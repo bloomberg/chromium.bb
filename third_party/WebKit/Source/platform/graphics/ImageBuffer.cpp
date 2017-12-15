@@ -33,36 +33,21 @@
 #include "platform/graphics/ImageBuffer.h"
 
 #include <memory>
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/sync_token.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/CanvasHeuristicParameters.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
-#include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/paint/PaintImage.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/ImageEncoder.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -88,7 +73,6 @@ std::unique_ptr<ImageBuffer> ImageBuffer::Create(
 
 ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
     : weak_ptr_factory_(this),
-      snapshot_state_(kInitialSnapshotState),
       surface_(std::move(surface)) {
   surface_->SetImageBuffer(this);
 }
@@ -97,248 +81,28 @@ ImageBuffer::~ImageBuffer() {
   surface_->SetImageBuffer(nullptr);
 }
 
-bool ImageBuffer::CanCreateImageBuffer(const IntSize& size) {
-  if (size.IsEmpty())
-    return false;
-  CheckedNumeric<int> area = size.Width();
-  area *= size.Height();
-  if (!area.IsValid() || area.ValueOrDie() > kMaxCanvasArea)
-    return false;
-  if (size.Width() > kMaxSkiaDim || size.Height() > kMaxSkiaDim)
-    return false;
-  return true;
-}
-
 PaintCanvas* ImageBuffer::Canvas() const {
   return surface_->Canvas();
-}
-
-void ImageBuffer::DisableDeferral(DisableDeferralReason reason) const {
-  return surface_->DisableDeferral(reason);
 }
 
 bool ImageBuffer::IsSurfaceValid() const {
   return surface_->IsValid();
 }
 
-void ImageBuffer::FinalizeFrame() {
-  surface_->FinalizeFrame();
-}
-
-void ImageBuffer::DoPaintInvalidation(const FloatRect& dirty_rect) {
-  surface_->DoPaintInvalidation(dirty_rect);
-}
-
-bool ImageBuffer::RestoreSurface() const {
-  return surface_->IsValid() || surface_->Restore();
-}
-
 scoped_refptr<StaticBitmapImage> ImageBuffer::NewImageSnapshot(
     AccelerationHint hint,
     SnapshotReason reason) const {
-  if (snapshot_state_ == kInitialSnapshotState)
-    snapshot_state_ = kDidAcquireSnapshot;
   if (!IsSurfaceValid())
     return nullptr;
   return surface_->NewImageSnapshot(hint, reason);
 }
 
-void ImageBuffer::DidDraw(const FloatRect& rect) const {
-  if (snapshot_state_ == kDidAcquireSnapshot)
-    snapshot_state_ = kDrawnToAfterSnapshot;
-  surface_->DidDraw(rect);
-}
-
-WebLayer* ImageBuffer::PlatformLayer() const {
-  return surface_->Layer();
-}
-
-bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
-                                        gpu::gles2::GLES2Interface* gl,
-                                        GLenum target,
-                                        GLuint texture,
-                                        bool premultiply_alpha,
-                                        bool flip_y,
-                                        const IntPoint& dest_point,
-                                        const IntRect& source_sub_rectangle) {
-  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(target))
-    return false;
-
-  if (!IsSurfaceValid())
-    return false;
-
-  scoped_refptr<StaticBitmapImage> image =
-      surface_->NewImageSnapshot(kPreferAcceleration, reason);
-  if (!image || !image->IsTextureBacked() || !image->IsValid())
-    return false;
-
-  // Get the texture ID, flushing pending operations if needed.
-  const GrGLTextureInfo* texture_info = skia::GrBackendObjectToGrGLTextureInfo(
-      image->PaintImageForCurrentFrame().GetSkImage()->getTextureHandle(true));
-  if (!texture_info || !texture_info->fID)
-    return false;
-
-  WebGraphicsContext3DProvider* provider = image->ContextProvider();
-  if (!provider || !provider->GetGrContext())
-    return false;
-  gpu::gles2::GLES2Interface* source_gl = provider->ContextGL();
-
-  gpu::Mailbox mailbox;
-
-  // Contexts may be in a different share group. We must transfer the texture
-  // through a mailbox first.
-  source_gl->GenMailboxCHROMIUM(mailbox.name);
-  source_gl->ProduceTextureDirectCHROMIUM(texture_info->fID, mailbox.name);
-  const GLuint64 shared_fence_sync = source_gl->InsertFenceSyncCHROMIUM();
-  source_gl->Flush();
-
-  gpu::SyncToken produce_sync_token;
-  source_gl->GenSyncTokenCHROMIUM(shared_fence_sync,
-                                  produce_sync_token.GetData());
-  gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
-
-  GLuint source_texture = gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
-
-  // The canvas is stored in a premultiplied format, so unpremultiply if
-  // necessary. The canvas is also stored in an inverted position, so the flip
-  // semantics are reversed.
-  // It is expected that callers of this method have already allocated
-  // the platform texture with the appropriate size.
-  gl->CopySubTextureCHROMIUM(
-      source_texture, 0, target, texture, 0, dest_point.X(), dest_point.Y(),
-      source_sub_rectangle.X(), source_sub_rectangle.Y(),
-      source_sub_rectangle.Width(), source_sub_rectangle.Height(),
-      flip_y ? GL_FALSE : GL_TRUE, GL_FALSE,
-      premultiply_alpha ? GL_FALSE : GL_TRUE);
-
-  gl->DeleteTextures(1, &source_texture);
-
-  const GLuint64 context_fence_sync = gl->InsertFenceSyncCHROMIUM();
-
-  gl->Flush();
-
-  gpu::SyncToken copy_sync_token;
-  gl->GenSyncTokenCHROMIUM(context_fence_sync, copy_sync_token.GetData());
-  source_gl->WaitSyncTokenCHROMIUM(copy_sync_token.GetConstData());
-  // This disassociates the texture from the mailbox to avoid leaking the
-  // mapping between the two in cases where the texture is recycled by skia.
-  source_gl->ProduceTextureDirectCHROMIUM(0, mailbox.name);
-
-  // Undo grContext texture binding changes introduced in this function.
-  GrContext* gr_context = provider->GetGrContext();
-  CHECK(gr_context);  // We already check / early-out above if null.
-  gr_context->resetContext(kTextureBinding_GrGLBackendState);
-
-  return true;
-}
-
-bool ImageBuffer::CopyRenderingResultsFromDrawingBuffer(
-    DrawingBuffer* drawing_buffer,
-    SourceDrawingBuffer source_buffer) {
-  if (!drawing_buffer || !surface_->IsAccelerated())
-    return false;
-  std::unique_ptr<WebGraphicsContext3DProvider> provider =
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
-  if (!provider)
-    return false;
-  gpu::gles2::GLES2Interface* gl = provider->ContextGL();
-  GLuint texture_id = surface_->GetBackingTextureHandleForOverwrite();
-  if (!texture_id)
-    return false;
-
-  gl->Flush();
-
-  return drawing_buffer->CopyToPlatformTexture(
-      gl, GL_TEXTURE_2D, texture_id, true, false, IntPoint(0, 0),
-      IntRect(IntPoint(0, 0), drawing_buffer->Size()), source_buffer);
-}
-
-void ImageBuffer::Draw(GraphicsContext& context,
-                       const FloatRect& dest_rect,
-                       const FloatRect* src_ptr,
-                       SkBlendMode op) {
-  if (!IsSurfaceValid())
-    return;
-
-  FloatRect src_rect =
-      src_ptr ? *src_ptr : FloatRect(FloatPoint(), FloatSize(Size()));
-  surface_->Draw(context, dest_rect, src_rect, op);
-}
-
-void ImageBuffer::PutByteArray(const unsigned char* source,
-                               const IntSize& source_size,
-                               const IntRect& source_rect,
-                               const IntPoint& dest_point) {
-  if (!IsSurfaceValid())
-    return;
-  uint8_t bytes_per_pixel = surface_->ColorParams().BytesPerPixel();
-
-  DCHECK_GT(source_rect.Width(), 0);
-  DCHECK_GT(source_rect.Height(), 0);
-
-  int origin_x = source_rect.X();
-  int dest_x = dest_point.X() + source_rect.X();
-  DCHECK_GE(dest_x, 0);
-  DCHECK_LT(dest_x, surface_->Size().Width());
-  DCHECK_GE(origin_x, 0);
-  DCHECK_LT(origin_x, source_rect.MaxX());
-
-  int origin_y = source_rect.Y();
-  int dest_y = dest_point.Y() + source_rect.Y();
-  DCHECK_GE(dest_y, 0);
-  DCHECK_LT(dest_y, surface_->Size().Height());
-  DCHECK_GE(origin_y, 0);
-  DCHECK_LT(origin_y, source_rect.MaxY());
-
-  const size_t src_bytes_per_row = bytes_per_pixel * source_size.Width();
-  const void* src_addr =
-      source + origin_y * src_bytes_per_row + origin_x * bytes_per_pixel;
-
-  SkAlphaType alpha_type;
-  if (kOpaque == surface_->GetOpacityMode()) {
-    // If the surface is opaque, tell it that we are writing opaque
-    // pixels.  Writing non-opaque pixels to opaque is undefined in
-    // Skia.  There is some discussion about whether it should be
-    // defined in skbug.com/6157.  For now, we can get the desired
-    // behavior (memcpy) by pretending the write is opaque.
-    alpha_type = kOpaque_SkAlphaType;
-  } else {
-    alpha_type = kUnpremul_SkAlphaType;
-  }
-
-  SkImageInfo info;
-  if (surface_->ColorParams().GetSkColorSpaceForSkSurfaces()) {
-    info = SkImageInfo::Make(
-        source_rect.Width(), source_rect.Height(),
-        surface_->ColorParams().GetSkColorType(), alpha_type,
-        surface_->ColorParams().GetSkColorSpaceForSkSurfaces());
-    if (info.colorType() == kN32_SkColorType)
-      info = info.makeColorType(kRGBA_8888_SkColorType);
-  } else {
-    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
-                             kRGBA_8888_SkColorType, alpha_type);
-  }
-  surface_->WritePixels(info, src_addr, src_bytes_per_row, dest_x, dest_y);
-}
-
-void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
-  scoped_refptr<StaticBitmapImage> image =
-      surface_->NewImageSnapshot(kPreferNoAcceleration, kSnapshotReasonPaint);
-
-  // image can be null if alloaction failed in which case we should just
-  // abort the surface switch to reatain the old surface which is still
-  // functional.
-  if (!image)
-    return;
-
-  surface->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0, 0);
-  surface->SetImageBuffer(this);
-  surface_ = std::move(surface);
-}
-
-void ImageBuffer::OnCanvasDisposed() {
-  if (surface_)
-    surface_->SetCanvasResourceHost(nullptr);
+bool ImageBuffer::WritePixels(const SkImageInfo& orig_info,
+                              const void* pixels,
+                              size_t row_bytes,
+                              int x,
+                              int y) {
+  return surface_->WritePixels(orig_info, pixels, row_bytes, x, y);
 }
 
 const unsigned char* ImageDataBuffer::Pixels() const {

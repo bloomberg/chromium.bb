@@ -15,6 +15,7 @@
 #include "modules/canvas/canvas2d/CanvasStyle.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/ColorBehavior.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "third_party/skia/include/effects/SkComposeImageFilter.h"
 
@@ -23,7 +24,6 @@ namespace blink {
 class CanvasImageSource;
 class Color;
 class Image;
-class ImageBuffer;
 class Path2D;
 class SVGMatrixTearOff;
 
@@ -224,10 +224,14 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual int Width() const = 0;
   virtual int Height() const = 0;
 
-  virtual bool HasImageBuffer() const { return false; }
-  virtual ImageBuffer* GetImageBuffer() const {
+  virtual bool IsAccelerated() const {
     NOTREACHED();
-    return nullptr;
+    return false;
+  }
+  virtual bool HasCanvas2DBuffer() const { return false; }
+  virtual bool CanCreateCanvas2DBuffer() const {
+    NOTREACHED();
+    return false;
   };
 
   virtual bool ParseColorOrCurrentColor(Color&,
@@ -251,7 +255,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual void WillDrawImage(CanvasImageSource*) const {}
 
-  virtual CanvasColorSpace ColorSpace() const { return kSRGBCanvasColorSpace; };
   virtual String ColorSpaceAsString() const {
     return kSRGBCanvasColorSpaceName;
   }
@@ -342,6 +345,21 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void UnwindStateStack();
 
+  virtual CanvasColorParams ColorParams() const { return CanvasColorParams(); };
+  virtual bool WritePixels(const SkImageInfo& orig_info,
+                           const void* pixels,
+                           size_t row_bytes,
+                           int x,
+                           int y) {
+    NOTREACHED();
+    return false;
+  }
+  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
+                                                    SnapshotReason) const {
+    NOTREACHED();
+    return nullptr;
+  }
+
   enum DrawType {
     kClipFill,  // Fill that is already known to cover the current clip
     kUntransformedUnclippedFill
@@ -372,11 +390,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual void DidInvokeGPUReadbackInCurrentFrame() {}
 
   virtual bool IsPaint2D() const { return false; }
-  virtual void WillOverwriteCanvas() {
-    if (HasImageBuffer()) {
-      GetImageBuffer()->WillOverwriteCanvas();
-    }
-  }
+  virtual void WillOverwriteCanvas() {}
 
  private:
   void RealizeSaves();
@@ -416,6 +430,15 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   void SetOriginTaintedByContent();
 
   ImageDataColorSettings GetColorSettingsAsImageDataColorSettings() const;
+
+  void PutByteArray(const unsigned char* source,
+                    const IntSize& source_size,
+                    const IntRect& source_rect,
+                    const IntPoint& dest_point);
+  virtual bool IsCanvas2DBufferValid() const {
+    NOTREACHED();
+    return false;
+  }
 
   bool origin_tainted_by_content_;
 };

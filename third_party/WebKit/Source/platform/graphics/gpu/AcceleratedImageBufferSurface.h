@@ -36,6 +36,7 @@
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -58,7 +59,7 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
   bool IsAccelerated() const override { return true; }
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
                                                     SnapshotReason) override;
-  GLuint GetBackingTextureHandleForOverwrite() override;
+  GLuint GetBackingTextureHandleForOverwrite();
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,
                    size_t row_bytes,

@@ -21,6 +21,12 @@ class ArrayBufferContents;
 
 }  // namespace WTF
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}  // namespace gpu
+
 namespace blink {
 
 class WebGraphicsContext3DProvider;
@@ -75,6 +81,18 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
                              const IntRect&) {
     NOTREACHED();
   }
+  // TODO: Merge CopyImageToPlatformTexture function with CopyToTexture
+  // function above and probably with CopyToPlatformTexture in DrawingBuffer
+  // too. See crbug.com/794706.
+  // Destroys the TEXTURE_2D binding for the active texture unit of the passed
+  // context. Assumes the destination texture has already been allocated.
+  bool CopyImageToPlatformTexture(gpu::gles2::GLES2Interface*,
+                                  GLenum target,
+                                  GLuint texture,
+                                  bool premultiply_alpha,
+                                  bool flip_y,
+                                  const IntPoint& dest_point,
+                                  const IntRect& source_sub_rectangle);
 
   // EnsureMailbox modifies the internal state of an accelerated static bitmap
   // image to make sure that it is represented by a Mailbox.  This must be

@@ -26,6 +26,7 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/MathExtras.h"
@@ -219,7 +220,7 @@ bool OffscreenCanvas::OriginClean() const {
 
 bool OffscreenCanvas::IsPaintable() const {
   if (!context_)
-    return ImageBuffer::CanCreateImageBuffer(size_);
+    return IsValidImageSize(size_);
   return context_->IsPaintable() && size_.Width() && size_.Height();
 }
 

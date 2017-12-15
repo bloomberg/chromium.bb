@@ -89,20 +89,21 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
                                    std::unique_ptr<viz::SingleReleaseCallback>*
                                        out_release_callback) override;
 
+  void FinalizeFrame();
+  void SetIsHidden(bool);
+  void DidDraw(const FloatRect&);
+  void DoPaintInvalidation(const FloatRect& dirty_rect);
+  WebLayer* Layer();
+  bool Restore();
+  virtual void WillOverwriteCanvas();  // virtual for unit testing
+  void DisableDeferral(DisableDeferralReason);
+  void SetFilterQuality(SkFilterQuality);
+
   // ImageBufferSurface implementation
-  void FinalizeFrame() override;
-  void DoPaintInvalidation(const FloatRect& dirty_rect) override;
-  void WillOverwriteCanvas() override;
   PaintCanvas* Canvas() override;
-  void DisableDeferral(DisableDeferralReason) override;
   bool IsValid() const override;
-  bool Restore() override;
-  WebLayer* Layer() override;
   bool IsAccelerated() const override;
-  void SetFilterQuality(SkFilterQuality) override;
-  void SetIsHidden(bool) override;
   void SetImageBuffer(ImageBuffer*) override;
-  void DidDraw(const FloatRect&) override;
   bool WritePixels(const SkImageInfo&,
                    const void* pixels,
                    size_t row_bytes,
@@ -124,6 +125,9 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
 
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
                                                     SnapshotReason);
+  bool WasDrawnToAfterSnapshot() const {
+    return snapshot_state_ == kDrawnToAfterSnapshot;
+  }
 
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
@@ -196,6 +200,13 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   AccelerationMode acceleration_mode_;
   CanvasColorParams color_params_;
   CheckedNumeric<int> recording_pixel_count_;
+
+  enum SnapshotState {
+    kInitialSnapshotState,
+    kDidAcquireSnapshot,
+    kDrawnToAfterSnapshot,
+  };
+  mutable SnapshotState snapshot_state_;
 
   CanvasResourceHost* resource_host_;
 };

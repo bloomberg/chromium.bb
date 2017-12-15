@@ -78,12 +78,14 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       software_rendering_while_hidden_(false),
       acceleration_mode_(acceleration_mode),
       color_params_(color_params),
+      snapshot_state_(kInitialSnapshotState),
       resource_host_(nullptr) {
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
   StartRecording();
   Clear();
+  DidDraw(FloatRect(FloatPoint(0, 0), FloatSize(Size())));
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
@@ -672,6 +674,8 @@ WebLayer* Canvas2DLayerBridge::Layer() {
 }
 
 void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
+  if (snapshot_state_ == kDidAcquireSnapshot)
+    snapshot_state_ = kDrawnToAfterSnapshot;
   if (is_deferral_enabled_) {
     have_recorded_draw_commands_ = true;
     IntRect pixel_bounds = EnclosingIntRect(rect);
@@ -730,6 +734,8 @@ void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
 scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
     AccelerationHint hint,
     SnapshotReason) {
+  if (snapshot_state_ == kInitialSnapshotState)
+    snapshot_state_ = kDidAcquireSnapshot;
   if (IsHibernating())
     return StaticBitmapImage::Create(hibernation_image_);
   if (!IsValid())

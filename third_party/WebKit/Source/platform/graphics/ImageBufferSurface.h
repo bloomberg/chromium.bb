@@ -36,24 +36,16 @@
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 struct SkImageInfo;
 
 namespace blink {
 
-class CanvasResourceHost;
-class FloatRect;
-class GraphicsContext;
 class ImageBuffer;
 class StaticBitmapImage;
-class WebLayer;
 
 class PLATFORM_EXPORT ImageBufferSurface {
   WTF_MAKE_NONCOPYABLE(ImageBufferSurface);
@@ -63,43 +55,22 @@ class PLATFORM_EXPORT ImageBufferSurface {
   virtual ~ImageBufferSurface();
 
   virtual PaintCanvas* Canvas() = 0;
-  virtual void DisableDeferral(DisableDeferralReason) {}
-  virtual void WillOverwriteCanvas() {}
-  virtual void DidDraw(const FloatRect& rect) {}
   virtual bool IsValid() const = 0;
-  virtual bool Restore() { return false; }
-  virtual WebLayer* Layer() { return nullptr; }
   virtual bool IsAccelerated() const { return false; }
-  virtual void SetFilterQuality(SkFilterQuality) {}
-  virtual void SetIsHidden(bool) {}
   virtual void SetImageBuffer(ImageBuffer*) {}
-  virtual sk_sp<PaintRecord> GetRecord();
-  virtual void FinalizeFrame() {}
-  virtual void DoPaintInvalidation(const FloatRect& dirty_rect) {}
-  virtual void Draw(GraphicsContext&,
-                    const FloatRect& dest_rect,
-                    const FloatRect& src_rect,
-                    SkBlendMode);
-  virtual void SetHasExpensiveOp() {}
-  virtual GLuint GetBackingTextureHandleForOverwrite() { return 0; }
-  virtual void PrepareSurfaceForPaintingIfNeeded() {}
   virtual bool WritePixels(const SkImageInfo& orig_info,
                            const void* pixels,
                            size_t row_bytes,
                            int x,
                            int y) = 0;
-  virtual void SetCanvasResourceHost(CanvasResourceHost*) {}
 
   // May return nullptr if the surface is GPU-backed and the GPU context was
   // lost.
   virtual scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
                                                             SnapshotReason) = 0;
 
-  OpacityMode GetOpacityMode() const { return color_params_.GetOpacityMode(); }
   const IntSize& Size() const { return size_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
-
-  void NotifyIsValidChanged(bool is_valid) const;
 
  protected:
   ImageBufferSurface(const IntSize&, const CanvasColorParams&);

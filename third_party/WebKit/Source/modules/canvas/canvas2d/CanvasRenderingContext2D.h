@@ -171,8 +171,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   int Width() const final;
   int Height() const final;
 
-  bool HasImageBuffer() const final;
-  ImageBuffer* GetImageBuffer() const final;
+  bool HasCanvas2DBuffer() const final;
+  bool CanCreateCanvas2DBuffer() const final;
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
@@ -180,9 +180,9 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   PaintCanvas* ExistingDrawingCanvas() const final;
   void DisableDeferral(DisableDeferralReason) final;
 
-  void DidDraw(const SkIRect& dirty_rect) final;  // overrides
-                                                  // BaseRenderingContext2D and
-                                                  // CanvasRenderingContext
+  void DidDraw(const SkIRect& dirty_rect) final;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
+                                            SnapshotReason) const final;
 
   bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;
@@ -190,12 +190,9 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void ValidateStateStack() const final;
 
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
-                                            SnapshotReason) const final;
-
   void FinalizeFrame() override { usage_counters_.num_frames_since_reset++; }
 
-  bool IsPaintable() const final { return HasImageBuffer(); }
+  bool IsPaintable() const final { return HasCanvas2DBuffer(); }
 
   void WillDrawImage(CanvasImageSource*) const final;
 
@@ -205,6 +202,14 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   virtual void NeedsFinalizeFrame() {
     CanvasRenderingContext::NeedsFinalizeFrame();
   }
+
+  CanvasColorParams ColorParams() const override;
+  bool WritePixels(const SkImageInfo& orig_info,
+                   const void* pixels,
+                   size_t row_bytes,
+                   int x,
+                   int y) override;
+  void WillOverwriteCanvas() override;
 
  private:
   friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
@@ -236,7 +241,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
     return CanvasRenderingContext::kContext2d;
   }
 
-  CanvasColorSpace ColorSpace() const override;
   String ColorSpaceAsString() const override;
   CanvasPixelFormat PixelFormat() const override;
 
@@ -250,6 +254,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   virtual bool IsTransformInvertible() const;
 
   WebLayer* PlatformLayer() const override;
+  bool IsCanvas2DBufferValid() const override;
 
   Member<HitRegionManager> hit_region_manager_;
   LostContextMode context_lost_mode_;
