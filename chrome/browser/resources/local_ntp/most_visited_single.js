@@ -199,6 +199,8 @@ var handleCommand = function(data) {
   if (cmd == 'tile') {
     addTile(data);
   } else if (cmd == 'show') {
+    // TODO(treib): If this happens before we have finished loading the previous
+    // tiles, we probably get into a bad state.
     showTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);

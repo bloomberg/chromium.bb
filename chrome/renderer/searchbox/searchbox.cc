@@ -219,6 +219,7 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
       is_input_in_progress_(false),
       is_key_capture_enabled_(false),
       most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
+      has_received_most_visited_(false),
       weak_ptr_factory_(this) {
   // Connect to the embedded search interface in the browser.
   chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
@@ -280,6 +281,10 @@ bool SearchBox::GenerateImageURLFromTransientURL(const GURL& transient_url,
 void SearchBox::GetMostVisitedItems(
     std::vector<InstantMostVisitedItemIDPair>* items) const {
   most_visited_items_cache_.GetCurrentItems(items);
+}
+
+bool SearchBox::AreMostVisitedItemsAvailable() const {
+  return has_received_most_visited_;
 }
 
 bool SearchBox::GetMostVisitedItemWithID(
@@ -368,6 +373,8 @@ void SearchBox::HistorySyncCheckResult(bool sync_history) {
 
 void SearchBox::MostVisitedChanged(
     const std::vector<InstantMostVisitedItem>& items) {
+  has_received_most_visited_ = true;
+
   std::vector<InstantMostVisitedItemIDPair> last_known_items;
   GetMostVisitedItems(&last_known_items);
 

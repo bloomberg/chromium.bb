@@ -95,6 +95,8 @@ class SearchBox : public content::RenderFrameObserver,
   void GetMostVisitedItems(
       std::vector<InstantMostVisitedItemIDPair>* items) const;
 
+  bool AreMostVisitedItemsAvailable() const;
+
   // If the |most_visited_item_id| is found in the cache, sets |item| to it
   // and returns true.
   bool GetMostVisitedItemWithID(InstantRestrictedID most_visited_item_id,
@@ -165,6 +167,7 @@ class SearchBox : public content::RenderFrameObserver,
   bool is_input_in_progress_;
   bool is_key_capture_enabled_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
+  bool has_received_most_visited_;
   ThemeBackgroundInfo theme_info_;
 
   base::WeakPtrFactory<SearchBox> weak_ptr_factory_;
