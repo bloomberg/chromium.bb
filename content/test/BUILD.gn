@@ -313,6 +313,8 @@ static_library("test_support") {
     "//content/utility:for_content_tests",
     "//device/base/synchronization",
     "//device/geolocation",
+    "//device/geolocation/public/cpp:test_support",
+    "//device/geolocation/public/interfaces",
     "//ipc:test_support",
     "//media",
     "//media/capture",

@@ -35,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "device/geolocation/network_location_request.h"
+#include "device/geolocation/public/cpp/scoped_geolocation_overrider.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -232,10 +233,9 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   };
 
   GeolocationBrowserTest();
-  ~GeolocationBrowserTest() override;
+  ~GeolocationBrowserTest() override = default;
 
   // InProcessBrowserTest:
-  void SetUpOnMainThread() override;
   void TearDownInProcessBrowserTestFixture() override;
 
   Browser* current_browser() { return current_browser_; }
@@ -293,6 +293,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   // Convenience method to look up the number of queued permission requests.
   int GetRequestQueueSize(PermissionRequestManager* manager);
 
+ protected:
+  // The values used for the position override.
+  double fake_latitude_ = 1.23;
+  double fake_longitude_ = 4.56;
+  std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
+
  private:
   // Calls watchPosition() in JavaScript and accepts or denies the resulting
   // permission request. Returns the JavaScript response.
@@ -314,22 +320,40 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   // The urls for the iframes loaded by LoadIFrames.
   std::vector<GURL> iframe_urls_;
 
-  // The values used for the position override.
-  double fake_latitude_ = 1.23;
-  double fake_longitude_ = 4.56;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationBrowserTest);
 };
 
-GeolocationBrowserTest::GeolocationBrowserTest() {
+// This class is only used by test case of UrlWithApiKey which connects the
+// real geolocation implementation instead of the FakeGeolocation.
+// TODO(ke.he@intel.com): crbug.com/788298. Remove this class and rewrite the
+// test case of UrlWithApiKey as a services_unittest. Also remove the
+// ui_test_utils::OverrideGeolocation() then.
+class GeolocationBrowserTestWithoutOverrider : public GeolocationBrowserTest {
+ public:
+  GeolocationBrowserTestWithoutOverrider();
+  ~GeolocationBrowserTestWithoutOverrider() override = default;
+  void SetUpOnMainThread() override;
+
+  DISALLOW_COPY_AND_ASSIGN(GeolocationBrowserTestWithoutOverrider);
+};
+
+GeolocationBrowserTestWithoutOverrider::
+    GeolocationBrowserTestWithoutOverrider() {
+  geolocation_overrider_.reset();
 }
 
-GeolocationBrowserTest::~GeolocationBrowserTest() {
-}
-
-void GeolocationBrowserTest::SetUpOnMainThread() {
+void GeolocationBrowserTestWithoutOverrider::SetUpOnMainThread() {
   ui_test_utils::OverrideGeolocation(fake_latitude_, fake_longitude_);
 }
+
+// WebContentImpl tries to connect Device Service earlier than
+// of SetUpOnMainThread(), so create the |geolocation_overrider_| here.
+GeolocationBrowserTest::GeolocationBrowserTest()
+    : geolocation_overrider_(
+          std::make_unique<device::ScopedGeolocationOverrider>(
+              fake_latitude_,
+              fake_longitude_)) {}
 
 void GeolocationBrowserTest::TearDownInProcessBrowserTestFixture() {
   LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
@@ -452,7 +476,8 @@ bool GeolocationBrowserTest::SetPositionAndWaitUntilUpdated(double latitude,
 
   fake_latitude_ = latitude;
   fake_longitude_ = longitude;
-  ui_test_utils::OverrideGeolocation(latitude, longitude);
+
+  geolocation_overrider_->UpdateLocation(fake_latitude_, fake_longitude_);
 
   std::string result;
   if (!dom_message_queue.WaitForMessage(&result))
@@ -495,7 +520,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
 #endif
 // Tests that Chrome makes a network geolocation request to the correct URL
 // including Google API key query param.
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_UrlWithApiKey) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTestWithoutOverrider,
+                       MAYBE_UrlWithApiKey) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
 
   // Unique ID (derived from Gerrit CL number):
