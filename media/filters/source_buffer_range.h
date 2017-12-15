@@ -110,8 +110,8 @@ class MEDIA_EXPORT SourceBufferRange {
   // |keyframe_map_|.
   // TODO(wolenetz): elevate keyframe_map_ to base class so this comment has
   // better context. See https://crbug.com/718641.
-  void FreeBufferRange(const BufferQueue::iterator& starting_point,
-                       const BufferQueue::iterator& ending_point);
+  void FreeBufferRange(const BufferQueue::const_iterator& starting_point,
+                       const BufferQueue::const_iterator& ending_point);
 
   // Returns the distance in time estimating how far from the beginning or end
   // of this range a buffer can be to considered in the range.

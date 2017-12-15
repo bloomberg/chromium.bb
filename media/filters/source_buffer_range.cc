@@ -101,9 +101,10 @@ void SourceBufferRange::AdjustEstimatedDurationForNewAppend(
 }
 
 void SourceBufferRange::FreeBufferRange(
-    const BufferQueue::iterator& starting_point,
-    const BufferQueue::iterator& ending_point) {
-  for (BufferQueue::iterator itr = starting_point; itr != ending_point; ++itr) {
+    const BufferQueue::const_iterator& starting_point,
+    const BufferQueue::const_iterator& ending_point) {
+  for (BufferQueue::const_iterator itr = starting_point; itr != ending_point;
+       ++itr) {
     size_t itr_data_size = static_cast<size_t>((*itr)->data_size());
     DCHECK_GE(size_in_bytes_, itr_data_size);
     size_in_bytes_ -= itr_data_size;

@@ -125,7 +125,7 @@ void SourceBufferRangeByPts::Seek(base::TimeDelta timestamp) {
   DCHECK(CanSeekTo(timestamp));
   DCHECK(!keyframe_map_.empty());
 
-  KeyframeMap::iterator result = GetFirstKeyframeAtOrBefore(timestamp);
+  KeyframeMap::const_iterator result = GetFirstKeyframeAtOrBefore(timestamp);
   next_buffer_index_ = result->second - keyframe_map_index_base_;
   CHECK_LT(next_buffer_index_, static_cast<int>(buffers_.size()))
       << next_buffer_index_ << ", size = " << buffers_.size();
@@ -141,14 +141,14 @@ bool SourceBufferRangeByPts::CanSeekTo(base::TimeDelta timestamp) const {
          timestamp < GetBufferedEndTimestamp();
 }
 
-int SourceBufferRangeByPts::GetConfigIdAtTime(base::TimeDelta timestamp) {
+int SourceBufferRangeByPts::GetConfigIdAtTime(base::TimeDelta timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
   DCHECK(CanSeekTo(timestamp));
   DCHECK(!keyframe_map_.empty());
 
-  KeyframeMap::iterator result = GetFirstKeyframeAtOrBefore(timestamp);
+  KeyframeMap::const_iterator result = GetFirstKeyframeAtOrBefore(timestamp);
   CHECK(result != keyframe_map_.end());
   size_t buffer_index = result->second - keyframe_map_index_base_;
   CHECK_LT(buffer_index, buffers_.size())
@@ -158,7 +158,7 @@ int SourceBufferRangeByPts::GetConfigIdAtTime(base::TimeDelta timestamp) {
 }
 
 bool SourceBufferRangeByPts::SameConfigThruRange(base::TimeDelta start,
-                                                 base::TimeDelta end) {
+                                                 base::TimeDelta end) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
@@ -196,7 +196,7 @@ std::unique_ptr<SourceBufferRangeByPts> SourceBufferRangeByPts::SplitRange(
   CHECK(!buffers_.empty());
 
   // Find the first keyframe at or after |timestamp|.
-  KeyframeMap::iterator new_beginning_keyframe =
+  KeyframeMap::const_iterator new_beginning_keyframe =
       GetFirstKeyframeAt(timestamp, false);
 
   // If there is no keyframe at or after |timestamp|, we can't split the range.
@@ -271,7 +271,7 @@ size_t SourceBufferRangeByPts::DeleteGOPFromFront(
   int buffers_deleted = 0;
   size_t total_bytes_deleted = 0;
 
-  KeyframeMap::iterator front = keyframe_map_.begin();
+  KeyframeMap::const_iterator front = keyframe_map_.begin();
   DCHECK(front != keyframe_map_.end());
 
   // Delete the keyframe at the start of |keyframe_map_|.
@@ -325,7 +325,7 @@ size_t SourceBufferRangeByPts::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
   DCHECK(deleted_buffers);
 
   // Remove the last GOP's keyframe from the |keyframe_map_|.
-  KeyframeMap::iterator back = keyframe_map_.end();
+  KeyframeMap::const_iterator back = keyframe_map_.end();
   DCHECK_GT(keyframe_map_.size(), 0u);
   --back;
 
@@ -356,24 +356,25 @@ size_t SourceBufferRangeByPts::GetRemovalGOP(
     base::TimeDelta start_timestamp,
     base::TimeDelta end_timestamp,
     size_t total_bytes_to_free,
-    base::TimeDelta* removal_end_timestamp) {
+    base::TimeDelta* removal_end_timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
   size_t bytes_removed = 0;
 
-  KeyframeMap::iterator gop_itr = GetFirstKeyframeAt(start_timestamp, false);
+  KeyframeMap::const_iterator gop_itr =
+      GetFirstKeyframeAt(start_timestamp, false);
   if (gop_itr == keyframe_map_.end())
     return 0;
   int keyframe_index = gop_itr->second - keyframe_map_index_base_;
-  BufferQueue::iterator buffer_itr = buffers_.begin() + keyframe_index;
-  KeyframeMap::iterator gop_end = keyframe_map_.end();
+  BufferQueue::const_iterator buffer_itr = buffers_.begin() + keyframe_index;
+  KeyframeMap::const_iterator gop_end = keyframe_map_.end();
   if (end_timestamp < GetBufferedEndTimestamp())
     gop_end = GetFirstKeyframeAtOrBefore(end_timestamp);
 
   // Check if the removal range is within a GOP and skip the loop if so.
   // [keyframe]...[start_timestamp]...[end_timestamp]...[keyframe]
-  KeyframeMap::iterator gop_itr_prev = gop_itr;
+  KeyframeMap::const_iterator gop_itr_prev = gop_itr;
   if (gop_itr_prev != keyframe_map_.begin() && --gop_itr_prev == gop_end)
     gop_end = gop_itr;
 
@@ -384,7 +385,8 @@ size_t SourceBufferRangeByPts::GetRemovalGOP(
     int next_gop_index = gop_itr == keyframe_map_.end()
                              ? buffers_.size()
                              : gop_itr->second - keyframe_map_index_base_;
-    BufferQueue::iterator next_gop_start = buffers_.begin() + next_gop_index;
+    BufferQueue::const_iterator next_gop_start =
+        buffers_.begin() + next_gop_index;
     for (; buffer_itr != next_gop_start; ++buffer_itr) {
       gop_size += (*buffer_itr)->data_size();
     }
@@ -500,7 +502,7 @@ bool SourceBufferRangeByPts::BelongsToRange(base::TimeDelta timestamp) const {
 }
 
 base::TimeDelta SourceBufferRangeByPts::NextKeyframeTimestamp(
-    base::TimeDelta timestamp) {
+    base::TimeDelta timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
@@ -509,7 +511,7 @@ base::TimeDelta SourceBufferRangeByPts::NextKeyframeTimestamp(
   if (timestamp < GetStartTimestamp() || timestamp >= GetBufferedEndTimestamp())
     return kNoTimestamp;
 
-  KeyframeMap::iterator itr = GetFirstKeyframeAt(timestamp, false);
+  KeyframeMap::const_iterator itr = GetFirstKeyframeAt(timestamp, false);
   if (itr == keyframe_map_.end())
     return kNoTimestamp;
 
@@ -525,7 +527,7 @@ base::TimeDelta SourceBufferRangeByPts::NextKeyframeTimestamp(
 }
 
 base::TimeDelta SourceBufferRangeByPts::KeyframeBeforeTimestamp(
-    base::TimeDelta timestamp) {
+    base::TimeDelta timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
@@ -539,7 +541,7 @@ base::TimeDelta SourceBufferRangeByPts::KeyframeBeforeTimestamp(
 
 bool SourceBufferRangeByPts::GetBuffersInRange(base::TimeDelta start,
                                                base::TimeDelta end,
-                                               BufferQueue* buffers) {
+                                               BufferQueue* buffers) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
@@ -550,7 +552,7 @@ bool SourceBufferRangeByPts::GetBuffersInRange(base::TimeDelta start,
 
   // Find all buffers involved in the range.
   const size_t previous_size = buffers->size();
-  for (BufferQueue::iterator it = GetBufferItrAt(first_timestamp, false);
+  for (BufferQueue::const_iterator it = GetBufferItrAt(first_timestamp, false);
        it != buffers_.end(); ++it) {
     const scoped_refptr<StreamParserBuffer>& buffer = *it;
     // Buffers without duration are not supported, so bail if we encounter any.
@@ -570,8 +572,9 @@ bool SourceBufferRangeByPts::GetBuffersInRange(base::TimeDelta start,
   return previous_size < buffers->size();
 }
 
-size_t SourceBufferRangeByPts::GetBufferIndexAt(base::TimeDelta timestamp,
-                                                bool skip_given_timestamp) {
+size_t SourceBufferRangeByPts::GetBufferIndexAt(
+    base::TimeDelta timestamp,
+    bool skip_given_timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
@@ -590,11 +593,11 @@ size_t SourceBufferRangeByPts::GetBufferIndexAt(base::TimeDelta timestamp,
   // a GOP may not match the DTS-sorted sequence of frames within the GOP.
   DCHECK_GT(buffers_.size(), 0u);
   size_t search_index = gop_iter->second - keyframe_map_index_base_;
-  SourceBufferRange::BufferQueue::iterator search_iter =
+  SourceBufferRange::BufferQueue::const_iterator search_iter =
       buffers_.begin() + search_index;
   gop_iter++;
 
-  SourceBufferRange::BufferQueue::iterator next_gop_start =
+  SourceBufferRange::BufferQueue::const_iterator next_gop_start =
       gop_iter == keyframe_map_.end()
           ? buffers_.end()
           : buffers_.begin() + (gop_iter->second - keyframe_map_index_base_);
@@ -611,18 +614,18 @@ size_t SourceBufferRangeByPts::GetBufferIndexAt(base::TimeDelta timestamp,
   return search_index;
 }
 
-SourceBufferRange::BufferQueue::iterator SourceBufferRangeByPts::GetBufferItrAt(
-    base::TimeDelta timestamp,
-    bool skip_given_timestamp) {
+SourceBufferRange::BufferQueue::const_iterator
+SourceBufferRangeByPts::GetBufferItrAt(base::TimeDelta timestamp,
+                                       bool skip_given_timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
   return buffers_.begin() + GetBufferIndexAt(timestamp, skip_given_timestamp);
 }
 
-SourceBufferRangeByPts::KeyframeMap::iterator
+SourceBufferRangeByPts::KeyframeMap::const_iterator
 SourceBufferRangeByPts::GetFirstKeyframeAt(base::TimeDelta timestamp,
-                                           bool skip_given_timestamp) {
+                                           bool skip_given_timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
@@ -630,12 +633,13 @@ SourceBufferRangeByPts::GetFirstKeyframeAt(base::TimeDelta timestamp,
                               : keyframe_map_.lower_bound(timestamp);
 }
 
-SourceBufferRangeByPts::KeyframeMap::iterator
-SourceBufferRangeByPts::GetFirstKeyframeAtOrBefore(base::TimeDelta timestamp) {
+SourceBufferRangeByPts::KeyframeMap::const_iterator
+SourceBufferRangeByPts::GetFirstKeyframeAtOrBefore(
+    base::TimeDelta timestamp) const {
   DVLOG(1) << __func__;
   DVLOG(4) << ToStringForDebugging();
 
-  KeyframeMap::iterator result = keyframe_map_.lower_bound(timestamp);
+  KeyframeMap::const_iterator result = keyframe_map_.lower_bound(timestamp);
   // lower_bound() returns the first element >= |timestamp|, so we want the
   // previous element if it did not return the element exactly equal to
   // |timestamp|.
@@ -671,11 +675,11 @@ bool SourceBufferRangeByPts::TruncateAt(const size_t starting_point,
     }
   }
 
-  const BufferQueue::iterator starting_point_iter =
+  const BufferQueue::const_iterator starting_point_iter =
       buffers_.begin() + starting_point;
 
   // Remove keyframes from |starting_point| onward.
-  KeyframeMap::iterator starting_point_keyframe =
+  KeyframeMap::const_iterator starting_point_keyframe =
       keyframe_map_.lower_bound((*starting_point_iter)->timestamp());
   keyframe_map_.erase(starting_point_keyframe, keyframe_map_.end());
 

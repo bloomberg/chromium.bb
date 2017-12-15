@@ -72,12 +72,12 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
 
   // Return the config ID for the buffer at |timestamp|. Precondition: callers
   // must first verify CanSeekTo(timestamp) == true.
-  int GetConfigIdAtTime(base::TimeDelta timestamp);
+  int GetConfigIdAtTime(base::TimeDelta timestamp) const;
 
   // Return true if all buffers in range of [start, end] have the same config
   // ID. Precondition: callers must first verify that
   // CanSeekTo(start) ==  CanSeekTo(end) == true.
-  bool SameConfigThruRange(base::TimeDelta start, base::TimeDelta end);
+  bool SameConfigThruRange(base::TimeDelta start, base::TimeDelta end) const;
 
   // Finds the next keyframe from |buffers_| starting at or after |timestamp|
   // and creates and returns a new SourceBufferRangeByPts with the buffers from
@@ -119,7 +119,7 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   size_t GetRemovalGOP(base::TimeDelta start_timestamp,
                        base::TimeDelta end_timestamp,
                        size_t bytes_to_free,
-                       base::TimeDelta* end_removal_timestamp);
+                       base::TimeDelta* end_removal_timestamp) const;
 
   // Returns true iff the buffered end time of the first GOP in this range is
   // at or before |media_time|.
@@ -156,12 +156,12 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // If |timestamp| is in the "gap" between the value returned by
   // GetStartTimestamp() and the timestamp on the first buffer in |buffers_|,
   // then |timestamp| is returned.
-  base::TimeDelta NextKeyframeTimestamp(base::TimeDelta timestamp);
+  base::TimeDelta NextKeyframeTimestamp(base::TimeDelta timestamp) const;
 
   // Gets the timestamp for the closest keyframe that is <= |timestamp|. If
   // there isn't a keyframe before |timestamp| or |timestamp| is outside
   // this range, then kNoTimestamp is returned.
-  base::TimeDelta KeyframeBeforeTimestamp(base::TimeDelta timestamp);
+  base::TimeDelta KeyframeBeforeTimestamp(base::TimeDelta timestamp) const;
 
   // Adds all buffers which overlap [start, end) to the end of |buffers|.  If
   // no buffers exist in the range returns false, true otherwise.
@@ -169,7 +169,7 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // buffers are expected to be keyframes here (so DTS doesn't matter at all).
   bool GetBuffersInRange(base::TimeDelta start,
                          base::TimeDelta end,
-                         BufferQueue* buffers);
+                         BufferQueue* buffers) const;
 
  private:
   typedef std::map<base::TimeDelta, int> KeyframeMap;
@@ -179,19 +179,22 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // the first buffer with timestamp strictly greater than |timestamp|. If
   // |buffers_| has no such buffer, returns |buffers_.size()| (or
   // |buffers_.end()|).
-  size_t GetBufferIndexAt(base::TimeDelta timestamp, bool skip_given_timestamp);
-  BufferQueue::iterator GetBufferItrAt(base::TimeDelta timestamp,
-                                       bool skip_given_timestamp);
+  size_t GetBufferIndexAt(base::TimeDelta timestamp,
+                          bool skip_given_timestamp) const;
+  BufferQueue::const_iterator GetBufferItrAt(base::TimeDelta timestamp,
+                                             bool skip_given_timestamp) const;
 
   // Returns an iterator in |keyframe_map_| pointing to the next keyframe after
   // |timestamp|. If |skip_given_timestamp| is true, this returns the first
   // keyframe with a timestamp strictly greater than |timestamp|.
-  KeyframeMap::iterator GetFirstKeyframeAt(base::TimeDelta timestamp,
-                                           bool skip_given_timestamp);
+  KeyframeMap::const_iterator GetFirstKeyframeAt(
+      base::TimeDelta timestamp,
+      bool skip_given_timestamp) const;
 
   // Returns an iterator in |keyframe_map_| pointing to the first keyframe
   // before or at |timestamp|.
-  KeyframeMap::iterator GetFirstKeyframeAtOrBefore(base::TimeDelta timestamp);
+  KeyframeMap::const_iterator GetFirstKeyframeAtOrBefore(
+      base::TimeDelta timestamp) const;
 
   // Helper method to delete buffers in |buffers_| starting at
   // |starting_point|, an index in |buffers_|.
