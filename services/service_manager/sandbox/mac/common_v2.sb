@@ -44,7 +44,10 @@
   (string-append (param homedir-as-literal) subpath))
 
 ; Allow logging for all processes.
-(allow file-write* (path (param log-file-path)))
+(allow file-write*
+  (require-all
+    (path (param log-file-path))
+    (vnode-type REGULAR-FILE)))
 
 ; Allow component builds to work.
 (if (param-defined? component-path)
@@ -77,7 +80,10 @@
 (allow file-read-data (path "/private/etc/passwd"))
 
 ; Access to /dev.
-(allow file-ioctl file-read-data file-write-data (path "/dev/dtracehelper"))
+(allow file-ioctl file-read-data file-write-data
+  (require-all
+    (path "/dev/dtracehelper")
+    (vnode-type CHARACTER-DEVICE)))
 
 (allow file-read-data
   (path "/dev/null")
