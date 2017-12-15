@@ -52,6 +52,9 @@ void ParseXml(service_manager::Connector* connector,
 // Below are convenience methods for handling the elements returned by
 // ParseXml().
 
+// Returns all the children of |element|.
+const base::Value* GetXmlElementChildren(const base::Value& element);
+
 // Returns the qualified name |name_space|:|name| or simply |name| if
 // |name_space| is empty.
 std::string GetXmlQualifiedName(const std::string& name_space,
