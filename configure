@@ -332,6 +332,7 @@ EXPERIMENT_LIST="
     spatial_segmentation
     segment_pred_last
     obu_no_ivf
+    tile_info_first
 "
 CONFIG_LIST="
     dependency_tracking

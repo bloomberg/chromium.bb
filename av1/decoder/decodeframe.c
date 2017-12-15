@@ -2957,6 +2957,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   }
 #endif  // CONFIG_INTRABC
 
+#if CONFIG_TILE_INFO_FIRST
+  read_tile_info(pbi, rb);
+#endif
+
   setup_loopfilter(cm, rb);
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
@@ -3100,7 +3104,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
+#if !CONFIG_TILE_INFO_FIRST
   read_tile_info(pbi, rb);
+#endif
 
   size_t sz;
   if (use_compressed_header(cm)) {
