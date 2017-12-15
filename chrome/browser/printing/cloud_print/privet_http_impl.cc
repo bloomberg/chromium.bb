@@ -502,14 +502,14 @@ void PrivetLocalPrintOperationImpl::StartPrinting() {
 }
 
 void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
-  using printing::PWGRasterConverter;
+  using printing::PwgRasterConverter;
   if (!pwg_raster_converter_)
-    pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
+    pwg_raster_converter_ = PwgRasterConverter::CreateDefault();
 
   pwg_raster_converter_->Start(
       data_.get(),
-      PWGRasterConverter::GetConversionSettings(capabilities_, page_size_),
-      PWGRasterConverter::GetBitmapSettings(capabilities_, ticket_),
+      PwgRasterConverter::GetConversionSettings(capabilities_, page_size_),
+      PwgRasterConverter::GetBitmapSettings(capabilities_, ticket_),
       base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
                  weak_factory_.GetWeakPtr()));
 }
@@ -636,8 +636,8 @@ void PrivetLocalPrintOperationImpl::SetPageSize(const gfx::Size& page_size) {
   page_size_ = page_size;
 }
 
-void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(
-    std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter) {
+void PrivetLocalPrintOperationImpl::SetPwgRasterConverterForTesting(
+    std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter) {
   pwg_raster_converter_ = std::move(pwg_raster_converter);
 }
 #endif  // ENABLE_PRINT_PREVIEW

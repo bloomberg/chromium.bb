@@ -755,7 +755,7 @@ TEST_P(PrivetCapabilitiesTest, BadToken) {
 // converts strings to file paths based on them by appending "test.pdf", since
 // it's easier to test that way. Instead of using a mock, we simply check if the
 // request is uploading a file that is based on this pattern.
-class FakePWGRasterConverter : public printing::PWGRasterConverter {
+class FakePwgRasterConverter : public printing::PwgRasterConverter {
  public:
   void Start(base::RefCountedMemory* data,
              const printing::PdfRenderSettings& conversion_settings,
@@ -783,9 +783,9 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
     local_print_operation_ = privet_client_->CreateLocalPrintOperation(
         &local_print_delegate_);
 
-    auto pwg_converter = std::make_unique<FakePWGRasterConverter>();
+    auto pwg_converter = std::make_unique<FakePwgRasterConverter>();
     pwg_converter_ = pwg_converter.get();
-    local_print_operation_->SetPWGRasterConverterForTesting(
+    local_print_operation_->SetPwgRasterConverterForTesting(
         std::move(pwg_converter));
   }
 
@@ -799,7 +799,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
  protected:
   std::unique_ptr<PrivetLocalPrintOperation> local_print_operation_;
   StrictMock<MockLocalPrintDelegate> local_print_delegate_;
-  FakePWGRasterConverter* pwg_converter_;
+  FakePwgRasterConverter* pwg_converter_;
 };
 
 INSTANTIATE_TEST_CASE_P(PrivetTests,

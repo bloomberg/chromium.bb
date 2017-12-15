@@ -112,19 +112,19 @@ bool FileHandlers::IsValid() {
 //    This step posts |FileHandlers| to be destroyed on |blocking_task_runner_|.
 // All these steps work sequentially, so no data should be accessed
 // simultaneously by several threads.
-class PWGRasterConverterHelper
-    : public base::RefCountedThreadSafe<PWGRasterConverterHelper> {
+class PwgRasterConverterHelper
+    : public base::RefCountedThreadSafe<PwgRasterConverterHelper> {
  public:
-  PWGRasterConverterHelper(const PdfRenderSettings& settings,
+  PwgRasterConverterHelper(const PdfRenderSettings& settings,
                            const PwgRasterSettings& bitmap_settings);
 
   void Convert(base::RefCountedMemory* data,
-               PWGRasterConverter::ResultCallback callback);
+               PwgRasterConverter::ResultCallback callback);
 
  private:
-  friend class base::RefCountedThreadSafe<PWGRasterConverterHelper>;
+  friend class base::RefCountedThreadSafe<PwgRasterConverterHelper>;
 
-  ~PWGRasterConverterHelper();
+  ~PwgRasterConverterHelper();
 
   void RunCallback(bool success);
 
@@ -134,14 +134,14 @@ class PWGRasterConverterHelper
   PwgRasterSettings bitmap_settings_;
   mojo::InterfacePtr<printing::mojom::PdfToPwgRasterConverter>
       pdf_to_pwg_raster_converter_ptr_;
-  PWGRasterConverter::ResultCallback callback_;
+  PwgRasterConverter::ResultCallback callback_;
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<FileHandlers, base::OnTaskRunnerDeleter> files_;
 
-  DISALLOW_COPY_AND_ASSIGN(PWGRasterConverterHelper);
+  DISALLOW_COPY_AND_ASSIGN(PwgRasterConverterHelper);
 };
 
-PWGRasterConverterHelper::PWGRasterConverterHelper(
+PwgRasterConverterHelper::PwgRasterConverterHelper(
     const PdfRenderSettings& settings,
     const PwgRasterSettings& bitmap_settings)
     : settings_(settings),
@@ -151,11 +151,11 @@ PWGRasterConverterHelper::PWGRasterConverterHelper(
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       files_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {}
 
-PWGRasterConverterHelper::~PWGRasterConverterHelper() {}
+PwgRasterConverterHelper::~PwgRasterConverterHelper() {}
 
-void PWGRasterConverterHelper::Convert(
+void PwgRasterConverterHelper::Convert(
     base::RefCountedMemory* data,
-    PWGRasterConverter::ResultCallback callback) {
+    PwgRasterConverter::ResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   callback_ = std::move(callback);
@@ -166,10 +166,10 @@ void PWGRasterConverterHelper::Convert(
       FROM_HERE,
       base::BindOnce(&FileHandlers::Init, base::Unretained(files_.get()),
                      base::RetainedRef(data)),
-      base::BindOnce(&PWGRasterConverterHelper::OnFilesReadyOnUIThread, this));
+      base::BindOnce(&PwgRasterConverterHelper::OnFilesReadyOnUIThread, this));
 }
 
-void PWGRasterConverterHelper::OnFilesReadyOnUIThread() {
+void PwgRasterConverterHelper::OnFilesReadyOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!files_->IsValid()) {
@@ -183,24 +183,24 @@ void PWGRasterConverterHelper::OnFilesReadyOnUIThread() {
                       &pdf_to_pwg_raster_converter_ptr_);
 
   pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(
-      base::Bind(&PWGRasterConverterHelper::RunCallback, this, false));
+      base::Bind(&PwgRasterConverterHelper::RunCallback, this, false));
 
   pdf_to_pwg_raster_converter_ptr_->Convert(
       mojo::WrapPlatformFile(files_->GetPdfForProcess()), settings_,
       bitmap_settings_, mojo::WrapPlatformFile(files_->GetPwgForProcess()),
-      base::Bind(&PWGRasterConverterHelper::RunCallback, this));
+      base::Bind(&PwgRasterConverterHelper::RunCallback, this));
 }
 
-void PWGRasterConverterHelper::RunCallback(bool success) {
+void PwgRasterConverterHelper::RunCallback(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (callback_)
     std::move(callback_).Run(success, files_->GetPwgPath());
 }
 
-class PWGRasterConverterImpl : public PWGRasterConverter {
+class PwgRasterConverterImpl : public PwgRasterConverter {
  public:
-  PWGRasterConverterImpl();
-  ~PWGRasterConverterImpl() override;
+  PwgRasterConverterImpl();
+  ~PwgRasterConverterImpl() override;
 
   void Start(base::RefCountedMemory* data,
              const PdfRenderSettings& conversion_settings,
@@ -212,33 +212,32 @@ class PWGRasterConverterImpl : public PWGRasterConverter {
   // change callback_ to a CancelableOnceCallback.
   void RunCallback(bool success, const base::FilePath& temp_file);
 
-  scoped_refptr<PWGRasterConverterHelper> utility_client_;
+  scoped_refptr<PwgRasterConverterHelper> utility_client_;
   ResultCallback callback_;
-  base::WeakPtrFactory<PWGRasterConverterImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PwgRasterConverterImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PWGRasterConverterImpl);
+  DISALLOW_COPY_AND_ASSIGN(PwgRasterConverterImpl);
 };
 
-PWGRasterConverterImpl::PWGRasterConverterImpl() : weak_ptr_factory_(this) {}
+PwgRasterConverterImpl::PwgRasterConverterImpl() : weak_ptr_factory_(this) {}
 
-PWGRasterConverterImpl::~PWGRasterConverterImpl() {
-}
+PwgRasterConverterImpl::~PwgRasterConverterImpl() {}
 
-void PWGRasterConverterImpl::Start(base::RefCountedMemory* data,
+void PwgRasterConverterImpl::Start(base::RefCountedMemory* data,
                                    const PdfRenderSettings& conversion_settings,
                                    const PwgRasterSettings& bitmap_settings,
                                    ResultCallback callback) {
   // Bind callback here and pass a wrapper to the utility client to avoid
-  // calling callback if PWGRasterConverterImpl is destroyed.
+  // calling callback if PwgRasterConverterImpl is destroyed.
   callback_ = std::move(callback);
-  utility_client_ = base::MakeRefCounted<PWGRasterConverterHelper>(
+  utility_client_ = base::MakeRefCounted<PwgRasterConverterHelper>(
       conversion_settings, bitmap_settings);
   utility_client_->Convert(data,
-                           base::BindOnce(&PWGRasterConverterImpl::RunCallback,
+                           base::BindOnce(&PwgRasterConverterImpl::RunCallback,
                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PWGRasterConverterImpl::RunCallback(bool success,
+void PwgRasterConverterImpl::RunCallback(bool success,
                                          const base::FilePath& temp_file) {
   std::move(callback_).Run(success, temp_file);
 }
@@ -246,12 +245,12 @@ void PWGRasterConverterImpl::RunCallback(bool success,
 }  // namespace
 
 // static
-std::unique_ptr<PWGRasterConverter> PWGRasterConverter::CreateDefault() {
-  return base::MakeUnique<PWGRasterConverterImpl>();
+std::unique_ptr<PwgRasterConverter> PwgRasterConverter::CreateDefault() {
+  return base::MakeUnique<PwgRasterConverterImpl>();
 }
 
 // static
-PdfRenderSettings PWGRasterConverter::GetConversionSettings(
+PdfRenderSettings PwgRasterConverter::GetConversionSettings(
     const cloud_devices::CloudDeviceDescription& printer_capabilities,
     const gfx::Size& page_size) {
   int dpi = kDefaultPdfDpi;
@@ -270,7 +269,7 @@ PdfRenderSettings PWGRasterConverter::GetConversionSettings(
 }
 
 // static
-PwgRasterSettings PWGRasterConverter::GetBitmapSettings(
+PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
     const cloud_devices::CloudDeviceDescription& printer_capabilities,
     const cloud_devices::CloudDeviceDescription& ticket) {
   cloud_devices::printer::DuplexTicketItem duplex_item;

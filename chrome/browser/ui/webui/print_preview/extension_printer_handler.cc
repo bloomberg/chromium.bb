@@ -45,7 +45,7 @@ using extensions::Extension;
 using extensions::ExtensionRegistry;
 using extensions::ListBuilder;
 using extensions::UsbPrinterManifestData;
-using printing::PWGRasterConverter;
+using printing::PwgRasterConverter;
 
 namespace {
 
@@ -253,8 +253,8 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void ExtensionPrinterHandler::SetPWGRasterConverterForTesting(
-    std::unique_ptr<PWGRasterConverter> pwg_raster_converter) {
+void ExtensionPrinterHandler::SetPwgRasterConverterForTesting(
+    std::unique_ptr<PwgRasterConverter> pwg_raster_converter) {
   pwg_raster_converter_ = std::move(pwg_raster_converter);
 }
 
@@ -266,12 +266,12 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
     std::unique_ptr<extensions::PrinterProviderPrintJob> job,
     PrintJobCallback callback) {
   if (!pwg_raster_converter_) {
-    pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
+    pwg_raster_converter_ = PwgRasterConverter::CreateDefault();
   }
   pwg_raster_converter_->Start(
       data.get(),
-      PWGRasterConverter::GetConversionSettings(printer_description, page_size),
-      PWGRasterConverter::GetBitmapSettings(printer_description, ticket),
+      PwgRasterConverter::GetConversionSettings(printer_description, page_size),
+      PwgRasterConverter::GetBitmapSettings(printer_description, ticket),
       base::BindOnce(&UpdateJobFileInfo, std::move(job), std::move(callback)));
 }
 

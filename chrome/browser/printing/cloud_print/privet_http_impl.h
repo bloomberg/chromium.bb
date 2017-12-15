@@ -160,8 +160,8 @@ class PrivetLocalPrintOperationImpl
   void SetUsername(const std::string& user) override;
   void SetJobname(const std::string& jobname) override;
   void SetPageSize(const gfx::Size& page_size) override;
-  void SetPWGRasterConverterForTesting(
-      std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter)
+  void SetPwgRasterConverterForTesting(
+      std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter)
       override;
   PrivetHTTPClient* GetHTTPClient() override;
 
@@ -216,7 +216,7 @@ class PrivetLocalPrintOperationImpl
 
   std::unique_ptr<PrivetURLFetcher> url_fetcher_;
   std::unique_ptr<PrivetJSONOperation> info_operation_;
-  std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
+  std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter_;
 
   base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_;
 };
