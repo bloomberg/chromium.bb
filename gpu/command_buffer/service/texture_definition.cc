@@ -155,8 +155,8 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
   DCHECK_NE(EGL_NO_DISPLAY, egl_display);
   DCHECK(glIsTexture(texture_id));
 
-  DCHECK(gl::g_driver_egl.ext.b_EGL_KHR_image_base &&
-         gl::g_driver_egl.ext.b_EGL_KHR_gl_texture_2D_image &&
+  DCHECK(gl::g_driver_egl->ext.b_EGL_KHR_image_base &&
+         gl::g_driver_egl->ext.b_EGL_KHR_gl_texture_2D_image &&
          gl::g_current_gl_driver->ext.b_GL_OES_EGL_image);
 
   const EGLint egl_attrib_list[] = {

@@ -37,6 +37,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/protected_memory.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "ui/gl/extension_set.h"
@@ -529,21 +530,21 @@ struct GL_EXPORT DriverGLX {
 GL_EXPORT extern base::ThreadLocalPointer<CurrentGL>* g_current_gl_context_tls;
 
 GL_EXPORT extern OSMESAApi* g_current_osmesa_context;
-GL_EXPORT extern DriverOSMESA g_driver_osmesa;
+GL_EXPORT extern base::ProtectedMemory<DriverOSMESA> g_driver_osmesa;
 
 #if defined(USE_EGL)
 GL_EXPORT extern EGLApi* g_current_egl_context;
-GL_EXPORT extern DriverEGL g_driver_egl;
+GL_EXPORT extern base::ProtectedMemory<DriverEGL> g_driver_egl;
 #endif
 
 #if defined(OS_WIN)
 GL_EXPORT extern WGLApi* g_current_wgl_context;
-GL_EXPORT extern DriverWGL g_driver_wgl;
+GL_EXPORT extern base::ProtectedMemory<DriverWGL> g_driver_wgl;
 #endif
 
 #if defined(USE_GLX)
 GL_EXPORT extern GLXApi* g_current_glx_context;
-GL_EXPORT extern DriverGLX g_driver_glx;
+GL_EXPORT extern base::ProtectedMemory<DriverGLX> g_driver_glx;
 #endif
 
 }  // namespace gl

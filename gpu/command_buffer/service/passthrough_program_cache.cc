@@ -31,7 +31,7 @@ namespace {
 bool ProgramCacheControlExtensionAvailable() {
 #if defined(USE_EGL)
   // The display should be initialized if the extension is available.
-  return gl::g_driver_egl.ext.b_EGL_ANGLE_program_cache_control;
+  return gl::g_driver_egl->ext.b_EGL_ANGLE_program_cache_control;
 #else
   return false;
 #endif  // defined(USE_EGL)

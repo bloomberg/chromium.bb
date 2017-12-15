@@ -15,8 +15,9 @@ class GLXApiTest : public testing::Test {
   void SetUp() override {
     fake_extension_string_ = "";
 
-    g_driver_glx.ClearBindings();
-    g_driver_glx.fn.glXQueryExtensionsStringFn = &FakeQueryExtensionsString;
+    auto writer = base::AutoWritableMemory::Create(g_driver_glx);
+    g_driver_glx->ClearBindings();
+    g_driver_glx->fn.glXQueryExtensionsStringFn = &FakeQueryExtensionsString;
     SetGLImplementation(kGLImplementationMockGL);
     SetGLGetProcAddressProc(
         static_cast<GLGetProcAddressProc>(&FakeGLGetProcAddress));
@@ -25,7 +26,8 @@ class GLXApiTest : public testing::Test {
   void TearDown() override {
     g_current_glx_context = nullptr;
     api_.reset(nullptr);
-    g_driver_glx.ClearBindings();
+    auto writer = base::AutoWritableMemory::Create(g_driver_glx);
+    g_driver_glx->ClearBindings();
 
     fake_extension_string_ = "";
   }
@@ -33,11 +35,12 @@ class GLXApiTest : public testing::Test {
   void InitializeAPI(const char* disabled_extensions) {
     api_.reset(new RealGLXApi());
     g_current_glx_context = api_.get();
-    api_->Initialize(&g_driver_glx);
+    api_->Initialize(&*g_driver_glx);
     if (disabled_extensions) {
       SetDisabledExtensionsGLX(disabled_extensions);
     }
-    g_driver_glx.InitializeExtensionBindings();
+    auto writer = base::AutoWritableMemory::Create(g_driver_glx);
+    g_driver_glx->InitializeExtensionBindings();
   }
 
   void SetFakeExtensionString(const char* fake_string) {
@@ -85,11 +88,11 @@ TEST_F(GLXApiTest, DisabledExtensionBitTest) {
   SetFakeExtensionString(kFakeExtensions);
   InitializeAPI(nullptr);
 
-  EXPECT_TRUE(g_driver_glx.ext.b_GLX_ARB_create_context);
+  EXPECT_TRUE(g_driver_glx->ext.b_GLX_ARB_create_context);
 
   InitializeAPI(kFakeDisabledExtensions);
 
-  EXPECT_FALSE(g_driver_glx.ext.b_GLX_ARB_create_context);
+  EXPECT_FALSE(g_driver_glx->ext.b_GLX_ARB_create_context);
 }
 
 TEST_F(GLXApiTest, DisabledExtensionStringTest) {

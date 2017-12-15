@@ -2661,7 +2661,9 @@ def GenerateSource(file, functions, set_name, used_extensions,
   """Generates gl_bindings_autogen_x.cc"""
 
   set_header_name = "ui/gl/gl_" + set_name.lower() + "_api_implementation.h"
-  include_list = [ 'base/trace_event/trace_event.h',
+  include_list = [ 'base/compiler_specific.h',
+                   'base/memory/protected_memory.h',
+                   'base/trace_event/trace_event.h',
                    'ui/gl/gl_enums.h',
                    'ui/gl/gl_bindings.h',
                    'ui/gl/gl_context.h',
@@ -2685,8 +2687,12 @@ namespace gl {
 
   file.write('\n')
   if set_name != 'gl':
-    file.write('Driver%s g_driver_%s;  // Exists in .bss\n' % (
-        set_name.upper(), set_name.lower()))
+    file.write('// Place the driver in protected memory so that it is set\n')
+    file.write('// read-only after it is initialized, preventing it from\n')
+    file.write('// being tampered with. See http://crbug.com/771365.\n')
+    file.write('PROTECTED_MEMORY_SECTION base::ProtectedMemory<Driver%s>\n' %
+        set_name.upper())
+    file.write('    g_driver_%s;\n' % set_name.lower())
   file.write('\n')
 
   # Write stub functions that take the place of some functions before a context
@@ -2858,6 +2864,7 @@ void DriverEGL::InitializeExtensionBindings() {
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
+    file.write('DISABLE_CFI_ICALL\n')
     file.write('%s %sApiBase::%sFn(%s) {\n' %
         (return_type, set_name.upper(), function_name, arguments))
     argument_names = MakeArgNames(arguments)
@@ -2875,6 +2882,7 @@ void DriverEGL::InitializeExtensionBindings() {
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
+    file.write('DISABLE_CFI_ICALL\n')
     file.write('%s Trace%sApi::%sFn(%s) {\n' %
         (return_type, set_name.upper(), function_name, arguments))
     argument_names = MakeArgNames(arguments)
@@ -2893,6 +2901,7 @@ void DriverEGL::InitializeExtensionBindings() {
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
+    file.write('DISABLE_CFI_ICALL\n')
     file.write('%s Debug%sApi::%sFn(%s) {\n' %
         (return_type, set_name.upper(), func['known_as'], arguments))
     argument_names = re.sub(

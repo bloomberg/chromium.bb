@@ -18,13 +18,14 @@ class EGLApiTest : public testing::Test {
     fake_extension_string_ = "";
 
     // TODO(dyen): Add a way to bind mock drivers for testing.
-    g_driver_egl.ClearBindings();
-    g_driver_egl.fn.eglInitializeFn = &FakeInitialize;
-    g_driver_egl.fn.eglQueryStringFn = &FakeQueryString;
-    g_driver_egl.fn.eglGetCurrentDisplayFn = &FakeGetCurrentDisplay;
-    g_driver_egl.fn.eglGetDisplayFn = &FakeGetDisplay;
-    g_driver_egl.fn.eglGetErrorFn = &FakeGetError;
-    g_driver_egl.fn.eglGetProcAddressFn = &FakeGetProcAddress;
+    auto writer = base::AutoWritableMemory::Create(g_driver_egl);
+    g_driver_egl->ClearBindings();
+    g_driver_egl->fn.eglInitializeFn = &FakeInitialize;
+    g_driver_egl->fn.eglQueryStringFn = &FakeQueryString;
+    g_driver_egl->fn.eglGetCurrentDisplayFn = &FakeGetCurrentDisplay;
+    g_driver_egl->fn.eglGetDisplayFn = &FakeGetDisplay;
+    g_driver_egl->fn.eglGetErrorFn = &FakeGetError;
+    g_driver_egl->fn.eglGetProcAddressFn = &FakeGetProcAddress;
 
     SetGLImplementation(kGLImplementationEGLGLES2);
   }
@@ -32,7 +33,8 @@ class EGLApiTest : public testing::Test {
   void TearDown() override {
     g_current_egl_context = nullptr;
     api_.reset(nullptr);
-    g_driver_egl.ClearBindings();
+    auto writer = base::AutoWritableMemory::Create(g_driver_egl);
+    g_driver_egl->ClearBindings();
 
     fake_client_extension_string_ = "";
     fake_extension_string_ = "";
@@ -41,13 +43,14 @@ class EGLApiTest : public testing::Test {
   void InitializeAPI(const char* disabled_extensions) {
     api_.reset(new RealEGLApi());
     g_current_egl_context = api_.get();
-    api_->Initialize(&g_driver_egl);
+    api_->Initialize(&*g_driver_egl);
     if (disabled_extensions) {
       SetDisabledExtensionsEGL(disabled_extensions);
     }
-    g_driver_egl.InitializeClientExtensionBindings();
+    auto writer = base::AutoWritableMemory::Create(g_driver_egl);
+    g_driver_egl->InitializeClientExtensionBindings();
     GLSurfaceEGL::InitializeDisplay(EGL_DEFAULT_DISPLAY);
-    g_driver_egl.InitializeExtensionBindings();
+    g_driver_egl->InitializeExtensionBindings();
   }
 
   void SetFakeExtensionString(const char* fake_string,
@@ -113,11 +116,11 @@ TEST_F(EGLApiTest, DisabledExtensionBitTest) {
   SetFakeExtensionString(kFakeExtensions, kFakeClientExtensions);
   InitializeAPI(nullptr);
 
-  EXPECT_TRUE(g_driver_egl.ext.b_EGL_KHR_fence_sync);
+  EXPECT_TRUE(g_driver_egl->ext.b_EGL_KHR_fence_sync);
 
   InitializeAPI(kFakeDisabledExtensions);
 
-  EXPECT_FALSE(g_driver_egl.ext.b_EGL_KHR_fence_sync);
+  EXPECT_FALSE(g_driver_egl->ext.b_EGL_KHR_fence_sync);
 }
 
 TEST_F(EGLApiTest, DisabledExtensionStringTest) {

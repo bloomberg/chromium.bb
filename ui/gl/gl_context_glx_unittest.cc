@@ -65,12 +65,12 @@ TEST(GLContextGLXTest, DoNotDestroyOnFailedMakeCurrent) {
     // window. In those cases, override the glx api to force MakeCurrent() to
     // fail.
     context->ReleaseCurrent(surface.get());
-    auto real_fn = g_driver_glx.fn.glXMakeContextCurrentFn;
-    g_driver_glx.fn.glXMakeContextCurrentFn =
+    auto real_fn = g_driver_glx->fn.glXMakeContextCurrentFn;
+    g_driver_glx->fn.glXMakeContextCurrentFn =
         [](Display* display, GLXDrawable drawable, GLXDrawable read,
            GLXContext context) -> int { return 0; };
     EXPECT_FALSE(context->MakeCurrent(surface.get()));
-    g_driver_glx.fn.glXMakeContextCurrentFn = real_fn;
+    g_driver_glx->fn.glXMakeContextCurrentFn = real_fn;
   }
   // At this point, MakeCurrent() failed. Make sure the GLContextGLX still was
   // not destroyed.
