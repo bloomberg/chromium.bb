@@ -129,5 +129,10 @@ chrome.test.runTests([
       chrome.test.assertTrue(chrome.runtime.lastError != undefined);
       chrome.test.succeed();
     });
+  },
+  function getPrinterList() {
+    chrome.autotestPrivate.getPrinterList(function(){
+      chrome.test.succeed();
+    });
   }
 ]);

@@ -1267,6 +1267,7 @@ enum HistogramValue {
   METRICSPRIVATE_RECORDBOOLEAN,
   METRICSPRIVATE_RECORDENUMERATIONVALUE,
   DEVELOPERPRIVATE_NOTIFYDRAGINSTALLINPROGRESS,
+  AUTOTESTPRIVATE_GETPRINTERLIST,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
