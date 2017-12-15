@@ -10,13 +10,14 @@ RealOSMESAApi* g_real_osmesa = nullptr;
 DebugOSMESAApi* g_debug_osmesa = nullptr;
 
 void InitializeStaticGLBindingsOSMESA() {
-  g_driver_osmesa.InitializeStaticBindings();
+  auto writer = base::AutoWritableMemory::Create(g_driver_osmesa);
+  g_driver_osmesa->InitializeStaticBindings();
   if (!g_real_osmesa) {
     g_real_osmesa = new RealOSMESAApi();
   }
-  g_real_osmesa->Initialize(&g_driver_osmesa);
+  g_real_osmesa->Initialize(&*g_driver_osmesa);
   g_current_osmesa_context = g_real_osmesa;
-  g_driver_osmesa.InitializeExtensionBindings();
+  g_driver_osmesa->InitializeExtensionBindings();
 }
 
 void InitializeDebugGLBindingsOSMESA() {
@@ -36,7 +37,8 @@ void ClearBindingsOSMESA() {
     g_real_osmesa = NULL;
   }
   g_current_osmesa_context = NULL;
-  g_driver_osmesa.ClearBindings();
+  auto writer = base::AutoWritableMemory::Create(g_driver_osmesa);
+  g_driver_osmesa->ClearBindings();
 }
 
 OSMESAApi::OSMESAApi() {

@@ -180,7 +180,7 @@ bool GLSurfaceWGL::InitializeOneOff() {
 bool GLSurfaceWGL::InitializeExtensionSettingsOneOff() {
   if (!initialized_)
     return false;
-  g_driver_wgl.InitializeExtensionBindings();
+  g_driver_wgl->InitializeExtensionBindings();
   return true;
 }
 
@@ -355,7 +355,7 @@ PbufferGLSurfaceWGL::~PbufferGLSurfaceWGL() {
 bool PbufferGLSurfaceWGL::Initialize(GLSurfaceFormat format) {
   DCHECK(!device_context_);
 
-  if (!g_driver_wgl.fn.wglCreatePbufferARBFn) {
+  if (!g_driver_wgl->fn.wglCreatePbufferARBFn) {
     LOG(ERROR) << "wglCreatePbufferARB not available.";
     Destroy();
     return false;

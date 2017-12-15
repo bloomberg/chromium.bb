@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
+#include "base/memory/protected_memory.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -20,7 +22,10 @@
 
 namespace gl {
 
-DriverGLX g_driver_glx;  // Exists in .bss
+// Place the driver in protected memory so that it is set
+// read-only after it is initialized, preventing it from
+// being tampered with. See http://crbug.com/771365.
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<DriverGLX> g_driver_glx;
 
 void DriverGLX::InitializeStaticBindings() {
   // Ensure struct has been zero-initialized.
@@ -183,6 +188,7 @@ void DriverGLX::ClearBindings() {
   memset(this, 0, sizeof(*this));
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXBindTexImageEXTFn(Display* dpy,
                                       GLXDrawable drawable,
                                       int buffer,
@@ -190,6 +196,7 @@ void GLXApiBase::glXBindTexImageEXTFn(Display* dpy,
   driver_->fn.glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig* GLXApiBase::glXChooseFBConfigFn(Display* dpy,
                                              int screen,
                                              const int* attribList,
@@ -197,12 +204,14 @@ GLXFBConfig* GLXApiBase::glXChooseFBConfigFn(Display* dpy,
   return driver_->fn.glXChooseFBConfigFn(dpy, screen, attribList, nitems);
 }
 
+DISABLE_CFI_ICALL
 XVisualInfo* GLXApiBase::glXChooseVisualFn(Display* dpy,
                                            int screen,
                                            int* attribList) {
   return driver_->fn.glXChooseVisualFn(dpy, screen, attribList);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXCopyContextFn(Display* dpy,
                                   GLXContext src,
                                   GLXContext dst,
@@ -210,6 +219,7 @@ void GLXApiBase::glXCopyContextFn(Display* dpy,
   driver_->fn.glXCopyContextFn(dpy, src, dst, mask);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXCopySubBufferMESAFn(Display* dpy,
                                         GLXDrawable drawable,
                                         int x,
@@ -219,6 +229,7 @@ void GLXApiBase::glXCopySubBufferMESAFn(Display* dpy,
   driver_->fn.glXCopySubBufferMESAFn(dpy, drawable, x, y, width, height);
 }
 
+DISABLE_CFI_ICALL
 GLXContext GLXApiBase::glXCreateContextFn(Display* dpy,
                                           XVisualInfo* vis,
                                           GLXContext shareList,
@@ -226,6 +237,7 @@ GLXContext GLXApiBase::glXCreateContextFn(Display* dpy,
   return driver_->fn.glXCreateContextFn(dpy, vis, shareList, direct);
 }
 
+DISABLE_CFI_ICALL
 GLXContext GLXApiBase::glXCreateContextAttribsARBFn(Display* dpy,
                                                     GLXFBConfig config,
                                                     GLXContext share_context,
@@ -235,12 +247,14 @@ GLXContext GLXApiBase::glXCreateContextAttribsARBFn(Display* dpy,
                                                   direct, attrib_list);
 }
 
+DISABLE_CFI_ICALL
 GLXPixmap GLXApiBase::glXCreateGLXPixmapFn(Display* dpy,
                                            XVisualInfo* visual,
                                            Pixmap pixmap) {
   return driver_->fn.glXCreateGLXPixmapFn(dpy, visual, pixmap);
 }
 
+DISABLE_CFI_ICALL
 GLXContext GLXApiBase::glXCreateNewContextFn(Display* dpy,
                                              GLXFBConfig config,
                                              int renderType,
@@ -250,12 +264,14 @@ GLXContext GLXApiBase::glXCreateNewContextFn(Display* dpy,
                                            direct);
 }
 
+DISABLE_CFI_ICALL
 GLXPbuffer GLXApiBase::glXCreatePbufferFn(Display* dpy,
                                           GLXFBConfig config,
                                           const int* attribList) {
   return driver_->fn.glXCreatePbufferFn(dpy, config, attribList);
 }
 
+DISABLE_CFI_ICALL
 GLXPixmap GLXApiBase::glXCreatePixmapFn(Display* dpy,
                                         GLXFBConfig config,
                                         Pixmap pixmap,
@@ -263,6 +279,7 @@ GLXPixmap GLXApiBase::glXCreatePixmapFn(Display* dpy,
   return driver_->fn.glXCreatePixmapFn(dpy, config, pixmap, attribList);
 }
 
+DISABLE_CFI_ICALL
 GLXWindow GLXApiBase::glXCreateWindowFn(Display* dpy,
                                         GLXFBConfig config,
                                         Window win,
@@ -270,30 +287,37 @@ GLXWindow GLXApiBase::glXCreateWindowFn(Display* dpy,
   return driver_->fn.glXCreateWindowFn(dpy, config, win, attribList);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXDestroyContextFn(Display* dpy, GLXContext ctx) {
   driver_->fn.glXDestroyContextFn(dpy, ctx);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
   driver_->fn.glXDestroyGLXPixmapFn(dpy, pixmap);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
   driver_->fn.glXDestroyPbufferFn(dpy, pbuf);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
   driver_->fn.glXDestroyPixmapFn(dpy, pixmap);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
   driver_->fn.glXDestroyWindowFn(dpy, window);
 }
 
+DISABLE_CFI_ICALL
 const char* GLXApiBase::glXGetClientStringFn(Display* dpy, int name) {
   return driver_->fn.glXGetClientStringFn(dpy, name);
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXGetConfigFn(Display* dpy,
                                XVisualInfo* visual,
                                int attrib,
@@ -301,22 +325,27 @@ int GLXApiBase::glXGetConfigFn(Display* dpy,
   return driver_->fn.glXGetConfigFn(dpy, visual, attrib, value);
 }
 
+DISABLE_CFI_ICALL
 GLXContext GLXApiBase::glXGetCurrentContextFn(void) {
   return driver_->fn.glXGetCurrentContextFn();
 }
 
+DISABLE_CFI_ICALL
 Display* GLXApiBase::glXGetCurrentDisplayFn(void) {
   return driver_->fn.glXGetCurrentDisplayFn();
 }
 
+DISABLE_CFI_ICALL
 GLXDrawable GLXApiBase::glXGetCurrentDrawableFn(void) {
   return driver_->fn.glXGetCurrentDrawableFn();
 }
 
+DISABLE_CFI_ICALL
 GLXDrawable GLXApiBase::glXGetCurrentReadDrawableFn(void) {
   return driver_->fn.glXGetCurrentReadDrawableFn();
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXGetFBConfigAttribFn(Display* dpy,
                                        GLXFBConfig config,
                                        int attribute,
@@ -324,18 +353,21 @@ int GLXApiBase::glXGetFBConfigAttribFn(Display* dpy,
   return driver_->fn.glXGetFBConfigAttribFn(dpy, config, attribute, value);
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig GLXApiBase::glXGetFBConfigFromVisualSGIXFn(
     Display* dpy,
     XVisualInfo* visualInfo) {
   return driver_->fn.glXGetFBConfigFromVisualSGIXFn(dpy, visualInfo);
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig* GLXApiBase::glXGetFBConfigsFn(Display* dpy,
                                            int screen,
                                            int* nelements) {
   return driver_->fn.glXGetFBConfigsFn(dpy, screen, nelements);
 }
 
+DISABLE_CFI_ICALL
 bool GLXApiBase::glXGetMscRateOMLFn(Display* dpy,
                                     GLXDrawable drawable,
                                     int32_t* numerator,
@@ -343,12 +375,14 @@ bool GLXApiBase::glXGetMscRateOMLFn(Display* dpy,
   return driver_->fn.glXGetMscRateOMLFn(dpy, drawable, numerator, denominator);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXGetSelectedEventFn(Display* dpy,
                                        GLXDrawable drawable,
                                        unsigned long* mask) {
   driver_->fn.glXGetSelectedEventFn(dpy, drawable, mask);
 }
 
+DISABLE_CFI_ICALL
 bool GLXApiBase::glXGetSyncValuesOMLFn(Display* dpy,
                                        GLXDrawable drawable,
                                        int64_t* ust,
@@ -357,15 +391,18 @@ bool GLXApiBase::glXGetSyncValuesOMLFn(Display* dpy,
   return driver_->fn.glXGetSyncValuesOMLFn(dpy, drawable, ust, msc, sbc);
 }
 
+DISABLE_CFI_ICALL
 XVisualInfo* GLXApiBase::glXGetVisualFromFBConfigFn(Display* dpy,
                                                     GLXFBConfig config) {
   return driver_->fn.glXGetVisualFromFBConfigFn(dpy, config);
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXIsDirectFn(Display* dpy, GLXContext ctx) {
   return driver_->fn.glXIsDirectFn(dpy, ctx);
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXMakeContextCurrentFn(Display* dpy,
                                         GLXDrawable draw,
                                         GLXDrawable read,
@@ -373,12 +410,14 @@ int GLXApiBase::glXMakeContextCurrentFn(Display* dpy,
   return driver_->fn.glXMakeContextCurrentFn(dpy, draw, read, ctx);
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXMakeCurrentFn(Display* dpy,
                                  GLXDrawable drawable,
                                  GLXContext ctx) {
   return driver_->fn.glXMakeCurrentFn(dpy, drawable, ctx);
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXQueryContextFn(Display* dpy,
                                   GLXContext ctx,
                                   int attribute,
@@ -386,6 +425,7 @@ int GLXApiBase::glXQueryContextFn(Display* dpy,
   return driver_->fn.glXQueryContextFn(dpy, ctx, attribute, value);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXQueryDrawableFn(Display* dpy,
                                     GLXDrawable draw,
                                     int attribute,
@@ -393,68 +433,82 @@ void GLXApiBase::glXQueryDrawableFn(Display* dpy,
   driver_->fn.glXQueryDrawableFn(dpy, draw, attribute, value);
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
   return driver_->fn.glXQueryExtensionFn(dpy, errorb, event);
 }
 
+DISABLE_CFI_ICALL
 const char* GLXApiBase::glXQueryExtensionsStringFn(Display* dpy, int screen) {
   return driver_->fn.glXQueryExtensionsStringFn(dpy, screen);
 }
 
+DISABLE_CFI_ICALL
 const char* GLXApiBase::glXQueryServerStringFn(Display* dpy,
                                                int screen,
                                                int name) {
   return driver_->fn.glXQueryServerStringFn(dpy, screen, name);
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
   return driver_->fn.glXQueryVersionFn(dpy, maj, min);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXReleaseTexImageEXTFn(Display* dpy,
                                          GLXDrawable drawable,
                                          int buffer) {
   driver_->fn.glXReleaseTexImageEXTFn(dpy, drawable, buffer);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXSelectEventFn(Display* dpy,
                                   GLXDrawable drawable,
                                   unsigned long mask) {
   driver_->fn.glXSelectEventFn(dpy, drawable, mask);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
   driver_->fn.glXSwapBuffersFn(dpy, drawable);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXSwapIntervalEXTFn(Display* dpy,
                                       GLXDrawable drawable,
                                       int interval) {
   driver_->fn.glXSwapIntervalEXTFn(dpy, drawable, interval);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXSwapIntervalMESAFn(unsigned int interval) {
   driver_->fn.glXSwapIntervalMESAFn(interval);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXUseXFontFn(Font font, int first, int count, int list) {
   driver_->fn.glXUseXFontFn(font, first, count, list);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXWaitGLFn(void) {
   driver_->fn.glXWaitGLFn();
 }
 
+DISABLE_CFI_ICALL
 int GLXApiBase::glXWaitVideoSyncSGIFn(int divisor,
                                       int remainder,
                                       unsigned int* count) {
   return driver_->fn.glXWaitVideoSyncSGIFn(divisor, remainder, count);
 }
 
+DISABLE_CFI_ICALL
 void GLXApiBase::glXWaitXFn(void) {
   driver_->fn.glXWaitXFn();
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXBindTexImageEXTFn(Display* dpy,
                                        GLXDrawable drawable,
                                        int buffer,
@@ -463,6 +517,7 @@ void TraceGLXApi::glXBindTexImageEXTFn(Display* dpy,
   glx_api_->glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig* TraceGLXApi::glXChooseFBConfigFn(Display* dpy,
                                               int screen,
                                               const int* attribList,
@@ -471,6 +526,7 @@ GLXFBConfig* TraceGLXApi::glXChooseFBConfigFn(Display* dpy,
   return glx_api_->glXChooseFBConfigFn(dpy, screen, attribList, nitems);
 }
 
+DISABLE_CFI_ICALL
 XVisualInfo* TraceGLXApi::glXChooseVisualFn(Display* dpy,
                                             int screen,
                                             int* attribList) {
@@ -478,6 +534,7 @@ XVisualInfo* TraceGLXApi::glXChooseVisualFn(Display* dpy,
   return glx_api_->glXChooseVisualFn(dpy, screen, attribList);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXCopyContextFn(Display* dpy,
                                    GLXContext src,
                                    GLXContext dst,
@@ -486,6 +543,7 @@ void TraceGLXApi::glXCopyContextFn(Display* dpy,
   glx_api_->glXCopyContextFn(dpy, src, dst, mask);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXCopySubBufferMESAFn(Display* dpy,
                                          GLXDrawable drawable,
                                          int x,
@@ -496,6 +554,7 @@ void TraceGLXApi::glXCopySubBufferMESAFn(Display* dpy,
   glx_api_->glXCopySubBufferMESAFn(dpy, drawable, x, y, width, height);
 }
 
+DISABLE_CFI_ICALL
 GLXContext TraceGLXApi::glXCreateContextFn(Display* dpy,
                                            XVisualInfo* vis,
                                            GLXContext shareList,
@@ -504,6 +563,7 @@ GLXContext TraceGLXApi::glXCreateContextFn(Display* dpy,
   return glx_api_->glXCreateContextFn(dpy, vis, shareList, direct);
 }
 
+DISABLE_CFI_ICALL
 GLXContext TraceGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
                                                      GLXFBConfig config,
                                                      GLXContext share_context,
@@ -514,6 +574,7 @@ GLXContext TraceGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
                                                 direct, attrib_list);
 }
 
+DISABLE_CFI_ICALL
 GLXPixmap TraceGLXApi::glXCreateGLXPixmapFn(Display* dpy,
                                             XVisualInfo* visual,
                                             Pixmap pixmap) {
@@ -521,6 +582,7 @@ GLXPixmap TraceGLXApi::glXCreateGLXPixmapFn(Display* dpy,
   return glx_api_->glXCreateGLXPixmapFn(dpy, visual, pixmap);
 }
 
+DISABLE_CFI_ICALL
 GLXContext TraceGLXApi::glXCreateNewContextFn(Display* dpy,
                                               GLXFBConfig config,
                                               int renderType,
@@ -531,6 +593,7 @@ GLXContext TraceGLXApi::glXCreateNewContextFn(Display* dpy,
                                          direct);
 }
 
+DISABLE_CFI_ICALL
 GLXPbuffer TraceGLXApi::glXCreatePbufferFn(Display* dpy,
                                            GLXFBConfig config,
                                            const int* attribList) {
@@ -538,6 +601,7 @@ GLXPbuffer TraceGLXApi::glXCreatePbufferFn(Display* dpy,
   return glx_api_->glXCreatePbufferFn(dpy, config, attribList);
 }
 
+DISABLE_CFI_ICALL
 GLXPixmap TraceGLXApi::glXCreatePixmapFn(Display* dpy,
                                          GLXFBConfig config,
                                          Pixmap pixmap,
@@ -546,6 +610,7 @@ GLXPixmap TraceGLXApi::glXCreatePixmapFn(Display* dpy,
   return glx_api_->glXCreatePixmapFn(dpy, config, pixmap, attribList);
 }
 
+DISABLE_CFI_ICALL
 GLXWindow TraceGLXApi::glXCreateWindowFn(Display* dpy,
                                          GLXFBConfig config,
                                          Window win,
@@ -554,36 +619,43 @@ GLXWindow TraceGLXApi::glXCreateWindowFn(Display* dpy,
   return glx_api_->glXCreateWindowFn(dpy, config, win, attribList);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXDestroyContextFn(Display* dpy, GLXContext ctx) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyContext")
   glx_api_->glXDestroyContextFn(dpy, ctx);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyGLXPixmap")
   glx_api_->glXDestroyGLXPixmapFn(dpy, pixmap);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyPbuffer")
   glx_api_->glXDestroyPbufferFn(dpy, pbuf);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyPixmap")
   glx_api_->glXDestroyPixmapFn(dpy, pixmap);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyWindow")
   glx_api_->glXDestroyWindowFn(dpy, window);
 }
 
+DISABLE_CFI_ICALL
 const char* TraceGLXApi::glXGetClientStringFn(Display* dpy, int name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetClientString")
   return glx_api_->glXGetClientStringFn(dpy, name);
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXGetConfigFn(Display* dpy,
                                 XVisualInfo* visual,
                                 int attrib,
@@ -592,26 +664,31 @@ int TraceGLXApi::glXGetConfigFn(Display* dpy,
   return glx_api_->glXGetConfigFn(dpy, visual, attrib, value);
 }
 
+DISABLE_CFI_ICALL
 GLXContext TraceGLXApi::glXGetCurrentContextFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentContext")
   return glx_api_->glXGetCurrentContextFn();
 }
 
+DISABLE_CFI_ICALL
 Display* TraceGLXApi::glXGetCurrentDisplayFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentDisplay")
   return glx_api_->glXGetCurrentDisplayFn();
 }
 
+DISABLE_CFI_ICALL
 GLXDrawable TraceGLXApi::glXGetCurrentDrawableFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentDrawable")
   return glx_api_->glXGetCurrentDrawableFn();
 }
 
+DISABLE_CFI_ICALL
 GLXDrawable TraceGLXApi::glXGetCurrentReadDrawableFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentReadDrawable")
   return glx_api_->glXGetCurrentReadDrawableFn();
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXGetFBConfigAttribFn(Display* dpy,
                                         GLXFBConfig config,
                                         int attribute,
@@ -620,6 +697,7 @@ int TraceGLXApi::glXGetFBConfigAttribFn(Display* dpy,
   return glx_api_->glXGetFBConfigAttribFn(dpy, config, attribute, value);
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig TraceGLXApi::glXGetFBConfigFromVisualSGIXFn(
     Display* dpy,
     XVisualInfo* visualInfo) {
@@ -628,6 +706,7 @@ GLXFBConfig TraceGLXApi::glXGetFBConfigFromVisualSGIXFn(
   return glx_api_->glXGetFBConfigFromVisualSGIXFn(dpy, visualInfo);
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig* TraceGLXApi::glXGetFBConfigsFn(Display* dpy,
                                             int screen,
                                             int* nelements) {
@@ -635,6 +714,7 @@ GLXFBConfig* TraceGLXApi::glXGetFBConfigsFn(Display* dpy,
   return glx_api_->glXGetFBConfigsFn(dpy, screen, nelements);
 }
 
+DISABLE_CFI_ICALL
 bool TraceGLXApi::glXGetMscRateOMLFn(Display* dpy,
                                      GLXDrawable drawable,
                                      int32_t* numerator,
@@ -643,6 +723,7 @@ bool TraceGLXApi::glXGetMscRateOMLFn(Display* dpy,
   return glx_api_->glXGetMscRateOMLFn(dpy, drawable, numerator, denominator);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXGetSelectedEventFn(Display* dpy,
                                         GLXDrawable drawable,
                                         unsigned long* mask) {
@@ -650,6 +731,7 @@ void TraceGLXApi::glXGetSelectedEventFn(Display* dpy,
   glx_api_->glXGetSelectedEventFn(dpy, drawable, mask);
 }
 
+DISABLE_CFI_ICALL
 bool TraceGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
                                         GLXDrawable drawable,
                                         int64_t* ust,
@@ -659,17 +741,20 @@ bool TraceGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
   return glx_api_->glXGetSyncValuesOMLFn(dpy, drawable, ust, msc, sbc);
 }
 
+DISABLE_CFI_ICALL
 XVisualInfo* TraceGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
                                                      GLXFBConfig config) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetVisualFromFBConfig")
   return glx_api_->glXGetVisualFromFBConfigFn(dpy, config);
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXIsDirect")
   return glx_api_->glXIsDirectFn(dpy, ctx);
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXMakeContextCurrentFn(Display* dpy,
                                          GLXDrawable draw,
                                          GLXDrawable read,
@@ -678,6 +763,7 @@ int TraceGLXApi::glXMakeContextCurrentFn(Display* dpy,
   return glx_api_->glXMakeContextCurrentFn(dpy, draw, read, ctx);
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXMakeCurrentFn(Display* dpy,
                                   GLXDrawable drawable,
                                   GLXContext ctx) {
@@ -685,6 +771,7 @@ int TraceGLXApi::glXMakeCurrentFn(Display* dpy,
   return glx_api_->glXMakeCurrentFn(dpy, drawable, ctx);
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXQueryContextFn(Display* dpy,
                                    GLXContext ctx,
                                    int attribute,
@@ -693,6 +780,7 @@ int TraceGLXApi::glXQueryContextFn(Display* dpy,
   return glx_api_->glXQueryContextFn(dpy, ctx, attribute, value);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXQueryDrawableFn(Display* dpy,
                                      GLXDrawable draw,
                                      int attribute,
@@ -701,16 +789,19 @@ void TraceGLXApi::glXQueryDrawableFn(Display* dpy,
   glx_api_->glXQueryDrawableFn(dpy, draw, attribute, value);
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryExtension")
   return glx_api_->glXQueryExtensionFn(dpy, errorb, event);
 }
 
+DISABLE_CFI_ICALL
 const char* TraceGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryExtensionsString")
   return glx_api_->glXQueryExtensionsStringFn(dpy, screen);
 }
 
+DISABLE_CFI_ICALL
 const char* TraceGLXApi::glXQueryServerStringFn(Display* dpy,
                                                 int screen,
                                                 int name) {
@@ -718,11 +809,13 @@ const char* TraceGLXApi::glXQueryServerStringFn(Display* dpy,
   return glx_api_->glXQueryServerStringFn(dpy, screen, name);
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryVersion")
   return glx_api_->glXQueryVersionFn(dpy, maj, min);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
                                           GLXDrawable drawable,
                                           int buffer) {
@@ -730,6 +823,7 @@ void TraceGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
   glx_api_->glXReleaseTexImageEXTFn(dpy, drawable, buffer);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXSelectEventFn(Display* dpy,
                                    GLXDrawable drawable,
                                    unsigned long mask) {
@@ -737,11 +831,13 @@ void TraceGLXApi::glXSelectEventFn(Display* dpy,
   glx_api_->glXSelectEventFn(dpy, drawable, mask);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXSwapBuffers")
   glx_api_->glXSwapBuffersFn(dpy, drawable);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXSwapIntervalEXTFn(Display* dpy,
                                        GLXDrawable drawable,
                                        int interval) {
@@ -749,21 +845,25 @@ void TraceGLXApi::glXSwapIntervalEXTFn(Display* dpy,
   glx_api_->glXSwapIntervalEXTFn(dpy, drawable, interval);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXSwapIntervalMESAFn(unsigned int interval) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXSwapIntervalMESA")
   glx_api_->glXSwapIntervalMESAFn(interval);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXUseXFontFn(Font font, int first, int count, int list) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXUseXFont")
   glx_api_->glXUseXFontFn(font, first, count, list);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXWaitGLFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXWaitGL")
   glx_api_->glXWaitGLFn();
 }
 
+DISABLE_CFI_ICALL
 int TraceGLXApi::glXWaitVideoSyncSGIFn(int divisor,
                                        int remainder,
                                        unsigned int* count) {
@@ -771,11 +871,13 @@ int TraceGLXApi::glXWaitVideoSyncSGIFn(int divisor,
   return glx_api_->glXWaitVideoSyncSGIFn(divisor, remainder, count);
 }
 
+DISABLE_CFI_ICALL
 void TraceGLXApi::glXWaitXFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXWaitX")
   glx_api_->glXWaitXFn();
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXBindTexImageEXTFn(Display* dpy,
                                        GLXDrawable drawable,
                                        int buffer,
@@ -787,6 +889,7 @@ void DebugGLXApi::glXBindTexImageEXTFn(Display* dpy,
   glx_api_->glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig* DebugGLXApi::glXChooseFBConfigFn(Display* dpy,
                                               int screen,
                                               const int* attribList,
@@ -801,6 +904,7 @@ GLXFBConfig* DebugGLXApi::glXChooseFBConfigFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 XVisualInfo* DebugGLXApi::glXChooseVisualFn(Display* dpy,
                                             int screen,
                                             int* attribList) {
@@ -812,6 +916,7 @@ XVisualInfo* DebugGLXApi::glXChooseVisualFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXCopyContextFn(Display* dpy,
                                    GLXContext src,
                                    GLXContext dst,
@@ -822,6 +927,7 @@ void DebugGLXApi::glXCopyContextFn(Display* dpy,
   glx_api_->glXCopyContextFn(dpy, src, dst, mask);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXCopySubBufferMESAFn(Display* dpy,
                                          GLXDrawable drawable,
                                          int x,
@@ -835,6 +941,7 @@ void DebugGLXApi::glXCopySubBufferMESAFn(Display* dpy,
   glx_api_->glXCopySubBufferMESAFn(dpy, drawable, x, y, width, height);
 }
 
+DISABLE_CFI_ICALL
 GLXContext DebugGLXApi::glXCreateContextFn(Display* dpy,
                                            XVisualInfo* vis,
                                            GLXContext shareList,
@@ -848,6 +955,7 @@ GLXContext DebugGLXApi::glXCreateContextFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXContext DebugGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
                                                      GLXFBConfig config,
                                                      GLXContext share_context,
@@ -863,6 +971,7 @@ GLXContext DebugGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXPixmap DebugGLXApi::glXCreateGLXPixmapFn(Display* dpy,
                                             XVisualInfo* visual,
                                             Pixmap pixmap) {
@@ -874,6 +983,7 @@ GLXPixmap DebugGLXApi::glXCreateGLXPixmapFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXContext DebugGLXApi::glXCreateNewContextFn(Display* dpy,
                                               GLXFBConfig config,
                                               int renderType,
@@ -889,6 +999,7 @@ GLXContext DebugGLXApi::glXCreateNewContextFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXPbuffer DebugGLXApi::glXCreatePbufferFn(Display* dpy,
                                            GLXFBConfig config,
                                            const int* attribList) {
@@ -900,6 +1011,7 @@ GLXPbuffer DebugGLXApi::glXCreatePbufferFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXPixmap DebugGLXApi::glXCreatePixmapFn(Display* dpy,
                                          GLXFBConfig config,
                                          Pixmap pixmap,
@@ -914,6 +1026,7 @@ GLXPixmap DebugGLXApi::glXCreatePixmapFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXWindow DebugGLXApi::glXCreateWindowFn(Display* dpy,
                                          GLXFBConfig config,
                                          Window win,
@@ -927,12 +1040,14 @@ GLXWindow DebugGLXApi::glXCreateWindowFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXDestroyContextFn(Display* dpy, GLXContext ctx) {
   GL_SERVICE_LOG("glXDestroyContext"
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
   glx_api_->glXDestroyContextFn(dpy, ctx);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
   GL_SERVICE_LOG("glXDestroyGLXPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", " << pixmap
@@ -940,6 +1055,7 @@ void DebugGLXApi::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
   glx_api_->glXDestroyGLXPixmapFn(dpy, pixmap);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
   GL_SERVICE_LOG("glXDestroyPbuffer"
                  << "(" << static_cast<const void*>(dpy) << ", " << pbuf
@@ -947,6 +1063,7 @@ void DebugGLXApi::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
   glx_api_->glXDestroyPbufferFn(dpy, pbuf);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
   GL_SERVICE_LOG("glXDestroyPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", " << pixmap
@@ -954,6 +1071,7 @@ void DebugGLXApi::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
   glx_api_->glXDestroyPixmapFn(dpy, pixmap);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
   GL_SERVICE_LOG("glXDestroyWindow"
                  << "(" << static_cast<const void*>(dpy) << ", " << window
@@ -961,6 +1079,7 @@ void DebugGLXApi::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
   glx_api_->glXDestroyWindowFn(dpy, window);
 }
 
+DISABLE_CFI_ICALL
 const char* DebugGLXApi::glXGetClientStringFn(Display* dpy, int name) {
   GL_SERVICE_LOG("glXGetClientString"
                  << "(" << static_cast<const void*>(dpy) << ", " << name
@@ -970,6 +1089,7 @@ const char* DebugGLXApi::glXGetClientStringFn(Display* dpy, int name) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXGetConfigFn(Display* dpy,
                                 XVisualInfo* visual,
                                 int attrib,
@@ -983,6 +1103,7 @@ int DebugGLXApi::glXGetConfigFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXContext DebugGLXApi::glXGetCurrentContextFn(void) {
   GL_SERVICE_LOG("glXGetCurrentContext"
                  << "("
@@ -992,6 +1113,7 @@ GLXContext DebugGLXApi::glXGetCurrentContextFn(void) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 Display* DebugGLXApi::glXGetCurrentDisplayFn(void) {
   GL_SERVICE_LOG("glXGetCurrentDisplay"
                  << "("
@@ -1001,6 +1123,7 @@ Display* DebugGLXApi::glXGetCurrentDisplayFn(void) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXDrawable DebugGLXApi::glXGetCurrentDrawableFn(void) {
   GL_SERVICE_LOG("glXGetCurrentDrawable"
                  << "("
@@ -1010,6 +1133,7 @@ GLXDrawable DebugGLXApi::glXGetCurrentDrawableFn(void) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXDrawable DebugGLXApi::glXGetCurrentReadDrawableFn(void) {
   GL_SERVICE_LOG("glXGetCurrentReadDrawable"
                  << "("
@@ -1019,6 +1143,7 @@ GLXDrawable DebugGLXApi::glXGetCurrentReadDrawableFn(void) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXGetFBConfigAttribFn(Display* dpy,
                                         GLXFBConfig config,
                                         int attribute,
@@ -1032,6 +1157,7 @@ int DebugGLXApi::glXGetFBConfigAttribFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig DebugGLXApi::glXGetFBConfigFromVisualSGIXFn(
     Display* dpy,
     XVisualInfo* visualInfo) {
@@ -1044,6 +1170,7 @@ GLXFBConfig DebugGLXApi::glXGetFBConfigFromVisualSGIXFn(
   return result;
 }
 
+DISABLE_CFI_ICALL
 GLXFBConfig* DebugGLXApi::glXGetFBConfigsFn(Display* dpy,
                                             int screen,
                                             int* nelements) {
@@ -1055,6 +1182,7 @@ GLXFBConfig* DebugGLXApi::glXGetFBConfigsFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 bool DebugGLXApi::glXGetMscRateOMLFn(Display* dpy,
                                      GLXDrawable drawable,
                                      int32_t* numerator,
@@ -1069,6 +1197,7 @@ bool DebugGLXApi::glXGetMscRateOMLFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXGetSelectedEventFn(Display* dpy,
                                         GLXDrawable drawable,
                                         unsigned long* mask) {
@@ -1078,6 +1207,7 @@ void DebugGLXApi::glXGetSelectedEventFn(Display* dpy,
   glx_api_->glXGetSelectedEventFn(dpy, drawable, mask);
 }
 
+DISABLE_CFI_ICALL
 bool DebugGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
                                         GLXDrawable drawable,
                                         int64_t* ust,
@@ -1093,6 +1223,7 @@ bool DebugGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 XVisualInfo* DebugGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
                                                      GLXFBConfig config) {
   GL_SERVICE_LOG("glXGetVisualFromFBConfig"
@@ -1103,6 +1234,7 @@ XVisualInfo* DebugGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
   GL_SERVICE_LOG("glXIsDirect"
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
@@ -1111,6 +1243,7 @@ int DebugGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXMakeContextCurrentFn(Display* dpy,
                                          GLXDrawable draw,
                                          GLXDrawable read,
@@ -1123,6 +1256,7 @@ int DebugGLXApi::glXMakeContextCurrentFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXMakeCurrentFn(Display* dpy,
                                   GLXDrawable drawable,
                                   GLXContext ctx) {
@@ -1134,6 +1268,7 @@ int DebugGLXApi::glXMakeCurrentFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXQueryContextFn(Display* dpy,
                                    GLXContext ctx,
                                    int attribute,
@@ -1147,6 +1282,7 @@ int DebugGLXApi::glXQueryContextFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXQueryDrawableFn(Display* dpy,
                                      GLXDrawable draw,
                                      int attribute,
@@ -1158,6 +1294,7 @@ void DebugGLXApi::glXQueryDrawableFn(Display* dpy,
   glx_api_->glXQueryDrawableFn(dpy, draw, attribute, value);
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
   GL_SERVICE_LOG("glXQueryExtension"
                  << "(" << static_cast<const void*>(dpy) << ", "
@@ -1168,6 +1305,7 @@ int DebugGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 const char* DebugGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
   GL_SERVICE_LOG("glXQueryExtensionsString"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
@@ -1177,6 +1315,7 @@ const char* DebugGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 const char* DebugGLXApi::glXQueryServerStringFn(Display* dpy,
                                                 int screen,
                                                 int name) {
@@ -1188,6 +1327,7 @@ const char* DebugGLXApi::glXQueryServerStringFn(Display* dpy,
   return result;
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
   GL_SERVICE_LOG("glXQueryVersion"
                  << "(" << static_cast<const void*>(dpy) << ", "
@@ -1198,6 +1338,7 @@ int DebugGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
   return result;
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
                                           GLXDrawable drawable,
                                           int buffer) {
@@ -1207,6 +1348,7 @@ void DebugGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
   glx_api_->glXReleaseTexImageEXTFn(dpy, drawable, buffer);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXSelectEventFn(Display* dpy,
                                    GLXDrawable drawable,
                                    unsigned long mask) {
@@ -1216,6 +1358,7 @@ void DebugGLXApi::glXSelectEventFn(Display* dpy,
   glx_api_->glXSelectEventFn(dpy, drawable, mask);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
   GL_SERVICE_LOG("glXSwapBuffers"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
@@ -1223,6 +1366,7 @@ void DebugGLXApi::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
   glx_api_->glXSwapBuffersFn(dpy, drawable);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXSwapIntervalEXTFn(Display* dpy,
                                        GLXDrawable drawable,
                                        int interval) {
@@ -1232,12 +1376,14 @@ void DebugGLXApi::glXSwapIntervalEXTFn(Display* dpy,
   glx_api_->glXSwapIntervalEXTFn(dpy, drawable, interval);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXSwapIntervalMESAFn(unsigned int interval) {
   GL_SERVICE_LOG("glXSwapIntervalMESA"
                  << "(" << interval << ")");
   glx_api_->glXSwapIntervalMESAFn(interval);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXUseXFontFn(Font font, int first, int count, int list) {
   GL_SERVICE_LOG("glXUseXFont"
                  << "(" << font << ", " << first << ", " << count << ", "
@@ -1245,6 +1391,7 @@ void DebugGLXApi::glXUseXFontFn(Font font, int first, int count, int list) {
   glx_api_->glXUseXFontFn(font, first, count, list);
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXWaitGLFn(void) {
   GL_SERVICE_LOG("glXWaitGL"
                  << "("
@@ -1252,6 +1399,7 @@ void DebugGLXApi::glXWaitGLFn(void) {
   glx_api_->glXWaitGLFn();
 }
 
+DISABLE_CFI_ICALL
 int DebugGLXApi::glXWaitVideoSyncSGIFn(int divisor,
                                        int remainder,
                                        unsigned int* count) {
@@ -1263,6 +1411,7 @@ int DebugGLXApi::glXWaitVideoSyncSGIFn(int divisor,
   return result;
 }
 
+DISABLE_CFI_ICALL
 void DebugGLXApi::glXWaitXFn(void) {
   GL_SERVICE_LOG("glXWaitX"
                  << "("

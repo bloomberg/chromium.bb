@@ -690,7 +690,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   RETURN_AND_NOTIFY_ON_FAILURE(
-      gl::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
+      gl::g_driver_egl->ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
       "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable",
       PLATFORM_FAILURE, false);
 
@@ -1741,10 +1741,10 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
       use_dx11_ && gl::GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_keyed_mutex");
 
   if (!use_dx11_ ||
-      !gl::g_driver_egl.ext.b_EGL_ANGLE_stream_producer_d3d_texture ||
-      !gl::g_driver_egl.ext.b_EGL_KHR_stream ||
-      !gl::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
-      !gl::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
+      !gl::g_driver_egl->ext.b_EGL_ANGLE_stream_producer_d3d_texture ||
+      !gl::g_driver_egl->ext.b_EGL_KHR_stream ||
+      !gl::g_driver_egl->ext.b_EGL_KHR_stream_consumer_gltexture ||
+      !gl::g_driver_egl->ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
     support_share_nv12_textures_ = false;
     support_copy_nv12_textures_ = false;
   }

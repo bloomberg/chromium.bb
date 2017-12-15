@@ -237,7 +237,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 
 // TODO(posciak): https://crbug.com/450898.
 #if defined(ARCH_CPU_ARMEL)
-    if (!gl::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+    if (!gl::g_driver_egl->ext.b_EGL_KHR_fence_sync) {
       LOGF(ERROR) << "context does not have EGL_KHR_fence_sync";
       return false;
     }
