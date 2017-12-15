@@ -291,7 +291,6 @@ EXPERIMENT_LIST="
     rd_debug
     reference_buffer
     entropy_stats
-    masked_tx
     dependent_horztiles
     dist_8x8
     palette_throughput
