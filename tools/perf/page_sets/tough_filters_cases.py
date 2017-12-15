@@ -38,11 +38,11 @@ class ToughFiltersCasesPageSet(story.StorySet):
 
     urls_list = [
       ('http://rawgit.com/WebKit/webkit/master/PerformanceTests/Animometer/developer.html?test-interval=20&display=minimal&controller=fixed&frame-rate=50&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Animometer&test-name=Focus&complexity=100', # pylint: disable=line-too-long
-       'MotionMark Focus'),
+       'MotionMark_Focus'),
       ('http://letmespellitoutforyou.com/samples/svg/filter_terrain.svg',
-       'Filter Terrain SVG'),
+       'Filter_Terrain_SVG'),
       ('http://static.bobdo.net/Analog_Clock.svg',
-       'Analog Clock SVG'),
+       'Analog_Clock_SVG'),
     ]
 
     for url, name in urls_list:
@@ -51,5 +51,5 @@ class ToughFiltersCasesPageSet(story.StorySet):
     pirate_url = ('http://web.archive.org/web/20150502135732/'
                   'http://ie.microsoft.com/testdrive/Performance/'
                   'Pirates/Default.html')
-    name = 'IE PirateMark'
+    name = 'IE_PirateMark'
     self.AddStory(PirateMarkPage(pirate_url, self, name=name))
