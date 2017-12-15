@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -27,7 +28,6 @@
 #include "device/usb/mojo/type_converters.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Invoke;
@@ -301,21 +301,20 @@ class USBDeviceImplTest : public testing::Test {
     ASSERT_GE(mock_inbound_data_.size(), 1u);
     const std::vector<uint8_t>& bytes = mock_inbound_data_.front();
     size_t length = bytes.size();
-    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(length);
-    std::copy(bytes.begin(), bytes.end(), buffer->data());
+    auto buffer = base::MakeRefCounted<base::RefCountedBytes>(bytes);
     mock_inbound_data_.pop();
     std::move(callback).Run(UsbTransferStatus::COMPLETED, buffer, length);
   }
 
-  void OutboundTransfer(scoped_refptr<net::IOBuffer> buffer,
+  void OutboundTransfer(scoped_refptr<base::RefCountedBytes> buffer,
                         size_t length,
                         UsbDeviceHandle::TransferCallback callback) {
     ASSERT_GE(mock_outbound_data_.size(), 1u);
     const std::vector<uint8_t>& bytes = mock_outbound_data_.front();
     ASSERT_EQ(bytes.size(), length);
     for (size_t i = 0; i < length; ++i) {
-      EXPECT_EQ(bytes[i], buffer->data()[i]) << "Contents differ at index: "
-                                             << i;
+      EXPECT_EQ(bytes[i], buffer->front()[i])
+          << "Contents differ at index: " << i;
     }
     mock_outbound_data_.pop();
     std::move(callback).Run(UsbTransferStatus::COMPLETED, buffer, length);
@@ -327,7 +326,7 @@ class USBDeviceImplTest : public testing::Test {
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        UsbDeviceHandle::TransferCallback& callback) {
@@ -339,7 +338,7 @@ class USBDeviceImplTest : public testing::Test {
 
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        UsbDeviceHandle::TransferCallback& callback) {
@@ -356,9 +355,7 @@ class USBDeviceImplTest : public testing::Test {
       UsbDeviceHandle::IsochronousTransferCallback& callback) {
     ASSERT_FALSE(mock_inbound_data_.empty());
     const std::vector<uint8_t>& bytes = mock_inbound_data_.front();
-    size_t length = bytes.size();
-    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(length);
-    std::copy(bytes.begin(), bytes.end(), buffer->data());
+    auto buffer = base::MakeRefCounted<base::RefCountedBytes>(bytes);
     mock_inbound_data_.pop();
 
     ASSERT_FALSE(mock_inbound_packets_.empty());
@@ -376,7 +373,7 @@ class USBDeviceImplTest : public testing::Test {
 
   void IsochronousTransferOut(
       uint8_t endpoint_number,
-      scoped_refptr<net::IOBuffer> buffer,
+      scoped_refptr<base::RefCountedBytes> buffer,
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
       UsbDeviceHandle::IsochronousTransferCallback& callback) {
@@ -386,8 +383,8 @@ class USBDeviceImplTest : public testing::Test {
         std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
     ASSERT_EQ(bytes.size(), length);
     for (size_t i = 0; i < length; ++i) {
-      EXPECT_EQ(bytes[i], buffer->data()[i]) << "Contents differ at index: "
-                                             << i;
+      EXPECT_EQ(bytes[i], buffer->front()[i])
+          << "Contents differ at index: " << i;
     }
     mock_outbound_data_.pop();
 

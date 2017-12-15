@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "device/base/mock_device_client.h"
@@ -18,7 +19,6 @@
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "net/base/io_buffer.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -48,14 +48,13 @@ ACTION_TEMPLATE(InvokeCallback,
 ACTION_TEMPLATE(InvokeUsbTransferCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p1)) {
-  net::IOBuffer* io_buffer = nullptr;
+  scoped_refptr<base::RefCountedBytes> buffer;
   size_t length = 0;
   if (p1 != UsbTransferStatus::TRANSFER_ERROR) {
     length = 1;
-    io_buffer = new net::IOBuffer(length);
-    memset(io_buffer->data(), 0, length);  // Avoid uninitialized reads.
+    buffer = base::MakeRefCounted<base::RefCountedBytes>(length);
   }
-  std::move(std::get<k>(args)).Run(p1, io_buffer, 1);
+  std::move(std::get<k>(args)).Run(p1, buffer, 1);
 }
 
 ACTION_P2(InvokeUsbIsochronousTransferOutCallback,
@@ -79,8 +78,7 @@ ACTION_P2(InvokeUsbIsochronousTransferInCallback,
           transferred_length,
           success_packets) {
   size_t total_length = std::accumulate(arg1.begin(), arg1.end(), 0u);
-  net::IOBuffer* io_buffer = new net::IOBuffer(total_length);
-  memset(io_buffer->data(), 0, total_length);  // Avoid uninitialized reads.
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(total_length);
   std::vector<UsbDeviceHandle::IsochronousPacket> packets(arg1.size());
   for (size_t i = 0; i < packets.size(); ++i) {
     packets[i].length = arg1[i];
@@ -93,7 +91,7 @@ ACTION_P2(InvokeUsbIsochronousTransferInCallback,
       packets[i].status = UsbTransferStatus::TRANSFER_ERROR;
     }
   }
-  std::move(arg3).Run(io_buffer, packets);
+  std::move(arg3).Run(buffer, packets);
 }
 
 ACTION_P(SetConfiguration, mock_device) {

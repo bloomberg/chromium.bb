@@ -21,13 +21,10 @@
 #include "third_party/libusb/src/libusb/libusb.h"
 
 namespace base {
+class RefCountedBytes;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 class TaskRunner;
-}
-
-namespace net {
-class IOBuffer;
 }
 
 namespace device {
@@ -65,7 +62,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
@@ -76,14 +73,14 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                              IsochronousTransferCallback callback) override;
 
   void IsochronousTransferOut(uint8_t endpoint,
-                              scoped_refptr<net::IOBuffer> buffer,
+                              scoped_refptr<base::RefCountedBytes> buffer,
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
 
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
@@ -141,7 +138,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       uint8_t request,
       uint16_t value,
       uint16_t index,
-      scoped_refptr<net::IOBuffer> buffer,
+      scoped_refptr<base::RefCountedBytes> buffer,
       size_t length,
       unsigned int timeout,
       scoped_refptr<base::TaskRunner> callback_task_runner,
@@ -156,7 +153,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   void IsochronousTransferOutInternal(
       uint8_t endpoint_address,
-      scoped_refptr<net::IOBuffer> buffer,
+      scoped_refptr<base::RefCountedBytes> buffer,
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
       scoped_refptr<base::TaskRunner> callback_task_runner,
@@ -164,7 +161,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   void GenericTransferInternal(
       uint8_t endpoint_address,
-      scoped_refptr<net::IOBuffer> buffer,
+      scoped_refptr<base::RefCountedBytes> buffer,
       size_t length,
       unsigned int timeout,
       scoped_refptr<base::TaskRunner> callback_task_runner,

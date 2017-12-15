@@ -7,12 +7,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device_handle.h"
-#include "net/base/io_buffer.h"
-
-using net::IOBufferWithSize;
 
 namespace device {
 
@@ -44,7 +42,7 @@ using ReadWebUsbDescriptorsCallback =
 void OnReadLandingPage(uint8_t landing_page_id,
                        const ReadWebUsbDescriptorsCallback& callback,
                        UsbTransferStatus status,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length) {
   if (status != UsbTransferStatus::COMPLETED) {
     USB_LOG(EVENT) << "Failed to read WebUSB URL descriptor: "
@@ -55,7 +53,7 @@ void OnReadLandingPage(uint8_t landing_page_id,
 
   GURL url;
   ParseWebUsbUrlDescriptor(
-      std::vector<uint8_t>(buffer->data(), buffer->data() + length), &url);
+      std::vector<uint8_t>(buffer->front(), buffer->front() + length), &url);
   callback.Run(url);
 }
 
@@ -63,7 +61,7 @@ void ReadLandingPage(uint8_t vendor_code,
                      uint8_t landing_page_id,
                      scoped_refptr<UsbDeviceHandle> device_handle,
                      const ReadWebUsbDescriptorsCallback& callback) {
-  auto buffer = base::MakeRefCounted<IOBufferWithSize>(255);
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(255);
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::VENDOR,
       UsbControlTransferRecipient::DEVICE, vendor_code, landing_page_id,
@@ -74,7 +72,7 @@ void ReadLandingPage(uint8_t vendor_code,
 void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
                          const ReadWebUsbDescriptorsCallback& callback,
                          UsbTransferStatus status,
-                         scoped_refptr<net::IOBuffer> buffer,
+                         scoped_refptr<base::RefCountedBytes> buffer,
                          size_t length) {
   if (status != UsbTransferStatus::COMPLETED) {
     USB_LOG(EVENT) << "Failed to read BOS descriptor.";
@@ -84,7 +82,7 @@ void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
 
   WebUsbPlatformCapabilityDescriptor descriptor;
   if (!descriptor.ParseFromBosDescriptor(
-          std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
+          std::vector<uint8_t>(buffer->front(), buffer->front() + length))) {
     callback.Run(GURL());
     return;
   }
@@ -100,7 +98,7 @@ void OnReadBosDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
 void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
                                const ReadWebUsbDescriptorsCallback& callback,
                                UsbTransferStatus status,
-                               scoped_refptr<net::IOBuffer> buffer,
+                               scoped_refptr<base::RefCountedBytes> buffer,
                                size_t length) {
   if (status != UsbTransferStatus::COMPLETED || length != 5) {
     USB_LOG(EVENT) << "Failed to read BOS descriptor header.";
@@ -108,9 +106,9 @@ void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
     return;
   }
 
-  const uint8_t* data = reinterpret_cast<uint8_t*>(buffer->data());
+  const uint8_t* data = buffer->front();
   uint16_t new_length = data[2] | (data[3] << 8);
-  scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
+  auto new_buffer = base::MakeRefCounted<base::RefCountedBytes>(new_length);
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
@@ -251,7 +249,7 @@ bool ParseWebUsbUrlDescriptor(const std::vector<uint8_t>& bytes, GURL* output) {
 
 void ReadWebUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
                            const ReadWebUsbDescriptorsCallback& callback) {
-  auto buffer = base::MakeRefCounted<IOBufferWithSize>(5);
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(5);
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,

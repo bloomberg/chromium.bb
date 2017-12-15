@@ -19,8 +19,8 @@
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/usb_descriptors.h"
 
-namespace net {
-class IOBuffer;
+namespace base {
+class RefCountedBytes;
 }
 
 namespace device {
@@ -42,9 +42,9 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
 
   using ResultCallback = base::OnceCallback<void(bool)>;
   using TransferCallback = base::OnceCallback<
-      void(UsbTransferStatus, scoped_refptr<net::IOBuffer>, size_t)>;
+      void(UsbTransferStatus, scoped_refptr<base::RefCountedBytes>, size_t)>;
   using IsochronousTransferCallback =
-      base::OnceCallback<void(scoped_refptr<net::IOBuffer>,
+      base::OnceCallback<void(scoped_refptr<base::RefCountedBytes>,
                               const std::vector<IsochronousPacket>& packets)>;
 
   virtual scoped_refptr<UsbDevice> GetDevice() const = 0;
@@ -77,7 +77,7 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                uint8_t request,
                                uint16_t value,
                                uint16_t index,
-                               scoped_refptr<net::IOBuffer> buffer,
+                               scoped_refptr<base::RefCountedBytes> buffer,
                                size_t length,
                                unsigned int timeout,
                                TransferCallback callback) = 0;
@@ -90,14 +90,14 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
 
   virtual void IsochronousTransferOut(
       uint8_t endpoint_number,
-      scoped_refptr<net::IOBuffer> buffer,
+      scoped_refptr<base::RefCountedBytes> buffer,
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
       IsochronousTransferCallback callback) = 0;
 
   virtual void GenericTransfer(UsbTransferDirection direction,
                                uint8_t endpoint_number,
-                               scoped_refptr<net::IOBuffer> buffer,
+                               scoped_refptr<base::RefCountedBytes> buffer,
                                size_t length,
                                unsigned int timeout,
                                TransferCallback callback) = 0;

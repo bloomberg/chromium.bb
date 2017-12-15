@@ -44,7 +44,7 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
@@ -55,14 +55,14 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
                              IsochronousTransferCallback callback) override;
 
   void IsochronousTransferOut(uint8_t endpoint,
-                              scoped_refptr<net::IOBuffer> buffer,
+                              scoped_refptr<base::RefCountedBytes> buffer,
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
 
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;

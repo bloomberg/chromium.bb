@@ -17,12 +17,9 @@
 #include "device/usb/usb_device_handle.h"
 
 namespace base {
+class RefCountedBytes;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
-}
-
-namespace net {
-class IOBuffer;
 }
 
 namespace device {
@@ -50,7 +47,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
@@ -61,14 +58,14 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                              IsochronousTransferCallback callback) override;
 
   void IsochronousTransferOut(uint8_t endpoint,
-                              scoped_refptr<net::IOBuffer> buffer,
+                              scoped_refptr<base::RefCountedBytes> buffer,
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
 
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
-                       scoped_refptr<net::IOBuffer> buffer,
+                       scoped_refptr<base::RefCountedBytes> buffer,
                        size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
@@ -93,15 +90,15 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   std::unique_ptr<Request> UnlinkRequest(Request* request);
   void GotNodeConnectionInformation(TransferCallback callback,
                                     void* node_connection_info,
-                                    scoped_refptr<net::IOBuffer> buffer,
+                                    scoped_refptr<base::RefCountedBytes> buffer,
                                     size_t buffer_length,
                                     Request* request_ptr,
                                     DWORD win32_result,
                                     size_t bytes_transferred);
   void GotDescriptorFromNodeConnection(
       TransferCallback callback,
-      scoped_refptr<net::IOBuffer> request_buffer,
-      scoped_refptr<net::IOBuffer> original_buffer,
+      scoped_refptr<base::RefCountedBytes> request_buffer,
+      scoped_refptr<base::RefCountedBytes> original_buffer,
       size_t original_buffer_length,
       Request* request_ptr,
       DWORD win32_result,

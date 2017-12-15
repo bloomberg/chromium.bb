@@ -15,11 +15,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
-#include "net/base/io_buffer.h"
 
 namespace device {
 
@@ -30,22 +30,17 @@ namespace usb {
 
 namespace {
 
-scoped_refptr<net::IOBuffer> CreateTransferBuffer(size_t size) {
-  return new net::IOBuffer(
-      std::max(static_cast<size_t>(1u), static_cast<size_t>(size)));
-}
-
 void OnTransferIn(mojom::UsbDevice::GenericTransferInCallback callback,
                   UsbTransferStatus status,
-                  scoped_refptr<net::IOBuffer> buffer,
+                  scoped_refptr<base::RefCountedBytes> buffer,
                   size_t buffer_size) {
   std::vector<uint8_t> data;
   if (buffer) {
-    // TODO(rockot/reillyg): We should change UsbDeviceHandle to use a
-    // std::vector<uint8_t> instead of net::IOBuffer. Then we could move
-    // instead of copy.
+    // TODO(rockot/reillyg): Take advantage of the ability to access the
+    // std::vector<uint8_t> within a base::RefCountedBytes to move instead of
+    // copy.
     data.resize(buffer_size);
-    std::copy(buffer->data(), buffer->data() + buffer_size, data.begin());
+    std::copy(buffer->front(), buffer->front() + buffer_size, data.begin());
   }
 
   std::move(callback).Run(mojo::ConvertTo<mojom::UsbTransferStatus>(status),
@@ -54,7 +49,7 @@ void OnTransferIn(mojom::UsbDevice::GenericTransferInCallback callback,
 
 void OnTransferOut(mojom::UsbDevice::GenericTransferOutCallback callback,
                    UsbTransferStatus status,
-                   scoped_refptr<net::IOBuffer> buffer,
+                   scoped_refptr<base::RefCountedBytes> buffer,
                    size_t buffer_size) {
   std::move(callback).Run(mojo::ConvertTo<mojom::UsbTransferStatus>(status));
 }
@@ -75,13 +70,13 @@ std::vector<mojom::UsbIsochronousPacketPtr> BuildIsochronousPacketArray(
 
 void OnIsochronousTransferIn(
     mojom::UsbDevice::IsochronousTransferInCallback callback,
-    scoped_refptr<net::IOBuffer> buffer,
+    scoped_refptr<base::RefCountedBytes> buffer,
     const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
   std::vector<uint8_t> data;
   if (buffer) {
-    // TODO(rockot/reillyg): We should change UsbDeviceHandle to use a
-    // std::vector<uint8_t> instead of net::IOBuffer. Then we could move
-    // instead of copy.
+    // TODO(rockot/reillyg): Take advantage of the ability to access the
+    // std::vector<uint8_t> within a base::RefCountedBytes to move instead of
+    // copy.
     uint32_t buffer_size =
         std::accumulate(packets.begin(), packets.end(), 0u,
                         [](const uint32_t& a,
@@ -89,7 +84,7 @@ void OnIsochronousTransferIn(
                           return a + packet.length;
                         });
     data.resize(buffer_size);
-    std::copy(buffer->data(), buffer->data() + buffer_size, data.begin());
+    std::copy(buffer->front(), buffer->front() + buffer_size, data.begin());
   }
   std::move(callback).Run(
       data,
@@ -98,7 +93,7 @@ void OnIsochronousTransferIn(
 
 void OnIsochronousTransferOut(
     mojom::UsbDevice::IsochronousTransferOutCallback callback,
-    scoped_refptr<net::IOBuffer> buffer,
+    scoped_refptr<base::RefCountedBytes> buffer,
     const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
   std::move(callback).Run(
       mojo::ConvertTo<std::vector<mojom::UsbIsochronousPacketPtr>>(packets));
@@ -305,7 +300,7 @@ void DeviceImpl::ControlTransferIn(UsbControlTransferParamsPtr params,
   }
 
   if (HasControlTransferPermission(params->recipient, params->index)) {
-    scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
+    auto buffer = base::MakeRefCounted<base::RefCountedBytes>(length);
     device_handle_->ControlTransfer(
         UsbTransferDirection::INBOUND, params->type, params->recipient,
         params->request, params->value, params->index, buffer, length, timeout,
@@ -325,8 +320,7 @@ void DeviceImpl::ControlTransferOut(UsbControlTransferParamsPtr params,
   }
 
   if (HasControlTransferPermission(params->recipient, params->index)) {
-    scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
-    std::copy(data.begin(), data.end(), buffer->data());
+    auto buffer = base::MakeRefCounted<base::RefCountedBytes>(data);
     device_handle_->ControlTransfer(
         UsbTransferDirection::OUTBOUND, params->type, params->recipient,
         params->request, params->value, params->index, buffer, data.size(),
@@ -346,7 +340,7 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
   }
 
   uint8_t endpoint_address = endpoint_number | 0x80;
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(length);
   device_handle_->GenericTransfer(
       UsbTransferDirection::INBOUND, endpoint_address, buffer, length, timeout,
       base::BindOnce(&OnTransferIn, std::move(callback)));
@@ -362,8 +356,7 @@ void DeviceImpl::GenericTransferOut(uint8_t endpoint_number,
   }
 
   uint8_t endpoint_address = endpoint_number;
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
-  std::copy(data.begin(), data.end(), buffer->data());
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(data);
   device_handle_->GenericTransfer(
       UsbTransferDirection::OUTBOUND, endpoint_address, buffer, data.size(),
       timeout, base::BindOnce(&OnTransferOut, std::move(callback)));
@@ -400,8 +393,7 @@ void DeviceImpl::IsochronousTransferOut(
   }
 
   uint8_t endpoint_address = endpoint_number;
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
-  std::copy(data.begin(), data.end(), buffer->data());
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(data);
   device_handle_->IsochronousTransferOut(
       endpoint_address, buffer, packet_lengths, timeout,
       base::BindOnce(&OnIsochronousTransferOut, std::move(callback)));
