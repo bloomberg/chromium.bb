@@ -23,28 +23,28 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     const NGConstraintSpace& container_space,
     const ComputedStyle& container_style,
     NGFragmentBuilder* container_builder)
-    : container_style_(container_style),
-      container_builder_(container_builder),
+    : container_builder_(container_builder),
       contains_absolute_(container.IsAbsoluteContainer()),
       contains_fixed_(container.IsFixedContainer()) {
-  WritingMode writing_mode(container_style_.GetWritingMode());
-
-  NGBoxStrut borders = ComputeBorders(container_space, container_style_);
-  NGBoxStrut scrollers = container.GetScrollbarSizes();
-  NGBoxStrut borders_and_scrollers = borders + scrollers;
-  content_offset_ = NGLogicalOffset{borders_and_scrollers.inline_start,
-                                    borders_and_scrollers.block_start};
-
+  NGBoxStrut borders_and_scrollers =
+      ComputeBorders(container_space, container_style) +
+      container.GetScrollbarSizes();
   NGPhysicalBoxStrut physical_borders = borders_and_scrollers.ConvertToPhysical(
-      writing_mode, container_style_.Direction());
-  content_physical_offset_ =
-      NGPhysicalOffset(physical_borders.left, physical_borders.top);
-
-  container_size_ = container_builder_->Size();
-  container_size_.inline_size -= borders_and_scrollers.InlineSum();
-  container_size_.block_size -= borders_and_scrollers.BlockSum();
+      container_style.GetWritingMode(), container_style.Direction());
 
   icb_size_ = container_space.InitialContainingBlockSize();
+
+  default_containing_block_.style = &container_style;
+  default_containing_block_.content_size = container_builder_->Size();
+  default_containing_block_.content_size.inline_size -=
+      borders_and_scrollers.InlineSum();
+  default_containing_block_.content_size.block_size -=
+      borders_and_scrollers.BlockSum();
+
+  default_containing_block_.content_offset = NGLogicalOffset{
+      borders_and_scrollers.inline_start, borders_and_scrollers.block_start};
+  default_containing_block_.content_physical_offset =
+      NGPhysicalOffset(physical_borders.left, physical_borders.top);
 }
 
 void NGOutOfFlowLayoutPart::Run(bool update_legacy) {
@@ -83,8 +83,7 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     DCHECK(containing_blocks_map_.Contains(descendant.inline_container));
     return containing_blocks_map_.at(descendant.inline_container);
   }
-  return ContainingBlockInfo{&container_style_, container_size_,
-                             content_offset_, content_physical_offset_};
+  return default_containing_block_;
 }
 
 void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
@@ -106,7 +105,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
       &inline_container_fragments, &container_builder_size);
   NGPhysicalSize container_builder_physical_size =
       container_builder_size.ConvertToPhysical(
-          container_style_.GetWritingMode());
+          default_containing_block_.style->GetWritingMode());
   // Translate start/end fragments into ContainingBlockInfo.
   for (auto& block_info : inline_container_fragments) {
     NGLogicalOffset inline_content_offset;
@@ -159,8 +158,10 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     const NGPhysicalFragment* start_fragment = block_info.value.start_fragment;
     const NGPhysicalLineBoxFragment* start_linebox_fragment =
         block_info.value.start_linebox_fragment;
-    WritingMode container_writing_mode = container_style_.GetWritingMode();
-    TextDirection container_direction = container_style_.Direction();
+    WritingMode container_writing_mode =
+        default_containing_block_.style->GetWritingMode();
+    TextDirection container_direction =
+        default_containing_block_.style->Direction();
     // Step 1
     NGLogicalOffset start_fragment_logical_offset =
         block_info.value.start_fragment_offset.ConvertToLogical(
@@ -248,16 +249,14 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     NGLogicalOffset default_container_offset;
     if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
       // NGPaint offset is wrt parent fragment.
-      default_container_offset =
-          start_fragment_logical_offset - content_offset_;
-      default_container_offset += NGLogicalOffset(
-          inline_cb_borders.inline_start, inline_cb_borders.block_start);
+      default_container_offset = start_fragment_logical_offset -
+                                 default_containing_block_.content_offset;
     } else {
       // Legacy offset is wrt inline container.
       default_container_offset =
           NGLogicalOffset(inline_cb_borders.inline_start,
                           inline_cb_borders.block_start) -
-          content_offset_;
+          default_containing_block_.content_offset;
     }
 
     containing_blocks_map_.insert(
@@ -339,8 +338,11 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // to the padding box so add back the container's borders.
   NGBoxStrut inset = node_position.inset.ConvertToLogical(
       container_writing_mode, container_info.style->Direction());
-  offset->inline_offset = inset.inline_start + content_offset_.inline_offset;
-  offset->block_offset = inset.block_start + content_offset_.block_offset;
+  offset->inline_offset =
+      inset.inline_start +
+      default_containing_block_.content_offset.inline_offset;
+  offset->block_offset =
+      inset.block_start + default_containing_block_.content_offset.block_offset;
 
   offset->inline_offset +=
       container_info.default_container_offset.inline_offset;
@@ -374,7 +376,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   WritingMode writing_mode(descendant.Style().GetWritingMode());
   NGLogicalSize container_size(
       container_info.content_size
-          .ConvertToPhysical(container_style_.GetWritingMode())
+          .ConvertToPhysical(default_containing_block_.style->GetWritingMode())
           .ConvertToLogical(writing_mode));
 
   LayoutUnit inline_size =

@@ -79,16 +79,11 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition node_position);
 
-  const ComputedStyle& container_style_;
   NGFragmentBuilder* container_builder_;
-
   bool contains_absolute_;
   bool contains_fixed_;
-  ContainingBlockInfo default_containing_block_;
-  NGLogicalOffset content_offset_;
-  NGPhysicalOffset content_physical_offset_;
-  NGLogicalSize container_size_;
   NGPhysicalSize icb_size_;
+  ContainingBlockInfo default_containing_block_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
 };
 
