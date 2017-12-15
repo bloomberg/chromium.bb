@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -36,6 +37,13 @@ void SelectionBound::SetEdge(const gfx::PointF& top,
 
 int SelectionBound::GetHeight() const {
   return edge_bottom_rounded_.y() - edge_top_rounded_.y();
+}
+
+std::string SelectionBound::ToString() const {
+  return base::StringPrintf(
+      "SelectionBound(%s, %s, %s, %s, %d)", edge_top_.ToString().c_str(),
+      edge_bottom_.ToString().c_str(), edge_top_rounded_.ToString().c_str(),
+      edge_bottom_rounded_.ToString().c_str(), visible_);
 }
 
 bool operator==(const SelectionBound& lhs, const SelectionBound& rhs) {

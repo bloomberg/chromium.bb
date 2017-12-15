@@ -55,4 +55,83 @@ bool RenderWidgetSurfaceProperties::operator!=(
   return !(*this == other);
 }
 
+std::string RenderWidgetSurfaceProperties::ToDiffString(
+    const RenderWidgetSurfaceProperties& other) const {
+  if (*this == other)
+    return std::string();
+
+  std::ostringstream stream;
+  stream << "RenderWidgetSurfaceProperties(";
+  uint32_t changed_properties = 0;
+  if (size != other.size) {
+    stream << "size(this: " << size.ToString()
+           << ", other: " << other.size.ToString() << ")";
+    ++changed_properties;
+  }
+
+  if (device_scale_factor != other.device_scale_factor) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "device_scale_factor(this: " << device_scale_factor
+           << ", other: " << other.device_scale_factor << ")";
+    ++changed_properties;
+  }
+
+#ifdef OS_ANDROID
+  if (top_controls_height != other.top_controls_height) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "top_controls_height(this: " << top_controls_height
+           << ", other: " << other.top_controls_height << ")";
+    ++changed_properties;
+  }
+
+  if (top_controls_shown_ratio != other.top_controls_shown_ratio) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "top_controls_shown_ratio(this: " << top_controls_shown_ratio
+           << ", other: " << other.top_controls_shown_ratio << ")";
+    ++changed_properties;
+  }
+
+  if (bottom_controls_height != other.bottom_controls_height) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "bottom_controls_height(this: " << bottom_controls_height
+           << ", other: " << other.bottom_controls_height << ")";
+    ++changed_properties;
+  }
+
+  if (bottom_controls_shown_ratio != other.bottom_controls_shown_ratio) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "bottom_controls_shown_ratio(this: "
+           << bottom_controls_shown_ratio
+           << ", other: " << other.bottom_controls_shown_ratio << ")";
+    ++changed_properties;
+  }
+
+  if (selection != other.selection) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "selection(this: " << selection.ToString()
+           << ", other: " << other.selection.ToString() << ")";
+    ++changed_properties;
+  }
+
+  if (has_transparent_background != other.has_transparent_background) {
+    if (changed_properties > 0)
+      stream << ", ";
+    stream << "has_transparent_background(this: " << has_transparent_background
+           << ", other: " << other.has_transparent_background << ")";
+    ++changed_properties;
+  }
+
+#endif
+
+  stream << ")";
+
+  return stream.str();
+}
+
 }  // namespace content

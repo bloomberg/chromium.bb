@@ -2667,6 +2667,11 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
   if (local_surface_id == last_local_surface_id_ &&
       new_surface_properties != last_surface_properties_) {
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "surface-invariants-violation", base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString key_value(
+        crash_key,
+        new_surface_properties.ToDiffString(last_surface_properties_));
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RWH_SURFACE_INVARIANTS_VIOLATION);
     return;

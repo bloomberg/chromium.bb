@@ -42,6 +42,8 @@ class GFX_EXPORT SelectionBound {
   // Returns the vertical difference between rounded top and bottom.
   int GetHeight() const;
 
+  std::string ToString() const;
+
  private:
   Type type_;
   gfx::PointF edge_top_;
