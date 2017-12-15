@@ -394,32 +394,6 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
     return false;
   }
 
-  if (preliminary_blacklisted_features_initialized_) {
-    // We only need to block GPU process if more features are disallowed other
-    // than those in the preliminary gpu feature flags because the latter work
-    // through renderer commandline switches. WebGL and WebGL2 should not matter
-    // because their context creation can always be rejected on the GPU process
-    // side.
-    std::set<int> feature_diffs;
-    std::set_difference(blacklisted_features_.begin(),
-                        blacklisted_features_.end(),
-                        preliminary_blacklisted_features_.begin(),
-                        preliminary_blacklisted_features_.end(),
-                        std::inserter(feature_diffs, feature_diffs.begin()));
-    if (feature_diffs.size()) {
-      // TODO(zmo): Other features might also be OK to ignore here.
-      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
-      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2);
-      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
-    }
-    if (feature_diffs.size()) {
-      if (reason) {
-        *reason = "Features are disabled on full but not preliminary GPU info.";
-      }
-      return false;
-    }
-  }
-
   if (blacklisted_features_.size() == gpu::NUMBER_OF_GPU_FEATURE_TYPES) {
     // On Linux, we use cached GL strings to make blacklist decsions at browser
     // startup time. We need to launch the GPU process to validate these
@@ -546,17 +520,6 @@ void GpuDataManagerImplPrivate::SetGLStrings(const std::string& gl_vendor,
   gpu::CollectDriverInfoGL(&gpu_info);
 
   UpdateGpuInfo(gpu_info);
-  UpdatePreliminaryBlacklistedFeatures();
-}
-
-void GpuDataManagerImplPrivate::GetGLStrings(std::string* gl_vendor,
-                                             std::string* gl_renderer,
-                                             std::string* gl_version) {
-  DCHECK(gl_vendor && gl_renderer && gl_version);
-
-  *gl_vendor = gpu_info_.gl_vendor;
-  *gl_renderer = gpu_info_.gl_renderer;
-  *gl_version = gpu_info_.gl_version;
 }
 
 void GpuDataManagerImplPrivate::Initialize() {
@@ -994,7 +957,6 @@ GpuDataManagerImplPrivate* GpuDataManagerImplPrivate::Create(
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
     : complete_gpu_info_already_requested_(false),
-      preliminary_blacklisted_features_initialized_(false),
       observer_list_(new GpuDataManagerObserverList),
       use_swiftshader_(false),
       card_blacklisted_(false),
@@ -1047,7 +1009,6 @@ void GpuDataManagerImplPrivate::InitializeImpl(
 
   gpu_info_ = gpu_info;
   UpdateGpuInfo(gpu_info);
-  UpdatePreliminaryBlacklistedFeatures();
 
   RunPostInitTasks();
 }
@@ -1074,11 +1035,6 @@ void GpuDataManagerImplPrivate::UpdateBlacklistedFeatures(
   }
 
   EnableSwiftShaderIfNecessary();
-}
-
-void GpuDataManagerImplPrivate::UpdatePreliminaryBlacklistedFeatures() {
-  preliminary_blacklisted_features_ = blacklisted_features_;
-  preliminary_blacklisted_features_initialized_ = true;
 }
 
 void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {

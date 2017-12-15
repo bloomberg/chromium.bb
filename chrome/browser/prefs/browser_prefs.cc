@@ -22,7 +22,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
-#include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
@@ -176,6 +175,7 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
+#include "chrome/browser/gpu/gpu_driver_info_manager_android.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
@@ -353,7 +353,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
-  GpuProfileCache::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
   IOThread::RegisterPrefs(registry);
   network_time::NetworkTimeTracker::RegisterPrefs(registry);
@@ -388,7 +387,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_ANDROID)
   ::android::RegisterPrefs(registry);
-
+  GpuDriverInfoManager::RegisterPrefs(registry);
   // Obsolete activity prefs. See MigrateObsoleteBrowserPrefs().
   registry->RegisterIntegerPref(kStabilityForegroundActivityType, 0);
   registry->RegisterIntegerPref(kStabilityLaunchedActivityFlags, 0);

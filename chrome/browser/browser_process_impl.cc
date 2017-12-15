@@ -49,7 +49,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
-#include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
@@ -183,6 +182,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
+#include "chrome/browser/gpu/gpu_driver_info_manager_android.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -678,12 +678,14 @@ IconManager* BrowserProcessImpl::icon_manager() {
   return icon_manager_.get();
 }
 
-GpuProfileCache* BrowserProcessImpl::gpu_profile_cache() {
+#if defined(OS_ANDROID)
+GpuDriverInfoManager* BrowserProcessImpl::gpu_driver_info_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!gpu_profile_cache_)
-    gpu_profile_cache_ = GpuProfileCache::Create();
-  return gpu_profile_cache_.get();
+  if (!gpu_driver_info_manager_)
+    gpu_driver_info_manager_ = GpuDriverInfoManager::Create();
+  return gpu_driver_info_manager_.get();
 }
+#endif
 
 GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -82,11 +82,6 @@ class GpuDataManager {
                             const std::string& gl_renderer,
                             const std::string& gl_version) = 0;
 
-  // Obtain collected GL strings.
-  virtual void GetGLStrings(std::string* gl_vendor,
-                            std::string* gl_renderer,
-                            std::string* gl_version) = 0;
-
   // Turn off all hardware acceleration.
   virtual void DisableHardwareAcceleration() = 0;
 

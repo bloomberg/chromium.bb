@@ -5,25 +5,28 @@
 #ifndef CHROME_BROWSER_GPU_GPU_DRIVER_INFO_MANAGER_ANDROID_H_
 #define CHROME_BROWSER_GPU_GPU_DRIVER_INFO_MANAGER_ANDROID_H_
 
-#include <string>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+
+class PrefRegistrySimple;
 
 // Class for managing the GPU driver information stored in profile.
 // On Android, collecting GPU driver information is very expensive as it needs
 // to create a temporary context. Caching the information in profile saves a lot
 // of start up cost.
-class GpuDriverInfoManager : public GpuProfileCache,
-                             public content::GpuDataManagerObserver {
+class GpuDriverInfoManager : public content::GpuDataManagerObserver {
  public:
   GpuDriverInfoManager();
   ~GpuDriverInfoManager() override;
 
-  // GpuProfileCache.
-  void Initialize() override;
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  static std::unique_ptr<GpuDriverInfoManager> Create();
+
+  void Initialize();
 
   // content::GpuDataManagerObserver
   void OnGpuInfoUpdate() override;

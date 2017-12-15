@@ -1510,7 +1510,10 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       GetMediaThreadTaskRunner();
   const bool enable_video_accelerator =
-      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
+      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
+      (gpu_channel_host->gpu_feature_info()
+           .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
+       gpu::kGpuFeatureStatusEnabled);
   const bool enable_gpu_memory_buffer_video_frames =
       !is_gpu_compositing_disabled_ &&
 #if defined(OS_MACOSX) || defined(OS_LINUX)

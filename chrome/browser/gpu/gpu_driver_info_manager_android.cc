@@ -4,7 +4,7 @@
 
 #include "chrome/browser/gpu/gpu_driver_info_manager_android.h"
 
-#include <memory>
+#include <string>
 
 #include "base/android/build_info.h"
 #include "base/memory/ptr_util.h"
@@ -18,7 +18,7 @@
 using base::android::BuildInfo;
 
 // static
-void GpuProfileCache::RegisterPrefs(PrefRegistrySimple* registry) {
+void GpuDriverInfoManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGLVendorString, std::string());
   registry->RegisterStringPref(prefs::kGLVersionString, std::string());
   registry->RegisterStringPref(prefs::kGLRendererString, std::string());
@@ -33,7 +33,7 @@ void GpuProfileCache::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-std::unique_ptr<GpuProfileCache> GpuProfileCache::Create() {
+std::unique_ptr<GpuDriverInfoManager> GpuDriverInfoManager::Create() {
   return base::MakeUnique<GpuDriverInfoManager>();
 }
 
@@ -97,4 +97,3 @@ void GpuDriverInfoManager::OnGpuInfoUpdate() {
                          BuildInfo::GetInstance()->android_build_fp());
   content::GpuDataManager::GetInstance()->RemoveObserver(this);
 }
-

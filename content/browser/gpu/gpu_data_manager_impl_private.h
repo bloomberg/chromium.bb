@@ -61,9 +61,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void SetGLStrings(const std::string& gl_vendor,
                     const std::string& gl_renderer,
                     const std::string& gl_version);
-  void GetGLStrings(std::string* gl_vendor,
-                    std::string* gl_renderer,
-                    std::string* gl_version);
   void DisableHardwareAcceleration();
   void SetGpuInfo(const gpu::GPUInfo& gpu_info);
 
@@ -195,10 +192,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void UpdateBlacklistedFeatures(const std::set<int>& features);
 
-  // This should only be called once at initialization time, when preliminary
-  // gpu info is collected.
-  void UpdatePreliminaryBlacklistedFeatures();
-
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 
@@ -220,8 +213,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool complete_gpu_info_already_requested_;
 
   std::set<int> blacklisted_features_;
-  std::set<int> preliminary_blacklisted_features_;
-  bool preliminary_blacklisted_features_initialized_;
 
   // Eventually |blacklisted_features_| should be folded in to this.
   gpu::GpuFeatureInfo gpu_feature_info_;

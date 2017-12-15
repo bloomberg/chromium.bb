@@ -89,9 +89,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void SetGLStrings(const std::string& gl_vendor,
                     const std::string& gl_renderer,
                     const std::string& gl_version) override;
-  void GetGLStrings(std::string* gl_vendor,
-                    std::string* gl_renderer,
-                    std::string* gl_version) override;
   void DisableHardwareAcceleration() override;
   bool HardwareAccelerationEnabled() const override;
   void GetDisabledExtensions(std::string* disabled_extensions) const override;
