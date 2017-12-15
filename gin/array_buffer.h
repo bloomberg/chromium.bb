@@ -25,7 +25,12 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   void Free(void* data, size_t length) override;
   void Free(void* data, size_t length, AllocationMode mode) override;
 
-  void SetProtection(void* data, size_t length, Protection protection) override;
+  // SetProtection should return result of mprotect calls - duplication of
+  // methods here as this change needs coordination between V8/Chromium.
+  // Subsequent changes will implement 'bool SetProtection(...)' to be the
+  // default method.
+  void SetProtection(void* data, size_t length, Protection protection) final;
+  bool SetProtection(Protection protection, void* data, size_t length);
 
   GIN_EXPORT static ArrayBufferAllocator* SharedInstance();
 };
