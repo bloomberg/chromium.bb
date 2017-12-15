@@ -63,26 +63,24 @@ namespace attestation {
 
 EnrollmentPolicyObserver::EnrollmentPolicyObserver(
     policy::CloudPolicyClient* policy_client)
-    : cros_settings_(CrosSettings::Get()),
+    : device_settings_service_(DeviceSettingsService::Get()),
       policy_client_(policy_client),
-      cryptohome_client_(NULL),
-      attestation_flow_(NULL),
+      cryptohome_client_(nullptr),
+      attestation_flow_(nullptr),
       num_retries_(0),
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  attestation_subscription_ = cros_settings_->AddSettingsObserver(
-      kDeviceEnrollmentIdNeeded,
-      base::Bind(&EnrollmentPolicyObserver::EnrollmentSettingChanged,
-                 base::Unretained(this)));
+  device_settings_service_->AddObserver(this);
   Start();
 }
 
 EnrollmentPolicyObserver::EnrollmentPolicyObserver(
     policy::CloudPolicyClient* policy_client,
+    DeviceSettingsService* device_settings_service,
     CryptohomeClient* cryptohome_client,
     AttestationFlow* attestation_flow)
-    : cros_settings_(CrosSettings::Get()),
+    : device_settings_service_(device_settings_service),
       policy_client_(policy_client),
       cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
@@ -90,28 +88,28 @@ EnrollmentPolicyObserver::EnrollmentPolicyObserver(
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  attestation_subscription_ = cros_settings_->AddSettingsObserver(
-      kDeviceEnrollmentIdNeeded,
-      base::Bind(&EnrollmentPolicyObserver::EnrollmentSettingChanged,
-                 base::Unretained(this)));
+
+  device_settings_service_->AddObserver(this);
   Start();
 }
 
 EnrollmentPolicyObserver::~EnrollmentPolicyObserver() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(DeviceSettingsService::IsInitialized());
+  device_settings_service_->RemoveObserver(this);
 }
 
-void EnrollmentPolicyObserver::EnrollmentSettingChanged() {
+void EnrollmentPolicyObserver::DeviceSettingsUpdated() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   num_retries_ = 0;
   Start();
 }
 
 void EnrollmentPolicyObserver::Start() {
-  // If we identification for enrollment isn't needed, there is nothing to do.
-  bool needed = false;
-  if (!cros_settings_->GetBoolean(kDeviceEnrollmentIdNeeded, &needed) ||
-      !needed)
+  // If identification for enrollment isn't needed, there is nothing to do.
+  const enterprise_management::PolicyData* policy_data =
+      device_settings_service_->policy_data();
+  if (!policy_data || !policy_data->enrollment_id_needed())
     return;
 
   // We expect a registered CloudPolicyClient.
@@ -169,7 +167,6 @@ void EnrollmentPolicyObserver::OnUploadComplete(bool status) {
   if (!status)
     return;
   VLOG(1) << "Enterprise Enrollment Certificate uploaded to DMServer.";
-  cros_settings_->SetBoolean(kDeviceEnrollmentIdNeeded, false);
 }
 
 void EnrollmentPolicyObserver::Reschedule() {

@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 
 namespace policy {
 class CloudPolicyClient;
@@ -19,7 +19,6 @@ class CloudPolicyClient;
 
 namespace chromeos {
 
-class CrosSettings;
 class CryptohomeClient;
 
 namespace attestation {
@@ -28,28 +27,28 @@ class AttestationFlow;
 
 // A class which observes policy changes and triggers uploading identification
 // for enrollment if necessary.
-class EnrollmentPolicyObserver {
+class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
  public:
-  // The observer immediately connects with CrosSettings to listen for policy
-  // changes.  The CloudPolicyClient is used to upload data to the server; it
-  // must be in the registered state.  This class does not take ownership of
-  // |policy_client|.
+  // The observer immediately connects with DeviceSettingsService to listen for
+  // policy changes.  The CloudPolicyClient is used to upload data to the
+  // server; it must be in the registered state.  This class does not take
+  // ownership of |policy_client|.
   explicit EnrollmentPolicyObserver(policy::CloudPolicyClient* policy_client);
 
-  // A constructor which allows custom CryptohomeClient and AttestationFlow
-  // implementations.  Useful for testing.
+  // A constructor which accepts custom instances useful for testing.
   EnrollmentPolicyObserver(policy::CloudPolicyClient* policy_client,
+                           DeviceSettingsService* device_settings_service,
                            CryptohomeClient* cryptohome_client,
                            AttestationFlow* attestation_flow);
 
-  ~EnrollmentPolicyObserver();
+  ~EnrollmentPolicyObserver() override;
 
   // Sets the retry delay in seconds; useful in testing.
   void set_retry_delay(int retry_delay) { retry_delay_ = retry_delay; }
 
  private:
-  // Called when the enrollment setting changes.
-  void EnrollmentSettingChanged();
+  // Called when the device settings change.
+  void DeviceSettingsUpdated() override;
 
   // Checks enrollment setting and starts any necessary work.
   void Start();
@@ -69,7 +68,7 @@ class EnrollmentPolicyObserver {
   // signal which indicates the system is ready to process this task.
   void Reschedule();
 
-  CrosSettings* cros_settings_;
+  DeviceSettingsService* device_settings_service_;
   policy::CloudPolicyClient* policy_client_;
   CryptohomeClient* cryptohome_client_;
   AttestationFlow* attestation_flow_;
@@ -77,11 +76,11 @@ class EnrollmentPolicyObserver {
   int num_retries_;
   int retry_delay_;
 
-  std::unique_ptr<CrosSettings::ObserverSubscription> attestation_subscription_;
-
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<EnrollmentPolicyObserver> weak_factory_;
+
+  friend class EnrollmentPolicyObserverTest;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentPolicyObserver);
 };
