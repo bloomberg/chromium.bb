@@ -1153,7 +1153,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     xd->left_txfm_context = xd->left_txfm_context_buffer +
                             ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
   }
-  if (av1_allow_intrabc(bsize, cm)) {
+  if (av1_allow_intrabc(cm)) {
     read_intrabc_info(cm, xd, mi_row, mi_col, r);
     if (is_intrabc_block(mbmi)) return;
   }

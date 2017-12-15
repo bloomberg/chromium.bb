@@ -4569,7 +4569,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   if (!dry_run) {
 #if CONFIG_INTRABC
-    if (av1_allow_intrabc(bsize, cm))
+    if (av1_allow_intrabc(cm))
       if (is_intrabc_block(mbmi)) td->intrabc_used_this_tile = 1;
 #endif  // CONFIG_INTRABC
     TX_SIZE tx_size =

@@ -1685,7 +1685,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
                        !xd->lossless[mbmi->segment_id];
 
 #if CONFIG_INTRABC
-  if (av1_allow_intrabc(bsize, cm)) {
+  if (av1_allow_intrabc(cm)) {
     write_intrabc_info(cm, xd, mbmi_ext, enable_tx_size, w);
     if (is_intrabc_block(mbmi)) return;
   }
