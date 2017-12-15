@@ -31,8 +31,8 @@
       }
     }
   };
-  await TestRunner.navigatePromise('resources/workers-on-navigation-resource.html');
   SDK.targetManager.observeTargets(observer);
+  await TestRunner.navigatePromise('resources/workers-on-navigation-resource.html');
   await TestRunner.evaluateInPagePromise('startWorker()');
   await TestRunner.reloadPagePromise();
   navigated = true;
