@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/display_info_provider_chromeos.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "extensions/common/api/system_display.h"
+#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_switches.h"
@@ -28,8 +29,8 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touch_device_transform.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -42,8 +43,7 @@ void InitExternalTouchDevices(int64_t display_id) {
   ui::TouchscreenDevice touchdevice(
       123, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
       std::string("test external touch device"), gfx::Size(1000, 1000), 1);
-  ui::InputDeviceManager::GetInstance()->SetTouchscreenDevicesForTesting(
-      {touchdevice});
+  ui::InputDeviceClientTestApi().SetTouchscreenDevices({touchdevice});
 
   std::vector<ui::TouchDeviceTransform> transforms;
   ui::TouchDeviceTransform touch_device_transform;
@@ -1484,7 +1484,7 @@ TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationNonTouchDisplay) {
                                  ? display_id_list[1]
                                  : display_id_list[0];
 
-  ui::InputDeviceManager::GetInstance()->SetTouchscreenDevicesForTesting({});
+  ui::InputDeviceClientTestApi().SetTouchscreenDevices({});
   std::string id = base::Int64ToString(display_id);
 
   std::string error;

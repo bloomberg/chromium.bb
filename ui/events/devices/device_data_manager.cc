@@ -253,16 +253,6 @@ void DeviceDataManager::RemoveObserver(InputDeviceEventObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DeviceDataManager::SetKeyboardDevicesForTesting(
-    const std::vector<InputDevice>& devices) {
-  OnKeyboardDevicesUpdated(devices);
-}
-
-void DeviceDataManager::SetTouchscreenDevicesForTesting(
-    const std::vector<TouchscreenDevice>& devices) {
-  OnTouchscreenDevicesUpdated(devices);
-}
-
 void DeviceDataManager::SetTouchscreensEnabled(bool enabled) {
   touch_screens_enabled_ = enabled;
 }

@@ -62,10 +62,6 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   bool AreTouchscreenTargetDisplaysValid() const override;
   void AddObserver(InputDeviceEventObserver* observer) override;
   void RemoveObserver(InputDeviceEventObserver* observer) override;
-  void SetKeyboardDevicesForTesting(
-      const std::vector<InputDevice>& devices) override;
-  void SetTouchscreenDevicesForTesting(
-      const std::vector<TouchscreenDevice>& devices) override;
 
  protected:
   DeviceDataManager();
