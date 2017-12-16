@@ -17,7 +17,6 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/manifest.h"
-#include "content/renderer/devtools/devtools_cpu_throttler.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_channel.h"
@@ -233,10 +232,6 @@ bool DevToolsAgent::RequestDevToolsForFrame(int session_id,
       base::Bind(&DevToolsAgent::OnRequestNewWindowCompleted,
                  weak_factory_.GetWeakPtr(), session_id));
   return true;
-}
-
-void DevToolsAgent::SetCPUThrottlingRate(double rate) {
-  DevToolsCPUThrottler::GetInstance()->SetThrottlingRate(rate);
 }
 
 void DevToolsAgent::SendChunkedProtocolMessage(int session_id,

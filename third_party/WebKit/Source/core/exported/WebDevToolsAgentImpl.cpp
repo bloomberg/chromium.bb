@@ -378,8 +378,7 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
     // TODO(dgozman): we should actually pass the view instead of frame, but
     // during remote->local transition we cannot access mainFrameImpl() yet, so
     // we have to store the frame which will become the main frame later.
-    session->Append(
-        InspectorEmulationAgent::Create(web_local_frame_impl_, this));
+    session->Append(new InspectorEmulationAgent(web_local_frame_impl_));
   }
 
   // Call session init callbacks registered from higher layers
@@ -476,11 +475,6 @@ void WebDevToolsAgentImpl::ShowReloadingBlanket() {
 void WebDevToolsAgentImpl::HideReloadingBlanket() {
   for (auto& it : overlay_agents_)
     it.value->HideReloadingBlanket();
-}
-
-void WebDevToolsAgentImpl::SetCPUThrottlingRate(double rate) {
-  if (client_)
-    client_->SetCPUThrottlingRate(rate);
 }
 
 void WebDevToolsAgentImpl::DispatchOnInspectorBackend(

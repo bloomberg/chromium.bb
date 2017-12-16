@@ -66,8 +66,6 @@ class WebDevToolsAgentClient {
     return false;
   }
 
-  virtual void SetCPUThrottlingRate(double rate) {}
-
  protected:
   ~WebDevToolsAgentClient() {}
 };
