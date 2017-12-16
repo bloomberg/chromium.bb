@@ -242,7 +242,8 @@ views::View* SessionCrashedBubbleView::CreateFootnoteView() {
 
   // Create a view to hold the checkbox and the text.
   views::View* uma_view = new views::View();
-  GridLayout* uma_layout = GridLayout::CreateAndInstall(uma_view);
+  GridLayout* uma_layout =
+      uma_view->SetLayoutManager(std::make_unique<views::GridLayout>(uma_view));
   uma_view->SetLayoutManager(uma_layout);
 
   const int kReportColumnSetId = 0;

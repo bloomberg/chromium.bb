@@ -70,7 +70,8 @@ void FirstRunBubble::Init() {
   views::Label* subtext = new views::Label(
       l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT), {original_font_list});
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 

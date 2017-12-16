@@ -53,7 +53,8 @@ LoginView::LoginView(const base::string16& authority,
       provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
 
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kStretchy,
                         GridLayout::FIXED, kMessageWidth, 0);

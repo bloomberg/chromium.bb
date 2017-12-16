@@ -570,7 +570,8 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   }
 
   views::View* view = new views::View();
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
 
   using views::GridLayout;
 
@@ -675,7 +676,8 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
 
   views::View* view = new views::View();
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
 
   using views::GridLayout;
 
@@ -738,7 +740,8 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
 
 views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   views::View* view = new views::View();
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
 
   using views::GridLayout;
 
@@ -799,7 +802,8 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
 
 views::View* TranslateBubbleView::CreateViewError() {
   views::View* view = new views::View();
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
 
   using views::GridLayout;
 
@@ -894,7 +898,8 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   }
 
   views::View* view = new views::View();
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
 
   using views::GridLayout;
 

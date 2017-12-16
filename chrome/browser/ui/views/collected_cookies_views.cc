@@ -397,7 +397,8 @@ CollectedCookiesViews::~CollectedCookiesViews() {
 void CollectedCookiesViews::Init() {
   using views::GridLayout;
 
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   if (provider->UseExtraDialogPadding()) {
     SetBorder(
@@ -472,7 +473,9 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout = GridLayout::CreateAndInstall(pane);
+  GridLayout* layout =
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane));
+
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));
@@ -535,7 +538,8 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout = GridLayout::CreateAndInstall(pane);
+  GridLayout* layout =
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane));
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));
@@ -567,8 +571,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
 
   {
     auto allowed = std::make_unique<views::View>();
-    views::GridLayout* layout =
-        views::GridLayout::CreateAndInstall(allowed.get());
+    views::GridLayout* layout = allowed->SetLayoutManager(
+        std::make_unique<views::GridLayout>(allowed.get()));
 
     block_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(
         this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
@@ -584,8 +588,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
 
   {
     auto blocked = std::make_unique<views::View>();
-    views::GridLayout* layout =
-        views::GridLayout::CreateAndInstall(blocked.get());
+    views::GridLayout* layout = blocked->SetLayoutManager(
+        std::make_unique<views::GridLayout>(blocked.get()));
     blocked->SetVisible(false);
 
     allow_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(

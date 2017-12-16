@@ -40,7 +40,8 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
           base::MakeUnique<DesktopIOSPromotionBubbleController>(profile,
                                                                 this,
                                                                 entry_point)) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetBorder(views::CreateEmptyBorder(
       0,

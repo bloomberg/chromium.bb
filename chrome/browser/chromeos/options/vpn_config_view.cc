@@ -506,7 +506,8 @@ void VPNConfigView::Init() {
     DCHECK(vpn && vpn->type() == shill::kTypeVPN);
   }
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   // Observer any changes to the certificate list.
   CertLibrary::Get()->AddObserver(this);

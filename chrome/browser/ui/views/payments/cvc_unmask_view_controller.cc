@@ -148,7 +148,8 @@ base::string16 CvcUnmaskViewController::GetSheetTitle() {
 }
 
 void CvcUnmaskViewController::FillContentView(views::View* content_view) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(content_view);
+  views::GridLayout* layout = content_view->SetLayoutManager(
+      std::make_unique<views::GridLayout>(content_view));
   content_view->SetBorder(views::CreateEmptyBorder(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets));

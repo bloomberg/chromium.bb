@@ -53,7 +53,8 @@ class CatalogViewerContents : public views::WidgetDelegateView,
     SetBorder(views::CreateEmptyBorder(gfx::Insets(kPadding)));
     SetBackground(views::CreateStandardPanelBackground());
 
-    views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+    views::GridLayout* layout =
+        SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
     views::ColumnSet* columns = layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,

@@ -31,7 +31,8 @@ ChosenObjectView::ChosenObjectView(
 
   constexpr float kFixed = 0.f;
   constexpr float kStretchy = 1.f;
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   const int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,

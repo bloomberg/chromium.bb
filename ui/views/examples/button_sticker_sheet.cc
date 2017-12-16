@@ -31,7 +31,8 @@ GridLayout* MakeStretchyGridLayout(View* host, int ncols) {
   const GridLayout::SizeType kColumnUsesFixedSize = GridLayout::FIXED;
   const int kColumnWidth = 96;
 
-  GridLayout* layout = GridLayout::CreateAndInstall(host);
+  GridLayout* layout =
+      host->SetLayoutManager(std::make_unique<views::GridLayout>(host));
   ColumnSet* columns = layout->AddColumnSet(kStretchyGridColumnSetId);
   for (int i = 0; i < ncols; ++i) {
     if (i != 0)

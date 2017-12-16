@@ -116,7 +116,8 @@ void GlobalErrorBubbleView::Init() {
     message_labels.push_back(message_label);
   }
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   // First row, message labels.
   views::ColumnSet* cs = layout->AddColumnSet(0);

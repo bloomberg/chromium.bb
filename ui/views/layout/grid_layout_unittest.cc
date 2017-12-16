@@ -99,7 +99,10 @@ class FlexibleView : public View {
 
 class GridLayoutTest : public testing::Test {
  public:
-  GridLayoutTest() : layout_(GridLayout::CreateAndInstall(&host_)) {}
+  GridLayoutTest() {
+    layout_ =
+        host_.SetLayoutManager(std::make_unique<views::GridLayout>(&host_));
+  }
 
   void RemoveAll() {
     for (int i = host_.child_count() - 1; i >= 0; i--)
@@ -118,7 +121,9 @@ class GridLayoutTest : public testing::Test {
 
 class GridLayoutAlignmentTest : public testing::Test {
  public:
-  GridLayoutAlignmentTest() : layout_(GridLayout::CreateAndInstall(&host_)) {
+  GridLayoutAlignmentTest() {
+    layout_ =
+        host_.SetLayoutManager(std::make_unique<views::GridLayout>(&host_));
     v1_.SetPreferredSize(gfx::Size(10, 20));
   }
 

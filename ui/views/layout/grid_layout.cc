@@ -775,15 +775,11 @@ bool ColumnSet::CanUseMinimum(const ViewState& view_state) const {
 
 // GridLayout -------------------------------------------------------------
 
-// static
-GridLayout* GridLayout::CreateAndInstall(View* host) {
-  GridLayout* result = new GridLayout(host);
-  host->SetLayoutManager(result);
-  return result;
+GridLayout::GridLayout(View* host) : host_(host) {
+  DCHECK(host);
 }
 
-GridLayout::~GridLayout() {
-}
+GridLayout::~GridLayout() {}
 
 ColumnSet* GridLayout::AddColumnSet(int id) {
   DCHECK(GetColumnSet(id) == nullptr);
@@ -937,17 +933,6 @@ int GridLayout::GetPreferredHeightForWidth(const View* host, int width) const {
   gfx::Size pref;
   SizeRowsAndColumns(false, width, 0, &pref);
   return pref.height();
-}
-
-GridLayout::GridLayout(View* host)
-    : host_(host),
-      calculated_master_columns_(false),
-      remaining_row_span_(0),
-      current_row_(-1),
-      next_column_(0),
-      current_row_col_set_(nullptr),
-      adding_view_(false) {
-  DCHECK(host);
 }
 
 void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,

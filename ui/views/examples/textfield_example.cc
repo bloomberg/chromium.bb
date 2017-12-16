@@ -61,7 +61,8 @@ void TextfieldExample::CreateExampleView(View* container) {
   name_->set_controller(this);
   password_->set_controller(this);
 
-  GridLayout* layout = GridLayout::CreateAndInstall(container);
+  GridLayout* layout = container->SetLayoutManager(
+      std::make_unique<views::GridLayout>(container));
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,

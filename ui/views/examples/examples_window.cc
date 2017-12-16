@@ -143,7 +143,8 @@ class ExamplesWindowContents : public WidgetDelegateView,
     combobox_->ModelChanged();
 
     SetBackground(CreateStandardPanelBackground());
-    GridLayout* layout = GridLayout::CreateAndInstall(this);
+    GridLayout* layout =
+        SetLayoutManager(std::make_unique<views::GridLayout>(this));
     ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddPaddingColumn(0, 5);
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,

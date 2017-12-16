@@ -222,7 +222,8 @@ class CustomScrollableView : public views::View {
 }  // namespace
 
 BulletedView::BulletedView(views::View* view) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                         0, views::GridLayout::FIXED, kBulletWidth, 0);
@@ -347,8 +348,8 @@ void ExtensionInstallDialogView::InitView() {
   // Create the scrollable view which will contain the permissions and retained
   // files/devices. It will span the full content width.
   CustomScrollableView* scrollable = new CustomScrollableView();
-  views::GridLayout* scroll_layout =
-      views::GridLayout::CreateAndInstall(scrollable);
+  views::GridLayout* scroll_layout = scrollable->SetLayoutManager(
+      std::make_unique<views::GridLayout>(scrollable));
 
   views::ColumnSet* scrollable_column_set =
       scroll_layout->AddColumnSet(column_set_id);
@@ -518,7 +519,8 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   // extension icon can be shown on the right of the dialog title, but on the
   // same y-axis, and the scroll view used to contain other content can have its
   // scrollbar aligned with the right edge of the dialog.
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(container_);
+  views::GridLayout* layout = container_->SetLayoutManager(
+      std::make_unique<views::GridLayout>(container_));
   container_->SetBorder(views::CreateEmptyBorder(0, content_insets.left(),
                                                  content_insets.bottom(), 0));
   AddChildView(container_);
@@ -729,7 +731,8 @@ ExpandableContainerView::ExpandableContainerView(
       expanded_(false) {
   DCHECK(!details.empty());
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   constexpr int kColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
 

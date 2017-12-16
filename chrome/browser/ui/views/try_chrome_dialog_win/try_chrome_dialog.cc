@@ -1026,8 +1026,8 @@ void TryChromeDialog::OnContextInitialized() {
 
   auto contents_view = std::make_unique<ClickableView>();
   contents_view->SetBackground(views::CreateSolidBackground(kBackgroundColor));
-  views::GridLayout* layout =
-      views::GridLayout::CreateAndInstall(contents_view.get());
+  views::GridLayout* layout = contents_view->SetLayoutManager(
+      std::make_unique<views::GridLayout>(contents_view.get()));
   layout->set_minimum_size(gfx::Size(kToastWidth, 0));
   views::ColumnSet* columns;
 

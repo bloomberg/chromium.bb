@@ -218,7 +218,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   // layer) won't do proper clipping.
   view->SetPaintToLayer();
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view.get());
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view.get()));
 
   // Note: each view is responsible for its own padding (insets).
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -236,7 +237,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
   pane_ = new views::View;
-  views::GridLayout* pane_layout = views::GridLayout::CreateAndInstall(pane_);
+  views::GridLayout* pane_layout =
+      pane_->SetLayoutManager(std::make_unique<views::GridLayout>(pane_));
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
   pane_columns->AddColumn(views::GridLayout::Alignment::FILL,
                           views::GridLayout::Alignment::LEADING, 0,
@@ -343,8 +345,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   container->SetBorder(
       views::CreateEmptyBorder(kInset, kInset, kInset, kInset));
 
-  views::GridLayout* layout =
-      views::GridLayout::CreateAndInstall(container.get());
+  views::GridLayout* layout = container->SetLayoutManager(
+      std::make_unique<views::GridLayout>(container.get()));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
