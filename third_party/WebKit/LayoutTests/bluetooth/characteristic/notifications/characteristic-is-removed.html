@@ -6,20 +6,16 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattService => gattService.getPrimaryService('heart_rate'))
-    .then(service => service.getCharacteristic('heart_rate_measurement'))
-    .then(characteristic => {
-      return setBluetoothFakeAdapter('MissingCharacteristicHeartRateAdapter')
-        .then(() => assert_promise_rejects_with_message(
-          characteristic.startNotifications(),
-          new DOMException('GATT Characteristic no longer exists.',
-                           'InvalidStateError'),
-          'Characteristic got removed.'));
-    });
-}, 'Characteristic is removed. Reject with InvalidStateError.');
+const test_desc = 'Characteristic is removed. Reject with InvalidStateError.';
+let characteristic, fake_characteristic;
+
+bluetooth_test(() => getMeasurementIntervalCharacteristic()
+    .then(_ => ({characteristic, fake_characteristic} = _))
+    .then(() => fake_characteristic.remove())
+    .then(() => assert_promise_rejects_with_message(
+      characteristic.startNotifications(),
+      new DOMException('GATT Characteristic no longer exists.',
+                       'InvalidStateError'),
+      'Characteristic got removed.')),
+    test_desc);
 </script>
