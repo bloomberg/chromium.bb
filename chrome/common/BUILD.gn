@@ -213,7 +213,6 @@ static_library("common") {
     "//chrome/app/theme:theme_resources",
     "//chrome/common:constants",
     "//chrome/common/net",
-    "//chrome/common/printing:interfaces",
     "//chrome/common/profiling",
     "//chrome/installer/util:with_no_strings",
     "//components/cast_certificate",

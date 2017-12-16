@@ -275,7 +275,7 @@ void PrintJob::StartPdfToEmfConversion(
       print_text_with_gdi ? PdfRenderSettings::Mode::GDI_TEXT
                           : PdfRenderSettings::Mode::NORMAL);
   pdf_conversion_state_->Start(
-      bytes, settings, base::Bind(&PrintJob::OnPdfConversionStarted, this));
+      bytes, settings, base::BindOnce(&PrintJob::OnPdfConversionStarted, this));
 }
 
 void PrintJob::OnPdfConversionStarted(int page_count) {
@@ -321,7 +321,7 @@ void PrintJob::StartPdfToTextConversion(
                              /*autorotate=*/true,
                              PdfRenderSettings::Mode::TEXTONLY);
   pdf_conversion_state_->Start(
-      bytes, settings, base::Bind(&PrintJob::OnPdfConversionStarted, this));
+      bytes, settings, base::BindOnce(&PrintJob::OnPdfConversionStarted, this));
 }
 
 void PrintJob::StartPdfToPostScriptConversion(
@@ -338,7 +338,7 @@ void PrintJob::StartPdfToPostScriptConversion(
       ps_level2 ? PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2
                 : PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
   pdf_conversion_state_->Start(
-      bytes, settings, base::Bind(&PrintJob::OnPdfConversionStarted, this));
+      bytes, settings, base::BindOnce(&PrintJob::OnPdfConversionStarted, this));
 }
 #endif  // defined(OS_WIN)
 

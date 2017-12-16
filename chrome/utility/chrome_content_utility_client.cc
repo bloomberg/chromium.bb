@@ -46,7 +46,6 @@
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/interfaces/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
-#include "chrome/utility/printing/pdf_to_emf_converter_factory_impl.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -179,11 +178,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
     registry->AddInterface(base::Bind(CreateResourceUsageReporter),
                            base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID)
-#if defined(OS_WIN)
-    registry->AddInterface(
-        base::Bind(printing::PdfToEmfConverterFactoryImpl::Create),
-        base::ThreadTaskRunnerHandle::Get());
-#endif
   }
 
   connection->AddConnectionFilter(

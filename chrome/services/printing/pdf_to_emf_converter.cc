@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/printing/pdf_to_emf_converter_impl.h"
+#include "chrome/services/printing/pdf_to_emf_converter.h"
 
 #include <algorithm>
 
@@ -61,7 +61,7 @@ void RegisterConverterClient(mojom::PdfToEmfConverterClientPtr client) {
 
 }  // namespace
 
-PdfToEmfConverterImpl::PdfToEmfConverterImpl(
+PdfToEmfConverter::PdfToEmfConverter(
     mojo::ScopedHandle pdf_file_in,
     const printing::PdfRenderSettings& pdf_render_settings,
     mojom::PdfToEmfConverterClientPtr client)
@@ -90,15 +90,15 @@ PdfToEmfConverterImpl::PdfToEmfConverterImpl(
   base::PlatformFile pdf_file;
   if (mojo::UnwrapPlatformFile(std::move(pdf_file_in), &pdf_file) !=
       MOJO_RESULT_OK) {
-    LOG(ERROR) << "Invalid PDF file passed to PdfToEmfConverterImpl";
+    LOG(ERROR) << "Invalid PDF file passed to PdfToEmfConverter.";
     return;
   }
   LoadPdf(base::File(pdf_file));
 }
 
-PdfToEmfConverterImpl::~PdfToEmfConverterImpl() = default;
+PdfToEmfConverter::~PdfToEmfConverter() = default;
 
-void PdfToEmfConverterImpl::LoadPdf(base::File pdf_file) {
+void PdfToEmfConverter::LoadPdf(base::File pdf_file) {
   int64_t length64 = pdf_file.GetLength();
   if (length64 <= 0 || length64 > std::numeric_limits<int>::max())
     return;
@@ -114,10 +114,10 @@ void PdfToEmfConverterImpl::LoadPdf(base::File pdf_file) {
   total_page_count_ = page_count;
 }
 
-bool PdfToEmfConverterImpl::RenderPdfPageToMetafile(int page_number,
-                                                    base::File output_file,
-                                                    float* scale_factor,
-                                                    bool postscript) {
+bool PdfToEmfConverter::RenderPdfPageToMetafile(int page_number,
+                                                base::File output_file,
+                                                float* scale_factor,
+                                                bool postscript) {
   Emf metafile;
   metafile.Init();
 
@@ -160,9 +160,9 @@ bool PdfToEmfConverterImpl::RenderPdfPageToMetafile(int page_number,
   return metafile.SaveTo(&output_file);
 }
 
-void PdfToEmfConverterImpl::ConvertPage(uint32_t page_number,
-                                        mojo::ScopedHandle emf_file_out,
-                                        ConvertPageCallback callback) {
+void PdfToEmfConverter::ConvertPage(uint32_t page_number,
+                                    mojo::ScopedHandle emf_file_out,
+                                    ConvertPageCallback callback) {
   if (page_number >= total_page_count_) {
     std::move(callback).Run(/*success=*/false, /*scale_factor=*/0.0);
     return;
