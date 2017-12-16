@@ -183,7 +183,8 @@ TEST_F(PeripheralBatteryNotifierTest, DISABLED_DeviceRemove) {
               nullptr);
 }
 
-TEST_F(PeripheralBatteryNotifierTest, StylusNotification) {
+// TODO(crbug.com/765794): Flaky on ash_unittests --mus.
+TEST_F(PeripheralBatteryNotifierTest, DISABLED_StylusNotification) {
   const std::string kTestStylusBatteryPath =
       "/sys/class/power_supply/hid-AAAA:BBBB:CCCC.DDDD-battery";
   const std::string kTestStylusName = "test_stylus";
