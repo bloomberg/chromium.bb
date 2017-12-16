@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "core/CoreExport.h"
-#include "core/inspector/InspectorEmulationAgent.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorSession.h"
@@ -62,7 +61,6 @@ class WebString;
 class CORE_EXPORT WebDevToolsAgentImpl final
     : public GarbageCollectedFinalized<WebDevToolsAgentImpl>,
       public WebDevToolsAgent,
-      public InspectorEmulationAgent::Client,
       public InspectorTracingAgent::Client,
       public InspectorPageAgent::Client,
       public InspectorSession::Client,
@@ -110,9 +108,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   // InspectorTracingAgent::Client implementation.
   void ShowReloadingBlanket() override;
   void HideReloadingBlanket() override;
-
-  // InspectorEmulationAgent::Client implementation.
-  void SetCPUThrottlingRate(double) override;
 
   // InspectorPageAgent::Client implementation.
   void PageLayoutInvalidated(bool resized) override;

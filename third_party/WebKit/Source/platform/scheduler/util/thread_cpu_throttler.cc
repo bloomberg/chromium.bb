@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/devtools/devtools_cpu_throttler.h"
+#include "platform/scheduler/util/thread_cpu_throttler.h"
 
 #include "base/atomicops.h"
 #include "base/macros.h"
@@ -20,12 +20,14 @@ using base::subtle::Atomic32;
 using base::subtle::Acquire_Load;
 using base::subtle::Release_Store;
 
-namespace content {
+namespace blink {
+namespace scheduler {
 
-class CPUThrottlingThread final : public base::PlatformThread::Delegate {
+class ThreadCPUThrottler::ThrottlingThread final
+    : public base::PlatformThread::Delegate {
  public:
-  explicit CPUThrottlingThread(double rate);
-  ~CPUThrottlingThread() override;
+  explicit ThrottlingThread(double rate);
+  ~ThrottlingThread() override;
 
   void SetThrottlingRate(double rate);
 
@@ -55,17 +57,17 @@ class CPUThrottlingThread final : public base::PlatformThread::Delegate {
   base::PlatformThreadHandle throttling_thread_handle_;
   base::CancellationFlag cancellation_flag_;
 
-  DISALLOW_COPY_AND_ASSIGN(CPUThrottlingThread);
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingThread);
 };
 
 #ifdef USE_SIGNALS
-bool CPUThrottlingThread::signal_handler_installed_;
-struct sigaction CPUThrottlingThread::old_signal_handler_;
+bool ThreadCPUThrottler::ThrottlingThread::signal_handler_installed_;
+struct sigaction ThreadCPUThrottler::ThrottlingThread::old_signal_handler_;
 #endif
-Atomic32 CPUThrottlingThread::throttling_rate_percent_;
-Atomic32 CPUThrottlingThread::thread_exists_;
+Atomic32 ThreadCPUThrottler::ThrottlingThread::throttling_rate_percent_;
+Atomic32 ThreadCPUThrottler::ThrottlingThread::thread_exists_;
 
-CPUThrottlingThread::CPUThrottlingThread(double rate)
+ThreadCPUThrottler::ThrottlingThread::ThrottlingThread(double rate)
 #ifdef OS_WIN
     : throttled_thread_handle_(
           ::OpenThread(THREAD_SUSPEND_RESUME, false, ::GetCurrentThreadId())) {
@@ -77,17 +79,17 @@ CPUThrottlingThread::CPUThrottlingThread(double rate)
   Start();
 }
 
-CPUThrottlingThread::~CPUThrottlingThread() {
+ThreadCPUThrottler::ThrottlingThread::~ThrottlingThread() {
   Stop();
   CHECK(base::subtle::NoBarrier_AtomicExchange(&thread_exists_, 0) == 1);
 }
 
-void CPUThrottlingThread::SetThrottlingRate(double rate) {
+void ThreadCPUThrottler::ThrottlingThread::SetThrottlingRate(double rate) {
   Release_Store(&throttling_rate_percent_, static_cast<Atomic32>(rate * 100));
 }
 
-void CPUThrottlingThread::ThreadMain() {
-  base::PlatformThread::SetName("DevToolsCPUThrottlingThread");
+void ThreadCPUThrottler::ThrottlingThread::ThreadMain() {
+  base::PlatformThread::SetName("CPUThrottlingThread");
   while (!cancellation_flag_.IsSet()) {
     Throttle();
   }
@@ -96,7 +98,7 @@ void CPUThrottlingThread::ThreadMain() {
 #ifdef USE_SIGNALS
 
 // static
-void CPUThrottlingThread::InstallSignalHandler() {
+void ThreadCPUThrottler::ThrottlingThread::InstallSignalHandler() {
   // There must be the only one!
   DCHECK(!signal_handler_installed_);
   struct sigaction sa;
@@ -108,7 +110,7 @@ void CPUThrottlingThread::InstallSignalHandler() {
 }
 
 // static
-void CPUThrottlingThread::RestoreSignalHandler() {
+void ThreadCPUThrottler::ThrottlingThread::RestoreSignalHandler() {
   if (!signal_handler_installed_)
     return;
   sigaction(SIGUSR2, &old_signal_handler_, nullptr);
@@ -116,7 +118,7 @@ void CPUThrottlingThread::RestoreSignalHandler() {
 }
 
 // static
-void CPUThrottlingThread::HandleSignal(int signal) {
+void ThreadCPUThrottler::ThrottlingThread::HandleSignal(int signal) {
   if (signal != SIGUSR2)
     return;
   static base::TimeTicks lastResumeTime;
@@ -139,7 +141,7 @@ void CPUThrottlingThread::HandleSignal(int signal) {
 
 #endif  // USE_SIGNALS
 
-void CPUThrottlingThread::Throttle() {
+void ThreadCPUThrottler::ThrottlingThread::Throttle() {
   const int quant_time_us = 200;
 #if defined(OS_WIN)
   double rate = Acquire_Load(&throttling_rate_percent_) / 100.;
@@ -157,7 +159,7 @@ void CPUThrottlingThread::Throttle() {
 #endif
 }
 
-void CPUThrottlingThread::Start() {
+void ThreadCPUThrottler::ThrottlingThread::Start() {
 #ifdef USE_SIGNALS
   InstallSignalHandler();
 #elif !defined(OS_WIN)
@@ -168,18 +170,19 @@ void CPUThrottlingThread::Start() {
   }
 }
 
-void CPUThrottlingThread::Sleep(base::TimeDelta duration) {
+void ThreadCPUThrottler::ThrottlingThread::Sleep(base::TimeDelta duration) {
 #if defined(OS_WIN)
   // We cannot rely on ::Sleep function as it's precision is not enough for
   // the purpose. Could be up to 16ms jitter.
   base::TimeTicks wakeup_time = base::TimeTicks::Now() + duration;
-  while (base::TimeTicks::Now() < wakeup_time) {}
+  while (base::TimeTicks::Now() < wakeup_time) {
+  }
 #else
   base::PlatformThread::Sleep(duration);
 #endif
 }
 
-void CPUThrottlingThread::Stop() {
+void ThreadCPUThrottler::ThrottlingThread::Stop() {
   cancellation_flag_.Set();
   base::PlatformThread::Join(throttling_thread_handle_);
 #ifdef USE_SIGNALS
@@ -187,10 +190,10 @@ void CPUThrottlingThread::Stop() {
 #endif
 }
 
-DevToolsCPUThrottler::DevToolsCPUThrottler() = default;
-DevToolsCPUThrottler::~DevToolsCPUThrottler() = default;
+ThreadCPUThrottler::ThreadCPUThrottler() = default;
+ThreadCPUThrottler::~ThreadCPUThrottler() = default;
 
-void DevToolsCPUThrottler::SetThrottlingRate(double rate) {
+void ThreadCPUThrottler::SetThrottlingRate(double rate) {
   if (rate <= 1) {
     if (throttling_thread_) {
       throttling_thread_.reset();
@@ -200,13 +203,14 @@ void DevToolsCPUThrottler::SetThrottlingRate(double rate) {
   if (throttling_thread_) {
     throttling_thread_->SetThrottlingRate(rate);
   } else {
-    throttling_thread_.reset(new CPUThrottlingThread(rate));
+    throttling_thread_.reset(new ThrottlingThread(rate));
   }
 }
 
 // static
-DevToolsCPUThrottler* DevToolsCPUThrottler::GetInstance() {
-  return base::Singleton<DevToolsCPUThrottler>::get();
+ThreadCPUThrottler* ThreadCPUThrottler::GetInstance() {
+  return base::Singleton<ThreadCPUThrottler>::get();
 }
 
-}  // namespace content
+}  // namespace scheduler
+}  // namespace blink

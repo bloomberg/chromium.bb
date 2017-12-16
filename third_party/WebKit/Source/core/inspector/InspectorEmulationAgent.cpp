@@ -13,6 +13,7 @@
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/scheduler/util/thread_cpu_throttler.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatPoint.h"
@@ -34,17 +35,9 @@ static const char kDefaultBackgroundColorOverrideRGBA[] =
 static const char kNavigatorPlatform[] = "navigatorPlatform";
 }
 
-InspectorEmulationAgent* InspectorEmulationAgent::Create(
-    WebLocalFrameImpl* web_local_frame_impl,
-    Client* client) {
-  return new InspectorEmulationAgent(web_local_frame_impl, client);
-}
-
 InspectorEmulationAgent::InspectorEmulationAgent(
-    WebLocalFrameImpl* web_local_frame_impl,
-    Client* client)
+    WebLocalFrameImpl* web_local_frame_impl)
     : web_local_frame_(web_local_frame_impl),
-      client_(client),
       virtual_time_observer_registered_(false) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() {}
@@ -131,8 +124,8 @@ Response InspectorEmulationAgent::setEmulatedMedia(const String& media) {
   return Response::OK();
 }
 
-Response InspectorEmulationAgent::setCPUThrottlingRate(double throttling_rate) {
-  client_->SetCPUThrottlingRate(throttling_rate);
+Response InspectorEmulationAgent::setCPUThrottlingRate(double rate) {
+  scheduler::ThreadCPUThrottler::GetInstance()->SetThrottlingRate(rate);
   return Response::OK();
 }
 

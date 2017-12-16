@@ -27,14 +27,7 @@ class CORE_EXPORT InspectorEmulationAgent final
     : public InspectorBaseAgent<protocol::Emulation::Metainfo>,
       public WebViewScheduler::VirtualTimeObserver {
  public:
-  class Client {
-   public:
-    virtual ~Client() {}
-
-    virtual void SetCPUThrottlingRate(double rate) {}
-  };
-
-  static InspectorEmulationAgent* Create(WebLocalFrameImpl*, Client*);
+  explicit InspectorEmulationAgent(WebLocalFrameImpl*);
   ~InspectorEmulationAgent() override;
 
   // protocol::Dispatcher::EmulationCommandHandler implementation.
@@ -80,12 +73,10 @@ class CORE_EXPORT InspectorEmulationAgent final
   void Trace(blink::Visitor*) override;
 
  private:
-  InspectorEmulationAgent(WebLocalFrameImpl*, Client*);
   WebViewImpl* GetWebViewImpl();
   void VirtualTimeBudgetExpired();
 
   Member<WebLocalFrameImpl> web_local_frame_;
-  Client* client_;
   bool virtual_time_observer_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
