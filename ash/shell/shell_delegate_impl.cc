@@ -74,10 +74,6 @@ AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
 }
 
-base::string16 ShellDelegateImpl::GetProductName() const {
-  return base::string16();
-}
-
 ui::InputDeviceControllerClient*
 ShellDelegateImpl::GetInputDeviceControllerClient() {
   return nullptr;

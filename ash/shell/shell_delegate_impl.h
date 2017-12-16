@@ -36,7 +36,6 @@ class ShellDelegateImpl : public ShellDelegate {
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
-  base::string16 GetProductName() const override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
  private:
