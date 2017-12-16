@@ -562,6 +562,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // normally suppressed in first run will still trigger.
   static void SetRunAlertsInFirstRunForTest();
 
+  void ClearExternalUninstallForTesting(const ExtensionId& id);
+
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsComponentExtension;     // Unit test.

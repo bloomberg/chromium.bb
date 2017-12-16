@@ -1691,6 +1691,10 @@ void ExtensionPrefs::SetRunAlertsInFirstRunForTest() {
   g_run_alerts_in_first_run_for_testing = true;
 }
 
+void ExtensionPrefs::ClearExternalUninstallForTesting(const ExtensionId& id) {
+  DeleteExtensionPrefs(id);
+}
+
 ExtensionPrefs::ExtensionPrefs(
     content::BrowserContext* browser_context,
     PrefService* prefs,
