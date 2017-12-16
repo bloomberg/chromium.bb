@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
+#import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -20,7 +21,8 @@
 
 class FullscreenWebStateObserverTest : public PlatformTest {
  public:
-  FullscreenWebStateObserverTest() : PlatformTest(), observer_(&model_) {
+  FullscreenWebStateObserverTest()
+      : PlatformTest(), controller_(&model_), observer_(&controller_, &model_) {
     // Set up model.
     SetUpFullscreenModelForTesting(&model_, 100.0);
     // Set up a TestNavigationManager.
@@ -45,6 +47,7 @@ class FullscreenWebStateObserverTest : public PlatformTest {
 
  private:
   FullscreenModel model_;
+  TestFullscreenController controller_;
   web::TestWebState web_state_;
   web::TestNavigationManager* navigation_manager_;
   FullscreenWebStateObserver observer_;

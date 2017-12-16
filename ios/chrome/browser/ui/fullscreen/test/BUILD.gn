@@ -7,6 +7,8 @@ source_set("test") {
   sources = [
     "fullscreen_model_test_util.h",
     "fullscreen_model_test_util.mm",
+    "test_fullscreen_controller.h",
+    "test_fullscreen_controller.mm",
     "test_fullscreen_controller_observer.h",
     "test_fullscreen_controller_observer.mm",
     "test_fullscreen_model_observer.h",

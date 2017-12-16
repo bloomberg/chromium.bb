@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_observer.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
+#import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
@@ -31,10 +33,15 @@ bool IsWebStateSSLBroken(web::WebState* web_state) {
 }
 }  // namespace
 
-FullscreenWebStateObserver::FullscreenWebStateObserver(FullscreenModel* model)
-    : model_(model) {
+FullscreenWebStateObserver::FullscreenWebStateObserver(
+    FullscreenController* controller,
+    FullscreenModel* model)
+    : controller_(controller), model_(model) {
+  DCHECK(controller_);
   DCHECK(model_);
 }
+
+FullscreenWebStateObserver::~FullscreenWebStateObserver() = default;
 
 void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
   if (web_state_ == web_state)
@@ -68,24 +75,23 @@ void FullscreenWebStateObserver::DidChangeVisibleSecurityState(
   SetIsSSLBroken(IsWebStateSSLBroken(web_state));
 }
 
+void FullscreenWebStateObserver::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state, web_state_);
+  SetWebState(nullptr);
+}
+
 void FullscreenWebStateObserver::SetIsSSLBroken(bool broken) {
-  if (ssl_broken_ == broken)
+  if (!!ssl_disabler_.get() == broken)
     return;
-  ssl_broken_ = broken;
-  // Fullscreen should be disbaled for pages with broken SSL.
-  if (ssl_broken_)
-    model_->IncrementDisabledCounter();
-  else
-    model_->DecrementDisabledCounter();
+  ssl_disabler_ = broken
+                      ? base::MakeUnique<ScopedFullscreenDisabler>(controller_)
+                      : nullptr;
 }
 
 void FullscreenWebStateObserver::SetIsLoading(bool loading) {
-  if (loading_ == loading)
+  if (!!loading_disabler_.get() == loading)
     return;
-  loading_ = loading;
-  // Fullscreen should be disabled while the web view is loading.
-  if (loading_)
-    model_->IncrementDisabledCounter();
-  else
-    model_->DecrementDisabledCounter();
+  loading_disabler_ =
+      loading ? base::MakeUnique<ScopedFullscreenDisabler>(controller_)
+              : nullptr;
 }

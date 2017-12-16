@@ -5,15 +5,21 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WEB_STATE_OBSERVER_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WEB_STATE_OBSERVER_H_
 
+#include <memory>
+
 #include "ios/web/public/web_state/web_state_observer.h"
 
+class FullscreenController;
 class FullscreenModel;
+class ScopedFullscreenDisabler;
 
 // A WebStateObserver that updates a FullscreenModel for navigation events.
 class FullscreenWebStateObserver : public web::WebStateObserver {
  public:
-  // Constructor for an observer that updates |model|.
-  FullscreenWebStateObserver(FullscreenModel* model);
+  // Constructor for an observer that updates |controller| and |model|.
+  FullscreenWebStateObserver(FullscreenController* controller,
+                             FullscreenModel* model);
+  ~FullscreenWebStateObserver() override;
 
   // Tells the observer to start observing |web_state|.
   void SetWebState(web::WebState* web_state);
@@ -25,6 +31,7 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
   void DidStartLoading(web::WebState* web_state) override;
   void DidStopLoading(web::WebState* web_state) override;
   void DidChangeVisibleSecurityState(web::WebState* web_state) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
   // Setter for whether the current page's SSL is broken.
   void SetIsSSLBroken(bool broken);
   // Setter for whether the WebState is currently loading.
@@ -32,12 +39,14 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
 
   // The WebState being observed.
   web::WebState* web_state_ = nullptr;
+  // The FullscreenController passed on construction.
+  FullscreenController* controller_;
   // The model passed on construction.
   FullscreenModel* model_;
-  // Whether the page's SSL is broken.
-  bool ssl_broken_ = false;
-  // Whether the WebState is loading.
-  bool loading_ = false;
+  // The disabler for broken SSL.
+  std::unique_ptr<ScopedFullscreenDisabler> ssl_disabler_;
+  // The disabler for loading.
+  std::unique_ptr<ScopedFullscreenDisabler> loading_disabler_;
 };
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WEB_STATE_OBSERVER_H_

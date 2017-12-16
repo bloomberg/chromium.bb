@@ -91,6 +91,11 @@
 
 - (void)scrollViewDidEndDraggingWithGesture:(UIPanGestureRecognizer*)panGesture
                            residualVelocity:(CGPoint)velocity {
+  // It's possible during the side-swipe gesture for a drag to end on the scroll
+  // view without a corresponding begin dragging call.  Early return if there
+  // is no pan gesture from the begin call.
+  if (!self.panGesture)
+    return;
   DCHECK_EQ(panGesture, self.panGesture);
   if (!AreCGFloatsEqual(velocity.y, 0.0))
     self.state.decelerating = YES;

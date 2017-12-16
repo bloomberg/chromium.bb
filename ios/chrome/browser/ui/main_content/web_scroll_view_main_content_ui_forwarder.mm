@@ -109,6 +109,14 @@
 #pragma mark - WebStateListObserving
 
 - (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  if (newWebState == webStateList->GetActiveWebState())
+    self.proxy = newWebState->GetWebViewProxy().scrollViewProxy;
+}
+
+- (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
