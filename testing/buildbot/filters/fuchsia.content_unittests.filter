@@ -14,9 +14,6 @@
 -RendererAudioOutputStreamFactoryIntegrationTest.StreamIntegrationTest
 -WebContentsAudioInputStreamTest.MirroringNothingWithTargetChange/0
 
-# https://crbug.com/762125
--VideoCaptureBufferPoolTest.BufferPool/*
-
 # Flaky: https://crbug.com/760687.
 -CacheStorageManagerTest.GetAllOriginsUsageWithOldIndex
 -CacheStorageManagerTest.GetOriginSizeWithOldIndex
