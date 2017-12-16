@@ -197,6 +197,9 @@ void GCMChannelStatusSyncer::ScheduleRequest() {
 void GCMChannelStatusSyncer::StartRequest() {
   DCHECK(!request_);
 
+  if (channel_status_request_url_.empty())
+    return;
+
   request_.reset(new GCMChannelStatusRequest(
       request_context_,
       channel_status_request_url_,
