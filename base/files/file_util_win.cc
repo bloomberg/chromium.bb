@@ -80,93 +80,43 @@ void AppendModeCharacter(base::char16 mode_char, base::string16* mode) {
                1, mode_char);
 }
 
-}  // namespace
-
-FilePath MakeAbsoluteFilePath(const FilePath& input) {
+bool DoCopyFile(const FilePath& from_path,
+                const FilePath& to_path,
+                bool fail_if_exists) {
   AssertBlockingAllowed();
-  wchar_t file_path[MAX_PATH];
-  if (!_wfullpath(file_path, input.value().c_str(), MAX_PATH))
-    return FilePath();
-  return FilePath(file_path);
-}
-
-bool DeleteFile(const FilePath& path, bool recursive) {
-  AssertBlockingAllowed();
-
-  if (path.empty())
-    return true;
-
-  if (path.value().length() >= MAX_PATH)
+  if (from_path.ReferencesParent() || to_path.ReferencesParent())
     return false;
 
-  // Handle any path with wildcards.
-  if (path.BaseName().value().find_first_of(L"*?") !=
-      FilePath::StringType::npos) {
-    return DeleteFileRecursive(path.DirName(), path.BaseName().value(),
-                               recursive);
-  }
-  DWORD attr = GetFileAttributes(path.value().c_str());
-  // We're done if we can't find the path.
-  if (attr == INVALID_FILE_ATTRIBUTES)
-    return true;
-  // We may need to clear the read-only bit.
-  if ((attr & FILE_ATTRIBUTE_READONLY) &&
-      !SetFileAttributes(path.value().c_str(),
-                          attr & ~FILE_ATTRIBUTE_READONLY)) {
+  // NOTE: I suspect we could support longer paths, but that would involve
+  // analyzing all our usage of files.
+  if (from_path.value().length() >= MAX_PATH ||
+      to_path.value().length() >= MAX_PATH) {
     return false;
   }
-  // Directories are handled differently if they're recursive.
-  if (!(attr & FILE_ATTRIBUTE_DIRECTORY))
-    return !!::DeleteFile(path.value().c_str());
-  // Handle a simple, single file delete.
-  if (!recursive || DeleteFileRecursive(path, L"*", true))
-    return !!RemoveDirectory(path.value().c_str());
 
-  return false;
-}
-
-bool DeleteFileAfterReboot(const FilePath& path) {
-  AssertBlockingAllowed();
-
-  if (path.value().length() >= MAX_PATH)
+  // Unlike the posix implementation that copies the file manually and discards
+  // the ACL bits, CopyFile() copies the complete SECURITY_DESCRIPTOR and access
+  // bits, which is usually not what we want. We can't do much about the
+  // SECURITY_DESCRIPTOR but at least remove the read only bit.
+  const wchar_t* dest = to_path.value().c_str();
+  if (!::CopyFile(from_path.value().c_str(), dest, fail_if_exists)) {
+    // Copy failed.
     return false;
-
-  return MoveFileEx(path.value().c_str(), NULL,
-                    MOVEFILE_DELAY_UNTIL_REBOOT |
-                        MOVEFILE_REPLACE_EXISTING) != FALSE;
+  }
+  DWORD attrs = GetFileAttributes(dest);
+  if (attrs == INVALID_FILE_ATTRIBUTES) {
+    return false;
+  }
+  if (attrs & FILE_ATTRIBUTE_READONLY) {
+    SetFileAttributes(dest, attrs & ~FILE_ATTRIBUTE_READONLY);
+  }
+  return true;
 }
 
-bool ReplaceFile(const FilePath& from_path,
-                 const FilePath& to_path,
-                 File::Error* error) {
-  AssertBlockingAllowed();
-  // Try a simple move first.  It will only succeed when |to_path| doesn't
-  // already exist.
-  if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
-    return true;
-  File::Error move_error = File::GetLastFileError();
-
-  // Try the full-blown replace if the move fails, as ReplaceFile will only
-  // succeed when |to_path| does exist. When writing to a network share, we may
-  // not be able to change the ACLs. Ignore ACL errors then
-  // (REPLACEFILE_IGNORE_MERGE_ERRORS).
-  if (::ReplaceFile(to_path.value().c_str(), from_path.value().c_str(), NULL,
-                    REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
-    return true;
-  }
-  // In the case of FILE_ERROR_NOT_FOUND from ReplaceFile, it is likely that
-  // |to_path| does not exist. In this case, the more relevant error comes
-  // from the call to MoveFile.
-  if (error) {
-    File::Error replace_error = File::GetLastFileError();
-    *error = replace_error == File::FILE_ERROR_NOT_FOUND ? move_error
-                                                         : replace_error;
-  }
-  return false;
-}
-
-bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
-                   bool recursive) {
+bool DoCopyDirectory(const FilePath& from_path,
+                     const FilePath& to_path,
+                     bool recursive,
+                     bool fail_if_exists) {
   // NOTE(maruel): Previous version of this function used to call
   // SHFileOperation().  This used to copy the file attributes and extended
   // attributes, OLE structured storage, NTFS file system alternate data
@@ -239,7 +189,7 @@ bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
                     << target_path.value().c_str();
         success = false;
       }
-    } else if (!CopyFile(current, target_path)) {
+    } else if (!DoCopyFile(current, target_path, fail_if_exists)) {
       DLOG(ERROR) << "CopyDirectory() couldn't create file: "
                   << target_path.value().c_str();
       success = false;
@@ -251,6 +201,103 @@ bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
   }
 
   return success;
+}
+
+}  // namespace
+
+FilePath MakeAbsoluteFilePath(const FilePath& input) {
+  AssertBlockingAllowed();
+  wchar_t file_path[MAX_PATH];
+  if (!_wfullpath(file_path, input.value().c_str(), MAX_PATH))
+    return FilePath();
+  return FilePath(file_path);
+}
+
+bool DeleteFile(const FilePath& path, bool recursive) {
+  AssertBlockingAllowed();
+
+  if (path.empty())
+    return true;
+
+  if (path.value().length() >= MAX_PATH)
+    return false;
+
+  // Handle any path with wildcards.
+  if (path.BaseName().value().find_first_of(L"*?") !=
+      FilePath::StringType::npos) {
+    return DeleteFileRecursive(path.DirName(), path.BaseName().value(),
+                               recursive);
+  }
+  DWORD attr = GetFileAttributes(path.value().c_str());
+  // We're done if we can't find the path.
+  if (attr == INVALID_FILE_ATTRIBUTES)
+    return true;
+  // We may need to clear the read-only bit.
+  if ((attr & FILE_ATTRIBUTE_READONLY) &&
+      !SetFileAttributes(path.value().c_str(),
+                          attr & ~FILE_ATTRIBUTE_READONLY)) {
+    return false;
+  }
+  // Directories are handled differently if they're recursive.
+  if (!(attr & FILE_ATTRIBUTE_DIRECTORY))
+    return !!::DeleteFile(path.value().c_str());
+  // Handle a simple, single file delete.
+  if (!recursive || DeleteFileRecursive(path, L"*", true))
+    return !!RemoveDirectory(path.value().c_str());
+
+  return false;
+}
+
+bool DeleteFileAfterReboot(const FilePath& path) {
+  AssertBlockingAllowed();
+
+  if (path.value().length() >= MAX_PATH)
+    return false;
+
+  return MoveFileEx(path.value().c_str(), NULL,
+                    MOVEFILE_DELAY_UNTIL_REBOOT |
+                        MOVEFILE_REPLACE_EXISTING) != FALSE;
+}
+
+bool ReplaceFile(const FilePath& from_path,
+                 const FilePath& to_path,
+                 File::Error* error) {
+  AssertBlockingAllowed();
+  // Try a simple move first.  It will only succeed when |to_path| doesn't
+  // already exist.
+  if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
+    return true;
+  File::Error move_error = File::OSErrorToFileError(GetLastError());
+
+  // Try the full-blown replace if the move fails, as ReplaceFile will only
+  // succeed when |to_path| does exist. When writing to a network share, we may
+  // not be able to change the ACLs. Ignore ACL errors then
+  // (REPLACEFILE_IGNORE_MERGE_ERRORS).
+  if (::ReplaceFile(to_path.value().c_str(), from_path.value().c_str(), NULL,
+                    REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
+    return true;
+  }
+  // In the case of FILE_ERROR_NOT_FOUND from ReplaceFile, it is likely that
+  // |to_path| does not exist. In this case, the more relevant error comes
+  // from the call to MoveFile.
+  if (error) {
+    File::Error replace_error = File::OSErrorToFileError(GetLastError());
+    *error = replace_error == File::FILE_ERROR_NOT_FOUND ? move_error
+                                                         : replace_error;
+  }
+  return false;
+}
+
+bool CopyDirectory(const FilePath& from_path,
+                   const FilePath& to_path,
+                   bool recursive) {
+  return DoCopyDirectory(from_path, to_path, recursive, false);
+}
+
+bool CopyDirectoryExcl(const FilePath& from_path,
+                       const FilePath& to_path,
+                       bool recursive) {
+  return DoCopyDirectory(from_path, to_path, recursive, true);
 }
 
 bool PathExists(const FilePath& path) {
@@ -774,34 +821,7 @@ int GetMaximumPathComponentLength(const FilePath& path) {
 }
 
 bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
-  AssertBlockingAllowed();
-  if (from_path.ReferencesParent() || to_path.ReferencesParent())
-    return false;
-
-  // NOTE: I suspect we could support longer paths, but that would involve
-  // analyzing all our usage of files.
-  if (from_path.value().length() >= MAX_PATH ||
-      to_path.value().length() >= MAX_PATH) {
-    return false;
-  }
-
-  // Unlike the posix implementation that copies the file manually and discards
-  // the ACL bits, CopyFile() copies the complete SECURITY_DESCRIPTOR and access
-  // bits, which is usually not what we want. We can't do much about the
-  // SECURITY_DESCRIPTOR but at least remove the read only bit.
-  const wchar_t* dest = to_path.value().c_str();
-  if (!::CopyFile(from_path.value().c_str(), dest, false)) {
-    // Copy failed.
-    return false;
-  }
-  DWORD attrs = GetFileAttributes(dest);
-  if (attrs == INVALID_FILE_ATTRIBUTES) {
-    return false;
-  }
-  if (attrs & FILE_ATTRIBUTE_READONLY) {
-    SetFileAttributes(dest, attrs & ~FILE_ATTRIBUTE_READONLY);
-  }
-  return true;
+  return DoCopyFile(from_path, to_path, false);
 }
 
 bool SetNonBlocking(int fd) {
