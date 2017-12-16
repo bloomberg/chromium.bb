@@ -17,10 +17,10 @@ var allTests = [
     button1.addEventListener(EventType.HOVER, function() {
       x = button2.location.left + button2.location.width / 2;
       y = button2.location.top + button2.location.height / 2;
-      button2.addEventListener(EventType.ALERT, function() {
+      button2.addEventListener(EventType.CLICKED, function() {
         chrome.test.succeed();
       }, true);
-      webArea.hitTest(x, y, EventType.ALERT);
+      webArea.hitTest(x, y, EventType.CLICKED);
     }, true);
     webArea.hitTest(x, y, EventType.HOVER);
   }
