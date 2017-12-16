@@ -16,7 +16,10 @@ import("//third_party/WebKit/Source/platform/platform_generated.gni")
 # Most targets in this file are private actions so use that as the default.
 visibility = [ ":*" ]
 
-blink_platform_neon_files = [ "graphics/cpu/arm/WebGLImageConversionNEON.h" ]
+blink_platform_neon_files = [
+  "audio/cpu/arm/VectorMathNEON.h",
+  "graphics/cpu/arm/WebGLImageConversionNEON.h",
+]
 
 blink_platform_msa_files = [ "graphics/cpu/mips/WebGLImageConversionMSA.h" ]
 
@@ -470,6 +473,7 @@ jumbo_component("platform") {
     "audio/VectorMath.h",
     "audio/VectorMathScalar.h",
     "audio/android/FFTFrameOpenMAXDLAndroid.cpp",
+    "audio/cpu/arm/VectorMathNEON.h",
     "audio/cpu/x86/VectorMathSSE.h",
     "audio/cpu/x86/VectorMathX86.h",
     "audio/ffmpeg/FFTFrameFFMPEG.cpp",
