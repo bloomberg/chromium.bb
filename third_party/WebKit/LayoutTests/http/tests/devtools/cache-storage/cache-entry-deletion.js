@@ -5,6 +5,9 @@
 (async function() {
   TestRunner.addResult(`Tests that cache entry data is correctly deleted by the inspector.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
+
   await TestRunner.showPanel('resources');
 
   var cacheStorageModel = TestRunner.mainTarget.model(SDK.ServiceWorkerCacheModel);

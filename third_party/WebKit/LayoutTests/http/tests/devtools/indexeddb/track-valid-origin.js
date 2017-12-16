@@ -5,6 +5,8 @@
 (async function() {
   TestRunner.addResult(`Tests that IndexedDB live update only tracks valid security origins.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
 
   let indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);
   let invalidOrigins = ['http', 'test://fake', 'test://fake.origin.com', 'chrome://test'];

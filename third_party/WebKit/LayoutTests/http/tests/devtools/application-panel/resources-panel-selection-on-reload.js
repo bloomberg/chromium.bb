@@ -5,6 +5,9 @@
 (async function() {
   TestRunner.addResult(`Tests Application Panel response to a main frame navigation.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
+
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('resources');
 

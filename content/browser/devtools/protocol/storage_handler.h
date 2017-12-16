@@ -32,9 +32,10 @@ class StorageHandler : public DevToolsDomainHandler,
   Response Disable() override;
 
   // content::protocol::storage::Backend
-  Response ClearDataForOrigin(
+  void ClearDataForOrigin(
       const std::string& origin,
-      const std::string& storage_types) override;
+      const std::string& storage_types,
+      std::unique_ptr<ClearDataForOriginCallback> callback) override;
   void GetUsageAndQuota(
       const String& origin,
       std::unique_ptr<GetUsageAndQuotaCallback> callback) override;

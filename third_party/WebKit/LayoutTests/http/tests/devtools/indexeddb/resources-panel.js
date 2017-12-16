@@ -5,6 +5,9 @@
 (async function() {
   TestRunner.addResult(`Tests IndexedDB tree element on resources panel.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
+
   await TestRunner.loadModule('console_test_runner');
 
   var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
