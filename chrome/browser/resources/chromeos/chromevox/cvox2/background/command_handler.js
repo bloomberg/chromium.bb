@@ -100,8 +100,11 @@ CommandHandler.onCommand = function(command) {
           Msgs.getMsg('pass_through_key'), cvox.QueueMode.QUEUE);
       return true;
     case 'showKbExplorerPage':
-      var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
-      chrome.tabs.create(explorerPage);
+      var explorerPage = {
+        url: 'chromevox/background/kbexplorer.html',
+        type: 'panel'
+      };
+      chrome.windows.create(explorerPage);
       break;
     case 'decreaseTtsRate':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
