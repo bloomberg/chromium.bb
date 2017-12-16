@@ -41,6 +41,7 @@ namespace chromeos {
 
 class AccessibilityExtensionLoader;
 class AccessibilityHighlightManager;
+class ScopedKeyboardStateSetter;
 class SelectToSpeakEventHandler;
 class SwitchAccessEventHandler;
 
@@ -448,6 +449,8 @@ class AccessibilityManager
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ash::ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
+
+  std::unique_ptr<ScopedKeyboardStateSetter> keyboard_state_setter_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

@@ -18,8 +18,10 @@ goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
+var Mod = constants.ModifierFlag;
 var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
+var StateType = chrome.automation.StateType;
 
 /**
  * Handles ChromeVox Next commands.
@@ -238,6 +240,11 @@ CommandHandler.onCommand = function(command) {
     return true;
 
   var current = ChromeVoxState.instance.currentRange_;
+
+  // Allow edit commands first.
+  if (!CommandHandler.onEditCommand_(current, command))
+    return false;
+
   var dir = Dir.FORWARD;
   var pred = null;
   var predErrorMsg = undefined;
@@ -901,6 +908,58 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
   } else {
     imageNode.getImageData(0, 0);
   }
+};
+
+/**
+ * Provides a partial mapping from ChromeVox key combinations to
+ * Search-as-a-function key as seen in Chrome OS documentation.
+ * @param {cursors.Range} current
+ * @param {string} command
+ * @return {boolean} True if the command should propagate.
+ * @private
+ */
+CommandHandler.onEditCommand_ = function(current, command) {
+  if (cvox.ChromeVox.isStickyModeOn() || !current || !current.start ||
+      !current.start.node || !current.start.node.state[StateType.EDITABLE])
+    return true;
+
+  switch (command) {
+    case 'previousCharacter':
+      BackgroundKeyboardHandler.sendKeyPress(36, 'Home', Mod.SHIFT);
+      break;
+    case 'nextCharacter':
+      BackgroundKeyboardHandler.sendKeyPress(35, 'End', Mod.SHIFT);
+      break;
+    case 'previousWord':
+      BackgroundKeyboardHandler.sendKeyPress(
+          36, 'Home', Mod.SHIFT | Mod.CONTROL);
+      break;
+    case 'nextWord':
+      BackgroundKeyboardHandler.sendKeyPress(
+          35, 'End', Mod.SHIFT | Mod.CONTROL);
+      break;
+    case 'previousObject':
+      BackgroundKeyboardHandler.sendKeyPress(36, 'Home');
+      break;
+    case 'nextObject':
+      BackgroundKeyboardHandler.sendKeyPress(35, 'End');
+      break;
+    case 'previousLine':
+      BackgroundKeyboardHandler.sendKeyPress(33, 'PageUp');
+      break;
+    case 'nextLine':
+      BackgroundKeyboardHandler.sendKeyPress(34, 'PageDown');
+      break;
+    case 'jumpToTop':
+      BackgroundKeyboardHandler.sendKeyPress(36, 'Home', Mod.CONTROL);
+      break;
+    case 'jumpToBottom':
+      BackgroundKeyboardHandler.sendKeyPress(35, 'End', Mod.CONTROL);
+      break;
+    default:
+      return true;
+  }
+  return false;
 };
 
 /**

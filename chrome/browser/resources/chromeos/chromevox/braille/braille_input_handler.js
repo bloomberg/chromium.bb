@@ -421,14 +421,6 @@ cvox.BrailleInputHandler.prototype = {
     chrome.virtualKeyboardPrivate.getKeyboardConfig(function(config) {
       // Use the virtual keyboard API instead of the IME key event API
       // so that these keys work even if the Braille IME is not active.
-
-      // The virtual keyboard private api fails silently if the a11y keyboard
-      // isn't enabled in settings. Let the user know.
-      if (!config.a11ymode) {
-        new Output().format('@enable_virtual_keyboard').go();
-        return;
-      }
-
       var keyName = /** @type {string} */ (event.standardKeyCode);
       var numericCode = cvox.BrailleKeyEvent.keyCodeToLegacyCode(keyName);
       if (!goog.isDef(numericCode))

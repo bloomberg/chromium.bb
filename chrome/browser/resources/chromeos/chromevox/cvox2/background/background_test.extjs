@@ -449,6 +449,10 @@ TEST_F('BackgroundTest', 'EarconsForControls', function() {
           .call(doCmd('nextObject'))
           .expectSpeech('Edit text')
           .expectEarcon(cvox.Earcon.EDITABLE_TEXT)
+
+      // Editable text Search re-mappings are in effect.
+          .call(doCmd('toggleStickyMode'))
+          .expectSpeech('Sticky mode enabled')
           .call(doCmd('nextObject'))
           .expectSpeech('List box')
           .expectEarcon(cvox.Earcon.LISTBOX)

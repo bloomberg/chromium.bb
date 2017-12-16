@@ -8,7 +8,11 @@
 
 goog.provide('BrailleCommandHandler');
 
+goog.require('BackgroundKeyboardHandler');
+
 goog.scope(function() {
+var Mod = constants.ModifierFlag;
+
 /**
  * Maps a dot pattern to a command.
  * @type {!Object<number, string>}
@@ -85,6 +89,46 @@ BrailleCommandHandler.getDots = function(command) {
       return key;
   }
   return 0;
+};
+
+/**
+ * Customizes ChromeVox commands when issued from a braille display while within
+ * editable text.
+ * @param {string} command
+ * @return {boolean} True if the command should propagate.
+ */
+BrailleCommandHandler.onEditCommand = function(command) {
+  switch (command) {
+    case 'previousCharacter':
+      BackgroundKeyboardHandler.sendKeyPress(37, 'ArrowLeft');
+      break;
+    case 'nextCharacter':
+      BackgroundKeyboardHandler.sendKeyPress(39, 'ArrowRight');
+      break;
+    case 'previousWord':
+      BackgroundKeyboardHandler.sendKeyPress(37, 'ArrowLeft', Mod.CONTROL);
+      break;
+    case 'nextWord':
+      BackgroundKeyboardHandler.sendKeyPress(39, 'ArrowRight', Mod.CONTROL);
+      break;
+    case 'previousObject':
+    case 'previousLine':
+      BackgroundKeyboardHandler.sendKeyPress(38, 'ArrowUp');
+      break;
+    case 'nextObject':
+    case 'nextLine':
+      BackgroundKeyboardHandler.sendKeyPress(40, 'ArrowDown');
+      break;
+    case 'previousGroup':
+      BackgroundKeyboardHandler.sendKeyPress(38, 'ArrowUp', Mod.CONTROL);
+      break;
+    case 'nextGroup':
+      BackgroundKeyboardHandler.sendKeyPress(40, 'ArrowDown', Mod.CONTROL);
+      break;
+    default:
+      return true;
+  }
+  return false;
 };
 
 /**
