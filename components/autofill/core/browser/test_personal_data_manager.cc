@@ -26,8 +26,7 @@ void TestPersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
 std::string TestPersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
   num_times_save_imported_profile_called_++;
-  AddProfile(imported_profile);
-  return imported_profile.guid();
+  return PersonalDataManager::SaveImportedProfile(imported_profile);
 }
 
 std::string TestPersonalDataManager::SaveImportedCreditCard(
@@ -107,6 +106,68 @@ const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
     return PersonalDataManager::GetDefaultCountryCodeForNewAddress();
 
   return default_country_code_;
+}
+
+void TestPersonalDataManager::SetProfiles(
+    std::vector<AutofillProfile>* profiles) {
+  // Copy all the profiles. Called by functions like
+  // PersonalDataManager::SaveImportedProfile, which impact metrics.
+  ClearProfiles();
+  for (const auto& profile : *profiles)
+    AddProfile(profile);
+}
+
+void TestPersonalDataManager::LoadProfiles() {
+  // Overridden to avoid a trip to the database. This should be a no-op except
+  // for the side-effect of logging the profile count.
+  pending_profiles_query_ = 123;
+  pending_server_profiles_query_ = 124;
+  {
+    std::vector<std::unique_ptr<AutofillProfile>> profiles;
+    web_profiles_.swap(profiles);
+    std::unique_ptr<WDTypedResult> result = std::make_unique<
+        WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
+        AUTOFILL_PROFILES_RESULT, std::move(profiles));
+    OnWebDataServiceRequestDone(pending_profiles_query_, std::move(result));
+  }
+  {
+    std::vector<std::unique_ptr<AutofillProfile>> profiles;
+    server_profiles_.swap(profiles);
+    std::unique_ptr<WDTypedResult> result = std::make_unique<
+        WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
+        AUTOFILL_PROFILES_RESULT, std::move(profiles));
+    OnWebDataServiceRequestDone(pending_server_profiles_query_,
+                                std::move(result));
+  }
+}
+
+void TestPersonalDataManager::LoadCreditCards() {
+  // Overridden to avoid a trip to the database.
+  pending_creditcards_query_ = 125;
+  pending_server_creditcards_query_ = 126;
+  {
+    std::vector<std::unique_ptr<CreditCard>> credit_cards;
+    local_credit_cards_.swap(credit_cards);
+    std::unique_ptr<WDTypedResult> result =
+        std::make_unique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
+            AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
+    OnWebDataServiceRequestDone(pending_creditcards_query_, std::move(result));
+  }
+  {
+    std::vector<std::unique_ptr<CreditCard>> credit_cards;
+    server_credit_cards_.swap(credit_cards);
+    std::unique_ptr<WDTypedResult> result =
+        std::make_unique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
+            AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
+    OnWebDataServiceRequestDone(pending_server_creditcards_query_,
+                                std::move(result));
+  }
+}
+
+bool TestPersonalDataManager::IsAutofillEnabled() const {
+  // Return the value of autofill_enabled_ if it has been set, otherwise fall
+  // back to the normal behavior of checking the pref_service.
+  return autofill_enabled_.value_or(PersonalDataManager::IsAutofillEnabled());
 }
 
 std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()

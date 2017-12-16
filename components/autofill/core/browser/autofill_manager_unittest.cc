@@ -4445,7 +4445,7 @@ TEST_F(AutofillManagerTest, FormSubmittedPossibleTypesTwoSubmissions) {
   // The second submission should now have data by which to infer types.
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   FormSubmitted(response_data);
-  ASSERT_EQ(2u, personal_data_.GetProfiles().size());
+  ASSERT_EQ(1u, personal_data_.GetProfiles().size());
 }
 
 // Test that the form signature for an uploaded form always matches the form

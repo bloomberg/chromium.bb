@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -38,6 +39,10 @@ class TestPersonalDataManager : public PersonalDataManager {
   std::vector<AutofillProfile*> GetProfiles() const override;
   std::vector<CreditCard*> GetCreditCards() const override;
   const std::string& GetDefaultCountryCodeForNewAddress() const override;
+  void SetProfiles(std::vector<AutofillProfile>* profiles) override;
+  void LoadProfiles() override;
+  void LoadCreditCards() override;
+  bool IsAutofillEnabled() const override;
   std::string CountryCodeForCurrentTimezone() const override;
 
   // Unique to TestPersonalDataManager:
@@ -69,10 +74,15 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_imported_profile_called_;
   }
 
+  void SetAutofillEnabled(bool autofill_enabled) {
+    autofill_enabled_ = autofill_enabled;
+  }
+
  private:
   std::string timezone_country_code_;
   std::string default_country_code_;
   int num_times_save_imported_profile_called_ = 0;
+  base::Optional<bool> autofill_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
