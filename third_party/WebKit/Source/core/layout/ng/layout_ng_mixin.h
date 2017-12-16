@@ -75,8 +75,6 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
 
   const NGBaseline* FragmentBaseline(NGBaselineAlgorithmType) const;
 
-  void UpdateMargins(const NGConstraintSpace&);
-
   std::unique_ptr<NGInlineNodeData> ng_inline_node_data_;
 
   scoped_refptr<NGLayoutResult> cached_result_;

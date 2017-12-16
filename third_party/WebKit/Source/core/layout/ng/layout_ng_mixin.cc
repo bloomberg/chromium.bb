@@ -158,12 +158,6 @@ void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info,
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::UpdateMargins(
-    const NGConstraintSpace& constraint_space) {
-  Base::SetMargin(ComputePhysicalMargins(constraint_space, Base::StyleRef()));
-}
-
-template <typename Base>
 bool LayoutNGMixin<Base>::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
