@@ -382,11 +382,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             @Override
             public void paste() {
                 SelectionPopupController.this.paste();
+                mWebContents.dismissTextHandles();
             }
 
             @Override
             public void pasteAsPlainText() {
                 SelectionPopupController.this.pasteAsPlainText();
+                mWebContents.dismissTextHandles();
             }
 
             @Override
@@ -748,14 +750,17 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             selectAll();
         } else if (id == R.id.select_action_menu_cut) {
             cut();
+            mode.finish();
         } else if (id == R.id.select_action_menu_copy) {
             copy();
             mode.finish();
         } else if (id == R.id.select_action_menu_paste) {
             paste();
+            mode.finish();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && id == R.id.select_action_menu_paste_as_plain_text) {
             pasteAsPlainText();
+            mode.finish();
         } else if (id == R.id.select_action_menu_share) {
             share();
             mode.finish();
