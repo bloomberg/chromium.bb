@@ -491,9 +491,8 @@ namespace developerPrivate {
   callback ItemsInfoCallback = void (ItemInfo[] result);
   callback ProfileInfoCallback = void (ProfileInfo info);
   callback GetProjectsInfoCallback = void (ProjectInfo[] result);
-  callback PathCallback = void (DOMString path);
   callback PackCallback = void (PackDirectoryResponse response);
-  callback VoidCallback = void();
+  callback StringCallback = void (DOMString string);
   callback RequestFileSourceCallback =
       void (RequestFileSourceResponse response);
   callback LoadErrorCallback = void (optional LoadError error);
@@ -516,6 +515,11 @@ namespace developerPrivate {
     // |callback| : Called with the result.
     static void getExtensionInfo(DOMString id,
                                  optional ExtensionInfoCallback callback);
+
+    // Returns the size of a particular extension on disk (already formatted).
+    // |id| : The id of the extension.
+    // |callback| : Called with the result.
+    static void getExtensionSize(DOMString id, StringCallback callback);
 
     // Returns information of all the extensions and apps installed.
     // |includeDisabled| : include disabled items.
@@ -567,7 +571,7 @@ namespace developerPrivate {
     // |directory| : The directory to load the extension from.
     static void loadDirectory(
         [instanceOf=DirectoryEntry] object directory,
-        PathCallback callback);
+        StringCallback callback);
 
     // Open Dialog to browse to an entry.
     // |selectType| : Select a file or a folder.
@@ -576,7 +580,7 @@ namespace developerPrivate {
     // |callback| : called with selected item's path.
     static void choosePath(SelectType selectType,
                            FileType fileType,
-                           PathCallback callback);
+                           StringCallback callback);
 
     // Pack an extension.
     // |rootPath| : The path of the extension.

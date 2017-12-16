@@ -85,6 +85,7 @@
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace extensions {
 
@@ -657,6 +658,48 @@ void DeveloperPrivateGetExtensionInfoFunction::OnInfosGenerated(
   DCHECK_LE(1u, list.size());
   Respond(list.empty() ? Error(kNoSuchExtensionError)
                        : OneArgument(list[0].ToValue()));
+}
+
+DeveloperPrivateGetExtensionSizeFunction::
+    DeveloperPrivateGetExtensionSizeFunction() {}
+
+DeveloperPrivateGetExtensionSizeFunction::
+    ~DeveloperPrivateGetExtensionSizeFunction() {}
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateGetExtensionSizeFunction::Run() {
+  std::unique_ptr<developer::GetExtensionSize::Params> params(
+      developer::GetExtensionSize::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const Extension* extension = GetExtensionById(params->id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  // TODO(dpapad): Share this logic with
+  // chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.cc.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&base::ComputeDirectorySize, extension->path()),
+      base::BindOnce(
+          &DeveloperPrivateGetExtensionSizeFunction::OnSizeCalculated,
+          this /* refcounted */));
+
+  return RespondLater();
+}
+
+void DeveloperPrivateGetExtensionSizeFunction::OnSizeCalculated(
+    int64_t size_in_bytes) {
+  base::string16 response;
+
+  const int one_mebibyte_in_bytes = 1024 * 1024;
+  if (size_in_bytes < one_mebibyte_in_bytes) {
+    response = l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_SMALL_LABEL);
+  } else {
+    response =
+        ui::FormatBytesWithUnits(size_in_bytes, ui::DATA_UNITS_MEBIBYTE, true);
+  }
+  Respond(OneArgument(std::make_unique<base::Value>(response)));
 }
 
 DeveloperPrivateGetItemsInfoFunction::DeveloperPrivateGetItemsInfoFunction() {}

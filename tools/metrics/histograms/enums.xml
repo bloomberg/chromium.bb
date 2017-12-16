@@ -14271,6 +14271,7 @@ Called by update_net_error_codes.py.-->
   <int value="1205" label="METRICSPRIVATE_RECORDENUMERATIONVALUE"/>
   <int value="1206" label="DEVELOPERPRIVATE_NOTIFYDRAGINSTALLINPROGRESS"/>
   <int value="1207" label="AUTOTESTPRIVATE_GETPRINTERLIST"/>
+  <int value="1208" label="DEVELOPERPRIVATE_GETEXTENSIONSIZE"/>
 </enum>
 
 <enum name="ExtensionIconState">
