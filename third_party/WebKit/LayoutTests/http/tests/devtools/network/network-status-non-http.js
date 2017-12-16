@@ -16,7 +16,7 @@
 
       function loadResources()
       {
-          addScriptElement("../../inspector/network-test.js");
+          addScriptElement("network-status-non-http.js");
           addScriptElement("non-existent-file.js");
 
           // Test that data-url doesn't appear in network panel.
@@ -25,7 +25,7 @@
   `);
 
   await TestRunner.NetworkAgent.setCacheDisabled(true);
-  var requestsToWatch = /\/network-test\.js$|\/non-existent-file.js$|^data:application\/javascript,|/;
+  var requestsToWatch = /\/network-status-non-http\.js$|\/non-existent-file.js$|^data:application\/javascript,|/;
   var seenRequests = 0;
 
   function dumpRequests() {

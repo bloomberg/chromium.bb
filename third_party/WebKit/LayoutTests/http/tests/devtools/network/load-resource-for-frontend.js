@@ -32,16 +32,16 @@
 
   TestRunner.runTestSuite([
     function testNetworkResourceNonCached(next) {
-      testLoadForURL('http://localhost:8080/inspector/network/resources/resource.php', undefined, next);
+      testLoadForURL('http://localhost:8080/devtools/network/resources/resource.php', undefined, next);
     },
 
     function testNetworkResourceCached(next) {
-      testLoadForURL('http://localhost:8080/inspector/network/resources/resource.php?cached=1', undefined, next);
+      testLoadForURL('http://localhost:8080/devtools/network/resources/resource.php?cached=1', undefined, next);
     },
 
     function testNetworkResourceIfModifiedSince(next) {
       testLoadForURL(
-          'http://localhost:8080/inspector/network/resources/resource.php?cached=1',
+          'http://localhost:8080/devtools/network/resources/resource.php?cached=1',
           {'if-modified-since': new Date().toUTCString()}, next);
     },
 
@@ -51,10 +51,10 @@
 
     function testResourceWithCookie(next) {
       NetworkTestRunner.makeSimpleXHR(
-          'GET', 'http://127.0.0.1:8000/inspector/network/resources/set-cookie.php', false, callback);
+          'GET', 'http://127.0.0.1:8000/devtools/network/resources/set-cookie.php', false, callback);
 
       function callback() {
-        testLoadForURL('http://127.0.0.1:8000/inspector/network/resources/print-cookie.php', undefined, next);
+        testLoadForURL('http://127.0.0.1:8000/devtools/network/resources/print-cookie.php', undefined, next);
       }
     }
   ]);

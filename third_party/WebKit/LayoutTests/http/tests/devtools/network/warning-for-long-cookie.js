@@ -9,11 +9,11 @@
   await TestRunner.showPanel('network');
 
   NetworkTestRunner.makeFetch(
-      'http://127.0.0.1:8000/inspector/network/resources/set-cookie.php?length=4096', {}, step1);
+      'http://127.0.0.1:8000/devtools/network/resources/set-cookie.php?length=4096', {}, step1);
 
   function step1() {
     NetworkTestRunner.makeFetch(
-        'http://127.0.0.1:8000/inspector/network/resources/set-cookie.php?length=4097', {}, dumpMessages);
+        'http://127.0.0.1:8000/devtools/network/resources/set-cookie.php?length=4097', {}, dumpMessages);
   }
 
   function dumpMessages() {
