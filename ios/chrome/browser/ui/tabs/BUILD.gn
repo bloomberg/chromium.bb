@@ -47,6 +47,8 @@ source_set("tabs") {
     "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:new_fullscreen",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/util",
     "//ios/third_party/material_components_ios",

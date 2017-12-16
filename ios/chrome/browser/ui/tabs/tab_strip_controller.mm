@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -30,6 +31,9 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
+#include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#include "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
@@ -192,6 +196,10 @@ UIColor* BackgroundColor() {
 
   // YES if this tab strip is representing an incognito TabModel.
   BOOL _isIncognito;
+
+  // The disabler that prevents the toolbar from being scrolled offscreen during
+  // drags.
+  std::unique_ptr<ScopedFullscreenDisabler> _fullscreenDisabler;
 
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _buttonNewTabInteraction;
@@ -714,6 +722,13 @@ UIColor* BackgroundColor() {
     [self installAutoscrollTimerIfNeeded];
   else
     [self removeAutoscrollTimer];
+
+  // Disable fullscreen during drags.
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    _fullscreenDisabler = base::MakeUnique<ScopedFullscreenDisabler>(
+        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+            _tabModel.browserState));
+  }
 }
 
 - (void)continueDrag:(UILongPressGestureRecognizer*)gesture {
@@ -741,6 +756,10 @@ UIColor* BackgroundColor() {
 - (void)endDrag:(UILongPressGestureRecognizer*)gesture {
   DCHECK([[gesture view] isKindOfClass:[TabView class]]);
 
+  // Stop disabling fullscreen.
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+    _fullscreenDisabler = nullptr;
+
   NSUInteger fromIndex = [self modelIndexForTabView:_draggedTab];
   // TODO(rohitrao): We're seeing crashes where fromIndex is NSNotFound,
   // indicating that the dragged tab is no longer in the TabModel.  This could
@@ -766,6 +785,10 @@ UIColor* BackgroundColor() {
 
 - (void)cancelDrag:(UILongPressGestureRecognizer*)gesture {
   DCHECK([[gesture view] isKindOfClass:[TabView class]]);
+
+  // Stop disabling fullscreen.
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+    _fullscreenDisabler = nullptr;
 
   // Reset drag state and trigger a relayout to moved tabs back into their
   // correct positions.
