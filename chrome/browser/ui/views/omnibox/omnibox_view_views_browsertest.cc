@@ -462,6 +462,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, TextElideStatus) {
             gfx::NO_ELIDE);
 }
 
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FragmentUnescapedForDisplay) {
+  OmniboxView* view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("https://www.google.com/#%E2%98%83"));
+
+  EXPECT_EQ(view->GetText(),
+            base::UTF8ToUTF16("https://www.google.com/#\u2603"));
+}
+
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
