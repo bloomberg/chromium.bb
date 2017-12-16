@@ -50,6 +50,7 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
+#include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/media/media_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -1592,6 +1593,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Callbacks that we should call when we get a routing token.
   std::vector<media::RoutingTokenCallback> pending_routing_token_callbacks_;
+
+  InputTargetClientImpl input_target_client_impl_;
 
   RenderThreadImpl::RendererMemoryMetrics peak_memory_metrics_;
 
