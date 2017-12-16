@@ -1457,6 +1457,21 @@ static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
   return tx_size_2d[tx_size];
 }
 
+static INLINE TX_SIZE av1_get_adjusted_tx_size(TX_SIZE tx_size) {
+#if CONFIG_TX64X64
+  if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64) {
+    return TX_32X32;
+  }
+  if (tx_size == TX_16X64) {
+    return TX_16X32;
+  }
+  if (tx_size == TX_64X16) {
+    return TX_32X16;
+  }
+#endif  // CONFIG_TX64X64
+  return tx_size;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

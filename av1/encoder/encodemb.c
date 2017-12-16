@@ -161,7 +161,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #endif
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
-  const TX_SIZE qm_tx_size = get_qm_tx_size(tx_size);
+  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
   const qm_val_t *iqmatrix =
       IS_2D_TRANSFORM(tx_type)
@@ -505,7 +505,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   const int diff_stride = block_size_wide[plane_bsize];
 #if CONFIG_AOM_QM
   int seg_id = mbmi->segment_id;
-  const TX_SIZE qm_tx_size = get_qm_tx_size(tx_size);
+  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
   const qm_val_t *qmatrix =
       IS_2D_TRANSFORM(tx_type) ? pd->seg_qmatrix[seg_id][qm_tx_size]

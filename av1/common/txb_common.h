@@ -112,26 +112,17 @@ static INLINE int av1_get_eob_pos_ctx(const TX_TYPE tx_type,
 }
 
 static INLINE int get_txb_bwl(TX_SIZE tx_size) {
-#if CONFIG_TX64X64
-  if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64)
-    tx_size = TX_32X32;
-#endif
+  tx_size = av1_get_adjusted_tx_size(tx_size);
   return tx_size_wide_log2[tx_size];
 }
 
 static INLINE int get_txb_wide(TX_SIZE tx_size) {
-#if CONFIG_TX64X64
-  if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64)
-    tx_size = TX_32X32;
-#endif
+  tx_size = av1_get_adjusted_tx_size(tx_size);
   return tx_size_wide[tx_size];
 }
 
 static INLINE int get_txb_high(TX_SIZE tx_size) {
-#if CONFIG_TX64X64
-  if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64)
-    tx_size = TX_32X32;
-#endif
+  tx_size = av1_get_adjusted_tx_size(tx_size);
   return tx_size_high[tx_size];
 }
 

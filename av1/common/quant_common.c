@@ -467,7 +467,7 @@ void aom_qm_init(AV1_COMMON *cm) {
       current = 0;
       for (t = 0; t < TX_SIZES_ALL; ++t) {
         const int size = tx_size_2d[t];
-        const int qm_tx_size = get_qm_tx_size(t);
+        const int qm_tx_size = av1_get_adjusted_tx_size(t);
         if (q == NUM_QM_LEVELS - 1) {
           cm->gqmatrix[q][c][t] = NULL;
           cm->giqmatrix[q][c][t] = NULL;
