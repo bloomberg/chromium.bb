@@ -179,9 +179,7 @@ TEST(ResourceTest, RevalidationFailed) {
   EXPECT_FALSE(resource->IsCacheValidator());
   EXPECT_EQ(200, resource->GetResponse().HttpStatusCode());
   EXPECT_FALSE(resource->ResourceBuffer());
-  // TODO(hiroshige): Currently CachedMetadataHandler is cleared on
-  // revalidation. Enable this check once fixed. crbug.com/784875
-  // EXPECT_TRUE(resource->CacheHandler());
+  EXPECT_TRUE(resource->CacheHandler());
   EXPECT_NE(original_cache_handler, resource->CacheHandler());
   EXPECT_EQ(resource, GetMemoryCache()->ResourceForURL(url));
 
@@ -394,9 +392,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   revalidating_response.SetHTTPStatusCode(200);
   resource->ResponseReceived(revalidating_response, nullptr);
 
-  // TODO(hiroshige): Currently CachedMetadataHandler is cleared on
-  // revalidation. Enable this check once fixed. crbug.com/784875
-  // EXPECT_TRUE(resource->CacheHandler());
+  EXPECT_TRUE(resource->CacheHandler());
 
   const char kData2[4] = "xyz";
   resource->AppendData(kData2, 3);
