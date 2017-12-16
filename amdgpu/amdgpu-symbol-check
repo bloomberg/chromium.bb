@@ -45,6 +45,8 @@ amdgpu_cs_submit
 amdgpu_cs_submit_raw
 amdgpu_cs_syncobj_export_sync_file
 amdgpu_cs_syncobj_import_sync_file
+amdgpu_cs_syncobj_reset
+amdgpu_cs_syncobj_signal
 amdgpu_cs_syncobj_wait
 amdgpu_cs_wait_fences
 amdgpu_cs_wait_semaphore

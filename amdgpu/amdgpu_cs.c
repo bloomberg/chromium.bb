@@ -634,6 +634,24 @@ int amdgpu_cs_destroy_syncobj(amdgpu_device_handle dev,
 	return drmSyncobjDestroy(dev->fd, handle);
 }
 
+int amdgpu_cs_syncobj_reset(amdgpu_device_handle dev,
+			    const uint32_t *syncobjs, uint32_t syncobj_count)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjReset(dev->fd, syncobjs, syncobj_count);
+}
+
+int amdgpu_cs_syncobj_signal(amdgpu_device_handle dev,
+			     const uint32_t *syncobjs, uint32_t syncobj_count)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjSignal(dev->fd, syncobjs, syncobj_count);
+}
+
 int amdgpu_cs_syncobj_wait(amdgpu_device_handle dev,
 			   uint32_t *handles, unsigned num_handles,
 			   int64_t timeout_nsec, unsigned flags,
