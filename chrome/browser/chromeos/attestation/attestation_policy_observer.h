@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/attestation/attestation_constants.h"
 
 namespace policy {
 class CloudPolicyClient;
@@ -45,10 +46,10 @@ class AttestationPolicyObserver {
 
   ~AttestationPolicyObserver();
 
+  // Sets the retry limit in number of tries; useful in testing.
+  void set_retry_limit(int limit) { retry_limit_ = limit; }
   // Sets the retry delay in seconds; useful in testing.
-  void set_retry_delay(int retry_delay) {
-    retry_delay_ = retry_delay;
-  }
+  void set_retry_delay(int retry_delay) { retry_delay_ = retry_delay; }
 
  private:
   // Called when the attestation setting changes.
@@ -84,6 +85,9 @@ class AttestationPolicyObserver {
   // Marks a key as uploaded in the payload proto.
   void MarkAsUploaded(const std::string& key_payload);
 
+  // Handles failure of getting a certificate.
+  void HandleGetCertificateFailure(AttestationStatus status);
+
   // Reschedules a policy check (i.e. a call to Start) for a later time.
   // TODO(dkrahn): A better solution would be to wait for a dbus signal which
   // indicates the system is ready to process this task. See crbug.com/256845.
@@ -95,6 +99,7 @@ class AttestationPolicyObserver {
   AttestationFlow* attestation_flow_;
   std::unique_ptr<AttestationFlow> default_attestation_flow_;
   int num_retries_;
+  int retry_limit_;
   int retry_delay_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription> attestation_subscription_;

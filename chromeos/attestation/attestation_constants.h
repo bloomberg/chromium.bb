@@ -51,6 +51,16 @@ enum AttestationCertificateProfile {
   PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE = 7
 };
 
+// Status for operations involving an attestation server.
+enum AttestationStatus {
+  // Call successful
+  ATTESTATION_SUCCESS,
+  // Failure, no specific reason
+  ATTESTATION_UNSPECIFIED_FAILURE,
+  // Failure, sending a bad request to an attestation server
+  ATTESTATION_SERVER_BAD_REQUEST_FAILURE
+};
+
 enum PrivacyCAType {
   DEFAULT_PCA,    // The Google-operated Privacy CA.
   TEST_PCA,       // The test version of the Google-operated Privacy CA.

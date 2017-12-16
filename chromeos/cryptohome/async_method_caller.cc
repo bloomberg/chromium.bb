@@ -270,6 +270,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
         base::Bind(it->second.data_callback, return_status, return_data));
     data_callback_map_.erase(it);
   }
+
   // Registers a callback which is called when the result for AsyncXXX is ready.
   void RegisterAsyncCallback(Callback callback,
                              const char* error,

@@ -39,7 +39,20 @@ const int64_t kCertExpired = -20;
 
 void CertCallbackSuccess(const AttestationFlow::CertificateCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true, "fake_cert"));
+      FROM_HERE, base::BindOnce(callback, ATTESTATION_SUCCESS, "fake_cert"));
+}
+
+void CertCallbackUnspecifiedFailure(
+    const AttestationFlow::CertificateCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, ATTESTATION_UNSPECIFIED_FAILURE, ""));
+}
+
+void CertCallbackBadRequestFailure(
+    const AttestationFlow::CertificateCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(callback, ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
 }
 
 void StatusCallbackSuccess(
@@ -105,6 +118,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     AttestationPolicyObserver observer(&policy_client_,
                                        &cryptohome_client_,
                                        &attestation_flow_);
+    observer.set_retry_limit(3);
     observer.set_retry_delay(0);
     base::RunLoop().RunUntilIdle();
   }
@@ -131,6 +145,18 @@ TEST_F(AttestationPolicyObserverTest, FeatureDisabled) {
 
 TEST_F(AttestationPolicyObserverTest, UnregisteredPolicyClient) {
   policy_client_.SetDMToken("");
+  Run();
+}
+
+TEST_F(AttestationPolicyObserverTest, GetCertificateUnspecifiedFailure) {
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
+      .WillRepeatedly(WithArgs<4>(Invoke(CertCallbackUnspecifiedFailure)));
+  Run();
+}
+
+TEST_F(AttestationPolicyObserverTest, GetCertificateBadRequestFailure) {
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
+      .WillOnce(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
   Run();
 }
 

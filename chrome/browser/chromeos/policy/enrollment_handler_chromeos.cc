@@ -391,9 +391,9 @@ void EnrollmentHandlerChromeOS::StartAttestationBasedEnrollmentFlow() {
 }
 
 void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
-    bool success,
+    chromeos::attestation::AttestationStatus status,
     const std::string& pem_certificate_chain) {
-  if (success)
+  if (status == chromeos::attestation::ATTESTATION_SUCCESS)
     client_->RegisterWithCertificate(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
