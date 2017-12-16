@@ -17,7 +17,7 @@
               if (xhr.readyState === XMLHttpRequest.DONE)
                   callback();
           };
-          xhr.open("POST", "http://localhost:8000/inspector/network/resources/cors.cgi");
+          xhr.open("POST", "http://localhost:8000/devtools/network/resources/cors.cgi");
           xhr.setRequestHeader("Content-Type", "application/xml");
           xhr.send("<xml></xml>");
       }
@@ -40,9 +40,9 @@
   `);
 
   NetworkTestRunner.makeFetch(
-      'http://localhost:8080/inspector/network/resources/cors-redirect.cgi', {headers: {'x-test': 'redirect'}},
+      'http://localhost:8080/devtools/network/resources/cors-redirect.cgi', {headers: {'x-test': 'redirect'}},
       function() {});
-  NetworkTestRunner.makeFetch('http://localhost:8080/inspector/network/resources/cors-redirect.cgi', {}, disableCache);
+  NetworkTestRunner.makeFetch('http://localhost:8080/devtools/network/resources/cors-redirect.cgi', {}, disableCache);
 
   async function disableCache() {
     await TestRunner.NetworkAgent.setCacheDisabled(true);
