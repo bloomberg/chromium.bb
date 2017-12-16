@@ -666,7 +666,8 @@ void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(
     const WebSecurityOrigin& security_origin) {
   DCHECK(GetFrame());
   DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
-      world_id, security_origin.Get()->IsolatedCopy());
+      world_id,
+      security_origin.Get() ? security_origin.Get()->IsolatedCopy() : nullptr);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldContentSecurityPolicy(
