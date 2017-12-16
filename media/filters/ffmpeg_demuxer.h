@@ -105,6 +105,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   void enable_negative_timestamp_fixups() {
     fixup_negative_timestamps_ = true;
   }
+  void enable_chained_ogg_fixups() { fixup_chained_ogg_ = true; }
 
   // DemuxerStream implementation.
   Type type() const override;
@@ -197,6 +198,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
 
   std::string encryption_key_id_;
   bool fixup_negative_timestamps_;
+  bool fixup_chained_ogg_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxerStream);
 };

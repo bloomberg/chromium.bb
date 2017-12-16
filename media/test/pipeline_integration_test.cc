@@ -2632,13 +2632,11 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
   ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 }
 
-// Ensures audio-video playback with missing or negative timestamps fails softly
+// Ensures audio-video playback with missing or negative timestamps fails
 // instead of crashing.  See http://crbug.com/396864.
 TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
-  ASSERT_EQ(PIPELINE_OK, Start("double-bear.ogv", kUnreliableDuration));
-  Play();
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
-  ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
+  ASSERT_EQ(DEMUXER_ERROR_COULD_NOT_PARSE,
+            Start("double-bear.ogv", kUnreliableDuration));
 }
 
 // Tests that we signal ended even when audio runs longer than video track.

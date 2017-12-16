@@ -306,7 +306,8 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       is_enabled_(true),
       waiting_for_keyframe_(false),
       aborted_(false),
-      fixup_negative_timestamps_(false) {
+      fixup_negative_timestamps_(false),
+      fixup_chained_ogg_(false) {
   DCHECK(demuxer_);
 
   bool is_encrypted = false;
@@ -515,7 +516,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
   // Only allow negative timestamps past if we know they'll be fixed up by the
   // code paths below; otherwise they should be treated as a parse error.
-  if ((!fixup_negative_timestamps_ || last_packet_timestamp_ == kNoTimestamp) &&
+  if ((!fixup_chained_ogg_ || last_packet_timestamp_ == kNoTimestamp) &&
       buffer->timestamp() < base::TimeDelta()) {
     MEDIA_LOG(DEBUG, media_log_)
         << "FFmpegDemuxer: unfixable negative timestamp";
@@ -558,8 +559,10 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     // Fixing chained ogg is non-trivial, so for now just reuse the last good
     // timestamp.  The decoder will rewrite the timestamps to be sample accurate
     // later.  See http://crbug.com/396864.
-    if (fixup_negative_timestamps_ &&
-        buffer->timestamp() < last_packet_timestamp_) {
+    //
+    // Note: This will not work with codecs that have out of order frames like
+    // H.264 with b-frames, but luckily you can't put those in ogg files...
+    if (fixup_chained_ogg_ && buffer->timestamp() < last_packet_timestamp_) {
       buffer->set_timestamp(last_packet_timestamp_ +
                             (last_packet_duration_ != kNoTimestamp
                                  ? last_packet_duration_
@@ -1278,6 +1281,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   int detected_text_track_count = 0;
   int supported_audio_track_count = 0;
   int supported_video_track_count = 0;
+  bool has_opus_or_vorbis_audio = false;
+  bool needs_negative_timestamp_fixup = false;
   for (size_t i = 0; i < format_context->nb_streams; ++i) {
     AVStream* stream = format_context->streams[i];
     const AVCodecParameters* codec_parameters = stream->codecpar;
@@ -1411,12 +1416,29 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
     max_duration = std::max(max_duration, streams_[i]->duration());
 
-    const base::TimeDelta start_time =
+    base::TimeDelta start_time =
         ExtractStartTime(stream, start_time_estimates[i]);
-    streams_[i]->set_start_time(start_time);
-    if (start_time < start_time_) {
+
+    // Note: This value is used for seeking, so we must take the true value and
+    // not the one possibly clamped to zero below.
+    if (start_time < start_time_)
       start_time_ = start_time;
+
+    const bool is_opus_or_vorbis =
+        codec_id == AV_CODEC_ID_OPUS || codec_id == AV_CODEC_ID_VORBIS;
+    if (!has_opus_or_vorbis_audio)
+      has_opus_or_vorbis_audio = is_opus_or_vorbis;
+
+    if (codec_type == AVMEDIA_TYPE_AUDIO && start_time < base::TimeDelta() &&
+        is_opus_or_vorbis) {
+      needs_negative_timestamp_fixup = true;
+
+      // Fixup the seeking information to avoid selecting the audio stream
+      // simply because it has a lower starting time.
+      start_time = base::TimeDelta();
     }
+
+    streams_[i]->set_start_time(start_time);
   }
 
   RecordDetectedTrackTypeStats(detected_audio_track_count,
@@ -1445,10 +1467,16 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     max_duration = kInfiniteDuration;
   }
 
+  // Chained ogg is only allowed on single track audio only opus/vorbis media.
+  const bool needs_chained_ogg_fixup =
+      glue_->container() == container_names::CONTAINER_OGG &&
+      supported_audio_track_count == 1 && !supported_video_track_count &&
+      has_opus_or_vorbis_audio;
+
   // FFmpeg represents audio data marked as before the beginning of stream as
   // having negative timestamps.  This data must be discarded after it has been
   // decoded, not before since it is used to warmup the decoder.  There are
-  // currently two known cases for this: vorbis in ogg and opus in ogg and webm.
+  // currently two known cases for this: vorbis in ogg and opus.
   //
   // For API clarity, it was decided that the rest of the media pipeline should
   // not be exposed to negative timestamps.  Which means we need to rebase these
@@ -1461,33 +1489,20 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   // FFmpeg's use of negative timestamps for opus pre-skip is nonstandard, but
   // for more information on pre-skip see section 4.2 of the Ogg Opus spec:
   // https://tools.ietf.org/html/draft-ietf-codec-oggopus-08#section-4.2
-  for (const auto& stream : streams_) {
-    if (!stream || stream->type() != DemuxerStream::AUDIO)
-      continue;
-    const AVStream* audio_stream = stream->av_stream();
-    DCHECK(audio_stream);
-    if (audio_stream->codecpar->codec_id == AV_CODEC_ID_OPUS ||
-        (glue_->container() == container_names::CONTAINER_OGG &&
-         audio_stream->codecpar->codec_id == AV_CODEC_ID_VORBIS)) {
-      for (size_t i = 0; i < streams_.size(); ++i) {
-        if (!streams_[i])
-          continue;
-        streams_[i]->enable_negative_timestamp_fixups();
-
-        // Fixup the seeking information to avoid selecting the audio stream
-        // simply because it has a lower starting time.
-        if (streams_[i]->av_stream() == audio_stream &&
-            streams_[i]->start_time() < base::TimeDelta()) {
-          streams_[i]->set_start_time(base::TimeDelta());
-        }
-      }
+  if (needs_negative_timestamp_fixup || needs_chained_ogg_fixup) {
+    for (auto& stream : streams_) {
+      if (!stream)
+        continue;
+      if (needs_negative_timestamp_fixup)
+        stream->enable_negative_timestamp_fixups();
+      if (needs_chained_ogg_fixup)
+        stream->enable_chained_ogg_fixups();
     }
   }
 
   // If no start time could be determined, default to zero.
-  if (start_time_ == kInfiniteDuration) {
+  if (start_time_ == kInfiniteDuration)
     start_time_ = base::TimeDelta();
-  }
 
   // MPEG-4 B-frames cause grief for a simple container like AVI. Enable PTS
   // generation so we always get timestamps, see http://crbug.com/169570
