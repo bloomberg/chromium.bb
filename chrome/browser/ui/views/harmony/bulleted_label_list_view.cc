@@ -52,7 +52,8 @@ BulletedLabelListView::BulletedLabelListView(
   constexpr auto USE_PREF = views::GridLayout::USE_PREF;
   constexpr auto FIXED = views::GridLayout::FIXED;
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* columns = layout->AddColumnSet(kColumnSetId);
 
   int width = ChromeLayoutProvider::Get()->GetDistanceMetric(

@@ -336,7 +336,8 @@ void BookmarkEditorView::Init() {
     new_folder_button_->SetEnabled(false);
   }
 
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   const int labels_column_set_id = 0;

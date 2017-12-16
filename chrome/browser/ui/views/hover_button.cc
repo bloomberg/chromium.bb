@@ -120,7 +120,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
   SetBorder(CreateBorderWithVerticalSpacing(remaining_vert_spacing));
 
-  views::GridLayout* grid_layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* grid_layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   // Badging may make the icon slightly wider (but not taller). However, the
   // layout should be the same whether or not the icon is badged, so allow the
   // badged part of the icon to extend into the padding.

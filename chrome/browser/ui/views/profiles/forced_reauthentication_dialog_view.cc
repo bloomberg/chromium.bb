@@ -209,7 +209,8 @@ void ForcedReauthenticationDialogView::AddedToWidget() {
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
   SetBorder(views::CreateEmptyBorder(dialog_insets.top(), 0,
                                      dialog_insets.bottom(), 0));
-  views::GridLayout* dialog_layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* dialog_layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   SetLayoutManager(dialog_layout);
 
   // Use a column set with no padding.

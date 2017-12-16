@@ -118,7 +118,8 @@ bool IsProfileChooser(profiles::BubbleViewMode mode) {
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
 views::GridLayout* CreateSingleColumnLayout(views::View* view, int width) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
@@ -202,8 +203,8 @@ class TitleCard : public views::View {
                                          TitleCard* title_card,
                                          int width) {
     views::View* titled_view = new views::View();
-    views::GridLayout* layout =
-        views::GridLayout::CreateAndInstall(titled_view);
+    views::GridLayout* layout = titled_view->SetLayoutManager(
+        std::make_unique<views::GridLayout>(titled_view));
 
     ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
     const gfx::Insets dialog_insets =

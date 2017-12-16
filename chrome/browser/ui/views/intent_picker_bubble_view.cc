@@ -211,7 +211,8 @@ bool IntentPickerBubbleView::ShouldShowCloseButton() const {
 }
 
 void IntentPickerBubbleView::Init() {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   // Creates a view to hold the views for each app.
   views::View* scrollable_view = new views::View();

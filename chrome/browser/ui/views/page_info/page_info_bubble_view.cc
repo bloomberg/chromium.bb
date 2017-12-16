@@ -122,7 +122,8 @@ views::View* CreateMoreInfoLinkSection(views::LinkListener* listener,
   (*link)->SetTooltipText(tooltip_text);
 
   views::View* new_view = new views::View();
-  GridLayout* layout = GridLayout::CreateAndInstall(new_view);
+  GridLayout* layout =
+      new_view->SetLayoutManager(std::make_unique<views::GridLayout>(new_view));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int side_margin =
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION).left();
@@ -312,7 +313,8 @@ BubbleHeaderView::BubbleHeaderView(
       password_reuse_button_container_(nullptr),
       change_password_button_(nullptr),
       whitelist_password_reuse_button_(nullptr) {
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   const int label_column_status = 1;
   AddColumnWithSideMargin(layout, side_margin, label_column_status);
@@ -573,7 +575,8 @@ PageInfoBubbleView::PageInfoBubbleView(
       UseHarmonyStyle() ? hover_list_spacing : margins().bottom();
   set_margins(gfx::Insets(margins().top(), 0, bottom_margin, 0));
 
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   constexpr int kColumnId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
@@ -756,7 +759,8 @@ void PageInfoBubbleView::SetPermissionInfo(
   if (permissions_view_->has_children())
     return;
 
-  GridLayout* layout = GridLayout::CreateAndInstall(permissions_view_);
+  GridLayout* layout = permissions_view_->SetLayoutManager(
+      std::make_unique<views::GridLayout>(permissions_view_));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   const int list_item_padding =

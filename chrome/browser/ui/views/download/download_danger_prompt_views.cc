@@ -98,8 +98,8 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
-  views::GridLayout* layout =
-      views::GridLayout::CreateAndInstall(contents_view_);
+  views::GridLayout* layout = contents_view_->SetLayoutManager(
+      std::make_unique<views::GridLayout>(contents_view_));
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,

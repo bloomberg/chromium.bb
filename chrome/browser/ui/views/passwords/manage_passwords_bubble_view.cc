@@ -558,7 +558,8 @@ gfx::Size ManagePasswordsBubbleView::PendingView::CalculatePreferredSize()
 
 void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout(
     bool show_password_label) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
 
   views::View* password_field =
@@ -663,7 +664,8 @@ class ManagePasswordsBubbleView::SaveConfirmationView
 ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
 
   views::StyledLabel* confirmation =
@@ -733,7 +735,8 @@ class ManagePasswordsBubbleView::SignInPromoView
 ManagePasswordsBubbleView::SignInPromoView::SignInPromoView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
 
   signin_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
@@ -800,7 +803,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent), selection_view_(nullptr) {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
 
   // Credential row.

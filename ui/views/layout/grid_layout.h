@@ -107,11 +107,7 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
     USE_PREF
   };
 
-  // Creates a new GridLayout and installs it as the LayoutManager for |host|.
-  // The returned pointer is owned by the view and already installed as its
-  // layout manager.
-  static GridLayout* CreateAndInstall(View* host);
-
+  explicit GridLayout(View* host);
   ~GridLayout() override;
 
   // See class description for what this does.
@@ -192,8 +188,6 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
 
  private:
-  explicit GridLayout(View* host);
-
   // As both Layout and GetPreferredSize need to do nearly the same thing,
   // they both call into this method. This sizes the Columns/Rows as
   // appropriate. If layout is true, width/height give the width/height the
@@ -234,23 +228,23 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   View* const host_;
 
   // Whether or not we've calculated the master/linked columns.
-  mutable bool calculated_master_columns_;
+  mutable bool calculated_master_columns_ = false;
 
   // Used to verify a view isn't added with a row span that expands into
   // another column structure.
-  int remaining_row_span_;
+  int remaining_row_span_ = 0;
 
   // Current row.
-  int current_row_;
+  int current_row_ = -1;
 
   // Current column.
-  int next_column_;
+  int next_column_ = 0;
 
   // Column set for the current row. This is null for padding rows.
-  ColumnSet* current_row_col_set_;
+  ColumnSet* current_row_col_set_ = nullptr;
 
   // Set to true when adding a View.
-  bool adding_view_;
+  bool adding_view_ = false;
 
   // ViewStates. This is ordered by row_span in ascending order.
   mutable std::vector<std::unique_ptr<ViewState>> view_states_;

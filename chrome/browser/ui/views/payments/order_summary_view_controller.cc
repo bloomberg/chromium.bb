@@ -57,7 +57,8 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
           ui::NativeTheme::kColorId_SeparatorColor),
       row_insets));
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(row.get());
+  views::GridLayout* layout =
+      row->SetLayoutManager(std::make_unique<views::GridLayout>(row.get()));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // The first column has resize_percent = 1 so that it stretches all the way
@@ -94,8 +95,8 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   amount_text->SetAllowCharacterBreak(true);
 
   std::unique_ptr<views::View> amount_wrapper = base::MakeUnique<views::View>();
-  views::GridLayout* wrapper_layout =
-      views::GridLayout::CreateAndInstall(amount_wrapper.get());
+  views::GridLayout* wrapper_layout = amount_wrapper->SetLayoutManager(
+      std::make_unique<views::GridLayout>(amount_wrapper.get()));
   views::ColumnSet* wrapper_columns = wrapper_layout->AddColumnSet(0);
   wrapper_columns->AddColumn(views::GridLayout::LEADING,
                              views::GridLayout::CENTER, 0,

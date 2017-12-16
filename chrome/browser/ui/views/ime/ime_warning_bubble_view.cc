@@ -159,7 +159,8 @@ void ImeWarningBubbleView::InitLayout() {
   // -----------------------------------------
   //
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   int cs_id = 0;
 

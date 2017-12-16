@@ -87,7 +87,8 @@ void ScrollViewExample::CreateExampleView(View* container) {
   scrollable_->SetBounds(0, 0, 1000, 100);
   scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 
-  GridLayout* layout = GridLayout::CreateAndInstall(container);
+  GridLayout* layout = container->SetLayoutManager(
+      std::make_unique<views::GridLayout>(container));
 
   // Add scroll view.
   ColumnSet* column_set = layout->AddColumnSet(0);

@@ -58,7 +58,8 @@ void TableExample::CreateExampleView(View* container) {
   column4_visible_checkbox_->SetChecked(true);
   column4_visible_checkbox_->set_listener(this);
 
-  GridLayout* layout = GridLayout::CreateAndInstall(container);
+  GridLayout* layout = container->SetLayoutManager(
+      std::make_unique<views::GridLayout>(container));
 
   std::vector<ui::TableColumn> columns;
   columns.push_back(TestTableColumn(0, "Fruit"));

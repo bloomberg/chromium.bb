@@ -103,7 +103,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   const int dialog_content_width = views::Widget::GetLocalizedContentsWidth(
       IDS_MEDIA_GALLERIES_DIALOG_CONTENT_WIDTH_CHARS);
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(contents_);
+  views::GridLayout* layout = contents_->SetLayoutManager(
+      std::make_unique<views::GridLayout>(contents_));
 
   int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);

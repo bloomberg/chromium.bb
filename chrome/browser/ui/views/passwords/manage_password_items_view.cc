@@ -250,7 +250,8 @@ void ManagePasswordItemsView::RecreateLayout() {
 
   RemoveAllChildViews(true);
 
-  views::GridLayout* grid_layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* grid_layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   const int vertical_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTROL_LIST_VERTICAL);

@@ -262,7 +262,8 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
     AddChildView(horizontal_label_.get());
   } else {
     RemoveChildView(horizontal_label_.get());
-    views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+    views::GridLayout* layout =
+        SetLayoutManager(std::make_unique<views::GridLayout>(this));
     const int kColumnId = 0;
     views::ColumnSet* columns = layout->AddColumnSet(kColumnId);
     columns->AddPaddingColumn(0, kVerticalClockLeftPadding);

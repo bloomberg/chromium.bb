@@ -81,7 +81,8 @@ void SessionAbortedDialog::InitDialog(const std::string& user_email) {
   constexpr int kTopInset = 10;
   constexpr int kOtherInset = 40;
   // Create the views and layout manager and set them up.
-  views::GridLayout* grid_layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* grid_layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
   SetBorder(views::CreateEmptyBorder(kTopInset, kOtherInset, kOtherInset,
                                      kOtherInset));
 

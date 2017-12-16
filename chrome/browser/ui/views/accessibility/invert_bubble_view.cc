@@ -113,7 +113,8 @@ void InvertBubbleView::Init() {
   close_->SetFontList(original_font_list);
   close_->set_listener(this);
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   for (int i = 0; i < 4; i++) {

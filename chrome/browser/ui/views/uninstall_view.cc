@@ -47,7 +47,8 @@ void UninstallView::SetupControls() {
   using views::ColumnSet;
   using views::GridLayout;
 
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   // Message to confirm uninstallation.
   int column_set_id = 0;
