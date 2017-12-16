@@ -278,6 +278,36 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
   if (duplex_item.LoadFrom(ticket))
     duplex_value = duplex_item.value();
 
+  // This assumes |ticket| contains a color ticket item. In case it does not, or
+  // the color is invalid, |color_value| will default to AUTO_COLOR, which works
+  // just fine. With AUTO_COLOR, it may be possible to better determine the
+  // value for |use_color| based on |printer_capabilities|, rather than just
+  // defaulting to the safe value of true. Parsing |printer_capabilities|
+  // requires work, which this method is avoiding on purpose.
+  cloud_devices::printer::Color color_value;
+  cloud_devices::printer::ColorTicketItem color_item;
+  if (color_item.LoadFrom(ticket) && color_item.IsValid())
+    color_value = color_item.value();
+  DCHECK(color_value.IsValid());
+  bool use_color;
+  switch (color_value.type) {
+    case cloud_devices::printer::STANDARD_MONOCHROME:
+    case cloud_devices::printer::CUSTOM_MONOCHROME:
+      use_color = false;
+      break;
+
+    case cloud_devices::printer::STANDARD_COLOR:
+    case cloud_devices::printer::CUSTOM_COLOR:
+    case cloud_devices::printer::AUTO_COLOR:
+      use_color = true;
+      break;
+
+    default:
+      NOTREACHED();
+      use_color = true;  // Still need to initialize |color| or MSVC will warn.
+      break;
+  }
+
   cloud_devices::printer::PwgRasterConfigCapability raster_capability;
   // If the raster capability fails to load, |raster_capability| will contain
   // the default value.
@@ -306,6 +336,14 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
 
   result.rotate_all_pages = raster_capability.value().rotate_all_pages;
   result.reverse_page_order = raster_capability.value().reverse_order_streaming;
+
+  // No need to check for SRGB_8 support in |types|. CDD spec says:
+  // "any printer that doesn't support SGRAY_8 must be able to perform
+  // conversion from RGB to grayscale... "
+  const auto& types = raster_capability.value().document_types_supported;
+  result.use_color =
+      use_color || !base::ContainsValue(types, cloud_devices::printer::SGRAY_8);
+
   return result;
 }
 

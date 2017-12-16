@@ -21,6 +21,18 @@ namespace printing {
 
 namespace {
 
+// Note that for some reason the generated PWG varies depending on the
+// platform (32 or 64 bits) on Linux.
+#if defined(OS_LINUX) && defined(ARCH_CPU_32_BITS)
+constexpr char kPdfToPwgRasterColorTestFile[] = "pdf_to_pwg_raster_test_32.pwg";
+constexpr char kPdfToPwgRasterMonoTestFile[] =
+    "pdf_to_pwg_raster_mono_test_32.pwg";
+#else
+constexpr char kPdfToPwgRasterColorTestFile[] = "pdf_to_pwg_raster_test.pwg";
+constexpr char kPdfToPwgRasterMonoTestFile[] =
+    "pdf_to_pwg_raster_mono_test.pwg";
+#endif
+
 void ResultCallbackImpl(bool* called,
                         bool* success_out,
                         base::FilePath* temp_file_out,
@@ -31,6 +43,33 @@ void ResultCallbackImpl(bool* called,
   *success_out = success_in;
   *temp_file_out = temp_file_in;
   quit_closure.Run();
+}
+
+void GetPdfData(const char* file_name,
+                base::FilePath* test_data_dir,
+                scoped_refptr<base::RefCountedString>* pdf_data) {
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, test_data_dir));
+  *test_data_dir = test_data_dir->AppendASCII("printing");
+  base::FilePath pdf_file = test_data_dir->AppendASCII(file_name);
+  std::string pdf_data_str;
+  ASSERT_TRUE(base::ReadFileToString(pdf_file, &pdf_data_str));
+  ASSERT_GT(pdf_data_str.length(), 0U);
+  *pdf_data = base::RefCountedString::TakeString(&pdf_data_str);
+}
+
+std::string HashFile(const std::string& file_data) {
+  std::string sha1 = base::SHA1HashString(file_data);
+  return base::HexEncode(sha1.c_str(), sha1.length());
+}
+
+void ComparePwgFiles(const base::FilePath& expected,
+                     const base::FilePath& actual) {
+  std::string pwg_expected_data_str;
+  ASSERT_TRUE(base::ReadFileToString(expected, &pwg_expected_data_str));
+  std::string pwg_actual_data_str;
+  ASSERT_TRUE(base::ReadFileToString(actual, &pwg_actual_data_str));
+  EXPECT_EQ(pwg_expected_data_str.length(), pwg_actual_data_str.length());
+  EXPECT_EQ(HashFile(pwg_expected_data_str), HashFile(pwg_actual_data_str));
 }
 
 class PdfToPwgRasterBrowserTest : public InProcessBrowserTest {
@@ -59,11 +98,6 @@ class PdfToPwgRasterBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<PwgRasterConverter> converter_;
 };
 
-std::string HashFile(const std::string& file_data) {
-  std::string sha1 = base::SHA1HashString(file_data);
-  return base::HexEncode(sha1.c_str(), sha1.length());
-}
-
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestFailure) {
@@ -74,19 +108,12 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestFailure) {
           /*expect_success=*/false, &temp_file);
 }
 
-IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccess) {
+IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessColor) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  test_data_dir = test_data_dir.AppendASCII("printing");
-  base::FilePath pdf_file =
-      test_data_dir.AppendASCII("pdf_to_pwg_raster_test.pdf");
-  std::string pdf_data_str;
-  ASSERT_TRUE(base::ReadFileToString(pdf_file, &pdf_data_str));
-  ASSERT_GT(pdf_data_str.length(), 0U);
-  scoped_refptr<base::RefCountedString> pdf_data(
-      base::RefCountedString::TakeString(&pdf_data_str));
+  scoped_refptr<base::RefCountedString> pdf_data;
+  GetPdfData("pdf_to_pwg_raster_test.pdf", &test_data_dir, &pdf_data);
 
   PdfRenderSettings pdf_settings(gfx::Rect(0, 0, 500, 500), gfx::Point(0, 0),
                                  /*dpi=*/1000, /*autorotate=*/false,
@@ -95,27 +122,42 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccess) {
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
   pwg_settings.rotate_all_pages = false;
   pwg_settings.reverse_page_order = false;
+  pwg_settings.use_color = true;
 
   base::FilePath temp_file;
   Convert(pdf_data.get(), pdf_settings, pwg_settings,
           /*expect_success=*/true, &temp_file);
   ASSERT_FALSE(temp_file.empty());
 
-  // Note that for some reason the generated PWG varies depending on the
-  // platform (32 or 64 bits) on Linux.
-  base::FilePath pwg_file = test_data_dir.AppendASCII(
-#if defined(OS_LINUX) && defined(ARCH_CPU_32_BITS)
-      "pdf_to_pwg_raster_test_32.pwg");
-#else
-      "pdf_to_pwg_raster_test.pwg");
-#endif
+  base::FilePath pwg_file =
+      test_data_dir.AppendASCII(kPdfToPwgRasterColorTestFile);
+  ComparePwgFiles(pwg_file, temp_file);
+}
 
-  std::string pwg_expected_data_str;
-  ASSERT_TRUE(base::ReadFileToString(pwg_file, &pwg_expected_data_str));
-  std::string pwg_actual_data_str;
-  ASSERT_TRUE(base::ReadFileToString(temp_file, &pwg_actual_data_str));
-  EXPECT_EQ(pwg_expected_data_str.length(), pwg_actual_data_str.length());
-  EXPECT_EQ(HashFile(pwg_expected_data_str), HashFile(pwg_actual_data_str));
+IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessMono) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::FilePath test_data_dir;
+  scoped_refptr<base::RefCountedString> pdf_data;
+  GetPdfData("pdf_to_pwg_raster_test.pdf", &test_data_dir, &pdf_data);
+
+  PdfRenderSettings pdf_settings(gfx::Rect(0, 0, 500, 500), gfx::Point(0, 0),
+                                 /*dpi=*/1000, /*autorotate=*/false,
+                                 PdfRenderSettings::Mode::NORMAL);
+  PwgRasterSettings pwg_settings;
+  pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
+  pwg_settings.rotate_all_pages = false;
+  pwg_settings.reverse_page_order = false;
+  pwg_settings.use_color = false;
+
+  base::FilePath temp_file;
+  Convert(pdf_data.get(), pdf_settings, pwg_settings,
+          /*expect_success=*/true, &temp_file);
+  ASSERT_FALSE(temp_file.empty());
+
+  base::FilePath pwg_file =
+      test_data_dir.AppendASCII(kPdfToPwgRasterMonoTestFile);
+  ComparePwgFiles(pwg_file, temp_file);
 }
 
 }  // namespace printing

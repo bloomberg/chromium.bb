@@ -194,6 +194,82 @@ const char kMultyDefaultCdd[] =
     "  }"
     "}";
 
+const char kDocumentTypeColorOnlyCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pwg_raster_config': {"
+    "      'document_type_supported': [ 'SRGB_8' ],"
+    "      'document_sheet_back': 'ROTATED'"
+    "    }"
+    "  }"
+    "}";
+
+const char kDocumentTypeGrayOnlyCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pwg_raster_config': {"
+    "      'document_type_supported': [ 'SGRAY_8' ],"
+    "      'document_sheet_back': 'ROTATED'"
+    "    }"
+    "  }"
+    "}";
+
+const char kDocumentTypeColorAndGrayCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pwg_raster_config': {"
+    "      'document_type_supported': [ 'SRGB_8', 'SGRAY_8' ],"
+    "      'document_sheet_back': 'ROTATED'"
+    "    }"
+    "  }"
+    "}";
+
+const char kDocumentTypeColorAndUnsupportedCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pwg_raster_config': {"
+    "      'document_type_supported': [ 'SRGB_8', 'SRGB_16' ],"
+    "      'document_sheet_back': 'ROTATED'"
+    "    }"
+    "  }"
+    "}";
+
+const char kDocumentTypeNoneCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pwg_raster_config': {"
+    "      'document_sheet_back': 'ROTATED'"
+    "    }"
+    "  }"
+    "}";
+
+const char kDocumentTypeNotStringCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pwg_raster_config': {"
+    "      'document_type_supported': [ 8, 16 ],"
+    "      'document_sheet_back': 'ROTATED'"
+    "    }"
+    "  }"
+    "}";
+
+const char kDocumentTypeNotListCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pwg_raster_config': {"
+    "      'document_type_supported': 'ROTATED',"
+    "      'document_sheet_back': 'ROTATED'"
+    "    }"
+    "  }"
+    "}";
+
 const char kCjt[] =
     "{"
     "  'version': '1.0',"
@@ -388,6 +464,144 @@ TEST(PrinterDescriptionTest, CddSetAll) {
   EXPECT_EQ(NormalizeJson(kCdd), NormalizeJson(description.ToString()));
 }
 
+TEST(PrinterDescriptionTest, CddGetDocumentTypeSupported) {
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(
+        description.InitFromString(NormalizeJson(kDocumentTypeColorOnlyCdd)));
+
+    PwgRasterConfigCapability pwg_raster;
+    EXPECT_TRUE(pwg_raster.LoadFrom(description));
+    ASSERT_EQ(1U, pwg_raster.value().document_types_supported.size());
+    EXPECT_EQ(SRGB_8, pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
+  }
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(
+        description.InitFromString(NormalizeJson(kDocumentTypeGrayOnlyCdd)));
+
+    PwgRasterConfigCapability pwg_raster;
+    EXPECT_TRUE(pwg_raster.LoadFrom(description));
+    ASSERT_EQ(1U, pwg_raster.value().document_types_supported.size());
+    EXPECT_EQ(SGRAY_8, pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
+  }
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(description.InitFromString(
+        NormalizeJson(kDocumentTypeColorAndGrayCdd)));
+
+    PwgRasterConfigCapability pwg_raster;
+    EXPECT_TRUE(pwg_raster.LoadFrom(description));
+    ASSERT_EQ(2U, pwg_raster.value().document_types_supported.size());
+    EXPECT_EQ(SRGB_8, pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(SGRAY_8, pwg_raster.value().document_types_supported[1]);
+    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
+  }
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(description.InitFromString(
+        NormalizeJson(kDocumentTypeColorAndUnsupportedCdd)));
+
+    PwgRasterConfigCapability pwg_raster;
+    EXPECT_TRUE(pwg_raster.LoadFrom(description));
+    ASSERT_EQ(1U, pwg_raster.value().document_types_supported.size());
+    EXPECT_EQ(SRGB_8, pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
+  }
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(
+        description.InitFromString(NormalizeJson(kDocumentTypeNoneCdd)));
+
+    PwgRasterConfigCapability pwg_raster;
+    EXPECT_TRUE(pwg_raster.LoadFrom(description));
+    EXPECT_EQ(0U, pwg_raster.value().document_types_supported.size());
+    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
+  }
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(
+        description.InitFromString(NormalizeJson(kDocumentTypeNotStringCdd)));
+
+    PwgRasterConfigCapability pwg_raster;
+    EXPECT_FALSE(pwg_raster.LoadFrom(description));
+  }
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(
+        description.InitFromString(NormalizeJson(kDocumentTypeNotListCdd)));
+
+    PwgRasterConfigCapability pwg_raster;
+    EXPECT_FALSE(pwg_raster.LoadFrom(description));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddSetDocumentTypeSupported) {
+  {
+    CloudDeviceDescription description;
+
+    PwgRasterConfig custom_raster;
+    custom_raster.document_types_supported.push_back(SRGB_8);
+    custom_raster.document_sheet_back = ROTATED;
+
+    PwgRasterConfigCapability pwg_raster;
+    pwg_raster.set_value(custom_raster);
+    pwg_raster.SaveTo(&description);
+
+    EXPECT_EQ(NormalizeJson(kDocumentTypeColorOnlyCdd),
+              NormalizeJson(description.ToString()));
+  }
+  {
+    CloudDeviceDescription description;
+
+    PwgRasterConfig custom_raster;
+    custom_raster.document_types_supported.push_back(SGRAY_8);
+    custom_raster.document_sheet_back = ROTATED;
+
+    PwgRasterConfigCapability pwg_raster;
+    pwg_raster.set_value(custom_raster);
+    pwg_raster.SaveTo(&description);
+
+    EXPECT_EQ(NormalizeJson(kDocumentTypeGrayOnlyCdd),
+              NormalizeJson(description.ToString()));
+  }
+  {
+    CloudDeviceDescription description;
+
+    PwgRasterConfig custom_raster;
+    custom_raster.document_types_supported.push_back(SRGB_8);
+    custom_raster.document_types_supported.push_back(SGRAY_8);
+    custom_raster.document_sheet_back = ROTATED;
+
+    PwgRasterConfigCapability pwg_raster;
+    pwg_raster.set_value(custom_raster);
+    pwg_raster.SaveTo(&description);
+
+    EXPECT_EQ(NormalizeJson(kDocumentTypeColorAndGrayCdd),
+              NormalizeJson(description.ToString()));
+  }
+  {
+    CloudDeviceDescription description;
+
+    PwgRasterConfig custom_raster;
+    custom_raster.document_sheet_back = ROTATED;
+
+    PwgRasterConfigCapability pwg_raster;
+    pwg_raster.set_value(custom_raster);
+    pwg_raster.SaveTo(&description);
+
+    EXPECT_EQ(NormalizeJson(kDocumentTypeNoneCdd),
+              NormalizeJson(description.ToString()));
+  }
+}
+
 TEST(PrinterDescriptionTest, CddGetAll) {
   CloudDeviceDescription description;
   ASSERT_TRUE(description.InitFromString(NormalizeJson(kCdd)));
@@ -424,6 +638,7 @@ TEST(PrinterDescriptionTest, CddGetAll) {
   EXPECT_TRUE(content_types.Contains("image/pwg-raster"));
   EXPECT_TRUE(content_types.Contains("image/jpeg"));
 
+  EXPECT_EQ(0U, pwg_raster_config.value().document_types_supported.size());
   EXPECT_EQ(MANUAL_TUMBLE, pwg_raster_config.value().document_sheet_back);
   EXPECT_TRUE(pwg_raster_config.value().reverse_order_streaming);
   EXPECT_FALSE(pwg_raster_config.value().rotate_all_pages);

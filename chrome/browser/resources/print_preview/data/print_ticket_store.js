@@ -435,7 +435,20 @@ cr.define('print_preview', function() {
             cjt.print.color.vendor_id = selectedOption.vendor_id;
           }
         }
+      } else {
+        // Always try setting the color in the print ticket, otherwise a
+        // reasonable reader of the ticket will have to do more work, or process
+        // the ticket sub-optimally, in order to safely handle the lack of a
+        // color ticket item.
+        const defaultOption = this.color.defaultColorOption();
+        if (defaultOption) {
+          cjt.print.color = {type: defaultOption.type};
+          if (defaultOption.hasOwnProperty('vendor_id')) {
+            cjt.print.color.vendor_id = defaultOption.vendor_id;
+          }
+        }
       }
+
       if (this.copies.isCapabilityAvailable() && this.copies.isUserEdited()) {
         cjt.print.copies = {copies: this.copies.getValueAsNumber()};
       }
