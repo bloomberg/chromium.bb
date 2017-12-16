@@ -2082,23 +2082,16 @@ void GLES2TraceImplementation::LoseContextCHROMIUM(GLenum current,
   gl_->LoseContextCHROMIUM(current, other);
 }
 
-GLuint64 GLES2TraceImplementation::InsertFenceSyncCHROMIUM() {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InsertFenceSyncCHROMIUM");
-  return gl_->InsertFenceSyncCHROMIUM();
-}
-
-void GLES2TraceImplementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                                    GLbyte* sync_token) {
+void GLES2TraceImplementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GenSyncTokenCHROMIUM");
-  gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token);
+  gl_->GenSyncTokenCHROMIUM(sync_token);
 }
 
 void GLES2TraceImplementation::GenUnverifiedSyncTokenCHROMIUM(
-    GLuint64 fence_sync,
     GLbyte* sync_token) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::GenUnverifiedSyncTokenCHROMIUM");
-  gl_->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token);
+  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token);
 }
 
 void GLES2TraceImplementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,

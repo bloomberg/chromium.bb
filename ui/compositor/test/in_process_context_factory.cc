@@ -98,11 +98,8 @@ class DirectOutputSurface : public viz::OutputSurface {
       context_provider_->ContextSupport()->Swap();
     }
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->ShallowFlushCHROMIUM();
-
     gpu::SyncToken sync_token;
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
 
     context_provider_->ContextSupport()->SignalSyncToken(
         sync_token, base::Bind(&DirectOutputSurface::OnSwapBuffersComplete,

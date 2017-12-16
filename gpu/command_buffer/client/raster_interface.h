@@ -32,11 +32,8 @@ class RasterInterface {
   virtual void OrderingBarrierCHROMIUM() = 0;
 
   // SyncTokens.
-  virtual GLuint64 InsertFenceSyncCHROMIUM() = 0;
-  virtual void GenSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                    GLbyte* sync_token) = 0;
-  virtual void GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                              GLbyte* sync_token) = 0;
+  virtual void GenSyncTokenCHROMIUM(GLbyte* sync_token) = 0;
+  virtual void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) = 0;
   virtual void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
                                         GLsizei count) = 0;
   virtual void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) = 0;

@@ -221,18 +221,6 @@ uint64_t Context::GenerateFenceSyncRelease() {
   return display_->GenerateFenceSyncRelease();
 }
 
-bool Context::IsFenceSyncRelease(uint64_t release) {
-  return display_->IsFenceSyncRelease(release);
-}
-
-bool Context::IsFenceSyncFlushed(uint64_t release) {
-  return display_->IsFenceSyncFlushed(release);
-}
-
-bool Context::IsFenceSyncFlushReceived(uint64_t release) {
-  return display_->IsFenceSyncFlushReceived(release);
-}
-
 bool Context::IsFenceSyncReleased(uint64_t release) {
   NOTIMPLEMENTED();
   return false;

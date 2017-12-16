@@ -1052,9 +1052,7 @@ class LayerTreeHostCopyRequestTestProvideTexture
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
 
-    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->ShallowFlushCHROMIUM();
-    gl->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
+    gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
 
     request->SetMailbox(mailbox, sync_token_);
     EXPECT_TRUE(request->has_mailbox());

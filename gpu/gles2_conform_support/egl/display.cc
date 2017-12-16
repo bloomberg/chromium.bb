@@ -355,19 +355,6 @@ uint64_t Display::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
 
-bool Display::IsFenceSyncRelease(uint64_t release) {
-  base::AutoLock auto_lock(lock_);
-  return release > 0 && release < next_fence_sync_release_;
-}
-
-bool Display::IsFenceSyncFlushed(uint64_t release) {
-  return IsFenceSyncRelease(release);
-}
-
-bool Display::IsFenceSyncFlushReceived(uint64_t release) {
-  return IsFenceSyncRelease(release);
-}
-
 void Display::InitializeConfigsIfNeeded() {
   lock_.AssertAcquired();
   if (!configs_[0]) {

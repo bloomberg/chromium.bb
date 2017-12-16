@@ -29,10 +29,8 @@ class GLES2_IMPL_EXPORT RasterImplementationGLES : public RasterInterface {
   void OrderingBarrierCHROMIUM() override;
 
   // SyncTokens.
-  GLuint64 InsertFenceSyncCHROMIUM() override;
-  void GenSyncTokenCHROMIUM(GLuint64 fence_sync, GLbyte* sync_token) override;
-  void GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                      GLbyte* sync_token) override;
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
   void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
   void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 

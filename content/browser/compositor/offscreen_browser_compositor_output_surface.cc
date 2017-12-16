@@ -154,11 +154,9 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
   // (crbug.com/520567).
   // The original implementation had a flickering issue (crbug.com/515332).
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->ShallowFlushCHROMIUM();
 
   gpu::SyncToken sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   context_provider_->ContextSupport()->SignalSyncToken(
       sync_token,
       base::Bind(

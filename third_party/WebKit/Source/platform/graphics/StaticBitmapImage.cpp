@@ -188,14 +188,12 @@ bool StaticBitmapImage::CopyImageToPlatformTexture(
   // through a mailbox first.
   source_gl->GenMailboxCHROMIUM(mailbox.name);
   source_gl->ProduceTextureDirectCHROMIUM(texture_info->fID, mailbox.name);
-  const GLuint64 shared_fence_sync = source_gl->InsertFenceSyncCHROMIUM();
   // TODO(xlai): This one might need to be replaced with ShallowFlushCHROMIUM().
   // See crbug.com/794706.
   source_gl->Flush();
 
   gpu::SyncToken produce_sync_token;
-  source_gl->GenSyncTokenCHROMIUM(shared_fence_sync,
-                                  produce_sync_token.GetData());
+  source_gl->GenSyncTokenCHROMIUM(produce_sync_token.GetData());
   gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
 
   GLuint source_texture = gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
@@ -214,12 +212,10 @@ bool StaticBitmapImage::CopyImageToPlatformTexture(
 
   gl->DeleteTextures(1, &source_texture);
 
-  const GLuint64 context_fence_sync = gl->InsertFenceSyncCHROMIUM();
-
   gl->Flush();
 
   gpu::SyncToken copy_sync_token;
-  gl->GenSyncTokenCHROMIUM(context_fence_sync, copy_sync_token.GetData());
+  gl->GenSyncTokenCHROMIUM(copy_sync_token.GetData());
   source_gl->WaitSyncTokenCHROMIUM(copy_sync_token.GetConstData());
   // This disassociates the texture from the mailbox to avoid leaking the
   // mapping between the two in cases where the texture is recycled by skia.

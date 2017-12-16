@@ -254,9 +254,7 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   if (!need_synchronization_resources.empty()) {
     DCHECK(child_info->needs_sync_tokens);
     DCHECK(gl);
-    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->OrderingBarrierCHROMIUM();
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+    gl->GenUnverifiedSyncTokenCHROMIUM(new_sync_token.GetData());
     unverified_sync_tokens.push_back(new_sync_token.GetData());
   }
 

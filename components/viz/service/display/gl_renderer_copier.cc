@@ -438,10 +438,8 @@ void GLRendererCopier::SendTextureResult(
     gl->GenMailboxCHROMIUM(mailbox.name);
     gl->ProduceTextureDirectCHROMIUM(result_texture, mailbox.name);
   }
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->ShallowFlushCHROMIUM();
   gpu::SyncToken sync_token;
-  gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  gl->GenSyncTokenCHROMIUM(sync_token.GetData());
 
   // Create a |release_callback| appropriate to the situation: If the
   // |result_texture| was provided in the mailbox of the copy request,

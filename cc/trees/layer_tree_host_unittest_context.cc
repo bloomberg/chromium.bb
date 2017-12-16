@@ -898,11 +898,8 @@ class LayerTreeHostContextTestDontUseLostResources
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
 
-    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->ShallowFlushCHROMIUM();
-
     gpu::SyncToken sync_token;
-    gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    gl->GenSyncTokenCHROMIUM(sync_token.GetData());
 
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));

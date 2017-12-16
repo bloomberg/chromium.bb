@@ -302,21 +302,6 @@ class RecordReplayContext : public GpuControl {
     return 0;
   }
 
-  bool IsFenceSyncRelease(uint64_t release) override {
-    NOTIMPLEMENTED();
-    return true;
-  }
-
-  bool IsFenceSyncFlushed(uint64_t release) override {
-    NOTIMPLEMENTED();
-    return true;
-  }
-
-  bool IsFenceSyncFlushReceived(uint64_t release) override {
-    NOTIMPLEMENTED();
-    return true;
-  }
-
   bool IsFenceSyncReleased(uint64_t release) override {
     NOTIMPLEMENTED();
     return true;

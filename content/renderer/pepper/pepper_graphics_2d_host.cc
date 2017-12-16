@@ -749,9 +749,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
     swizzled.reset();
 
     gpu::SyncToken sync_token;
-    uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->OrderingBarrierCHROMIUM();
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
 
     gl->BindTexture(texture_target, 0);
 

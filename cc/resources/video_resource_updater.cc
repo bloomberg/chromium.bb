@@ -115,9 +115,7 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
     if (sync_token_.HasData()) {
       *sync_token = sync_token_;
     } else {
-      const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
-      gl_->ShallowFlushCHROMIUM();
-      gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+      gl_->GenSyncTokenCHROMIUM(sync_token->GetData());
     }
   }
 
@@ -140,9 +138,7 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
 // Sync tokens passed downstream to the compositor can be unverified.
 void GenerateCompositorSyncToken(gpu::gles2::GLES2Interface* gl,
                                  gpu::SyncToken* sync_token) {
-  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->OrderingBarrierCHROMIUM();
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token->GetData());
 }
 
 }  // namespace

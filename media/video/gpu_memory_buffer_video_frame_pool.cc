@@ -681,11 +681,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   // Insert a sync_token, this is needed to make sure that the textures the
   // mailboxes refer to will be used only after all the previous commands posted
   // in the command buffer have been processed.
-  const GLuint64 fence_sync = gles2->InsertFenceSyncCHROMIUM();
-  gles2->OrderingBarrierCHROMIUM();
-
   gpu::SyncToken sync_token;
-  gles2->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  gles2->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   for (size_t i = 0; i < NumGpuMemoryBuffers(output_format_); i++)
     mailbox_holders[i].sync_token = sync_token;
 

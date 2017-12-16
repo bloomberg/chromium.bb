@@ -272,9 +272,7 @@ const gpu::Mailbox& CanvasResource_GpuMemoryBuffer::GetOrCreateGpuMailbox() {
   if (gpu_mailbox_.IsZero() && gl) {
     gl->GenMailboxCHROMIUM(gpu_mailbox_.name);
     gl->ProduceTextureDirectCHROMIUM(texture_id_, gpu_mailbox_.name);
-    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->ShallowFlushCHROMIUM();
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
   }
   return gpu_mailbox_;
 }

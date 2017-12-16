@@ -118,9 +118,6 @@ class MockClientGpuControl : public GpuControl {
   MOCK_CONST_METHOD0(GetCommandBufferID, CommandBufferId());
   MOCK_METHOD0(FlushPendingWork, void());
   MOCK_METHOD0(GenerateFenceSyncRelease, uint64_t());
-  MOCK_METHOD1(IsFenceSyncRelease, bool(uint64_t release));
-  MOCK_METHOD1(IsFenceSyncFlushed, bool(uint64_t release));
-  MOCK_METHOD1(IsFenceSyncFlushReceived, bool(uint64_t release));
   MOCK_METHOD1(IsFenceSyncReleased, bool(uint64_t release));
   MOCK_METHOD2(SignalSyncToken, void(const SyncToken& sync_token,
                                      const base::Closure& callback));
