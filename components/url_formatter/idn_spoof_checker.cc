@@ -110,8 +110,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
 
   // These Cyrillic letters look like Latin. A domain label entirely made of
   // these letters is blocked as a simplified whole-script-spoofable.
-  cyrillic_letters_latin_alike_ =
-      icu::UnicodeSet(icu::UnicodeString("[асԁеһіјӏорԛѕԝхуъЬҽпгѵѡ]"), status);
+  cyrillic_letters_latin_alike_ = icu::UnicodeSet(
+      icu::UnicodeString::fromUTF8("[асԁеһіјӏорԛѕԝхуъЬҽпгѵѡ]"), status);
   cyrillic_letters_latin_alike_.freeze();
 
   cyrillic_letters_ =
@@ -141,8 +141,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
   UParseError parse_error;
   diacritic_remover_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("DropAcc"),
-      icu::UnicodeString("::NFD; ::[:Nonspacing Mark:] Remove; ::NFC;"
-                         " ł > l; ø > o; đ > d;"),
+      icu::UnicodeString::fromUTF8("::NFD; ::[:Nonspacing Mark:] Remove; ::NFC;"
+                                   " ł > l; ø > o; đ > d;"),
       UTRANS_FORWARD, parse_error, status));
 
   // Supplement the Unicode confusable list by the following mapping.
@@ -158,7 +158,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - U+0D1F (ട) => s
   extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("ExtraConf"),
-      icu::UnicodeString(
+      icu::UnicodeString::fromUTF8(
           "ӏ > l; [кĸκ] > k; п > n; [ƅь] > b; в > b; м > m; н > h; "
           "т > t; [шщ] > w; ട > s;"),
       UTRANS_FORWARD, parse_error, status));
