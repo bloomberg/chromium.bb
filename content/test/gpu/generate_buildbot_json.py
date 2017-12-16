@@ -402,19 +402,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win10 Release (NVIDIA Quadro P400)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '10de:1cb3',
-          'os': 'Windows-10'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
