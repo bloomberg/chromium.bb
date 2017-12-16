@@ -104,11 +104,6 @@ AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
 }
 
-base::string16 ShellDelegateMus::GetProductName() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return base::string16();
-}
-
 ui::InputDeviceControllerClient*
 ShellDelegateMus::GetInputDeviceControllerClient() {
   if (!connector_)

@@ -66,8 +66,6 @@
 #include "content/public/common/url_constants.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/url_constants.h"
 
 using chromeos::AccessibilityManager;
@@ -354,10 +352,6 @@ void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
   // browser will be shown on the active desktop, we ensure the visibility.
   multi_user_util::MoveWindowToCurrentDesktop(
       displayer.browser()->window()->GetNativeWindow());
-}
-
-base::string16 ChromeShellDelegate::GetProductName() const {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {

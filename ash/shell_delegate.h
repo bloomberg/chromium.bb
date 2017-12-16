@@ -84,9 +84,6 @@ class ASH_EXPORT ShellDelegate {
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
 
-  // Get the product name.
-  virtual base::string16 GetProductName() const = 0;
-
   virtual void OpenKeyboardShortcutHelpPage() const {}
 
   // Creator of Shell owns this; it's assumed this outlives Shell.
