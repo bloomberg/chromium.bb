@@ -391,6 +391,17 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
+    'Win10 Release Swarmed (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:5912',
+          'os': 'Windows-10',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+    },
     'Win10 Release (NVIDIA Quadro P400)': {
       'swarming_dimensions': [
         {
@@ -675,6 +686,17 @@ FYI_WATERFALL = {
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
+      'os_type': 'linux',
+    },
+    'Linux Release Swarmed (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:5912',
+          'os': 'Ubuntu'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
       'os_type': 'linux',
     },
     'Linux Release (AMD R7 240)': {
