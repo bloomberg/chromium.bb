@@ -19,6 +19,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 
 class ArcAppTest;
+class IndependentOTRProfileManagerTest;
 class SessionControllerClientTest;
 class Profile;
 
@@ -191,6 +192,7 @@ class ProfileHelper
   friend class ::ArcAppTest;
   friend class ::SessionControllerClientTest;
   friend class ::test::BrowserFinderChromeOSTest;
+  friend class ::IndependentOTRProfileManagerTest;
 
   // Called when signin profile is cleared.
   void OnSigninProfileCleared();
