@@ -127,6 +127,14 @@ cr.define('extension_detail_view_tests', function() {
       Polymer.dom.flush();
       expectTrue(testIsVisible('#id-section'));
       expectTrue(testIsVisible('#inspectable-views'));
+
+      // Ensure that the "Extension options" button is disabled when the item
+      // itself is disabled.
+      var extensionOptions = item.$$('#extensions-options');
+      assertFalse(extensionOptions.disabled);
+      item.set('data.state', chrome.developerPrivate.ExtensionState.DISABLED);
+      Polymer.dom.flush();
+      assertTrue(extensionOptions.disabled);
     });
 
     test(assert(TestNames.LayoutSource), function() {
