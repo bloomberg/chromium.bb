@@ -28,6 +28,7 @@ class RasterInterface {
 
   // Command buffer Flush / Finish.
   virtual void Finish() = 0;
+  virtual void Flush() = 0;
   virtual void ShallowFlushCHROMIUM() = 0;
   virtual void OrderingBarrierCHROMIUM() = 0;
 
@@ -150,6 +151,10 @@ class RasterInterface {
                               GLfloat post_translate_y,
                               GLfloat post_scale) = 0;
   virtual void EndRasterCHROMIUM() = 0;
+
+  // Raster via GrContext.
+  virtual void BeginGpuRaster() = 0;
+  virtual void EndGpuRaster() = 0;
 };
 
 }  // namespace raster

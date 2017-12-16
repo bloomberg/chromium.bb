@@ -25,6 +25,10 @@ void RasterImplementationGLES::Finish() {
   gl_->Finish();
 }
 
+void RasterImplementationGLES::Flush() {
+  gl_->Flush();
+}
+
 void RasterImplementationGLES::ShallowFlushCHROMIUM() {
   gl_->ShallowFlushCHROMIUM();
 }
@@ -288,6 +292,23 @@ void RasterImplementationGLES::RasterCHROMIUM(const cc::DisplayItemList* list,
 
 void RasterImplementationGLES::EndRasterCHROMIUM() {
   gl_->EndRasterCHROMIUM();
+}
+
+void RasterImplementationGLES::BeginGpuRaster() {
+  // TODO(alokp): Use a trace macro to push/pop markers.
+  // Using push/pop functions directly incurs cost to evaluate function
+  // arguments even when tracing is disabled.
+  gl_->TraceBeginCHROMIUM("BeginGpuRaster", "GpuRasterization");
+}
+
+void RasterImplementationGLES::EndGpuRaster() {
+  // Restore default GL unpack alignment.  TextureUploader expects this.
+  gl_->PixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+  // TODO(alokp): Use a trace macro to push/pop markers.
+  // Using push/pop functions directly incurs cost to evaluate function
+  // arguments even when tracing is disabled.
+  gl_->TraceEndCHROMIUM();
 }
 
 }  // namespace raster

@@ -25,6 +25,7 @@ class GLES2_IMPL_EXPORT RasterImplementationGLES : public RasterInterface {
 
   // Command buffer Flush / Finish.
   void Finish() override;
+  void Flush() override;
   void ShallowFlushCHROMIUM() override;
   void OrderingBarrierCHROMIUM() override;
 
@@ -144,6 +145,10 @@ class GLES2_IMPL_EXPORT RasterImplementationGLES : public RasterInterface {
                       GLfloat post_translate_y,
                       GLfloat post_scale) override;
   void EndRasterCHROMIUM() override;
+
+  // Raster via GrContext.
+  void BeginGpuRaster() override;
+  void EndGpuRaster() override;
 
  private:
   gles2::GLES2Interface* gl_;
