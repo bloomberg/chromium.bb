@@ -1154,17 +1154,16 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
 
   // Uninstall it and check that its killbit gets set.
   UninstallExtension(good_crx);
-  ValidateIntegerPref(good_crx, "state",
-                      Extension::EXTERNAL_EXTENSION_UNINSTALLED);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
 
   // Try to re-install it externally. This should fail because of the killbit.
   info = CreateExternalExtension(good_crx, version_str, path,
                                  Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(info));
   content::RunAllTasksUntilIdle();
-  ASSERT_TRUE(NULL == service()->GetExtensionById(good_crx, false));
-  ValidateIntegerPref(good_crx, "state",
-                      Extension::EXTERNAL_EXTENSION_UNINSTALLED);
+  ASSERT_FALSE(service()->GetExtensionById(good_crx, false));
+  EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
 
   std::string newer_version = "1.0.0.1";
   // Repeat the same thing with a newer version of the extension.
@@ -1173,9 +1172,8 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
                                  Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
   provider->UpdateOrAddExtension(std::move(info));
   content::RunAllTasksUntilIdle();
-  ASSERT_TRUE(NULL == service()->GetExtensionById(good_crx, false));
-  ValidateIntegerPref(good_crx, "state",
-                      Extension::EXTERNAL_EXTENSION_UNINSTALLED);
+  ASSERT_FALSE(service()->GetExtensionById(good_crx, false));
+  EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
 
   // Try adding the same extension from an external update URL.
   ASSERT_FALSE(service()->pending_extension_manager()->AddFromExternalUpdateUrl(
@@ -5060,7 +5058,11 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ(location, loaded_[0]->location());
   ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
-  ValidatePrefKeyCount(1);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_TRUE(prefs->GetInstalledExtensionInfo(good_crx));
+  // TODO(devlin): Testing the underlying values of the prefs for extensions
+  // should be done in an ExtensionPrefs test, not here. This should only be
+  // using the public ExtensionPrefs interfaces.
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
@@ -5071,7 +5073,7 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   content::RunAllTasksUntilIdle();
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  ValidatePrefKeyCount(1);
+  EXPECT_TRUE(prefs->GetInstalledExtensionInfo(good_crx));
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
@@ -5084,13 +5086,14 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
-  ValidatePrefKeyCount(1);
+  EXPECT_TRUE(prefs->GetInstalledExtensionInfo(good_crx));
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
   // Uninstall the extension and reload. Nothing should happen because the
   // preference should prevent us from reinstalling.
   std::string id = loaded_[0]->id();
+  EXPECT_EQ(id, good_crx);
   bool no_uninstall =
       GetManagementPolicy()->MustRemainEnabled(loaded_[0].get(), NULL);
   service()->UninstallExtension(id,
@@ -5102,6 +5105,8 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   if (no_uninstall) {
     // Policy controlled extensions should not have been touched by uninstall.
     ASSERT_TRUE(base::PathExists(install_path));
+    EXPECT_TRUE(prefs->GetInstalledExtensionInfo(good_crx));
+    EXPECT_FALSE(prefs->IsExternalExtensionUninstalled(good_crx));
   } else {
     // The extension should also be gone from the install directory.
     ASSERT_FALSE(base::PathExists(install_path));
@@ -5109,19 +5114,18 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
     service()->CheckForExternalUpdates();
     content::RunAllTasksUntilIdle();
     ASSERT_EQ(0u, loaded_.size());
-    ValidatePrefKeyCount(1);
-    ValidateIntegerPref(good_crx, "state",
-                        Extension::EXTERNAL_EXTENSION_UNINSTALLED);
-    ValidateIntegerPref(good_crx, "location", location);
+    EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
+    EXPECT_FALSE(prefs->GetInstalledExtensionInfo(good_crx));
 
     // Now clear the preference and reinstall.
-    SetPrefInteg(good_crx, "state", Extension::ENABLED);
+    prefs->ClearExternalUninstallForTesting(good_crx);
 
     loaded_.clear();
     WaitForExternalExtensionInstalled();
     ASSERT_EQ(1u, loaded_.size());
   }
-  ValidatePrefKeyCount(1);
+  EXPECT_TRUE(prefs->GetInstalledExtensionInfo(good_crx));
+  EXPECT_FALSE(prefs->IsExternalExtensionUninstalled(good_crx));
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
@@ -5136,7 +5140,8 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
     service()->OnExternalProviderReady(provider);
     content::RunAllTasksUntilIdle();
     ASSERT_EQ(0u, loaded_.size());
-    ValidatePrefKeyCount(0);
+    EXPECT_FALSE(prefs->IsExternalExtensionUninstalled(good_crx));
+    EXPECT_FALSE(prefs->GetInstalledExtensionInfo(good_crx));
 
     // The extension should also be gone from the install directory.
     ASSERT_FALSE(base::PathExists(install_path));
@@ -5165,7 +5170,9 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
     service()->ReloadExtensionsForTest();
     content::RunAllTasksUntilIdle();
     ASSERT_EQ(0u, loaded_.size());
-    ValidatePrefKeyCount(1);
+
+    EXPECT_FALSE(prefs->GetInstalledExtensionInfo(good_crx));
+    EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
 
     EXPECT_EQ(5, provider->visit_count());
   }
