@@ -668,7 +668,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
         DCT_DCT;
 #else
-    assert(xd->mi[0]->mbmi.txk_type[blk_row << MAX_MIB_SIZE_LOG2 + blk_col] ==
+    assert(xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
            DCT_DCT);
 #endif
   }
@@ -954,8 +954,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
       xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
           DCT_DCT;
 #else
-      assert(xd->mi[0]->mbmi.txk_type[blk_row << MAX_MIB_SIZE_LOG2 + blk_col] ==
-             DCT_DCT);
+      assert(
+          xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
+          DCT_DCT);
 #endif
     }
 #endif  // CONFIG_TXK_SEL
