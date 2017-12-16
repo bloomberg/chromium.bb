@@ -800,7 +800,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Sync) {
               demuxer_->start_time());
 
     // Though the internal start time may be below zero, the exposed media time
-    // must always be greater than zero.
+    // must always be >= zero.
     EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 
     video->Read(NewReadCB(FROM_HERE, 9997, 0, true));
@@ -847,7 +847,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusDiscard_Sync) {
     }
 
     // Though the internal start time may be below zero, the exposed media time
-    // must always be greater than zero.
+    // must always be >= zero.
     EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 
     video->Read(NewReadCB(FROM_HERE, 16009, 0, true));
@@ -865,6 +865,59 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusDiscard_Sync) {
     event.RunAndWaitForStatus(PIPELINE_OK);
   }
 }
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+// Similar to the test above, but using an opus clip plus h264 b-frames to
+// ensure we don't apply chained ogg workarounds to other content.
+TEST_F(FFmpegDemuxerTest,
+       Read_AudioNegativeStartTimeAndOpusDiscardH264Mp4_Sync) {
+  CreateDemuxer("tos-h264-opus.mp4");
+  InitializeDemuxer();
+
+  // Attempt a read from the video stream and run the message loop until done.
+  DemuxerStream* video = GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* audio = GetStream(DemuxerStream::AUDIO);
+  EXPECT_EQ(audio->audio_decoder_config().codec_delay(), 312);
+
+  // Packet size to timestamp (in microseconds) mapping for the first N packets
+  // which should be fully discarded.
+  static const int kTestExpectations[][2] = {
+      {234, 20000}, {228, 40000}, {340, 60000}};
+
+  // Run the test twice with a seek in between.
+  for (int i = 0; i < 2; ++i) {
+    audio->Read(NewReadCBWithCheckedDiscard(
+        FROM_HERE, 408, 0, base::TimeDelta::FromMicroseconds(6500), true));
+    base::RunLoop().Run();
+
+    for (size_t j = 0; j < arraysize(kTestExpectations); ++j) {
+      audio->Read(NewReadCB(FROM_HERE, kTestExpectations[j][0],
+                            kTestExpectations[j][1], true));
+      base::RunLoop().Run();
+    }
+
+    // Though the internal start time may be below zero, the exposed media time
+    // must always be >= zero.
+    EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
+
+    video->Read(NewReadCB(FROM_HERE, 185105, 0, true));
+    base::RunLoop().Run();
+
+    video->Read(NewReadCB(FROM_HERE, 35941, 125000, false));
+    base::RunLoop().Run();
+
+    // If things aren't working correctly, this expectation will fail because
+    // the chained ogg workaround breaks out of order timestamps.
+    video->Read(NewReadCB(FROM_HERE, 8129, 84000, false));
+    base::RunLoop().Run();
+
+    // Seek back to the beginning and repeat the test.
+    WaitableMessageLoopEvent event;
+    demuxer_->Seek(base::TimeDelta(), event.GetPipelineStatusCB());
+    event.RunAndWaitForStatus(PIPELINE_OK);
+  }
+}
+#endif
 
 // Similar to the test above, but using sfx-opus.ogg, which has a much smaller
 // amount of discard padding and no |start_time| set on the AVStream.
@@ -885,7 +938,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusSfxDiscard_Sync) {
     base::RunLoop().Run();
 
     // Though the internal start time may be below zero, the exposed media time
-    // must always be greater than zero.
+    // must always be >= zero.
     EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 
     // Seek back to the beginning and repeat the test.
