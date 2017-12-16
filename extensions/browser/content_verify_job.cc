@@ -175,8 +175,7 @@ void ContentVerifyJob::OnHashesReady(bool success) {
     // TODO(lazyboy): Make ContentHashReader::Init return an enum instead of
     // bool. This should make the following checks on |hash_reader_| easier
     // to digest and will avoid future bugs from creeping up.
-    if (!hash_reader_->have_verified_contents() ||
-        !hash_reader_->have_computed_hashes()) {
+    if (!hash_reader_->has_content_hashes()) {
       DispatchFailureCallback(MISSING_ALL_HASHES);
       return;
     }
