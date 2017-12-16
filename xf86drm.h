@@ -863,6 +863,8 @@ extern int drmSyncobjExportSyncFile(int fd, uint32_t handle, int *sync_file_fd);
 extern int drmSyncobjWait(int fd, uint32_t *handles, unsigned num_handles,
 			  int64_t timeout_nsec, unsigned flags,
 			  uint32_t *first_signaled);
+extern int drmSyncobjReset(int fd, const uint32_t *handles, uint32_t handle_count);
+extern int drmSyncobjSignal(int fd, const uint32_t *handles, uint32_t handle_count);
 
 #if defined(__cplusplus)
 }

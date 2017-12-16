@@ -4247,3 +4247,29 @@ int drmSyncobjWait(int fd, uint32_t *handles, unsigned num_handles,
         *first_signaled = args.first_signaled;
     return ret;
 }
+
+int drmSyncobjReset(int fd, const uint32_t *handles, uint32_t handle_count)
+{
+    struct drm_syncobj_array args;
+    int ret;
+
+    memclear(args);
+    args.handles = (uintptr_t)handles;
+    args.count_handles = handle_count;
+
+    ret = drmIoctl(fd, DRM_IOCTL_SYNCOBJ_RESET, &args);
+    return ret;
+}
+
+int drmSyncobjSignal(int fd, const uint32_t *handles, uint32_t handle_count)
+{
+    struct drm_syncobj_array args;
+    int ret;
+
+    memclear(args);
+    args.handles = (uintptr_t)handles;
+    args.count_handles = handle_count;
+
+    ret = drmIoctl(fd, DRM_IOCTL_SYNCOBJ_SIGNAL, &args);
+    return ret;
+}
