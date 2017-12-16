@@ -321,7 +321,7 @@ const base::Feature kServiceWorkerScriptFullCodeCache{
 // An experiment to require process isolation for the sign-in origin,
 // https://accounts.google.com.  Launch bug: https://crbug.com/739418.
 const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
 // Launch bug: https://crbug.com/739418.
