@@ -48,7 +48,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   class MessageImpl;
 
   // RenderFrameObserver implementation.
-  void WidgetWillClose() override;
   void OnDestruct() override;
 
   // mojom::DevToolsAgent implementation.
