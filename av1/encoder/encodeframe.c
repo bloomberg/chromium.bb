@@ -4079,11 +4079,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // If intrabc is allowed but never selected, reset the allow_intrabc flag.
   if (cm->allow_intrabc && !cpi->intrabc_used) cm->allow_intrabc = 0;
 #endif  // CONFIG_INTRABC
-
-#if 0
-  // Keep record of the total distortion this time around for future use
-  cpi->last_frame_distortion = cpi->frame_distortion;
-#endif
 }
 
 static void make_consistent_compound_tools(AV1_COMMON *cm) {

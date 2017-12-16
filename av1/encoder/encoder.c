@@ -2507,12 +2507,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   rc->is_last_bipred_frame = 0;
   rc->is_bipred_frame = 0;
 
-#if 0
-  // Experimental RD Code
-  cpi->frame_distortion = 0;
-  cpi->last_frame_distortion = 0;
-#endif
-
   set_tile_info(cpi);
 
   cpi->ext_refresh_frame_flags_pending = 0;
