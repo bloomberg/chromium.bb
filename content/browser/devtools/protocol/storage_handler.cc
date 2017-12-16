@@ -263,8 +263,10 @@ Response StorageHandler::Disable() {
                               cache_storage_observer_.release());
   }
   if (indexed_db_observer_) {
-    indexed_db_observer_->TaskRunner()->DeleteSoon(
-        FROM_HERE, std::move(indexed_db_observer_));
+    scoped_refptr<base::SequencedTaskRunner> observer_task_runner =
+        indexed_db_observer_->TaskRunner();
+    observer_task_runner->DeleteSoon(FROM_HERE,
+                                     std::move(indexed_db_observer_));
   }
 
   return Response::OK();
