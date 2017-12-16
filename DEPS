@@ -947,9 +947,9 @@ hooks = [
   {
     'name': 'content_shell_fonts',
     'pattern': '.',
+    'condition': 'checkout_linux',
     'action': [ 'download_from_google_storage',
                 '--no_resume',
-                '--platform=linux*',
                 '--extract',
                 '--no_auth',
                 '--bucket', 'chromium-fonts',
