@@ -357,13 +357,12 @@
             </template>
           </div>
         </template>
-        <div class="section control-line actionable" id="extensions-options"
-            on-tap="onOptionsTap_"
-            hidden$="[[!shouldShowOptionsLink_(data.*)]]">
-          <span id="optionLabel">$i18n{itemOptions}</span>
-          <button class="icon-external" is="paper-icon-button-light"
-              aria-labelledby="optionLabel" actionable></button>
-        </div>
+        <button class="hr" is="cr-link-row" id="extensions-options"
+            disabled="[[!isEnabled_(data.state)]]"
+            hidden="[[!shouldShowOptionsLink_(data.*)]]"
+            icon-class="icon-external" label="$i18n{itemOptions}"
+            on-tap="onExtensionOptionsTap_">
+        </button>
         <button class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
             is="cr-link-row" icon-class="icon-external" id="developerWebsite"
             label="$i18n{developerWebsite}" on-tap="onDeveloperWebSiteTap_">
