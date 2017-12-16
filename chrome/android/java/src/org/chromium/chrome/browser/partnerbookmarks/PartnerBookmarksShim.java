@@ -62,6 +62,10 @@ public class PartnerBookmarksShim {
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         long last = pref.getLong(PartnerBookmarksReader.LAST_EMPTY_READ_PREFS_NAME, 0);
         long elapsed = System.currentTimeMillis() - last;
+        if (last > 0) {
+            RecordHistogram.recordCustomTimesHistogram("PartnerBookmark.TimeSinceLastEmptyRead",
+                    elapsed, 1, TimeUnit.DAYS.toMillis(365), TimeUnit.MILLISECONDS, 50);
+        }
         // Without checking elapsed >= 0, we might get stuck at an "always skip mode" if
         // |LAST_EMPTY_READ_PREFS_NAME| is a bogus future time.
         return 0 <= elapsed && elapsed < BAN_DURATION_MS;
