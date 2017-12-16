@@ -203,6 +203,13 @@ const CGFloat kSeparatorInset = 10;
       UIEdgeInsetsMake(0, kSeparatorInset, 0, kSeparatorInset);
   self.styler.allowsItemInlay = NO;
 
+  // Never adjust the content inset on iOS11 or it will create padding on top of
+  // the first cell.
+  if (@available(iOS 11, *)) {
+    [self.collectionView setContentInsetAdjustmentBehavior:
+                             UIScrollViewContentInsetAdjustmentNever];
+  }
+
   self.clearsSelectionOnViewWillAppear = NO;
   self.collectionView.keyboardDismissMode =
       UIScrollViewKeyboardDismissModeOnDrag;
@@ -645,21 +652,20 @@ const CGFloat kSeparatorInset = 10;
         self.isSearching ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
                          : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
     entriesStatusItem = noResultsItem;
-  } else {
+  } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory) {
     HistoryEntriesStatusItem* historyEntriesStatusItem =
         [[HistoryEntriesStatusItem alloc] initWithType:ItemTypeEntriesStatus];
     historyEntriesStatusItem.delegate = self;
     historyEntriesStatusItem.hidden = self.isSearching;
-    historyEntriesStatusItem.showsOtherBrowsingDataNotice =
-        _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
     entriesStatusItem = historyEntriesStatusItem;
   }
-  // Replace the item in the first section, which is always present.
+  // Replace the item in the first section if it exists. Then insert the new
+  // item if it exists.
   NSArray* items = [self.collectionViewModel
       itemsInSectionWithIdentifier:kEntriesStatusSectionIdentifier];
   if ([items count]) {
-    // There should only ever be one item in this section.
-    DCHECK([items count] == 1);
+    // There should only ever be at most one item in this section.
+    DCHECK([items count] <= 1);
     // Only update if the item has changed.
     if ([items[0] isEqual:entriesStatusItem]) {
       return;
@@ -674,9 +680,11 @@ const CGFloat kSeparatorInset = 10;
           fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
       [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
     }
-    [self.collectionViewModel addItem:entriesStatusItem
-              toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-    [self.collectionView insertItemsAtIndexPaths:@[ indexPath ]];
+    if (entriesStatusItem) {
+      [self.collectionViewModel addItem:entriesStatusItem
+                toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+      [self.collectionView insertItemsAtIndexPaths:@[ indexPath ]];
+    }
   }
                                 completion:nil];
 }

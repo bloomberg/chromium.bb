@@ -50,37 +50,14 @@ namespace {
 using HistoryEntriesStatusItemTest = PlatformTest;
 
 // Tests that configuring a cell for HistoryEntriesStatusItem with hidden
-// property set to YES results in an empty label, regardless of what
-// showsOtherBrowsingDataNotice is set to.
+// property set to YES results in an empty label.
 TEST_F(HistoryEntriesStatusItemTest, TestHidden) {
   HistoryEntriesStatusItem* item =
       [[HistoryEntriesStatusItem alloc] initWithType:0];
   item.hidden = YES;
-  item.showsOtherBrowsingDataNotice = YES;
   HistoryEntriesStatusCell* cell = [[HistoryEntriesStatusCell alloc] init];
   [item configureCell:cell];
   EXPECT_FALSE(cell.textLabel.text);
-}
-
-// Tests that configuring a cell for HistoryEntriesStatusItem with
-// showsOtherBrowsingDataNotice set to YES adds other browsing
-// data text to the label, while set to NO has no text.
-TEST_F(HistoryEntriesStatusItemTest, TestOtherBrowsingDataNotice) {
-  HistoryEntriesStatusItem* item =
-      [[HistoryEntriesStatusItem alloc] initWithType:0];
-  HistoryEntriesStatusCell* cell = [[HistoryEntriesStatusCell alloc] init];
-  item.hidden = NO;
-  item.showsOtherBrowsingDataNotice = YES;
-  [item configureCell:cell];
-  NSString* label_text =
-      l10n_util::GetNSString(IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY);
-  NSRange range;
-  label_text = ParseStringWithLink(label_text, &range);
-  EXPECT_NSEQ(label_text, cell.textLabel.text);
-
-  item.showsOtherBrowsingDataNotice = NO;
-  [item configureCell:cell];
-  EXPECT_NSEQ(nil, cell.textLabel.text);
 }
 
 // Tests that tapping on links on a configured cell invokes
@@ -93,7 +70,6 @@ TEST_F(HistoryEntriesStatusItemTest, TestDelegate) {
       [[MockEntriesStatusItemDelegate alloc] init];
   item.delegate = delegate;
   item.hidden = NO;
-  item.showsOtherBrowsingDataNotice = YES;
   [item configureCell:cell];
 
   // Layout the cell so that links are drawn.
