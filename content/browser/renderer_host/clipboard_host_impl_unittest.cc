@@ -35,12 +35,12 @@ class ClipboardHostImplTest : public ::testing::Test {
                       mojo::ScopedSharedBufferHandle shared_memory,
                       size_t shared_memory_size) {
     host_->WriteImage(
-        blink::mojom::ClipboardBuffer::kStandard, size,
+        ui::CLIPBOARD_TYPE_COPY_PASTE, size,
         shared_memory->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY));
   }
 
   void CallCommitWrite() {
-    host_->CommitWrite(blink::mojom::ClipboardBuffer::kStandard);
+    host_->CommitWrite(ui::CLIPBOARD_TYPE_COPY_PASTE);
     base::RunLoop().RunUntilIdle();
   }
 

@@ -56,43 +56,41 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
                                     ReadImageCallback callback);
 
   // content::mojom::ClipboardHost
-  void GetSequenceNumber(blink::mojom::ClipboardBuffer buffer,
+  void GetSequenceNumber(ui::ClipboardType clipboard_type,
                          GetSequenceNumberCallback callback) override;
   void IsFormatAvailable(blink::mojom::ClipboardFormat format,
-                         blink::mojom::ClipboardBuffer buffer,
+                         ui::ClipboardType clipboard_type,
                          IsFormatAvailableCallback callback) override;
-  void ReadAvailableTypes(blink::mojom::ClipboardBuffer buffer,
+  void ReadAvailableTypes(ui::ClipboardType clipboard_type,
                           ReadAvailableTypesCallback callback) override;
-  void ReadText(blink::mojom::ClipboardBuffer buffer,
+  void ReadText(ui::ClipboardType clipboard_type,
                 ReadTextCallback callback) override;
-  void ReadHtml(blink::mojom::ClipboardBuffer buffer,
+  void ReadHtml(ui::ClipboardType clipboard_type,
                 ReadHtmlCallback callback) override;
-  void ReadRtf(blink::mojom::ClipboardBuffer buffer,
+  void ReadRtf(ui::ClipboardType clipboard_type,
                ReadRtfCallback callback) override;
-  void ReadImage(blink::mojom::ClipboardBuffer buffer,
+  void ReadImage(ui::ClipboardType clipboard_type,
                  ReadImageCallback callback) override;
-  void ReadCustomData(blink::mojom::ClipboardBuffer buffer,
+  void ReadCustomData(ui::ClipboardType clipboard_type,
                       const base::string16& type,
                       ReadCustomDataCallback callback) override;
-  void WriteText(blink::mojom::ClipboardBuffer buffer,
+  void WriteText(ui::ClipboardType clipboard_type,
                  const base::string16& text) override;
-  void WriteHtml(blink::mojom::ClipboardBuffer buffer,
+  void WriteHtml(ui::ClipboardType clipboard_type,
                  const base::string16& markup,
                  const GURL& url) override;
-  void WriteSmartPasteMarker(blink::mojom::ClipboardBuffer buffer) override;
+  void WriteSmartPasteMarker(ui::ClipboardType clipboard_type) override;
   void WriteCustomData(
-      blink::mojom::ClipboardBuffer buffer,
+      ui::ClipboardType clipboard_type,
       const std::unordered_map<base::string16, base::string16>& data) override;
-  void WriteBookmark(blink::mojom::ClipboardBuffer buffer,
+  void WriteBookmark(ui::ClipboardType clipboard_type,
                      const std::string& url,
                      const base::string16& title) override;
-  void WriteImage(blink::mojom::ClipboardBuffer buffer,
+  void WriteImage(ui::ClipboardType clipboard_type,
                   const gfx::Size& size_in_pixels,
                   mojo::ScopedSharedBufferHandle shared_buffer_handle) override;
-  void CommitWrite(blink::mojom::ClipboardBuffer buffer) override;
+  void CommitWrite(ui::ClipboardType clipboard_type) override;
   void WriteStringToFindPboard(const base::string16& text) override;
-
-  void ConvertBufferType(blink::mojom::ClipboardBuffer, ui::ClipboardType*);
 
   ui::Clipboard* clipboard_;  // Not owned
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
