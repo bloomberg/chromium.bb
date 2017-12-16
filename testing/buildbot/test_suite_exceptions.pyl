@@ -224,44 +224,20 @@
       'Lollipop Consumer Tester',
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
-      # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
       # chromium.clang
       'CrWinAsan',
       'CrWinAsan(dll)',
       'CrWinAsanCov',
       'ToTLinuxMSan',
       # chromium.fyi
-      'Chromium Mac 10.10 MacViews',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
-      'Chromium Mac 10.13',
-      'Chromium Win 10 GCE Tests',
       'CrWinAsan tester',
       'CrWinAsan(dll) tester',
       'CrWinAsanCov tester',
-      'Win 10 Fast Ring',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Cast Audio Linux',
-      'Cast Linux',
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux ChromiumOS MSan Tests',
       'Linux MSan Tests',
       'Linux TSan Tests',
-      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (dbg)(1)',
     ],
     'modifications': {
       # chromium.android
@@ -296,27 +272,9 @@
       'CrWinAsanCov',
       'ToTLinuxMSan',
       # chromium.fyi
-      'Chromium Mac 10.10 MacViews',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
-      'Chromium Mac 10.13',
-      'Chromium Win 10 GCE Tests',
       'CrWinAsan tester',
       'CrWinAsan(dll) tester',
       'CrWinAsanCov tester',
-      'Win 10 Fast Ring',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
-      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (dbg)(1)',
     ],
   },
   'boringssl_crypto_tests': {
@@ -4347,26 +4305,6 @@
       },
     },
   },
-  'webkit_python_tests': {
-    'remove_from': [
-      # chromium.clang
-      'ToTMac',
-      # chromium.fyi
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
-      'Win 7 Tests x64 (1)',
-      'Win7 Tests (dbg)(1)',
-    ],
-  },
   'webkit_unit_tests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
@@ -4387,10 +4325,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
       # chromium.clang
       'CrWinAsan',
       'CrWinAsan(dll)',
@@ -4399,34 +4333,15 @@
       'ToTLinuxMSan',
       'ToTLinuxThinLTO',
       # chromium.fyi
-      'Chromium Mac 10.10 MacViews',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
-      'Chromium Mac 10.13',
-      'Chromium Win 10 GCE Tests',
       'CrWinAsan tester',
       'CrWinAsan(dll) tester',
       'CrWinAsanCov tester',
-      'ThinLTO Linux ToT',
-      'Win 10 Fast Ring',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Cast Audio Linux',
-      'Cast Linux',
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
+      # chromium.chromiumos
+      'linux-chromeos-rel',  # crbug.com/795440
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux ChromiumOS MSan Tests',
       'Linux MSan Tests',
-      # chromium.win
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (dbg)(1)',
     ],
     'modifications': {
       # chromium.memory
@@ -4582,10 +4497,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
       # chromium.clang
       'CrWinAsan',
       'CrWinAsan(dll)',
@@ -4593,34 +4504,14 @@
       'ToTAndroidCFI',
       'ToTLinuxMSan',
       # chromium.fyi
-      'Chromium Mac 10.10 MacViews',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
-      'Chromium Mac 10.13',
-      'Chromium Win 10 GCE Tests',
       'CrWinAsan tester',
       'CrWinAsan(dll) tester',
       'CrWinAsanCov tester',
-      'Win 10 Fast Ring',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Cast Audio Linux',
-      'Cast Linux',
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux ChromiumOS MSan Tests',
       'Linux MSan Tests',
       'Linux TSan Tests',
-      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (dbg)(1)',
     ],
   },
   'zucchini_unittests': {
