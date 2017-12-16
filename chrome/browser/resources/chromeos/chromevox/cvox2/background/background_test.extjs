@@ -24,6 +24,8 @@ BackgroundTest.prototype = {
   setUp: function() {
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
+    window.press = this.press;
+    window.Mod = constants.ModifierFlag;
 
     this.forceContextualLastOutput();
   },
@@ -46,6 +48,12 @@ BackgroundTest.prototype = {
   doCmd: function(cmd) {
     return function() {
       CommandHandler.onCommand(cmd);
+    };
+  },
+
+  press: function(keyCode, keyName, modifiers) {
+    return function() {
+      BackgroundKeyboardHandler.sendKeyPress(keyCode, keyName, modifiers);
     };
   },
 
@@ -1269,6 +1277,23 @@ TEST_F('BackgroundTest', 'NodeVsSubnode', function() {
         .expectSpeech('es')
         .call(outputLinkRange(0, 4))
         .expectSpeech('test', 'Link')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'NativeFind', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <a href="#">grape</a>
+    <a href="#">pineapple</a>
+  */}, function(root) {
+    mockFeedback.call(press(70, 'F', Mod.CONTROL))
+        .expectSpeech('Find', 'Edit text')
+        .call(press(71, 'G'))
+        .expectSpeech('grape', 'Link')
+        .call(press(8, 'Backspace'))
+        .call(press(76, 'L'))
+        .expectSpeech('pineapple', 'Link')
         .replay();
   });
 });
