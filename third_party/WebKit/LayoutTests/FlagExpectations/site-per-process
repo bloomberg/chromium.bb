@@ -107,8 +107,6 @@ crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash 
 # http/ flaky tests w/ --site-per-process
 crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Pass ]
 crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
-crbug.com/678484 http/tests/devtools/startup/reattach-after-editing-styles.html [ Timeout Pass ]
-crbug.com/678485 http/tests/devtools/startup/shadow-dom-rules-restart.html [ Timeout ]
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 
 # Slow tests. These are listed in SlowTests listed here also because

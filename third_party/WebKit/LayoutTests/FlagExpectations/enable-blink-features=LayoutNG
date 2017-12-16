@@ -7286,7 +7286,6 @@ crbug.com/591099 http/tests/devtools/sources/debugger-pause/debugger-pause-in-in
 crbug.com/591099 http/tests/devtools/sources/debugger-ui/function-generator-details.js [ Failure ]
 crbug.com/591099 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass ]
 crbug.com/591099 http/tests/devtools/sources/debugger/properties-special.js [ Failure ]
-crbug.com/591099 http/tests/devtools/startup/reattach-after-editing-styles.html [ Crash Pass Timeout ]
 crbug.com/591099 http/tests/devtools/text-autosizing-override.js [ Failure ]
 crbug.com/714962 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/591099 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Crash Failure ]

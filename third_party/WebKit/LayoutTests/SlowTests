@@ -108,7 +108,7 @@ crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-events.js [ S
 crbug.com/667560 http/tests/devtools/startup/console/console-format-startup.js [ Slow ]
 crbug.com/679833 http/tests/devtools/network/network-datareceived.js [ Slow ]
 webkit.org/b/90488 [ Release ] http/tests/devtools/compiler-source-mapping-debug.js [ Slow ]
-crbug.com/243492 http/tests/devtools/startup/injected-script-discard.html [ Slow ]
+crbug.com/243492 inspector-protocol/injected-script-discard.js [ Slow ]
 crbug.com/327078 http/tests/devtools/network/long-script-content.js [ Slow ]
 crbug.com/420008 [ Release ] http/tests/devtools/editor/text-editor-word-jumps.js [ Slow ]
 crbug.com/420008 [ Release ] http/tests/devtools/console-xhr-logging.js [ Slow ]
