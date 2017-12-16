@@ -96,7 +96,7 @@ cr.define('extensions', function() {
      * In the case that the alert dialog was a success message, the entire
      * pack-dialog should close. Otherwise, we detach the alert by setting
      * lastResponse_ null. Additionally, if the user selected "proceed anyway"
-     * in the warning dialog, we pack the extension again with override flags.
+     * in the dialog, we pack the extension again with override flags.
      * @param {!Event} e
      * @private
      */
@@ -109,7 +109,7 @@ cr.define('extensions', function() {
         return;
       }
 
-      /* This is only possible for a warning dialog. */
+      // This is only possible for a warning dialog.
       if (this.$$('extensions-pack-dialog-alert').returnValue == 'success') {
         this.delegate.packExtension(
             this.lastResponse_.item_path, this.lastResponse_.pem_path,
