@@ -474,6 +474,7 @@ jumbo_component("platform") {
     "audio/cpu/x86/VectorMathX86.h",
     "audio/ffmpeg/FFTFrameFFMPEG.cpp",
     "audio/mac/FFTFrameMac.cpp",
+    "audio/mac/VectorMathMac.h",
     "bindings/ActiveScriptWrappableBase.cpp",
     "bindings/ActiveScriptWrappableBase.h",
     "bindings/CallbackFunctionBase.cpp",
