@@ -58905,6 +58905,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PartnerBookmark.TimeSinceLastEmptyRead" units="ms">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    When trying to load the partner bookmarks, if no partner bookmark is read
+    last time, record the time elapsed since then. It is recorded no matter
+    whether loading would be skipped.
+  </summary>
+</histogram>
+
 <histogram name="PartnerBookmarksFaviconThrottle.NumEntries" units="entries">
   <owner>thildebr@chromium.org</owner>
   <summary>
