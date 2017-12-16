@@ -1,3 +1,8 @@
+# Tests for tables that use literary 6 dots notation for numbers, e.g. [⠼⠁, 1]
+table: [tables/unicode.dis,tables/en-ueb-g1.ctb]
+table: [tables/unicode.dis,tables/en-us-g1.ctb]
+table: [tables/unicode.dis,tables/fi.utb]
+table: [tables/unicode.dis,tables/fr-ca-g1.utb]
 table: [tables/unicode.dis,tables/nl-NL-g0.utb]
 table: [tables/unicode.dis,tables/nl-BE-g0.utb]
 flags: {testmode: backward}
