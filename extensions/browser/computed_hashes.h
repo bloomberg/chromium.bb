@@ -34,7 +34,7 @@ class ComputedHashes {
     // out parameters.
     bool GetHashes(const base::FilePath& relative_path,
                    int* block_size,
-                   std::vector<std::string>* hashes);
+                   std::vector<std::string>* hashes) const;
 
    private:
     typedef std::pair<int, std::vector<std::string> > HashInfo;
