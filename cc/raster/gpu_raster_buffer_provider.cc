@@ -64,6 +64,27 @@ static void RasterizeSourceOOP(
   ri->DeleteTextures(1, &texture_id);
 }
 
+// The following class is needed to correctly reset GL state when rendering to
+// SkCanvases with a GrContext on a RasterInterface enabled context.
+class ScopedGrContextAccess {
+ public:
+  explicit ScopedGrContextAccess(viz::ContextProvider* context_provider)
+      : context_provider_(context_provider) {
+    gpu::raster::RasterInterface* ri = context_provider_->RasterContext();
+    ri->BeginGpuRaster();
+
+    class GrContext* gr_context = context_provider_->GrContext();
+    gr_context->resetContext();
+  }
+  ~ScopedGrContextAccess() {
+    gpu::raster::RasterInterface* ri = context_provider_->RasterContext();
+    ri->EndGpuRaster();
+  }
+
+ private:
+  viz::ContextProvider* context_provider_;
+};
+
 static void RasterizeSource(
     const RasterSource* raster_source,
     bool resource_has_previous_content,
@@ -76,7 +97,7 @@ static void RasterizeSource(
     ResourceProvider::ScopedWriteLockRaster* resource_lock,
     bool use_distance_field_text,
     int msaa_sample_count) {
-  ScopedGpuRaster gpu_raster(context_provider);
+  ScopedGrContextAccess gr_context_access(context_provider);
 
   gpu::raster::RasterInterface* ri = context_provider->RasterContext();
   GLuint texture_id = resource_lock->ConsumeTexture(ri);
