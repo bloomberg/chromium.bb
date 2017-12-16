@@ -16,12 +16,12 @@ namespace printing {
 
 struct PdfRenderSettings;
 
-class PdfToPwgRasterConverterImpl
+class PdfToPwgRasterConverter
     : public printing::mojom::PdfToPwgRasterConverter {
  public:
-  explicit PdfToPwgRasterConverterImpl(
+  explicit PdfToPwgRasterConverter(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-  ~PdfToPwgRasterConverterImpl() override;
+  ~PdfToPwgRasterConverter() override;
 
  private:
   // printing::mojom::PdfToPwgRasterConverter
@@ -33,7 +33,7 @@ class PdfToPwgRasterConverterImpl
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
-  DISALLOW_COPY_AND_ASSIGN(PdfToPwgRasterConverterImpl);
+  DISALLOW_COPY_AND_ASSIGN(PdfToPwgRasterConverter);
 };
 
 }  // namespace printing

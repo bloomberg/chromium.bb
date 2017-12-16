@@ -97,13 +97,13 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
 
 }  // namespace
 
-PdfToPwgRasterConverterImpl::PdfToPwgRasterConverterImpl(
+PdfToPwgRasterConverter::PdfToPwgRasterConverter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
 
-PdfToPwgRasterConverterImpl::~PdfToPwgRasterConverterImpl() {}
+PdfToPwgRasterConverter::~PdfToPwgRasterConverter() {}
 
-void PdfToPwgRasterConverterImpl::Convert(
+void PdfToPwgRasterConverter::Convert(
     mojo::ScopedHandle pdf_file_in,
     const PdfRenderSettings& pdf_settings,
     const PwgRasterSettings& pwg_raster_settings,
@@ -112,7 +112,7 @@ void PdfToPwgRasterConverterImpl::Convert(
   base::PlatformFile pdf_file;
   if (mojo::UnwrapPlatformFile(std::move(pdf_file_in), &pdf_file) !=
       MOJO_RESULT_OK) {
-    LOG(ERROR) << "Invalid PDF file passed to PdfToPwgRasterConverterImpl";
+    LOG(ERROR) << "Invalid PDF file passed to PdfToPwgRasterConverter.";
     std::move(callback).Run(false);
     return;
   }
@@ -120,8 +120,7 @@ void PdfToPwgRasterConverterImpl::Convert(
   base::PlatformFile pwg_raster_file;
   if (mojo::UnwrapPlatformFile(std::move(pwg_raster_file_out),
                                &pwg_raster_file) != MOJO_RESULT_OK) {
-    LOG(ERROR)
-        << "Invalid PWGRaster file passed to PdfToPwgRasterConverterImpl";
+    LOG(ERROR) << "Invalid PWGRaster file passed to PdfToPwgRasterConverter.";
     std::move(callback).Run(false);
     return;
   }

@@ -8,17 +8,31 @@
 #include "chrome/services/printing/pdf_to_pwg_raster_converter.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
+#if defined(OS_WIN)
+#include "chrome/services/printing/pdf_to_emf_converter.h"
+#include "chrome/services/printing/pdf_to_emf_converter_factory.h"
+#endif
+
 namespace printing {
 
 namespace {
 
+#if defined(OS_WIN)
+void OnPdfToEmfConverterFactoryRequest(
+    service_manager::ServiceContextRefFactory* ref_factory,
+    printing::mojom::PdfToEmfConverterFactoryRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<printing::PdfToEmfConverterFactory>(
+                              ref_factory->CreateRef()),
+                          std::move(request));
+}
+#endif
+
 void OnPdfToPwgRasterConverterRequest(
     service_manager::ServiceContextRefFactory* ref_factory,
     printing::mojom::PdfToPwgRasterConverterRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<printing::PdfToPwgRasterConverterImpl>(
-          ref_factory->CreateRef()),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<printing::PdfToPwgRasterConverter>(
+                              ref_factory->CreateRef()),
+                          std::move(request));
 }
 
 }  // namespace
@@ -35,6 +49,10 @@ void PrintingService::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context())));
+#if defined(OS_WIN)
+  registry_.AddInterface(
+      base::Bind(&OnPdfToEmfConverterFactoryRequest, ref_factory_.get()));
+#endif
   registry_.AddInterface(
       base::Bind(&OnPdfToPwgRasterConverterRequest, ref_factory_.get()));
 }

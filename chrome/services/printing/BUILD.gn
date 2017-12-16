@@ -22,6 +22,17 @@ source_set("lib") {
     "//chrome/services/printing/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
+
+  if (is_win) {
+    sources += [
+      "pdf_to_emf_converter.cc",
+      "pdf_to_emf_converter.h",
+      "pdf_to_emf_converter_factory.cc",
+      "pdf_to_emf_converter_factory.h",
+    ]
+
+    deps += [ "//skia" ]
+  }
 }
 
 service_manifest("manifest") {
