@@ -864,7 +864,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   // Balanced in ClearObservers(), which is called from the first observer
   // method to be called with the appropriate extension (or shutdown).
   AddRef();
-  error_reporter_observer_.Add(ExtensionErrorReporter::GetInstance());
+  error_reporter_observer_.Add(LoadErrorReporter::GetInstance());
   registry_observer_.Add(ExtensionRegistry::Get(browser_context()));
 
   return RespondLater();

@@ -13,8 +13,8 @@
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
@@ -173,7 +173,7 @@ class DeclarativeNetRequestBrowserTest
     content::RunAllTasksUntilIdle();
 
     // Ensure no load errors were reported.
-    EXPECT_TRUE(ExtensionErrorReporter::GetInstance()->GetErrors()->empty());
+    EXPECT_TRUE(LoadErrorReporter::GetInstance()->GetErrors()->empty());
 
     tester.ExpectTotalCount(kIndexRulesTimeHistogram, 1);
     tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 1);

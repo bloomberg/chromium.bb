@@ -56,7 +56,7 @@ ToolbarActionsModel::ToolbarActionsModel(
       has_active_bubble_(false),
       extension_action_observer_(this),
       extension_registry_observer_(this),
-      extension_error_reporter_observer_(this),
+      load_error_reporter_observer_(this),
       weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::Bind(&ToolbarActionsModel::OnReady,
@@ -256,7 +256,8 @@ void ToolbarActionsModel::RemovePref(const ToolbarItem& item) {
 void ToolbarActionsModel::OnReady() {
   InitializeActionList();
 
-  extension_error_reporter_observer_.Add(ExtensionErrorReporter::GetInstance());
+  load_error_reporter_observer_.Add(
+      extensions::LoadErrorReporter::GetInstance());
 
   // Wait until the extension system is ready before observing any further
   // changes so that the toolbar buttons can be shown in their stable ordering

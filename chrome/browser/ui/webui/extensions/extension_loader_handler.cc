@@ -55,7 +55,8 @@ ExtensionLoaderHandler::ExtensionLoaderHandler(Profile* profile)
       ui_ready_(false),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
-  extension_error_reporter_observer_.Add(ExtensionErrorReporter::GetInstance());
+  extension_error_reporter_observer_.Add(
+      extensions::LoadErrorReporter::GetInstance());
 }
 
 ExtensionLoaderHandler::~ExtensionLoaderHandler() {

@@ -46,7 +46,7 @@ class ZipFileInstaller : public base::RefCountedThreadSafe<ZipFileInstaller> {
   // On failure, report the |error| reason.
   void ReportFailure(const std::string& error);
 
-  // Passed to the ExtensionErrorReporter when reporting errors.
+  // Passed to the LoadErrorReporter when reporting errors.
   bool be_noisy_on_failure_;
 
   // Pointer to our controlling extension service.

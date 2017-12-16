@@ -22,13 +22,13 @@
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/shared_user_script_master.h"
@@ -193,7 +193,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   navigation_observer_.reset(new NavigationObserver(profile_));
 
   bool allow_noisy_errors = !command_line->HasSwitch(switches::kNoErrorDialogs);
-  ExtensionErrorReporter::Init(allow_noisy_errors);
+  LoadErrorReporter::Init(allow_noisy_errors);
 
   content_verifier_ = new ContentVerifier(
       profile_, base::MakeUnique<ChromeContentVerifierDelegate>(profile_));

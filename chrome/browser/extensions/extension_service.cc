@@ -1143,8 +1143,7 @@ void ExtensionService::CheckForUpdatesSoon() {
 // (and also, on Windows, in the registry) and this code will periodically
 // check that location for a .crx file, which it will then install locally if
 // a new version is available.
-// Errors are reported through ExtensionErrorReporter. Success is not
-// reported.
+// Errors are reported through LoadErrorReporter. Success is not reported.
 void ExtensionService::CheckForExternalUpdates() {
   if (external_updates_disabled_for_test_)
     return;

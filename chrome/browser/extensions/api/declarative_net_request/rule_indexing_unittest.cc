@@ -14,8 +14,8 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
@@ -149,8 +149,8 @@ class RuleIndexingTest : public DNRTestBase {
     }
   }
 
-  ExtensionErrorReporter* error_reporter() {
-    return ExtensionErrorReporter::GetInstance();
+  LoadErrorReporter* error_reporter() {
+    return LoadErrorReporter::GetInstance();
   }
 
   std::vector<TestRule> rules_list_;

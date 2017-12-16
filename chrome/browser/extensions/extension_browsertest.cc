@@ -27,11 +27,11 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -509,7 +509,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
     VLOG(1) << "Errors follow:";
     const std::vector<base::string16>* errors =
-        ExtensionErrorReporter::GetInstance()->GetErrors();
+        extensions::LoadErrorReporter::GetInstance()->GetErrors();
     for (std::vector<base::string16>::const_iterator iter = errors->begin();
          iter != errors->end(); ++iter)
       VLOG(1) << *iter;

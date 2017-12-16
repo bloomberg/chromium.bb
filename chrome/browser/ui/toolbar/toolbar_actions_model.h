@@ -13,7 +13,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/ui/toolbar/component_action_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -42,7 +42,7 @@ class ExtensionRegistry;
 // actions in a particular window should check that window's instance of
 // ToolbarActionsBar, which is responsible for the per-window layout.
 class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
-                            public ExtensionErrorReporter::Observer,
+                            public extensions::LoadErrorReporter::Observer,
                             public extensions::ExtensionRegistryObserver,
                             public KeyedService,
                             public ComponentActionDelegate {
@@ -232,7 +232,7 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
       content::WebContents* web_contents,
       content::BrowserContext* browser_context) override;
 
-  // ExtensionErrorReporter::Observer:
+  // extensions::LoadErrorReporter::Observer:
   void OnLoadFailure(content::BrowserContext* browser_context,
                      const base::FilePath& extension_path,
                      const std::string& error) override;
@@ -346,8 +346,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   PrefChangeRegistrar pref_change_registrar_;
   base::Closure pref_change_callback_;
 
-  ScopedObserver<ExtensionErrorReporter, ExtensionErrorReporter::Observer>
-      extension_error_reporter_observer_;
+  ScopedObserver<extensions::LoadErrorReporter,
+                 extensions::LoadErrorReporter::Observer>
+      load_error_reporter_observer_;
 
   base::WeakPtrFactory<ToolbarActionsModel> weak_ptr_factory_;
 

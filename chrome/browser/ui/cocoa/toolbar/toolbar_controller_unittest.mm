@@ -12,6 +12,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -112,7 +113,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
     extensions::ExtensionSystem::Get(profile())
         ->extension_service()
         ->AddExtension(extension.get());
-    ExtensionErrorReporter::Init(true);
+    extensions::LoadErrorReporter::Init(true);
     ToolbarActionsModel* model =
         extensions::extension_action_test_util::CreateToolbarModelForProfile(
             profile());

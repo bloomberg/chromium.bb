@@ -47,7 +47,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -61,6 +60,7 @@
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 #include "chrome/browser/extensions/installed_loader.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -1312,7 +1312,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   installed_ = NULL;
   was_update_ = false;
   loaded_.clear();
-  ExtensionErrorReporter::GetInstance()->ClearErrors();
+  extensions::LoadErrorReporter::GetInstance()->ClearErrors();
 }
 
 // Extensions don't install during shutdown.
@@ -5711,7 +5711,7 @@ TEST_F(ExtensionServiceTestSimple, Enabledness) {
   content::PluginService::GetInstance()->Init();
 #endif
 
-  ExtensionErrorReporter::Init(false);  // no noisy errors
+  extensions::LoadErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
   std::unique_ptr<base::CommandLine> command_line;
