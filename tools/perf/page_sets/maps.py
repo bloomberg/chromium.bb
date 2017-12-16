@@ -2,65 +2,49 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from telemetry.page import page as page_module
 from telemetry import story
 
 from page_sets import webgl_supported_shared_state
 
 
+_MAPS_PERF_TEST_DIR = os.path.join(os.path.dirname(__file__), 'maps_perf_test')
+
 class MapsPage(page_module.Page):
   """Google Maps benchmarks and pixel tests.
 
-  The Maps team gave us a build of their test. The only modification
-  to the test was to config.js, where the width and height query args
-  were set to 800 by 600. The WPR was recorded with:
+  The Maps team gave us a build of their test. The static files are stored in
+  //src/tools/perf/page_sets/maps_perf_test/.
 
-  tools/perf/record_wpr smoothness_maps --browser=system
+  Note: the file maps_perf_test/load_dataset is a large binary file (~3Mb),
+  hence we upload it to cloud storage & only check in the SHA1 hash.
 
-  This produced maps_???.wpr, maps_???.wpr.sha1 and maps.json.
-
-  It's worth noting that telemetry no longer allows replaying a URL that
-  refers to localhost. If the recording was created for the locahost URL, one
-  can update the host name by running:
-
-    web-page-replay/httparchive.py remap-host maps_004.wpr \
-    localhost:8000 map-test
-
-  (web-page-replay/ can be found in third_party/catapult/telemetry/third_party/)
-
-  After updating the host name in the WPR archive, or recording a
-  newly-numbered WPR archive, please remember to update
-  content/test/gpu/gpu_tests/maps_integration_test.py (and potentially
-  its pixel expectations) as well.
-
-  To upload the maps_???.wpr to cloud storage, one would run:
-
-    depot_tools/upload_to_google_storage.py --bucket=chromium-telemetry \
-    maps_???.wpr
-  """
+  The command to upload it to cloud_storage is:
+  <path to depot_tools>/upload_to_google_storage.py \
+      maps_perf_test/load_dataset --bucket=chromium-telemetry
+"""
 
   def __init__(self, page_set):
-    url = 'http://map-test/performance.html'
     super(MapsPage, self).__init__(
-      url=url,
+      url='file://performance.html',
+      base_dir=_MAPS_PERF_TEST_DIR,
       page_set=page_set,
       shared_page_state_class=(
           webgl_supported_shared_state.WebGLSupportedSharedState),
-      name=url)
+      name='maps_perf_test')
 
   @property
   def skipped_gpus(self):
     # Skip this intensive test on low-end devices. crbug.com/464731
     return ['arm']
 
-  def RunNavigateSteps(self, action_runner):
-    super(MapsPage, self).RunNavigateSteps(action_runner)
-    action_runner.Wait(3)
-
   def RunPageInteractions(self, action_runner):
+    action_runner.WaitForJavaScriptCondition('window.startTest !== undefined')
+    action_runner.EvaluateJavaScript('startTest()')
     with action_runner.CreateInteraction('MapAnimation'):
-      action_runner.WaitForJavaScriptCondition(
-        'window.testMetrics != undefined', timeout=120)
+      action_runner.WaitForJavaScriptCondition('window.testDone', timeout=120)
 
 
 class MapsPageSet(story.StorySet):
@@ -68,8 +52,6 @@ class MapsPageSet(story.StorySet):
   """ Google Maps examples """
 
   def __init__(self):
-    super(MapsPageSet, self).__init__(
-        archive_data_file='data/maps.json',
-        cloud_storage_bucket=story.PUBLIC_BUCKET)
+    super(MapsPageSet,self).__init__(cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddStory(MapsPage(self))

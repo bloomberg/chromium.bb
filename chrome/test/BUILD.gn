@@ -287,10 +287,10 @@ group("telemetry_gpu_integration_test") {
     "//content/test/gpu/",
     "//content/test/data/gpu/",
 
-    # For the Maps WPR archive SHA. Include the entire directory to
-    # avoid having to update this BUILD.gn file if the WPR is
-    # re-recorded.
-    "//tools/perf/page_sets/data/",
+    # For the Maps performance test. Include the entire directory to
+    # avoid having to update this BUILD.gn file if more files are
+    # added in the future.
+    "//tools/perf/page_sets/maps_perf_test/",
 
     # For depth_capture
     "//content/test/data/media/depth_stream_test_utilities.js",

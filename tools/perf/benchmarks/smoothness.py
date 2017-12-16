@@ -177,7 +177,7 @@ class SmoothnessMaps(_Smoothness):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
         self.DisableStory(
-            'http://map-test/performance.html',
+            'maps_perf_test',
             [story_module.expectations.ANDROID_WEBVIEW],
             'crbug.com/653993')
     return StoryExpectations()
