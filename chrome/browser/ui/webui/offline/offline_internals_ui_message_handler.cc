@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -323,8 +324,18 @@ void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
 
   prefetch_service_->GetPrefetchDispatcher()->AddCandidatePrefetchURLs(
       offline_pages::kSuggestedArticlesNamespace, prefetch_urls);
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value("Added candidate URLs."));
+  std::string message("Added candidate URLs.\n");
+  // Construct a JSON array containing all the URLs. To guard against malicious
+  // URLs that might contain special characters, we create a ListValue and then
+  // serialize it into JSON, instead of doing direct string manipulation.
+  base::ListValue urls;
+  for (const auto& prefetch_url : prefetch_urls) {
+    urls.GetList().emplace_back(prefetch_url.url.spec());
+  }
+  std::string json;
+  base::JSONWriter::Write(urls, &json);
+  message.append(json);
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value(message));
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetOperation(
