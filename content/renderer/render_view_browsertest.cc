@@ -2609,24 +2609,6 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
 
 #endif
 
-TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
-  Attach();
-  EXPECT_FALSE(IsPaused());
-  DispatchDevToolsMessage("Debugger.enable",
-                          "{\"id\":1,\"method\":\"Debugger.enable\"}");
-
-  // Executing javascript will pause the thread and create nested run loop.
-  // Posting task simulates message coming from browser.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&DevToolsAgentTest::CloseWhilePaused,
-                                base::Unretained(this)));
-  ExecuteJavaScriptForTests("debugger;");
-
-  // CloseWhilePaused should resume execution and continue here.
-  EXPECT_FALSE(IsPaused());
-  Detach();
-}
-
 TEST_F(DevToolsAgentTest, RuntimeEnableForcesContexts) {
   LoadHTML("<body>page<iframe></iframe></body>");
   Attach();
