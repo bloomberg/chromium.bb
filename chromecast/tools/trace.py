@@ -22,7 +22,7 @@ def Connect(options):
   if options.adb_device:
     backend = TracingBackendAndroid(options.adb_device)
   else:
-    backend = TracingBackend(options.device, options.port, 10, 0)
+    backend = TracingBackend(options.device, options.port, options.timeout, 0)
 
   try:
     backend.Connect()
@@ -57,6 +57,9 @@ def _CreateOptionParser():
       default='127.0.0.1')
   parser.add_option(
       '-s', '--adb-device', help='Device serial for adb.', type='string')
+  parser.add_option(
+      '-t', '--timeout', help='Websocket timeout interval.', type='int',
+      default=90)
 
   tracing_opts = optparse.OptionGroup(parser, 'Tracing options')
   tracing_opts.add_option(
@@ -75,7 +78,7 @@ def _CreateOptionParser():
       help='Enable system tracing.',
       action='store_true',
       dest='systrace',
-      default=False)
+      default=True)
   parser.add_option_group(tracing_opts)
 
   output_options = optparse.OptionGroup(parser, 'Output options')
