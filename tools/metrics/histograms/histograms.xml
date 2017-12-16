@@ -58879,6 +58879,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PartnerBookmark.LoadingTime" units="ms">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    The time spent on loading partner bookmarks, from kickOffReading() to
+    bookmarkModelLoaded() callback.
+  </summary>
+</histogram>
+
 <histogram name="PartnerBookmark.Null" enum="BooleanNull">
   <owner>wychen@chromium.org</owner>
   <summary>

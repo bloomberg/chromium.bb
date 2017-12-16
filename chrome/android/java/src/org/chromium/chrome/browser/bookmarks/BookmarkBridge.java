@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -11,6 +12,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -19,6 +21,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Provides the communication channel for Android to fetch and manipulate the
@@ -303,10 +306,13 @@ public class BookmarkBridge {
             return true;
         }
 
+        long startTime = SystemClock.elapsedRealtime();
         addObserver(new BookmarkModelObserver() {
             @Override
             public void bookmarkModelLoaded() {
                 removeObserver(this);
+                RecordHistogram.recordTimesHistogram("PartnerBookmark.LoadingTime",
+                        SystemClock.elapsedRealtime() - startTime, TimeUnit.MILLISECONDS);
                 runAfterModelLoaded.run();
             }
             @Override
