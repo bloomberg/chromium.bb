@@ -160,9 +160,8 @@ TEST_F(HistoryCollectionViewControllerTest, DeleteSingleEntry) {
              scrollPosition:UICollectionViewScrollPositionNone];
   [history_collection_view_controller_ deleteSelectedItemsFromHistory];
 
-  // Expect header section with one item and one entries section with one item.
+  // Expect header section and one entries section with one item.
   EXPECT_EQ(2, [collection_view numberOfSections]);
-  EXPECT_EQ(1, [collection_view numberOfItemsInSection:0]);
   EXPECT_EQ(1, [collection_view numberOfItemsInSection:1]);
 }
 
@@ -189,7 +188,6 @@ TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleEntries) {
 
   // Expect only the header section to remain.
   EXPECT_EQ(1, [collection_view numberOfSections]);
-  EXPECT_EQ(1, [collection_view numberOfItemsInSection:0]);
 }
 
 // Tests that adding two entries to history from different days then deleting
@@ -217,5 +215,4 @@ TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleSections) {
 
   // Expect only the header section to remain.
   EXPECT_EQ(1, [collection_view numberOfSections]);
-  EXPECT_EQ(1, [collection_view numberOfItemsInSection:0]);
 }

@@ -25,8 +25,6 @@ class GURL;
 @interface HistoryEntriesStatusItem : CollectionViewItem
 // YES if messages should be hidden.
 @property(nonatomic, assign, getter=isHidden) BOOL hidden;
-// YES if message for other forms of browsing data should be shown.
-@property(nonatomic, assign) BOOL showsOtherBrowsingDataNotice;
 // Delegate for HistoryEntriesStatusItem. Is notified when a link is pressed.
 @property(nonatomic, weak) id<HistoryEntriesStatusItemDelegate> delegate;
 @end
