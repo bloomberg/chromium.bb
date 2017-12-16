@@ -31,37 +31,37 @@
   },
   {
     "comment": "light green",
-    "location": [ 100, 175 ],
+    "location": [ 43, 247 ],
     "size": [ 1, 1 ],
-    "color": [ 202, 223, 170 ],
+    "color": [ 214, 232, 186 ],
     "tolerance": 3
   },
   {
     "comment": "darker green",
-    "location": [ 40, 250 ],
+    "location": [ 326, 111 ],
     "size": [ 1, 1 ],
-    "color": [ 190, 214, 190 ],
+    "color": [ 203, 230, 163 ],
     "tolerance": 3
   },
   {
     "comment": "blue lake",
-    "location": [ 590, 390 ],
+    "location": [ 593, 393 ],
     "size": [ 1, 1 ],
-    "color": [ 145, 188, 255 ],
+    "color": [ 163, 205, 255 ],
     "tolerance": 3
   },
   {
-    "comment": "darker gray",
-    "location": [ 90, 125 ],
+    "comment": "gray",
+    "location": [ 95, 117 ],
     "size": [ 1, 1 ],
-    "color": [ 233, 229, 220 ],
+    "color": [ 232, 232, 232 ],
     "tolerance": 3
   },
   {
-    "comment": "lighter gray",
-    "location": [ 390, 300 ],
+    "comment": "tan",
+    "location": [ 344, 263 ],
     "size": [ 1, 1 ],
-    "color": [ 240, 237, 229 ],
+    "color": [ 240, 237, 230 ],
     "tolerance": 3
   }
 ]

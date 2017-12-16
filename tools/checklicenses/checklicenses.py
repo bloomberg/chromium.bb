@@ -603,6 +603,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/gyp/test': [
         'UNKNOWN',
     ],
+    # Perf test data from Google Maps team. Not shipped.
+    'tools/perf/page_sets/maps_perf_test': [
+        'UNKNOWN',
+    ],
     'tools/python/google/__init__.py': [
         'UNKNOWN',
     ],

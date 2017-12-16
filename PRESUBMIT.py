@@ -24,6 +24,8 @@ _EXCLUDED_PATHS = (
     r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
     r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js",
     r"tools[\\\/]md_browser[\\\/].*\.css$",
+    # Test pages for Maps telemetry tests.
+    r"tools[\\\/]perf[\\\/]page_sets[\\\/]maps_perf_test.*",
     # Test pages for WebRTC telemetry tests.
     r"tools[\\\/]perf[\\\/]page_sets[\\\/]webrtc_cases.*",
 )
