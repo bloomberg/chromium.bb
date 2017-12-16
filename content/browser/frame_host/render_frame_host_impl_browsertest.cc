@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -277,8 +278,14 @@ class DropBeforeUnloadACKFilter : public BrowserMessageFilter {
 
 // Tests that a beforeunload dialog in an iframe doesn't stop the beforeunload
 // timer of a parent frame.
+// TODO(avi): flaky on Linux TSAN: http://crbug.com/795326
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_IframeBeforeUnloadParentHang DISABLED_IframeBeforeUnloadParentHang
+#else
+#define MAYBE_IframeBeforeUnloadParentHang IframeBeforeUnloadParentHang
+#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       IframeBeforeUnloadParentHang) {
+                       MAYBE_IframeBeforeUnloadParentHang) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   TestJavaScriptDialogManager dialog_manager;
   wc->SetDelegate(&dialog_manager);
