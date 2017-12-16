@@ -636,7 +636,7 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
 void DevToolsUIBindings::DispatchProtocolMessage(
     content::DevToolsAgentHost* agent_host, const std::string& message) {
   DCHECK(agent_host == agent_host_.get());
-  if (!frontend_host_)
+  if (!frontend_host_ || reloading_)
     return;
 
   if (message.length() < kMaxMessageChunkSize) {
@@ -1070,7 +1070,7 @@ void DevToolsUIBindings::ReadyForTest() {
 
 void DevToolsUIBindings::DispatchProtocolMessageFromDevToolsFrontend(
     const std::string& message) {
-  if (agent_host_.get())
+  if (agent_host_.get() && !reloading_)
     agent_host_->DispatchProtocolMessage(this, message);
 }
 
@@ -1322,8 +1322,6 @@ void DevToolsUIBindings::AttachTo(
 
 void DevToolsUIBindings::Reload() {
   reloading_ = true;
-  if (agent_host_)
-    agent_host_->DetachClient(this);
   web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
 }
 
@@ -1406,8 +1404,10 @@ void DevToolsUIBindings::DocumentAvailableInMainFrame() {
   if (!reloading_)
     return;
   reloading_ = false;
-  if (agent_host_.get())
+  if (agent_host_.get()) {
+    agent_host_->DetachClient(this);
     InnerAttach();
+  }
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
