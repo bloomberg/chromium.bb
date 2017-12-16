@@ -2095,7 +2095,7 @@ WebRequestInternalEventHandledFunction::Run() {
     // In Public Session we only want to allow "cancel" (except for whitelisted
     // extensions which have no such restrictions).
     if (IsPublicSession() &&
-        !extensions::IsWhitelistedForPublicSession(extension()->id()) &&
+        !extensions::IsWhitelistedForPublicSession(extension_id_safe()) &&
         (value->HasKey("redirectUrl") ||
          value->HasKey(keys::kAuthCredentialsKey) ||
          value->HasKey("requestHeaders") ||
