@@ -19,7 +19,7 @@ var allTests = [
                                                     role: 'button' } });
           if (button) {
             didHitTest = true;
-            button.addEventListener(EventType.ALERT, function() {
+            button.addEventListener(EventType.CLICKED, function() {
               chrome.test.succeed();
             }, true);
             // Click just barely on the second button, very close
@@ -27,7 +27,7 @@ var allTests = [
             // coordinate properly.
             var cx = button.location.left + 10;
             var cy = button.location.top + 10;
-            desktop.hitTest(cx, cy, EventType.ALERT);
+            desktop.hitTest(cx, cy, EventType.CLICKED);
           }
         }
       }, false);
