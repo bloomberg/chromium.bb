@@ -357,6 +357,7 @@ class PersonalDataManager : public KeyedService,
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
+  friend class AutofillMetricsTest;
   friend class FormDataImporterTest;
   friend class PersonalDataManagerTest;
   friend class PersonalDataManagerTestBase;

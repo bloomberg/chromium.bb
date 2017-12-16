@@ -1539,18 +1539,21 @@ TEST_F(CreditCardSaveManagerTest,
   personal_data_.ClearProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
-  // Create, fill and submit two address forms with different zip codes.
-  FormData address_form1, address_form2;
-  test::CreateTestAddressFormData(&address_form1);
-  test::CreateTestAddressFormData(&address_form2);
+  // Create two separate profiles with different zip codes. Must directly add
+  // instead of submitting a form, because they're deduped on form submit.
+  AutofillProfile profile1;
+  profile1.set_guid("00000000-0000-0000-0000-000000000001");
+  profile1.SetInfo(NAME_FULL, ASCIIToUTF16("Flo Master"), "en-US");
+  profile1.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("H3B2Y5"), "en-US");
+  profile1.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"), "en-US");
+  personal_data_.AddProfile(profile1);
 
-  FormsSeen({address_form1, address_form2});
-
-  ManuallyFillAddressForm("Flo", "Master", "H3B2Y5", "CA", &address_form1);
-  FormSubmitted(address_form1);
-
-  ManuallyFillAddressForm("Flo", "Master", "h3b 2y5", "CA", &address_form2);
-  FormSubmitted(address_form2);
+  AutofillProfile profile2;
+  profile2.set_guid("00000000-0000-0000-0000-000000000002");
+  profile2.SetInfo(NAME_FULL, ASCIIToUTF16("Flo Master"), "en-US");
+  profile2.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("h3b 2y5"), "en-US");
+  profile2.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"), "en-US");
+  personal_data_.AddProfile(profile2);
 
   // Set up our credit card form data.
   FormData credit_card_form;

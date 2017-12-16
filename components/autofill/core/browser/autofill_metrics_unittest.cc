@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -76,186 +77,6 @@ using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
 
 using ExpectedUkmMetrics =
     std::vector<std::vector<std::pair<const char*, int64_t>>>;
-
-class TestPersonalDataManager : public PersonalDataManager {
- public:
-  TestPersonalDataManager()
-      : PersonalDataManager("en-US"), autofill_enabled_(true) {
-    CreateTestAutofillProfiles(&web_profiles_);
-  }
-
-  using PersonalDataManager::set_account_tracker;
-  using PersonalDataManager::set_signin_manager;
-  using PersonalDataManager::set_database;
-  using PersonalDataManager::SetPrefService;
-
-  // Overridden to avoid a trip to the database. This should be a no-op except
-  // for the side-effect of logging the profile count.
-  void LoadProfiles() override {
-    pending_profiles_query_ = 123;
-    pending_server_profiles_query_ = 124;
-    {
-      std::vector<std::unique_ptr<AutofillProfile>> profiles;
-      web_profiles_.swap(profiles);
-      std::unique_ptr<WDTypedResult> result = std::make_unique<
-          WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
-          AUTOFILL_PROFILES_RESULT, std::move(profiles));
-      OnWebDataServiceRequestDone(pending_profiles_query_, std::move(result));
-    }
-    {
-      std::vector<std::unique_ptr<AutofillProfile>> profiles;
-      server_profiles_.swap(profiles);
-      std::unique_ptr<WDTypedResult> result = std::make_unique<
-          WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
-          AUTOFILL_PROFILES_RESULT, std::move(profiles));
-      OnWebDataServiceRequestDone(pending_server_profiles_query_,
-                                  std::move(result));
-    }
-  }
-
-  // Overridden to avoid a trip to the database.
-  void LoadCreditCards() override {
-    pending_creditcards_query_ = 125;
-    pending_server_creditcards_query_ = 126;
-    {
-      std::vector<std::unique_ptr<CreditCard>> credit_cards;
-      local_credit_cards_.swap(credit_cards);
-      std::unique_ptr<WDTypedResult> result =
-          std::make_unique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
-              AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
-      OnWebDataServiceRequestDone(pending_creditcards_query_,
-                                  std::move(result));
-    }
-    {
-      std::vector<std::unique_ptr<CreditCard>> credit_cards;
-      server_credit_cards_.swap(credit_cards);
-      std::unique_ptr<WDTypedResult> result =
-          std::make_unique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
-              AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
-      OnWebDataServiceRequestDone(pending_server_creditcards_query_,
-                                  std::move(result));
-    }
-  }
-
-  // Overridden to add potential new profiles to the |web_profiles_|. Since
-  // there is no database set for the test, the original method would do
-  // nothing.
-  void SetProfiles(std::vector<AutofillProfile>* profiles) override {
-    // Only need to copy all the profiles. This adds any new profiles created at
-    // form submission.
-    web_profiles_.clear();
-    for (const auto& profile : *profiles)
-      web_profiles_.push_back(std::make_unique<AutofillProfile>(profile));
-  }
-
-  void set_autofill_enabled(bool autofill_enabled) {
-    autofill_enabled_ = autofill_enabled;
-  }
-
-  // Removes all existing profiles
-  void ClearProfiles() {
-    web_profiles_.clear();
-    Refresh();
-  }
-
-  // Removes all existing profiles and creates one profile.
-  void RecreateProfile() {
-    web_profiles_.clear();
-
-    std::unique_ptr<AutofillProfile> profile =
-        std::make_unique<AutofillProfile>();
-    test::SetProfileInfo(profile.get(), "Elvis", "Aaron", "Presley",
-                         "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
-                         "Apt. 10", "Memphis", "Tennessee", "38116", "US",
-                         "12345678901");
-    profile->set_guid("00000000-0000-0000-0000-000000000001");
-    web_profiles_.push_back(std::move(profile));
-
-    Refresh();
-  }
-
-  // Removes all existing credit cards and creates 0 or 1 local profiles and
-  // 0 or 1 server profile according to the parameters.
-  void RecreateCreditCards(bool include_local_credit_card,
-                           bool include_masked_server_credit_card,
-                           bool include_full_server_credit_card) {
-    local_credit_cards_.clear();
-    server_credit_cards_.clear();
-    if (include_local_credit_card) {
-      std::unique_ptr<CreditCard> credit_card =
-          std::make_unique<CreditCard>(test::GetCreditCard());
-      credit_card->set_guid("10000000-0000-0000-0000-000000000001");
-      local_credit_cards_.push_back(std::move(credit_card));
-    }
-    if (include_masked_server_credit_card) {
-      std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>(
-          CreditCard::MASKED_SERVER_CARD, "server_id");
-      credit_card->set_guid("10000000-0000-0000-0000-000000000002");
-      credit_card->SetNetworkForMaskedCard(kDiscoverCard);
-      credit_card->SetNumber(ASCIIToUTF16("9424"));
-      server_credit_cards_.push_back(std::move(credit_card));
-    }
-    if (include_full_server_credit_card) {
-      std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>(
-          CreditCard::FULL_SERVER_CARD, "server_id");
-      credit_card->set_guid("10000000-0000-0000-0000-000000000003");
-      server_credit_cards_.push_back(std::move(credit_card));
-    }
-    Refresh();
-  }
-
-  // Removes all existing credit cards and creates 1 server card with a bank
-  // name.
-  void RecreateServerCreditCardsWithBankName() {
-    server_credit_cards_.clear();
-    std::unique_ptr<CreditCard> credit_card =
-        std::make_unique<CreditCard>(CreditCard::FULL_SERVER_CARD, "server_id");
-    test::SetCreditCardInfo(credit_card.get(), "name", "4111111111111111", "12",
-                            "24", "1");
-    credit_card->set_guid("10000000-0000-0000-0000-000000000003");
-    credit_card->set_bank_name("Chase");
-    server_credit_cards_.push_back(std::move(credit_card));
-    Refresh();
-  }
-
-  bool IsAutofillEnabled() const override { return autofill_enabled_; }
-
-  void CreateAmbiguousProfiles() {
-    web_profiles_.clear();
-    CreateTestAutofillProfiles(&web_profiles_);
-
-    auto profile = std::make_unique<AutofillProfile>();
-    test::SetProfileInfo(profile.get(), "John", "Decca", "Public",
-                         "john@gmail.com", "Company", "123 Main St.", "unit 7",
-                         "Springfield", "Texas", "79401", "US", "2345678901");
-    profile->set_guid("00000000-0000-0000-0000-000000000003");
-    web_profiles_.push_back(std::move(profile));
-    Refresh();
-  }
-
- private:
-  void CreateTestAutofillProfiles(
-      std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
-    std::unique_ptr<AutofillProfile> profile =
-        std::make_unique<AutofillProfile>();
-    test::SetProfileInfo(profile.get(), "Elvis", "Aaron", "Presley",
-                         "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
-                         "Apt. 10", "Memphis", "Tennessee", "38116", "US",
-                         "12345678901");
-    profile->set_guid("00000000-0000-0000-0000-000000000001");
-    profiles->push_back(std::move(profile));
-    profile = std::make_unique<AutofillProfile>();
-    test::SetProfileInfo(profile.get(), "Charles", "Hardin", "Holley",
-                         "buddy@gmail.com", "Decca", "123 Apple St.", "unit 6",
-                         "Lubbock", "Texas", "79401", "US", "2345678901");
-    profile->set_guid("00000000-0000-0000-0000-000000000002");
-    profiles->push_back(std::move(profile));
-  }
-
-  bool autofill_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
-};
 
 class TestFormStructure : public FormStructure {
  public:
@@ -486,6 +307,20 @@ class AutofillMetricsTest : public testing::Test {
 
  protected:
   void EnableWalletSync();
+  void CreateAmbiguousProfiles();
+
+  // Removes all existing profiles and creates one profile.
+  void RecreateProfile();
+
+  // Removes all existing credit cards and creates 0 or 1 local profiles and
+  // 0 or 1 server profile according to the parameters.
+  void RecreateCreditCards(bool include_local_credit_card,
+                           bool include_masked_server_credit_card,
+                           bool include_full_server_credit_card);
+
+  // Removes all existing credit cards and creates 1 server card with a bank
+  // name.
+  void RecreateServerCreditCardsWithBankName();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
@@ -498,6 +333,9 @@ class AutofillMetricsTest : public testing::Test {
   std::unique_ptr<TestPersonalDataManager> personal_data_;
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  void CreateTestAutofillProfiles();
 };
 
 AutofillMetricsTest::~AutofillMetricsTest() {
@@ -512,7 +350,7 @@ void AutofillMetricsTest::SetUp() {
   // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
   test::DisableSystemServices(autofill_client_.GetPrefs());
 
-  // Setup identity services.
+  // Set up identity services.
   signin_client_.reset(new TestSigninClient(autofill_client_.GetPrefs()));
   account_tracker_.reset(new AccountTrackerService());
   account_tracker_->Initialize(signin_client_.get());
@@ -533,6 +371,9 @@ void AutofillMetricsTest::SetUp() {
   external_delegate_.reset(new AutofillExternalDelegate(
       autofill_manager_.get(), autofill_driver_.get()));
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
+
+  // Initialize the TestPersonalDataManager with some default data.
+  CreateTestAutofillProfiles();
 }
 
 void AutofillMetricsTest::TearDown() {
@@ -552,6 +393,89 @@ void AutofillMetricsTest::TearDown() {
 
 void AutofillMetricsTest::EnableWalletSync() {
   signin_manager_->SetAuthenticatedAccountInfo("12345", "syncuser@example.com");
+}
+
+void AutofillMetricsTest::CreateAmbiguousProfiles() {
+  personal_data_->ClearProfiles();
+  CreateTestAutofillProfiles();
+
+  AutofillProfile profile;
+  test::SetProfileInfo(&profile, "John", "Decca", "Public", "john@gmail.com",
+                       "Company", "123 Main St.", "unit 7", "Springfield",
+                       "Texas", "79401", "US", "2345678901");
+  profile.set_guid("00000000-0000-0000-0000-000000000003");
+  personal_data_->AddProfile(profile);
+  personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::RecreateProfile() {
+  personal_data_->ClearProfiles();
+
+  AutofillProfile profile;
+  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
+                       "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
+                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
+                       "12345678901");
+  profile.set_guid("00000000-0000-0000-0000-000000000001");
+  personal_data_->AddProfile(profile);
+  personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::RecreateCreditCards(
+    bool include_local_credit_card,
+    bool include_masked_server_credit_card,
+    bool include_full_server_credit_card) {
+  personal_data_->ClearCreditCards();
+  if (include_local_credit_card) {
+    CreditCard local_credit_card;
+    test::SetCreditCardInfo(&local_credit_card, "Test User",
+                            "4111111111111111" /* Visa */, "11", "2022", "1");
+    local_credit_card.set_guid("10000000-0000-0000-0000-000000000001");
+    personal_data_->AddCreditCard(local_credit_card);
+  }
+  if (include_masked_server_credit_card) {
+    CreditCard masked_server_credit_card(CreditCard::MASKED_SERVER_CARD,
+                                         "server_id");
+    masked_server_credit_card.set_guid("10000000-0000-0000-0000-000000000002");
+    masked_server_credit_card.SetNetworkForMaskedCard(kDiscoverCard);
+    masked_server_credit_card.SetNumber(ASCIIToUTF16("9424"));
+    personal_data_->AddServerCreditCard(masked_server_credit_card);
+  }
+  if (include_full_server_credit_card) {
+    CreditCard full_server_credit_card(CreditCard::FULL_SERVER_CARD,
+                                       "server_id");
+    full_server_credit_card.set_guid("10000000-0000-0000-0000-000000000003");
+    personal_data_->AddFullServerCreditCard(full_server_credit_card);
+  }
+  personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::RecreateServerCreditCardsWithBankName() {
+  personal_data_->ClearCreditCards();
+  CreditCard credit_card(CreditCard::FULL_SERVER_CARD, "server_id");
+  test::SetCreditCardInfo(&credit_card, "name", "4111111111111111", "12", "24",
+                          "1");
+  credit_card.set_guid("10000000-0000-0000-0000-000000000003");
+  credit_card.set_bank_name("Chase");
+  personal_data_->AddFullServerCreditCard(credit_card);
+  personal_data_->Refresh();
+}
+
+void AutofillMetricsTest::CreateTestAutofillProfiles() {
+  AutofillProfile profile1;
+  test::SetProfileInfo(&profile1, "Elvis", "Aaron", "Presley",
+                       "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
+                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
+                       "12345678901");
+  profile1.set_guid("00000000-0000-0000-0000-000000000001");
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2;
+  test::SetProfileInfo(&profile2, "Charles", "Hardin", "Holley",
+                       "buddy@gmail.com", "Decca", "123 Apple St.", "unit 6",
+                       "Lubbock", "Texas", "79401", "US", "2345678901");
+  profile2.set_guid("00000000-0000-0000-0000-000000000002");
+  personal_data_->AddProfile(profile2);
 }
 
 // Test that we log quality metrics appropriately.
@@ -1163,7 +1087,7 @@ class QualityMetricsTest
       case AMBIGUOUS_TYPE:
         // This occurs as both a company name and a middle name once ambiguous
         // profiles are created.
-        personal_data_->CreateAmbiguousProfiles();
+        CreateAmbiguousProfiles();
         return "Decca";
 
       default:
@@ -2571,10 +2495,9 @@ TEST_F(AutofillMetricsTest, StoredLocalCreditCardCount) {
   // The metric should be logged when the credit cards are first loaded.
   {
     base::HistogramTester histogram_tester;
-    personal_data_->RecreateCreditCards(
-        true /* include_local_credit_card */,
-        false /* include_masked_server_credit_card */,
-        false /* include_full_server_credit_card */);
+    RecreateCreditCards(true /* include_local_credit_card */,
+                        false /* include_masked_server_credit_card */,
+                        false /* include_full_server_credit_card */);
     histogram_tester.ExpectUniqueSample("Autofill.StoredLocalCreditCardCount",
                                         1, 1);
   }
@@ -2582,10 +2505,9 @@ TEST_F(AutofillMetricsTest, StoredLocalCreditCardCount) {
   // The metric should only be logged once.
   {
     base::HistogramTester histogram_tester;
-    personal_data_->RecreateCreditCards(
-        true /* include_local_credit_card */,
-        false /* include_masked_server_credit_card */,
-        false /* include_full_server_credit_card */);
+    RecreateCreditCards(true /* include_local_credit_card */,
+                        false /* include_masked_server_credit_card */,
+                        false /* include_full_server_credit_card */);
     histogram_tester.ExpectTotalCount("Autofill.StoredLocalCreditCardCount", 0);
   }
 }
@@ -2595,10 +2517,9 @@ TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Masked) {
   // The metrics should be logged when the credit cards are first loaded.
   {
     base::HistogramTester histogram_tester;
-    personal_data_->RecreateCreditCards(
-        false /* include_local_credit_card */,
-        true /* include_masked_server_credit_card */,
-        false /* include_full_server_credit_card */);
+    RecreateCreditCards(false /* include_local_credit_card */,
+                        true /* include_masked_server_credit_card */,
+                        false /* include_full_server_credit_card */);
     histogram_tester.ExpectUniqueSample(
         "Autofill.StoredServerCreditCardCount.Masked", 1, 1);
   }
@@ -2606,10 +2527,9 @@ TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Masked) {
   // The metrics should only be logged once.
   {
     base::HistogramTester histogram_tester;
-    personal_data_->RecreateCreditCards(
-        false /* include_local_credit_card */,
-        true /* include_masked_server_credit_card */,
-        true /* include_full_server_credit_card */);
+    RecreateCreditCards(false /* include_local_credit_card */,
+                        true /* include_masked_server_credit_card */,
+                        true /* include_full_server_credit_card */);
     histogram_tester.ExpectTotalCount(
         "Autofill.StoredServerCreditCardCount.Masked", 0);
   }
@@ -2620,10 +2540,9 @@ TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Unmasked) {
   // The metrics should be logged when the credit cards are first loaded.
   {
     base::HistogramTester histogram_tester;
-    personal_data_->RecreateCreditCards(
-        false /* include_local_credit_card */,
-        false /* include_masked_server_credit_card */,
-        true /* include_full_server_credit_card */);
+    RecreateCreditCards(false /* include_local_credit_card */,
+                        false /* include_masked_server_credit_card */,
+                        true /* include_full_server_credit_card */);
     histogram_tester.ExpectUniqueSample(
         "Autofill.StoredServerCreditCardCount.Unmasked", 1, 1);
   }
@@ -2631,10 +2550,9 @@ TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Unmasked) {
   // The metrics should only be logged once.
   {
     base::HistogramTester histogram_tester;
-    personal_data_->RecreateCreditCards(
-        false /* include_local_credit_card */,
-        false /* include_masked_server_credit_card */,
-        true /* include_full_server_credit_card */);
+    RecreateCreditCards(false /* include_local_credit_card */,
+                        false /* include_masked_server_credit_card */,
+                        true /* include_full_server_credit_card */);
     histogram_tester.ExpectTotalCount(
         "Autofill.StoredServerCreditCardCount.Unmasked", 0);
   }
@@ -2643,7 +2561,7 @@ TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Unmasked) {
 // Test that we correctly log when Autofill is enabled.
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
-  personal_data_->set_autofill_enabled(true);
+  personal_data_->SetAutofillEnabled(true);
   personal_data_->Init(autofill_client_.GetDatabase(),
                        autofill_client_.GetPrefs(), account_tracker_.get(),
                        signin_manager_.get(), false);
@@ -2653,7 +2571,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
 // Test that we correctly log when Autofill is disabled.
 TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
-  personal_data_->set_autofill_enabled(false);
+  personal_data_->SetAutofillEnabled(false);
   personal_data_->Init(autofill_client_.GetDatabase(),
                        autofill_client_.GetPrefs(), account_tracker_.get(),
                        signin_manager_.get(), false);
@@ -2730,10 +2648,9 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
 // Test that the credit card checkout flow user actions are correctly logged.
 TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -2847,7 +2764,7 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
 // Test that the profile checkout flow user actions are correctly logged.
 TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // Create a profile.
-  personal_data_->RecreateProfile();
+  RecreateProfile();
 
   // Set up our form data.
   FormData form;
@@ -2962,10 +2879,9 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
 // Tests that the Autofill_PolledCreditCardSuggestions user action is only
 // logged once if the field is queried repeatedly.
 TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up the form data.
   FormData form;
@@ -3018,10 +2934,9 @@ TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
 // Tests that the Autofill.QueriedCreditCardFormIsSecure histogram is logged
 // properly.
 TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up the form data.
   FormData form;
@@ -3083,7 +2998,7 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
 // Tests that the Autofill_PolledProfileSuggestions user action is only logged
 // once if the field is queried repeatedly.
 TEST_F(AutofillMetricsTest, PolledProfileSuggestions_DebounceLogs) {
-  personal_data_->RecreateProfile();
+  RecreateProfile();
 
   // Set up the form data.
   FormData form;
@@ -3275,7 +3190,7 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
   }
 
   // Recreate server cards with bank names.
-  personal_data_->RecreateServerCreditCardsWithBankName();
+  RecreateServerCreditCardsWithBankName();
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -3327,10 +3242,9 @@ TEST_F(AutofillMetricsTest, CreditCardShownFormEvents) {
 TEST_F(AutofillMetricsTest, CreditCardSelectedFormEvents) {
   EnableWalletSync();
   // Creating all kinds of cards.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -3400,10 +3314,9 @@ TEST_F(AutofillMetricsTest, CreditCardSelectedFormEvents) {
 // Test that we log filled form events for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
   // Creating all kinds of cards.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -3469,10 +3382,9 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
 
   // Recreating cards as the previous test should have upgraded the masked
   // card to a full card.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -3522,7 +3434,7 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
   }
 
   // Recreate server cards with bank names.
-  personal_data_->RecreateServerCreditCardsWithBankName();
+  RecreateServerCreditCardsWithBankName();
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -3572,10 +3484,9 @@ TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
 TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
   EnableWalletSync();
   // Creating masked card
-  personal_data_->RecreateCreditCards(
-      false /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(false /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -3620,10 +3531,9 @@ TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration) {
   autofill_manager_->Reset();
   autofill_manager_->AddSeenForm(form, field_types, field_types);
   // Creating masked card
-  personal_data_->RecreateCreditCards(
-      false /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(false /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   {
     // Simulating filling a masked card server suggestion.
@@ -3646,10 +3556,9 @@ TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsNoCard) {
   EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -3690,10 +3599,9 @@ TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsWrongSizeCard) {
   EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -3733,10 +3641,9 @@ TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsFailLuhnCheckCard) {
   EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -3777,10 +3684,9 @@ TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsUnknownCard) {
   EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -3823,10 +3729,9 @@ TEST_F(AutofillMetricsTest,
        CreditCardSubmittedWithoutSelectingSuggestionsKnownCard) {
   EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -3869,10 +3774,9 @@ TEST_F(AutofillMetricsTest,
        ShouldNotLogSubmitWithoutSelectingSuggestionsIfSuggestionFilled) {
   EnableWalletSync();
   // Create a local card for testing, card number is 4111111111111111.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -3928,7 +3832,7 @@ TEST_F(AutofillMetricsTest,
 TEST_F(AutofillMetricsTest, ShouldNotLogFormEventNoCardForAddressForm) {
   EnableWalletSync();
   // Create a profile.
-  personal_data_->RecreateProfile();
+  RecreateProfile();
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -3968,10 +3872,9 @@ TEST_F(AutofillMetricsTest, ShouldNotLogFormEventNoCardForAddressForm) {
 TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
   EnableWalletSync();
   // Creating all kinds of cards.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -4184,10 +4087,9 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
 
   // Recreating cards as the previous test should have upgraded the masked
   // card to a full card.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -4317,10 +4219,9 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
 TEST_F(AutofillMetricsTest, CreditCardWillSubmitFormEvents) {
   EnableWalletSync();
   // Creating all kinds of cards.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -4444,10 +4345,9 @@ TEST_F(AutofillMetricsTest, CreditCardWillSubmitFormEvents) {
 
   // Recreating cards as the previous test should have upgraded the masked
   // card to a full card.
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -4596,7 +4496,7 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
 TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
   EnableWalletSync();
   // Create a profile.
-  personal_data_->RecreateProfile();
+  RecreateProfile();
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -4687,7 +4587,7 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
 TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   EnableWalletSync();
   // Create a profile.
-  personal_data_->RecreateProfile();
+  RecreateProfile();
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -4754,7 +4654,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
 TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
   EnableWalletSync();
   // Create a profile.
-  personal_data_->RecreateProfile();
+  RecreateProfile();
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -4956,7 +4856,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
 TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
   EnableWalletSync();
   // Create a profile.
-  personal_data_->RecreateProfile();
+  RecreateProfile();
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5153,10 +5053,9 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  personal_data_->RecreateCreditCards(
-      false /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(false /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -5170,10 +5069,9 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   // Reset the autofill manager state.
   autofill_manager_->Reset();
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -5187,10 +5085,9 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   // Reset the autofill manager state.
   autofill_manager_->Reset();
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  personal_data_->RecreateCreditCards(
-      false /* include_local_credit_card */,
-      true /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(false /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -5204,10 +5101,9 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   // Reset the autofill manager state.
   autofill_manager_->Reset();
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  personal_data_->RecreateCreditCards(
-      false /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(false /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -5221,10 +5117,9 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   // Reset the autofill manager state.
   autofill_manager_->Reset();
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      true /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      true /* include_full_server_credit_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -5277,7 +5172,7 @@ TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
   // Reset the autofill manager state.
   autofill_manager_->Reset();
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  personal_data_->RecreateProfile();
+  RecreateProfile();
 
   {
     // Simulate activating the autofill popup for the street field.
@@ -5725,10 +5620,9 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_EmptyForm) {
 // Verify that we correctly log user happiness metrics dealing with form
 // interaction.
 TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Load a fillable form.
   FormData form;
@@ -6757,10 +6651,9 @@ TEST_F(AutofillMetricsTest, ShowHttpNotSecureExplanationUserAction) {
 // Tests that credit card form submissions are logged specially when the form is
 // on a non-secure page.
 TEST_F(AutofillMetricsTest, NonsecureCreditCardForm) {
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
@@ -6815,10 +6708,9 @@ TEST_F(AutofillMetricsTest, NonsecureCreditCardForm) {
 // form is *not* on a non-secure page.
 TEST_F(AutofillMetricsTest,
        NonsecureCreditCardFormMetricsNotRecordedOnSecurePage) {
-  personal_data_->RecreateCreditCards(
-      true /* include_local_credit_card */,
-      false /* include_masked_server_credit_card */,
-      false /* include_full_server_credit_card */);
+  RecreateCreditCards(true /* include_local_credit_card */,
+                      false /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */);
 
   // Set up our form data.
   FormData form;
