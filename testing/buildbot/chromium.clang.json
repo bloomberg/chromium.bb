@@ -7578,6 +7578,13 @@
           "can_use_on_swarming_builders": true,
           "shards": 4
         }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ]
   },
