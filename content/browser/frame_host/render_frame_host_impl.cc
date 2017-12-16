@@ -3707,10 +3707,11 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   remote_interfaces_->Bind(std::move(remote_interfaces));
 
   if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
-    GetRemoteInterfaces()->GetInterface(&frame_input_handler_);
+    remote_interfaces_->GetInterface(&frame_input_handler_);
   } else {
     legacy_frame_input_handler_.reset(new LegacyIPCFrameInputHandler(this));
   }
+  remote_interfaces_->GetInterface(&input_target_client_);
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {

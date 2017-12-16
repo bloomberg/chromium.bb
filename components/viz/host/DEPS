@@ -9,6 +9,7 @@ include_rules = [
   "+mojo/public/cpp",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
+  "+services/viz/public/interfaces/hit_test",
 ]
 
 specific_include_rules = {

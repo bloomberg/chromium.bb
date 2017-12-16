@@ -1,0 +1,11 @@
+module viz.mojom;
+
+import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+// Returns the hit-tested frame sink id for the given coordinates.
+interface InputTargetClient {
+
+  // Returns the FrameSinkId of the frame that the given point belongs to.
+  FrameSinkIdAt(gfx.mojom.Point point) => (FrameSinkId id);
+};

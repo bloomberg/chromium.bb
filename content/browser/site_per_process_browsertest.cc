@@ -31,6 +31,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -345,6 +346,29 @@ void SurfaceHitTestTestHelper(
       gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 5) *
                        scale_factor));
   child_event.click_count = 1;
+
+  // Check the renderer hit-test API return the correct frame for
+  // the cross site iframe.
+  base::RunLoop run_loop;
+  viz::FrameSinkId received_frame_sink_id;
+  base::Closure quit_closure =
+      content::GetDeferredQuitTaskForRunLoop(&run_loop);
+  // TODO(crbug.com/793018): There is a confusion here about scale_factor.
+  DCHECK_NE(root->current_frame_host()->GetInputTargetClient(), nullptr);
+  root->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
+      gfx::ScaleToCeiledPoint(
+          gfx::ToCeiledPoint(child_event.PositionInWidget()), scale_factor,
+          scale_factor),
+      base::BindLambdaForTesting([&](const viz::FrameSinkId& id) {
+        received_frame_sink_id = id;
+        quit_closure.Run();
+      }));
+  content::RunThisRunLoop(&run_loop);
+  ASSERT_EQ(
+      viz::FrameSinkId(root_view->GetRenderWidgetHost()->GetProcess()->GetID(),
+                       rwhv_child->GetRenderWidgetHost()->GetRoutingID()),
+      received_frame_sink_id);
+
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());

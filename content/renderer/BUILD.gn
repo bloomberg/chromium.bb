@@ -204,6 +204,8 @@ target(link_target_type, "renderer") {
     "input/input_handler_manager_client.h",
     "input/input_handler_wrapper.cc",
     "input/input_handler_wrapper.h",
+    "input/input_target_client_impl.cc",
+    "input/input_target_client_impl.h",
     "input/main_thread_event_queue.cc",
     "input/main_thread_event_queue.h",
     "input/main_thread_event_queue_task.h",

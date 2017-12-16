@@ -52,7 +52,8 @@
           "content::mojom::ImageDownloader",
           "content::mojom::FrameInputHandler",
           "content::mojom::MediaStreamDispatcher",
-          "content::mojom::Widget"
+          "content::mojom::Widget",
+          "viz::mojom::InputTargetClient"
         ]
       },
       "requires": {
