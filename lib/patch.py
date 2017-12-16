@@ -2242,25 +2242,22 @@ def _CheckLocalPatches(manifest, local_patches):
           'out to multiple directories. Try uploading your patch to gerrit '
           'and referencing it via the -g option instead.'
       )
+    checkout = checkouts[0]
 
-    ok = False
-    for checkout in checkouts:
-      project_dir = checkout.GetPath(absolute=True)
+    project_dir = checkout.GetPath(absolute=True)
 
-      # If no branch was specified, we use the project's current branch.
-      if not branch:
-        local_branch = git.GetCurrentBranch(project_dir)
-      else:
-        local_branch = branch
+    # If no branch was specified, we use the project's current branch.
+    if not branch:
+      local_branch = git.GetCurrentBranch(project_dir)
+    else:
+      local_branch = branch
 
-      if local_branch and git.DoesCommitExistInRepo(project_dir, local_branch):
-        verified_patches.append('%s:%s' % (project, local_branch))
-        ok = True
-
-    if not ok:
+    if local_branch and git.DoesCommitExistInRepo(project_dir, local_branch):
+      verified_patches.append('%s:%s' % (project, local_branch))
+    else:
       if branch:
-        cros_build_lib.Die('Project %s does not have branch %s'
-                           % (project, branch))
+        cros_build_lib.Die('Project %s (checked out at %s) has no branch %s'
+                           % (checkout['name'], checkout['path'], branch))
       else:
         cros_build_lib.Die('Project %s is not on a branch!' % (project,))
 
