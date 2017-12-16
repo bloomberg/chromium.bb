@@ -105,6 +105,8 @@ cr.define('extension_pack_dialog_tests', function() {
 
     test(assert(TestNames.PackSuccess), function() {
       var dialogElement = packDialog.$$('dialog');
+      var packDialogAlert;
+      var alertElement;
 
       packDialog.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
@@ -125,6 +127,18 @@ cr.define('extension_pack_dialog_tests', function() {
             return PolymerTest.flushTasks();
           })
           .then(() => {
+            packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
+            alertElement = packDialogAlert.$.dialog;
+            expectTrue(extension_test_util.isElementVisible(alertElement));
+            expectTrue(extension_test_util.isElementVisible(dialogElement));
+            expectTrue(!!packDialogAlert.$$('.action-button'));
+
+            // After 'ok', both dialogs should be closed.
+            MockInteractions.tap(packDialogAlert.$$('.action-button'));
+            return PolymerTest.flushTasks();
+          })
+          .then(() => {
+            expectFalse(extension_test_util.isElementVisible(alertElement));
             expectFalse(extension_test_util.isElementVisible(dialogElement));
           });
     });
@@ -155,11 +169,11 @@ cr.define('extension_pack_dialog_tests', function() {
         alertElement = packDialogAlert.$.dialog;
         expectTrue(extension_test_util.isElementVisible(alertElement));
         expectTrue(extension_test_util.isElementVisible(dialogElement));
-        expectFalse(packDialogAlert.$$('.cancel-button').hidden);
-        expectTrue(packDialogAlert.$$('.action-button').hidden);
+        expectTrue(!!packDialogAlert.$$('.action-button'));
 
         // After cancel, original dialog is still open and values unchanged.
-        MockInteractions.tap(packDialogAlert.$$('.cancel-button'));
+        MockInteractions.tap(packDialogAlert.$$('.action-button'));
+        Polymer.dom.flush();
         expectFalse(extension_test_util.isElementVisible(alertElement));
         expectTrue(extension_test_util.isElementVisible(dialogElement));
         expectEquals(kRootPath, packDialog.$$('#root-dir').value);

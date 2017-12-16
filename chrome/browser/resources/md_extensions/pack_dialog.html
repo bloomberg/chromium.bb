@@ -61,7 +61,7 @@
     </dialog>
     <template is="dom-if" if="[[lastResponse_]]" restamp>
       <extensions-pack-dialog-alert model="[[lastResponse_]]"
-          on-warning-confirmed="onWarningConfirmed_" on-close="resetResponse_">
+          on-close="onAlertClose_">
       </extensions-pack-dialog-alert>
     </template>
   </template>
