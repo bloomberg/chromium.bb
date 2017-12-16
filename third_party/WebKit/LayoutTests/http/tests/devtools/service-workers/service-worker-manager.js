@@ -5,6 +5,9 @@
 (async function() {
   TestRunner.addResult(`Tests the way service worker manager manages targets.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
+
   await TestRunner.showPanel('resources');
 
   var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-empty.js';

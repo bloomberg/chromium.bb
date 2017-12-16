@@ -5,6 +5,8 @@
 (async function() {
   TestRunner.addResult(`Tests object store and index entry deletion.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
 
   function dumpObjectStore(treeElement) {
     TestRunner.addResult(`            Index: ${treeElement.title}`);

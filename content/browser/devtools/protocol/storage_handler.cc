@@ -270,11 +270,12 @@ Response StorageHandler::Disable() {
   return Response::OK();
 }
 
-Response StorageHandler::ClearDataForOrigin(
+void StorageHandler::ClearDataForOrigin(
     const std::string& origin,
-    const std::string& storage_types) {
+    const std::string& storage_types,
+    std::unique_ptr<ClearDataForOriginCallback> callback) {
   if (!process_)
-    return Response::InternalError();
+    return callback->sendFailure(Response::InternalError());
 
   StoragePartition* partition = process_->GetStoragePartition();
   std::vector<std::string> types = base::SplitString(
@@ -302,13 +303,17 @@ Response StorageHandler::ClearDataForOrigin(
   if (set.count(Storage::StorageTypeEnum::All))
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_ALL;
 
-  if (!remove_mask)
-    return Response::InvalidParams("No valid storage type specified");
+  if (!remove_mask) {
+    return callback->sendFailure(
+        Response::InvalidParams("No valid storage type specified"));
+  }
 
-  partition->ClearDataForOrigin(
-      remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(origin));
-  return Response::OK();
+  partition->ClearData(remove_mask,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+                       GURL(origin), StoragePartition::OriginMatcherFunction(),
+                       base::Time(), base::Time::Max(),
+                       base::BindOnce(&ClearDataForOriginCallback::sendSuccess,
+                                      std::move(callback)));
 }
 
 void StorageHandler::GetUsageAndQuota(

@@ -5,6 +5,9 @@
 (async function() {
   TestRunner.addResult(`Tests that the IndexedDB database list live updates.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
+
   await TestRunner.showPanel('resources');
 
   let indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);

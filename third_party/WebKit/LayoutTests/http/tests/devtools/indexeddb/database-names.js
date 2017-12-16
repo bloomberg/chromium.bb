@@ -5,6 +5,8 @@
 (async function() {
   TestRunner.addResult(`Tests that database names are correctly loaded and saved in IndexedDBModel.\n`);
   await TestRunner.loadModule('application_test_runner');
+    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  await ApplicationTestRunner.resetState();
 
   var indexedDBModel = ApplicationTestRunner.createIndexedDBModel();
   var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
