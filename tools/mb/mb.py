@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""MB - the Meta-Build wrapper around GN
+"""MB - the Meta-Build wrapper around GN.
 
 MB is a wrapper script for GN that can be used to generate build files
 for sets of canned configurations and analyze them.
@@ -17,6 +17,7 @@ import errno
 import json
 import os
 import pipes
+import platform
 import pprint
 import re
 import shutil
@@ -179,7 +180,6 @@ class MetaBuildWrapper(object):
         '    --test-launcher-retry-limit=0'
         '\n'
     )
-
     AddCommonOptions(subp)
     subp.add_argument('-j', '--jobs', dest='jobs', type=int,
                       help='Number of jobs to pass to ninja')
@@ -191,6 +191,14 @@ class MetaBuildWrapper(object):
                             ' This can be either a regular path or a '
                             'GN-style source-relative path like '
                             '//out/Default.'))
+    subp.add_argument('-s', '--swarmed', action='store_true',
+                      help='Run under swarming with the default dimensions')
+    subp.add_argument('-d', '--dimension', default=[], action='append', nargs=2,
+                      dest='dimensions', metavar='FOO bar',
+                      help='dimension to filter on')
+    subp.add_argument('--no-default-dimensions', action='store_false',
+                      dest='default_dimensions', default=True,
+                      help='Do not automatically add dimensions to the task')
     subp.add_argument('target', nargs=1,
                       help='ninja target to build and run')
     subp.add_argument('extra_args', nargs='*',
@@ -313,19 +321,78 @@ class MetaBuildWrapper(object):
     if ret:
       return ret
 
+    if self.args.swarmed:
+      return self._RunUnderSwarming(build_dir, target)
+    else:
+      return self._RunLocallyIsolated(build_dir, target)
+
+  def _RunUnderSwarming(self, build_dir, target):
+    # TODO(dpranke): Look up the information for the target in
+    # the //testing/buildbot.json file, if possible, so that we
+    # can determine the isolate target, command line, and additional
+    # swarming parameters, if possible.
+    #
+    # TODO(dpranke): Also, add support for sharding and merging results.
+    dimensions = []
+    for k, v in self._DefaultDimensions() + self.args.dimensions:
+      dimensions += ['-d', k, v]
+
+    cmd = [
+        self.executable,
+        self.PathJoin('tools', 'swarming_client', 'isolate.py'),
+        'archive',
+        '-s',
+        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
+        '-I', 'isolateserver.appspot.com',
+      ]
+    ret, out, _ = self.Run(cmd, force_verbose=False)
+    if ret:
+      return ret
+
+    isolated_hash = out.splitlines()[0].split()[0]
+    cmd = [
+        self.executable,
+        self.PathJoin('tools', 'swarming_client', 'swarming.py'),
+          'run',
+          '-s', isolated_hash,
+          '-I', 'isolateserver.appspot.com',
+          '-S', 'chromium-swarm.appspot.com',
+      ] + dimensions
+    if self.args.extra_args:
+      cmd += ['--'] + self.args.extra_args
+    ret, _, _ = self.Run(cmd, force_verbose=True, buffer_output=False)
+    return ret
+
+  def _RunLocallyIsolated(self, build_dir, target):
     cmd = [
         self.executable,
         self.PathJoin('tools', 'swarming_client', 'isolate.py'),
         'run',
         '-s',
         self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
-    ]
+      ]
     if self.args.extra_args:
-        cmd += ['--'] + self.args.extra_args
-
-    ret, _, _ = self.Run(cmd, force_verbose=False, buffer_output=False)
-
+      cmd += ['--'] + self.args.extra_args
+    ret, _, _ = self.Run(cmd, force_verbose=True, buffer_output=False)
     return ret
+
+  def _DefaultDimensions(self):
+    if not self.args.default_dimensions:
+      return []
+
+    # This code is naive and just picks reasonable defaults per platform.
+    if self.platform == 'darwin':
+      os_dim = ('os', 'Mac-10.12')
+    elif self.platform.startswith('linux'):
+      os_dim = ('os', 'Ubuntu-14.04')
+    elif self.platform == 'win32':
+      os_dim = ('os', 'Windows-10-14393')
+    else:
+      raise MBErr('unrecognized platform string "%s"' % self.platform)
+
+    return [('pool', 'Chrome'),
+            ('cpu', 'x86-64'),
+            os_dim]
 
   def CmdBuildbucket(self):
     self.ReadConfigFile()

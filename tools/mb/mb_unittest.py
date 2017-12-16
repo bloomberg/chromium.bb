@@ -478,6 +478,33 @@ class UnitTest(unittest.TestCase):
     self.check(['run', '-c', 'debug_goma', '//out/Default',
                 'base_unittests'], files=files, ret=0)
 
+  def test_run_swarmed(self):
+    files = {
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'base_unittests': {"
+          "  'label': '//base:base_unittests',"
+          "  'type': 'raw',"
+          "  'args': [],"
+          "}}\n"
+      ),
+      '/fake_src/out/Default/base_unittests.runtime_deps': (
+          "base_unittests\n"
+      ),
+    }
+
+    def run_stub(cmd, **_kwargs):
+      if 'isolate.py' in cmd[1]:
+        return 0, 'fake_hash base_unittests', ''
+      else:
+        return 0, '', ''
+
+    mbw = self.fake_mbw(files=files)
+    mbw.Run = run_stub
+    self.check(['run', '-s', '-c', 'debug_goma', '//out/Default',
+                'base_unittests'], mbw=mbw, ret=0)
+    self.check(['run', '-s', '-c', 'debug_goma', '-d', 'os', 'Win7',
+                '//out/Default', 'base_unittests'], mbw=mbw, ret=0)
+
   def test_lookup(self):
     self.check(['lookup', '-c', 'debug_goma'], ret=0)
 
