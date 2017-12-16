@@ -734,7 +734,6 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
       }
       break;
     case PIXEL_FORMAT_YV16:
-    case PIXEL_FORMAT_I422:
       LIBYUV_I422_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
                           video_frame->stride(VideoFrame::kYPlane),
                           video_frame->visible_data(VideoFrame::kUPlane),

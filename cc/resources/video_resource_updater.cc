@@ -99,7 +99,6 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
     case media::PIXEL_FORMAT_YUV444P12:
     case media::PIXEL_FORMAT_Y8:
     case media::PIXEL_FORMAT_Y16:
-    case media::PIXEL_FORMAT_I422:
     case media::PIXEL_FORMAT_UNKNOWN:
       break;
   }
