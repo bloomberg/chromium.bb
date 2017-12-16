@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_impl.h"
 
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
@@ -16,8 +16,9 @@
 #error "This file requires ARC support."
 #endif
 
-FullscreenController::FullscreenController()
-    : broadcaster_([[ChromeBroadcaster alloc] init]),
+FullscreenControllerImpl::FullscreenControllerImpl()
+    : FullscreenController(),
+      broadcaster_([[ChromeBroadcaster alloc] init]),
       model_(base::MakeUnique<FullscreenModel>()),
       bridge_(
           [[ChromeBroadcastOberverBridge alloc] initWithObserver:model_.get()]),
@@ -35,40 +36,45 @@ FullscreenController::FullscreenController()
                 forSelector:@selector(broadcastToolbarHeight:)];
 }
 
-FullscreenController::~FullscreenController() = default;
+FullscreenControllerImpl::~FullscreenControllerImpl() = default;
 
-void FullscreenController::SetWebStateList(WebStateList* web_state_list) {
+ChromeBroadcaster* FullscreenControllerImpl::broadcaster() {
+  return broadcaster_;
+}
+
+void FullscreenControllerImpl::SetWebStateList(WebStateList* web_state_list) {
   if (web_state_list_observer_)
     web_state_list_observer_->Disconnect();
   web_state_list_ = web_state_list;
   web_state_list_observer_ =
       web_state_list_ ? base::MakeUnique<FullscreenWebStateListObserver>(
-                            model_.get(), web_state_list_)
+                            this, model_.get(), web_state_list_)
                       : nullptr;
 }
 
-void FullscreenController::AddObserver(FullscreenControllerObserver* observer) {
+void FullscreenControllerImpl::AddObserver(
+    FullscreenControllerObserver* observer) {
   mediator_->AddObserver(observer);
 }
 
-void FullscreenController::RemoveObserver(
+void FullscreenControllerImpl::RemoveObserver(
     FullscreenControllerObserver* observer) {
   mediator_->RemoveObserver(observer);
 }
 
-bool FullscreenController::IsEnabled() const {
+bool FullscreenControllerImpl::IsEnabled() const {
   return model_->enabled();
 }
 
-void FullscreenController::IncrementDisabledCounter() {
+void FullscreenControllerImpl::IncrementDisabledCounter() {
   model_->IncrementDisabledCounter();
 }
 
-void FullscreenController::DecrementDisabledCounter() {
+void FullscreenControllerImpl::DecrementDisabledCounter() {
   model_->DecrementDisabledCounter();
 }
 
-void FullscreenController::Shutdown() {
+void FullscreenControllerImpl::Shutdown() {
   mediator_->Disconnect();
   [disabler_ disconnect];
   if (web_state_list_observer_)

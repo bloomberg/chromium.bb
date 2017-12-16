@@ -41,8 +41,9 @@ source_set("new_fullscreen") {
 
 source_set("new_fullscreen_internal") {
   sources = [
-    "fullscreen_controller.mm",
     "fullscreen_controller_factory.mm",
+    "fullscreen_controller_impl.h",
+    "fullscreen_controller_impl.mm",
     "fullscreen_mediator.h",
     "fullscreen_mediator.mm",
     "fullscreen_model.h",

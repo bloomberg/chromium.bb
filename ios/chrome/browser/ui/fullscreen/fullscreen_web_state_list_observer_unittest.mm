@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
+#import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -25,8 +26,9 @@ class FullscreenWebStateListObserverTest : public PlatformTest {
  public:
   FullscreenWebStateListObserverTest()
       : PlatformTest(),
+        controller_(&model_),
         web_state_list_(&web_state_list_delegate_),
-        observer_(&model_, &web_state_list_) {
+        observer_(&controller_, &model_, &web_state_list_) {
     SetUpFullscreenModelForTesting(&model_, 100.0);
   }
 
@@ -40,6 +42,7 @@ class FullscreenWebStateListObserverTest : public PlatformTest {
 
  private:
   FullscreenModel model_;
+  TestFullscreenController controller_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   FullscreenWebStateListObserver observer_;

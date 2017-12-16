@@ -115,6 +115,15 @@
 #pragma mark WebStateListObserving
 
 - (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  DCHECK_EQ(self.webStateList, webStateList);
+  if (newWebState == webStateList->GetActiveWebState())
+    self.webState = newWebState;
+}
+
+- (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
