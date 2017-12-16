@@ -128,9 +128,7 @@ void ExtensionPopup::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
   if (host()->host_contents() != agent_host->GetWebContents())
     return;
-  // Widget::Close posts a task, which should give the devtools window a
-  // chance to finish detaching from the inspected RenderViewHost.
-  GetWidget()->Close();
+  inspect_with_devtools_ = false;
 }
 
 void ExtensionPopup::OnExtensionSizeChanged(ExtensionViewViews* view) {
