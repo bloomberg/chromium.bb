@@ -42,6 +42,23 @@ cr.define('settings', function() {
      * @param {function(?Array<settings.ArcVpnProvider>):void} callback
      */
     setUpdateArcVpnProvidersCallback(callback) {}
+
+    /**
+     * Requests that Chrome send the list of devices whose "Google Play
+     * Services" notifications are disabled (these notifications must be enabled
+     * to utilize Instant Tethering). The names will be provided via
+     * setGmsCoreNotificationsDisabledDeviceNamesCallback().
+     */
+    requestGmsCoreNotificationsDisabledDeviceNames() {}
+
+    /**
+     * Sets the callback to be used to receive the list of devices whose "Google
+     * Play Services" notifications are disabled. |callback| is invoked with an
+     * array of the names of these devices; note that if no devices have this
+     * property, the provided list of device names is empty.
+     * @param {function(!Array<string>):void} callback
+     */
+    setGmsCoreNotificationsDisabledDeviceNamesCallback(callback) {}
   }
 
   /**
@@ -66,6 +83,17 @@ cr.define('settings', function() {
     /** @override */
     setUpdateArcVpnProvidersCallback(callback) {
       cr.addWebUIListener('sendArcVpnProviders', callback);
+    }
+
+    /** @override */
+    requestGmsCoreNotificationsDisabledDeviceNames() {
+      chrome.send('requestGmsCoreNotificationsDisabledDeviceNames');
+    }
+
+    /** @override */
+    setGmsCoreNotificationsDisabledDeviceNamesCallback(callback) {
+      cr.addWebUIListener(
+          'sendGmsCoreNotificationsDisabledDeviceNames', callback);
     }
   }
 

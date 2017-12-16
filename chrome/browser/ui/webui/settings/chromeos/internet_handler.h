@@ -45,6 +45,8 @@ class InternetHandler : public app_list::ArcVpnProviderManager::Observer,
   void AddNetwork(const base::ListValue* args);
   void ConfigureNetwork(const base::ListValue* args);
   void RequestArcVpnProviders(const base::ListValue* args);
+  void RequestGmsCoreNotificationsDisabledDeviceNames(
+      const base::ListValue* args);
 
   // Sets list of Arc Vpn providers.
   void SetArcVpnProviders(
@@ -55,10 +57,20 @@ class InternetHandler : public app_list::ArcVpnProviderManager::Observer,
   // Sends list of Arc Vpn providers to Chrome://settings.
   void SendArcVpnProviders();
 
+  // Sets list of names of devices whose "Google Play Services" notifications
+  // are disabled.
+  void SetGmsCoreNotificationsDisabledDeviceNames(
+      const std::vector<std::string>& device_names);
+
+  // Sends the list of names.
+  void SendGmsCoreNotificationsDisabledDeviceNames();
+
   gfx::NativeWindow GetNativeWindow() const;
 
   std::map<std::string, std::unique_ptr<base::DictionaryValue>>
       arc_vpn_providers_;
+
+  std::vector<std::unique_ptr<base::Value>> device_names_without_notifications_;
 
   Profile* const profile_;
 
