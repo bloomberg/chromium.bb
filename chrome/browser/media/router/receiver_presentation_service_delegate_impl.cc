@@ -7,6 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/media/router/local_presentation_manager.h"
 #include "chrome/browser/media/router/local_presentation_manager_factory.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/web_preferences.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::ReceiverPresentationServiceDelegateImpl);
@@ -28,6 +31,11 @@ void ReceiverPresentationServiceDelegateImpl::CreateForWebContents(
       UserDataKey(),
       base::WrapUnique(new ReceiverPresentationServiceDelegateImpl(
           web_contents, presentation_id)));
+  auto* render_view_host = web_contents->GetRenderViewHost();
+  DCHECK(render_view_host);
+  auto web_prefs = render_view_host->GetWebkitPreferences();
+  web_prefs.presentation_receiver = true;
+  render_view_host->UpdateWebkitPreferences(web_prefs);
 }
 
 void ReceiverPresentationServiceDelegateImpl::AddObserver(

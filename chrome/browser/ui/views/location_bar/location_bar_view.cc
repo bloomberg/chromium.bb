@@ -239,14 +239,17 @@ void LocationBarView::Init() {
   add_icon(zoom_view_ = new ZoomView(delegate_));
   add_icon(manage_passwords_icon_view_ =
                new ManagePasswordsIconViews(command_updater()));
-  add_icon(save_credit_card_icon_view_ =
-               new autofill::SaveCardIconView(command_updater(), browser_));
+  if (browser_)
+    add_icon(save_credit_card_icon_view_ =
+                 new autofill::SaveCardIconView(command_updater(), browser_));
   add_icon(translate_icon_view_ = new TranslateIconView(command_updater()));
 #if defined(OS_CHROMEOS)
-  add_icon(intent_picker_view_ = new IntentPickerView(browser_));
+  if (browser_)
+    add_icon(intent_picker_view_ = new IntentPickerView(browser_));
 #endif
   add_icon(find_bar_icon_ = new FindBarIcon());
-  add_icon(star_view_ = new StarView(command_updater(), browser_));
+  if (browser_)
+    add_icon(star_view_ = new StarView(command_updater(), browser_));
 
   clear_all_button_ = views::CreateVectorImageButton(this);
   clear_all_button_->SetTooltipText(
@@ -449,10 +452,12 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
 
   // Compute width of omnibox-trailing content.
   int trailing_width = edge_thickness;
-  trailing_width += IncrementalMinimumWidth(star_view_) +
-                    IncrementalMinimumWidth(translate_icon_view_) +
-                    IncrementalMinimumWidth(save_credit_card_icon_view_) +
-                    IncrementalMinimumWidth(manage_passwords_icon_view_) +
+  if (star_view_)
+    trailing_width += IncrementalMinimumWidth(star_view_);
+  trailing_width += IncrementalMinimumWidth(translate_icon_view_);
+  if (save_credit_card_icon_view_)
+    trailing_width += IncrementalMinimumWidth(save_credit_card_icon_view_);
+  trailing_width += IncrementalMinimumWidth(manage_passwords_icon_view_) +
                     IncrementalMinimumWidth(zoom_view_);
 #if defined(OS_CHROMEOS)
   if (intent_picker_view_)
@@ -535,12 +540,15 @@ void LocationBarView::Layout() {
   };
 
 #if defined(OS_CHROMEOS)
-  add_trailing_decoration(intent_picker_view_);
+  if (intent_picker_view_)
+    add_trailing_decoration(intent_picker_view_);
 #endif
-  add_trailing_decoration(star_view_);
+  if (star_view_)
+    add_trailing_decoration(star_view_);
   add_trailing_decoration(find_bar_icon_);
   add_trailing_decoration(translate_icon_view_);
-  add_trailing_decoration(save_credit_card_icon_view_);
+  if (save_credit_card_icon_view_)
+    add_trailing_decoration(save_credit_card_icon_view_);
   add_trailing_decoration(manage_passwords_icon_view_);
   add_trailing_decoration(zoom_view_);
   for (ContentSettingViews::const_reverse_iterator i(
@@ -768,7 +776,7 @@ bool LocationBarView::IsVirtualKeyboardVisible() {
 
 bool LocationBarView::RefreshSaveCreditCardIconView() {
   WebContents* web_contents = GetWebContents();
-  if (!web_contents)
+  if (!save_credit_card_icon_view_ || !web_contents)
     return false;
 
   const bool was_visible = save_credit_card_icon_view_->visible();

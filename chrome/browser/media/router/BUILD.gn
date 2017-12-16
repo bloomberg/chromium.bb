@@ -47,6 +47,8 @@ static_library("router") {
     "media_sinks_observer.h",
     "presentation_media_sinks_observer.cc",
     "presentation_media_sinks_observer.h",
+    "presentation_navigation_policy.cc",
+    "presentation_navigation_policy.h",
     "presentation_service_delegate_impl.cc",
     "presentation_service_delegate_impl.h",
     "presentation_service_delegate_observers.cc",
@@ -83,6 +85,13 @@ static_library("router") {
       "mojo/media_router_mojo_metrics.h",
       "mojo/wired_display_media_route_provider.cc",
       "mojo/wired_display_media_route_provider.h",
+    ]
+  }
+
+  if (!is_android) {
+    sources += [
+      "independent_otr_profile_manager.cc",
+      "independent_otr_profile_manager.h",
     ]
   }
 }

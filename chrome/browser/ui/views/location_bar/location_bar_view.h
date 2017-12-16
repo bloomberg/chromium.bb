@@ -153,14 +153,16 @@ class LocationBarView : public LocationBar,
   void SetStarToggled(bool on);
 
 #if defined(OS_CHROMEOS)
-  // The intent picker, should not always be visible.
+  // The intent picker, should not always be visible.  It will be null when
+  // |browser_| is null.
   IntentPickerView* intent_picker_view() { return intent_picker_view_; }
 #endif  // defined(OS_CHROMEOS)
 
-  // The star. It may not be visible.
+  // The star. It may not be visible.  It will be null when |browser_| is null.
   StarView* star_view() { return star_view_; }
 
-  // The save credit card icon. It may not be visible.
+  // The save credit card icon. It may not be visible.  It will be null when
+  // |browser_| is null.
   autofill::SaveCardIconView* save_credit_card_icon_view() {
     return save_credit_card_icon_view_;
   }
@@ -402,21 +404,22 @@ class LocationBarView : public LocationBar,
   // The manage passwords icon.
   ManagePasswordsIconViews* manage_passwords_icon_view_ = nullptr;
 
-  // The save credit card icon.
+  // The save credit card icon.  It will be null when |browser_| is null.
   autofill::SaveCardIconView* save_credit_card_icon_view_ = nullptr;
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_ = nullptr;
 
 #if defined(OS_CHROMEOS)
-  // The intent picker for accessing ARC's apps.
+  // The intent picker for accessing ARC's apps.  It will be null when
+  // |browser_| is null.
   IntentPickerView* intent_picker_view_ = nullptr;
 #endif  // defined(OS_CHROMEOS)
 
   // The icon displayed when the find bar is visible.
   FindBarIcon* find_bar_icon_ = nullptr;
 
-  // The star for bookmarking.
+  // The star for bookmarking.  It will be null when |browser_| is null.
   StarView* star_view_ = nullptr;
 
   // An [x] that appears in touch mode (when the OSK is visible) and allows the

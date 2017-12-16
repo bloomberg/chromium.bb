@@ -535,6 +535,7 @@ test("browser_tests") {
       "../browser/media/media_browsertest.h",
       "../browser/media/media_engagement_autoplay_browsertest.cc",
       "../browser/media/media_engagement_browsertest.cc",
+      "../browser/media/router/independent_otr_profile_manager_browsertest.cc",
       "../browser/media/test_license_server.cc",
       "../browser/media/test_license_server.h",
       "../browser/media/test_license_server_config.h",
@@ -1389,6 +1390,7 @@ test("browser_tests") {
           # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
           # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
           # chrome_browser_ui_views_non_mac_sources). http://crbug.com/404979.
+          "../browser/ui/media_router/presentation_receiver_window_controller_browsertest.cc",
           "../browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc",
           "../browser/ui/views/autofill/autofill_popup_view_views_browsertest.cc",
           "../browser/ui/views/autofill/password_generation_popup_view_tester_views.cc",
