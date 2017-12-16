@@ -39,14 +39,12 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
   // should likely be discarded.
   bool Init();
 
-  // These return whether we found valid verified_contents.json /
-  // computed_hashes.json files respectively. Note that both of these can be
-  // true but we still didn't find an entry for |relative_path_| in them.
-  bool have_verified_contents() const { return have_verified_contents_; }
-  bool have_computed_hashes() const { return have_computed_hashes_; }
+  // Returns true if we found valid verified_contents.json and
+  // computed_hashes.json files. Note that this can be true even if we didn't
+  // find an entry for |relative_path_| in them.
+  bool has_content_hashes() const { return has_content_hashes_; }
   // Returns whether or not this resource's entry exists in
-  // verified_contents.json (given that both |have_verified_contents_| and
-  // |have_computed_hashes_| are true).
+  // verified_contents.json (given that |has_content_hashes_| is true.
   bool file_missing_from_verified_contents() const {
     return file_missing_from_verified_contents_;
   }
@@ -72,14 +70,13 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
   base::FilePath relative_path_;
   ContentVerifierKey key_;
 
-  InitStatus status_;
+  InitStatus status_ = NOT_INITIALIZED;
 
-  bool have_verified_contents_;
-  bool have_computed_hashes_;
-  bool file_missing_from_verified_contents_;
+  bool has_content_hashes_ = false;
+  bool file_missing_from_verified_contents_ = false;
 
   // The blocksize used for generating the hashes.
-  int block_size_;
+  int block_size_ = 0;
 
   std::vector<std::string> hashes_;
 
