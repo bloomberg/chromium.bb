@@ -35,25 +35,21 @@ namespace {
 const int kRetryDelay = 5;  // Seconds.
 const int kRetryLimit = 100;
 
-// A dbus callback which handles a string result.
-//
-// Parameters
-//   on_success - Called when status=success and result=true.
-//   status - The dbus operation status.
-//   result - The result returned by the dbus operation.
-//   data - The data returned by the dbus operation.
-void DBusStringCallback(
-    const base::Callback<void(const std::string&)> on_success,
-    const base::Closure& on_failure,
+void DBusPrivacyCACallback(
+    const base::RepeatingCallback<void(const std::string&)> on_success,
+    const base::RepeatingCallback<
+        void(chromeos::attestation::AttestationStatus)> on_failure,
     const base::Location& from_here,
-    const chromeos::CryptohomeClient::TpmAttestationDataResult& result) {
-  if (!result.success) {
-    LOG(ERROR) << "Cryptohome DBus method failed: " << from_here.ToString();
-    if (!on_failure.is_null())
-      on_failure.Run();
+    chromeos::attestation::AttestationStatus status,
+    const std::string& data) {
+  if (status == chromeos::attestation::ATTESTATION_SUCCESS) {
+    on_success.Run(data);
     return;
   }
-  on_success.Run(result.data);
+  LOG(ERROR) << "Cryptohome DBus method or server call failed with status: "
+             << status << ": " << from_here.ToString();
+  if (!on_failure.is_null())
+    on_failure.Run(status);
 }
 
 }  // namespace
@@ -68,6 +64,7 @@ EnrollmentPolicyObserver::EnrollmentPolicyObserver(
       cryptohome_client_(nullptr),
       attestation_flow_(nullptr),
       num_retries_(0),
+      retry_limit_(kRetryLimit),
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -141,17 +138,19 @@ void EnrollmentPolicyObserver::GetEnrollmentCertificate() {
       std::string(),     // Not used.
       false,             // Not used.
       base::Bind(
-          [](const base::Callback<void(const std::string&)> on_success,
-             const base::Closure& on_failure, const base::Location& from_here,
-             bool success, const std::string& data) {
-            DBusStringCallback(on_success, on_failure, from_here,
-                               CryptohomeClient::TpmAttestationDataResult{
-                                   success, std::move(data)});
+          [](const base::RepeatingCallback<void(const std::string&)> on_success,
+             const base::RepeatingCallback<void(
+                 chromeos::attestation::AttestationStatus)> on_failure,
+             const base::Location& from_here, AttestationStatus status,
+             const std::string& data) {
+            DBusPrivacyCACallback(on_success, on_failure, from_here, status,
+                                  std::move(data));
           },
-          base::Bind(&EnrollmentPolicyObserver::UploadCertificate,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&EnrollmentPolicyObserver::Reschedule,
-                     weak_factory_.GetWeakPtr()),
+          base::BindRepeating(&EnrollmentPolicyObserver::UploadCertificate,
+                              weak_factory_.GetWeakPtr()),
+          base::BindRepeating(
+              &EnrollmentPolicyObserver::HandleGetCertificateFailure,
+              weak_factory_.GetWeakPtr()),
           FROM_HERE));
 }
 
@@ -169,8 +168,12 @@ void EnrollmentPolicyObserver::OnUploadComplete(bool status) {
   VLOG(1) << "Enterprise Enrollment Certificate uploaded to DMServer.";
 }
 
-void EnrollmentPolicyObserver::Reschedule() {
-  if (++num_retries_ < kRetryLimit) {
+void EnrollmentPolicyObserver::HandleGetCertificateFailure(
+    AttestationStatus status) {
+  if (status == ATTESTATION_SERVER_BAD_REQUEST_FAILURE) {
+    // We cannot get an enrollment cert (no EID) so upload an empty one.
+    UploadCertificate("");
+  } else if (++num_retries_ < retry_limit_) {
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&EnrollmentPolicyObserver::Start,

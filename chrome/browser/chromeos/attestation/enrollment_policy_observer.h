@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/attestation/attestation_constants.h"
 
 namespace policy {
 class CloudPolicyClient;
@@ -43,6 +44,8 @@ class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
 
   ~EnrollmentPolicyObserver() override;
 
+  // Sets the retry limit in number of tries; useful in testing.
+  void set_retry_limit(int limit) { retry_limit_ = limit; }
   // Sets the retry delay in seconds; useful in testing.
   void set_retry_delay(int retry_delay) { retry_delay_ = retry_delay; }
 
@@ -63,10 +66,8 @@ class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
   // will be true.
   void OnUploadComplete(bool status);
 
-  // Reschedules a policy check (i.e. a call to Start) for a later time.
-  // TODO(crbug.com/256845): A better solution would be to wait for a DBUS
-  // signal which indicates the system is ready to process this task.
-  void Reschedule();
+  // Handles a failure to get a certificate.
+  void HandleGetCertificateFailure(AttestationStatus status);
 
   DeviceSettingsService* device_settings_service_;
   policy::CloudPolicyClient* policy_client_;
@@ -74,6 +75,7 @@ class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
   AttestationFlow* attestation_flow_;
   std::unique_ptr<AttestationFlow> default_attestation_flow_;
   int num_retries_;
+  int retry_limit_;
   int retry_delay_;
 
   // Note: This should remain the last member so it'll be destroyed and

@@ -33,7 +33,20 @@ namespace {
 
 void CertCallbackSuccess(const AttestationFlow::CertificateCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true, "fake_cert"));
+      FROM_HERE, base::BindOnce(callback, ATTESTATION_SUCCESS, "fake_cert"));
+}
+
+void CertCallbackUnspecifiedFailure(
+    const AttestationFlow::CertificateCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, ATTESTATION_UNSPECIFIED_FAILURE, ""));
+}
+
+void CertCallbackBadRequestFailure(
+    const AttestationFlow::CertificateCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(callback, ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""));
 }
 
 void StatusCallbackSuccess(
@@ -59,6 +72,10 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
                   UploadEnterpriseEnrollmentCertificate("fake_cert", _))
           .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
     }
+    SetUpDevicePolicy(enrollment_id_needed);
+  }
+
+  void SetUpDevicePolicy(bool enrollment_id_needed) {
     device_policy_.policy_data().set_enrollment_id_needed(enrollment_id_needed);
     device_policy_.Build();
     session_manager_client_.set_device_policy(device_policy_.GetBlob());
@@ -69,6 +86,7 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
     EnrollmentPolicyObserver observer(&policy_client_,
                                       &device_settings_service_,
                                       &cryptohome_client_, &attestation_flow_);
+    observer.set_retry_limit(3);
     observer.set_retry_delay(0);
     base::RunLoop().RunUntilIdle();
   }
@@ -93,8 +111,25 @@ TEST_F(EnrollmentPolicyObserverTest, UnregisteredPolicyClient) {
   Run();
 }
 
+TEST_F(EnrollmentPolicyObserverTest, GetCertificateUnspecifiedFailure) {
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
+      .WillRepeatedly(WithArgs<4>(Invoke(CertCallbackUnspecifiedFailure)));
+  SetUpDevicePolicy(true);
+  Run();
+}
+
+TEST_F(EnrollmentPolicyObserverTest, GetCertificateBadRequestFailure) {
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
+      .WillOnce(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
+  EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentCertificate("", _))
+      .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
+  SetUpDevicePolicy(true);
+  Run();
+}
+
 TEST_F(EnrollmentPolicyObserverTest, DBusFailureRetry) {
   SetUpEnrollmentIdNeeded(true);
+
   // Simulate a DBus failure.
   cryptohome_client_.SetServiceIsAvailable(false);
 

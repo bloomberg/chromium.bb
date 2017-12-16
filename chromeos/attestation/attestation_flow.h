@@ -58,8 +58,8 @@ class CHROMEOS_EXPORT ServerProxy {
 // This class is not thread safe.
 class CHROMEOS_EXPORT AttestationFlow {
  public:
-  typedef base::Callback<void(bool success,
-                              const std::string& pem_certificate_chain)>
+  typedef base::RepeatingCallback<
+      void(AttestationStatus status, const std::string& pem_certificate_chain)>
       CertificateCallback;
 
   // Returns the attestation key type for a given |certificate_profile|.
@@ -242,6 +242,16 @@ class CHROMEOS_EXPORT AttestationFlow {
                                        const CertificateCallback& callback,
                                        bool success,
                                        const std::string& data);
+
+  // Called after cryptohome finishes processing of a certificate request.
+  //
+  // Parameters
+  //   callback - Called when the operation completes.
+  //   success - The status of request finishing.
+  //   data - The certificate data in PEM format.
+  void OnCertRequestFinished(const CertificateCallback& callback,
+                             bool success,
+                             const std::string& data);
 
   // Gets an existing certificate from the attestation daemon.
   //

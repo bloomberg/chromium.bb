@@ -60,7 +60,8 @@ class MockObserver {
   MockObserver();
   virtual ~MockObserver();
 
-  MOCK_METHOD2(MockCertificateCallback, void(bool, const std::string&));
+  MOCK_METHOD2(MockCertificateCallback,
+               void(AttestationStatus, const std::string&));
 };
 
 class MockAttestationFlow : public AttestationFlow {

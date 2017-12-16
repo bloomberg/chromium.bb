@@ -45,12 +45,12 @@ class AttestationFlowTest : public testing::Test {
  public:
   void QuitRunLoopCertificateCallback(
       const AttestationFlow::CertificateCallback& callback,
-      bool success,
+      AttestationStatus status,
       const std::string& cert) {
     LOG(WARNING) << "Quitting run loop.";
     run_loop_->Quit();
     if (!callback.is_null())
-      callback.Run(success, cert);
+      callback.Run(status, cert);
   }
 
  protected:
@@ -130,10 +130,10 @@ TEST_F(AttestationFlowTest, GetCertificate) {
       .InSequence(flow_order);
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(
-      observer,
-      MockCertificateCallback(
-          true, cryptohome::MockAsyncMethodCaller::kFakeAttestationCert))
+  EXPECT_CALL(observer,
+              MockCertificateCallback(
+                  ATTESTATION_SUCCESS,
+                  cryptohome::MockAsyncMethodCaller::kFakeAttestationCert))
       .Times(1)
       .InSequence(flow_order);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
@@ -211,9 +211,10 @@ TEST_F(AttestationFlowTest, GetCertificate_Attestation_Not_Prepared) {
                                 kEnterpriseUserKey, _));
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(
-      true,
-      cryptohome::MockAsyncMethodCaller::kFakeAttestationCert))
+  EXPECT_CALL(observer,
+              MockCertificateCallback(
+                  ATTESTATION_SUCCESS,
+                  cryptohome::MockAsyncMethodCaller::kFakeAttestationCert))
       .Times(1)
       .InSequence(flow_order);
   AttestationFlow::CertificateCallback callback = base::Bind(
@@ -243,7 +244,9 @@ TEST_F(AttestationFlowTest, GetCertificate_Attestation_Never_Prepared) {
   EXPECT_CALL(*proxy, GetType()).WillRepeatedly(DoDefault());
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(false, "")).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_UNSPECIFIED_FAILURE, ""))
+      .Times(1);
   AttestationFlow::CertificateCallback callback = base::Bind(
       &AttestationFlowTest::QuitRunLoopCertificateCallback,
       base::Unretained(this), base::Bind(&MockObserver::MockCertificateCallback,
@@ -274,7 +277,8 @@ TEST_F(AttestationFlowTest, GetCertificate_NoEK) {
   EXPECT_CALL(*proxy, GetType()).WillRepeatedly(DoDefault());
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(false, ""))
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_UNSPECIFIED_FAILURE, ""))
       .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
@@ -305,7 +309,8 @@ TEST_F(AttestationFlowTest, GetCertificate_EKRejected) {
       _)).Times(1);
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(false, ""))
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_UNSPECIFIED_FAILURE, ""))
       .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
@@ -342,7 +347,9 @@ TEST_F(AttestationFlowTest, GetCertificate_FailEnroll) {
       _)).Times(1);
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(false, "")).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_UNSPECIFIED_FAILURE, ""))
+      .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
       base::Unretained(&observer));
@@ -380,9 +387,11 @@ TEST_F(AttestationFlowTest, GetMachineCertificateAlreadyEnrolled) {
       _)).Times(1);
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(
-      true,
-      cryptohome::MockAsyncMethodCaller::kFakeAttestationCert)).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(
+                  ATTESTATION_SUCCESS,
+                  cryptohome::MockAsyncMethodCaller::kFakeAttestationCert))
+      .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
       base::Unretained(&observer));
@@ -409,7 +418,9 @@ TEST_F(AttestationFlowTest, GetCertificate_FailCreateCertRequest) {
   EXPECT_CALL(*proxy, GetType()).WillRepeatedly(DoDefault());
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(false, "")).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_UNSPECIFIED_FAILURE, ""))
+      .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
       base::Unretained(&observer));
@@ -439,7 +450,48 @@ TEST_F(AttestationFlowTest, GetCertificate_CertRequestRejected) {
       _)).Times(1);
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(false, "")).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_UNSPECIFIED_FAILURE, ""))
+      .Times(1);
+  AttestationFlow::CertificateCallback mock_callback = base::BindRepeating(
+      &MockObserver::MockCertificateCallback, base::Unretained(&observer));
+
+  std::unique_ptr<ServerProxy> proxy_interface(proxy.release());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
+  flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, EmptyAccountId(), "",
+                      true, mock_callback);
+  RunUntilIdle();
+}
+
+TEST_F(AttestationFlowTest, GetCertificate_CertRequestBadRequest) {
+  StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
+  async_caller.SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(async_caller, AsyncTpmAttestationCreateCertRequest(
+                                _, PROFILE_ENTERPRISE_USER_CERTIFICATE,
+                                cryptohome::Identification(), "", _))
+      .Times(1);
+
+  chromeos::FakeCryptohomeClient client;
+
+  std::unique_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());
+  proxy->DeferToFake(true);
+  EXPECT_CALL(*proxy, GetType()).WillRepeatedly(DoDefault());
+  EXPECT_CALL(
+      *proxy,
+      SendCertificateRequest(
+          cryptohome::MockAsyncMethodCaller::kFakeAttestationCertRequest, _))
+      .Times(1);
+  EXPECT_CALL(async_caller, AsyncTpmAttestationFinishCertRequest(_, _, _, _, _))
+      .Times(1)
+      .WillOnce(WithArgs<4>(Invoke(
+          [](const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+            callback.Run(false, "");
+          })));
+
+  StrictMock<MockObserver> observer;
+  EXPECT_CALL(observer, MockCertificateCallback(
+                            ATTESTATION_SERVER_BAD_REQUEST_FAILURE, ""))
+      .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
       base::Unretained(&observer));
@@ -463,7 +515,9 @@ TEST_F(AttestationFlowTest, GetCertificate_FailIsEnrolled) {
   EXPECT_CALL(*proxy, GetType()).WillRepeatedly(DoDefault());
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(false, "")).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_UNSPECIFIED_FAILURE, ""))
+      .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
       base::Unretained(&observer));
@@ -501,9 +555,11 @@ TEST_F(AttestationFlowTest, GetCertificate_CheckExisting) {
       _)).Times(1);
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(
-      true,
-      cryptohome::MockAsyncMethodCaller::kFakeAttestationCert)).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(
+                  ATTESTATION_SUCCESS,
+                  cryptohome::MockAsyncMethodCaller::kFakeAttestationCert))
+      .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
       base::Unretained(&observer));
@@ -528,7 +584,9 @@ TEST_F(AttestationFlowTest, GetCertificate_AlreadyExists) {
   EXPECT_CALL(*proxy, GetType()).WillRepeatedly(DoDefault());
 
   StrictMock<MockObserver> observer;
-  EXPECT_CALL(observer, MockCertificateCallback(true, "fake_cert")).Times(1);
+  EXPECT_CALL(observer,
+              MockCertificateCallback(ATTESTATION_SUCCESS, "fake_cert"))
+      .Times(1);
   AttestationFlow::CertificateCallback mock_callback = base::Bind(
       &MockObserver::MockCertificateCallback,
       base::Unretained(&observer));

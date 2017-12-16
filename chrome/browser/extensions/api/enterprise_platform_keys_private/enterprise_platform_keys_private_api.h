@@ -151,7 +151,7 @@ class EPKPChallengeKeyBase {
       bool result);
   void GetCertificateCallback(
       const base::Callback<void(PrepareKeyResult)>& callback,
-      bool success,
+      chromeos::attestation::AttestationStatus status,
       const std::string& pem_certificate_chain);
 
   chromeos::InstallAttributes* install_attributes_;

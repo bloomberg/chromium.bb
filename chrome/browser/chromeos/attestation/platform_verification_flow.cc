@@ -283,11 +283,11 @@ void PlatformVerificationFlow::OnCertificateReady(
     const ChallengeContext& context,
     const AccountId& account_id,
     std::unique_ptr<base::Timer> timer,
-    bool operation_success,
+    AttestationStatus operation_status,
     const std::string& certificate_chain) {
   // Log failure before checking the timer so all failures are logged, even if
   // they took too long.
-  if (!operation_success) {
+  if (operation_status != ATTESTATION_SUCCESS) {
     LOG(WARNING) << "PlatformVerificationFlow: Failed to certify platform.";
   }
   if (!timer->IsRunning()) {
@@ -296,7 +296,7 @@ void PlatformVerificationFlow::OnCertificateReady(
     return;
   }
   timer->Stop();
-  if (!operation_success) {
+  if (operation_status != ATTESTATION_SUCCESS) {
     ReportError(context.callback, PLATFORM_NOT_VERIFIED);
     return;
   }
@@ -422,10 +422,10 @@ PlatformVerificationFlow::ExpiryStatus PlatformVerificationFlow::CheckExpiry(
 
 void PlatformVerificationFlow::RenewCertificateCallback(
     const std::string& old_certificate_chain,
-    bool operation_success,
+    AttestationStatus operation_status,
     const std::string& certificate_chain) {
   renewals_in_progress_.erase(old_certificate_chain);
-  if (!operation_success) {
+  if (operation_status != ATTESTATION_SUCCESS) {
     LOG(WARNING) << "PlatformVerificationFlow: Failed to renew platform "
                     "certificate.";
     return;

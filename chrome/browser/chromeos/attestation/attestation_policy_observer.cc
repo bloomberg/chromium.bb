@@ -87,6 +87,23 @@ void DBusStringCallback(
   on_success.Run(result->data);
 }
 
+void DBusPrivacyCACallback(
+    const base::RepeatingCallback<void(const std::string&)> on_success,
+    const base::RepeatingCallback<
+        void(chromeos::attestation::AttestationStatus)> on_failure,
+    const base::Location& from_here,
+    chromeos::attestation::AttestationStatus status,
+    const std::string& data) {
+  if (status == chromeos::attestation::ATTESTATION_SUCCESS) {
+    on_success.Run(data);
+    return;
+  }
+  LOG(ERROR) << "Cryptohome DBus method or server called failed with status:"
+             << status << ": " << from_here.ToString();
+  if (!on_failure.is_null())
+    on_failure.Run(status);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -96,9 +113,10 @@ AttestationPolicyObserver::AttestationPolicyObserver(
     policy::CloudPolicyClient* policy_client)
     : cros_settings_(CrosSettings::Get()),
       policy_client_(policy_client),
-      cryptohome_client_(NULL),
-      attestation_flow_(NULL),
+      cryptohome_client_(nullptr),
+      attestation_flow_(nullptr),
       num_retries_(0),
+      retry_limit_(kRetryLimit),
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -188,17 +206,18 @@ void AttestationPolicyObserver::GetNewCertificate() {
       std::string(),     // Not used.
       true,              // Force a new key to be generated.
       base::Bind(
-          [](const base::Callback<void(const std::string&)> on_success,
-             const base::Closure& on_failure, const base::Location& from_here,
-             bool success, const std::string& data) {
-            DBusStringCallback(on_success, on_failure, from_here,
-                               CryptohomeClient::TpmAttestationDataResult{
-                                   success, std::move(data)});
+          [](const base::RepeatingCallback<void(const std::string&)> on_success,
+             const base::RepeatingCallback<void(AttestationStatus)> on_failure,
+             const base::Location& from_here, AttestationStatus status,
+             const std::string& data) {
+            DBusPrivacyCACallback(on_success, on_failure, from_here, status,
+                                  std::move(data));
           },
-          base::Bind(&AttestationPolicyObserver::UploadCertificate,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&AttestationPolicyObserver::Reschedule,
-                     weak_factory_.GetWeakPtr()),
+          base::BindRepeating(&AttestationPolicyObserver::UploadCertificate,
+                              weak_factory_.GetWeakPtr()),
+          base::BindRepeating(
+              &AttestationPolicyObserver::HandleGetCertificateFailure,
+              weak_factory_.GetWeakPtr()),
           FROM_HERE));
 }
 
@@ -307,16 +326,23 @@ void AttestationPolicyObserver::MarkAsUploaded(const std::string& key_payload) {
       KEY_DEVICE,
       cryptohome::Identification(),  // Not used.
       kEnterpriseMachineKey, new_payload,
-      base::BindOnce(DBusBoolRedirectCallback, base::Closure(), base::Closure(),
-                     base::Closure(), FROM_HERE));
+      base::BindRepeating(DBusBoolRedirectCallback, base::RepeatingClosure(),
+                          base::RepeatingClosure(), base::RepeatingClosure(),
+                          FROM_HERE));
+}
+
+void AttestationPolicyObserver::HandleGetCertificateFailure(
+    AttestationStatus status) {
+  if (status != ATTESTATION_SERVER_BAD_REQUEST_FAILURE)
+    Reschedule();
 }
 
 void AttestationPolicyObserver::Reschedule() {
-  if (++num_retries_ < kRetryLimit) {
+  if (++num_retries_ < retry_limit_) {
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&AttestationPolicyObserver::Start,
-                       weak_factory_.GetWeakPtr()),
+        base::BindRepeating(&AttestationPolicyObserver::Start,
+                            weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(retry_delay_));
   } else {
     LOG(WARNING) << "AttestationPolicyObserver: Retry limit exceeded.";
