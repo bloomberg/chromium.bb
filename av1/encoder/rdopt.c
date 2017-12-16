@@ -3589,7 +3589,7 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_U];
-  const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, pd);
+  const TX_SIZE uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
   int plane;
   int is_cost_valid = 1;
   av1_init_rd_stats(rd_stats);
@@ -5413,8 +5413,10 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]);
   assert(plane_bsize < BLOCK_SIZES_ALL);
-  assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
-  assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);
+  if (!xd->lossless[mbmi->segment_id]) {
+    assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
+    assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);
+  }
 #endif
 
   xd->cfl.use_dc_pred_cache = 1;
@@ -5551,8 +5553,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (mode == UV_CFL_PRED) {
       if (!is_cfl_allowed(mbmi)) continue;
       assert(!is_directional_mode);
-      const TX_SIZE uv_tx_size =
-          av1_get_uv_tx_size(mbmi, &xd->plane[AOM_PLANE_U]);
+      const TX_SIZE uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
       cfl_alpha_rate = cfl_rd_pick_alpha(x, cpi, uv_tx_size, best_rd);
       if (cfl_alpha_rate == INT_MAX) continue;
     }
@@ -5585,7 +5586,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       assert(is_cfl_allowed(mbmi));
       this_rate += cfl_alpha_rate;
 #if CONFIG_DEBUG
-      assert(xd->cfl.rate == this_rate);
+      if (!xd->lossless[mbmi->segment_id]) assert(xd->cfl.rate == this_rate);
 #endif  // CONFIG_DEBUG
     }
 #endif
@@ -8890,7 +8891,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  struct macroblockd_plane *const pd = xd->plane;
   int rate_y = 0, rate_uv = 0, rate_y_tokenonly = 0, rate_uv_tokenonly = 0;
   int y_skip = 0, uv_skip = 0;
   int64_t dist_y = 0, dist_uv = 0;
@@ -8924,8 +8924,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       xd->cfl.store_y = 0;
     }
 #endif  // CONFIG_CFL
-    max_uv_tx_size = uv_txsize_lookup[bsize][mbmi->tx_size][pd[1].subsampling_x]
-                                     [pd[1].subsampling_y];
+    max_uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
     init_sbuv_mode(mbmi);
     if (!x->skip_chroma_rd)
       rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
@@ -9792,7 +9791,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (ref_frame == INTRA_FRAME) {
       RD_STATS rd_stats_y;
       TX_SIZE uv_tx;
-      struct macroblockd_plane *const pd = &xd->plane[1];
 #if CONFIG_EXT_INTRA
       is_directional_mode = av1_is_directional_mode(mbmi->mode, bsize);
       if (is_directional_mode && av1_use_angle_delta(bsize)) {
@@ -9884,8 +9882,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       if (rate_y == INT_MAX) continue;
 
-      uv_tx = uv_txsize_lookup[bsize][mbmi->tx_size][pd->subsampling_x]
-                              [pd->subsampling_y];
+      uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
       if (rate_uv_intra[uv_tx] == INT_MAX) {
         choose_intra_uv_mode(cpi, x, bsize, uv_tx, &rate_uv_intra[uv_tx],
                              &rate_uv_tokenonly[uv_tx], &dist_uvs[uv_tx],
@@ -10604,8 +10601,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
            rows * cols * sizeof(best_palette_color_map[0]));
     super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
     if (rd_stats_y.rate == INT_MAX) goto PALETTE_EXIT;
-    uv_tx = uv_txsize_lookup[bsize][mbmi->tx_size][xd->plane[1].subsampling_x]
-                            [xd->plane[1].subsampling_y];
+    uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
     if (rate_uv_intra[uv_tx] == INT_MAX) {
       choose_intra_uv_mode(cpi, x, bsize, uv_tx, &rate_uv_intra[uv_tx],
                            &rate_uv_tokenonly[uv_tx], &dist_uvs[uv_tx],

@@ -1418,7 +1418,7 @@ static void get_filter_level_and_masks_non420(
     const int skip_this_r = skip_this && !block_edge_above;
 
     TX_SIZE tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                          ? av1_get_uv_tx_size(mbmi, plane)
+                          ? av1_get_uv_tx_size(mbmi, ss_x, ss_y)
                           : mbmi->tx_size;
 
     const int skip_border_4x4_c =
@@ -2013,7 +2013,8 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
   const MB_MODE_INFO *mbmi = &mi->mbmi;
   TX_SIZE tx_size = (plane == AOM_PLANE_Y)
                         ? mbmi->tx_size
-                        : av1_get_uv_tx_size(mbmi, plane_ptr);
+                        : av1_get_uv_tx_size(mbmi, plane_ptr->subsampling_x,
+                                             plane_ptr->subsampling_y);
   assert(tx_size < TX_SIZES_ALL);
 
   // mi_row and mi_col is the absolute position of the MI block.

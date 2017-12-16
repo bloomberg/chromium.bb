@@ -42,6 +42,9 @@ extern "C" {
 // Disables vartx transform split for chroma
 #define DISABLE_VARTX_FOR_CHROMA 1
 
+// Disables small transform split for intra modes.
+#define DISABLE_SMLTX_FOR_CHROMA_INTRA 1
+
 // SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
 typedef enum {
 #if COMPOUND_SEGMENT_TYPE == 0
@@ -1128,27 +1131,52 @@ static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize,
   return tx_size;
 }
 
-static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi,
-                                         const struct macroblockd_plane *pd) {
-#if CONFIG_CFL
-  if (!is_inter_block(mbmi) && mbmi->uv_mode == UV_CFL_PRED) {
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
-    assert(plane_bsize < BLOCK_SIZES_ALL);
-    return max_txsize_rect_lookup[0][plane_bsize];
+static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int is_inter,
+                                            int ss_x, int ss_y) {
+  const BLOCK_SIZE plane_bsize = ss_size_lookup[bsize][ss_x][ss_y];
+  assert(plane_bsize < BLOCK_SIZES_ALL);
+  TX_SIZE uv_tx = max_txsize_rect_lookup[is_inter][plane_bsize];
+#if CONFIG_TX64X64
+  switch (uv_tx) {
+    case TX_64X64:
+    case TX_64X32:
+    case TX_32X64: return TX_32X32;
+    case TX_64X16: return TX_32X16;
+    case TX_16X64: return TX_16X32;
+    default: break;
   }
+#endif  // CONFIG_TX64X64
+  return uv_tx;
+}
+
+static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi, int ss_x,
+                                         int ss_y) {
+  if (is_inter_block(mbmi)) {
+#if DISABLE_VARTX_FOR_CHROMA
+    if (ss_x || ss_y)
+      return av1_get_max_uv_txsize(mbmi->sb_type, 1, ss_x, ss_y);
+#endif  // DISABLE_VARTX_FOR_CHROMA
+  } else {
+#if DISABLE_SMLTX_FOR_CHROMA_INTRA
+    return av1_get_max_uv_txsize(mbmi->sb_type, 0, ss_x, ss_y);
+#endif  // DISABLE_SMLTX_FOR_CHROMA_INTRA
+#if CONFIG_CFL
+    if (mbmi->uv_mode == UV_CFL_PRED)
+      return av1_get_max_uv_txsize(mbmi->sb_type, 0, ss_x, ss_y);
 #endif
+  }
   const TX_SIZE uv_txsize =
-      uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]
-                      [pd->subsampling_y];
+      uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][ss_x][ss_y];
   assert(uv_txsize != TX_INVALID);
   return uv_txsize;
 }
 
 static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  if (xd->lossless[mbmi->segment_id]) return TX_4X4;
   if (plane == 0) return mbmi->tx_size;
   const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
-  return av1_get_uv_tx_size(mbmi, pd);
+  return av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y);
 }
 
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
