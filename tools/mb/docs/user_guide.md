@@ -132,6 +132,13 @@ incorporated into the appropriate flags for GN as needed.
 
 Produces help output on the other subcommands
 
+### `mb isolate`
+
+Builds a given (ninja) target and produces an `.isolated` file suitable
+for then running the command either locally in an isolated environment,
+or remotely by uploading it to an isolate server and running it under
+swarming. See below for more information on isolates and swarming.
+
 ### `mb lookup`
 
 Prints what command will be run by `mb gen` (like `mb gen -n` but does
@@ -140,6 +147,24 @@ not require you to specify a path).
 The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
 `--phase`, `-q/--quiet`, and `-v/--verbose` flags work as documented for
 `mb gen`.
+
+### `mb run`
+
+Builds and runs a given (ninja) target. By default the target will
+be run locally but isolated (i.e., outside of the source tree, just
+as it would be run under swarming). If the `-s/--swarming` flag is
+passed, the target will be built, run, uploaded to the isolate server,
+and run under swarming.
+
+By default, a set of dimensions appropriate for running the target in the
+default pool for the build will be provided. You can specify additional
+dimensions with the `-d/--dimension` flags, and you can skip the default
+dimensions with the `--no-default-dimensions` flag (which can be useful
+if you need to run on devices or in a different pool). See below for more
+information on isolates and swarming.
+
+In either case, any flags past `--` will be passed on to the command
+to be run inside the isolate.
 
 ### `mb validate`
 
