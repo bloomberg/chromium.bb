@@ -22,6 +22,8 @@ struct PwgRasterSettings {
   bool rotate_all_pages;
   // Rasterize pages in reverse order.
   bool reverse_page_order;
+  // Rasterize pages in color.
+  bool use_color;
 };
 
 }  // namespace printing

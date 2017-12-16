@@ -229,10 +229,27 @@ const char kSampleCapabilitiesResponsePWGSettings[] =
          }
        })";
 
+const char kSampleCapabilitiesResponsePWGSettingsMono[] =
+    R"({
+         "version": "1.0",
+         "printer": {
+           "pwg_raster_config": {
+             "document_type_supported": [ "SGRAY_8" ],
+             "document_sheet_back": "ROTATED"
+           }
+         }
+       })";
+
 const char kSampleCJTDuplex[] =
     R"({
          "version" : "1.0",
          "print": { "duplex": {"type": "SHORT_EDGE"} }
+       })";
+
+const char kSampleCJTMono[] =
+    R"({
+         "version" : "1.0",
+         "print": { "color": {"type": "STANDARD_MONOCHROME"} }
        })";
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -880,6 +897,9 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
             pwg_converter_->bitmap_settings().odd_page_transform);
   EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
   EXPECT_FALSE(pwg_converter_->bitmap_settings().reverse_page_order);
+
+  // Defaults to true when the color is not specified.
+  EXPECT_TRUE(pwg_converter_->bitmap_settings().use_color);
 }
 
 TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
@@ -914,6 +934,83 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
             pwg_converter_->bitmap_settings().odd_page_transform);
   EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
   EXPECT_TRUE(pwg_converter_->bitmap_settings().reverse_page_order);
+
+  // Defaults to true when the color is not specified.
+  EXPECT_TRUE(pwg_converter_->bitmap_settings().use_color);
+}
+
+TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintMono) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetData(RefCountedBytesFromString("path/to/"));
+  local_print_operation_->SetTicket(kSampleCJTMono);
+  local_print_operation_->SetCapabilities(
+      kSampleCapabilitiesResponsePWGSettings);
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
+                                      kSampleInfoResponseWithCreatejob));
+
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
+      GetUrl("/privet/printer/createjob"), kSampleCJTMono,
+      kSampleCreatejobResponse));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com"
+             "&job_name=Sample+job+name&job_id=1234"),
+      base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
+      kSampleLocalPrintResponse));
+
+  EXPECT_EQ(printing::TRANSFORM_NORMAL,
+            pwg_converter_->bitmap_settings().odd_page_transform);
+  EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
+  EXPECT_TRUE(pwg_converter_->bitmap_settings().reverse_page_order);
+
+  // Ticket specified mono, but no SGRAY_8 color capability.
+  EXPECT_TRUE(pwg_converter_->bitmap_settings().use_color);
+}
+
+TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintMonoToGRAY8Printer) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetData(RefCountedBytesFromString("path/to/"));
+  local_print_operation_->SetTicket(kSampleCJTMono);
+  local_print_operation_->SetCapabilities(
+      kSampleCapabilitiesResponsePWGSettingsMono);
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/info"),
+                                      kSampleInfoResponseWithCreatejob));
+
+  EXPECT_TRUE(
+      SuccessfulResponseToURL(GetUrl("/privet/info"), kSampleInfoResponse));
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
+      GetUrl("/privet/printer/createjob"), kSampleCJTMono,
+      kSampleCreatejobResponse));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
+      GetUrl("/privet/printer/submitdoc?"
+             "client_name=Chrome&user_name=sample%40gmail.com"
+             "&job_name=Sample+job+name&job_id=1234"),
+      base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
+      kSampleLocalPrintResponse));
+
+  EXPECT_EQ(printing::TRANSFORM_NORMAL,
+            pwg_converter_->bitmap_settings().odd_page_transform);
+  EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
+  EXPECT_FALSE(pwg_converter_->bitmap_settings().reverse_page_order);
+
+  // Ticket specified mono, and SGRAY_8 color capability exists.
+  EXPECT_FALSE(pwg_converter_->bitmap_settings().use_color);
 }
 
 TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {

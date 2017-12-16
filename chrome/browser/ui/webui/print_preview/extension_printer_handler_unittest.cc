@@ -800,6 +800,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
             pwg_raster_converter_->bitmap_settings().odd_page_transform);
   EXPECT_FALSE(pwg_raster_converter_->bitmap_settings().rotate_all_pages);
   EXPECT_FALSE(pwg_raster_converter_->bitmap_settings().reverse_page_order);
+  EXPECT_TRUE(pwg_raster_converter_->bitmap_settings().use_color);
 
   EXPECT_EQ(printing::kDefaultPdfDpi,
             pwg_raster_converter_->conversion_settings().dpi);
@@ -853,6 +854,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
             pwg_raster_converter_->bitmap_settings().odd_page_transform);
   EXPECT_TRUE(pwg_raster_converter_->bitmap_settings().rotate_all_pages);
   EXPECT_TRUE(pwg_raster_converter_->bitmap_settings().reverse_page_order);
+  EXPECT_TRUE(pwg_raster_converter_->bitmap_settings().use_color);
 
   EXPECT_EQ(200,  // max(vertical_dpi, horizontal_dpi)
             pwg_raster_converter_->conversion_settings().dpi);

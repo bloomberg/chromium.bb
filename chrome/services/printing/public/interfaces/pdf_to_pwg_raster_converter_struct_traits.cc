@@ -13,6 +13,7 @@ bool StructTraits<printing::mojom::PwgRasterSettingsDataView,
          printing::PwgRasterSettings* out) {
   out->rotate_all_pages = data.rotate_all_pages();
   out->reverse_page_order = data.reverse_page_order();
+  out->use_color = data.use_color();
   return data.ReadOddPageTransform(&out->odd_page_transform);
 }
 

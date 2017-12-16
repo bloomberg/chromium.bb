@@ -49,6 +49,18 @@ cr.define('print_preview.ticket_items', function() {
           null;
     }
 
+    /** @return {Object} Printer's default color option. */
+    defaultColorOption() {
+      const capability = this.capability;
+      if (!capability) {
+        return null;
+      }
+      const defaultOptions = capability.option.filter(function(option) {
+        return option.is_default;
+      });
+      return defaultOptions.length != 0 ? defaultOptions[0] : null;
+    }
+
     /** @return {Object} Color option corresponding to the current value. */
     getSelectedOption() {
       const capability = this.capability;
@@ -70,9 +82,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal() {
-      const capability = this.capability;
-      const defaultOption =
-          capability ? this.getDefaultColorOption_(capability.option) : null;
+      const defaultOption = this.defaultColorOption();
       return defaultOption &&
           (Color.COLOR_TYPES_.indexOf(defaultOption.type) >= 0);
     }
@@ -90,21 +100,6 @@ cr.define('print_preview.ticket_items', function() {
         }
       }
       return this.getDefaultValueInternal();
-    }
-
-    /**
-     * @param {!Array<!Object<{type: (string|undefined),
-     *                           is_default: (boolean|undefined)}>>} options
-     * @return {Object<{type: (string|undefined),
-     *                   is_default: (boolean|undefined)}>} Default color
-     *     option of the given list.
-     * @private
-     */
-    getDefaultColorOption_(options) {
-      const defaultOptions = options.filter(function(option) {
-        return option.is_default;
-      });
-      return (defaultOptions.length == 0) ? null : defaultOptions[0];
     }
   }
 
