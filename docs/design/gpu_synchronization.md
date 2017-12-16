@@ -119,12 +119,13 @@ ensure this sequencing, Chrome has to emulate it using virtual contexts. (Or by
 using explicit synchronization, but it doesn't do that today.) See also the
 "CHROMIUM fence sync" section below.
 
-## Command buffer GL clients: use CHROMIUM fence sync
+## Command buffer GL clients: use CHROMIUM sync tokens
 
 Chrome's command buffer IPC interface uses multiple layers. There are multiple
 active IPC channels (typically one per process, i.e. one per Renderer and one
-for Browser). Each IPC channel has multiple streams, and each stream can contain
-multiple command buffers, which in turn contain a sequence of GL commands.
+for Browser). Each IPC channel has multiple scheduling groups (also called
+streams), and each stream can contain multiple command buffers, which in turn
+contain a sequence of GL commands.
 
 Command buffers in the same client-side share group must be in the same stream.
 Command scheduling granuarity is at the stream level, and a client can choose to
@@ -133,14 +134,13 @@ arbitrary integers assigned by the client at creation time, see for example the
 [ui::ContextProviderCommandBuffer](/src/services/ui/public/cpp/gpu/context_provider_command_buffer.h)
 constructor.
 
-The CHROMIUM fence sync mechanism is intended to order operations among
-command buffer GL instructions. It is based on creating a fence sync object in the
-stream, flushing it appropriately (see below), and generating a sync token from
-it which is a cross-context transportable reference to the underlying fence
-sync. A WaitSyncTokenCHROMIUM call does **not** ensure that the underlying GL
-commands have been executed at the GPU driver level, this mechanism is not
-suitable for synchronizing command buffer GL operations with a local
-driver-level GL context.
+The CHROMIUM sync token is intended to order operations among command buffer GL
+instructions. It inserts an internal fence sync command in the stream, flushing
+it appropriately (see below), and generating a sync token from it which is a
+cross-context transportable reference to the underlying fence sync. A
+WaitSyncTokenCHROMIUM call does **not** ensure that the underlying GL commands
+have been executed at the GPU driver level, this mechanism is not suitable for
+synchronizing command buffer GL operations with a local driver-level GL context.
 
 See the
 [CHROMIUM_sync_point](/src/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_sync_point.txt)
@@ -166,9 +166,7 @@ token is sufficient, and commands do not need to be flushed to the server:
 ```c++
 // stream A
 Render1(glA);
-uint64 fence = glA->InsertFenceSyncCHROMIUM();
-glA->OrderingBarrierCHROMIUM();
-glA->GenUnverifiedSyncTokenCHROMIUM(fence, out_sync_token);
+glA->GenUnverifiedSyncTokenCHROMIUM(out_sync_token);
 
 // stream B
 glB->WaitSyncTokenCHROMIUM();
@@ -184,8 +182,7 @@ Example:
 ```c++
 // IPC channel in process X
 Render1(glX);
-uint64 fence = glX->InsertFenceSyncCHROMIUM();
-glX->GenSyncTokenCHROMIUM(fence, out_sync_token);
+glX->GenSyncTokenCHROMIUM(out_sync_token);
 
 // IPC channel in process Y
 glY->WaitSyncTokenCHROMIUM();
@@ -197,12 +194,8 @@ by calling `VerifySyncTokensCHROMIUM`. This will wait for a flush to complete as
 necessary. Use this to avoid multiple sequential flushes:
 
 ```c++
-uint64 fence1 = gl->InsertFenceSyncCHROMIUM();
-gl->OrderingBarrierCHROMIUM();
-gl->GenUnverifiedSyncTokenCHROMIUM(fence1, out_sync_tokens[0]);
-uint64 fence2 = gl->InsertFenceSyncCHROMIUM();
-gl->OrderingBarrierCHROMIUM();
-gl->GenUnverifiedSyncTokenCHROMIUM(fence2, out_sync_tokens[1]);
+gl->GenUnverifiedSyncTokenCHROMIUM(out_sync_tokens[0]);
+gl->GenUnverifiedSyncTokenCHROMIUM(out_sync_tokens[1]);
 gl->VerifySyncTokensCHROMIUM(out_sync_tokens, 2);
 ```
 

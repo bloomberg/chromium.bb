@@ -248,9 +248,7 @@ gpu::SyncToken GpuVideoAcceleratorFactoriesImpl::CreateSyncToken() {
   viz::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gl = lock.ContextGL();
   gpu::SyncToken sync_token;
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->ShallowFlushCHROMIUM();
-  gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  gl->GenSyncTokenCHROMIUM(sync_token.GetData());
   return sync_token;
 }
 

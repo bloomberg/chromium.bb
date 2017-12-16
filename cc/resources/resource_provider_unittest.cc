@@ -121,12 +121,10 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 
   void RetireTextureId(GLuint) override {}
 
-  GLuint64 insertFenceSync() override { return next_fence_sync_++; }
-
-  void genSyncToken(GLuint64 fence_sync, GLbyte* sync_token) override {
+  void genSyncToken(GLbyte* sync_token) override {
     gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0,
                                    gpu::CommandBufferId::FromUnsafeValue(0x123),
-                                   fence_sync);
+                                   next_fence_sync_++);
     sync_token_data.SetVerifyFlush();
     memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
   }
@@ -198,11 +196,8 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return base::WrapUnique(new ResourceProviderContext(shared_data));
   }
 
-  GLuint64 insertFenceSync() override {
-    return shared_data_->InsertFenceSync();
-  }
-
-  void genSyncToken(GLuint64 fence_sync, GLbyte* sync_token) override {
+  void genSyncToken(GLbyte* sync_token) override {
+    uint64_t fence_sync = shared_data_->InsertFenceSync();
     gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0,
                                    gpu::CommandBufferId::FromUnsafeValue(0x123),
                                    fence_sync);
@@ -485,8 +480,7 @@ class ResourceProviderTest : public testing::TestWithParam<viz::ResourceType> {
       gpu::Mailbox gpu_mailbox;
       child_context_->genMailboxCHROMIUM(gpu_mailbox.name);
       child_context_->produceTextureDirectCHROMIUM(texture, gpu_mailbox.name);
-      child_context_->genSyncToken(child_context_->insertFenceSync(),
-                                   sync_token->GetData());
+      child_context_->genSyncToken(sync_token->GetData());
       EXPECT_TRUE(sync_token->HasData());
 
       std::unique_ptr<viz::SharedBitmap> shared_bitmap;
@@ -867,8 +861,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
   child_context_->produceTextureDirectCHROMIUM(external_texture_id,
                                                external_mailbox.name);
   gpu::SyncToken external_sync_token;
-  child_context_->genSyncToken(child_context_->insertFenceSync(),
-                               external_sync_token.GetData());
+  child_context_->genSyncToken(external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
 
   viz::TransferableResource id1_transfer =
@@ -995,8 +988,7 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
   child_context_->produceTextureDirectCHROMIUM(external_texture_id,
                                                external_mailbox.name);
   gpu::SyncToken external_sync_token;
-  child_context_->genSyncToken(child_context_->insertFenceSync(),
-                               external_sync_token.GetData());
+  child_context_->genSyncToken(external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
   viz::ResourceId id3 = child_resource_provider_->ImportResource(
       viz::TransferableResource::MakeGL(external_mailbox, GL_LINEAR,
@@ -1978,7 +1970,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   context()->genMailboxCHROMIUM(mailbox.name);
   context()->produceTextureDirectCHROMIUM(texture, mailbox.name);
   gpu::SyncToken sync_token;
-  context()->genSyncToken(context()->insertFenceSync(), sync_token.GetData());
+  context()->genSyncToken(sync_token.GetData());
   EXPECT_TRUE(sync_token.HasData());
 
   // All the logic below assumes that the sync token releases are all positive.
@@ -2019,8 +2011,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
     context()->produceTextureDirectCHROMIUM(other_texture, mailbox.name);
     context()->deleteTexture(other_texture);
-    context()->genSyncToken(context()->insertFenceSync(),
-                            list[0].mailbox_holder.sync_token.GetData());
+    context()->genSyncToken(list[0].mailbox_holder.sync_token.GetData());
     EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
 
     // Receive the resource, then delete it, expect the sync points to be
@@ -2074,8 +2065,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
     context()->produceTextureDirectCHROMIUM(other_texture, mailbox.name);
     context()->deleteTexture(other_texture);
-    context()->genSyncToken(context()->insertFenceSync(),
-                            list[0].mailbox_holder.sync_token.GetData());
+    context()->genSyncToken(list[0].mailbox_holder.sync_token.GetData());
     EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
 
     // Delete the resource, which shouldn't do anything.

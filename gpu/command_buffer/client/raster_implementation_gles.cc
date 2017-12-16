@@ -33,19 +33,13 @@ void RasterImplementationGLES::OrderingBarrierCHROMIUM() {
   gl_->OrderingBarrierCHROMIUM();
 }
 
-GLuint64 RasterImplementationGLES::InsertFenceSyncCHROMIUM() {
-  return gl_->InsertFenceSyncCHROMIUM();
-}
-
-void RasterImplementationGLES::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                                    GLbyte* sync_token) {
-  gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token);
+void RasterImplementationGLES::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  gl_->GenSyncTokenCHROMIUM(sync_token);
 }
 
 void RasterImplementationGLES::GenUnverifiedSyncTokenCHROMIUM(
-    GLuint64 fence_sync,
     GLbyte* sync_token) {
-  gl_->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token);
+  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token);
 }
 
 void RasterImplementationGLES::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,

@@ -169,11 +169,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     }
   }
 
-  GLuint64 InsertFenceSyncCHROMIUM() override {
-    static GLuint64 sync_point_generator = 0;
-    return ++sync_point_generator;
-  }
-
   void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override {
     memcpy(&most_recently_waited_sync_token_, sync_token,
            sizeof(most_recently_waited_sync_token_));
@@ -263,7 +258,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     }
   }
 
-  void GenSyncTokenCHROMIUM(GLuint64 fence_sync, GLbyte* sync_token) override {
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override {
     static uint64_t unique_id = 1;
     gpu::SyncToken source(
         gpu::GPU_IO, 1, gpu::CommandBufferId::FromUnsafeValue(unique_id++), 2);

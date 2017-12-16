@@ -4352,6 +4352,7 @@ _FUNCTION_INFO = {
   },
   'InsertFenceSyncCHROMIUM': {
     'type': 'Custom',
+    'internal': True,
     'impl_func': False,
     'cmd_args': 'GLuint64 release_count',
     'extension': "CHROMIUM_sync_point",

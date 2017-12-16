@@ -71,9 +71,7 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
   explicit SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
   ~SyncTokenClientImpl() override = default;
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
-    gl_->ShallowFlushCHROMIUM();
-    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+    gl_->GenSyncTokenCHROMIUM(sync_token->GetData());
   }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
     gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
@@ -910,10 +908,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
 
     // Wait for mailbox creation on canvas context before consuming it and
     // copying from it on the consumer context.
-    const GLuint64 fence_sync = canvas_gl->InsertFenceSyncCHROMIUM();
-    canvas_gl->ShallowFlushCHROMIUM();
-    canvas_gl->GenSyncTokenCHROMIUM(fence_sync,
-                                    mailbox_holder.sync_token.GetData());
+    canvas_gl->GenSyncTokenCHROMIUM(mailbox_holder.sync_token.GetData());
 
     destination_gl->WaitSyncTokenCHROMIUM(
         mailbox_holder.sync_token.GetConstData());
@@ -929,11 +924,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
 
     // Wait for destination context to consume mailbox before deleting it in
     // canvas context.
-    const GLuint64 dest_fence_sync = destination_gl->InsertFenceSyncCHROMIUM();
-    destination_gl->ShallowFlushCHROMIUM();
     gpu::SyncToken dest_sync_token;
-    destination_gl->GenSyncTokenCHROMIUM(dest_fence_sync,
-                                         dest_sync_token.GetData());
+    destination_gl->GenSyncTokenCHROMIUM(dest_sync_token.GetData());
     canvas_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
 
     SyncTokenClientImpl client(canvas_gl);

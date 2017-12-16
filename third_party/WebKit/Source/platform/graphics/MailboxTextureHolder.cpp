@@ -95,13 +95,10 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
   }
 
   if (!sync_token_.HasData()) {
-    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
     if (mode == kVerifiedSyncToken) {
-      gl->ShallowFlushCHROMIUM();
-      gl->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
+      gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
     } else {
-      gl->OrderingBarrierCHROMIUM();
-      gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
+      gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
     }
     return;
   }

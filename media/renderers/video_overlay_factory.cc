@@ -40,9 +40,7 @@ class VideoOverlayFactory::Texture {
         gl->GenMailboxCHROMIUM(mailbox_.name);
         gl->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_.name);
 
-        const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-        gl->ShallowFlushCHROMIUM();
-        gl->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
+        gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
       }
     }
   }

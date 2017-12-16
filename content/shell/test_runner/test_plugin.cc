@@ -264,10 +264,8 @@ void TestPlugin::UpdateGeometry(
 
     gl_->GenMailboxCHROMIUM(mailbox_.name);
     gl_->ProduceTextureDirectCHROMIUM(color_texture_, mailbox_.name);
-    const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
     gl_->Flush();
-
-    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
+    gl_->GenSyncTokenCHROMIUM(sync_token_.GetData());
 
     shared_bitmap_ = nullptr;
   } else {

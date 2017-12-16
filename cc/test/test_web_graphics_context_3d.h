@@ -267,8 +267,7 @@ class TestWebGraphicsContext3D {
                                                     GLenum internalformat,
                                                     GLenum usage);
 
-  virtual GLuint64 insertFenceSync();
-  virtual void genSyncToken(GLuint64 fence_sync, GLbyte* sync_token);
+  virtual void genSyncToken(GLbyte* sync_token);
   virtual void waitSyncToken(const GLbyte* sync_token);
   virtual void verifySyncTokens(GLbyte** sync_tokens, GLsizei count);
 

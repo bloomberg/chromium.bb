@@ -72,18 +72,16 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame(
   GLuint texture_target = GL_TEXTURE_EXTERNAL_OES;
   GLuint texture_id_ref =
       gl->CreateAndConsumeTextureCHROMIUM(texture_mailbox_.name);
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->Flush();
 
   gpu::SyncToken texture_mailbox_sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
-                                     texture_mailbox_sync_token.GetData());
   if (texture_mailbox_sync_token.namespace_id() ==
       gpu::CommandBufferNamespace::IN_PROCESS) {
     // TODO(boliu): Remove this once Android WebView switches to IPC-based
     // command buffer for video.
-    GLbyte* sync_tokens[] = {texture_mailbox_sync_token.GetData()};
-    gl->VerifySyncTokensCHROMIUM(sync_tokens, arraysize(sync_tokens));
+    gl->GenSyncTokenCHROMIUM(texture_mailbox_sync_token.GetData());
+  } else {
+    gl->GenUnverifiedSyncTokenCHROMIUM(texture_mailbox_sync_token.GetData());
   }
 
   gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {

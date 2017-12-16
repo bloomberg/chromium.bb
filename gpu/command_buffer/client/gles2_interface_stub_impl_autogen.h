@@ -975,13 +975,8 @@ void GLES2InterfaceStub::DiscardFramebufferEXT(
     const GLenum* /* attachments */) {}
 void GLES2InterfaceStub::LoseContextCHROMIUM(GLenum /* current */,
                                              GLenum /* other */) {}
-GLuint64 GLES2InterfaceStub::InsertFenceSyncCHROMIUM() {
-  return 0;
-}
-void GLES2InterfaceStub::GenSyncTokenCHROMIUM(GLuint64 /* fence_sync */,
-                                              GLbyte* /* sync_token */) {}
+void GLES2InterfaceStub::GenSyncTokenCHROMIUM(GLbyte* /* sync_token */) {}
 void GLES2InterfaceStub::GenUnverifiedSyncTokenCHROMIUM(
-    GLuint64 /* fence_sync */,
     GLbyte* /* sync_token */) {}
 void GLES2InterfaceStub::VerifySyncTokensCHROMIUM(GLbyte** /* sync_tokens */,
                                                   GLsizei /* count */) {}

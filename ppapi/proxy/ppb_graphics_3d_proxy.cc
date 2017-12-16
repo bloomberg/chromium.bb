@@ -127,11 +127,8 @@ int32_t Graphics3D::DoSwapBuffers(const gpu::SyncToken& sync_token,
       new PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer(API_ID_PPB_GRAPHICS_3D,
                                                      host_resource()));
 
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->ShallowFlushCHROMIUM();
-
   gpu::SyncToken new_sync_token;
-  gl->GenSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+  gl->GenSyncTokenCHROMIUM(new_sync_token.GetData());
 
   IPC::Message* msg = new PpapiHostMsg_PPBGraphics3D_SwapBuffers(
       API_ID_PPB_GRAPHICS_3D, host_resource(), new_sync_token, size);

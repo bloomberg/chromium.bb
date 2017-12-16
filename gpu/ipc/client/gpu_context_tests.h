@@ -51,11 +51,8 @@ CONTEXT_TEST_F(SignalTest, BasicSignalSyncTokenTest) {
     return;
 #endif
 
-  const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
-  gl_->ShallowFlushCHROMIUM();
-
   gpu::SyncToken sync_token;
-  gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
 
   TestSignalSyncToken(sync_token);
 };

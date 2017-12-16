@@ -77,9 +77,6 @@ class Display {
   EGLBoolean MakeCurrent(ThreadState*, EGLSurface, EGLSurface, EGLContext);
 
   uint64_t GenerateFenceSyncRelease();
-  bool IsFenceSyncRelease(uint64_t release);
-  bool IsFenceSyncFlushed(uint64_t release);
-  bool IsFenceSyncFlushReceived(uint64_t release);
 
  private:
   void InitializeConfigsIfNeeded();

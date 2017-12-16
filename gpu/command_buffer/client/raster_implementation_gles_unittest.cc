@@ -35,11 +35,8 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
   MOCK_METHOD0(OrderingBarrierCHROMIUM, void());
 
   // SyncTokens.
-  MOCK_METHOD0(InsertFenceSyncCHROMIUM, GLuint64());
-  MOCK_METHOD2(GenSyncTokenCHROMIUM,
-               void(GLuint64 fence_sync, GLbyte* sync_token));
-  MOCK_METHOD2(GenUnverifiedSyncTokenCHROMIUM,
-               void(GLuint64 fence_sync, GLbyte* sync_token));
+  MOCK_METHOD1(GenSyncTokenCHROMIUM, void(GLbyte* sync_token));
+  MOCK_METHOD1(GenUnverifiedSyncTokenCHROMIUM, void(GLbyte* sync_token));
   MOCK_METHOD2(VerifySyncTokensCHROMIUM,
                void(GLbyte** sync_tokens, GLsizei count));
   MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
@@ -191,30 +188,18 @@ TEST_F(RasterImplementationGLESTest, OrderingBarrierCHROMIUM) {
   ri_->OrderingBarrierCHROMIUM();
 }
 
-TEST_F(RasterImplementationGLESTest, InsertFenceSyncCHROMIUM) {
-  const GLuint64 kFenceSync = 0x123u;
-  GLuint64 fence_sync = 0;
-
-  EXPECT_CALL(*gl_, InsertFenceSyncCHROMIUM()).WillOnce(Return(kFenceSync));
-  fence_sync = ri_->InsertFenceSyncCHROMIUM();
-  EXPECT_EQ(kFenceSync, fence_sync);
-}
-
 TEST_F(RasterImplementationGLESTest, GenSyncTokenCHROMIUM) {
-  const GLuint64 kFenceSync = 0x123u;
   GLbyte sync_token_data[GL_SYNC_TOKEN_SIZE_CHROMIUM] = {};
 
-  EXPECT_CALL(*gl_, GenSyncTokenCHROMIUM(kFenceSync, sync_token_data)).Times(1);
-  ri_->GenSyncTokenCHROMIUM(kFenceSync, sync_token_data);
+  EXPECT_CALL(*gl_, GenSyncTokenCHROMIUM(sync_token_data)).Times(1);
+  ri_->GenSyncTokenCHROMIUM(sync_token_data);
 }
 
 TEST_F(RasterImplementationGLESTest, GenUnverifiedSyncTokenCHROMIUM) {
-  const GLuint64 kFenceSync = 0x123u;
   GLbyte sync_token_data[GL_SYNC_TOKEN_SIZE_CHROMIUM] = {};
 
-  EXPECT_CALL(*gl_, GenUnverifiedSyncTokenCHROMIUM(kFenceSync, sync_token_data))
-      .Times(1);
-  ri_->GenUnverifiedSyncTokenCHROMIUM(kFenceSync, sync_token_data);
+  EXPECT_CALL(*gl_, GenUnverifiedSyncTokenCHROMIUM(sync_token_data)).Times(1);
+  ri_->GenUnverifiedSyncTokenCHROMIUM(sync_token_data);
 }
 
 TEST_F(RasterImplementationGLESTest, VerifySyncTokensCHROMIUM) {

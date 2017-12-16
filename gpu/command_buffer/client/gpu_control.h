@@ -95,16 +95,6 @@ class GPU_EXPORT GpuControl {
   // must be verified before sending a sync token across channel boundaries.
   virtual uint64_t GenerateFenceSyncRelease() = 0;
 
-  // Returns true if the fence sync is valid.
-  virtual bool IsFenceSyncRelease(uint64_t release) = 0;
-
-  // Returns true if the client has flushed the fence sync.
-  virtual bool IsFenceSyncFlushed(uint64_t release) = 0;
-
-  // Returns true if the service has received the fence sync. Used for verifying
-  // sync tokens.
-  virtual bool IsFenceSyncFlushReceived(uint64_t release) = 0;
-
   // Returns true if the service has released (executed) the fence sync. Some
   // implementations may support calling this from any thread without holding
   // the lock provided by the client.

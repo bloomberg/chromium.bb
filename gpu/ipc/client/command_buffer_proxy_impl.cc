@@ -566,27 +566,6 @@ uint64_t CommandBufferProxyImpl::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
 
-bool CommandBufferProxyImpl::IsFenceSyncRelease(uint64_t release) {
-  CheckLock();
-  return release && release < next_fence_sync_release_;
-}
-
-bool CommandBufferProxyImpl::IsFenceSyncFlushed(uint64_t release) {
-  CheckLock();
-  return release && release <= flushed_fence_sync_release_;
-}
-
-bool CommandBufferProxyImpl::IsFenceSyncFlushReceived(uint64_t release) {
-  CheckLock();
-  if (release > verified_fence_sync_release_) {
-    // Don't send messages once disconnected.
-    if (!disconnected_)
-      channel_->VerifyFlush(last_flush_id_);
-    verified_fence_sync_release_ = flushed_fence_sync_release_;
-  }
-  return release && release <= verified_fence_sync_release_;
-}
-
 // This can be called from any thread without holding |lock_|. Use a thread-safe
 // non-error throwing variant of TryUpdateState for this.
 bool CommandBufferProxyImpl::IsFenceSyncReleased(uint64_t release) {

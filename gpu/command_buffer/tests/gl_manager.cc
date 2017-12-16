@@ -555,18 +555,6 @@ uint64_t GLManager::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
 
-bool GLManager::IsFenceSyncRelease(uint64_t release) {
-  return release > 0 && release < next_fence_sync_release_;
-}
-
-bool GLManager::IsFenceSyncFlushed(uint64_t release) {
-  return IsFenceSyncRelease(release);
-}
-
-bool GLManager::IsFenceSyncFlushReceived(uint64_t release) {
-  return IsFenceSyncRelease(release);
-}
-
 bool GLManager::IsFenceSyncReleased(uint64_t release) {
   return release <= command_buffer_->GetLastState().release_count;
 }

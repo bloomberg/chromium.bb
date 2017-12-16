@@ -192,25 +192,6 @@ uint64_t PpapiCommandBufferProxy::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
 
-bool PpapiCommandBufferProxy::IsFenceSyncRelease(uint64_t release) {
-  return release != 0 && release < next_fence_sync_release_;
-}
-
-bool PpapiCommandBufferProxy::IsFenceSyncFlushed(uint64_t release) {
-  return release <= flushed_fence_sync_release_;
-}
-
-bool PpapiCommandBufferProxy::IsFenceSyncFlushReceived(uint64_t release) {
-  if (!IsFenceSyncFlushed(release))
-    return false;
-
-  if (release <= validated_fence_sync_release_)
-    return true;
-
-  EnsureWorkVisible();
-  return release <= validated_fence_sync_release_;
-}
-
 bool PpapiCommandBufferProxy::IsFenceSyncReleased(uint64_t release) {
   NOTIMPLEMENTED();
   return false;

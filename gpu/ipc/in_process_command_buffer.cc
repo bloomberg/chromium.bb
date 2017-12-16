@@ -1079,18 +1079,6 @@ uint64_t InProcessCommandBuffer::GenerateFenceSyncRelease() {
   return next_fence_sync_release_++;
 }
 
-bool InProcessCommandBuffer::IsFenceSyncRelease(uint64_t release) {
-  return release != 0 && release < next_fence_sync_release_;
-}
-
-bool InProcessCommandBuffer::IsFenceSyncFlushed(uint64_t release) {
-  return release <= flushed_fence_sync_release_;
-}
-
-bool InProcessCommandBuffer::IsFenceSyncFlushReceived(uint64_t release) {
-  return IsFenceSyncFlushed(release);
-}
-
 bool InProcessCommandBuffer::IsFenceSyncReleased(uint64_t release) {
   return release <= GetLastState().release_count;
 }

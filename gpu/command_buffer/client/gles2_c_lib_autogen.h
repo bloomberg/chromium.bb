@@ -1431,16 +1431,11 @@ void GL_APIENTRY GLES2DiscardFramebufferEXT(GLenum target,
 void GL_APIENTRY GLES2LoseContextCHROMIUM(GLenum current, GLenum other) {
   gles2::GetGLContext()->LoseContextCHROMIUM(current, other);
 }
-GLuint64 GL_APIENTRY GLES2InsertFenceSyncCHROMIUM() {
-  return gles2::GetGLContext()->InsertFenceSyncCHROMIUM();
+void GL_APIENTRY GLES2GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  gles2::GetGLContext()->GenSyncTokenCHROMIUM(sync_token);
 }
-void GL_APIENTRY GLES2GenSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                           GLbyte* sync_token) {
-  gles2::GetGLContext()->GenSyncTokenCHROMIUM(fence_sync, sync_token);
-}
-void GL_APIENTRY GLES2GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
-                                                     GLbyte* sync_token) {
-  gles2::GetGLContext()->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token);
+void GL_APIENTRY GLES2GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
+  gles2::GetGLContext()->GenUnverifiedSyncTokenCHROMIUM(sync_token);
 }
 void GL_APIENTRY GLES2VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
                                                GLsizei count) {
@@ -2902,10 +2897,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glLoseContextCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glLoseContextCHROMIUM),
-    },
-    {
-        "glInsertFenceSyncCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glInsertFenceSyncCHROMIUM),
     },
     {
         "glGenSyncTokenCHROMIUM",

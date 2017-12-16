@@ -134,9 +134,7 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   if (!need_synchronization_resources.empty()) {
     DCHECK(settings_.delegated_sync_points_required);
     DCHECK(gl);
-    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->OrderingBarrierCHROMIUM();
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+    gl->GenUnverifiedSyncTokenCHROMIUM(new_sync_token.GetData());
     unverified_sync_tokens.push_back(new_sync_token.GetData());
   }
 

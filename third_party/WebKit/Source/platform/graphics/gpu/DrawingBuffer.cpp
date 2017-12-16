@@ -391,17 +391,15 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
   {
     gl_->ProduceTextureDirectCHROMIUM(color_buffer_for_mailbox->texture_id,
                                       color_buffer_for_mailbox->mailbox.name);
-    const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
     // It's critical to order the execution of this context's work relative
     // to other contexts, in particular the compositor. Previously this
     // used to be a Flush, and there was a bug that we didn't flush before
-    // InsertFenceSyncCHROMIUM, above. On some platforms this caused
+    // synchronizing with the composition, and on some platforms this caused
     // incorrect rendering with complex WebGL content that wasn't always
     // properly flushed to the driver. There is now a basic assumption that
     // there are implicit flushes between contexts at the lowest level.
-    gl_->OrderingBarrierCHROMIUM();
     gl_->GenUnverifiedSyncTokenCHROMIUM(
-        fence_sync, color_buffer_for_mailbox->produce_sync_token.GetData());
+        color_buffer_for_mailbox->produce_sync_token.GetData());
 #if defined(OS_MACOSX)
     // Needed for GPU back-pressure on macOS. Used to be in the middle
     // of the commands above; try to move it to the bottom to allow
@@ -778,10 +776,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
     src_gl->GenMailboxCHROMIUM(mailbox.name);
     src_gl->ProduceTextureDirectCHROMIUM(back_color_buffer_->texture_id,
                                          mailbox.name);
-    const GLuint64 fence_sync = src_gl->InsertFenceSyncCHROMIUM();
-    src_gl->OrderingBarrierCHROMIUM();
-    src_gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
-                                           produce_sync_token.GetData());
+    src_gl->GenUnverifiedSyncTokenCHROMIUM(produce_sync_token.GetData());
   }
 
   if (!produce_sync_token.HasData()) {
@@ -808,11 +803,8 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
 
   dst_gl->DeleteTextures(1, &src_texture);
 
-  const GLuint64 fence_sync = dst_gl->InsertFenceSyncCHROMIUM();
-
-  dst_gl->OrderingBarrierCHROMIUM();
   gpu::SyncToken sync_token;
-  dst_gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  dst_gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   src_gl->WaitSyncTokenCHROMIUM(sync_token.GetData());
 
   return true;
