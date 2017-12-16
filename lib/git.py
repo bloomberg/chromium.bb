@@ -633,10 +633,9 @@ class ManifestCheckout(Manifest):
     """
     checkouts = []
     for checkout in self.checkouts_by_name.get(project, []):
-      if project == checkout['name']:
-        tracking_branch = checkout['tracking_branch']
-        if branch is None or StripRefs(branch) == StripRefs(tracking_branch):
-          checkouts.append(checkout)
+      tracking_branch = checkout['tracking_branch']
+      if branch is None or StripRefs(branch) == StripRefs(tracking_branch):
+        checkouts.append(checkout)
     return checkouts
 
   def FindCheckout(self, project, branch=None, strict=True):
