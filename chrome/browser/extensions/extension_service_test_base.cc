@@ -15,9 +15,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -276,12 +276,12 @@ void ExtensionServiceTestBase::ValidateStringPref(
 }
 
 void ExtensionServiceTestBase::SetUp() {
-  ExtensionErrorReporter::GetInstance()->ClearErrors();
+  LoadErrorReporter::GetInstance()->ClearErrors();
 }
 
 void ExtensionServiceTestBase::SetUpTestCase() {
   // Safe to call multiple times.
-  ExtensionErrorReporter::Init(false);  // no noisy errors.
+  LoadErrorReporter::Init(false);  // no noisy errors.
 }
 
 // These are declared in the .cc so that all inheritors don't need to know

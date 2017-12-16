@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
@@ -38,7 +39,7 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    ExtensionErrorReporter::Init(true);
+    extensions::LoadErrorReporter::Init(true);
 
     toolbar_actions_model_ =
         extensions::extension_action_test_util::CreateToolbarModelForProfile(

@@ -17,9 +17,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
@@ -202,7 +202,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   }
 
   if (!extension.get()) {
-    ExtensionErrorReporter::GetInstance()->ReportLoadError(
+    LoadErrorReporter::GetInstance()->ReportLoadError(
         info.extension_path, error, extension_service_->profile(),
         false);  // Be quiet.
     return;
@@ -298,11 +298,9 @@ void InstalledLoader::LoadAllExtensions() {
 
       if (!extension.get() || extension->id() != info->extension_id) {
         invalid_extensions_.insert(info->extension_path);
-        ExtensionErrorReporter::GetInstance()->ReportLoadError(
-            info->extension_path,
-            error,
-            profile,
-            false);  // Be quiet.
+        LoadErrorReporter::GetInstance()->ReportLoadError(info->extension_path,
+                                                          error, profile,
+                                                          false);  // Be quiet.
         continue;
       }
 

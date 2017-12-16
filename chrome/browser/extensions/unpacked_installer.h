@@ -43,7 +43,7 @@ class UnpackedInstaller
 
   // Loads the extension from the directory |extension_path|, which is
   // the top directory of a specific extension where its manifest file lives.
-  // Errors are reported through ExtensionErrorReporter. On success,
+  // Errors are reported through LoadErrorReporter. On success,
   // ExtensionService::AddExtension() is called.
   void Load(const base::FilePath& extension_path);
 

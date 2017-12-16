@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -61,7 +61,7 @@ void ExtensionServiceTestWithInstall::InitializeExtensionService(
 // static
 std::vector<base::string16> ExtensionServiceTestWithInstall::GetErrors() {
   const std::vector<base::string16>* errors =
-      ExtensionErrorReporter::GetInstance()->GetErrors();
+      LoadErrorReporter::GetInstance()->GetErrors();
   std::vector<base::string16> ret_val;
 
   for (const base::string16& error : *errors) {
@@ -242,7 +242,7 @@ const Extension* ExtensionServiceTestWithInstall::VerifyCrxInstall(
   was_update_ = false;
   old_name_ = "";
   loaded_.clear();
-  ExtensionErrorReporter::GetInstance()->ClearErrors();
+  LoadErrorReporter::GetInstance()->ClearErrors();
   return extension;
 }
 

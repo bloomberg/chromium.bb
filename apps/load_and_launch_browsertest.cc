@@ -12,7 +12,7 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(LoadAndLaunchPlatformAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(LoadAndLaunchExtensionBrowserTest,
                        LoadAndLaunchExtension) {
   const std::vector<base::string16>* errors =
-      ExtensionErrorReporter::GetInstance()->GetErrors();
+      extensions::LoadErrorReporter::GetInstance()->GetErrors();
 
 #if defined(GOOGLE_CHROME_BUILD)
   // The error is skipped on official builds.

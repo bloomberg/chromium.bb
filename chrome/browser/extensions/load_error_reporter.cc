@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 
 #include "build/build_config.h"
 
@@ -20,30 +20,32 @@
 #include "extensions/browser/notification_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ExtensionErrorReporter* ExtensionErrorReporter::instance_ = NULL;
+namespace extensions {
+
+LoadErrorReporter* LoadErrorReporter::instance_ = nullptr;
 
 // static
-void ExtensionErrorReporter::Init(bool enable_noisy_errors) {
+void LoadErrorReporter::Init(bool enable_noisy_errors) {
   if (!instance_) {
-    instance_ = new ExtensionErrorReporter(enable_noisy_errors);
+    instance_ = new LoadErrorReporter(enable_noisy_errors);
   }
 }
 
 // static
-ExtensionErrorReporter* ExtensionErrorReporter::GetInstance() {
+LoadErrorReporter* LoadErrorReporter::GetInstance() {
   CHECK(instance_) << "Init() was never called";
   return instance_;
 }
 
-ExtensionErrorReporter::ExtensionErrorReporter(bool enable_noisy_errors)
+LoadErrorReporter::LoadErrorReporter(bool enable_noisy_errors)
     : enable_noisy_errors_(enable_noisy_errors) {
   if (base::ThreadTaskRunnerHandle::IsSet())
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
-ExtensionErrorReporter::~ExtensionErrorReporter() {}
+LoadErrorReporter::~LoadErrorReporter() {}
 
-void ExtensionErrorReporter::ReportLoadError(
+void LoadErrorReporter::ReportLoadError(
     const base::FilePath& extension_path,
     const std::string& error,
     content::BrowserContext* browser_context,
@@ -57,15 +59,14 @@ void ExtensionErrorReporter::ReportLoadError(
   base::string16 message = base::UTF8ToUTF16(base::StringPrintf(
       "%s %s. %s",
       l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE).c_str(),
-      path_str.c_str(),
-      error.c_str()));
+      path_str.c_str(), error.c_str()));
   ReportError(message, be_noisy);
   for (auto& observer : observers_)
     observer.OnLoadFailure(browser_context, extension_path, error);
 }
 
-void ExtensionErrorReporter::ReportError(const base::string16& message,
-                                         bool be_noisy) {
+void LoadErrorReporter::ReportError(const base::string16& message,
+                                    bool be_noisy) {
   // NOTE: There won't be a |ui_task_runner_| in the unit test environment.
   CHECK(!ui_task_runner_ || ui_task_runner_->BelongsToCurrentThread())
       << "ReportError can only be called from the UI thread.";
@@ -83,18 +84,20 @@ void ExtensionErrorReporter::ReportError(const base::string16& message,
   }
 }
 
-const std::vector<base::string16>* ExtensionErrorReporter::GetErrors() {
+const std::vector<base::string16>* LoadErrorReporter::GetErrors() {
   return &errors_;
 }
 
-void ExtensionErrorReporter::ClearErrors() {
+void LoadErrorReporter::ClearErrors() {
   errors_.clear();
 }
 
-void ExtensionErrorReporter::AddObserver(Observer* observer) {
+void LoadErrorReporter::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void ExtensionErrorReporter::RemoveObserver(Observer* observer) {
+void LoadErrorReporter::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
+
+}  // namespace extensions

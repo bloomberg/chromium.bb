@@ -7,8 +7,8 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -112,7 +112,7 @@ void ZipFileInstaller::ReportFailure(const std::string& error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (extension_service_weak_) {
-    ExtensionErrorReporter::GetInstance()->ReportLoadError(
+    LoadErrorReporter::GetInstance()->ReportLoadError(
         zip_file_, error, extension_service_weak_->profile(),
         be_noisy_on_failure_);
   }

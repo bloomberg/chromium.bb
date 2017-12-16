@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 #include "chrome/browser/extensions/proxy_overridden_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
@@ -333,7 +334,7 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
   }
 
   void Init() {
-    ExtensionErrorReporter::Init(true);
+    LoadErrorReporter::Init(true);
     // The two lines of magical incantation required to get the extension
     // service to work inside a unit test and access the extension prefs.
     static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))

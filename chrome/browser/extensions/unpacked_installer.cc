@@ -14,9 +14,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"
@@ -351,11 +351,8 @@ void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (service_weak_.get()) {
-    ExtensionErrorReporter::GetInstance()->ReportLoadError(
-        extension_path_,
-        error,
-        service_weak_->profile(),
-        be_noisy_on_failure_);
+    LoadErrorReporter::GetInstance()->ReportLoadError(
+        extension_path_, error, service_weak_->profile(), be_noisy_on_failure_);
   }
 
   if (!callback_.is_null()) {

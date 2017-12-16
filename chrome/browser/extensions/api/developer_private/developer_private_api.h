@@ -16,9 +16,9 @@
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/webstore_install_result.h"
@@ -399,7 +399,7 @@ class DeveloperPrivateUpdateExtensionConfigurationFunction
 
 class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction,
                                        public ExtensionRegistryObserver,
-                                       public ExtensionErrorReporter::Observer {
+                                       public LoadErrorReporter::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.reload",
                              DEVELOPERPRIVATE_RELOAD);
@@ -411,7 +411,7 @@ class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction,
                          const Extension* extension) override;
   void OnShutdown(ExtensionRegistry* registry) override;
 
-  // ExtensionErrorReporter::Observer:
+  // LoadErrorReporter::Observer:
   void OnLoadFailure(content::BrowserContext* browser_context,
                      const base::FilePath& file_path,
                      const std::string& error) override;
@@ -437,7 +437,7 @@ class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
-  ScopedObserver<ExtensionErrorReporter, ExtensionErrorReporter::Observer>
+  ScopedObserver<LoadErrorReporter, LoadErrorReporter::Observer>
       error_reporter_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateReloadFunction);

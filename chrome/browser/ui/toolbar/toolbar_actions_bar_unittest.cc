@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -110,11 +111,12 @@ std::string VerifyToolbarOrderForBar(
 
 // The ToolbarActionErrorTestObserver is used to notify when an extension
 // failed to load.
-class ToolbarActionErrorTestObserver : public ExtensionErrorReporter::Observer {
+class ToolbarActionErrorTestObserver
+    : public extensions::LoadErrorReporter::Observer {
  public:
   ToolbarActionErrorTestObserver() : extension_error_reporter_observer_(this) {
     extension_error_reporter_observer_.Add(
-        ExtensionErrorReporter::GetInstance());
+        extensions::LoadErrorReporter::GetInstance());
   }
 
   ~ToolbarActionErrorTestObserver() override {}
@@ -122,7 +124,7 @@ class ToolbarActionErrorTestObserver : public ExtensionErrorReporter::Observer {
   void WaitForOnLoadFailure() { run_loop_.Run(); }
 
  private:
-  // ExtensionErrorReporter::Observer:
+  // extensions::LoadErrorReporter::Observer:
   void OnLoadFailure(content::BrowserContext* browser_context,
                      const base::FilePath& extension_path,
                      const std::string& error) override {
@@ -131,7 +133,8 @@ class ToolbarActionErrorTestObserver : public ExtensionErrorReporter::Observer {
 
   base::RunLoop run_loop_;
 
-  ScopedObserver<ExtensionErrorReporter, ExtensionErrorReporter::Observer>
+  ScopedObserver<extensions::LoadErrorReporter,
+                 extensions::LoadErrorReporter::Observer>
       extension_error_reporter_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionErrorTestObserver);
@@ -146,7 +149,7 @@ ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
-  ExtensionErrorReporter::Init(true);
+  extensions::LoadErrorReporter::Init(true);
 
   // The toolbar typically displays extension icons, so create some extension
   // test infrastructure.

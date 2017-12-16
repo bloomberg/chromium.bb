@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -35,7 +35,7 @@ class Extension;
 
 // The handler page for the Extension Commands UI overlay.
 class ExtensionLoaderHandler : public content::WebUIMessageHandler,
-                               public ExtensionErrorReporter::Observer,
+                               public extensions::LoadErrorReporter::Observer,
                                public content::WebContentsObserver {
  public:
   using GetManifestErrorCallback =
@@ -71,7 +71,7 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
   // Try to load an unpacked extension from the given |file_path|.
   void LoadUnpackedExtension(const base::FilePath& file_path);
 
-  // ExtensionErrorReporter::Observer:
+  // extensions::LoadErrorReporter::Observer:
   void OnLoadFailure(content::BrowserContext* browser_context,
                      const base::FilePath& file_path,
                      const std::string& error) override;
@@ -101,7 +101,8 @@ class ExtensionLoaderHandler : public content::WebUIMessageHandler,
   // Holds failed paths for load retries.
   std::vector<base::FilePath> failed_paths_;
 
-  ScopedObserver<ExtensionErrorReporter, ExtensionErrorReporter::Observer>
+  ScopedObserver<extensions::LoadErrorReporter,
+                 extensions::LoadErrorReporter::Observer>
       extension_error_reporter_observer_;
 
   // Set when the chrome://extensions page is fully loaded and the frontend is

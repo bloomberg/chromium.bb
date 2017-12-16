@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_LOAD_ERROR_REPORTER_H_
+#define CHROME_BROWSER_EXTENSIONS_LOAD_ERROR_REPORTER_H_
 
 #include <string>
 #include <vector>
@@ -21,15 +21,14 @@ namespace content {
 class BrowserContext;
 }
 
+namespace extensions {
+
 // Exposes an easy way for the various components of the extension system to
-// report errors. This is a singleton that lives on the UI thread, with the
+// report load errors. This is a singleton that lives on the UI thread, with the
 // exception of ReportError() which may be called from any thread.
-// TODO(aa): Hook this up to about:extensions, when we have about:extensions.
-// TODO(aa): Consider exposing directly, or via a helper, to the renderer
-// process and plumbing the errors out to the browser.
 // TODO(aa): Add ReportError(extension_id, message, be_noisy), so that we can
 // report errors that are specific to a particular extension.
-class ExtensionErrorReporter {
+class LoadErrorReporter {
  public:
   class Observer {
    public:
@@ -46,7 +45,7 @@ class ExtensionErrorReporter {
   static void Init(bool enable_noisy_errors);
 
   // Get the singleton instance.
-  static ExtensionErrorReporter* GetInstance();
+  static LoadErrorReporter* GetInstance();
 
   // Report an extension load error. This forwards to ReportError() after
   // sending an EXTENSION_LOAD_ERROR notification.
@@ -73,16 +72,20 @@ class ExtensionErrorReporter {
   void RemoveObserver(Observer* observer);
 
  private:
-  static ExtensionErrorReporter* instance_;
+  static LoadErrorReporter* instance_;
 
-  explicit ExtensionErrorReporter(bool enable_noisy_errors);
-  ~ExtensionErrorReporter();
+  explicit LoadErrorReporter(bool enable_noisy_errors);
+  ~LoadErrorReporter();
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   std::vector<base::string16> errors_;
   bool enable_noisy_errors_;
 
   base::ObserverList<Observer> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoadErrorReporter);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_LOAD_ERROR_REPORTER_H_
