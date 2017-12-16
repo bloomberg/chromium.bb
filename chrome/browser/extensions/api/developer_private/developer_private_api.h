@@ -348,6 +348,22 @@ class DeveloperPrivateGetExtensionInfoFunction
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetExtensionInfoFunction);
 };
 
+class DeveloperPrivateGetExtensionSizeFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DeveloperPrivateGetExtensionSizeFunction();
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.getExtensionSize",
+                             DEVELOPERPRIVATE_GETEXTENSIONSIZE);
+
+ private:
+  ~DeveloperPrivateGetExtensionSizeFunction() override;
+  ResponseAction Run() override;
+
+  void OnSizeCalculated(int64_t size_in_bytes);
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetExtensionSizeFunction);
+};
+
 class DeveloperPrivateGetProfileConfigurationFunction
     : public DeveloperPrivateAPIFunction {
  public:

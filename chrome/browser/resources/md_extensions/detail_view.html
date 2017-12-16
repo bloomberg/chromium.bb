@@ -14,6 +14,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="item_behavior.html">
@@ -178,6 +179,15 @@
       #load-path > a[is='action-link'] {
         display: inline;
       }
+
+      #size {
+        display: flex;
+        align-items: center;
+      }
+
+      paper-spinner-lite {
+        @apply(--cr-icon-height-width);
+      }
     </style>
     <div id="container">
       <div id="main">
@@ -264,6 +274,14 @@
         <div class="section block">
           <div class="section-title">$i18n{itemVersion}</div>
           <div class="section-content">[[data.version]]</div>
+        </div>
+        <div class="section block">
+          <div class="section-title">$i18n{itemSize}</div>
+          <div class="section-content" id="size">
+            <span>[[size_]]</span>
+            <paper-spinner-lite active="[[!size_]]" hidden="[[size_]]">
+            </paper-spinner-lite>
+          </div>
         </div>
         <div class="section block" id="id-section" hidden$="[[!inDevMode]]">
           <div class="section-title">$i18n{itemIdHeading}</div>

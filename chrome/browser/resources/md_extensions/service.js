@@ -39,6 +39,13 @@ cr.define('extensions', function() {
       });
     }
 
+    /** @override */
+    getExtensionSize(id) {
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.getExtensionSize(id, resolve);
+      });
+    }
+
     /**
      * Opens a file browser dialog for the user to select a file (or directory).
      * @param {chrome.developerPrivate.SelectType} selectType
