@@ -2358,7 +2358,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE txk_end = TX_TYPES - 1;
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
-  uint8_t best_eob = 0;
+  uint8_t best_txb_ctx = 0;
+  uint16_t best_eob = 0;
   RD_STATS best_rd_stats;
   TX_TYPE tx_type;
 
@@ -2404,7 +2405,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_rd = rd;
       best_rd_stats = this_rd_stats;
       best_tx_type = tx_type;
-      best_eob = x->plane[plane].txb_entropy_ctx[block];
+      best_txb_ctx = x->plane[plane].txb_entropy_ctx[block];
+      best_eob = x->plane[plane].eobs[block];
     }
   }
 
@@ -2414,7 +2416,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   if (plane == 0)
     mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = best_tx_type;
-  x->plane[plane].txb_entropy_ctx[block] = best_eob;
+  x->plane[plane].txb_entropy_ctx[block] = best_txb_ctx;
 
   if (!is_inter_block(mbmi)) {
 // intra mode needs decoded result such that the next transform block
