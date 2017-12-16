@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -35,6 +36,10 @@ const char kAddNetworkMessage[] = "addNetwork";
 const char kConfigureNetworkMessage[] = "configureNetwork";
 const char kRequestArcVpnProviders[] = "requestArcVpnProviders";
 const char kSendArcVpnProviders[] = "sendArcVpnProviders";
+const char kRequestGmsCoreNotificationsDisabledDeviceNames[] =
+    "requestGmsCoreNotificationsDisabledDeviceNames";
+const char kSendGmsCoreNotificationsDisabledDeviceNames[] =
+    "sendGmsCoreNotificationsDisabledDeviceNames";
 
 std::string ServicePathFromGuid(const std::string& guid) {
   const NetworkState* network =
@@ -89,6 +94,11 @@ void InternetHandler::RegisterMessages() {
       kRequestArcVpnProviders,
       base::Bind(&InternetHandler::RequestArcVpnProviders,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kRequestGmsCoreNotificationsDisabledDeviceNames,
+      base::Bind(
+          &InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames,
+          base::Unretained(this)));
 }
 
 void InternetHandler::OnJavascriptAllowed() {}
@@ -205,6 +215,16 @@ void InternetHandler::RequestArcVpnProviders(const base::ListValue* args) {
   SetArcVpnProviders(arc_vpn_provider_manager_->GetArcVpnProviders());
 }
 
+void InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames(
+    const base::ListValue* args) {
+  // TODO(khorimoto): Send an actual list of device names. Currently, an empty
+  // list is sent. See crbug.com/765966.
+  std::vector<std::string> device_names;
+
+  AllowJavascript();
+  SetGmsCoreNotificationsDisabledDeviceNames(device_names);
+}
+
 void InternetHandler::SetArcVpnProviders(
     const std::vector<
         std::unique_ptr<app_list::ArcVpnProviderManager::ArcVpnProvider>>&
@@ -226,6 +246,28 @@ void InternetHandler::SendArcVpnProviders() {
     arc_vpn_providers_value.GetList().push_back(iter.second->Clone());
   }
   FireWebUIListener(kSendArcVpnProviders, arc_vpn_providers_value);
+}
+
+void InternetHandler::SetGmsCoreNotificationsDisabledDeviceNames(
+    const std::vector<std::string>& device_names) {
+  device_names_without_notifications_.clear();
+  for (const auto& device_name : device_names) {
+    device_names_without_notifications_.emplace_back(
+        std::make_unique<base::Value>(device_name));
+  }
+  SendGmsCoreNotificationsDisabledDeviceNames();
+}
+
+void InternetHandler::SendGmsCoreNotificationsDisabledDeviceNames() {
+  if (!IsJavascriptAllowed())
+    return;
+
+  base::ListValue device_names_value;
+  for (const auto& device_name : device_names_without_notifications_)
+    device_names_value.GetList().push_back(device_name->Clone());
+
+  FireWebUIListener(kSendGmsCoreNotificationsDisabledDeviceNames,
+                    device_names_value);
 }
 
 gfx::NativeWindow InternetHandler::GetNativeWindow() const {

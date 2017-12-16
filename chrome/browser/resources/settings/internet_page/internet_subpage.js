@@ -98,7 +98,19 @@ Polymer({
       value: function() {
         return {};
       }
-    }
+    },
+
+    /**
+     * List of potential Tether hosts whose "Google Play Services" notifications
+     * are disabled (these notifications are required to use Instant Tethering).
+     * @private {!Array<string>}
+     */
+    notificationsDisabledDeviceNames_: {
+      type: Array,
+      value: function() {
+        return [];
+      },
+    },
   },
 
   listeners: {'network-list-changed': 'getNetworkStateList_'},
@@ -114,6 +126,13 @@ Polymer({
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
+  ready: function() {
+    this.browserProxy_.setGmsCoreNotificationsDisabledDeviceNamesCallback(
+        this.onNotificationsDisabledDeviceNamesReceived_.bind(this));
+    this.browserProxy_.requestGmsCoreNotificationsDisabledDeviceNames();
   },
 
   /** override */
@@ -267,6 +286,15 @@ Polymer({
     }
 
     this.networkStateList_ = networkStates;
+  },
+
+  /**
+   * @param {!Array<string>} notificationsDisabledDeviceNames
+   * @private
+   */
+  onNotificationsDisabledDeviceNamesReceived_: function(
+      notificationsDisabledDeviceNames) {
+    this.notificationsDisabledDeviceNames_ = notificationsDisabledDeviceNames;
   },
 
   /**
@@ -587,5 +615,37 @@ Polymer({
     }
 
     return this.i18n('internetNoNetworks');
+  },
+
+  /**
+   * @param {!Array<string>} notificationsDisabledDeviceNames
+   * @return {boolean}
+   * @private
+   */
+  showGmsCoreNotificationsSection_: function(notificationsDisabledDeviceNames) {
+    return notificationsDisabledDeviceNames.length > 0;
+  },
+
+  /**
+   * @param {!Array<string>} notificationsDisabledDeviceNames
+   * @return {string}
+   * @private
+   */
+  getGmsCoreNotificationsDevicesString_: function(
+      notificationsDisabledDeviceNames) {
+    if (notificationsDisabledDeviceNames.length == 1) {
+      return this.i18n(
+          'gmscoreNotificationsOneDeviceSubtitle',
+          notificationsDisabledDeviceNames[0]);
+    }
+
+    if (notificationsDisabledDeviceNames.length == 2) {
+      return this.i18n(
+          'gmscoreNotificationsTwoDevicesSubtitle',
+          notificationsDisabledDeviceNames[0],
+          notificationsDisabledDeviceNames[1]);
+    }
+
+    return this.i18n('gmscoreNotificationsManyDevicesSubtitle');
   },
 });

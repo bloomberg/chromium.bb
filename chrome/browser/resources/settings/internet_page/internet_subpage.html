@@ -12,13 +12,18 @@
   <template>
     <style include="settings-shared iron-flex">
       #networkListDiv {
+        margin-top: var(--settings-page-vertical-margin);
+        min-height: var(--settings-row-min-height);
+      }
+
+      /* Set padding on children instead of the container itself to ensure that
+         separator lines can fill the entire width of the page. */
+      #networkListDiv > * {
         /* cr-network-list is padded to the right to allow space for a ripple */
         -webkit-padding-end: calc(var(--settings-box-row-padding) -
             var(--cr-icon-ripple-padding));
         -webkit-padding-start: var(--settings-box-row-padding);
-        margin-top: var(--settings-page-vertical-margin);
-        min-height: var(--settings-row-min-height);
-     }
+      }
 
       #addButton {
         -webkit-margin-end: var(--settings-control-label-spacing);
@@ -45,6 +50,29 @@
 
       cr-network-list {
         flex: 1;
+      }
+
+      #gmscore-notifications-container {
+        border-top: var(--cr-separator-line);
+        margin: 10px 0;
+        padding-bottom: var(--cr-section-padding);
+        padding-top: var(--cr-section-padding);
+      }
+
+      #gmscore-notifications-container[no-networks-text-below] {
+        border-bottom: var(--cr-separator-line);
+        margin-top: 0;
+      }
+
+      #gmscore-notifications-device-string {
+        @apply(--cr-secondary-text);
+        margin-top: 5px;
+      }
+
+      #gmscore-notifications-instructions {
+        @apply(--cr-secondary-text);
+        -webkit-padding-start: 15px;
+        margin: 0;
       }
     </style>
 
@@ -81,26 +109,53 @@
     <template is="dom-if" if="[[deviceIsEnabled_(deviceState)]]">
       <div id="networkListDiv" class="layout vertical flex">
         <!-- VPN only header for built-in VPNs. -->
-        <div class="vpn-header layout horizontal center"
-            hidden$="[[!isEqual_('VPN', deviceState.Type)]]">
-          <div class="flex">$i18n{networkVpnBuiltin}</div>
-          <button is="paper-icon-button-light" class="icon-add-circle"
-              aria-label="$i18n{internetAddVPN}"
-              on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
-          </button>
-        </div>
+        <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
+          <div class="vpn-header layout horizontal center">
+            <div class="flex">$i18n{networkVpnBuiltin}</div>
+            <button is="paper-icon-button-light" class="icon-add-circle"
+                aria-label="$i18n{internetAddVPN}"
+                on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
+            </button>
+          </div>
+        </template>
 
-        <!-- List of networks or 'None'. -->
-        <cr-network-list id="networkList" show-buttons
-            hidden$="[[!shouldShowNetworkList_(networkStateList_)]]"
-            networks="[[networkStateList_]]"
-            on-selected="onNetworkSelected_">
-        </cr-network-list>
-        <div hidden$="[[shouldShowNetworkList_(networkStateList_)]]"
-            inner-h-t-m-l=
-                "[[getNoNetworksString_(deviceState, tetherDeviceState)]]"
-            class="no-networks">
-        </div>
+        <!-- List of networks (empty if no networks exist). -->
+        <template is="dom-if"
+            if="[[shouldShowNetworkList_(networkStateList_)]]">
+          <cr-network-list id="networkList" show-buttons
+              networks="[[networkStateList_]]"
+              on-selected="onNetworkSelected_">
+          </cr-network-list>
+        </template>
+
+        <!-- Instructions for how to enable "Google Play Services" notifications
+            (needed for Instant Tethering). -->
+        <template is="dom-if" if="[[showGmsCoreNotificationsSection_(
+            notificationsDisabledDeviceNames_)]]">
+          <div id="gmscore-notifications-container"
+              no-networks-text-below$="[[!networkStateList_.length]]">
+            <div>$i18n{gmscoreNotificationsTitle}</div>
+            <div id="gmscore-notifications-device-string">
+              [[getGmsCoreNotificationsDevicesString_(
+                  notificationsDisabledDeviceNames_)]]
+            </div>
+            <ol id="gmscore-notifications-instructions">
+              <li>$i18n{gmscoreNotificationsFirstStep}</li>
+              <li>$i18n{gmscoreNotificationsSecondStep}</li>
+              <li>$i18n{gmscoreNotificationsThirdStep}</li>
+            </ol>
+          </div>
+        </template>
+
+        <!-- Text shown if no networks exist. -->
+        <template is="dom-if"
+            if="[[!shouldShowNetworkList_(networkStateList_)]]">
+          <div
+              inner-h-t-m-l=
+                  "[[getNoNetworksString_(deviceState, tetherDeviceState)]]"
+              class="no-networks">
+          </div>
+        </template>
 
         <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
           <!-- Third party VPNs. -->
