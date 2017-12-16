@@ -696,18 +696,22 @@ TEST_F('BackgroundTest', 'ForwardObjectNavigationThroughIframes', function() {
       return;
 
     running = true;
+    var suppressFocusActionOutput = function() {
+      DesktopAutomationHandler.announceActions = false;
+    };
     var beforeButton = rootNode.find({role: RoleType.BUTTON,
                                       name: 'Before'});
-    beforeButton.focus();
-    mockFeedback.expectSpeech('Before', 'Button');
-    mockFeedback.call(doCmd('nextObject'))
+    mockFeedback.call(beforeButton.focus.bind(beforeButton))
+        .expectSpeech('Before', 'Button')
+        .call(suppressFocusActionOutput)
+        .call(doCmd('nextObject'))
         .expectSpeech('Inside', 'Button');
     mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('Inside', 'Heading 1');
     mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('After', 'Button');
     mockFeedback.call(doCmd('previousObject'))
-        .expectSpeech('Heading 1', 'Inside');
+        .expectSpeech('Inside', 'Heading 1');
     mockFeedback.call(doCmd('previousObject'))
         .expectSpeech('Inside', 'Button');
     mockFeedback.call(doCmd('previousObject'))

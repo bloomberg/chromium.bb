@@ -285,7 +285,8 @@ DesktopAutomationHandler.prototype = {
    */
   onFocus: function(evt) {
     if (evt.target.role == RoleType.ROOT_WEB_AREA) {
-      this.maybeRecoverFocusAndOutput_(evt);
+      chrome.automation.getFocus(
+          this.maybeRecoverFocusAndOutput_.bind(this, evt));
       return;
     }
 
@@ -320,8 +321,19 @@ DesktopAutomationHandler.prototype = {
   onLoadComplete: function(evt) {
     this.lastRootUrl_ = '';
     chrome.automation.getFocus(function(focus) {
-      if (!focus || !AutomationUtil.isDescendantOf(focus, evt.target))
+      // In some situations, ancestor windows get focused before a descendant
+      // webView/rootWebArea. In particular, a window that gets opened but no
+      // inner focus gets set. We catch this generically by re-targetting focus
+      // if focus is the ancestor of the load complete target (below).
+      var focusIsAncestor = AutomationUtil.isDescendantOf(evt.target, focus);
+      var focusIsDescendant = AutomationUtil.isDescendantOf(focus, evt.target);
+      if (!focus || (!focusIsAncestor && !focusIsDescendant))
         return;
+
+      if (focusIsAncestor) {
+        focus = evt.target;
+        Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+      }
 
       // Create text edit handler, if needed, now in order not to miss initial
       // value change if text field has already been focused when initializing
@@ -339,7 +351,7 @@ DesktopAutomationHandler.prototype = {
         return;
       }
 
-      this.maybeRecoverFocusAndOutput_(evt);
+      this.maybeRecoverFocusAndOutput_(evt, focus);
     }.bind(this));
   },
 
@@ -544,48 +556,46 @@ DesktopAutomationHandler.prototype = {
    * @param {AutomationEvent} evt
    * @private
    */
-  maybeRecoverFocusAndOutput_: function(evt) {
-    chrome.automation.getFocus(function(focus) {
-      var focusedRoot = AutomationUtil.getTopLevelRoot(focus);
-      if (!focusedRoot)
-        return;
+  maybeRecoverFocusAndOutput_: function(evt, focus) {
+    var focusedRoot = AutomationUtil.getTopLevelRoot(focus);
+    if (!focusedRoot)
+      return;
 
-      var curRoot;
-      if (ChromeVoxState.instance.currentRange) {
-        curRoot = AutomationUtil.getTopLevelRoot(
-            ChromeVoxState.instance.currentRange.start.node);
-      }
+    var curRoot;
+    if (ChromeVoxState.instance.currentRange) {
+      curRoot = AutomationUtil.getTopLevelRoot(
+          ChromeVoxState.instance.currentRange.start.node);
+    }
 
-      // If initial focus was already placed inside this page (e.g. if a user
-      // starts tabbing before load complete), then don't move ChromeVox's
-      // position on the page.
-      if (curRoot && focusedRoot == curRoot &&
-          this.lastRootUrl_ == focusedRoot.docUrl)
-        return;
+    // If initial focus was already placed inside this page (e.g. if a user
+    // starts tabbing before load complete), then don't move ChromeVox's
+    // position on the page.
+    if (curRoot && focusedRoot == curRoot &&
+        this.lastRootUrl_ == focusedRoot.docUrl)
+      return;
 
-      this.lastRootUrl_ = focusedRoot.docUrl || '';
-      var o = new Output();
-      // Restore to previous position.
-      var url = focusedRoot.docUrl;
-      url = url.substring(0, url.indexOf('#')) || url;
-      var pos = cvox.ChromeVox.position[url];
-      if (pos) {
-        focus = AutomationUtil.hitTest(focusedRoot, pos) || focus;
-        if (focus != focusedRoot)
-          o.format('$name', focusedRoot);
-      } else {
-        // This catches initial focus (i.e. on startup).
-        if (!curRoot && focus != focusedRoot)
-          o.format('$name', focusedRoot);
-      }
+    this.lastRootUrl_ = focusedRoot.docUrl || '';
+    var o = new Output();
+    // Restore to previous position.
+    var url = focusedRoot.docUrl;
+    url = url.substring(0, url.indexOf('#')) || url;
+    var pos = cvox.ChromeVox.position[url];
+    if (pos) {
+      focus = AutomationUtil.hitTest(focusedRoot, pos) || focus;
+      if (focus != focusedRoot)
+        o.format('$name', focusedRoot);
+    } else {
+      // This catches initial focus (i.e. on startup).
+      if (!curRoot && focus != focusedRoot)
+        o.format('$name', focusedRoot);
+    }
 
-      ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
+    ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
 
-      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-      o.withRichSpeechAndBraille(
-           ChromeVoxState.instance.currentRange, null, evt.type)
-          .go();
-    }.bind(this));
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+    o.withRichSpeechAndBraille(
+         ChromeVoxState.instance.currentRange, null, evt.type)
+        .go();
   }
 };
 
