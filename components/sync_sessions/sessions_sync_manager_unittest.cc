@@ -61,10 +61,7 @@ const base::Time kTime2 = base::Time::FromInternalValue(120);
 const base::Time kTime3 = base::Time::FromInternalValue(130);
 const base::Time kTime4 = base::Time::FromInternalValue(140);
 const base::Time kTime5 = base::Time::FromInternalValue(150);
-const base::Time kTime6 = base::Time::FromInternalValue(160);
-const base::Time kTime7 = base::Time::FromInternalValue(170);
-const base::Time kTime8 = base::Time::FromInternalValue(180);
-const base::Time kTime9 = base::Time::FromInternalValue(190);
+const base::Time kTime6 = base::Time::FromInternalValue(190);
 
 std::string TabNodeIdToTag(const std::string& machine_tag, int tab_node_id) {
   return base::StringPrintf("%s %d", machine_tag.c_str(), tab_node_id);
@@ -874,7 +871,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateNavigationIndex) {
   tab->set_current_entry_index(kNavs - 2);
 
   sessions::SessionTab session_tab;
-  manager()->SetSessionTabFromDelegate(*tab, kTime9, &session_tab);
+  manager()->SetSessionTabFromDelegate(*tab, kTime6, &session_tab);
 
   EXPECT_EQ(6, session_tab.current_navigation_index);
   ASSERT_EQ(8u, session_tab.navigations.size());
@@ -894,7 +891,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateCurrentInvalid) {
   tab->set_current_entry_index(1);
 
   sessions::SessionTab session_tab;
-  manager()->SetSessionTabFromDelegate(*tab, kTime9, &session_tab);
+  manager()->SetSessionTabFromDelegate(*tab, kTime6, &session_tab);
 
   EXPECT_EQ(2, session_tab.current_navigation_index);
   ASSERT_EQ(3u, session_tab.navigations.size());
