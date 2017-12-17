@@ -40,7 +40,7 @@ class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
     NOTIMPLEMENTED();
   }
 
-  void GetUserStatus(const std::string& object_guid,
+  void GetUserStatus(const authpolicy::GetUserStatusRequest& request,
                      GetUserStatusCallback callback) override {
     NOTIMPLEMENTED();
   }
