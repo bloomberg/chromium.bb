@@ -405,8 +405,8 @@ TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
 
 TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
   MirrorWindowTestApi test_api;
-  display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
   UpdateDisplay("400x200,500x500");
+  display_manager()->SetMirrorMode(true);
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateCurrentRootWindowTransformerForMirroring());
   // Y margin must be margin is (500 - 500/400 * 200) / 2 = 125.

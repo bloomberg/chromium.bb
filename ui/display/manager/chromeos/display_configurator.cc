@@ -999,6 +999,8 @@ void DisplayConfigurator::ResumeDisplays() {
                            this, &DisplayConfigurator::ConfigureDisplays);
   }
 
+  // TODO(crbug.com/794831): Solve the issue of mirror mode on display resume.
+
   // If requested_power_state_ is ALL_OFF due to idle suspend, powerd will turn
   // the display power on when it enables the backlight.
   SetDisplayPower(requested_power_state_, kSetDisplayPowerNoFlags,
