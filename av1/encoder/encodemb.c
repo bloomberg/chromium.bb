@@ -484,13 +484,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-#if !CONFIG_DIST_8X8
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-#else
-  struct macroblock_plane *const p = &x->plane[plane];
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-#endif
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
 
@@ -517,18 +512,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_AOM_QM
 
   TxfmParam txfm_param;
-
-#if CONFIG_DIST_8X8
-  uint8_t *dst;
-  const int dst_stride = pd->dst.stride;
-#if CONFIG_DIST_8X8
-  int16_t *pred;
-  const int txw = tx_size_wide[tx_size];
-  const int txh = tx_size_high[tx_size];
-  int i, j;
-#endif
-#endif
-
   QUANT_PARAM qparam;
   const int16_t *src_diff;
 
@@ -547,33 +530,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   qparam.qmatrix = qmatrix;
   qparam.iqmatrix = iqmatrix;
 #endif  // CONFIG_AOM_QM
-
-#if CONFIG_DIST_8X8
-  dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-#endif  // CONFIG_DIST_8X8
-
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8) {
-    pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-
-// copy uint8 orig and predicted block to int16 buffer
-// in order to use existing VP10 transform functions
-#if CONFIG_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      for (j = 0; j < txh; j++)
-        for (i = 0; i < txw; i++)
-          pred[diff_stride * j + i] =
-              CONVERT_TO_SHORTPTR(dst)[dst_stride * j + i];
-    } else {
-#endif  // CONFIG_HIGHBITDEPTH
-      for (j = 0; j < txh; j++)
-        for (i = 0; i < txw; i++)
-          pred[diff_stride * j + i] = dst[dst_stride * j + i];
-#if CONFIG_HIGHBITDEPTH
-    }
-#endif  // CONFIG_HIGHBITDEPTH
-  }
-#endif  // CONFIG_DIST_8X8
 
   txfm_param.tx_type = tx_type;
   txfm_param.tx_size = tx_size;
