@@ -1915,7 +1915,9 @@ using ios::material::TimingFunction;
 
   // The popup positions itself as a static frame below the web toolbar.  This
   // will no longer be necessary post omnibox popup boxing.
-  _popupView->UpdatePopupAppearance();
+  if (_popupView) {
+    _popupView->UpdatePopupAppearance();
+  }
 }
 
 @end
