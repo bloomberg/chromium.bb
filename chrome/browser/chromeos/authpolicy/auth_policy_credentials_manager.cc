@@ -172,8 +172,11 @@ void AuthPolicyCredentialsManager::GetUserStatus() {
   is_get_status_in_progress_ = true;
   rerun_get_status_on_error_ = false;
   scheduled_get_user_status_call_.Cancel();
+  authpolicy::GetUserStatusRequest request;
+  request.set_user_principal_name(account_id_.GetUserEmail());
+  request.set_account_id(account_id_.GetObjGuid());
   chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->GetUserStatus(
-      account_id_.GetObjGuid(),
+      request,
       base::BindOnce(&AuthPolicyCredentialsManager::OnGetUserStatusCallback,
                      weak_factory_.GetWeakPtr()));
 }

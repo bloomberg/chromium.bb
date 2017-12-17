@@ -42,7 +42,7 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
 
   // Runs |callback| with |password_status_| and |tgt_status_|. Also calls
   // |on_get_status_closure_| after that.
-  void GetUserStatus(const std::string& object_guid,
+  void GetUserStatus(const authpolicy::GetUserStatusRequest& request,
                      GetUserStatusCallback callback) override;
 
   // Runs |callback| with Kerberos files.

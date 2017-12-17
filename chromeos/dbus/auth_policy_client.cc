@@ -98,12 +98,16 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetUserStatus(const std::string& object_guid,
+  void GetUserStatus(const authpolicy::GetUserStatusRequest& request,
                      GetUserStatusCallback callback) override {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
                                  authpolicy::kGetUserStatusMethod);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(object_guid);
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      std::move(callback).Run(authpolicy::ERROR_DBUS_FAILURE,
+                              authpolicy::ActiveDirectoryUserStatus());
+      return;
+    }
     proxy_->CallMethod(
         &method_call, kSlowDbusTimeoutMilliseconds,
         base::BindOnce(&AuthPolicyClientImpl::HandleCallback<

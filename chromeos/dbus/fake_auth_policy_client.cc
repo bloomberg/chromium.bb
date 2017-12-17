@@ -152,15 +152,16 @@ void FakeAuthPolicyClient::AuthenticateUser(
                      dbus_operation_delay_);
 }
 
-void FakeAuthPolicyClient::GetUserStatus(const std::string& object_guid,
-                                         GetUserStatusCallback callback) {
+void FakeAuthPolicyClient::GetUserStatus(
+    const authpolicy::GetUserStatusRequest& request,
+    GetUserStatusCallback callback) {
   authpolicy::ActiveDirectoryUserStatus user_status;
   user_status.set_password_status(password_status_);
   user_status.set_tgt_status(tgt_status_);
 
   authpolicy::ActiveDirectoryAccountInfo* const account_info =
       user_status.mutable_account_info();
-  account_info->set_account_id(object_guid);
+  account_info->set_account_id(request.account_id());
   if (!display_name_.empty())
     account_info->set_display_name(display_name_);
   if (!given_name_.empty())
