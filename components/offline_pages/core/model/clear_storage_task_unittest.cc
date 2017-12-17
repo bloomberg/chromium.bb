@@ -15,7 +15,7 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/model/offline_page_test_util.h"
+#include "components/offline_pages/core/model/offline_page_test_utils.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -210,7 +210,7 @@ TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 }
 
 TEST_F(ClearStorageTaskTest, ClearPagesMoreFreshPages) {
@@ -231,7 +231,7 @@ TEST_F(ClearStorageTaskTest, ClearPagesMoreFreshPages) {
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(130LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(130UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(130UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 }
 
 TEST_F(ClearStorageTaskTest, TryClearPersistentPages) {
@@ -250,7 +250,7 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPages) {
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(20LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(20UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(20UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 }
 
 TEST_F(ClearStorageTaskTest, TryClearPersistentPagesWithStoragePressure) {
@@ -271,7 +271,7 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPagesWithStoragePressure) {
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(20LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(20UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(20UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 }
 
 TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
@@ -311,7 +311,7 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(90LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(90UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(90UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 
   // Advance the clock by the expiration period of bookmark namespace so that
   // all pages left in that namespace should be expired.
@@ -324,7 +324,7 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(2, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(70LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(70UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(70UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 
   // Advance the clock by 1 ms, there's no change in pages so the attempt to
   // clear storage should be unnecessary.
@@ -336,7 +336,7 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(3, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(70LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(70UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(70UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 
   // Adding more fresh pages in last_n namespace to make storage usage exceed
   // limit, so even if only 5 minutes passed from last clearing, this will still
@@ -356,7 +356,7 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(4, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(107LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(107UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(107UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 
   // Advance the clock by 300 days, in order to expire all temporary pages. Only
   // 67 temporary pages are left from the last clearing.
@@ -368,7 +368,7 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(5, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(40LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(40UL, test_util::GetFileCountInDirectory(temp_dir_path()));
+  EXPECT_EQ(40UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
 }
 
 }  // namespace offline_pages

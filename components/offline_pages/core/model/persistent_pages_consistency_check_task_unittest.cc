@@ -14,7 +14,7 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/model/offline_page_test_util.h"
+#include "components/offline_pages/core/model/offline_page_test_utils.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -136,14 +136,14 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
   OfflinePageItem page2 = AddPage(kDownloadNamespace, persistent_dir());
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
   auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   histogram_tester()->ExpectTotalCount(
@@ -176,14 +176,14 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
   OfflinePageItem page2 = AddPage(kDownloadNamespace, persistent_dir());
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
   auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   histogram_tester()->ExpectTotalCount(
@@ -217,14 +217,14 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   OfflinePageItem page3 = AddPage(kDownloadNamespace, persistent_dir());
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
   auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page3));
@@ -251,14 +251,14 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest, TestKeepingNonMhtmlFile) {
   EXPECT_TRUE(base::Move(path, mp3_path));
 
   EXPECT_EQ(0LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
   auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(0LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page1));
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ConsistencyCheck.Persistent.PagesMissingArchiveFileCount",

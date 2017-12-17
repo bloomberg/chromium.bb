@@ -53925,6 +53925,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="OfflinePages.AccessCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Number of accesses to the offline page since its creation. This is reported
+    when the offline page was deleted.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.AccessEntryPoint"
     enum="OfflinePagesAccessEntryPoint">
   <owner>jianli@chromium.org</owner>
@@ -54733,14 +54741,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Length of time between two consecutive opens.</summary>
 </histogram>
 
-<histogram name="OfflinePages.PageLifetime" units="minutes">
+<histogram base="true" name="OfflinePages.PageLifetime" units="minutes">
   <owner>jianli@chromium.org</owner>
   <summary>
     Length of time between when an offline page was created and was removed.
   </summary>
 </histogram>
 
-<histogram name="OfflinePages.PageSize" units="KB">
+<histogram base="true" name="OfflinePages.PageSize" units="KB">
   <owner>jianli@chromium.org</owner>
   <summary>Size of the saved copy of an offline page.</summary>
 </histogram>
@@ -55046,12 +55054,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="OfflinePages.SavePageResult" enum="OfflinePagesSavePageResult">
+<histogram base="true" name="OfflinePages.SavePageResult"
+    enum="OfflinePagesSavePageResult">
   <owner>jianli@chromium.org</owner>
   <summary>Result of saving an offline copy for a page.</summary>
 </histogram>
 
-<histogram name="OfflinePages.SavePageTime" units="ms">
+<histogram base="true" name="OfflinePages.SavePageTime" units="ms">
   <owner>jianli@chromium.org</owner>
   <summary>
     The amount of time taken to save an offline copy for a page.

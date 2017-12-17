@@ -14,7 +14,7 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
-#include "components/offline_pages/core/model/offline_page_test_util.h"
+#include "components/offline_pages/core/model/offline_page_test_utils.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -134,14 +134,14 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
   OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temporary_dir()));
 
   auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
       store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   histogram_tester()->ExpectTotalCount(
@@ -173,14 +173,14 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
   OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir()));
 
   auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
       store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   histogram_tester()->ExpectTotalCount(
@@ -214,14 +214,14 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   OfflinePageItem page3 = AddPage(kLastNNamespace, temporary_dir());
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temporary_dir()));
 
   auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
       store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir()));
   EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
   EXPECT_TRUE(IsPageRemovedFromBothPlaces(page3));
