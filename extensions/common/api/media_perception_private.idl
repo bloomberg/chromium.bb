@@ -82,6 +82,9 @@ namespace mediaPerceptionPrivate {
   // The state of the media analytics downloadable component.
   dictionary ComponentState {
     ComponentStatus status;
+
+    // The version string for the current component.
+    DOMString? version;
   };
 
   // The parameters for processing a particular video stream.

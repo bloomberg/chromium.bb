@@ -36,7 +36,7 @@ class TestMediaPerceptionAPIDelegate : public MediaPerceptionAPIDelegate {
     if (type == media_perception::COMPONENT_TYPE_LIGHT) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(load_callback),
-                                    "/run/imageloader/rtanalytics-light"));
+                                    "/run/imageloader/rtanalytics-light/1.0"));
       return;
     }
 
