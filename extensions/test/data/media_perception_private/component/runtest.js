@@ -7,6 +7,7 @@ function setAnalyticsComponentLight() {
     type: 'LIGHT',
   }, chrome.test.callbackPass(function(component_state) {
     chrome.test.assertEq('INSTALLED', component_state.status);
+    chrome.test.assertEq('1.0', component_state.version);
   }));
 }
 

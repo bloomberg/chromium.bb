@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/media_perception_private/media_perception_api_manager.h"
 
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/media_analytics_client.h"
@@ -35,11 +36,19 @@ media_perception::Diagnostics GetDiagnosticsForServiceError(
   return diagnostics;
 }
 
-media_perception::ComponentState GetComponentStateForComponentStatus(
-    const media_perception::ComponentStatus status) {
+media_perception::ComponentState GetFailedToInstallComponentState() {
   media_perception::ComponentState component_state;
-  component_state.status = status;
+  component_state.status = media_perception::COMPONENT_STATUS_FAILED_TO_INSTALL;
   return component_state;
+}
+
+// Pulls out the version number from a mount_point location for the media
+// perception component. Mount points look like
+// /run/imageloader/rtanalytics-light/1.0, where 1.0 is the version string.
+std::unique_ptr<std::string> ExtractVersionFromMountPoint(
+    const std::string& mount_point) {
+  return std::make_unique<std::string>(
+      base::FilePath(mount_point).BaseName().value());
 }
 
 }  // namespace
@@ -109,8 +118,7 @@ void MediaPerceptionAPIManager::SetAnalyticsComponent(
     APISetAnalyticsComponentCallback callback) {
   if (analytics_process_state_ != AnalyticsProcessState::IDLE) {
     LOG(WARNING) << "Analytics process is not STOPPED.";
-    std::move(callback).Run(GetComponentStateForComponentStatus(
-        media_perception::COMPONENT_STATUS_FAILED_TO_INSTALL));
+    std::move(callback).Run(GetFailedToInstallComponentState());
     return;
   }
 
@@ -118,8 +126,7 @@ void MediaPerceptionAPIManager::SetAnalyticsComponent(
       ExtensionsAPIClient::Get()->GetMediaPerceptionAPIDelegate();
   if (!delegate) {
     LOG(WARNING) << "Could not get MediaPerceptionAPIDelegate.";
-    std::move(callback).Run(GetComponentStateForComponentStatus(
-        media_perception::COMPONENT_STATUS_FAILED_TO_INSTALL));
+    std::move(callback).Run(GetFailedToInstallComponentState());
     return;
   }
 
@@ -132,17 +139,17 @@ void MediaPerceptionAPIManager::SetAnalyticsComponent(
 void MediaPerceptionAPIManager::LoadComponentCallback(
     APISetAnalyticsComponentCallback callback,
     const std::string& mount_point) {
-  media_perception::ComponentState component_state;
   if (mount_point.empty()) {
-    component_state.status =
-        media_perception::COMPONENT_STATUS_FAILED_TO_INSTALL;
-    std::move(callback).Run(std::move(component_state));
+    std::move(callback).Run(GetFailedToInstallComponentState());
     return;
   }
 
   // If the new component is loaded, override the mount point.
   mount_point_ = mount_point;
+
+  media_perception::ComponentState component_state;
   component_state.status = media_perception::COMPONENT_STATUS_INSTALLED;
+  component_state.version = ExtractVersionFromMountPoint(mount_point_);
   std::move(callback).Run(std::move(component_state));
   return;
 }
