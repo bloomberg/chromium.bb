@@ -17,7 +17,7 @@
         "binhost_bucket": null,
         "binhost_key": null,
         "binhost_test": false,
-        "board_replace": true,
+        "board_replace": false,
         "boards": null,
         "branch": false,
         "branch_util_test": false,
@@ -17855,6 +17855,7 @@
     "falco-full-compile-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
+        "board_replace": true,
         "boards": [
             "falco"
         ],
@@ -17880,6 +17881,7 @@
     "falco-full-compile-paladin-tryjob": {
         "_template": "paladin",
         "active_waterfall": "chromiumos.tryserver",
+        "board_replace": true,
         "boards": [
             "falco"
         ],
@@ -38529,6 +38531,7 @@
     "nyan-full-compile-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
+        "board_replace": true,
         "boards": [
             "nyan"
         ],
@@ -38554,6 +38557,7 @@
     "nyan-full-compile-paladin-tryjob": {
         "_template": "paladin",
         "active_waterfall": "chromiumos.tryserver",
+        "board_replace": true,
         "boards": [
             "nyan"
         ],
