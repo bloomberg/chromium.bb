@@ -44,6 +44,7 @@ NGLineBreaker::NGLineBreaker(
     offset_ = break_token->TextOffset();
     previous_line_had_forced_break_ = break_token->IsForcedBreak();
     node.AssertOffset(item_index_, offset_);
+    ignore_floats_ = break_token->IgnoreFloats();
   }
 }
 
@@ -482,7 +483,11 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
   // twice.
   // Ideally rewind can take floats out of floats list, but the difference is
   // sutble compared to the complexity.
-  if (item_index_ < handled_floats_end_item_index_) {
+  //
+  // Additionally, we need to skip floats if we're retrying a line after a
+  // fragmentainer break. In that case the floats associated with this line will
+  // already have been processed.
+  if (item_index_ < handled_floats_end_item_index_ || ignore_floats_) {
     MoveToNextOf(item);
     return ComputeIsBreakableAfter(item_result);
   }

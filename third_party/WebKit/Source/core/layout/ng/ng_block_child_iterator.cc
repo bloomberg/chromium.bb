@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_block_child_iterator.h"
 
 #include "core/layout/ng/ng_block_break_token.h"
+#include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 
 namespace blink {
@@ -26,6 +27,9 @@ NGBlockChildIterator::NGBlockChildIterator(NGLayoutInputNode first_child,
     }
     return;
   }
+  auto first_node_child = ToNGBlockNode(break_token->InputNode()).FirstChild();
+  resuming_at_inline_formatting_context_ =
+      first_node_child && first_node_child.IsInline();
   child_ = child_break_tokens[0]->InputNode();
 }
 
@@ -49,6 +53,22 @@ NGBlockChildIterator::Entry NGBlockChildIterator::NextChild(
     //
     // [1] https://drafts.csswg.org/css-break/#parallel-flows
     const auto& child_break_tokens = break_token_->ChildBreakTokens();
+
+    if (resuming_at_inline_formatting_context_) {
+      // When resuming inside an inline formatting context, just process the
+      // break tokens. There'll be any number of break tokens for broken floats,
+      // followed by at most one break token for the actual inline formatting
+      // context where we had to give up in the previous fragmentainer. The node
+      // structure will not be of any help at all, since the break tokens will
+      // be associated with nodes that are not siblings.
+      while (child_token_idx_ < child_break_tokens.size()) {
+        const auto& token = child_break_tokens[child_token_idx_];
+        child_token_idx_++;
+        if (!token->IsFinished())
+          return Entry(token->InputNode(), token.get());
+      }
+      return Entry(nullptr, nullptr);
+    }
 
     do {
       // Early exit if we've exhausted our child break tokens.

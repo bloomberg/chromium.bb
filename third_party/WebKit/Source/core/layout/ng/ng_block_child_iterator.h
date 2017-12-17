@@ -40,6 +40,8 @@ class CORE_EXPORT NGBlockChildIterator {
   // An index into break_token_'s ChildBreakTokens() vector. Used for keeping
   // track of the next child break token to inspect.
   size_t child_token_idx_;
+
+  bool resuming_at_inline_formatting_context_ = false;
 };
 
 struct NGBlockChildIterator::Entry {

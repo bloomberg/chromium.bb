@@ -702,6 +702,11 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
   DCHECK(container_builder_.BfcOffset() || ConstraintSpace().FloatsBfcOffset())
       << "The parent BFC offset should be known here";
 
+  if (BreakToken() && BreakToken()->IgnoreFloats()) {
+    unpositioned_floats_.clear();
+    return;
+  }
+
   NGBfcOffset bfc_offset = container_builder_.BfcOffset()
                                ? container_builder_.BfcOffset().value()
                                : ConstraintSpace().FloatsBfcOffset().value();

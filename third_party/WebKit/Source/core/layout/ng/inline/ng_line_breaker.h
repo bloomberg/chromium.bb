@@ -181,6 +181,8 @@ class CORE_EXPORT NGLineBreaker {
   // quirks.
   // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
   bool in_line_height_quirks_mode_ = false;
+
+  bool ignore_floats_ = false;
 };
 
 }  // namespace blink

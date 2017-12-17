@@ -35,6 +35,7 @@
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
@@ -366,6 +367,7 @@ void PlaceLineBoxChildren(const Vector<NGInlineItem>& items,
                           const Vector<unsigned, 32>& text_offsets,
                           const NGConstraintSpace& constraint_space,
                           const NGPhysicalBoxFragment& box_fragment,
+                          LayoutUnit extra_block_offset,
                           LayoutBlockFlow& block_flow,
                           LineInfo& line_info) {
   FontBaseline baseline_type =
@@ -389,6 +391,7 @@ void PlaceLineBoxChildren(const Vector<NGInlineItem>& items,
         physical_line_box.Offset().ConvertToLogical(
             constraint_space.GetWritingMode(), TextDirection::kLtr,
             box_fragment.Size(), physical_line_box.Size());
+    line_box_offset.block_offset += extra_block_offset;
 
     // Create a BidiRunList for this line.
     CreateBidiRuns(&bidi_runs, physical_line_box.Children(), constraint_space,
@@ -785,25 +788,35 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
     descend_into_fragmentainers = true;
   }
 
-  block_flow->DeleteLineBoxTree();
+  NGPhysicalBoxFragment* box_fragment =
+      ToNGPhysicalBoxFragment(layout_result.PhysicalFragment().get());
+  if (IsFirstFragment(constraint_space, *box_fragment))
+    block_flow->DeleteLineBoxTree();
 
   const Vector<NGInlineItem>& items = Data().items_;
   Vector<unsigned, 32> text_offsets(items.size());
   GetLayoutTextOffsets(&text_offsets);
 
   LineInfo line_info;
-  NGPhysicalBoxFragment* box_fragment =
-      ToNGPhysicalBoxFragment(layout_result.PhysicalFragment().get());
   if (descend_into_fragmentainers) {
+    LayoutUnit extra_block_offset;
     for (const auto& child : box_fragment->Children()) {
       DCHECK(child->IsBox());
       const auto& fragmentainer = ToNGPhysicalBoxFragment(*child.get());
       PlaceLineBoxChildren(items, text_offsets, constraint_space, fragmentainer,
-                           *block_flow, line_info);
+                           extra_block_offset, *block_flow, line_info);
+      extra_block_offset =
+          ToNGBlockBreakToken(fragmentainer.BreakToken())->UsedBlockSize();
     }
   } else {
+    LayoutUnit extra_block_offset;
+    if (constraint_space.HasBlockFragmentation()) {
+      extra_block_offset =
+          PreviouslyUsedBlockSpace(constraint_space, *box_fragment);
+    }
+
     PlaceLineBoxChildren(items, text_offsets, constraint_space, *box_fragment,
-                         *block_flow, line_info);
+                         extra_block_offset, *block_flow, line_info);
   }
 }
 

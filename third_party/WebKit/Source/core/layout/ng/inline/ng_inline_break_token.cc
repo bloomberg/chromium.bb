@@ -18,16 +18,15 @@ NGInlineBreakToken::NGInlineBreakToken(
       item_index_(item_index),
       text_offset_(text_offset),
       is_forced_break_(is_forced_break),
-      state_stack_(std::move(state_stack)) {
-  // Use nullptr for the initial layout, rather than (0, 0) break token.
-  DCHECK(item_index || text_offset);
-}
+      ignore_floats_(false),
+      state_stack_(std::move(state_stack)) {}
 
 NGInlineBreakToken::NGInlineBreakToken(NGLayoutInputNode node)
     : NGBreakToken(kInlineBreakToken, kFinished, node),
       item_index_(0),
       text_offset_(0),
       is_forced_break_(false),
+      ignore_floats_(false),
       state_stack_(nullptr) {}
 
 NGInlineBreakToken::~NGInlineBreakToken() {}
