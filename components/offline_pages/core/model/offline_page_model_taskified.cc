@@ -93,6 +93,22 @@ SavePageResult AddPageResultToSavePageResult(AddPageResult add_page_result) {
   return SavePageResult::STORE_FAILURE;
 }
 
+void ReportPageHistogramAfterSuccessfulSaving(
+    const OfflinePageItem& offline_page,
+    const base::Time& save_time) {
+  base::UmaHistogramCustomTimes(
+      model_utils::AddHistogramSuffix(offline_page.client_id,
+                                      "OfflinePages.SavePageTime"),
+      save_time - offline_page.creation_time,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(10),
+      50);
+
+  base::UmaHistogramCustomCounts(
+      model_utils::AddHistogramSuffix(offline_page.client_id,
+                                      "OfflinePages.PageSize"),
+      offline_page.file_size / 1024, 1, 10000, 50);
+}
+
 }  // namespace
 
 OfflinePageModelTaskified::OfflinePageModelTaskified(
@@ -292,6 +308,11 @@ void OfflinePageModelTaskified::InformSavePageDone(
       "OfflinePages.SavePageCount",
       model_utils::ToNamespaceEnum(page.client_id.name_space),
       OfflinePagesNamespaceEnumeration::RESULT_COUNT);
+  base::UmaHistogramEnumeration(
+      model_utils::AddHistogramSuffix(page.client_id,
+                                      "OfflinePages.SavePageResult"),
+      result, SavePageResult::RESULT_COUNT);
+
   if (result == SavePageResult::ARCHIVE_CREATION_FAILED)
     CreateArchivesDirectoryIfNeeded();
   if (!callback.is_null())
@@ -342,8 +363,10 @@ void OfflinePageModelTaskified::OnAddPageForSavePageDone(
   SavePageResult save_page_result =
       AddPageResultToSavePageResult(add_page_result);
   InformSavePageDone(callback, save_page_result, page_attempted);
-  if (save_page_result == SavePageResult::SUCCESS)
+  if (save_page_result == SavePageResult::SUCCESS) {
+    ReportPageHistogramAfterSuccessfulSaving(page_attempted, GetCurrentTime());
     RemovePagesMatchingUrlAndNamespace(page_attempted);
+  }
   PostClearCachedPagesTask(false /* is_initializing */);
 }
 
@@ -357,19 +380,14 @@ void OfflinePageModelTaskified::OnAddPageDone(const OfflinePageItem& page,
   }
 }
 
-// TODO(romax): see if this method can be moved into anonymous namespace after
-// migrating UMAs.
-void OfflinePageModelTaskified::InformDeletePageDone(
-    const DeletePageCallback& callback,
-    DeletePageResult result) {
-  if (!callback.is_null())
-    callback.Run(result);
-}
-
 void OfflinePageModelTaskified::OnDeleteDone(
     const DeletePageCallback& callback,
     DeletePageResult result,
     const std::vector<OfflinePageModel::DeletedPageInfo>& infos) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.DeletePageResult", result,
+                            DeletePageResult::RESULT_COUNT);
+
+  // Notify observers and run callback.
   for (const auto& info : infos) {
     UMA_HISTOGRAM_ENUMERATION(
         "OfflinePages.DeletePageCount",
@@ -378,7 +396,8 @@ void OfflinePageModelTaskified::OnDeleteDone(
     for (Observer& observer : observers_)
       observer.OfflinePageDeleted(info);
   }
-  InformDeletePageDone(callback, result);
+  if (!callback.is_null())
+    callback.Run(result);
 }
 
 void OfflinePageModelTaskified::PostClearLegacyTemporaryPagesTask() {

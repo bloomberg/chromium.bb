@@ -144,8 +144,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                      AddPageResult result);
 
   // Callbacks for deleting pages.
-  void InformDeletePageDone(const DeletePageCallback& callback,
-                            DeletePageResult result);
   void OnDeleteDone(
       const DeletePageCallback& callback,
       DeletePageResult result,

@@ -29,6 +29,7 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.original_url = original_url_;
   item.file_size = file_size_;
   item.last_access_time = last_access_time_;
+  item.access_count = access_count_;
   return item;
 }
 
@@ -71,9 +72,12 @@ void OfflinePageItemGenerator::SetFileSize(int64_t file_size) {
   file_size_ = file_size;
 }
 
-void OfflinePageItemGenerator::SetLastAccessTime(
-    const base::Time& last_access_time) {
+void OfflinePageItemGenerator::SetLastAccessTime(base::Time last_access_time) {
   last_access_time_ = last_access_time;
+}
+
+void OfflinePageItemGenerator::SetAccessCount(int access_count) {
+  access_count_ = access_count;
 }
 
 void OfflinePageItemGenerator::SetArchiveDirectory(

@@ -17,14 +17,14 @@ class FilePath;
 
 namespace offline_pages {
 
-// The test_util namespace within offline_pages namespace contains helper
+// The test_utils namespace within offline_pages namespace contains helper
 // methods that are common and shared among all Offline Pages tests.
-namespace test_util {
+namespace test_utils {
 
 // Get number of files in the given |dir|.
 size_t GetFileCountInDirectory(const base::FilePath& directory);
 
-}  // namespace test_util
+}  // namespace test_utils
 
 }  // namespace offline_pages
 

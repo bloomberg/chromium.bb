@@ -93,8 +93,8 @@ static_library("test_support") {
   sources = [
     "model/offline_page_item_generator.cc",
     "model/offline_page_item_generator.h",
-    "model/offline_page_test_util.cc",
-    "model/offline_page_test_util.h",
+    "model/offline_page_test_utils.cc",
+    "model/offline_page_test_utils.h",
     "offline_page_metadata_store_test_util.cc",
     "offline_page_metadata_store_test_util.h",
     "offline_page_test_archiver.cc",
