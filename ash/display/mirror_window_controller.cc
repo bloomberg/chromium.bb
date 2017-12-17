@@ -107,18 +107,9 @@ display::DisplayManager::MultiDisplayMode GetCurrentMultiDisplayMode() {
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   return display_manager->IsInUnifiedMode()
              ? display::DisplayManager::UNIFIED
-             : (display_manager->IsInSoftwareMirrorMode()
+             : (display_manager->IsInMirrorMode()
                     ? display::DisplayManager::MIRRORING
                     : display::DisplayManager::EXTENDED);
-}
-
-int64_t GetCurrentReflectingSourceId() {
-  display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  if (display_manager->IsInUnifiedMode())
-    return display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  if (display_manager->IsInSoftwareMirrorMode())
-    return display_manager->mirroring_source_id();
-  return display::kInvalidDisplayId;
 }
 
 }  // namespace
@@ -146,26 +137,27 @@ MirrorWindowController::~MirrorWindowController() {
 
 void MirrorWindowController::UpdateWindow(
     const std::vector<display::ManagedDisplayInfo>& display_info_list) {
-  display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  DCHECK(display_manager->IsInSoftwareMirrorMode() ||
-         display_manager->IsInUnifiedMode());
   static int mirror_host_count = 0;
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const display::Display& primary =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::ManagedDisplayInfo& source_display_info =
+      display_manager->GetDisplayInfo(primary.id());
 
   multi_display_mode_ = GetCurrentMultiDisplayMode();
-  reflecting_source_id_ = GetCurrentReflectingSourceId();
 
   for (const display::ManagedDisplayInfo& display_info : display_info_list) {
     std::unique_ptr<RootWindowTransformer> transformer;
-    if (display_manager->IsInSoftwareMirrorMode()) {
+    if (display_manager->IsInMirrorMode()) {
       transformer.reset(CreateRootWindowTransformerForMirroredDisplay(
-          display_manager->GetDisplayInfo(reflecting_source_id_),
-          display_info));
-    } else {
-      DCHECK(display_manager->IsInUnifiedMode());
+          source_display_info, display_info));
+    } else if (display_manager->IsInUnifiedMode()) {
       display::Display display =
           display_manager->GetMirroringDisplayById(display_info.id());
       transformer.reset(CreateRootWindowTransformerForUnifiedDesktop(
-          display::Screen::GetScreen()->GetPrimaryDisplay().bounds(), display));
+          primary.bounds(), display));
+    } else {
+      NOTREACHED();
     }
 
     if (mirroring_host_info_map_.find(display_info.id()) ==
@@ -205,7 +197,7 @@ void MirrorWindowController::UpdateWindow(
         AshWindowTreeHost* unified_ash_host =
             Shell::Get()
                 ->window_tree_host_manager()
-                ->GetAshWindowTreeHostForDisplayId(reflecting_source_id_);
+                ->GetAshWindowTreeHostForDisplayId(primary.id());
         unified_ash_host->RegisterMirroringHost(host_info->ash_host.get());
         aura::client::SetScreenPositionClient(host->window(),
                                               screen_position_client_.get());
@@ -232,9 +224,7 @@ void MirrorWindowController::UpdateWindow(
               aura::Env::GetInstance()
                   ->context_factory_private()
                   ->CreateReflector(
-                      Shell::GetRootWindowForDisplayId(reflecting_source_id_)
-                          ->GetHost()
-                          ->compositor(),
+                      Shell::GetPrimaryRootWindow()->GetHost()->compositor(),
                       mirror_window->layer());
         }
       }
@@ -288,10 +278,9 @@ void MirrorWindowController::UpdateWindow() {
 void MirrorWindowController::CloseIfNotNecessary() {
   display::DisplayManager::MultiDisplayMode new_mode =
       GetCurrentMultiDisplayMode();
-  int64_t new_reflecting_source_id = GetCurrentReflectingSourceId();
-  if (multi_display_mode_ != new_mode ||
-      reflecting_source_id_ != new_reflecting_source_id) {
+  if (multi_display_mode_ != new_mode) {
     Close(true);
+    multi_display_mode_ = new_mode;
   } else {
     UpdateWindow();
   }

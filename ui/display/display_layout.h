@@ -100,7 +100,6 @@ class DISPLAY_EXPORT DisplayLayout final {
 
   std::vector<DisplayPlacement> placement_list;
 
-  // TODO(crbug.com/791881) Remove this variable and related code.
   // True if displays are mirrored.
   bool mirrored;
 
