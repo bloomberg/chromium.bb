@@ -157,9 +157,9 @@ MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
                             [](const DisplaySnapshot* display_state) {
                               return display_state->display_id();
                             });
-  bool mirrored = display_manager_->layout_store()->GetMirrorMode(list);
-  return mirrored ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
-                  : MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
+  return display_manager_->ShouldSetMirrorModeOn(list)
+             ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
+             : MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
 }
 
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,

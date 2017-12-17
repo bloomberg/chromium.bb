@@ -300,10 +300,6 @@ bool DisplayManager::InitFromCommandLine() {
     info_list.back().set_native(true);
   }
   MaybeInitInternalDisplay(&info_list[0]);
-  if (info_list.size() > 1 &&
-      command_line->HasSwitch(::switches::kEnableSoftwareMirroring)) {
-    SetMultiDisplayMode(MIRRORING);
-  }
   OnNativeDisplaysChanged(info_list);
   return true;
 }
@@ -723,8 +719,8 @@ void DisplayManager::OnNativeDisplaysChanged(
   std::map<gfx::Point, int64_t> origins;
 
   bool internal_display_connected = false;
-  num_connected_displays_ = updated_displays.size();
-  ClearMirroringSourceAndDestination();
+  DisplayIdList hardware_mirroring_display_id_list;
+  int64_t mirroring_source_id = kInvalidDisplayId;
   DisplayInfoList new_display_info_list;
   for (const auto& display_info : updated_displays) {
     if (!internal_display_connected)
@@ -735,17 +731,17 @@ void DisplayManager::OnNativeDisplaysChanged(
     const auto iter = origins.find(origin);
     if (iter != origins.end()) {
       InsertAndUpdateDisplayInfo(display_info);
-      if (hardware_mirroring_display_id_list_.empty()) {
+      if (hardware_mirroring_display_id_list.empty()) {
         // Unlike software mirroring, hardware mirroring has no source and
         // target. All mirroring displays scan the same frame buffer. But for
         // convenience, we treat the first mirroring display as source.
-        mirroring_source_id_ = iter->second;
+        mirroring_source_id = iter->second;
       }
       // Only keep the first hardware mirroring display in
       // |new_display_info_list| because hardware mirroring is not visible for
       // display manager and all hardware mirroring displays should be treated
       // as one single display from this point.
-      hardware_mirroring_display_id_list_.emplace_back(display_info.id());
+      hardware_mirroring_display_id_list.emplace_back(display_info.id());
     } else {
       origins.emplace(origin, display_info.id());
       new_display_info_list.emplace_back(display_info);
@@ -791,19 +787,30 @@ void DisplayManager::OnNativeDisplaysChanged(
   }
 
 #if defined(OS_CHROMEOS)
-  if (!configure_displays_ && new_display_info_list.size() > 1) {
+  if (!configure_displays_ && new_display_info_list.size() > 1 &&
+      hardware_mirroring_display_id_list.empty()) {
+    // Mirror mode is set by DisplayConfigurator on the device. Emulate it when
+    // running on linux desktop. Do not emulate it when hardware mirroring is
+    // on (This only happens in test).
     DisplayIdList list = GenerateDisplayIdList(
         new_display_info_list.begin(), new_display_info_list.end(),
-        [](const ManagedDisplayInfo& info) { return info.id(); });
-
-    const DisplayLayout& layout =
-        layout_store_->GetRegisteredDisplayLayout(list);
-    // Mirror mode is set by DisplayConfigurator on the device.
-    // Emulate it when running on linux desktop.
-    if (layout.mirrored)
-      SetMultiDisplayMode(MIRRORING);
+        [](const ManagedDisplayInfo& display_info) {
+          return display_info.id();
+        });
+    multi_display_mode_ = (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                               ::switches::kEnableSoftwareMirroring) ||
+                           ShouldSetMirrorModeOn(list))
+                              ? MIRRORING
+                              : EXTENDED;
   }
 #endif
+
+  // Do not clear current mirror state before calling ShouldSetMirrorModeOn()
+  // as it depends on the state.
+  software_mirroring_display_list_.clear();
+  hardware_mirroring_display_id_list_ = hardware_mirroring_display_id_list;
+  mirroring_source_id_ = mirroring_source_id;
+  num_connected_displays_ = updated_displays.size();
 
   UpdateDisplaysWith(new_display_info_list);
 }
@@ -1022,6 +1029,8 @@ void DisplayManager::UpdateDisplaysWith(
   if (delegate_ && primary_metrics)
     NotifyMetricsChanged(screen_->GetPrimaryDisplay(), primary_metrics);
 
+  UpdateInfoForRestoringMirrorMode();
+
   if (delegate_)
     delegate_->PostDisplayConfigurationChange();
 
@@ -1173,6 +1182,32 @@ int64_t DisplayManager::GetDisplayIdForUIScaling() const {
   // UI Scaling is effective on internal display.
   return Display::HasInternalDisplay() ? Display::InternalDisplayId()
                                        : kInvalidDisplayId;
+}
+
+bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
+  DCHECK(new_id_list.size() > 1);
+  if (layout_store_->forced_mirror_mode())
+    return true;
+
+  if (disable_restoring_mirror_mode_for_test_)
+    return false;
+
+  if (num_connected_displays_ <= 1) {
+    // The ChromeOS just boots up or it only has one display. Restore mirror
+    // mode based on the external displays' mirror info stored in the
+    // preferences. Mirror mode should be on if one of the external displays was
+    // in mirror mode before.
+    for (int64_t id : new_id_list) {
+      if (external_display_mirror_info_.count(
+              GetDisplayIdWithoutOutputIndex(id))) {
+        return true;
+      }
+    }
+    return false;
+  }
+  // Mirror mode should remain unchanged as long as there are more than one
+  // connected displays.
+  return IsInMirrorMode();
 }
 
 void DisplayManager::SetMirrorMode(bool mirror) {
@@ -1910,6 +1945,23 @@ const Display& DisplayManager::GetSecondaryDisplay() const {
   return GetDisplayAt(0).id() == Screen::GetScreen()->GetPrimaryDisplay().id()
              ? GetDisplayAt(1)
              : GetDisplayAt(0);
+}
+
+void DisplayManager::UpdateInfoForRestoringMirrorMode() {
+  if (num_connected_displays_ <= 1)
+    return;
+
+  for (auto id : GetCurrentDisplayIdList()) {
+    if (Display::IsInternalDisplayId(id))
+      continue;
+    // Mask the output index out (8 bits) so that the user does not have to
+    // reconnect a display to the same port to restore mirror mode.
+    int64_t masked_id = GetDisplayIdWithoutOutputIndex(id);
+    if (IsInMirrorMode())
+      external_display_mirror_info_.emplace(masked_id);
+    else
+      external_display_mirror_info_.erase(masked_id);
+  }
 }
 
 }  // namespace display
