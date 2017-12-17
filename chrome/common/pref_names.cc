@@ -600,9 +600,6 @@ const char kDisplayPowerState[] = "settings.display.power_state";
 const char kDisplayProperties[] = "settings.display.properties";
 // A dictionary pref that stores the touch associations for the device.
 const char kDisplayTouchAssociations[] = "settings.display.touch_associations";
-// A list pref that stores the mirror info for each external display.
-const char kExternalDisplayMirrorInfo[] =
-    "settings.display.external_display_mirror_info";
 
 // A dictionary pref that specifies per-display layout/offset information.
 // Its key is the ID of the display and its value is a dictionary for the

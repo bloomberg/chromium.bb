@@ -338,28 +338,6 @@ void LoadDisplayTouchAssociations() {
       touch_associations);
 }
 
-// Loads mirror info for each external display, the info will later be used to
-// restore mirror mode.
-void LoadExternalDisplayMirrorInfo() {
-  PrefService* local_state = g_browser_process->local_state();
-  const base::ListValue* pref_data =
-      local_state->GetList(prefs::kExternalDisplayMirrorInfo);
-  std::set<int64_t> external_display_mirror_info;
-  for (auto it = pref_data->begin(); it != pref_data->end(); ++it) {
-    std::string display_id_str;
-    if (!it->GetAsString(&display_id_str))
-      continue;
-
-    int64_t display_id;
-    if (!base::StringToInt64(display_id_str, &display_id))
-      continue;
-
-    external_display_mirror_info.emplace(display_id);
-  }
-  GetDisplayManager()->set_external_display_mirror_info(
-      external_display_mirror_info);
-}
-
 void StoreDisplayLayoutPref(const display::DisplayIdList& list,
                             const display::DisplayLayout& display_layout) {
   DCHECK(display::DisplayLayout::Validate(list, display_layout));
@@ -556,18 +534,6 @@ void StoreDisplayTouchAssociations() {
   }
 }
 
-// Stores mirror info for each external display.
-void StoreExternalDisplayMirrorInfo() {
-  PrefService* local_state = g_browser_process->local_state();
-  ListPrefUpdate update(local_state, prefs::kExternalDisplayMirrorInfo);
-  base::ListValue* pref_data = update.Get();
-  pref_data->Clear();
-  const std::set<int64_t>& external_display_mirror_info =
-      GetDisplayManager()->external_display_mirror_info();
-  for (const auto& id : external_display_mirror_info)
-    pref_data->GetList().emplace_back(base::Value(base::Int64ToString(id)));
-}
-
 }  // namespace
 
 void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -579,7 +545,6 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDisplayPowerState, iter->second);
   registry->RegisterDictionaryPref(prefs::kDisplayRotationLock);
   registry->RegisterDictionaryPref(prefs::kDisplayTouchAssociations);
-  registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);
 }
 
 void StoreDisplayPrefs() {
@@ -598,7 +563,6 @@ void StoreDisplayPrefs() {
   StoreCurrentDisplayLayoutPrefs();
   StoreCurrentDisplayProperties();
   StoreDisplayTouchAssociations();
-  StoreExternalDisplayMirrorInfo();
 }
 
 void StoreDisplayRotationPrefs(bool rotation_lock) {
@@ -619,7 +583,6 @@ void StoreDisplayRotationPrefs(bool rotation_lock) {
 void LoadDisplayPreferences(bool first_run_after_boot) {
   LoadDisplayLayouts();
   LoadDisplayProperties();
-  LoadExternalDisplayMirrorInfo();
   LoadDisplayRotationState();
   LoadDisplayTouchAssociations();
   if (!first_run_after_boot) {
