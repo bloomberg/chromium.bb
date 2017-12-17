@@ -25,6 +25,8 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
                       [expectations.ALL], 'crbug.com/769809')
     self.DisableStory('browse:tools:maps', [expectations.ALL_MAC],
                       'crbug.com/773084')
+    self.DisableStory('load:media:youtube', [expectations.ALL_MAC],
+                      'crbug.com/795585')
 
 
 class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
