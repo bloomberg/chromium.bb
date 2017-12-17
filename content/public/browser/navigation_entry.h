@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -26,6 +27,7 @@ namespace content {
 
 class PageState;
 struct FaviconStatus;
+struct ReplacedNavigationEntryData;
 struct SSLStatus;
 
 // A NavigationEntry is a data structure that captures all the information
@@ -216,6 +218,12 @@ class NavigationEntry {
   // redirecting URL to the final non-redirecting current URL.
   virtual void SetRedirectChain(const std::vector<GURL>& redirects) = 0;
   virtual const std::vector<GURL>& GetRedirectChain() const = 0;
+  // When a history entry is replaced (e.g. history.replaceState()), this
+  // contains some information about the entry prior to being replaced. Even if
+  // an entry is replaced multiple times, it represents data prior to the
+  // *first* replace.
+  virtual const base::Optional<ReplacedNavigationEntryData>&
+  GetReplacedEntryData() const = 0;
 
   // True if this entry is restored and hasn't been loaded.
   virtual bool IsRestored() const = 0;

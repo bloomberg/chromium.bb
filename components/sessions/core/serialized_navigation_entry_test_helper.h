@@ -22,9 +22,6 @@ class Time;
 }
 
 namespace sessions {
-
-class SerializedNavigationEntry;
-
 namespace test_data {
 
 extern const int kIndex;
@@ -93,6 +90,10 @@ class SerializedNavigationEntryTestHelper {
 
   static void SetTimestamp(base::Time timestamp,
                            SerializedNavigationEntry* navigation);
+
+  static void SetReplacedEntryData(
+      const SerializedNavigationEntry::ReplacedNavigationEntryData& data,
+      SerializedNavigationEntry* navigation);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SerializedNavigationEntryTestHelper);
