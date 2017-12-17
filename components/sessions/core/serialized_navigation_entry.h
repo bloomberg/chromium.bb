@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/sessions/core/sessions_export.h"
@@ -142,6 +143,23 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   }
   const std::vector<GURL>& redirect_chain() const { return redirect_chain_; }
 
+  // This class is analogous to content::ReplacedNavigationEntryData.
+  // When a history entry is replaced (e.g. history.replaceState()), this
+  // contains some information about the entry prior to being replaced. Even if
+  // an entry is replaced multiple times, it represents data prior to the
+  // *first* replace.
+  struct ReplacedNavigationEntryData {
+    size_t EstimateMemoryUsage() const;
+
+    GURL first_committed_url;
+    base::Time first_timestamp;
+    ui::PageTransition first_transition_type;
+  };
+  const base::Optional<ReplacedNavigationEntryData>& replaced_entry_data()
+      const {
+    return replaced_entry_data_;
+  }
+
   const std::map<std::string, std::string>& extended_info_map() const {
     return extended_info_map_;
   }
@@ -176,6 +194,8 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   int http_status_code_ = 0;
   bool is_restored_ = false;          // Not persisted.
   std::vector<GURL> redirect_chain_;  // Not persisted.
+  base::Optional<ReplacedNavigationEntryData>
+      replaced_entry_data_;  // Not persisted.
 
   // Additional information.
   BlockedState blocked_state_ = STATE_INVALID;

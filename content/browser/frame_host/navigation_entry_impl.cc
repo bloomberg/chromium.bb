@@ -556,6 +556,11 @@ const std::vector<GURL>& NavigationEntryImpl::GetRedirectChain() const {
   return root_node()->frame_entry->redirect_chain();
 }
 
+const base::Optional<ReplacedNavigationEntryData>&
+NavigationEntryImpl::GetReplacedEntryData() const {
+  return replaced_entry_data_;
+}
+
 bool NavigationEntryImpl::IsRestored() const {
   return restore_type_ != RestoreType::NONE;
 }
@@ -652,6 +657,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 #endif
   // ResetForCommit: reload_type_
   copy->extra_data_ = extra_data_;
+  copy->replaced_entry_data_ = replaced_entry_data_;
 
   return copy;
 }

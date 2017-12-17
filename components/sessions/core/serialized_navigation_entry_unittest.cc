@@ -175,6 +175,33 @@ TEST(SerializedNavigationEntryTest, ToSyncData) {
   EXPECT_EQ(test_data::kRedirectURL1.spec(),
             sync_data.navigation_redirect(1).url());
   EXPECT_FALSE(sync_data.has_last_navigation_redirect_url());
+  EXPECT_FALSE(sync_data.has_replaced_navigation());
+}
+
+// Specifically test the |replaced_navigation| field, which should be populated
+// when the navigation entry has been replaced by another entry (e.g.
+// history.pushState()).
+TEST(SerializedNavigationEntryTest, ReplacedNavigation) {
+  const GURL kReplacedURL = GURL("http://replaced-url.com");
+  const int kReplacedTimestampMs = 79;
+  const ui::PageTransition kReplacedPageTransition =
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+
+  SerializedNavigationEntry navigation =
+      SerializedNavigationEntryTestHelper::CreateNavigationForTest();
+  SerializedNavigationEntryTestHelper::SetReplacedEntryData(
+      {kReplacedURL, syncer::ProtoTimeToTime(kReplacedTimestampMs),
+       kReplacedPageTransition},
+      &navigation);
+
+  const sync_pb::TabNavigation sync_data = navigation.ToSyncData();
+  EXPECT_TRUE(sync_data.has_replaced_navigation());
+  EXPECT_EQ(kReplacedURL.spec(),
+            sync_data.replaced_navigation().first_committed_url());
+  EXPECT_EQ(kReplacedTimestampMs,
+            sync_data.replaced_navigation().first_timestamp_msec());
+  EXPECT_EQ(sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK,
+            sync_data.replaced_navigation().first_page_transition());
 }
 
 // Test that the last_navigation_redirect_url is set when needed.  This test is

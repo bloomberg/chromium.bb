@@ -599,6 +599,12 @@ VISIT_PROTO_FIELDS(const sync_pb::NavigationRedirect& proto) {
   VISIT(url);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::ReplacedNavigation& proto) {
+  VISIT(first_committed_url);
+  VISIT(first_timestamp_msec);
+  VISIT_ENUM(first_page_transition);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(encryption_keybag);
   VISIT(keybag_is_frozen);
@@ -861,6 +867,7 @@ VISIT_PROTO_FIELDS(const sync_pb::TabNavigation& proto) {
   VISIT_ENUM(password_state);
   VISIT(task_id);
   VISIT_REP(ancestor_task_id);
+  VISIT(replaced_navigation);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ThemeSpecifics& proto) {

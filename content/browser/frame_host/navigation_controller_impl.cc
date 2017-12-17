@@ -71,6 +71,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/replaced_navigation_entry_data.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -161,6 +162,23 @@ bool ShouldTreatNavigationAsReload(const NavigationEntry* entry) {
     return true;
   }
   return false;
+}
+
+// See replaced_navigation_entry_data.h for details: this information is meant
+// to ensure |*output_entry| keeps track of its original URL (landing page in
+// case of server redirects) as it gets replaced (e.g. history.replaceState()),
+// without overwriting it later, for main frames.
+void CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
+    const NavigationEntryImpl& replaced_entry,
+    NavigationEntryImpl* output_entry) {
+  if (output_entry->GetReplacedEntryData().has_value())
+    return;
+
+  ReplacedNavigationEntryData data;
+  data.first_committed_url = replaced_entry.GetURL();
+  data.first_timestamp = replaced_entry.GetTimestamp();
+  data.first_transition_type = replaced_entry.GetTransitionType();
+  output_entry->SetReplacedEntryData(data);
 }
 
 }  // namespace
@@ -1331,6 +1349,14 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // which land us at the last committed entry.
     entry = GetLastCommittedEntry();
 
+    // TODO(crbug.com/751023): Set page transition type to PAGE_TRANSITION_LINK
+    // to avoid misleading interpretations (e.g. URLs paired with
+    // PAGE_TRANSITION_TYPED that haven't actually been typed) as well as to fix
+    // the inconsistency with what we report to observers (PAGE_TRANSITION_LINK
+    // | PAGE_TRANSITION_CLIENT_REDIRECT).
+
+    CopyReplacedNavigationEntryDataIfPreviouslyEmpty(*entry, entry);
+
     // If this is a same document navigation, then there's no SSLStatus in the
     // NavigationHandle so don't overwrite the existing entry's SSLStatus.
     if (!is_same_document)
@@ -1462,6 +1488,12 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // band with the actual navigations.
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
+
+  // The DCHECK below documents the fact that we don't know of any situation
+  // where |replace_entry| is true for subframe navigations. This simplifies
+  // reasoning about the replacement struct for subframes (see
+  // CopyReplacedNavigationEntryDataIfPreviouslyEmpty()).
+  DCHECK(!replace_entry);
 
   // Make sure we don't leak frame_entry if new_entry doesn't take ownership.
   scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry(
@@ -1874,6 +1906,8 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
 
   // When replacing, don't prune the forward history.
   if (replace && current_size > 0) {
+    CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
+        *entries_[last_committed_entry_index_], entry.get());
     entries_[last_committed_entry_index_] = std::move(entry);
     return;
   }

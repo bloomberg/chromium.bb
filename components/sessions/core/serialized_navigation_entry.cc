@@ -19,6 +19,110 @@ namespace sessions {
 // The previous referrer policy value corresponding to |Never|.
 const int kObsoleteReferrerPolicyNever = 2;
 
+namespace {
+
+sync_pb::SyncEnums_PageTransition ToSyncPageTransition(
+    ui::PageTransition transition_type) {
+  switch (ui::PageTransitionStripQualifier(transition_type)) {
+    case ui::PAGE_TRANSITION_LINK:
+      return sync_pb::SyncEnums_PageTransition_LINK;
+
+    case ui::PAGE_TRANSITION_TYPED:
+      return sync_pb::SyncEnums_PageTransition_TYPED;
+
+    case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
+      return sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK;
+
+    case ui::PAGE_TRANSITION_AUTO_SUBFRAME:
+      return sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME;
+
+    case ui::PAGE_TRANSITION_MANUAL_SUBFRAME:
+      return sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME;
+
+    case ui::PAGE_TRANSITION_GENERATED:
+      return sync_pb::SyncEnums_PageTransition_GENERATED;
+
+    case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
+      return sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL;
+
+    case ui::PAGE_TRANSITION_FORM_SUBMIT:
+      return sync_pb::SyncEnums_PageTransition_FORM_SUBMIT;
+
+    case ui::PAGE_TRANSITION_RELOAD:
+      return sync_pb::SyncEnums_PageTransition_RELOAD;
+
+    case ui::PAGE_TRANSITION_KEYWORD:
+      return sync_pb::SyncEnums_PageTransition_KEYWORD;
+
+    case ui::PAGE_TRANSITION_KEYWORD_GENERATED:
+      return sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED;
+
+    // Non-core values listed here although unreachable:
+    case ui::PAGE_TRANSITION_CORE_MASK:
+    case ui::PAGE_TRANSITION_BLOCKED:
+    case ui::PAGE_TRANSITION_FORWARD_BACK:
+    case ui::PAGE_TRANSITION_FROM_ADDRESS_BAR:
+    case ui::PAGE_TRANSITION_HOME_PAGE:
+    case ui::PAGE_TRANSITION_FROM_API:
+    case ui::PAGE_TRANSITION_CHAIN_START:
+    case ui::PAGE_TRANSITION_CHAIN_END:
+    case ui::PAGE_TRANSITION_CLIENT_REDIRECT:
+    case ui::PAGE_TRANSITION_SERVER_REDIRECT:
+    case ui::PAGE_TRANSITION_IS_REDIRECT_MASK:
+    case ui::PAGE_TRANSITION_QUALIFIER_MASK:
+      break;
+  }
+  NOTREACHED();
+  return sync_pb::SyncEnums_PageTransition_LINK;
+}
+
+ui::PageTransition FromSyncPageTransition(
+    sync_pb::SyncEnums_PageTransition transition_type) {
+  switch (transition_type) {
+    case sync_pb::SyncEnums_PageTransition_LINK:
+      return ui::PAGE_TRANSITION_LINK;
+
+    case sync_pb::SyncEnums_PageTransition_TYPED:
+      return ui::PAGE_TRANSITION_TYPED;
+
+    case sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK:
+      return ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+
+    case sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME:
+      return ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+
+    case sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME:
+      return ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
+
+    case sync_pb::SyncEnums_PageTransition_GENERATED:
+      return ui::PAGE_TRANSITION_GENERATED;
+
+    case sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL:
+      return ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
+
+    case sync_pb::SyncEnums_PageTransition_FORM_SUBMIT:
+      return ui::PAGE_TRANSITION_FORM_SUBMIT;
+
+    case sync_pb::SyncEnums_PageTransition_RELOAD:
+      return ui::PAGE_TRANSITION_RELOAD;
+
+    case sync_pb::SyncEnums_PageTransition_KEYWORD:
+      return ui::PAGE_TRANSITION_KEYWORD;
+
+    case sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED:
+      return ui::PAGE_TRANSITION_KEYWORD_GENERATED;
+  }
+  return ui::PAGE_TRANSITION_LINK;
+}
+
+}  // namespace
+
+size_t
+SerializedNavigationEntry::ReplacedNavigationEntryData::EstimateMemoryUsage()
+    const {
+  return base::trace_event::EstimateMemoryUsage(first_committed_url);
+}
+
 SerializedNavigationEntry::SerializedNavigationEntry() {
   referrer_policy_ =
       SerializedNavigationDriver::Get()->GetDefaultReferrerPolicy();
@@ -59,47 +163,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   navigation.virtual_url_ = GURL(sync_data.virtual_url());
   navigation.title_ = base::UTF8ToUTF16(sync_data.title());
 
-  uint32_t transition = 0;
-  if (sync_data.has_page_transition()) {
-    switch (sync_data.page_transition()) {
-      case sync_pb::SyncEnums_PageTransition_LINK:
-        transition = ui::PAGE_TRANSITION_LINK;
-        break;
-      case sync_pb::SyncEnums_PageTransition_TYPED:
-        transition = ui::PAGE_TRANSITION_TYPED;
-        break;
-      case sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK:
-        transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-        break;
-      case sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME:
-        transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-        break;
-      case sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME:
-        transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
-        break;
-      case sync_pb::SyncEnums_PageTransition_GENERATED:
-        transition = ui::PAGE_TRANSITION_GENERATED;
-        break;
-      case sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL:
-        transition = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
-        break;
-      case sync_pb::SyncEnums_PageTransition_FORM_SUBMIT:
-        transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
-        break;
-      case sync_pb::SyncEnums_PageTransition_RELOAD:
-        transition = ui::PAGE_TRANSITION_RELOAD;
-        break;
-      case sync_pb::SyncEnums_PageTransition_KEYWORD:
-        transition = ui::PAGE_TRANSITION_KEYWORD;
-        break;
-      case sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED:
-        transition = ui::PAGE_TRANSITION_KEYWORD_GENERATED;
-        break;
-      default:
-        transition = ui::PAGE_TRANSITION_LINK;
-        break;
-    }
-  }
+  uint32_t transition = FromSyncPageTransition(sync_data.page_transition());
 
   if  (sync_data.has_redirect_type()) {
     switch (sync_data.redirect_type()) {
@@ -135,6 +199,17 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   }
 
   navigation.http_status_code_ = sync_data.http_status_code();
+
+  if (sync_data.has_replaced_navigation()) {
+    navigation.replaced_entry_data_ = ReplacedNavigationEntryData();
+    navigation.replaced_entry_data_->first_committed_url =
+        GURL(sync_data.replaced_navigation().first_committed_url());
+    navigation.replaced_entry_data_->first_timestamp = syncer::ProtoTimeToTime(
+        sync_data.replaced_navigation().first_timestamp_msec());
+    navigation.replaced_entry_data_->first_transition_type =
+        FromSyncPageTransition(
+            sync_data.replaced_navigation().first_page_transition());
+  }
 
   SerializedNavigationDriver::Get()->Sanitize(&navigation);
 
@@ -364,54 +439,7 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
                 static_cast<int32_t>(ui::PAGE_TRANSITION_KEYWORD_GENERATED),
                 "PAGE_TRANSITION_LAST_CORE must equal "
                 "PAGE_TRANSITION_KEYWORD_GENERATED");
-  switch (ui::PageTransitionStripQualifier(transition_type_)) {
-    case ui::PAGE_TRANSITION_LINK:
-      sync_data.set_page_transition(
-          sync_pb::SyncEnums_PageTransition_LINK);
-      break;
-    case ui::PAGE_TRANSITION_TYPED:
-      sync_data.set_page_transition(
-          sync_pb::SyncEnums_PageTransition_TYPED);
-      break;
-    case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
-      sync_data.set_page_transition(
-          sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK);
-      break;
-    case ui::PAGE_TRANSITION_AUTO_SUBFRAME:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
-      break;
-    case ui::PAGE_TRANSITION_MANUAL_SUBFRAME:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME);
-      break;
-    case ui::PAGE_TRANSITION_GENERATED:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_GENERATED);
-      break;
-    case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_AUTO_TOPLEVEL);
-      break;
-    case ui::PAGE_TRANSITION_FORM_SUBMIT:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_FORM_SUBMIT);
-      break;
-    case ui::PAGE_TRANSITION_RELOAD:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_RELOAD);
-      break;
-    case ui::PAGE_TRANSITION_KEYWORD:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_KEYWORD);
-      break;
-    case ui::PAGE_TRANSITION_KEYWORD_GENERATED:
-      sync_data.set_page_transition(
-        sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED);
-      break;
-    default:
-      NOTREACHED();
-  }
+  sync_data.set_page_transition(ToSyncPageTransition(transition_type_));
 
   // Page transition qualifiers.
   if (ui::PageTransitionIsRedirect(transition_type_)) {
@@ -474,6 +502,17 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
     }
   }
 
+  if (replaced_entry_data_.has_value()) {
+    sync_pb::ReplacedNavigation* replaced_navigation =
+        sync_data.mutable_replaced_navigation();
+    replaced_navigation->set_first_committed_url(
+        replaced_entry_data_->first_committed_url.spec());
+    replaced_navigation->set_first_timestamp_msec(
+        syncer::TimeToProtoTime(replaced_entry_data_->first_timestamp));
+    replaced_navigation->set_first_page_transition(
+        ToSyncPageTransition(replaced_entry_data_->first_transition_type));
+  }
+
   sync_data.set_is_restored(is_restored_);
 
   return sync_data;
@@ -481,16 +520,16 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
 
 size_t SerializedNavigationEntry::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
-  return
-      EstimateMemoryUsage(referrer_url_) +
-      EstimateMemoryUsage(virtual_url_) +
-      EstimateMemoryUsage(title_) +
-      EstimateMemoryUsage(encoded_page_state_) +
-      EstimateMemoryUsage(original_request_url_) +
-      EstimateMemoryUsage(favicon_url_) +
-      EstimateMemoryUsage(redirect_chain_) +
-      EstimateMemoryUsage(content_pack_categories_) +
-      EstimateMemoryUsage(extended_info_map_);
+  return EstimateMemoryUsage(referrer_url_) +
+         EstimateMemoryUsage(virtual_url_) + EstimateMemoryUsage(title_) +
+         EstimateMemoryUsage(encoded_page_state_) +
+         EstimateMemoryUsage(original_request_url_) +
+         EstimateMemoryUsage(favicon_url_) +
+         EstimateMemoryUsage(redirect_chain_) +
+         EstimateMemoryUsage(
+             replaced_entry_data_.value_or(ReplacedNavigationEntryData())) +
+         EstimateMemoryUsage(content_pack_categories_) +
+         EstimateMemoryUsage(extended_info_map_);
 }
 
 }  // namespace sessions

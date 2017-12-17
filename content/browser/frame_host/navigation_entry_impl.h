@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/reload_type.h"
+#include "content/public/browser/replaced_navigation_entry_data.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_state.h"
@@ -147,6 +149,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   int GetHttpStatusCode() const override;
   void SetRedirectChain(const std::vector<GURL>& redirects) override;
   const std::vector<GURL>& GetRedirectChain() const override;
+  const base::Optional<ReplacedNavigationEntryData>& GetReplacedEntryData()
+      const override;
   bool IsRestored() const override;
   std::string GetExtraHeaders() const override;
   void AddExtraHeaders(const std::string& extra_headers) override;
@@ -424,6 +428,12 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   }
 #endif
 
+  // Stores a record of the what was committed in this NavigationEntry's main
+  // frame before it was replaced (e.g. by history.replaceState()).
+  void SetReplacedEntryData(const ReplacedNavigationEntryData& data) {
+    replaced_entry_data_ = data;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -559,6 +569,13 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // Set to true if the navigation controller gets notified about a SSL error
   // for a pending navigation. Defaults to false.
   bool ssl_error_;
+
+  // Stores information about the entry prior to being replaced (e.g.
+  // history.replaceState()). It is preserved after commit (session sync for
+  // offline analysis) but should not be persisted. The concept is valid for
+  // subframe navigations but we only need to track it for main frames, that's
+  // why the field is listed here.
+  base::Optional<ReplacedNavigationEntryData> replaced_entry_data_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };
