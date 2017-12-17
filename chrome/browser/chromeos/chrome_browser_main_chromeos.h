@@ -25,6 +25,7 @@ class StateController;
 
 namespace arc {
 class ArcServiceLauncher;
+class VoiceInteractionControllerClient;
 }
 
 namespace chromeos {
@@ -111,6 +112,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
+
+  std::unique_ptr<arc::VoiceInteractionControllerClient>
+      arc_voice_interaction_controller_client_;
 
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;

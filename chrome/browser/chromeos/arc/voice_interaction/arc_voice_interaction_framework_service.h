@@ -17,7 +17,6 @@
 #include "components/arc/common/voice_interaction_framework.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/session_manager/core/session_manager_observer.h"
 
 class KeyedServiceBaseFactory;
 
@@ -33,7 +32,6 @@ namespace arc {
 
 class ArcBridgeService;
 class HighlighterControllerClient;
-class VoiceInteractionControllerClient;
 
 // This provides voice interaction context (currently screenshots)
 // to ARC to be used by VoiceInteractionSession. This class lives on the UI
@@ -43,8 +41,7 @@ class ArcVoiceInteractionFrameworkService
       public KeyedService,
       public mojom::VoiceInteractionFrameworkHost,
       public ConnectionObserver<mojom::VoiceInteractionFrameworkInstance>,
-      public ArcSessionManager::Observer,
-      public session_manager::SessionManagerObserver {
+      public ArcSessionManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -72,9 +69,6 @@ class ArcVoiceInteractionFrameworkService
 
   // ArcSessionManager::Observer overrides.
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
-
-  // session_manager::SessionManagerObserver overrides.
-  void OnSessionStateChanged() override;
 
   // CrasAudioHandler::AudioObserver overrides.
   void OnHotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) override;
@@ -129,11 +123,6 @@ class ArcVoiceInteractionFrameworkService
     return state_;
   }
 
-  VoiceInteractionControllerClient*
-  GetVoiceInteractionControllerClientForTesting() const {
-    return voice_interaction_controller_client_.get();
-  }
-
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 
@@ -178,9 +167,6 @@ class ArcVoiceInteractionFrameworkService
   int32_t context_request_remaining_count_ = 0;
 
   std::unique_ptr<HighlighterControllerClient> highlighter_client_;
-
-  std::unique_ptr<VoiceInteractionControllerClient>
-      voice_interaction_controller_client_;
 
   base::WeakPtrFactory<ArcVoiceInteractionFrameworkService> weak_ptr_factory_;
 
