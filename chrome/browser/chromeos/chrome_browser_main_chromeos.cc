@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_component_updater_service_provider_delegate.h"
@@ -749,6 +750,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       new NetworkThrottlingObserver(g_browser_process->local_state()));
 
   arc_service_launcher_ = base::MakeUnique<arc::ArcServiceLauncher>();
+  arc_voice_interaction_controller_client_ =
+      std::make_unique<arc::VoiceInteractionControllerClient>();
 
   chromeos::ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
@@ -1131,6 +1134,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   NoteTakingHelper::Shutdown();
 
   arc_service_launcher_->Shutdown();
+
+  arc_voice_interaction_controller_client_.reset();
 
   // Unregister CrosSettings observers before CrosSettings is destroyed.
   shutdown_policy_forwarder_.reset();

@@ -232,19 +232,15 @@ ArcVoiceInteractionFrameworkService::ArcVoiceInteractionFrameworkService(
     : context_(context),
       arc_bridge_service_(bridge_service),
       highlighter_client_(std::make_unique<HighlighterControllerClient>(this)),
-      voice_interaction_controller_client_(
-          std::make_unique<VoiceInteractionControllerClient>()),
       weak_ptr_factory_(this) {
   arc_bridge_service_->voice_interaction_framework()->SetHost(this);
   arc_bridge_service_->voice_interaction_framework()->AddObserver(this);
   ArcSessionManager::Get()->AddObserver(this);
-  session_manager::SessionManager::Get()->AddObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
 ArcVoiceInteractionFrameworkService::~ArcVoiceInteractionFrameworkService() {
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  session_manager::SessionManager::Get()->RemoveObserver(this);
   ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->voice_interaction_framework()->RemoveObserver(this);
   arc_bridge_service_->voice_interaction_framework()->SetHost(nullptr);
@@ -337,7 +333,7 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionState(
     highlighter_client_->Exit();
 
   state_ = state;
-  voice_interaction_controller_client_->NotifyStatusChanged(state);
+  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(state);
 }
 
 void ArcVoiceInteractionFrameworkService::ShowMetalayer() {
@@ -353,42 +349,12 @@ void ArcVoiceInteractionFrameworkService::HideMetalayer() {
 void ArcVoiceInteractionFrameworkService::OnArcPlayStoreEnabledChanged(
     bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  voice_interaction_controller_client_->NotifyFeatureAllowed(
-      IsAssistantAllowedForProfile(Profile::FromBrowserContext(context_)));
-
   if (enabled)
     return;
 
   SetVoiceInteractionSetupCompletedInternal(false);
   SetVoiceInteractionEnabled(false, base::BindOnce(&DoNothing<bool>));
   SetVoiceInteractionContextEnabled(false);
-}
-
-void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  session_manager::SessionState session_state =
-      session_manager::SessionManager::Get()->session_state();
-  if (session_state != session_manager::SessionState::ACTIVE)
-    return;
-
-  Profile* profile = Profile::FromBrowserContext(context_);
-  PrefService* prefs = profile->GetPrefs();
-  bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionEnabled);
-  voice_interaction_controller_client_->NotifySettingsEnabled(enabled);
-
-  bool context = prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled);
-  voice_interaction_controller_client_->NotifyContextEnabled(context);
-
-  bool setup_completed =
-      prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted);
-  voice_interaction_controller_client_->NotifySetupCompleted(setup_completed);
-
-  voice_interaction_controller_client_->NotifyFeatureAllowed(
-      IsAssistantAllowedForProfile(profile));
-
-  // We only want notify the status change on first user signed in.
-  session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnHotwordTriggered(uint64_t tv_sec,
@@ -450,8 +416,6 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionEnabled(
     VoiceInteractionSettingCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  voice_interaction_controller_client_->NotifySettingsEnabled(enable);
-
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
 
   prefs->SetBoolean(prefs::kVoiceInteractionEnabled, enable);
@@ -473,8 +437,6 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionEnabled(
 void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
     bool enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  voice_interaction_controller_client_->NotifyContextEnabled(enable);
 
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, enable);
@@ -593,7 +555,7 @@ bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction(
 
   if (state_ == ash::mojom::VoiceInteractionState::NOT_READY) {
     // If the container side is not ready, we will be waiting for a while.
-    voice_interaction_controller_client_->NotifyStatusChanged(
+    arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
         ash::mojom::VoiceInteractionState::NOT_READY);
   }
 
@@ -615,8 +577,6 @@ void ArcVoiceInteractionFrameworkService::
     SetVoiceInteractionSetupCompletedInternal(bool completed) {
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, completed);
-
-  voice_interaction_controller_client_->NotifySetupCompleted(completed);
 }
 
 bool ArcVoiceInteractionFrameworkService::IsHomescreenActive() {
