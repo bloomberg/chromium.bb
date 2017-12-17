@@ -493,11 +493,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // We only finalize for fragmentation if the fragment has a BFC offset. This
   // may occur with a zero block size fragment. We need to know the BFC offset
   // to determine where the fragmentation line is relative to us.
-  // TODO(ikilpatrick): Skip this step if we are inside an inline formatting
-  // context at the moment. This is wrong, and needs work to correct it.
   if (container_builder_.BfcOffset() &&
-      ConstraintSpace().HasBlockFragmentation() &&
-      !Node().FirstChild().IsInline())
+      ConstraintSpace().HasBlockFragmentation())
     FinalizeForFragmentation();
 
   // Only layout absolute and fixed children if we aren't going to revisit this
@@ -1272,14 +1269,16 @@ bool NGBlockLayoutAlgorithm::ShouldBreakBeforeChild(
   if (space_left >= ConstraintSpace().FragmentainerBlockSize())
     return false;
 
+  if (child.IsInline()) {
+    NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
+    return fragment.BlockSize() > space_left;
+  }
+
   // If the block offset is past the fragmentainer boundary (or exactly at the
   // boundary), no part of the fragment is going to fit in the current
   // fragmentainer. Fragments may be pushed past the fragmentainer boundary by
   // margins.
-  // TODO(mstensho): The inline check here shouldn't be necessary, but
-  // it's needed as long as we don't support breaking between line
-  // boxes.
-  if (space_left <= LayoutUnit() && !child.IsInline())
+  if (space_left <= LayoutUnit())
     return true;
 
   const auto* token = physical_fragment.BreakToken();
@@ -1376,18 +1375,19 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     space_builder.SetUnpositionedFloats(unpositioned_floats_);
   }
 
+  WritingMode writing_mode;
   if (child.IsInline()) {
-    // TODO(kojii): Setup space_builder appropriately for inline child.
     space_builder.SetClearanceOffset(ConstraintSpace().ClearanceOffset());
-    return space_builder.ToConstraintSpace(Style().GetWritingMode());
+    writing_mode = Style().GetWritingMode();
+  } else {
+    const ComputedStyle& child_style = child.Style();
+    space_builder
+        .SetClearanceOffset(
+            exclusion_space_->ClearanceOffset(child_style.Clear()))
+        .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
+        .SetTextDirection(child_style.Direction());
+    writing_mode = child_style.GetWritingMode();
   }
-
-  const ComputedStyle& child_style = child.Style();
-  space_builder
-      .SetClearanceOffset(
-          exclusion_space_->ClearanceOffset(child_style.Clear()))
-      .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
-      .SetTextDirection(child_style.Direction());
 
   LayoutUnit space_available;
   if (ConstraintSpace().HasBlockFragmentation()) {
@@ -1405,7 +1405,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder.SetFragmentationType(
       ConstraintSpace().BlockFragmentationType());
 
-  return space_builder.ToConstraintSpace(child_style.GetWritingMode());
+  return space_builder.ToConstraintSpace(writing_mode);
 }
 
 // Add a baseline from a child box fragment.

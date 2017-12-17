@@ -56,6 +56,15 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
     return *state_stack_;
   }
 
+  // When a previously laid out line box didn't fit in the current
+  // fragmentainer, and we have to lay it out again in the next fragmentainer,
+  // we need to skip floats associated with that line. The parent block layout
+  // algorithm will take care of any floats that broke and need to be resumed in
+  // the next fragmentainer. Dealing with them as part of line layout as well
+  // would result in duplicate fragments for the floats.
+  void SetIgnoreFloats() { ignore_floats_ = true; }
+  bool IgnoreFloats() const { return ignore_floats_; }
+
 #ifndef NDEBUG
   String ToString() const override;
 #endif  // NDEBUG
@@ -72,6 +81,7 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
   unsigned item_index_;
   unsigned text_offset_;
   unsigned is_forced_break_ : 1;
+  unsigned ignore_floats_ : 1;
 
   std::unique_ptr<const NGInlineLayoutStateStack> state_stack_;
 };

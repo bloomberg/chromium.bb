@@ -5,7 +5,9 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 
 #include "core/layout/LayoutObject.h"
+#include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
@@ -77,6 +79,19 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
 
 NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child) {
+  if (child.IsInline()) {
+    if (last_inline_break_token_) {
+      // We need to resume at this inline location in the next fragmentainer,
+      // but broken floats, which are resumed and positioned by the parent block
+      // layout algorithm, need to be ignored by the inline layout algorithm.
+      ToNGInlineBreakToken(last_inline_break_token_.get())->SetIgnoreFloats();
+    } else {
+      last_inline_break_token_ = NGInlineBreakToken::Create(
+          ToNGInlineNode(child), 0, 0, false,
+          std::make_unique<NGInlineLayoutStateStack>());
+    }
+    return *this;
+  }
   // TODO(mstensho): Come up with a more intuitive way of creating an unfinished
   // break token. We currently need to pass a Vector here, just to end up in the
   // right NGBlockBreakToken constructor - the one that sets the token as
