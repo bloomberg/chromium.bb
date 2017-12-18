@@ -14,7 +14,7 @@ class FirstRunBubbleBrowserTest : public DialogBrowserTest {
   FirstRunBubbleBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     FirstRunBubble::Show(browser());
   }
 
@@ -23,7 +23,7 @@ class FirstRunBubbleBrowserTest : public DialogBrowserTest {
 };
 
 // Invokes a dialog that tells the user they can type into the omnibox to search
-// with Google. See test_browser_dialog.h.
-IN_PROC_BROWSER_TEST_F(FirstRunBubbleBrowserTest, InvokeDialog_default) {
-  RunDialog();
+// with Google.
+IN_PROC_BROWSER_TEST_F(FirstRunBubbleBrowserTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }

@@ -43,7 +43,7 @@ class ProfileSigninConfirmationDialogTest : public DialogBrowserTest {
     DialogBrowserTest::SetUp();
   }
 
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     Profile* profile = browser()->profile();
 
     // Add a bookmark to ensure CheckShouldPromptForNewProfile() returns true.
@@ -65,10 +65,7 @@ class ProfileSigninConfirmationDialogTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationDialogTest);
 };
 
-// Test that calls ShowDialog("default"). Interactive when run via
-// browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
-// --dialog=ProfileSigninConfirmationDialogTest.InvokeDialog_default
-IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationDialogTest,
-                       InvokeDialog_default) {
-  RunDialog();
+// Test that calls ShowUi("default").
+IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationDialogTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }

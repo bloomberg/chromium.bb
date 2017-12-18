@@ -10,7 +10,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/test/test_browser_ui.h"
 #endif  // defined(OS_WIN)
 
 int main(int argc, char** argv) {

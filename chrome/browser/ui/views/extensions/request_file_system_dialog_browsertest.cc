@@ -21,7 +21,7 @@ class RequestFileSystemDialogTest : public DialogBrowserTest {
  public:
   RequestFileSystemDialogTest() {}
 
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     RequestFileSystemDialogView::ShowDialog(
         browser()->tab_strip_model()->GetActiveWebContents(),
         "RequestFileSystemDialogTest", "TestVolume", true,
@@ -34,8 +34,8 @@ class RequestFileSystemDialogTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(RequestFileSystemDialogTest);
 };
 
-IN_PROC_BROWSER_TEST_F(RequestFileSystemDialogTest, InvokeDialog_default) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(RequestFileSystemDialogTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }
 
 }  // namespace

@@ -14,7 +14,7 @@ class OutdatedUpgradeBubbleTest : public DialogBrowserTest {
   OutdatedUpgradeBubbleTest() = default;
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     ToolbarView* toolbar_view =
         BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
     if (name == "Outdated")
@@ -31,17 +31,17 @@ class OutdatedUpgradeBubbleTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(OutdatedUpgradeBubbleTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeDialog_Outdated) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeUi_Outdated) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeDialog_NoAutoUpdate) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeUi_NoAutoUpdate) {
+  ShowAndVerifyUi();
 }
 
 // The critical upgrade dialog is intentionally only shown on Windows.
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeDialog_Critical) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeUi_Critical) {
+  ShowAndVerifyUi();
 }
 #endif

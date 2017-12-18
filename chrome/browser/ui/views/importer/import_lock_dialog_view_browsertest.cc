@@ -15,7 +15,7 @@ class ImportLockDialogViewBrowserTest : public DialogBrowserTest {
   ImportLockDialogViewBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
     ImportLockDialogView::Show(native_window, base::Callback<void(bool)>());
   }
@@ -25,7 +25,7 @@ class ImportLockDialogViewBrowserTest : public DialogBrowserTest {
 };
 
 // Invokes a dialog that implores the user to close Firefox before trying to
-// import data. See test_browser_dialog.h.
-IN_PROC_BROWSER_TEST_F(ImportLockDialogViewBrowserTest, InvokeDialog_default) {
-  RunDialog();
+// import data.
+IN_PROC_BROWSER_TEST_F(ImportLockDialogViewBrowserTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }

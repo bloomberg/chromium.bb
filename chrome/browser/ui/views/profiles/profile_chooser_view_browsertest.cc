@@ -125,8 +125,8 @@ class ProfileChooserViewExtensionsTest
   ProfileChooserViewExtensionsTest() {}
   ~ProfileChooserViewExtensionsTest() override {}
 
-  // SupportsTestDialog:
-  void ShowDialog(const std::string& name) override {
+  // SupportsTestUi:
+  void ShowUi(const std::string& name) override {
     constexpr char kSignedIn[] = "SignedIn";
     constexpr char kMultiProfile[] = "MultiProfile";
     constexpr char kGuest[] = "Guest";
@@ -388,43 +388,42 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 }
 
 // Shows a non-signed in profile with no others.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeDialog_default) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }
 
 // Shows a signed in profile with no others.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       InvokeDialog_SignedIn) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_SignedIn) {
+  ShowAndVerifyUi();
 }
 
 // Shows the |ProfileChooserView| with three different profiles.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       InvokeDialog_MultiProfile) {
-  RunDialog();
+                       InvokeUi_MultiProfile) {
+  ShowAndVerifyUi();
 }
 
 // Shows the |ProfileChooserView| during a Guest browsing session.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeDialog_Guest) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_Guest) {
+  ShowAndVerifyUi();
 }
 
 // Shows the manage account link, which appears when account consistency is
 // enabled for signed-in accounts.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       InvokeDialog_ManageAccountLink) {
-  RunDialog();
+                       InvokeUi_ManageAccountLink) {
+  ShowAndVerifyUi();
 }
 
 // Shows the |ProfileChooserView| from a signed-in account that has a supervised
 // user profile attached.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       InvokeDialog_SupervisedOwner) {
-  RunDialog();
+                       InvokeUi_SupervisedOwner) {
+  ShowAndVerifyUi();
 }
 
 // Shows the |ProfileChooserView| when a supervised user is the active profile.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       InvokeDialog_SupervisedUser) {
-  RunDialog();
+                       InvokeUi_SupervisedUser) {
+  ShowAndVerifyUi();
 }

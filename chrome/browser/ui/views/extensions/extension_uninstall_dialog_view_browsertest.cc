@@ -264,7 +264,7 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
     EXTENSION_LOCAL_SOURCE,
     EXTENSION_FROM_WEBSTORE,
   };
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     extensions::DictionaryBuilder manifest_builder;
     manifest_builder.Set("name", "ExtensionForRemoval").Set("version", "1.0");
     if (extension_origin_ == EXTENSION_FROM_WEBSTORE) {
@@ -310,7 +310,7 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
     uninstall_method_ = uninstall_method;
     extension_origin_ = extension_origin;
 
-    RunDialog();
+    ShowAndVerifyUi();
   }
 
  private:
@@ -336,21 +336,21 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_ManualUninstall) {
+                       InvokeUi_ManualUninstall) {
   RunTest(MANUAL_UNINSTALL, EXTENSION_LOCAL_SOURCE);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_ManualUninstallShowReportAbuse) {
+                       InvokeUi_ManualUninstallShowReportAbuse) {
   RunTest(MANUAL_UNINSTALL, EXTENSION_FROM_WEBSTORE);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_UninstallByExtension) {
+                       InvokeUi_UninstallByExtension) {
   RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_LOCAL_SOURCE);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_UninstallByExtensionShowReportAbuse) {
+                       InvokeUi_UninstallByExtensionShowReportAbuse) {
   RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_FROM_WEBSTORE);
 }

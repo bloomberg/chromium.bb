@@ -20,7 +20,7 @@ class PWAConfirmationViewTest : public DialogBrowserTest {
  public:
   PWAConfirmationViewTest() {}
 
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     constexpr int kIconSize = 48;
     WebApplicationInfo::IconInfo icon_info;
     icon_info.data.allocN32Pixels(kIconSize, kIconSize, true);
@@ -58,20 +58,20 @@ class PWAConfirmationViewTest : public DialogBrowserTest {
 
 // Launches an installation confirmation dialog for a PWA with a short name and
 // origin.
-IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeDialog_short_text) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeUi_short_text) {
+  ShowAndVerifyUi();
 }
 
 // Launches an installation confirmation dialog for a PWA with name and origin
 // long enough to be elided.
-IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeDialog_long_text) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeUi_long_text) {
+  ShowAndVerifyUi();
 }
 
 // Launches an installation confirmation dialog for a PWA with an RTL subdomain
 // which is long enough to be elided.
-IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeDialog_rtl) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(PWAConfirmationViewTest, InvokeUi_rtl) {
+  ShowAndVerifyUi();
 }
 
 }  // namespace

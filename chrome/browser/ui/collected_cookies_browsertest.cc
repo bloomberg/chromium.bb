@@ -24,7 +24,7 @@ class CollectedCookiesTest : public DialogBrowserTest {
   CollectedCookiesTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     // Disable cookies.
@@ -62,16 +62,14 @@ class CollectedCookiesTestMd : public CollectedCookiesTest {
   DISALLOW_COPY_AND_ASSIGN(CollectedCookiesTestMd);
 };
 
-// Test that calls ShowDialog("default"). Interactive when run via
-// browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
-// --dialog=CollectedCookiesTestMd.InvokeDialog_default
-IN_PROC_BROWSER_TEST_F(CollectedCookiesTestMd, InvokeDialog_default) {
-  RunDialog();
+// Test that calls ShowUi("default").
+IN_PROC_BROWSER_TEST_F(CollectedCookiesTestMd, InvokeUi_default) {
+  ShowAndVerifyUi();
 }
 
 // If this crashes on Windows, use http://crbug.com/79331
 IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
-  ShowDialog(std::string());
+  ShowUi(std::string());
 
   // Click on the info link a second time.
   content::WebContents* web_contents =
@@ -81,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
 
 // If this crashes on Windows, use http://crbug.com/79331
 IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
-  ShowDialog(std::string());
+  ShowUi(std::string());
 
   // Navigate to another page.
   ui_test_utils::NavigateToURL(

@@ -16,7 +16,7 @@ class UpdateRecommendedDialogTest : public DialogBrowserTest {
     DialogBrowserTest::SetUp();
   }
 
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     InProcessBrowserTest::browser()->window()->ShowUpdateChromeDialog();
   }
 
@@ -24,9 +24,7 @@ class UpdateRecommendedDialogTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(UpdateRecommendedDialogTest);
 };
 
-// Test that calls ShowDialog("default"). Interactive when run via
-// browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
-// --dialog=UpdateRecommendedDialogTest.InvokeDialog_default
-IN_PROC_BROWSER_TEST_F(UpdateRecommendedDialogTest, InvokeDialog_default) {
-  RunDialog();
+// Test that calls ShowUi("default").
+IN_PROC_BROWSER_TEST_F(UpdateRecommendedDialogTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }

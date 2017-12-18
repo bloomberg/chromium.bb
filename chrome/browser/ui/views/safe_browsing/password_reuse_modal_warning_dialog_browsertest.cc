@@ -27,7 +27,7 @@ class PasswordReuseModalWarningTest : public DialogBrowserTest {
   ~PasswordReuseModalWarningTest() override {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     dialog_ = new PasswordReuseModalWarningDialog(
@@ -59,16 +59,16 @@ class PasswordReuseModalWarningTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseModalWarningTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, InvokeDialog_default) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, InvokeDialog_softer) {
+IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, InvokeUi_softer) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(
       safe_browsing::kGoogleBrandedPhishingWarning,
       {{"softer_warning", "true"}});
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, TestBasicDialogBehavior) {
@@ -76,13 +76,13 @@ IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, TestBasicDialogBehavior) {
 
   // Simulating a click on ui::DIALOG_BUTTON_OK button results in a
   // CHANGE_PASSWORD action.
-  ShowDialog(std::string());
+  ShowUi(std::string());
   dialog_->GetDialogClientView()->AcceptWindow();
   EXPECT_EQ(PasswordProtectionService::CHANGE_PASSWORD, latest_user_action_);
 
   // Simulating a click on ui::DIALOG_BUTTON_CANCEL button results in an
   // IGNORE_WARNING action.
-  ShowDialog(std::string());
+  ShowUi(std::string());
   dialog_->GetDialogClientView()->CancelWindow();
   EXPECT_EQ(PasswordProtectionService::IGNORE_WARNING, latest_user_action_);
 }
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest,
                        CloseDialogWhenWebContentsDestroyed) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  ShowDialog(std::string());
+  ShowUi(std::string());
   CloseActiveWebContents();
   EXPECT_EQ(PasswordProtectionService::CLOSE, latest_user_action_);
 }

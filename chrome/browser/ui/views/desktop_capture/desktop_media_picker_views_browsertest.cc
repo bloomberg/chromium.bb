@@ -20,7 +20,7 @@ class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
   DesktopMediaPickerViewsBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     picker_ = base::MakeUnique<DesktopMediaPickerViews>();
     auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
     gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
@@ -45,8 +45,7 @@ class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
 };
 
 // Invokes a dialog that allows the user to select what view of their desktop
-// they would like to share. See test_browser_dialog.h.
-IN_PROC_BROWSER_TEST_F(DesktopMediaPickerViewsBrowserTest,
-                       InvokeDialog_default) {
-  RunDialog();
+// they would like to share.
+IN_PROC_BROWSER_TEST_F(DesktopMediaPickerViewsBrowserTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }

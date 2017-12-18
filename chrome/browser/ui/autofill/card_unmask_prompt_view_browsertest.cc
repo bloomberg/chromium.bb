@@ -145,7 +145,7 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
     delegate_.reset(new TestCardUnmaskDelegate());
   }
 
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     CardUnmaskPromptView* dialog =
         CreateCardUnmaskPromptView(controller(), contents());
     CreditCard card = test::GetMaskedServerCard();
@@ -183,38 +183,35 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViewBrowserTest);
 };
 
-// Note: Although the following tests all just call RunDialog(), they execute
-// different behavior based on the test name's suffix. See ShowDialog().
-
-IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeDialog_expired) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeUi_expired) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeDialog_valid) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeUi_valid) {
+  ShowAndVerifyUi();
 }
 
 // This dialog will show a temporary error when Confirm is clicked.
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
-                       InvokeDialog_valid_TemporaryError) {
-  RunDialog();
+                       InvokeUi_valid_TemporaryError) {
+  ShowAndVerifyUi();
 }
 
 // This dialog will show a permanent error when Confirm is clicked.
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
-                       InvokeDialog_valid_PermanentError) {
-  RunDialog();
+                       InvokeUi_valid_PermanentError) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
-  ShowDialog(kExpiryExpired);
+  ShowUi(kExpiryExpired);
 }
 
 // Makes sure the user can close the dialog while the verification success
 // message is showing.
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
                        EarlyCloseAfterSuccess) {
-  ShowDialog(kExpiryExpired);
+  ShowUi(kExpiryExpired);
   controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
                                  base::ASCIIToUTF16("10"),
                                  base::ASCIIToUTF16("2020"), false);
@@ -236,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
 // https://crbug.com/484376
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
                        CloseTabWhileDialogShowing) {
-  ShowDialog(kExpiryExpired);
+  ShowUi(kExpiryExpired);
   // Simulate AutofillManager (the delegate in production code) being destroyed
   // before CardUnmaskPromptViewBridge::OnConstrainedWindowClosed() is called.
   FreeDelegate();
