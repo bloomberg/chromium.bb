@@ -549,8 +549,6 @@ void ShellSurfaceBase::OnSurfaceCommit() {
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
   }
 
-  SubmitCompositorFrame();
-
   // Apply the accumulated pending origin offset to reflect acknowledged
   // configure requests.
   origin_offset_ += pending_origin_offset_;
@@ -606,6 +604,8 @@ void ShellSurfaceBase::OnSurfaceCommit() {
         UpdateSystemModal();
     }
   }
+
+  SubmitCompositorFrame();
 }
 
 bool ShellSurfaceBase::IsTouchEnabled(Surface*) const {

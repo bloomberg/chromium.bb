@@ -507,6 +507,20 @@ TEST_F(ClientControlledShellSurfaceTest, Maximize) {
   EXPECT_TRUE(HasBackdrop());
   EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
 
+  // Enable backdrop only if the shell surface doesn't cover the display.
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  shell_surface->SetGeometry(display.bounds());
+  surface->Commit();
+  EXPECT_FALSE(HasBackdrop());
+
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 100, display.bounds().height()));
+  surface->Commit();
+  EXPECT_TRUE(HasBackdrop());
+
+  shell_surface->SetGeometry(gfx::Rect(0, 0, display.bounds().width(), 100));
+  surface->Commit();
+  EXPECT_TRUE(HasBackdrop());
+
   // Toggle maximize.
   ash::wm::WMEvent maximize_event(ash::wm::WM_EVENT_TOGGLE_MAXIMIZE);
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
@@ -553,6 +567,20 @@ TEST_F(ClientControlledShellSurfaceTest, SetFullscreen) {
 
   shell_surface->SetFullscreen(true);
   surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_TRUE(HasBackdrop());
+
+  // Enable backdrop only if the shell surface doesn't cover the display.
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  shell_surface->SetGeometry(display.bounds());
+  surface->Commit();
+  EXPECT_FALSE(HasBackdrop());
+
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 100, display.bounds().height()));
+  surface->Commit();
+  EXPECT_TRUE(HasBackdrop());
+
+  shell_surface->SetGeometry(gfx::Rect(0, 0, display.bounds().width(), 100));
   surface->Commit();
   EXPECT_TRUE(HasBackdrop());
 
