@@ -44,8 +44,6 @@ _EXTRA_TEST = (
 _EXTRA_TEST_LIST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.TestList')
-_EXTRA_UBSAN_OPTIONS = (
-    'org.chromium.native_test.NativeTest.UBSAN_OPTIONS')
 
 _MAX_SHARD_SIZE = 256
 _SECONDS_TO_NANOS = int(1e9)
@@ -173,9 +171,6 @@ class _ApkDelegate(object):
     stdout_file = device_temp_file.DeviceTempFile(
         device.adb, dir=device.GetExternalStoragePath(), suffix='.gtest_out')
     extras[_EXTRA_STDOUT_FILE] = stdout_file.name
-
-    if self._tool != 'asan':
-      extras[_EXTRA_UBSAN_OPTIONS] = constants.UBSAN_OPTIONS
 
     if self._wait_for_java_debugger:
       cmd = ['am', 'set-debug-app', '-w', self._package]

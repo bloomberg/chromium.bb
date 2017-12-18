@@ -29,6 +29,12 @@ public class BuildConfig {
     public static final boolean DCHECK_IS_ON = false;
 #endif
 
+#if defined(_IS_UBSAN)
+    public static final boolean IS_UBSAN = true;
+#else
+    public static final boolean IS_UBSAN = false;
+#endif
+
     // Sorted list of locales that have a compressed .pak within assets.
     // Stored as an array because AssetManager.list() is slow.
     public static final String[] COMPRESSED_LOCALES =

@@ -11,6 +11,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.PowerMonitor;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.NativeLibraries;
 
 /**
@@ -36,10 +37,6 @@ public class NativeUnitTest extends NativeTest {
         // Needed by system_monitor_unittest.cc
         PowerMonitor.createForTests();
 
-        // Configure ubsan using $UBSAN_OPTIONS. This needs to happen here because ubsan reads its
-        // configuration from $UBSAN_OPTIONS when the native library is loaded.
-        setEnvForNative(activity);
-
         // For NativeActivity based tests,
         // dependency libraries must be loaded before NativeActivity::OnCreate,
         // otherwise loading android.app.lib_name will fail
@@ -47,6 +44,7 @@ public class NativeUnitTest extends NativeTest {
     }
 
     private void loadLibraries() {
+        LibraryLoader.setEnvForNative();
         for (String library : NativeLibraries.LIBRARIES) {
             Log.i(TAG, "loading: %s", library);
             System.loadLibrary(library);

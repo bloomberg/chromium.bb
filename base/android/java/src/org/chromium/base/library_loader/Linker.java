@@ -518,6 +518,7 @@ public abstract class Linker {
      * Load the Linker JNI library. Throws UnsatisfiedLinkError on error.
      */
     protected static void loadLinkerJniLibrary() {
+        LibraryLoader.setEnvForNative();
         String libName = "lib" + LINKER_JNI_LIBRARY + ".so";
         if (DEBUG) {
             Log.i(TAG, "Loading " + libName);
