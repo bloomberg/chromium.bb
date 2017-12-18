@@ -301,10 +301,16 @@ void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
 void TranslateBubbleView::OnMenuButtonClicked(views::MenuButton* source,
                                               const gfx::Point& point,
                                               const ui::Event* event) {
-  if (!denial_menu_runner_) {
-    denial_menu_model_.reset(new ui::SimpleMenuModel(this));
+  if (!options_menu_runner_) {
+    options_menu_model_.reset(new ui::SimpleMenuModel(this));
 
-    denial_menu_model_->AddItem(
+    options_menu_model_->AddCheckItem(
+        DenialMenuItem::ALWAYS_TRANSLATE_LANGUAGE,
+        l10n_util::GetStringFUTF16(
+            IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
+            model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
+
+    options_menu_model_->AddItem(
         DenialMenuItem::NEVER_TRANSLATE_LANGUAGE,
         l10n_util::GetStringFUTF16(
             IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
@@ -314,30 +320,32 @@ void TranslateBubbleView::OnMenuButtonClicked(views::MenuButton* source,
     // incognito mode as it leaves a trace of the user.
     if (model_->CanBlacklistSite()) {
       if (Use2016Q2UI()) {
-        denial_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+        options_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       }
 
-      denial_menu_model_->AddItemWithStringId(
+      options_menu_model_->AddItemWithStringId(
           DenialMenuItem::NEVER_TRANSLATE_SITE,
           IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
     }
 
     if (!Use2016Q2UI()) {
-      denial_menu_model_->AddItemWithStringId(
-          DenialMenuItem::MORE_OPTIONS, IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON);
+      options_menu_model_->AddItemWithStringId(
+          DenialMenuItem::MORE_OPTIONS,
+          IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON);
     }
 
-    denial_menu_runner_.reset(
-        new views::MenuRunner(denial_menu_model_.get(), 0));
+    options_menu_runner_.reset(
+        new views::MenuRunner(options_menu_model_.get(), 0));
   }
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
-  denial_menu_runner_->RunMenuAt(source->GetWidget(), source, screen_bounds,
-                                 views::MENU_ANCHOR_TOPRIGHT,
-                                 ui::MENU_SOURCE_MOUSE);
+  options_menu_runner_->RunMenuAt(source->GetWidget(), source, screen_bounds,
+                                  views::MENU_ANCHOR_TOPRIGHT,
+                                  ui::MENU_SOURCE_MOUSE);
 }
 
 bool TranslateBubbleView::IsCommandIdChecked(int command_id) const {
-  return false;
+  DCHECK_EQ(DenialMenuItem::ALWAYS_TRANSLATE_LANGUAGE, command_id);
+  return should_always_translate_;
 }
 
 bool TranslateBubbleView::IsCommandIdEnabled(int command_id) const {
@@ -346,6 +354,16 @@ bool TranslateBubbleView::IsCommandIdEnabled(int command_id) const {
 
 void TranslateBubbleView::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
+    case DenialMenuItem::ALWAYS_TRANSLATE_LANGUAGE:
+      should_always_translate_ = !should_always_translate_;
+      model_->SetAlwaysTranslate(should_always_translate_);
+
+      if (should_always_translate_) {
+        model_->Translate();
+        SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
+      }
+      break;
+
     case DenialMenuItem::NEVER_TRANSLATE_LANGUAGE:
       translate::ReportUiAction(
           translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
@@ -409,7 +427,7 @@ TranslateBubbleView::TranslateBubbleView(
       advanced_always_translate_checkbox_(NULL),
       advanced_cancel_button_(NULL),
       advanced_done_button_(NULL),
-      denial_menu_button_(NULL),
+      options_menu_button_(NULL),
       model_(std::move(model)),
       error_type_(error_type),
       is_in_incognito_window_(
@@ -662,11 +680,11 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   layout->AddView(accept_button);
   accept_button->SetIsDefault(true);
   const bool show_dropdown_arrow = Use2016Q2UI();
-  denial_menu_button_ = new views::MenuButton(
+  options_menu_button_ = new views::MenuButton(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON), this,
       show_dropdown_arrow);
-  denial_menu_button_->SetStyleDeprecated(views::Button::STYLE_BUTTON);
-  layout->AddView(denial_menu_button_);
+  options_menu_button_->SetStyleDeprecated(views::Button::STYLE_BUTTON);
+  layout->AddView(options_menu_button_);
 
   return view;
 }

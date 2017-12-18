@@ -8497,6 +8497,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON" desc="Text to show for the translate bubble button to jump to the advanced panel.">
             More options
           </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON" desc="Text to show for the translate bubble menu button to jump to the advanced panel, specifically to change which languages are translated between.">
+            Change languages
+          </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE" desc="Title text for the options panel.">
             Options
           </message>
@@ -8505,6 +8508,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_DENY" desc="Text to show for the translate bubble menu item to deny translation.">
             Nope
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG" desc="Text to show for the translate bubble menu item to always translate the specified language">
+            Always translate <ph name="language">$1<ex>French</ex></ph>
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG" desc="Text to show for the translate bubble menu item to never translate the specified language">
             Never translate <ph name="language">$1<ex>French</ex></ph>
@@ -8565,6 +8571,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON" desc="In Title Case: Text to show for the translate bubble button to jump to the advanced panel.">
             More Options
           </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON" desc="In Title Case: Text to show for the translate bubble menu button to jump to the advanced panel, specifically to change which languages are translated between.">
+            Change Languages
+          </message>
           <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE" desc="In Title Case: Title text for the options panel.">
             Options
           </message>
@@ -8573,6 +8582,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_DENY" desc="In Title Case: Text to show for the translate bubble menu item to deny translation.">
             Nope
+          </message>
+          <message name="IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG" desc="In Title Case: Text to show for the translate bubble menu item to always translate the specified language">
+            Always Translate <ph name="language">$1<ex>French</ex></ph>
           </message>
           <message name="IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG" desc="In Title Case: Text to show for the translate bubble menu item to never translate the specified language">
             Never Translate <ph name="language">$1<ex>French</ex></ph>
