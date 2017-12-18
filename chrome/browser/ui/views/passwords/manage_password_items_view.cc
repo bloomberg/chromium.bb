@@ -133,7 +133,7 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
     label->SetObscured(true);
   if (!form.federation_origin.unique())
     label->SetElideBehavior(gfx::ELIDE_HEAD);
-  label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+
   return label;
 }
 
