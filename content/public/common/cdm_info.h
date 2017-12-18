@@ -22,6 +22,7 @@ struct CONTENT_EXPORT CdmInfo {
           const base::FilePath& path,
           const std::string& file_system_id,
           const std::vector<std::string>& supported_codecs,
+          bool supports_persistent_license,
           const std::string& supported_key_system,
           bool supports_sub_key_systems);
   CdmInfo(const CdmInfo& other);
@@ -49,6 +50,9 @@ struct CONTENT_EXPORT CdmInfo {
   // TODO(jrummell): use the enums from media::AudioCodec and media::VideoCodec
   // instead of strings.
   std::vector<std::string> supported_codecs;
+
+  // Whether this CDM supports persistent licenses.
+  bool supports_persistent_license;
 
   // The key system supported by this CDM.
   std::string supported_key_system;
