@@ -19,7 +19,7 @@ namespace extensions {
 namespace {
 
 ContentVerifyJob::TestDelegate* g_test_delegate = NULL;
-ContentVerifyJob::TestObserver* g_test_observer = NULL;
+ContentVerifyJob::TestObserver* g_content_verify_job_test_observer = NULL;
 
 class ScopedElapsedTimer {
  public:
@@ -62,9 +62,9 @@ ContentVerifyJob::~ContentVerifyJob() {
 
 void ContentVerifyJob::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (g_test_observer)
-    g_test_observer->JobStarted(hash_reader_->extension_id(),
-                                hash_reader_->relative_path());
+  if (g_content_verify_job_test_observer)
+    g_content_verify_job_test_observer->JobStarted(
+        hash_reader_->extension_id(), hash_reader_->relative_path());
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&ContentHashReader::Init, hash_reader_),
@@ -134,9 +134,9 @@ void ContentVerifyJob::DoneReading() {
   if (hashes_ready_) {
     if (!FinishBlock()) {
       DispatchFailureCallback(HASH_MISMATCH);
-    } else if (g_test_observer) {
-      g_test_observer->JobFinished(hash_reader_->extension_id(),
-                                   hash_reader_->relative_path(), NONE);
+    } else if (g_content_verify_job_test_observer) {
+      g_content_verify_job_test_observer->JobFinished(
+          hash_reader_->extension_id(), hash_reader_->relative_path(), NONE);
     }
   }
 }
@@ -182,9 +182,9 @@ void ContentVerifyJob::OnHashesReady(bool success) {
 
     if (hash_reader_->file_missing_from_verified_contents()) {
       // Ignore verification of non-existent resources.
-      if (g_test_observer) {
-        g_test_observer->JobFinished(hash_reader_->extension_id(),
-                                     hash_reader_->relative_path(), NONE);
+      if (g_content_verify_job_test_observer) {
+        g_content_verify_job_test_observer->JobFinished(
+            hash_reader_->extension_id(), hash_reader_->relative_path(), NONE);
       }
       return;
     }
@@ -202,9 +202,9 @@ void ContentVerifyJob::OnHashesReady(bool success) {
     ScopedElapsedTimer timer(&time_spent_);
     if (!FinishBlock()) {
       DispatchFailureCallback(HASH_MISMATCH);
-    } else if (g_test_observer) {
-      g_test_observer->JobFinished(hash_reader_->extension_id(),
-                                   hash_reader_->relative_path(), NONE);
+    } else if (g_content_verify_job_test_observer) {
+      g_content_verify_job_test_observer->JobFinished(
+          hash_reader_->extension_id(), hash_reader_->relative_path(), NONE);
     }
   }
 }
@@ -219,7 +219,7 @@ void ContentVerifyJob::SetDelegateForTests(TestDelegate* delegate) {
 
 // static
 void ContentVerifyJob::SetObserverForTests(TestObserver* observer) {
-  g_test_observer = observer;
+  g_content_verify_job_test_observer = observer;
 }
 
 void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
@@ -231,9 +231,9 @@ void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
             << " reason:" << reason;
     std::move(failure_callback_).Run(reason);
   }
-  if (g_test_observer) {
-    g_test_observer->JobFinished(hash_reader_->extension_id(),
-                                 hash_reader_->relative_path(), reason);
+  if (g_content_verify_job_test_observer) {
+    g_content_verify_job_test_observer->JobFinished(
+        hash_reader_->extension_id(), hash_reader_->relative_path(), reason);
   }
 }
 
