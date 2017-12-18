@@ -304,6 +304,10 @@ void URLLoader::FollowRedirect() {
   url_request_->FollowDeferredRedirect();
 }
 
+void URLLoader::ProceedWithResponse() {
+  NOTREACHED();
+}
+
 void URLLoader::SetPriority(net::RequestPriority priority,
                             int32_t intra_priority_value) {
   NOTIMPLEMENTED();

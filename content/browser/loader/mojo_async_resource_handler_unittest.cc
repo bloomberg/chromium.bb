@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/loader/mock_resource_loader.h"
 #include "content/browser/loader/resource_controller.h"
@@ -204,12 +205,14 @@ class MojoAsyncResourceHandlerWithStubOperations
       net::URLRequest* request,
       ResourceDispatcherHostImpl* rdh,
       mojom::URLLoaderRequest mojo_request,
-      mojom::URLLoaderClientPtr url_loader_client)
+      mojom::URLLoaderClientPtr url_loader_client,
+      bool defer_on_response_started)
       : MojoAsyncResourceHandler(request,
                                  rdh,
                                  std::move(mojo_request),
                                  std::move(url_loader_client),
-                                 RESOURCE_TYPE_MAIN_FRAME),
+                                 RESOURCE_TYPE_MAIN_FRAME,
+                                 defer_on_response_started),
         task_runner_(new base::TestSimpleTaskRunner) {}
   ~MojoAsyncResourceHandlerWithStubOperations() override {}
 
@@ -315,8 +318,9 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
 
 class MojoAsyncResourceHandlerTestBase {
  public:
-  explicit MojoAsyncResourceHandlerTestBase(
-      std::unique_ptr<net::UploadDataStream> upload_stream)
+  MojoAsyncResourceHandlerTestBase(
+      std::unique_ptr<net::UploadDataStream> upload_stream,
+      bool defer_on_response_started)
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(32 * 1024);
@@ -361,7 +365,7 @@ class MojoAsyncResourceHandlerTestBase {
 
     handler_.reset(new MojoAsyncResourceHandlerWithStubOperations(
         request_.get(), &rdh_, factory_impl->PassLoaderRequest(),
-        factory_impl->PassClientPtr()));
+        factory_impl->PassClientPtr(), defer_on_response_started));
     mock_loader_.reset(new MockResourceLoader(handler_.get()));
   }
 
@@ -429,7 +433,20 @@ class MojoAsyncResourceHandlerTestBase {
 class MojoAsyncResourceHandlerTest : public MojoAsyncResourceHandlerTestBase,
                                      public ::testing::Test {
  protected:
-  MojoAsyncResourceHandlerTest() : MojoAsyncResourceHandlerTestBase(nullptr) {}
+  MojoAsyncResourceHandlerTest()
+      : MojoAsyncResourceHandlerTestBase(
+            nullptr,
+            false /* defer_on_response_started */) {}
+};
+
+class MojoAsyncResourceHandlerDeferOnResponseStartedTest
+    : public MojoAsyncResourceHandlerTestBase,
+      public ::testing::Test {
+ protected:
+  MojoAsyncResourceHandlerDeferOnResponseStartedTest()
+      : MojoAsyncResourceHandlerTestBase(nullptr,
+                                         true /* defer_on_response_started */) {
+  }
 };
 
 // This test class is parameterized with MojoAsyncResourceHandler's allocation
@@ -439,7 +456,9 @@ class MojoAsyncResourceHandlerWithAllocationSizeTest
       public ::testing::TestWithParam<size_t> {
  protected:
   MojoAsyncResourceHandlerWithAllocationSizeTest()
-      : MojoAsyncResourceHandlerTestBase(nullptr) {
+      : MojoAsyncResourceHandlerTestBase(
+            nullptr,
+            false /* defer_on_response_started */) {
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(GetParam());
   }
 };
@@ -450,7 +469,8 @@ class MojoAsyncResourceHandlerUploadTest
  protected:
   MojoAsyncResourceHandlerUploadTest()
       : MojoAsyncResourceHandlerTestBase(
-            std::make_unique<DummyUploadDataStream>()) {}
+            std::make_unique<DummyUploadDataStream>(),
+            false /* defer_on_response_started */) {}
 };
 
 TEST_F(MojoAsyncResourceHandlerTest, InFlightRequests) {
@@ -1333,6 +1353,36 @@ TEST_P(
     }
   }
   EXPECT_EQ("B", body);
+}
+
+TEST_F(MojoAsyncResourceHandlerDeferOnResponseStartedTest,
+       ProceedWithResponse) {
+  EXPECT_TRUE(CallOnWillStart());
+
+  // On response started, the MojoAsyncResourceHandler should stop loading,
+  // since |defer_on_response_started| is true.
+  {
+    MockResourceLoader::Status result = mock_loader_->OnResponseStarted(
+        base::MakeRefCounted<ResourceResponse>());
+    EXPECT_EQ(MockResourceLoader::Status::CALLBACK_PENDING, result);
+    std::unique_ptr<base::Value> request_state = request_->GetStateAsValue();
+    base::Value* delegate_blocked_by =
+        request_state->FindKey("delegate_blocked_by");
+    EXPECT_TRUE(delegate_blocked_by);
+    EXPECT_EQ("MojoAsyncResourceHandler", delegate_blocked_by->GetString());
+  }
+
+  // When ProceedWithResponse() is called, the MojoAsyncResourceHandler should
+  // resume its controller.
+  {
+    handler_->ProceedWithResponse();
+    mock_loader_->WaitUntilIdleOrCanceled();
+    EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
+    std::unique_ptr<base::Value> request_state = request_->GetStateAsValue();
+    base::Value* delegate_blocked_by =
+        request_state->FindKey("delegate_blocked_by");
+    EXPECT_FALSE(delegate_blocked_by);
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(MojoAsyncResourceHandlerWithAllocationSizeTest,

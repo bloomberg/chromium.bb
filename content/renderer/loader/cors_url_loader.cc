@@ -87,6 +87,10 @@ void CORSURLLoader::FollowRedirect() {
   network_loader_->FollowRedirect();
 }
 
+void CORSURLLoader::ProceedWithResponse() {
+  NOTREACHED();
+}
+
 void CORSURLLoader::SetPriority(net::RequestPriority priority,
                                 int32_t intra_priority_value) {
   // TODO(toyoshim): Should not be called during the redirect decisions, but
