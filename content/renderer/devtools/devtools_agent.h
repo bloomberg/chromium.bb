@@ -42,7 +42,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   void ContinueProgram();
 
  private:
-  friend class DevToolsAgentTest;
   class Session;
   class IOSession;
   class MessageImpl;
@@ -62,8 +61,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                            int call_id,
                            const blink::WebString& message,
                            const blink::WebString& state_cookie) override;
-  void WillEnterDebugLoop() override;
-  void DidExitDebugLoop() override;
   bool RequestDevToolsForFrame(int session_id,
                                blink::WebLocalFrame* frame) override;
 
@@ -86,10 +83,7 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   base::flat_map<int, std::unique_ptr<IOSession, base::OnTaskRunnerDeleter>>
       io_sessions_;
   base::flat_map<int, mojom::DevToolsSessionHostAssociatedPtr> hosts_;
-  bool paused_;
   RenderFrameImpl* frame_;
-  base::Callback<void(int, int, const std::string&, const std::string&)>
-      send_protocol_message_callback_for_test_;
   base::WeakPtrFactory<DevToolsAgent> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);

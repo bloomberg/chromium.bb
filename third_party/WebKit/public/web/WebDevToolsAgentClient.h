@@ -59,9 +59,6 @@ class WebDevToolsAgentClient {
   // initialize its state.
   virtual void ResumeStartup() {}
 
-  virtual void WillEnterDebugLoop() {}
-  virtual void DidExitDebugLoop() {}
-
   virtual bool RequestDevToolsForFrame(int session_id, WebLocalFrame*) {
     return false;
   }

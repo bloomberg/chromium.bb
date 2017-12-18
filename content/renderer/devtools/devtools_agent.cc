@@ -151,7 +151,6 @@ class DevToolsAgent::Session : public mojom::DevToolsSession {
 DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
     : RenderFrameObserver(frame),
       binding_(this),
-      paused_(false),
       frame_(frame),
       weak_factory_(this) {
   frame_->GetWebFrame()->SetDevToolsAgentClient(this);
@@ -211,14 +210,6 @@ void DevToolsAgent::SendProtocolMessage(int session_id,
                              state_cookie.Utf8());
 }
 
-void DevToolsAgent::WillEnterDebugLoop() {
-  paused_ = true;
-}
-
-void DevToolsAgent::DidExitDebugLoop() {
-  paused_ = false;
-}
-
 bool DevToolsAgent::RequestDevToolsForFrame(int session_id,
                                             blink::WebLocalFrame* webFrame) {
   RenderFrameImpl* frame = RenderFrameImpl::FromWebFrame(webFrame);
@@ -238,12 +229,6 @@ void DevToolsAgent::SendChunkedProtocolMessage(int session_id,
                                                int call_id,
                                                std::string message,
                                                std::string post_state) {
-  if (!send_protocol_message_callback_for_test_.is_null()) {
-    send_protocol_message_callback_for_test_.Run(
-        session_id, call_id, std::move(message), std::move(post_state));
-    return;
-  }
-
   auto it = hosts_.find(session_id);
   if (it == hosts_.end())
     return;
