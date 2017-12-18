@@ -5,10 +5,10 @@
 typemaps = [
   "//content/public/common/cors_error_status.typemap",
   "//content/public/common/manifest.typemap",
+  "//content/public/common/network_param.typemap",
   "//content/public/common/proxy_config.typemap",
   "//content/public/common/referrer.typemap",
   "//content/public/common/resource_type.typemap",
-  "//content/public/common/ssl_info.typemap",
   "//content/public/common/url_loader_completion_status.typemap",
   "//content/public/common/url_request.typemap",
   "//content/public/common/url_request_redirect_info.typemap",

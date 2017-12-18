@@ -16,7 +16,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
-#include "net/http/http_request_headers.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -276,11 +275,6 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXRelativeBounds)
   IPC_STRUCT_TRAITS_MEMBER(offset_container_id)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(transform)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(net::HttpRequestHeaders::HeaderKeyValuePair)
-  IPC_STRUCT_TRAITS_MEMBER(key)
-  IPC_STRUCT_TRAITS_MEMBER(value)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_

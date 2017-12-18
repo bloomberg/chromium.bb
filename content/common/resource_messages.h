@@ -26,7 +26,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/cors_error_status.h"
-#include "services/network/public/cpp/ssl_info_ipc_traits.h"
+#include "services/network/public/cpp/network_param_ipc_traits.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"

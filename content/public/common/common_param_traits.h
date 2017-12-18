@@ -37,8 +37,6 @@ class PageState;
 }
 
 namespace net {
-class HostPortPair;
-class HttpRequestHeaders;
 class IPAddress;
 class IPEndPoint;
 }
@@ -52,26 +50,6 @@ struct CONTENT_EXPORT ParamTraits<url::Origin> {
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
-  typedef net::HostPortPair param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<net::HttpRequestHeaders> {
-  typedef net::HttpRequestHeaders param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
