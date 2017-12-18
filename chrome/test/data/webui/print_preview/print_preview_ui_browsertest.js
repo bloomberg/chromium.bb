@@ -142,7 +142,9 @@ GEN('#endif');
 
 GEN('#if defined(OS_WIN)');
 [
-  'WinSystemDialogLink',
+  // TODO(https://crbug.com/795658): Re-enable this test when test flakiness is
+  // fixed.
+  'DISABLED_WinSystemDialogLink',
   'WinSystemDialogLinkBadPrintTicket',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
