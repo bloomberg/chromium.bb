@@ -242,9 +242,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
         background_color);
 
     // Outdent the popup to factor in the shadow size.
-    int border_thickness = border->GetBorderThickness();
-    new_target_bounds.Inset(-border_thickness, -border_thickness,
-                            -border_thickness, -border_thickness);
+    new_target_bounds.Inset(-border->GetInsets());
 
     SetBackground(base::MakeUnique<views::BubbleBackground>(border.get()));
     SetBorder(std::move(border));
