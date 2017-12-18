@@ -828,9 +828,8 @@ std::string VideoFrame::AsHumanReadableString() {
   return s.str();
 }
 
-int VideoFrame::BitsPerChannel(VideoPixelFormat format) {
-  int bits_per_channel = 0;
-  switch (format) {
+size_t VideoFrame::BitDepth() const {
+  switch (format_) {
     case media::PIXEL_FORMAT_UNKNOWN:
       NOTREACHED();
     // Fall through!
@@ -850,28 +849,24 @@ int VideoFrame::BitsPerChannel(VideoPixelFormat format) {
     case media::PIXEL_FORMAT_MJPEG:
     case media::PIXEL_FORMAT_MT21:
     case media::PIXEL_FORMAT_Y8:
-      bits_per_channel = 8;
-      break;
+      return 8;
     case media::PIXEL_FORMAT_YUV420P9:
     case media::PIXEL_FORMAT_YUV422P9:
     case media::PIXEL_FORMAT_YUV444P9:
-      bits_per_channel = 9;
-      break;
+      return 9;
     case media::PIXEL_FORMAT_YUV420P10:
     case media::PIXEL_FORMAT_YUV422P10:
     case media::PIXEL_FORMAT_YUV444P10:
-      bits_per_channel = 10;
-      break;
+      return 10;
     case media::PIXEL_FORMAT_YUV420P12:
     case media::PIXEL_FORMAT_YUV422P12:
     case media::PIXEL_FORMAT_YUV444P12:
-      bits_per_channel = 12;
-      break;
+      return 12;
     case media::PIXEL_FORMAT_Y16:
-      bits_per_channel = 16;
-      break;
+      return 16;
   }
-  return bits_per_channel;
+  NOTREACHED();
+  return 0;
 }
 
 // static
