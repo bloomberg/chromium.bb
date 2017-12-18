@@ -146,6 +146,7 @@ class GpuArcVideoDecodeAccelerator
   mojom::VideoDecodeClientPtr client_;
 
   gfx::Size coded_size_;
+  gfx::Size pending_coded_size_;
   media::VideoPixelFormat output_pixel_format_ = media::PIXEL_FORMAT_UNKNOWN;
 
   // Owned by caller.
