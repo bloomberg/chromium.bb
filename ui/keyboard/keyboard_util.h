@@ -14,8 +14,6 @@ namespace aura {
 class WindowTreeHost;
 }
 
-class GURL;
-
 namespace keyboard {
 
 // For virtual keyboard IME extension.
@@ -171,13 +169,6 @@ KEYBOARD_EXPORT void MarkKeyboardLoadStarted();
 // Marks that the keyboard load has ended. This finishes measuring that the
 // keyboard is loaded.
 KEYBOARD_EXPORT void MarkKeyboardLoadFinished();
-
-// Sets the override content url.
-// This is used by for input view for extension IMEs.
-KEYBOARD_EXPORT void SetOverrideContentUrl(const GURL& url);
-
-// Gets the override content url.
-KEYBOARD_EXPORT const GURL& GetOverrideContentUrl();
 
 // Logs the keyboard control event as a UMA stat.
 void LogKeyboardControlEvent(KeyboardControlEvent event);
