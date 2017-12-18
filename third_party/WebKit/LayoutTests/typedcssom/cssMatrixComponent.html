@@ -72,19 +72,6 @@ for (let params of testParams) {
 }
 
 test(() => {
-  for (let param of testParams) {
-    let matrixComponent = new CSSMatrixComponent(param.input, {});
-    assert_equals(matrixComponent.is2D, param.input.is2D);
-    matrixComponent = new CSSMatrixComponent(param.input, {is2D: undefined});
-    assert_equals(matrixComponent.is2D, param.input.is2D);
-    matrixComponent = new CSSMatrixComponent(param.input, undefined);
-    assert_equals(matrixComponent.is2D, param.input.is2D);
-    matrixComponent = new CSSMatrixComponent(param.input, null);
-    assert_equals(matrixComponent.is2D, param.input.is2D);
-  }
-}, "is2D value should be matrix's is2D when second parameter is not CSSMatrixComponentOptions");
-
-test(() => {
   assert_throws(new TypeError(), () => { new CSSMatrixComponent(); });
   assert_throws(new TypeError(), () => { new CSSMatrixComponent(0); });
   assert_throws(new TypeError(), () => { new CSSMatrixComponent("string") });
