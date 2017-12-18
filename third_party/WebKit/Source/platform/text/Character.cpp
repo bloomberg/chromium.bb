@@ -283,4 +283,9 @@ bool Character::IsCommonOrInheritedScript(UChar32 character) {
          (script == USCRIPT_COMMON || script == USCRIPT_INHERITED);
 }
 
+bool Character::IsUnassignedOrPrivateUse(UChar32 character) {
+  return WTF::Unicode::Category(character) &
+         (WTF::Unicode::kOther_NotAssigned | WTF::Unicode::kOther_PrivateUse);
+}
+
 }  // namespace blink

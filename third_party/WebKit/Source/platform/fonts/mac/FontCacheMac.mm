@@ -105,7 +105,7 @@ static inline bool IsAppKitFontWeightBold(NSInteger app_kit_font_weight) {
   return app_kit_font_weight >= 7;
 }
 
-scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
+scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 character,
     const SimpleFontData* font_data_to_substitute,
