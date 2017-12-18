@@ -1222,4 +1222,46 @@ TEST_F(WindowOcclusionTrackerTest,
   window->layer()->GetAnimator()->StopAnimating();
 }
 
+// Verify that no crash occurs if an animation completes on a non-tracked
+// window's layer after the window has been removed from a root with a tracked
+// window and deleted.
+TEST_F(WindowOcclusionTrackerTest,
+       DeleteNonTrackedAnimatedWindowRemovedFromTrackedRoot) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::LayerAnimatorTestController test_controller(
+      ui::LayerAnimator::CreateImplicitAnimator());
+  ui::ScopedLayerAnimationSettings layer_animation_settings(
+      test_controller.animator());
+  layer_animation_settings.SetTransitionDuration(kTransitionDuration);
+
+  // Create a tracked window. Expect it to be non-occluded.
+  MockWindowDelegate* delegate = new MockWindowDelegate();
+  delegate->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate->is_expecting_call());
+
+  // Create a non-tracked window and add an observer that deletes it when its
+  // stops being animated.
+  Window* window = CreateUntrackedWindow(gfx::Rect(10, 0, 10, 10));
+  window->layer()->SetAnimator(test_controller.animator());
+  ObserverDestroyingWindowOnAnimationEnded observer(window);
+  window->layer()->GetAnimator()->AddObserver(&observer);
+
+  // Animate the window. WindowOcclusionTracker should add itself as an observer
+  // of its LayerAnimator (after |observer|).
+  window->layer()->SetOpacity(0.5f);
+
+  // Remove the non-tracked window from its root. WindowOcclusionTracker should
+  // remove the window from its list of animated windows and stop observing it
+  // and its LayerAnimator.
+  root_window()->RemoveChild(window);
+
+  // Complete animations on the window. |observer| will delete the window when
+  // it is notified that animations are complete. Expect that
+  // WindowOcclusionTracker will not try to access |window| after that (if it
+  // does, the test will crash).
+  window->layer()->GetAnimator()->StopAnimating();
+}
+
 }  // namespace aura

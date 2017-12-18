@@ -333,10 +333,13 @@ void WindowOcclusionTracker::TrackedWindowRemovedFromRoot(Window* window) {
 
 void WindowOcclusionTracker::RemoveObserverFromWindowAndDescendants(
     Window* window) {
-  if (WindowIsTracked(window))
+  if (WindowIsTracked(window)) {
     DCHECK(window->HasObserver(this));
-  else
+  } else {
     window->RemoveObserver(this);
+    window->layer()->GetAnimator()->RemoveObserver(this);
+    animated_windows_.erase(window);
+  }
   for (Window* child_window : window->children())
     RemoveObserverFromWindowAndDescendants(child_window);
 }
