@@ -396,6 +396,7 @@ FYI_WATERFALL = {
         {
           'gpu': '8086:5912',
           'os': 'Windows-10',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
@@ -679,7 +680,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:5912',
-          'os': 'Ubuntu'
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
