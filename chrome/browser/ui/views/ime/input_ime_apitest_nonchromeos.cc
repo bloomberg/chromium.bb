@@ -4,6 +4,7 @@
 
 #include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -111,7 +112,12 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
   input_method->DetachTextInputClient(client2.get());
 }
 
+// TODO(https://crbug.com/795631): This test is failing on the Linux bot.
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_SendKeyEventsOnNormalPage) {
+#else
 IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEventsOnNormalPage) {
+#endif
   // Navigates to special page that sendKeyEvents API has limition with.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Manipulates the focused text input client because the follow cursor
