@@ -28,11 +28,11 @@ class LockManager final : public ScriptWrappable,
   explicit LockManager(ExecutionContext*);
 
   ScriptPromise acquire(ScriptState*,
-                        const StringOrStringSequence& scope,
+                        const String& name,
                         V8LockGrantedCallback*,
                         ExceptionState&);
   ScriptPromise acquire(ScriptState*,
-                        const StringOrStringSequence& scope,
+                        const String& name,
                         const LockOptions&,
                         V8LockGrantedCallback*,
                         ExceptionState&);

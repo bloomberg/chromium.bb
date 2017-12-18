@@ -12,7 +12,7 @@ self.addEventListener('message', e => {
   switch (e.data.op) {
   case 'request':
     navigator.locks.acquire(
-      e.data.scope, {
+      e.data.name, {
         mode: e.data.mode || 'exclusive',
         ifAvailable: e.data.ifAvailable || false
       }, lock => {

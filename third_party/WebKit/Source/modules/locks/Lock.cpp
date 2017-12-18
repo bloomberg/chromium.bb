@@ -57,18 +57,18 @@ class Lock::ThenFunction final : public ScriptFunction {
 
 // static
 Lock* Lock::Create(ScriptState* script_state,
-                   const Vector<String>& scope,
+                   const String& name,
                    mojom::blink::LockManager::LockMode mode,
                    mojom::blink::LockHandlePtr handle) {
-  return new Lock(script_state, scope, mode, std::move(handle));
+  return new Lock(script_state, name, mode, std::move(handle));
 }
 
 Lock::Lock(ScriptState* script_state,
-           const Vector<String>& scope,
+           const String& name,
            mojom::blink::LockManager::LockMode mode,
            mojom::blink::LockHandlePtr handle)
     : PausableObject(ExecutionContext::From(script_state)),
-      scope_(scope),
+      name_(name),
       mode_(mode),
       handle_(std::move(handle)) {
   PauseIfNeeded();

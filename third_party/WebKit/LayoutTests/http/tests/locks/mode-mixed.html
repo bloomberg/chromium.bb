@@ -28,7 +28,7 @@ promise_test(async t => {
     exclusive_lock = lock;
   });
 
-  // This should be granted immediately (different scope).
+  // This should be granted immediately (different name).
   await navigator.locks.acquire('b', {mode: 'exclusive'}, lock => {
     granted.push('b-exclusive'); });
 

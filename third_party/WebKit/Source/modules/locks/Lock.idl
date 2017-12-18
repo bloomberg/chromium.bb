@@ -8,6 +8,6 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=LocksAPI
 ] interface Lock {
-    readonly attribute FrozenArray<DOMString> scope;
+    readonly attribute DOMString name;
     readonly attribute LockMode mode;
 };

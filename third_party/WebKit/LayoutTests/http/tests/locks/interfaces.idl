@@ -1,6 +1,4 @@
 
-typedef (DOMString or sequence<DOMString>) LockScope;
-
 enum LockMode { "shared", "exclusive" };
 
 dictionary LockOptions {
@@ -22,15 +20,15 @@ partial interface WorkerNavigator {
 
 [Exposed=(Window,Worker), SecureContext]
 interface LockManager {
-  Promise<any> acquire(LockScope scope,
+  Promise<any> acquire(DOMString name,
                        LockRequestCallback callback);
-  Promise<any> acquire(LockScope scope,
+  Promise<any> acquire(DOMString name,
                        LockOptions options,
                        LockRequestCallback callback);
 };
 
 [Exposed=(Window,Worker), SecureContext]
 interface Lock {
-  readonly attribute FrozenArray<DOMString> scope;
+  readonly attribute DOMString name;
   readonly attribute LockMode mode;
 };

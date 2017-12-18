@@ -706,7 +706,7 @@ interface InstallEvent : ExtendableEvent
 interface Lock
     attribute @@toStringTag
     getter mode
-    getter scope
+    getter name
     method constructor
 interface LockManager
     attribute @@toStringTag

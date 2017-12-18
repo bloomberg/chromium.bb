@@ -24,26 +24,21 @@ promise_test(async t => {
 }, 'Lock requests are granted in order');
 
 promise_test(async t => {
-  let ab_acquired = false, a_acquired = false, b_acquired = false;
+  let a_acquired = false, a_acquired_again = false;
 
-  await navigator.locks.acquire(['a', 'b'], {mode: 'shared'}, async lock => {
-    ab_acquired = true;
+  await navigator.locks.acquire('a', {mode: 'shared'}, async lock => {
+    a_acquired = true;
 
-    // Since lock over [a, b] is held, these requests would be blocked if the
-    // locks were not all 'shared', causing this test to time out.
+    // Since lock is held, this request would be blocked if the
+    // lock was not 'shared', causing this test to time out.
 
     await navigator.locks.acquire('a', {mode: 'shared'}, lock => {
-      a_acquired = true;
-    });
-
-    await navigator.locks.acquire('b', {mode: 'shared'}, lock => {
-      b_acquired = true;
+      a_acquired_again = true;
     });
   });
 
-  assert_true(ab_acquired, 'requested lock was acquired');
-  assert_true(a_acquired, 'first lock with overlapping scope acquired');
-  assert_true(a_acquired, 'second lock with overlapping scope acquired');
+  assert_true(a_acquired, 'first lock acquired');
+  assert_true(a_acquired_again, 'second lock acquired');
 }, 'Shared locks are not exclusive');
 
 </script>
