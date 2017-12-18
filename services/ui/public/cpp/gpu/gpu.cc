@@ -222,16 +222,15 @@ void Gpu::CreateVideoEncodeAcceleratorProvider(
       std::move(vea_provider_request));
 }
 
-void Gpu::EstablishGpuChannel(
-    const gpu::GpuChannelEstablishedCallback& callback) {
+void Gpu::EstablishGpuChannel(gpu::GpuChannelEstablishedCallback callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
   if (channel) {
-    callback.Run(std::move(channel));
+    std::move(callback).Run(std::move(channel));
     return;
   }
 
-  establish_callbacks_.push_back(callback);
+  establish_callbacks_.push_back(std::move(callback));
   SendEstablishGpuChannelRequest();
 }
 
@@ -303,8 +302,8 @@ void Gpu::OnEstablishedGpuChannel() {
 
   std::vector<gpu::GpuChannelEstablishedCallback> callbacks;
   callbacks.swap(establish_callbacks_);
-  for (const auto& callback : callbacks)
-    callback.Run(gpu_channel_);
+  for (auto&& callback : std::move(callbacks))
+    std::move(callback).Run(gpu_channel_);
 }
 
 }  // namespace ui

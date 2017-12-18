@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   // The factory will return a null GpuChannelHost in the callback during
   // shutdown.
   void EstablishGpuChannel(
-      const gpu::GpuChannelEstablishedCallback& callback) override;
+      gpu::GpuChannelEstablishedCallback callback) override;
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 

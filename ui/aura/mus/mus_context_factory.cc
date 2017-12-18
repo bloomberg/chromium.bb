@@ -56,8 +56,8 @@ void MusContextFactory::OnEstablishedGpuChannel(
 void MusContextFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   gpu_->EstablishGpuChannel(
-      base::Bind(&MusContextFactory::OnEstablishedGpuChannel,
-                 weak_ptr_factory_.GetWeakPtr(), compositor));
+      base::BindOnce(&MusContextFactory::OnEstablishedGpuChannel,
+                     weak_ptr_factory_.GetWeakPtr(), compositor));
 }
 
 scoped_refptr<viz::ContextProvider>

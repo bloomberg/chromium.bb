@@ -444,8 +444,8 @@ void Compositor::CreateContextProvider(
   BrowserMainLoop::GetInstance()
       ->gpu_channel_establish_factory()
       ->EstablishGpuChannel(
-          base::Bind(&CreateContextProviderAfterGpuChannelEstablished, handle,
-                     attributes, shared_memory_limits, callback));
+          base::BindOnce(&CreateContextProviderAfterGpuChannelEstablished,
+                         handle, attributes, shared_memory_limits, callback));
 }
 
 // static
@@ -708,8 +708,9 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
   BrowserMainLoop::GetInstance()
       ->gpu_channel_establish_factory()
-      ->EstablishGpuChannel(base::Bind(&CompositorImpl::OnGpuChannelEstablished,
-                                       weak_factory_.GetWeakPtr()));
+      ->EstablishGpuChannel(
+          base::BindOnce(&CompositorImpl::OnGpuChannelEstablished,
+                         weak_factory_.GetWeakPtr()));
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)

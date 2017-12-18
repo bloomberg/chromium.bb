@@ -62,7 +62,7 @@ scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSyncRunLoop() {
   CHECK(factory);
   base::RunLoop run_loop;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
-  factory->EstablishGpuChannel(base::Bind(
+  factory->EstablishGpuChannel(base::BindOnce(
       &OnEstablishedGpuChannel, run_loop.QuitClosure(), &gpu_channel_host));
   run_loop.Run();
   return gpu_channel_host;
@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   // Expect established callback immediately.
   bool event = false;
   GetFactory()->EstablishGpuChannel(
-      base::Bind(&BrowserGpuChannelHostFactoryTest::Signal,
-                 base::Unretained(this), &event));
+      base::BindOnce(&BrowserGpuChannelHostFactoryTest::Signal,
+                     base::Unretained(this), &event));
   EXPECT_TRUE(event);
   EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
 }

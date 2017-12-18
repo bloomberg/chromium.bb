@@ -252,7 +252,7 @@ BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
 }
 
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
-    const gpu::GpuChannelEstablishedCallback& callback) {
+    gpu::GpuChannelEstablishedCallback callback) {
 #if defined(USE_AURA)
   DCHECK(!switches::IsMusHostingViz());
 #endif
@@ -273,9 +273,9 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
 
   if (!callback.is_null()) {
     if (gpu_channel_.get())
-      callback.Run(gpu_channel_);
+      std::move(callback).Run(gpu_channel_);
     else
-      established_callbacks_.push_back(callback);
+      established_callbacks_.push_back(std::move(callback));
   }
 }
 
@@ -327,8 +327,8 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
 
   std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks;
   established_callbacks_.swap(established_callbacks);
-  for (auto& callback : established_callbacks)
-    callback.Run(gpu_channel_);
+  for (auto&& callback : std::move(established_callbacks))
+    std::move(callback).Run(gpu_channel_);
 }
 
 void BrowserGpuChannelHostFactory::RestartTimeout() {

@@ -338,7 +338,7 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
   const bool use_gpu_compositing =
       !compositor->force_software_compositor() && !is_gpu_compositing_disabled_;
   if (use_gpu_compositing && !use_vulkan) {
-    gpu_channel_factory_->EstablishGpuChannel(base::Bind(
+    gpu_channel_factory_->EstablishGpuChannel(base::BindOnce(
         &GpuProcessTransportFactory::EstablishedGpuChannel,
         callback_factory_.GetWeakPtr(), compositor, use_gpu_compositing));
   } else {
@@ -481,7 +481,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (!use_gpu_compositing) {
       shared_worker_context_provider_ = nullptr;
     } else {
-      gpu_channel_factory_->EstablishGpuChannel(base::Bind(
+      gpu_channel_factory_->EstablishGpuChannel(base::BindOnce(
           &GpuProcessTransportFactory::EstablishedGpuChannel,
           callback_factory_.GetWeakPtr(), compositor, use_gpu_compositing));
       return;
