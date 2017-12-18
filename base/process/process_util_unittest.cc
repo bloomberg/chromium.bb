@@ -771,8 +771,10 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
 
   // Read from the pipe to verify that the child received it.
   zx_signals_t signals = 0;
-  result = zx_object_wait_one(handles[1], ZX_SOCKET_READABLE,
-                              zx_deadline_after(ZX_SEC(5)), &signals);
+  result = zx_object_wait_one(
+      handles[1], ZX_SOCKET_READABLE,
+      (base::TimeTicks::Now() + TestTimeouts::action_timeout()).ToZxTime(),
+      &signals);
   EXPECT_EQ(ZX_OK, result);
   EXPECT_TRUE(signals & ZX_SOCKET_READABLE);
 
@@ -786,8 +788,8 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
   CHECK_EQ(ZX_OK, zx_handle_close(handles[1]));
 
   int exit_code;
-  ASSERT_TRUE(
-      process.WaitForExitWithTimeout(TimeDelta::FromSeconds(5), &exit_code));
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
   EXPECT_EQ(0, exit_code);
 }
 #endif  // defined(OS_FUCHSIA)
