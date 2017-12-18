@@ -64,6 +64,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common/app_group",
     "//ios/public/provider/chrome/browser",

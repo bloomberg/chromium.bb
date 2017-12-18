@@ -180,7 +180,8 @@
   self.toolbarViewController =
       [[ToolbarViewController alloc] initWithDispatcher:self.dispatcher
                                           buttonFactory:factory
-                                          buttonUpdater:self.buttonUpdater];
+                                          buttonUpdater:self.buttonUpdater
+                                         omniboxFocuser:self];
   self.toolbarViewController.locationBarView = self.locationBarView;
   self.toolbarViewController.dispatcher = self.dispatcher;
 
