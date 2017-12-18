@@ -448,6 +448,17 @@ cr.define('languages_page_tests', function() {
         assertTrue(triggerRow.classList.contains('two-line'));
         assertLT(
             0, triggerRow.querySelector('.secondary').textContent.length);
+
+        // Force-disable spellchecking via policy.
+        languageHelper.setPrefValue('browser.enable_spellchecking', false);
+        Polymer.dom.flush();
+
+        // The second row should not be empty.
+        assertTrue(triggerRow.classList.contains('two-line'));
+        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
+
+        // The policy indicator should be present.
+        assertTrue(!!triggerRow.querySelector('cr-policy-pref-indicator'));
       }
     });
   });

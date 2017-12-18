@@ -177,6 +177,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Languages page
+  (*s_whitelist)[spellcheck::prefs::kEnableSpellcheck] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckDictionaries] =
       settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckForcedDictionaries] =
