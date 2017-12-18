@@ -54,7 +54,7 @@ public class ImeTest {
 
     @Before
     public void setUp() throws Exception {
-        mRule.setUp();
+        mRule.setUpForUrl(ImeActivityTestRule.INPUT_FORM_HTML);
     }
 
     @Test

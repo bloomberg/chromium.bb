@@ -111,6 +111,7 @@ HTMLInputElement::HTMLInputElement(Document& document, bool created_by_parser)
       should_reveal_password_(false),
       needs_to_update_view_value_(true),
       is_placeholder_visible_(false),
+      has_been_password_field_(false),
       // |m_inputType| is lazily created when constructed by the parser to avoid
       // constructing unnecessarily a text inputType and its shadow subtree,
       // just to destroy them when the |type| attribute gets set by the parser
@@ -374,6 +375,8 @@ void HTMLInputElement::InitializeTypeInParsing() {
   String default_value = FastGetAttribute(valueAttr);
   if (input_type_->GetValueMode() == ValueMode::kValue)
     non_attribute_value_ = SanitizeValue(default_value);
+  has_been_password_field_ |= new_type_name == InputTypeNames::password;
+
   if (input_type_view_->NeedsShadowSubtree()) {
     CreateUserAgentShadowRoot();
     CreateShadowSubtree();
@@ -428,6 +431,8 @@ void HTMLInputElement::UpdateType() {
 
   bool placeholder_changed =
       input_type_->SupportsPlaceholder() != new_type->SupportsPlaceholder();
+
+  has_been_password_field_ |= new_type_name == InputTypeNames::password;
 
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
@@ -941,6 +946,10 @@ void HTMLInputElement::ResetImpl() {
 
 bool HTMLInputElement::IsTextField() const {
   return input_type_->IsTextField();
+}
+
+bool HTMLInputElement::HasBeenPasswordField() const {
+  return has_been_password_field_;
 }
 
 void HTMLInputElement::DispatchChangeEventIfNeeded() {

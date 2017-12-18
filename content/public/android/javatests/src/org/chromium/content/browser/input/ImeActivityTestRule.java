@@ -48,14 +48,15 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     private ImeAdapter mImeAdapter;
 
     static final String INPUT_FORM_HTML = "content/test/data/android/input/input_forms.html";
+    static final String PASSWORD_FORM_HTML = "content/test/data/android/input/password_form.html";
 
     private ContentViewCore mContentViewCore;
     private SelectionPopupController mSelectionPopupController;
     private TestCallbackHelperContainer mCallbackContainer;
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
-    public void setUp() throws Exception {
-        launchContentShellWithUrlSync(INPUT_FORM_HTML);
+    public void setUpForUrl(String url) throws Exception {
+        launchContentShellWithUrlSync(url);
         mContentViewCore = getContentViewCore();
         mSelectionPopupController = mContentViewCore.getSelectionPopupControllerForTesting();
         mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(mContentViewCore) {

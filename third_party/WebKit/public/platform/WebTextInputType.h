@@ -88,7 +88,10 @@ enum WebTextInputFlags {
   kWebTextInputFlagAutocapitalizeWords = 1 << 8,
   kWebTextInputFlagAutocapitalizeSentences = 1 << 9,
   kWebTextInputFlagHaveNextFocusableElement = 1 << 10,
-  kWebTextInputFlagHavePreviousFocusableElement = 1 << 11
+  kWebTextInputFlagHavePreviousFocusableElement = 1 << 11,
+  // Whether an input field is or has ever been a password. For such an input
+  // type we don't want autocomplete or a keyboard to memorize the content.
+  kWebTextInputFlagHasBeenPasswordField = 1 << 12,
 };
 
 }  // namespace blink
