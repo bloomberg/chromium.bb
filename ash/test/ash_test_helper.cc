@@ -67,7 +67,8 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
     : ash_test_environment_(ash_test_environment),
       test_shell_delegate_(nullptr),
       dbus_thread_manager_initialized_(false),
-      bluez_dbus_manager_initialized_(false) {
+      bluez_dbus_manager_initialized_(false),
+      command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
   ui::test::EnableTestConfigForPlatformWindows();
   aura::test::InitializeAuraEventGeneratorDelegate();
 }
@@ -75,7 +76,6 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
 AshTestHelper::~AshTestHelper() = default;
 
 void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
-  command_line_ = std::make_unique<base::test::ScopedCommandLine>();
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
