@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
@@ -459,7 +460,8 @@ public class CustomTabsConnection {
         // Don't do anything for unknown schemes. Not having a scheme is allowed, as we allow
         // "www.example.com".
         String scheme = uri.normalizeScheme().getScheme();
-        boolean allowedScheme = scheme == null || scheme.equals("http") || scheme.equals("https");
+        boolean allowedScheme = scheme == null || scheme.equals(UrlConstants.HTTP_SCHEME)
+                || scheme.equals(UrlConstants.HTTPS_SCHEME);
         if (!allowedScheme) return false;
         return true;
     }
