@@ -79,7 +79,7 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
       return VideoFrameExternalResources::RGB_RESOURCE;
       break;
     case media::PIXEL_FORMAT_YV12:
-    case media::PIXEL_FORMAT_YV16:
+    case media::PIXEL_FORMAT_I422:
     case media::PIXEL_FORMAT_YV24:
     case media::PIXEL_FORMAT_YV12A:
     case media::PIXEL_FORMAT_NV21:

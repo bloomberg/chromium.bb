@@ -52,7 +52,7 @@ static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
     case AOM_IMG_FMT_I420:
       return PIXEL_FORMAT_I420;
     case AOM_IMG_FMT_I422:
-      return PIXEL_FORMAT_YV16;
+      return PIXEL_FORMAT_I422;
     case AOM_IMG_FMT_I444:
       return PIXEL_FORMAT_YV24;
 

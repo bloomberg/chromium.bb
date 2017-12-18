@@ -120,7 +120,7 @@ bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_YV24:
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
@@ -526,7 +526,7 @@ size_t VideoFrame::NumPlanes(VideoPixelFormat format) {
       return 2;
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_YV24:
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
@@ -835,7 +835,7 @@ size_t VideoFrame::BitDepth() const {
     // Fall through!
     case media::PIXEL_FORMAT_I420:
     case media::PIXEL_FORMAT_YV12:
-    case media::PIXEL_FORMAT_YV16:
+    case media::PIXEL_FORMAT_I422:
     case media::PIXEL_FORMAT_YV12A:
     case media::PIXEL_FORMAT_YV24:
     case media::PIXEL_FORMAT_NV12:
@@ -1100,7 +1100,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_Y16:
           return gfx::Size(1, 1);
 
-        case PIXEL_FORMAT_YV16:
+        case PIXEL_FORMAT_I422:
         case PIXEL_FORMAT_YUV422P9:
         case PIXEL_FORMAT_YUV422P10:
         case PIXEL_FORMAT_YUV422P12:
@@ -1165,7 +1165,7 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     }
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
-    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_YV12A:
     case PIXEL_FORMAT_YV24:
     case PIXEL_FORMAT_Y8:

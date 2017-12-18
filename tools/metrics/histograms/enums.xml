@@ -43260,7 +43260,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="I420"/>
   <int value="2" label="YV12"/>
-  <int value="3" label="YV16"/>
+  <int value="3" label="I422"/>
   <int value="4" label="YV12A"/>
   <int value="5" label="YV24"/>
   <int value="6" label="NV12"/>
