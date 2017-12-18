@@ -1965,6 +1965,11 @@ crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass 
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/svg/path/bearing/zero.svg [ Failure ]
+crbug.com/626703 external/wpt/svg/path/bearing/relative.svg [ Failure ]
+crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.html [ Skip ]
+crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.html [ Skip ]
+crbug.com/626703 external/wpt/svg/path/bearing/absolute.svg [ Failure ]
 crbug.com/626703 [ Android Win7 ] external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Timeout ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-color/t32-opacity-offscreen-b.xht [ Failure ]
@@ -3181,8 +3186,6 @@ crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
 # known bug: import() inside set{Timeout,Interval}
-crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-classic.html [ Failure ]
-crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-module.html [ Failure ]
 
 # import.meta.url is under development.
 crbug.com/773713 external/wpt/html/semantics/scripting-1/the-script-element/module/import-meta [ Skip ]
