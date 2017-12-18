@@ -357,13 +357,9 @@ void FaviconHandler::OnUpdateCandidates(
   if (last_page_url_ != page_url)
     return;
 
-  bool manifests_feature_enabled =
-      base::FeatureList::IsEnabled(kFaviconsFromWebManifest);
-
   // |candidates| or |manifest_url| could have been modified via Javascript. If
   // neither changed, ignore the call.
-  if (candidates_received_ &&
-      (!manifests_feature_enabled || manifest_url_ == manifest_url) &&
+  if (candidates_received_ && manifest_url_ == manifest_url &&
       (non_manifest_original_candidates_.size() == candidates.size() &&
        std::equal(candidates.begin(), candidates.end(),
                   non_manifest_original_candidates_.begin(),
@@ -380,9 +376,7 @@ void FaviconHandler::OnUpdateCandidates(
   num_image_download_requests_ = 0;
   current_candidate_index_ = 0u;
   best_favicon_ = DownloadedFavicon();
-
-  if (manifests_feature_enabled)
-    manifest_url_ = manifest_url;
+  manifest_url_ = manifest_url;
 
   // Check if the manifest was previously blacklisted (e.g. returned a 404) and
   // ignore the manifest URL if that's the case.
