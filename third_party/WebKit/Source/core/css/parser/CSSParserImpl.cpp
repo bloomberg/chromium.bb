@@ -10,8 +10,6 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/ImmutableCSSPropertyValueSet.h"
-#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/PropertyRegistry.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
