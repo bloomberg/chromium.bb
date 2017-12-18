@@ -60,6 +60,9 @@ class MediaEngagementScore final {
   // Returns whether the total score is considered high.
   bool high_score() const { return is_high_; }
 
+  // Returns the origin associated with this score.
+  const GURL& origin() const { return origin_; }
+
   // Writes the values in this score into |settings_map_|. If there are multiple
   // instances of a score object for an origin, this could result in stale data
   // being stored.
@@ -103,6 +106,12 @@ class MediaEngagementScore final {
   friend class MediaEngagementAutoplayBrowserTest;
   friend class MediaEngagementContentsObserverTest;
   friend class MediaEngagementService;
+
+  // Only used by the Media Engagement service when bulk loading data.
+  MediaEngagementScore(base::Clock* clock,
+                       const GURL& origin,
+                       std::unique_ptr<base::DictionaryValue> score_dict,
+                       HostContentSettingsMap* settings);
 
   static const char kScoreMinVisitsParamName[];
   static const char kHighScoreLowerThresholdParamName[];

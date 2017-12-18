@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
@@ -128,8 +129,13 @@ class MediaEngagementService : public KeyedService,
   // Records all the stored scores to a histogram.
   void RecordStoredScoresToHistogram();
 
+  std::vector<MediaEngagementScore> GetAllStoredScores() const;
+
   int GetSchemaVersion() const;
   void SetSchemaVersion(int);
+
+  // Allows us to cancel the RecordScoresToHistogram task if we are destroyed.
+  base::CancelableTaskTracker task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementService);
 };
