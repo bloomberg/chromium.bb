@@ -325,6 +325,10 @@ class FileSystem(object):
     def make_executable(self, file_path):
         os.chmod(file_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP)
 
+    def symlink(self, source, link_name):
+        """Create a symbolic link. Unix only."""
+        os.symlink(source, link_name)
+
 
 # _remove_contents is implemented in terms of other FileSystem functions. To
 # allow it to be reused on the MockFileSystem object, we define it here and
