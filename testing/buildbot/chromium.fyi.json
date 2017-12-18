@@ -12,7 +12,8 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -47,7 +48,8 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -84,7 +86,8 @@
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--annotation=Restriction=DON_Enabled",
           "--don-enabled",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -119,7 +122,8 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -154,7 +158,8 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -189,7 +194,8 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -221,12 +227,18 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "vr_common_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -236,7 +248,8 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--test-filter=WebViewWebVrTest#*"
+          "--test-filter=WebViewWebVrTest#*",
+          "--recover-devices"
         ],
         "merge": {
           "args": [

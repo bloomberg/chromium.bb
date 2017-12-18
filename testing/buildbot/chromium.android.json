@@ -9,6 +9,9 @@
   "Android Cronet ARMv6 Builder": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -39,6 +42,9 @@
         "test": "cronet_sample_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -69,6 +75,9 @@
         "test": "cronet_smoketests_missing_native_library_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -99,6 +108,9 @@
         "test": "cronet_smoketests_platform_only_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -129,6 +141,9 @@
         "test": "cronet_test_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -159,6 +174,9 @@
         "test": "cronet_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -198,6 +216,9 @@
   "Android Cronet Builder (dbg)": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -228,6 +249,9 @@
         "test": "cronet_sample_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -258,6 +282,9 @@
         "test": "cronet_smoketests_missing_native_library_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -288,6 +315,9 @@
         "test": "cronet_smoketests_platform_only_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -318,6 +348,9 @@
         "test": "cronet_test_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -348,6 +381,9 @@
         "test": "cronet_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -422,6 +458,9 @@
   "Android Cronet KitKat Builder": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -452,6 +491,9 @@
         "test": "cronet_sample_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -482,6 +524,9 @@
         "test": "cronet_smoketests_missing_native_library_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -512,6 +557,9 @@
         "test": "cronet_smoketests_platform_only_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -542,6 +590,9 @@
         "test": "cronet_test_instrumentation_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -572,6 +623,9 @@
         "test": "cronet_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -680,6 +734,9 @@
   "KitKat Phone Tester (dbg)": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -718,6 +775,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -757,6 +817,9 @@
         "test": "blink_heap_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -795,6 +858,9 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -833,6 +899,9 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -871,6 +940,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -909,6 +981,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -949,7 +1024,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -992,7 +1068,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -1034,6 +1111,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1072,6 +1152,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1112,6 +1195,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1153,7 +1239,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -1195,6 +1282,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1234,6 +1324,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1272,6 +1365,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1310,6 +1406,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1348,6 +1447,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1387,6 +1489,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1425,6 +1530,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1463,6 +1571,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1501,6 +1612,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1539,6 +1653,9 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1577,6 +1694,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1616,6 +1736,9 @@
         "test": "mojo_common_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1655,6 +1778,9 @@
         "test": "mojo_public_bindings_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1694,6 +1820,9 @@
         "test": "mojo_public_system_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1734,7 +1863,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -1775,6 +1905,9 @@
         "test": "mojo_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1815,6 +1948,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1853,6 +1989,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1892,6 +2031,9 @@
         "test": "services_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1930,6 +2072,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1969,6 +2114,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2007,6 +2155,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2045,6 +2196,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2083,6 +2237,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2122,6 +2279,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2206,6 +2366,9 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2244,6 +2407,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2283,6 +2449,9 @@
         "test": "blink_heap_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2321,6 +2490,9 @@
         "test": "boringssl_crypto_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2359,6 +2531,9 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2397,6 +2572,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2435,6 +2613,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2475,7 +2656,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -2518,7 +2700,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -2559,6 +2742,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2597,6 +2783,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2637,6 +2826,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2678,7 +2870,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -2720,6 +2913,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2759,6 +2955,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2797,6 +2996,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2835,6 +3037,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2873,6 +3078,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2912,6 +3120,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2950,6 +3161,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -2988,6 +3202,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3026,6 +3243,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3064,6 +3284,9 @@
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3102,6 +3325,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3141,6 +3367,9 @@
         "test": "mojo_common_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3180,6 +3409,9 @@
         "test": "mojo_public_bindings_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3219,6 +3451,9 @@
         "test": "mojo_public_system_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3259,7 +3494,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -3300,6 +3536,9 @@
         "test": "mojo_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3340,6 +3579,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3378,6 +3620,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3417,6 +3662,9 @@
         "test": "services_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3455,6 +3703,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3494,6 +3745,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3532,6 +3786,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3570,6 +3827,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3608,6 +3868,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3647,6 +3910,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3730,6 +3996,9 @@
   "KitKat Tablet Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3770,6 +4039,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3810,6 +4082,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3850,6 +4125,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3891,7 +4169,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -3935,7 +4214,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -3977,6 +4257,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4017,6 +4300,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4058,6 +4344,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4100,7 +4389,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -4143,6 +4433,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4183,6 +4476,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4223,6 +4519,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4263,6 +4562,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4303,6 +4605,9 @@
         "test": "gfx_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4343,6 +4648,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4383,6 +4691,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4423,6 +4734,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4463,6 +4777,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4503,6 +4820,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4543,6 +4863,9 @@
         "test": "latency_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4583,6 +4906,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4624,6 +4950,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4664,6 +4993,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4704,6 +5036,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4744,6 +5079,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4784,6 +5122,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4824,6 +5165,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4864,6 +5208,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4905,6 +5252,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4945,6 +5295,9 @@
         "test": "viz_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4989,6 +5342,9 @@
   "Lollipop Phone Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5029,6 +5385,9 @@
         "test": "android_webview_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5069,6 +5428,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5109,6 +5471,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5149,6 +5514,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5190,7 +5558,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -5234,9 +5603,10 @@
       },
       {
         "args": [
-          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json"
         ],
         "merge": {
           "args": [
@@ -5279,7 +5649,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -5321,6 +5692,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5361,6 +5735,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5402,6 +5779,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5444,7 +5824,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -5487,6 +5868,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5527,6 +5911,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5567,6 +5954,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5607,6 +5997,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5647,6 +6040,9 @@
         "test": "gfx_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5687,6 +6083,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5727,6 +6126,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5767,6 +6169,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5807,6 +6212,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5847,6 +6255,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5887,6 +6298,9 @@
         "test": "latency_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5927,6 +6341,9 @@
         "test": "media_blink_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5967,6 +6384,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6008,6 +6428,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6048,6 +6471,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6088,6 +6514,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6128,6 +6557,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6168,6 +6600,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6208,6 +6643,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6248,6 +6686,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6289,6 +6730,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6329,6 +6773,9 @@
         "test": "viz_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6370,7 +6817,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -6417,6 +6865,9 @@
   "Lollipop Tablet Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6457,6 +6908,9 @@
         "test": "android_webview_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6497,6 +6951,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6537,6 +6994,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6577,6 +7037,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6618,7 +7081,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -6662,7 +7126,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -6704,6 +7169,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6744,6 +7212,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6785,6 +7256,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6827,7 +7301,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -6870,6 +7345,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6910,6 +7388,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6950,6 +7431,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6990,6 +7474,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7030,6 +7517,9 @@
         "test": "gfx_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7070,6 +7560,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7110,6 +7603,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7150,6 +7646,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7190,6 +7689,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7230,6 +7732,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7270,6 +7775,9 @@
         "test": "media_blink_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7310,6 +7818,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7351,6 +7862,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7391,6 +7905,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7431,6 +7948,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7471,6 +7991,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7511,6 +8034,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7551,6 +8077,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7591,6 +8120,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7632,6 +8164,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7672,6 +8207,9 @@
         "test": "viz_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7713,7 +8251,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -7760,6 +8299,9 @@
   "Marshmallow 64 bit Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7800,7 +8342,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -7841,6 +8384,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7880,6 +8426,9 @@
         "test": "blink_heap_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7919,6 +8468,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7958,6 +8510,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -7998,7 +8553,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -8041,8 +8597,9 @@
       },
       {
         "args": [
-          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
-          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
+          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--recover-devices",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json"
         ],
         "merge": {
           "args": [
@@ -8084,7 +8641,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -8125,6 +8683,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8164,6 +8725,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8204,6 +8768,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8245,7 +8812,8 @@
       },
       {
         "args": [
-          "--disable-browser-side-navigation"
+          "--disable-browser-side-navigation",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -8289,7 +8857,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -8333,7 +8902,8 @@
       {
         "args": [
           "--disable-browser-side-navigation",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -8376,6 +8946,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8416,7 +8989,8 @@
       },
       {
         "args": [
-          "--disable-browser-side-navigation"
+          "--disable-browser-side-navigation",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -8458,6 +9032,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8497,6 +9074,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8536,6 +9116,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8575,6 +9158,9 @@
         "test": "gfx_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8614,6 +9200,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8653,6 +9242,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8692,6 +9284,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8731,6 +9326,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8770,6 +9368,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8809,6 +9410,9 @@
         "test": "media_blink_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8848,6 +9452,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8888,6 +9495,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8927,6 +9537,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8966,6 +9579,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9005,6 +9621,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9044,6 +9663,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9083,6 +9705,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9122,6 +9747,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9162,6 +9790,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9201,6 +9832,9 @@
         "test": "viz_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9241,7 +9875,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -9285,7 +9920,8 @@
       {
         "args": [
           "--disable-browser-side-navigation",
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -9336,7 +9972,8 @@
     "gtest_tests": [
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -9376,6 +10013,9 @@
         "test": "android_webview_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9415,6 +10055,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9454,6 +10097,9 @@
         "test": "blink_heap_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9492,6 +10138,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9530,6 +10179,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -9561,8 +10213,9 @@
       },
       {
         "args": [
-          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
-          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
+          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--recover-devices",
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json"
         ],
         "merge": {
           "args": [
@@ -9604,7 +10257,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -9645,6 +10299,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9684,6 +10341,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9724,6 +10384,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9765,7 +10428,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -9807,6 +10471,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9846,6 +10513,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9885,6 +10555,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9923,6 +10596,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9962,6 +10638,9 @@
         "test": "gfx_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10000,6 +10679,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10039,6 +10721,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10077,6 +10762,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10116,6 +10804,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10154,6 +10845,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10192,6 +10886,9 @@
         "test": "latency_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10230,6 +10927,9 @@
         "test": "media_blink_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10269,6 +10969,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10308,6 +11011,9 @@
         "test": "mojo_common_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10347,6 +11053,9 @@
         "test": "mojo_public_bindings_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10386,6 +11095,9 @@
         "test": "mojo_public_system_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10426,7 +11138,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -10467,6 +11180,9 @@
         "test": "mojo_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10507,6 +11223,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10545,6 +11264,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -10575,6 +11297,9 @@
         "test": "services_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10613,6 +11338,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10651,6 +11379,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10689,6 +11420,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10727,6 +11461,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10765,6 +11502,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10805,6 +11545,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -10835,6 +11578,9 @@
         "test": "viz_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10875,7 +11621,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -10943,6 +11690,9 @@
   "Marshmallow Tablet Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -10983,6 +11733,9 @@
         "test": "android_webview_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11023,6 +11776,9 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11063,6 +11819,9 @@
         "test": "breakpad_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11103,6 +11862,9 @@
         "test": "capture_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11144,7 +11906,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -11188,7 +11951,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -11230,6 +11994,9 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11270,6 +12037,9 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11311,6 +12081,9 @@
         "test": "components_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11353,7 +12126,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -11396,6 +12170,9 @@
         "test": "content_shell_test_apk"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11436,6 +12213,9 @@
         "test": "content_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11476,6 +12256,9 @@
         "test": "device_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11516,6 +12299,9 @@
         "test": "events_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11556,6 +12342,9 @@
         "test": "gfx_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11596,6 +12385,9 @@
         "test": "gl_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11636,6 +12428,9 @@
         "test": "gl_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11676,6 +12471,9 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11716,6 +12514,9 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11756,6 +12557,9 @@
         "test": "ipc_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11796,6 +12600,9 @@
         "test": "media_blink_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11836,6 +12643,9 @@
         "test": "media_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11877,6 +12687,9 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11917,6 +12730,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11957,6 +12773,9 @@
         "test": "sql_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -11997,6 +12816,9 @@
         "test": "storage_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -12037,6 +12859,9 @@
         "test": "ui_android_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -12077,6 +12902,9 @@
         "test": "ui_base_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -12117,6 +12945,9 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -12158,6 +12989,9 @@
         "test": "unit_tests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -12198,6 +13032,9 @@
         "test": "viz_unittests"
       },
       {
+        "args": [
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -12239,7 +13076,8 @@
       },
       {
         "args": [
-          "--gs-results-bucket=chromium-result-details"
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -12288,7 +13126,8 @@
       {
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
-          "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
+          "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -12323,7 +13162,8 @@
       {
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
-          "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
+          "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -12360,7 +13200,8 @@
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--annotation=Restriction=DON_Enabled",
-          "--don-enabled"
+          "--don-enabled",
+          "--recover-devices"
         ],
         "merge": {
           "args": [

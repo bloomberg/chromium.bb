@@ -192,6 +192,7 @@ ANDROID_WATERFALL = """\
           ],
         },
         'os_type': 'android',
+        'skip_device_recovery': True,
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -737,6 +738,9 @@ ANDROID_WATERFALL_OUTPUT = """\
   "Fake Android L Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--recover-devices"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
