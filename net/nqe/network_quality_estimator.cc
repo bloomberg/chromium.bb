@@ -1331,22 +1331,16 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
   *transport_rtt = nqe::internal::InvalidRTT();
   *downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
 
-  if (params_->forced_effective_connection_type()) {
-    *http_rtt = params_
-                    ->TypicalNetworkQuality(
-                        params_->forced_effective_connection_type().value())
-                    .http_rtt();
+  auto forced_ect =
+      params_->GetForcedEffectiveConnectionType(current_network_id_.type);
+  if (forced_ect) {
+    *http_rtt = params_->TypicalNetworkQuality(forced_ect.value()).http_rtt();
     *transport_rtt =
-        params_
-            ->TypicalNetworkQuality(
-                params_->forced_effective_connection_type().value())
-            .transport_rtt();
+        params_->TypicalNetworkQuality(forced_ect.value()).transport_rtt();
     *downstream_throughput_kbps =
-        params_
-            ->TypicalNetworkQuality(
-                params_->forced_effective_connection_type().value())
+        params_->TypicalNetworkQuality(forced_ect.value())
             .downstream_throughput_kbps();
-    return params_->forced_effective_connection_type().value();
+    return forced_ect.value();
   }
 
   // If the device is currently offline, then return

@@ -12,6 +12,7 @@
 namespace net {
 
 const char kForceEffectiveConnectionType[] = "force_effective_connection_type";
+const char kEffectiveConnectionTypeSlow2GOnCellular[] = "Slow-2G-On-Cellular";
 
 namespace {
 
@@ -354,10 +355,24 @@ void ObtainConnectionThresholds(
   }
 }
 
-base::Optional<EffectiveConnectionType> GetForcedEffectiveConnectionType(
+std::string GetForcedEffectiveConnectionTypeString(
     const std::map<std::string, std::string>& params) {
-  std::string forced_value = GetStringValueForVariationParamWithDefaultValue(
+  return GetStringValueForVariationParamWithDefaultValue(
       params, kForceEffectiveConnectionType, "");
+}
+
+bool GetForcedEffectiveConnectionTypeOnCellularOnly(
+    const std::map<std::string, std::string>& params) {
+  return GetForcedEffectiveConnectionTypeString(params) ==
+         kEffectiveConnectionTypeSlow2GOnCellular;
+}
+
+base::Optional<EffectiveConnectionType> GetInitForcedEffectiveConnectionType(
+    const std::map<std::string, std::string>& params) {
+  if (GetForcedEffectiveConnectionTypeOnCellularOnly(params)) {
+    return base::nullopt;
+  }
+  std::string forced_value = GetForcedEffectiveConnectionTypeString(params);
   base::Optional<EffectiveConnectionType> ect =
       GetEffectiveConnectionTypeForName(forced_value);
   DCHECK(forced_value.empty() || ect);
@@ -394,7 +409,9 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               "correlation_logging_probability",
               0.01)),
       forced_effective_connection_type_(
-          GetForcedEffectiveConnectionType(params_)),
+          GetInitForcedEffectiveConnectionType(params_)),
+      forced_effective_connection_type_on_cellular_only_(
+          GetForcedEffectiveConnectionTypeOnCellularOnly(params_)),
       persistent_cache_reading_enabled_(
           GetPersistentCacheReadingEnabled(params_)),
       min_socket_watcher_notification_interval_(
@@ -514,6 +531,21 @@ bool NetworkQualityEstimatorParams::use_small_responses() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return use_small_responses_;
 };
+
+base::Optional<EffectiveConnectionType>
+NetworkQualityEstimatorParams::GetForcedEffectiveConnectionType(
+    NetworkChangeNotifier::ConnectionType connection_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (forced_effective_connection_type_) {
+    return forced_effective_connection_type_;
+  }
+
+  if (forced_effective_connection_type_on_cellular_only_ &&
+      net::NetworkChangeNotifier::IsConnectionCellular(connection_type)) {
+    return EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+  }
+  return base::nullopt;
+}
 
 // static
 NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm

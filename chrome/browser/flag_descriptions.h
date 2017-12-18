@@ -418,6 +418,7 @@ extern const char kForceEffectiveConnectionTypeDescription[];
 extern const char kEffectiveConnectionTypeUnknownDescription[];
 extern const char kEffectiveConnectionTypeOfflineDescription[];
 extern const char kEffectiveConnectionTypeSlow2GDescription[];
+extern const char kEffectiveConnectionTypeSlow2GOnCellularDescription[];
 extern const char kEffectiveConnectionType2GDescription[];
 extern const char kEffectiveConnectionType3GDescription[];
 extern const char kEffectiveConnectionType4GDescription[];
