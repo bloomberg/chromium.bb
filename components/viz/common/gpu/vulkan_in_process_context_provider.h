@@ -37,8 +37,8 @@ class VIZ_COMMON_EXPORT VulkanInProcessContextProvider
   ~VulkanInProcessContextProvider() override;
 
  private:
-  GrContext* gr_context_;
 #if BUILDFLAG(ENABLE_VULKAN)
+  sk_sp<GrContext> gr_context_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
   sk_sp<GrVkBackendContext> backend_context_;
 #endif
