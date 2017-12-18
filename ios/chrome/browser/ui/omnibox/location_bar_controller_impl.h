@@ -31,6 +31,7 @@ class OmniboxViewIOS;
 @class OmniboxClearButtonBridge;
 @protocol OmniboxPopupPositioner;
 @class LocationBarView;
+class ScopedFullscreenDisabler;
 class ToolbarModel;
 class OmniboxPopupViewIOS;
 
@@ -102,6 +103,12 @@ class LocationBarControllerImpl : public LocationBarController,
   __weak id<LocationBarDelegate> delegate_;
   // Dispatcher to send commands from the location bar.
   __weak id<BrowserCommands> dispatcher_;
+  // The BrowserState passed on construction.
+  ios::ChromeBrowserState* browser_state_;
+  // The disabler that prevents fullscreen calculations to occur while the
+  // location bar is focused.
+  std::unique_ptr<ScopedFullscreenDisabler> fullscreen_disabler_;
+
   bool is_showing_placeholder_while_collapsed_;
 };
 
