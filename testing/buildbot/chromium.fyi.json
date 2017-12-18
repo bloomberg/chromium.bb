@@ -4256,6 +4256,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--xvfb",
           "--extra-browser-args=--enable-viz"
         ],
         "isolate_name": "telemetry_perf_unittests",
@@ -4269,9 +4270,10 @@
       {
         "args": [
           "--extra-browser-args=--enable-viz",
-          "--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot",
-          "--skip=telemetry.internal.browser.tab_unittest.GpuTabTest.testScreenshot",
           "--skip=telemetry.internal.actions.scroll_unittest.ScrollActionTest.testWheelScrollDistanceWhileZoomed",
+          "--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot",
+          "--skip=telemetry.internal.backends.chrome.tab_list_backend_unittest.TabListBackendTest.testNewTab",
+          "--skip=telemetry.internal.browser.tab_unittest.GpuTabTest.testScreenshot",
           "--skip=telemetry.page.cache_temperature_unittest.CacheTemperatureTests.testEnsureHotAfterColdRun"
         ],
         "isolate_name": "telemetry_unittests",
