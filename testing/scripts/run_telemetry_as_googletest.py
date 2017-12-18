@@ -72,6 +72,8 @@ def main():
   total_shards = None
   shard_index = None
   env = os.environ.copy()
+  env['CHROME_HEADLESS'] = '1'
+
   if 'GTEST_TOTAL_SHARDS' in env:
     total_shards = int(env['GTEST_TOTAL_SHARDS'])
     del env['GTEST_TOTAL_SHARDS']

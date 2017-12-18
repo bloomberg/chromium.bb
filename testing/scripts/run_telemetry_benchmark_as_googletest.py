@@ -85,6 +85,8 @@ def main():
 
 def run_benchmark(args, rest_args):
   env = os.environ.copy()
+  env['CHROME_HEADLESS'] = '1'
+
   # Assume we want to set up the sandbox environment variables all the
   # time; doing so is harmless on non-Linux platforms and is needed
   # all the time on Linux.
