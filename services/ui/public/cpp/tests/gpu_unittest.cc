@@ -186,7 +186,7 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
 
   base::RunLoop run_loop;
   scoped_refptr<gpu::GpuChannelHost> host;
-  auto callback = base::Bind(
+  auto callback = base::BindOnce(
       [](scoped_refptr<gpu::GpuChannelHost>* out_host,
          const base::Closure& callback,
          scoped_refptr<gpu::GpuChannelHost> host) {
@@ -194,17 +194,17 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
         *out_host = std::move(host);
       },
       &host, run_loop.QuitClosure());
-  gpu()->EstablishGpuChannel(base::Bind(
+  gpu()->EstablishGpuChannel(base::BindOnce(
       [](ui::Gpu* gpu, TestGpuImpl* gpu_impl,
-         const gpu::GpuChannelEstablishedCallback& callback,
+         gpu::GpuChannelEstablishedCallback callback,
          scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_FALSE(host);
         // Responding to the first request would issue a second request
         // immediately which should succeed.
         gpu_impl->SetRequestWillSucceed(true);
-        gpu->EstablishGpuChannel(callback);
+        gpu->EstablishGpuChannel(std::move(callback));
       },
-      gpu(), gpu_impl(), callback));
+      gpu(), gpu_impl(), std::move(callback)));
 
   run_loop.Run();
   EXPECT_TRUE(host);
@@ -214,7 +214,7 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
 // are met synchronously.
 TEST_F(GpuTest, EstablishRequestResponseSynchronouslyOnSuccess) {
   base::RunLoop run_loop;
-  gpu()->EstablishGpuChannel(base::Bind(
+  gpu()->EstablishGpuChannel(base::BindOnce(
       [](const base::Closure& callback,
          scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_TRUE(host);
@@ -224,13 +224,13 @@ TEST_F(GpuTest, EstablishRequestResponseSynchronouslyOnSuccess) {
   run_loop.Run();
 
   int counter = 0;
-  auto callback = base::Bind(
+  auto callback = base::BindOnce(
       [](int* counter, scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_TRUE(host);
         ++(*counter);
       },
       &counter);
-  gpu()->EstablishGpuChannel(callback);
+  gpu()->EstablishGpuChannel(std::move(callback));
   EXPECT_EQ(1, counter);
 }
 
@@ -239,7 +239,7 @@ TEST_F(GpuTest, EstablishRequestResponseSynchronouslyOnSuccess) {
 // the thread until the original call returns.
 TEST_F(GpuTest, EstablishRequestAsyncThenSync) {
   int counter = 0;
-  gpu()->EstablishGpuChannel(base::Bind(
+  gpu()->EstablishGpuChannel(base::BindOnce(
       [](int* counter, scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_TRUE(host);
         ++(*counter);
@@ -255,7 +255,7 @@ TEST_F(GpuTest, EstablishRequestAsyncThenSync) {
 // EstablishGpuChannel() has returned that request is used immediately.
 TEST_F(GpuTest, EstablishRequestAsyncThenSyncWithResponse) {
   int counter = 0;
-  gpu()->EstablishGpuChannel(base::Bind(
+  gpu()->EstablishGpuChannel(base::BindOnce(
       [](int* counter, scoped_refptr<gpu::GpuChannelHost> host) {
         EXPECT_TRUE(host);
         ++(*counter);
@@ -284,10 +284,11 @@ TEST_F(GpuTest, EstablishRequestAsyncThenSyncWithResponse) {
 // issues.
 TEST_F(GpuTest, DestroyGpuWithPendingRequest) {
   int counter = 0;
-  gpu()->EstablishGpuChannel(
-      base::Bind([](int* counter,
-                    scoped_refptr<gpu::GpuChannelHost> host) { ++(*counter); },
-                 base::Unretained(&counter)));
+  gpu()->EstablishGpuChannel(base::BindOnce(
+      [](int* counter, scoped_refptr<gpu::GpuChannelHost> host) {
+        ++(*counter);
+      },
+      base::Unretained(&counter)));
 
   // This should cancel the pending request and not crash.
   DestroyGpu();

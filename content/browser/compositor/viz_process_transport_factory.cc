@@ -167,8 +167,8 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSink(
     return;
   }
   gpu_channel_establish_factory_->EstablishGpuChannel(
-      base::Bind(&VizProcessTransportFactory::OnEstablishedGpuChannel,
-                 weak_ptr_factory_.GetWeakPtr(), compositor));
+      base::BindOnce(&VizProcessTransportFactory::OnEstablishedGpuChannel,
+                     weak_ptr_factory_.GetWeakPtr(), compositor));
 }
 
 scoped_refptr<viz::ContextProvider>
@@ -408,8 +408,8 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
       // Retry on failure. If this isn't possible we should hear that we're
       // falling back to software compositing from the viz process eventually.
       gpu_channel_establish_factory_->EstablishGpuChannel(
-          base::Bind(&VizProcessTransportFactory::OnEstablishedGpuChannel,
-                     weak_ptr_factory_.GetWeakPtr(), compositor_weak_ptr));
+          base::BindOnce(&VizProcessTransportFactory::OnEstablishedGpuChannel,
+                         weak_ptr_factory_.GetWeakPtr(), compositor_weak_ptr));
       return;
     }
   }

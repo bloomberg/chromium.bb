@@ -42,14 +42,13 @@ namespace gpu {
 struct SyncToken;
 class GpuChannelHost;
 using GpuChannelEstablishedCallback =
-    base::Callback<void(scoped_refptr<GpuChannelHost>)>;
+    base::OnceCallback<void(scoped_refptr<GpuChannelHost>)>;
 
 class GPU_EXPORT GpuChannelEstablishFactory {
  public:
   virtual ~GpuChannelEstablishFactory() = default;
 
-  virtual void EstablishGpuChannel(
-      const GpuChannelEstablishedCallback& callback) = 0;
+  virtual void EstablishGpuChannel(GpuChannelEstablishedCallback callback) = 0;
   virtual scoped_refptr<GpuChannelHost> EstablishGpuChannelSync() = 0;
   virtual GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 };
