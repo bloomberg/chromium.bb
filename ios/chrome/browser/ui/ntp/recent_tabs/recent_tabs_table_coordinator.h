@@ -46,6 +46,10 @@ class ChromeBrowserState;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 // The view controller managed by this coordinator.
 - (UIViewController*)viewController;

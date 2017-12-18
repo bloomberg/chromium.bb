@@ -33,6 +33,10 @@ struct ContextMenuParams;
 // Params are needed for the initialization.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 // Adds an item at the end of the menu if |visible| is false.
 - (void)addItemWithTitle:(NSString*)title action:(ProceduralBlock)action;

@@ -210,7 +210,7 @@ const CGFloat kPrefHeight = 300;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
                              cancelHandler:(ProceduralBlock)cancelHandler {
-  self = [super initWithBaseViewController:viewController];
+  self = [super initWithBaseViewController:viewController browserState:nullptr];
   if (self) {
     _title = [title copy];
     _cancelHandler = cancelHandler;

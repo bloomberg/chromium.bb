@@ -10,35 +10,32 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ChromeCoordinator () {
-  __weak UIViewController* _baseViewController;
-  MutableCoordinatorArray* _childCoordinators;
-}
-@end
-
 @implementation ChromeCoordinator
+@synthesize childCoordinators = _childCoordinators;
+@synthesize baseViewController = _baseViewController;
+@synthesize browserState = _browserState;
 
 - (nullable instancetype)initWithBaseViewController:
     (UIViewController*)viewController {
+  return [self initWithBaseViewController:viewController browserState:nullptr];
+}
+
+- (nullable instancetype)
+initWithBaseViewController:(UIViewController*)viewController
+              browserState:(ios::ChromeBrowserState*)browserState {
   if (self = [super init]) {
     _baseViewController = viewController;
     _childCoordinators = [MutableCoordinatorArray array];
+    _browserState = browserState;
   }
   return self;
-}
-
-- (nullable instancetype)init {
-  NOTREACHED();
-  return nil;
 }
 
 - (void)dealloc {
   [self stop];
 }
 
-- (MutableCoordinatorArray*)childCoordinators {
-  return _childCoordinators;
-}
+#pragma mark - Accessors
 
 - (ChromeCoordinator*)activeChildCoordinator {
   // By default the active child is the one most recently added to the child
@@ -46,9 +43,7 @@
   return self.childCoordinators.lastObject;
 }
 
-- (nullable UIViewController*)baseViewController {
-  return _baseViewController;
-}
+#pragma mark - Public
 
 - (void)start {
   // Default implementation does nothing.

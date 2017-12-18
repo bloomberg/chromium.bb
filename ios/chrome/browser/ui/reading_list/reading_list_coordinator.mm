@@ -78,7 +78,8 @@ enum UMAContextMenuAction {
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
                                     loader:(id<UrlLoader>)loader {
-  self = [super initWithBaseViewController:viewController];
+  self = [super initWithBaseViewController:viewController
+                              browserState:browserState];
   if (self) {
     _browserState = browserState;
     _URLLoader = loader;

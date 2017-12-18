@@ -30,6 +30,10 @@ initWithBaseViewController:(nullable UIViewController*)viewController
 
 - (nullable instancetype)initWithBaseViewController:
     (nullable UIViewController*)viewController NS_UNAVAILABLE;
+- (nullable instancetype)
+initWithBaseViewController:(nullable UIViewController*)viewController
+              browserState:(nullable ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 @end
 
