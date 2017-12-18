@@ -243,6 +243,8 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       PositionAvoidingSpecialElementBoundary(insertion_position, editing_state);
   if (editing_state->IsAborted())
     return;
+  // InsertTextCommandTest.AnchorElementWithBlockCrash reaches here.
+  ABORT_EDITING_COMMAND_IF(!start_block->parentNode());
   if (list_child == enclosing_anchor) {
     // |positionAvoidingSpecialElementBoundary()| creates new A element and
     // move to another place.
