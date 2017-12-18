@@ -252,7 +252,41 @@ class GitCLTest(unittest.TestCase):
             Build('some-builder', 2): TryJobStatus('STARTED'),
         }))
 
-    def test_latest_try_builds(self):
+    def test_latest_try_jobs_cq_only(self):
+        git_cl = GitCL(MockHost())
+        git_cl.fetch_raw_try_job_results = lambda: [
+            {
+                'builder_name': 'cq-a',
+                'experimental': False,
+                'result': None,
+                'status': 'SCHEDULED',
+                'tags': ['user_agent:cq'],
+                'url': None,
+            },
+            {
+                'builder_name': 'cq-a-experimental',
+                'experimental': True,
+                'result': None,
+                'status': 'SCHEDULED',
+                'tags': ['user_agent:cq'],
+                'url': None,
+            },
+            {
+                'builder_name': 'other',
+                'experimental': False,
+                'status': 'SCHEDULED',
+                'result': None,
+                'tags': ['user_agent:git_cl_try'],
+                'url': None,
+            },
+        ]
+        self.assertEqual(
+            git_cl.latest_try_jobs(cq_only=True),
+            {
+                Build('cq-a'): TryJobStatus('SCHEDULED'),
+            })
+
+    def test_latest_try_jobs(self):
         git_cl = GitCL(MockHost())
         git_cl.fetch_raw_try_job_results = lambda: [
             {
@@ -287,7 +321,7 @@ class GitCLTest(unittest.TestCase):
                 Build('builder-b', 100): TryJobStatus('COMPLETED', 'SUCCESS'),
             })
 
-    def test_latest_try_builds_started_build_luci_url(self):
+    def test_latest_try_jobs_started_build_luci_url(self):
         git_cl = GitCL(MockHost())
         git_cl.fetch_raw_try_job_results = lambda: [
             {
@@ -301,7 +335,7 @@ class GitCLTest(unittest.TestCase):
             git_cl.latest_try_jobs(['builder-a']),
             {Build('builder-a', 100): TryJobStatus('STARTED')})
 
-    def test_latest_try_builds_started_build_buildbot_url(self):
+    def test_latest_try_jobs_started_build_buildbot_url(self):
         git_cl = GitCL(MockHost())
         git_cl.fetch_raw_try_job_results = lambda: [
             {
@@ -315,7 +349,7 @@ class GitCLTest(unittest.TestCase):
             git_cl.latest_try_jobs(['builder-a']),
             {Build('builder-a', 100): TryJobStatus('STARTED')})
 
-    def test_latest_try_builds_failures(self):
+    def test_latest_try_jobs_failures(self):
         git_cl = GitCL(MockHost())
         git_cl.fetch_raw_try_job_results = lambda: [
             {
@@ -340,7 +374,7 @@ class GitCLTest(unittest.TestCase):
                 Build('builder-b', 200): TryJobStatus('COMPLETED', 'FAILURE'),
             })
 
-    def test_latest_try_builds_ignores_swarming_task(self):
+    def test_latest_try_jobs_ignores_swarming_task(self):
         git_cl = GitCL(MockHost())
         git_cl.fetch_raw_try_job_results = lambda: [
             {

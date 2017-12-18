@@ -49,7 +49,9 @@ class MockGitCL(object):
     def wait_for_try_jobs(self, **_):
         if self._time_out:
             return None
-        return CLStatus(self._status, self._try_job_results)
+        return CLStatus(
+            self._status,
+            self.filter_latest(self._try_job_results))
 
     def wait_for_closed_status(self, **_):
         if self._time_out:

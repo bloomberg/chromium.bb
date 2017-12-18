@@ -150,37 +150,6 @@ class TestImporterTest(LoggingTestCase):
             ['git', 'cl', 'try'],
         ])
 
-    def test_run_commit_queue_for_cl_only_checks_non_blink_bots(self):
-        host = MockHost()
-        host.filesystem.write_text_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
-        host.builders = BuilderList({
-            'fakeos_blink_rel': {
-                'port_name': 'test-fakeos',
-                'specifiers': ['FakeOS', 'Release'],
-                'is_try_builder': True,
-            }
-        })
-        importer = TestImporter(host)
-        importer.git_cl = MockGitCL(host, status='lgtm', try_job_results={
-            Build('fakeos_blink_rel', 123): TryJobStatus('COMPLETED', 'FAILURE'),
-            Build('cq-builder-b', 200): TryJobStatus('COMPLETED', 'SUCCESS'),
-        })
-        importer.fetch_new_expectations_and_baselines = lambda: None
-        success = importer.run_commit_queue_for_cl()
-        self.assertTrue(success)
-        self.assertLog([
-            'INFO: Triggering CQ try jobs.\n',
-            'INFO: All jobs finished.\n',
-            'INFO: CQ appears to have passed; trying to commit.\n',
-            'INFO: Update completed.\n',
-        ])
-        self.assertEqual(importer.git_cl.calls, [
-            ['git', 'cl', 'try'],
-            ['git', 'cl', 'upload', '-f', '--send-mail'],
-            ['git', 'cl', 'set-commit'],
-        ])
-
     def test_run_commit_queue_for_cl_timeout(self):
         # This simulates the case where we time out while waiting for try jobs.
         host = MockHost()
