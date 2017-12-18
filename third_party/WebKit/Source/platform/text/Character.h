@@ -63,7 +63,10 @@ class PLATFORM_EXPORT Character {
                         0xE01EF);  // VARIATION SELECTOR-17 to 256
   }
 
-  static bool IsCJKIdeographOrSymbol(UChar32);
+  static bool IsCJKIdeographOrSymbol(UChar32 c) {
+    // Below U+02C7 is likely a common case.
+    return c < 0x2C7 ? false : IsCJKIdeographOrSymbolSlow(c);
+  }
   static bool IsCJKIdeographOrSymbolBase(UChar32 c) {
     return IsCJKIdeographOrSymbol(c) &&
            !(U_GET_GC_MASK(c) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK));
@@ -172,6 +175,9 @@ class PLATFORM_EXPORT Character {
   static String NormalizeSpaces(const UChar*, unsigned length);
 
   static bool IsCommonOrInheritedScript(UChar32);
+
+ private:
+  static bool IsCJKIdeographOrSymbolSlow(UChar32);
 };
 
 }  // namespace blink

@@ -110,11 +110,7 @@ bool Character::IsUprightInMixedVertical(UChar32 character) {
   RETURN_HAS_PROPERTY(character, kIsUprightInMixedVertical)
 }
 
-bool Character::IsCJKIdeographOrSymbol(UChar32 c) {
-  // Likely common case
-  if (c < 0x2C7)
-    return false;
-
+bool Character::IsCJKIdeographOrSymbolSlow(UChar32 c) {
   RETURN_HAS_PROPERTY(c, kIsCJKIdeographOrSymbol)
 }
 
@@ -219,16 +215,12 @@ bool Character::CanTextDecorationSkipInk(UChar32 codepoint) {
   switch (block) {
     // These blocks contain CJK characters we don't want to skip ink, but are
     // not ideograph that IsCJKIdeographOrSymbol() does not cover.
-    case UBLOCK_BOPOMOFO:
-    case UBLOCK_BOPOMOFO_EXTENDED:
     case UBLOCK_HANGUL_JAMO:
     case UBLOCK_HANGUL_COMPATIBILITY_JAMO:
     case UBLOCK_HANGUL_SYLLABLES:
     case UBLOCK_HANGUL_JAMO_EXTENDED_A:
     case UBLOCK_HANGUL_JAMO_EXTENDED_B:
     case UBLOCK_LINEAR_B_IDEOGRAMS:
-    case UBLOCK_TANGUT:
-    case UBLOCK_TANGUT_COMPONENTS:
       return false;
     default:
       return true;
