@@ -93,8 +93,10 @@ class AudioParamTimeline {
                             float min_value,
                             float max_value);
 
-  // Returns true if this AudioParam has any events on it.
-  bool HasValues() const;
+  // Returns true if the AudioParam timeline needs to run in this
+  // rendering quantum.  This means some automation is already running
+  // or is scheduled to run in the current rendering quantuym.
+  bool HasValues(size_t current_frame, double sample_rate) const;
 
   float SmoothedValue() { return smoothed_value_; }
   void SetSmoothedValue(float v) { smoothed_value_ = v; }
