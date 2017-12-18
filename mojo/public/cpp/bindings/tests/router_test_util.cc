@@ -63,7 +63,7 @@ bool ResponseGenerator::AcceptWithResponder(
   bool result = SendResponse(message->name(), message->request_id(),
                              reinterpret_cast<const char*>(message->payload()),
                              responder.get());
-  EXPECT_TRUE(responder->IsValid());
+  EXPECT_TRUE(responder->IsConnected());
   return result;
 }
 

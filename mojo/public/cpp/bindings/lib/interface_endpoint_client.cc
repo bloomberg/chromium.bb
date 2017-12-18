@@ -26,10 +26,10 @@ namespace mojo {
 
 namespace {
 
-void DCheckIfInvalid(const base::WeakPtr<InterfaceEndpointClient>& client,
-                     const std::string& message) {
-  bool is_valid = client && !client->encountered_error();
-  DCHECK(!is_valid) << message;
+void DetermineIfEndpointIsConnected(
+    const base::WeakPtr<InterfaceEndpointClient>& client,
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(client && !client->encountered_error());
 }
 
 // When receiving an incoming message which expects a repsonse,
@@ -86,17 +86,18 @@ class ResponderThunk : public MessageReceiverWithStatus {
   }
 
   // MessageReceiverWithStatus implementation:
-  bool IsValid() override {
+  bool IsConnected() override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     return endpoint_client_ && !endpoint_client_->encountered_error();
   }
 
-  void DCheckInvalid(const std::string& message) override {
+  void IsConnectedAsync(base::OnceCallback<void(bool)> callback) override {
     if (task_runner_->RunsTasksInCurrentSequence()) {
-      DCheckIfInvalid(endpoint_client_, message);
+      DetermineIfEndpointIsConnected(endpoint_client_, std::move(callback));
     } else {
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&DCheckIfInvalid, endpoint_client_, message));
+          FROM_HERE, base::BindOnce(&DetermineIfEndpointIsConnected,
+                                    endpoint_client_, std::move(callback)));
     }
   }
 

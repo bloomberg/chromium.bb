@@ -64,7 +64,7 @@ class LazyResponseGenerator : public ResponseGenerator {
 
   bool has_responder() const { return !!responder_; }
 
-  bool responder_is_valid() const { return responder_->IsValid(); }
+  bool responder_is_valid() const { return responder_->IsConnected(); }
 
   void set_closure(const base::Closure& closure) { closure_ = closure; }
 
