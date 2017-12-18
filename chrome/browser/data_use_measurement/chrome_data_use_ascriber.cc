@@ -299,14 +299,6 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
   subframe_to_mainframe_map_.erase(key);
 }
 
-void ChromeDataUseAscriber::DidStartMainFrameNavigation(
-    const GURL& gurl,
-    int render_process_id,
-    int render_frame_id,
-    void* navigation_handle) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-}
-
 void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
     content::GlobalRequestID global_request_id,
     int render_process_id,

@@ -123,24 +123,6 @@ void ChromeDataUseAscriberService::RenderFrameDeleted(
                      main_render_frame_id));
 }
 
-void ChromeDataUseAscriberService::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!navigation_handle->IsInMainFrame())
-    return;
-
-  if (!ascriber_)
-    return;
-  content::WebContents* web_contents = navigation_handle->GetWebContents();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ChromeDataUseAscriber::DidStartMainFrameNavigation,
-                     base::Unretained(ascriber_), navigation_handle->GetURL(),
-                     web_contents->GetMainFrame()->GetProcess()->GetID(),
-                     web_contents->GetMainFrame()->GetRoutingID(),
-                     navigation_handle));
-}
-
 void ChromeDataUseAscriberService::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

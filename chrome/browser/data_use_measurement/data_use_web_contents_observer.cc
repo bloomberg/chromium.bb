@@ -64,11 +64,6 @@ void DataUseWebContentsObserver::RenderFrameDeleted(
   service_->RenderFrameDeleted(render_frame_host);
 }
 
-void DataUseWebContentsObserver::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  service_->DidStartNavigation(navigation_handle);
-}
-
 void DataUseWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   service_->ReadyToCommitNavigation(navigation_handle);

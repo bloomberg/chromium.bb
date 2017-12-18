@@ -220,11 +220,7 @@ TEST_F(ChromeDataUseAscriberTest, MainFrameNavigation) {
   ascriber()->OnBeforeUrlRequest(request.get());
   EXPECT_EQ(2u, recorders().size());
 
-  // Navigation starts.
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
-
+  // Navigation commits.
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -262,9 +258,6 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
   ascriber()->OnBeforeUrlRequest(page_load_a_main_frame_request.get());
 
   // Commit the page load.
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -283,9 +276,6 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
   ascriber()->OnBeforeUrlRequest(page_load_b_main_frame_request.get());
 
   // Commit the second page load.
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test_2.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -333,9 +323,6 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
   // First page load 'a'.
   ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
   ascriber()->OnBeforeUrlRequest(page_load_a_mainresource.get());
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -366,9 +353,6 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
 
   // Second page load 'b' on the same main render frame.
   ascriber()->OnBeforeUrlRequest(page_load_b_mainresource.get());
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test_2.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -406,9 +390,6 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
   // Third page load 'c' on the same main render frame with
   // same_document_navigation set.
   ascriber()->OnBeforeUrlRequest(page_load_c_mainresource.get());
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test_c.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -469,11 +450,7 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
 
   ascriber()->OnBeforeUrlRequest(request.get());
 
-  // Navigation starts.
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
-
+  // Navigation starts and is ready to commit.
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
@@ -524,11 +501,7 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverForErrorPageValidatedURL) {
 
   ascriber()->OnBeforeUrlRequest(request.get());
 
-  // Navigation starts.
-  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
-                                          kRenderProcessId, kRenderFrameId,
-                                          kNavigationHandle);
-
+  // Navigation starts and is ready to commit.
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
