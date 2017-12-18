@@ -55,14 +55,69 @@ namespace {
 // default TopSites tiles (see history::PrepopulatedPage).
 const int kDefaultMostVisitedItemCount = 2;
 
-class LocalNTPTest : public InProcessBrowserTest {
+class TestMostVisitedObserver : public InstantServiceObserver {
  public:
-  LocalNTPTest() {}
+  explicit TestMostVisitedObserver(InstantService* service)
+      : service_(service), expected_count_(0) {
+    service_->AddObserver(this);
+  }
+
+  ~TestMostVisitedObserver() override { service_->RemoveObserver(this); }
+
+  void WaitForNumberOfItems(size_t count) {
+    DCHECK(!quit_closure_);
+
+    expected_count_ = count;
+
+    if (items_.size() == count) {
+      return;
+    }
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
 
  private:
-  void SetUp() override {
+  void ThemeInfoChanged(const ThemeBackgroundInfo&) override {}
+
+  void MostVisitedItemsChanged(
+      const std::vector<InstantMostVisitedItem>& items) override {
+    items_ = items;
+
+    if (quit_closure_ && items_.size() == expected_count_) {
+      std::move(quit_closure_).Run();
+      quit_closure_.Reset();
+    }
+  }
+
+  InstantService* const service_;
+
+  std::vector<InstantMostVisitedItem> items_;
+
+  size_t expected_count_;
+  base::OnceClosure quit_closure_;
+};
+
+class LocalNTPTest : public InProcessBrowserTest {
+ public:
+  LocalNTPTest() {
     feature_list_.InitAndEnableFeature(features::kUseGoogleLocalNtp);
-    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  void SetUpOnMainThread() override {
+    // Some tests depend on the prepopulated most visited tiles coming from
+    // TopSites, so make sure they are available before running the tests.
+    // (TopSites is loaded asynchronously at startup, so without this, there's
+    // a chance that it hasn't finished and we receive 0 tiles.)
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+    TestMostVisitedObserver mv_observer(instant_service);
+    // Make sure the observer knows about the current items. Typically, this
+    // gets triggered by navigating to an NTP.
+    instant_service->UpdateMostVisitedItemsInfo();
+    mv_observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -175,50 +230,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIExposesStaticFunctions) {
                            test_case.args)));
   }
 }
-
-class TestMostVisitedObserver : public InstantServiceObserver {
- public:
-  explicit TestMostVisitedObserver(InstantService* service)
-      : service_(service), expected_count_(0) {
-    service_->AddObserver(this);
-  }
-
-  ~TestMostVisitedObserver() override { service_->RemoveObserver(this); }
-
-  void WaitForNumberOfItems(size_t count) {
-    DCHECK(!quit_closure_);
-
-    expected_count_ = count;
-
-    if (items_.size() == count) {
-      return;
-    }
-
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
- private:
-  void ThemeInfoChanged(const ThemeBackgroundInfo&) override {}
-
-  void MostVisitedItemsChanged(
-      const std::vector<InstantMostVisitedItem>& items) override {
-    items_ = items;
-
-    if (quit_closure_ && items_.size() == expected_count_) {
-      std::move(quit_closure_).Run();
-      quit_closure_.Reset();
-    }
-  }
-
-  InstantService* const service_;
-
-  std::vector<InstantMostVisitedItem> items_;
-
-  size_t expected_count_;
-  base::OnceClosure quit_closure_;
-};
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIEndToEnd) {
   content::WebContents* active_tab =
