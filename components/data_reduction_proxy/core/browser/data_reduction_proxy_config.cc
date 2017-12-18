@@ -163,7 +163,11 @@ void DataReductionProxyConfig::InitializeOnIOThread(
 
   secure_proxy_checker_.reset(
       new SecureProxyChecker(basic_url_request_context_getter));
-  warmup_url_fetcher_.reset(new WarmupURLFetcher(url_request_context_getter));
+  warmup_url_fetcher_.reset(new WarmupURLFetcher(
+      url_request_context_getter,
+      base::BindRepeating(
+          &DataReductionProxyConfig::HandleWarmupFetcherResponse,
+          base::Unretained(this))));
 
   if (ShouldAddDefaultProxyBypassRules())
     AddDefaultProxyBypassRules();
@@ -178,6 +182,7 @@ bool DataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
 void DataReductionProxyConfig::OnNewClientConfigFetched() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ReloadConfig();
+  FetchWarmupURL();
 }
 
 void DataReductionProxyConfig::ReloadConfig() {
@@ -199,6 +204,26 @@ bool DataReductionProxyConfig::WasDataReductionProxyUsed(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request);
   return IsDataReductionProxy(request->proxy_server(), proxy_info);
+}
+
+bool DataReductionProxyConfig::IsDataReductionProxyServerCore(
+    const net::ProxyServer& proxy_server) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsDataReductionProxy(proxy_server, nullptr /* proxy_info */));
+
+  const net::HostPortPair& host_port_pair = proxy_server.host_port_pair();
+
+  const std::vector<DataReductionProxyServer>& data_reduction_proxy_servers =
+      config_values_->proxies_for_http();
+
+  const auto proxy_it = std::find_if(
+      data_reduction_proxy_servers.begin(), data_reduction_proxy_servers.end(),
+      [&host_port_pair](const DataReductionProxyServer& proxy) {
+        return proxy.proxy_server().is_valid() &&
+               proxy.proxy_server().host_port_pair().Equals(host_port_pair);
+      });
+
+  return proxy_it->IsCoreProxy();
 }
 
 bool DataReductionProxyConfig::IsDataReductionProxy(
@@ -411,6 +436,56 @@ void DataReductionProxyConfig::UpdateConfigForTesting(
 void DataReductionProxyConfig::SetNetworkPropertiesManagerForTesting(
     NetworkPropertiesManager* manager) {
   network_properties_manager_ = manager;
+}
+
+void DataReductionProxyConfig::HandleWarmupFetcherResponse(
+    const net::ProxyServer& proxy_server,
+    bool success_response) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Check the proxy server used, or disable all data saver proxies?
+  if (!IsDataReductionProxy(proxy_server, nullptr)) {
+    // No need to do anything here.
+    return;
+  }
+
+  bool is_secure_drp_proxy = proxy_server.is_https() || proxy_server.is_quic();
+  bool is_core_proxy = IsDataReductionProxyServerCore(proxy_server);
+  if (is_secure_drp_proxy && is_core_proxy) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch."
+        "SecureProxy.Core",
+        success_response);
+  } else if (is_secure_drp_proxy && !is_core_proxy) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch."
+        "SecureProxy.NonCore",
+        success_response);
+  } else if (!is_secure_drp_proxy && is_core_proxy) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch."
+        "InsecureProxy.Core",
+        success_response);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch."
+        "InsecureProxy.NonCore",
+        success_response);
+  }
+
+  bool warmup_url_failed_past =
+      network_properties_manager_->HasWarmupURLProbeFailed(is_secure_drp_proxy,
+                                                           is_core_proxy);
+
+  network_properties_manager_->SetHasWarmupURLProbeFailed(
+      is_secure_drp_proxy, is_core_proxy,
+      !success_response /* warmup failed */);
+
+  if (warmup_url_failed_past !=
+      network_properties_manager_->HasWarmupURLProbeFailed(is_secure_drp_proxy,
+                                                           is_core_proxy)) {
+    ReloadConfig();
+  }
 }
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(

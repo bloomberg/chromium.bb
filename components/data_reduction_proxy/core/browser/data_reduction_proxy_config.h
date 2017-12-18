@@ -216,6 +216,13 @@ class DataReductionProxyConfig
   // Returns the ID of the current network by calling the platform APIs.
   virtual std::string GetCurrentNetworkID() const;
 
+  // Callback that is executed when the warmup URL fetch is complete.
+  // |proxy_server| is the proxy server over which the warmup URL was fetched.
+  // |success_response| is true if the fetching of the URL was successful or
+  // not.
+  void HandleWarmupFetcherResponse(const net::ProxyServer& proxy_server,
+                                   bool success_response);
+
  private:
   friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;
@@ -289,6 +296,12 @@ class DataReductionProxyConfig
 
   // Fetches the warmup URL.
   void FetchWarmupURL();
+
+  // Returns true if |proxy_server| is a core data reduction proxy server.
+  // Should be called only if |proxy_server| is a valid data reduction proxy
+  // server.
+  bool IsDataReductionProxyServerCore(
+      const net::ProxyServer& proxy_server) const;
 
   // URL fetcher used for performing the secure proxy check.
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
