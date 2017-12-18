@@ -301,7 +301,7 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   </div>
   <div id="filters">
     <span class="fix-width">Filters</span>
-    <input id="text-filter" onchange="Query.filterChanged()" type="text" placeholder="text filter, hit enter">
+    <input id="text-filter" onchange="Query.filterChanged()" type="text" placeholder="test name/bug#, hit enter">
     <label id="CRASH"><input type="checkbox">Crash <span></span></label>
     <label id="TIMEOUT"><input type="checkbox">Timeout <span></span></label>
     <label id="TEXT"><input type="checkbox">Text failure <span></span></label>
@@ -773,7 +773,15 @@ const Query = {
     let searchText = document.querySelector("#text-filter").value;
     let textFilter = (!searchText || searchText.length < 1)
       ? _ => true
-      : test => test.expectPath.includes(searchText);
+      : test => {
+          if (test.expectPath.includes(searchText))
+            return true;
+          for (let bug of test.bugs) {
+            if (bug.includes(searchText))
+              return true;
+          }
+          return false;
+        };
     return test => {
       if (!queryFilter(test) || !textFilter(test))
         return false;
