@@ -2123,6 +2123,9 @@
     <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS_NONE" desc="Placeholder that is shown when there are no custom words in the list of saved custom words dictionary.">
       Saved custom words will appear here
     </message>
+    <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_DISABLED" desc="Text that is shown when spell checking is disabled by policy.">
+      Disabled
+    </message>
   </if>
 
   <!-- Privacy Page -->

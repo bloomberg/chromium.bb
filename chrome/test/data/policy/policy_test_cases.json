@@ -910,6 +910,15 @@
     ]
   },
 
+  "SpellcheckEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SpellcheckEnabled": false },
+    "pref_mappings": [
+      { "pref": "browser.enable_spellchecking",
+        "indicator_tests": [ { "policy": { "SpellcheckEnabled": false } } ] }
+    ]
+  },
+
   "ExtensionInstallBlacklist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ExtensionInstallBlacklist": ["*"] },

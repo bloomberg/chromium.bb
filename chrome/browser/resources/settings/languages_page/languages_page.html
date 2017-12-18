@@ -206,14 +206,24 @@
         <div id="spellCheckSubpageTrigger"
             class$="settings-box [[getSpellCheckListTwoLine_(
                 spellCheckSecondaryText_)]]"
-            actionable on-tap="toggleExpandButton_">
+            actionable$="[[!spellCheckDisabled_]]"
+            on-tap="toggleExpandButton_">
           <div class="start">
             <div>$i18n{spellCheckListTitle}</div>
             <div class="secondary">[[spellCheckSecondaryText_]]</div>
           </div>
-          <cr-expand-button expanded="{{spellCheckOpened_}}"
-              alt="$i18n{spellCheckExpandA11yLabel}">
-          </cr-expand-button>
+          <!-- |enable_spellchecking| may be set by policy, but if it's enabled,
+               we shouldn't display the policy indicator. -->
+          <template is="dom-if" if="[[spellCheckDisabled_]]">
+            <cr-policy-pref-indicator
+                pref="[[prefs.browser.enable_spellchecking]]">
+            </cr-policy-pref-indicator>
+          </template>
+          <template is="dom-if" if="[[!spellCheckDisabled_]]">
+            <cr-expand-button expanded="{{spellCheckOpened_}}"
+                alt="$i18n{spellCheckExpandA11yLabel}">
+            </cr-expand-button>
+          </template>
         </div>
         <iron-collapse id="spellCheckCollapse" opened="[[spellCheckOpened_]]">
           <div class="list-frame vertical-list">

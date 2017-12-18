@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 407
+#   For your editing convenience: highest ID currently used: 408
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10831,6 +10831,8 @@
 
       If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
 
+      If the SpellcheckEnabled policy is set to disabled, this policy will have no effect.
+
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
     },
     {
@@ -10848,6 +10850,25 @@
       'tags': [],
       'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.''',
     },
+    {
+      'name': 'SpellcheckEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:65-', 'chrome_os:65-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 408,
+      'caption': '''Enable spellcheck''',
+      'tags': [],
+      'desc': '''If this policy is not set or enabled, the user is allowed to use spellcheck.
+
+      If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage policy will also be ignored when this policy is disabled.
+      '''
+    }
   ],
 
   'messages': {

@@ -1155,6 +1155,7 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
     {"customDictionaryWords", IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS},
     {"noCustomDictionaryWordsFound",
      IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS_NONE},
+    {"spellCheckDisabled", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_DISABLED},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

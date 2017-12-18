@@ -347,31 +347,43 @@ cr.define('settings', function() {
 
   // List of language-related preferences suitable for testing.
   function getFakeLanguagePrefs() {
-    var fakePrefs = [{
-      key: 'intl.app_locale',
-      type: chrome.settingsPrivate.PrefType.STRING,
-      value: 'en-US',
-    }, {
-      key: 'intl.accept_languages',
-      type: chrome.settingsPrivate.PrefType.STRING,
-      value: 'en-US,sw',
-    }, {
-      key: 'spellcheck.dictionaries',
-      type: chrome.settingsPrivate.PrefType.LIST,
-      value: ['en-US'],
-    }, {
-      key: 'spellcheck.forced_dictionaries',
-      type: chrome.settingsPrivate.PrefType.LIST,
-      value: [],
-    }, {
-      key: 'translate.enabled',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: true,
-    }, {
-      key: 'translate_blocked_languages',
-      type: chrome.settingsPrivate.PrefType.LIST,
-      value: ['en-US'],
-    }];
+    var fakePrefs = [
+      {
+        key: 'browser.enable_spellchecking',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: true,
+      },
+      {
+        key: 'intl.app_locale',
+        type: chrome.settingsPrivate.PrefType.STRING,
+        value: 'en-US',
+      },
+      {
+        key: 'intl.accept_languages',
+        type: chrome.settingsPrivate.PrefType.STRING,
+        value: 'en-US,sw',
+      },
+      {
+        key: 'spellcheck.dictionaries',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: ['en-US'],
+      },
+      {
+        key: 'spellcheck.forced_dictionaries',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: [],
+      },
+      {
+        key: 'translate.enabled',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: true,
+      },
+      {
+        key: 'translate_blocked_languages',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: ['en-US'],
+      }
+    ];
     if (cr.isChromeOS) {
       fakePrefs.push({
         key: 'settings.language.preferred_languages',

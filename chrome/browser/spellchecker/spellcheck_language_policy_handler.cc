@@ -32,6 +32,14 @@ bool SpellcheckLanguagePolicyHandler::CheckPolicySettings(
 void SpellcheckLanguagePolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
+  // Ignore this policy if the SpellcheckEnabled policy disables spellcheck.
+  const base::Value* spellcheck_enabled_value =
+      policies.GetValue(policy::key::kSpellcheckEnabled);
+  if (spellcheck_enabled_value &&
+      spellcheck_enabled_value->GetBool() == false) {
+    return;
+  }
+
   const base::Value* value = policies.GetValue(policy_name());
   if (!value)
     return;

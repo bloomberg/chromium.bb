@@ -12151,6 +12151,7 @@ Called by update_net_error_codes.py.-->
   <int value="405" label="SpellcheckLanguage"/>
   <int value="406" label="SecondaryGoogleAccountSigninAllowed"/>
   <int value="407" label="ThirdPartyBlockingEnabled"/>
+  <int value="408" label="SpellcheckEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
