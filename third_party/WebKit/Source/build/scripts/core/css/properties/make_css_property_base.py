@@ -61,18 +61,33 @@ class CSSPropertyWriter(json5_generator.Writer):
         self._alias_classes_by_id.sort(key=lambda t: t.enum_value)
 
     def get_class(self, property_):
-        """Gets the automatically
-        generated class name for a property.
+        """Gets the classname for a given property.
+
+        If the property has property_class set to True, returns an automatically
+        generated class name. If it is set to a string, returns that. If it is
+        set to None, returns the Longhand base class.
+
         Args:
             property_: A single property from CSSProperties.properties()
         Returns:
-            The name to use for the property class.
+            The name to use for the property class, or None.
         """
+        assert property_['property_class'] is True or \
+            property_['property_class'] is None or \
+            isinstance(property_['property_class'], str), \
+            "property_class value for {} should be None, True or a string".format(
+                property_['name'])
+        classname = property_['property_class']
         namespace_group = 'Shorthand' if property_['longhands'] else 'Longhand'
+        if property_['property_class'] is None:
+            classname = 'Longhand'
+            namespace_group = None
+        if property_['property_class'] is True:
+            classname = property_['upper_camel_name']
         return PropertyClassData(
             enum_value=property_['enum_value'],
             property_id=property_['property_id'],
-            classname=property_['upper_camel_name'],
+            classname=classname,
             namespace_group=namespace_group)
 
     @property

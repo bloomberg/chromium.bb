@@ -20,9 +20,17 @@ class CSSValue;
 namespace CSS{{property.namespace_group}} {
 
 {% if property.is_property %}
+  {% if property.unique %}
 // Implements the '{{property.name}}' CSS property
+  {% else %}
+// Implements multiple CSS properties
+  {% endif %}
 {% else %}
+  {% if property.unique %}
 // Implements the '{{property.name}}' CSS descriptor
+  {% else %}
+// Implements multiple CSS descriptors
+  {% endif %}
 {% endif %}
 // See src/third_party/WebKit/Source/core/css/properties/README.md
   {% if property.alias_for != None%}
@@ -34,11 +42,13 @@ class {{property_classname}} : public {{property.namespace_group}} {
  public:
   constexpr {{property_classname}}(CSSPropertyID id) : {{property.namespace_group}}(id) {}
   {% endif %}
+  {% if property.unique %}
   const char* GetPropertyName() const override { return "{{property.name}}\0"; }
   const WTF::AtomicString& GetPropertyNameAtomicString() const override {
     static const WTF::AtomicString& name = WTF::AtomicString("{{property.name}}\0");
     return name;
   }
+  {% endif %}
   {% if property.alias_for == None %}
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
