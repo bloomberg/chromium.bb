@@ -1764,6 +1764,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   int64_t accu_dist = 0;
   int64_t prev_eob_rd_cost = INT64_MAX;
   int64_t cur_eob_rd_cost = 0;
+  int8_t has_nz_tail = 0;
 
   for (int si = init_eob - 1; si >= 0; --si) {
     const int coeff_idx = scan[si];
@@ -1779,28 +1780,33 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
     if (qc == 0) {
       accu_rate += stats.rate;
     } else {
-      // check if it is better to make this the last significant coefficient
-      int cur_eob_rate =
-          get_eob_cost(si + 1, seg_eob, txb_costs, txb_info->tx_type);
-      cur_eob_rd_cost = RDCOST(txb_info->rdmult, cur_eob_rate, 0);
-      prev_eob_rd_cost =
-          RDCOST(txb_info->rdmult, accu_rate + stats.nz_rate, accu_dist);
-      if (cur_eob_rd_cost <= prev_eob_rd_cost) {
-        update = 1;
-        for (int j = si + 1; j < txb_info->eob; j++) {
-          const int coeff_pos_j = scan[j];
-          update_coeff(coeff_pos_j, 0, txb_info);
-        }
-        txb_info->eob = si + 1;
+      if (has_nz_tail < 2) {
+        // check if it is better to make this the last significant coefficient
+        int cur_eob_rate =
+            get_eob_cost(si + 1, seg_eob, txb_costs, txb_info->tx_type);
+        cur_eob_rd_cost = RDCOST(txb_info->rdmult, cur_eob_rate, 0);
+        prev_eob_rd_cost =
+            RDCOST(txb_info->rdmult, accu_rate + stats.nz_rate, accu_dist);
+        if (cur_eob_rd_cost <= prev_eob_rd_cost) {
+          update = 1;
+          for (int j = si + 1; j < txb_info->eob; j++) {
+            const int coeff_pos_j = scan[j];
+            update_coeff(coeff_pos_j, 0, txb_info);
+          }
+          txb_info->eob = si + 1;
 
-        // rerun cost calculation due to change of eob
-        accu_rate = cur_eob_rate;
-        accu_dist = 0;
-        get_dist_cost_stats(&stats, si,
+          // rerun cost calculation due to change of eob
+          accu_rate = cur_eob_rate;
+          accu_dist = 0;
+          get_dist_cost_stats(&stats, si,
 #if CONFIG_LV_MAP_MULTI
-                            1,
+                              1,
 #endif
-                            txb_costs, txb_info);
+                              txb_costs, txb_info);
+          accu_rate += stats.rate;
+          accu_dist += stats.dist;
+          continue;
+        }
       }
 
       int bUpdCoeff = 0;
@@ -1809,6 +1815,8 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
           bUpdCoeff = 1;
           update = 1;
         }
+      } else {
+        ++has_nz_tail;
       }
 
       if (bUpdCoeff) {
