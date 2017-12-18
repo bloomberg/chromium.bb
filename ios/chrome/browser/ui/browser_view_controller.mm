@@ -2297,12 +2297,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // If the BVC is not visible, do not present the bubble.
   if (!self.viewVisible)
     return;
-  // Do not present the bubble if there is no current or if the current tab is
-  // the NTP.
+  // Do not present the bubble if there is no current tab or if the current tab
+  // is the NTP.
   Tab* currentTab = [self.tabModel currentTab];
   if (!currentTab)
     return;
   if (currentTab.webState->GetVisibleURL() == kChromeUINewTabURL)
+    return;
+  // Do not present the bubble if the tab is scrolled.
+  if (!CGPointEqualToPoint(
+          currentTab.webState->GetWebViewProxy().scrollViewProxy.contentOffset,
+          CGPointZero))
     return;
 
   NSString* text =
@@ -2362,6 +2367,16 @@ bubblePresenterForFeature:(const base::Feature&)feature
       respondsToSelector:@selector(anchorPointForToolsMenuButton:)]);
   // If the BVC is not visible, do not present the bubble.
   if (!self.viewVisible)
+    return;
+
+  // Do not present the bubble if there is no current tab.
+  Tab* currentTab = [self.tabModel currentTab];
+  if (!currentTab)
+    return;
+  // Do not present the bubble if the tab is scrolled.
+  if (!CGPointEqualToPoint(
+          currentTab.webState->GetWebViewProxy().scrollViewProxy.contentOffset,
+          CGPointZero))
     return;
 
   NSString* text = l10n_util::GetNSStringWithFixup(
