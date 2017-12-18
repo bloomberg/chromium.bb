@@ -139,9 +139,6 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
     #  '--enable-heap-profiling=native',
     #])
 
-  def GetExpectations(self):
-    return page_sets.SystemHealthDesktopMemoryExpectations()
-
 
 @benchmark.Owner(emails=['perezju@chromium.org'])
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
@@ -161,9 +158,6 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   @classmethod
   def Name(cls):
     return 'system_health.memory_mobile'
-
-  def GetExpectations(self):
-    return page_sets.SystemHealthMobileMemoryExpectations()
 
 
 @benchmark.Owner(emails=['perezju@chromium.org', 'torne@chromium.org'])

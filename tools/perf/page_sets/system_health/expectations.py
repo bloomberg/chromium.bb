@@ -29,33 +29,6 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
                       'crbug.com/795585')
 
 
-class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
-  def SetExpectations(self):
-    self.DisableStory('browse:news:hackernews',
-                      [expectations.ALL_WIN, expectations.ALL_MAC],
-                      'crbug.com/676336')
-    self.DisableStory('browse:search:google', [expectations.ALL_WIN],
-                      'crbug.com/673775')
-    self.DisableStory('load:games:miniclip', [expectations.ALL_MAC],
-                      'crbug.com/664661')
-    self.DisableStory('play:media:google_play_music', [expectations.ALL],
-                      'crbug.com/649392')
-    self.DisableStory('play:media:soundcloud', [expectations.ALL_WIN],
-                      'crbug.com/649392')
-    self.DisableStory('play:media:pandora', [expectations.ALL],
-                      'crbug.com/64939')
-    self.DisableStory('browse:news:cnn',
-                      [expectations.ALL_MAC], 'crbug.com/728576')
-    self.DisableStory('browse:social:twitter_infinite_scroll',
-                      [expectations.ALL_WIN], 'crbug.com/728464')
-    self.DisableStory('multitab:misc:typical24',
-                      [expectations.ALL_MAC], 'crbug.com/742475')
-    self.DisableStory('browse_accessibility:tools:gmail_compose',
-                      [expectations.ALL], 'crbug.com/769809')
-    self.DisableStory('browse:tools:maps', [expectations.ALL_MAC],
-                      'crbug.com/773084')
-
-
 class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
@@ -84,42 +57,6 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
                       'Webview does not have tabs')
     self.DisableStory('browse:shopping:avito',
                       [expectations.ANDROID_NEXUS6], 'crbug.com/736497')
-    self.DisableStory('load:media:soundcloud',
-                      [expectations.ANDROID_WEBVIEW], 'crbug.com/787001')
-
-
-class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
-  def SetExpectations(self):
-    self.DisableStory('background:tools:gmail', [expectations.ANDROID_NEXUS5],
-                      'crbug.com/784400')
-    self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
-                      'crbug.com/708300')
-    self.DisableStory('browse:news:globo', [expectations.ALL_ANDROID],
-                      'crbug.com/714650')
-    self.DisableStory('load:tools:gmail', [expectations.ALL_ANDROID],
-                      'crbug.com/657433')
-    self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
-                      'crbug.com/728081')
-    self.DisableStory(
-        'load:tools:drive',
-        [expectations.ANDROID_NEXUS5X, expectations.ANDROID_WEBVIEW],
-        'crbug.com/738854')
-    self.DisableStory('long_running:tools:gmail-background',
-                      [expectations.ANDROID_SVELTE], 'crbug.com/777355')
-    self.DisableStory('browse:social:facebook',
-                      [expectations.ANDROID_NEXUS5], 'crbug.com/780779')
-    # TODO(rnephew): This disabling should move to CanRunOnBrowser.
-    self.DisableStory('browse:chrome:omnibox',
-                      [expectations.ANDROID_WEBVIEW],
-                      'Webview does not have omnibox')
-    # TODO(rnephew): This disabling should move to CanRunOnBrowser.
-    self.DisableStory('browse:chrome:newtab',
-                      [expectations.ANDROID_WEBVIEW],
-                      'Webview does not have NTP')
-    # TODO(rnephew): This disabling should move to CanRunOnBrowser.
-    self.DisableStory('long_running:tools:gmail-background',
-                      [expectations.ANDROID_WEBVIEW],
-                      'Webview does not have tabs')
     self.DisableStory('load:media:soundcloud',
                       [expectations.ANDROID_WEBVIEW], 'crbug.com/787001')
 
