@@ -266,6 +266,7 @@ test("capture_unittests") {
     "video/linux/camera_config_chromeos_unittest.cc",
     "video/linux/v4l2_capture_delegate_unittest.cc",
     "video/mac/video_capture_device_factory_mac_unittest.mm",
+    "video/shared_memory_handle_provider_unittest.cc",
     "video/video_capture_device_client_unittest.cc",
     "video/video_capture_device_unittest.cc",
     "video_capture_types_unittest.cc",
