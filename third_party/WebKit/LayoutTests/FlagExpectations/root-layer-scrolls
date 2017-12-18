@@ -1,4 +1,6 @@
 crbug.com/417782 compositing/iframes/become-composited-nested-iframes.html [ Failure ]
+crbug.com/417782 compositing/iframes/iframe-composited-scrolling.html [ Pass Failure ] # Sometimes the iframe is not composited.
+crbug.com/417782 compositing/overflow/border-radius-composited-subframe.html [ Failure ] # Extra ChildContainmentLayer?
 crbug.com/417782 compositing/squashing/squash-above-fixed-1.html [ Failure ]
 crbug.com/417782 compositing/squashing/squash-above-fixed-3.html [ Failure ]
 crbug.com/417782 compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
