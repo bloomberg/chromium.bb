@@ -117,6 +117,7 @@ def main():
       else:
         executable = './%s' % executable
       with common.temporary_file() as tempfile_path:
+        env['CHROME_HEADLESS'] = '1'
         rc = common.run_command_with_output([executable] + extra_flags,
             env=env, stdoutfile=tempfile_path)
         # Now get the correct json format from the stdout to write to the

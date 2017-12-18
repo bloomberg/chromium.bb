@@ -103,6 +103,7 @@ def main():
     valid = True
     rc = 0
     try:
+      env['CHROME_HEADLESS'] = '1'
       rc = common.run_command([sys.executable] + rest_args + sharding_args + [
         '--write-full-results-to', args.isolated_script_test_output
       ], env=env)

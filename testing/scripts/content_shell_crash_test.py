@@ -55,6 +55,7 @@ def main(argv):
     exe = os.path.join('.', 'content_shell')
 
   with common.temporary_file() as tempfile_path:
+    env['CHROME_HEADLESS'] = '1'
     rc = xvfb.run_executable([
         sys.executable,
         os.path.join(common.SRC_DIR, 'content', 'shell', 'tools',

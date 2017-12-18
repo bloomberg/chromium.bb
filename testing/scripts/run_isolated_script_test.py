@@ -61,7 +61,8 @@ def main():
 
   args, rest_args = parser.parse_known_args()
 
-  env = os.environ
+  env = os.environ.copy()
+  env['CHROME_HEADLESS'] = '1'
   cmd = [sys.executable] + rest_args
   cmd += ['--write-full-results-to', args.isolated_script_test_output]
   temp_filter_file = None
