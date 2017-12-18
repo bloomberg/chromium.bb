@@ -46,8 +46,6 @@ class WebDevToolsAgent {
   virtual void Reattach(int session_id, const WebString& saved_state) = 0;
   virtual void Detach(int session_id) = 0;
 
-  virtual void ContinueProgram() = 0;
-
   virtual void DispatchOnInspectorBackend(int session_id,
                                           int call_id,
                                           const WebString& method,
@@ -58,10 +56,6 @@ class WebDevToolsAgent {
 
   // Exposed for TestRunner.
   virtual WebString EvaluateInWebInspectorOverlay(const WebString& script) = 0;
-
-  // Returns true if caching is disabled for network requests issued by dev
-  // tools.
-  virtual bool CacheDisabled() = 0;
 
   class MessageDescriptor {
    public:
