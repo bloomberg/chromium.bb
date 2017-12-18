@@ -85,7 +85,8 @@ class ASH_EXPORT WorkspaceLayoutManager
       aura::Window* lost_active) override;
 
   // keyboard::KeyboardControllerObserver overrides:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardWorkspaceDisplacingBoundsChanging(
+      const gfx::Rect& new_bounds) override;
   void OnKeyboardClosed() override;
 
   // WindowStateObserver overrides:
