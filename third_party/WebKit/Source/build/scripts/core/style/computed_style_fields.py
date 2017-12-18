@@ -152,7 +152,6 @@ class Field(object):
         self.group = None
 
         # Method names
-        # TODO(nainar): Method name generation is inconsistent. Fix.
         self.getter_method_name = getter_method_name
         self.setter_method_name = setter_method_name
         self.internal_getter_method_name = method_name([self.name, 'internal'])
