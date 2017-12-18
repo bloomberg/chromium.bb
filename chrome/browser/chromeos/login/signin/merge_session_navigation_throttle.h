@@ -29,6 +29,8 @@ class MergeSessionNavigationThrottle : public content::NavigationThrottle {
 
   // content::NavigationThrottle implementation:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
+  content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
+      override;
   const char* GetNameForLogging() override;
 
   // MergeSessionLoadPage callback.

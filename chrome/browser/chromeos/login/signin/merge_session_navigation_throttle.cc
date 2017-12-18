@@ -45,6 +45,11 @@ MergeSessionNavigationThrottle::WillStartRequest() {
   return content::NavigationThrottle::DEFER;
 }
 
+content::NavigationThrottle::ThrottleCheckResult
+MergeSessionNavigationThrottle::WillRedirectRequest() {
+  return WillStartRequest();
+}
+
 const char* MergeSessionNavigationThrottle::GetNameForLogging() {
   return "MergeSessionNavigationThrottle";
 }

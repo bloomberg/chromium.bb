@@ -52,22 +52,31 @@ MergeSessionResourceThrottle::~MergeSessionResourceThrottle() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void MergeSessionResourceThrottle::WillStartRequest(bool* defer) {
+bool MergeSessionResourceThrottle::MaybeDeferLoading(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!merge_session_throttling_utils::ShouldDelayUrl(request_->url()))
-    return;
+  if (!merge_session_throttling_utils::ShouldDelayUrl(url))
+    return false;
 
-  DVLOG(1) << "WillStartRequest: defer " << request_->url();
+  DVLOG(1) << "MergeSessionResourceThrottle: defer " << url;
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
-          &DelayXHRLoadOnUIThread, info->GetWebContentsGetterForRequest(),
-          request_->url(),
+          &DelayXHRLoadOnUIThread, info->GetWebContentsGetterForRequest(), url,
           base::Bind(&MergeSessionResourceThrottle::OnBlockingPageComplete,
                      weak_factory_.GetWeakPtr())));
-  *defer = true;
+  return true;
+}
+
+void MergeSessionResourceThrottle::WillStartRequest(bool* defer) {
+  *defer = MaybeDeferLoading(request_->url());
+}
+
+void MergeSessionResourceThrottle::WillRedirectRequest(
+    const net::RedirectInfo& redirect_info,
+    bool* defer) {
+  *defer = MaybeDeferLoading(redirect_info.new_url);
 }
 
 const char* MergeSessionResourceThrottle::GetNameForLogging() const {
