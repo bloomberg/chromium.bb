@@ -201,28 +201,16 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvent(
   api::automation::EventType automation_event_type =
       ToAutomationEvent(params.event_type);
 
-  if (automation_event_type ==
-      api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED)
-    LOG(ERROR) << "AXAX Native DOCUMENT SELECTION CHANGED event";
-
   // Send some events directly from the event message, if they're not
   // handled by AXEventGenerator yet.
-  if (!IsEventTypeHandledByAXEventGenerator(automation_event_type)) {
-    if (automation_event_type ==
-        api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED)
-      LOG(ERROR) << "AXAX SENDING Native DOCUMENT SELECTION CHANGED event";
+  if (!IsEventTypeHandledByAXEventGenerator(automation_event_type))
     owner_->SendAutomationEvent(params, params.id, automation_event_type);
-  }
 
   // Send auto-generated AXEventGenerator events.
   for (auto targeted_event : *this) {
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event);
-    if (event_type == api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED)
-      LOG(ERROR) << "AXAX Generated DOCUMENT SELECTION CHANGED event";
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
-      if (event_type == api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED)
-        LOG(ERROR) << "AXAX SENDING Generated DOCUMENT SELECTION CHANGED event";
       owner_->SendAutomationEvent(params, targeted_event.node->id(),
                                   event_type);
     }
