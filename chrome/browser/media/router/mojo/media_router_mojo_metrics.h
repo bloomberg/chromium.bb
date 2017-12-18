@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/route_request_result.h"
 
 namespace base {
@@ -78,6 +79,18 @@ enum class MediaRouteProviderWakeup {
 
 class MediaRouterMojoMetrics {
  public:
+  // UMA histogram names.
+  static const char kHistogramProviderCreateRouteResult[];
+  static const char kHistogramProviderCreateRouteResultWiredDisplay[];
+  static const char kHistogramProviderJoinRouteResult[];
+  static const char kHistogramProviderJoinRouteResultWiredDisplay[];
+  static const char kHistogramProviderRouteControllerCreationOutcome[];
+  static const char kHistogramProviderTerminateRouteResult[];
+  static const char kHistogramProviderTerminateRouteResultWiredDisplay[];
+  static const char kHistogramProviderVersion[];
+  static const char kHistogramProviderWakeReason[];
+  static const char kHistogramProviderWakeup[];
+
   // Records the installed version of the Media Router component extension.
   static void RecordMediaRouteProviderVersion(
       const extensions::Extension& extension);
@@ -90,19 +103,22 @@ class MediaRouterMojoMetrics {
   // page.
   static void RecordMediaRouteProviderWakeup(MediaRouteProviderWakeup wakeup);
 
-  // Records the outcome of a create route request to the Media Route Provider
-  // Manager.
+  // Records the outcome of a create route request to a Media Route Provider.
+  // This and the following methods that record ResultCode use per-provider
+  // histograms.
   static void RecordCreateRouteResultCode(
+      MediaRouteProviderId provider_id,
       RouteRequestResult::ResultCode result_code);
 
-  // Records the outcome of a join route request to the Media Route Provider
-  // Manager.
+  // Records the outcome of a join route request to a Media Route Provider.
   static void RecordJoinRouteResultCode(
+      MediaRouteProviderId provider_id,
       RouteRequestResult::ResultCode result_code);
 
-  // Records the outcome of a call to terminateRoute() on the Media Route
-  // Provider Manager.
+  // Records the outcome of a call to terminateRoute() on a Media Route
+  // Provider.
   static void RecordMediaRouteProviderTerminateRoute(
+      MediaRouteProviderId provider_id,
       RouteRequestResult::ResultCode result_code);
 
   // Records whether the Media Route Provider succeeded or failed to create a

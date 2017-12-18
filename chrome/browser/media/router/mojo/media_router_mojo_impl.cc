@@ -163,10 +163,13 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     OnRouteAdded(provider_id, *media_route);
   }
 
-  if (is_join)
-    MediaRouterMojoMetrics::RecordJoinRouteResultCode(result->result_code());
-  else
-    MediaRouterMojoMetrics::RecordCreateRouteResultCode(result->result_code());
+  if (is_join) {
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(provider_id,
+                                                      result->result_code());
+  } else {
+    MediaRouterMojoMetrics::RecordCreateRouteResultCode(provider_id,
+                                                        result->result_code());
+  }
 
   RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
 }
@@ -184,6 +187,8 @@ void MediaRouterMojoImpl::CreateRoute(
   if (!sink) {
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Sink not found", RouteRequestResult::SINK_NOT_FOUND);
+    MediaRouterMojoMetrics::RecordCreateRouteResultCode(
+        MediaRouteProviderId::UNKNOWN, result->result_code());
     RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
     return;
   }
@@ -216,7 +221,9 @@ void MediaRouterMojoImpl::JoinRoute(
                            << " and presentation ID: " << presentation_id;
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Route not found", RouteRequestResult::ROUTE_NOT_FOUND);
-    MediaRouterMojoMetrics::RecordJoinRouteResultCode(result->result_code());
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(
+        provider_id.value_or(MediaRouteProviderId::UNKNOWN),
+        result->result_code());
     RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
     return;
   }
@@ -264,12 +271,15 @@ void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
     DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(
+        MediaRouteProviderId::UNKNOWN, RouteRequestResult::ROUTE_NOT_FOUND);
     return;
   }
 
   DVLOG(2) << "TerminateRoute " << route_id;
-  auto callback = base::BindOnce(&MediaRouterMojoImpl::OnTerminateRouteResult,
-                                 weak_factory_.GetWeakPtr(), route_id);
+  auto callback =
+      base::BindOnce(&MediaRouterMojoImpl::OnTerminateRouteResult,
+                     weak_factory_.GetWeakPtr(), route_id, *provider_id);
   media_route_providers_[*provider_id]->TerminateRoute(route_id,
                                                        std::move(callback));
 }
@@ -795,6 +805,7 @@ void MediaRouterMojoImpl::OnPresentationConnectionClosed(
 
 void MediaRouterMojoImpl::OnTerminateRouteResult(
     const MediaRoute::Id& route_id,
+    MediaRouteProviderId provider_id,
     const base::Optional<std::string>& error_text,
     RouteRequestResult::ResultCode result_code) {
   if (result_code != RouteRequestResult::OK) {
@@ -802,7 +813,8 @@ void MediaRouterMojoImpl::OnTerminateRouteResult(
                  << ": result_code = " << result_code << ", "
                  << error_text.value_or(std::string());
   }
-  MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(result_code);
+  MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(provider_id,
+                                                                 result_code);
 }
 
 void MediaRouterMojoImpl::OnRouteAdded(MediaRouteProviderId provider_id,
