@@ -68,3 +68,8 @@ struct Vector2dF {
   float x;
   float y;
 };
+
+struct ScrollOffset {
+  float x;
+  float y;
+};

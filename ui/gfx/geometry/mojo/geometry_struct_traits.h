@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -135,6 +136,18 @@ struct StructTraits<gfx::mojom::Vector2dFDataView, gfx::Vector2dF> {
   static float x(const gfx::Vector2dF& v) { return v.x(); }
   static float y(const gfx::Vector2dF& v) { return v.y(); }
   static bool Read(gfx::mojom::Vector2dFDataView data, gfx::Vector2dF* out) {
+    out->set_x(data.x());
+    out->set_y(data.y());
+    return true;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::ScrollOffsetDataView, gfx::ScrollOffset> {
+  static float x(const gfx::ScrollOffset& v) { return v.x(); }
+  static float y(const gfx::ScrollOffset& v) { return v.y(); }
+  static bool Read(gfx::mojom::ScrollOffsetDataView data,
+                   gfx::ScrollOffset* out) {
     out->set_x(data.x());
     out->set_y(data.y());
     return true;
