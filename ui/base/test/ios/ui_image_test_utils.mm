@@ -11,7 +11,13 @@ namespace test {
 namespace uiimage_utils {
 
 UIImage* UIImageWithSizeAndSolidColor(CGSize const& size, UIColor* color) {
-  UIGraphicsBeginImageContext(size);
+  return UIImageWithSizeAndSolidColorAndScale(size, color, /*scale=*/1.0);
+}
+
+UIImage* UIImageWithSizeAndSolidColorAndScale(CGSize const& size,
+                                              UIColor* color,
+                                              CGFloat scale) {
+  UIGraphicsBeginImageContextWithOptions(size, /*opaque=*/YES, scale);
   CGContextRef context = UIGraphicsGetCurrentContext();
   CGContextSetFillColorWithColor(context, [color CGColor]);
   CGContextFillRect(context, CGRectMake(0, 0, size.width, size.height));

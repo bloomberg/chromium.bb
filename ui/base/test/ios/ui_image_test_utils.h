@@ -11,8 +11,16 @@ namespace ui {
 namespace test {
 namespace uiimage_utils {
 
-// Returns a new UIImage of size |size| with a solid color of |color|.
+// Returns a new UIImage of size |size| with a solid color of |color|. This
+// is the same as calling UIImageWithSizeAndSolidColorAndScale with a scale
+// of 1.0.
 UIImage* UIImageWithSizeAndSolidColor(CGSize const& size, UIColor* color);
+
+// Returns a new UIImage of size |size| with a solid color of |color|
+// at scale |scale|.
+UIImage* UIImageWithSizeAndSolidColorAndScale(CGSize const& size,
+                                              UIColor* color,
+                                              CGFloat scale);
 
 // Disclaimer, this is a testing function with plenty of limitations:
 // Requires the UIImages to be backed by a CGImage, ignores colorspace, may
