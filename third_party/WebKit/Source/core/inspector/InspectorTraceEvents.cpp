@@ -341,6 +341,8 @@ const char* CompileOptionsString(v8::ScriptCompiler::CompileOptions options) {
       return "full code";
     case v8::ScriptCompiler::kConsumeCodeCache:
       return "code";
+    default:
+      NOTREACHED();
   }
   NOTREACHED();
   return "";
