@@ -201,12 +201,10 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
   if (profile_prefs) {  // May be NULL during testing.
     DictionaryPrefUpdate update_excluded_schemas_profile(
         profile_prefs, prefs::kExcludedSchemes);
-    if (!update_excluded_schemas_profile->empty()) {
-      if (state == DONT_BLOCK)
-        update_excluded_schemas_profile->SetBoolean(scheme, false);
-      else
-        update_excluded_schemas_profile->Remove(scheme, nullptr);
-    }
+    if (state == DONT_BLOCK)
+      update_excluded_schemas_profile->SetBoolean(scheme, false);
+    else
+      update_excluded_schemas_profile->Remove(scheme, nullptr);
   }
 }
 

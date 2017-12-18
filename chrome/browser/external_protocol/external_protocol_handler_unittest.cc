@@ -5,6 +5,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -120,17 +121,13 @@ class ExternalProtocolHandlerTest : public testing::Test {
   ExternalProtocolHandlerTest() {}
 
   void SetUp() override {
-    local_state_.reset(new TestingPrefServiceSimple);
     profile_.reset(new TestingProfile());
-    RegisterLocalState(local_state_->registry());
-    TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
   }
 
   void TearDown() override {
     // Ensure that g_accept_requests gets set back to true after test execution.
     ExternalProtocolHandler::PermitLaunchUrl();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
-    local_state_.reset();
   }
 
   enum class Action { PROMPT, LAUNCH, BLOCK };
@@ -165,7 +162,6 @@ class ExternalProtocolHandlerTest : public testing::Test {
 
   FakeExternalProtocolHandlerDelegate delegate_;
 
-  std::unique_ptr<TestingPrefServiceSimple> local_state_;
   std::unique_ptr<TestingProfile> profile_;
 };
 
@@ -246,7 +242,6 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateUnknown) {
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("tel", profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
-  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
   EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
@@ -255,7 +250,6 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultBlock) {
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("afp", profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
-  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
   EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
@@ -264,7 +258,36 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultDontBlock) {
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("mailto", profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
-  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
+  EXPECT_TRUE(
+      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+}
+
+TEST_F(ExternalProtocolHandlerTest, TestSetBlockState) {
+  const char kScheme[] = "custom";
+  ExternalProtocolHandler::BlockState block_state =
+      ExternalProtocolHandler::GetBlockState(kScheme, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+  EXPECT_TRUE(
+      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+
+  // Set to DONT_BLOCK, and make sure it is written to prefs.
+  ExternalProtocolHandler::SetBlockState(
+      kScheme, ExternalProtocolHandler::DONT_BLOCK, profile_.get());
+  block_state = ExternalProtocolHandler::GetBlockState(kScheme, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
+  base::Value expected_excluded_schemes(base::Value::Type::DICTIONARY);
+  expected_excluded_schemes.SetKey(kScheme, base::Value(false));
+  EXPECT_EQ(expected_excluded_schemes,
+            *profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes));
+
+  // Note: BLOCK is no longer supported (it triggers a DCHECK in SetBlockState;
+  // see https://crbug.com/724919).
+
+  // Set back to UNKNOWN, and make sure this results in an empty dictionary.
+  ExternalProtocolHandler::SetBlockState(
+      kScheme, ExternalProtocolHandler::UNKNOWN, profile_.get());
+  block_state = ExternalProtocolHandler::GetBlockState(kScheme, profile_.get());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
   EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
