@@ -548,7 +548,7 @@ TEST_F(ContentLoFiDeciderTest, DetermineCommittedServerPreviewsStateLitePage) {
           request.get());
   data_reduction_proxy_data->set_used_data_reduction_proxy(true);
   data_reduction_proxy_data->set_lite_page_received(true);
-  data_reduction_proxy_data->set_lofi_requested(false);
+  data_reduction_proxy_data->set_lofi_policy_received(false);
 
   // Verify selects LitePage bit but doesn't touch client-only NoScript bit.
   EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON,
@@ -569,7 +569,7 @@ TEST_F(ContentLoFiDeciderTest, DetermineCommittedServerPreviewsStateLoFi) {
           request.get());
   data_reduction_proxy_data->set_used_data_reduction_proxy(true);
   data_reduction_proxy_data->set_lite_page_received(false);
-  data_reduction_proxy_data->set_lofi_requested(true);
+  data_reduction_proxy_data->set_lofi_policy_received(true);
 
   // Verify keeps LoFi bits and also doesn't touch client-only NoScript bit.
   EXPECT_EQ(

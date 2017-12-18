@@ -51,7 +51,15 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     lite_page_received_ = lite_page_received;
   }
 
-  // Whether a lite page response was seen for the request or navigation.
+  // Whether a Lo-Fi (or empty-image) page policy directive was received for
+  // the navigation.
+  bool lofi_policy_received() const { return lofi_policy_received_; }
+  void set_lofi_policy_received(bool lofi_policy_received) {
+    lofi_policy_received_ = lofi_policy_received;
+  }
+
+  // Whether a server Lo-Fi page response was seen for the request or
+  // navigation.
   bool lofi_received() const { return lofi_received_; }
   void set_lofi_received(bool lofi_received) { lofi_received_ = lofi_received; }
 
@@ -123,6 +131,10 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
 
   // Whether a lite page response was seen for the request or navigation.
   bool lite_page_received_;
+
+  // Whether server Lo-Fi directive was received for this navigation. True if
+  // the proxy returns the empty-image page-policy for the main frame response.
+  bool lofi_policy_received_;
 
   // Whether a lite page response was seen for the request or navigation.
   bool lofi_received_;

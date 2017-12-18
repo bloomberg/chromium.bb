@@ -551,14 +551,25 @@ void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
   if (!original_response_headers ||
       original_response_headers->IsRedirect(nullptr))
     return;
-  if (IsEmptyImagePreview(*original_response_headers)) {
-    DataReductionProxyData* data =
-        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
-    data->set_lofi_received(true);
-  } else if (IsLitePagePreview(*original_response_headers)) {
-    DataReductionProxyData* data =
-        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
-    data->set_lite_page_received(true);
+
+  switch (ParseResponseTransform(*original_response_headers)) {
+    case TRANSFORM_LITE_PAGE:
+      DataReductionProxyData::GetDataAndCreateIfNecessary(request)
+          ->set_lite_page_received(true);
+      break;
+    case TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE:
+      DataReductionProxyData::GetDataAndCreateIfNecessary(request)
+          ->set_lofi_policy_received(true);
+      break;
+    case TRANSFORM_EMPTY_IMAGE:
+      DataReductionProxyData::GetDataAndCreateIfNecessary(request)
+          ->set_lofi_received(true);
+      break;
+    case TRANSFORM_IDENTITY:
+    case TRANSFORM_COMPRESSED_VIDEO:
+    case TRANSFORM_NONE:
+    case TRANSFORM_UNKNOWN:
+      break;
   }
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider() &&
