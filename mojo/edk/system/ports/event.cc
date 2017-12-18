@@ -90,7 +90,7 @@ ScopedEvent Event::Deserialize(const void* buffer, size_t num_bytes) {
 
   const auto* header = static_cast<const SerializedHeader*>(buffer);
   const PortName& port_name = header->port_name;
-  const size_t data_size = num_bytes - sizeof(header);
+  const size_t data_size = num_bytes - sizeof(*header);
   switch (header->type) {
     case Type::kUserMessage:
       return UserMessageEvent::Deserialize(port_name, header + 1, data_size);
