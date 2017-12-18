@@ -11,8 +11,11 @@
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 class ChooserDialogViewTest : public ChromeViewsTestBase {
  public:
@@ -23,11 +26,14 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
     auto controller = std::make_unique<FakeBluetoothChooserController>();
     controller_ = controller.get();
     dialog_ = new ChooserDialogView(std::move(controller));
-    controller_->SetBluetoothStatus(
-        FakeBluetoothChooserController::BluetoothStatus::IDLE);
 
     widget_ = views::DialogDelegate::CreateDialogWidget(dialog_, GetContext(),
                                                         nullptr);
+    controller_->SetBluetoothStatus(
+        FakeBluetoothChooserController::BluetoothStatus::IDLE);
+
+    ASSERT_NE(nullptr, table_view());
+    ASSERT_NE(nullptr, re_scan_button());
   }
 
   void TearDown() override {
@@ -35,15 +41,20 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::TearDown();
   }
 
+  views::TableView* table_view() {
+    return dialog_->device_chooser_content_view_for_test()->table_view_;
+  }
+
+  views::LabelButton* re_scan_button() {
+    return dialog_->device_chooser_content_view_for_test()
+        ->bluetooth_status_container_->re_scan_button();
+  }
+
   void AddDevice() {
     controller_->AddDevice(
         {"Device", FakeBluetoothChooserController::NOT_CONNECTED,
          FakeBluetoothChooserController::NOT_PAIRED,
          FakeBluetoothChooserController::kSignalStrengthLevel1});
-  }
-
-  void SelectDevice(size_t index) {
-    dialog_->device_chooser_content_view_for_test()->table_view_->Select(index);
   }
 
  protected:
@@ -64,7 +75,7 @@ TEST_F(ChooserDialogViewTest, ButtonState) {
   EXPECT_FALSE(dialog_->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   AddDevice();
   EXPECT_FALSE(dialog_->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  SelectDevice(0);
+  table_view()->Select(0);
   EXPECT_TRUE(dialog_->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
   // Changing state disables the OK button.
@@ -74,17 +85,39 @@ TEST_F(ChooserDialogViewTest, ButtonState) {
   controller_->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::SCANNING);
   EXPECT_FALSE(dialog_->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  SelectDevice(0);
+  table_view()->Select(0);
   EXPECT_TRUE(dialog_->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   controller_->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::IDLE);
   EXPECT_FALSE(dialog_->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 }
 
+TEST_F(ChooserDialogViewTest, CancelButtonFocusedWhenReScanIsPressed) {
+  EXPECT_CALL(*controller_, RefreshOptions()).WillOnce(testing::Invoke([=]() {
+    controller_->SetBluetoothStatus(
+        FakeBluetoothChooserController::BluetoothStatus::SCANNING);
+  }));
+  AddDevice();
+  table_view()->RequestFocus();
+  controller_->RemoveDevice(0);
+
+  // Click the re-scan button.
+  const gfx::Point point(10, 10);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  re_scan_button()->OnMousePressed(event);
+  re_scan_button()->OnMouseReleased(event);
+
+  EXPECT_FALSE(re_scan_button()->visible());
+  EXPECT_EQ(dialog_->GetDialogClientView()->cancel_button(),
+            dialog_->GetFocusManager()->GetFocusedView());
+}
+
 TEST_F(ChooserDialogViewTest, Accept) {
   AddDevice();
   AddDevice();
-  SelectDevice(1);
+  table_view()->Select(1);
   std::vector<size_t> expected = {1u};
   EXPECT_CALL(*controller_, Select(testing::Eq(expected))).Times(1);
   dialog_->Accept();

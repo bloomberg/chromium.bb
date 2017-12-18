@@ -65,8 +65,12 @@ bool ChooserController::ShouldShowIconBeforeText() const {
   return false;
 }
 
-bool ChooserController::ShouldShowFootnoteView() const {
+bool ChooserController::ShouldShowHelpButton() const {
   return true;
+}
+
+bool ChooserController::ShouldShowReScanButton() const {
+  return false;
 }
 
 bool ChooserController::AllowMultipleSelection() const {

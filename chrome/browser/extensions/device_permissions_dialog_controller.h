@@ -22,7 +22,7 @@ class DevicePermissionsDialogController
   ~DevicePermissionsDialogController() override;
 
   // ChooserController:
-  bool ShouldShowFootnoteView() const override;
+  bool ShouldShowHelpButton() const override;
   bool AllowMultipleSelection() const override;
   base::string16 GetNoOptionsText() const override;
   base::string16 GetOkButtonLabel() const override;

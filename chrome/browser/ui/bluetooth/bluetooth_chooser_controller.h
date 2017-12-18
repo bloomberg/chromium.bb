@@ -29,6 +29,7 @@ class BluetoothChooserController : public ChooserController {
 
   // ChooserController:
   bool ShouldShowIconBeforeText() const override;
+  bool ShouldShowReScanButton() const override;
   base::string16 GetNoOptionsText() const override;
   base::string16 GetOkButtonLabel() const override;
   size_t NumOptions() const override;
