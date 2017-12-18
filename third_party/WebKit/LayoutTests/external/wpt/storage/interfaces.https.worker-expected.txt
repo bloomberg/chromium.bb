@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Storage API IDL test promise_test: Unhandled rejection with value: "NavigatorStorage: interface mixin not yet supported"
-Harness: the test ran to completion.
-
