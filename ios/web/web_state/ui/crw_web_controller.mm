@@ -5107,7 +5107,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
     web::NavigationContextImpl* context =
         [_navigationStates contextForNavigation:navigation];
-    if (context->GetUrl() == URL) {
+    if (context && context->GetUrl() == URL) {
       return context;
     }
   }
