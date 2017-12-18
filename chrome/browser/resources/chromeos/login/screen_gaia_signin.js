@@ -186,7 +186,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * to match the API version.
      * Note that this cannot be changed after authenticator is created.
      */
-    chromeOSApiVersion_: undefined,
+    chromeOSApiVersion_: 2,
 
     /** @override */
     decorate: function() {
@@ -681,6 +681,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.setSigninFramePartition_(data.webviewPartitionName);
 
+      // Must be set before calling updateSigninFrameContainers_()
+      this.chromeOSApiVersion_ = data.chromeOSApiVersion;
+      // This triggers updateSigninFrameContainers_()
       this.screenMode = data.screenMode;
       this.email = '';
       this.authCompleted_ = false;
@@ -695,7 +698,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('saml-notice-container').hidden = true;
       this.samlPasswordConfirmAttempt_ = 0;
 
-      this.chromeOSApiVersion_ = data.chromeOSApiVersion;
       if (this.chromeOSApiVersion_ == 2) {
         $('signin-frame-container-v2').appendChild($('signin-frame'));
         $('gaia-signin')
@@ -704,6 +706,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         $('offline-gaia').removeAttribute('not-a-dialog');
         $('offline-gaia').classList.toggle('fit', false);
       } else {
+        $('gaia-signin-form-container').appendChild($('signin-frame'));
+        $('gaia-signin-form-container')
+            .appendChild($('offline-gaia'), $('gaia-step-contents'));
         $('offline-gaia').glifMode = false;
         $('offline-gaia').setAttribute('not-a-dialog', true);
         $('offline-gaia').classList.toggle('fit', true);
