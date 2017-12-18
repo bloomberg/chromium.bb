@@ -2660,7 +2660,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-bulk-printers", flag_descriptions::kBulkPrintersName,
      flag_descriptions::kBulkPrintersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kBulkPrinters)},
-    {"enable-cros-component", flag_descriptions::kCrOSComponentName,
+    {"disable-cros-component", flag_descriptions::kCrOSComponentName,
      flag_descriptions::kCrOSComponentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrOSComponent)},
     {"enable-cros-container", flag_descriptions::kCrOSContainerName,
