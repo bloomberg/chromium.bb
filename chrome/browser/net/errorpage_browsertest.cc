@@ -450,7 +450,7 @@ class ErrorPageTest : public InProcessBrowserTest {
     DCHECK_EQ(-1, requests_to_wait_for_);
     DCHECK(!run_loop_);
 
-    if (requests_to_wait_for >= num_requests_)
+    if (requests_to_wait_for <= num_requests_)
       return;
 
     requests_to_wait_for_ = requests_to_wait_for;
@@ -461,9 +461,7 @@ class ErrorPageTest : public InProcessBrowserTest {
     EXPECT_EQ(num_requests_, requests_to_wait_for);
   }
 
-  // It is up to the caller to wait until all relevant requests has been
-  // created, either through calling WaitForRequests or some other manner,
-  // before calling this method.
+  // Returns the total number of requests handled thus far.
   int32_t num_requests() const {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return num_requests_;
@@ -707,7 +705,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoSearch) {
   // Have to wait for it, since the search page does not depend on having
   // sent the tracking request.
   WaitForRequests(2);
-  EXPECT_EQ(2, num_requests());
 
   // Check the path and query string.
   std::string url;
@@ -752,7 +749,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoReload) {
   // to wait for the tracking request, since the new error page does not depend
   // on it.
   WaitForRequests(3);
-  EXPECT_EQ(3, num_requests());
 }
 
 // Test that the reload button on a DNS error page works after a same document
@@ -796,7 +792,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest,
   // to wait for the tracking request, since the new error page does not depend
   // on it.
   WaitForRequests(3);
-  EXPECT_EQ(3, num_requests());
 }
 
 // Test that clicking links on a DNS error page works.
@@ -834,7 +829,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoClickLink) {
   // to make sure to wait the tracking request, since the new page does not
   // depend on it.
   WaitForRequests(2);
-  EXPECT_EQ(2, num_requests());
 }
 
 // Test that a DNS error occuring in an iframe does not result in showing
