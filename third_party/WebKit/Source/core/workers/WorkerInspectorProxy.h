@@ -75,24 +75,6 @@ class CORE_EXPORT WorkerInspectorProxy final
   String inspector_id_;
 };
 
-struct CORE_EXPORT GlobalScopeInspectorCreationParams final {
-  USING_FAST_MALLOC(GlobalScopeInspectorCreationParams);
-
- public:
-  explicit GlobalScopeInspectorCreationParams(
-      WorkerInspectorProxy::PauseOnWorkerStart pause_on_start);
-  GlobalScopeInspectorCreationParams(
-      WorkerInspectorProxy::PauseOnWorkerStart pause_on_start,
-      const v8_inspector::V8StackTraceId&);
-  ~GlobalScopeInspectorCreationParams() = default;
-
-  WorkerInspectorProxy::PauseOnWorkerStart pause_on_start;
-  v8_inspector::V8StackTraceId stack_id;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GlobalScopeInspectorCreationParams);
-};
-
 }  // namespace blink
 
 #endif  // WorkerInspectorProxy_h

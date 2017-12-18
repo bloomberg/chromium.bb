@@ -309,8 +309,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   // on initialization to run debugger tasks.
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
-                        std::make_unique<GlobalScopeInspectorCreationParams>(
-                            WorkerInspectorProxy::PauseOnWorkerStart::kPause),
+                        WorkerInspectorProxy::PauseOnWorkerStart::kPause,
                         ParentFrameTaskRunners::Create());
 
   // Used to wait for worker thread termination in a debugger task on the

@@ -108,9 +108,10 @@ class WorkerThreadForTest : public WorkerThread {
 
     Start(std::move(creation_params),
           WorkerBackingThreadStartupData::CreateDefault(),
-          std::make_unique<GlobalScopeInspectorCreationParams>(
-              WorkerInspectorProxy::PauseOnWorkerStart::kDontPause),
-          parent_frame_task_runners, source);
+          WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+          parent_frame_task_runners);
+    EvaluateClassicScript(script_url, source, nullptr /* cached_meta_data */,
+                          v8_inspector::V8StackTraceId());
   }
 
   void WaitForInit() {

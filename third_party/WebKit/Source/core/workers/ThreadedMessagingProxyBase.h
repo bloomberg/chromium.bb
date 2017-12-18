@@ -16,10 +16,6 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
 
-namespace v8_inspector {
-struct V8StackTraceId;
-}  // namespace v8_inspector
-
 namespace blink {
 
 class ExecutionContext;
@@ -74,10 +70,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
   void InitializeWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
-      const WTF::Optional<WorkerBackingThreadStartupData>&,
-      const KURL& script_url,
-      const v8_inspector::V8StackTraceId&,
-      const String& source_code = String());
+      const WTF::Optional<WorkerBackingThreadStartupData>&);
 
   ThreadableLoadingContext* CreateThreadableLoadingContext() const;
 
