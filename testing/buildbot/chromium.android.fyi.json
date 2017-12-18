@@ -1317,7 +1317,8 @@
               "device_type": "sprout"
             }
           ],
-          "expiration": 14400
+          "expiration": 14400,
+          "hard_timeout": 900
         },
         "test": "cc_unittests"
       },
@@ -2137,7 +2138,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -2541,7 +2542,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -3817,7 +3818,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "hard_timeout": 900
         },
         "test": "cc_unittests"
       },
@@ -4078,7 +4080,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "hard_timeout": 900
         },
         "test": "gfx_unittests"
       },
@@ -4745,7 +4748,8 @@
             {
               "device_type": "gce_x86"
             }
-          ]
+          ],
+          "hard_timeout": 900
         },
         "test": "cc_unittests"
       },
