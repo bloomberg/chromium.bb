@@ -17,7 +17,6 @@ extern const base::Feature kAllowReaderForAccessibility;
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kAndroidPayIntegrationV2;
 extern const base::Feature kAndroidPaymentApps;
-extern const base::Feature kAndroidSigninPromos;
 extern const base::Feature kCCTBackgroundTab;
 extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kCCTPostMessageAPI;

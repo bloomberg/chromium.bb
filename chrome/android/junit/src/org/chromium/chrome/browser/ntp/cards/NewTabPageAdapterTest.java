@@ -100,8 +100,7 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 @DisableFeatures({ChromeFeatureList.NTP_CONDENSED_LAYOUT, ChromeFeatureList.CHROME_HOME,
-        ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-        ChromeFeatureList.ANDROID_SIGNIN_PROMOS})
+        ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -298,8 +297,8 @@ public class NewTabPageAdapterTest {
         assertFalse(AccountManagerFacade.get().isUpdatePending());
 
         // Initialise the sign in state. We will be signed in by default in the tests.
-        assertFalse(
-                ChromePreferenceManager.getInstance().getNewTabPageGenericSigninPromoDismissed());
+        assertFalse(ChromePreferenceManager.getInstance()
+                            .getNewTabPagePersonalizedSigninPromoDismissed());
         SigninManager.setInstanceForTesting(mMockSigninManager);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
@@ -317,7 +316,7 @@ public class NewTabPageAdapterTest {
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
         SigninManager.setInstanceForTesting(null);
-        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(false);
+        ChromePreferenceManager.getInstance().setNewTabPagePersonalizedSigninPromoDismissed(false);
     }
 
     /**
@@ -1003,12 +1002,13 @@ public class NewTabPageAdapterTest {
     @Config(shadows = MyShadowResources.class)
     public void testSigninPromoDismissal() {
         final String signInPromoText = "sign in";
-        when(MyShadowResources.sResources.getText(R.string.snippets_disabled_generic_prompt))
+        when(MyShadowResources.sResources.getText(
+                     R.string.signin_promo_description_ntp_content_suggestions))
                 .thenReturn(signInPromoText);
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
-        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(false);
+        ChromePreferenceManager.getInstance().setNewTabPagePersonalizedSigninPromoDismissed(false);
         reloadNtp();
 
         final int signInPromoPosition = mAdapter.getFirstPositionForType(ItemViewType.PROMO);
@@ -1019,8 +1019,8 @@ public class NewTabPageAdapterTest {
 
         verify(itemDismissedCallback).onResult(anyString());
         assertFalse(isSignInPromoVisible());
-        assertTrue(
-                ChromePreferenceManager.getInstance().getNewTabPageGenericSigninPromoDismissed());
+        assertTrue(ChromePreferenceManager.getInstance()
+                           .getNewTabPagePersonalizedSigninPromoDismissed());
 
         reloadNtp();
         assertFalse(isSignInPromoVisible());

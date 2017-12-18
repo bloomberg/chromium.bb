@@ -54,8 +54,7 @@ import java.util.List;
  * Tests for the personalized signin promo on the Bookmarks page.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=AndroidSigninPromos"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RetryOnFailure(message = "crbug.com/789531")
 public class BookmarkPersonalizedSigninPromoTest {
     private static final String TEST_ACCOUNT_NAME = "test@gmail.com";

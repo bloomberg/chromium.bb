@@ -1652,11 +1652,6 @@ const char kAndroidPaymentAppsName[] = "Android payment apps";
 const char kAndroidPaymentAppsDescription[] =
     "Enable third party Android apps to integrate as payment apps";
 
-const char kAndroidSigninPromosName[] = "Signin promos for Android.";
-const char kAndroidSigninPromosDescription[] =
-    "New signin promos for Android which will be displayed in content "
-    "suggestions, Settings, Bookmarks and Recent Tabs.";
-
 const char kAndroidViewPasswordsName[] = "Copy and view passwords for Android";
 const char kAndroidViewPasswordsDescription[] =
     "Enables copying and viewing passwords in settings.";
