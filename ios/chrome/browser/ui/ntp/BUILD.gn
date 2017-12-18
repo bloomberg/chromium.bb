@@ -34,6 +34,7 @@ source_set("ntp_header") {
     "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar:resource_macros",
+    "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
@@ -71,6 +72,7 @@ source_set("ntp_controller") {
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/ntp/recent_tabs",
     "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/public/provider/chrome/browser/voice",
     "//ui/base",
   ]
