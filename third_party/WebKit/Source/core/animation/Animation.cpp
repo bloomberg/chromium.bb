@@ -1260,7 +1260,7 @@ void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
   if (ScriptForbiddenScope::IsScriptForbidden()) {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&AnimationPromise::Resolve<Animation*>,
                              WrapPersistent(promise), WrapPersistent(this)));
   } else {
@@ -1277,7 +1277,7 @@ void Animation::RejectAndResetPromiseMaybeAsync(AnimationPromise* promise) {
   if (ScriptForbiddenScope::IsScriptForbidden()) {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&Animation::RejectAndResetPromise,
                              WrapPersistent(this), WrapPersistent(promise)));
   } else {

@@ -37,8 +37,8 @@ MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
   // is scheduled.
   if (result != MOJO_RESULT_OK) {
     watcher->task_runner_->PostTask(
-        BLINK_FROM_HERE, WTF::Bind(&RunWatchCallback, WrapPersistent(callback),
-                                   WrapPersistent(watcher), result));
+        FROM_HERE, WTF::Bind(&RunWatchCallback, WrapPersistent(callback),
+                             WrapPersistent(watcher), result));
   }
   return watcher;
 }
@@ -107,7 +107,7 @@ MojoResult MojoWatcher::Watch(mojo::Handle handle,
   if (result == MOJO_RESULT_FAILED_PRECONDITION) {
     // We couldn't arm the watcher because the handle is already ready to
     // trigger a success notification. Post a notification manually.
-    task_runner_->PostTask(BLINK_FROM_HERE,
+    task_runner_->PostTask(FROM_HERE,
                            WTF::Bind(&MojoWatcher::RunReadyCallback,
                                      WrapPersistent(this), ready_result));
     return MOJO_RESULT_OK;
@@ -155,7 +155,7 @@ void MojoWatcher::OnHandleReady(uintptr_t context,
   // notification received by this callback.
   MojoWatcher* watcher = reinterpret_cast<MojoWatcher*>(context);
   watcher->task_runner_->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&MojoWatcher::RunReadyCallback,
                       WrapCrossThreadWeakPersistent(watcher), result));
 }
@@ -196,7 +196,7 @@ void MojoWatcher::RunReadyCallback(MojoResult result) {
     return;
 
   if (arm_result == MOJO_RESULT_FAILED_PRECONDITION) {
-    task_runner_->PostTask(BLINK_FROM_HERE,
+    task_runner_->PostTask(FROM_HERE,
                            WTF::Bind(&MojoWatcher::RunReadyCallback,
                                      WrapWeakPersistent(this), ready_result));
     return;

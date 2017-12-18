@@ -261,7 +261,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     std::unique_ptr<WaitableEvent> completion_event =
         std::make_unique<WaitableEvent>();
     worker_loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCreateLoader,
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(client),
@@ -273,11 +273,10 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     std::unique_ptr<WaitableEvent> completion_event =
         std::make_unique<WaitableEvent>();
     worker_loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerStartLoader,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(completion_event.get()),
-                        request));
+        FROM_HERE, CrossThreadBind(
+                       &WorkerThreadableLoaderTestHelper::WorkerStartLoader,
+                       CrossThreadUnretained(this),
+                       CrossThreadUnretained(completion_event.get()), request));
     completion_event->Wait();
   }
 
@@ -310,7 +309,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     std::unique_ptr<WaitableEvent> completion_event =
         std::make_unique<WaitableEvent>();
     worker_loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCallCheckpoint,
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(completion_event.get()), n));
@@ -350,13 +349,12 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
 
   void OnTearDown() override {
     worker_loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::ClearLoader,
                         CrossThreadUnretained(this)));
     WaitForWorkerThreadSignal();
     worker_loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&UnregisterAllURLsAndClearMemoryCache));
+        FROM_HERE, CrossThreadBind(&UnregisterAllURLsAndClearMemoryCache));
     WaitForWorkerThreadSignal();
 
     worker_thread_->Terminate();

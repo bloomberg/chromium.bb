@@ -35,15 +35,14 @@ class ClientAdapter final : public GarbageCollectedFinalized<ClientAdapter>,
   void OnRead(const ModuleScriptCreationParams& params) override {
     DCHECK(IsMainThread());
     inside_settings_task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&WorkletModuleResponsesMap::Client::OnRead, client_,
-                        params));
+        FROM_HERE, CrossThreadBind(&WorkletModuleResponsesMap::Client::OnRead,
+                                   client_, params));
   }
 
   void OnFailed() override {
     DCHECK(IsMainThread());
     inside_settings_task_runner_->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&WorkletModuleResponsesMap::Client::OnFailed, client_));
   }
 
@@ -75,7 +74,7 @@ void WorkletModuleResponsesMapProxy::ReadEntry(
     Client* client) {
   DCHECK(inside_settings_task_runner_->RunsTasksInCurrentSequence());
   outside_settings_task_runner_->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkletModuleResponsesMapProxy::ReadEntryOnMainThread,
                       WrapCrossThreadPersistent(this), fetch_params,
                       WrapCrossThreadPersistent(client)));

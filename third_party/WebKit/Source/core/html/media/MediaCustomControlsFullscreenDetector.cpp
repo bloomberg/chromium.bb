@@ -116,7 +116,7 @@ void MediaCustomControlsFullscreenDetector::handleEvent(
   }
 
   check_viewport_intersection_timer_.StartOneShot(
-      kCheckFullscreenIntervalSeconds, BLINK_FROM_HERE);
+      kCheckFullscreenIntervalSeconds, FROM_HERE);
 }
 
 void MediaCustomControlsFullscreenDetector::ContextDestroyed() {

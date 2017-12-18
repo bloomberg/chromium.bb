@@ -4,11 +4,11 @@
 
 #include "core/workers/SharedWorkerReportingProxy.h"
 
+#include "base/location.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/exported/WebSharedWorkerImpl.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/wtf/WTF.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -26,7 +26,7 @@ SharedWorkerReportingProxy::~SharedWorkerReportingProxy() {
 void SharedWorkerReportingProxy::CountFeature(WebFeature feature) {
   DCHECK(!IsMainThread());
   parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&WebSharedWorkerImpl::CountFeature,
                                  CrossThreadUnretained(worker_), feature));
 }
@@ -63,7 +63,7 @@ void SharedWorkerReportingProxy::PostMessageToPageInspector(
   // run even on a suspended page.
   parent_frame_task_runners_->Get(TaskType::kUnthrottled)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&WebSharedWorkerImpl::PostMessageToPageInspector,
                           CrossThreadUnretained(worker_), session_id, message));
 }
@@ -71,16 +71,15 @@ void SharedWorkerReportingProxy::PostMessageToPageInspector(
 void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
   DCHECK(!IsMainThread());
   parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
-      ->PostTask(
-          BLINK_FROM_HERE,
-          CrossThreadBind(&WebSharedWorkerImpl::DidCloseWorkerGlobalScope,
-                          CrossThreadUnretained(worker_)));
+      ->PostTask(FROM_HERE, CrossThreadBind(
+                                &WebSharedWorkerImpl::DidCloseWorkerGlobalScope,
+                                CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
   DCHECK(!IsMainThread());
   parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&WebSharedWorkerImpl::DidTerminateWorkerThread,
                                  CrossThreadUnretained(worker_)));
 }

@@ -50,7 +50,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     GlobalScope()->CountFeature(feature);
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
   // Emulates deprecated API use on DedicatedWorkerGlobalScope.
@@ -65,7 +65,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
   void TestTaskRunner() {
@@ -75,7 +75,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 };
 
@@ -227,7 +227,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
                           CrossThreadUnretained(GetWorkerThread()), kFeature1));
   testing::EnterRunLoop();
@@ -238,7 +238,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
                           CrossThreadUnretained(GetWorkerThread()), kFeature1));
   testing::EnterRunLoop();
@@ -252,7 +252,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
   testing::EnterRunLoop();
@@ -263,7 +263,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
   testing::EnterRunLoop();
@@ -275,7 +275,7 @@ TEST_F(DedicatedWorkerTest, TaskRunner) {
 
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&DedicatedWorkerThreadForTest::TestTaskRunner,
                                  CrossThreadUnretained(GetWorkerThread())));
   testing::EnterRunLoop();

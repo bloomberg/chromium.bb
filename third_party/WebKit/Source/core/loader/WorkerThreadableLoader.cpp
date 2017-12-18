@@ -75,12 +75,12 @@ class WorkerThreadableLoader::AsyncTaskForwarder final
   }
   ~AsyncTaskForwarder() override { DCHECK(IsMainThread()); }
 
-  void ForwardTask(const WebTraceLocation& location,
+  void ForwardTask(const base::Location& location,
                    CrossThreadClosure task) override {
     DCHECK(IsMainThread());
     worker_loading_task_runner_->PostTask(location, std::move(task));
   }
-  void ForwardTaskWithDoneSignal(const WebTraceLocation& location,
+  void ForwardTaskWithDoneSignal(const base::Location& location,
                                  CrossThreadClosure task) override {
     DCHECK(IsMainThread());
     worker_loading_task_runner_->PostTask(location, std::move(task));
@@ -92,13 +92,13 @@ class WorkerThreadableLoader::AsyncTaskForwarder final
 };
 
 struct WorkerThreadableLoader::TaskWithLocation final {
-  TaskWithLocation(const WebTraceLocation& location, CrossThreadClosure task)
+  TaskWithLocation(const base::Location& location, CrossThreadClosure task)
       : location_(location), task_(std::move(task)) {}
   TaskWithLocation(TaskWithLocation&& task)
       : TaskWithLocation(task.location_, std::move(task.task_)) {}
   ~TaskWithLocation() = default;
 
-  WebTraceLocation location_;
+  base::Location location_;
   CrossThreadClosure task_;
 };
 
@@ -170,12 +170,12 @@ class WorkerThreadableLoader::SyncTaskForwarder final
   }
   ~SyncTaskForwarder() override { DCHECK(IsMainThread()); }
 
-  void ForwardTask(const WebTraceLocation& location,
+  void ForwardTask(const base::Location& location,
                    CrossThreadClosure task) override {
     DCHECK(IsMainThread());
     event_with_tasks_->Append(TaskWithLocation(location, std::move(task)));
   }
-  void ForwardTaskWithDoneSignal(const WebTraceLocation& location,
+  void ForwardTaskWithDoneSignal(const base::Location& location,
                                  CrossThreadClosure task) override {
     DCHECK(IsMainThread());
     event_with_tasks_->Append(TaskWithLocation(location, std::move(task)));
@@ -238,7 +238,7 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
       worker_global_scope_->GetTaskRunner(TaskType::kUnspecedLoading);
   parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(
               &MainThreadLoaderHolder::CreateAndStart,
               WrapCrossThreadPersistent(this),
@@ -274,7 +274,7 @@ void WorkerThreadableLoader::OverrideTimeout(
     return;
   parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&MainThreadLoaderHolder::OverrideTimeout,
                           main_thread_loader_holder_, timeout_milliseconds));
 }
@@ -283,9 +283,8 @@ void WorkerThreadableLoader::Cancel() {
   DCHECK(!IsMainThread());
   if (main_thread_loader_holder_) {
     parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
-        ->PostTask(BLINK_FROM_HERE,
-                   CrossThreadBind(&MainThreadLoaderHolder::Cancel,
-                                   main_thread_loader_holder_));
+        ->PostTask(FROM_HERE, CrossThreadBind(&MainThreadLoaderHolder::Cancel,
+                                              main_thread_loader_holder_));
     main_thread_loader_holder_ = nullptr;
   }
 
@@ -316,10 +315,9 @@ void WorkerThreadableLoader::DidStart(
   if (!client_) {
     // The thread is terminating.
     parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
-        ->PostTask(BLINK_FROM_HERE,
-                   CrossThreadBind(
-                       &MainThreadLoaderHolder::Cancel,
-                       WrapCrossThreadPersistent(main_thread_loader_holder)));
+        ->PostTask(FROM_HERE, CrossThreadBind(&MainThreadLoaderHolder::Cancel,
+                                              WrapCrossThreadPersistent(
+                                                  main_thread_loader_holder)));
     return;
   }
 
@@ -451,7 +449,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::CreateAndStart(
   }
   main_thread_loader_holder->worker_loader_ = worker_loader;
   forwarder->ForwardTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThreadableLoader::DidStart,
                       WrapCrossThreadPersistent(worker_loader),
                       WrapCrossThreadPersistent(main_thread_loader_holder)));
@@ -490,7 +488,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidSendData(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThreadableLoader::DidSendData, worker_loader,
                       bytes_sent, total_bytes_to_be_sent));
 }
@@ -503,9 +501,8 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveRedirectTo(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerThreadableLoader::DidReceiveRedirectTo,
-                      worker_loader, url));
+      FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidReceiveRedirectTo,
+                                 worker_loader, url));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveResponse(
@@ -518,10 +515,9 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveResponse(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerThreadableLoader::DidReceiveResponse,
-                      worker_loader, identifier, response,
-                      WTF::Passed(std::move(handle))));
+      FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidReceiveResponse,
+                                 worker_loader, identifier, response,
+                                 WTF::Passed(std::move(handle))));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveData(
@@ -533,7 +529,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveData(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(
           &WorkerThreadableLoader::DidReceiveData, worker_loader,
           WTF::Passed(CreateVectorFromMemoryRegion(data, data_length))));
@@ -547,8 +543,8 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidDownloadData(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTask(
-      BLINK_FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidDownloadData,
-                                       worker_loader, data_length));
+      FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidDownloadData,
+                                 worker_loader, data_length));
 }
 
 void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveCachedMetadata(
@@ -560,7 +556,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveCachedMetadata(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(
           &WorkerThreadableLoader::DidReceiveCachedMetadata, worker_loader,
           WTF::Passed(CreateVectorFromMemoryRegion(data, data_length))));
@@ -575,9 +571,8 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidFinishLoading(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTaskWithDoneSignal(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerThreadableLoader::DidFinishLoading, worker_loader,
-                      identifier, finish_time));
+      FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidFinishLoading,
+                                 worker_loader, identifier, finish_time));
   forwarder_ = nullptr;
 }
 
@@ -589,7 +584,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidFail(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTaskWithDoneSignal(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThreadableLoader::DidFail, worker_loader, error));
   forwarder_ = nullptr;
 }
@@ -601,9 +596,8 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidFailRedirectCheck() {
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTaskWithDoneSignal(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerThreadableLoader::DidFailRedirectCheck,
-                      worker_loader));
+      FROM_HERE, CrossThreadBind(&WorkerThreadableLoader::DidFailRedirectCheck,
+                                 worker_loader));
   forwarder_ = nullptr;
 }
 
@@ -615,7 +609,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::DidReceiveResourceTiming(
   if (!worker_loader || !forwarder_)
     return;
   forwarder_->ForwardTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThreadableLoader::DidReceiveResourceTiming,
                       worker_loader, info));
 }

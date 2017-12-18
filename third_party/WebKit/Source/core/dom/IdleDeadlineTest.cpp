@@ -25,8 +25,8 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
   bool CanExceedIdleDeadlineIfRequired() override { return false; }
-  void PostIdleTask(const WebTraceLocation&, WebThread::IdleTask) override {}
-  void PostNonNestableIdleTask(const WebTraceLocation&,
+  void PostIdleTask(const base::Location&, WebThread::IdleTask) override {}
+  void PostNonNestableIdleTask(const base::Location&,
                                WebThread::IdleTask) override {}
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter*,

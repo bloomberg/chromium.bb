@@ -89,8 +89,8 @@ void WebHelperPluginImpl::Destroy() {
   // Removing this causes one Chrome test to fail with a timeout.
   object_element_->GetDocument()
       .GetTaskRunner(TaskType::kUnspecedTimer)
-      ->PostTask(BLINK_FROM_HERE, WTF::Bind(&WebHelperPluginImpl::ReallyDestroy,
-                                            WTF::Unretained(this)));
+      ->PostTask(FROM_HERE, WTF::Bind(&WebHelperPluginImpl::ReallyDestroy,
+                                      WTF::Unretained(this)));
 }
 
 WebPlugin* WebHelperPluginImpl::GetPlugin() {

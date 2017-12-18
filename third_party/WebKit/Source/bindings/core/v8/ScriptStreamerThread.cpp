@@ -5,13 +5,13 @@
 #include "bindings/core/v8/ScriptStreamerThread.h"
 
 #include <memory>
+#include "base/location.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -39,8 +39,7 @@ void ScriptStreamerThread::PostTask(CrossThreadClosure task) {
   MutexLocker locker(mutex_);
   DCHECK(!running_task_);
   running_task_ = true;
-  PlatformThread().GetWebTaskRunner()->PostTask(BLINK_FROM_HERE,
-                                                std::move(task));
+  PlatformThread().GetWebTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
 void ScriptStreamerThread::TaskDone() {

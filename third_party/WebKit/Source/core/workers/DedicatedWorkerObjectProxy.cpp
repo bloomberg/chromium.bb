@@ -67,7 +67,7 @@ void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
     const v8_inspector::V8StackTraceId& stack_id) {
   GetParentFrameTaskRunners()
       ->Get(TaskType::kPostedMessage)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(
                      &DedicatedWorkerMessagingProxy::PostMessageToWorkerObject,
                      messaging_proxy_weak_ptr_, std::move(message),
@@ -105,7 +105,7 @@ void DedicatedWorkerObjectProxy::ReportException(
   GetParentFrameTaskRunners()
       ->Get(TaskType::kUnspecedTimer)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&DedicatedWorkerMessagingProxy::DispatchErrorEvent,
                           messaging_proxy_weak_ptr_, error_message,
                           WTF::Passed(location->Clone()), exception_id));

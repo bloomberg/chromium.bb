@@ -123,7 +123,7 @@ void ExternalPopupMenu::Show() {
     synthetic_event_ = WTF::WrapUnique(new WebMouseEvent);
     *synthetic_event_ = *static_cast<const WebMouseEvent*>(current_event);
     synthetic_event_->SetType(WebInputEvent::kMouseUp);
-    dispatch_event_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    dispatch_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
     // FIXME: show() is asynchronous. If preparing a popup is slow and a
     // user released the mouse button before showing the popup, mouseup and
     // click events are correctly dispatched. Dispatching the synthetic
@@ -155,8 +155,8 @@ void ExternalPopupMenu::UpdateFromElement(UpdateReason reason) {
       needs_update_ = true;
       owner_element_->GetDocument()
           .GetTaskRunner(TaskType::kUserInteraction)
-          ->PostTask(BLINK_FROM_HERE, WTF::Bind(&ExternalPopupMenu::Update,
-                                                WrapPersistent(this)));
+          ->PostTask(FROM_HERE, WTF::Bind(&ExternalPopupMenu::Update,
+                                          WrapPersistent(this)));
       break;
 
     case kByStyleChange:

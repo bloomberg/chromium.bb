@@ -27,11 +27,11 @@
 #ifndef EventQueue_h
 #define EventQueue_h
 
+#include "base/location.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ class CORE_EXPORT EventQueue : public GarbageCollectedFinalized<EventQueue> {
  public:
   virtual ~EventQueue() {}
   virtual void Trace(blink::Visitor* visitor) {}
-  virtual bool EnqueueEvent(const WebTraceLocation&, Event*) = 0;
+  virtual bool EnqueueEvent(const base::Location&, Event*) = 0;
   virtual bool CancelEvent(Event*) = 0;
   // The accumulated and all the future events will be discarded, no events will
   // be dispatched anymore.

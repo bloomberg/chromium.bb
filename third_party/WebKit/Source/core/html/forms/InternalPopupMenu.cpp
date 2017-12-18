@@ -502,7 +502,7 @@ void InternalPopupMenu::UpdateFromElement(UpdateReason) {
   OwnerElement()
       .GetDocument()
       .GetTaskRunner(TaskType::kUserInteraction)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&InternalPopupMenu::Update, WrapPersistent(this)));
 }
 

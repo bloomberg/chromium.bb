@@ -52,7 +52,7 @@ void WorkerEventQueue::Trace(blink::Visitor* visitor) {
   EventQueue::Trace(visitor);
 }
 
-bool WorkerEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
+bool WorkerEventQueue::EnqueueEvent(const base::Location& from_here,
                                     Event* event) {
   if (is_closed_)
     return false;

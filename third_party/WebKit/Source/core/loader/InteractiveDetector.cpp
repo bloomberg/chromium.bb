@@ -89,7 +89,7 @@ void InteractiveDetector::StartOrPostponeCITimer(double timer_fire_time) {
     // the API contract. nullptr should work fine.
     TimeToInteractiveTimerFired(nullptr);
   } else {
-    time_to_interactive_timer_.StartOneShot(delay, BLINK_FROM_HERE);
+    time_to_interactive_timer_.StartOneShot(delay, FROM_HERE);
   }
 }
 

@@ -615,7 +615,7 @@ void MouseEventManager::DispatchFakeMouseMoveEventSoon(
               MouseEventManager::FakeMouseMoveReason::kDuringScroll
           ? kFakeMouseMoveIntervalDuringScroll
           : kFakeMouseMoveIntervalPerFrame;
-  fake_mouse_move_event_timer_.StartOneShot(interval, BLINK_FROM_HERE);
+  fake_mouse_move_event_timer_.StartOneShot(interval, FROM_HERE);
 }
 
 void MouseEventManager::DispatchFakeMouseMoveEventSoonInQuad(

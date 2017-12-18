@@ -265,7 +265,7 @@ void SMILTimeContainer::ScheduleWakeUp(
     FrameSchedulingState frame_scheduling_state) {
   DCHECK(frame_scheduling_state == kSynchronizeAnimations ||
          frame_scheduling_state == kFutureAnimationFrame);
-  wakeup_timer_.StartOneShot(delay_time, BLINK_FROM_HERE);
+  wakeup_timer_.StartOneShot(delay_time, FROM_HERE);
   frame_scheduling_state_ = frame_scheduling_state;
 }
 
@@ -284,7 +284,7 @@ void SMILTimeContainer::WakeupTimerFired(TimerBase*) {
 
 void SMILTimeContainer::ScheduleAnimationPolicyTimer() {
   animation_policy_once_timer_.StartOneShot(kAnimationPolicyOnceDuration,
-                                            BLINK_FROM_HERE);
+                                            FROM_HERE);
 }
 
 void SMILTimeContainer::CancelAnimationPolicyTimer() {

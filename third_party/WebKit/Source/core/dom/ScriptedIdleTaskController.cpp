@@ -4,6 +4,7 @@
 
 #include "core/dom/ScriptedIdleTaskController.h"
 
+#include "base/location.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IdleRequestOptions.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -15,7 +16,6 @@
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -159,14 +159,13 @@ void ScriptedIdleTaskController::ScheduleCallback(
     scoped_refptr<internal::IdleRequestCallbackWrapper> callback_wrapper,
     long long timeout_millis) {
   scheduler_->PostIdleTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&internal::IdleRequestCallbackWrapper::IdleTaskFired,
-                callback_wrapper));
+      FROM_HERE, WTF::Bind(&internal::IdleRequestCallbackWrapper::IdleTaskFired,
+                           callback_wrapper));
   if (timeout_millis > 0) {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kIdleTask)
         ->PostDelayedTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             WTF::Bind(&internal::IdleRequestCallbackWrapper::TimeoutFired,
                       callback_wrapper),
             TimeDelta::FromMilliseconds(timeout_millis));
@@ -257,7 +256,7 @@ void ScriptedIdleTaskController::Unpause() {
     scoped_refptr<internal::IdleRequestCallbackWrapper> callback_wrapper =
         internal::IdleRequestCallbackWrapper::Create(idle_task.key, this);
     scheduler_->PostIdleTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         WTF::Bind(&internal::IdleRequestCallbackWrapper::IdleTaskFired,
                   callback_wrapper));
   }

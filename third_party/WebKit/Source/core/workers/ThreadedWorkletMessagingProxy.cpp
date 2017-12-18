@@ -65,7 +65,7 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
   DCHECK(IsMainThread());
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kUnspecedLoading)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(
                      &ThreadedWorkletObjectProxy::FetchAndInvokeScript,
                      CrossThreadUnretained(worklet_object_proxy_.get()),

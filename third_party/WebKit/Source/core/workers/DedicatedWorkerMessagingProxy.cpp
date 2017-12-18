@@ -77,7 +77,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
         CrossThreadUnretained(GetWorkerThread()), queued_task.stack_id);
     GetWorkerThread()
         ->GetTaskRunner(TaskType::kPostedMessage)
-        ->PostTask(BLINK_FROM_HERE, std::move(task));
+        ->PostTask(FROM_HERE, std::move(task));
   }
   queued_early_tasks_.clear();
 }
@@ -98,7 +98,7 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
         CrossThreadUnretained(GetWorkerThread()), stack_id);
     GetWorkerThread()
         ->GetTaskRunner(TaskType::kPostedMessage)
-        ->PostTask(BLINK_FROM_HERE, std::move(task));
+        ->PostTask(FROM_HERE, std::move(task));
   } else {
     // GetWorkerThread() returns nullptr while the worker thread is being
     // created. In that case, push events into the queue and dispatch them in
@@ -161,7 +161,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(
                      &DedicatedWorkerObjectProxy::ProcessUnhandledException,
                      CrossThreadUnretained(worker_object_proxy_.get()),

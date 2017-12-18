@@ -130,7 +130,7 @@ void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
   loaded_sheet_ = is_load_event;
   GetDocument()
       .GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,
                            WrapPersistent(this),
                            WTF::Passed(IncrementLoadEventDelayCount::Create(

@@ -59,7 +59,7 @@ void WaitForSignalTask(WorkerThread* worker_thread,
   // Notify the main thread that the debugger task is waiting for the signal.
   worker_thread->GetParentFrameTaskRunners()
       ->Get(TaskType::kInternalTest)
-      ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+      ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   waitable_event->Wait();
 }
 

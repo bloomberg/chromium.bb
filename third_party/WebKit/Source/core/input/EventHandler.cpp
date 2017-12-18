@@ -1658,8 +1658,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
         event_with_hit_test_results.GetHitTestResult().InnerElement();
     // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
     active_interval_timer_.StartOneShot(
-        (kMinimumActiveInterval - active_interval).InSecondsF(),
-        BLINK_FROM_HERE);
+        (kMinimumActiveInterval - active_interval).InSecondsF(), FROM_HERE);
   }
 
   return event_with_hit_test_results;
@@ -1890,7 +1889,7 @@ void EventHandler::ScheduleHoverStateUpdate() {
   // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
   if (!hover_timer_.IsActive() &&
       !mouse_event_manager_->IsMousePositionUnknown())
-    hover_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    hover_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void EventHandler::ScheduleCursorUpdate() {
@@ -1900,7 +1899,7 @@ void EventHandler::ScheduleCursorUpdate() {
 
   // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
   if (!cursor_update_timer_.IsActive())
-    cursor_update_timer_.StartOneShot(kCursorUpdateInterval, BLINK_FROM_HERE);
+    cursor_update_timer_.StartOneShot(kCursorUpdateInterval, FROM_HERE);
 }
 
 bool EventHandler::CursorUpdatePending() {

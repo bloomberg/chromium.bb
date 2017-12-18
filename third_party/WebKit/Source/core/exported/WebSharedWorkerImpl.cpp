@@ -195,11 +195,10 @@ void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   // https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(
-          BLINK_FROM_HERE,
-          CrossThreadBind(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
-                          WTF::CrossThreadUnretained(this),
-                          WTF::Passed(std::move(web_channel))));
+      ->PostTask(FROM_HERE, CrossThreadBind(
+                                &WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
+                                WTF::CrossThreadUnretained(this),
+                                WTF::Passed(std::move(web_channel))));
 }
 
 void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(

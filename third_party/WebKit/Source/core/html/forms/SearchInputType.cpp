@@ -110,15 +110,14 @@ void SearchInputType::StartSearchEventTimer() {
     GetElement()
         .GetDocument()
         .GetTaskRunner(TaskType::kUserInteraction)
-        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&HTMLInputElement::OnSearch,
-                                              WrapPersistent(&GetElement())));
+        ->PostTask(FROM_HERE, WTF::Bind(&HTMLInputElement::OnSearch,
+                                        WrapPersistent(&GetElement())));
     return;
   }
 
   // After typing the first key, we wait 0.5 seconds.
   // After the second key, 0.4 seconds, then 0.3, then 0.2 from then on.
-  search_event_timer_.StartOneShot(max(0.2, 0.6 - 0.1 * length),
-                                   BLINK_FROM_HERE);
+  search_event_timer_.StartOneShot(max(0.2, 0.6 - 0.1 * length), FROM_HERE);
 }
 
 void SearchInputType::DispatchSearchEvent() {

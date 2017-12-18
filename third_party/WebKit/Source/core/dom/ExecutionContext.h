@@ -30,6 +30,7 @@
 
 #include <memory>
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleNotifier.h"
@@ -40,7 +41,6 @@
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
-#include "public/platform/WebTraceLocation.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {

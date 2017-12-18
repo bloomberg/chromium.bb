@@ -547,7 +547,7 @@ void NavigationScheduler::StartTimer() {
   navigate_task_handle_ = frame_->FrameScheduler()
                               ->GetTaskRunner(TaskType::kUnspecedLoading)
                               ->PostDelayedCancellableTask(
-                                  BLINK_FROM_HERE,
+                                  FROM_HERE,
                                   WTF::Bind(&NavigationScheduler::NavigateTask,
                                             WrapWeakPersistent(this)),
                                   TimeDelta::FromSecondsD(redirect_->Delay()));

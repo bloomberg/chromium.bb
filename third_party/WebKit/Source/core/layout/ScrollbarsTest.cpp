@@ -122,7 +122,7 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
         ->Scheduler()
         ->LoadingTaskRunner()
         ->PostDelayedTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             WTF::Bind(
                 &ScrollbarsTestWithVirtualTimer::StopVirtualTimeAndExitRunLoop,
                 WTF::Unretained(this)),

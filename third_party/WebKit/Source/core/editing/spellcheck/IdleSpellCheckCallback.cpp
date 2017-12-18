@@ -119,7 +119,7 @@ void IdleSpellCheckCallback::SetNeedsColdModeInvocation() {
   int interval_ms = state_ == State::kInColdModeInvocation
                         ? kConsecutiveColdModeTimerIntervalMS
                         : kColdModeTimerIntervalMS;
-  cold_mode_timer_.StartOneShot(interval_ms / 1000.0, BLINK_FROM_HERE);
+  cold_mode_timer_.StartOneShot(interval_ms / 1000.0, FROM_HERE);
   state_ = State::kColdModeTimerStarted;
 }
 

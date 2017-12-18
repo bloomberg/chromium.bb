@@ -4,6 +4,7 @@
 
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
+#include "base/location.h"
 #include "build/build_config.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
@@ -21,7 +22,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
@@ -227,7 +227,7 @@ bool CanvasAsyncBlobCreator::EncodeImage(const double& quality) {
 void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
   if (!static_bitmap_image_loaded_) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&CanvasAsyncBlobCreator::CreateNullAndReturnResult,
                              WrapPersistent(this)));
     return;
@@ -241,7 +241,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
       if (!EncodeImage(quality)) {
         context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
             ->PostTask(
-                BLINK_FROM_HERE,
+                FROM_HERE,
                 WTF::Bind(&CanvasAsyncBlobCreator::CreateNullAndReturnResult,
                           WrapPersistent(this)));
 
@@ -249,13 +249,13 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
       }
       context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
           ->PostTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
                         WrapPersistent(this)));
 
     } else {
       BackgroundTaskRunner::PostOnBackgroundThread(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&CanvasAsyncBlobCreator::EncodeImageOnEncoderThread,
                           WrapCrossThreadPersistent(this), quality));
     }
@@ -266,7 +266,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
     // We post the below task to check if the above idle task isn't late.
     // There's no risk of concurrency as both tasks are on the same thread.
     PostDelayedTaskToCurrentThread(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         WTF::Bind(&CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent,
                   WrapPersistent(this), quality),
         kIdleTaskStartTimeoutDelayMs);
@@ -312,8 +312,8 @@ void CanvasAsyncBlobCreator::LoadStaticBitmapImage() {
 void CanvasAsyncBlobCreator::ScheduleInitiateEncoding(double quality) {
   schedule_idle_task_start_time_ = WTF::CurrentTimeTicksInSeconds();
   Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
-      BLINK_FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::InitiateEncoding,
-                                 WrapPersistent(this), quality));
+      FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::InitiateEncoding,
+                           WrapPersistent(this), quality));
 }
 
 void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
@@ -347,8 +347,8 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(double deadline_seconds) {
     if (IsDeadlineNearOrPassed(deadline_seconds)) {
       num_rows_completed_ = y;
       Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
-          BLINK_FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::IdleEncodeRows,
-                                     WrapPersistent(this)));
+          FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::IdleEncodeRows,
+                               WrapPersistent(this)));
       return;
     }
 
@@ -366,7 +366,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(double deadline_seconds) {
   RecordElapsedTimeHistogram(kCompleteEncodingDelay, mime_type_, elapsed_time);
   if (IsDeadlineNearOrPassed(deadline_seconds)) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
                              WrapPersistent(this)));
   } else {
@@ -392,7 +392,7 @@ void CanvasAsyncBlobCreator::ForceEncodeRowsOnCurrentThread() {
   } else {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
                             WrapCrossThreadPersistent(this)));
   }
@@ -409,7 +409,7 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
                                    ConvertMimeTypeEnumToString(mime_type_));
   if (function_type_ == kHTMLCanvasToBlobCallback) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&V8BlobCallback::InvokeAndReportException,
                              callback_, nullptr, WrapPersistent(result_blob)));
   } else {
@@ -425,7 +425,7 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
     DCHECK(IsMainThread());
     RecordIdleTaskStatusHistogram(idle_task_status_);
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&V8BlobCallback::InvokeAndReportException,
                              callback_, nullptr, nullptr));
   } else {
@@ -443,7 +443,7 @@ void CanvasAsyncBlobCreator::EncodeImageOnEncoderThread(double quality) {
   if (!EncodeImage(quality)) {
     parent_frame_task_runner_->Get(TaskType::kCanvasBlobSerialization)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(&CanvasAsyncBlobCreator::CreateNullAndReturnResult,
                             WrapCrossThreadPersistent(this)));
     return;
@@ -451,7 +451,7 @@ void CanvasAsyncBlobCreator::EncodeImageOnEncoderThread(double quality) {
 
   parent_frame_task_runner_->Get(TaskType::kCanvasBlobSerialization)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
                           WrapCrossThreadPersistent(this)));
 }
@@ -490,7 +490,7 @@ void CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent(double quality) {
   if (idle_task_status_ == kIdleTaskStarted) {
     // Even if the task started quickly, we still want to ensure completion
     PostDelayedTaskToCurrentThread(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         WTF::Bind(&CanvasAsyncBlobCreator::IdleTaskCompleteTimeoutEvent,
                   WrapPersistent(this)),
         kIdleTaskCompleteTimeoutDelayMs);
@@ -505,7 +505,7 @@ void CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent(double quality) {
     if (InitializeEncoder(quality)) {
       context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
           ->PostTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&CanvasAsyncBlobCreator::ForceEncodeRowsOnCurrentThread,
                         WrapPersistent(this)));
     } else {
@@ -530,7 +530,7 @@ void CanvasAsyncBlobCreator::IdleTaskCompleteTimeoutEvent() {
     DCHECK(mime_type_ == kMimeTypePng || mime_type_ == kMimeTypeJpeg);
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             WTF::Bind(&CanvasAsyncBlobCreator::ForceEncodeRowsOnCurrentThread,
                       WrapPersistent(this)));
   } else {
@@ -541,7 +541,7 @@ void CanvasAsyncBlobCreator::IdleTaskCompleteTimeoutEvent() {
 }
 
 void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
-    const WebTraceLocation& location,
+    const base::Location& location,
     base::OnceClosure task,
     double delay_ms) {
   context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)

@@ -30,7 +30,7 @@ void ScriptPromiseResolver::Pause() {
 
 void ScriptPromiseResolver::Unpause() {
   if (state_ == kResolving || state_ == kRejecting)
-    timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void ScriptPromiseResolver::Detach() {

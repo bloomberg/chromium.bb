@@ -84,7 +84,7 @@ class WorkletThreadHolder {
   void Initialize(std::unique_ptr<WorkerBackingThread> backing_thread) {
     thread_ = std::move(backing_thread);
     thread_->BackingThread().PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&WorkletThreadHolder::InitializeOnWorkletThread,
                         CrossThreadUnretained(this)));
   }
@@ -101,7 +101,7 @@ class WorkletThreadHolder {
     DCHECK(IsMainThread());
     WaitableEvent waitable_event;
     thread_->BackingThread().PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&WorkletThreadHolder::ShutdownOnWorlketThread,
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(&waitable_event)));

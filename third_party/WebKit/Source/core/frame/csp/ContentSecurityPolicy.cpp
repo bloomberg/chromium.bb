@@ -1270,7 +1270,7 @@ void ContentSecurityPolicy::ReportViolation(
   // we're not processing 'frame-ancestors').
   if (execution_context_) {
     execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&ContentSecurityPolicy::DispatchViolationEvents,
                              WrapPersistent(this), violation_data,
                              WrapPersistent(element)));
@@ -1398,7 +1398,7 @@ void ContentSecurityPolicy::DispatchViolationEvents(
   } else if (execution_context_->IsWorkerGlobalScope()) {
     event->SetTarget(ToWorkerGlobalScope(execution_context_));
   }
-  queue->EnqueueEvent(BLINK_FROM_HERE, event);
+  queue->EnqueueEvent(FROM_HERE, event);
 }
 
 void ContentSecurityPolicy::ReportMixedContent(const KURL& mixed_url,

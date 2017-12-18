@@ -165,7 +165,7 @@ void MojoInterfaceInterceptor::OnInterfaceRequest(
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kMicrotask)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           WTF::Bind(&MojoInterfaceInterceptor::DispatchInterfaceRequestEvent,
                     WrapPersistent(this), WTF::Passed(std::move(handle))));
 }

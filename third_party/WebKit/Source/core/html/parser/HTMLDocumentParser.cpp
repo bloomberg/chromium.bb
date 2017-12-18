@@ -462,7 +462,7 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
 
   DCHECK(checkpoint->unparsed_input.IsSafeToSendToAnotherThread());
   loading_task_runner_->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       WTF::Bind(&BackgroundHTMLParser::ResumeFrom, background_parser_,
                 WTF::Passed(std::move(checkpoint))));
 }
@@ -490,9 +490,8 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
   size_t element_token_count = 0;
 
   loading_task_runner_->PostTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&BackgroundHTMLParser::StartedChunkWithCheckpoint,
-                background_parser_, chunk->input_checkpoint));
+      FROM_HERE, WTF::Bind(&BackgroundHTMLParser::StartedChunkWithCheckpoint,
+                           background_parser_, chunk->input_checkpoint));
 
   for (const auto& xss_info : chunk->xss_infos) {
     text_position_ = xss_info->text_position_;
@@ -977,7 +976,7 @@ void HTMLDocumentParser::Finish() {
     if (!input_.HaveSeenEndOfFile())
       input_.CloseWithoutMarkingEndOfFile();
     loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         WTF::Bind(&BackgroundHTMLParser::Finish, background_parser_));
     return;
   }
@@ -1183,7 +1182,7 @@ void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {
                  "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
     loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         WTF::Bind(&BackgroundHTMLParser::AppendRawBytesFromMainThread,
                   background_parser_, WTF::Passed(std::move(buffer))));
     return;
@@ -1209,8 +1208,7 @@ void HTMLDocumentParser::Flush() {
     }
 
     loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        WTF::Bind(&BackgroundHTMLParser::Flush, background_parser_));
+        FROM_HERE, WTF::Bind(&BackgroundHTMLParser::Flush, background_parser_));
   } else {
     DecodedDataDocumentParser::Flush();
   }
@@ -1223,9 +1221,8 @@ void HTMLDocumentParser::SetDecoder(
 
   if (have_background_parser_) {
     loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        WTF::Bind(&BackgroundHTMLParser::SetDecoder, background_parser_,
-                  WTF::Passed(TakeDecoder())));
+        FROM_HERE, WTF::Bind(&BackgroundHTMLParser::SetDecoder,
+                             background_parser_, WTF::Passed(TakeDecoder())));
   }
 }
 

@@ -1248,9 +1248,8 @@ void SVGSMILElement::ScheduleRepeatEvents(unsigned count) {
 void SVGSMILElement::ScheduleEvent(const AtomicString& event_type) {
   GetDocument()
       .GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(BLINK_FROM_HERE,
-                 WTF::Bind(&SVGSMILElement::DispatchPendingEvent,
-                           WrapPersistent(this), event_type));
+      ->PostTask(FROM_HERE, WTF::Bind(&SVGSMILElement::DispatchPendingEvent,
+                                      WrapPersistent(this), event_type));
 }
 
 void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {

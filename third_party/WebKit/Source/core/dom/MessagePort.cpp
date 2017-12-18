@@ -109,7 +109,7 @@ void MessagePort::MessageAvailable() {
   if (AtomicTestAndSetToOne(&pending_dispatch_task_))
     return;
 
-  task_runner_->PostTask(BLINK_FROM_HERE,
+  task_runner_->PostTask(FROM_HERE,
                          CrossThreadBind(&MessagePort::DispatchMessages,
                                          WrapCrossThreadPersistent(this)));
 }

@@ -33,7 +33,7 @@ void IntersectionObserverController::PostTaskToDeliverObservations() {
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kUnthrottled)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           WTF::Bind(
               &IntersectionObserverController::DeliverIntersectionObservations,
               WrapWeakPersistent(this)));

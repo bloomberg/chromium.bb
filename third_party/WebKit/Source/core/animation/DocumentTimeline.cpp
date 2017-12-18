@@ -178,7 +178,7 @@ void DocumentTimeline::ScheduleNextService() {
 void DocumentTimeline::DocumentTimelineTiming::WakeAfter(double duration) {
   if (timer_.IsActive() && timer_.NextFireInterval() < duration)
     return;
-  timer_.StartOneShot(duration, BLINK_FROM_HERE);
+  timer_.StartOneShot(duration, FROM_HERE);
 }
 
 void DocumentTimeline::DocumentTimelineTiming::ServiceOnNextFrame() {

@@ -82,7 +82,7 @@ void WorkerThreadFunc(WorkerBackingThread* thread,
   worlds.clear();
 
   thread->ShutdownOnBackingThread();
-  main_thread_task_runner->PostTask(BLINK_FROM_HERE,
+  main_thread_task_runner->PostTask(FROM_HERE,
                                     CrossThreadBind(&testing::ExitRunLoop));
 }
 
@@ -121,7 +121,7 @@ TEST(DOMWrapperWorldTest, Basic) {
   scoped_refptr<WebTaskRunner> main_thread_task_runner =
       Platform::Current()->CurrentThread()->GetWebTaskRunner();
   thread->BackingThread().PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThreadFunc, CrossThreadUnretained(thread.get()),
                       std::move(main_thread_task_runner)));
   testing::EnterRunLoop();

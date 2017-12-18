@@ -179,7 +179,7 @@ void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
   AdvanceState(State::kFetchingDependencies);
 
   modulator_->TaskRunner()->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       WTF::Bind(&ModuleTreeLinker::FetchDescendants, WrapPersistent(this),
                 WrapPersistent(module_script)));
 }

@@ -96,9 +96,9 @@ DOMTimer::DOMTimer(ExecutionContext* context,
       nesting_level_ >= kMaxTimerNestingLevel)
     interval_milliseconds = kMinimumInterval;
   if (single_shot)
-    StartOneShot(interval_milliseconds, BLINK_FROM_HERE);
+    StartOneShot(interval_milliseconds, FROM_HERE);
   else
-    StartRepeating(interval_milliseconds, BLINK_FROM_HERE);
+    StartRepeating(interval_milliseconds, FROM_HERE);
 
   PauseIfNeeded();
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",

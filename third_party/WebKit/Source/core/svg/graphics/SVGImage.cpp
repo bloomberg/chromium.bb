@@ -692,9 +692,8 @@ void SVGImage::LoadCompleted() {
       // to make LoadEventFinished() true when AsyncLoadCompleted() is called.
       ToLocalFrame(page_->MainFrame())
           ->GetTaskRunner(TaskType::kUnspecedLoading)
-          ->PostTask(BLINK_FROM_HERE,
-                     WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
-                               scoped_refptr<SVGImage>(this)));
+          ->PostTask(FROM_HERE, WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
+                                          scoped_refptr<SVGImage>(this)));
       break;
 
     case kDataChangedNotStarted:

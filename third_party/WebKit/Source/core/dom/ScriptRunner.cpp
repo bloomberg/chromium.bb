@@ -69,7 +69,7 @@ void ScriptRunner::QueueScriptForExecution(ScriptLoader* script_loader,
   }
 }
 
-void ScriptRunner::PostTask(const WebTraceLocation& web_trace_location) {
+void ScriptRunner::PostTask(const base::Location& web_trace_location) {
   task_runner_->PostTask(
       web_trace_location,
       WTF::Bind(&ScriptRunner::ExecuteTask, WrapWeakPersistent(this)));
@@ -91,10 +91,10 @@ void ScriptRunner::Resume() {
   is_suspended_ = false;
 
   for (size_t i = 0; i < async_scripts_to_execute_soon_.size(); ++i) {
-    PostTask(BLINK_FROM_HERE);
+    PostTask(FROM_HERE);
   }
   for (size_t i = 0; i < in_order_scripts_to_execute_soon_.size(); ++i) {
-    PostTask(BLINK_FROM_HERE);
+    PostTask(FROM_HERE);
   }
 }
 
@@ -103,7 +103,7 @@ void ScriptRunner::ScheduleReadyInOrderScripts() {
          pending_in_order_scripts_.front()->IsReady()) {
     in_order_scripts_to_execute_soon_.push_back(
         pending_in_order_scripts_.TakeFirst());
-    PostTask(BLINK_FROM_HERE);
+    PostTask(FROM_HERE);
   }
 }
 
@@ -121,7 +121,7 @@ void ScriptRunner::NotifyScriptReady(ScriptLoader* script_loader,
       pending_async_scripts_.erase(script_loader);
       async_scripts_to_execute_soon_.push_back(script_loader);
 
-      PostTask(BLINK_FROM_HERE);
+      PostTask(FROM_HERE);
       TryStreamAny();
       break;
 
@@ -150,7 +150,7 @@ bool ScriptRunner::RemovePendingInOrderScript(ScriptLoader* script_loader) {
 }
 
 void ScriptRunner::NotifyScriptStreamerFinished() {
-  PostTask(BLINK_FROM_HERE);
+  PostTask(FROM_HERE);
   TryStreamAny();
 }
 

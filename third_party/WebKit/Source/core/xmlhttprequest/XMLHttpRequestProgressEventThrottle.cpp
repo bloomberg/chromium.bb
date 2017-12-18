@@ -104,8 +104,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressEvent(
   } else {
     DispatchProgressProgressEvent(ProgressEvent::Create(
         EventTypeNames::progress, length_computable, loaded, total));
-    StartOneShot(kMinimumProgressEventDispatchingIntervalInSeconds,
-                 BLINK_FROM_HERE);
+    StartOneShot(kMinimumProgressEventDispatchingIntervalInSeconds, FROM_HERE);
   }
 }
 
@@ -169,8 +168,7 @@ void XMLHttpRequestProgressEventThrottle::Fired() {
   DispatchProgressProgressEvent(deferred_.Take());
 
   // Watch if another "progress" ProgressEvent arrives in the next 50ms.
-  StartOneShot(kMinimumProgressEventDispatchingIntervalInSeconds,
-               BLINK_FROM_HERE);
+  StartOneShot(kMinimumProgressEventDispatchingIntervalInSeconds, FROM_HERE);
 }
 
 void XMLHttpRequestProgressEventThrottle::Pause() {
@@ -184,7 +182,7 @@ void XMLHttpRequestProgressEventThrottle::Unpause() {
   // Do not dispatch events inline here, since ExecutionContext is iterating
   // over the list of PausableObjects to resume them, and any activated JS
   // event-handler could insert new PausableObjects to the list.
-  StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void XMLHttpRequestProgressEventThrottle::Trace(blink::Visitor* visitor) {
