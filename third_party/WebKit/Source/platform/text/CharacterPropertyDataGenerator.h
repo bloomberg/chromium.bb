@@ -47,13 +47,10 @@ static const UChar32 kIsCJKIdeographOrSymbolRanges[] = {
     0x4E00, 0x9FFF,
     // CJK Compatibility Ideographs.
     0xF900, 0xFAFF,
-    // CJK Unified Ideographs Extension B.
-    0x20000, 0x2A6DF,
-    // CJK Unified Ideographs Extension C.
-    // CJK Unified Ideographs Extension D.
-    0x2A700, 0x2B81F,
+    // Unicode Plane 2: Supplementary Ideographic Plane. This plane includes:
+    // CJK Unified Ideographs Extension B to F.
     // CJK Compatibility Ideographs Supplement.
-    0x2F800, 0x2FA1F,
+    0x20000, 0x2FFFF,
 
     // cjkSymbolRanges
     0x2156, 0x215A, 0x2160, 0x216B, 0x2170, 0x217B, 0x231A, 0x231B, 0x23E9,
@@ -80,13 +77,29 @@ static const UChar32 kIsCJKIdeographOrSymbolRanges[] = {
     0x3190, 0x31BF,
     // Enclosed CJK Letters and Months (0x3200 .. 0x32FF).
     // CJK Compatibility (0x3300 .. 0x33FF).
-    0x3200, 0x33FF, 0xF860, 0xF862,
+    0x3200, 0x33FF,
+    // Yijing Hexagram Symbols
+    0x4DC0, 0x4DFF,
+    // http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/JAPANESE.TXT
+    0xF860, 0xF862,
     // CJK Compatibility Forms.
     // Small Form Variants (for CNS 11643).
     0xFE30, 0xFE6F,
     // Halfwidth and Fullwidth Forms
     // Usually only used in CJK
     0xFF00, 0xFF0C, 0xFF0E, 0xFF1A, 0xFF1F, 0xFFEF,
+    // Ideographic Symbols and Punctuation
+    0x16FE0, 0x16FFF,
+    // Tangut
+    0x17000, 0x187FF,
+    // Tangut Components
+    0x18800, 0x18AFF,
+    // Kana Supplement
+    0x1B000, 0x1B0FF,
+    // Kana Extended-A
+    0x1B100, 0x1B12F,
+    // Nushu
+    0x1B170, 0x1B2FF,
     // Emoji.
     0x1F110, 0x1F129, 0x1F130, 0x1F149, 0x1F150, 0x1F169, 0x1F170, 0x1F189,
     0x1F191, 0x1F19A, 0x1F1E6, 0x1F1FF, 0x1F200, 0x1F6FF,
@@ -158,6 +171,8 @@ static const UChar32 kIsUprightInMixedVerticalRanges[] = {
     0x10980, 0x1099F,
     // Siddham
     0x11580, 0x115FF,
+    // Zanabazar Square
+    0x11A00, 0x11AAF,
     // Egyptian Hieroglyphs
     0x13000, 0x1342F,
     // Anatolian Hieroglyphs
@@ -170,6 +185,10 @@ static const UChar32 kIsUprightInMixedVerticalRanges[] = {
     0x18800, 0x18AFF,
     // Kana Supplement
     0x1B000, 0x1B0FF,
+    // Kana Extended-A
+    0x1B100, 0x1B12F,
+    // Nushu
+    0x1B170, 0x1B2FF,
     // Byzantine Musical Symbols/Musical Symbols
     0x1D000, 0x1D1FF,
     // Tai Xuan Jing Symbols/Counting Rod Numerals
