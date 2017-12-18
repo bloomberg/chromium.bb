@@ -37,6 +37,10 @@ class LoFi(IntegrationTest):
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
 
+      # Verify Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(1, histogram['count'])
+
   # Checks that LoFi images are served when LoFi slow connections are used and
   # the network quality estimator returns Slow2G.
   def testLoFiSlowConnection(self):
@@ -68,6 +72,50 @@ class LoFi(IntegrationTest):
 
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
+
+      # Verify Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(1, histogram['count'])
+
+  # Checks that LoFi images are NOT served when the network quality estimator
+  # returns fast connection type.
+  def testLoFiFastConnection(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features='
+                               'DataReductionProxyDecidesTransform')
+      test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=slow-connections-'
+                               'only')
+      # Disable server experiments such as tamper detection.
+      test_driver.AddChromeArg('--data-reduction-proxy-server-experiments-'
+                               'disabled')
+      test_driver.AddChromeArg('--force-fieldtrial-params='
+                               'NetworkQualityEstimator.Enabled:'
+                               'force_effective_connection_type/4G')
+      test_driver.AddChromeArg('--force-fieldtrials=NetworkQualityEstimator/'
+                               'Enabled')
+
+      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+
+      lofi_responses = 0
+      for response in test_driver.GetHTTPResponses():
+        if response.url.endswith('html'):
+          # Main resource should accept transforms but not be transformed.
+          self.assertEqual('lite-page',
+            response.request_headers['chrome-proxy-accept-transform'])
+          self.assertNotIn('chrome-proxy-content-transform',
+            response.response_headers)
+          if 'chrome-proxy' in response.response_headers:
+            self.assertNotIn('page-policies',
+                             response.response_headers['chrome-proxy'])
+        else:
+          # No subresources should accept transforms.
+          self.assertNotIn('chrome-proxy-accept-transform',
+            response.request_headers)
+
+      # Verify no Lo-Fi previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(histogram, {})
 
   # Checks that LoFi images are not served, but the if-heavy CPAT header is
   # added when LoFi slow connections are used and the network quality estimator

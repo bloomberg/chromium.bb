@@ -47,7 +47,7 @@ ContentLoFiDecider::DetermineCommittedServerPreviewsState(
     // Turn off LitePage bit.
     updated_state &= ~(content::SERVER_LITE_PAGE_ON);
   }
-  if (!drp_data->lofi_requested()) {
+  if (!drp_data->lofi_policy_received()) {
     // Turn off LoFi bit(s).
     updated_state &= ~(content::SERVER_LOFI_ON);
     if (drp_data->used_data_reduction_proxy()) {
