@@ -5,8 +5,6 @@
 #ifndef BASE_TASK_SCHEDULER_SCHEDULER_WORKER_POOL_H_
 #define BASE_TASK_SCHEDULER_SCHEDULER_WORKER_POOL_H_
 
-#include <memory>
-
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -42,8 +40,7 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
   // |sequence|. |task| won't be executed before its delayed run time, if any.
   // Returns true if |task| is posted.
-  bool PostTaskWithSequence(std::unique_ptr<Task> task,
-                            scoped_refptr<Sequence> sequence);
+  bool PostTaskWithSequence(Task task, scoped_refptr<Sequence> sequence);
 
   // Registers the worker pool in TLS.
   void BindToCurrentThread();
@@ -66,8 +63,7 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
   // |sequence|. This must only be called after |task| has gone through
   // PostTaskWithSequence() and after |task|'s delayed run time.
-  void PostTaskWithSequenceNow(std::unique_ptr<Task> task,
-                               scoped_refptr<Sequence> sequence);
+  void PostTaskWithSequenceNow(Task task, scoped_refptr<Sequence> sequence);
 
   TaskTracker* const task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;

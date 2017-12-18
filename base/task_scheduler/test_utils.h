@@ -5,8 +5,6 @@
 #ifndef BASE_TASK_SCHEDULER_TEST_UTILS_H_
 #define BASE_TASK_SCHEDULER_TEST_UTILS_H_
 
-#include <memory>
-
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 
@@ -25,7 +23,7 @@ namespace test {
 enum class ExecutionMode { PARALLEL, SEQUENCED, SINGLE_THREADED };
 
 // Creates a Sequence and pushes |task| to it. Returns that sequence.
-scoped_refptr<Sequence> CreateSequenceWithTask(std::unique_ptr<Task> task);
+scoped_refptr<Sequence> CreateSequenceWithTask(Task task);
 
 // Creates a TaskRunner that posts tasks to |worker_pool| with the
 // |execution_mode| execution mode and the WithBaseSyncPrimitives() trait.

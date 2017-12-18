@@ -45,5 +45,7 @@ Task::Task(Task&& other) noexcept
 
 Task::~Task() = default;
 
+Task& Task::operator=(Task&& other) = default;
+
 }  // namespace internal
 }  // namespace base

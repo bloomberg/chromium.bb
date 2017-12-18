@@ -237,16 +237,15 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
   scoped_refptr<Sequence> GetWorkFromWindowsMessageQueue() {
     MSG msg;
     if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE) {
-      auto pump_message_task =
-          std::make_unique<Task>(FROM_HERE,
-                                 Bind(
-                                     [](MSG msg) {
-                                       TranslateMessage(&msg);
-                                       DispatchMessage(&msg);
-                                     },
-                                     std::move(msg)),
-                                 TaskTraits(MayBlock()), TimeDelta());
-      if (task_tracker_->WillPostTask(pump_message_task.get())) {
+      Task pump_message_task(FROM_HERE,
+                             Bind(
+                                 [](MSG msg) {
+                                   TranslateMessage(&msg);
+                                   DispatchMessage(&msg);
+                                 },
+                                 std::move(msg)),
+                             TaskTraits(MayBlock()), TimeDelta());
+      if (task_tracker_->WillPostTask(pump_message_task)) {
         bool was_empty =
             message_pump_sequence_->PushTask(std::move(pump_message_task));
         DCHECK(was_empty) << "GetWorkFromWindowsMessageQueue() does not expect "
@@ -294,14 +293,13 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     if (!g_manager_is_alive)
       return false;
 
-    auto task =
-        std::make_unique<Task>(from_here, std::move(closure), traits_, delay);
-    task->single_thread_task_runner_ref = this;
+    Task task(from_here, std::move(closure), traits_, delay);
+    task.single_thread_task_runner_ref = this;
 
-    if (!outer_->task_tracker_->WillPostTask(task.get()))
+    if (!outer_->task_tracker_->WillPostTask(task))
       return false;
 
-    if (task->delayed_run_time.is_null()) {
+    if (task.delayed_run_time.is_null()) {
       PostTaskNow(std::move(task));
     } else {
       outer_->delayed_task_manager_->AddDelayedTask(
@@ -351,7 +349,7 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     }
   }
 
-  void PostTaskNow(std::unique_ptr<Task> task) {
+  void PostTaskNow(Task task) {
     scoped_refptr<Sequence> sequence = GetDelegate()->sequence();
     // If |sequence| is null, then the thread is effectively gone (either
     // shutdown or joined).

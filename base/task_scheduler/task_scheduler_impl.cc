@@ -118,7 +118,7 @@ void TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   GetWorkerPoolForTraits(new_traits)
       ->PostTaskWithSequence(
-          std::make_unique<Task>(from_here, std::move(task), new_traits, delay),
+          Task(from_here, std::move(task), new_traits, delay),
           MakeRefCounted<Sequence>());
 }
 

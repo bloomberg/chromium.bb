@@ -62,7 +62,7 @@ class SchedulerParallelTaskRunner : public TaskRunner {
 
     // Post the task as part of a one-off single-task Sequence.
     return worker_pool_->PostTaskWithSequence(
-        std::make_unique<Task>(from_here, std::move(closure), traits_, delay),
+        Task(from_here, std::move(closure), traits_, delay),
         MakeRefCounted<Sequence>());
   }
 
@@ -98,9 +98,8 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
     if (!g_active_pools_count)
       return false;
 
-    std::unique_ptr<Task> task =
-        std::make_unique<Task>(from_here, std::move(closure), traits_, delay);
-    task->sequenced_task_runner_ref = this;
+    Task task(from_here, std::move(closure), traits_, delay);
+    task.sequenced_task_runner_ref = this;
 
     // Post the task as part of |sequence_|.
     return worker_pool_->PostTaskWithSequence(std::move(task), sequence_);
@@ -141,29 +140,28 @@ SchedulerWorkerPool::CreateSequencedTaskRunnerWithTraits(
 }
 
 bool SchedulerWorkerPool::PostTaskWithSequence(
-    std::unique_ptr<Task> task,
+    Task task,
     scoped_refptr<Sequence> sequence) {
-  DCHECK(task);
+  DCHECK(task.task);
   DCHECK(sequence);
 
-  if (!task_tracker_->WillPostTask(task.get()))
+  if (!task_tracker_->WillPostTask(task))
     return false;
 
-  if (task->delayed_run_time.is_null()) {
+  if (task.delayed_run_time.is_null()) {
     PostTaskWithSequenceNow(std::move(task), std::move(sequence));
   } else {
     // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
     // for details.
-    CHECK(task->task);
+    CHECK(task.task);
     delayed_task_manager_->AddDelayedTask(
-        std::move(task),
-        BindOnce(
-            [](scoped_refptr<Sequence> sequence,
-               SchedulerWorkerPool* worker_pool, std::unique_ptr<Task> task) {
-              worker_pool->PostTaskWithSequenceNow(std::move(task),
-                                                   std::move(sequence));
-            },
-            std::move(sequence), Unretained(this)));
+        std::move(task), BindOnce(
+                             [](scoped_refptr<Sequence> sequence,
+                                SchedulerWorkerPool* worker_pool, Task task) {
+                               worker_pool->PostTaskWithSequenceNow(
+                                   std::move(task), std::move(sequence));
+                             },
+                             std::move(sequence), Unretained(this)));
   }
 
   return true;
@@ -194,14 +192,14 @@ void SchedulerWorkerPool::UnbindFromCurrentThread() {
 }
 
 void SchedulerWorkerPool::PostTaskWithSequenceNow(
-    std::unique_ptr<Task> task,
+    Task task,
     scoped_refptr<Sequence> sequence) {
-  DCHECK(task);
+  DCHECK(task.task);
   DCHECK(sequence);
 
   // Confirm that |task| is ready to run (its delayed run time is either null or
   // in the past).
-  DCHECK_LE(task->delayed_run_time, TimeTicks::Now());
+  DCHECK_LE(task.delayed_run_time, TimeTicks::Now());
 
   const bool sequence_was_empty = sequence->PushTask(std::move(task));
   if (sequence_was_empty) {
