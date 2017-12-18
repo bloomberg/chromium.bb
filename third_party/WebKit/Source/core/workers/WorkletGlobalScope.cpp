@@ -10,7 +10,6 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Modulator.h"
 #include "core/inspector/MainThreadDebugger.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -100,30 +99,14 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   // moduleURLRecord, moduleResponsesMap, credentialOptions, outsideSettings,
   // and insideSettings when it asynchronously completes."
 
-  // [FMWST]
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
-  // [FMWST] Step 2: "Let options be a script fetch options whose cryptographic
-  // nonce is the empty string,
-  String nonce;
-  // integrity metadata is the empty string,
-  String integrity_attribute;
-  // parser metadata is "not-parser-inserted",
-  ParserDisposition parser_state = kNotParserInserted;
-  // and credentials mode is credentials mode.
-  ScriptFetchOptions options(nonce, IntegrityMetadataSet(), integrity_attribute,
-                             parser_state, credentials_mode);
-
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
-  // [FMWST] Step 3. "Perform the internal module script graph fetching
-  // procedure ..."
-  ModuleScriptFetchRequest module_request(
-      module_url_record, modulator->GetReferrerPolicy(), options);
 
   // Step 3 to 5 are implemented in
   // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished.
   WorkletModuleTreeClient* client = new WorkletModuleTreeClient(
       modulator, std::move(outside_settings_task_runner), pending_tasks);
-  modulator->FetchTree(module_request, client);
+
+  FetchModuleScript(module_url_record, credentials_mode, client);
 }
 
 WorkletModuleResponsesMapProxy* WorkletGlobalScope::ModuleResponsesMapProxy()

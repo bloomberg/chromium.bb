@@ -14,10 +14,12 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "platform/wtf/BitVector.h"
+#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 
 namespace blink {
 
 class Modulator;
+class ModuleTreeClient;
 class ResourceFetcher;
 class V8AbstractEventListener;
 class WorkerOrWorkletScriptController;
@@ -111,6 +113,13 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
  protected:
   void ApplyContentSecurityPolicyFromVector(
       const Vector<CSPHeaderAndType>& headers);
+
+  // Implementation of the "fetch a module worker script graph" algorithm in the
+  // HTML spec:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
+  void FetchModuleScript(const KURL& module_url_record,
+                         network::mojom::FetchCredentialsMode,
+                         ModuleTreeClient*);
 
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;
