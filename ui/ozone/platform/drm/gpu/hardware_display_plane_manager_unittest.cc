@@ -3,13 +3,20 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <unistd.h>
 
 #include <memory>
 
+#include "base/files/file_util.h"
+#include "base/files/platform_file.h"
 #include "base/macros.h"
+#include "base/posix/eintr_wrapper.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/fake_plane_info.h"
+#include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
+#include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 #include "ui/ozone/platform/drm/gpu/mock_hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
@@ -56,7 +63,7 @@ void HardwareDisplayPlaneManagerTest::SetUp() {
 
 TEST_F(HardwareDisplayPlaneManagerTest, SinglePlaneAssignment) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
                               default_crtcs_);
   EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
@@ -66,7 +73,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, SinglePlaneAssignment) {
 
 TEST_F(HardwareDisplayPlaneManagerTest, BadCrtc) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
                               default_crtcs_);
   EXPECT_FALSE(
@@ -75,8 +82,8 @@ TEST_F(HardwareDisplayPlaneManagerTest, BadCrtc) {
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultiplePlaneAssignment) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
                               default_crtcs_);
   EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
@@ -86,8 +93,8 @@ TEST_F(HardwareDisplayPlaneManagerTest, MultiplePlaneAssignment) {
 
 TEST_F(HardwareDisplayPlaneManagerTest, NotEnoughPlanes) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
                               default_crtcs_);
 
@@ -97,7 +104,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, NotEnoughPlanes) {
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultipleCrtcs) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
                               default_crtcs_);
 
@@ -110,8 +117,8 @@ TEST_F(HardwareDisplayPlaneManagerTest, MultipleCrtcs) {
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultiplePlanesAndCrtcs) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
                               default_crtcs_);
   EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
@@ -123,7 +130,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, MultiplePlanesAndCrtcs) {
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultipleFrames) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
                               default_crtcs_);
 
@@ -143,7 +150,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, MultipleFrames) {
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultipleFramesDifferentPlanes) {
   ui::OverlayPlaneList assigns;
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
                               default_crtcs_);
 
@@ -162,8 +169,8 @@ TEST_F(HardwareDisplayPlaneManagerTest, SharedPlanes) {
   scoped_refptr<ui::MockScanoutBuffer> buffer =
       new ui::MockScanoutBuffer(gfx::Size(1, 1));
 
-  assigns.push_back(ui::OverlayPlane(fake_buffer_));
-  assigns.push_back(ui::OverlayPlane(buffer));
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, base::kInvalidPlatformFile));
+  assigns.push_back(ui::OverlayPlane(buffer, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kOnePlanePerCrtcWithShared,
                               arraysize(kOnePlanePerCrtcWithShared),
                               default_crtcs_);
@@ -180,7 +187,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, CheckFramebufferFormatMatch) {
   ui::OverlayPlaneList assigns;
   scoped_refptr<ui::MockScanoutBuffer> buffer =
       new ui::MockScanoutBuffer(kDefaultBufferSize, kDummyFormat);
-  assigns.push_back(ui::OverlayPlane(buffer));
+  assigns.push_back(ui::OverlayPlane(buffer, base::kInvalidPlatformFile));
   plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
                               default_crtcs_);
   plane_manager_->BeginFrame(&state_);
@@ -191,7 +198,7 @@ TEST_F(HardwareDisplayPlaneManagerTest, CheckFramebufferFormatMatch) {
   assigns.clear();
   scoped_refptr<ui::MockScanoutBuffer> xrgb_buffer =
       new ui::MockScanoutBuffer(kDefaultBufferSize);
-  assigns.push_back(ui::OverlayPlane(xrgb_buffer));
+  assigns.push_back(ui::OverlayPlane(xrgb_buffer, base::kInvalidPlatformFile));
   plane_manager_->BeginFrame(&state_);
   EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
                                                   default_crtcs_[0], nullptr));
@@ -210,8 +217,10 @@ TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
       new ui::MockScanoutBuffer(kDefaultBufferSize);
   scoped_refptr<ui::MockScanoutBuffer> overlay_buffer =
       new ui::MockScanoutBuffer(gfx::Size(1, 1));
-  assigns.push_back(ui::OverlayPlane(primary_buffer));
-  assigns.push_back(ui::OverlayPlane(overlay_buffer));
+  assigns.push_back(
+      ui::OverlayPlane(primary_buffer, base::kInvalidPlatformFile));
+  assigns.push_back(
+      ui::OverlayPlane(overlay_buffer, base::kInvalidPlatformFile));
   ui::HardwareDisplayPlaneList hdpl;
   ui::CrtcController crtc(drm, crtcs[0], 0);
   drm->plane_manager()->BeginFrame(&hdpl);
@@ -219,13 +228,138 @@ TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
                                                         crtcs[0], &crtc));
   EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false));
   assigns.clear();
-  assigns.push_back(ui::OverlayPlane(primary_buffer));
+  assigns.push_back(
+      ui::OverlayPlane(primary_buffer, base::kInvalidPlatformFile));
   drm->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
                                                         crtcs[0], &crtc));
   EXPECT_EQ(0, drm->get_overlay_clear_call_count());
   EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false));
   EXPECT_EQ(1, drm->get_overlay_clear_call_count());
+}
+
+class FakeFenceFD {
+ public:
+  FakeFenceFD();
+
+  int get() const;
+  void signal() const;
+
+ private:
+  base::ScopedFD read_fd;
+  base::ScopedFD write_fd;
+};
+
+FakeFenceFD::FakeFenceFD() {
+  int fds[2];
+  base::CreateLocalNonBlockingPipe(fds);
+  read_fd = base::ScopedFD(fds[0]);
+  write_fd = base::ScopedFD(fds[1]);
+}
+
+int FakeFenceFD::get() const {
+  return read_fd.get();
+}
+
+void FakeFenceFD::signal() const {
+  base::WriteFileDescriptor(write_fd.get(), "a", 1);
+}
+
+class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
+ protected:
+  HardwareDisplayPlaneManagerPlanesReadyTest() = default;
+
+  void UseLegacyManager();
+  void UseAtomicManager();
+  void RequestPlanesReady(const ui::OverlayPlaneList& planes);
+
+  std::unique_ptr<ui::HardwareDisplayPlaneManager> plane_manager_;
+  bool callback_called = false;
+  base::test::ScopedTaskEnvironment task_env_{
+      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
+      base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED};
+  const scoped_refptr<ui::ScanoutBuffer> scanout_buffer{
+      new ui::MockScanoutBuffer(kDefaultBufferSize)};
+  const FakeFenceFD fake_fence_fd1;
+  const FakeFenceFD fake_fence_fd2;
+
+  const ui::OverlayPlaneList planes_without_fences_{
+      ui::OverlayPlane(scanout_buffer, base::kInvalidPlatformFile),
+      ui::OverlayPlane(scanout_buffer, base::kInvalidPlatformFile)};
+  const ui::OverlayPlaneList planes_with_fences_{
+      ui::OverlayPlane(scanout_buffer, fake_fence_fd1.get()),
+      ui::OverlayPlane(scanout_buffer, fake_fence_fd2.get())};
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerPlanesReadyTest);
+};
+
+void HardwareDisplayPlaneManagerPlanesReadyTest::RequestPlanesReady(
+    const ui::OverlayPlaneList& planes) {
+  auto set_true = [](bool* b) { *b = true; };
+  plane_manager_->RequestPlanesReadyCallback(
+      planes, base::BindOnce(set_true, &callback_called));
+}
+
+void HardwareDisplayPlaneManagerPlanesReadyTest::UseLegacyManager() {
+  plane_manager_ = std::make_unique<ui::HardwareDisplayPlaneManagerLegacy>();
+}
+
+void HardwareDisplayPlaneManagerPlanesReadyTest::UseAtomicManager() {
+  plane_manager_ = std::make_unique<ui::HardwareDisplayPlaneManagerAtomic>();
+}
+
+TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
+       LegacyWithoutFencesIsAsynchronousWithoutFenceWait) {
+  UseLegacyManager();
+  RequestPlanesReady(planes_without_fences_);
+
+  EXPECT_FALSE(callback_called);
+
+  task_env_.RunUntilIdle();
+
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
+       LegacyWithFencesIsAsynchronousWithFenceWait) {
+  UseLegacyManager();
+  RequestPlanesReady(planes_with_fences_);
+
+  EXPECT_FALSE(callback_called);
+
+  fake_fence_fd1.signal();
+  fake_fence_fd2.signal();
+
+  EXPECT_FALSE(callback_called);
+
+  task_env_.RunUntilIdle();
+
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
+       AtomicWithoutFencesIsAsynchronousWithoutFenceWait) {
+  UseAtomicManager();
+  RequestPlanesReady(planes_without_fences_);
+
+  EXPECT_FALSE(callback_called);
+
+  task_env_.RunUntilIdle();
+
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
+       AtomicWithFencesIsAsynchronousWithoutFenceWait) {
+  UseAtomicManager();
+  RequestPlanesReady(planes_with_fences_);
+
+  EXPECT_FALSE(callback_called);
+
+  task_env_.RunUntilIdle();
+
+  EXPECT_TRUE(callback_called);
 }
 
 }  // namespace

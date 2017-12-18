@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -174,7 +175,8 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   ui::MockDumbBufferGenerator buffer_generator;
   ui::DrmWindow* window = screen_manager_->GetWindow(kDefaultWidgetHandle);
   ui::OverlayPlane plane(
-      buffer_generator.Create(drm_, DRM_FORMAT_XRGB8888, window_size));
+      buffer_generator.Create(drm_, DRM_FORMAT_XRGB8888, window_size),
+      base::kInvalidPlatformFile);
 
   drm_->set_page_flip_expectation(false);
 

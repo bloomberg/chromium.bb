@@ -5,7 +5,9 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 
 #include "base/bind.h"
+#include "base/files/platform_file.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
@@ -42,9 +44,9 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
       plane->set_in_use(false);
       HardwareDisplayPlaneAtomic* atomic_plane =
           static_cast<HardwareDisplayPlaneAtomic*>(plane);
-      atomic_plane->SetPlaneData(plane_list->atomic_property_set.get(), 0, 0,
-                                 gfx::Rect(), gfx::Rect(),
-                                 gfx::OVERLAY_TRANSFORM_NONE);
+      atomic_plane->SetPlaneData(
+          plane_list->atomic_property_set.get(), 0, 0, gfx::Rect(), gfx::Rect(),
+          gfx::OVERLAY_TRANSFORM_NONE, base::kInvalidPlatformFile);
     }
   }
 
@@ -99,9 +101,9 @@ bool HardwareDisplayPlaneManagerAtomic::DisableOverlayPlanes(
 
     HardwareDisplayPlaneAtomic* atomic_plane =
         static_cast<HardwareDisplayPlaneAtomic*>(plane);
-    atomic_plane->SetPlaneData(plane_list->atomic_property_set.get(), 0, 0,
-                               gfx::Rect(), gfx::Rect(),
-                               gfx::OVERLAY_TRANSFORM_NONE);
+    atomic_plane->SetPlaneData(
+        plane_list->atomic_property_set.get(), 0, 0, gfx::Rect(), gfx::Rect(),
+        gfx::OVERLAY_TRANSFORM_NONE, base::kInvalidPlatformFile);
   }
   // The list of crtcs is only useful if flags contains DRM_MODE_PAGE_FLIP_EVENT
   // to get the pageflip callback. In this case we don't need to be notified
@@ -124,6 +126,13 @@ bool HardwareDisplayPlaneManagerAtomic::ValidatePrimarySize(
   return true;
 }
 
+void HardwareDisplayPlaneManagerAtomic::RequestPlanesReadyCallback(
+    const OverlayPlaneList& planes,
+    base::OnceClosure callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                   std::move(callback));
+}
+
 bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
     HardwareDisplayPlaneList* plane_list,
     HardwareDisplayPlane* hw_plane,
@@ -136,9 +145,10 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
   uint32_t framebuffer_id = overlay.z_order
                                 ? overlay.buffer->GetFramebufferId()
                                 : overlay.buffer->GetOpaqueFramebufferId();
-  if (!atomic_plane->SetPlaneData(
-          plane_list->atomic_property_set.get(), crtc_id, framebuffer_id,
-          overlay.display_bounds, src_rect, overlay.plane_transform)) {
+  if (!atomic_plane->SetPlaneData(plane_list->atomic_property_set.get(),
+                                  crtc_id, framebuffer_id,
+                                  overlay.display_bounds, src_rect,
+                                  overlay.plane_transform, overlay.fence_fd)) {
     LOG(ERROR) << "Failed to set plane properties";
     return false;
   }

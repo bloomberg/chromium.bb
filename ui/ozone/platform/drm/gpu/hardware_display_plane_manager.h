@@ -103,6 +103,12 @@ class HardwareDisplayPlaneManager {
     return planes_;
   }
 
+  // Request a callback to be called when the planes are ready to be displayed.
+  // The callback will be invoked in the caller's execution context (same
+  // sequence or thread).
+  virtual void RequestPlanesReadyCallback(const OverlayPlaneList& planes,
+                                          base::OnceClosure callback) = 0;
+
   // Returns all formats which can be scanned out by this PlaneManager. Use
   // IsFormatSupported to find if a given format is supported on a particular
   // plane for a given crtc.

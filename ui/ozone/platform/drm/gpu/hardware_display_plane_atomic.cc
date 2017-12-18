@@ -20,6 +20,7 @@ const char* kSrcYPropName = "SRC_Y";
 const char* kSrcWPropName = "SRC_W";
 const char* kSrcHPropName = "SRC_H";
 const char* kRotationPropName = "rotation";
+const char* kInFenceFdPropName = "IN_FENCE_FD";
 
 // TODO(dcastagna): Remove the following defines once they're in libdrm headers.
 #if !defined(DRM_ROTATE_0)
@@ -86,7 +87,8 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
     uint32_t framebuffer,
     const gfx::Rect& crtc_rect,
     const gfx::Rect& src_rect,
-    const gfx::OverlayTransform transform) {
+    const gfx::OverlayTransform transform,
+    int in_fence_fd) {
   if (transform != gfx::OVERLAY_TRANSFORM_NONE && !rotation_prop_.id)
     return false;
 
@@ -119,6 +121,12 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
             property_set, plane_id_, rotation_prop_.id,
             OverlayTransformToDrmRotationPropertyValue(transform));
   }
+  if (in_fence_fd_prop_.id && in_fence_fd >= 0) {
+    plane_set_succeeded =
+        plane_set_succeeded &&
+        drmModeAtomicAddProperty(property_set, plane_id_, in_fence_fd_prop_.id,
+                                 in_fence_fd);
+  }
   if (!plane_set_succeeded) {
     PLOG(ERROR) << "Failed to set plane data";
     return false;
@@ -144,8 +152,9 @@ bool HardwareDisplayPlaneAtomic::InitializeProperties(
     LOG(ERROR) << "Unable to get plane properties.";
     return false;
   }
-  // "rotation" property is optional.
+  // The following properties are optional.
   rotation_prop_.Initialize(drm, kRotationPropName, plane_props);
+  in_fence_fd_prop_.Initialize(drm, kInFenceFdPropName, plane_props);
   return true;
 }
 

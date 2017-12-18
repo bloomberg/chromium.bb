@@ -10,6 +10,7 @@
 #include <xf86drm.h>
 #include <utility>
 
+#include "base/files/platform_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
@@ -387,8 +388,9 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
   DCHECK(buffer_->GetFlags() & GBM_BO_USE_SCANOUT);
-  surface_manager_->GetSurface(widget)->QueueOverlayPlane(OverlayPlane(
-      buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
+  surface_manager_->GetSurface(widget)->QueueOverlayPlane(
+      OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
+                   crop_rect, base::kInvalidPlatformFile));
 
   return true;
 }
