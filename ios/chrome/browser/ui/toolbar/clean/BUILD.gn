@@ -20,7 +20,6 @@ source_set("toolbar") {
     "//components/bookmarks/browser",
     "//components/google/core/browser",
     "//components/search_engines",
-    "//components/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/bookmarks",

@@ -15,7 +15,6 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/search_engines/util.h"
-#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -45,7 +44,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
@@ -146,9 +144,6 @@
                                         font:[MDCTypography subheadFont]
                                    textColor:textColor
                                    tintColor:tintColor];
-
-  SetA11yLabelAndUiAutomationName(self.locationBarView.textField,
-                                  IDS_ACCNAME_LOCATION, @"Address");
   _locationBar = base::MakeUnique<LocationBarControllerImpl>(
       self.locationBarView, self.browserState, self, self.dispatcher);
   self.locationBarView.incognito = isIncognito;

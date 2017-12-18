@@ -95,8 +95,7 @@ void SelectTab(NSString* title) {
         selectElementWithMatcher:grey_allOf(
                                      grey_kindOfClass(
                                          [TabSwitcherLocalSessionCell class]),
-                                     grey_descendant(grey_text(title)),
-                                     grey_sufficientlyVisible(), nil)]
+                                     grey_descendant(grey_text(title)), nil)]
         performAction:grey_tap()];
   } else {
     // On phone, tapping on the title UILabel will select the tab.
