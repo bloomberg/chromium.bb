@@ -131,9 +131,9 @@ class LinuxPort(base.Port):
         self._original_home = self.host.environ.get('HOME')
         dummy_home = str(self._filesystem.mkdtemp())
         self.host.environ['HOME'] = dummy_home
-        self._copy_files_to_dummy_home_dir(dummy_home)
+        self._setup_files_in_dummy_home_dir(dummy_home)
 
-    def _copy_files_to_dummy_home_dir(self, dummy_home):
+    def _setup_files_in_dummy_home_dir(self, dummy_home):
         # Note: This may be unnecessary.
         fs = self._filesystem
         for filename in ['.Xauthority']:
@@ -141,6 +141,12 @@ class LinuxPort(base.Port):
             if not fs.exists(original_path):
                 continue
             fs.copyfile(original_path, fs.join(dummy_home, filename))
+        # Prevent fontconfig etc. from reconstructing the cache.
+        for dirname in ['.cache']:
+            original_path = fs.join(self._original_home, dirname)
+            if not fs.exists(original_path):
+                continue
+            fs.symlink(original_path, fs.join(dummy_home, dirname))
 
     def _clean_up_dummy_home_dir(self):
         """Cleans up the dummy dir and resets the HOME environment variable."""

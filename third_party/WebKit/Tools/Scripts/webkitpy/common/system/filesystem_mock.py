@@ -439,6 +439,9 @@ class MockFileSystem(object):
             idx = len(path)
         return (path[0:idx], path[idx:])
 
+    def symlink(self, source, link_name):
+        raise NotImplementedError('Symlink not expected to be called in tests')
+
 
 class WritableBinaryFileObject(object):
 
