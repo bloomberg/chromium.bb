@@ -185,9 +185,12 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     // and call insertPlaceholderForTab:frame:.
     if (outOfTabHorizDeadZone_ || fabs(vertOffset) > kVertTearDistance) {
       tabWasDragged_ = YES;
-      [sourceController_ insertPlaceholderForTab:[draggedTab_ tabView]
-                                           frame:NSOffsetRect(sourceTabFrame_,
-                                                              horizOffset, 0)];
+      TabView* tabView = [draggedTab_ tabView];
+      [sourceController_
+          insertPlaceholderForTab:tabView
+                            frame:[tabView centerScanRect:NSOffsetRect(
+                                                              sourceTabFrame_,
+                                                              horizOffset, 0)]];
     }
 
     // Check if the tab has been pulled out of the tab strip. Emulate the
