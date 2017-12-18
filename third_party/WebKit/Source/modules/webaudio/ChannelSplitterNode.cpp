@@ -41,6 +41,7 @@ ChannelSplitterHandler::ChannelSplitterHandler(AudioNode& node,
   // These properties are fixed and cannot be changed by the user.
   channel_count_ = number_of_outputs;
   SetInternalChannelCountMode(kExplicit);
+  SetInternalChannelInterpretation(AudioBus::kDiscrete);
   AddInput();
 
   // Create a fixed number of outputs (able to handle the maximum number of
@@ -107,6 +108,20 @@ void ChannelSplitterHandler::SetChannelCountMode(
     exception_state.ThrowDOMException(
         kInvalidStateError,
         "ChannelSplitter: channelCountMode cannot be changed from 'explicit'");
+  }
+}
+
+void ChannelSplitterHandler::SetChannelInterpretation(
+    const String& mode,
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::GraphAutoLocker locker(Context());
+
+  // channelInterpretation must be "discrete"
+  if (mode != "discrete") {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "ChannelSplitter: channelInterpretation "
+                                      "cannot be changed from 'discrete'");
   }
 }
 

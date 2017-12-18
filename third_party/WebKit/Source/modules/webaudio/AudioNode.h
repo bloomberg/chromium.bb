@@ -220,7 +220,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   virtual void SetChannelCountMode(const String&, ExceptionState&);
 
   String ChannelInterpretation();
-  void SetChannelInterpretation(const String&, ExceptionState&);
+  virtual void SetChannelInterpretation(const String&, ExceptionState&);
 
   ChannelCountMode InternalChannelCountMode() const {
     return channel_count_mode_;

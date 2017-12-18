@@ -137,37 +137,68 @@ function testAudioNodeOptions(should, context, nodeName, expectedNodeOptions) {
   }
 
   // Test channelInterpretation
-  should(() => {
-    node = new window[nodeName](
-        context, Object.assign({}, expectedNodeOptions.additionalOptions, {
-          channelInterpretation: 'speakers'
-        }));
-  }, 'new ' + nodeName + '(c, {channelInterpretation: "speakers"})').notThrow();
-  should(node.channelInterpretation, 'node.channelInterpretation')
-      .beEqualTo('speakers');
+  if (expectedNodeOptions.channelInterpretation &&
+      expectedNodeOptions.channelInterpretation.isFixed) {
+    // The channel interpretation is fixed.  Verify that we throw an
+    // error if we try to change it.
+    ['speakers', 'discrete'].forEach(testValue => {
+      if (testValue !== expectedNodeOptions.channelInterpretation.value) {
+        should(
+            () => {
+              node = new window[nodeName](
+                  context,
+                  Object.assign(
+                      {}, expectedNodeOptions.additionOptions,
+                      {channelInterpretation: testValue}));
+            },
+            `new ${nodeName}(c, {channelInterpretation: "${testValue}"})`)
+            .throw(expectedNodeOptions.channelInterpretation.errorType);
+      }
+    });
+  } else {
+    // Channel interpretation is not fixed. Verify that we can set it
+    // to all possible values.
+    should(
+        () => {
+          node = new window[nodeName](
+              context,
+              Object.assign(
+                  {}, expectedNodeOptions.additionalOptions,
+                  {channelInterpretation: 'speakers'}));
+        },
+        'new ' + nodeName + '(c, {channelInterpretation: "speakers"})')
+        .notThrow();
+    should(node.channelInterpretation, 'node.channelInterpretation')
+        .beEqualTo('speakers');
 
-  should(() => {
-    node = new window[nodeName](
-        context, Object.assign({}, expectedNodeOptions.additionalOptions, {
-          channelInterpretation: 'discrete'
-        }));
-  }, 'new ' + nodeName + '(c, {channelInterpretation: "discrete"})').notThrow();
-  should(node.channelInterpretation, 'node.channelInterpretation')
-      .beEqualTo('discrete');
+    should(
+        () => {
+          node = new window[nodeName](
+              context,
+              Object.assign(
+                  {}, expectedNodeOptions.additionalOptions,
+                  {channelInterpretation: 'discrete'}));
+        },
+        'new ' + nodeName + '(c, {channelInterpretation: "discrete"})')
+        .notThrow();
+    should(node.channelInterpretation, 'node.channelInterpretation')
+        .beEqualTo('discrete');
 
-  should(
-      () => {
-        node = new window[nodeName](
-            context, Object.assign({}, expectedNodeOptions.additionalOptions, {
-              channelInterpretation: 'foobar'
-            }));
-      },
-      'new ' + nodeName + '(c, {channelInterpretation: "foobar"})')
-      .throw('TypeError');
-  should(
-      node.channelInterpretation,
-      'node.channelInterpretation after invalid setter')
-      .beEqualTo('discrete');
+    should(
+        () => {
+          node = new window[nodeName](
+              context,
+              Object.assign(
+                  {}, expectedNodeOptions.additionalOptions,
+                  {channelInterpretation: 'foobar'}));
+        },
+        'new ' + nodeName + '(c, {channelInterpretation: "foobar"})')
+        .throw('TypeError');
+    should(
+        node.channelInterpretation,
+        'node.channelInterpretation after invalid setter')
+        .beEqualTo('discrete');
+  }
 }
 
 function initializeContext(should) {
