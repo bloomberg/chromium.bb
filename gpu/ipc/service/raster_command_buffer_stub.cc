@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/raster_decoder.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -130,7 +131,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->transfer_buffer_manager());
-  decoder_.reset(gles2::GLES2Decoder::Create(
+  decoder_.reset(new raster::RasterDecoder(
       this, command_buffer_.get(), manager->outputter(), context_group_.get()));
 
   sync_point_client_state_ =
