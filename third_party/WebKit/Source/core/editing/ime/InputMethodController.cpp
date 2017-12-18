@@ -161,6 +161,7 @@ void InsertTextDuringCompositionWithEvents(
       // https://crbug.com/693481
       if (text.IsEmpty())
         TypingCommand::DeleteSelection(*frame.GetDocument(), 0);
+      frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
       TypingCommand::InsertText(*frame.GetDocument(), text, options,
                                 composition_type, is_incremental_insertion);
       break;

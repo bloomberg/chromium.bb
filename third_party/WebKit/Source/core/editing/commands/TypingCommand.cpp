@@ -350,11 +350,12 @@ void TypingCommand::InsertText(
     TextCompositionType composition_type,
     const bool is_incremental_insertion,
     InputEvent::InputType input_type) {
+  DCHECK(!document.NeedsLayoutTreeUpdate());
   LocalFrame* frame = document.GetFrame();
   DCHECK(frame);
 
   const VisibleSelection& current_selection =
-      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+      frame->Selection().ComputeVisibleSelectionInDOMTree();
   const VisibleSelection& selection_for_insertion =
       CreateVisibleSelection(passed_selection_for_insertion);
 
