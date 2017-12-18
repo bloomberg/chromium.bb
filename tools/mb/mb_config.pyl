@@ -653,8 +653,8 @@
       'linux_nacl_sdk': 'release_bot',
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'linux_site_isolation': 'release_trybot',
+      'linux_vr': 'vr_release_trybot',
       'linux_upload_clang': 'release_bot',
-      'vr_linux': 'vr_release_trybot',
       'leak_detection_linux': 'release_trybot',
     },
 
