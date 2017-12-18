@@ -193,6 +193,10 @@ URLRegistry& Blob::Registry() const {
   return BlobURLRegistry::Registry();
 }
 
+mojom::blink::BlobPtr Blob::AsMojoBlob() {
+  return blob_data_handle_->CloneBlobPtr();
+}
+
 // static
 String Blob::NormalizeType(const String& type) {
   if (type.IsNull())

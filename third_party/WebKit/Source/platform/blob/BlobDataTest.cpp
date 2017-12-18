@@ -114,9 +114,9 @@ class MockBlobRegistry : public BlobRegistry {
     std::move(callback).Run();
   }
 
-  void RegisterURL(BlobPtr blob,
-                   const KURL& url,
-                   RegisterURLCallback callback) override {
+  void URLStoreForOrigin(
+      const scoped_refptr<const SecurityOrigin>& origin,
+      mojom::blink::BlobURLStoreAssociatedRequest request) override {
     NOTREACHED();
   }
 
