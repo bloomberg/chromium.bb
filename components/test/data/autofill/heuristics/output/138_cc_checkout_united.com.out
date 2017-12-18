@@ -27,13 +27,13 @@ ADDRESS_HOME_CITY | PayPalCity | City/town/department* |  | CreditCardViewModels
 ADDRESS_HOME_STATE | PayPalState | State/province/region/county* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_ZIP | PayPalZipCode | ZIP/Postal code* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_COUNTRY | PayPalCountryCode | United States | US | CreditCardViewModels[0].CardTypeCode_1-default
-CREDIT_CARD_VERIFICATION_CODE | WalletCCSecurityCode | Security code |  | CreditCardViewModels[0].CardTypeCode_1-cc
+UNKNOWN_TYPE | WalletCCSecurityCode | Security code |  | CreditCardViewModels[0].CardTypeCode_1-default
 UNKNOWN_TYPE | CashType | Western Union ($11.95 service charge per transaction) | WU | CreditCardViewModels[0].CardTypeCode_1-default
 UNKNOWN_TYPE | CashType | Airport Ticket Office (service charge per transaction may apply) | ATO | CreditCardViewModels[0].CardTypeCode_1-default
 UNKNOWN_TYPE | CashType | United Ticket Office (service charge per transaction may apply) | CTO | CreditCardViewModels[0].CardTypeCode_1-default
 UNKNOWN_TYPE | BmlModel.IfForSixMonthsNoPayment | Yes, I would like to make no payments for six months on orders greater than $250. | true | CreditCardViewModels[0].CardTypeCode_1-default
-CREDIT_CARD_NAME_FIRST | BmlModel.FirstName | First name* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_NAME_LAST | BmlModel.LastName | Last name* |  | CreditCardViewModels[0].CardTypeCode_1-cc
+NAME_FIRST | BmlModel.FirstName | First name* |  | CreditCardViewModels[0].CardTypeCode_1-default
+NAME_LAST | BmlModel.LastName | Last name* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_LINE1 | BmlModel.BMLAddressLine1 | Billing address* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_CITY | BmlModel.BMLCity | City* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_STATE | BmlModel.BMLStateCode | State/territory/province* |  | CreditCardViewModels[0].CardTypeCode_1-default

@@ -168,13 +168,14 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
           scanner->Advance();
           return std::move(credit_card_field);
         } else {
-          // Put the scanner back to the field right after the current cvv.
+          // Chances that verification field is the first of a card are really
+          // low.
           scanner->Advance();
-          scanner->Advance();
+          credit_card_field->verification_ = nullptr;
         }
+      } else {
+        continue;
       }
-
-      continue;
     }
 
     // TODO(crbug.com/591816): Make sure parsing cc-numbers of type password
