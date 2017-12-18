@@ -17,6 +17,8 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/generic_sensor/sensor_provider_impl.h"
+#include "services/device/geolocation/public_ip_address_geolocator.h"
+#include "services/device/geolocation/public_ip_address_location_notifier.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/public/interfaces/battery_monitor.mojom.h"
 #include "services/device/serial/serial_device_enumerator_impl.h"
@@ -46,6 +48,9 @@ namespace device {
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const GeolocationProvider::RequestContextProducer
+        geolocation_request_context_producer,
+    const std::string& geolocation_api_key,
     const WakeLockContextCallback& wake_lock_context_callback,
     const CustomLocationProviderCallback& custom_location_provider_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate) {
@@ -53,17 +58,22 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
       custom_location_provider_callback);
   return std::make_unique<DeviceService>(
       std::move(file_task_runner), std::move(io_task_runner),
+      std::move(geolocation_request_context_producer), geolocation_api_key,
       wake_lock_context_callback, java_nfc_delegate);
 }
 #else
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const GeolocationProvider::RequestContextProducer
+        geolocation_request_context_producer,
+    const std::string& geolocation_api_key,
     const CustomLocationProviderCallback& custom_location_provider_callback) {
   GeolocationProviderImpl::SetCustomLocationProviderCallback(
       custom_location_provider_callback);
-  return std::make_unique<DeviceService>(std::move(file_task_runner),
-                                         std::move(io_task_runner));
+  return std::make_unique<DeviceService>(
+      std::move(file_task_runner), std::move(io_task_runner),
+      std::move(geolocation_request_context_producer), geolocation_api_key);
 }
 #endif
 
@@ -71,10 +81,16 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const GeolocationProvider::RequestContextProducer
+        geolocation_request_context_producer,
+    const std::string& geolocation_api_key,
     const WakeLockContextCallback& wake_lock_context_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate)
     : file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
+      geolocation_request_context_producer_(
+          geolocation_request_context_producer),
+      geolocation_api_key_(geolocation_api_key),
       wake_lock_context_callback_(wake_lock_context_callback),
       java_interface_provider_initialized_(false) {
   java_nfc_delegate_.Reset(java_nfc_delegate);
@@ -82,15 +98,26 @@ DeviceService::DeviceService(
 #else
 DeviceService::DeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    const GeolocationProvider::RequestContextProducer
+        geolocation_request_context_producer,
+    const std::string& geolocation_api_key)
     : file_task_runner_(std::move(file_task_runner)),
-      io_task_runner_(std::move(io_task_runner)) {}
+      io_task_runner_(std::move(io_task_runner)),
+      geolocation_request_context_producer_(
+          geolocation_request_context_producer),
+      geolocation_api_key_(geolocation_api_key) {}
 #endif
 
 DeviceService::~DeviceService() {
 #if !defined(OS_ANDROID)
   device::BatteryStatusService::GetInstance()->Shutdown();
 #endif
+  if (public_ip_address_geolocation_provider_) {
+    DCHECK(io_task_runner_);
+    io_task_runner_->DeleteSoon(
+        FROM_HERE, std::move(public_ip_address_geolocation_provider_));
+  }
 }
 
 void DeviceService::OnStart() {
@@ -102,6 +129,10 @@ void DeviceService::OnStart() {
       &DeviceService::BindGeolocationControlRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
       &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::PublicIpAddressGeolocationProvider>(
+      base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderRequest,
+                 base::Unretained(this)),
+      io_task_runner_);
   registry_.AddInterface<mojom::ScreenOrientationListener>(
       base::Bind(&DeviceService::BindScreenOrientationListenerRequest,
                  base::Unretained(this)));
@@ -203,6 +234,21 @@ void DeviceService::BindPowerMonitorRequest(
         std::make_unique<PowerMonitorMessageBroadcaster>();
   }
   power_monitor_message_broadcaster_->Bind(std::move(request));
+}
+
+void DeviceService::BindPublicIpAddressGeolocationProviderRequest(
+    mojom::PublicIpAddressGeolocationProviderRequest request) {
+  // This needs to run on IO thread because it uses URLRequestContextGetters
+  // which must not outlive that thread.
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+
+  if (!public_ip_address_geolocation_provider_) {
+    public_ip_address_geolocation_provider_ =
+        std::make_unique<PublicIpAddressGeolocationProvider>(
+            geolocation_request_context_producer_, geolocation_api_key_);
+  }
+
+  public_ip_address_geolocation_provider_->Bind(std::move(request));
 }
 
 void DeviceService::BindScreenOrientationListenerRequest(

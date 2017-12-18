@@ -8,13 +8,7 @@
 
 namespace device {
 
-PublicIpAddressGeolocationProvider::PublicIpAddressGeolocationProvider() {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-PublicIpAddressGeolocationProvider::~PublicIpAddressGeolocationProvider() {}
-
-void PublicIpAddressGeolocationProvider::Initialize(
+PublicIpAddressGeolocationProvider::PublicIpAddressGeolocationProvider(
     GeolocationProvider::RequestContextProducer request_context_producer,
     const std::string& api_key) {
   // Bind sequence_checker_ to the initialization sequence.
@@ -24,6 +18,8 @@ void PublicIpAddressGeolocationProvider::Initialize(
       std::make_unique<PublicIpAddressLocationNotifier>(
           request_context_producer, api_key);
 }
+
+PublicIpAddressGeolocationProvider::~PublicIpAddressGeolocationProvider() {}
 
 void PublicIpAddressGeolocationProvider::Bind(
     mojom::PublicIpAddressGeolocationProviderRequest request) {

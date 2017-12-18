@@ -445,6 +445,8 @@ ServiceManagerContext::ServiceManagerContext() {
   device_info.factory = base::Bind(
       &device::CreateDeviceService, device_blocking_task_runner,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      base::BindRepeating(&GetGeolocationRequestContextFromContentClient),
+      GetContentClient()->browser()->GetGeolocationApiKey(),
       base::Bind(&WakeLockContextHost::GetNativeViewForContext),
       base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
                  base::Unretained(GetContentClient()->browser())),
@@ -453,6 +455,8 @@ ServiceManagerContext::ServiceManagerContext() {
   device_info.factory = base::Bind(
       &device::CreateDeviceService, device_blocking_task_runner,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      base::BindRepeating(&GetGeolocationRequestContextFromContentClient),
+      GetContentClient()->browser()->GetGeolocationApiKey(),
       base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
                  base::Unretained(GetContentClient()->browser())));
 #endif
@@ -460,10 +464,10 @@ ServiceManagerContext::ServiceManagerContext() {
   packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
                                                     device_info);
 
-  // Pipe embedder-supplied API key through to GeolocationProvider.
-  // TODO(amoylan): Once GeolocationProvider hangs off DeviceService
-  // (https://crbug.com/709301), pass these via CreateDeviceService above
-  // instead.
+  // Pipe embedder-supplied API key & URL request context producer through to
+  // GeolocationProvider.
+  // TODO(amoylan): Remove these once GeolocationProvider hangs off
+  // DeviceService (https://crbug.com/709301).
   device::GeolocationProvider::SetRequestContextProducer(
       base::BindRepeating(&GetGeolocationRequestContextFromContentClient));
   device::GeolocationProvider::SetApiKey(

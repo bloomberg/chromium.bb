@@ -25,24 +25,16 @@ namespace device {
 // Sequencing:
 // * Must be used and destroyed on the same sequence.
 // * Provides mojom::Geolocation instances that are bound on the same sequence.
-// * Requires two-step construction: Construct on any sequence, then invoke
-//   Initialize() on the sequence on which this object will run.
 class PublicIpAddressGeolocationProvider
     : public mojom::PublicIpAddressGeolocationProvider {
  public:
-  // After construction, invoke Initialize() (on the appropriate sequence) to
-  // finish initialization.
-  PublicIpAddressGeolocationProvider();
-  ~PublicIpAddressGeolocationProvider() override;
-
-  // Finishes initialization, using the specified Google |api_key| and a URL
-  // request context produced by |request_context_producer| for network location
-  // requests.
-  // After this call is made, this object must be used only on the sequence on
-  // which this call was made.
-  void Initialize(
+  // Initialize PublicIpAddressGeolocationProvider using the specified Google
+  // |api_key| and a URL request context produced by |request_context_producer|
+  // for network location requests.
+  PublicIpAddressGeolocationProvider(
       GeolocationProvider::RequestContextProducer request_context_producer,
       const std::string& api_key);
+  ~PublicIpAddressGeolocationProvider() override;
 
   // Binds a PublicIpAddressGeolocationProvider request to this instance.
   void Bind(mojom::PublicIpAddressGeolocationProviderRequest request);
