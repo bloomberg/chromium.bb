@@ -13,7 +13,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
-class StoragePartition;
+class URLLoaderFactoryGetter;
 
 // Helper class to intercept URLLoaderFactory calls for tests.
 // This intercepts:
@@ -59,7 +59,6 @@ class URLLoaderInterceptor {
   using InterceptCallback = base::Callback<bool(RequestParams* params)>;
 
   URLLoaderInterceptor(const InterceptCallback& callback,
-                       StoragePartition* storage_partition,
                        bool intercept_frame_requests = true,
                        bool intercept_subresources = false);
   ~URLLoaderInterceptor();
@@ -71,7 +70,8 @@ class URLLoaderInterceptor {
 
  private:
   class Interceptor;
-  class IOThreadWrapper;
+  class SubresourceWrapper;
+  class URLLoaderFactoryGetterWrapper;
 
   // Used to create a factory for subresources in the network service case.
   void CreateURLLoaderFactoryForSubresources(
@@ -79,19 +79,31 @@ class URLLoaderInterceptor {
       int process_id,
       mojom::URLLoaderFactoryPtrInfo original_factory);
 
-  // Used on shutdown to clear |io_thread_wrappers_| on the IO thread.
-  void ClearSubresourceWrappers();
+  // Callback on IO thread whenever a URLLoaderFactoryGetter::GetNetworkContext
+  // is called on an object that doesn't have a test factory set up.
+  void GetNetworkFactoryCallback(
+      URLLoaderFactoryGetter* url_loader_factory_getter);
+
+  // Called when a SubresourceWrapper's binding has an error.
+  void SubresourceWrapperBindingError(SubresourceWrapper* wrapper);
+
+  // Called on IO thread at initialization and shutdown.
+  void InitializeOnIOThread(base::OnceClosure closure);
+  void ShutdownOnIOThread(base::OnceClosure closure);
 
   InterceptCallback callback_;
-  StoragePartition* storage_partition_;
-  // For intercepting frame requests.
-  std::unique_ptr<Interceptor> frame_interceptor_;
+  bool intercept_frame_requests_;
+  bool intercept_subresources_;
+  // For intercepting frame requests with network service. There is one per
+  // StoragePartition. Only accessed on IO thread.
+  std::set<std::unique_ptr<URLLoaderFactoryGetterWrapper>>
+      url_loader_factory_getter_wrappers_;
   // For intercepting subresources without network service in
   // ResourceMessageFilter.
   std::unique_ptr<Interceptor> rmf_interceptor_;
-  // For intercepting subresources with network service. Only accessed on IO
-  // thread.
-  std::set<std::unique_ptr<IOThreadWrapper>> io_thread_wrappers_;
+  // For intercepting subresources with network service. There is one per active
+  // render frame commit. Only accessed on IO thread.
+  std::set<std::unique_ptr<SubresourceWrapper>> subresource_wrappers_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderInterceptor);
 };

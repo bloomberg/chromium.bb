@@ -5,10 +5,16 @@
 #include "content/browser/url_loader_factory_getter.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/common/network_service.mojom.h"
 
 namespace content {
+
+namespace {
+base::LazyInstance<URLLoaderFactoryGetter::GetNetworkFactoryCallback>::Leaky
+    g_get_network_factory_callback = LAZY_INSTANCE_INITIALIZER;
+}
 
 URLLoaderFactoryGetter::URLLoaderFactoryGetter() {}
 
@@ -30,6 +36,8 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
 
 mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetNetworkFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (g_get_network_factory_callback.Get() && !test_factory_)
+    g_get_network_factory_callback.Get().Run(this);
   return test_factory_ ? test_factory_ : network_factory_.get();
 }
 
@@ -43,6 +51,15 @@ void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!test_factory_ || !test_factory);
   test_factory_ = test_factory;
+}
+
+void URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
+    const GetNetworkFactoryCallback& get_network_factory_callback) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!g_get_network_factory_callback.Get() ||
+         !get_network_factory_callback);
+  g_get_network_factory_callback.Get() = get_network_factory_callback;
 }
 
 URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}

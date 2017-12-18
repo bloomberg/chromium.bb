@@ -216,15 +216,6 @@ class NoStatePrefetchBrowserTest
                            expected_final_status);
   }
 
-  content::StoragePartition* GetStoragePartition() {
-    return browser()
-        ->tab_strip_model()
-        ->GetActiveWebContents()
-        ->GetMainFrame()
-        ->GetProcess()
-        ->GetStoragePartition();
-  }
-
  private:
   // Schedule a task to retrieve AppCacheInfo from |appcache_service|. This sets
   // |found_manifest| if an appcache exists for |manifest_url|. |callback| will
@@ -351,7 +342,7 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
             return false;
           },
           prefetch_page, prefetch_script),
-      GetStoragePartition(), use_interceptor_for_frame_requests, true);
+      use_interceptor_for_frame_requests, true);
 
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
@@ -519,7 +510,7 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
             return false;
           },
           redirect_url),
-      GetStoragePartition(), use_interceptor, false);
+      use_interceptor, false);
 
   PrefetchFromFile(redirect_path, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(redirect_url, 1);

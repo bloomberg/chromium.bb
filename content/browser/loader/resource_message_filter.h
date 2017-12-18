@@ -93,7 +93,9 @@ class CONTENT_EXPORT ResourceMessageFilter
   // When the testing pointer's CreateLoaderAndStart() is being called,
   // |GetCurrentForTesting()| will return the filter that's calling the testing
   // pointer. Also, the testing pointer won't be used for nested
-  // CreateLoaderAndStart's. Must be called on the IO thread.
+  // CreateLoaderAndStart's.
+  // This method must be called either on the IO thread or before threads start.
+  // This callback is run on the IO thread.
   static void SetNetworkFactoryForTesting(
       mojom::URLLoaderFactory* test_factory);
   static ResourceMessageFilter* GetCurrentForTesting();

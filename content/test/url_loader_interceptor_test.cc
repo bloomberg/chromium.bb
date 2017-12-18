@@ -8,9 +8,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -46,14 +43,6 @@ class URLLoaderInterceptorTest : public ContentBrowserTest {
   }
 
   GURL GetImageURL() { return embedded_test_server()->GetURL("/blank.jpg"); }
-
-  StoragePartition* GetStoragePartition() {
-    return shell()
-        ->web_contents()
-        ->GetMainFrame()
-        ->GetProcess()
-        ->GetStoragePartition();
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, NoInterception) {
@@ -62,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, NoInterception) {
         NOTREACHED();
         return false;
       }),
-      GetStoragePartition(), false, false);
+      false, false);
   Test();
 }
 
@@ -81,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorFrame) {
             seen = true;
             return false;
           }),
-      GetStoragePartition(), true, false);
+      true, false);
   Test();
   EXPECT_TRUE(seen);
 }
@@ -101,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptFrame) {
             params->client->OnComplete(status);
             return true;
           }),
-      GetStoragePartition(), true, false);
+      true, false);
   EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
 }
 
@@ -120,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorSubresource) {
             seen = true;
             return false;
           }),
-      GetStoragePartition(), false, true);
+      false, true);
   Test();
   EXPECT_TRUE(seen);
   EXPECT_TRUE(DidImageLoad());
@@ -140,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptSubresource) {
             params->client->OnComplete(status);
             return true;
           }),
-      GetStoragePartition(), false, true);
+      false, true);
   Test();
   EXPECT_FALSE(DidImageLoad());
 }

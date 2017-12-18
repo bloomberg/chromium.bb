@@ -50,7 +50,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -289,14 +288,6 @@ std::unique_ptr<net::test_server::HttpResponse> Return500WithBinaryBody(
   return std::unique_ptr<net::test_server::HttpResponse>(
       new net::test_server::RawHttpResponse("HTTP/1.1 500 Server Sad :(",
                                             "\x01"));
-}
-
-content::StoragePartition* GetStoragePartition(Browser* browser) {
-  return browser->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetMainFrame()
-      ->GetProcess()
-      ->GetStoragePartition();
 }
 
 class ErrorPageTest : public InProcessBrowserTest {
@@ -1095,8 +1086,8 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
     requests_ = failures_ = 0;
 
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-          base::BindRepeating(
+      url_loader_interceptor_ =
+          std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
               [](int32_t requests_to_fail, int32_t* requests, int32_t* failures,
                  content::URLLoaderInterceptor::RequestParams* params) {
                 (*requests)++;
@@ -1114,8 +1105,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
                     params->client.get());
                 return true;
               },
-              requests_to_fail, &requests_, &failures_),
-          GetStoragePartition(browser()));
+              requests_to_fail, &requests_, &failures_));
     } else {
       std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
           new FailFirstNRequestsInterceptor(requests_to_fail, &requests_,
@@ -1265,8 +1255,8 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-          base::BindRepeating(
+      url_loader_interceptor_ =
+          std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
               [](content::URLLoaderInterceptor::RequestParams* params) {
                 if (params->url_request.url != google_util::LinkDoctorBaseURL())
                   return false;
@@ -1275,8 +1265,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
                 status.error_code = net::ERR_ADDRESS_UNREACHABLE;
                 params->client->OnComplete(status);
                 return true;
-              }),
-          GetStoragePartition(browser()));
+              }));
     } else {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
