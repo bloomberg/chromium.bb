@@ -149,6 +149,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesText) {
   SetupHtml("t", "<div id=t>Hello <span>inline</span> world.</div>");
   NGInlineNodeForTest node = CreateInlineNode();
   node.CollectInlines();
+  EXPECT_FALSE(node.IsBidiEnabled());
   Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 6u);
   TEST_ITEM_TYPE_OFFSET(items[1], kOpenTag, 6u, 6u);
@@ -163,6 +164,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesBR) {
   NGInlineNodeForTest node = CreateInlineNode();
   node.CollectInlines();
   EXPECT_EQ("Hello\nWorld", node.Text());
+  EXPECT_FALSE(node.IsBidiEnabled());
   Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 5u);
   TEST_ITEM_TYPE_OFFSET(items[1], kControl, 5u, 6u);
@@ -170,7 +172,28 @@ TEST_F(NGInlineNodeTest, CollectInlinesBR) {
   EXPECT_EQ(3u, items.size());
 }
 
-TEST_F(NGInlineNodeTest, CollectInlinesRtlText) {
+TEST_F(NGInlineNodeTest, CollectInlinesUTF16) {
+  SetupHtml("t", u"<div id=t>Hello \u3042</div>");
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines();
+  // |CollectInlines()| sets |IsBidiEnabled()| for any UTF-16 strings.
+  EXPECT_TRUE(node.IsBidiEnabled());
+  // |SegmentText()| analyzes the string and resets |IsBidiEnabled()| if all
+  // characters are LTR.
+  node.SegmentText();
+  EXPECT_FALSE(node.IsBidiEnabled());
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesRtl) {
+  SetupHtml("t", u"<div id=t>Hello \u05E2</div>");
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines();
+  EXPECT_TRUE(node.IsBidiEnabled());
+  node.SegmentText();
+  EXPECT_TRUE(node.IsBidiEnabled());
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesRtlWithSpan) {
   SetupHtml("t", u"<div id=t dir=rtl>\u05E2 <span>\u05E2</span> \u05E2</div>");
   NGInlineNodeForTest node = CreateInlineNode();
   node.CollectInlines();
