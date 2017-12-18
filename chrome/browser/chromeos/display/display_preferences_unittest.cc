@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -30,6 +31,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "ui/display/display_layout_builder.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/chromeos/test/touch_device_manager_test_api.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -227,6 +229,15 @@ class DisplayPreferencesTest : public ash::AshTestBase {
     pref_data->SetInteger("orientation", static_cast<int>(rotation));
   }
 
+  void StoreExternalDisplayMirrorInfo(
+      const std::set<int64_t>& external_display_mirror_info) {
+    ListPrefUpdate update(local_state(), prefs::kExternalDisplayMirrorInfo);
+    base::ListValue* pref_data = update.Get();
+    pref_data->Clear();
+    for (const auto& id : external_display_mirror_info)
+      pref_data->GetList().emplace_back(base::Value(base::Int64ToString(id)));
+  }
+
   std::string GetRegisteredDisplayPlacementStr(
       const display::DisplayIdList& list) {
     return ash::Shell::Get()
@@ -290,11 +301,13 @@ TEST_F(DisplayPreferencesTest, ListedLayoutOverrides) {
 TEST_F(DisplayPreferencesTest, BasicStores) {
   ash::WindowTreeHostManager* window_tree_host_manager =
       ash::Shell::Get()->window_tree_host_manager();
-
-  UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+
+  // For each configuration change, we store mirror info only for external
+  // displays. So set internal display first before adding display.
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                          id1);
+  UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   int64_t dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
@@ -374,6 +387,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   bool mirrored = true;
   EXPECT_TRUE(layout_value->GetBoolean(kMirroredKey, &mirrored));
   EXPECT_FALSE(mirrored);
+
+  const base::ListValue* external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(0U, external_display_mirror_info->GetSize());
 
   const base::DictionaryValue* properties =
       local_state()->GetDictionary(prefs::kDisplayProperties);
@@ -518,6 +535,12 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id1), &property));
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
+
+  external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(1U, external_display_mirror_info->GetSize());
+  EXPECT_EQ(base::Int64ToString(id2),
+            external_display_mirror_info->GetList()[0].GetString());
 
   // External display's selected resolution must not change
   // by mirroring.
@@ -1057,41 +1080,71 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
 }
 
 TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
-  int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  const int64_t first_display_id = 210000001;
+  const int64_t second_display_id = 220000002;
+  display::ManagedDisplayInfo first_display_info =
+      display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 500, 500));
+  display::ManagedDisplayInfo second_display_info =
+      display::CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 500, 500));
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.emplace_back(first_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+      first_display_id);
+  EXPECT_FALSE(display_manager()->IsInUnifiedMode());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+
   display::DisplayIdList list =
-      display::test::CreateDisplayIdList2(id1, id1 + 1);
+      display::test::CreateDisplayIdList2(first_display_id, second_display_id);
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   StoreDisplayPropertyForList(
       list, "primary-id",
-      base::MakeUnique<base::Value>(base::Int64ToString(id1)));
+      base::MakeUnique<base::Value>(base::Int64ToString(first_display_id)));
   LoadDisplayPreferences(false);
 
   // Should not restore to unified unless unified desktop is enabled.
-  UpdateDisplay("100x100,200x200");
+  display_info_list.emplace_back(second_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 
   // Restored to unified.
   display_manager()->SetUnifiedDesktopEnabled(true);
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   LoadDisplayPreferences(false);
-  UpdateDisplay("100x100,200x200");
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(display_manager()->IsInUnifiedMode());
 
+  // Remove the second display.
+  display_info_list.erase(display_info_list.end() - 1);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_FALSE(display_manager()->IsInUnifiedMode());
+
   // Restored to mirror, then unified.
-  StoreDisplayBoolPropertyForList(list, "mirrored", true);
+  std::set<int64_t> external_display_mirror_info;
+  external_display_mirror_info.emplace(
+      display::GetDisplayIdWithoutOutputIndex(second_display_id));
+  StoreExternalDisplayMirrorInfo(external_display_mirror_info);
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   LoadDisplayPreferences(false);
-  UpdateDisplay("100x100,200x200");
+  display_info_list.emplace_back(second_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
   display_manager()->SetMirrorMode(false);
   EXPECT_TRUE(display_manager()->IsInUnifiedMode());
 
+  // Remove the second display.
+  display_info_list.erase(display_info_list.end() - 1);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_FALSE(display_manager()->IsInUnifiedMode());
+
   // Sanity check. Restore to extended.
+  external_display_mirror_info.clear();
+  StoreExternalDisplayMirrorInfo(external_display_mirror_info);
   StoreDisplayBoolPropertyForList(list, "default_unified", false);
-  StoreDisplayBoolPropertyForList(list, "mirrored", false);
   LoadDisplayPreferences(false);
-  UpdateDisplay("100x100,200x200");
+  display_info_list.emplace_back(second_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 }
@@ -1251,6 +1304,116 @@ TEST_F(DisplayPreferencesTest, LegacyTouchCalibrationDataSupport) {
   EXPECT_TRUE(tdm->touch_associations().at(identifier).count(id_2));
   EXPECT_EQ(tdm->touch_associations().at(identifier).at(id_2).calibration_data,
             data_2);
+}
+
+class MultiMirroringDisplayPreferencesTest : public DisplayPreferencesTest {
+ public:
+  MultiMirroringDisplayPreferencesTest() = default;
+  ~MultiMirroringDisplayPreferencesTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableMultiMirroring);
+    DisplayPreferencesTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultiMirroringDisplayPreferencesTest);
+};
+
+TEST_F(MultiMirroringDisplayPreferencesTest, ExternalDisplayMirrorInfo) {
+  LoggedInAsUser();
+
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  constexpr int64_t first_display_id = 210000001;
+  constexpr int64_t second_display_id = 220000002;
+  const int64_t first_display_masked_id =
+      display::GetDisplayIdWithoutOutputIndex(first_display_id);
+  const int64_t second_display_masked_id =
+      display::GetDisplayIdWithoutOutputIndex(second_display_id);
+  display::ManagedDisplayInfo first_display_info =
+      display::CreateDisplayInfo(first_display_id, gfx::Rect(1, 1, 500, 500));
+  display::ManagedDisplayInfo second_display_info =
+      display::CreateDisplayInfo(second_display_id, gfx::Rect(2, 2, 500, 500));
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+
+  // There's no external display now.
+  display_info_list.push_back(display::CreateDisplayInfo(
+      internal_display_id, gfx::Rect(0, 0, 100, 100)));
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // Add first display id to the external display mirror info.
+  std::set<int64_t> external_display_mirror_info;
+  external_display_mirror_info.emplace(first_display_masked_id);
+  StoreExternalDisplayMirrorInfo(external_display_mirror_info);
+  LoadDisplayPreferences(true);
+  const base::ListValue* pref_external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(1U, pref_external_display_mirror_info->GetSize());
+  EXPECT_EQ(base::Int64ToString(first_display_masked_id),
+            pref_external_display_mirror_info->GetList()[0].GetString());
+
+  // Add first display, mirror mode restores and the external display mirror
+  // info does not change.
+  display_info_list.emplace_back(first_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+  pref_external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(1U, pref_external_display_mirror_info->GetSize());
+  EXPECT_EQ(base::Int64ToString(first_display_masked_id),
+            pref_external_display_mirror_info->GetList()[0].GetString());
+
+  // Add second display, mirror mode persists and the second display id is added
+  // to the external display mirror info.
+  display_info_list.emplace_back(second_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+  pref_external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(2U, pref_external_display_mirror_info->GetSize());
+  EXPECT_EQ(base::Int64ToString(first_display_masked_id),
+            pref_external_display_mirror_info->GetList()[0].GetString());
+  EXPECT_EQ(base::Int64ToString(second_display_masked_id),
+            pref_external_display_mirror_info->GetList()[1].GetString());
+
+  // Disconnect all external displays.
+  display_info_list.erase(display_info_list.begin() + 1,
+                          display_info_list.end());
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // Clear external display mirror info and only add second display id to it.
+  external_display_mirror_info.clear();
+  external_display_mirror_info.emplace(second_display_masked_id);
+  StoreExternalDisplayMirrorInfo(external_display_mirror_info);
+  LoadDisplayPreferences(false);
+  pref_external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(1U, pref_external_display_mirror_info->GetSize());
+  EXPECT_EQ(base::Int64ToString(second_display_masked_id),
+            pref_external_display_mirror_info->GetList()[0].GetString());
+
+  // Add first display, mirror mode is off and the external display mirror info
+  // does not change.
+  display_info_list.emplace_back(first_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  pref_external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(1U, pref_external_display_mirror_info->GetSize());
+  EXPECT_EQ(base::Int64ToString(second_display_masked_id),
+            pref_external_display_mirror_info->GetList()[0].GetString());
+
+  // Add second display, mirror mode remains off and the second display id is
+  // removed from the external display mirror info.
+  display_info_list.emplace_back(second_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  pref_external_display_mirror_info =
+      local_state()->GetList(prefs::kExternalDisplayMirrorInfo);
+  EXPECT_EQ(0U, pref_external_display_mirror_info->GetSize());
 }
 
 }  // namespace chromeos

@@ -25,6 +25,8 @@ class DISPLAY_MANAGER_EXPORT DisplayLayoutStore {
   // Set true to force mirror mode.
   void set_forced_mirror_mode(bool forced) { forced_mirror_mode_ = forced; }
 
+  bool forced_mirror_mode() const { return forced_mirror_mode_; }
+
   void SetDefaultDisplayPlacement(const DisplayPlacement& placement);
 
   // Registers the display layout info for the specified display(s).

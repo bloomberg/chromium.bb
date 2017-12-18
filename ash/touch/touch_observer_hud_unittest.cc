@@ -348,6 +348,10 @@ TEST_F(TouchHudDebugTest, SwapPrimaryDisplay) {
 
 // Checks if debug touch HUDs are correctly handled when displays are mirrored.
 TEST_F(TouchHudDebugTest, MirrorDisplays) {
+  // Disable restoring mirror mode to prevent interference from previous
+  // display configuration.
+  display_manager()->set_disable_restoring_mirror_mode_for_test(true);
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -367,11 +371,15 @@ TEST_F(TouchHudDebugTest, MirrorDisplays) {
             display_manager()->GetSecondaryDisplay().id());
   CheckInternalDisplay();
   CheckExternalDisplay();
+
+  display_manager()->set_disable_restoring_mirror_mode_for_test(false);
 }
 
 // Checks if debug touch HUDs are correctly handled when displays are mirrored
 // after setting the external display as the primary one.
 TEST_F(TouchHudDebugTest, SwapPrimaryThenMirrorDisplays) {
+  display_manager()->set_disable_restoring_mirror_mode_for_test(true);
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -395,6 +403,8 @@ TEST_F(TouchHudDebugTest, SwapPrimaryThenMirrorDisplays) {
             display_manager()->GetSecondaryDisplay().id());
   CheckInternalDisplay();
   CheckExternalDisplay();
+
+  display_manager()->set_disable_restoring_mirror_mode_for_test(false);
 }
 
 // Checks if debug touch HUDs are correctly handled when the external display,
