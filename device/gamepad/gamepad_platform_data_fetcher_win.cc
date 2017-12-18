@@ -32,6 +32,14 @@ static const BYTE kDeviceSubTypeDrumKit = 8;
 static const BYTE kDeviceSubTypeGuitarBass = 11;
 static const BYTE kDeviceSubTypeArcadePad = 19;
 
+// XInput does not expose the state of the Guide (Xbox) button through the
+// XInputGetState method. To access this button, we need to query the gamepad
+// state with the undocumented XInputGetStateEx method.
+static const LPCSTR kXInputGetStateExOrdinal = (LPCSTR)100;
+
+// Bitmask for the Guide button in XInputGamepadEx.wButtons.
+static const int kXInputGamepadGuide = 0x0400;
+
 float NormalizeXInputAxis(SHORT value) {
   return ((value + 32768.f) / 32767.5f) - 1.f;
 }
@@ -152,10 +160,18 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
 
   Gamepad& pad = pad_state->data;
 
-  XINPUT_STATE state;
-  memset(&state, 0, sizeof(XINPUT_STATE));
+  // Use XInputGetStateEx if it is available, otherwise fall back to
+  // XInputGetState. We can use the same struct for both since XInputStateEx
+  // has identical layout to XINPUT_STATE except for an extra padding member at
+  // the end.
+  XInputStateEx state;
+  memset(&state, 0, sizeof(XInputStateEx));
   TRACE_EVENT_BEGIN1("GAMEPAD", "XInputGetState", "id", i);
-  DWORD dwResult = xinput_get_state_(i, &state);
+  DWORD dwResult;
+  if (xinput_get_state_ex_)
+    dwResult = xinput_get_state_ex_(i, &state);
+  else
+    dwResult = xinput_get_state_(i, reinterpret_cast<XINPUT_STATE*>(&state));
   TRACE_EVENT_END1("GAMEPAD", "XInputGetState", "id", i);
 
   if (dwResult == ERROR_SUCCESS) {
@@ -190,6 +206,10 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
     ADD(XINPUT_GAMEPAD_DPAD_DOWN);
     ADD(XINPUT_GAMEPAD_DPAD_LEFT);
     ADD(XINPUT_GAMEPAD_DPAD_RIGHT);
+    if (xinput_get_state_ex_) {
+      // Only XInputGetStateEx reports the Guide button state.
+      ADD(kXInputGamepadGuide);
+    }
 #undef ADD
     pad.axes_length = 0;
 
@@ -208,17 +228,26 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
 }
 
 bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {
-  xinput_get_capabilities_ = NULL;
-  xinput_get_state_ = NULL;
+  xinput_get_capabilities_ = nullptr;
+  xinput_get_state_ = nullptr;
+  xinput_get_state_ex_ = nullptr;
   XInputEnableFunc xinput_enable = reinterpret_cast<XInputEnableFunc>(
       xinput_dll_.GetFunctionPointer("XInputEnable"));
   xinput_get_capabilities_ = reinterpret_cast<XInputGetCapabilitiesFunc>(
       xinput_dll_.GetFunctionPointer("XInputGetCapabilities"));
   if (!xinput_get_capabilities_)
     return false;
-  xinput_get_state_ = reinterpret_cast<XInputGetStateFunc>(
-      xinput_dll_.GetFunctionPointer("XInputGetState"));
-  if (!xinput_get_state_)
+
+  // Get undocumented function XInputGetStateEx. If it is not present, fall back
+  // to XInputGetState.
+  xinput_get_state_ex_ = reinterpret_cast<XInputGetStateExFunc>(
+      ::GetProcAddress(xinput_dll_.get(), kXInputGetStateExOrdinal));
+  if (!xinput_get_state_ex_) {
+    xinput_get_state_ = reinterpret_cast<XInputGetStateFunc>(
+        xinput_dll_.GetFunctionPointer("XInputGetState"));
+  }
+
+  if (!xinput_get_state_ && !xinput_get_state_ex_)
     return false;
   if (xinput_enable) {
     // XInputEnable is unavailable before Win8 and deprecated in Win10.

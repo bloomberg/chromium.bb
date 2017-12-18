@@ -29,6 +29,23 @@
 
 namespace device {
 
+// XInputGetStateEx uses a slightly larger struct than XInputGetState.
+struct XInputGamepadEx {
+  WORD wButtons;
+  BYTE bLeftTrigger;
+  BYTE bRightTrigger;
+  SHORT sThumbLX;
+  SHORT sThumbLY;
+  SHORT sThumbRX;
+  SHORT sThumbRY;
+  DWORD dwPaddingReserved;
+};
+
+struct XInputStateEx {
+  DWORD dwPacketNumber;
+  XInputGamepadEx Gamepad;
+};
+
 class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
  public:
   typedef GamepadDataFetcherFactoryImpl<GamepadPlatformDataFetcherWin,
@@ -45,7 +62,7 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
  private:
   void OnAddedToProvider() override;
 
-  // The three function types we use from xinput1_3.dll.
+  // The function types we use from xinput1_3.dll.
   typedef void(WINAPI* XInputEnableFunc)(BOOL enable);
   typedef DWORD(WINAPI* XInputGetCapabilitiesFunc)(
       DWORD dwUserIndex,
@@ -53,6 +70,8 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
       XINPUT_CAPABILITIES* pCapabilities);
   typedef DWORD(WINAPI* XInputGetStateFunc)(DWORD dwUserIndex,
                                             XINPUT_STATE* pState);
+  typedef DWORD(WINAPI* XInputGetStateExFunc)(DWORD dwUserIndex,
+                                              XInputStateEx* pState);
 
   // Get functions from dynamically loading the xinput dll.
   // Returns true if loading was successful.
@@ -69,6 +88,7 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   // |GetXinputDllFunctions|.
   XInputGetCapabilitiesFunc xinput_get_capabilities_;
   XInputGetStateFunc xinput_get_state_;
+  XInputGetStateExFunc xinput_get_state_ex_;
 
   bool xinuput_connected_[XUSER_MAX_COUNT];
 
