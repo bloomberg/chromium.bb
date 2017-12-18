@@ -638,11 +638,11 @@ class LocalDeviceInstrumentationTestRun(
           extras['log'] = 'true'
           extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
           target = '%s/%s' % (test_package, junit4_runner_class)
-          kwargs = {}
+          timeout = 120
           if self._test_instance.wait_for_java_debugger:
-            kwargs['timeout'] = None
+            timeout = None
           test_list_run_output = dev.StartInstrumentation(
-              target, extras=extras, retries=0, **kwargs)
+              target, extras=extras, retries=0, timeout=timeout)
           if any(test_list_run_output):
             logging.error('Unexpected output while listing tests:')
             for line in test_list_run_output:
