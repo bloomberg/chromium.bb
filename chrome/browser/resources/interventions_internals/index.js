@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 /** The columns that are used to find rows that contain the keyword. */
-const KEY_COLUMNS = ['log-type', 'log-description', 'log-url'];
 const ENABLE_BLACKLIST_BUTTON = 'Enable Blacklist';
 const IGNORE_BLACKLIST_BUTTON = 'Ignore Blacklist';
 const IGNORE_BLACKLIST_MESSAGE = 'Blacklist decisions are ignored.';
@@ -92,6 +91,32 @@ function pushMessagesToTopOfLogsTable(pageId) {
   // Moving the original row.
   pushRowToTopOfLogsTable(currentMessageRow, logsTable);
   window.logTableMap[pageId] = logsTable.rows[1];
+}
+
+/**
+ * Helper method to expand all logs in the message-logs-table.
+ */
+function expandAllLogs() {
+  let rows = $('message-logs-table').rows;
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i].className.includes('expansion-row')) {
+      rows[i].className = rows[i].className.replace('hide', 'show');
+      rows[i - 1].querySelector('.arrow').className = 'arrow up';
+    }
+  }
+}
+
+/**
+ * Helper method to collapse all logs in the message-logs-table.
+ */
+function collapseAllLogs() {
+  let rows = $('message-logs-table').rows;
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i].className.includes('expansion-row')) {
+      rows[i].className = rows[i].className.replace('show', 'hide');
+      rows[i - 1].querySelector('.arrow').className = 'arrow down';
+    }
+  }
 }
 
 /**
@@ -270,18 +295,42 @@ function setupLogSearch() {
   $('log-search-bar').addEventListener('keyup', () => {
     let keyword = $('log-search-bar').value.toUpperCase();
     let rows = $('message-logs-table').rows;
+    expandAllLogs();
 
     for (let i = 1; i < rows.length; i++) {
-      let row = rows[i];
-      let found = KEY_COLUMNS.some((column) => {
-        let cell = row.querySelector('.' + column);
-        if (!cell) {
-          return keyword == '';
+      rows[i].style.display =
+          rows[i].textContent.toUpperCase().includes(keyword) ? '' : 'none';
+
+      let subtable = rows[i].querySelector('.expansion-logs-table');
+      if (subtable) {
+        for (let i = 0; i < subtable.rows.length; i++) {
+          subtable.rows[i].style.display =
+              subtable.rows[i].textContent.toUpperCase().includes(keyword) ?
+              '' :
+              'none';
         }
-        return cell.textContent.toUpperCase().includes(keyword);
-      });
-      row.style.display = found ? '' : 'none';
+      }
     }
+  });
+}
+
+/**
+ * Initialize the button to expand all logs data, and collapse all logs.
+ */
+function setupExpandLogs() {
+  // Expand all button.
+  $('expand-log-button').addEventListener('click', () => {
+    expandAllLogs();
+    $('collapse-log-button').style.display = '';
+    $('expand-log-button').style.display = 'none';
+  });
+
+  // Collapse all button.
+  $('collapse-log-button').style.display = 'none';
+  $('collapse-log-button').addEventListener('click', () => {
+    collapseAllLogs();
+    $('collapse-log-button').style.display = 'none';
+    $('expand-log-button').style.display = '';
   });
 }
 
@@ -612,6 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTabControl();
   setupLogSearch();
   setupLogClear();
+  setupExpandLogs();
   let pageHandler = null;
   let pageImpl = null;
 
