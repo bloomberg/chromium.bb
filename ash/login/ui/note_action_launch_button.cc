@@ -44,7 +44,7 @@ constexpr int kLargeBubbleRadiusDp = 56;
 constexpr float kLargeBubbleOpacity = 0.46;
 
 // The note action background color.
-constexpr int kBubbleColor = SkColorSetARGBMacro(0x9E, 0x9E, 0x9E, 0xFF);
+constexpr int kBubbleColor = SkColorSetRGB(0x9E, 0x9E, 0x9E);
 
 // The note action icon size.
 constexpr int kIconSizeDp = 16;
