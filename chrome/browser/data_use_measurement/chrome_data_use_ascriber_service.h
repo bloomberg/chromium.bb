@@ -45,11 +45,6 @@ class ChromeDataUseAscriberService : public KeyedService {
   // are propagated.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host);
 
-  // Called when a navigation is started. Propagates main frame navigation
-  // start to the |ascriber_| on the IO thread. NavigationHandle methods
-  // cannot be called on the IO thread, so the pointer is cast to void*.
-  void DidStartNavigation(content::NavigationHandle* navigation_handle);
-
   // Called when the navigation is ready to be committed in a renderer.
   // Propagates the event to the |ascriber_| on the IO thread. NavigationHandle
   // methods cannot be called on the IO thread, so the pointer is cast to void*.

@@ -79,12 +79,6 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                           int main_render_process_id,
                           int main_render_frame_id);
 
-  // Called when a main frame navigation is started.
-  void DidStartMainFrameNavigation(const GURL& gurl,
-                                   int render_process_id,
-                                   int render_frame_id,
-                                   void* navigation_handle);
-
   // Called when a main frame navigation is ready to be committed in a
   // renderer.
   void ReadyToCommitMainFrameNavigation(
