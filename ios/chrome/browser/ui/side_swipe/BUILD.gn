@@ -30,6 +30,7 @@ source_set("side_swipe") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:new_fullscreen",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/web",
