@@ -79,8 +79,7 @@ void DOMURL::setSearch(const String& value) {
 
 String DOMURL::CreatePublicURL(ExecutionContext* execution_context,
                                URLRegistrable* registrable) {
-  return execution_context->GetPublicURLManager().RegisterURL(execution_context,
-                                                              registrable);
+  return execution_context->GetPublicURLManager().RegisterURL(registrable);
 }
 
 URLSearchParams* DOMURL::searchParams() {

@@ -6,43 +6,19 @@
 
 #include "base/barrier_closure.h"
 #include "base/callback_helpers.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_transport_strategy.h"
+#include "storage/browser/blob/blob_url_store_impl.h"
 
 namespace storage {
 
 namespace {
 
 using MemoryStrategy = BlobMemoryController::Strategy;
-
-class BlobURLHandleImpl final : public blink::mojom::BlobURLHandle {
- public:
-  static blink::mojom::BlobURLHandlePtr Create(
-      base::WeakPtr<BlobStorageContext> context,
-      const GURL& url) {
-    blink::mojom::BlobURLHandlePtr ptr;
-    mojo::MakeStrongBinding(
-        base::WrapUnique(new BlobURLHandleImpl(std::move(context), url)),
-        mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  ~BlobURLHandleImpl() override {
-    if (context_)
-      context_->RevokePublicBlobURL(url_);
-  }
-
- private:
-  BlobURLHandleImpl(base::WeakPtr<BlobStorageContext> context, const GURL& url)
-      : context_(std::move(context)), url_(url) {}
-
-  base::WeakPtr<BlobStorageContext> context_;
-  const GURL url_;
-  DISALLOW_COPY_AND_ASSIGN(BlobURLHandleImpl);
-};
 
 }  // namespace
 
@@ -579,32 +555,17 @@ void BlobRegistryImpl::GetBlobFromUUID(blink::mojom::BlobRequest blob,
   std::move(callback).Run();
 }
 
-void BlobRegistryImpl::RegisterURL(blink::mojom::BlobPtr blob,
-                                   const GURL& url,
-                                   RegisterURLCallback callback) {
+void BlobRegistryImpl::URLStoreForOrigin(
+    const url::Origin& origin,
+    blink::mojom::BlobURLStoreAssociatedRequest request) {
+  // TODO(mek): Pass origin on to BlobURLStoreImpl so it can use it to generate
+  // Blob URLs, and verify at this point that the renderer can create URLs for
+  // that origin.
   Delegate* delegate = bindings_.dispatch_context().get();
   DCHECK(delegate);
-  if (!url.SchemeIsBlob() || !delegate->CanCommitURL(url)) {
-    bindings_.ReportBadMessage(
-        "Invalid Blob URL passed to BlobRegistry::RegisterURL");
-    return;
-  }
-
-  blink::mojom::Blob* blob_ptr = blob.get();
-  blob_ptr->GetInternalUUID(base::BindOnce(
-      &BlobRegistryImpl::RegisterURLWithUUID, weak_ptr_factory_.GetWeakPtr(),
-      url, std::move(blob), std::move(callback)));
-}
-
-void BlobRegistryImpl::RegisterURLWithUUID(const GURL& url,
-                                           blink::mojom::BlobPtr blob,
-                                           RegisterURLCallback callback,
-                                           const std::string& uuid) {
-  // |blob| is unused, but is passed here to be kept alive until
-  // RegisterBlobURL increments the refcount of it via the uuid.
-  if (context_)
-    context_->RegisterPublicBlobURL(url, uuid);
-  std::move(callback).Run(BlobURLHandleImpl::Create(context_, url));
+  mojo::MakeStrongAssociatedBinding(
+      std::make_unique<BlobURLStoreImpl>(context_, delegate),
+      std::move(request));
 }
 
 }  // namespace storage

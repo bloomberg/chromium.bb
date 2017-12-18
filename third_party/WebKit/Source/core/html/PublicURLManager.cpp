@@ -27,7 +27,9 @@
 #include "core/html/PublicURLManager.h"
 
 #include "core/html/URLRegistry.h"
+#include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringHash.h"
@@ -43,14 +45,25 @@ PublicURLManager* PublicURLManager::Create(ExecutionContext* context) {
 PublicURLManager::PublicURLManager(ExecutionContext* context)
     : ContextLifecycleObserver(context), is_stopped_(false) {}
 
-String PublicURLManager::RegisterURL(ExecutionContext* context,
-                                     URLRegistrable* registrable) {
-  SecurityOrigin* origin = context->GetMutableSecurityOrigin();
+String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
+  if (is_stopped_)
+    return String();
+
+  SecurityOrigin* origin = GetExecutionContext()->GetMutableSecurityOrigin();
   const KURL& url = BlobURL::CreatePublicURL(origin);
   DCHECK(!url.IsEmpty());
   const String& url_string = url.GetString();
 
-  if (!is_stopped_) {
+  mojom::blink::BlobPtr blob;
+  if (RuntimeEnabledFeatures::MojoBlobURLsEnabled())
+    blob = registrable->AsMojoBlob();
+  if (blob) {
+    if (!url_store_) {
+      BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
+          origin, MakeRequest(&url_store_));
+    }
+    url_store_->Register(std::move(blob), url);
+  } else {
     URLRegistry* registry = &registrable->Registry();
     registry->RegisterURL(origin, url, registrable);
     url_to_registry_.insert(url_string, registry);
@@ -60,6 +73,13 @@ String PublicURLManager::RegisterURL(ExecutionContext* context,
 }
 
 void PublicURLManager::Revoke(const KURL& url) {
+  if (RuntimeEnabledFeatures::MojoBlobURLsEnabled() && !is_stopped_) {
+    if (!url_store_) {
+      BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
+          GetExecutionContext()->GetSecurityOrigin(), MakeRequest(&url_store_));
+    }
+    url_store_->Revoke(url);
+  }
   auto it = url_to_registry_.find(url.GetString());
   if (it == url_to_registry_.end())
     return;
@@ -76,6 +96,8 @@ void PublicURLManager::ContextDestroyed(ExecutionContext*) {
     url_registry.value->UnregisterURL(KURL(url_registry.key));
 
   url_to_registry_.clear();
+
+  url_store_.reset();
 }
 
 void PublicURLManager::Trace(blink::Visitor* visitor) {

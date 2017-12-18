@@ -8,13 +8,9 @@ import "mojo/common/file.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
+import "third_party/WebKit/common/blob/blob_url_store.mojom";
+import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
-
-// An opaque handle passed from the browser process to a child process to
-// manage the lifetime of the returned Blob URL. The URL is revoked when
-// this handle is dropped.
-interface BlobURLHandle {
-};
 
 // This interface is the primary access point from renderer to the browser's blob system.
 // This interface provides methods to register new blobs and get references to existing blobs.
@@ -26,15 +22,14 @@ interface BlobRegistry {
                   string content_type, string content_disposition,
                   array<DataElement> elements) => ();
 
-  // Registers a public Blob URL with the blob registry.
-  // TODO(kinuko,mek): This should probably create and return a new blob: URL rather
-  // than letting the caller in the renderer provide one.
-  [Sync] RegisterURL(blink.mojom.Blob blob, url.mojom.Url url) => (BlobURLHandle url_handle);
-
   // Returns a reference to an existing blob. Should not be used by new code,
   // is only exposed to make converting existing blob using code easier.
   // TODO(mek): Remove when crbug.com/740744 is resolved.
   [Sync] GetBlobFromUUID(Blob& blob, string uuid) => ();
+
+  // Returns a BlobURLStore for a specific origin.
+  URLStoreForOrigin(url.mojom.Origin origin,
+                    associated blink.mojom.BlobURLStore& url_store);
 };
 
 // A blob is built up of elements of various types.

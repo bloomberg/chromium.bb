@@ -450,12 +450,6 @@ BlobPtr BlobDataHandle::CloneBlobPtr() {
   return blob_clone;
 }
 
-// static
-void BlobDataHandle::SetBlobRegistryForTesting(
-    mojom::blink::BlobRegistry* registry) {
-  g_blob_registry_for_testing = registry;
-}
-
 void BlobDataHandle::ReadAll(mojo::ScopedDataPipeProducerHandle pipe,
                              mojom::blink::BlobReaderClientPtr client) {
   MutexLocker locker(blob_info_mutex_);
@@ -474,6 +468,17 @@ void BlobDataHandle::ReadRange(uint64_t offset,
   blob.Bind(std::move(blob_info_));
   blob->ReadRange(offset, length, std::move(pipe), std::move(client));
   blob_info_ = blob.PassInterface();
+}
+
+// static
+mojom::blink::BlobRegistry* BlobDataHandle::GetBlobRegistry() {
+  return GetThreadSpecificRegistry();
+}
+
+// static
+void BlobDataHandle::SetBlobRegistryForTesting(
+    mojom::blink::BlobRegistry* registry) {
+  g_blob_registry_for_testing = registry;
 }
 
 }  // namespace blink

@@ -112,6 +112,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
 
   // URLRegistrable to support PublicURLs.
   URLRegistry& Registry() const final;
+  mojom::blink::BlobPtr AsMojoBlob() final;
 
   // ImageBitmapSource implementation
   bool IsBlob() const override { return true; }

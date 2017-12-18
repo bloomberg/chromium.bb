@@ -649,6 +649,9 @@
       name: "MojoBlobs",
     },
     {
+      name: "MojoBlobURLs",
+    },
+    {
       name: "MojoJS",
       status: "test",
     },
