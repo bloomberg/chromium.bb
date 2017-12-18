@@ -28,13 +28,15 @@ int WriteNetSocket(net::Socket* socket,
 
 struct BufferedSocketWriter::PendingPacket {
   PendingPacket(scoped_refptr<net::DrainableIOBuffer> data,
-                const base::Closure& done_task)
+                const base::Closure& done_task,
+                const net::NetworkTrafficAnnotationTag& traffic_annotation)
       : data(data),
-        done_task(done_task) {
-  }
+        done_task(done_task),
+        traffic_annotation(traffic_annotation) {}
 
   scoped_refptr<net::DrainableIOBuffer> data;
   base::Closure done_task;
+  net::NetworkTrafficAnnotationTag traffic_annotation;
 };
 
 // static
@@ -42,7 +44,6 @@ std::unique_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
     net::Socket* socket,
     const WriteFailedCallback& write_failed_callback) {
   std::unique_ptr<BufferedSocketWriter> result(new BufferedSocketWriter());
-  // TODO(crbug.com/656607): Add proper network traffic annotation.
   result->Start(base::Bind(&WriteNetSocket, socket), write_failed_callback);
   return result;
 }
@@ -72,9 +73,9 @@ void BufferedSocketWriter::Write(
   if (closed_)
     return;
 
-  // TODO(crbug.com/656607): Handle traffic annotation.
   queue_.push_back(base::MakeUnique<PendingPacket>(
-      new net::DrainableIOBuffer(data.get(), data->size()), done_task));
+      new net::DrainableIOBuffer(data.get(), data->size()), done_task,
+      traffic_annotation));
 
   DoWrite();
 }
@@ -85,12 +86,11 @@ void BufferedSocketWriter::DoWrite() {
   base::WeakPtr<BufferedSocketWriter> self = weak_factory_.GetWeakPtr();
   while (self && !write_pending_ && !write_callback_.is_null() &&
          !queue_.empty()) {
-    // TODO(crbug.com/656607): Add proper network traffic annotation.
     int result = write_callback_.Run(
         queue_.front()->data.get(), queue_.front()->data->BytesRemaining(),
         base::Bind(&BufferedSocketWriter::OnWritten,
                    weak_factory_.GetWeakPtr()),
-        NO_TRAFFIC_ANNOTATION_BUG_656607);
+        queue_.front()->traffic_annotation);
     HandleWriteResult(result);
   }
 }
