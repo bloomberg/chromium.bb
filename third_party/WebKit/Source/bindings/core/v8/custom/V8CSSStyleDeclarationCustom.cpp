@@ -156,8 +156,10 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(
   if (property_names.IsEmpty()) {
     for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
       CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
-      if (CSSProperty::Get(resolveCSSPropertyID(property_id)).IsEnabled())
-        property_names.push_back(getJSPropertyName(property_id));
+      const CSSProperty& property_class =
+          CSSProperty::Get(resolveCSSPropertyID(property_id));
+      if (property_class.IsEnabled())
+        property_names.push_back(property_class.GetJSPropertyName());
     }
     std::sort(property_names.begin(), property_names.end(),
               WTF::CodePointCompareLessThan);
@@ -229,7 +231,8 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(
                 value);
   ExceptionState exception_state(
       info.GetIsolate(), ExceptionState::kSetterContext, "CSSStyleDeclaration",
-      getPropertyName(resolveCSSPropertyID(unresolved_property)));
+      CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
+          .GetPropertyName());
   impl->SetPropertyInternal(unresolved_property, String(), property_value,
                             false, execution_context->GetSecureContextMode(),
                             exception_state);

@@ -78,7 +78,7 @@ void ComputedStylePropertyMap::ForEachProperty(
     const CSSValue* value = ComputedStyleCSSValueMapping::Get(
         *property, *style, nullptr /* layout_object */, StyledNode());
     if (value)
-      callback(getPropertyName(property->PropertyID()), *value);
+      callback(property->GetPropertyName(), *value);
   }
 }
 

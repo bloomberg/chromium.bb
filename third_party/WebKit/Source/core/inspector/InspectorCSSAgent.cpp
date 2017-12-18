@@ -1107,7 +1107,7 @@ Response InspectorCSSAgent::getComputedStyleForNode(
       continue;
     (*style)->addItem(
         protocol::CSS::CSSComputedStyleProperty::create()
-            .setName(getPropertyNameString(property_id))
+            .setName(property_class.GetPropertyNameString())
             .setValue(computed_style_info->GetPropertyValue(property_id))
             .build());
   }
@@ -2114,12 +2114,12 @@ HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::MatchingStyles(
 }
 
 CSSStyleDeclaration* InspectorCSSAgent::FindEffectiveDeclaration(
-    CSSPropertyID property_id,
+    const CSSProperty& property_class,
     const HeapVector<Member<CSSStyleDeclaration>>& styles) {
   if (!styles.size())
     return nullptr;
 
-  String longhand = getPropertyNameString(property_id);
+  String longhand = property_class.GetPropertyNameString();
   CSSStyleDeclaration* found_style = nullptr;
 
   for (unsigned i = 0; i < styles.size(); ++i) {
@@ -2155,8 +2155,9 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
     return Response::Error("Can't edit a node from a non-active document");
 
   CSSPropertyID property_id = cssPropertyID(property_name);
+  const CSSProperty& property_class = CSSProperty::Get(property_id);
   CSSStyleDeclaration* style =
-      FindEffectiveDeclaration(property_id, MatchingStyles(element));
+      FindEffectiveDeclaration(property_class, MatchingStyles(element));
   if (!style)
     return Response::Error("Can't find a style to edit");
 
@@ -2182,10 +2183,11 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   Vector<StylePropertyShorthand, 4> shorthands;
   getMatchingShorthandsForLonghand(property_id, &shorthands);
 
-  String shorthand = shorthands.size() > 0
-                         ? getPropertyNameString(shorthands[0].id())
-                         : String();
-  String longhand = getPropertyNameString(property_id);
+  String shorthand =
+      shorthands.size() > 0
+          ? CSSProperty::Get(shorthands[0].id()).GetPropertyNameString()
+          : String();
+  String longhand = property_class.GetPropertyNameString();
 
   int found_index = -1;
   Vector<CSSPropertySourceData>& properties = source_data->property_data;

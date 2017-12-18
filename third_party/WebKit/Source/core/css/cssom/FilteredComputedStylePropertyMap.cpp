@@ -46,8 +46,10 @@ void FilteredComputedStylePropertyMap::ForEachProperty(
   // are a few tests that rely on this.
   for (const auto property_id : native_properties_) {
     const CSSValue* value = GetProperty(property_id);
-    if (value)
-      callback(getPropertyNameAtomicString(property_id), *value);
+    if (value) {
+      callback(CSSProperty::Get(property_id).GetPropertyNameAtomicString(),
+               *value);
+    }
   }
 
   for (const auto& name : custom_properties_) {

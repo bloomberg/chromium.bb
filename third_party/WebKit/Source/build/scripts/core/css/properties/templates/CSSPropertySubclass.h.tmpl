@@ -6,11 +6,9 @@
 {% from 'core/css/properties/templates/style_builder_functions.tmpl' import style_builder_functions %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef GEN_BLINK_CORE_CSS_PROPERTIES_{{property.superclass.upper()}}_{{property_classname}}_h
-#define GEN_BLINK_CORE_CSS_PROPERTIES_{{property.superclass.upper()}}_{{property_classname}}_h
+#ifndef GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h
+#define GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h
 
-#include "core/css/properties/{{property.superclass}}.h"
-{# conditional includes - only used in some property classes #}
 {% for include in property.includes %}
 #include "{{include}}"
 {% endfor %}
@@ -19,7 +17,7 @@ namespace blink {
 
 class CSSValue;
 
-namespace CSS{{property.superclass}} {
+namespace CSS{{property.namespace_group}} {
 
 {% if property.is_property %}
   {% if property.unique %}
@@ -35,9 +33,23 @@ namespace CSS{{property.superclass}} {
   {% endif %}
 {% endif %}
 // See src/third_party/WebKit/Source/core/css/properties/README.md
-class {{property_classname}} : public {{property.superclass}} {
+  {% if property.alias_for != None%}
+class {{property_classname}} : public CSSUnresolvedProperty {
  public:
-  constexpr {{property_classname}}(CSSPropertyID id) : {{property.superclass}}(id) {}
+  constexpr {{property_classname}}(CSSPropertyID id) : CSSUnresolvedProperty(id) {}
+  {% else %}
+class {{property_classname}} : public {{property.namespace_group}} {
+ public:
+  constexpr {{property_classname}}(CSSPropertyID id) : {{property.namespace_group}}(id) {}
+  {% endif %}
+  {% if property.unique %}
+  const char* GetPropertyName() const override { return "{{property.name}}\0"; }
+  const WTF::AtomicString& GetPropertyNameAtomicString() const override {
+    static const WTF::AtomicString& name = WTF::AtomicString("{{property.name}}\0");
+    return name;
+  }
+  {% endif %}
+  {% if property.alias_for == None %}
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}
@@ -77,7 +89,7 @@ class {{property_classname}} : public {{property.superclass}} {
     {% if property.direction_aware_options.logical_side == "width" %}
   const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
-      WritingMode writing_mode) const override {
+      blink::WritingMode writing_mode) const override {
     if (IsHorizontalWritingMode(writing_mode))
       return Get{{property.direction_aware_options.shorthand_for_physical_side}}Width();
     return Get{{property.direction_aware_options.shorthand_for_physical_side}}Height();
@@ -85,7 +97,7 @@ class {{property_classname}} : public {{property.superclass}} {
     {% elif property.direction_aware_options.logical_side == "height" %}
   const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
-      WritingMode writing_mode) const override {
+      blink::WritingMode writing_mode) const override {
     if (IsHorizontalWritingMode(writing_mode))
       return Get{{property.direction_aware_options.shorthand_for_physical_side}}Height();
     return Get{{property.direction_aware_options.shorthand_for_physical_side}}Width();
@@ -93,7 +105,7 @@ class {{property_classname}} : public {{property.superclass}} {
     {% else %}
   const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
-      WritingMode writing_mode) const override {
+      blink::WritingMode writing_mode) const override {
     return Resolve{{property.direction_aware_options.logical_side[0].upper() + property.direction_aware_options.logical_side[1:]}}ToPhysicalProperty(
       direction,
       writing_mode,
@@ -106,9 +118,10 @@ class {{property_classname}} : public {{property.superclass}} {
   // Style builder functions
 {{style_builder_functions(property)}}
   {%- endif %}
+  {% endif %}
 };
 
-}  // namespace CSS{{property.superclass}}
+}  // namespace CSS{{property.namespace_group}}
 }  // namespace blink
 
-#endif  // GEN_BLINK_CORE_CSS_PROPERTIES_{{property.superclass.upper()}}_{{property_classname}}_h
+#endif  // GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h

@@ -613,7 +613,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     if (property.IsCSSCustomProperty()) {
       animation->setId(property.CustomPropertyName());
     } else {
-      animation->setId(getPropertyName(property.GetCSSProperty().PropertyID()));
+      animation->setId(property.GetCSSProperty().GetPropertyName());
     }
     // Set the current time as the start time for retargeted transitions
     if (retargeted_compositor_transitions.Contains(property)) {
@@ -1178,7 +1178,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     String property_name =
         property_.IsCSSCustomProperty()
             ? property_.CustomPropertyName()
-            : getPropertyNameString(property_.GetCSSProperty().PropertyID());
+            : property_.GetCSSProperty().GetPropertyNameString();
     const Timing& timing = animation_node.SpecifiedTiming();
     double elapsed_time = timing.iteration_duration;
     const AtomicString& event_type = EventTypeNames::transitionend;

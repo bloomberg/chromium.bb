@@ -99,7 +99,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyAt(
   CSSPropertyValueSet::PropertyReference property =
       property_set_->PropertyAt(all_index_);
   return StylePropertySerializer::PropertyValueForSerializer(
-      property_id, &property.Value(), property.IsImportant());
+      CSSProperty::Get(property_id), &property.Value(), property.IsImportant());
 }
 
 bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
@@ -173,7 +173,7 @@ StylePropertySerializer::StylePropertySerializer(
 String StylePropertySerializer::GetCustomPropertyText(
     const PropertyValueForSerializer& property,
     bool is_not_first_decl) const {
-  DCHECK_EQ(property.Id(), CSSPropertyVariable);
+  DCHECK_EQ(property.Property().PropertyID(), CSSPropertyVariable);
   StringBuilder result;
   if (is_not_first_decl)
     result.Append(' ');
@@ -190,14 +190,14 @@ String StylePropertySerializer::GetCustomPropertyText(
   return result.ToString();
 }
 
-String StylePropertySerializer::GetPropertyText(CSSPropertyID property_id,
+String StylePropertySerializer::GetPropertyText(const CSSProperty& property,
                                                 const String& value,
                                                 bool is_important,
                                                 bool is_not_first_decl) const {
   StringBuilder result;
   if (is_not_first_decl)
     result.Append(' ');
-  result.Append(getPropertyName(property_id));
+  result.Append(property.GetPropertyName());
   result.Append(": ");
   result.Append(value);
   if (is_important)
@@ -220,10 +220,9 @@ String StylePropertySerializer::AsText() const {
 
     StylePropertySerializer::PropertyValueForSerializer property =
         property_set_.PropertyAt(n);
-    CSSPropertyID property_id = property.Id();
-#if DCHECK_IS_ON()
-    const CSSProperty& property_class =
-        CSSProperty::Get(resolveCSSPropertyID(property_id));
+    const CSSProperty& property_class = property.Property();
+    CSSPropertyID property_id = property_class.PropertyID();
+
     // Only enabled properties should be part of the style.
     DCHECK(property_class.IsEnabled());
     // All shorthand properties should have been expanded at parse time.
@@ -231,14 +230,14 @@ String StylePropertySerializer::AsText() const {
            (property_class.IsProperty() && !property_class.IsShorthand()));
     DCHECK(!property_set_.IsDescriptorContext() ||
            property_class.IsDescriptor());
-#endif
 
     switch (property_id) {
       case CSSPropertyVariable:
         result.Append(GetCustomPropertyText(property, num_decls++));
         continue;
       case CSSPropertyAll:
-        result.Append(GetPropertyText(property_id, property.Value()->CssText(),
+        result.Append(GetPropertyText(property_class,
+                                      property.Value()->CssText(),
                                       property.IsImportant(), num_decls++));
         continue;
       default:
@@ -284,8 +283,9 @@ String StylePropertySerializer::AsText() const {
       if (shorthand_result.IsEmpty())
         continue;
 
-      result.Append(GetPropertyText(shorthand_property, shorthand_result,
-                                    property.IsImportant(), num_decls++));
+      result.Append(GetPropertyText(CSSProperty::Get(shorthand_property),
+                                    shorthand_result, property.IsImportant(),
+                                    num_decls++));
       serialized_as_shorthand = true;
       for (unsigned i = 0; i < shorthand.length(); i++) {
         longhand_serialized.set(shorthand.properties()[i]->PropertyID() -
@@ -297,7 +297,7 @@ String StylePropertySerializer::AsText() const {
     if (serialized_as_shorthand)
       continue;
 
-    result.Append(GetPropertyText(property_id, property.Value()->CssText(),
+    result.Append(GetPropertyText(property_class, property.Value()->CssText(),
                                   property.IsImportant(), num_decls++));
   }
 

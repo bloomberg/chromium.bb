@@ -11,9 +11,11 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
+#include "core/css/properties/CSSUnresolvedProperty.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -28,17 +30,14 @@ class StylePropertyShorthand;
 
 enum PhysicalBoxSide { kTopSide, kRightSide, kBottomSide, kLeftSide };
 
-class CSSProperty {
+class CSSProperty : public CSSUnresolvedProperty {
  public:
   CORE_EXPORT static const CSSProperty& Get(CSSPropertyID);
 
-  explicit constexpr CSSProperty(CSSPropertyID id) : id_(id) {}
+  explicit constexpr CSSProperty(CSSPropertyID id) : CSSUnresolvedProperty(id) {}
 
-  // For backwards compatibility when passing around CSSProperty references.
-  // In case we need to call a function that hasn't been converted to using
-  // property classes yet.
-  CSSPropertyID PropertyID() const { return id_; }
-  bool IDEquals(CSSPropertyID id) const { return id_ == id; }
+  bool IsResolvedProperty() const override { return true; }
+  WTF::String GetJSPropertyName() const;
 
   virtual bool IsInterpolable() const { return false; }
   virtual bool IsInherited() const { return false; }
@@ -90,10 +89,13 @@ class CSSProperty {
       TextDirection,
       WritingMode,
       const StylePropertyShorthand&);
-
- private:
-  const CSSPropertyID id_;
 };
+
+DEFINE_TYPE_CASTS(CSSProperty,
+                  CSSUnresolvedProperty,
+                  unresolved,
+                  unresolved->IsResolvedProperty(),
+                  unresolved.IsResolvedProperty());
 
 CORE_EXPORT const CSSProperty& GetCSSPropertyVariable();
 {% for property_class_data in property_classes_by_property_id %}

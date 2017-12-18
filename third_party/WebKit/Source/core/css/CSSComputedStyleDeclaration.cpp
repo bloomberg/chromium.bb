@@ -180,13 +180,13 @@ CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   return static_cast<CSSValueID>(CSSValueXxSmall + keyword_size - 1);
 }
 
-void LogUnimplementedPropertyID(CSSPropertyID property_id) {
+void LogUnimplementedPropertyID(const CSSProperty& property) {
   DEFINE_STATIC_LOCAL(HashSet<CSSPropertyID>, property_id_set, ());
-  if (!property_id_set.insert(property_id).is_new_entry)
+  if (!property_id_set.insert(property.PropertyID()).is_new_entry)
     return;
 
   DLOG(ERROR) << "Blink does not yet implement getComputedStyle for '"
-              << getPropertyName(property_id) << "'.";
+              << property.GetPropertyName() << "'.";
 }
 
 }  // namespace
@@ -220,7 +220,7 @@ String CSSComputedStyleDeclaration::cssText() const {
   for (unsigned i = 0; i < properties.size(); i++) {
     if (i)
       result.Append(' ');
-    result.Append(getPropertyName(properties[i]->PropertyID()));
+    result.Append(properties[i]->GetPropertyName());
     result.Append(": ");
     result.Append(GetPropertyValue(properties[i]->PropertyID()));
     result.Append(';');
@@ -362,7 +362,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   if (value)
     return value;
 
-  LogUnimplementedPropertyID(property_class.PropertyID());
+  LogUnimplementedPropertyID(property_class);
   return nullptr;
 }
 
@@ -384,7 +384,7 @@ String CSSComputedStyleDeclaration::item(unsigned i) const {
   if (i >= length())
     return "";
 
-  return getPropertyNameString(ComputableProperties()[i]->PropertyID());
+  return ComputableProperties()[i]->GetPropertyNameString();
 }
 
 bool CSSComputedStyleDeclaration::CssPropertyMatches(
@@ -508,7 +508,8 @@ void CSSComputedStyleDeclaration::SetPropertyInternal(
   exception_state.ThrowDOMException(
       kNoModificationAllowedError,
       "These styles are computed, and therefore the '" +
-          getPropertyNameString(id) + "' property is read-only.");
+          CSSProperty::Get(id).GetPropertyNameString() +
+          "' property is read-only.");
 }
 
 void CSSComputedStyleDeclaration::Trace(blink::Visitor* visitor) {

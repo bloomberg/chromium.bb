@@ -40,7 +40,7 @@ void InlineStylePropertyMap::ForEachProperty(
           ToCSSCustomPropertyDeclaration(property_reference.Value());
       callback(decl.GetName(), property_reference.Value());
     } else {
-      callback(getPropertyNameAtomicString(property_reference.Id()),
+      callback(property_reference.Property().GetPropertyNameAtomicString(),
                property_reference.Value());
     }
   }

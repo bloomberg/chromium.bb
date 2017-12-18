@@ -58,7 +58,7 @@ class StylePropertySerializer {
                                           StringBuilder& result) const;
   String OffsetValue() const;
   String BackgroundRepeatPropertyValue() const;
-  String GetPropertyText(CSSPropertyID,
+  String GetPropertyText(const CSSProperty&,
                          const String& value,
                          bool is_important,
                          bool is_not_first_decl) const;
@@ -84,20 +84,20 @@ class StylePropertySerializer {
     explicit PropertyValueForSerializer(
         CSSPropertyValueSet::PropertyReference property)
         : value_(property.Value()),
-          id_(property.Id()),
+          property_(property.Property()),
           is_important_(property.IsImportant()),
           is_inherited_(property.IsInherited()) {}
 
     // TODO(sashab): Make this take a const CSSValue&.
-    PropertyValueForSerializer(CSSPropertyID id,
+    PropertyValueForSerializer(const CSSProperty& property,
                                const CSSValue* value,
                                bool is_important)
         : value_(value),
-          id_(id),
+          property_(property),
           is_important_(is_important),
           is_inherited_(value->IsInheritedValue()) {}
 
-    CSSPropertyID Id() const { return id_; }
+    const CSSProperty& Property() const { return property_; }
     const CSSValue* Value() const { return value_; }
     bool IsImportant() const { return is_important_; }
     bool IsInherited() const { return is_inherited_; }
@@ -105,7 +105,7 @@ class StylePropertySerializer {
 
    private:
     Member<const CSSValue> value_;
-    CSSPropertyID id_;
+    const CSSProperty& property_;
     bool is_important_;
     bool is_inherited_;
   };

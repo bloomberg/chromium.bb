@@ -41,6 +41,7 @@
 #include "core/animation/DocumentTimeline.h"
 #include "core/css/SelectRuleFeatureSet.h"
 #include "core/css/StyleEngine.h"
+#include "core/css/properties/CSSUnresolvedProperty.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
@@ -3424,8 +3425,9 @@ Vector<String> Internals::getCSSPropertyLonghands() const {
   Vector<String> result;
   for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
     CSSPropertyID property = static_cast<CSSPropertyID>(id);
-    if (CSSProperty::Get(property).IsLonghand()) {
-      result.push_back(getPropertyNameString(property));
+    const CSSProperty& property_class = CSSProperty::Get(property);
+    if (property_class.IsLonghand()) {
+      result.push_back(property_class.GetPropertyNameString());
     }
   }
   return result;
@@ -3435,8 +3437,9 @@ Vector<String> Internals::getCSSPropertyShorthands() const {
   Vector<String> result;
   for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
     CSSPropertyID property = static_cast<CSSPropertyID>(id);
-    if (CSSProperty::Get(property).IsShorthand()) {
-      result.push_back(getPropertyNameString(property));
+    const CSSProperty& property_class = CSSProperty::Get(property);
+    if (property_class.IsShorthand()) {
+      result.push_back(property_class.GetPropertyNameString());
     }
   }
   return result;
@@ -3446,7 +3449,8 @@ Vector<String> Internals::getCSSPropertyAliases() const {
   Vector<String> result;
   for (CSSPropertyID alias : kCSSPropertyAliasList) {
     DCHECK(isPropertyAlias(alias));
-    result.push_back(getPropertyNameString(alias));
+    result.push_back(CSSUnresolvedProperty::GetAliasProperty(alias)
+                         ->GetPropertyNameString());
   }
   return result;
 }
