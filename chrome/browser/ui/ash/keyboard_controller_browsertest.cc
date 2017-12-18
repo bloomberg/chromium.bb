@@ -19,11 +19,11 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/keyboard/content/keyboard_constants.h"
+#include "ui/keyboard/content/keyboard_content_util.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_test_util.h"
 #include "ui/keyboard/keyboard_ui.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace {
 const int kKeyboardHeightForTest = 100;
