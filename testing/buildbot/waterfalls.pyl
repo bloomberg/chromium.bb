@@ -1907,7 +1907,11 @@
       },
       'WinMSVC64 (dbg)': {
         'additional_compile_targets': [
-          'all',
+          # TODO(crbug.com/777642): Add more compile targets if we get
+          # more capacity.
+          'chrome',
+          'browser_tests',
+          'unit_tests',
         ],
       },
       'Win 7 Tests x64 (1)': {
