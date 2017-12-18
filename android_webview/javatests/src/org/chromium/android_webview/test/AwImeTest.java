@@ -150,8 +150,16 @@ public class AwImeTest {
     @SmallTest
     public void testImeDpadMovesFocusOutOfWebView() throws Throwable {
         loadContentEditableBody();
+        focusOnEditTextAndShowKeyboard();
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivityTestRule.getActivity().getCurrentFocus() == mTestContainerView;
+            }
+        });
 
         ThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
             getInputConnection().sendKeyEvent(
@@ -174,8 +182,16 @@ public class AwImeTest {
     @SmallTest
     public void testDpadDispatchKeyEventMovesFocusOutOfWebView() throws Throwable {
         loadContentEditableBody();
+        focusOnEditTextAndShowKeyboard();
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivityTestRule.getActivity().getCurrentFocus() == mTestContainerView;
+            }
+        });
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mTestContainerView.dispatchKeyEvent(
