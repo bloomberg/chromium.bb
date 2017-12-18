@@ -357,6 +357,9 @@ void TextSuggestionController::OnSuggestionMenuClosed() {
 
 void TextSuggestionController::SuggestionMenuTimeoutCallback(
     size_t max_number_of_suggestions) {
+  if (!IsAvailable())
+    return;
+
   const VisibleSelectionInFlatTree& selection =
       GetFrame().Selection().ComputeVisibleSelectionInFlatTree();
   if (selection.IsNone())
