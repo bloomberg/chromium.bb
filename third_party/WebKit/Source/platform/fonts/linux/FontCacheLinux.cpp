@@ -86,7 +86,7 @@ void FontCache::GetFontForCharacter(
 }
 
 #if !defined(OS_ANDROID)
-scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
+scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 c,
     const SimpleFontData*,

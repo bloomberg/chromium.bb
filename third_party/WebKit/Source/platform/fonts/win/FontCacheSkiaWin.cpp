@@ -110,7 +110,7 @@ FontCache::FontCache() : purge_prevent_count_(0) {
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
-scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
+scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 character,
     const SimpleFontData* original_font_data,

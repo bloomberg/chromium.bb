@@ -275,6 +275,17 @@ SimpleFontData* FontCache::GetNonRetainedLastResortFallbackFont(
   return font.get();
 }
 
+scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
+    const FontDescription& description,
+    UChar32 lookup_char,
+    const SimpleFontData* font_data_to_substitute,
+    FontFallbackPriority fallback_priority) {
+  if (Character::IsUnassignedOrPrivateUse(lookup_char))
+    return nullptr;
+  return PlatformFallbackFontForCharacter(
+      description, lookup_char, font_data_to_substitute, fallback_priority);
+}
+
 void FontCache::ReleaseFontData(const SimpleFontData* font_data) {
   font_data_cache_.Release(font_data);
 }
