@@ -271,10 +271,6 @@ void DevToolsAgent::OnRequestNewWindowCompleted(int session_id, bool success) {
     GetWebAgent()->FailedToRequestDevTools(session_id);
 }
 
-void DevToolsAgent::ContinueProgram() {
-  GetWebAgent()->ContinueProgram();
-}
-
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
   return frame_->GetWebFrame()->DevToolsAgent();
 }
@@ -285,18 +281,6 @@ void DevToolsAgent::BindRequest(mojom::DevToolsAgentAssociatedRequest request) {
 
 base::WeakPtr<DevToolsAgent> DevToolsAgent::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-bool DevToolsAgent::IsAttached() {
-  return !hosts_.empty();
-}
-
-void DevToolsAgent::DetachAllSessions() {
-  for (auto& it : hosts_)
-    GetWebAgent()->Detach(it.first);
-  hosts_.clear();
-  io_sessions_.clear();
-  sessions_.clear();
 }
 
 }  // namespace content

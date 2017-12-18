@@ -848,6 +848,11 @@ class WebLocalFrame : public WebFrame {
   // empty ((0,0), (0,0)).
   virtual WebRect GetSelectionBoundsRectForTesting() const = 0;
 
+  // Detaches all attached sessions.
+  // TODO(dgozman): this should be removed together with
+  // old inspector testing harness.
+  virtual void DetachAllDevToolsSessionsForTesting() = 0;
+
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

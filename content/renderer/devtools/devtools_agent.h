@@ -37,9 +37,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
 
   void BindRequest(mojom::DevToolsAgentAssociatedRequest request);
   base::WeakPtr<DevToolsAgent> GetWeakPtr();
-  bool IsAttached();
-  void DetachAllSessions();
-  void ContinueProgram();
 
  private:
   class Session;

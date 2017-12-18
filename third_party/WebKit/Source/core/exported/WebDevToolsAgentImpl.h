@@ -85,13 +85,13 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool ScreencastEnabled();
   void LayerTreeViewChanged(WebLayerTreeView*);
   void RootLayerCleared();
-  bool CacheDisabled() override;
+  bool CacheDisabled();
+  void DetachAllSessionsForTesting();
 
   // WebDevToolsAgent implementation.
   void Attach(int session_id) override;
   void Reattach(int session_id, const WebString& saved_state) override;
   void Detach(int session_id) override;
-  void ContinueProgram() override;
   void DispatchOnInspectorBackend(int session_id,
                                   int call_id,
                                   const WebString& method,
