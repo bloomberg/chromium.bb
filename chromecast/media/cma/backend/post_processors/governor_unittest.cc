@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "chromecast/media/cma/backend/post_processor_factory.h"
 #include "chromecast/media/cma/backend/post_processors/governor.h"
+#include "chromecast/media/cma/backend/post_processors/post_processor_benchmark.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -132,6 +133,22 @@ TEST_P(PostProcessorTest, GovernorPassthrough) {
   TestPassthrough(pp.get(), sample_rate_);
 }
 
+TEST_P(PostProcessorTest, GovernorBenchmark) {
+  std::string config = MakeConfigString(1.0, 1.0);
+  PostProcessorFactory factory;
+  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  AudioProcessorBenchmark(pp.get(), sample_rate_);
+}
+
 }  // namespace post_processor_test
 }  // namespace media
 }  // namespace chromecast
+
+/*
+Benchmark results:
+Device: Google Home Max, test audio duration: 1 sec.
+Benchmark           Sample Rate    CPU(%)
+----------------------------------------------------
+GovernorBenchmark   44100          0.0013%
+GovernorBenchmark   48000          0.0015%
+*/
