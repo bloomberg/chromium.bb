@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -17,7 +18,9 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
 #import "ios/chrome/browser/ui/side_swipe/history_side_swipe_provider.h"
@@ -98,6 +101,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   ReadingListSideSwipeProvider* readingListSideSwipeProvider_;
 
   __weak id<SideSwipeContentProvider> currentContentProvider_;
+
+  // The disabler that prevents the toolbar from being scrolled away when the
+  // side swipe gesture is being recognized.
+  std::unique_ptr<ScopedFullscreenDisabler> fullscreenDisabler_;
 
   // Browser state passed to the initialiser.
   ios::ChromeBrowserState* browserState_;
@@ -319,8 +326,13 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     return;
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
-    // If the toolbar is hidden, move it to visible.
-    if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+      // Disable fullscreen while the side swipe gesture is occurring.
+      fullscreenDisabler_ = base::MakeUnique<ScopedFullscreenDisabler>(
+          FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+              browserState_));
+    } else {
+      // If the toolbar is hidden, move it to visible.
       [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
     }
     [[model_ currentTab] updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
@@ -383,6 +395,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kSideSwipeDidStopNotification
                       object:nil];
+
+    // Stop disabling fullscreen.
+    if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+      fullscreenDisabler_ = nullptr;
   }
 }
 
