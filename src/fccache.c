@@ -62,6 +62,7 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	int fd;
 	uuid_t uuid;
 	char out[37];
+	FcBool (* hash_add) (FcHashTable *, void*, void*);
 
 	atomic = FcAtomicCreate (uuidname);
 	if (!atomic)
@@ -81,7 +82,11 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	    goto bail3;
 	}
 	uuid_generate_random (uuid);
-	if (!FcHashTableAdd (config->uuid_table, dir, uuid))
+	if (force)
+	    hash_add = FcHashTableReplace;
+	else
+	    hash_add = FcHashTableAdd;
+	if (!hash_add (config->uuid_table, dir, uuid))
 	{
 	    ret = FcFalse;
 	    goto bail3;

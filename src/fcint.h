@@ -1335,5 +1335,9 @@ FcHashTableAdd (FcHashTable *table,
 		void        *key,
 		void        *value);
 
+FcPrivate FcBool
+FcHashTableReplace (FcHashTable *table,
+		    void        *key,
+		    void        *value);
 
 #endif /* _FC_INT_H_ */

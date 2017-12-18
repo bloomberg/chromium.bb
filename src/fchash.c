@@ -137,10 +137,11 @@ FcHashTableFind (FcHashTable  *table,
     return FcFalse;
 }
 
-FcBool
-FcHashTableAdd (FcHashTable *table,
-		void        *key,
-		void        *value)
+static FcBool
+FcHashTableAddInternal (FcHashTable *table,
+			void        *key,
+			void        *value,
+			FcBool       replace)
 {
     FcHashBucket **prev, *bucket, *b;
     FcChar32 hash = table->hash_func (key);
@@ -167,17 +168,43 @@ FcHashTableAdd (FcHashTable *table,
 	    table->value_destroy_func (bucket->value);
 	free (bucket);
 
-	return FcFalse;
+	return !ret;
     }
   retry:
     for (prev = &table->buckets[hash % FC_HASH_SIZE];
 	 (b = fc_atomic_ptr_get (prev)); prev = &(b->next))
     {
 	if (!table->compare_func (bucket->key, key))
+	{
+	    if (replace)
+	    {
+		if (!fc_atomic_ptr_cmpexch (prev, b, bucket))
+		    goto retry;
+		bucket = b;
+	    }
+	    else
+		ret = FcTrue;
 	    goto destroy;
+	}
     }
     if (!fc_atomic_ptr_cmpexch (prev, b, bucket))
 	goto retry;
 
     return FcTrue;
+}
+
+FcBool
+FcHashTableAdd (FcHashTable *table,
+		void        *key,
+		void        *value)
+{
+    return FcHashTableAddInternal (table, key, value, FcFalse);
+}
+
+FcBool
+FcHashTableReplace (FcHashTable *table,
+		    void        *key,
+		    void        *value)
+{
+    return FcHashTableAddInternal (table, key, value, FcTrue);
 }
