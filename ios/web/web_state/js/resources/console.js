@@ -16,8 +16,12 @@ __gCrWeb.console = {};
 
 /* Beginning of anonymous object. */
 (function() {
-  function sendConsoleMessage(method, originalArguments) {
-    message = Array.prototype.slice.call(originalArguments).join(' ');
+  function sendConsoleMessage(method, originalArgs) {
+    var message, slicedArgs = Array.prototype.slice.call(originalArgs);
+    try {
+      message = slicedArgs.join(' ');
+    } catch (err) {
+    }
     __gCrWeb.message.invokeOnHost({'command': 'console',
                                     'method': method,
                                    'message': message,
@@ -44,3 +48,4 @@ __gCrWeb.console = {};
     sendConsoleMessage('error', arguments);
   };
 }());
+
