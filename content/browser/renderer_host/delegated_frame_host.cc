@@ -525,7 +525,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
         local_surface_id, std::move(frame), std::move(hit_test_region_list));
     DCHECK(result);
   }
-
 }
 
 void DelegatedFrameHost::ClearDelegatedFrame() {
@@ -617,27 +616,25 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  if (enable_viz_) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
   if (!HasFallbackSurface())
     return;
 
   if (enable_surface_synchronization_) {
     client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
         viz::SurfaceId());
-    support_->EvictCurrentSurface();
-    frame_evictor_->DiscardedFrame();
-    return;
+  } else {
+    client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
+    resize_lock_.reset();
+    UpdateGutters();
   }
 
-  client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
-  support_->EvictCurrentSurface();
-  resize_lock_.reset();
+  // TODO(samans): Ensure that with --enable-viz the latest frame is evicted and
+  // that DelegatedFrameHost updates the SurfaceLayer when the frame becomes
+  // visible again.
+  if (!enable_viz_)
+    support_->EvictCurrentSurface();
+
   frame_evictor_->DiscardedFrame();
-  UpdateGutters();
 }
 
 // static
