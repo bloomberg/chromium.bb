@@ -120,7 +120,7 @@ CrossThreadHTTPHeaderMapData ToCrossThreadHTTPHeaderMapData(
 
 }  // namespace
 
-class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
+class ServiceWorkerInstalledScriptsManagerTest : public ::testing::Test {
  public:
   ServiceWorkerInstalledScriptsManagerTest()
       : io_thread_(Platform::Current()->CreateThread("io thread")),
