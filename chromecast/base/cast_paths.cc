@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "chromecast/chromecast_features.h"
 
 namespace chromecast {
 
@@ -17,14 +18,14 @@ bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
     case DIR_CAST_HOME: {
       base::FilePath home = base::GetHomeDir();
-#if defined(ARCH_CPU_ARMEL)
-      // When running on the actual device, $HOME is set to the user's
-      // directory under the data partition.
-      *result = home;
-#else
+#if BUILDFLAG(IS_CAST_DESKTOP_BUILD)
       // When running a development instance as a regular user, use
       // a data directory under $HOME (similar to Chrome).
       *result = home.Append(".config/cast_shell");
+#else
+      // When running on the actual device, $HOME is set to the user's
+      // directory under the data partition.
+      *result = home;
 #endif
       return true;
     }
