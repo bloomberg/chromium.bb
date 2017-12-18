@@ -207,10 +207,9 @@ class Helper : public EmbeddedWorkerTestHelper {
   ~Helper() override = default;
 
   // Tells this helper to respond to fetch events with the specified blob.
-  void RespondWithBlob(const std::string blob_uuid, uint64_t blob_size) {
+  void RespondWithBlob(blink::mojom::BlobPtr blob) {
     response_mode_ = ResponseMode::kBlob;
-    blob_uuid_ = blob_uuid;
-    blob_size_ = blob_size;
+    blob_body_ = std::move(blob);
   }
 
   // Tells this helper to respond to fetch events with the specified stream.
@@ -297,18 +296,18 @@ class Helper : public EmbeddedWorkerTestHelper {
             std::move(response_callback), std::move(finish_callback));
         return;
       case ResponseMode::kBlob:
-        response_callback->OnResponse(
+        response_callback->OnResponseBlob(
             ServiceWorkerResponse(
                 std::make_unique<std::vector<GURL>>(), 200, "OK",
                 network::mojom::FetchResponseType::kDefault,
-                std::make_unique<ServiceWorkerHeaderMap>(), blob_uuid_,
-                blob_size_, nullptr /* blob */,
+                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+                0 /* blob_size */, nullptr /* blob */,
                 blink::mojom::ServiceWorkerResponseError::kUnknown,
                 base::Time(), false /* response_is_in_cache_storage */,
                 std::string() /* response_cache_storage_cache_name */,
                 std::make_unique<
                     ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            base::Time::Now());
+            std::move(blob_body_), base::Time::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
@@ -431,8 +430,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   scoped_refptr<ResourceRequestBody> request_body_;
 
   // For ResponseMode::kBlob.
-  std::string blob_uuid_;
-  uint64_t blob_size_ = 0;
+  blink::mojom::BlobPtr blob_body_;
 
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
@@ -519,10 +517,6 @@ class ServiceWorkerURLLoaderJobTest
 
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
-  base::WeakPtr<storage::BlobStorageContext> GetBlobStorageContext() {
-    return blob_context_.AsWeakPtr();
-  }
-
   // Indicates whether ServiceWorkerURLLoaderJob decided to handle a request,
   // i.e., it returned a non-null StartLoaderCallback for the request.
   enum class JobResult {
@@ -540,8 +534,7 @@ class ServiceWorkerURLLoaderJobTest
     job_ = std::make_unique<ServiceWorkerURLLoaderJob>(
         base::BindOnce(&ReceiveStartLoaderCallback, &callback), this, *request,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
-            helper_->context()->loader_factory_getter()),
-        GetBlobStorageContext());
+            helper_->context()->loader_factory_getter()));
     job_->ForwardToServiceWorker();
     base::RunLoop().RunUntilIdle();
     if (!callback)
@@ -671,7 +664,10 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
   blob_data->AppendData(kResponseBody);
   std::unique_ptr<storage::BlobDataHandle> blob_handle =
       blob_context_.AddFinishedBlob(blob_data.get());
-  helper_->RespondWithBlob(blob_handle->uuid(), blob_handle->size());
+  blink::mojom::BlobPtr blob_ptr;
+  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob_ptr);
+  storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
+  helper_->RespondWithBlob(std::move(blob_ptr));
 
   // Perform the request.
   JobResult result = StartRequest(CreateRequest());
@@ -688,23 +684,36 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &body));
   EXPECT_EQ(kResponseBody, body);
+  EXPECT_EQ(net::OK, client_.completion_status().error_code);
 }
 
 // Tell the helper to respond with a non-existent Blob.
-TEST_F(ServiceWorkerURLLoaderJobTest, NonExistentBlobUUIDResponse) {
-  helper_->RespondWithBlob("blob-id:nothing-is-here", 0);
+TEST_F(ServiceWorkerURLLoaderJobTest, BrokenBlobResponse) {
+  const std::string kBrokenUUID = "broken_uuid";
+
+  // Create the broken blob.
+  std::unique_ptr<storage::BlobDataHandle> blob_handle =
+      blob_context_.AddBrokenBlob(kBrokenUUID, "", "",
+                                  storage::BlobStatus::ERR_OUT_OF_MEMORY);
+  blink::mojom::BlobPtr blob_ptr;
+  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob_ptr);
+  storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
+  helper_->RespondWithBlob(std::move(blob_ptr));
 
   // Perform the request.
   JobResult result = StartRequest(CreateRequest());
   EXPECT_EQ(JobResult::kHandledRequest, result);
-  client_.RunUntilComplete();
 
+  // We should get a valid response once the headers arrive.
+  client_.RunUntilResponseReceived();
   const ResourceResponseHead& info = client_.response_head();
-  // TODO(falken): Currently our code returns 404 not found (with net::OK), but
-  // the spec seems to say this should act as if a network error has occurred.
-  // See https://crbug.com/732750
-  EXPECT_EQ(404, info.headers->response_code());
+  EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+
+  // However, since the blob is broken we should get an error while transferring
+  // the body.
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::ERR_OUT_OF_MEMORY, client_.completion_status().error_code);
 }
 
 TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
@@ -901,8 +910,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, FallbackToNetwork) {
   auto job = std::make_unique<ServiceWorkerURLLoaderJob>(
       base::BindOnce(&ReceiveStartLoaderCallback, &callback), this, request,
       base::WrapRefCounted<URLLoaderFactoryGetter>(
-          helper_->context()->loader_factory_getter()),
-      GetBlobStorageContext());
+          helper_->context()->loader_factory_getter()));
   // Ask the job to fallback to network. In production code,
   // ServiceWorkerControlleeRequestHandler calls FallbackToNetwork() to do this.
   job->FallbackToNetwork();

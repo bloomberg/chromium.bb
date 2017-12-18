@@ -21,15 +21,8 @@
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "third_party/WebKit/common/blob/blob.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_stream_handle.mojom.h"
-
-namespace net {
-struct RedirectInfo;
-}
-
-namespace storage {
-class BlobStorageContext;
-}
 
 namespace content {
 
@@ -39,13 +32,10 @@ class ServiceWorkerVersion;
 // S13nServiceWorker:
 // ServiceWorkerURLLoaderJob works similar to ServiceWorkerURLRequestJob
 // but with mojom::URLLoader instead of URLRequest.
-// This also works as a URLLoaderClient for BlobURLLoader while reading
-// the blob content returned by SW.
 // This class is owned by the job wrapper until it is bound to a URLLoader
 // request. After it is bound |this| is kept alive until the Mojo connection
 // to this URLLoader is dropped.
-class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
-                                                 public mojom::URLLoaderClient {
+class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader {
  public:
   using Delegate = ServiceWorkerURLJobWrapper::Delegate;
   using ResponseType = ServiceWorkerResponseType;
@@ -72,16 +62,13 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
   //    StartResponse().
   // 5. Then StartResponse() will be called with mojom::URLLoaderClientPtr
   //    that is connected to NavigationURLLoaderNetworkService (for resource
-  //    loading for navigation).  This job may set up BlobURLLoader and
-  //    act as URLLoaderClient for the BlobURLLoader if the response includes
-  //    blob uuid as a response body, or may forward the stream data pipe to
-  //    the NavigationURLLoader if response body was sent as a stream.
+  //    loading for navigation). This forwards the blob/stream data pipe to the
+  //    NavigationURLLoader if the response body was sent as a blob/stream.
   ServiceWorkerURLLoaderJob(
       LoaderCallback loader_callback,
       Delegate* delegate,
       const ResourceRequest& resource_request,
-      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
   ~ServiceWorkerURLLoaderJob() override;
 
@@ -150,22 +137,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
-  // mojom::URLLoaderClient for Blob response reading (used only when
-  // the SW response had valid blob UUID):
-  void OnReceiveResponse(const ResourceResponseHead& response_head,
-                         const base::Optional<net::SSLInfo>& ssl_info,
-                         mojom::DownloadedTempFilePtr downloaded_file) override;
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override;
-  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override;
-  void OnUploadProgress(int64_t current_position,
-                        int64_t total_size,
-                        OnUploadProgressCallback ack_callback) override;
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
-  void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const network::URLLoaderCompletionStatus& status) override;
+  void OnBlobReadingComplete(int net_error);
 
   void DeleteIfNeeded();
 
@@ -175,16 +147,14 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
   Delegate* delegate_;
   ResourceRequest resource_request_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   std::unique_ptr<StreamWaiter> stream_waiter_;
+  // The blob needs to be held while it's read to keep it alive.
+  blink::mojom::BlobPtr body_as_blob_;
 
   bool did_navigation_preload_ = false;
   ResourceResponseHead response_head_;
   base::Optional<net::SSLInfo> ssl_info_;
-
-  // URLLoaderClient binding for loading a blob.
-  mojo::Binding<mojom::URLLoaderClient> blob_client_binding_;
 
   // Pointer to the URLLoaderClient (i.e. NavigationURLLoader).
   mojom::URLLoaderClientPtr url_loader_client_;

@@ -4,14 +4,40 @@
 
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
 
 namespace content {
+namespace {
+
+// Calls |callback| when Blob reading is complete.
+class BlobCompleteCaller : public blink::mojom::BlobReaderClient {
+ public:
+  using BlobCompleteCallback = base::OnceCallback<void(int net_error)>;
+
+  explicit BlobCompleteCaller(BlobCompleteCallback callback)
+      : callback_(std::move(callback)) {}
+  ~BlobCompleteCaller() override = default;
+
+  void OnCalculatedSize(uint64_t total_size,
+                        uint64_t expected_content_size) override {}
+  void OnComplete(int32_t status, uint64_t data_length) override {
+    std::move(callback_).Run(base::checked_cast<int>(status));
+  }
+
+ private:
+  BlobCompleteCallback callback_;
+};
+
+}  // namespace
 
 // static
 std::unique_ptr<ServiceWorkerFetchRequest>
@@ -113,6 +139,39 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
       referrer_policy, referrer_string, response_head.headers.get(),
       response_head.headers->response_code(),
       original_request.url.Resolve(new_location), token_binding_negotiated);
+}
+
+int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
+    blink::mojom::BlobPtr* blob,
+    const net::HttpRequestHeaders& headers,
+    base::OnceCallback<void(int)> on_blob_read_complete,
+    mojo::ScopedDataPipeConsumerHandle* handle_out) {
+  bool byte_range_set = false;
+  uint64_t offset = 0;
+  uint64_t length = 0;
+  // We don't support multiple range requests in one single URL request,
+  // because we need to do multipart encoding here.
+  // TODO(falken): Support multipart byte range requests.
+  if (!ServiceWorkerUtils::ExtractSinglePartHttpRange(headers, &byte_range_set,
+                                                      &offset, &length)) {
+    return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
+  }
+
+  mojo::DataPipe data_pipe;
+  blink::mojom::BlobReaderClientPtr blob_reader_client;
+  mojo::MakeStrongBinding(
+      std::make_unique<BlobCompleteCaller>(std::move(on_blob_read_complete)),
+      mojo::MakeRequest(&blob_reader_client));
+
+  if (byte_range_set) {
+    (*blob)->ReadRange(offset, length, std::move(data_pipe.producer_handle),
+                       std::move(blob_reader_client));
+  } else {
+    (*blob)->ReadAll(std::move(data_pipe.producer_handle),
+                     std::move(blob_reader_client));
+  }
+  *handle_out = std::move(data_pipe.consumer_handle);
+  return net::OK;
 }
 
 }  // namespace content
