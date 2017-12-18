@@ -1782,6 +1782,7 @@ enum WebFeature {
   kFileAccessedServiceWorker = 2273,
   kFileAccessedSessionStorage = 2274,
   kFileAccessedSharedWorker = 2275,
+  kV8MediaKeys_GetStatusForPolicy_Method = 2276,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
