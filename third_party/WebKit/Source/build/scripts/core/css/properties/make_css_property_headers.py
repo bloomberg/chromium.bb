@@ -36,6 +36,7 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
                 return_type=property_method['return_type'],
                 parameters=property_method['parameters'],
             )
+        self.validate_input()
 
         self._outputs = {}
         output_dir = sys.argv[sys.argv.index('--output_dir') + 1]
@@ -45,6 +46,10 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
             properties = self.css_properties.shorthands
             namespace_group = 'Shorthand'
         for property_ in properties:
+            if property_['property_class'] is None:
+                continue
+            property_['unique'] = isinstance(
+                property_['property_class'], types.BooleanType)
             property_['property_methods'] = [
                 self._property_methods[method_name]
                 for method_name in property_['property_methods']
@@ -59,6 +64,9 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
         for property_ in self.css_properties.aliases:
             if ('shorthands' in output_dir and property_['longhands']) or \
                ('longhands' in output_dir and not property_['longhands']):
+                if property_['property_class'] is None:
+                    continue
+                property_['unique'] = True
                 class_data = self.get_class(property_)
                 property_['namespace_group'] = namespace_group
                 self.populate_includes(property_)
@@ -79,9 +87,11 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
 
     def calculate_apply_functions_to_declare(self, property_):
         # Functions should only be declared on the property classes if they are
-        # implemented.
+        # implemented and not shared (denoted by property_class = true. Shared
+        # classes are denoted by property_class = "some string").
         property_['should_declare_apply_functions'] = \
-            property_['is_property'] \
+            property_['unique'] \
+            and property_['is_property'] \
             and not property_['longhands'] \
             and not property_['direction_aware_options'] \
             and not property_['builder_skip']
@@ -153,6 +163,35 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
                     includes.append("core/css/properties/StyleBuildingUtils.h")
         includes.sort()
         property_['includes'] = includes
+
+    def validate_input(self):
+        # First collect which classes correspond to which properties.
+        class_names_to_properties = defaultdict(list)
+        for property_ in self.css_properties.properties_including_aliases:
+            if property_['property_class'] is None:
+                continue
+            class_data = self.get_class(property_)
+            class_names_to_properties[class_data.classname].append(property_)
+        # Check that properties that share class names specify the same method
+        # names.
+        for properties in class_names_to_properties.values():
+            if len(properties) == 1:
+                assert properties[0]['property_class'] is True, 'Unique property_class ' \
+                    '{} defined on {}. property_class as a string is reserved for ' \
+                    'use with properties that share logic. Did you mean ' \
+                    'property_class: true?'.format(
+                        properties[0]['property_class'], properties[0]['name'])
+
+            property_methods = set(properties[0]['property_methods'])
+            for property_ in properties[1:]:
+                assert property_methods == set(property_['property_methods']), \
+                    'Properties {} and {} share the same property_class but do ' \
+                    'not declare the same property_methods. Properties sharing ' \
+                    'the same property_class must declare the same list of ' \
+                    'property_methods to ensure deterministic code ' \
+                    'generation.'.format(
+                        properties[0]['name'], property_['name'])
+
 
 if __name__ == '__main__':
     json5_generator.Maker(CSSPropertyHeadersWriter).main()

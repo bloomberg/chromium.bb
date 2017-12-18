@@ -25,6 +25,18 @@
 #endif
 
 namespace blink {
+static const char propertyNameStringsPool[] = {
+{% for name in property_names %}
+  "{{name}}\0"
+{% endfor %}
+};
+
+static const unsigned short propertyNameStringsOffsets[] = {
+{% for offset in property_offsets %}
+  {{offset}},
+{% endfor %}
+};
+
 %}
 %struct-type
 struct Property;
@@ -49,6 +61,25 @@ struct Property;
 
 const Property* FindProperty(const char* str, unsigned int len) {
   return {{class_name}}Hash::findPropertyImpl(str, len);
+}
+
+const char* getPropertyName(CSSPropertyID id) {
+  DCHECK(isCSSPropertyIDWithName(id));
+  int index = id - firstCSSProperty;
+  return propertyNameStringsPool + propertyNameStringsOffsets[index];
+}
+
+const AtomicString& getPropertyNameAtomicString(CSSPropertyID id) {
+  DCHECK(isCSSPropertyIDWithName(id));
+  int index = id - firstCSSProperty;
+  static AtomicString* propertyStrings =
+      new AtomicString[lastUnresolvedCSSProperty]; // Leaked.
+  AtomicString& propertyString = propertyStrings[index];
+  if (propertyString.IsNull()) {
+    propertyString = AtomicString(propertyNameStringsPool +
+                     propertyNameStringsOffsets[index]);
+  }
+  return propertyString;
 }
 
 CSSPropertyID cssPropertyID(const String& string)

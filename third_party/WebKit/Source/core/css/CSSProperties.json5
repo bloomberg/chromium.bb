@@ -20,6 +20,19 @@
     longhands: {
     },
 
+    // - property_class: true|"classname"
+    // Specifies the existence (and optionally name) of a CSSProperty for
+    // this property.
+    // * Add this flag if a property class has been implemented for this property.
+    // * If the classname for this is different to the name of the property,
+    //   specify a value for this flag.
+    //   e.g. property_class=CSSPropertyWebkitPadding.
+    // TODO(meade): When most properties have been implemented, modify this so
+    // that properties with default classnames do not get this flag, and
+    // introduce a 'not_implemented' flag instead.
+    property_class: {
+    },
+
     // - property_methods: ["method1", "method2"]
     // List of methods that are implemented in the CSSProperty for this
     // property.
@@ -343,12 +356,14 @@
     // Animation Priority properties
     {
       name: "animation-delay",
+      property_class: "Delay",
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-direction",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
       separator: ",",
@@ -357,6 +372,7 @@
     },
     {
       name: "animation-duration",
+      property_class: "Duration",
       property_methods: ["ParseSingleValue"],
       typedom_types: ["Time"],
       separator: ",",
@@ -365,12 +381,14 @@
     },
     {
       name: "animation-fill-mode",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-iteration-count",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       keywords: ["infinite"],
       separator: ",",
@@ -379,30 +397,35 @@
     },
     {
       name: "animation-name",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-play-state",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-timing-function",
+      property_class: "TimingFunction",
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "transition-delay",
+      property_class: "Delay",
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "transition-duration",
+      property_class: "Duration",
       property_methods: ["ParseSingleValue"],
       typedom_types: ["Time"],
       separator: ",",
@@ -411,12 +434,14 @@
     },
     {
       name: "transition-property",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "transition-timing-function",
+      property_class: "TimingFunction",
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
@@ -427,6 +452,7 @@
     // (e.g. font-size / ems)
     {
       name: "color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       inherited: true,
@@ -441,6 +467,7 @@
     },
     {
       name: "direction",
+      property_class: true,
       affected_by_all: false,
       inherited: true,
       field_template: "keyword",
@@ -453,6 +480,7 @@
     },
     {
       name: "font-family",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       inherited: true,
@@ -464,6 +492,7 @@
     },
     {
       name: "font-kerning",
+      property_class: true,
       inherited: true,
       font: true,
       name_for_methods: "Kerning",
@@ -472,6 +501,7 @@
     },
     {
       name: "font-size",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -483,6 +513,7 @@
     },
     {
       name: "font-size-adjust",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -494,6 +525,7 @@
     },
     {
       name: "font-stretch",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       inherited: true,
@@ -504,6 +536,7 @@
     },
     {
       name: "font-style",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       inherited: true,
@@ -514,6 +547,7 @@
     },
     {
       name: "font-variant-ligatures",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       font: true,
@@ -524,6 +558,7 @@
     },
     {
       name: "font-variant-caps",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       font: true,
@@ -533,6 +568,7 @@
     },
     {
       name: "font-variant-east-asian",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       font: true,
@@ -542,6 +578,7 @@
     },
     {
       name: "font-variant-numeric",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       font: true,
@@ -551,6 +588,7 @@
     },
     {
       name: "font-weight",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       interpolable: true,
@@ -562,6 +600,7 @@
     },
     {
       name: "font-feature-settings",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       inherited: true,
@@ -572,6 +611,7 @@
     },
     {
       name: "font-variation-settings",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -583,6 +623,7 @@
     },
     {
       name: "-webkit-font-smoothing",
+      property_class: true,
       inherited: true,
       font: true,
       type_name: "FontSmoothingMode",
@@ -590,6 +631,7 @@
     },
     {
       name: "-webkit-locale",
+      property_class: "AutoOrString",
       property_methods: ["ParseSingleValue"],
       inherited: true,
       font: true,
@@ -598,6 +640,7 @@
     },
     {
       name: "text-orientation",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -609,6 +652,7 @@
     },
     {
       name: "-webkit-text-orientation",
+      property_class: true,
       inherited: true,
       type_name: "TextOrientation",
       custom_apply_functions_value: true,
@@ -616,6 +660,7 @@
     },
     {
       name: "writing-mode",
+      property_class: true,
       inherited: true,
       field_template: "keyword",
       include_paths: ["platform/text/WritingMode.h"],
@@ -627,6 +672,7 @@
     },
     {
       name: "-webkit-writing-mode",
+      property_class: true,
       inherited: true,
       type_name: "WritingMode",
       custom_apply_functions_value: true,
@@ -634,6 +680,7 @@
     },
     {
       name: "text-rendering",
+      property_class: true,
       inherited: true,
       font: true,
       type_name: "TextRenderingMode",
@@ -641,6 +688,7 @@
     },
     {
       name: "zoom",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       field_group: "visual",
@@ -653,6 +701,7 @@
     },
     {
       name: "align-content",
+      property_class: "AlignOrJustifyContent",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -663,6 +712,7 @@
     },
     {
       name: "align-items",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -677,6 +727,7 @@
     },
     {
       name: "align-self",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -687,6 +738,7 @@
     },
     {
       name: "backdrop-filter",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       compositable: true,
@@ -702,6 +754,7 @@
     },
     {
       name: "backface-visibility",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["visible", "hidden"],
@@ -709,21 +762,25 @@
     },
     {
       name: "background-attachment",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "background-blend-mode",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "background-clip",
+      property_class: "BackgroundBox",
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "background-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "background",
@@ -736,6 +793,7 @@
     },
     {
       name: "background-image",
+      property_class: "BackgroundOrMaskImage",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       keywords: ["auto", "none"],
@@ -744,17 +802,20 @@
     },
     {
       name: "background-origin",
+      property_class: "BackgroundBox",
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "background-position-x",
+      property_class: "PositionX",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "background-position-y",
+      property_class: "PositionY",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
@@ -769,12 +830,14 @@
     },
     {
       name: "background-size",
+      property_class: "BackgroundOrMaskSize",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "baseline-shift",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -783,6 +846,7 @@
     },
     {
       name: "border-bottom-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
@@ -795,6 +859,7 @@
     },
     {
       name: "border-bottom-left-radius",
+      property_class: "BorderRadiusCorner",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -806,6 +871,7 @@
     },
     {
       name: "border-bottom-right-radius",
+      property_class: "BorderRadiusCorner",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -829,6 +895,7 @@
     },
     {
       name: "border-bottom-width",
+      property_class: "BorderWidthSide",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -843,6 +910,7 @@
     },
     {
       name: "border-collapse",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -851,23 +919,27 @@
     },
     {
       name: "border-image-outset",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "border-image-repeat",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "border-image-slice",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "border-image-source",
+      property_class: "ImageSource",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       keywords: ["none"],
@@ -876,12 +948,14 @@
     },
     {
       name: "border-image-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "border-left-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
@@ -906,6 +980,7 @@
     },
     {
       name: "border-left-width",
+      property_class: "BorderWidthSide",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -920,6 +995,7 @@
     },
     {
       name: "border-right-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
@@ -944,6 +1020,7 @@
     },
     {
       name: "border-right-width",
+      property_class: "BorderWidthSide",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -958,6 +1035,7 @@
     },
     {
       name: "border-top-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
@@ -970,6 +1048,7 @@
     },
     {
       name: "border-top-left-radius",
+      property_class: "BorderRadiusCorner",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -981,6 +1060,7 @@
     },
     {
       name: "border-top-right-radius",
+      property_class: "BorderRadiusCorner",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -1004,6 +1084,7 @@
     },
     {
       name: "border-top-width",
+      property_class: "BorderWidthSide",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "surround",
@@ -1018,6 +1099,7 @@
     },
     {
       name: "bottom",
+      property_class: "OffsetSide",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1029,6 +1111,7 @@
     },
     {
       name: "box-shadow",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1041,6 +1124,7 @@
     },
     {
       name: "box-sizing",
+      property_class: true,
       field_group: "box",
       field_template: "keyword",
       keywords: ["content-box", "border-box"],
@@ -1084,6 +1168,7 @@
     },
     {
       name: "caption-side",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1092,6 +1177,7 @@
     },
     {
       name: "caret-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       inherited: true,
@@ -1111,6 +1197,7 @@
     },
     {
       name: "clip",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "visual",
@@ -1124,6 +1211,7 @@
     },
     {
       name: "clip-path",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1136,23 +1224,27 @@
     },
     {
       name: "clip-rule",
+      property_class: true,
       inherited: true,
       svg: true,
       type_name: "WindRule",
     },
     {
       name: "color-interpolation",
+      property_class: true,
       inherited: true,
       svg: true,
     },
     {
       name: "color-interpolation-filters",
+      property_class: true,
       inherited: true,
       svg: true,
       type_name: "EColorInterpolation",
     },
     {
       name: "color-rendering",
+      property_class: true,
       inherited: true,
       svg: true,
     },
@@ -1166,6 +1258,7 @@
     },
     {
       name: "contain",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_size: 4,
@@ -1177,6 +1270,7 @@
     },
     {
       name: "content",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1191,16 +1285,19 @@
     },
     {
       name: "counter-increment",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "counter-reset",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "cursor",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_template: "keyword",
@@ -1218,6 +1315,7 @@
     },
     {
       name: "cx",
+      property_class: "ShapeLength",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -1225,6 +1323,7 @@
     },
     {
       name: "cy",
+      property_class: "ShapeLength",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -1232,6 +1331,7 @@
     },
     {
       name: "d",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -1251,11 +1351,13 @@
     },
     {
       name: "dominant-baseline",
+      property_class: true,
       inherited: true,
       svg: true,
     },
     {
       name: "empty-cells",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1264,6 +1366,7 @@
     },
     {
       name: "fill",
+      property_class: "PaintStroke",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -1273,6 +1376,7 @@
     },
     {
       name: "fill-opacity",
+      property_class: "FillOrStrokeOpacity",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -1281,12 +1385,14 @@
     },
     {
       name: "fill-rule",
+      property_class: true,
       inherited: true,
       svg: true,
       type_name: "WindRule",
     },
     {
       name: "filter",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       compositable: true,
@@ -1301,6 +1407,7 @@
     },
     {
       name: "flex-basis",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1310,6 +1417,7 @@
     },
     {
       name: "flex-direction",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["row", "row-reverse", "column", "column-reverse"],
@@ -1317,6 +1425,7 @@
     },
     {
       name: "flex-grow",
+      property_class: "FlexGrowOrShrink",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1326,6 +1435,7 @@
     },
     {
       name: "flex-shrink",
+      property_class: "FlexGrowOrShrink",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1335,6 +1445,7 @@
     },
     {
       name: "flex-wrap",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["nowrap", "wrap", "wrap-reverse"],
@@ -1350,6 +1461,7 @@
     },
     {
       name: "flood-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       svg: true,
@@ -1357,6 +1469,7 @@
     },
     {
       name: "flood-opacity",
+      property_class: "FloodOrStopOpacity",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -1364,6 +1477,7 @@
     },
     {
       name: "grid-auto-columns",
+      property_class: "GridAutoLine",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1374,6 +1488,7 @@
     },
     {
       name: "grid-auto-flow",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_size: 4, // FIXME: Make this use "kGridAutoFlowBits".
@@ -1385,6 +1500,7 @@
     },
     {
       name: "grid-auto-rows",
+      property_class: "GridAutoLine",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1395,6 +1511,7 @@
     },
     {
       name: "grid-column-end",
+      property_class: "GridLine",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1405,6 +1522,7 @@
     },
     {
       name: "grid-column-gap",
+      property_class: "GridRowOrColumnGap",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "<length>",
@@ -1413,6 +1531,7 @@
     },
     {
       name: "grid-column-start",
+      property_class: "GridLine",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1423,6 +1542,7 @@
     },
     {
       name: "grid-row-end",
+      property_class: "GridLine",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1433,6 +1553,7 @@
     },
     {
       name: "grid-row-gap",
+      property_class: "GridRowOrColumnGap",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "<length>",
@@ -1441,6 +1562,7 @@
     },
     {
       name: "grid-row-start",
+      property_class: "GridLine",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1451,11 +1573,13 @@
     },
     {
       name: "grid-template-areas",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "grid-template-columns",
+      property_class: "GridTemplateLine",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       field_group: "*",
       field_template: "external",
@@ -1466,6 +1590,7 @@
     },
     {
       name: "grid-template-rows",
+      property_class: "GridTemplateLine",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       field_group: "*",
       field_template: "external",
@@ -1476,6 +1601,7 @@
     },
     {
       name: "height",
+      property_class: "WidthOrHeight",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       is_descriptor: true,
       interpolable: true,
@@ -1488,6 +1614,7 @@
     },
     {
       name: "hyphens",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -1497,6 +1624,7 @@
     },
     {
       name: "image-rendering",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -1508,6 +1636,7 @@
     },
     {
       name: "image-orientation",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       runtime_flag: "ImageOrientation",
@@ -1527,6 +1656,7 @@
     },
     {
       name: "justify-content",
+      property_class: "AlignOrJustifyContent",
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1537,6 +1667,7 @@
     },
     {
       name: "justify-items",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1547,6 +1678,7 @@
     },
     {
       name: "justify-self",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -1557,6 +1689,7 @@
     },
     {
       name: "left",
+      property_class: "OffsetSide",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1568,6 +1701,7 @@
     },
     {
       name: "letter-spacing",
+      property_class: "LetterAndWordSpacing",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -1575,6 +1709,7 @@
     },
     {
       name: "lighting-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       svg: true,
@@ -1582,6 +1717,7 @@
     },
     {
       name: "line-height",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -1594,6 +1730,7 @@
     },
     {
       name: "line-height-step",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       runtime_flag: "CSSSnapSize",
@@ -1605,6 +1742,7 @@
     },
     {
       name: "list-style-image",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -1620,6 +1758,7 @@
     },
     {
       name: "list-style-position",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1628,6 +1767,7 @@
     },
     {
       name: "list-style-type",
+      property_class: true,
       inherited: true,
       field_template: "keyword",
       keywords: [
@@ -1649,6 +1789,7 @@
     },
     {
       name: "margin-bottom",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1658,6 +1799,7 @@
     },
     {
       name: "margin-left",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1667,6 +1809,7 @@
     },
     {
       name: "margin-right",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1676,6 +1819,7 @@
     },
     {
       name: "margin-top",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1685,6 +1829,7 @@
     },
     {
       name: "marker-end",
+      property_class: "MarkerPoint",
       property_methods: ["ParseSingleValue"],
       inherited: true,
       svg: true,
@@ -1693,6 +1838,7 @@
     },
     {
       name: "marker-mid",
+      property_class: "MarkerPoint",
       property_methods: ["ParseSingleValue"],
       inherited: true,
       svg: true,
@@ -1701,6 +1847,7 @@
     },
     {
       name: "marker-start",
+      property_class: "MarkerPoint",
       property_methods: ["ParseSingleValue"],
       inherited: true,
       svg: true,
@@ -1709,6 +1856,7 @@
     },
     {
       name: "mask",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       svg: true,
       name_for_methods: "MaskerResource",
@@ -1716,6 +1864,7 @@
     },
     {
       name: "mask-source-type",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSMaskSourceType",
       custom_apply_functions_all: true,
@@ -1726,6 +1875,7 @@
     },
     {
       name: "max-height",
+      property_class: "MaxWidthOrHeight",
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       interpolable: true,
@@ -1736,6 +1886,7 @@
     },
     {
       name: "max-width",
+      property_class: "MaxWidthOrHeight",
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       interpolable: true,
@@ -1746,6 +1897,7 @@
     },
     {
       name: "min-height",
+      property_class: "MinWidthOrHeight",
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       interpolable: true,
@@ -1756,6 +1908,7 @@
     },
     {
       name: "min-width",
+      property_class: "MinWidthOrHeight",
       property_methods: ["ParseSingleValue"],
       is_descriptor: true,
       interpolable: true,
@@ -1788,6 +1941,7 @@
     },
     {
       name: "object-position",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1799,6 +1953,7 @@
     },
     {
       name: "offset-anchor",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       runtime_flag: "CSSOffsetPositionAnchor",
@@ -1811,6 +1966,7 @@
     },
     {
       name: "offset-distance",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1820,6 +1976,7 @@
     },
     {
       name: "offset-path",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1832,6 +1989,7 @@
     },
     {
       name: "offset-position",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       runtime_flag: "CSSOffsetPositionAnchor",
@@ -1844,6 +2002,7 @@
     },
     {
       name: "offset-rotate",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1855,6 +2014,7 @@
     },
     {
       name: "opacity",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       compositable: true,
@@ -1866,6 +2026,7 @@
     },
     {
       name: "order",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1876,6 +2037,7 @@
     },
     {
       name: "orphans",
+      property_class: "OrphansOrWidows",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -1886,6 +2048,7 @@
     },
     {
       name: "outline-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "*",
@@ -1898,6 +2061,7 @@
     },
     {
       name: "outline-offset",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1921,6 +2085,7 @@
     },
     {
       name: "outline-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -1933,6 +2098,7 @@
     },
     {
       name: "overflow-anchor",
+      property_class: true,
       inherited: false,
       runtime_flag: "ScrollAnchoring",
       field_template: "keyword",
@@ -1943,6 +2109,7 @@
     },
     {
       name: "overflow-wrap",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -1971,6 +2138,7 @@
     },
     {
       name: "padding-bottom",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1980,6 +2148,7 @@
     },
     {
       name: "padding-left",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1989,6 +2158,7 @@
     },
     {
       name: "padding-right",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -1998,6 +2168,7 @@
     },
     {
       name: "padding-top",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -2007,6 +2178,7 @@
     },
     {
       name: "paint-order",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       svg: true,
@@ -2014,6 +2186,7 @@
     },
     {
       name: "perspective",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2024,6 +2197,7 @@
     },
     {
       name: "perspective-origin",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "*",
@@ -2035,6 +2209,7 @@
     },
     {
       name: "pointer-events",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2056,6 +2231,7 @@
     },
     {
       name: "quotes",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -2076,6 +2252,7 @@
     },
     {
       name: "right",
+      property_class: "OffsetSide",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -2087,6 +2264,7 @@
     },
     {
       name: "r",
+      property_class: "ShapeLength",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -2094,6 +2272,7 @@
     },
     {
       name: "rx",
+      property_class: "Radius",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -2101,6 +2280,7 @@
     },
     {
       name: "ry",
+      property_class: "Radius",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -2108,6 +2288,7 @@
     },
     {
       name: "scroll-behavior",
+      property_class: true,
       runtime_flag: "CSSOMSmoothScroll",
       field_group: "*",
       field_size: 2, // FIXME: Convert this to a keyword field
@@ -2117,6 +2298,7 @@
     },
     {
       name: "overscroll-behavior-x",
+      property_class: "OverscrollBehaviorXOrY",
       runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -2125,6 +2307,7 @@
     },
     {
       name: "overscroll-behavior-y",
+      property_class: "OverscrollBehaviorXOrY",
       runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -2133,6 +2316,7 @@
     },
     {
       name: "scroll-snap-type",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2145,6 +2329,7 @@
     },
     {
       name: "scroll-snap-align",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2157,6 +2342,7 @@
     },
     {
       name: "scroll-snap-stop",
+      property_class: true,
       runtime_flag: "CSSScrollSnapPoints",
       field_template: "keyword",
       keywords: ["normal", "always"],
@@ -2164,6 +2350,7 @@
     },
     {
       name: "scroll-padding-top",
+      property_class: "ScrollPaddingSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2174,6 +2361,7 @@
     },
     {
       name: "scroll-padding-bottom",
+      property_class: "ScrollPaddingSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2184,6 +2372,7 @@
     },
     {
       name: "scroll-padding-left",
+      property_class: "ScrollPaddingSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2194,6 +2383,7 @@
     },
     {
       name: "scroll-padding-right",
+      property_class: "ScrollPaddingSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2204,6 +2394,7 @@
     },
     {
       name: "scroll-padding-block-start",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
@@ -2217,6 +2408,7 @@
     },
     {
       name: "scroll-padding-block-end",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
@@ -2230,6 +2422,7 @@
     },
     {
       name: "scroll-padding-inline-start",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
@@ -2243,6 +2436,7 @@
     },
     {
       name: "scroll-padding-inline-end",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
@@ -2256,6 +2450,7 @@
     },
     {
       name: "scroll-snap-margin-top",
+      property_class: "ScrollSnapMarginSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2266,6 +2461,7 @@
     },
     {
       name: "scroll-snap-margin-bottom",
+      property_class: "ScrollSnapMarginSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2276,6 +2472,7 @@
     },
     {
       name: "scroll-snap-margin-left",
+      property_class: "ScrollSnapMarginSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2286,6 +2483,7 @@
     },
     {
       name: "scroll-snap-margin-right",
+      property_class: "ScrollSnapMarginSide",
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
@@ -2296,6 +2494,7 @@
     },
     {
       name: "scroll-snap-margin-block-start",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
@@ -2305,6 +2504,7 @@
     },
     {
       name: "scroll-snap-margin-block-end",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
@@ -2314,6 +2514,7 @@
     },
     {
       name: "scroll-snap-margin-inline-start",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
@@ -2323,6 +2524,7 @@
     },
     {
       name: "scroll-snap-margin-inline-end",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
@@ -2332,6 +2534,7 @@
     },
     {
       name: "shape-image-threshold",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2342,6 +2545,7 @@
     },
     {
       name: "shape-margin",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2351,6 +2555,7 @@
     },
     {
       name: "shape-outside",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2365,16 +2570,19 @@
     },
     {
       name: "shape-rendering",
+      property_class: true,
       inherited: true,
       svg: true,
     },
     {
       name: "size",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "speak",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2386,6 +2594,7 @@
     },
     {
       name: "stop-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       svg: true,
@@ -2393,6 +2602,7 @@
     },
     {
       name: "stop-opacity",
+      property_class: "FloodOrStopOpacity",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -2400,6 +2610,7 @@
     },
     {
       name: "stroke",
+      property_class: "PaintStroke",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2409,6 +2620,7 @@
     },
     {
       name: "stroke-dasharray",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2418,6 +2630,7 @@
     },
     {
       name: "stroke-dashoffset",
+      property_class: "StrokeDashoffsetOrStrokeWidth",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2427,6 +2640,7 @@
     },
     {
       name: "stroke-linecap",
+      property_class: true,
       inherited: true,
       svg: true,
       name_for_methods: "CapStyle",
@@ -2434,6 +2648,7 @@
     },
     {
       name: "stroke-linejoin",
+      property_class: true,
       inherited: true,
       svg: true,
       name_for_methods: "JoinStyle",
@@ -2441,6 +2656,7 @@
     },
     {
       name: "stroke-miterlimit",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2450,6 +2666,7 @@
     },
     {
       name: "stroke-opacity",
+      property_class: "FillOrStrokeOpacity",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2458,6 +2675,7 @@
     },
     {
       name: "stroke-width",
+      property_class: "StrokeDashoffsetOrStrokeWidth",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2474,6 +2692,7 @@
     },
     {
       name: "tab-size",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -2486,6 +2705,7 @@
     },
     {
       name: "text-align",
+      property_class: true,
       independent: false,
       inherited: true,
       field_template: "keyword",
@@ -2499,6 +2719,7 @@
     },
     {
       name: "text-align-last",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2507,11 +2728,13 @@
     },
     {
       name: "text-anchor",
+      property_class: true,
       inherited: true,
       svg: true,
     },
     {
       name: "text-combine-upright",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2521,6 +2744,7 @@
     },
     {
       name: "text-decoration-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "*",
@@ -2532,6 +2756,7 @@
     },
     {
       name: "text-decoration-line",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "visual",
       field_template: "multi_keyword",
@@ -2543,6 +2768,7 @@
     },
     {
       name: "text-decoration-skip-ink",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2551,6 +2777,7 @@
     },
     {
       name: "text-decoration-style",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["solid", "double", "dotted", "dashed", "wavy"],
@@ -2558,6 +2785,7 @@
     },
     {
       name: "text-indent",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2568,6 +2796,7 @@
     },
     {
       name: "text-justify",
+      property_class: true,
       inherited: true,
       runtime_flag: "CSS3Text",
       field_group: "*",
@@ -2587,6 +2816,7 @@
     },
     {
       name: "text-shadow",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2600,6 +2830,7 @@
     },
     {
       name: "text-size-adjust",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -2612,6 +2843,7 @@
     },
     {
       name: "text-transform",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2621,6 +2853,7 @@
     // FIXME: Implement support for 'under left' and 'under right' values.
     {
       name: "text-underline-position",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -2631,6 +2864,7 @@
     },
     {
       name: "top",
+      property_class: "OffsetSide",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
@@ -2642,6 +2876,7 @@
     },
     {
       name: "touch-action",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_size: 6, // FIXME: Make this use "kTouchActionBits".
@@ -2653,6 +2888,7 @@
     },
     {
       name: "transform",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       compositable: true,
@@ -2667,6 +2903,7 @@
     },
     {
       name: "transform-box",
+      property_class: true,
       runtime_flag: "CSSTransformBox",
       field_template: "keyword",
       keywords: ["fill-box", "view-box"],
@@ -2674,6 +2911,7 @@
     },
     {
       name: "transform-origin",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "*",
@@ -2686,6 +2924,7 @@
     },
     {
       name: "transform-style",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["flat", "preserve-3d"],
@@ -2694,6 +2933,7 @@
     },
     {
       name: "translate",
+      property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       compositable: true,
@@ -2708,6 +2948,7 @@
     },
     {
       name: "rotate",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       compositable: true,
@@ -2722,6 +2963,7 @@
     },
     {
       name: "scale",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       compositable: true,
@@ -2736,6 +2978,7 @@
     },
     {
       name: "unicode-bidi",
+      property_class: true,
       affected_by_all: false,
       field_template: "keyword",
       include_paths: ["platform/text/UnicodeBidi.h"],
@@ -2752,6 +2995,7 @@
     },
     {
       name: "vertical-align",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_inherit: true,
@@ -2759,6 +3003,7 @@
     },
     {
       name: "visibility",
+      property_class: true,
       independent: true,
       interpolable: true,
       inherited: true,
@@ -2768,6 +3013,7 @@
     },
     {
       name: "x",
+      property_class: "ShapeLength",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -2775,6 +3021,7 @@
     },
     {
       name: "y",
+      property_class: "ShapeLength",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -2799,6 +3046,7 @@
     },
     {
       name: "-webkit-border-horizontal-spacing",
+      property_class: "WebkitBorderSpacing",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2811,11 +3059,13 @@
     },
     {
       name: "-webkit-border-image",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_value: true,
     },
     {
       name: "-webkit-border-vertical-spacing",
+      property_class: "WebkitBorderSpacing",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -2845,6 +3095,7 @@
     },
     {
       name: "-webkit-box-direction",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2853,6 +3104,7 @@
     },
     {
       name: "-webkit-box-flex",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "primitive",
@@ -2861,6 +3113,7 @@
     },
     {
       name: "-webkit-box-flex-group",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "primitive",
@@ -2876,6 +3129,7 @@
     },
     {
       name: "-webkit-box-ordinal-group",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "primitive",
@@ -2899,6 +3153,7 @@
     },
     {
       name: "-webkit-box-reflect",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "pointer",
@@ -2910,6 +3165,7 @@
     },
     {
       name: "column-count",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2921,6 +3177,7 @@
     },
     {
       name: "column-gap",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2933,6 +3190,7 @@
     },
     {
       name: "column-rule-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "*",
@@ -2945,6 +3203,7 @@
     },
     {
       name: "column-rule-style",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: [
@@ -2956,6 +3215,7 @@
     },
     {
       name: "column-rule-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2968,6 +3228,7 @@
     },
     {
       name: "column-span",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "keyword",
@@ -2977,6 +3238,7 @@
     },
     {
       name: "column-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "*",
@@ -2989,6 +3251,7 @@
     },
     {
       name: "-webkit-highlight",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -3000,6 +3263,7 @@
     },
     {
       name: "-webkit-hyphenate-character",
+      property_class: "AutoOrString",
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -3012,6 +3276,7 @@
     },
     {
       name: "-webkit-line-break",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3021,12 +3286,14 @@
     },
     {
       name: "line-break",
+      property_class: true,
       inherited: true,
       type_name: "LineBreak",
     },
     // An Apple extension.
     {
       name: "-webkit-line-clamp",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       field_group: "*",
       field_template: "external",
@@ -3062,62 +3329,73 @@
     },
     {
       name: "-webkit-mask-box-image-outset",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-repeat",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-slice",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-source",
+      property_class: "ImageSource",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_value: true,
     },
     {
       name: "-webkit-mask-box-image-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-clip",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-composite",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-image",
+      property_class: "BackgroundOrMaskImage",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-origin",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-x",
+      property_class: "PositionX",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-y",
+      property_class: "PositionY",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
@@ -3132,24 +3410,28 @@
     },
     {
       name: "-webkit-mask-size",
+      property_class: "BackgroundOrMaskSize",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-perspective-origin-x",
+      property_class: "WebkitOriginX",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       converter: "ConvertLength",
     },
     {
       name: "-webkit-perspective-origin-y",
+      property_class: "WebkitOriginY",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       converter: "ConvertLength",
     },
     {
       name: "-webkit-print-color-adjust",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3158,6 +3440,7 @@
     },
     {
       name: "-webkit-rtl-ordering",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3169,6 +3452,7 @@
     },
     {
       name: "-webkit-ruby-position",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3178,6 +3462,7 @@
     },
     {
       name: "-webkit-tap-highlight-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       inherited: true,
       field_group: "*",
@@ -3187,11 +3472,13 @@
     },
     {
       name: "-webkit-text-combine",
+      property_class: true,
       inherited: true,
       name_for_methods: "TextCombine",
     },
     {
       name: "-webkit-text-emphasis-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       inherited: true,
       field_group: "*",
@@ -3204,6 +3491,7 @@
     },
     {
       name: "-webkit-text-emphasis-position",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -3215,12 +3503,14 @@
     },
     {
       name: "-webkit-text-emphasis-style",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-text-fill-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       inherited: true,
       field_group: "*",
@@ -3233,6 +3523,7 @@
     },
     {
       name: "-webkit-text-security",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3241,6 +3532,7 @@
     },
     {
       name: "-webkit-text-stroke-color",
+      property_class: true,
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
       interpolable: true,
       inherited: true,
@@ -3254,6 +3546,7 @@
     },
     {
       name: "-webkit-text-stroke-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_group: "*",
@@ -3264,18 +3557,21 @@
     },
     {
       name: "-webkit-transform-origin-x",
+      property_class: "WebkitOriginX",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       converter: "ConvertLength",
     },
     {
       name: "-webkit-transform-origin-y",
+      property_class: "WebkitOriginY",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       converter: "ConvertLength",
     },
     {
       name: "-webkit-transform-origin-z",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       converter: "ConvertComputedLength<float>",
@@ -3289,6 +3585,7 @@
     },
     {
       name: "-webkit-user-modify",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3297,6 +3594,7 @@
     },
     {
       name: "user-select",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3305,6 +3603,7 @@
     },
     {
       name: "white-space",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3315,6 +3614,7 @@
     },
     {
       name: "widows",
+      property_class: "OrphansOrWidows",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -3325,6 +3625,7 @@
     },
     {
       name: "width",
+      property_class: "WidthOrHeight",
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       is_descriptor: true,
       interpolable: true,
@@ -3337,11 +3638,13 @@
     },
     {
       name: "will-change",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       custom_apply_functions_all: true,
     },
     {
       name: "word-break",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3351,6 +3654,7 @@
     },
     {
       name: "word-spacing",
+      property_class: "LetterAndWordSpacing",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
@@ -3360,11 +3664,13 @@
     // property. So using the same handlers.
     {
       name: "word-wrap",
+      property_class: true,
       inherited: true,
       name_for_methods: "OverflowWrap",
     },
     {
       name: "z-index",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       field_group: "box",
@@ -3378,6 +3684,7 @@
     // CSS logical props
     {
       name: "inline-size",
+      property_class: "InlineSizeOrLogicalWidth",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
@@ -3386,6 +3693,7 @@
     },
     {
       name: "block-size",
+      property_class: "BlockSizeOrLogicalHeight",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
@@ -3394,6 +3702,7 @@
     },
     {
       name: "min-inline-size",
+      property_class: "MinInlineSizeOrMinLogicalWidth",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
@@ -3402,6 +3711,7 @@
     },
     {
       name: "min-block-size",
+      property_class: "MinBlockSizeOrMinLogicalHeight",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
@@ -3410,6 +3720,7 @@
     },
     {
       name: "max-inline-size",
+      property_class: "MaxInlineSizeOrMaxLogicalWidth",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
@@ -3418,6 +3729,7 @@
     },
     {
       name: "max-block-size",
+      property_class: "MaxBlockSizeOrMaxLogicalHeight",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
@@ -3429,6 +3741,7 @@
 
     {
       name: "-webkit-border-end-color",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "end",
@@ -3437,6 +3750,7 @@
     },
     {
       name: "-webkit-border-end-style",
+      property_class: true,
       direction_aware_options: {
         logical_side: "end",
         shorthand_for_physical_side: "borderStyleShorthand",
@@ -3444,6 +3758,7 @@
     },
     {
       name: "-webkit-border-end-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "end",
@@ -3452,6 +3767,7 @@
     },
     {
       name: "-webkit-border-start-color",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "start",
@@ -3460,6 +3776,7 @@
     },
     {
       name: "-webkit-border-start-style",
+      property_class: true,
       direction_aware_options: {
         logical_side: "start",
         shorthand_for_physical_side: "borderStyleShorthand",
@@ -3467,6 +3784,7 @@
     },
     {
       name: "-webkit-border-start-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "start",
@@ -3475,6 +3793,7 @@
     },
     {
       name: "-webkit-border-before-color",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "before",
@@ -3483,6 +3802,7 @@
     },
     {
       name: "-webkit-border-before-style",
+      property_class: true,
       direction_aware_options: {
         logical_side: "before",
         shorthand_for_physical_side: "borderStyleShorthand",
@@ -3490,6 +3810,7 @@
     },
     {
       name: "-webkit-border-before-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "before",
@@ -3498,6 +3819,7 @@
     },
     {
       name: "-webkit-border-after-color",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "after",
@@ -3506,6 +3828,7 @@
     },
     {
       name: "-webkit-border-after-style",
+      property_class: true,
       direction_aware_options: {
         logical_side: "after",
         shorthand_for_physical_side: "borderStyleShorthand",
@@ -3513,6 +3836,7 @@
     },
     {
       name: "-webkit-border-after-width",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "after",
@@ -3521,6 +3845,7 @@
     },
     {
       name: "-webkit-margin-end",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "end",
@@ -3529,6 +3854,7 @@
     },
     {
       name: "-webkit-margin-start",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "start",
@@ -3537,6 +3863,7 @@
     },
     {
       name: "-webkit-margin-before",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "before",
@@ -3545,6 +3872,7 @@
     },
     {
       name: "-webkit-margin-after",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "after",
@@ -3553,6 +3881,7 @@
     },
     {
       name: "-webkit-padding-end",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "end",
@@ -3561,6 +3890,7 @@
     },
     {
       name: "-webkit-padding-start",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "start",
@@ -3569,6 +3899,7 @@
     },
     {
       name: "-webkit-padding-before",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "before",
@@ -3577,6 +3908,7 @@
     },
     {
       name: "-webkit-padding-after",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "after",
@@ -3585,6 +3917,7 @@
     },
     {
       name: "-webkit-logical-width",
+      property_class: "InlineSizeOrLogicalWidth",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
@@ -3593,6 +3926,7 @@
     },
     {
       name: "-webkit-logical-height",
+      property_class: "BlockSizeOrLogicalHeight",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
@@ -3601,6 +3935,7 @@
     },
     {
       name: "-webkit-min-logical-width",
+      property_class: "MinInlineSizeOrMinLogicalWidth",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
@@ -3609,6 +3944,7 @@
     },
     {
       name: "-webkit-min-logical-height",
+      property_class: "MinBlockSizeOrMinLogicalHeight",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
@@ -3617,6 +3953,7 @@
     },
     {
       name: "-webkit-max-logical-width",
+      property_class: "MaxInlineSizeOrMaxLogicalWidth",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "width",
@@ -3625,6 +3962,7 @@
     },
     {
       name: "-webkit-max-logical-height",
+      property_class: "MaxBlockSizeOrMaxLogicalHeight",
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         logical_side: "height",
@@ -3637,21 +3975,25 @@
     // StyleBuilder
     {
       name: "all",
+      property_class: true,
       affected_by_all: false,
       builder_skip: true,
     },
     {
       name: "page",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       builder_skip: true,
     },
     {
       name: "-webkit-font-size-delta",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       builder_skip: true,
     },
     {
       name: "-webkit-text-decorations-in-effect",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       inherited: true,
       builder_skip: true,
@@ -3660,36 +4002,43 @@
     // Descriptor only names
     {
       name: "font-display",
+      property_class: true,
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "max-zoom",
+      property_class: "DescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "min-zoom",
+      property_class: "DescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "orientation",
+      property_class: "DescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "src",
+      property_class: "DescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "unicode-range",
+      property_class: "DescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "user-zoom",
+      property_class: "DescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
@@ -3702,6 +4051,7 @@
         "animation-delay", "animation-iteration-count", "animation-direction",
         "animation-fill-mode", "animation-play-state"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3712,16 +4062,19 @@
         "background-attachment", "background-origin", "background-clip",
         "background-color"
       ],
+      property_class: "Background",
       property_methods: ["ParseShorthand"],
     },
     {
       name: "background-position",
       longhands: ["background-position-x", "background-position-y"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "background-repeat",
       longhands: ["background-repeat-x", "background-repeat-y"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3734,6 +4087,7 @@
         "border-image-source", "border-image-slice", "border-image-width",
         "border-image-outset", "border-image-repeat"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3741,6 +4095,7 @@
       longhands: [
         "border-bottom-width", "border-bottom-style", "border-bottom-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3749,6 +4104,7 @@
         "border-top-color", "border-right-color", "border-bottom-color",
         "border-left-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3757,6 +4113,7 @@
         "border-image-source", "border-image-slice", "border-image-width",
         "border-image-outset", "border-image-repeat"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3764,6 +4121,7 @@
       longhands: [
         "border-left-width", "border-left-style", "border-left-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3772,6 +4130,7 @@
         "border-top-left-radius", "border-top-right-radius",
         "border-bottom-right-radius", "border-bottom-left-radius"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3779,6 +4138,7 @@
       longhands: [
         "border-right-width", "border-right-style", "border-right-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3786,6 +4146,7 @@
       longhands: [
         "-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3794,6 +4155,7 @@
         "border-top-style", "border-right-style", "border-bottom-style",
         "border-left-style"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       keywords: ["none"],
       typedom_types: ["Image"],
@@ -3801,6 +4163,7 @@
     {
       name: "border-top",
       longhands: ["border-top-width", "border-top-style", "border-top-color"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3809,16 +4172,19 @@
         "border-top-width", "border-right-width", "border-bottom-width",
         "border-left-width"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "flex",
       longhands: ["flex-grow", "flex-shrink", "flex-basis"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "flex-flow",
       longhands: ["flex-direction", "flex-wrap"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3828,6 +4194,7 @@
         "font-variant-numeric", "font-variant-east-asian", "font-weight",
         "font-stretch", "font-size", "line-height", "font-family"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3836,6 +4203,7 @@
         "font-variant-ligatures", "font-variant-caps",
         "font-variant-numeric", "font-variant-east-asian"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       is_descriptor: true,
     },
@@ -3845,21 +4213,25 @@
         "grid-template-rows", "grid-template-columns", "grid-template-areas",
         "grid-auto-flow", "grid-auto-rows", "grid-auto-columns"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "place-content",
       longhands: ["align-content", "justify-content"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "place-items",
       longhands: ["align-items", "justify-items"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "place-self",
       longhands: ["align-self", "justify-self"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3868,21 +4240,25 @@
         "grid-row-start", "grid-column-start", "grid-row-end",
         "grid-column-end"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "grid-column",
       longhands: ["grid-column-start", "grid-column-end"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "grid-gap",
       longhands: ["grid-row-gap", "grid-column-gap"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "grid-row",
       longhands: ["grid-row-start", "grid-row-end"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3890,21 +4266,25 @@
       longhands: [
         "grid-template-rows", "grid-template-columns", "grid-template-areas"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "list-style",
       longhands: ["list-style-type", "list-style-position", "list-style-image"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "margin",
       longhands: ["margin-top", "margin-right", "margin-bottom", "margin-left"],
+      property_class: true,
       property_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "marker",
       longhands: ["marker-start", "marker-mid", "marker-end"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3913,21 +4293,25 @@
         "offset-position", "offset-path", "offset-distance", "offset-rotate",
         "offset-anchor"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "outline",
       longhands: ["outline-color", "outline-style", "outline-width"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "overflow",
       longhands: ["overflow-x", "overflow-y"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "overscroll-behavior",
       longhands: ["overscroll-behavior-x", "overscroll-behavior-y"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       runtime_flag: "CSSOverscrollBehavior",
     },
@@ -3936,21 +4320,25 @@
       longhands: [
         "padding-top", "padding-right", "padding-bottom", "padding-left"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "page-break-after",
       longhands: ["break-after"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "page-break-before",
       longhands: ["break-before"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "page-break-inside",
       longhands: ["break-inside"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -3959,42 +4347,49 @@
         "scroll-padding-top", "scroll-padding-right", "scroll-padding-bottom",
         "scroll-padding-left"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-block",
       longhands: ["scroll-padding-block-start", "scroll-padding-block-end"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-inline",
       longhands: ["scroll-padding-inline-start", "scroll-padding-inline-end"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-snap-margin",
       longhands: ["scroll-snap-margin-top", "scroll-snap-margin-right", "scroll-snap-margin-bottom", "scroll-snap-margin-left"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-snap-margin-block",
       longhands: ["scroll-snap-margin-block-start", "scroll-snap-margin-block-end"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-snap-margin-inline",
       longhands: ["scroll-snap-margin-inline-start", "scroll-snap-margin-inline-end"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "text-decoration",
       longhands: ["text-decoration-line", "text-decoration-style", "text-decoration-color"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -4003,6 +4398,7 @@
         "transition-property", "transition-duration",
         "transition-timing-function", "transition-delay"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -4011,6 +4407,7 @@
         "-webkit-border-after-width", "-webkit-border-after-style",
         "-webkit-border-after-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       direction_aware_options: {
         logical_side: "after",
@@ -4023,6 +4420,7 @@
         "-webkit-border-before-width", "-webkit-border-before-style",
         "-webkit-border-before-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       direction_aware_options: {
         logical_side: "before",
@@ -4035,6 +4433,7 @@
         "-webkit-border-end-width", "-webkit-border-end-style",
         "-webkit-border-end-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       direction_aware_options: {
         logical_side: "end",
@@ -4047,6 +4446,7 @@
         "-webkit-border-start-width", "-webkit-border-start-style",
         "-webkit-border-start-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
       direction_aware_options: {
         logical_side: "start",
@@ -4056,16 +4456,19 @@
     {
       name: "-webkit-column-break-after",
       longhands: ["break-after"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-column-break-before",
       longhands: ["break-before"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-column-break-inside",
       longhands: ["break-inside"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -4073,11 +4476,13 @@
       longhands: [
         "column-rule-width", "column-rule-style", "column-rule-color"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "columns",
       longhands: ["column-width", "column-count"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -4085,6 +4490,7 @@
       longhands: [
         "-webkit-margin-before-collapse", "-webkit-margin-after-collapse"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
@@ -4094,6 +4500,7 @@
         "-webkit-mask-position-y", "-webkit-mask-size", "-webkit-mask-repeat-x",
         "-webkit-mask-repeat-y", "-webkit-mask-origin", "-webkit-mask-clip"
       ],
+      property_class: "Background",
       property_methods: ["ParseShorthand"],
     },
     {
@@ -4103,310 +4510,384 @@
         "-webkit-mask-box-image-width", "-webkit-mask-box-image-outset",
         "-webkit-mask-box-image-repeat"
       ],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-mask-position",
       longhands: ["-webkit-mask-position-x", "-webkit-mask-position-y"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-mask-repeat",
       longhands: ["-webkit-mask-repeat-x", "-webkit-mask-repeat-y"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-text-emphasis",
       longhands: ["-webkit-text-emphasis-style", "-webkit-text-emphasis-color"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-text-stroke",
       longhands: ["-webkit-text-stroke-width", "-webkit-text-stroke-color"],
+      property_class: true,
       property_methods: ["ParseShorthand"],
     },
 
     // Aliases; these map to the same CSSPropertyID
     {
       name: "-epub-caption-side",
+      property_class: true,
       alias_for: "caption-side",
     },
     {
       name: "-epub-text-combine",
+      property_class: true,
       alias_for: "-webkit-text-combine",
     },
     {
       name: "-epub-text-emphasis",
+      property_class: true,
       alias_for: "-webkit-text-emphasis",
     },
     {
       name: "-epub-text-emphasis-color",
+      property_class: true,
       alias_for: "-webkit-text-emphasis-color",
     },
     {
       name: "-epub-text-emphasis-style",
+      property_class: true,
       alias_for: "-webkit-text-emphasis-style",
     },
     {
       name: "-epub-text-orientation",
+      property_class: true,
       alias_for: "-webkit-text-orientation",
     },
     {
       name: "-epub-text-transform",
+      property_class: true,
       alias_for: "text-transform",
     },
     {
       name: "-epub-word-break",
+      property_class: true,
       alias_for: "word-break",
     },
     {
       name: "-epub-writing-mode",
+      property_class: true,
       alias_for: "-webkit-writing-mode",
     },
     {
       name: "-webkit-align-content",
+      property_class: true,
       alias_for: "align-content",
     },
     {
       name: "-webkit-align-items",
+      property_class: true,
       alias_for: "align-items",
     },
     {
       name: "-webkit-align-self",
+      property_class: true,
       alias_for: "align-self",
     },
     {
       name: "-webkit-animation",
+      property_class: true,
       alias_for: "animation",
     },
     {
       name: "-webkit-animation-delay",
+      property_class: true,
       alias_for: "animation-delay",
     },
     {
       name: "-webkit-animation-direction",
+      property_class: true,
       alias_for: "animation-direction",
     },
     {
       name: "-webkit-animation-duration",
+      property_class: true,
       alias_for: "animation-duration",
     },
     {
       name: "-webkit-animation-fill-mode",
+      property_class: true,
       alias_for: "animation-fill-mode",
     },
     {
       name: "-webkit-animation-iteration-count",
+      property_class: true,
       alias_for: "animation-iteration-count",
     },
     {
       name: "-webkit-animation-name",
+      property_class: true,
       alias_for: "animation-name",
     },
     {
       name: "-webkit-animation-play-state",
+      property_class: true,
       alias_for: "animation-play-state",
     },
     {
       name: "-webkit-animation-timing-function",
+      property_class: true,
       alias_for: "animation-timing-function",
     },
     {
       name: "-webkit-backface-visibility",
+      property_class: true,
       alias_for: "backface-visibility",
     },
     // -webkit-background-clip accepts "content", "padding", and "border" values
     // See crbug.com/604023
     {
       name: "-webkit-background-clip",
+      property_class: true,
       alias_for: "background-clip",
     },
     // -webkit-background-origin accepts "content", "padding", and "border"
     // values. See crbug.com/604023
     {
       name: "-webkit-background-origin",
+      property_class: true,
       alias_for: "background-origin"
     },
     // "-webkit-background-size: 10px" behaves as "background-size: 10px 10px"
     {
       name: "-webkit-background-size",
+      property_class: true,
       alias_for: "background-size",
     },
     {
       name: "-webkit-border-bottom-left-radius",
+      property_class: true,
       alias_for: "border-bottom-left-radius",
     },
     {
       name: "-webkit-border-bottom-right-radius",
+      property_class: true,
       alias_for: "border-bottom-right-radius",
     },
     // "-webkit-border-radius: 1px 2px" behaves as "border-radius: 1px / 2px"
     {
       name: "-webkit-border-radius",
+      property_class: true,
       alias_for: "border-radius",
     },
     {
       name: "-webkit-border-top-left-radius",
+      property_class: true,
       alias_for: "border-top-left-radius",
     },
     {
       name: "-webkit-border-top-right-radius",
+      property_class: true,
       alias_for: "border-top-right-radius",
     },
     {
       name: "-webkit-box-shadow",
+      property_class: true,
       alias_for: "box-shadow",
     },
     {
       name: "-webkit-box-sizing",
+      property_class: true,
       alias_for: "box-sizing",
     },
     {
       name: "-webkit-clip-path",
+      property_class: true,
       alias_for: "clip-path",
     },
     {
       name: "-webkit-column-count",
+      property_class: true,
       alias_for: "column-count",
     },
     {
       name: "-webkit-column-gap",
+      property_class: true,
       alias_for: "column-gap",
     },
     {
       name: "-webkit-column-rule",
+      property_class: true,
       alias_for: "column-rule",
     },
     {
       name: "-webkit-column-rule-color",
+      property_class: true,
       alias_for: "column-rule-color",
     },
     {
       name: "-webkit-column-rule-style",
+      property_class: true,
       alias_for: "column-rule-style",
     },
     {
       name: "-webkit-column-rule-width",
+      property_class: true,
       alias_for: "column-rule-width",
     },
     {
       name: "-webkit-column-span",
+      property_class: true,
       alias_for: "column-span",
     },
     {
       name: "-webkit-column-width",
+      property_class: true,
       alias_for: "column-width",
     },
     {
       name: "-webkit-columns",
+      property_class: true,
       alias_for: "columns",
     },
     {
       name: "-webkit-filter",
+      property_class: true,
       alias_for: "filter",
     },
     {
       name: "-webkit-flex",
+      property_class: true,
       alias_for: "flex",
     },
     {
       name: "-webkit-flex-basis",
+      property_class: true,
       alias_for: "flex-basis",
     },
     {
       name: "-webkit-flex-direction",
+      property_class: true,
       alias_for: "flex-direction",
     },
     {
       name: "-webkit-flex-flow",
+      property_class: true,
       alias_for: "flex-flow",
     },
     {
       name: "-webkit-flex-grow",
+      property_class: true,
       alias_for: "flex-grow",
     },
     {
       name: "-webkit-flex-shrink",
+      property_class: true,
       alias_for: "flex-shrink",
     },
     {
       name: "-webkit-flex-wrap",
+      property_class: true,
       alias_for: "flex-wrap",
     },
     {
       name: "-webkit-font-feature-settings",
+      property_class: true,
       alias_for: "font-feature-settings",
     },
     {
       name: "-webkit-justify-content",
+      property_class: true,
       alias_for: "justify-content",
     },
     {
       name: "-webkit-opacity",
+      property_class: true,
       alias_for: "opacity",
     },
     {
       name: "-webkit-order",
+      property_class: true,
       alias_for: "order",
     },
     {
       name: "-webkit-perspective",
+      property_class: true,
       alias_for: "perspective",
     },
     {
       name: "-webkit-perspective-origin",
+      property_class: true,
       alias_for: "perspective-origin",
     },
     {
       name: "-webkit-shape-image-threshold",
+      property_class: true,
       alias_for: "shape-image-threshold",
     },
     {
       name: "-webkit-shape-margin",
+      property_class: true,
       alias_for: "shape-margin",
     },
     {
       name: "-webkit-shape-outside",
+      property_class: true,
       alias_for: "shape-outside",
     },
     {
       name: "-webkit-text-size-adjust",
+      property_class: true,
       alias_for: "text-size-adjust",
     },
     {
       name: "-webkit-transform",
+      property_class: true,
       alias_for: "transform",
     },
     {
       name: "-webkit-transform-origin",
+      property_class: true,
       alias_for: "transform-origin",
     },
     {
       name: "-webkit-transform-style",
+      property_class: true,
       alias_for: "transform-style",
     },
     {
       name: "-webkit-transition",
+      property_class: true,
       alias_for: "transition",
     },
     {
       name: "-webkit-transition-delay",
+      property_class: true,
       alias_for: "transition-delay",
     },
     {
       name: "-webkit-transition-duration",
+      property_class: true,
       alias_for: "transition-duration",
     },
     {
       name: "-webkit-transition-property",
+      property_class: true,
       alias_for: "transition-property",
     },
     {
       name: "-webkit-transition-timing-function",
+      property_class: true,
       alias_for: "transition-timing-function",
     },
     {
       name: "-webkit-user-select",
+      property_class: true,
       alias_for: "user-select",
     },
   ],

@@ -29,13 +29,9 @@ class CSSUnresolvedProperty {
   CSSPropertyID PropertyID() const { return id_; }
   bool IDEquals(CSSPropertyID id) const { return id_ == id; }
   virtual bool IsResolvedProperty() const { return false; }
-  virtual const char* GetPropertyName() const {
-    NOTREACHED();
-    return nullptr;
-  }
+  virtual const char* GetPropertyName() const { return getPropertyName(id_); }
   virtual const WTF::AtomicString& GetPropertyNameAtomicString() const {
-    NOTREACHED();
-    return g_empty_atom;
+    return getPropertyNameAtomicString(id_);
   }
   WTF::String GetPropertyNameString() const {
     // We share the StringImpl with the AtomicStrings.

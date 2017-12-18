@@ -42,11 +42,16 @@ def calculate_apply_functions_to_declare(property_):
         and not property_['direction_aware_options'] \
         and not property_['builder_skip'] \
         and property_['is_property']
+    # Functions should only be used in StyleBuilder if the CSSProperty
+    # class is shared or not implemented yet (shared classes are denoted by
+    # property_class = "some string").
     property_['use_property_class_in_stylebuilder'] = \
         property_['should_declare_functions'] \
         and not (property_['custom_apply_functions_initial'] or
                  property_['custom_apply_functions_inherit'] or
-                 property_['custom_apply_functions_value'])
+                 property_['custom_apply_functions_value']) \
+        and property_['property_class'] \
+        and isinstance(property_['property_class'], types.BooleanType)
     # TODO(crbug.com/751354): Remove this hard coded list of supported
     # properties once all of them have been implemented
     if property_['custom_apply_functions_all']:
