@@ -137,7 +137,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
   [[mock_js_autofill_manager_ expect] fillForm:
                                           @"{\"fields\":{"
                                            "\"field1\":\"value 2\","
-                                           "\"region\":\"\""
+                                           "\"region\":\"California\""
                                            "},\"formName\":\"\"}"
                             forceFillFieldName:@""
                              completionHandler:[OCMArg any]];
