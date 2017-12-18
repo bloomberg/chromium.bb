@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -29,6 +30,8 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -83,19 +86,14 @@ public class BottomSheetNavigateTest {
         // Focus URL bar.
         final UrlBar urlBar = (UrlBar) mActivity.findViewById(R.id.url_bar);
         Assert.assertNotNull("urlBar is null", urlBar);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBar.requestFocus();
-            mBottomSheet.endAnimations();
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> { urlBar.requestFocus(); });
 
-        Assert.assertEquals("Bottom sheet should be expanded.", BottomSheet.SHEET_STATE_FULL,
-                mBottomSheet.getSheetState());
+        // Verify BottomSheet is expanded.
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(BottomSheet.SHEET_STATE_FULL, () -> mBottomSheet.getSheetState()));
 
         // Navigate to the URL.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBar.setText(url);
-            mBottomSheet.endAnimations();
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> { urlBar.setText(url); });
         final LocationBarLayout locationBar =
                 (LocationBarLayout) mActivity.findViewById(R.id.location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
@@ -106,7 +104,9 @@ public class BottomSheetNavigateTest {
                 InstrumentationRegistry.getInstrumentation(), urlBar, KeyEvent.KEYCODE_ENTER);
         observer.assertLoaded();
 
-        Assert.assertEquals("Bottom sheet should be closed.", BottomSheet.SHEET_STATE_PEEK,
+        // TODO(mdjones): Add polling to wait for sheet to be done animating, once it properly
+        // animates on close. crbug.com/764860.
+        Assert.assertEquals("The bottom sheet should be closed.", BottomSheet.SHEET_STATE_PEEK,
                 mBottomSheet.getSheetState());
 
         // The URL has been set before the page notification was broadcast, so it is safe to access.
@@ -127,6 +127,8 @@ public class BottomSheetNavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation", "Main"})
+    //@RetryOnFailure
+    @DisabledTest(message = "crbug.com/793534")
     public void testNavigate() throws Exception {
         String url = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         String result = typeInOmniboxAndNavigate(url, "Simple");
