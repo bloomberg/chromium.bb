@@ -2997,6 +2997,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     // TODO(huisu@google.com): Try to avoid duplicate computation in cases
     // where the dominant colors and the k-means results are similar.
     for (n = AOMMIN(colors, PALETTE_MAX_SIZE); n >= 2; --n) {
+      aom_clear_system_state();
       for (i = 0; i < n; ++i) centroids[i] = (float)(top_colors[i]);
       palette_rd_y(cpi, x, mbmi, bsize, palette_ctx, dc_mode_cost, data,
                    centroids, n, color_cache, n_cache, best_mbmi,
