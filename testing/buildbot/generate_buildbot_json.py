@@ -399,6 +399,9 @@ class BBJSONGenerator(object):
             'name': 'shard #${SHARD_INDEX} logcats',
           },
         ]
+      if not tester_config.get('skip_device_recovery', False):
+        result['args'] = result.get('args', []) + ['--recover-devices']
+
     result = self.update_and_cleanup_test(result, test_name, tester_name,
                                           waterfall)
     return result
