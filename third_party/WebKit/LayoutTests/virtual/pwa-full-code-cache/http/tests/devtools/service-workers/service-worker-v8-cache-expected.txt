@@ -28,7 +28,7 @@ v8.compile Properties:
     startTime : <number>
     type : "v8.compile"
 }
-Text details for v8.compile: :8000/devtools/service-workers/resources/v8-cache-script.js:1
+Text details for v8.compile: v8-cache-script.js:1
 -----------------------------------------------
 --- Trace events while executing scripts ------
 v8.compile Properties:
