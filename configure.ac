@@ -34,7 +34,11 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
+
+save_CFLAGS="$CFLAGS"
+export CFLAGS="$CFLAGS -Werror"
 AC_HEADER_MAJOR
+CFLAGS="$save_CFLAGS"
 
 AM_INIT_AUTOMAKE([1.11 parallel-tests foreign no-dist-gzip dist-xz color-tests subdir-objects])
 
