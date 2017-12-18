@@ -19,8 +19,3 @@ NSString* const kTTSWillStartPlayingNotification =
     @"kTTSWillStartPlayingNotification";
 NSString* const kTTSDidStopPlayingNotification =
     @"kTTSDidStopPlayingNotification";
-
-NSString* const kVoiceSearchBarViewButtonSelectedNotification =
-    @"kVoiceSearchBarViewButtonSelectedNotification";
-NSString* const kVoiceSearchBarViewButtonDeselectedNotification =
-    @"kVoiceSearchBarViewButtonDeselectedNotification";

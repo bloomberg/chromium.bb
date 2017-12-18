@@ -24,11 +24,4 @@ extern NSString* const kTTSWillStartPlayingNotification;
 // Notification when TTS stops playing.
 extern NSString* const kTTSDidStopPlayingNotification;
 
-// VoiceSearchBar notifications.
-
-// Notification when a VoiceSearchBar button is selected.
-extern NSString* const kVoiceSearchBarViewButtonSelectedNotification;
-// Notification when a VoiceSearchBar button is deselected.
-extern NSString* const kVoiceSearchBarViewButtonDeselectedNotification;
-
 #endif  // IOS_CHROME_BROWSER_UI_VOICE_VOICE_SEARCH_NOTIFICATION_NAMES_H_
