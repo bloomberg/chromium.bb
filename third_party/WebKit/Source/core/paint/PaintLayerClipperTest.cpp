@@ -204,7 +204,12 @@ TEST_F(PaintLayerClipperTest, RoundedClipNested) {
   EXPECT_EQ(LayoutRect(0, 0, 500, 500), layer_bounds);
 }
 
+// TODO(https://crbug.com/795645): This test is failing on the ChromeOS bot.
+#if defined(OS_CHROMEOS)
+TEST_F(PaintLayerClipperTest, DISABLED_ControlClipSelect) {
+#else
 TEST_F(PaintLayerClipperTest, ControlClipSelect) {
+#endif
   SetBodyInnerHTML(R"HTML(
     <select id='target' style='position: relative; width: 100px;
         background: none; border: none; padding: 0px 15px 0px 5px;'>
