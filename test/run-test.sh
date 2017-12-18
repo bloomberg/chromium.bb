@@ -164,6 +164,19 @@ if [ $n != 1 ]; then
   exit 1
 fi
 
+dotest "Keep mtime of the font directory"
+prep
+cp $FONT1 $FONTDIR
+touch -d @0 $FONTDIR
+stat $FONTDIR | grep Modify > out1
+$FCCACHE $FONTDIR
+stat $FONTDIR | grep Modify > out2
+if cmp out1 out2 > /dev/null ; then : ; else
+    echo "*** Test failed: $TEST"
+    echo "mtime was modified"
+    exit 1
+fi
+
 if [ x"$BWRAP" != "x" ]; then
 dotest "Basic functionality with the bind-mounted cache dir"
 prep

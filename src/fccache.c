@@ -30,6 +30,7 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <assert.h>
 #if defined(HAVE_MMAP) || defined(__CYGWIN__)
 #  include <unistd.h>
@@ -63,7 +64,14 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	uuid_t uuid;
 	char out[37];
 	FcBool (* hash_add) (FcHashTable *, void*, void*);
+	struct stat statb;
+	struct timeval times[2];
 
+	if (FcStat (dir, &statb) != 0)
+	{
+	    ret = FcFalse;
+	    goto bail1;
+	}
 	atomic = FcAtomicCreate (uuidname);
 	if (!atomic)
 	{
@@ -101,6 +109,24 @@ FcDirCacheCreateUUID (FcChar8  *dir,
 	FcAtomicUnlock (atomic);
     bail2:
 	FcAtomicDestroy (atomic);
+
+	if (ret)
+	{
+	    /* revert mtime of the directory */
+	    times[0].tv_sec = statb.st_atime;
+	    times[1].tv_sec = statb.st_mtime;
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+	    times[0].tv_usec = statb.st_atim.tv_nsec / 1000;
+	    times[1].tv_usec = statb.st_mtim.tv_nsec / 1000;
+#else
+	    times[0].tv_usec = 0;
+	    times[1].tv_usec = 0;
+#endif
+	    if (utimes ((const  char *) dir, times) != 0)
+	    {
+		fprintf (stderr, "Unable to revert mtime: %s\n", dir);
+	    }
+	}
     }
     bail1:
     FcStrFree (uuidname);
