@@ -224,8 +224,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(
       std::make_unique<ServiceWorkerURLLoaderJob>(
           std::move(callback), this, resource_request,
-          base::WrapRefCounted(context_->loader_factory_getter()),
-          blob_storage_context_));
+          base::WrapRefCounted(context_->loader_factory_getter())));
 
   resource_context_ = resource_context;
 

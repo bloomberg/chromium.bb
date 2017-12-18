@@ -316,13 +316,11 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   }
 
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory>
-  CreateSubresourceLoaderFactory(const GURL& controller_origin) {
+  CreateSubresourceLoaderFactory() {
     auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
         &fake_container_host_);
     return std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
-        connector, loader_factory_getter_, controller_origin,
-        base::MakeRefCounted<
-            base::RefCountedData<blink::mojom::BlobRegistryPtr>>());
+        connector, loader_factory_getter_);
   }
 
   // Starts |request| using |loader_factory| and sets |out_loader| and
@@ -362,7 +360,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
   ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo.png"));
   mojom::URLLoaderPtr loader;
@@ -381,7 +379,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
 
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   // Perform the request.
   ResourceRequest request =
@@ -397,7 +395,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
   {
     ResourceRequest request =
         CreateRequest(GURL("https://www.example.com/foo.png"));
@@ -452,7 +450,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   {
     ResourceRequest request =
@@ -509,7 +507,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
 
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
   ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo.png"));
   mojom::URLLoaderPtr loader;
@@ -536,7 +534,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
 
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   // Perform the request.
   ResourceRequest request =
@@ -586,7 +584,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackResponse) {
 
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   // Perform the request.
   ResourceRequest request =
@@ -606,7 +604,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
 
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   // Perform the request.
   ResourceRequest request =
@@ -624,7 +622,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
 
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   // Perform the request.
   ResourceRequest request =
@@ -701,7 +699,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
   fake_controller_.RespondWithRedirect(redirect_location);
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   // Perform the request.
   ResourceRequest request =
@@ -747,7 +745,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
 
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kScope.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   struct TestCase {
     network::mojom::FetchRequestMode fetch_request_mode;
@@ -815,7 +813,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
 TEST_F(ServiceWorkerSubresourceLoaderTest, RequestBody) {
   const GURL kUrl("https://www.example.com");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
-      CreateSubresourceLoaderFactory(kUrl.GetOrigin());
+      CreateSubresourceLoaderFactory();
 
   // Create a request with a body.
   auto request_body = base::MakeRefCounted<ResourceRequestBody>();

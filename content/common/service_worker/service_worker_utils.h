@@ -13,6 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
 #include "url/gurl.h"
 
@@ -67,6 +68,15 @@ class ServiceWorkerUtils {
 
   static std::string ClientTypeToString(
       blink::mojom::ServiceWorkerClientType type);
+
+  // Sets |has_range| to true if |headers| specify a single range request, and
+  // |offset| and |size| to the range. Returns true on valid input (regardless
+  // of |has_range|), and false if there is more than one range or if the bounds
+  // overflow.
+  static bool ExtractSinglePartHttpRange(const net::HttpRequestHeaders& headers,
+                                         bool* has_range_out,
+                                         uint64_t* offset_out,
+                                         uint64_t* size_out);
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {

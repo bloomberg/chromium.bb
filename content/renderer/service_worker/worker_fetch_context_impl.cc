@@ -276,7 +276,7 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
       std::make_unique<ServiceWorkerSubresourceLoaderFactory>(
           base::MakeRefCounted<ControllerServiceWorkerConnector>(
               service_worker_container_host_.get()),
-          url_loader_factory_getter_, origin_url_, blob_registry_),
+          url_loader_factory_getter_),
       mojo::MakeRequest(&service_worker_url_loader_factory));
   url_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
