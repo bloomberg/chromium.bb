@@ -429,4 +429,12 @@ TEST_F(TextSuggestionControllerTest,
                          .first);
 }
 
+TEST_F(TextSuggestionControllerTest, CallbackHappensAfterDocumentDestroyed) {
+  LocalFrame& frame = *GetDocument().GetFrame();
+  GetDocument().Shutdown();
+
+  // Shouldn't crash
+  frame.GetTextSuggestionController().SuggestionMenuTimeoutCallback(0);
+}
+
 }  // namespace blink
