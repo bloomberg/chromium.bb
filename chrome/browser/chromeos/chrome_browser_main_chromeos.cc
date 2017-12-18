@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/accessibility/select_to_speak_event_rewriter.h"
 #include "chrome/browser/chromeos/accessibility/spoken_feedback_event_rewriter.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -1093,6 +1095,11 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
         std::unique_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
     keyboard_event_rewriters_->AddEventRewriter(
         std::unique_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
+    keyboard_event_rewriters_->AddEventRewriter(
+        std::unique_ptr<ui::EventRewriter>(new SelectToSpeakEventRewriter(
+            ash::Shell::Get()
+                ->GetPrimaryRootWindowController()
+                ->GetRootWindow())));
     event_rewriter_delegate_ = base::MakeUnique<EventRewriterDelegateImpl>();
     keyboard_event_rewriters_->AddEventRewriter(
         base::MakeUnique<ui::EventRewriterChromeOS>(

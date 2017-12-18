@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
 #include "chrome/browser/chromeos/accessibility/switch_access_event_handler.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/ash_config.h"
@@ -969,14 +968,10 @@ void AccessibilityManager::UpdateSelectToSpeakFromPref() {
     return;
   select_to_speak_enabled_ = enabled;
 
-  if (enabled) {
+  if (enabled)
     select_to_speak_loader_->Load(profile_, base::Closure() /* done_cb */);
-    select_to_speak_event_handler_.reset(
-        new chromeos::SelectToSpeakEventHandler());
-  } else {
+  else
     select_to_speak_loader_->Unload();
-    select_to_speak_event_handler_.reset(nullptr);
-  }
 }
 
 void AccessibilityManager::SetSwitchAccessEnabled(bool enabled) {
