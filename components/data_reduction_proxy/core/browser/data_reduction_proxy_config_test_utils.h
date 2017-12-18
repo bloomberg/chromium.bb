@@ -107,6 +107,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   void SetCurrentNetworkID(const std::string& network_id);
 
   using DataReductionProxyConfig::UpdateConfigForTesting;
+  using DataReductionProxyConfig::HandleWarmupFetcherResponse;
 
  private:
   bool GetIsCaptivePortal() const override;
