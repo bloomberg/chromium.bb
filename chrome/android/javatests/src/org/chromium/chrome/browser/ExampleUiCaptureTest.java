@@ -55,8 +55,8 @@ public class ExampleUiCaptureTest {
     @Feature({"UiCatalogue"})
     @ScreenShooter.Directory("TabSwitcher")
     public void testCaptureTabSwitcher() throws IOException, InterruptedException {
-        mScreenShooter.shoot("NTP");
+        mScreenShooter.shoot("NTP", ScreenShooter.TagsEnum.UiCatalogueExample);
         Espresso.onView(ViewMatchers.withId(R.id.tab_switcher_button)).perform(ViewActions.click());
-        mScreenShooter.shoot("Tab switcher");
+        mScreenShooter.shoot("Tab switcher", ScreenShooter.TagsEnum.UiCatalogueExample);
     }
 }
