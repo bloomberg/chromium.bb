@@ -1485,6 +1485,44 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
 }
 
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_NoNameAvailableAndNoProfileAvailable) {
+  personal_data_.ClearProfiles();
+  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+
+  // Don't fill or submit an address form.
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, but don't include a name, and submit.
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  // Neither a local save nor an upload should happen in this case.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entries were logged.
+  ExpectCardUploadDecision(
+      histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE);
+  ExpectCardUploadDecision(histogram_tester,
+                           AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
+  // Verify that the correct UKM was logged.
+  ExpectMetric(UkmCardUploadDecisionType::kUploadDecisionName,
+               UkmCardUploadDecisionType::kEntryName,
+               AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE |
+                   AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME,
+               1 /* expected_num_matching_entries */);
+}
+
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
   personal_data_.ClearProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
