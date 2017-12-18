@@ -61,6 +61,18 @@ class SANDBOX_EXPORT BrokerFilePermission {
     return BrokerFilePermission(path, true, true, true, true, true);
   }
 
+  // Returns true if |requested_filename| is allowed to be accessed
+  // by this permission as per access(2).
+  // If |file_to_access| is not NULL, it is set to point to either
+  // the |requested_filename| in the case of a recursive match,
+  // or a pointer to the matched path in the whitelist if an absolute
+  // match.
+  // |mode| is per mode argument of access(2).
+  // Async signal safe if |file_to_access| is NULL
+  bool CheckAccess(const char* requested_filename,
+                   int mode,
+                   const char** file_to_access) const;
+
   // Returns true if |requested_filename| is allowed to be opened
   // by this permission.
   // If |file_to_open| is not NULL it is set to point to either
@@ -75,17 +87,17 @@ class SANDBOX_EXPORT BrokerFilePermission {
                  const char** file_to_open,
                  bool* unlink_after_open) const;
 
-  // Returns true if |requested_filename| is allowed to be accessed
-  // by this permission as per access(2).
+  // Returns true if |requested_filename| is allowed to be stat'd
+  // by this permission as per stat(2). Differs from CheckAccess()
+  // in that if create permission is granted to a file, we permit
+  // stat() on all of its leading components.
   // If |file_to_open| is not NULL, it is set to point to either
   // the |requested_filename| in the case of a recursive match,
   // or a pointer to the matched path in the whitelist if an absolute
   // match.
-  // |mode| is per mode argument of access(2).
   // Async signal safe if |file_to_access| is NULL
-  bool CheckAccess(const char* requested_filename,
-                   int mode,
-                   const char** file_to_access) const;
+  bool CheckStat(const char* requested_filename,
+                 const char** file_to_access) const;
 
  private:
   friend class BrokerFilePermissionTester;
@@ -107,6 +119,12 @@ class SANDBOX_EXPORT BrokerFilePermission {
 
   // MatchPath returns true if |requested_filename| is covered by this instance
   bool MatchPath(const char* requested_filename) const;
+
+  // Helper routine for CheckAccess() and CheckStat(). Must be safe to call
+  // from an async signal context.
+  bool CheckAccessInternal(const char* requested_filename,
+                           int mode,
+                           const char** file_to_access) const;
 
   // Used in by BrokerFilePermissionTester for tests.
   static const char* GetErrorMessageForTests();

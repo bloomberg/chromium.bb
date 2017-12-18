@@ -736,7 +736,17 @@ void TestStatHelper(bool fast_check_in_client) {
 
   std::string temp_str = tmp_file.full_file_name();
   const char* tempfile_name = temp_str.c_str();
-  const char* nonesuch_name = "/mbogo/nonesuch";
+  const char* nonesuch_name = "/mbogo/fictitious/nonesuch";
+  const char* leading_path1 = "/mbogo/fictitious";
+  const char* leading_path2 = "/mbogo";
+  const char* leading_path3 = "/";
+  const char* bad_leading_path1 = "/mbog";
+  const char* bad_leading_path2 = "/mboga";
+  const char* bad_leading_path3 = "/mbogos";
+  const char* bad_leading_path4 = "/mbogo/fictitiou";
+  const char* bad_leading_path5 = "/mbogo/fictitioux";
+  const char* bad_leading_path6 = "/mbogo/fictitiousa";
+
   struct stat sb;
 
   {
@@ -784,6 +794,45 @@ void TestStatHelper(bool fast_check_in_client) {
 
     memset(&sb, 0, sizeof(sb));
     EXPECT_EQ(-ENOENT, open_broker.Stat(nonesuch_name, &sb));
+
+    // Gets denied all the way back to root since no create permission.
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(leading_path1, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(leading_path2, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(leading_path3, &sb));
+
+    // Not fooled by substrings.
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path1, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path2, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path3, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path4, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path5, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path6, &sb));
+  }
+  {
+    // Nonexistent file with permissions to create file.
+    std::vector<BrokerFilePermission> permissions = {
+        BrokerFilePermission::ReadWriteCreate(nonesuch_name)};
+    BrokerProcess open_broker(kFakeErrnoSentinel, command_set, permissions,
+                              fast_check_in_client);
+    ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
+
+    memset(&sb, 0, sizeof(sb));
+    EXPECT_EQ(-ENOENT, open_broker.Stat(nonesuch_name, &sb));
+
+    // Gets ENOENT all the way back to root since it has create permission.
+    EXPECT_EQ(-ENOENT, open_broker.Stat(leading_path1, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.Stat(leading_path2, &sb));
+
+    // But can always get the root.
+    EXPECT_EQ(0, open_broker.Stat(leading_path3, &sb));
+
+    // Not fooled by substrings.
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path1, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path2, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path3, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path4, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path5, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path6, &sb));
   }
   {
     // Actual file with permissions to see file.

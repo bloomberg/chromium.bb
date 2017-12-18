@@ -18,6 +18,21 @@
 namespace sandbox {
 namespace syscall_broker {
 
+namespace {
+
+bool CheckCallerArgs(const char** file_to_access) {
+  if (file_to_access && *file_to_access) {
+    // Make sure that callers never pass a non-empty string. In case callers
+    // wrongly forget to check the return value and look at the string
+    // instead, this could catch bugs.
+    RAW_LOG(FATAL, "*file_to_access should be NULL");
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
+
 BrokerPermissionList::BrokerPermissionList(
     int denied_errno,
     const std::vector<BrokerFilePermission>& permissions)
@@ -51,13 +66,9 @@ bool BrokerPermissionList::GetFileNameIfAllowedToAccess(
     const char* requested_filename,
     int requested_mode,
     const char** file_to_access) const {
-  if (file_to_access && *file_to_access) {
-    // Make sure that callers never pass a non-empty string. In case callers
-    // wrongly forget to check the return value and look at the string
-    // instead, this could catch bugs.
-    RAW_LOG(FATAL, "*file_to_access should be NULL");
+  if (!CheckCallerArgs(file_to_access))
     return false;
-  }
+
   for (size_t i = 0; i < num_of_permissions_; i++) {
     if (permissions_array_[i].CheckAccess(requested_filename, requested_mode,
                                           file_to_access)) {
@@ -80,13 +91,9 @@ bool BrokerPermissionList::GetFileNameIfAllowedToOpen(
     int requested_flags,
     const char** file_to_open,
     bool* unlink_after_open) const {
-  if (file_to_open && *file_to_open) {
-    // Make sure that callers never pass a non-empty string. In case callers
-    // wrongly forget to check the return value and look at the string
-    // instead, this could catch bugs.
-    RAW_LOG(FATAL, "*file_to_open should be NULL");
+  if (!CheckCallerArgs(file_to_open))
     return false;
-  }
+
   for (size_t i = 0; i < num_of_permissions_; i++) {
     if (permissions_array_[i].CheckOpen(requested_filename, requested_flags,
                                         file_to_open, unlink_after_open)) {
@@ -96,6 +103,18 @@ bool BrokerPermissionList::GetFileNameIfAllowedToOpen(
   return false;
 }
 
-}  // namespace syscall_broker
+bool BrokerPermissionList::GetFileNameIfAllowedToStat(
+    const char* requested_filename,
+    const char** file_to_stat) const {
+  if (!CheckCallerArgs(file_to_stat))
+    return false;
 
+  for (size_t i = 0; i < num_of_permissions_; i++) {
+    if (permissions_array_[i].CheckStat(requested_filename, file_to_stat))
+      return true;
+  }
+  return false;
+}
+
+}  // namespace syscall_broker
 }  // namespace sandbox

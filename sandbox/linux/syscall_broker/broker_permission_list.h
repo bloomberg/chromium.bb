@@ -66,6 +66,16 @@ class BrokerPermissionList {
                                   const char** file_to_open,
                                   bool* unlink_after_open) const;
 
+  // Check if calling stat() should be allowed on |requested_filename|.
+  // Async signal safe if and only if |file_to_open| is NULL. This is
+  // similar to GetFileNameIfAllowedToAccess(), except that if we have
+  // create permission on file, we permit stat() on all its leading
+  // components, otherwise checking for missing intermediate directories
+  // can't happen proplery during a base::CreateDirectory() call.
+  // Async signal safe if and only if |file_to_open| is NULL.
+  bool GetFileNameIfAllowedToStat(const char* requested_filename,
+                                  const char** file_to_access) const;
+
   int denied_errno() const { return denied_errno_; }
 
  private:
@@ -83,7 +93,6 @@ class BrokerPermissionList {
 };
 
 }  // namespace syscall_broker
-
 }  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SYSCALL_BROKER_BROKER_PERMISSION_LIST_H_

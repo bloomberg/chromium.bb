@@ -80,8 +80,7 @@ bool CommandStatIsSafe(const BrokerCommandSet& command_set,
                        const char* requested_filename,
                        const char** filename_to_use) {
   return command_set.test(COMMAND_STAT) &&
-         policy.GetFileNameIfAllowedToAccess(requested_filename, F_OK,
-                                             filename_to_use);
+         policy.GetFileNameIfAllowedToStat(requested_filename, filename_to_use);
 }
 
 bool CommandUnlinkIsSafe(const BrokerCommandSet& command_set,
