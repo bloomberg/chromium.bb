@@ -118,7 +118,7 @@ public class TileGridLayoutTest {
     public void testHomePageIsMovedToFirstPositionWhenMultipleRowsExist() throws Exception {
         // Contructs a home page tile in the second row. Assuming a row contains <= 6 tiles.
         NewTabPage ntp =
-                setUpFakeDataToShowOnNtp(/*homePagePosition=*/7, FAKE_MOST_VISITED_URLS.length);
+                setUpFakeDataToShowOnNtp(/* homePagePosition = */ 7, FAKE_MOST_VISITED_URLS.length);
         TileGridLayout grid = getTileGridLayout(ntp);
         TileView homePageTileView = (TileView) grid.getChildAt(7);
 
@@ -130,7 +130,8 @@ public class TileGridLayoutTest {
     @SmallTest
     @Feature({"NewTabPage"})
     public void testHomePageRemainsAsLastElementInOnlyRow() throws Exception {
-        NewTabPage ntp = setUpFakeDataToShowOnNtp(/*homePagePosition=*/4, /*suggestionsCount=*/4);
+        NewTabPage ntp =
+                setUpFakeDataToShowOnNtp(/* homePagePosition = */ 4, /* suggestionCount = */ 4);
         TileGridLayout grid = getTileGridLayout(ntp);
         TileView homePageTileView = (TileView) grid.getChildAt(4);
         grid.setMaxColumns(4);
@@ -147,7 +148,8 @@ public class TileGridLayoutTest {
     @SmallTest
     @Feature({"NewTabPage"})
     public void testHomePageKeepsPositionInOnlyRow() throws Exception {
-        NewTabPage ntp = setUpFakeDataToShowOnNtp(/*homePagePosition=*/2, /*suggestionsCount=*/3);
+        NewTabPage ntp =
+                setUpFakeDataToShowOnNtp(/* homePagePosition = */ 2, /* suggestionCount = */ 3);
         TileGridLayout grid = getTileGridLayout(ntp);
 
         // The home page tile stays at the third position as we have only one row.
