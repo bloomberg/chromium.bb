@@ -128,7 +128,5 @@ class Kraken(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory(
-            'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html',
-            [story.expectations.ANDROID_SVELTE], 'crbug.com/624411')
+        pass # http://krakenbenchmark.mozilla.org/kraken-1.1/ not disabled
     return StoryExpectations()
