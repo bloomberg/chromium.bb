@@ -828,6 +828,11 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
+#if defined(OS_WIN)
+  // TODO(chrisha): Move this to chrome/browser/conflicts as we build the
+  // logic that responds to this pref.
+  registry->RegisterBooleanPref(prefs::kThirdPartyBlockingEnabled, true);
+#endif
 }
 
 // static

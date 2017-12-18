@@ -908,6 +908,12 @@ extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 extern const char kIsolateOrigins[];
 extern const char kSitePerProcess[];
 
+#if defined(OS_WIN)
+// Preference for controlling whether or not third party blocking is enabled on
+// Windows.
+extern const char kThirdPartyBlockingEnabled[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
