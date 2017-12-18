@@ -26,7 +26,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Wrapper object for the file system / source tree."""
+"""Wrapper object for functions that access the filesystem.
+
+A FileSystem object can be used to represent dependency on the
+filesystem, and can be replaced with a MockFileSystem in tests.
+"""
 
 import codecs
 import errno
@@ -40,7 +44,6 @@ import stat
 import sys
 import tempfile
 import time
-
 
 _log = logging.getLogger(__name__)
 
@@ -62,8 +65,10 @@ class FileSystem(object):
 
     def path_to_module(self, module_name):
         """Returns the absolute path of a module."""
-        # FIXME: This is the only use of sys in this file. It's possible this function should move elsewhere.
-        # __file__ is not always an absolute path in Python <3.4 (https://bugs.python.org/issue18416).
+        # FIXME: This is the only use of sys in this file. It's possible that
+        # this function should move elsewhere.
+        # __file__ is not always an absolute path in Python <3.4
+        # (https://bugs.python.org/issue18416).
         return self.abspath(sys.modules[module_name].__file__)
 
     def expanduser(self, path):
@@ -85,15 +90,18 @@ class FileSystem(object):
         return os.path.exists(path)
 
     def files_under(self, path, dirs_to_skip=None, file_filter=None):
-        """Return the list of all files under the given path in topdown order.
+        """Walks the filesystem tree under the given path in top-down order.
 
         Args:
-            dirs_to_skip: a list of directories to skip over during the
-                traversal (e.g., .svn, resources, etc.)
-            file_filter: if not None, the filter will be invoked
-                with the filesystem object and the dirname and basename of
-                each file found. The file is included in the result if the
-                callback returns True.
+            dirs_to_skip: A list of directories to skip over during the
+                traversal (e.g., .svn, resources, etc.).
+            file_filter: If not None, the filter will be invoked with the
+                filesystem object and the dirname and basename of each file
+                found. The file is included in the result if the callback
+                returns True.
+
+        Returns:
+            A list of all files under the given path in top-down order.
         """
         dirs_to_skip = dirs_to_skip or []
 
@@ -145,7 +153,7 @@ class FileSystem(object):
         return os.walk(top, topdown=topdown, onerror=onerror, followlinks=followlinks)
 
     def mkdtemp(self, **kwargs):
-        """Create and return a uniquely named directory.
+        """Creates and returns a uniquely-named directory.
 
         This is like tempfile.mkdtemp, but if used in a with statement
         the directory will self-delete at the end of the block (if the
@@ -153,8 +161,9 @@ class FileSystem(object):
         directory can be safely deleted inside the block as well, if so
         desired.
 
-        Note that the object returned is not a string and does not support all of the string
-        methods. If you need a string, coerce the object to a string and go from there.
+        Note that the object returned is not a string and does not support all
+        of the string methods. If you need a string, coerce the object to a
+        string and go from there.
         """
         class TemporaryDirectory(object):
 
@@ -178,7 +187,7 @@ class FileSystem(object):
         return TemporaryDirectory(**kwargs)
 
     def maybe_make_directory(self, *path):
-        """Create the specified directory if it doesn't already exist."""
+        """Creates the specified directory if it doesn't already exist."""
         try:
             os.makedirs(self.join(*path))
         except OSError as error:
@@ -195,7 +204,10 @@ class FileSystem(object):
         return os.path.normpath(path)
 
     def open_binary_tempfile(self, suffix=''):
-        """Create, open, and return a binary temp file. Returns a tuple of the file and the name."""
+        """Creates, opens, and returns a binary temp file.
+
+        Returns a tuple of the file and the name.
+        """
         temp_fd, temp_name = tempfile.mkstemp(suffix)
         f = os.fdopen(temp_fd, 'wb')
         return f, temp_name
@@ -207,7 +219,7 @@ class FileSystem(object):
         return file(path, 'wb')
 
     def read_binary_file(self, path):
-        """Return the contents of the file at the given path as a byte string."""
+        """Returns the contents of the file as a byte string."""
         with file(path, 'rb') as f:
             return f.read()
 
@@ -216,23 +228,25 @@ class FileSystem(object):
             f.write(contents)
 
     def open_text_tempfile(self, suffix=''):
-        """Create, open, and return a text temp file. Returns a tuple of the file and the name."""
+        """Creates, opens, and returns a text temp file.
+
+        Returns a tuple of the file and the name.
+        """
         _, temp_name = tempfile.mkstemp(suffix)
         f = codecs.open(temp_name, 'w', 'utf8')
         return f, temp_name
 
     def open_text_file_for_reading(self, path):
-        # Note: There appears to be an issue with the returned file objects
-        # not being seekable. See
+        # Note: There appears to be an issue with the returned file objects not
+        # being seekable. See:
         # http://stackoverflow.com/questions/1510188/can-seek-and-tell-work-with-utf-8-encoded-documents-in-python
-        # .
         return codecs.open(path, 'r', 'utf8')
 
     def open_text_file_for_writing(self, path):
         return codecs.open(path, 'w', 'utf8')
 
     def read_text_file(self, path):
-        """Return the contents of the file at the given path as a Unicode string.
+        """Returns the contents of the file as a Unicode string.
 
         The file is read assuming it is a UTF-8 encoded file with no BOM.
         """
@@ -240,7 +254,7 @@ class FileSystem(object):
             return f.read()
 
     def write_text_file(self, path, contents):
-        """Write the contents to the file at the given location.
+        """Writes the contents to the file at the given location.
 
         The file is written encoded as UTF-8 with no BOM.
         """
@@ -258,10 +272,12 @@ class FileSystem(object):
         """Fake exception for Linux and Mac."""
 
     def remove(self, path, osremove=os.remove, retry=True):
-        """On Windows, if a process was recently killed and it held on to a
-        file, the OS will hold on to the file for a short while.  This makes
-        attempts to delete the file fail.  To work around that, this method
-        will retry for a few seconds until Windows is done with the file.
+        """Removes a file.
+
+        On Windows, if a process was recently killed and it held on to a file,
+        the OS will hold on to the file for a short while. This makes attempts
+        to delete the file fail. To work around that, this method will retry
+        for a few seconds until Windows is done with the file.
         """
         try:
             exceptions.WindowsError
@@ -281,11 +297,12 @@ class FileSystem(object):
                     raise
 
     def rmtree(self, path, ignore_errors=True, onerror=None):
-        """Delete the directory rooted at path, whether empty or not."""
+        """Deletes the directory rooted at path, whether empty or not."""
         shutil.rmtree(path, ignore_errors=ignore_errors, onerror=onerror)
 
     def remove_contents(self, dirname):
-        """Attempt to remove the contents of a directory tree.
+        """Attempts to remove the contents of a directory tree.
+
         Args:
             dirname (string): Directory to remove the contents of.
 
