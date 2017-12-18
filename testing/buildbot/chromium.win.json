@@ -2224,7 +2224,9 @@
   },
   "WinMSVC64 (dbg)": {
     "additional_compile_targets": [
-      "all"
+      "chrome",
+      "browser_tests",
+      "unit_tests"
     ]
   }
 }
