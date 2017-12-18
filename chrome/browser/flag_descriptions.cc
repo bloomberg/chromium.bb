@@ -2431,7 +2431,7 @@ const char kCaptivePortalBypassProxyDescription[] =
 
 const char kCrOSComponentName[] = "Chrome OS Component";
 const char kCrOSComponentDescription[] =
-    "Enable the use of componentized escpr CUPS filter.";
+    "Disable the use of componentized escpr CUPS filter.";
 
 const char kCrOSContainerName[] = "Chrome OS Container";
 const char kCrOSContainerDescription[] =
