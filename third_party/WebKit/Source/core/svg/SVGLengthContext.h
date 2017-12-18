@@ -64,6 +64,9 @@ class SVGLengthContext {
   static float ResolveLength(const SVGElement*,
                              SVGUnitTypes::SVGUnitType,
                              const SVGLength&);
+  FloatPoint ResolveLengthPair(const Length& x_length,
+                               const Length& y_length,
+                               const ComputedStyle&) const;
 
   float ConvertValueToUserUnits(float,
                                 SVGLengthMode,

@@ -47,16 +47,15 @@ void LayoutSVGRect::UpdateShapeFromElement() {
   DCHECK(rect);
 
   SVGLengthContext length_context(rect);
-  FloatSize bounding_box_size(
-      length_context.ValueForLength(StyleRef().Width(), StyleRef(),
-                                    SVGLengthMode::kWidth),
-      length_context.ValueForLength(StyleRef().Height(), StyleRef(),
-                                    SVGLengthMode::kHeight));
+  const ComputedStyle& style = StyleRef();
+  FloatSize bounding_box_size(ToFloatSize(
+      length_context.ResolveLengthPair(style.Width(), style.Height(), style)));
 
   // Spec: "A negative value is an error."
   if (bounding_box_size.Width() < 0 || bounding_box_size.Height() < 0)
     return;
 
+  const SVGComputedStyle& svg_style = style.SvgStyle();
   // Spec: "A value of zero disables rendering of the element."
   if (!bounding_box_size.IsEmpty()) {
     // Fallback to LayoutSVGShape and path-based hit detection if the rect
@@ -69,25 +68,19 @@ void LayoutSVGRect::UpdateShapeFromElement() {
       use_path_fallback_ = true;
       return;
     }
-    if (length_context.ValueForLength(StyleRef().SvgStyle().Rx(), StyleRef(),
-                                      SVGLengthMode::kWidth) > 0 ||
-        length_context.ValueForLength(StyleRef().SvgStyle().Ry(), StyleRef(),
-                                      SVGLengthMode::kHeight) > 0 ||
-        !DefinitelyHasSimpleStroke()) {
+    FloatPoint radii(length_context.ResolveLengthPair(svg_style.Rx(),
+                                                      svg_style.Ry(), style));
+    if (radii.X() > 0 || radii.Y() > 0 || !DefinitelyHasSimpleStroke()) {
       CreatePath();
       use_path_fallback_ = true;
     }
   }
 
   fill_bounding_box_ = FloatRect(
-      FloatPoint(
-          length_context.ValueForLength(StyleRef().SvgStyle().X(), StyleRef(),
-                                        SVGLengthMode::kWidth),
-          length_context.ValueForLength(StyleRef().SvgStyle().Y(), StyleRef(),
-                                        SVGLengthMode::kHeight)),
+      length_context.ResolveLengthPair(svg_style.X(), svg_style.Y(), style),
       bounding_box_size);
   stroke_bounding_box_ = fill_bounding_box_;
-  if (Style()->SvgStyle().HasStroke())
+  if (svg_style.HasStroke())
     stroke_bounding_box_.Inflate(StrokeWidth() / 2);
 }
 

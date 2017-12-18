@@ -79,40 +79,29 @@ Path SVGRectElement::AsPath() const {
   SVGLengthContext length_context(this);
   DCHECK(GetLayoutObject());
   const ComputedStyle& style = GetLayoutObject()->StyleRef();
+
+  FloatSize size(ToFloatSize(
+      length_context.ResolveLengthPair(style.Width(), style.Height(), style)));
+  if (size.Width() < 0 || size.Height() < 0 ||
+      (!size.Width() && !size.Height()))
+    return path;
+
   const SVGComputedStyle& svg_style = style.SvgStyle();
-
-  float width = length_context.ValueForLength(style.Width(), style,
-                                              SVGLengthMode::kWidth);
-  if (width < 0)
-    return path;
-  float height = length_context.ValueForLength(style.Height(), style,
-                                               SVGLengthMode::kHeight);
-  if (height < 0)
-    return path;
-  if (!width && !height)
-    return path;
-
-  float x = length_context.ValueForLength(svg_style.X(), style,
-                                          SVGLengthMode::kWidth);
-  float y = length_context.ValueForLength(svg_style.Y(), style,
-                                          SVGLengthMode::kHeight);
-  float rx = length_context.ValueForLength(svg_style.Rx(), style,
-                                           SVGLengthMode::kWidth);
-  float ry = length_context.ValueForLength(svg_style.Ry(), style,
-                                           SVGLengthMode::kHeight);
-  bool has_rx = rx > 0;
-  bool has_ry = ry > 0;
-  if (has_rx || has_ry) {
+  FloatRect rect(
+      length_context.ResolveLengthPair(svg_style.X(), svg_style.Y(), style),
+      size);
+  FloatPoint radii(
+      length_context.ResolveLengthPair(svg_style.Rx(), svg_style.Ry(), style));
+  if (radii.X() > 0 || radii.Y() > 0) {
     if (svg_style.Rx().IsAuto())
-      rx = ry;
+      radii.SetX(radii.Y());
     else if (svg_style.Ry().IsAuto())
-      ry = rx;
+      radii.SetY(radii.X());
 
-    path.AddRoundedRect(FloatRect(x, y, width, height), FloatSize(rx, ry));
-    return path;
+    path.AddRoundedRect(rect, ToFloatSize(radii));
+  } else {
+    path.AddRect(rect);
   }
-
-  path.AddRect(FloatRect(x, y, width, height));
   return path;
 }
 
