@@ -49,9 +49,9 @@ UNKNOWN_TYPE | Incident.CustomFields.c.email_opt_in | No | 0 | Incident.CustomFi
 UNKNOWN_TYPE | Incident.CustomFields.c.franchise_forward | Yes | 1 | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
 UNKNOWN_TYPE | Incident.CustomFields.c.franchise_forward | No | 0 | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
 UNKNOWN_TYPE | Incident.CustomFields.c.passthrough_textarea | Pass Through Text Area Optional Optional |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
-UNKNOWN_TYPE | Incident.Subject | Subject Optional Optional |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-cc
-NAME_FIRST | Contact.Name.First | First Name * Required |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-cc
-NAME_LAST | Contact.Name.Last | Last Name * Required |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-cc
+UNKNOWN_TYPE | Incident.Subject | Subject Optional Optional |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
+NAME_FIRST | Contact.Name.First | First Name * Required |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
+NAME_LAST | Contact.Name.Last | Last Name * Required |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
 EMAIL_ADDRESS | Contact.Emails.PRIMARY.Address | Email Address * Required |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
 PHONE_HOME_WHOLE_NUMBER | Contact.Phones.HOME.Number | Phone Number Optional Optional |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
 UNKNOWN_TYPE | Contact.CustomFields.c.panera_my_panera_number | MyPanera Card Number Optional Optional |  | Incident.CustomFields.c.escalated_gift_card_devalue_1-default
