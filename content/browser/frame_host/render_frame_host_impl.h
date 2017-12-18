@@ -162,6 +162,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Allows overriding the URLLoaderFactory creation for subresources.
   // Passing a null callback will restore the default behavior.
+  // This method must be called either on the UI thread or before threads start.
+  // This callback is run on the UI thread.
   using CreateNetworkFactoryCallback =
       base::Callback<void(mojom::URLLoaderFactoryRequest request,
                           int process_id,

@@ -3185,17 +3185,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
       base::FeatureList::IsEnabled(features::kNetworkService);
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
   if (network_service) {
-    StoragePartition* storage_partition =
-        BrowserContext::GetDefaultStoragePartition(
-            shell()->web_contents()->GetBrowserContext());
     url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
         base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
           network::URLLoaderCompletionStatus status;
           status.error_code = net::ERR_NOT_IMPLEMENTED;
           params->client->OnComplete(status);
           return true;
-        }),
-        storage_partition);
+        }));
   } else {
     host_resolver()->ClearRules();
   }

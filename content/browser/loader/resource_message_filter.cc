@@ -130,7 +130,8 @@ void ResourceMessageFilter::InitializeForTest() {
 
 void ResourceMessageFilter::SetNetworkFactoryForTesting(
     mojom::URLLoaderFactory* test_factory) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!test_factory || !g_test_factory);
   g_test_factory = test_factory;
 }

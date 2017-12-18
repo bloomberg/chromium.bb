@@ -9,7 +9,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_H_
 #define CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_H_
 
-#include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -23,11 +22,6 @@ class CONTENT_EXPORT NotificationService {
   static NotificationService* current();
 
   static NotificationService* Create();
-
-  // Sets a callback that is called when the next NotificationService is
-  // created. There can only be one callback at a time.
-  static void SetCreationCallbackForTesting(
-      const base::RepeatingClosure& callback);
 
   virtual ~NotificationService() {}
 
