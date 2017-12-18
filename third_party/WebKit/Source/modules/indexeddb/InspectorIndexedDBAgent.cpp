@@ -620,13 +620,14 @@ class OpenCursorCallback final : public EventListener {
     std::unique_ptr<DataEntry> data_entry =
         DataEntry::create()
             .setKey(v8_session_->wrapObject(
-                context, idb_cursor->key(script_state).V8Value(), object_group))
+                context, idb_cursor->key(script_state).V8Value(), object_group,
+                true /* generatePreview */))
             .setPrimaryKey(v8_session_->wrapObject(
                 context, idb_cursor->primaryKey(script_state).V8Value(),
-                object_group))
+                object_group, true /* generatePreview */))
             .setValue(v8_session_->wrapObject(
                 context, idb_cursor->value(script_state).V8Value(),
-                object_group))
+                object_group, true /* generatePreview */))
             .build();
     result_->addItem(std::move(data_entry));
   }

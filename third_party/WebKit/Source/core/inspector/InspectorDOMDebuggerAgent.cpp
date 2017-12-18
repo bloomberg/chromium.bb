@@ -500,10 +500,10 @@ InspectorDOMDebuggerAgent::BuildObjectForEventListener(
           .setColumnNumber(column_number)
           .build();
   if (object_group_id.length()) {
-    value->setHandler(
-        v8_session_->wrapObject(context, function, object_group_id));
-    value->setOriginalHandler(
-        v8_session_->wrapObject(context, info.handler, object_group_id));
+    value->setHandler(v8_session_->wrapObject(
+        context, function, object_group_id, false /* generatePreview */));
+    value->setOriginalHandler(v8_session_->wrapObject(
+        context, info.handler, object_group_id, false /* generatePreview */));
     if (info.backend_node_id)
       value->setBackendNodeId(info.backend_node_id);
   }

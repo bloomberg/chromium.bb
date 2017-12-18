@@ -437,7 +437,8 @@ Response InspectorAnimationAgent::resolveAnimation(
       script_state->GetContext(),
       ToV8(animation, script_state->GetContext()->Global(),
            script_state->GetIsolate()),
-      ToV8InspectorStringView(kAnimationObjectGroup));
+      ToV8InspectorStringView(kAnimationObjectGroup),
+      false /* generatePreview */);
   if (!*result)
     return Response::Error("Element not associated with a document.");
   return Response::OK();
