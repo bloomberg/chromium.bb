@@ -540,9 +540,12 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data) {
   NGInlineItemsBuilder builder(&data->items_);
   CollectInlinesInternal(block, &builder);
   data->text_content_ = builder.ToString();
+  // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
+  // point the string may or may not contain RTL characters.
+  // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if it
+  // doesn't contain any RTL characters.
   data->is_bidi_enabled_ =
-      !data->text_content_.IsEmpty() &&
-      !(data->text_content_.Is8Bit() && !builder.HasBidiControls());
+      !data->text_content_.Is8Bit() || builder.HasBidiControls();
   data->is_empty_inline_ = builder.IsEmptyInline();
 }
 
