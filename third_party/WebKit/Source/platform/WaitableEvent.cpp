@@ -37,6 +37,10 @@ void WaitableEvent::Signal() {
   impl_->Signal();
 }
 
+bool WaitableEvent::IsSignaled() {
+  return impl_->IsSignaled();
+}
+
 size_t WaitableEvent::WaitMultiple(const WTF::Vector<WaitableEvent*>& events) {
   std::vector<base::WaitableEvent*> base_events;
   for (size_t i = 0; i < events.size(); ++i)

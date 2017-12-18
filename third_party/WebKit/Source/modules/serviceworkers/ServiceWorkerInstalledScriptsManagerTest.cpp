@@ -2,44 +2,53 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
+#include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
 
-#include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include <memory>
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "platform/CrossThreadFunctional.h"
+#include "platform/WaitableEvent.h"
+#include "platform/wtf/Functional.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 
-namespace content {
+namespace blink {
+
+namespace {
 
 class BrowserSideSender
-    : blink::mojom::ServiceWorkerInstalledScriptsManagerHost {
+    : mojom::blink::ServiceWorkerInstalledScriptsManagerHost {
  public:
   BrowserSideSender() : binding_(this) {}
   ~BrowserSideSender() override = default;
 
-  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr CreateAndBind(
-      const std::vector<GURL>& installed_urls) {
+  mojom::blink::ServiceWorkerInstalledScriptsInfoPtr CreateAndBind(
+      const WTF::Vector<KURL>& installed_urls) {
     EXPECT_FALSE(manager_.is_bound());
     EXPECT_FALSE(body_handle_.is_valid());
     EXPECT_FALSE(meta_data_handle_.is_valid());
-    auto scripts_info = blink::mojom::ServiceWorkerInstalledScriptsInfo::New();
+    auto scripts_info = mojom::blink::ServiceWorkerInstalledScriptsInfo::New();
     scripts_info->installed_urls = installed_urls;
     scripts_info->manager_request = mojo::MakeRequest(&manager_);
     binding_.Bind(mojo::MakeRequest(&scripts_info->manager_host_ptr));
     return scripts_info;
   }
 
-  void TransferInstalledScript(const GURL& script_url,
-                               int64_t body_size,
-                               int64_t meta_data_size) {
+  void TransferInstalledScript(
+      const KURL& script_url,
+      const WTF::String& encoding,
+      const WTF::HashMap<WTF::String, WTF::String>& headers,
+      int64_t body_size,
+      int64_t meta_data_size) {
     EXPECT_FALSE(body_handle_.is_valid());
     EXPECT_FALSE(meta_data_handle_.is_valid());
-    auto script_info = blink::mojom::ServiceWorkerScriptInfo::New();
+    auto script_info = mojom::blink::ServiceWorkerScriptInfo::New();
     script_info->script_url = script_url;
+    script_info->encoding = encoding;
+    script_info->headers = headers;
     EXPECT_EQ(MOJO_RESULT_OK,
               mojo::CreateDataPipe(nullptr, &body_handle_, &script_info->body));
     EXPECT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &meta_data_handle_,
@@ -63,7 +72,7 @@ class BrowserSideSender
 
   void ResetManager() { manager_.reset(); }
 
-  void WaitForRequestInstalledScript(const GURL& script_url) {
+  void WaitForRequestInstalledScript(const KURL& script_url) {
     waiting_requested_url_ = script_url;
     base::RunLoop loop;
     requested_script_closure_ = loop.QuitClosure();
@@ -71,7 +80,7 @@ class BrowserSideSender
   }
 
  private:
-  void RequestInstalledScript(const GURL& script_url) override {
+  void RequestInstalledScript(const KURL& script_url) override {
     EXPECT_EQ(waiting_requested_url_, script_url);
     ASSERT_TRUE(requested_script_closure_);
     std::move(requested_script_closure_).Run();
@@ -89,10 +98,10 @@ class BrowserSideSender
   }
 
   base::OnceClosure requested_script_closure_;
-  GURL waiting_requested_url_;
+  KURL waiting_requested_url_;
 
-  blink::mojom::ServiceWorkerInstalledScriptsManagerPtr manager_;
-  mojo::Binding<blink::mojom::ServiceWorkerInstalledScriptsManagerHost>
+  mojom::blink::ServiceWorkerInstalledScriptsManagerPtr manager_;
+  mojo::Binding<mojom::blink::ServiceWorkerInstalledScriptsManagerHost>
       binding_;
 
   mojo::ScopedDataPipeProducerHandle body_handle_;
@@ -101,96 +110,93 @@ class BrowserSideSender
   DISALLOW_COPY_AND_ASSIGN(BrowserSideSender);
 };
 
-class WebServiceWorkerInstalledScriptsManagerImplTest : public testing::Test {
+CrossThreadHTTPHeaderMapData ToCrossThreadHTTPHeaderMapData(
+    const WTF::HashMap<WTF::String, WTF::String>& headers) {
+  CrossThreadHTTPHeaderMapData data;
+  for (auto it : headers)
+    data.emplace_back(it.key, it.value);
+  return data;
+}
+
+}  // namespace
+
+class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
  public:
-  WebServiceWorkerInstalledScriptsManagerImplTest()
-      : io_thread_("io thread"),
-        worker_thread_("worker thread"),
-        worker_waiter_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                       base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  ServiceWorkerInstalledScriptsManagerTest()
+      : io_thread_(Platform::Current()->CreateThread("io thread")),
+        worker_thread_(Platform::Current()->CreateThread("worker thread")),
+        io_task_runner_(io_thread_->GetSingleThreadTaskRunner()),
+        worker_task_runner_(worker_thread_->GetSingleThreadTaskRunner()) {}
 
  protected:
-  using RawScriptData =
-      blink::WebServiceWorkerInstalledScriptsManager::RawScriptData;
-
-  void SetUp() override {
-    ASSERT_TRUE(io_thread_.Start());
-    ASSERT_TRUE(worker_thread_.Start());
-    io_task_runner_ = io_thread_.task_runner();
-    worker_task_runner_ = worker_thread_.task_runner();
-  }
-
-  void TearDown() override {
-    io_thread_.Stop();
-    worker_thread_.Stop();
-  }
+  using RawScriptData = ThreadSafeScriptContainer::RawScriptData;
 
   void CreateInstalledScriptsManager(
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
+      mojom::blink::ServiceWorkerInstalledScriptsInfoPtr
           installed_scripts_info) {
     installed_scripts_manager_ =
-        WebServiceWorkerInstalledScriptsManagerImpl::Create(
-            std::move(installed_scripts_info), io_task_runner_);
+        std::make_unique<ServiceWorkerInstalledScriptsManager>(
+            std::move(installed_scripts_info->installed_urls),
+            std::move(installed_scripts_info->manager_request),
+            std::move(installed_scripts_info->manager_host_ptr),
+            io_task_runner_);
   }
 
-  base::WaitableEvent* IsScriptInstalledOnWorkerThread(const GURL& script_url,
-                                                       bool* out_installed) {
+  WaitableEvent* IsScriptInstalledOnWorkerThread(const KURL& script_url,
+                                                 bool* out_installed) {
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            [](blink::WebServiceWorkerInstalledScriptsManager*
-                   installed_scripts_manager,
-               const blink::WebURL& script_url, bool* out_installed,
-               base::WaitableEvent* waiter) {
+        ConvertToBaseCallback(CrossThreadBind(
+            [](ServiceWorkerInstalledScriptsManager* installed_scripts_manager,
+               const KURL& script_url, bool* out_installed,
+               WaitableEvent* waiter) {
               *out_installed =
                   installed_scripts_manager->IsScriptInstalled(script_url);
               waiter->Signal();
             },
-            installed_scripts_manager_.get(), script_url, out_installed,
-            &worker_waiter_));
+            CrossThreadUnretained(installed_scripts_manager_.get()), script_url,
+            CrossThreadUnretained(out_installed),
+            CrossThreadUnretained(&worker_waiter_))));
     return &worker_waiter_;
   }
 
-  base::WaitableEvent* GetRawScriptDataOnWorkerThread(
-      const GURL& script_url,
+  WaitableEvent* GetRawScriptDataOnWorkerThread(
+      const KURL& script_url,
       std::unique_ptr<RawScriptData>* out_data) {
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            [](blink::WebServiceWorkerInstalledScriptsManager*
-                   installed_scripts_manager,
-               const blink::WebURL& script_url,
-               std::unique_ptr<RawScriptData>* out_data,
-               base::WaitableEvent* waiter) {
-              *out_data =
-                  installed_scripts_manager->GetRawScriptData(script_url);
-              waiter->Signal();
-            },
-            installed_scripts_manager_.get(), script_url, out_data,
-            &worker_waiter_));
+        ConvertToBaseCallback(CrossThreadBind(
+            &ServiceWorkerInstalledScriptsManagerTest::CallGetRawScriptData,
+            CrossThreadUnretained(this), script_url,
+            CrossThreadUnretained(out_data),
+            CrossThreadUnretained(&worker_waiter_))));
     return &worker_waiter_;
   }
 
  private:
-  // Provides SingleThreadTaskRunner for this test.
-  const base::MessageLoop message_loop_;
+  void CallGetRawScriptData(const KURL& script_url,
+                            std::unique_ptr<RawScriptData>* out_data,
+                            WaitableEvent* waiter) {
+    *out_data = installed_scripts_manager_->GetRawScriptData(script_url);
+    waiter->Signal();
+  }
 
-  base::Thread io_thread_;
-  base::Thread worker_thread_;
+  std::unique_ptr<WebThread> io_thread_;
+  std::unique_ptr<WebThread> worker_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
 
-  base::WaitableEvent worker_waiter_;
+  WaitableEvent worker_waiter_;
 
-  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager>
+  std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerInstalledScriptsManagerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerInstalledScriptsManagerTest);
 };
 
-TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
-  const GURL kScriptUrl = GURL("https://example.com/installed1.js");
-  const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
+TEST_F(ServiceWorkerInstalledScriptsManagerTest, GetRawScriptData) {
+  const KURL kScriptUrl("https://example.com/installed1.js");
+  const KURL kUnknownScriptUrl("https://example.com/not_installed.js");
 
   BrowserSideSender sender;
   CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
@@ -215,11 +221,16 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
     std::unique_ptr<RawScriptData> script_data;
     const std::string kExpectedBody = "This is a script body.";
     const std::string kExpectedMetaData = "This is a meta data.";
-    base::WaitableEvent* get_raw_script_data_waiter =
+    const WTF::String kScriptInfoEncoding("utf8");
+    const WTF::HashMap<WTF::String, WTF::String> kScriptInfoHeaders(
+        {{"Cache-Control", "no-cache"}, {"User-Agent", "Chrome"}});
+
+    WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script. +1 for null terminator.
-    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 1,
+    sender.TransferInstalledScript(kScriptUrl, kScriptInfoEncoding,
+                                   kScriptInfoHeaders, kExpectedBody.size() + 1,
                                    kExpectedMetaData.size() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
@@ -243,22 +254,29 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
               script_data->MetaDataChunks()[0].size());
     EXPECT_STREQ(kExpectedMetaData.data(),
                  script_data->MetaDataChunks()[0].Data());
+    EXPECT_EQ(kScriptInfoEncoding, script_data->Encoding());
+    EXPECT_EQ(ToCrossThreadHTTPHeaderMapData(kScriptInfoHeaders),
+              *(script_data->TakeHeaders()));
   }
 
   {
     std::unique_ptr<RawScriptData> script_data;
     const std::string kExpectedBody = "This is another script body.";
     const std::string kExpectedMetaData = "This is another meta data.";
+    const WTF::String kScriptInfoEncoding("ASCII");
+    const WTF::HashMap<WTF::String, WTF::String> kScriptInfoHeaders(
+        {{"Connection", "keep-alive"}, {"Content-Length", "512"}});
 
     // Request the same script again.
-    base::WaitableEvent* get_raw_script_data_waiter =
+    WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // It should call a Mojo IPC "RequestInstalledScript()" to the browser.
     sender.WaitForRequestInstalledScript(kScriptUrl);
 
     // Start transferring the script. +1 for null terminator.
-    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 1,
+    sender.TransferInstalledScript(kScriptUrl, kScriptInfoEncoding,
+                                   kScriptInfoHeaders, kExpectedBody.size() + 1,
                                    kExpectedMetaData.size() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
@@ -282,13 +300,15 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
               script_data->MetaDataChunks()[0].size());
     EXPECT_STREQ(kExpectedMetaData.data(),
                  script_data->MetaDataChunks()[0].Data());
+    EXPECT_EQ(kScriptInfoEncoding, script_data->Encoding());
+    EXPECT_EQ(ToCrossThreadHTTPHeaderMapData(kScriptInfoHeaders),
+              *(script_data->TakeHeaders()));
   }
 }
 
-TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
-       EarlyDisconnectionBody) {
-  const GURL kScriptUrl = GURL("https://example.com/installed1.js");
-  const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
+TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionBody) {
+  const KURL kScriptUrl("https://example.com/installed1.js");
+  const KURL kUnknownScriptUrl("https://example.com/not_installed.js");
 
   BrowserSideSender sender;
   CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
@@ -297,14 +317,16 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
     std::unique_ptr<RawScriptData> script_data;
     const std::string kExpectedBody = "This is a script body.";
     const std::string kExpectedMetaData = "This is a meta data.";
-    base::WaitableEvent* get_raw_script_data_waiter =
+    WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script.
     // Body is expected to be 100 bytes larger than kExpectedBody, but sender
     // only sends kExpectedBody and a null byte (kExpectedBody.size() + 1 bytes
     // in total).
-    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 100,
+    sender.TransferInstalledScript(kScriptUrl, WTF::String::FromUTF8("utf8"),
+                                   WTF::HashMap<WTF::String, WTF::String>(),
+                                   kExpectedBody.size() + 100,
                                    kExpectedMetaData.size() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
@@ -332,10 +354,9 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   }
 }
 
-TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
-       EarlyDisconnectionMetaData) {
-  const GURL kScriptUrl = GURL("https://example.com/installed1.js");
-  const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
+TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionMetaData) {
+  const KURL kScriptUrl("https://example.com/installed1.js");
+  const KURL kUnknownScriptUrl("https://example.com/not_installed.js");
 
   BrowserSideSender sender;
   CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
@@ -344,14 +365,16 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
     std::unique_ptr<RawScriptData> script_data;
     const std::string kExpectedBody = "This is a script body.";
     const std::string kExpectedMetaData = "This is a meta data.";
-    base::WaitableEvent* get_raw_script_data_waiter =
+    WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script.
     // Meta data is expected to be 100 bytes larger than kExpectedMetaData, but
     // sender only sends kExpectedMetaData and a null byte
     // (kExpectedMetaData.size() + 1 bytes in total).
-    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 1,
+    sender.TransferInstalledScript(kScriptUrl, WTF::String::FromUTF8("utf8"),
+                                   WTF::HashMap<WTF::String, WTF::String>(),
+                                   kExpectedBody.size() + 1,
                                    kExpectedMetaData.size() + 100);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
@@ -379,17 +402,16 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   }
 }
 
-TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
-       EarlyDisconnectionManager) {
-  const GURL kScriptUrl = GURL("https://example.com/installed1.js");
-  const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
+TEST_F(ServiceWorkerInstalledScriptsManagerTest, EarlyDisconnectionManager) {
+  const KURL kScriptUrl("https://example.com/installed1.js");
+  const KURL kUnknownScriptUrl("https://example.com/not_installed.js");
 
   BrowserSideSender sender;
   CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    base::WaitableEvent* get_raw_script_data_waiter =
+    WaitableEvent* get_raw_script_data_waiter =
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Reset the Mojo connection before sending the script.
@@ -414,4 +436,4 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   }
 }
 
-}  // namespace content
+}  // namespace blink

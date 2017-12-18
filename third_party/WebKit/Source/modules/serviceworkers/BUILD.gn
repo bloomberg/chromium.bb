@@ -56,11 +56,17 @@ blink_modules_sources("serviceworkers") {
     "ServiceWorkerWindowClient.h",
     "ServiceWorkerWindowClientCallback.cpp",
     "ServiceWorkerWindowClientCallback.h",
+    "ThreadSafeScriptContainer.cpp",
+    "ThreadSafeScriptContainer.h",
     "WaitUntilObserver.cpp",
     "WaitUntilObserver.h",
   ]
 
   public_deps = [
     "//third_party/WebKit/Source/platform",
+  ]
+
+  deps = [
+    "//base",
   ]
 }
