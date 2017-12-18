@@ -242,4 +242,41 @@ TEST_F(InsertTextCommandTest, CheckTabSpanElementNoCrash) {
                                         Selection().GetSelectionInDOMTree()));
 }
 
+// http://crbug.com/792548
+TEST_F(InsertTextCommandTest, AnchorElementWithBlockCrash) {
+  GetDocument().setDesignMode("on");
+  SetBodyContent("<a href=\"www\" style=\"display:block\">");
+  // We need the below DOM with selection.
+  // <a href=\"www\" style=\"display:block\">
+  //   <a href=\"www\" style=\"display: inline !important;\">
+  //   <i>^home|</i>
+  //   </a>
+  // </a>
+  // Since the HTML parser rejects it as there are nested <a> elements.
+  // We are contructing the remaining DOM manually.
+  Element* const anchor = GetDocument().QuerySelector("a");
+  Element* nested_anchor = GetDocument().createElement("a");
+  Element* iElement = GetDocument().createElement("i");
+
+  nested_anchor->setAttribute("href", "www");
+  iElement->SetInnerHTMLFromString("home");
+
+  anchor->AppendChild(nested_anchor);
+  nested_anchor->AppendChild(iElement);
+
+  Node* const iElement_text_node = iElement->firstChild();
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(Position(iElement_text_node, 0),
+                            Position(iElement_text_node, 4))
+          .Build());
+  // Crash happens here with when '\n' is inserted.
+  GetDocument().execCommand("inserttext", false, "a\n", ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(
+      "<i style=\"display: block;\">"
+      "<a href=\"www\" style=\"display: block;\">a</a>"
+      "</i>|",
+      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink
