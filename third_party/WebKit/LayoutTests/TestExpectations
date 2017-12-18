@@ -3590,6 +3590,7 @@ crbug.com/785662 [ Debug ] http/tests/devtools/sources/debugger-ui/reveal-not-sk
 
 # Flaky DevTools
 crbug.com/667560 http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
+crbug.com/795542 http/tests/devtools/elements/elements-panel-selection-after-delete.js [ Timeout Pass ]
 
 # Sheriff failures 2017-11-16
 crbug.com/785980 [ Win7 Win10 ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
