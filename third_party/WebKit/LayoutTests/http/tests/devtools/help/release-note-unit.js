@@ -13,11 +13,15 @@
   ];
 
   function testMaybeShowInDrawer(lastSeenVersion) {
+    return testMaybeShowInDrawerWithSettings(lastSeenVersion, {showReleaseNote: true});
+  }
+
+  function testMaybeShowInDrawerWithSettings(lastSeenVersion, {showReleaseNote}) {
     TestRunner.addResult(`Last seen version: ${lastSeenVersion}`);
     TestRunner.addSniffer(UI.viewManager, 'showView', onShowView);
     var showedReleaseNote = false;
 
-    Help._showReleaseNoteIfNeeded(lastSeenVersion, Help.latestReleaseNote().version);
+    Help._showReleaseNoteIfNeeded(lastSeenVersion, Help.latestReleaseNote().version, showReleaseNote);
 
     function onShowView() {
       showedReleaseNote = true;
@@ -48,6 +52,15 @@
       var lastSeenVersion = 0;
       testMaybeShowInDrawer(lastSeenVersion);
       TestRunner.addResult(`Release note version in setting: ${Help.releaseNoteVersionSetting().get()}`);
+      next();
+    },
+    function showReleaseNoteSetting(next) {
+      TestRunner.addResult('\nDisabled showReleaseNote setting');
+      var lastSeenVersion = 4;
+      testMaybeShowInDrawerWithSettings(lastSeenVersion, {showReleaseNote: false});
+
+      TestRunner.addResult('\nEnabled showReleaseNote setting');
+      testMaybeShowInDrawerWithSettings(lastSeenVersion, {showReleaseNote: true});
       next();
     },
   ]);
