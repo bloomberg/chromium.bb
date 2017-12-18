@@ -40,7 +40,6 @@ public abstract class NativeBrowserTestActivity extends Activity {
     @Override
     public void onStart() {
         deletePrivateDataDirectory();
-        mTest.setEnvForNative(this);
         initializeBrowserProcess();
         super.onStart();
         mTest.postStart(this, false);

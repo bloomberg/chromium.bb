@@ -7,9 +7,12 @@ package org.chromium.base.library_loader;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
+import android.system.Os;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -400,6 +403,7 @@ public class LibraryLoader {
 
                     linker.finishLibraryLoad();
                 } else {
+                    setEnvForNative();
                     preloadAlreadyLocked(appContext);
                     // Load libraries using the system linker.
                     for (String library : NativeLibraries.LIBRARIES) {
@@ -545,6 +549,27 @@ public class LibraryLoader {
     @VisibleForTesting
     public static void setLibraryLoaderForTesting(LibraryLoader loader) {
         sInstance = loader;
+    }
+
+    /**
+     * Configure ubsan using $UBSAN_OPTIONS. This function needs to be called before any native
+     * libraries are loaded because ubsan reads its configuration from $UBSAN_OPTIONS when the
+     * native library is loaded.
+     */
+    public static void setEnvForNative() {
+        // The setenv API was added in L. On older versions of Android, we should still see ubsan
+        // reports, but they will not have stack traces.
+        if (BuildConfig.IS_UBSAN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                // This value is duplicated in build/android/pylib/constants/__init__.py.
+                Os.setenv("UBSAN_OPTIONS",
+                        "print_stacktrace=1 stack_trace_format='#%n pc %o %m' "
+                                + "handle_segv=0 handle_sigbus=0 handle_sigfpe=0",
+                        true);
+            } catch (Exception e) {
+                Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
+            }
+        }
     }
 
     // Only methods needed before or during normal JNI registration are during System.OnLoad.

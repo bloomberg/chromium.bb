@@ -118,6 +118,8 @@ DEVICE_LOCAL_PROPERTIES_PATH = '/data/local.prop'
 # Configure ubsan to print stack traces in the format understood by "stack" so
 # that they will be symbolized, and disable signal handlers because they
 # interfere with the breakpad and sandbox tests.
+# This value is duplicated in
+# base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java
 UBSAN_OPTIONS = (
     'print_stacktrace=1 stack_trace_format=\'#%n pc %o %m\' '
     'handle_segv=0 handle_sigbus=0 handle_sigfpe=0')

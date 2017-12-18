@@ -2879,6 +2879,9 @@ if (is_android) {
     if (is_java_debug || dcheck_always_on) {
       defines += [ "_DCHECK_IS_ON" ]
     }
+    if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
+      defines += [ "_IS_UBSAN" ]
+    }
   }
 
   java_cpp_template("base_native_libraries_gen") {
