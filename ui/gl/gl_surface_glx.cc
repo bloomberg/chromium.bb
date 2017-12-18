@@ -635,8 +635,8 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
 void NativeViewGLSurfaceGLX::Destroy() {
   // Discard pending frames and run presentation callback with empty
   // PresentationFeedback.
+  bool has_context = gl_context_ && gl_context_->IsCurrent(this);
   for (auto& frame : pending_frames_) {
-    bool has_context = gl_context_->IsCurrent(this);
     frame.timer->Destroy(has_context);
     frame.callback.Run(gfx::PresentationFeedback());
   }
@@ -809,6 +809,18 @@ void NativeViewGLSurfaceGLX::CheckPendingFrames() {
 
   if (pending_frames_.empty())
     return;
+
+  // If the |gl_context_| is not current anymore, we assume SwapBuffers issued
+  // for previous context will be discarded.
+  if (gl_context_ && !gl_context_->IsCurrent(this)) {
+    gpu_timing_client_ = nullptr;
+    for (auto& frame : pending_frames_) {
+      frame.timer->Destroy(false /* has_context */);
+      frame.callback.Run(gfx::PresentationFeedback());
+    }
+    pending_frames_.clear();
+    return;
+  }
 
   bool disjoint_occurred =
       gpu_timing_client_ && gpu_timing_client_->CheckAndResetTimerErrors();
