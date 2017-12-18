@@ -14,7 +14,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
-#include "ui/views/controls/link.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -42,10 +44,14 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
     content_view_ = std::make_unique<DeviceChooserContentView>(
         table_observer_.get(), std::move(controller));
 
+    // Also creates |bluetooth_status_container_|.
+    extra_views_container_ = content_view().CreateExtraView();
+
     ASSERT_NE(nullptr, table_view());
-    ASSERT_NE(nullptr, throbber());
     ASSERT_NE(nullptr, adapter_off_help_link());
-    ASSERT_NE(nullptr, footnote_link());
+    ASSERT_NE(nullptr, re_scan_button());
+    ASSERT_NE(nullptr, throbber());
+    ASSERT_NE(nullptr, scanning_label());
 
     controller_->SetBluetoothStatus(
         FakeBluetoothChooserController::BluetoothStatus::IDLE);
@@ -57,24 +63,17 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
 
   views::TableView* table_view() { return content_view().table_view_; }
   ui::TableModel* table_model() { return table_view()->model(); }
-  views::Throbber* throbber() { return content_view().throbber_; }
   views::StyledLabel* adapter_off_help_link() {
     return content_view().turn_adapter_off_help_;
   }
-  views::StyledLabel* footnote_link() {
-    return content_view().footnote_link_.get();
+  views::LabelButton* re_scan_button() {
+    return content_view().bluetooth_status_container_->re_scan_button();
   }
-
-  void ExpectFootnoteLinkHasScanningText() {
-    EXPECT_EQ(content_view().help_and_scanning_text_, footnote_link()->text());
+  views::Throbber* throbber() {
+    return content_view().bluetooth_status_container_->throbber();
   }
-
-  void ExpectFootnoteLinkHasRescanText() {
-    EXPECT_EQ(content_view().help_and_re_scan_text_, footnote_link()->text());
-  }
-
-  void ExpectFootnoteLinkOnlyHasHelpText() {
-    EXPECT_EQ(content_view().help_text_, footnote_link()->text());
+  views::Label* scanning_label() {
+    return content_view().bluetooth_status_container_->scanning_label();
   }
 
   void AddUnpairedDevice() {
@@ -114,6 +113,9 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
     EXPECT_FALSE(IsDeviceSelected());
   }
 
+ protected:
+  std::unique_ptr<views::View> extra_views_container_;
+
  private:
   std::unique_ptr<MockTableViewObserver> table_observer_;
   FakeBluetoothChooserController* controller_ = nullptr;
@@ -127,9 +129,11 @@ TEST_F(DeviceChooserContentViewTest, InitialState) {
 
   EXPECT_TRUE(table_view()->visible());
   ExpectNoDevices();
-  EXPECT_FALSE(throbber()->visible());
   EXPECT_FALSE(adapter_off_help_link()->visible());
-  ExpectFootnoteLinkHasRescanText();
+  EXPECT_FALSE(throbber()->visible());
+  EXPECT_FALSE(scanning_label()->visible());
+  EXPECT_TRUE(re_scan_button()->visible());
+  EXPECT_TRUE(re_scan_button()->enabled());
 }
 
 TEST_F(DeviceChooserContentViewTest, AddOption) {
@@ -209,7 +213,9 @@ TEST_F(DeviceChooserContentViewTest, TurnBluetoothOffAndOn) {
   EXPECT_FALSE(table_view()->visible());
   EXPECT_TRUE(adapter_off_help_link()->visible());
   EXPECT_FALSE(throbber()->visible());
-  ExpectFootnoteLinkOnlyHasHelpText();
+  EXPECT_FALSE(scanning_label()->visible());
+  EXPECT_TRUE(re_scan_button()->visible());
+  EXPECT_FALSE(re_scan_button()->enabled());
 
   controller()->RemoveDevice(0);
   controller()->SetBluetoothStatus(
@@ -217,24 +223,29 @@ TEST_F(DeviceChooserContentViewTest, TurnBluetoothOffAndOn) {
   ExpectNoDevices();
   EXPECT_FALSE(adapter_off_help_link()->visible());
   EXPECT_FALSE(throbber()->visible());
+  EXPECT_FALSE(scanning_label()->visible());
+  EXPECT_TRUE(re_scan_button()->visible());
+  EXPECT_TRUE(re_scan_button()->enabled());
 }
 
 TEST_F(DeviceChooserContentViewTest, ScanForDevices) {
   controller()->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::SCANNING);
-  EXPECT_FALSE(table_view()->visible());
+  EXPECT_EQ(0, table_view()->RowCount());
+  EXPECT_FALSE(table_view()->enabled());
   EXPECT_FALSE(adapter_off_help_link()->visible());
   EXPECT_TRUE(throbber()->visible());
-  ExpectFootnoteLinkHasScanningText();
+  EXPECT_TRUE(scanning_label()->visible());
+  EXPECT_FALSE(re_scan_button()->visible());
 
   AddUnpairedDevice();
-  EXPECT_TRUE(table_view()->visible());
+  EXPECT_EQ(1, table_view()->RowCount());
   EXPECT_TRUE(table_view()->enabled());
   EXPECT_FALSE(adapter_off_help_link()->visible());
-  EXPECT_FALSE(throbber()->visible());
-  EXPECT_EQ(1, table_view()->RowCount());
+  EXPECT_TRUE(throbber()->visible());
+  EXPECT_TRUE(scanning_label()->visible());
   EXPECT_FALSE(IsDeviceSelected());
-  ExpectFootnoteLinkHasScanningText();
+  EXPECT_FALSE(re_scan_button()->visible());
 }
 
 TEST_F(DeviceChooserContentViewTest, ClickAdapterOffHelpLink) {
@@ -242,14 +253,24 @@ TEST_F(DeviceChooserContentViewTest, ClickAdapterOffHelpLink) {
   adapter_off_help_link()->LinkClicked(nullptr, 0);
 }
 
-TEST_F(DeviceChooserContentViewTest, ClickRescanLink) {
+TEST_F(DeviceChooserContentViewTest, ClickRescanButton) {
   EXPECT_CALL(*controller(), RefreshOptions()).Times(1);
-  content_view().StyledLabelLinkClicked(footnote_link(),
-                                        content_view().re_scan_text_range_, 0);
+  const gfx::Point point(10, 10);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  content_view().ButtonPressed(re_scan_button(), event);
 }
 
-TEST_F(DeviceChooserContentViewTest, ClickGetHelpLink) {
+TEST_F(DeviceChooserContentViewTest, ClickHelpButton) {
   EXPECT_CALL(*controller(), OpenHelpCenterUrl()).Times(1);
-  content_view().StyledLabelLinkClicked(footnote_link(),
-                                        content_view().help_text_range_, 0);
+  // The content view doesn't have a direct reference to the help button, so we
+  // need to find it. It's on the left (in LTR) so it should be the first child.
+  views::ImageButton* help_button =
+      static_cast<views::ImageButton*>(extra_views_container_->child_at(0));
+  const gfx::Point point(10, 10);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  content_view().ButtonPressed(help_button, event);
 }

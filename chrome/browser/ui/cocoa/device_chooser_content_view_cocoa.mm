@@ -449,7 +449,7 @@ void ChooserContentViewController::UpdateTableView() {
     // Help button.
     CGFloat helpButtonWidth = 0.0f;
     CGFloat helpButtonHeight = 0.0f;
-    if (chooserController_->ShouldShowFootnoteView()) {
+    if (chooserController_->ShouldShowHelpButton()) {
       helpButton_ =
           [self createHyperlinkButtonWithText:
                     l10n_util::GetNSStringF(
@@ -478,14 +478,14 @@ void ChooserContentViewController::UpdateTableView() {
     CGFloat scrollViewWidth = kChooserWidth - 2 * kMarginX;
     CGFloat scrollViewHeight =
         kChooserHeight - 2 * kMarginY -
-        (chooserController_->ShouldShowFootnoteView() ? 4 * kVerticalPadding
-                                                      : 2 * kVerticalPadding) -
+        (chooserController_->ShouldShowHelpButton() ? 4 * kVerticalPadding
+                                                    : 2 * kVerticalPadding) -
         titleHeight - cancelButtonHeight - helpButtonHeight;
     CGFloat scrollViewOriginX = kMarginX;
     CGFloat scrollViewOriginY =
         kMarginY + helpButtonHeight +
-        (chooserController_->ShouldShowFootnoteView() ? 3 * kVerticalPadding
-                                                      : kVerticalPadding) +
+        (chooserController_->ShouldShowHelpButton() ? 3 * kVerticalPadding
+                                                    : kVerticalPadding) +
         cancelButtonHeight;
     NSRect scrollFrame = NSMakeRect(scrollViewOriginX, scrollViewOriginY,
                                     scrollViewWidth, scrollViewHeight);
@@ -564,8 +564,8 @@ void ChooserContentViewController::UpdateTableView() {
                                   connectButtonWidth;
     CGFloat cancelButtonOriginY =
         kMarginY + helpButtonHeight +
-        (chooserController_->ShouldShowFootnoteView() ? 2 * kVerticalPadding
-                                                      : 0.0f);
+        (chooserController_->ShouldShowHelpButton() ? 2 * kVerticalPadding
+                                                    : 0.0f);
     [cancelButton_
         setFrameOrigin:NSMakePoint(cancelButtonOriginX, cancelButtonOriginY)];
     [self addSubview:cancelButton_];
@@ -579,7 +579,7 @@ void ChooserContentViewController::UpdateTableView() {
     [connectButton_ setEnabled:NO];
     [self addSubview:connectButton_];
 
-    if (chooserController_->ShouldShowFootnoteView()) {
+    if (chooserController_->ShouldShowHelpButton()) {
       // Separator.
       CGFloat separatorOriginX = 0.0f;
       separatorOriginY_ = kMarginY + helpButtonHeight + kVerticalPadding;

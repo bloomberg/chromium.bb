@@ -25,7 +25,7 @@ DevicePermissionsDialogController::~DevicePermissionsDialogController() {
   prompt_->SetObserver(nullptr);
 }
 
-bool DevicePermissionsDialogController::ShouldShowFootnoteView() const {
+bool DevicePermissionsDialogController::ShouldShowHelpButton() const {
   return false;
 }
 

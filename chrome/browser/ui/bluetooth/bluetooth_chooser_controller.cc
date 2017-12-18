@@ -48,6 +48,10 @@ bool BluetoothChooserController::ShouldShowIconBeforeText() const {
   return true;
 }
 
+bool BluetoothChooserController::ShouldShowReScanButton() const {
+  return true;
+}
+
 base::string16 BluetoothChooserController::GetNoOptionsText() const {
   return l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);

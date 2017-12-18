@@ -22,6 +22,10 @@ bool FakeBluetoothChooserController::ShouldShowIconBeforeText() const {
   return true;
 }
 
+bool FakeBluetoothChooserController::ShouldShowReScanButton() const {
+  return true;
+}
+
 base::string16 FakeBluetoothChooserController::GetNoOptionsText() const {
   return l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
