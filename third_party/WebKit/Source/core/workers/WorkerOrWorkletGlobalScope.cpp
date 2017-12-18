@@ -10,6 +10,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/WorkerFetchContext.h"
+#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -193,6 +194,28 @@ void WorkerOrWorkletGlobalScope::ApplyContentSecurityPolicyFromVector(
         kContentSecurityPolicyHeaderSourceHTTP);
   }
   GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
+}
+
+void WorkerOrWorkletGlobalScope::FetchModuleScript(
+    const KURL& module_url_record,
+    network::mojom::FetchCredentialsMode credentials_mode,
+    ModuleTreeClient* client) {
+  // Step 2: "Let options be a script fetch options whose cryptographic nonce is
+  // the empty string,
+  String nonce;
+  // integrity metadata is the empty string,
+  String integrity_attribute;
+  // parser metadata is "not-parser-inserted",
+  ParserDisposition parser_state = kNotParserInserted;
+  // and credentials mode is credentials mode."
+  ScriptFetchOptions options(nonce, IntegrityMetadataSet(), integrity_attribute,
+                             parser_state, credentials_mode);
+
+  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
+  // Step 3. "Perform the internal module script graph fetching procedure ..."
+  ModuleScriptFetchRequest module_request(
+      module_url_record, modulator->GetReferrerPolicy(), options);
+  modulator->FetchTree(module_request, client);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
