@@ -1250,6 +1250,11 @@ int InputMethodController::TextInputFlags() const {
     }
   }
 
+  if (HTMLInputElement* input = ToHTMLInputElementOrNull(element)) {
+    if (input->HasBeenPasswordField())
+      flags |= kWebTextInputFlagHasBeenPasswordField;
+  }
+
   return flags;
 }
 

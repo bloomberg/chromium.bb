@@ -47,7 +47,7 @@ public class TextSuggestionMenuTest {
 
     @Before
     public void setUp() throws Throwable {
-        mRule.setUp();
+        mRule.setUpForUrl(ImeActivityTestRule.INPUT_FORM_HTML);
         mRule.fullyLoadUrl(URL);
     }
 

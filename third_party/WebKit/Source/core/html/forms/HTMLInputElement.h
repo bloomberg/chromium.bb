@@ -105,6 +105,10 @@ class CORE_EXPORT HTMLInputElement
   // isRadio, isFile.  If you want to check the input type, you may use
   // |input->type() == InputTypeNames::image|, etc.
 
+  // Returns whether this field is or has ever been a password field so that
+  // its value can be protected from memorization by autofill or keyboards.
+  bool HasBeenPasswordField() const;
+
   bool checked() const;
   void setChecked(bool, TextFieldEventBehavior = kDispatchNoEvent);
   void DispatchChangeEventIfNeeded();
@@ -421,6 +425,7 @@ class CORE_EXPORT HTMLInputElement
   unsigned should_reveal_password_ : 1;
   unsigned needs_to_update_view_value_ : 1;
   unsigned is_placeholder_visible_ : 1;
+  unsigned has_been_password_field_ : 1;
   Member<InputType> input_type_;
   Member<InputTypeView> input_type_view_;
   // The ImageLoader must be owned by this element because the loader code
