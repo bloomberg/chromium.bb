@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_extensions.h"
 #include "chrome/browser/permissions/permission_context_base.h"
+#include "device/geolocation/public/interfaces/geolocation_control.mojom.h"
 
 namespace content {
 class WebContents;
@@ -42,8 +43,12 @@ class GeolocationPermissionContext  : public PermissionContextBase {
                         bool allowed) override;
   bool IsRestrictedToSecureOrigins() const override;
 
+  device::mojom::GeolocationControl* GetGeolocationControl();
+
   // This must only be accessed from the UI thread.
   GeolocationPermissionContextExtensions extensions_context_;
+
+  device::mojom::GeolocationControlPtr geolocation_control_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContext);
 };

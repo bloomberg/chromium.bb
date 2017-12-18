@@ -23,8 +23,13 @@ namespace device {
 // must communicate with it on the same thread.
 // The underlying location arbitrator will only be enabled whilst there is at
 // least one registered observer or pending callback (and only after
-// UserDidOptIntoLocationServices). The arbitrator and the location providers it
-// uses run on a separate Geolocation thread.
+// mojom::UserDidOptIntoLocationServices() which is implemented by
+// GeolocationProviderImpl). The arbitrator and the location providers it uses
+// run on a separate Geolocation thread.
+// TODO(ke.he@intel.com): With the proceeding of the servicification of
+// geolocation, the geolocation core will be moved into //services/device and as
+// a internal part of Device Service. This geolocation_provider.h will also be
+// removed.
 class GeolocationProvider {
  public:
   DEVICE_GEOLOCATION_EXPORT static GeolocationProvider* GetInstance();
@@ -55,12 +60,6 @@ class GeolocationProvider {
   virtual std::unique_ptr<Subscription> AddLocationUpdateCallback(
       const LocationUpdateCallback& callback,
       bool enable_high_accuracy) = 0;
-
-  // Calling this method indicates the user has opted into using location
-  // services, including sending network requests to [Google servers to] resolve
-  // the user's location. Use this method carefully, in line with the rules in
-  // go/chrome-privacy-doc.
-  virtual void UserDidOptIntoLocationServices() = 0;
 
   virtual bool HighAccuracyLocationInUse() = 0;
 

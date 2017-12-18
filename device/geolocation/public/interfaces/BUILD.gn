@@ -9,6 +9,7 @@ mojom("interfaces") {
     "geolocation.mojom",
     "geolocation_config.mojom",
     "geolocation_context.mojom",
+    "geolocation_control.mojom",
     "geoposition.mojom",
   ]
   public_deps = [
