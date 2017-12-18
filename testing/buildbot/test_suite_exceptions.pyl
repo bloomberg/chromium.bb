@@ -3860,16 +3860,6 @@
       'Linux ASan LSan Tests (1)',
     ],
   },
-  'viz_content_browsertests': {
-    'remove_from': [
-      # TODO(dpranke): Remove this exception.
-      'Linux Tests SANDBOX',
-
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-    ],
-  },
   'viz_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
