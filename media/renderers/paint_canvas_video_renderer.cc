@@ -309,7 +309,7 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 
       size_t offset;
       const int y_shift =
-          (frame_->format() == media::PIXEL_FORMAT_YV16) ? 0 : 1;
+          (frame_->format() == media::PIXEL_FORMAT_I422) ? 0 : 1;
       if (plane == VideoFrame::kYPlane) {
         offset =
             (frame_->stride(VideoFrame::kYPlane) * frame_->visible_rect().y()) +
@@ -502,17 +502,17 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
 
     case PIXEL_FORMAT_YUV422P12:
       shift = 4;
-      format = PIXEL_FORMAT_YV16;
+      format = PIXEL_FORMAT_I422;
       break;
 
     case PIXEL_FORMAT_YUV422P10:
       shift = 2;
-      format = PIXEL_FORMAT_YV16;
+      format = PIXEL_FORMAT_I422;
       break;
 
     case PIXEL_FORMAT_YUV422P9:
       shift = 1;
-      format = PIXEL_FORMAT_YV16;
+      format = PIXEL_FORMAT_I422;
       break;
 
     case PIXEL_FORMAT_YUV444P12:
@@ -731,7 +731,7 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
                             video_frame->visible_rect().height());
       }
       break;
-    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_I422:
       LIBYUV_I422_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
                           video_frame->stride(VideoFrame::kYPlane),
                           video_frame->visible_data(VideoFrame::kUPlane),

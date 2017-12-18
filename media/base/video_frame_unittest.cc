@@ -289,7 +289,7 @@ TEST(VideoFrame, CheckFrameExtents) {
   // Each call consists of a Format and the expected hash of all
   // planes if filled with kFillByte (defined in ExpectFrameExtents).
   ExpectFrameExtents(PIXEL_FORMAT_YV12, "8e5d54cb23cd0edca111dd35ffb6ff05");
-  ExpectFrameExtents(PIXEL_FORMAT_YV16, "cce408a044b212db42a10dfec304b3ef");
+  ExpectFrameExtents(PIXEL_FORMAT_I422, "cce408a044b212db42a10dfec304b3ef");
 }
 
 static void TextureCallback(gpu::SyncToken* called_sync_token,
@@ -463,7 +463,7 @@ TEST(VideoFrame, AllocationSize_OddSize) {
         break;
       case PIXEL_FORMAT_UYVY:
       case PIXEL_FORMAT_YUY2:
-      case PIXEL_FORMAT_YV16:
+      case PIXEL_FORMAT_I422:
         EXPECT_EQ(48u, allocation_size) << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_YV12:

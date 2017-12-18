@@ -22,10 +22,10 @@ enum VideoPixelFormat {
       1,  // 12bpp YUV planar 1x1 Y, 2x2 UV samples, a.k.a. YU12.
 
   // Note: Chrome does not actually support YVU compositing, so you probably
-  // don't actually want to use either of these. See http://crbug.com/784627.
+  // don't actually want to use this. See http://crbug.com/784627.
   PIXEL_FORMAT_YV12 = 2,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
-  PIXEL_FORMAT_YV16 = 3,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples.
 
+  PIXEL_FORMAT_I422 = 3,   // 16bpp YVU planar 1x1 Y, 2x1 UV samples.
   PIXEL_FORMAT_YV12A = 4,  // 20bpp YUVA planar 1x1 Y, 2x2 UV, 1x1 A samples.
   PIXEL_FORMAT_YV24 = 5,   // 24bpp YUV planar, no subsampling.
   PIXEL_FORMAT_NV12 =

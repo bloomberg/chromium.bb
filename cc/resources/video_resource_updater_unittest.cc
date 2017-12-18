@@ -119,7 +119,7 @@ class VideoResourceUpdaterTest : public testing::Test {
 
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapExternalYuvData(
-            media::PIXEL_FORMAT_YV16,  // format
+            media::PIXEL_FORMAT_I422,  // format
             size,                      // coded_size
             gfx::Rect(size),           // visible_rect
             size,                      // natural_size
@@ -145,7 +145,7 @@ class VideoResourceUpdaterTest : public testing::Test {
 
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapExternalYuvData(
-            media::PIXEL_FORMAT_YV16,                 // format
+            media::PIXEL_FORMAT_I422,                 // format
             gfx::Size(kYWidth, kDimension),           // coded_size
             gfx::Rect(2, 0, kDimension, kDimension),  // visible_rect
             gfx::Size(kDimension, kDimension),        // natural_size

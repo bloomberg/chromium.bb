@@ -57,7 +57,7 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
       return PIXEL_FORMAT_YV12;
 
     case V4L2_PIX_FMT_YUV422M:
-      return PIXEL_FORMAT_YV16;
+      return PIXEL_FORMAT_I422;
 
     case V4L2_PIX_FMT_RGB32:
       return PIXEL_FORMAT_ARGB;

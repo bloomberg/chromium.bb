@@ -67,7 +67,7 @@ TEST(VideoFrameMac, CheckFormats) {
   const FormatPair format_pairs[] = {
       {PIXEL_FORMAT_I420, kCVPixelFormatType_420YpCbCr8Planar},
       {PIXEL_FORMAT_YV12, 0},
-      {PIXEL_FORMAT_YV16, 0},
+      {PIXEL_FORMAT_I422, 0},
       {PIXEL_FORMAT_YV12A, 0},
       {PIXEL_FORMAT_YV24, 0},
   };

@@ -416,7 +416,7 @@ void VideoDecoderShim::YUVConverter::Convert(
         uv_height_divisor_ = 2;
         uv_width_divisor_ = 2;
         break;
-      case media::PIXEL_FORMAT_YV16:  // 422
+      case media::PIXEL_FORMAT_I422:  // 422
         uv_width_divisor_ = 2;
         uv_height_divisor_ = 1;
         break;

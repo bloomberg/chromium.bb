@@ -517,7 +517,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   // Pad out |coded_size| for subsampled YUV formats.
   if (format != PIXEL_FORMAT_YV24 && format != PIXEL_FORMAT_UNKNOWN) {
     coded_size.set_width((coded_size.width() + 1) / 2 * 2);
-    if (format != PIXEL_FORMAT_YV16)
+    if (format != PIXEL_FORMAT_I422)
       coded_size.set_height((coded_size.height() + 1) / 2 * 2);
   }
 
@@ -692,14 +692,15 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
     case AV_PIX_FMT_YUVJ444P:
       return PIXEL_FORMAT_YV24;
 
-    // TODO(dalecurtis): These are incorrect; see http://crbug.com/784627. This
-    // should actually be PIXEL_FORMAT_I420 and PIXEL_FORMAT_I422.
+    // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627. This
+    // should actually be PIXEL_FORMAT_I420.
     case AV_PIX_FMT_YUV420P:
     case AV_PIX_FMT_YUVJ420P:
       return PIXEL_FORMAT_YV12;
+
     case AV_PIX_FMT_YUV422P:
     case AV_PIX_FMT_YUVJ422P:
-      return PIXEL_FORMAT_YV16;
+      return PIXEL_FORMAT_I422;
 
     case AV_PIX_FMT_YUVA420P:
       return PIXEL_FORMAT_YV12A;
@@ -733,13 +734,13 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
 
 AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
   switch (video_format) {
-    // TODO(dalecurtis): These are incorrect; see http://crbug.com/784627.
+    // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627.
     // FFmpeg actually has no YVU format...
-    case PIXEL_FORMAT_YV16:
-      return AV_PIX_FMT_YUV422P;
     case PIXEL_FORMAT_YV12:
       return AV_PIX_FMT_YUV420P;
 
+    case PIXEL_FORMAT_I422:
+      return AV_PIX_FMT_YUV422P;
     case PIXEL_FORMAT_YV12A:
       return AV_PIX_FMT_YUVA420P;
     case PIXEL_FORMAT_YV24:

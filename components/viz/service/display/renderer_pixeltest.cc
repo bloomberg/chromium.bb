@@ -393,7 +393,7 @@ scoped_refptr<media::VideoFrame> CreateHighbitVideoFrame(
     case media::PIXEL_FORMAT_YV12:
       format = media::PIXEL_FORMAT_YUV420P10;
       break;
-    case media::PIXEL_FORMAT_YV16:
+    case media::PIXEL_FORMAT_I422:
       format = media::PIXEL_FORMAT_YUV422P10;
       break;
     case media::PIXEL_FORMAT_YV24:

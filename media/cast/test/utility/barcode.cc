@@ -39,7 +39,7 @@ const int kWhiteThreshold = 256 / 3;
 bool EncodeBarcode(const std::vector<bool>& bits,
                    scoped_refptr<VideoFrame> output_frame) {
   DCHECK(output_frame->format() == PIXEL_FORMAT_YV12 ||
-         output_frame->format() == PIXEL_FORMAT_YV16 ||
+         output_frame->format() == PIXEL_FORMAT_I422 ||
          output_frame->format() == PIXEL_FORMAT_I420);
   int row_bytes = output_frame->row_bytes(VideoFrame::kYPlane);
   std::vector<unsigned char> bytes(row_bytes);
@@ -151,7 +151,7 @@ bool DecodeBarCodeRows(const scoped_refptr<VideoFrame>& frame,
 bool DecodeBarcode(const scoped_refptr<VideoFrame>& frame,
                    std::vector<bool>* output) {
   DCHECK(frame->format() == PIXEL_FORMAT_YV12 ||
-         frame->format() == PIXEL_FORMAT_YV16 ||
+         frame->format() == PIXEL_FORMAT_I422 ||
          frame->format() == PIXEL_FORMAT_I420);
   int rows = frame->rows(VideoFrame::kYPlane);
   // Middle 10 lines

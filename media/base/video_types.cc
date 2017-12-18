@@ -16,8 +16,8 @@ std::string VideoPixelFormatToString(VideoPixelFormat format) {
       return "PIXEL_FORMAT_I420";
     case PIXEL_FORMAT_YV12:
       return "PIXEL_FORMAT_YV12";
-    case PIXEL_FORMAT_YV16:
-      return "PIXEL_FORMAT_YV16";
+    case PIXEL_FORMAT_I422:
+      return "PIXEL_FORMAT_I422";
     case PIXEL_FORMAT_YV12A:
       return "PIXEL_FORMAT_YV12A";
     case PIXEL_FORMAT_YV24:
@@ -73,7 +73,7 @@ bool IsYuvPlanar(VideoPixelFormat format) {
   switch (format) {
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
-    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_YV12A:
     case PIXEL_FORMAT_YV24:
     case PIXEL_FORMAT_NV12:
@@ -110,7 +110,7 @@ bool IsOpaque(VideoPixelFormat format) {
     case PIXEL_FORMAT_UNKNOWN:
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_YV24:
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
