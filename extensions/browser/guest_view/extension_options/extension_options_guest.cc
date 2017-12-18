@@ -38,7 +38,6 @@
 using content::WebContents;
 using guest_view::GuestViewBase;
 using guest_view::GuestViewEvent;
-using namespace extensions::api;
 
 namespace extensions {
 
@@ -128,7 +127,7 @@ void ExtensionOptionsGuest::DidInitialize(
 void ExtensionOptionsGuest::GuestViewDidStopLoading() {
   std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
-      extension_options_internal::OnLoad::kEventName, std::move(args)));
+      api::extension_options_internal::OnLoad::kEventName, std::move(args)));
 }
 
 const char* ExtensionOptionsGuest::GetAPINamespace() const {
@@ -144,12 +143,12 @@ bool ExtensionOptionsGuest::IsPreferredSizeModeEnabled() const {
 }
 
 void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
-  extension_options_internal::PreferredSizeChangedOptions options;
+  api::extension_options_internal::PreferredSizeChangedOptions options;
   // Convert the size from physical pixels to logical pixels.
   options.width = PhysicalPixelsToLogicalPixels(pref_size.width());
   options.height = PhysicalPixelsToLogicalPixels(pref_size.height());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
-      extension_options_internal::OnPreferredSizeChanged::kEventName,
+      api::extension_options_internal::OnPreferredSizeChanged::kEventName,
       options.ToValue()));
 }
 
@@ -175,7 +174,7 @@ WebContents* ExtensionOptionsGuest::OpenURLFromTab(
 
 void ExtensionOptionsGuest::CloseContents(WebContents* source) {
   DispatchEventToView(std::make_unique<GuestViewEvent>(
-      extension_options_internal::OnClose::kEventName,
+      api::extension_options_internal::OnClose::kEventName,
       base::WrapUnique(new base::DictionaryValue())));
 }
 

@@ -27,7 +27,6 @@
 using content::WebContents;
 using guest_view::GuestViewBase;
 using guest_view::GuestViewEvent;
-using namespace extensions::api;
 
 namespace extensions {
 
