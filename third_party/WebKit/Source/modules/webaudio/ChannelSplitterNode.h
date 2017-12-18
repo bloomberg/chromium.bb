@@ -43,6 +43,7 @@ class ChannelSplitterHandler final : public AudioHandler {
   void Process(size_t frames_to_process) override;
   void SetChannelCount(unsigned long, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
+  void SetChannelInterpretation(const String&, ExceptionState&) final;
 
   // AudioNode
   double TailTime() const override { return 0; }

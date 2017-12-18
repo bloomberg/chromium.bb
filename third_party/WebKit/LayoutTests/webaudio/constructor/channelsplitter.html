@@ -33,7 +33,7 @@
           numberOfOutputs: 6,
           channelCount: 6,
           channelCountMode: 'explicit',
-          channelInterpretation: 'speakers'
+          channelInterpretation: 'discrete'
         });
 
         task.done();
@@ -46,7 +46,12 @@
           channelCountMode: {
             value: 'explicit',
             isFixed: true,
-          }
+          },
+          channelInterpretation: {
+            value: 'discrete',
+            isFixed: true,
+            errorType: 'InvalidStateError'
+          },
         });
         task.done();
       });
