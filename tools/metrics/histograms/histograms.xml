@@ -42295,6 +42295,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.DiskCache.Size" units="MB">
+  <obsolete>
+    Removed in Chrome 65.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     The sum of the size of all files in the HTTP cache directory.

@@ -7,12 +7,9 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -82,11 +79,6 @@ NetworkContext::NetworkContext(
     : network_service_(network_service),
       params_(std::move(params)),
       binding_(this, std::move(request)) {
-  if (params_ && params_->http_cache_path) {
-    // Only sample 0.1% of NetworkContexts that get created.
-    if (base::RandUint64() % 1000 == 0)
-      disk_checker_ = std::make_unique<DiskChecker>(*params_->http_cache_path);
-  }
   network_service_->RegisterNetworkContext(this);
   ApplyContextParamsToBuilder(builder.get(), params_.get());
   owned_url_request_context_ = builder->Build();
@@ -185,30 +177,6 @@ void NetworkContext::OnConnectionError() {
   if (network_service_)
     delete this;
 }
-
-NetworkContext::DiskChecker::DiskChecker(const base::FilePath& cache_path)
-    : cache_path_(cache_path) {
-  timer_.Start(FROM_HERE, base::TimeDelta::FromHours(24),
-               base::Bind(&DiskChecker::CheckDiskSize, base::Unretained(this)));
-
-  // Check disk size at startup, hopefully before the HTTPCache has been cleared
-  // from the previous run.
-  CheckDiskSize();
-}
-
-void NetworkContext::DiskChecker::CheckDiskSize() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&DiskChecker::CheckDiskSizeOnBackgroundThread, cache_path_));
-}
-
-void NetworkContext::DiskChecker::CheckDiskSizeOnBackgroundThread(
-    const base::FilePath& cache_path) {
-  int64_t size = base::ComputeDirectorySize(cache_path);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Net.DiskCache.Size", size / 1024 / 1024);
-}
-
-NetworkContext::DiskChecker::~DiskChecker() = default;
 
 std::unique_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
     mojom::NetworkContextParams* network_context_params) {
