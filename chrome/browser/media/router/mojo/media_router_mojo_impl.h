@@ -354,9 +354,13 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       media::mojom::MirrorServiceRemoterPtr remoter,
       media::mojom::MirrorServiceRemotingSourceRequest source_request) override;
 
-  // Result callback when Mojo terminateRoute is invoked.  |route_id| is bound
-  // to the ID of the route that was terminated.
+  // Result callback when Mojo TerminateRoute is invoked.
+  // |route_id|: ID of MediaRoute passed to the TerminateRoute request.
+  // |provider_id|: ID of MediaRouteProvider that handled the request.
+  // |error_text|: Error message if an error occurred.
+  // |result_code|: The result of the request.
   void OnTerminateRouteResult(const MediaRoute::Id& route_id,
+                              MediaRouteProviderId provider_id,
                               const base::Optional<std::string>& error_text,
                               RouteRequestResult::ResultCode result_code);
 

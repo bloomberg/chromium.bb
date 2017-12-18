@@ -36191,13 +36191,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="MediaRouter.Provider.CreateRoute.Result"
     enum="MediaRouteProviderResult">
   <owner>imcheng@chromium.org</owner>
-  <summary>Result of a request to create a route.</summary>
+  <summary>
+    Result of a request to the extension (or an unknown) MediaRouteProvider to
+    create a route.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Provider.CreateRoute.Result.WiredDisplay"
+    enum="MediaRouteProviderResult">
+  <owner>takumif@chromium.org</owner>
+  <summary>
+    Result of a request to the wired display MediaRouteProvider to create a
+    route.
+  </summary>
 </histogram>
 
 <histogram name="MediaRouter.Provider.JoinRoute.Result"
     enum="MediaRouteProviderResult">
   <owner>imcheng@chromium.org</owner>
-  <summary>Result of a request to join a route.</summary>
+  <summary>
+    Result of a request to the extension (or an unknown) MediaRouteProvider to
+    join a route.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Provider.JoinRoute.Result.WiredDisplay"
+    enum="MediaRouteProviderResult">
+  <owner>takumif@chromium.org</owner>
+  <summary>
+    Result of a request to the wired display MediaRouteProvider to join a route.
+  </summary>
 </histogram>
 
 <histogram name="MediaRouter.Provider.RouteControllerCreationOutcome"
@@ -36212,7 +36235,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="MediaRouter.Provider.TerminateRoute.Result"
     enum="MediaRouteProviderResult">
   <owner>mfoltz@chromium.org</owner>
-  <summary>Result of a request to terminate a route.</summary>
+  <summary>
+    Result of a request to the extension (or an unknown) MediaRouteProvider to
+    terminate a route.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Provider.TerminateRoute.Result.WiredDisplay"
+    enum="MediaRouteProviderResult">
+  <owner>takumif@chromium.org</owner>
+  <summary>
+    Result of a request to the wired display MediaRouteProvider to terminate a
+    route.
+  </summary>
 </histogram>
 
 <histogram name="MediaRouter.Provider.Version" enum="MediaRouteProviderVersion">
