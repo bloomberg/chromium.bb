@@ -48,7 +48,6 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                        uint16_t value,
                        uint16_t index,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
 
@@ -66,7 +65,6 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
   const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
@@ -91,7 +89,6 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   void GotNodeConnectionInformation(TransferCallback callback,
                                     void* node_connection_info,
                                     scoped_refptr<base::RefCountedBytes> buffer,
-                                    size_t buffer_length,
                                     Request* request_ptr,
                                     DWORD win32_result,
                                     size_t bytes_transferred);
@@ -99,7 +96,6 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
       TransferCallback callback,
       scoped_refptr<base::RefCountedBytes> request_buffer,
       scoped_refptr<base::RefCountedBytes> original_buffer,
-      size_t original_buffer_length,
       Request* request_ptr,
       DWORD win32_result,
       size_t bytes_transferred);

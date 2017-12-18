@@ -80,10 +80,9 @@ scoped_refptr<base::RefCountedBytes> BuildControlTransferBuffer(
     uint8_t request,
     uint16_t value,
     uint16_t index,
-    scoped_refptr<base::RefCountedBytes> original_buffer,
-    size_t length) {
+    scoped_refptr<base::RefCountedBytes> original_buffer) {
   auto new_buffer = base::MakeRefCounted<base::RefCountedBytes>(
-      length + sizeof(usb_ctrlrequest));
+      original_buffer->size() + sizeof(usb_ctrlrequest));
   usb_ctrlrequest* setup = new_buffer->front_as<usb_ctrlrequest>();
   setup->bRequestType = ConvertEndpointDirection(direction) |
                         ConvertRequestType(request_type) |
@@ -91,9 +90,9 @@ scoped_refptr<base::RefCountedBytes> BuildControlTransferBuffer(
   setup->bRequest = request;
   setup->wValue = value;
   setup->wIndex = index;
-  setup->wLength = length;
+  setup->wLength = original_buffer->size();
   memcpy(new_buffer->front() + sizeof(usb_ctrlrequest),
-         original_buffer->front(), length);
+         original_buffer->front(), original_buffer->size());
   return new_buffer;
 }
 
@@ -583,7 +582,6 @@ void UsbDeviceHandleUsbfs::ControlTransfer(
     uint16_t value,
     uint16_t index,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     TransferCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -596,13 +594,12 @@ void UsbDeviceHandleUsbfs::ControlTransfer(
 
   std::unique_ptr<Transfer> transfer(
       new (0) Transfer(buffer, std::move(callback), nullptr));
-  transfer->control_transfer_buffer =
-      BuildControlTransferBuffer(direction, request_type, recipient, request,
-                                 value, index, buffer, length);
+  transfer->control_transfer_buffer = BuildControlTransferBuffer(
+      direction, request_type, recipient, request, value, index, buffer);
   transfer->urb.type = USBDEVFS_URB_TYPE_CONTROL;
   transfer->urb.endpoint = 0;
   transfer->urb.buffer = transfer->control_transfer_buffer->front();
-  transfer->urb.buffer_length = 8 + length;
+  transfer->urb.buffer_length = transfer->control_transfer_buffer->size();
 
   // USBDEVFS_SUBMITURB appears to be non-blocking as completion is reported
   // by USBDEVFS_REAPURBNDELAY.
@@ -651,17 +648,16 @@ void UsbDeviceHandleUsbfs::GenericTransfer(
     UsbTransferDirection direction,
     uint8_t endpoint_number,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     TransferCallback callback) {
   if (task_runner_->BelongsToCurrentThread()) {
-    GenericTransferInternal(direction, endpoint_number, buffer, length, timeout,
+    GenericTransferInternal(direction, endpoint_number, buffer, timeout,
                             std::move(callback), task_runner_);
   } else {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&UsbDeviceHandleUsbfs::GenericTransferInternal, this,
-                       direction, endpoint_number, buffer, length, timeout,
+                       direction, endpoint_number, buffer, timeout,
                        std::move(callback),
                        base::ThreadTaskRunnerHandle::Get()));
   }
@@ -737,6 +733,7 @@ void UsbDeviceHandleUsbfs::IsochronousTransferInternal(
     return;
   }
 
+  DCHECK_GE(buffer->size(), total_length);
   std::unique_ptr<Transfer> transfer(new (packet_lengths.size())
                                          Transfer(buffer, std::move(callback)));
   transfer->urb.type = USBDEVFS_URB_TYPE_ISO;
@@ -766,7 +763,6 @@ void UsbDeviceHandleUsbfs::GenericTransferInternal(
     UsbTransferDirection direction,
     uint8_t endpoint_number,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     TransferCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner) {
@@ -794,7 +790,7 @@ void UsbDeviceHandleUsbfs::GenericTransferInternal(
   std::unique_ptr<Transfer> transfer(
       new (0) Transfer(buffer, std::move(callback), callback_runner));
   transfer->urb.endpoint = endpoint_address;
-  transfer->urb.buffer_length = length;
+  transfer->urb.buffer_length = buffer->size();
   transfer->urb.type = ConvertTransferType(it->second.type);
 
   // USBDEVFS_SUBMITURB appears to be non-blocking as completion is reported

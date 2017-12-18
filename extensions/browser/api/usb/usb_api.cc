@@ -1065,7 +1065,7 @@ ExtensionFunction::ResponseAction UsbControlTransferFunction::Run() {
 
   device_handle->ControlTransfer(
       direction, request_type, recipient, transfer.request, transfer.value,
-      transfer.index, buffer.get(), size, timeout,
+      transfer.index, buffer, timeout,
       base::Bind(&UsbControlTransferFunction::OnCompleted, this));
   return RespondLater();
 }
@@ -1110,7 +1110,7 @@ ExtensionFunction::ResponseAction UsbBulkTransferFunction::Run() {
   }
 
   device_handle->GenericTransfer(
-      direction, transfer.endpoint, buffer.get(), size, timeout,
+      direction, transfer.endpoint, buffer, timeout,
       base::Bind(&UsbBulkTransferFunction::OnCompleted, this));
   return RespondLater();
 }
@@ -1155,7 +1155,7 @@ ExtensionFunction::ResponseAction UsbInterruptTransferFunction::Run() {
   }
 
   device_handle->GenericTransfer(
-      direction, transfer.endpoint, buffer.get(), size, timeout,
+      direction, transfer.endpoint, buffer, timeout,
       base::Bind(&UsbInterruptTransferFunction::OnCompleted, this));
   return RespondLater();
 }

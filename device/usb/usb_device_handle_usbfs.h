@@ -55,7 +55,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                        uint16_t value,
                        uint16_t index,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
   void IsochronousTransferIn(uint8_t endpoint_number,
@@ -72,7 +71,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
   const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
@@ -117,7 +115,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
       UsbTransferDirection direction,
       uint8_t endpoint_number,
       scoped_refptr<base::RefCountedBytes> buffer,
-      size_t length,
       unsigned int timeout,
       TransferCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> callback_runner);

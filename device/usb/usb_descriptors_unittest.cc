@@ -20,9 +20,9 @@ namespace device {
 namespace {
 
 ACTION_P2(InvokeCallback, data, length) {
-  size_t transferred_length = std::min(length, arg7);
+  size_t transferred_length = std::min(length, arg6->size());
   memcpy(arg6->front(), data, transferred_length);
-  std::move(arg9).Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
+  std::move(arg8).Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
 }
 
 void ExpectStringDescriptors(
@@ -226,13 +226,13 @@ TEST_F(UsbDescriptorsTest, ReadDescriptors) {
               ControlTransferInternal(UsbTransferDirection::INBOUND,
                                       UsbControlTransferType::STANDARD,
                                       UsbControlTransferRecipient::DEVICE, 0x06,
-                                      0x0100, 0x0000, _, _, _, _))
+                                      0x0100, 0x0000, _, _, _))
       .WillOnce(InvokeCallback(kDeviceDescriptor, sizeof(kDeviceDescriptor)));
   EXPECT_CALL(*device_handle,
               ControlTransferInternal(UsbTransferDirection::INBOUND,
                                       UsbControlTransferType::STANDARD,
                                       UsbControlTransferRecipient::DEVICE, 0x06,
-                                      0x0200, 0x0000, _, _, _, _))
+                                      0x0200, 0x0000, _, _, _))
       .Times(2)
       .WillRepeatedly(
           InvokeCallback(kConfig1Descriptor, sizeof(kConfig1Descriptor)));
@@ -240,7 +240,7 @@ TEST_F(UsbDescriptorsTest, ReadDescriptors) {
               ControlTransferInternal(UsbTransferDirection::INBOUND,
                                       UsbControlTransferType::STANDARD,
                                       UsbControlTransferRecipient::DEVICE, 0x06,
-                                      0x0201, 0x0000, _, _, _, _))
+                                      0x0201, 0x0000, _, _, _))
       .Times(2)
       .WillRepeatedly(
           InvokeCallback(kConfig2Descriptor, sizeof(kConfig2Descriptor)));
@@ -410,7 +410,7 @@ TEST_F(UsbDescriptorsTest, ReadStringDescriptors) {
               ControlTransferInternal(UsbTransferDirection::INBOUND,
                                       UsbControlTransferType::STANDARD,
                                       UsbControlTransferRecipient::DEVICE, 0x06,
-                                      0x0300, 0x0000, _, _, _, _))
+                                      0x0300, 0x0000, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor0, sizeof(kStringDescriptor0)));
   static const uint8_t kStringDescriptor1[] = {0x12, 0x03, 'S', 0, 't', 0,
                                                'r',  0,    'i', 0, 'n', 0,
@@ -419,7 +419,7 @@ TEST_F(UsbDescriptorsTest, ReadStringDescriptors) {
               ControlTransferInternal(UsbTransferDirection::INBOUND,
                                       UsbControlTransferType::STANDARD,
                                       UsbControlTransferRecipient::DEVICE, 0x06,
-                                      0x0301, 0x4321, _, _, _, _))
+                                      0x0301, 0x4321, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor1, sizeof(kStringDescriptor1)));
   static const uint8_t kStringDescriptor2[] = {0x12, 0x03, 'S', 0, 't', 0,
                                                'r',  0,    'i', 0, 'n', 0,
@@ -428,7 +428,7 @@ TEST_F(UsbDescriptorsTest, ReadStringDescriptors) {
               ControlTransferInternal(UsbTransferDirection::INBOUND,
                                       UsbControlTransferType::STANDARD,
                                       UsbControlTransferRecipient::DEVICE, 0x06,
-                                      0x0302, 0x4321, _, _, _, _))
+                                      0x0302, 0x4321, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor2, sizeof(kStringDescriptor2)));
   static const uint8_t kStringDescriptor3[] = {0x12, 0x03, 'S', 0, 't', 0,
                                                'r',  0,    'i', 0, 'n', 0,
@@ -437,7 +437,7 @@ TEST_F(UsbDescriptorsTest, ReadStringDescriptors) {
               ControlTransferInternal(UsbTransferDirection::INBOUND,
                                       UsbControlTransferType::STANDARD,
                                       UsbControlTransferRecipient::DEVICE, 0x06,
-                                      0x0303, 0x4321, _, _, _, _))
+                                      0x0303, 0x4321, _, _, _))
       .WillOnce(InvokeCallback(kStringDescriptor3, sizeof(kStringDescriptor3)));
 
   ReadUsbStringDescriptors(device_handle, std::move(string_map),

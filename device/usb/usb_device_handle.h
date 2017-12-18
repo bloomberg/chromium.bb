@@ -78,7 +78,6 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                uint16_t value,
                                uint16_t index,
                                scoped_refptr<base::RefCountedBytes> buffer,
-                               size_t length,
                                unsigned int timeout,
                                TransferCallback callback) = 0;
 
@@ -98,7 +97,6 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
   virtual void GenericTransfer(UsbTransferDirection direction,
                                uint8_t endpoint_number,
                                scoped_refptr<base::RefCountedBytes> buffer,
-                               size_t length,
                                unsigned int timeout,
                                TransferCallback callback) = 0;
 

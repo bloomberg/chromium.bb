@@ -303,7 +303,7 @@ void DeviceImpl::ControlTransferIn(UsbControlTransferParamsPtr params,
     auto buffer = base::MakeRefCounted<base::RefCountedBytes>(length);
     device_handle_->ControlTransfer(
         UsbTransferDirection::INBOUND, params->type, params->recipient,
-        params->request, params->value, params->index, buffer, length, timeout,
+        params->request, params->value, params->index, buffer, timeout,
         base::BindOnce(&OnTransferIn, std::move(callback)));
   } else {
     std::move(callback).Run(mojom::UsbTransferStatus::PERMISSION_DENIED, {});
@@ -323,8 +323,8 @@ void DeviceImpl::ControlTransferOut(UsbControlTransferParamsPtr params,
     auto buffer = base::MakeRefCounted<base::RefCountedBytes>(data);
     device_handle_->ControlTransfer(
         UsbTransferDirection::OUTBOUND, params->type, params->recipient,
-        params->request, params->value, params->index, buffer, data.size(),
-        timeout, base::BindOnce(&OnTransferOut, std::move(callback)));
+        params->request, params->value, params->index, buffer, timeout,
+        base::BindOnce(&OnTransferOut, std::move(callback)));
   } else {
     std::move(callback).Run(mojom::UsbTransferStatus::PERMISSION_DENIED);
   }
@@ -342,7 +342,7 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
   uint8_t endpoint_address = endpoint_number | 0x80;
   auto buffer = base::MakeRefCounted<base::RefCountedBytes>(length);
   device_handle_->GenericTransfer(
-      UsbTransferDirection::INBOUND, endpoint_address, buffer, length, timeout,
+      UsbTransferDirection::INBOUND, endpoint_address, buffer, timeout,
       base::BindOnce(&OnTransferIn, std::move(callback)));
 }
 
@@ -358,8 +358,8 @@ void DeviceImpl::GenericTransferOut(uint8_t endpoint_number,
   uint8_t endpoint_address = endpoint_number;
   auto buffer = base::MakeRefCounted<base::RefCountedBytes>(data);
   device_handle_->GenericTransfer(
-      UsbTransferDirection::OUTBOUND, endpoint_address, buffer, data.size(),
-      timeout, base::BindOnce(&OnTransferOut, std::move(callback)));
+      UsbTransferDirection::OUTBOUND, endpoint_address, buffer, timeout,
+      base::BindOnce(&OnTransferOut, std::move(callback)));
 }
 
 void DeviceImpl::IsochronousTransferIn(
