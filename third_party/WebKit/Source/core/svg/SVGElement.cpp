@@ -444,8 +444,7 @@ void SVGElement::ChildrenChanged(const ChildrenChange& change) {
   Element::ChildrenChanged(change);
 
   // Invalidate all instances associated with us.
-  if (!change.by_parser)
-    InvalidateInstances();
+  InvalidateInstances();
 }
 
 CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
