@@ -596,10 +596,9 @@ void ClientControlledShellSurface::UpdateBackdrop() {
   aura::Window* window = widget_->GetNativeWindow();
   const display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-  // TODO(oshima): We may want to use following condition:
-  // 1) the widget doesn't fill the screen/workspace and
-  // 2) the background opacity isn't 1.0f.
-  bool enable_backdrop = widget_->IsFullscreen() || widget_->IsMaximized();
+  bool enable_backdrop =
+      (widget_->IsFullscreen() || widget_->IsMaximized()) &&
+      !widget_->GetWindowBoundsInScreen().Contains(display.work_area());
 
   if (window->GetProperty(aura::client::kHasBackdrop) != enable_backdrop)
     window->SetProperty(aura::client::kHasBackdrop, enable_backdrop);
