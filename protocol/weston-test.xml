@@ -53,6 +53,13 @@
       <arg name="button" type="int"/>
       <arg name="state" type="uint"/>
     </request>
+    <request name="send_axis">
+      <arg name="tv_sec_hi" type="uint"/>
+      <arg name="tv_sec_lo" type="uint"/>
+      <arg name="tv_nsec" type="uint"/>
+      <arg name="axis" type="uint"/>
+      <arg name="value" type="fixed"/>
+    </request>
     <request name="activate_surface">
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
     </request>

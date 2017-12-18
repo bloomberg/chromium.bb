@@ -177,8 +177,14 @@ pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
 
 static void
 pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
-		    uint32_t time, uint32_t axis, wl_fixed_t value)
+		    uint32_t time_msec, uint32_t axis, wl_fixed_t value)
 {
+	struct pointer *pointer = data;
+
+	pointer->axis = axis;
+	pointer->axis_value = wl_fixed_to_double(value);
+	pointer->axis_time_msec = time_msec;
+
 	fprintf(stderr, "test-client: got pointer axis %u %f\n",
 		axis, wl_fixed_to_double(value));
 }
@@ -198,9 +204,14 @@ pointer_handle_axis_source(void *data, struct wl_pointer *wl_pointer,
 
 static void
 pointer_handle_axis_stop(void *data, struct wl_pointer *wl_pointer,
-			 uint32_t time, uint32_t axis)
+			 uint32_t time_msec, uint32_t axis)
 {
-	fprintf(stderr, "test-client: got pointer axis stop\n");
+	struct pointer *pointer = data;
+
+	pointer->axis = axis;
+	pointer->axis_stop_time_msec = time_msec;
+
+	fprintf(stderr, "test-client: got pointer axis stop %u\n", axis);
 }
 
 static void

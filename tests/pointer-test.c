@@ -59,6 +59,18 @@ send_button(struct client *client, const struct timespec *time,
 }
 
 static void
+send_axis(struct client *client, const struct timespec *time, uint32_t axis,
+	  double value)
+{
+	uint32_t tv_sec_hi, tv_sec_lo, tv_nsec;
+
+	timespec_to_proto(time, &tv_sec_hi, &tv_sec_lo, &tv_nsec);
+	weston_test_send_axis(client->test->weston_test, tv_sec_hi, tv_sec_lo,
+			      tv_nsec, axis, wl_fixed_from_double(value));
+	client_roundtrip(client);
+}
+
+static void
 check_pointer(struct client *client, int x, int y)
 {
 	int sx, sy;
@@ -354,4 +366,20 @@ TEST(pointer_button_events)
 	assert(pointer->button == BTN_LEFT);
 	assert(pointer->state == WL_POINTER_BUTTON_STATE_RELEASED);
 	assert(pointer->button_time_msec == timespec_to_msec(&t2));
+}
+
+TEST(pointer_axis_events)
+{
+	struct client *client = create_client_with_pointer_focus(100, 100,
+								 100, 100);
+	struct pointer *pointer = client->input->pointer;
+
+	send_axis(client, &t1, 1, 1.0);
+	assert(pointer->axis == 1);
+	assert(pointer->axis_value == 1.0);
+	assert(pointer->axis_time_msec == timespec_to_msec(&t1));
+
+	send_axis(client, &t2, 2, 0.0);
+	assert(pointer->axis == 2);
+	assert(pointer->axis_stop_time_msec == timespec_to_msec(&t2));
 }

@@ -184,6 +184,25 @@ send_button(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
+send_axis(struct wl_client *client, struct wl_resource *resource,
+	  uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec,
+	  uint32_t axis, wl_fixed_t value)
+{
+	struct weston_test *test = wl_resource_get_user_data(resource);
+	struct weston_seat *seat = get_seat(test);
+	struct timespec time;
+	struct weston_pointer_axis_event axis_event;
+
+	timespec_from_proto(&time, tv_sec_hi, tv_sec_lo, tv_nsec);
+	axis_event.axis = axis;
+	axis_event.value = wl_fixed_to_double(value);
+	axis_event.has_discrete = false;
+	axis_event.discrete = 0;
+
+	notify_axis(seat, &time, &axis_event);
+}
+
+static void
 activate_surface(struct wl_client *client, struct wl_resource *resource,
 		 struct wl_resource *surface_resource)
 {
@@ -519,6 +538,7 @@ static const struct weston_test_interface test_implementation = {
 	move_surface,
 	move_pointer,
 	send_button,
+	send_axis,
 	activate_surface,
 	send_key,
 	device_release,
