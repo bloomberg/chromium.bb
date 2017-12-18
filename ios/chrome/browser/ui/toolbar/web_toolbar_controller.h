@@ -9,7 +9,7 @@
 
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
 #include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
-#import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/clean/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_web_toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"

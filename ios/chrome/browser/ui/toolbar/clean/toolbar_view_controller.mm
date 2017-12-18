@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -12,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/clean/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
@@ -137,18 +139,21 @@
 @synthesize trailingFakeSafeAreaConstraint = _trailingFakeSafeAreaConstraint;
 @synthesize leadingSafeAreaConstraint = _leadingSafeAreaConstraint;
 @synthesize trailingSafeAreaConstraint = _trailingSafeAreaConstraint;
+@synthesize omniboxFocuser = _omniboxFocuser;
 
 #pragma mark - Public
 
 - (instancetype)initWithDispatcher:
                     (id<ApplicationCommands, BrowserCommands>)dispatcher
                      buttonFactory:(ToolbarButtonFactory*)buttonFactory
-                     buttonUpdater:(ToolbarButtonUpdater*)buttonUpdater {
+                     buttonUpdater:(ToolbarButtonUpdater*)buttonUpdater
+                    omniboxFocuser:(id<OmniboxFocuser>)omniboxFocuser {
   _dispatcher = dispatcher;
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _buttonFactory = buttonFactory;
     _buttonUpdater = buttonUpdater;
+    _omniboxFocuser = omniboxFocuser;
     [self setUpToolbarButtons];
     [self setUpLocationBarContainer];
     [self setUpProgressBar];
@@ -607,6 +612,7 @@
           initWithTarget:self
                   action:@selector(handleLongPress:)];
   [self.backButton addGestureRecognizer:backHistoryLongPress];
+  [self addStandardActionsForButton:self.backButton];
 
   // Forward button.
   self.forwardButton = [self.buttonFactory forwardToolbarButton];
@@ -628,6 +634,7 @@
           initWithTarget:self
                   action:@selector(handleLongPress:)];
   [self.forwardButton addGestureRecognizer:forwardHistoryLongPress];
+  [self addStandardActionsForButton:self.forwardButton];
 
   // Tab switcher Strip button.
   self.tabSwitchStripButton =
@@ -640,6 +647,7 @@
   [self.tabSwitchStripButton addTarget:self.dispatcher
                                 action:@selector(displayTabSwitcher)
                       forControlEvents:UIControlEventTouchUpInside];
+  [self addStandardActionsForButton:self.tabSwitchStripButton];
 
   // Tools menu button.
   self.toolsMenuButton = [self.buttonFactory toolsMenuToolbarButton];
@@ -651,6 +659,7 @@
   [self.toolsMenuButton addTarget:self.dispatcher
                            action:@selector(showToolsMenu)
                  forControlEvents:UIControlEventTouchUpInside];
+  [self addStandardActionsForButton:self.toolsMenuButton];
 
   // Share button.
   self.shareButton = [self.buttonFactory shareToolbarButton];
@@ -662,6 +671,7 @@
   [self.shareButton addTarget:self.dispatcher
                        action:@selector(sharePage)
              forControlEvents:UIControlEventTouchUpInside];
+  [self addStandardActionsForButton:self.shareButton];
 
   // Reload button.
   self.reloadButton = [self.buttonFactory reloadToolbarButton];
@@ -672,6 +682,7 @@
   [self.reloadButton addTarget:self.dispatcher
                         action:@selector(reload)
               forControlEvents:UIControlEventTouchUpInside];
+  [self addStandardActionsForButton:self.reloadButton];
 
   // Stop button.
   self.stopButton = [self.buttonFactory stopToolbarButton];
@@ -682,6 +693,7 @@
   [self.stopButton addTarget:self.dispatcher
                       action:@selector(stopLoading)
             forControlEvents:UIControlEventTouchUpInside];
+  [self addStandardActionsForButton:self.stopButton];
 
   // Voice Search button.
   self.voiceSearchButton = [self.buttonFactory voiceSearchButton];
@@ -691,6 +703,7 @@
       addObject:[self.voiceSearchButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
   self.voiceSearchButton.enabled = NO;
+  [self addStandardActionsForButton:self.voiceSearchButton];
 
   // Bookmark button.
   self.bookmarkButton = [self.buttonFactory bookmarkToolbarButton];
@@ -701,6 +714,7 @@
   [self.bookmarkButton addTarget:self.dispatcher
                           action:@selector(bookmarkPage)
                 forControlEvents:UIControlEventTouchUpInside];
+  [self addStandardActionsForButton:self.bookmarkButton];
 
   // Contract button.
   self.contractButton = [self.buttonFactory contractToolbarButton];
@@ -1152,4 +1166,40 @@
   return IsIPadIdiom() ? kLeadingMarginIPad : 0;
 }
 
+// Registers the actions which will be triggered when tapping the button.
+- (void)addStandardActionsForButton:(UIButton*)button {
+  if (button != self.toolsMenuButton) {
+    [button addTarget:self.omniboxFocuser
+                  action:@selector(cancelOmniboxEdit)
+        forControlEvents:UIControlEventTouchUpInside];
+  }
+  [button addTarget:self
+                action:@selector(recordUserMetrics:)
+      forControlEvents:UIControlEventTouchUpInside];
+}
+
+// Records the use of a button.
+- (IBAction)recordUserMetrics:(id)sender {
+  if (sender == self.backButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarBack"));
+  } else if (sender == self.forwardButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarForward"));
+  } else if (sender == self.reloadButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarReload"));
+  } else if (sender == self.stopButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarStop"));
+  } else if (sender == self.voiceSearchButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarVoiceSearch"));
+  } else if (sender == self.bookmarkButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarToggleBookmark"));
+  } else if (sender == self.toolsMenuButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarShowMenu"));
+  } else if (sender == self.tabSwitchStripButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarShowStackView"));
+  } else if (sender == self.shareButton) {
+    base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
+  } else {
+    NOTREACHED();
+  }
+}
 @end

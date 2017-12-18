@@ -14,6 +14,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol OmniboxFocuser;
 @class ToolbarButtonFactory;
 @class ToolbarButtonUpdater;
 @class ToolbarToolsMenuButton;
@@ -30,6 +31,7 @@
                     (id<ApplicationCommands, BrowserCommands>)dispatcher
                      buttonFactory:(ToolbarButtonFactory*)buttonFactory
                      buttonUpdater:(ToolbarButtonUpdater*)buttonUpdater
+                    omniboxFocuser:(id<OmniboxFocuser>)omniboxFocuser
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -45,6 +47,8 @@
 @property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
 // Whether the toolbar is in the expanded state or not.
 @property(nonatomic, assign) BOOL expanded;
+// Omnibox focuser.
+@property(nonatomic, weak) id<OmniboxFocuser> omniboxFocuser;
 
 // Adds the toolbar expanded state animations to |animator|, and changes the
 // toolbar constraints in preparation for the animation.

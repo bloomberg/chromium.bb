@@ -11,7 +11,6 @@ source_set("toolbar") {
     "legacy_toolbar_view.mm",
     "new_tab_button.h",
     "new_tab_button.mm",
-    "omnibox_focuser.h",
     "toolbar_adapter.h",
     "toolbar_adapter.mm",
     "toolbar_controller+protected.h",
