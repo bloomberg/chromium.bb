@@ -182,7 +182,7 @@ void GpuArcVideoDecodeAccelerator::ProvidePictureBuffers(
   }
 
   output_pixel_format_ = format;
-  coded_size_ = dimensions;
+  pending_coded_size_ = dimensions;
 
   mojom::PictureBufferFormatPtr pbf = mojom::PictureBufferFormat::New();
   pbf->pixel_format = pixel_format;
@@ -527,6 +527,8 @@ void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count) {
         mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
     return;
   }
+
+  coded_size_ = pending_coded_size_;
   std::vector<media::PictureBuffer> buffers;
   for (uint32_t id = 0; id < count; ++id) {
     buffers.push_back(
