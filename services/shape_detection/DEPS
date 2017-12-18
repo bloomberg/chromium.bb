@@ -1,5 +1,4 @@
 include_rules = [
-  "+media/base/scoped_callback_runner.h",
   "+jni",
   "+skia/ext/skia_utils_mac.h",
   "+third_party/skia/include",
