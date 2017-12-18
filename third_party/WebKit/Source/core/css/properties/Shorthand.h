@@ -13,8 +13,6 @@ class CSSPropertyValue;
 
 class Shorthand : public CSSProperty {
  public:
-  constexpr Shorthand() : CSSProperty() {}
-
   // Parses and consumes entire shorthand value from the token range and adds
   // all constituent parsed longhand properties to the 'properties' set.
   // Returns false if the input is invalid.
@@ -28,6 +26,9 @@ class Shorthand : public CSSProperty {
     return false;
   }
   bool IsShorthand() const override { return true; }
+
+ protected:
+  constexpr Shorthand() : CSSProperty() {}
 };
 
 DEFINE_TYPE_CASTS(Shorthand,
