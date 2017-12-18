@@ -3,6 +3,16 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -23,8 +33,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [55, 55, 500, 500],
-          "reason": "compositing update"
+          "rect": [0, 0, 500, 500],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [55, 55, 445, 445],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='to-be-removed'",
