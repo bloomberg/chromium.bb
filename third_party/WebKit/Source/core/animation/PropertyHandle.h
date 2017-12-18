@@ -23,8 +23,7 @@ class CORE_EXPORT PropertyHandle {
       : handle_type_(is_presentation_attribute ? kHandlePresentationAttribute
                                                : kHandleCSSProperty),
         css_property_(&property) {
-    DCHECK(!property.IDEquals(CSSPropertyInvalid));
-    DCHECK(!property.IDEquals(CSSPropertyVariable));
+    DCHECK_NE(CSSPropertyVariable, property.PropertyID());
   }
 
   explicit PropertyHandle(const AtomicString& property_name)
