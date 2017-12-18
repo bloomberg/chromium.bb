@@ -18,6 +18,7 @@ source_set("alert_coordinator") {
     "//base",
     "//components/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/web",
     "//ui/base",
     "//ui/strings",

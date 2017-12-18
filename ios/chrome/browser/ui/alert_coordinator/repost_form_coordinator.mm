@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,7 +38,10 @@
                          completionHandler:(void (^)(BOOL))completionHandler {
   DCHECK(webState);
   DCHECK(completionHandler);
-  self = [super initWithBaseViewController:viewController];
+  self = [super
+      initWithBaseViewController:viewController
+                    browserState:ios::ChromeBrowserState::FromBrowserState(
+                                     webState->GetBrowserState())];
   if (self) {
     _webState = webState;
     CGRect sourceRect = CGRectMake(dialogLocation.x, dialogLocation.y, 1, 1);

@@ -71,7 +71,7 @@
 
 - (instancetype)initWithController:(RecentTabsTableViewController*)controller
                       browserState:(ios::ChromeBrowserState*)browserState {
-  self = [super initWithBaseViewController:nil];
+  self = [super initWithBaseViewController:nil browserState:browserState];
   if (self) {
     DCHECK(controller);
     DCHECK(browserState);

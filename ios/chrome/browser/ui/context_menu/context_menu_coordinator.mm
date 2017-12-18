@@ -27,7 +27,7 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                     params:
                                         (const web::ContextMenuParams&)params {
-  self = [super initWithBaseViewController:viewController];
+  self = [super initWithBaseViewController:viewController browserState:nullptr];
   if (self) {
     CGRect rect = CGRectMake(params.location.x, params.location.y, 1.0, 1.0);
     _alertCoordinator.reset([[ActionSheetCoordinator alloc]

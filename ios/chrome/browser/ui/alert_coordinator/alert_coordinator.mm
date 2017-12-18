@@ -52,7 +52,7 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
                                    message:(NSString*)message {
-  self = [super initWithBaseViewController:viewController];
+  self = [super initWithBaseViewController:viewController browserState:nullptr];
   if (self) {
     _title = [title copy];
     _message = [message copy];

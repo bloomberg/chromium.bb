@@ -8,15 +8,24 @@
 #import <UIKit/UIKit.h>
 
 @class ChromeCoordinator;
+namespace ios {
+class ChromeBrowserState;
+}
 typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 
 // A coordinator object that manages view controllers and other coordinators.
 // Members of this class should clean up their own UI when they are deallocated.
+// TODO(crbug.com/795832): Move to ui/coordinators.
 @interface ChromeCoordinator : NSObject
 
-// Creates a coordinator that will use |viewController|
+// Creates a coordinator that will use |viewController|.
 - (nullable instancetype)initWithBaseViewController:
-    (nullable UIViewController*)viewController NS_DESIGNATED_INITIALIZER;
+    (nullable UIViewController*)viewController;
+// Creates a coordinator that uses |viewController| and |browserState|.
+- (nullable instancetype)
+initWithBaseViewController:(nullable UIViewController*)viewController
+              browserState:(nullable ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
 
 - (nullable instancetype)init NS_UNAVAILABLE;
 
@@ -32,6 +41,10 @@ typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 // The view controller this coordinator was initialized with.
 @property(weak, nonatomic, nullable, readonly)
     UIViewController* baseViewController;
+
+// The coordinator's BrowserState.
+@property(assign, nonatomic, nullable, readonly)
+    ios::ChromeBrowserState* browserState;
 
 // The basic lifecycle methods for coordinators are -start and -stop. These
 // are blank template methods; child classes are expected to implement them and
