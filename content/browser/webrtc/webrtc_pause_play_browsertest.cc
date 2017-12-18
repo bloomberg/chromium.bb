@@ -51,7 +51,7 @@ class MAYBE_WebRtcPausePlayBrowserTest : public WebRtcContentBrowserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcPausePlayBrowserTest,
-                       SurvivesPeerConnectionPausePlaying) {
+                       MANUAL_SurvivesPeerConnectionPausePlaying) {
   // Args: runtimeSeconds, numPeerConnections, pausePlayIterationDelayMillis,
   // elementType.
   MakeTypicalPeerConnectionCall(
