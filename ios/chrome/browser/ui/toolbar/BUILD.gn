@@ -21,8 +21,6 @@ source_set("toolbar") {
     "toolbar_model_impl_ios.h",
     "toolbar_model_impl_ios.mm",
     "toolbar_model_ios.h",
-    "toolbar_owner.h",
-    "toolbar_snapshot_providing.h",
     "toolbar_view_delegate.h",
     "tools_menu_button_observer_bridge.h",
     "tools_menu_button_observer_bridge.mm",
@@ -32,6 +30,7 @@ source_set("toolbar") {
   ]
   deps = [
     ":resource_macros",
+    ":toolbar_ui",
     "public",
     "public:toolbar_base_feature",
     "resources:collapse",
@@ -124,11 +123,12 @@ source_set("toolbar_ui") {
   sources = [
     "legacy_toolbar_ui_updater.h",
     "legacy_toolbar_ui_updater.mm",
+    "toolbar_owner.h",
+    "toolbar_snapshot_providing.h",
     "toolbar_ui.h",
     "toolbar_ui.mm",
   ]
   deps = [
-    ":toolbar",
     "//base",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/web_state_list",
