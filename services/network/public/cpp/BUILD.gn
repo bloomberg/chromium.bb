@@ -12,8 +12,8 @@ static_library("cpp") {
     "mutable_partial_network_traffic_annotation_tag_struct_traits.h",
     "net_adapters.cc",
     "net_adapters.h",
-    "ssl_info_ipc_traits.cc",
-    "ssl_info_ipc_traits.h",
+    "network_param_ipc_traits.cc",
+    "network_param_ipc_traits.h",
     "url_loader_completion_status.cc",
     "url_loader_completion_status.h",
   ]

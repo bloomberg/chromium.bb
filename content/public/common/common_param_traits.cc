@@ -10,10 +10,8 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
-#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 
 namespace IPC {
@@ -56,59 +54,6 @@ bool ParamTraits<url::Origin>::Read(const base::Pickle* m,
 
 void ParamTraits<url::Origin>::Log(const url::Origin& p, std::string* l) {
   l->append(p.Serialize());
-}
-
-void ParamTraits<net::HostPortPair>::Write(base::Pickle* m,
-                                           const param_type& p) {
-  WriteParam(m, p.host());
-  WriteParam(m, p.port());
-}
-
-bool ParamTraits<net::HostPortPair>::Read(const base::Pickle* m,
-                                          base::PickleIterator* iter,
-                                          param_type* r) {
-  std::string host;
-  uint16_t port;
-  if (!ReadParam(m, iter, &host) || !ReadParam(m, iter, &port))
-    return false;
-
-  r->set_host(host);
-  r->set_port(port);
-  return true;
-}
-
-void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
-  l->append(p.ToString());
-}
-
-void ParamTraits<net::HttpRequestHeaders>::Write(base::Pickle* m,
-                                                 const param_type& p) {
-  WriteParam(m, static_cast<int>(p.GetHeaderVector().size()));
-  for (size_t i = 0; i < p.GetHeaderVector().size(); ++i)
-    WriteParam(m, p.GetHeaderVector()[i]);
-}
-
-bool ParamTraits<net::HttpRequestHeaders>::Read(const base::Pickle* m,
-                                                base::PickleIterator* iter,
-                                                param_type* r) {
-  // Sanity check.
-  int size;
-  if (!iter->ReadLength(&size))
-    return false;
-  for (int i = 0; i < size; ++i) {
-    net::HttpRequestHeaders::HeaderKeyValuePair pair;
-    if (!ReadParam(m, iter, &pair) ||
-        !net::HttpUtil::IsValidHeaderName(pair.key) ||
-        !net::HttpUtil::IsValidHeaderValue(pair.value))
-      return false;
-    r->SetHeader(pair.key, pair.value);
-  }
-  return true;
-}
-
-void ParamTraits<net::HttpRequestHeaders>::Log(const param_type& p,
-                                               std::string* l) {
-  l->append(p.ToString());
 }
 
 void ParamTraits<net::IPEndPoint>::Write(base::Pickle* m, const param_type& p) {
