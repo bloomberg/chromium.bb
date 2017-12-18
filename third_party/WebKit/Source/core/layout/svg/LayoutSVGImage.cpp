@@ -90,17 +90,14 @@ bool LayoutSVGImage::UpdateBoundingBox() {
   FloatRect old_object_bounding_box = object_bounding_box_;
 
   SVGLengthContext length_context(GetElement());
+  const ComputedStyle& style = StyleRef();
+  const SVGComputedStyle& svg_style = style.SvgStyle();
   object_bounding_box_ = FloatRect(
-      length_context.ValueForLength(StyleRef().SvgStyle().X(), StyleRef(),
-                                    SVGLengthMode::kWidth),
-      length_context.ValueForLength(StyleRef().SvgStyle().Y(), StyleRef(),
-                                    SVGLengthMode::kHeight),
-      length_context.ValueForLength(StyleRef().Width(), StyleRef(),
-                                    SVGLengthMode::kWidth),
-      length_context.ValueForLength(StyleRef().Height(), StyleRef(),
-                                    SVGLengthMode::kHeight));
+      length_context.ResolveLengthPair(svg_style.X(), svg_style.Y(), style),
+      ToFloatSize(length_context.ResolveLengthPair(style.Width(),
+                                                   style.Height(), style)));
 
-  if (StyleRef().Width().IsAuto() || StyleRef().Height().IsAuto())
+  if (style.Width().IsAuto() || style.Height().IsAuto())
     object_bounding_box_.SetSize(CalculateObjectSize());
 
   if (old_object_bounding_box != object_bounding_box_) {

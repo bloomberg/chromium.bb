@@ -197,6 +197,19 @@ FloatPoint SVGLengthContext::ResolvePoint(const SVGElement* context,
   return FloatPoint(x.ValueAsPercentage(), y.ValueAsPercentage());
 }
 
+FloatPoint SVGLengthContext::ResolveLengthPair(
+    const Length& x_length,
+    const Length& y_length,
+    const ComputedStyle& style) const {
+  FloatSize viewport_size;
+  if (x_length.IsPercentOrCalc() || y_length.IsPercentOrCalc())
+    DetermineViewport(viewport_size);
+
+  float zoom = style.EffectiveZoom();
+  return FloatPoint(ValueForLength(x_length, zoom, viewport_size.Width()),
+                    ValueForLength(y_length, zoom, viewport_size.Height()));
+}
+
 float SVGLengthContext::ResolveLength(const SVGElement* context,
                                       SVGUnitTypes::SVGUnitType type,
                                       const SVGLength& x) {
