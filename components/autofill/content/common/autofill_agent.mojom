@@ -67,6 +67,9 @@ interface AutofillAgent {
 
   // Configures whether scroll is required in order to complete focus. The default is true.
   SetFocusRequiresScroll(bool require);
+
+  // Configures whether AutofillAgent will query password field autofill suggestions. The default is false.
+  SetQueryPasswordSuggestion(bool query);
 };
 
 // There is one instance of this interface per render frame in the render

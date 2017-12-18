@@ -46,6 +46,7 @@ ContentAutofillDriver::ContentAutofillDriver(
     GetAutofillAgent()->SetUserGestureRequired(false);
     GetAutofillAgent()->SetSecureContextRequired(true);
     GetAutofillAgent()->SetFocusRequiresScroll(false);
+    GetAutofillAgent()->SetQueryPasswordSuggestion(true);
   } else {
     autofill_handler_ = base::MakeUnique<AutofillManager>(
         this, client, app_locale, enable_download_manager);

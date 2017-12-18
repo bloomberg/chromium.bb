@@ -208,6 +208,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void SetFocusRequiresScroll(bool require) override {}
 
+  void SetQueryPasswordSuggestion(bool query) override{};
+
   mojo::BindingSet<mojom::AutofillAgent> bindings_;
 
   base::Closure quit_closure_;

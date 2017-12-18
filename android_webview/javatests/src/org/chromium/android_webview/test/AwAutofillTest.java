@@ -962,6 +962,35 @@ public class AwAutofillTest {
         }
     }
 
+    /**
+     * This test is verifying new session starts if frame change.
+     */
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testTouchingPasswordFieldTriggerQuery() throws Throwable {
+        int cnt = 0;
+        TestWebServer webServer = TestWebServer.start();
+        final String data =
+                "<html><head></head><body><form action='a.html' name='formname' id='formid'>"
+                + "<input type='password' id='passwordid' name='passwordname'"
+                + "<input type='submit'>"
+                + "</form></body></html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+        } finally {
+            webServer.shutdown();
+            DOMUtils.waitForNonZeroNodeBounds(mAwContents.getWebContents(), "passwordid");
+            // Note that we currently depend on keyboard app's behavior.
+            // TODO(changwan): mock out IME interaction.
+            Assert.assertTrue(
+                    DOMUtils.clickNode(mTestContainerView.getContentViewCore(), "passwordid"));
+            cnt += waitForCallbackAndVerifyTypes(
+                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED});
+        }
+    }
+
     private void loadUrlSync(String url) throws Exception {
         mRule.loadUrlSync(
                 mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(), url);
