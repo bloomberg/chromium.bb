@@ -114,12 +114,12 @@ cdm::Status StubCdm::Decrypt(const cdm::InputBuffer& /* encrypted_buffer */,
 
 cdm::Status StubCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& /* audio_decoder_config */) {
-  return cdm::kDecryptError;
+  return cdm::kSuccess;
 }
 
 cdm::Status StubCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& /* video_decoder_config */) {
-  return cdm::kDecryptError;
+  return cdm::kSuccess;
 }
 
 void StubCdm::ResetDecoder(cdm::StreamType /* decoder_type */) {
@@ -131,13 +131,13 @@ void StubCdm::DeinitializeDecoder(cdm::StreamType /* decoder_type */) {
 cdm::Status StubCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& /* encrypted_buffer */,
     cdm::VideoFrame* /* decoded_frame */) {
-  return cdm::kDecryptError;
+  return cdm::kNoKey;
 }
 
 cdm::Status StubCdm::DecryptAndDecodeSamples(
     const cdm::InputBuffer& /* encrypted_buffer */,
     cdm::AudioFrames* /* audio_frames */) {
-  return cdm::kDecryptError;
+  return cdm::kNoKey;
 }
 
 void StubCdm::Destroy() {
