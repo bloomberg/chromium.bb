@@ -321,6 +321,20 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     return software_mirroring_display_list_;
   }
 
+  // Used in test to prevent previous mirror modes affecting current mode.
+  void set_disable_restoring_mirror_mode_for_test(bool disabled) {
+    disable_restoring_mirror_mode_for_test_ = disabled;
+  }
+
+  const std::set<int64_t>& external_display_mirror_info() const {
+    return external_display_mirror_info_;
+  }
+
+  void set_external_display_mirror_info(
+      const std::set<int64_t>& external_display_mirror_info) {
+    external_display_mirror_info_ = external_display_mirror_info;
+  }
+
   // Remove mirroring source and destination displays, so that they will be
   // updated when UpdateDisplaysWith() is called.
   void ClearMirroringSourceAndDestination();
@@ -365,6 +379,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // ID if such internal display doesn't exist. On linux desktop, this returns
   // the first display ID.
   int64_t GetDisplayIdForUIScaling() const;
+
+  // Returns true if mirror mode should be set on for the specified displays.
+  bool ShouldSetMirrorModeOn(const DisplayIdList& id_list);
 
   // Change the mirror mode.
   void SetMirrorMode(bool mirrored);
@@ -502,6 +519,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
                           Displays* display_list,
                           std::vector<int64_t>* updated_ids);
 
+  // Update the info used to restore mirror mode.
+  void UpdateInfoForRestoringMirrorMode();
+
   Delegate* delegate_ = nullptr;  // not owned.
 
   // When set to true, DisplayManager will use DisplayConfigurator to configure
@@ -573,6 +593,12 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // |mirroring_source_id_| and treat the rest of mirroring displays as
   // destination and store their ids in this list.
   DisplayIdList hardware_mirroring_display_id_list_;
+
+  // Stores external displays that were in mirror mode before.
+  std::set<int64_t> external_display_mirror_info_;
+
+  // True if mirror mode should not be restored. Only used in test.
+  bool disable_restoring_mirror_mode_for_test_ = false;
 
   // Cached mirror mode for metrics changed notification.
   bool mirror_mode_for_metrics_ = false;
