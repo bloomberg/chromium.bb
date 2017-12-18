@@ -25,7 +25,7 @@ test(() => {
 
 test(() => {
   const styleMap = document.getElementById('target-multiple').attributeStyleMap;
-  const [key, value] = [...styleMap][2];
+  const [key, result] = [...styleMap][2];
   assert_equals(key, 'width');
   assert_style_value_equals(result, CSS.px(10));
 }, 'StylePropertyMap iterator returns CSS properties with the correct CSSStyleValue');
