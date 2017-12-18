@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_hints.h"
 #include "net/base/address_list.h"
@@ -55,6 +56,7 @@ void PreconnectUrl(net::URLRequestContextGetter* getter,
              ->io_thread_task_runner()
              ->BelongsToCurrentThread());
   DCHECK(getter);
+  TRACE_EVENT2("net", "PreconnectUrl", "url", url.spec(), "count", count);
 
   net::URLRequestContext* request_context = getter->GetURLRequestContext();
   if (!request_context)
@@ -99,6 +101,7 @@ int PreresolveUrl(net::URLRequestContextGetter* getter,
              ->io_thread_task_runner()
              ->BelongsToCurrentThread());
   DCHECK(getter);
+  TRACE_EVENT1("net", "PreresolveUrl", "url", url.spec());
 
   net::URLRequestContext* request_context = getter->GetURLRequestContext();
   if (!request_context)
