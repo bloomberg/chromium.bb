@@ -82,7 +82,9 @@ class GitCL(object):
     def _get_cl_status(self):
         return self.run(['status', '--field=status']).strip()
 
-    def wait_for_try_jobs(self, poll_delay_seconds=10 * 60, timeout_seconds=120 * 60):
+    def wait_for_try_jobs(
+            self, poll_delay_seconds=10 * 60, timeout_seconds=120 * 60,
+            cq_only=False):
         """Waits until all try jobs are finished and returns results, or None.
 
         This function can also be interrupted if the corresponding CL is
@@ -95,7 +97,7 @@ class GitCL(object):
         def finished_try_job_results_or_none():
             cl_status = self._get_cl_status()
             _log.debug('Fetched CL status: %s', cl_status)
-            try_job_results = self.try_job_results()
+            try_job_results = self.latest_try_jobs(cq_only=cq_only)
             _log.debug('Fetched try results: %s', try_job_results)
             if (cl_status == 'closed' or
                     (try_job_results and self.all_finished(try_job_results))):
@@ -151,7 +153,7 @@ class GitCL(object):
         self._host.print_('Timed out waiting%s.' % message)
         return None
 
-    def latest_try_jobs(self, builder_names=None):
+    def latest_try_jobs(self, builder_names=None, cq_only=False):
         """Fetches a dict of Build to TryJobStatus for the latest try jobs.
 
         This includes jobs that are not yet finished and builds with infra
@@ -160,6 +162,7 @@ class GitCL(object):
 
         Args:
             builder_names: Optional list of builders used to filter results.
+            cq_only: If True, only include CQ jobs.
 
         Returns:
             A dict mapping Build objects to TryJobStatus objects, with
@@ -167,7 +170,8 @@ class GitCL(object):
         """
         # TODO(crbug.com/771438): Update filter_latest to handle Swarming tasks.
         return self.filter_latest(
-            self.try_job_results(builder_names, include_swarming_tasks=False))
+            self.try_job_results(
+                builder_names, include_swarming_tasks=False, cq_only=cq_only))
 
     @staticmethod
     def filter_latest(try_results):
@@ -177,7 +181,9 @@ class GitCL(object):
         latest_builds = filter_latest_builds(try_results.keys())
         return {b: s for b, s in try_results.items() if b in latest_builds}
 
-    def try_job_results(self, builder_names=None, include_swarming_tasks=True):
+    def try_job_results(
+            self, builder_names=None, include_swarming_tasks=True,
+            cq_only=False):
         """Returns a dict mapping Build objects to TryJobStatus objects."""
         raw_results = self.fetch_raw_try_job_results()
         build_to_status = {}
@@ -186,6 +192,10 @@ class GitCL(object):
                 continue
             is_swarming_task = result['url'] and '/task/' in result['url']
             if is_swarming_task and not include_swarming_tasks:
+                continue
+            is_cq = 'user_agent:cq' in result.get('tags', [])
+            is_experimental = result.get('experimental')
+            if cq_only and not (is_cq and not is_experimental):
                 continue
             build_to_status[self._build(result)] = self._try_job_status(result)
         return build_to_status

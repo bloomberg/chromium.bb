@@ -214,7 +214,8 @@ class TestImporter(object):
         self.git_cl.run(['try'])
         cl_status = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,
-            timeout_seconds=TIMEOUT_SECONDS)
+            timeout_seconds=TIMEOUT_SECONDS,
+            cq_only=True)
 
         if not cl_status:
             self.git_cl.run(['set-close'])
@@ -226,16 +227,7 @@ class TestImporter(object):
             return False
 
         _log.info('All jobs finished.')
-        try_results = self.git_cl.filter_latest(cl_status.try_job_results)
-
-        # We only want to check the status of CQ bots. The set of CQ bots is
-        # determined by //infra/config/cq.cfg, but since in import jobs we only
-        # trigger CQ bots and Blink try bots, we just ignore the
-        # Blink try bots to get the set of CQ try bots.
-        # Important: if any CQ bots are added to the builder list
-        # (self.host.builders), then this logic will need to be updated.
-        cq_try_results = {build: status for build, status in try_results.items()
-                          if build.builder_name not in self.blink_try_bots()}
+        cq_try_results = cl_status.try_job_results
 
         if not cq_try_results:
             _log.error('No CQ try results found in try results: %s.', try_results)
