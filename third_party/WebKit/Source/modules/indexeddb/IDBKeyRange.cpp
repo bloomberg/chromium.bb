@@ -208,26 +208,17 @@ bool IDBKeyRange::includes(ScriptState* script_state,
   }
 
   if (lower_) {
-    short c = key->Compare(lower_);
-    if (lowerOpen()) {
-      if (c <= 0)
-        return false;
-    } else {
-      if (c < 0)
-        return false;
-    }
+    int compared_with_lower = key->Compare(lower_);
+    if (compared_with_lower < 0 || (compared_with_lower == 0 && lowerOpen()))
+      return false;
   }
 
   if (upper_) {
-    short c = key->Compare(upper_);
-    if (upperOpen()) {
-      if (c >= 0)
-        return false;
-    } else {
-      if (c > 0)
-        return false;
-    }
+    int compared_with_upper = key->Compare(upper_);
+    if (compared_with_upper > 0 || (compared_with_upper == 0 && upperOpen()))
+      return false;
   }
+
   return true;
 }
 
