@@ -87,6 +87,15 @@ MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
 MediaEngagementScore::MediaEngagementScore(
     base::Clock* clock,
     const GURL& origin,
+    std::unique_ptr<base::DictionaryValue> score_dict,
+    HostContentSettingsMap* settings)
+    : MediaEngagementScore(clock, origin, std::move(score_dict)) {
+  settings_map_ = settings;
+}
+
+MediaEngagementScore::MediaEngagementScore(
+    base::Clock* clock,
+    const GURL& origin,
     std::unique_ptr<base::DictionaryValue> score_dict)
     : origin_(origin), clock_(clock), score_dict_(score_dict.release()) {
   if (!score_dict_)
