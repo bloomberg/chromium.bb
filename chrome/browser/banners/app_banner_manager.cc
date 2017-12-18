@@ -415,7 +415,11 @@ void AppBannerManager::SendBannerPromptRequest() {
 
   blink::mojom::AppBannerServicePtr banner_proxy;
   binding_.Bind(mojo::MakeRequest(&banner_proxy));
-  controller->BannerPromptRequest(
+
+  // Get a raw controller pointer before we move out of the smart pointer to
+  // avoid crashing with MSVC's order of evaluation.
+  blink::mojom::AppBannerController* controller_ptr = controller.get();
+  controller_ptr->BannerPromptRequest(
       std::move(banner_proxy), mojo::MakeRequest(&event_), {GetBannerType()},
       base::BindOnce(&AppBannerManager::OnBannerPromptReply, GetWeakPtr(),
                      base::Passed(&controller)));
