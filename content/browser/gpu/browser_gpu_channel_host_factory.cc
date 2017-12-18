@@ -46,22 +46,22 @@ BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = nullptr;
 class BrowserGpuChannelHostFactory::EstablishRequest
     : public base::RefCountedThreadSafe<EstablishRequest> {
  public:
-  static scoped_refptr<EstablishRequest> Create(int gpu_client_id,
-                                                uint64_t gpu_client_tracing_id);
+  static scoped_refptr<EstablishRequest> Create(
+      int gpu_client_id,
+      uint64_t gpu_client_tracing_id,
+      BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager);
   void Wait();
   void Cancel();
 
-  mojo::ScopedMessagePipeHandle TakeChannelHandle() {
-    return std::move(channel_handle_);
-  }
-  const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
-  const gpu::GpuFeatureInfo& gpu_feature_info() const {
-    return gpu_feature_info_;
+  const scoped_refptr<gpu::GpuChannelHost>& gpu_channel() {
+    return gpu_channel_;
   }
 
  private:
   friend class base::RefCountedThreadSafe<EstablishRequest>;
-  EstablishRequest(int gpu_client_id, uint64_t gpu_client_tracing_id);
+  EstablishRequest(int gpu_client_id,
+                   uint64_t gpu_client_tracing_id,
+                   BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~EstablishRequest() {}
   void RestartTimeout();
   void EstablishOnIO();
@@ -75,9 +75,8 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   base::WaitableEvent event_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
-  mojo::ScopedMessagePipeHandle channel_handle_;
-  gpu::GPUInfo gpu_info_;
-  gpu::GpuFeatureInfo gpu_feature_info_;
+  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   bool finished_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 };
@@ -85,14 +84,13 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 scoped_refptr<BrowserGpuChannelHostFactory::EstablishRequest>
 BrowserGpuChannelHostFactory::EstablishRequest::Create(
     int gpu_client_id,
-    uint64_t gpu_client_tracing_id) {
-  scoped_refptr<EstablishRequest> establish_request =
-      new EstablishRequest(gpu_client_id, gpu_client_tracing_id);
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+    uint64_t gpu_client_tracing_id,
+    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager) {
+  scoped_refptr<EstablishRequest> establish_request = new EstablishRequest(
+      gpu_client_id, gpu_client_tracing_id, gpu_memory_buffer_manager);
   // PostTask outside the constructor to ensure at least one reference exists.
-  task_runner->PostTask(
-      FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO,
           establish_request));
@@ -101,11 +99,13 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(
 
 BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
     int gpu_client_id,
-    uint64_t gpu_client_tracing_id)
+    uint64_t gpu_client_tracing_id,
+    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
     : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
              base::WaitableEvent::InitialState::NOT_SIGNALED),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       finished_(false),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
@@ -154,9 +154,19 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
     EstablishOnIO();
     return;
   }
-  channel_handle_ = std::move(channel_handle);
-  gpu_info_ = gpu_info;
-  gpu_feature_info_ = gpu_feature_info;
+
+  if (channel_handle.is_valid()) {
+    // Note: We may get here after the BrowserGpuChannelHostFactory is destroyed
+    // on the UI thread, in which case gpu_memory_buffer_manager_ could be
+    // stale.  However GpuChannelHost doesn't dereference it, and it only gets
+    // used by CommandBufferProxyImpl after we returned the GpuChannelHost on
+    // the UI thread, which we won't if indeed BrowserGpuChannelHostFactory was
+    // destroyed.
+    // TODO(piman): clean this.
+    gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
+        gpu_client_id_, gpu_info, gpu_feature_info, std::move(channel_handle),
+        gpu_memory_buffer_manager_);
+  }
   FinishOnIO();
 }
 
@@ -267,7 +277,8 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
   if (!gpu_channel_.get() && !pending_request_.get()) {
     // We should only get here if the context was lost.
     pending_request_ =
-        EstablishRequest::Create(gpu_client_id_, gpu_client_tracing_id_);
+        EstablishRequest::Create(gpu_client_id_, gpu_client_tracing_id_,
+                                 gpu_memory_buffer_manager_.get());
     RestartTimeout();
   }
 
@@ -311,19 +322,11 @@ gpu::GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
 void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(pending_request_.get());
-  mojo::ScopedMessagePipeHandle handle(pending_request_->TakeChannelHandle());
-  if (!handle.is_valid()) {
-    DCHECK(!gpu_channel_.get());
-  } else {
-    GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
-    gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-        gpu_client_id_, pending_request_->gpu_info(),
-        pending_request_->gpu_feature_info(), std::move(handle),
-        gpu_memory_buffer_manager_.get());
-  }
+  gpu_channel_ = pending_request_->gpu_channel();
   pending_request_ = nullptr;
   timeout_.Stop();
+  if (gpu_channel_)
+    GetContentClient()->SetGpuInfo(gpu_channel_->gpu_info());
 
   std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks;
   established_callbacks_.swap(established_callbacks);
