@@ -586,11 +586,29 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
   new_events_.insert(events_[i].get());
 }
 
-bool AudioParamTimeline::HasValues() const {
+bool AudioParamTimeline::HasValues(size_t current_frame,
+                                   double sample_rate) const {
   MutexTryLocker try_locker(events_lock_);
 
-  if (try_locker.Locked())
-    return events_.size();
+  if (try_locker.Locked()) {
+    if (events_.size() == 0)
+      return false;
+
+    switch (events_[0]->GetType()) {
+      case ParamEvent::kSetValue:
+      case ParamEvent::kSetValueCurve:
+      case ParamEvent::kSetTarget:
+        // Need automation if the event starts somewhere before the
+        // end of the current render quantum.
+        return events_[0]->Time() <=
+               (current_frame + AudioUtilities::kRenderQuantumFrames) /
+                   sample_rate;
+      default:
+        // Otherwise, there's some kind of other event running, so we
+        // need to do automation.
+        return true;
+    }
+  }
 
   // Can't get the lock so that means the main thread is trying to insert an
   // event.  Just return true then.  If the main thread releases the lock before
