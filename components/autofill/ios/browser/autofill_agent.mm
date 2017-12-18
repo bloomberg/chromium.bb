@@ -197,7 +197,8 @@ void GetFormAndField(autofill::FormData* form,
   // AutofillManagerDelegate.
   base::WeakPtr<autofill::AutofillPopupDelegate> popupDelegate_;
   // The autofill data that needs to be send when the |webState_| is shown.
-  NSString* pendingFormData_;
+  // The string is in JSON format.
+  NSString* pendingFormJSON_;
 }
 
 - (instancetype)initWithPrefService:(PrefService*)prefService
@@ -654,10 +655,10 @@ void GetFormAndField(autofill::FormData* form,
 
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(webState_, webState);
-  if (pendingFormData_) {
-    [self sendDataToWebState:pendingFormData_];
+  if (pendingFormJSON_) {
+    [self sendDataToWebState:pendingFormJSON_];
   }
-  pendingFormData_ = nil;
+  pendingFormJSON_ = nil;
 }
 
 - (void)webState:(web::WebState*)webState
@@ -870,32 +871,35 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)onFormDataFilled:(const autofill::FormData&)form {
-  std::unique_ptr<base::DictionaryValue> formData(new base::DictionaryValue);
-  formData->SetString("formName", base::UTF16ToUTF8(form.name));
+  std::unique_ptr<base::DictionaryValue> JSONForm(new base::DictionaryValue);
+  JSONForm->SetString("formName", base::UTF16ToUTF8(form.name));
   // Note: Destruction of all child base::Value types is handled by the root
   // formData object on its own destruction.
-  auto fieldsData = base::MakeUnique<base::DictionaryValue>();
+  auto JSONFields = base::MakeUnique<base::DictionaryValue>();
 
-  const std::vector<autofill::FormFieldData>& fields = form.fields;
-  for (const auto& fieldData : fields) {
-    fieldsData->SetKey(base::UTF16ToUTF8(fieldData.name),
-                       base::Value(fieldData.value));
+  const std::vector<autofill::FormFieldData>& autofillFields = form.fields;
+  for (const auto& autofillField : autofillFields) {
+    if (JSONFields->HasKey(base::UTF16ToUTF8(autofillField.name)) &&
+        autofillField.value.empty())
+      continue;
+    JSONFields->SetKey(base::UTF16ToUTF8(autofillField.name),
+                       base::Value(autofillField.value));
   }
-  formData->Set("fields", std::move(fieldsData));
+  JSONForm->Set("fields", std::move(JSONFields));
 
   // Stringify the JSON data and send it to the UIWebView-side fillForm method.
-  std::string dataString;
-  base::JSONWriter::Write(*formData.get(), &dataString);
-  NSString* nsDataString = base::SysUTF8ToNSString(dataString);
+  std::string JSONString;
+  base::JSONWriter::Write(*JSONForm.get(), &JSONString);
+  NSString* nsJSONString = base::SysUTF8ToNSString(JSONString);
 
   if (!webState_->IsVisible()) {
-    pendingFormData_ = nsDataString;
+    pendingFormJSON_ = nsJSONString;
     return;
   }
-  [self sendDataToWebState:nsDataString];
+  [self sendDataToWebState:nsJSONString];
 }
 
-- (void)sendDataToWebState:(NSString*)formData {
+- (void)sendDataToWebState:(NSString*)JSONData {
   DCHECK(webState_->IsVisible());
   // It is possible that the fill was not initiated by selecting a suggestion.
   // In this case we provide an empty callback.
@@ -903,7 +907,7 @@ void GetFormAndField(autofill::FormData* form,
     suggestionHandledCompletion_ = [^{
     } copy];
   [jsAutofillManager_
-                fillForm:formData
+                fillForm:JSONData
       forceFillFieldName:base::SysUTF16ToNSString(pendingAutocompleteField_)
        completionHandler:suggestionHandledCompletion_];
   suggestionHandledCompletion_ = nil;
