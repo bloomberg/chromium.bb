@@ -29,8 +29,6 @@ const char kZeroEncodeDetails[] = "zero-encode-details";
 
 size_t RegisterWebViewCrashKeys() {
   base::debug::CrashKey fixed_keys[] = {
-      {kClientId, kSmallSize},
-      {kChannel, kSmallSize},
       {kActiveURL, kLargeSize},
       {kNumVariations, kSmallSize},
       {kVariations, kHugeSize},
@@ -50,8 +48,6 @@ size_t RegisterWebViewCrashKeys() {
   // a collection of data, like command line switches or extension IDs.
   std::vector<base::debug::CrashKey> keys(fixed_keys,
                                           fixed_keys + arraysize(fixed_keys));
-
-  GetCrashKeysForCommandLineSwitches(&keys);
 
   return base::debug::InitCrashKeys(&keys.at(0), keys.size(), kChunkMaxLength);
 }

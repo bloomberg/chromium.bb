@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/debug/crash_logging.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "ios/chrome/app/startup/ios_chrome_main.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
@@ -24,9 +25,9 @@ NSString* const kUIApplicationDelegateInfoKey = @"UIApplicationDelegate";
 void StartCrashController() {
   @autoreleasepool {
     std::string channel_string = GetChannelString();
-
     RegisterChromeIOSCrashKeys();
-    base::debug::SetCrashKeyValue(crash_keys::kChannel, channel_string);
+    breakpad_helper::AddReportParameter(
+        @"channel", base::SysUTF8ToNSString(channel_string), false);
     breakpad_helper::Start(channel_string);
   }
 }

@@ -35,7 +35,7 @@ target(crash_key_target_type, "crash_key") {
     "crash_key_base_support.h",
   ]
 
-  defines = [ "CRASH_CORE_COMMON_IMPLEMENTATION" ]
+  defines = []
 
   # This target is not always a component, depending on the implementation.
   # When it is not a component, annotating functions with the standard
@@ -44,7 +44,10 @@ target(crash_key_target_type, "crash_key") {
   # wrapper macro CRASH_KEY_EXPORT that only evaluates to CRASH_EXPORT if this
   # target is really a component.
   if (crash_key_target_type == "component") {
-    defines += [ "CRASH_KEY_EXPORT=CRASH_EXPORT" ]
+    defines += [
+      "CRASH_KEY_EXPORT=CRASH_EXPORT",
+      "CRASH_CORE_COMMON_IMPLEMENTATION",
+    ]
   }
 
   deps = [

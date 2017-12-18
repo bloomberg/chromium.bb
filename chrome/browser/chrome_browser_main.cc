@@ -207,6 +207,10 @@
 #include "chrome/browser/first_run/upgrade_util_linux.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+#if defined(OS_LINUX)
+#include "components/crash/content/app/breakpad_linux.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
 
@@ -1125,8 +1129,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Set the product channel for crash reports.
-  base::debug::SetCrashKeyValue(crash_keys::kChannel,
-                                chrome::GetChannelString());
+  breakpad::SetChannelCrashKey(chrome::GetChannelString());
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
 #if defined(OS_MACOSX)

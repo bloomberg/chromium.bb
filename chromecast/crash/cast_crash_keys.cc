@@ -16,8 +16,6 @@ size_t RegisterCastCrashKeys() {
       // chrome/common/crash_keys.cc. When http://crbug.com/598854 is fixed,
       // remove these and refactor as necessary.
 
-      {::crash_keys::kClientId, ::crash_keys::kSmallSize},
-      {::crash_keys::kChannel, ::crash_keys::kSmallSize},
       {"url-chunk", ::crash_keys::kLargeSize},
       {::crash_keys::kNumVariations, ::crash_keys::kSmallSize},
       {::crash_keys::kVariations, ::crash_keys::kHugeSize},
