@@ -487,8 +487,10 @@ const char* const kPredefinedAllowedFileHandleOrigins[] = {
 };
 
 const char* const kPredefinedAllowedSocketOrigins[] = {
-  "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
-  "pnhechapfaindjhompbnflcldabbghjo",  // HTerm App (SSH Client)
+  "okddffdblfhhnmhodogpojmfkjmhinfp",  // Secure Shell App (dev)
+  "pnhechapfaindjhompbnflcldabbghjo",  // Secure Shell App (stable)
+  "algkcnfjnajfhgimadimbjhmpaeohhln",  // Secure Shell Extension (dev)
+  "iodihamcpbpeioajjeobimgagajmlibd",  // Secure Shell Extension (stable)
   "bglhmjfplikpjnfoegeomebmfnkjomhe",  // see crbug.com/122126
   "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
   "kgngmbheleoaphbjbaiobfdepmghbfah",  // Pre-release Chrome Remote Desktop
