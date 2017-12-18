@@ -20,3 +20,7 @@ set($ENV{GTEST_TOTAL_SHARDS} ${GTEST_TOTAL_SHARDS})
 execute_process(COMMAND ${TEST_LIBAOM} RESULT_VARIABLE test_result)
 set(test_message "Test shard ${GTEST_SHARD_INDEX}/${GTEST_TOTAL_SHARDS} result")
 message("${test_message}: ${test_result}")
+
+if (NOT "${test_result}" STREQUAL "0")
+  message(FATAL_ERROR "${test_message}: FAILED, non-zero exit code.")
+endif ()
