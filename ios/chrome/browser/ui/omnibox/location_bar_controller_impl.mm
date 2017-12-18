@@ -20,6 +20,9 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_view.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
@@ -151,8 +154,10 @@ LocationBarControllerImpl::LocationBarControllerImpl(
                                                   browser_state)),
       location_bar_view_(location_bar_view),
       delegate_(delegate),
-      dispatcher_(dispatcher) {
+      dispatcher_(dispatcher),
+      browser_state_(browser_state) {
   DCHECK([delegate_ toolbarModel]);
+  DCHECK(browser_state_);
   show_hint_text_ = true;
 
   InstallLocationIcon();
@@ -271,6 +276,10 @@ void LocationBarControllerImpl::OnKillFocus() {
     [location_bar_view_.textField setPlaceholder:placeholderText];
   }
 
+  // Stop disabling fullscreen since the loation bar is no longer focused.
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+    fullscreen_disabler_ = nullptr;
+
   UpdateRightDecorations();
   [delegate_ locationBarHasResignedFirstResponder];
 }
@@ -292,6 +301,15 @@ void LocationBarControllerImpl::OnSetFocus() {
   if (IsIPadIdiom()) {
     [location_bar_view_.textField setPlaceholder:nil];
   }
+
+  // Disable fullscreen while focused so that the location bar cannot be scolled
+  // offscreen.
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    fullscreen_disabler_ = base::MakeUnique<ScopedFullscreenDisabler>(
+        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+            browser_state_));
+  }
+
   UpdateRightDecorations();
   [delegate_ locationBarHasBecomeFirstResponder];
 }

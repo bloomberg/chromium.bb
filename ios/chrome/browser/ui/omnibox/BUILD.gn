@@ -94,6 +94,8 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:new_fullscreen",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_components_ui",
     "//ios/chrome/browser/ui/toolbar/public",
