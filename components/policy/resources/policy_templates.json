@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 406
+#   For your editing convenience: highest ID currently used: 407
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10832,7 +10832,22 @@
       If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
 
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
-    }
+    },
+    {
+      'name': 'ThirdPartyBlockingEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:65-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 407,
+      'caption': '''Enables third party software injection blocking''',
+      'tags': [],
+      'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.''',
+    },
   ],
 
   'messages': {

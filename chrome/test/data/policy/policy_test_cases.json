@@ -900,6 +900,16 @@
     ]
   },
 
+  "ThirdPartyBlockingEnabled": {
+    "os": ["win"],
+    "test_policy": { "ThirdPartyBlockingEnabled": false },
+    "pref_mappings": [
+      { "pref": "third_party_blocking_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "ExtensionInstallBlacklist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ExtensionInstallBlacklist": ["*"] },
