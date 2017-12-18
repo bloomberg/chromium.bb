@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class CSSLazyPropertyParser;
 class CSSRule;
 class CSSStyleSheet;
 

@@ -31,8 +31,6 @@
 #include "core/dom/ElementData.h"
 
 #include "core/css/CSSPropertyValueSet.h"
-#include "core/css/ImmutableCSSPropertyValueSet.h"
-#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/wtf/Vector.h"
 

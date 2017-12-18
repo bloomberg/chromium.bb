@@ -6,7 +6,6 @@
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyValueSet.h"
-#include "core/css/MutableCSSPropertyValueSet.h"
 
 namespace blink {
 
