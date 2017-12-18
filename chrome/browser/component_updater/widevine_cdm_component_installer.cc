@@ -126,7 +126,7 @@ base::FilePath GetPlatformDirectory(const base::FilePath& base_path) {
 bool MakeWidevineCdmPluginInfo(const base::Version& version,
                                const base::FilePath& cdm_install_dir,
                                const std::string& codecs,
-                               bool is_persistent_license_supported,
+                               bool supports_persistent_license,
                                content::PepperPluginInfo* plugin_info) {
   if (!version.IsValid() ||
       version.components().size() !=
@@ -158,7 +158,7 @@ bool MakeWidevineCdmPluginInfo(const base::Version& version,
   // Put persistent license support string in additional param.
   widevine_cdm_mime_type.additional_params.emplace_back(
       base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName),
-      base::ASCIIToUTF16(is_persistent_license_supported
+      base::ASCIIToUTF16(supports_persistent_license
                              ? kCdmFeatureSupported
                              : kCdmFeatureNotSupported));
 
@@ -235,12 +235,11 @@ void RegisterWidevineCdmWithChrome(
     std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string codecs = GetCodecs(*manifest);
-  bool is_persistent_license_supported = GetPersistentLicenseSupport(*manifest);
+  bool supports_persistent_license = GetPersistentLicenseSupport(*manifest);
 
   content::PepperPluginInfo plugin_info;
   if (!MakeWidevineCdmPluginInfo(cdm_version, cdm_install_dir, codecs,
-                                 is_persistent_license_supported,
-                                 &plugin_info)) {
+                                 supports_persistent_license, &plugin_info)) {
     return;
   }
 
@@ -255,16 +254,16 @@ void RegisterWidevineCdmWithChrome(
   PluginService::GetInstance()->PurgePluginListCache(NULL, false);
 
   // Also register Widevine with the CdmRegistry.
-  // TODO(xhwang): Add |is_persistent_license_supported| to CdmInfo.
   const base::FilePath cdm_path =
       GetPlatformDirectory(cdm_install_dir)
           .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
   const std::vector<std::string> supported_codecs = base::SplitString(
       codecs, std::string(1, kCdmSupportedCodecsValueDelimiter),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  CdmRegistry::GetInstance()->RegisterCdm(content::CdmInfo(
-      kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version, cdm_path,
-      kWidevineCdmFileSystemId, supported_codecs, kWidevineKeySystem, false));
+  CdmRegistry::GetInstance()->RegisterCdm(
+      content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version,
+                       cdm_path, kWidevineCdmFileSystemId, supported_codecs,
+                       supports_persistent_license, kWidevineKeySystem, false));
 }
 
 }  // namespace

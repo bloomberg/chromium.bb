@@ -15,6 +15,7 @@ CdmInfo::CdmInfo(const std::string& name,
                  const base::FilePath& path,
                  const std::string& file_system_id,
                  const std::vector<std::string>& supported_codecs,
+                 bool supports_persistent_license,
                  const std::string& supported_key_system,
                  bool supports_sub_key_systems)
     : name(name),
@@ -23,6 +24,7 @@ CdmInfo::CdmInfo(const std::string& name,
       path(path),
       file_system_id(file_system_id),
       supported_codecs(supported_codecs),
+      supports_persistent_license(supports_persistent_license),
       supported_key_system(supported_key_system),
       supports_sub_key_systems(supports_sub_key_systems) {
   DCHECK(base::IsValidGUID(guid));

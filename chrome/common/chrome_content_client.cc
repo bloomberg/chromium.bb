@@ -131,7 +131,7 @@ content::PepperPluginInfo::PPP_ShutdownModuleFunc g_nacl_shutdown_module;
 bool IsWidevineAvailable(base::FilePath* adapter_path,
                          base::FilePath* cdm_path,
                          std::vector<std::string>* codecs_supported,
-                         bool* is_persistent_license_supported) {
+                         bool* supports_persistent_license) {
   static enum {
     NOT_CHECKED,
     FOUND,
@@ -160,9 +160,9 @@ bool IsWidevineAvailable(base::FilePath* adapter_path,
 // TODO(crbug.com/767941): Push persistent-license support info here once
 // we check in a new CDM that supports it on Linux.
 #if defined(OS_CHROMEOS)
-      *is_persistent_license_supported = true;
+      *supports_persistent_license = true;
 #else
-      *is_persistent_license_supported = false;
+      *supports_persistent_license = false;
 #endif  // defined(OS_CHROMEOS)
 
       return true;
@@ -231,9 +231,9 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   base::FilePath adapter_path;
   base::FilePath cdm_path;
   std::vector<std::string> codecs_supported;
-  bool is_persistent_license_supported;
+  bool supports_persistent_license;
   if (IsWidevineAvailable(&adapter_path, &cdm_path, &codecs_supported,
-                          &is_persistent_license_supported)) {
+                          &supports_persistent_license)) {
     content::PepperPluginInfo info;
     info.is_out_of_process = true;
     info.path = adapter_path;
@@ -258,7 +258,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     // Put persistent license support string in additional param.
     mime_type.additional_params.emplace_back(
         base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName),
-        base::ASCIIToUTF16(is_persistent_license_supported
+        base::ASCIIToUTF16(supports_persistent_license
                                ? kCdmFeatureSupported
                                : kCdmFeatureNotSupported));
 
@@ -574,19 +574,18 @@ void ChromeContentClient::AddContentDecryptionModules(
     base::FilePath adapter_path;
     base::FilePath cdm_path;
     std::vector<std::string> codecs_supported;
-    bool is_persistent_license_supported;
+    bool supports_persistent_license;
     if (IsWidevineAvailable(&adapter_path, &cdm_path, &codecs_supported,
-                            &is_persistent_license_supported)) {
+                            &supports_persistent_license)) {
       // CdmInfo needs |path| to be the actual Widevine library,
       // not the adapter, so adjust as necessary. It will be in the
       // same directory as the installed adapter.
-      // TODO(xhwang): Pass |is_persistent_license_supported| to CdmInfo.
       const base::Version version(WIDEVINE_CDM_VERSION_STRING);
       DCHECK(version.IsValid());
-      cdms->push_back(
-          content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, version,
-                           cdm_path, kWidevineCdmFileSystemId, codecs_supported,
-                           kWidevineKeySystem, false));
+      cdms->push_back(content::CdmInfo(
+          kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_path,
+          kWidevineCdmFileSystemId, codecs_supported,
+          supports_persistent_license, kWidevineKeySystem, false));
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -603,6 +602,8 @@ void ChromeContentClient::AddContentDecryptionModules(
       // A variant of ECK key system that has a different GUID.
       const char kExternalClearKeyDifferentGuidTestKeySystem[] =
           "org.chromium.externalclearkey.differentguid";
+      // ECK implementation supports persistent licenses.
+      constexpr bool supports_persistent_license = true;
 
       // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
       // Otherwise, it'll be treated as a sub-key-system of normal
@@ -611,15 +612,15 @@ void ChromeContentClient::AddContentDecryptionModules(
       cdms->push_back(content::CdmInfo(
           media::kClearKeyCdmDisplayName, media::kClearKeyCdmDifferentGuid,
           base::Version("0.1.0.0"), clear_key_cdm_path,
-          media::kClearKeyCdmFileSystemId, {},
+          media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
           kExternalClearKeyDifferentGuidTestKeySystem, false));
 
       // Supported codecs are hard-coded in ExternalClearKeyProperties.
-      cdms->push_back(
-          content::CdmInfo(media::kClearKeyCdmDisplayName,
-                           media::kClearKeyCdmGuid, base::Version("0.1.0.0"),
-                           clear_key_cdm_path, media::kClearKeyCdmFileSystemId,
-                           {}, kExternalClearKeyKeySystem, true));
+      cdms->push_back(content::CdmInfo(
+          media::kClearKeyCdmDisplayName, media::kClearKeyCdmGuid,
+          base::Version("0.1.0.0"), clear_key_cdm_path,
+          media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
+          kExternalClearKeyKeySystem, true));
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }
