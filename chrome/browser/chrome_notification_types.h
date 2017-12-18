@@ -352,12 +352,6 @@ enum NotificationType {
   // is being deleted, so the receiver shouldn't use the screen locker
   // object.
   NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-
-  // Sent by DeviceSettingsService to indicate that the ownership status
-  // changed. If you can, please use DeviceSettingsService::Observer instead.
-  // Other singleton-based services can't use that because Observer
-  // unregistration is impossible due to unpredictable deletion order.
-  NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
 #endif
 
 #if defined(TOOLKIT_VIEWS)
