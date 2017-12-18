@@ -46,6 +46,7 @@ Bug(none) external/wpt/service-workers/service-worker/navigation-preload/broken-
 Bug(none) external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/unregister.https.html [ Pass Failure ]
 Bug(none) external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Pass Failure ]
 Bug(none) external/wpt/service-workers/service-worker/ready.https.html [ Pass Crash Failure ]
+Bug(none) external/wpt/service-workers/service-worker/skip-waiting-using-registration.https.html [ Pass Timeout ]
 Bug(none) http/tests/local/serviceworker/fetch-request-body-file.html [ Pass Crash Failure ]
 Bug(none) http/tests/serviceworker/chromium/stop-worker-during-respond-with.html [ Pass Failure ]
 Bug(none) http/tests/appcache/top-frame-3.html [ Pass Timeout ]
