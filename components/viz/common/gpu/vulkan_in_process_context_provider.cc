@@ -89,6 +89,9 @@ bool VulkanInProcessContextProvider::Initialize() {
 
 void VulkanInProcessContextProvider::Destroy() {
 #if BUILDFLAG(ENABLE_VULKAN)
+  if (gr_context_)
+    gr_context_.reset();
+
   if (device_queue_) {
     device_queue_->Destroy();
     device_queue_.reset();
@@ -98,7 +101,11 @@ void VulkanInProcessContextProvider::Destroy() {
 }
 
 GrContext* VulkanInProcessContextProvider::GetGrContext() {
-  return gr_context_;
+#if BUILDFLAG(ENABLE_VULKAN)
+  return gr_context_.get();
+#else
+  return nullptr;
+#endif
 }
 
 gpu::VulkanDeviceQueue* VulkanInProcessContextProvider::GetDeviceQueue() {
