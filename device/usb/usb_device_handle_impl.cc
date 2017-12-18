@@ -712,19 +712,18 @@ void UsbDeviceHandleImpl::ControlTransfer(
     uint16_t value,
     uint16_t index,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     TransferCallback callback) {
   if (task_runner_->BelongsToCurrentThread()) {
     ControlTransferInternal(direction, request_type, recipient, request, value,
-                            index, buffer, length, timeout, task_runner_,
+                            index, buffer, timeout, task_runner_,
                             std::move(callback));
   } else {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::ControlTransferInternal,
                                   this, direction, request_type, recipient,
-                                  request, value, index, buffer, length,
-                                  timeout, base::ThreadTaskRunnerHandle::Get(),
+                                  request, value, index, buffer, timeout,
+                                  base::ThreadTaskRunnerHandle::Get(),
                                   std::move(callback)));
   }
 }
@@ -775,19 +774,18 @@ void UsbDeviceHandleImpl::GenericTransfer(
     UsbTransferDirection direction,
     uint8_t endpoint_number,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     TransferCallback callback) {
   uint8_t endpoint_address =
       ConvertTransferDirection(direction) | endpoint_number;
   if (task_runner_->BelongsToCurrentThread()) {
-    GenericTransferInternal(endpoint_address, buffer, length, timeout,
-                            task_runner_, std::move(callback));
+    GenericTransferInternal(endpoint_address, buffer, timeout, task_runner_,
+                            std::move(callback));
   } else {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::GenericTransferInternal,
-                                  this, endpoint_address, buffer, length,
-                                  timeout, base::ThreadTaskRunnerHandle::Get(),
+                                  this, endpoint_address, buffer, timeout,
+                                  base::ThreadTaskRunnerHandle::Get(),
                                   std::move(callback)));
   }
 }
@@ -993,7 +991,6 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
     uint16_t value,
     uint16_t index,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     scoped_refptr<base::TaskRunner> callback_task_runner,
     TransferCallback callback) {
@@ -1005,23 +1002,23 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
     return;
   }
 
-  if (!base::IsValueInRangeForNumericType<uint16_t>(length)) {
+  if (!base::IsValueInRangeForNumericType<uint16_t>(buffer->size())) {
     USB_LOG(USER) << "Transfer too long.";
     RunTransferCallback(callback_task_runner, std::move(callback),
                         UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
     return;
   }
 
-  const size_t resized_length = LIBUSB_CONTROL_SETUP_SIZE + length;
+  const size_t resized_length = LIBUSB_CONTROL_SETUP_SIZE + buffer->size();
   auto resized_buffer =
       base::MakeRefCounted<base::RefCountedBytes>(resized_length);
   memcpy(resized_buffer->front() + LIBUSB_CONTROL_SETUP_SIZE, buffer->front(),
-         length);
+         buffer->size());
 
   std::unique_ptr<Transfer> transfer = Transfer::CreateControlTransfer(
       this, CreateRequestType(direction, request_type, recipient), request,
-      value, index, static_cast<uint16_t>(length), resized_buffer, timeout,
-      callback_task_runner, &callback);
+      value, index, static_cast<uint16_t>(buffer->size()), resized_buffer,
+      timeout, callback_task_runner, &callback);
   if (!transfer) {
     DCHECK(callback);
     RunTransferCallback(callback_task_runner, std::move(callback),
@@ -1085,7 +1082,6 @@ void UsbDeviceHandleImpl::IsochronousTransferOutInternal(
 void UsbDeviceHandleImpl::GenericTransferInternal(
     uint8_t endpoint_address,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     scoped_refptr<base::TaskRunner> callback_task_runner,
     TransferCallback callback) {
@@ -1107,7 +1103,7 @@ void UsbDeviceHandleImpl::GenericTransferInternal(
     return;
   }
 
-  if (!base::IsValueInRangeForNumericType<int>(length)) {
+  if (!base::IsValueInRangeForNumericType<int>(buffer->size())) {
     USB_LOG(DEBUG) << "Transfer too long.";
     RunTransferCallback(callback_task_runner, std::move(callback),
                         UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
@@ -1117,13 +1113,13 @@ void UsbDeviceHandleImpl::GenericTransferInternal(
   std::unique_ptr<Transfer> transfer;
   UsbTransferType transfer_type = endpoint_it->second.endpoint->transfer_type;
   if (transfer_type == UsbTransferType::BULK) {
-    transfer = Transfer::CreateBulkTransfer(this, endpoint_address, buffer,
-                                            static_cast<int>(length), timeout,
-                                            callback_task_runner, &callback);
+    transfer = Transfer::CreateBulkTransfer(
+        this, endpoint_address, buffer, static_cast<int>(buffer->size()),
+        timeout, callback_task_runner, &callback);
   } else if (transfer_type == UsbTransferType::INTERRUPT) {
     transfer = Transfer::CreateInterruptTransfer(
-        this, endpoint_address, buffer, static_cast<int>(length), timeout,
-        callback_task_runner, &callback);
+        this, endpoint_address, buffer, static_cast<int>(buffer->size()),
+        timeout, callback_task_runner, &callback);
   } else {
     USB_LOG(DEBUG) << "Endpoint " << static_cast<int>(endpoint_address)
                    << " is not a bulk or interrupt endpoint.";

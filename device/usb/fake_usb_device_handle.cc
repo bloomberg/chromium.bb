@@ -61,7 +61,6 @@ void FakeUsbDeviceHandle::ControlTransfer(
     uint16_t value,
     uint16_t index,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     UsbDeviceHandle::TransferCallback callback) {
   if (position_ == size_) {
@@ -74,7 +73,7 @@ void FakeUsbDeviceHandle::ControlTransfer(
     if (position_ + 2 <= size_) {
       bytes_transferred = data_[position_] | data_[position_ + 1] << 8;
       position_ += 2;
-      bytes_transferred = std::min(bytes_transferred, length);
+      bytes_transferred = std::min(bytes_transferred, buffer->size());
       bytes_transferred = std::min(bytes_transferred, size_ - position_);
     }
 
@@ -111,7 +110,6 @@ void FakeUsbDeviceHandle::GenericTransfer(
     UsbTransferDirection direction,
     uint8_t endpoint_number,
     scoped_refptr<base::RefCountedBytes> buffer,
-    size_t length,
     unsigned int timeout,
     TransferCallback callback) {
   NOTIMPLEMENTED();

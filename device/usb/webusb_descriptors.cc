@@ -65,7 +65,7 @@ void ReadLandingPage(uint8_t vendor_code,
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::VENDOR,
       UsbControlTransferRecipient::DEVICE, vendor_code, landing_page_id,
-      kGetUrlRequest, buffer, buffer->size(), kControlTransferTimeoutMs,
+      kGetUrlRequest, buffer, kControlTransferTimeoutMs,
       base::Bind(&OnReadLandingPage, landing_page_id, callback));
 }
 
@@ -112,8 +112,7 @@ void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
-      kBosDescriptorType << 8, 0, new_buffer, new_buffer->size(),
-      kControlTransferTimeoutMs,
+      kBosDescriptorType << 8, 0, new_buffer, kControlTransferTimeoutMs,
       base::Bind(&OnReadBosDescriptor, device_handle, callback));
 }
 
@@ -253,8 +252,7 @@ void ReadWebUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
-      kBosDescriptorType << 8, 0, buffer, buffer->size(),
-      kControlTransferTimeoutMs,
+      kBosDescriptorType << 8, 0, buffer, kControlTransferTimeoutMs,
       base::Bind(&OnReadBosDescriptorHeader, device_handle, callback));
 }
 

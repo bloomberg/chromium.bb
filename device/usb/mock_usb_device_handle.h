@@ -74,23 +74,21 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                        uint16_t value,
                        uint16_t index,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override {
     ControlTransferInternal(direction, request_type, recipient, request, value,
-                            index, buffer, length, timeout, callback);
+                            index, buffer, timeout, callback);
   }
-  MOCK_METHOD10(ControlTransferInternal,
-                void(UsbTransferDirection direction,
-                     UsbControlTransferType request_type,
-                     UsbControlTransferRecipient recipient,
-                     uint8_t request,
-                     uint16_t value,
-                     uint16_t index,
-                     scoped_refptr<base::RefCountedBytes> buffer,
-                     size_t length,
-                     unsigned int timeout,
-                     TransferCallback& callback));
+  MOCK_METHOD9(ControlTransferInternal,
+               void(UsbTransferDirection direction,
+                    UsbControlTransferType request_type,
+                    UsbControlTransferRecipient recipient,
+                    uint8_t request,
+                    uint16_t value,
+                    uint16_t index,
+                    scoped_refptr<base::RefCountedBytes> buffer,
+                    unsigned int timeout,
+                    TransferCallback& callback));
 
   void IsochronousTransferIn(uint8_t endpoint,
                              const std::vector<uint32_t>& packet_lengths,
@@ -122,17 +120,14 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override {
-    GenericTransferInternal(direction, endpoint, buffer, length, timeout,
-                            callback);
+    GenericTransferInternal(direction, endpoint, buffer, timeout, callback);
   }
-  MOCK_METHOD6(GenericTransferInternal,
+  MOCK_METHOD5(GenericTransferInternal,
                void(UsbTransferDirection direction,
                     uint8_t endpoint,
                     scoped_refptr<base::RefCountedBytes> buffer,
-                    size_t length,
                     unsigned int timeout,
                     TransferCallback& callback));
 

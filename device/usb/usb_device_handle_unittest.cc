@@ -153,8 +153,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
 
   auto in_buffer = base::MakeRefCounted<base::RefCountedBytes>(64);
   TestCompletionCallback in_completion;
-  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x81, in_buffer.get(),
-                          in_buffer->size(),
+  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x81, in_buffer,
                           5000,  // 5 second timeout
                           in_completion.GetCallback());
 
@@ -165,8 +164,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
     out_buffer->data()[i] = i;
   }
 
-  handle->GenericTransfer(UsbTransferDirection::OUTBOUND, 0x01,
-                          out_buffer.get(), out_buffer->size(),
+  handle->GenericTransfer(UsbTransferDirection::OUTBOUND, 0x01, out_buffer,
                           5000,  // 5 second timeout
                           out_completion.GetCallback());
   out_completion.WaitForResult();
@@ -221,8 +219,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
 
   auto in_buffer = base::MakeRefCounted<base::RefCountedBytes>(512);
   TestCompletionCallback in_completion;
-  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, in_buffer.get(),
-                          in_buffer->size(),
+  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, in_buffer,
                           5000,  // 5 second timeout
                           in_completion.GetCallback());
 
@@ -233,8 +230,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
     out_buffer->data()[i] = i;
   }
 
-  handle->GenericTransfer(UsbTransferDirection::OUTBOUND, 0x02,
-                          out_buffer.get(), out_buffer->size(),
+  handle->GenericTransfer(UsbTransferDirection::OUTBOUND, 0x02, out_buffer,
                           5000,  // 5 second timeout
                           out_completion.GetCallback());
   out_completion.WaitForResult();
@@ -273,10 +269,10 @@ TEST_F(UsbDeviceHandleTest, ControlTransfer) {
 
   auto buffer = base::MakeRefCounted<base::RefCountedBytes>(255);
   TestCompletionCallback completion;
-  handle->ControlTransfer(
-      UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
-      UsbControlTransferRecipient::DEVICE, 0x06, 0x0301, 0x0409, buffer,
-      buffer->size(), 0, completion.GetCallback());
+  handle->ControlTransfer(UsbTransferDirection::INBOUND,
+                          UsbControlTransferType::STANDARD,
+                          UsbControlTransferRecipient::DEVICE, 0x06, 0x0301,
+                          0x0409, buffer, 0, completion.GetCallback());
   completion.WaitForResult();
   ASSERT_EQ(UsbTransferStatus::COMPLETED, completion.status());
   const char expected_str[] = "\x18\x03G\0o\0o\0g\0l\0e\0 \0I\0n\0c\0.\0";
@@ -340,8 +336,7 @@ TEST_F(UsbDeviceHandleTest, CancelOnClose) {
 
   auto buffer = base::MakeRefCounted<base::RefCountedBytes>(512);
   TestCompletionCallback completion;
-  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer.get(),
-                          buffer->size(),
+  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer,
                           5000,  // 5 second timeout
                           completion.GetCallback());
 
@@ -371,8 +366,7 @@ TEST_F(UsbDeviceHandleTest, ErrorOnDisconnect) {
 
   auto buffer = base::MakeRefCounted<base::RefCountedBytes>(512);
   TestCompletionCallback completion;
-  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer.get(),
-                          buffer->size(),
+  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer,
                           5000,  // 5 second timeout
                           completion.GetCallback());
 
@@ -409,8 +403,7 @@ TEST_F(UsbDeviceHandleTest, Timeout) {
 
   auto buffer = base::MakeRefCounted<base::RefCountedBytes>(512);
   TestCompletionCallback completion;
-  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer.get(),
-                          buffer->size(),
+  handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer,
                           10,  // 10 millisecond timeout
                           completion.GetCallback());
 
@@ -441,7 +434,7 @@ TEST_F(UsbDeviceHandleTest, CloseReentrancy) {
   base::RunLoop run_loop;
   auto buffer = base::MakeRefCounted<base::RefCountedBytes>(512);
   handle->GenericTransfer(
-      UsbTransferDirection::INBOUND, 0x82, buffer.get(), buffer->size(),
+      UsbTransferDirection::INBOUND, 0x82, buffer,
       10,  // 10 millisecond timeout
       base::Bind(&ExpectTimeoutAndClose, handle, run_loop.QuitClosure()));
   // Drop handle so that the completion callback holds the last reference.

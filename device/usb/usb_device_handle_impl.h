@@ -63,7 +63,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                        uint16_t value,
                        uint16_t index,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
 
@@ -81,7 +80,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
   const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
@@ -139,7 +137,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       uint16_t value,
       uint16_t index,
       scoped_refptr<base::RefCountedBytes> buffer,
-      size_t length,
       unsigned int timeout,
       scoped_refptr<base::TaskRunner> callback_task_runner,
       TransferCallback callback);
@@ -162,7 +159,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   void GenericTransferInternal(
       uint8_t endpoint_address,
       scoped_refptr<base::RefCountedBytes> buffer,
-      size_t length,
       unsigned int timeout,
       scoped_refptr<base::TaskRunner> callback_task_runner,
       TransferCallback callback);

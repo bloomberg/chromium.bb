@@ -45,7 +45,6 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
                        uint16_t value,
                        uint16_t index,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
 
@@ -63,7 +62,6 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
-                       size_t length,
                        unsigned int timeout,
                        TransferCallback callback) override;
   const UsbInterfaceDescriptor* FindInterfaceByEndpoint(

@@ -118,7 +118,7 @@ void OnReadConfigDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
     device_handle->ControlTransfer(
         UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
         UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
-        kConfigurationDescriptorType << 8 | index, 0, buffer, total_length,
+        kConfigurationDescriptorType << 8 | index, 0, buffer,
         kControlTransferTimeoutMs,
         base::Bind(&OnReadConfigDescriptor, desc, base::Passed(&closure)));
   } else {
@@ -164,7 +164,7 @@ void OnReadDeviceDescriptor(
     device_handle->ControlTransfer(
         UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
         UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
-        kConfigurationDescriptorType << 8 | i, 0, header, header->size(),
+        kConfigurationDescriptorType << 8 | i, 0, header,
         kControlTransferTimeoutMs,
         base::BindOnce(&OnReadConfigDescriptorHeader, device_handle, desc_ptr,
                        i, closure));
@@ -203,7 +203,7 @@ void ReadStringDescriptor(
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
-      kStringDescriptorType << 8 | index, language_id, buffer, buffer->size(),
+      kStringDescriptorType << 8 | index, language_id, buffer,
       kControlTransferTimeoutMs,
       base::Bind(&OnReadStringDescriptor, base::Passed(&callback)));
 }
@@ -499,8 +499,7 @@ void ReadUsbDescriptors(
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
-      kDeviceDescriptorType << 8, 0, buffer, buffer->size(),
-      kControlTransferTimeoutMs,
+      kDeviceDescriptorType << 8, 0, buffer, kControlTransferTimeoutMs,
       base::Bind(&OnReadDeviceDescriptor, device_handle,
                  base::Passed(&callback)));
 }
