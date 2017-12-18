@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -517,6 +518,9 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleCompleteAdAuthentication);
   AddCallback("cancelAdAuthentication",
               &GaiaScreenHandler::HandleCancelActiveDirectoryAuth);
+
+  // Allow UMA metrics collection from JS.
+  web_ui()->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 }
 
 void GaiaScreenHandler::OnPortalDetectionCompleted(

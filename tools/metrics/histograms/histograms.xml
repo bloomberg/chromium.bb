@@ -9503,6 +9503,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.GAIA.AuthenticatorContentWindowNull" enum="Boolean">
+  <owner>wjmaclean@chromium.org</owner>
+  <summary>
+    Whether the GAIA Authenticator unexpectedly encountered a null contentWindow
+    value while handling WebView's onContentLoad event. This metric is only
+    enabled for AuthMode = DEFAULT, which indicates ChromeOS online login. This
+    is the only mode where the issue has been observed. Other modes not captured
+    here are OFFLINE (offline ChromeOS login) and DESKTOP (for online GAIA login
+    on desktop Chrome).
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.GAIA.WebViewFlow" enum="BooleanGAIAWebViewFlow">
   <owner>achuith@chromium.org</owner>
   <summary>
