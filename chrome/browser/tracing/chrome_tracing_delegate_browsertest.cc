@@ -151,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       base::Closure(), content::BackgroundTracingManager::NO_DATA_FILTERING));
 }
 
-// Flaky on Linux. See https://crbug.com/723933.
-#if defined(OS_LINUX)
+// Flaky on Linux and Windows. See https://crbug.com/723933.
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_BackgroundTracingThrottleTimeElapsed \
   DISABLED_BackgroundTracingThrottleTimeElapsed
 #else
