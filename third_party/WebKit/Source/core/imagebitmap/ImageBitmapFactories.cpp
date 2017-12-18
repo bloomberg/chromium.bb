@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/location.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
@@ -55,7 +56,6 @@
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -299,7 +299,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
   scoped_refptr<WebTaskRunner> task_runner =
       Platform::Current()->CurrentThread()->GetWebTaskRunner();
   BackgroundTaskRunner::PostOnBackgroundThread(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(
           &ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread,
           WrapCrossThreadPersistent(this), std::move(task_runner),
@@ -330,7 +330,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
   }
   task_runner->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::
                           ResolvePromiseOnOriginalThread,
                       WrapCrossThreadPersistent(this), std::move(frame)));

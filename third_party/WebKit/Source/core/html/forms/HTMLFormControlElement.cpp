@@ -624,7 +624,7 @@ void HTMLFormControlElement::SetNeedsValidityCheck() {
     GetDocument()
         .GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             WTF::Bind(&HTMLFormControlElement::UpdateVisibleValidationMessage,
                       WrapPersistent(this)));
   }

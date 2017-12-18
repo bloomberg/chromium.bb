@@ -358,14 +358,14 @@ void LocalDOMWindow::EnqueueWindowEvent(Event* event) {
   if (!event_queue_)
     return;
   event->SetTarget(this);
-  event_queue_->EnqueueEvent(BLINK_FROM_HERE, event);
+  event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 void LocalDOMWindow::EnqueueDocumentEvent(Event* event) {
   if (!event_queue_)
     return;
   event->SetTarget(document_.Get());
-  event_queue_->EnqueueEvent(BLINK_FROM_HERE, event);
+  event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 void LocalDOMWindow::DispatchWindowLoadEvent() {
@@ -377,9 +377,8 @@ void LocalDOMWindow::DispatchWindowLoadEvent() {
   // 'load' event asynchronously.  crbug.com/569511.
   if (ScopedEventQueue::Instance()->ShouldQueueEvents() && document_) {
     document_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(BLINK_FROM_HERE,
-                   WTF::Bind(&LocalDOMWindow::DispatchLoadEvent,
-                             WrapPersistent(this)));
+        ->PostTask(FROM_HERE, WTF::Bind(&LocalDOMWindow::DispatchLoadEvent,
+                                        WrapPersistent(this)));
     return;
   }
   DispatchLoadEvent();
@@ -619,7 +618,7 @@ void LocalDOMWindow::SchedulePostMessage(
   PostMessageTimer* timer =
       new PostMessageTimer(*this, event, std::move(target), std::move(location),
                            UserGestureIndicator::CurrentToken());
-  timer->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer->StartOneShot(TimeDelta(), FROM_HERE);
   timer->PauseIfNeeded();
   post_message_timers_.insert(timer);
 }
@@ -1453,9 +1452,10 @@ void LocalDOMWindow::DispatchLoadEvent() {
     // preloads, as speculatove preloads were cleared at DCL.
     if (GetFrame() &&
         document_loader == GetFrame()->Loader().GetDocumentLoader() &&
-        document_loader->Fetcher()->CountPreloads())
+        document_loader->Fetcher()->CountPreloads()) {
       unused_preloads_timer_.StartOneShot(kUnusedPreloadTimeoutInSeconds,
-                                          BLINK_FROM_HERE);
+                                          FROM_HERE);
+    }
   } else {
     DispatchEvent(load_event, document());
   }

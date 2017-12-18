@@ -396,7 +396,7 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
       if (status_ == kLoaded) {
         GetExecutionContext()
             ->GetTaskRunner(TaskType::kDOMManipulation)
-            ->PostTask(BLINK_FROM_HERE,
+            ->PostTask(FROM_HERE,
                        WTF::Bind(&LoadedProperty::Resolve<FontFace*>,
                                  WrapPersistent(loaded_property_.Get()),
                                  WrapPersistent(this)));
@@ -406,7 +406,7 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
 
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&FontFace::RunCallbacks, WrapPersistent(this)));
   }
 }

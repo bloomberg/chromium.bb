@@ -104,8 +104,7 @@ void IdlenessDetector::OnDidLoadResource() {
   }
 
   if (!network_quiet_timer_.IsActive()) {
-    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds,
-                                      BLINK_FROM_HERE);
+    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds, FROM_HERE);
   }
 }
 
@@ -172,8 +171,7 @@ void IdlenessDetector::Stop() {
 void IdlenessDetector::NetworkQuietTimerFired(TimerBase*) {
   // TODO(lpy) Reduce the number of timers.
   if (network_0_quiet_ > 0 || network_2_quiet_ > 0) {
-    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds,
-                                      BLINK_FROM_HERE);
+    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds, FROM_HERE);
   }
 }
 

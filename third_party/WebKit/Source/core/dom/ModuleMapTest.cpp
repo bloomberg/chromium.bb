@@ -144,7 +144,7 @@ void ModuleMapTestModulator::ResolveFetches() {
     auto* module_script = ModuleScript::CreateForTest(
         this, ScriptModule(), test_request->url, test_request->options);
     TaskRunner()->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         WTF::Bind(&ModuleScriptLoaderClient::NotifyNewSingleModuleFinished,
                   WrapPersistent(test_request->client.Get()),
                   WrapPersistent(module_script)));

@@ -213,7 +213,7 @@ void SpinButtonElement::StartRepeatingTimer() {
   DCHECK(page);
   ScrollbarTheme& theme = page->GetScrollbarTheme();
   repeating_timer_.Start(theme.InitialAutoscrollTimerDelay(),
-                         theme.AutoscrollTimerDelay(), BLINK_FROM_HERE);
+                         theme.AutoscrollTimerDelay(), FROM_HERE);
 }
 
 void SpinButtonElement::StopRepeatingTimer() {

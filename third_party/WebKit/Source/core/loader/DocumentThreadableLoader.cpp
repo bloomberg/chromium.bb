@@ -81,9 +81,8 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
     explicit EmptyDataReader(WebDataConsumerHandle::Client* client)
         : factory_(this) {
       Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-          BLINK_FROM_HERE,
-          WTF::Bind(&EmptyDataReader::Notify, factory_.GetWeakPtr(),
-                    WTF::Unretained(client)));
+          FROM_HERE, WTF::Bind(&EmptyDataReader::Notify, factory_.GetWeakPtr(),
+                               WTF::Unretained(client)));
     }
 
    private:
@@ -563,7 +562,7 @@ void DocumentThreadableLoader::OverrideTimeout(
         CurrentTimeTicksInSeconds() - request_started_seconds_;
     double next_fire = timeout_milliseconds / 1000.0;
     double resolved_time = std::max(next_fire - elapsed_time, 0.0);
-    timeout_timer_.StartOneShot(resolved_time, BLINK_FROM_HERE);
+    timeout_timer_.StartOneShot(resolved_time, FROM_HERE);
   }
 }
 
@@ -1190,7 +1189,7 @@ void DocumentThreadableLoader::LoadRequestAsync(
   // CORS-with-preflight request.
   if (options_.timeout_milliseconds > 0 && !timeout_timer_.IsActive()) {
     timeout_timer_.StartOneShot(options_.timeout_milliseconds / 1000.0,
-                                BLINK_FROM_HERE);
+                                FROM_HERE);
   }
 
   FetchParameters new_params(request, resource_loader_options);

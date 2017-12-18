@@ -2424,7 +2424,7 @@ void Document::LayoutUpdated() {
 
 void Document::ClearFocusedElementSoon() {
   if (!clear_focused_element_timer_.IsActive())
-    clear_focused_element_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    clear_focused_element_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void Document::ClearFocusedElementTimerFired(TimerBase*) {
@@ -3931,9 +3931,8 @@ void Document::DidLoadAllScriptBlockingResources() {
   execute_scripts_waiting_for_resources_task_handle_ =
       GetTaskRunner(TaskType::kNetworking)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
-              WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
-                        WrapWeakPersistent(this)));
+              FROM_HERE, WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
+                                   WrapWeakPersistent(this)));
 
   if (IsHTMLDocument() && body()) {
     // For HTML if we have no more stylesheets to load and we're past the body
@@ -4900,7 +4899,7 @@ void Document::SendSensitiveInputVisibility() {
   sensitive_input_visibility_task_ =
       GetTaskRunner(TaskType::kUnspecedLoading)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&Document::SendSensitiveInputVisibilityInternal,
                         WrapWeakPersistent(this)));
 }
@@ -5827,7 +5826,7 @@ void Document::FinishedParsing() {
   // indefinitely by something innocuous like JS setting .innerHTML repeatedly
   // on a timer.
   element_data_cache_clear_timer_.StartOneShot(TimeDelta::FromSeconds(10),
-                                               BLINK_FROM_HERE);
+                                               FROM_HERE);
 
   // Parser should have picked up all preloads by now
   fetcher_->ClearPreloads(ResourceFetcher::kClearSpeculativeMarkupPreloads);
@@ -6312,7 +6311,7 @@ bool Document::IsContextThread() const {
 
 void Document::UpdateFocusAppearanceLater() {
   if (!update_focus_appearance_timer_.IsActive())
-    update_focus_appearance_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    update_focus_appearance_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void Document::CancelFocusAppearanceUpdate() {
@@ -6395,11 +6394,11 @@ static void RunAddConsoleMessageTask(MessageSource source,
 void Document::AddConsoleMessage(ConsoleMessage* console_message) {
   if (!IsContextThread()) {
     GetTaskRunner(TaskType::kUnthrottled)
-        ->PostTask(BLINK_FROM_HERE,
-                   CrossThreadBind(
-                       &RunAddConsoleMessageTask, console_message->Source(),
-                       console_message->Level(), console_message->Message(),
-                       WrapCrossThreadPersistent(this)));
+        ->PostTask(FROM_HERE, CrossThreadBind(&RunAddConsoleMessageTask,
+                                              console_message->Source(),
+                                              console_message->Level(),
+                                              console_message->Message(),
+                                              WrapCrossThreadPersistent(this)));
     return;
   }
 
@@ -6528,7 +6527,7 @@ void Document::DecrementLoadEventDelayCountAndCheckLoadEvent() {
 
 void Document::CheckLoadEventSoon() {
   if (GetFrame() && !load_event_delay_timer_.IsActive())
-    load_event_delay_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    load_event_delay_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 bool Document::IsDelayingLoadEvent() {
@@ -6552,7 +6551,7 @@ void Document::LoadPluginsSoon() {
   // FIXME: Remove this timer once we don't need to compute layout to load
   // plugins.
   if (!plugin_loading_timer_.IsActive())
-    plugin_loading_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    plugin_loading_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void Document::PluginLoadingTimerFired(TimerBase*) {
@@ -6924,7 +6923,7 @@ void Document::DidAssociateFormControl(Element* element) {
   // We add a slight delay because this could be called rapidly.
   if (!did_associate_form_controls_timer_.IsActive()) {
     did_associate_form_controls_timer_.StartOneShot(
-        TimeDelta::FromMilliseconds(300), BLINK_FROM_HERE);
+        TimeDelta::FromMilliseconds(300), FROM_HERE);
   }
 }
 
@@ -6958,7 +6957,7 @@ void Document::SetAutofocusElement(Element* element) {
   DCHECK(!autofocus_element_);
   autofocus_element_ = element;
   GetTaskRunner(TaskType::kUserInteraction)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&RunAutofocusTask, WrapWeakPersistent(this)));
 }
 
@@ -7189,9 +7188,8 @@ void Document::MaybeQueueSendDidEditFieldInInsecureContext() {
   sensitive_input_edited_task_ =
       GetTaskRunner(TaskType::kUserInteraction)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
-              WTF::Bind(&Document::SendDidEditFieldInInsecureContext,
-                        WrapWeakPersistent(this)));
+              FROM_HERE, WTF::Bind(&Document::SendDidEditFieldInInsecureContext,
+                                   WrapWeakPersistent(this)));
 }
 
 CoreProbeSink* Document::GetProbeSink() {

@@ -724,14 +724,14 @@ void HTMLMediaElement::ScheduleTextTrackResourceLoad() {
   pending_action_flags_ |= kLoadTextTrackResource;
 
   if (!load_timer_.IsActive())
-    load_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void HTMLMediaElement::ScheduleNextSourceChild() {
   // Schedule the timer to try the next <source> element WITHOUT resetting state
   // ala invokeLoadAlgorithm.
   pending_action_flags_ |= kLoadMediaResource;
-  load_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void HTMLMediaElement::ScheduleEvent(const AtomicString& event_name) {
@@ -743,7 +743,7 @@ void HTMLMediaElement::ScheduleEvent(Event* event) {
   BLINK_MEDIA_LOG << "ScheduleEvent(" << (void*)this << ")"
                   << " - scheduling '" << event->type() << "'";
 #endif
-  async_event_queue_->EnqueueEvent(BLINK_FROM_HERE, event);
+  async_event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 void HTMLMediaElement::LoadTimerFired(TimerBase*) {
@@ -1303,7 +1303,7 @@ void HTMLMediaElement::DeferLoad() {
   ChangeNetworkStateFromLoadingToIdle();
   // 3. Queue a task to set the element's delaying-the-load-event
   // flag to false. This stops delaying the load event.
-  deferred_load_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  deferred_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
   // 4. Wait for the task to be run.
   deferred_load_state_ = kWaitingForStopDelayingLoadEventTask;
   // Continued in executeDeferredLoad().
@@ -1480,7 +1480,7 @@ void HTMLMediaElement::StartProgressEventTimer() {
   previous_progress_time_ = WTF::CurrentTime();
   // 350ms is not magic, it is in the spec!
   progress_event_timer_.StartRepeating(TimeDelta::FromMilliseconds(350),
-                                       BLINK_FROM_HERE);
+                                       FROM_HERE);
 }
 
 void HTMLMediaElement::WaitForSourceChange() {
@@ -2585,7 +2585,7 @@ void HTMLMediaElement::StartPlaybackProgressTimer() {
 
   previous_progress_time_ = WTF::CurrentTime();
   playback_progress_timer_.StartRepeating(kMaxTimeupdateEventFrequency,
-                                          BLINK_FROM_HERE);
+                                          FROM_HERE);
 }
 
 void HTMLMediaElement::PlaybackProgressTimerFired(TimerBase*) {
@@ -2654,7 +2654,7 @@ void HTMLMediaElement::AudioTrackChanged(AudioTrack* track) {
     media_source_->OnTrackChanged(track);
 
   if (!audio_tracks_timer_.IsActive())
-    audio_tracks_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    audio_tracks_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void HTMLMediaElement::AudioTracksTimerFired(TimerBase*) {
@@ -3996,7 +3996,7 @@ void HTMLMediaElement::ScheduleResolvePlayPromises() {
       GetDocument()
           .GetTaskRunner(TaskType::kMediaElementEvent)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&HTMLMediaElement::ResolveScheduledPlayPromises,
                         WrapWeakPersistent(this)));
 }
@@ -4026,7 +4026,7 @@ void HTMLMediaElement::ScheduleRejectPlayPromises(ExceptionCode code) {
       GetDocument()
           .GetTaskRunner(TaskType::kMediaElementEvent)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&HTMLMediaElement::RejectScheduledPlayPromises,
                         WrapWeakPersistent(this)));
 }
@@ -4160,7 +4160,7 @@ void HTMLMediaElement::AudioSourceProviderImpl::Trace(blink::Visitor* visitor) {
 void HTMLMediaElement::ActivateViewportIntersectionMonitoring(bool activate) {
   if (activate && !check_viewport_intersection_timer_.IsActive()) {
     check_viewport_intersection_timer_.StartRepeating(
-        kCheckViewportIntersectionInterval, BLINK_FROM_HERE);
+        kCheckViewportIntersectionInterval, FROM_HERE);
   } else if (!activate) {
     check_viewport_intersection_timer_.Stop();
   }

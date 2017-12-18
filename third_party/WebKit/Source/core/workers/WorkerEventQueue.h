@@ -44,7 +44,7 @@ class WorkerEventQueue final : public EventQueue {
   void Trace(blink::Visitor*) override;
 
   // EventQueue
-  bool EnqueueEvent(const WebTraceLocation&, Event*) override;
+  bool EnqueueEvent(const base::Location&, Event*) override;
   bool CancelEvent(Event*) override;
   void Close() override;
 

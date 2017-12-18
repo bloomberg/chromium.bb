@@ -84,7 +84,7 @@ bool LayoutProgress::IsAnimating() const {
 void LayoutProgress::AnimationTimerFired(TimerBase*) {
   SetShouldDoFullPaintInvalidation();
   if (!animation_timer_.IsActive() && animating_)
-    animation_timer_.StartOneShot(animation_repeat_interval_, BLINK_FROM_HERE);
+    animation_timer_.StartOneShot(animation_repeat_interval_, FROM_HERE);
 }
 
 void LayoutProgress::UpdateAnimationState() {
@@ -101,7 +101,7 @@ void LayoutProgress::UpdateAnimationState() {
   animating_ = animating;
   if (animating_) {
     animation_start_time_ = CurrentTime();
-    animation_timer_.StartOneShot(animation_repeat_interval_, BLINK_FROM_HERE);
+    animation_timer_.StartOneShot(animation_repeat_interval_, FROM_HERE);
   } else {
     animation_timer_.Stop();
   }

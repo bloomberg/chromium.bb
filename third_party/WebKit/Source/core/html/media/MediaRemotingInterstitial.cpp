@@ -66,8 +66,7 @@ void MediaRemotingInterstitial::Show(
     toggle_insterstitial_timer_.Stop();
   should_be_visible_ = true;
   RemoveInlineStyleProperty(CSSPropertyDisplay);
-  toggle_insterstitial_timer_.StartOneShot(kStyleChangeTransSeconds,
-                                           BLINK_FROM_HERE);
+  toggle_insterstitial_timer_.StartOneShot(kStyleChangeTransSeconds, FROM_HERE);
 }
 
 void MediaRemotingInterstitial::Hide() {
@@ -78,8 +77,7 @@ void MediaRemotingInterstitial::Hide() {
   should_be_visible_ = false;
   SetInlineStyleProperty(CSSPropertyOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
-  toggle_insterstitial_timer_.StartOneShot(kHiddenAnimationSeconds,
-                                           BLINK_FROM_HERE);
+  toggle_insterstitial_timer_.StartOneShot(kHiddenAnimationSeconds, FROM_HERE);
 }
 
 void MediaRemotingInterstitial::ToggleInterstitialTimerFired(TimerBase*) {

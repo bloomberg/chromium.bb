@@ -67,7 +67,7 @@ void ModuleMap::Entry::TraceWrappers(
 void ModuleMap::Entry::DispatchFinishedNotificationAsync(
     SingleModuleClient* client) {
   map_->GetModulator()->TaskRunner()->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       WTF::Bind(&SingleModuleClient::NotifyModuleLoadFinished,
                 WrapPersistent(client), WrapPersistent(module_script_.Get())));
 }

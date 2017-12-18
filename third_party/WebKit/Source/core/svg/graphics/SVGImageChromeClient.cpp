@@ -101,7 +101,7 @@ void SVGImageChromeClient::ScheduleAnimation(const PlatformFrameView*) {
       return;
     fire_time = kAnimationFrameDelay;
   }
-  animation_timer_->StartOneShot(fire_time, BLINK_FROM_HERE);
+  animation_timer_->StartOneShot(fire_time, FROM_HERE);
 }
 
 void SVGImageChromeClient::SetTimer(std::unique_ptr<TimerBase> timer) {

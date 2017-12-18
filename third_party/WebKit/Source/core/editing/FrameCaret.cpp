@@ -25,6 +25,7 @@
 
 #include "core/editing/FrameCaret.h"
 
+#include "base/location.h"
 #include "core/editing/CaretDisplayItemClient.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
@@ -40,7 +41,6 @@
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/page/Page.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -116,7 +116,7 @@ void FrameCaret::StartBlinkCaret() {
 
   TimeDelta blink_interval = LayoutTheme::GetTheme().CaretBlinkInterval();
   if (!blink_interval.is_zero())
-    caret_blink_timer_->StartRepeating(blink_interval, BLINK_FROM_HERE);
+    caret_blink_timer_->StartRepeating(blink_interval, FROM_HERE);
 
   should_paint_caret_ = true;
   ScheduleVisualUpdateForPaintInvalidationIfNeeded();

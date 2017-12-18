@@ -889,9 +889,8 @@ void HTMLSelectElement::ScrollToOption(HTMLOptionElement* option) {
   if (!has_pending_task) {
     GetDocument()
         .GetTaskRunner(TaskType::kUserInteraction)
-        ->PostTask(BLINK_FROM_HERE,
-                   WTF::Bind(&HTMLSelectElement::ScrollToOptionTask,
-                             WrapPersistent(this)));
+        ->PostTask(FROM_HERE, WTF::Bind(&HTMLSelectElement::ScrollToOptionTask,
+                                        WrapPersistent(this)));
   }
 }
 

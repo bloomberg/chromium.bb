@@ -348,7 +348,7 @@ void FileReader::abort() {
   // reader alive until the task has completed.
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&FileReader::Terminate, WrapPersistent(this)));
 }
 

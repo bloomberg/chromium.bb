@@ -32,6 +32,7 @@
 #define WorkerThreadableLoader_h
 
 #include <memory>
+#include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -42,7 +43,6 @@
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -102,8 +102,8 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   class TaskForwarder : public GarbageCollectedFinalized<TaskForwarder> {
    public:
     virtual ~TaskForwarder() {}
-    virtual void ForwardTask(const WebTraceLocation&, CrossThreadClosure) = 0;
-    virtual void ForwardTaskWithDoneSignal(const WebTraceLocation&,
+    virtual void ForwardTask(const base::Location&, CrossThreadClosure) = 0;
+    virtual void ForwardTaskWithDoneSignal(const base::Location&,
                                            CrossThreadClosure) = 0;
     virtual void Abort() = 0;
 

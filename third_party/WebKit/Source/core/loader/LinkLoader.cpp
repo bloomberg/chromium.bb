@@ -658,8 +658,8 @@ bool LinkLoader::LoadLink(
 
 void LinkLoader::DispatchLinkLoadingErroredAsync() {
   client_->GetLoadingTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&LinkLoaderClient::LinkLoadingErrored,
-                                 WrapPersistent(client_.Get())));
+      FROM_HERE, WTF::Bind(&LinkLoaderClient::LinkLoadingErrored,
+                           WrapPersistent(client_.Get())));
 }
 
 void LinkLoader::Abort() {

@@ -85,7 +85,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_FALSE(global_scope->DocumentSecurityOrigin()->IsUnique());
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
   void TestContentSecurityPolicy() {
@@ -109,7 +109,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
   // Emulates API use on ThreadedWorkletGlobalScope.
@@ -118,7 +118,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     GlobalScope()->CountFeature(feature);
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
   // Emulates deprecated API use on ThreadedWorkletGlobalScope.
@@ -133,7 +133,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
   void TestTaskRunner() {
@@ -143,7 +143,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     GetParentFrameTaskRunners()
         ->Get(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+        ->PostTask(FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
  private:
@@ -234,7 +234,7 @@ TEST_F(ThreadedWorkletTest, SecurityOrigin) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedWorkletThreadForTest::TestSecurityOrigin,
                           CrossThreadUnretained(GetWorkerThread())));
   testing::EnterRunLoop();
@@ -253,7 +253,7 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
 
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(
                      &ThreadedWorkletThreadForTest::TestContentSecurityPolicy,
                      CrossThreadUnretained(GetWorkerThread())));
@@ -272,7 +272,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedWorkletThreadForTest::CountFeature,
                           CrossThreadUnretained(GetWorkerThread()), kFeature1));
   testing::EnterRunLoop();
@@ -283,7 +283,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedWorkletThreadForTest::CountFeature,
                           CrossThreadUnretained(GetWorkerThread()), kFeature1));
   testing::EnterRunLoop();
@@ -297,7 +297,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedWorkletThreadForTest::CountDeprecation,
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
   testing::EnterRunLoop();
@@ -308,7 +308,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedWorkletThreadForTest::CountDeprecation,
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
   testing::EnterRunLoop();
@@ -319,7 +319,7 @@ TEST_F(ThreadedWorkletTest, TaskRunner) {
 
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kInternalTest)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&ThreadedWorkletThreadForTest::TestTaskRunner,
                                  CrossThreadUnretained(GetWorkerThread())));
   testing::EnterRunLoop();

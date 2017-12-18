@@ -54,7 +54,7 @@ void MediaElementEventQueue::Trace(blink::Visitor* visitor) {
   EventQueue::Trace(visitor);
 }
 
-bool MediaElementEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
+bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
                                           Event* event) {
   if (is_closed_)
     return false;

@@ -108,14 +108,14 @@ void WorkerThread::Start(
   // from posting a task to the thread before the scheduler is ready.
   WaitableEvent waitable_event;
   GetWorkerBackingThread().BackingThread().PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThread::InitializeSchedulerOnWorkerThread,
                       CrossThreadUnretained(this),
                       CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 
   GetWorkerBackingThread().BackingThread().PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
                       CrossThreadUnretained(this),
                       WTF::Passed(std::move(global_scope_creation_params)),
@@ -129,7 +129,7 @@ void WorkerThread::EvaluateClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   GetTaskRunner(TaskType::kUnthrottled)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
                           CrossThreadUnretained(this), script_url, source_code,
                           WTF::Passed(std::move(cached_meta_data)), stack_id));
@@ -154,13 +154,12 @@ void WorkerThread::Terminate() {
   inspector_task_runner_->Kill();
 
   GetWorkerBackingThread().BackingThread().PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerThread::PrepareForShutdownOnWorkerThread,
                       CrossThreadUnretained(this)));
   GetWorkerBackingThread().BackingThread().PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerThread::PerformShutdownOnWorkerThread,
-                      CrossThreadUnretained(this)));
+      FROM_HERE, CrossThreadBind(&WorkerThread::PerformShutdownOnWorkerThread,
+                                 CrossThreadUnretained(this)));
 }
 
 void WorkerThread::TerminateAllWorkersForTesting() {
@@ -237,7 +236,7 @@ void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
       inspector_task_runner_->InterruptAndRunAllTasksDontWait(GetIsolate());
   }
   GetTaskRunner(TaskType::kUnthrottled)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(
                      &WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread,
                      CrossThreadUnretained(this)));
@@ -334,7 +333,7 @@ void WorkerThread::ScheduleToTerminateScriptExecution() {
   forcible_termination_task_handle_ =
       parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
           ->PostDelayedCancellableTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
                         WTF::Unretained(this),
                         ExitCode::kAsyncForciblyTerminated),

@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/location.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -84,7 +85,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebTraceLocation.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -863,7 +863,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     // If the canvas element's bitmap has no pixels
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&V8BlobCallback::InvokeAndReportException,
                              WrapPersistentCallbackFunction(callback), nullptr,
                              nullptr));
@@ -896,7 +896,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   } else {
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&V8BlobCallback::InvokeAndReportException,
                              WrapPersistentCallbackFunction(callback), nullptr,
                              nullptr));

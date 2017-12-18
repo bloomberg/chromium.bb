@@ -43,8 +43,8 @@ void ReportingContext::QueueReport(Report* report) {
   // batch (in the queue) to all ReportingObservers.
   if (reports_.size() == 1) {
     execution_context_->GetTaskRunner(TaskType::kMiscPlatformAPI)
-        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&ReportingContext::SendReports,
-                                              WrapWeakPersistent(this)));
+        ->PostTask(FROM_HERE, WTF::Bind(&ReportingContext::SendReports,
+                                        WrapWeakPersistent(this)));
   }
 }
 

@@ -401,7 +401,7 @@ void VTTRegion::StartTimer() {
     return;
 
   double duration = IsScrollingRegion() ? kScrollTime : 0;
-  scroll_timer_.StartOneShot(duration, BLINK_FROM_HERE);
+  scroll_timer_.StartOneShot(duration, FROM_HERE);
 }
 
 void VTTRegion::StopTimer() {

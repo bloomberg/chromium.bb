@@ -26,6 +26,7 @@
 #ifndef ScriptRunner_h
 #define ScriptRunner_h
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -33,7 +34,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashMap.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -78,7 +78,7 @@ class CORE_EXPORT ScriptRunner final
   bool RemovePendingInOrderScript(ScriptLoader*);
   void ScheduleReadyInOrderScripts();
 
-  void PostTask(const WebTraceLocation&);
+  void PostTask(const base::Location&);
 
   // Execute the first task in in_order_scripts_to_execute_soon_.
   // Returns true if task was run, and false otherwise.

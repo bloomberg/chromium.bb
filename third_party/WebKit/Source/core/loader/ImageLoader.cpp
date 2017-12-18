@@ -321,7 +321,7 @@ inline void ImageLoader::DispatchErrorEvent() {
           ->GetDocument()
           .GetTaskRunner(TaskType::kDOMManipulation)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&ImageLoader::DispatchPendingErrorEvent,
                         WrapPersistent(this),
                         WTF::Passed(IncrementLoadEventDelayCount::Create(
@@ -662,7 +662,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
           ->GetDocument()
           .GetTaskRunner(TaskType::kDOMManipulation)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               WTF::Bind(&ImageLoader::DispatchPendingLoadEvent,
                         WrapPersistent(this),
                         WTF::Passed(IncrementLoadEventDelayCount::Create(

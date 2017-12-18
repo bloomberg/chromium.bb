@@ -102,9 +102,10 @@ class PresentationAttributeCacheCleaner {
 
     hit_count_++;
 
-    if (!clean_timer_.IsActive())
+    if (!clean_timer_.IsActive()) {
       clean_timer_.StartOneShot(kPresentationAttributeCacheCleanTimeInSeconds,
-                                BLINK_FROM_HERE);
+                                FROM_HERE);
+    }
   }
 
  private:

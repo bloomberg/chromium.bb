@@ -31,9 +31,8 @@ void PlatformEventController::StartUpdating() {
     update_callback_handle_ =
         document_->GetTaskRunner(TaskType::kUnspecedTimer)
             ->PostCancellableTask(
-                BLINK_FROM_HERE,
-                WTF::Bind(&PlatformEventController::UpdateCallback,
-                          WrapWeakPersistent(this)));
+                FROM_HERE, WTF::Bind(&PlatformEventController::UpdateCallback,
+                                     WrapWeakPersistent(this)));
   }
 
   RegisterWithDispatcher();

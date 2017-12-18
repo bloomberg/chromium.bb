@@ -972,10 +972,10 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
   scoped_refptr<WebTaskRunner> task_runner =
       Platform::Current()->MainThread()->GetWebTaskRunner();
   task_runner->PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&ResolvePromiseOnOriginalThread,
-                                       WrapCrossThreadPersistent(resolver),
-                                       std::move(skia_image), origin_clean,
-                                       WTF::Passed(std::move(parsed_options))));
+      FROM_HERE, CrossThreadBind(&ResolvePromiseOnOriginalThread,
+                                 WrapCrossThreadPersistent(resolver),
+                                 std::move(skia_image), origin_clean,
+                                 WTF::Passed(std::move(parsed_options))));
 }
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
@@ -1027,7 +1027,7 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
   std::unique_ptr<ParsedOptions> passed_parsed_options =
       std::make_unique<ParsedOptions>(parsed_options);
   BackgroundTaskRunner::PostOnBackgroundThread(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&RasterizeImageOnBackgroundThread,
                       WrapCrossThreadPersistent(resolver),
                       std::move(paint_record), draw_dst_rect,

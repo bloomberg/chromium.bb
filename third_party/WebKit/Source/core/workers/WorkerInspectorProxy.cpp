@@ -4,6 +4,7 @@
 
 #include "core/workers/WorkerInspectorProxy.h"
 
+#include "base/location.h"
 #include "core/frame/FrameConsole.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -16,7 +17,6 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 

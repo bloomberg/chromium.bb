@@ -1297,8 +1297,8 @@ void HTMLInputElement::DefaultEventHandler(Event* evt) {
     if (type() == InputTypeNames::search) {
       GetDocument()
           .GetTaskRunner(TaskType::kUserInteraction)
-          ->PostTask(BLINK_FROM_HERE, WTF::Bind(&HTMLInputElement::OnSearch,
-                                                WrapPersistent(this)));
+          ->PostTask(FROM_HERE, WTF::Bind(&HTMLInputElement::OnSearch,
+                                          WrapPersistent(this)));
     }
     // Form submission finishes editing, just as loss of focus does.
     // If there was a change, send the event now.

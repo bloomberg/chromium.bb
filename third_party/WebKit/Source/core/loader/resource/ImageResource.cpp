@@ -316,8 +316,8 @@ void ImageResource::AllClientsAndObserversRemoved() {
   // animation updates (crbug.com/613709)
   if (!ThreadHeap::WillObjectBeLazilySwept(this)) {
     Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE, WTF::Bind(&ImageResourceContent::DoResetAnimation,
-                                   WrapWeakPersistent(GetContent())));
+        FROM_HERE, WTF::Bind(&ImageResourceContent::DoResetAnimation,
+                             WrapWeakPersistent(GetContent())));
   } else {
     GetContent()->DoResetAnimation();
   }
@@ -359,7 +359,7 @@ void ImageResource::AppendData(const char* data, size_t length) {
       double flush_delay = last_flush_time_ - now + kFlushDelaySeconds;
       if (flush_delay < 0.)
         flush_delay = 0.;
-      flush_timer_.StartOneShot(flush_delay, BLINK_FROM_HERE);
+      flush_timer_.StartOneShot(flush_delay, FROM_HERE);
     }
   }
 }

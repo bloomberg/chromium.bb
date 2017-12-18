@@ -30,6 +30,7 @@
 
 #include "core/clipboard/DataTransferItem.h"
 
+#include "base/location.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/v8_function_string_callback.h"
 #include "core/clipboard/DataObjectItem.h"
@@ -39,7 +40,6 @@
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -80,7 +80,7 @@ void DataTransferItem::getAsString(ScriptState* script_state,
   ExecutionContext* context = ExecutionContext::From(script_state);
   probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
   context->GetTaskRunner(TaskType::kUserInteraction)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&DataTransferItem::RunGetAsStringTask,
                            WrapPersistent(this), WrapPersistent(context),
                            WrapPersistent(callback), item_->GetAsString()));

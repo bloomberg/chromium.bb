@@ -19,7 +19,7 @@ namespace blink {
 void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
   GetParentFrameTaskRunners()
       ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&ThreadedMessagingProxyBase::CountFeature,
                                  MessagingProxyWeakPtr(), feature));
 }
@@ -27,7 +27,7 @@ void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
 void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
   GetParentFrameTaskRunners()
       ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&ThreadedMessagingProxyBase::CountDeprecation,
                                  MessagingProxyWeakPtr(), feature));
 }
@@ -39,7 +39,7 @@ void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
   GetParentFrameTaskRunners()
       ->Get(TaskType::kUnspecedTimer)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
                           MessagingProxyWeakPtr(), source, level, message,
                           WTF::Passed(location->Clone())));
@@ -52,7 +52,7 @@ void ThreadedObjectProxyBase::PostMessageToPageInspector(
   // run even on a suspended page.
   GetParentFrameTaskRunners()
       ->Get(TaskType::kUnthrottled)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(
                      &ThreadedMessagingProxyBase::PostMessageToPageInspector,
                      MessagingProxyWeakPtr(), session_id, message));
@@ -62,7 +62,7 @@ void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
   GetParentFrameTaskRunners()
       ->Get(TaskType::kUnspecedTimer)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedMessagingProxyBase::TerminateGlobalScope,
                           MessagingProxyWeakPtr()));
 }
@@ -72,7 +72,7 @@ void ThreadedObjectProxyBase::DidTerminateWorkerThread() {
   GetParentFrameTaskRunners()
       ->Get(TaskType::kUnspecedTimer)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
                           MessagingProxyWeakPtr()));
 }

@@ -27,6 +27,7 @@
 #define V8IdleTaskRunner_h
 
 #include <memory>
+#include "base/location.h"
 #include "core/CoreExport.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "platform/runtime_enabled_features.h"
@@ -34,7 +35,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -48,7 +48,7 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   void PostIdleTask(v8::IdleTask* task) override {
     DCHECK(RuntimeEnabledFeatures::V8IdleTasksEnabled());
     scheduler_->PostIdleTask(
-        BLINK_FROM_HERE, WTF::Bind(&v8::IdleTask::Run, WTF::WrapUnique(task)));
+        FROM_HERE, WTF::Bind(&v8::IdleTask::Run, WTF::WrapUnique(task)));
   }
 
  private:

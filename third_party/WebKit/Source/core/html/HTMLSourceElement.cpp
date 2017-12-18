@@ -139,9 +139,8 @@ void HTMLSourceElement::ScheduleErrorEvent() {
       GetDocument()
           .GetTaskRunner(TaskType::kDOMManipulation)
           ->PostCancellableTask(
-              BLINK_FROM_HERE,
-              WTF::Bind(&HTMLSourceElement::DispatchPendingEvent,
-                        WrapPersistent(this)));
+              FROM_HERE, WTF::Bind(&HTMLSourceElement::DispatchPendingEvent,
+                                   WrapPersistent(this)));
 }
 
 void HTMLSourceElement::CancelPendingErrorEvent() {

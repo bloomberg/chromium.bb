@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/location.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/v8_blob_callback.h"
 #include "core/CoreExport.h"
@@ -18,7 +19,6 @@
 #include "platform/image-encoders/ImageEncoder.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -81,7 +81,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   // Methods are virtual for unit testing
   virtual void ScheduleInitiateEncoding(double quality);
   virtual void IdleEncodeRows(double deadline_seconds);
-  virtual void PostDelayedTaskToCurrentThread(const WebTraceLocation&,
+  virtual void PostDelayedTaskToCurrentThread(const base::Location&,
                                               base::OnceClosure,
                                               double delay_ms);
   virtual void SignalAlternativeCodePathFinishedForTesting() {}

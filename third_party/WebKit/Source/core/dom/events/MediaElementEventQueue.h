@@ -26,13 +26,13 @@
 #ifndef MediaElementEventQueue_h
 #define MediaElementEventQueue_h
 
+#include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/EventQueue.h"
 #include "core/dom/events/EventTarget.h"
 #include "platform/Timer.h"
 #include "platform/wtf/Vector.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ class CORE_EXPORT MediaElementEventQueue final : public EventQueue {
 
   // EventQueue
   virtual void Trace(blink::Visitor*);
-  bool EnqueueEvent(const WebTraceLocation&, Event*) override;
+  bool EnqueueEvent(const base::Location&, Event*) override;
   bool CancelEvent(Event*) override;
   void Close() override;
 

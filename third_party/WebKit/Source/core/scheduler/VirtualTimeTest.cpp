@@ -65,7 +65,7 @@ class VirtualTimeTest : public SimTest {
         ->Scheduler()
         ->LoadingTaskRunner()
         ->PostDelayedTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             WTF::Bind(&VirtualTimeTest::StopVirtualTimeAndExitRunLoop,
                       WTF::Unretained(this)),
             TimeDelta::FromMillisecondsD(delay_ms));
@@ -229,7 +229,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
 
   // Schedule a task to suspend virtual time at the same point in time.
   runner->PostDelayedTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       WTF::Bind(
           [](WebViewScheduler* scheduler) {
             scheduler->SetVirtualTimePolicy(

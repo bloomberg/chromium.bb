@@ -135,9 +135,8 @@ void HTMLDetailsElement::ParseAttribute(
         GetDocument()
             .GetTaskRunner(TaskType::kDOMManipulation)
             ->PostCancellableTask(
-                BLINK_FROM_HERE,
-                WTF::Bind(&HTMLDetailsElement::DispatchPendingEvent,
-                          WrapPersistent(this)));
+                FROM_HERE, WTF::Bind(&HTMLDetailsElement::DispatchPendingEvent,
+                                     WrapPersistent(this)));
 
     Element* content = EnsureUserAgentShadowRoot().getElementById(
         ShadowElementNames::DetailsContent());

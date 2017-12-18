@@ -1141,7 +1141,7 @@ void LocalFrameView::ScheduleOrPerformPostLayoutTasks() {
     // after we return.  postLayoutTasks() can make us need to update again, and
     // we can get stuck in a nasty cycle unless we call it through the timer
     // here.
-    post_layout_tasks_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    post_layout_tasks_timer_.StartOneShot(TimeDelta(), FROM_HERE);
     if (NeedsLayout())
       UpdateLayout();
   }
@@ -2578,7 +2578,7 @@ void LocalFrameView::ScheduleUpdatePluginsIfNecessary() {
   DCHECK(!IsInPerformLayout());
   if (update_plugins_timer_.IsActive() || part_update_set_.IsEmpty())
     return;
-  update_plugins_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  update_plugins_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void LocalFrameView::PerformPostLayoutTasks() {
@@ -4283,7 +4283,7 @@ void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
   }
 
   did_scroll_timer_.StartOneShot(kResourcePriorityUpdateDelayAfterScroll,
-                                 BLINK_FROM_HERE);
+                                 FROM_HERE);
 
   if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())
     cache->HandleScrollPositionChanged(this);

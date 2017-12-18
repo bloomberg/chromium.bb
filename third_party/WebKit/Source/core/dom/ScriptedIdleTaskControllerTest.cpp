@@ -31,11 +31,11 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
   bool CanExceedIdleDeadlineIfRequired() override { return false; }
-  void PostIdleTask(const WebTraceLocation&,
+  void PostIdleTask(const base::Location&,
                     WebThread::IdleTask idle_task) override {
     idle_task_ = std::move(idle_task);
   }
-  void PostNonNestableIdleTask(const WebTraceLocation&,
+  void PostNonNestableIdleTask(const base::Location&,
                                WebThread::IdleTask) override {}
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter*,
