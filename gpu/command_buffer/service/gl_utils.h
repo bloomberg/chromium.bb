@@ -34,9 +34,10 @@ struct GLVersionInfo;
 namespace gpu {
 
 struct Capabilities;
-class FeatureInfo;
 
 namespace gles2 {
+
+class FeatureInfo;
 
 struct CALayerSharedState {
   float opacity;

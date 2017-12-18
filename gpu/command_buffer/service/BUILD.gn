@@ -119,6 +119,8 @@ target(link_target_type, "service_sources") {
     "program_manager.h",
     "query_manager.cc",
     "query_manager.h",
+    "raster_decoder.cc",
+    "raster_decoder.h",
     "renderbuffer_manager.cc",
     "renderbuffer_manager.h",
     "sampler_manager.cc",
