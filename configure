@@ -264,7 +264,6 @@ EXPERIMENT_LIST="
     striped_loop_restoration
     ext_partition
     ext_partition_types
-    ext_partition_types_ab
     ext_tile
     q_adapt_probs
     inter_stats_only

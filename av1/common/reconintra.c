@@ -343,7 +343,7 @@ static const uint16_t orders_4x16[256] = {
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#if CONFIG_EXT_PARTITION_TYPES
 static const uint16_t orders_vert_128x128[1] = { 0 };
 static const uint16_t orders_vert_64x64[4] = { 0, 2, 1, 3 };
 static const uint16_t orders_vert_32x32[16] = { 0, 2,  4,  6,  1, 3,  5,  7,
@@ -376,7 +376,7 @@ static const uint16_t orders_vert_8x8[256] = {
   255
 };
 #endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
 // The orders_* tables encode the order in which we visit blocks of the given
 // size. For example, orders_32x32 has (128/32)^2 = 4^2 = 16 entries that
@@ -464,7 +464,7 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#if CONFIG_EXT_PARTITION_TYPES
 // The orders_vert_* tables are like the orders_* tables above, but describe the
 // order we visit square blocks when doing a PARTITION_VERT_A or
 // PARTITION_VERT_B. This is the same order as normal except for on the last
@@ -507,12 +507,12 @@ static const uint16_t *const orders_vert[BLOCK_SIZES] = {
 };
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
 static const uint16_t *get_order_table(PARTITION_TYPE partition,
                                        BLOCK_SIZE bsize) {
   const uint16_t *ret = NULL;
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#if CONFIG_EXT_PARTITION_TYPES
   // If this is a mixed vertical partition, look up bsize in orders_vert.
   if (partition == PARTITION_VERT_A || partition == PARTITION_VERT_B) {
     assert(bsize < BLOCK_SIZES);
@@ -523,7 +523,7 @@ static const uint16_t *get_order_table(PARTITION_TYPE partition,
 #else
   (void)partition;
   ret = orders[bsize];
-#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
   assert(ret);
   return ret;

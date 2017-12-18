@@ -1282,9 +1282,6 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   const int hbs = mi_size_wide[bsize] / 2;
-#if CONFIG_EXT_PARTITION_TYPES && CONFIG_EXT_PARTITION_TYPES_AB
-  const int qbs = mi_size_wide[bsize] / 4;
-#endif
   const int is_partition_root = bsize >= BLOCK_8X8;
   const int ctx = is_partition_root
                       ? partition_plane_context(xd, mi_row, mi_col, bsize)
@@ -1294,9 +1291,7 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_EXT_PARTITION_TYPES
   int quarter_step = mi_size_wide[bsize] / 4;
   int i;
-#if !CONFIG_EXT_PARTITION_TYPES_AB
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-#endif  // !CONFIG_EXT_PARTITION_TYPES_AB
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
@@ -1351,51 +1346,6 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
       break;
 
 #if CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_EXT_PARTITION_TYPES_AB
-    case PARTITION_HORZ_A:
-      encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run,
-               get_subsize(bsize, PARTITION_HORZ_4), partition,
-               &pc_tree->horizontala[0], rate);
-      encode_b(cpi, tile_data, td, tp, mi_row + qbs, mi_col, dry_run,
-               get_subsize(bsize, PARTITION_HORZ_4), partition,
-               &pc_tree->horizontala[1], rate);
-      encode_b(cpi, tile_data, td, tp, mi_row + hbs, mi_col, dry_run, subsize,
-               partition, &pc_tree->horizontala[2], rate);
-      break;
-    case PARTITION_HORZ_B:
-      encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run, subsize,
-               partition, &pc_tree->horizontalb[0], rate);
-      encode_b(cpi, tile_data, td, tp, mi_row + hbs, mi_col, dry_run,
-               get_subsize(bsize, PARTITION_HORZ_4), partition,
-               &pc_tree->horizontalb[1], rate);
-      if (mi_row + 3 * qbs < cm->mi_rows)
-        encode_b(cpi, tile_data, td, tp, mi_row + 3 * qbs, mi_col, dry_run,
-                 get_subsize(bsize, PARTITION_HORZ_4), partition,
-                 &pc_tree->horizontalb[2], rate);
-      break;
-    case PARTITION_VERT_A:
-      encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run,
-               get_subsize(bsize, PARTITION_VERT_4), partition,
-               &pc_tree->verticala[0], rate);
-      encode_b(cpi, tile_data, td, tp, mi_row, mi_col + qbs, dry_run,
-               get_subsize(bsize, PARTITION_VERT_4), partition,
-               &pc_tree->verticala[1], rate);
-      encode_b(cpi, tile_data, td, tp, mi_row, mi_col + hbs, dry_run, subsize,
-               partition, &pc_tree->verticala[2], rate);
-
-      break;
-    case PARTITION_VERT_B:
-      encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run, subsize,
-               partition, &pc_tree->verticalb[0], rate);
-      encode_b(cpi, tile_data, td, tp, mi_row, mi_col + hbs, dry_run,
-               get_subsize(bsize, PARTITION_VERT_4), partition,
-               &pc_tree->verticalb[1], rate);
-      if (mi_col + 3 * qbs < cm->mi_cols)
-        encode_b(cpi, tile_data, td, tp, mi_row, mi_col + 3 * qbs, dry_run,
-                 get_subsize(bsize, PARTITION_VERT_4), partition,
-                 &pc_tree->verticalb[2], rate);
-      break;
-#else
     case PARTITION_HORZ_A:
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run, bsize2,
                partition, &pc_tree->horizontala[0], rate);
@@ -1429,7 +1379,6 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
       encode_b(cpi, tile_data, td, tp, mi_row + hbs, mi_col + hbs, dry_run,
                bsize2, partition, &pc_tree->verticalb[2], rate);
       break;
-#endif
     case PARTITION_HORZ_4:
       for (i = 0; i < 4; ++i) {
         int this_mi_row = mi_row + i * quarter_step;
@@ -2148,9 +2097,6 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_STATS sum_rdc, this_rdc;
-#if CONFIG_EXT_PARTITION_TYPES_AB
-  const AV1_COMMON *const cm = &cpi->common;
-#endif
 #define RTP_STX_TRY_ARGS
 
   if (!rd_try_subblock(cpi, td, tile_data, tp, 1, 0, mi_row0, mi_col0, subsize0,
@@ -2163,16 +2109,12 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
                        RTP_STX_TRY_ARGS partition, &ctxs[0], &ctxs[1]))
     return;
 
-// With the new layout of mixed partitions for PARTITION_HORZ_B and
-// PARTITION_VERT_B, the last subblock might start past halfway through the
-// main block, so we might signal it even though the subblock lies strictly
-// outside the image. In that case, we won't spend any bits coding it and the
-// difference (obviously) doesn't contribute to the error.
-#if CONFIG_EXT_PARTITION_TYPES_AB
-  const int try_block2 = mi_row2 < cm->mi_rows && mi_col2 < cm->mi_cols;
-#else
+  // With the new layout of mixed partitions for PARTITION_HORZ_B and
+  // PARTITION_VERT_B, the last subblock might start past halfway through the
+  // main block, so we might signal it even though the subblock lies strictly
+  // outside the image. In that case, we won't spend any bits coding it and the
+  // difference (obviously) doesn't contribute to the error.
   const int try_block2 = 1;
-#endif
   if (try_block2 &&
       !rd_try_subblock(cpi, td, tile_data, tp, 0, 1, mi_row2, mi_col2, subsize2,
                        best_rdc, &sum_rdc, &this_rdc,
@@ -2261,7 +2203,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   int64_t horz_rd[4] = { 0, 0 };
   int64_t vert_rd[4] = { 0, 0 };
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#if CONFIG_EXT_PARTITION_TYPES
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
 #endif
 
@@ -2784,12 +2726,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   const int partition4_allowed = ext_partition_allowed;
 #endif
 
-#if CONFIG_EXT_PARTITION_TYPES_AB
-  // The alternative AB partitions are allowed iff the corresponding 4:1
-  // partitions are allowed.
-  int horzab_partition_allowed = partition4_allowed;
-  int vertab_partition_allowed = partition4_allowed;
-#else
   // The standard AB partitions are allowed whenever ext-partition-types are
   // allowed
   int horzab_partition_allowed = ext_partition_allowed;
@@ -2817,20 +2753,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     horza_partition_allowed &= (horz_a_rd / 16 * 15 < best_rdc.rdcost);
     horzb_partition_allowed &= (horz_b_rd / 16 * 15 < best_rdc.rdcost);
   }
-#endif  // CONFIG_EXT_PARTITION_TYPES_AB
 
-// PARTITION_HORZ_A
-#if CONFIG_EXT_PARTITION_TYPES_AB
-  if (partition_horz_allowed && horzab_partition_allowed) {
-    rd_test_partition3(
-        cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->horizontala,
-        ctx_none, mi_row, mi_col, bsize, PARTITION_HORZ_A, mi_row, mi_col,
-        get_subsize(bsize, PARTITION_HORZ_4), mi_row + mi_step / 2, mi_col,
-        get_subsize(bsize, PARTITION_HORZ_4), mi_row + mi_step, mi_col,
-        get_subsize(bsize, PARTITION_HORZ));
-    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
-  }
-#else
+  // PARTITION_HORZ_A
   if (partition_horz_allowed && horza_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_HORZ_A);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
@@ -2840,22 +2764,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        subsize);
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
-#endif
-// PARTITION_HORZ_B
-#if CONFIG_EXT_PARTITION_TYPES_AB
-  if (partition_horz_allowed && horzab_partition_allowed) {
-    rd_test_partition3(
-        cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->horizontalb,
-        ctx_none, mi_row, mi_col, bsize, PARTITION_HORZ_B, mi_row, mi_col,
-        get_subsize(bsize, PARTITION_HORZ), mi_row + mi_step, mi_col,
-        get_subsize(bsize, PARTITION_HORZ_4), mi_row + 3 * mi_step / 2, mi_col,
-        get_subsize(bsize, PARTITION_HORZ_4));
-    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
-  }
-  (void)vert_rd;
-  (void)horz_rd;
-  (void)split_rd;
-#else
+  // PARTITION_HORZ_B
   if (partition_horz_allowed && horzb_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_HORZ_B);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
@@ -2874,20 +2783,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     verta_partition_allowed &= (vert_a_rd / 16 * 15 < best_rdc.rdcost);
     vertb_partition_allowed &= (vert_b_rd / 16 * 15 < best_rdc.rdcost);
   }
-#endif  // CONFIG_EXT_PARTITION_TYPES_AB
 
-// PARTITION_VERT_A
-#if CONFIG_EXT_PARTITION_TYPES_AB
-  if (partition_vert_allowed && vertab_partition_allowed) {
-    rd_test_partition3(
-        cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->verticala,
-        ctx_none, mi_row, mi_col, bsize, PARTITION_VERT_A, mi_row, mi_col,
-        get_subsize(bsize, PARTITION_VERT_4), mi_row, mi_col + mi_step / 2,
-        get_subsize(bsize, PARTITION_VERT_4), mi_row, mi_col + mi_step,
-        get_subsize(bsize, PARTITION_VERT));
-    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
-  }
-#else
+  // PARTITION_VERT_A
   if (partition_vert_allowed && verta_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_VERT_A);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
@@ -2897,19 +2794,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        mi_col + mi_step, subsize);
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
-#endif
-// PARTITION_VERT_B
-#if CONFIG_EXT_PARTITION_TYPES_AB
-  if (partition_vert_allowed && vertab_partition_allowed) {
-    rd_test_partition3(
-        cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->verticalb,
-        ctx_none, mi_row, mi_col, bsize, PARTITION_VERT_B, mi_row, mi_col,
-        get_subsize(bsize, PARTITION_VERT), mi_row, mi_col + mi_step,
-        get_subsize(bsize, PARTITION_VERT_4), mi_row, mi_col + 3 * mi_step / 2,
-        get_subsize(bsize, PARTITION_VERT_4));
-    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
-  }
-#else
+  // PARTITION_VERT_B
   if (partition_vert_allowed && vertb_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_VERT_B);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
@@ -2919,7 +2804,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        mi_col + mi_step, bsize2);
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
-#endif
 
   // PARTITION_HORZ_4
   int partition_horz4_allowed = partition4_allowed && partition_horz_allowed;

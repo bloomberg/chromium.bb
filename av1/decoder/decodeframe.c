@@ -629,16 +629,11 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   AV1_COMMON *const cm = &pbi->common;
   const int num_8x8_wh = mi_size_wide[bsize];
   const int hbs = num_8x8_wh >> 1;
-#if CONFIG_EXT_PARTITION_TYPES && CONFIG_EXT_PARTITION_TYPES_AB
-  const int qbs = num_8x8_wh >> 2;
-#endif
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
 #if CONFIG_EXT_PARTITION_TYPES
   const int quarter_step = num_8x8_wh / 4;
-#if !CONFIG_EXT_PARTITION_TYPES_AB
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-#endif
 #endif
   const int has_rows = (mi_row + hbs) < cm->mi_rows;
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
@@ -688,32 +683,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       DEC_PARTITION(mi_row + hbs, mi_col + hbs, subsize);
       break;
 #if CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_EXT_PARTITION_TYPES_AB
-    case PARTITION_HORZ_A:
-      DEC_BLOCK(mi_row, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
-      DEC_BLOCK(mi_row + qbs, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
-      DEC_BLOCK(mi_row + hbs, mi_col, subsize);
-      break;
-    case PARTITION_HORZ_B:
-      DEC_BLOCK(mi_row, mi_col, subsize);
-      DEC_BLOCK(mi_row + hbs, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
-      if (mi_row + 3 * qbs < cm->mi_rows)
-        DEC_BLOCK(mi_row + 3 * qbs, mi_col,
-                  get_subsize(bsize, PARTITION_HORZ_4));
-      break;
-    case PARTITION_VERT_A:
-      DEC_BLOCK(mi_row, mi_col, get_subsize(bsize, PARTITION_VERT_4));
-      DEC_BLOCK(mi_row, mi_col + qbs, get_subsize(bsize, PARTITION_VERT_4));
-      DEC_BLOCK(mi_row, mi_col + hbs, subsize);
-      break;
-    case PARTITION_VERT_B:
-      DEC_BLOCK(mi_row, mi_col, subsize);
-      DEC_BLOCK(mi_row, mi_col + hbs, get_subsize(bsize, PARTITION_VERT_4));
-      if (mi_col + 3 * qbs < cm->mi_cols)
-        DEC_BLOCK(mi_row, mi_col + 3 * qbs,
-                  get_subsize(bsize, PARTITION_VERT_4));
-      break;
-#else
     case PARTITION_HORZ_A:
       DEC_BLOCK(mi_row, mi_col, bsize2);
       DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
@@ -734,7 +703,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
       DEC_BLOCK(mi_row + hbs, mi_col + hbs, bsize2);
       break;
-#endif
     case PARTITION_HORZ_4:
       for (int i = 0; i < 4; ++i) {
         int this_mi_row = mi_row + i * quarter_step;

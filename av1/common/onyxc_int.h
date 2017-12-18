@@ -1011,10 +1011,8 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
                                                 BLOCK_SIZE bsize,
                                                 PARTITION_TYPE partition) {
   if (bsize >= BLOCK_8X8) {
-#if !CONFIG_EXT_PARTITION_TYPES_AB
     const int hbs = mi_size_wide[bsize] / 2;
     BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-#endif
     switch (partition) {
       case PARTITION_SPLIT:
         if (bsize != BLOCK_8X8) break;
@@ -1026,30 +1024,6 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
       case PARTITION_VERT_4:
         update_partition_context(xd, mi_row, mi_col, subsize, bsize);
         break;
-#if CONFIG_EXT_PARTITION_TYPES_AB
-      case PARTITION_HORZ_A:
-        update_partition_context(xd, mi_row, mi_col,
-                                 get_subsize(bsize, PARTITION_HORZ_4), subsize);
-        update_partition_context(xd, mi_row + mi_size_high[bsize] / 2, mi_col,
-                                 subsize, subsize);
-        break;
-      case PARTITION_HORZ_B:
-        update_partition_context(xd, mi_row, mi_col, subsize, subsize);
-        update_partition_context(xd, mi_row + mi_size_high[bsize] / 2, mi_col,
-                                 get_subsize(bsize, PARTITION_HORZ_4), subsize);
-        break;
-      case PARTITION_VERT_A:
-        update_partition_context(xd, mi_row, mi_col,
-                                 get_subsize(bsize, PARTITION_VERT_4), subsize);
-        update_partition_context(xd, mi_row, mi_col + mi_size_wide[bsize] / 2,
-                                 subsize, subsize);
-        break;
-      case PARTITION_VERT_B:
-        update_partition_context(xd, mi_row, mi_col, subsize, subsize);
-        update_partition_context(xd, mi_row, mi_col + mi_size_wide[bsize] / 2,
-                                 get_subsize(bsize, PARTITION_VERT_4), subsize);
-        break;
-#else
       case PARTITION_HORZ_A:
         update_partition_context(xd, mi_row, mi_col, bsize2, subsize);
         update_partition_context(xd, mi_row + hbs, mi_col, subsize, subsize);
@@ -1066,7 +1040,6 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
         update_partition_context(xd, mi_row, mi_col, subsize, subsize);
         update_partition_context(xd, mi_row, mi_col + hbs, bsize2, subsize);
         break;
-#endif
       default: assert(0 && "Invalid partition type");
     }
   }
@@ -1298,16 +1271,6 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
     const MB_MODE_INFO *const mbmi_below = &mi[bhigh / 2 * cm->mi_stride]->mbmi;
 
     if (sswide == bwide) {
-#if CONFIG_EXT_PARTITION_TYPES_AB
-      // Smaller height but same width. Is PARTITION_HORZ, PARTITION_HORZ_4,
-      // PARTITION_HORZ_A or PARTITION_HORZ_B.
-      if (sshigh * 2 == bhigh)
-        return (mbmi_below->sb_type == subsize) ? PARTITION_HORZ
-                                                : PARTITION_HORZ_B;
-      assert(sshigh * 4 == bhigh);
-      return (mbmi_below->sb_type == subsize) ? PARTITION_HORZ_4
-                                              : PARTITION_HORZ_A;
-#else
       // Smaller height but same width. Is PARTITION_HORZ_4, PARTITION_HORZ or
       // PARTITION_HORZ_B. To distinguish the latter two, check if the lower
       // half was split.
@@ -1318,18 +1281,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
         return PARTITION_HORZ;
       else
         return PARTITION_HORZ_B;
-#endif
     } else if (sshigh == bhigh) {
-#if CONFIG_EXT_PARTITION_TYPES_AB
-      // Smaller width but same height. Is PARTITION_VERT, PARTITION_VERT_4,
-      // PARTITION_VERT_A or PARTITION_VERT_B.
-      if (sswide * 2 == bwide)
-        return (mbmi_right->sb_type == subsize) ? PARTITION_VERT
-                                                : PARTITION_VERT_B;
-      assert(sswide * 4 == bwide);
-      return (mbmi_right->sb_type == subsize) ? PARTITION_VERT_4
-                                              : PARTITION_VERT_A;
-#else
       // Smaller width but same height. Is PARTITION_VERT_4, PARTITION_VERT or
       // PARTITION_VERT_B. To distinguish the latter two, check if the right
       // half was split.
@@ -1340,9 +1292,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
         return PARTITION_VERT;
       else
         return PARTITION_VERT_B;
-#endif
     } else {
-#if !CONFIG_EXT_PARTITION_TYPES_AB
       // Smaller width and smaller height. Might be PARTITION_SPLIT or could be
       // PARTITION_HORZ_A or PARTITION_VERT_A. If subsize isn't halved in both
       // dimensions, we immediately know this is a split (which will recurse to
@@ -1354,7 +1304,6 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 
       if (mi_size_wide[mbmi_below->sb_type] == bwide) return PARTITION_HORZ_A;
       if (mi_size_high[mbmi_right->sb_type] == bhigh) return PARTITION_VERT_A;
-#endif
 
       return PARTITION_SPLIT;
     }

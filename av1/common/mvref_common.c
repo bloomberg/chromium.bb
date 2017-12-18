@@ -456,7 +456,7 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (xd->n8_w > xd->n8_h)
     if (xd->is_sec_rect) has_tr = 0;
 
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+#if CONFIG_EXT_PARTITION_TYPES
   // The bottom left square of a Vertical A (in the old format) does
   // not have a top right as it is decoded before the right hand
   // rectangle of the partition

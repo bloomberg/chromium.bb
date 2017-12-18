@@ -188,28 +188,6 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
       CSEGS(hbs, bs, 0, 0);
       CSEGS(hbs, bs, 0, hbs);
       break;
-#if CONFIG_EXT_PARTITION_TYPES_AB
-    case PARTITION_HORZ_A:
-      CSEGS(bs, qbs, 0, 0);
-      CSEGS(bs, qbs, qbs, 0);
-      CSEGS(bs, hbs, hbs, 0);
-      break;
-    case PARTITION_HORZ_B:
-      CSEGS(bs, hbs, 0, 0);
-      CSEGS(bs, qbs, hbs, 0);
-      if (mi_row + 3 * qbs < cm->mi_rows) CSEGS(bs, qbs, 3 * qbs, 0);
-      break;
-    case PARTITION_VERT_A:
-      CSEGS(qbs, bs, 0, 0);
-      CSEGS(qbs, bs, 0, qbs);
-      CSEGS(hbs, bs, 0, hbs);
-      break;
-    case PARTITION_VERT_B:
-      CSEGS(hbs, bs, 0, 0);
-      CSEGS(qbs, bs, 0, hbs);
-      if (mi_col + 3 * qbs < cm->mi_cols) CSEGS(qbs, bs, 0, 3 * qbs);
-      break;
-#else
     case PARTITION_HORZ_A:
       CSEGS(hbs, hbs, 0, 0);
       CSEGS(hbs, hbs, 0, hbs);
@@ -230,7 +208,6 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
       CSEGS(hbs, hbs, 0, hbs);
       CSEGS(hbs, hbs, hbs, hbs);
       break;
-#endif
     case PARTITION_HORZ_4:
       CSEGS(bs, qbs, 0, 0);
       CSEGS(bs, qbs, qbs, 0);
