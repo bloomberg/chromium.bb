@@ -60,6 +60,14 @@ button {
   float: right;
 }
 
+#expand-log-button {
+  float: right;
+}
+
+#collapse-log-button {
+  float: right;
+}
+
 .hidden-tab {
   display: none;
   padding: 12px;
