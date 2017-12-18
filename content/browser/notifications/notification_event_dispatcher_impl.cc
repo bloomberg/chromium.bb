@@ -405,40 +405,40 @@ void NotificationEventDispatcherImpl::DispatchNotificationCloseEvent(
 void NotificationEventDispatcherImpl::RegisterNonPersistentNotification(
     const std::string& notification_id,
     int renderer_id,
-    int non_persistent_id) {
-  if (non_persistent_ids_.count(notification_id) &&
-      non_persistent_ids_[notification_id] != non_persistent_id) {
-    // Notify close for a previously displayed notification with the same id,
-    // this can happen when replacing a non-persistent notification with the
-    // same tag since from the JS point of view there will be two notification
-    // objects and the old one needs to receive the close event.
+    int request_id) {
+  if (request_ids_.count(notification_id) &&
+      request_ids_[notification_id] != request_id) {
+    // Notify close for a previously displayed notification with the same
+    // request id, this can happen when replacing a non-persistent notification
+    // with the same tag since from the JS point of view there will be two
+    // notification objects and the old one needs to receive the close event.
     // TODO(miguelg) this is probably not the right layer to do this.
     DispatchNonPersistentCloseEvent(notification_id);
   }
   renderer_ids_[notification_id] = renderer_id;
-  non_persistent_ids_[notification_id] = non_persistent_id;
+  request_ids_[notification_id] = request_id;
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentShowEvent(
     const std::string& notification_id) {
   if (!renderer_ids_.count(notification_id))
     return;
-  DCHECK(non_persistent_ids_.count(notification_id));
+  DCHECK(request_ids_.count(notification_id));
 
   RenderProcessHost* sender =
       RenderProcessHost::FromID(renderer_ids_[notification_id]);
   if (!sender)
     return;
 
-  sender->Send(new PlatformNotificationMsg_DidShow(
-      non_persistent_ids_[notification_id]));
+  sender->Send(
+      new PlatformNotificationMsg_DidShow(request_ids_[notification_id]));
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
     const std::string& notification_id) {
   if (!renderer_ids_.count(notification_id))
     return;
-  DCHECK(non_persistent_ids_.count(notification_id));
+  DCHECK(request_ids_.count(notification_id));
 
   RenderProcessHost* sender =
       RenderProcessHost::FromID(renderer_ids_[notification_id]);
@@ -448,15 +448,15 @@ void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
   // closed.
   if (!sender)
     return;
-  sender->Send(new PlatformNotificationMsg_DidClick(
-      non_persistent_ids_[notification_id]));
+  sender->Send(
+      new PlatformNotificationMsg_DidClick(request_ids_[notification_id]));
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
     const std::string& notification_id) {
   if (!renderer_ids_.count(notification_id))
     return;
-  DCHECK(non_persistent_ids_.count(notification_id));
+  DCHECK(request_ids_.count(notification_id));
 
   RenderProcessHost* sender =
       RenderProcessHost::FromID(renderer_ids_[notification_id]);
@@ -467,18 +467,18 @@ void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
   if (!sender)
     return;
 
-  sender->Send(new PlatformNotificationMsg_DidClose(
-      non_persistent_ids_[notification_id]));
+  sender->Send(
+      new PlatformNotificationMsg_DidClose(request_ids_[notification_id]));
 
   // No interaction will follow anymore once the notification has been closed.
-  non_persistent_ids_.erase(notification_id);
+  request_ids_.erase(notification_id);
   renderer_ids_.erase(notification_id);
 }
 
 void NotificationEventDispatcherImpl::RendererGone(int renderer_id) {
   for (auto iter = renderer_ids_.begin(); iter != renderer_ids_.end();) {
     if (iter->second == renderer_id) {
-      non_persistent_ids_.erase(iter->first);
+      request_ids_.erase(iter->first);
       iter = renderer_ids_.erase(iter);
     } else {
       iter++;

@@ -57,7 +57,7 @@ std::string NotificationIdGenerator::GenerateForPersistentNotification(
 std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
     const GURL& origin,
     const std::string& tag,
-    int non_persistent_notification_id,
+    int request_id,
     int render_process_id) const {
   DCHECK(origin.is_valid());
   DCHECK_EQ(origin, origin.GetOrigin());
@@ -72,7 +72,7 @@ std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
     stream << base::IntToString(render_process_id);
     stream << kSeparator;
 
-    stream << base::IntToString(non_persistent_notification_id);
+    stream << base::IntToString(request_id);
   } else {
     stream << tag;
   }
