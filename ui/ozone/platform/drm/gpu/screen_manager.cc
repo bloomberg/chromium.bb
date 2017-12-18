@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/files/platform_file.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/display/types/display_snapshot.h"
@@ -377,11 +378,11 @@ OverlayPlane ScreenManager::GetModesetBuffer(
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return OverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID, gfx::Rect(),
-                        gfx::RectF());
+                        gfx::RectF(), base::kInvalidPlatformFile);
   }
 
   FillModesetBuffer(drm, controller, buffer.get());
-  return OverlayPlane(buffer);
+  return OverlayPlane(buffer, base::kInvalidPlatformFile);
 }
 
 bool ScreenManager::EnableController(HardwareDisplayController* controller) {

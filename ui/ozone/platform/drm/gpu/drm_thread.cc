@@ -77,7 +77,8 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
 
 }  // namespace
 
-DrmThread::DrmThread() : base::Thread("DrmThread"), binding_(this) {}
+DrmThread::DrmThread()
+    : base::Thread("DrmThread"), binding_(this), weak_ptr_factory_(this) {}
 
 DrmThread::~DrmThread() {
   Stop();
@@ -189,6 +190,19 @@ void DrmThread::GetScanoutFormats(
 void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
                                  const std::vector<OverlayPlane>& planes,
                                  SwapCompletionOnceCallback callback) {
+  scoped_refptr<ui::DrmDevice> drm_device =
+      device_manager_->GetDrmDevice(widget);
+
+  drm_device->plane_manager()->RequestPlanesReadyCallback(
+      planes, base::BindOnce(&DrmThread::OnPlanesReadyForPageFlip,
+                             weak_ptr_factory_.GetWeakPtr(), widget, planes,
+                             base::Passed(&callback)));
+}
+
+void DrmThread::OnPlanesReadyForPageFlip(
+    gfx::AcceleratedWidget widget,
+    const std::vector<OverlayPlane>& planes,
+    SwapCompletionOnceCallback callback) {
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (window) {
     bool result = window->SchedulePageFlip(planes, std::move(callback));

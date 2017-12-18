@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/platform_file.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
@@ -137,7 +138,7 @@ void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
       params.buffer_size);
   ui::OverlayPlane plane(std::move(scanout_buffer), params.plane_z_order,
                          params.transform, params.display_rect,
-                         params.crop_rect);
+                         params.crop_rect, base::kInvalidPlatformFile);
   plane_list_.push_back(plane);
 }
 
@@ -274,7 +275,8 @@ TEST_F(DrmOverlayValidatorTest,
   controller->AddCrtc(std::unique_ptr<ui::CrtcController>(
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new ui::MockScanoutBuffer(primary_rect_.size())));
+                              new ui::MockScanoutBuffer(primary_rect_.size())),
+                          base::kInvalidPlatformFile);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
   gfx::RectF crop_rect = gfx::RectF(0, 0, 0.5, 0.5);
@@ -335,7 +337,8 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatYUV_MirroredControllers) {
   controller->AddCrtc(std::unique_ptr<ui::CrtcController>(
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
-      new ui::MockScanoutBuffer(primary_rect_.size())));
+                              new ui::MockScanoutBuffer(primary_rect_.size())),
+                          base::kInvalidPlatformFile);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
   overlay_params_.back().buffer_size = overlay_rect_.size();

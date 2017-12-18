@@ -141,6 +141,10 @@ class DrmThread : public base::Thread,
   void Init() override;
 
  private:
+  void OnPlanesReadyForPageFlip(gfx::AcceleratedWidget widget,
+                                const std::vector<OverlayPlane>& planes,
+                                SwapCompletionOnceCallback callback);
+
   std::unique_ptr<DrmDeviceManager> device_manager_;
   std::unique_ptr<ScanoutBufferGenerator> buffer_generator_;
   std::unique_ptr<ScreenManager> screen_manager_;
@@ -152,6 +156,8 @@ class DrmThread : public base::Thread,
 
   // The mojo implementation of DrmDevice can use a simple binding.
   mojo::Binding<ozone::mojom::DrmDevice> binding_;
+
+  base::WeakPtrFactory<DrmThread> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmThread);
 };

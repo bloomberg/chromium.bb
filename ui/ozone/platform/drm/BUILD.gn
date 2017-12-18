@@ -117,6 +117,7 @@ source_set("gbm") {
     "//services/ui/public/interfaces:constants",
     "//skia",
     "//third_party/libdrm",
+    "//third_party/libsync",
     "//third_party/minigbm",
     "//ui/base",
     "//ui/display",
@@ -168,6 +169,7 @@ source_set("gbm_unittests") {
 
   deps = [
     ":gbm",
+    "//base/test:test_support",
     "//skia",
     "//testing/gtest",
     "//third_party/libdrm",
