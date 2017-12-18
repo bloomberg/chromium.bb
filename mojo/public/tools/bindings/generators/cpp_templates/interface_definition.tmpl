@@ -219,12 +219,11 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
   ~{{class_name}}_{{method.name}}_ProxyToResponder() {
 #if DCHECK_IS_ON()
     if (responder_) {
-      // Is the Service destroying the callback without running it
-      // and without first closing the pipe?
-      responder_->DCheckInvalid("The callback passed to "
-          "{{class_name}}::{{method.name}}() was never run. It should either "
-          "be run before destruction, or else destroyed after first closing "
-          "the pipe.");
+      // If we're being destroyed without being run, we want to ensure the
+      // binding endpoint has been closed. This checks for that asynchronously.
+      // We pass a bound generated callback to handle the response so that any
+      // resulting DCHECK stack will have useful interface type information.
+      responder_->IsConnectedAsync(base::BindOnce(&OnIsConnectedComplete));
     }
 #endif
     // If the Callback was dropped then deleting the responder will close
@@ -241,6 +240,16 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
         is_sync_(is_sync),
         responder_(std::move(responder)) {
   }
+
+#if DCHECK_IS_ON()
+  static void OnIsConnectedComplete(bool connected) {
+    DCHECK(!connected)
+        << "{{class_name}}::{{method.name}}Callback was destroyed without "
+        << "first either being run or its corresponding binding being closed. "
+        << "It is an error to drop response callbacks which still correspond "
+        << "to an open interface pipe.";
+  }
+#endif
 
   void Run(
       {{interface_macros.declare_params("in_", method.response_parameters)}});
