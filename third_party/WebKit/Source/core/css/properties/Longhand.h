@@ -16,7 +16,7 @@ class StyleResolverState;
 
 class Longhand : public CSSProperty {
  public:
-  constexpr Longhand() : CSSProperty() {}
+  constexpr Longhand(CSSPropertyID id) : CSSProperty(id) {}
 
   // Parses and consumes a longhand property value from the token range.
   // Returns nullptr if the input is invalid.

@@ -34,10 +34,11 @@ class CSSProperty : public CSSUnresolvedProperty {
  public:
   CORE_EXPORT static const CSSProperty& Get(CSSPropertyID);
 
-  constexpr CSSProperty() : CSSUnresolvedProperty() {}
+  explicit constexpr CSSProperty(CSSPropertyID id) : CSSUnresolvedProperty(id) {}
 
   bool IsResolvedProperty() const override { return true; }
   WTF::String GetJSPropertyName() const;
+
   virtual bool IsInterpolable() const { return false; }
   virtual bool IsInherited() const { return false; }
   virtual bool IsCompositableProperty() const { return false; }

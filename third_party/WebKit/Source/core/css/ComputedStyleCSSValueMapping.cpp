@@ -2235,9 +2235,12 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     const LayoutObject* layout_object,
     Node* styled_node,
     bool allow_visited_style) {
+  if (property.IDEquals(CSSPropertyInvalid))
+    return nullptr;
   const SVGComputedStyle& svg_style = style.SvgStyle();
   const CSSProperty& resolved_property = property.ResolveDirectionAwareProperty(
       style.Direction(), style.GetWritingMode());
+  DCHECK(!resolved_property.IDEquals(CSSPropertyInvalid));
   switch (resolved_property.PropertyID()) {
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage: {
