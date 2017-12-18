@@ -75,6 +75,9 @@ CGFloat FullscreenModel::GetToolbarHeight() const {
 }
 
 void FullscreenModel::SetYContentOffset(CGFloat y_content_offset) {
+  if (!enabled())
+    return;
+
   y_content_offset_ = y_content_offset;
 
   if (!has_base_offset())

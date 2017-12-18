@@ -9,8 +9,13 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_gesture_recognizer.h"
@@ -174,6 +179,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // The scrollview driving the OverscrollActionsController when not using
   // the scrollview from the WebState.
   UIScrollView* _scrollview;
+  // The disabler that prevents fullscreen calculations from occurring while
+  // overscroll actions are being recognized.
+  std::unique_ptr<ScopedFullscreenDisabler> _fullscreenDisabler;
 }
 
 // The view displayed over the header view holding the actions.
@@ -244,6 +252,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @synthesize initialHeaderHeight = _initialHeaderHeight;
 @synthesize overscrollState = _overscrollState;
 @synthesize delegate = _delegate;
+@synthesize browserState = _browserState;
 @synthesize panPointScreenOrigin = _panPointScreenOrigin;
 @synthesize panGestureRecognizer = _panGestureRecognizer;
 
@@ -735,6 +744,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       [[NSNotificationCenter defaultCenter]
           postNotificationName:kOverscrollActionsDidEnd
                         object:self];
+      _fullscreenDisabler = nullptr;
       if (_shouldInvalidate) {
         [self invalidate];
       }
@@ -747,6 +757,13 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
           [[NSNotificationCenter defaultCenter]
               postNotificationName:kOverscrollActionsWillStart
                             object:self];
+          if (self.browserState) {
+            FullscreenController* fullscreenController =
+                FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+                    self.browserState);
+            _fullscreenDisabler = base::MakeUnique<ScopedFullscreenDisabler>(
+                fullscreenController);
+          }
         }
         [CATransaction begin];
         [CATransaction setDisableActions:YES];
