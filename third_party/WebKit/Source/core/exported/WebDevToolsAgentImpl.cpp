@@ -166,24 +166,17 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     for (const auto view : WebViewImpl::AllInstances())
       view->GetChromeClient().NotifyPopupOpeningObservers();
 
-    // 2. Notify embedder about pausing.
-    if (agent->Client())
-      agent->Client()->WillEnterDebugLoop();
-
-    // 3. Disable active objects
+    // 2. Disable active objects
     WebView::WillEnterModalLoop();
 
-    // 4. Process messages until quitNow is called.
+    // 3. Process messages until quitNow is called.
     message_loop_->Run();
 
-    // 5. Resume active objects
+    // 4. Resume active objects
     WebView::DidExitModalLoop();
 
+    // 5. Enable input events.
     WebFrameWidgetBase::SetIgnoreInputEvents(false);
-
-    // 7. Notify embedder about resuming.
-    if (agent->Client())
-      agent->Client()->DidExitDebugLoop();
   }
 
   void QuitNow() override {
