@@ -3748,9 +3748,9 @@
             ],
             "experiments": [
                 {
-                    "name": "NeverThresholdEquals7",
+                    "name": "DarkerColor",
                     "params": {
-                        "translate_auto_never_threshold": "7"
+                        "translate_tab_default_text_color": "1"
                     },
                     "enable_features": [
                         "TranslateCompactUI"
