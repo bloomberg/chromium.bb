@@ -407,6 +407,8 @@ struct drm_plane_state {
 
 	struct drm_fb *fb;
 
+	struct weston_view *ev; /**< maintained for drm_assign_planes only */
+
 	int32_t src_x, src_y;
 	uint32_t src_w, src_h;
 	int32_t dest_x, dest_y;
@@ -1984,6 +1986,7 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	}
 
 	state->fb = fb;
+	state->ev = ev;
 	state->output = output;
 	if (!drm_plane_state_coords_for_view(state, ev))
 		goto err;
@@ -3055,6 +3058,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	}
 
 	state->fb = fb;
+	state->ev = ev;
 	state->output = output;
 
 	if (!drm_plane_state_coords_for_view(state, ev))
@@ -3182,6 +3186,7 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	}
 
 	output->cursor_view = ev;
+	plane_state->ev = ev;
 
 	plane_state->fb =
 		drm_fb_ref(output->gbm_cursor_fb[output->current_cursor]);
@@ -3258,6 +3263,149 @@ err:
 	drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
 }
 
+static struct drm_output_state *
+drm_output_propose_state(struct weston_output *output_base,
+			 struct drm_pending_state *pending_state)
+{
+	struct drm_output *output = to_drm_output(output_base);
+	struct drm_output_state *state;
+	struct weston_view *ev;
+	pixman_region32_t surface_overlap, renderer_region;
+	struct weston_plane *primary = &output_base->compositor->primary_plane;
+
+	assert(!output->state_last);
+	state = drm_output_state_duplicate(output->state_cur,
+					   pending_state,
+					   DRM_OUTPUT_STATE_CLEAR_PLANES);
+
+	/*
+	 * Find a surface for each sprite in the output using some heuristics:
+	 * 1) size
+	 * 2) frequency of update
+	 * 3) opacity (though some hw might support alpha blending)
+	 * 4) clipping (this can be fixed with color keys)
+	 *
+	 * The idea is to save on blitting since this should save power.
+	 * If we can get a large video surface on the sprite for example,
+	 * the main display surface may not need to update at all, and
+	 * the client buffer can be used directly for the sprite surface
+	 * as we do for flipping full screen surfaces.
+	 */
+	pixman_region32_init(&renderer_region);
+
+	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
+		struct weston_plane *next_plane = NULL;
+
+		/* Since we process views from top to bottom, we know that if
+		 * the view intersects the calculated renderer region, it must
+		 * be part of, or occluded by, it, and cannot go on a plane. */
+		pixman_region32_init(&surface_overlap);
+		pixman_region32_intersect(&surface_overlap, &renderer_region,
+					  &ev->transform.boundingbox);
+
+		if (pixman_region32_not_empty(&surface_overlap))
+			next_plane = primary;
+		pixman_region32_fini(&surface_overlap);
+
+		if (next_plane == NULL)
+			next_plane = drm_output_prepare_cursor_view(state, ev);
+
+		if (next_plane == NULL)
+			next_plane = drm_output_prepare_scanout_view(state, ev);
+
+		if (next_plane == NULL)
+			next_plane = drm_output_prepare_overlay_view(state, ev);
+
+		if (next_plane == NULL)
+			next_plane = primary;
+
+		if (next_plane == primary)
+			pixman_region32_union(&renderer_region,
+					      &renderer_region,
+					      &ev->transform.boundingbox);
+	}
+	pixman_region32_fini(&renderer_region);
+
+	return state;
+}
+
+static void
+drm_assign_planes(struct weston_output *output_base, void *repaint_data)
+{
+	struct drm_backend *b = to_drm_backend(output_base->compositor);
+	struct drm_pending_state *pending_state = repaint_data;
+	struct drm_output *output = to_drm_output(output_base);
+	struct drm_output_state *state;
+	struct drm_plane_state *plane_state;
+	struct weston_view *ev;
+	struct weston_plane *primary = &output_base->compositor->primary_plane;
+
+	state = drm_output_propose_state(output_base, pending_state);
+
+	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
+		struct drm_plane *target_plane = NULL;
+
+		/* Test whether this buffer can ever go into a plane:
+		 * non-shm, or small enough to be a cursor.
+		 *
+		 * Also, keep a reference when using the pixman renderer.
+		 * That makes it possible to do a seamless switch to the GL
+		 * renderer and since the pixman renderer keeps a reference
+		 * to the buffer anyway, there is no side effects.
+		 */
+		if (b->use_pixman ||
+		    (ev->surface->buffer_ref.buffer &&
+		    (!wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) ||
+		     (ev->surface->width <= b->cursor_width &&
+		      ev->surface->height <= b->cursor_height))))
+			ev->surface->keep_buffer = true;
+		else
+			ev->surface->keep_buffer = false;
+
+		/* This is a bit unpleasant, but lacking a temporary place to
+		 * hang a plane off the view, we have to do a nested walk.
+		 * Our first-order iteration has to be planes rather than
+		 * views, because otherwise we won't reset views which were
+		 * previously on planes to being on the primary plane. */
+		wl_list_for_each(plane_state, &state->plane_list, link) {
+			if (plane_state->ev == ev) {
+				plane_state->ev = NULL;
+				target_plane = plane_state->plane;
+				break;
+			}
+		}
+
+		if (target_plane)
+			weston_view_move_to_plane(ev, &target_plane->base);
+		else
+			weston_view_move_to_plane(ev, primary);
+
+		if (!target_plane ||
+		    target_plane->type == WDRM_PLANE_TYPE_CURSOR) {
+			/* cursor plane & renderer involve a copy */
+			ev->psf_flags = 0;
+		} else {
+			/* All other planes are a direct scanout of a
+			 * single client buffer.
+			 */
+			ev->psf_flags = WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY;
+		}
+	}
+
+	/* We rely on output->cursor_view being both an accurate reflection of
+	 * the cursor plane's state, but also being maintained across repaints
+	 * to avoid unnecessary damage uploads, per the comment in
+	 * drm_output_prepare_cursor_view. In the event that we go from having
+	 * a cursor view to not having a cursor view, we need to clear it. */
+	if (output->cursor_view) {
+		plane_state =
+			drm_output_state_get_existing_plane(state,
+							    output->cursor_plane);
+		if (!plane_state || !plane_state->fb)
+			output->cursor_view = NULL;
+	}
+}
+
 /*
  * Get the aspect-ratio from drmModeModeInfo mode flags.
  *
@@ -3279,115 +3427,6 @@ aspect_ratio_to_string(enum weston_mode_aspect_ratio ratio)
 		return " (unknown aspect ratio)";
 
 	return aspect_ratio_as_string[ratio];
-}
-
-static void
-drm_assign_planes(struct weston_output *output_base, void *repaint_data)
-{
-	struct drm_backend *b = to_drm_backend(output_base->compositor);
-	struct drm_pending_state *pending_state = repaint_data;
-	struct drm_output *output = to_drm_output(output_base);
-	struct drm_output_state *state;
-	struct drm_plane_state *plane_state;
-	struct weston_view *ev;
-	pixman_region32_t surface_overlap, renderer_region;
-	struct weston_plane *primary, *next_plane;
-
-	assert(!output->state_last);
-	state = drm_output_state_duplicate(output->state_cur,
-					   pending_state,
-					   DRM_OUTPUT_STATE_CLEAR_PLANES);
-
-	/*
-	 * Find a surface for each sprite in the output using some heuristics:
-	 * 1) size
-	 * 2) frequency of update
-	 * 3) opacity (though some hw might support alpha blending)
-	 * 4) clipping (this can be fixed with color keys)
-	 *
-	 * The idea is to save on blitting since this should save power.
-	 * If we can get a large video surface on the sprite for example,
-	 * the main display surface may not need to update at all, and
-	 * the client buffer can be used directly for the sprite surface
-	 * as we do for flipping full screen surfaces.
-	 */
-	pixman_region32_init(&renderer_region);
-	primary = &output_base->compositor->primary_plane;
-
-	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
-		struct weston_surface *es = ev->surface;
-
-		/* Test whether this buffer can ever go into a plane:
-		 * non-shm, or small enough to be a cursor.
-		 *
-		 * Also, keep a reference when using the pixman renderer.
-		 * That makes it possible to do a seamless switch to the GL
-		 * renderer and since the pixman renderer keeps a reference
-		 * to the buffer anyway, there is no side effects.
-		 */
-		if (b->use_pixman ||
-		    (es->buffer_ref.buffer &&
-		    (!wl_shm_buffer_get(es->buffer_ref.buffer->resource) ||
-		     (ev->surface->width <= b->cursor_width &&
-		      ev->surface->height <= b->cursor_height))))
-			es->keep_buffer = true;
-		else
-			es->keep_buffer = false;
-
-		pixman_region32_init(&surface_overlap);
-		pixman_region32_intersect(&surface_overlap, &renderer_region,
-					  &ev->transform.boundingbox);
-
-		next_plane = NULL;
-		if (pixman_region32_not_empty(&surface_overlap))
-			next_plane = primary;
-		if (next_plane == NULL)
-			next_plane = drm_output_prepare_cursor_view(state, ev);
-
-		if (next_plane == NULL)
-			next_plane = drm_output_prepare_scanout_view(state, ev);
-
-		if (next_plane == NULL)
-			next_plane = drm_output_prepare_overlay_view(state, ev);
-
-		if (next_plane == NULL)
-			next_plane = primary;
-
-		weston_view_move_to_plane(ev, next_plane);
-
-		if (next_plane == primary)
-			pixman_region32_union(&renderer_region,
-					      &renderer_region,
-					      &ev->transform.boundingbox);
-
-		if (next_plane == primary ||
-		    (output->cursor_plane &&
-		     next_plane == &output->cursor_plane->base)) {
-			/* cursor plane involves a copy */
-			ev->psf_flags = 0;
-		} else {
-			/* All other planes are a direct scanout of a
-			 * single client buffer.
-			 */
-			ev->psf_flags = WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY;
-		}
-
-		pixman_region32_fini(&surface_overlap);
-	}
-	pixman_region32_fini(&renderer_region);
-
-	/* We rely on output->cursor_view being both an accurate reflection of
-	 * the cursor plane's state, but also being maintained across repaints
-	 * to avoid unnecessary damage uploads, per the comment in
-	 * drm_output_prepare_cursor_view. In the event that we go from having
-	 * a cursor view to not having a cursor view, we need to clear it. */
-	if (output->cursor_view) {
-		plane_state =
-			drm_output_state_get_existing_plane(state,
-							    output->cursor_plane);
-		if (!plane_state || !plane_state->fb)
-			output->cursor_view = NULL;
-	}
 }
 
 /**
