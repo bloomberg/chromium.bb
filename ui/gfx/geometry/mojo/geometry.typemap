@@ -10,6 +10,7 @@ public_headers = [
   "//ui/gfx/geometry/rect.h",
   "//ui/gfx/geometry/rect_f.h",
   "//ui/gfx/geometry/safe_integer_conversions.h",
+  "//ui/gfx/geometry/scroll_offset.h",
   "//ui/gfx/geometry/insets.h",
   "//ui/gfx/geometry/vector2d.h",
   "//ui/gfx/geometry/vector2d_f.h",
@@ -29,4 +30,5 @@ type_mappings = [
   "gfx.mojom.InsetsF=gfx::InsetsF",
   "gfx.mojom.Vector2d=gfx::Vector2d",
   "gfx.mojom.Vector2dF=gfx::Vector2dF",
+  "gfx.mojom.ScrollOffset=gfx::ScrollOffset",
 ]
