@@ -46,15 +46,14 @@ DisplayItemList::DisplayItemList(UsageHint usage_hint)
 DisplayItemList::~DisplayItemList() = default;
 
 void DisplayItemList::Raster(SkCanvas* canvas,
-                             ImageProvider* image_provider,
-                             SkPicture::AbortCallback* callback) const {
+                             ImageProvider* image_provider) const {
   DCHECK(usage_hint_ == kTopLevelDisplayItemList);
   gfx::Rect canvas_playback_rect;
   if (!GetCanvasClipBounds(canvas, &canvas_playback_rect))
     return;
 
   std::vector<size_t> offsets = rtree_.Search(canvas_playback_rect);
-  paint_op_buffer_.Playback(canvas, image_provider, callback, &offsets);
+  paint_op_buffer_.Playback(canvas, image_provider, &offsets);
 }
 
 void DisplayItemList::GrowCurrentBeginItemVisualRect(

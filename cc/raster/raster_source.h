@@ -15,7 +15,6 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/layers/recording_source.h"
 #include "cc/paint/image_id.h"
-#include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
 
@@ -143,8 +142,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
  private:
   void RasterCommon(SkCanvas* canvas,
-                    ImageProvider* image_provider = nullptr,
-                    SkPicture::AbortCallback* callback = nullptr) const;
+                    ImageProvider* image_provider = nullptr) const;
 
   void ClearCanvasForPlayback(SkCanvas* canvas) const;
 

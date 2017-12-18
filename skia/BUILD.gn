@@ -229,8 +229,6 @@ component("skia") {
     "ext/SkDiscardableMemory_chrome.cc",
     "ext/SkDiscardableMemory_chrome.h",
     "ext/SkMemory_new_handler.cpp",
-    "ext/analysis_canvas.cc",
-    "ext/analysis_canvas.h",
     "ext/benchmarking_canvas.cc",
     "ext/benchmarking_canvas.h",
     "ext/convolver.cc",
@@ -726,7 +724,6 @@ source_set("skia_opts") {
 
 test("skia_unittests") {
   sources = [
-    "ext/analysis_canvas_unittest.cc",
     "ext/convolver_unittest.cc",
     "ext/image_operations_unittest.cc",
     "ext/platform_canvas_unittest.cc",

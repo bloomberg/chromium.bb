@@ -805,8 +805,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   // Replays the paint op buffer into the canvas.
   void Playback(SkCanvas* canvas,
-                ImageProvider* image_provider = nullptr,
-                SkPicture::AbortCallback* callback = nullptr) const;
+                ImageProvider* image_provider = nullptr) const;
 
   static sk_sp<PaintOpBuffer> MakeFromMemory(
       const volatile void* input,
@@ -1037,7 +1036,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   // the vector will be replayed.
   void Playback(SkCanvas* canvas,
                 ImageProvider* image_provider,
-                SkPicture::AbortCallback* callback,
                 const std::vector<size_t>* indices) const;
 
   void ReallocBuffer(size_t new_size);

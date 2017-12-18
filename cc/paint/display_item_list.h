@@ -57,9 +57,7 @@ class CC_PAINT_EXPORT DisplayItemList
 
   explicit DisplayItemList(UsageHint = kTopLevelDisplayItemList);
 
-  void Raster(SkCanvas* canvas,
-              ImageProvider* image_provider = nullptr,
-              SkPicture::AbortCallback* callback = nullptr) const;
+  void Raster(SkCanvas* canvas, ImageProvider* image_provider = nullptr) const;
 
   // TODO(vmpstr): This is only used to keep track of debugging info, so we can
   // probably remove it? But it would be nice to delimit painting in a block

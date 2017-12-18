@@ -2044,9 +2044,8 @@ static const PaintOp* GetNestedSingleDrawingOp(const PaintOp* op) {
 }
 
 void PaintOpBuffer::Playback(SkCanvas* canvas,
-                             ImageProvider* image_provider,
-                             SkPicture::AbortCallback* callback) const {
-  Playback(canvas, image_provider, callback, nullptr);
+                             ImageProvider* image_provider) const {
+  Playback(canvas, image_provider, nullptr);
 }
 
 PaintOpBuffer::PlaybackFoldingIterator::PlaybackFoldingIterator(
@@ -2130,7 +2129,6 @@ const PaintOp* PaintOpBuffer::PlaybackFoldingIterator::NextUnfoldedOp() {
 
 void PaintOpBuffer::Playback(SkCanvas* canvas,
                              ImageProvider* image_provider,
-                             SkPicture::AbortCallback* callback,
                              const std::vector<size_t>* offsets) const {
   if (!op_count_)
     return;
@@ -2147,12 +2145,6 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   // transform.  This could probably be done more efficiently.
   PlaybackParams params(image_provider, canvas->getTotalMatrix());
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
-    // Check if we should abort. This should happen at the start of loop since
-    // there are a couple of raster branches below, and we need to ensure that
-    // we do this check after every one of them.
-    if (callback && callback->abort())
-      return;
-
     const PaintOp* op = *iter;
 
     // This is an optimization to replicate the behaviour in SkCanvas
