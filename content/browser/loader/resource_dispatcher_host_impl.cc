@@ -1475,7 +1475,8 @@ ResourceDispatcherHostImpl::CreateBaseResourceHandler(
   if (mojo_request.is_pending()) {
     handler.reset(new MojoAsyncResourceHandler(
         request, this, std::move(mojo_request), std::move(url_loader_client),
-        resource_type));
+        resource_type,
+        false));  // defer_on_response_started.
   } else {
     handler.reset(new AsyncResourceHandler(request, this));
   }
@@ -2164,7 +2165,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   if (IsNavigationMojoResponseEnabled()) {
     handler = std::make_unique<MojoAsyncResourceHandler>(
         new_request.get(), this, std::move(url_loader_request),
-        std::move(url_loader_client), resource_type);
+        std::move(url_loader_client), resource_type,
+        true);  // defer_on_response_started.
   } else {
     StreamContext* stream_context =
         GetStreamContextForResourceContext(resource_context);

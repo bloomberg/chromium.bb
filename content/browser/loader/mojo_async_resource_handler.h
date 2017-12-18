@@ -55,7 +55,8 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
                            ResourceDispatcherHostImpl* rdh,
                            mojom::URLLoaderRequest mojo_request,
                            mojom::URLLoaderClientPtr url_loader_client,
-                           ResourceType resource_type);
+                           ResourceType resource_type,
+                           bool defer_on_response_started);
   ~MojoAsyncResourceHandler() override;
 
   // ResourceHandler implementation:
@@ -80,6 +81,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
 
   // mojom::URLLoader implementation:
   void FollowRedirect() override;
+  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -131,6 +133,8 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
   ResourceDispatcherHostImpl* rdh_;
   mojo::Binding<mojom::URLLoader> binding_;
 
+  bool defer_on_response_started_;
+
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;
   bool is_using_io_buffer_not_from_writer_ = false;
@@ -139,6 +143,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
   bool did_defer_on_will_read_ = false;
   bool did_defer_on_writing_ = false;
   bool did_defer_on_redirect_ = false;
+  bool did_defer_on_response_started_ = false;
   base::TimeTicks response_started_ticks_;
   int64_t reported_total_received_bytes_ = 0;
   int64_t total_written_bytes_ = 0;

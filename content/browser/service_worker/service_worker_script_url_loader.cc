@@ -109,6 +109,10 @@ void ServiceWorkerScriptURLLoader::FollowRedirect() {
   NOTREACHED();
 }
 
+void ServiceWorkerScriptURLLoader::ProceedWithResponse() {
+  NOTREACHED();
+}
+
 void ServiceWorkerScriptURLLoader::SetPriority(net::RequestPriority priority,
                                                int32_t intra_priority_value) {
   network_loader_->SetPriority(priority, intra_priority_value);

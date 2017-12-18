@@ -84,6 +84,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   // mojom::URLLoader overrides:
   void FollowRedirect() override;
+  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;

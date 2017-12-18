@@ -136,6 +136,9 @@ class SubresourceLoader : public mojom::URLLoader,
                        weak_factory_.GetWeakPtr()));
   }
 
+  // mojom::URLLoader implementation
+  void ProceedWithResponse() override { NOTREACHED(); }
+
   void ContinueFollowRedirect(StartLoaderCallback start_function) {
     if (start_function)
       CreateAndStartAppCacheLoader(std::move(start_function));

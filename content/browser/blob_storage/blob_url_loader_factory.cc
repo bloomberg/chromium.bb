@@ -98,6 +98,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
 
   // mojom::URLLoader implementation:
   void FollowRedirect() override { NOTREACHED(); }
+  void ProceedWithResponse() override { NOTREACHED(); }
 
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
