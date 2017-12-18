@@ -457,7 +457,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // Tests rotating the device while the switcher is not active.  This is a
 // regression test case for https://crbug.com/789975.
 - (void)testRotationsWhileSwitcherIsNotActive {
-  NSString* tab_title = @"NormalTabLongerStringForTest1";
+  NSString* tab_title = @"NormalTabLongerStringForRotationTest";
   [self setUpTestServer];
   [ChromeEarlGrey loadURL:[self makeURLForTitle:tab_title]];
 
