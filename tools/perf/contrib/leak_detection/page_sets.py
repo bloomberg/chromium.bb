@@ -29,16 +29,20 @@ class LeakDetectionStorySet(story.StorySet):
     urls_list = [
       # Alexa top websites
       'https://www.google.com',
-      'https://www.youtube.com',
+      # TODO(yuzus) Disabling youtube for the moment because of a crash when
+      # running PrepareForLeakDetection with ServiceWorker. (crbug.com/795665)
+      # 'https://www.youtube.com',
       'https://www.facebook.com',
       'https://www.baidu.com',
       'https://www.wikipedia.org',
       'https://www.yahoo.com',
       'https://www.reddit.com',
       'http://www.qq.com',
+      'http://www.amazon.com',
+      'http://www.twitter.com',
       # websites which found to be leaking in the past
       'https://www.macys.com',
-      'https://www.citi.com',
+      'https://www.prezi.com',
       'http://www.time.com',
       'http://infomoney.com.br',
       'http://www.cheapoair.com',
