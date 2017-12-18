@@ -403,8 +403,6 @@ class ComputedStyle : public ComputedStyleBase,
   void SetBorderImageOutset(const BorderImageLengthBox&);
 
   // Border width properties.
-  // TODO(nainar): Move all fixed point logic to a separate class.
-  // border-top-width
   float BorderTopWidth() const {
     if (BorderTopStyle() == EBorderStyle::kNone ||
         BorderTopStyle() == EBorderStyle::kHidden)
