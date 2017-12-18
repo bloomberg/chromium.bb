@@ -16,6 +16,7 @@
 
 class ConfirmInfoBarDelegate;
 class GURL;
+class InfoBarUiTest;
 
 namespace infobars {
 
@@ -119,6 +120,8 @@ class InfoBarManager {
   virtual void NotifyInfoBarRemoved(InfoBar* infobar, bool animate);
 
  private:
+  friend class ::InfoBarUiTest;
+
   // InfoBars associated with this InfoBarManager.  We own these pointers.
   // However, this is not a vector of unique_ptr, because we don't delete the
   // infobars directly once they've been added to this; instead, when we're

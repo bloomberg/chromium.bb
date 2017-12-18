@@ -7,51 +7,51 @@
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "build/build_config.h"
+#include "chrome/browser/ui/test/test_browser_ui.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_switches.h"
 
 namespace {
 
-// Switch for BrowserDialogTest.Invoke to spawn a subprocess testing the
-// provided argument under a consistent setup.
-constexpr const char kDialogSwitch[] = "dialog";
+// Switch for BrowserUiTest.Invoke to spawn a subprocess testing the provided
+// argument under a consistent setup.
+constexpr const char kUiSwitch[] = "ui";
 
-// Pattern to search in test names that indicate support for dialog testing.
-constexpr const char kDialogPattern[] = "InvokeDialog_";
+// Pattern to search in test names that indicate support for UI testing.
+constexpr const char kUiPattern[] = "InvokeUi_";
 
 }  // namespace
 
-// Adds a browser_test entry point into the dialog testing framework. Without a
-// --dialog specified, just lists the available dialogs and exits.
-TEST(BrowserDialogTest, Invoke) {
+// Adds a browser_test entry point into the UI testing framework. Without a
+// --ui specified, just lists the available UIs and exits.
+TEST(BrowserUiTest, Invoke) {
   const base::CommandLine& invoker = *base::CommandLine::ForCurrentProcess();
-  const std::string dialog_name = invoker.GetSwitchValueASCII(kDialogSwitch);
+  const std::string ui_name = invoker.GetSwitchValueASCII(kUiSwitch);
 
-  std::set<std::string> dialog_cases;
+  std::set<std::string> ui_cases;
   const testing::UnitTest* unit_test = testing::UnitTest::GetInstance();
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
     for (int j = 0; j < test_case->total_test_count(); ++j) {
       const char* name = test_case->GetTestInfo(j)->name();
-      if (strstr(name, kDialogPattern))
-        dialog_cases.insert(test_case->name() + std::string(".") + name);
+      if (strstr(name, kUiPattern))
+        ui_cases.insert(test_case->name() + std::string(".") + name);
     }
   }
 
-  if (dialog_name.empty()) {
+  if (ui_name.empty()) {
     std::string case_list;
-    for (const std::string& name : dialog_cases)
+    for (const std::string& name : ui_cases)
       case_list += "\t" + name + "\n";
-    VLOG(0) << "\nPass one of the following after --" << kDialogSwitch << "=\n"
+    VLOG(0) << "\nPass one of the following after --" << kUiSwitch << "=\n"
             << case_list;
     return;
   }
 
-  auto it = dialog_cases.find(dialog_name);
-  ASSERT_NE(it, dialog_cases.end()) << "Dialog '" << dialog_name
-                                    << "' not found.";
+  auto it = ui_cases.find(ui_name);
+  ASSERT_NE(it, ui_cases.end()) << "UI '" << ui_name << "' not found.";
 
   // Don't create test output for the subprocess (the paths will conflict).
   base::CommandLine::StringVector argv = invoker.argv();
@@ -63,8 +63,8 @@ TEST(BrowserDialogTest, Invoke) {
       });
   base::CommandLine command(argv);
 
-  // Replace TestBrowserDialog.Invoke with |dialog_name|.
-  command.AppendSwitchASCII(base::kGTestFilterFlag, dialog_name);
+  // Replace TestBrowserUi.Invoke with |ui_name|.
+  command.AppendSwitchASCII(base::kGTestFilterFlag, ui_name);
 
   base::LaunchOptions options;
 

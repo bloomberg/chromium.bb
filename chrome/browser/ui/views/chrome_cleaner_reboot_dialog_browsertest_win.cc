@@ -19,8 +19,7 @@ namespace {
 
 // Provides tests which allows explicit invocation of the Chrome Cleaner Reboot
 // Prompt useful for checking dialog layout or any other interactive
-// functionality tests. See docs/testing/test_browser_dialog.md for description
-// of the testing framework.
+// functionality tests.
 class ChromeCleanerRebootDialog : public DialogBrowserTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
@@ -28,7 +27,7 @@ class ChromeCleanerRebootDialog : public DialogBrowserTest {
   }
 
   // DialogBrowserTest overrides.
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     ON_CALL(mock_cleaner_controller_, state())
         .WillByDefault(::testing::Return(
             safe_browsing::ChromeCleanerController::State::kRebootRequired));
@@ -45,8 +44,8 @@ class ChromeCleanerRebootDialog : public DialogBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeCleanerRebootDialog, InvokeDialog_default) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ChromeCleanerRebootDialog, InvokeUi_default) {
+  ShowAndVerifyUi();
 }
 
 }  // namespace

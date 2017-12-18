@@ -14,7 +14,7 @@ class BookmarkPromoDialogTest : public DialogBrowserTest {
   BookmarkPromoDialogTest() = default;
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
         ->location_bar()
@@ -26,10 +26,7 @@ class BookmarkPromoDialogTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BookmarkPromoDialogTest);
 };
 
-// Test that calls ShowDialog("default"). Interactive when run via
-// ../browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
-// --dialog=BookmarkPromoDialogTest.InvokeDialog_BookmarkPromoBubble
-IN_PROC_BROWSER_TEST_F(BookmarkPromoDialogTest,
-                       InvokeDialog_BookmarkPromoBubble) {
-  RunDialog();
+// Test that calls ShowUi("default").
+IN_PROC_BROWSER_TEST_F(BookmarkPromoDialogTest, InvokeUi_BookmarkPromoBubble) {
+  ShowAndVerifyUi();
 }

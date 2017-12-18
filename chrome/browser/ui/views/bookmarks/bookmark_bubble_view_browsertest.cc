@@ -23,7 +23,7 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
   BookmarkBubbleViewBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
 #if !defined(OS_CHROMEOS)
     if (name == "bookmark_details") {
       SigninManagerFactory::GetForProfile(browser()->profile())
@@ -61,21 +61,20 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
 // ChromeOS is always signed in.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
-                       InvokeDialog_bookmark_details) {
-  RunDialog();
+                       InvokeUi_bookmark_details) {
+  ShowAndVerifyUi();
 }
 #endif
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
-                       InvokeDialog_bookmark_details_signed_in) {
-  RunDialog();
+                       InvokeUi_bookmark_details_signed_in) {
+  ShowAndVerifyUi();
 }
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
-                       InvokeDialog_ios_promotion) {
+IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest, InvokeUi_ios_promotion) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kForceDesktopIOSPromotion);
-  RunDialog();
+  ShowAndVerifyUi();
 }
 #endif

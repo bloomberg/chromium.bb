@@ -154,8 +154,7 @@ used when committed.
     Diagnosing and fixing layout test flakiness due to ordering dependencies.
 *   [Running Layout Tests using `content_shell`](testing/layout_tests_in_content_shell.md) -
     Running layout tests by hand.
-*   [Testing Browser Dialogs](testing/test_browser_dialog.md) - Using
-    TestBrowserDialog
+*   [Testing Browser UI](testing/test_browser_ui.md) - Using TestBrowserUi
 *   [Web Platform Tests](testing/web_platform_tests.md) - Shared tests across
     browser vendors
 *   [Using Breakpad with `content_shell`](testing/using_breakpad_with_content_shell.md) -

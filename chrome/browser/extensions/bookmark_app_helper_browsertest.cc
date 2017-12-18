@@ -92,7 +92,7 @@ class BookmarkAppHelperTest : public DialogBrowserTest {
     run_loop.Run();
   }
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     const std::string path = (name == "CreateWindowedPWA")
@@ -124,17 +124,17 @@ class BookmarkAppHelperTest : public DialogBrowserTest {
 };
 
 // Launches an installation confirmation dialog for a bookmark app.
-IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeDialog_CreateBookmarkApp) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeUi_CreateBookmarkApp) {
+  ShowAndVerifyUi();
 }
 
 // Launches an installation confirmation dialog for a PWA.
-IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeDialog_CreateWindowedPWA) {
+IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeUi_CreateWindowedPWA) {
   // The PWA dialog will be launched because manifest_test_page.html passes
   // the PWA check, but the kDesktopPWAWindowing flag must also be enabled.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 }  // namespace extensions

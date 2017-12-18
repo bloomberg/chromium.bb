@@ -76,13 +76,13 @@ class GlobalErrorBubbleTest : public DialogBrowserTest {
   }
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override;
+  void ShowUi(const std::string& name) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubbleTest);
 };
 
-void GlobalErrorBubbleTest::ShowDialog(const std::string& name) {
+void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
   content::WindowedNotificationObserver global_errors_updated(
       chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
       base::Bind([](const content::NotificationSource& source,
@@ -177,41 +177,41 @@ void GlobalErrorBubbleTest::ShowDialog(const std::string& name) {
 }
 
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
-                       InvokeDialog_ExtensionDisabledGlobalError) {
-  RunDialog();
+                       InvokeUi_ExtensionDisabledGlobalError) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
-                       InvokeDialog_ExtensionDisabledGlobalErrorRemote) {
-  RunDialog();
+                       InvokeUi_ExtensionDisabledGlobalErrorRemote) {
+  ShowAndVerifyUi();
 }
 
 // This shows a non-persistent dialog during a RunLoop::RunUntilIdle(), so it's
 // not possible to guarantee that events to dismiss the dialog are not processed
 // as well. Disable by default to prevent flakiness in browser_tests.
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
-                       DISABLED_InvokeDialog_ExtensionGlobalError) {
-  RunDialog();
+                       DISABLED_InvokeUi_ExtensionGlobalError) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
-                       InvokeDialog_ExternalInstallBubbleAlert) {
+                       InvokeUi_ExternalInstallBubbleAlert) {
   extensions::FeatureSwitch::ScopedOverride prompt(
       extensions::FeatureSwitch::prompt_for_external_extensions(), true);
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 // RecoveryInstallGlobalError only exists on Windows and Mac.
 #if defined(OS_WIN) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
-                       InvokeDialog_RecoveryInstallGlobalError) {
-  RunDialog();
+                       InvokeUi_RecoveryInstallGlobalError) {
+  ShowAndVerifyUi();
 }
 #endif
 
 // Signin global errors never happon on ChromeOS.
 #if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest, InvokeDialog_SigninGlobalError) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest, InvokeUi_SigninGlobalError) {
+  ShowAndVerifyUi();
 }
 #endif

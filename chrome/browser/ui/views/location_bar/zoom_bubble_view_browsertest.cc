@@ -162,7 +162,7 @@ class ZoomBubbleDialogTest : public DialogBrowserTest {
   ZoomBubbleDialogTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     content::WebContents* web_contents = browser_view->GetActiveWebContents();
     ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
@@ -173,9 +173,7 @@ class ZoomBubbleDialogTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ZoomBubbleDialogTest);
 };
 
-// Test that calls ShowDialog("default"). Interactive when run via
-// browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
-// --dialog=ZoomBubbleDialogTest.InvokeDialog_default
-IN_PROC_BROWSER_TEST_F(ZoomBubbleDialogTest, InvokeDialog_default) {
-  RunDialog();
+// Test that calls ShowUi("default").
+IN_PROC_BROWSER_TEST_F(ZoomBubbleDialogTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }

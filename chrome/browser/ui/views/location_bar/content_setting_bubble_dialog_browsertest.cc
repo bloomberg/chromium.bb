@@ -39,7 +39,7 @@ class ContentSettingBubbleDialogTest : public DialogBrowserTest {
   void ShowDialogBubble(ContentSettingsType content_type,
                         ContentSettingImageModel::ImageType image_type);
 
-  void ShowDialog(const std::string& name) override;
+  void ShowUi(const std::string& name) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleDialogTest);
@@ -110,7 +110,7 @@ void ContentSettingBubbleDialogTest::ShowDialogBubble(
                                static_cast<int>(image_type), 1);
 }
 
-void ContentSettingBubbleDialogTest::ShowDialog(const std::string& name) {
+void ContentSettingBubbleDialogTest::ShowUi(const std::string& name) {
   constexpr struct {
     const char* name;
     ContentSettingsType content_type;
@@ -148,68 +148,63 @@ void ContentSettingBubbleDialogTest::ShowDialog(const std::string& name) {
   ADD_FAILURE() << "Unknown dialog type";
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeDialog_cookies) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_cookies) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeDialog_images) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_images) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_javascript) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_javascript) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeDialog_plugins) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_plugins) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeDialog_popups) {
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_popups) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  RunDialog();
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_geolocation) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_ppapi_broker) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_mixed_script) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_geolocation) {
-  RunDialog();
+                       InvokeUi_mediastream_mic) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_ppapi_broker) {
-  RunDialog();
+                       InvokeUi_mediastream_camera) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_mixed_script) {
-  RunDialog();
+                       InvokeUi_protocol_handlers) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_mediastream_mic) {
-  RunDialog();
+                       InvokeUi_automatic_downloads) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_mediastream_camera) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_midi_sysex) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_protocol_handlers) {
-  RunDialog();
-}
-
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_automatic_downloads) {
-  RunDialog();
-}
-
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
-                       InvokeDialog_midi_sysex) {
-  RunDialog();
-}
-
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeDialog_ads) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_ads) {
+  ShowAndVerifyUi();
 }

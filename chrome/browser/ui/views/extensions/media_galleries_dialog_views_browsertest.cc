@@ -54,7 +54,7 @@ class MediaGalleriesInteractiveDialogTest : public DialogBrowserTest {
     manager.WaitForNavigationFinished();
   }
 
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     std::vector<base::string16> headers = {base::string16(),
                                            base::ASCIIToUTF16("header2")};
     MediaGalleriesDialogController::Entries attached_permissions = {
@@ -78,6 +78,6 @@ class MediaGalleriesInteractiveDialogTest : public DialogBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesInteractiveDialogTest,
-                       InvokeDialog_DisplayDialog) {
-  RunDialog();
+                       InvokeUi_DisplayDialog) {
+  ShowAndVerifyUi();
 }

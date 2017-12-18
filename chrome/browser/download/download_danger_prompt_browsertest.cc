@@ -354,11 +354,11 @@ class DownloadDangerPromptBrowserTest : public DialogBrowserTest {
     danger_type_ = danger_type;
     invocation_type_ = invocation_type;
 
-    RunDialog();
+    ShowAndVerifyUi();
   }
 
  private:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     ON_CALL(download_, GetURL()).WillByDefault(ReturnRef(download_url_));
     ON_CALL(download_, GetReferrerUrl())
         .WillByDefault(ReturnRef(GURL::EmptyGURL()));
@@ -389,38 +389,37 @@ class DownloadDangerPromptBrowserTest : public DialogBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_DangerousFile) {
+                       InvokeUi_DangerousFile) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, USER_INITIATED);
 }
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_DangerousFileFromApi) {
+                       InvokeUi_DangerousFileFromApi) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, FROM_DOWNLOAD_API);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_DangerousUrl) {
+IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest, InvokeUi_DangerousUrl) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, USER_INITIATED);
 }
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_DangerousUrlFromApi) {
+                       InvokeUi_DangerousUrlFromApi) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, FROM_DOWNLOAD_API);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_UncommonContent) {
+                       InvokeUi_UncommonContent) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT, USER_INITIATED);
 }
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_UncommonContentFromApi) {
+                       InvokeUi_UncommonContentFromApi) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT, FROM_DOWNLOAD_API);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_PotentiallyUnwanted) {
+                       InvokeUi_PotentiallyUnwanted) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED, USER_INITIATED);
 }
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,
-                       InvokeDialog_PotentiallyUnwantedFromApi) {
+                       InvokeUi_PotentiallyUnwantedFromApi) {
   RunTest(content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
           FROM_DOWNLOAD_API);
 }

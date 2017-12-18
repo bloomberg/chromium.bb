@@ -15,7 +15,7 @@ class InvertBubbleViewBrowserTest : public DialogBrowserTest {
   InvertBubbleViewBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     ShowInvertBubbleView(browser(), &anchor_);
   }
 
@@ -26,7 +26,7 @@ class InvertBubbleViewBrowserTest : public DialogBrowserTest {
 };
 
 // Invokes a bubble that asks the user if they want to install a high contrast
-// Chrome theme. See test_browser_dialog.h.
-IN_PROC_BROWSER_TEST_F(InvertBubbleViewBrowserTest, InvokeDialog_default) {
-  RunDialog();
+// Chrome theme.
+IN_PROC_BROWSER_TEST_F(InvertBubbleViewBrowserTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }

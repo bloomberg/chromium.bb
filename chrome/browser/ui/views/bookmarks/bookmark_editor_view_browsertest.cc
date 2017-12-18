@@ -13,7 +13,7 @@ class BookmarkEditorViewBrowserTest : public DialogBrowserTest {
   BookmarkEditorViewBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     DCHECK_EQ("all_tabs", name);
     chrome::ShowBookmarkAllTabsDialog(browser());
   }
@@ -24,7 +24,6 @@ class BookmarkEditorViewBrowserTest : public DialogBrowserTest {
 
 // Shows the dialog for bookmarking all tabs. This shows a BookmarkEditorView
 // dialog, with a tree view, where a user can rename and select a parent folder.
-// Can be interactive when run with --gtest_filter=BrowserDialogTest.Invoke.
-IN_PROC_BROWSER_TEST_F(BookmarkEditorViewBrowserTest, InvokeDialog_all_tabs) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(BookmarkEditorViewBrowserTest, InvokeUi_all_tabs) {
+  ShowAndVerifyUi();
 }

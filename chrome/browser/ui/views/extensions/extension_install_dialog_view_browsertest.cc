@@ -230,7 +230,7 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
   ExtensionInstallDialogViewInteractiveBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     extensions::ChromeTestExtensionLoader loader(browser()->profile());
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
@@ -284,59 +284,59 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_Simple) {
-  RunDialog();
+                       InvokeUi_Simple) {
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_External) {
+                       InvokeUi_External) {
   set_external_install();
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_ExternalWithPermission) {
+                       InvokeUi_ExternalWithPermission) {
   set_external_install();
   AddPermission("Example permission");
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_FromWebstore) {
+                       InvokeUi_FromWebstore) {
   set_from_webstore();
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_FromWebstoreWithPermission) {
+                       InvokeUi_FromWebstoreWithPermission) {
   set_from_webstore();
   AddPermission("Example permission");
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_MultilinePermission) {
+                       InvokeUi_MultilinePermission) {
   AddPermission(
       "In the shade of the house, in the sunshine of the riverbank "
       "near the boats, in the shade of the Sal-wood forest, in the "
       "shade of the fig tree is where Siddhartha grew up");
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_ManyPermissions) {
+                       InvokeUi_ManyPermissions) {
   for (int i = 0; i < 20; i++)
     AddPermission("Example permission");
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
-                       InvokeDialog_DetailedPermission) {
+                       InvokeUi_DetailedPermission) {
   AddPermissionWithDetails("Example header permission",
                            {base::ASCIIToUTF16("Detailed permission 1"),
                             base::ASCIIToUTF16("Detailed permission 2"),
                             base::ASCIIToUTF16("Detailed permission 3")});
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 class ExtensionInstallDialogRatingsSectionTest

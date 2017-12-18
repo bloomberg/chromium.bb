@@ -43,13 +43,13 @@ void ShowChooser(const std::string& test_name,
 }  // namespace
 
 // Invokes a dialog allowing the user to select a USB device for a web page or
-// extension. See test_browser_dialog.h.
+// extension.
 class UsbChooserBrowserTest : public DialogBrowserTest {
  public:
   UsbChooserBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     ShowChooser(name, browser(),
                 base::MakeUnique<FakeUsbChooserController>(device_count_));
   }
@@ -62,33 +62,33 @@ class UsbChooserBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(UsbChooserBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeDialog_NoDevicesBubble) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeUi_NoDevicesBubble) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeDialog_NoDevicesModal) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeUi_NoDevicesModal) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeDialog_WithDevicesBubble) {
+IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeUi_WithDevicesBubble) {
   device_count_ = 5;
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeDialog_WithDevicesModal) {
+IN_PROC_BROWSER_TEST_F(UsbChooserBrowserTest, InvokeUi_WithDevicesModal) {
   device_count_ = 5;
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 // Invokes a dialog allowing the user to select a Bluetooth device for a web
-// page or extension. See test_browser_dialog.h.
+// page or extension.
 class BluetoothChooserBrowserTest : public DialogBrowserTest {
  public:
   BluetoothChooserBrowserTest()
       : status_(FakeBluetoothChooserController::BluetoothStatus::UNAVAILABLE) {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+  void ShowUi(const std::string& name) override {
     auto controller =
         std::make_unique<FakeBluetoothChooserController>(std::move(devices_));
     auto* controller_unowned = controller.get();
@@ -145,75 +145,68 @@ class BluetoothChooserBrowserTest : public DialogBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_UnavailableBubble) {
-  RunDialog();
+                       InvokeUi_UnavailableBubble) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_UnavailableModal) {
-  RunDialog();
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_UnavailableModal) {
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_NoDevicesBubble) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_NoDevicesBubble) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::IDLE);
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_NoDevicesModal) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_NoDevicesModal) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::IDLE);
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_ScanningBubble) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_ScanningBubble) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::SCANNING);
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_ScanningModal) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_ScanningModal) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::SCANNING);
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_ScanningWithDevicesBubble) {
+                       InvokeUi_ScanningWithDevicesBubble) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::SCANNING);
   AddDeviceForAllStrengths();
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_ScanningWithDevicesModal) {
+                       InvokeUi_ScanningWithDevicesModal) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::SCANNING);
   AddDeviceForAllStrengths();
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_ConnectedBubble) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_ConnectedBubble) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::IDLE);
   AddConnectedDevice();
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest,
-                       InvokeDialog_ConnectedModal) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_ConnectedModal) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::IDLE);
   AddConnectedDevice();
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeDialog_PairedBubble) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_PairedBubble) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::IDLE);
   AddPairedDevice();
-  RunDialog();
+  ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeDialog_PairedModal) {
+IN_PROC_BROWSER_TEST_F(BluetoothChooserBrowserTest, InvokeUi_PairedModal) {
   set_status(FakeBluetoothChooserController::BluetoothStatus::IDLE);
   AddPairedDevice();
-  RunDialog();
+  ShowAndVerifyUi();
 }

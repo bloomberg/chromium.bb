@@ -77,7 +77,7 @@ class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
   ExternalProtocolDialogBrowserTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name = "") override {
+  void ShowUi(const std::string& name) override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     int render_view_process_id =
@@ -108,7 +108,7 @@ class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
-  ShowDialog();
+  ShowUi(std::string());
   EXPECT_TRUE(dialog_->Accept());
   EXPECT_TRUE(called_);
   EXPECT_TRUE(accept_);
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestAcceptWithChecked) {
-  ShowDialog();
+  ShowUi(std::string());
   SetChecked(true);
   EXPECT_TRUE(dialog_->Accept());
   EXPECT_TRUE(called_);
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
-  ShowDialog();
+  ShowUi(std::string());
   EXPECT_TRUE(dialog_->Cancel());
   EXPECT_FALSE(called_);
   EXPECT_FALSE(accept_);
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestCancelWithChecked) {
-  ShowDialog();
+  ShowUi(std::string());
   SetChecked(true);
   EXPECT_TRUE(dialog_->Cancel());
   EXPECT_FALSE(called_);
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestClose) {
   // Closing the dialog should be the same as canceling, except for histograms.
-  ShowDialog();
+  ShowUi(std::string());
   EXPECT_TRUE(dialog_->Close());
   EXPECT_FALSE(called_);
   EXPECT_FALSE(accept_);
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestClose) {
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestCloseWithChecked) {
   // Closing the dialog should be the same as canceling, except for histograms.
-  ShowDialog();
+  ShowUi(std::string());
   SetChecked(true);
   EXPECT_TRUE(dialog_->Close());
   EXPECT_FALSE(called_);
@@ -182,8 +182,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
 }
 
 // Invokes a dialog that asks the user if an external application is allowed to
-// run. See test_browser_dialog.h.
-IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
-                       InvokeDialog_default) {
-  RunDialog();
+// run.
+IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, InvokeUi_default) {
+  ShowAndVerifyUi();
 }
