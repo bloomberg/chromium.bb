@@ -211,6 +211,18 @@ void HoverButton::SetTitleTextWithHintRange(const base::string16& title_text,
                               taken_width_);
 }
 
+views::Button::KeyClickAction HoverButton::GetKeyClickActionForEvent(
+    const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_RETURN) {
+    // As the hover button is presented in the user menu, it triggers an
+    // |CLICK_ON_KEY_PRESS| action every time the user clicks on enter on all
+    // platforms (it ignores the value of
+    // |PlatformStyle::kReturnClicksFocusedControl|.
+    return CLICK_ON_KEY_PRESS;
+  }
+  return LabelButton::GetKeyClickActionForEvent(event);
+}
+
 void HoverButton::StateChanged(ButtonState old_state) {
   LabelButton::StateChanged(old_state);
 
