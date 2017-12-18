@@ -31,6 +31,6 @@ test(function(){ assert_equals(getComputedStyle(document.querySelector("#t5")).d
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t5 g")).display, "table"); }, "svg:g display table");
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t6")).display, "table-cell"); }, "svg:svg display table-cell");
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t6 g")).display, "table-cell"); }, "svg:g display table-cell");
-test(function(){ assert_equals(getComputedStyle(document.querySelector("#t7")).display, "inline"); }, "svg:svg display contents computes to inline");
-test(function(){ assert_equals(getComputedStyle(document.querySelector("#t7 g")).display, "inline"); }, "svg:g display contents computes to inline");
+test(function(){ assert_equals(getComputedStyle(document.querySelector("#t7")).display, "none"); }, "svg:svg display contents computes to none");
+test(function(){ assert_equals(getComputedStyle(document.querySelector("#t7 g")).display, "contents"); }, "svg:g display contents computes to contents");
 </script>

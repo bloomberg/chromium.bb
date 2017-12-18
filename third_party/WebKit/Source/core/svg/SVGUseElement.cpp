@@ -482,7 +482,9 @@ void SVGUseElement::BuildShadowAndInstanceTree(SVGElement& target) {
   UpdateRelativeLengthsInformation();
 }
 
-LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle& style) {
+  if (style.Display() == EDisplay::kContents)
+    return nullptr;
   return new LayoutSVGTransformableContainer(this);
 }
 
