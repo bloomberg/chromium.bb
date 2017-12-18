@@ -17,9 +17,12 @@
 #include "components/crash/core/common/crash_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using crash_reporter::GetCrashKeyValue;
+
 class CrashKeysTest : public testing::Test {
  public:
   void SetUp() override {
+    crash_reporter::ResetCrashKeysForTesting();
     crash_reporter::InitializeCrashKeys();
     self_ = this;
     base::debug::SetCrashKeyReportingFunctions(
@@ -29,6 +32,7 @@ class CrashKeysTest : public testing::Test {
 
   void TearDown() override {
     base::debug::ResetCrashLoggingForTesting();
+    crash_reporter::ResetCrashKeysForTesting();
     self_ = NULL;
   }
 
@@ -137,9 +141,10 @@ TEST_F(CrashKeysTest, IgnoreBoringFlags) {
 
   crash_keys::SetCrashKeysFromCommandLine(command_line);
 
-  EXPECT_EQ("--vv=1", GetKeyValue("switch-1"));
-  EXPECT_EQ("--vvv", GetKeyValue("switch-2"));
-  EXPECT_EQ("--enable-multi-profiles", GetKeyValue("switch-3"));
-  EXPECT_EQ("--device-management-url=https://foo/bar", GetKeyValue("switch-4"));
-  EXPECT_FALSE(HasCrashKey("switch-5"));
+  EXPECT_EQ("--vv=1", GetCrashKeyValue("switch-1"));
+  EXPECT_EQ("--vvv", GetCrashKeyValue("switch-2"));
+  EXPECT_EQ("--enable-multi-profiles", GetCrashKeyValue("switch-3"));
+  EXPECT_EQ("--device-management-url=https://foo/bar",
+            GetCrashKeyValue("switch-4"));
+  EXPECT_TRUE(GetCrashKeyValue("switch-5").empty());
 }
