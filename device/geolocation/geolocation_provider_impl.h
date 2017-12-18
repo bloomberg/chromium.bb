@@ -16,7 +16,9 @@
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/public/cpp/location_provider.h"
+#include "device/geolocation/public/interfaces/geolocation_control.mojom.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 template <typename Type>
@@ -33,13 +35,13 @@ using CustomLocationProviderCallback =
 
 class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
     : public GeolocationProvider,
+      public mojom::GeolocationControl,
       public base::Thread {
  public:
   // GeolocationProvider implementation:
   std::unique_ptr<GeolocationProvider::Subscription> AddLocationUpdateCallback(
       const LocationUpdateCallback& callback,
       bool enable_high_accuracy) override;
-  void UserDidOptIntoLocationServices() override;
   bool HighAccuracyLocationInUse() override;
   void OverrideLocationForTesting(const mojom::Geoposition& position) override;
 
@@ -58,6 +60,11 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
   // and call no more than once.
   static void SetCustomLocationProviderCallback(
       const CustomLocationProviderCallback& callback);
+
+  void BindGeolocationControlRequest(mojom::GeolocationControlRequest request);
+
+  // mojom::GeolocationControl implementation:
+  void UserDidOptIntoLocationServices() override;
 
   bool user_did_opt_into_location_services_for_testing() {
     return user_did_opt_into_location_services_;
@@ -110,6 +117,8 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
 
   // Only to be used on the geolocation thread.
   std::unique_ptr<LocationProvider> arbitrator_;
+
+  mojo::Binding<mojom::GeolocationControl> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationProviderImpl);
 };

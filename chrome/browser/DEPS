@@ -18,6 +18,7 @@ include_rules = [
   "+chromeos",
   "+components",
   "+content/public/browser",
+  "+content/public/common",
   "+courgette",
   "+device/base",
   "+device/bluetooth",
@@ -49,7 +50,7 @@ include_rules = [
   "+rlz",
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+services/data_decoder/public",
-  "+services/device/public/cpp/device_features.h",
+  "+services/device/public",
   "+services/identity/public",
   "+services/metrics/metrics_mojo_service.h",
   "+services/metrics/public",

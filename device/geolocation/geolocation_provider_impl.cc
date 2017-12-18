@@ -72,14 +72,6 @@ GeolocationProviderImpl::AddLocationUpdateCallback(
   return subscription;
 }
 
-void GeolocationProviderImpl::UserDidOptIntoLocationServices() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  bool was_permission_granted = user_did_opt_into_location_services_;
-  user_did_opt_into_location_services_ = true;
-  if (IsRunning() && !was_permission_granted)
-    InformProvidersPermissionGranted();
-}
-
 bool GeolocationProviderImpl::HighAccuracyLocationInUse() {
   return !high_accuracy_callbacks_.empty();
 }
@@ -108,11 +100,29 @@ GeolocationProviderImpl* GeolocationProviderImpl::GetInstance() {
   return base::Singleton<GeolocationProviderImpl>::get();
 }
 
+void GeolocationProviderImpl::BindGeolocationControlRequest(
+    mojom::GeolocationControlRequest request) {
+  // The |binding_| has been bound already here means that more than one
+  // GeolocationPermissionContext in chrome tried to bind to Device Service.
+  // We only bind the first request. See more info in geolocation_control.mojom.
+  if (!binding_.is_bound())
+    binding_.Bind(std::move(request));
+}
+
+void GeolocationProviderImpl::UserDidOptIntoLocationServices() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  bool was_permission_granted = user_did_opt_into_location_services_;
+  user_did_opt_into_location_services_ = true;
+  if (IsRunning() && !was_permission_granted)
+    InformProvidersPermissionGranted();
+}
+
 GeolocationProviderImpl::GeolocationProviderImpl()
     : base::Thread("Geolocation"),
       user_did_opt_into_location_services_(false),
       ignore_location_updates_(false),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      binding_(this) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   high_accuracy_callbacks_.set_removal_callback(base::Bind(
       &GeolocationProviderImpl::OnClientsChanged, base::Unretained(this)));

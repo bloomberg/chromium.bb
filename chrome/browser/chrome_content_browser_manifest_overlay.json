@@ -33,7 +33,10 @@
         "chrome": [ "input_device_controller" ],
         "chrome_printing": [ "converter" ],
         "content_browser": [ "profiling_client" ],
-        "device": [ "device:fingerprint" ],
+        "device": [
+          "device:fingerprint",
+          "device:geolocation_control"
+        ],
         "file_util": [ "analyze_archive", "zip_file" ],
         "identity": [ "identity_manager" ],
         // Only used in classic ash case.
