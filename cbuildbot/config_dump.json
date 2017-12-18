@@ -33801,6 +33801,7 @@
             "peppy-paladin",
             "poppy-paladin",
             "quawks-paladin",
+            "rainier-paladin",
             "reef-paladin",
             "romer-paladin",
             "samus-paladin",
@@ -33923,6 +33924,7 @@
             "peppy-paladin",
             "poppy-paladin",
             "quawks-paladin",
+            "rainier-paladin",
             "reef-paladin",
             "romer-paladin",
             "samus-paladin",
@@ -45801,6 +45803,7 @@
     },
     "rainier-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "rainier"
         ],
