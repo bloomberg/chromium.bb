@@ -142,7 +142,8 @@ TEST_F(FlingControllerTest, ControllerSendsWheelEndOnFlingWithZeroVelocity) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_F(FlingControllerTest, ControllerHandlesGestureFling) {
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
+TEST_F(FlingControllerTest, DISABLED_ControllerHandlesGestureFling) {
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
   // The first wheel event must have momentum_phase == KPhaseBegan.
@@ -171,7 +172,8 @@ TEST_F(FlingControllerTest, ControllerHandlesGestureFling) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_F(FlingControllerTest, ControllerSendsWheelEndWhenFlingIsOver) {
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
+TEST_F(FlingControllerTest, DISABLED_ControllerSendsWheelEndWhenFlingIsOver) {
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(100, 0));
   EXPECT_TRUE(FlingInProgress());
   GiveItSomeTime(17);
@@ -194,7 +196,9 @@ TEST_F(FlingControllerTest, ControllerSendsWheelEndWhenFlingIsOver) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_F(FlingControllerTest, EarlyFlingCancelationOnInertialGSUAckNotConsumed) {
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
+TEST_F(FlingControllerTest,
+       DISABLED_EarlyFlingCancelationOnInertialGSUAckNotConsumed) {
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
   GiveItSomeTime(17);
@@ -218,7 +222,8 @@ TEST_F(FlingControllerTest, EarlyFlingCancelationOnInertialGSUAckNotConsumed) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_F(FlingControllerTest, ControllerBoostsFling) {
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
+TEST_F(FlingControllerTest, DISABLED_ControllerBoostsFling) {
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
   // The first wheel event must have momentum_phase == KPhaseBegan.

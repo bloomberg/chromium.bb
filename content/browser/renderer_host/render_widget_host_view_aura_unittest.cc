@@ -4439,16 +4439,19 @@ void RenderWidgetHostViewAuraOverscrollTest::ScrollEventsOverscrollWithFling() {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
 }
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       ScrollEventsOverscrollWithFling) {
+       DISABLED_ScrollEventsOverscrollWithFling) {
   ScrollEventsOverscrollWithFling();
 }
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverscrollWithoutWheelScrollLatchingTest,
-       ScrollEventsOverscrollWithFling) {
+       DISABLED_ScrollEventsOverscrollWithFling) {
   ScrollEventsOverscrollWithFling();
 }
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
-       ScrollEventsOverscrollWithFling) {
+       DISABLED_ScrollEventsOverscrollWithFling) {
   ScrollEventsOverscrollWithFling();
 }
 
@@ -5883,15 +5886,19 @@ void RenderWidgetHostViewAuraOverscrollTest::ScrollDeltasResetOnEnd() {
   EXPECT_EQ(0.f, overscroll_delta_x());
   EXPECT_EQ(0.f, overscroll_delta_y());
 }
-TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
+TEST_F(RenderWidgetHostViewAuraOverscrollTest,
+       DISABLED_ScrollDeltasResetOnEnd) {
   ScrollDeltasResetOnEnd();
 }
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverscrollWithoutWheelScrollLatchingTest,
-       ScrollDeltasResetOnEnd) {
+       DISABLED_ScrollDeltasResetOnEnd) {
   ScrollDeltasResetOnEnd();
 }
+// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
-       ScrollDeltasResetOnEnd) {
+       DISABLED_ScrollDeltasResetOnEnd) {
   ScrollDeltasResetOnEnd();
 }
 
