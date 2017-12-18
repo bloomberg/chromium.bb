@@ -14,7 +14,6 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/solid_color_analyzer.h"
 #include "cc/raster/raster_source.h"
-#include "skia/ext/analysis_canvas.h"
 
 namespace {
 
