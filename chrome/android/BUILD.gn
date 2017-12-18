@@ -658,7 +658,7 @@ if (enable_vr) {
 
     data = [
       "//chrome/android/shared_preference_files/test/",
-      "//chrome/test/data/android/",
+      "//chrome/test/data/vr/e2e_test_files/",
       "//third_party/gvr-android-sdk/test-apks/",
       "//third_party/WebKit/LayoutTests/resources/testharness.js",
     ]
