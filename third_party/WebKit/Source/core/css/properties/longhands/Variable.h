@@ -15,16 +15,10 @@ namespace blink {
 
 class Variable : public CSSProperty {
  public:
-  constexpr Variable() : CSSProperty() {}
+  constexpr Variable(CSSPropertyID id) : CSSProperty(id) {}
 
   bool IsInherited() const override { return true; }
   bool IsAffectedByAll() const override { return false; }
-  CSSPropertyID PropertyID() const override { return CSSPropertyVariable; }
-  const char* GetPropertyName() const override { return "variable\0"; }
-  const WTF::AtomicString& GetPropertyNameAtomicString() const override {
-    static const WTF::AtomicString& name = WTF::AtomicString("variable\0");
-    return name;
-  }
 };
 
 }  // namespace blink

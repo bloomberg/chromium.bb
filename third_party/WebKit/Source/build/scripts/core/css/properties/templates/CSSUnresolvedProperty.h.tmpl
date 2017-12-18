@@ -21,16 +21,13 @@ class CSSUnresolvedProperty {
  public:
   CORE_EXPORT static const CSSUnresolvedProperty& Get(CSSPropertyID);
 
-  constexpr CSSUnresolvedProperty() {}
+  explicit constexpr CSSUnresolvedProperty(CSSPropertyID id) : id_(id) {}
 
   // For backwards compatibility when passing around CSSUnresolvedProperty
   // references. In case we need to call a function that hasn't been converted
   // to using property classes yet.
-  virtual CSSPropertyID PropertyID() const {
-    NOTREACHED();
-    return CSSPropertyInvalid;
-  }
-  bool IDEquals(CSSPropertyID id) const { return PropertyID() == id; }
+  CSSPropertyID PropertyID() const { return id_; }
+  bool IDEquals(CSSPropertyID id) const { return id_ == id; }
   virtual bool IsResolvedProperty() const { return false; }
   virtual const char* GetPropertyName() const {
     NOTREACHED();
@@ -51,6 +48,9 @@ class CSSUnresolvedProperty {
   {% endfor %}
 
   CORE_EXPORT static const CSSUnresolvedProperty* GetAliasProperty(CSSPropertyID);
+
+ private:
+  const CSSPropertyID id_;
 
  protected:
   static const CSSUnresolvedProperty& GetNonAliasProperty(CSSPropertyID);

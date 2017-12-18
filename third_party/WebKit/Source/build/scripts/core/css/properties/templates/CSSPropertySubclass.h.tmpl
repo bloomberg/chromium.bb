@@ -28,13 +28,12 @@ namespace CSS{{property.namespace_group}} {
   {% if property.alias_for != None%}
 class {{property_classname}} : public CSSUnresolvedProperty {
  public:
-  constexpr {{property_classname}}() : CSSUnresolvedProperty() {}
+  constexpr {{property_classname}}(CSSPropertyID id) : CSSUnresolvedProperty(id) {}
   {% else %}
 class {{property_classname}} : public {{property.namespace_group}} {
  public:
-  constexpr {{property_classname}}() : {{property.namespace_group}}() {}
+  constexpr {{property_classname}}(CSSPropertyID id) : {{property.namespace_group}}(id) {}
   {% endif %}
-  CSSPropertyID PropertyID() const override { return {{property.property_id}}; }
   const char* GetPropertyName() const override { return "{{property.name}}\0"; }
   const WTF::AtomicString& GetPropertyNameAtomicString() const override {
     static const WTF::AtomicString& name = WTF::AtomicString("{{property.name}}\0");
