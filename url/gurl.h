@@ -21,9 +21,8 @@
 
 // Represents a URL.
 //
-// A parsed canonicalized URL will be guaranteed UTF-8. Only the ref (if
-// specified) can be non-ASCII, the host, path, etc. will be guaranteed ASCII
-// and any non-ASCII characters will be encoded and % escaped.
+// A parsed canonicalized URL is guaranteed to be UTF-8. Any non-ASCII input
+// characters are UTF-8 encoded and % escaped to ASCII.
 //
 // The string representation of a URL is called the spec(). Getting the
 // spec will assert if the URL is invalid to help protect against malicious
@@ -101,13 +100,12 @@ class URL_EXPORT GURL {
   // the empty string (for safety in release builds, to keep them from being
   // misused which might be a security problem).
   //
-  // The URL will be ASCII except the reference fragment, which may be UTF-8.
-  // It is guaranteed to be valid UTF-8.
+  // The URL will be ASCII (non-ASCII characters will be %-escaped UTF-8).
   //
   // The exception is for empty() URLs (which are !is_valid()) but this will
   // return the empty string without asserting.
   //
-  // Used invalid_spec() below to get the unusable spec of an invalid URL. This
+  // Use invalid_spec() below to get the unusable spec of an invalid URL. This
   // separation is designed to prevent errors that may cause security problems
   // that could result from the mistaken use of an invalid URL.
   const std::string& spec() const;
@@ -356,8 +354,8 @@ class URL_EXPORT GURL {
     return ComponentStringPiece(parsed_.query);
   }
 
-  // Stuff following '#' to the end of the string. This will be UTF-8 encoded
-  // (not necessarily ASCII). The getters will not include the '#'.
+  // Stuff following '#' to the end of the string. This will be %-escaped UTF-8.
+  // The getters will not include the '#'.
   bool has_ref() const {
     return parsed_.ref.len >= 0;
   }
@@ -398,15 +396,15 @@ class URL_EXPORT GURL {
   // "www.google.com".
   //
   // The input domain should match host canonicalization rules. i.e. the input
-  // show be lowercase except for escape chars.
+  // should be lowercase except for escape chars.
   //
   // This call is more efficient than getting the host and checking whether the
   // host has the specific domain or not because no copies or object
   // constructions are done.
   bool DomainIs(base::StringPiece canonical_domain) const;
 
-  // Checks whether or not two URLs are differing only in the ref (the part
-  // after the # character).
+  // Checks whether or not two URLs differ only in the ref (the part after
+  // the # character).
   bool EqualsIgnoringRef(const GURL& other) const;
 
   // Swaps the contents of this GURL object with |other|, without doing
