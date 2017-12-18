@@ -47,6 +47,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
  public:
   // Item IDs for the denial button's menu.
   enum DenialMenuItem {
+    ALWAYS_TRANSLATE_LANGUAGE,
     NEVER_TRANSLATE_LANGUAGE,
     NEVER_TRANSLATE_SITE,
     MORE_OPTIONS
@@ -177,6 +178,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            DenialMenuRespectsBlacklistSite);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            DenialMenuNeverTranslateSite);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           AlwaysTranslateLanguageMenuItem);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageBrowserTest, TranslateAndRevert);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewBrowserTest,
                            CheckNeverTranslateThisSiteBlacklist);
@@ -252,9 +255,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::LabelButton* advanced_cancel_button_;
   views::LabelButton* advanced_done_button_;
 
-  views::MenuButton* denial_menu_button_;
-  std::unique_ptr<ui::SimpleMenuModel> denial_menu_model_;
-  std::unique_ptr<views::MenuRunner> denial_menu_runner_;
+  views::MenuButton* options_menu_button_;
+  std::unique_ptr<ui::SimpleMenuModel> options_menu_model_;
+  std::unique_ptr<views::MenuRunner> options_menu_runner_;
 
   std::unique_ptr<TranslateBubbleModel> model_;
 
