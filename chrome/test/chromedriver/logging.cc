@@ -112,7 +112,7 @@ bool HandleLogMessage(int severity,
     std::string entry = base::StringPrintf(
         "[%.3lf][%s]: %s",
         base::TimeDelta(base::TimeTicks::Now() -
-                        base::TimeTicks::FromInternalValue(g_start_time))
+                        base::TimeTicks::UnixEpoch())
             .InSecondsF(),
         level_name,
         message.c_str());
