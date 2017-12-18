@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<title>Tests that "Skip whitespace" step around cue-timings separator is working correctly.</title>
+<title>"Skip whitespace" step around cue-timings separator</title>
 <script src="track-helpers.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-check_cues_from_track("captions-webvtt/tc029-timings-whitespace.vtt", function(track) {
+check_cues_from_track("resources/timings-whitespace.vtt", function(track) {
     var expected = [
         { id: "1", startTime: 0.1, endTime: 1.5, text: "Single U+0020 SPACE left of cue-timings separator" },
         { id: "2", startTime: 0.1, endTime: 1.5, text: "Single U+0020 SPACE right of cue-timings separator" },

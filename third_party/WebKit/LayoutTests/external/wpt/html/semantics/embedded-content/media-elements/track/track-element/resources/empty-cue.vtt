@@ -1,5 +1,5 @@
 WEBVTT
-Empty cues should be discarded and ignored.
+Empty cues should not be discarded.
 
 1
 00:00:00.000 --> 00:00:30.500 align:start position:20%
