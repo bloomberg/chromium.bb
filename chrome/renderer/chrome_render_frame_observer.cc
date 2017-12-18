@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -167,8 +168,6 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeFrameMsg_GetWebApplicationInfo,
-                        OnGetWebApplicationInfo)
 #if BUILDFLAG(ENABLE_PRINTING)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
@@ -261,7 +260,8 @@ void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
 #endif
 }
 
-void ChromeRenderFrameObserver::OnGetWebApplicationInfo() {
+void ChromeRenderFrameObserver::GetWebApplicationInfo(
+    const GetWebApplicationInfoCallback& callback) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
 
   WebApplicationInfo web_app_info;
@@ -298,8 +298,7 @@ void ChromeRenderFrameObserver::OnGetWebApplicationInfo() {
   web_app_info.description =
       web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
 
-  Send(new ChromeFrameHostMsg_DidGetWebApplicationInfo(routing_id(),
-                                                       web_app_info));
+  std::move(callback).Run(web_app_info);
 }
 
 void ChromeRenderFrameObserver::SetClientSidePhishingDetection(

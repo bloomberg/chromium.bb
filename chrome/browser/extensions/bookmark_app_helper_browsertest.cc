@@ -13,22 +13,17 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 namespace extensions {
 namespace {
-
-content::RenderWidgetHost* GetActiveRenderWidgetHost(Browser* browser) {
-  return browser->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetRenderWidgetHostView()
-      ->GetRenderWidgetHost();
-}
 
 // Extends BookmarkAppHelper to see the call to OnIconsDownloaded.
 class TestBookmarkAppHelper : public BookmarkAppHelper {
@@ -54,20 +49,21 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
 
-// Intercepts the ChromeFrameHostMsg_DidGetWebApplicationInfo that would usually
-// get sent to extensions::TabHelper to create a BookmarkAppHelper that lets us
-// detect when icons are downloaded and the dialog is ready to show.
-class WebAppReadyMsgWatcher : public content::BrowserMessageFilter {
+}  // namespace
+
+class BookmarkAppHelperTest : public DialogBrowserTest {
  public:
-  explicit WebAppReadyMsgWatcher(Browser* browser)
-      : BrowserMessageFilter(ChromeMsgStart), browser_(browser) {}
+  BookmarkAppHelperTest() {}
 
   content::WebContents* web_contents() {
-    return browser_->tab_strip_model()->GetActiveWebContents();
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  void OnDidGetWebApplicationInfo(const WebApplicationInfo& const_info) {
+  void OnDidGetWebApplicationInfo(
+      chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+      const WebApplicationInfo& const_info) {
     WebApplicationInfo info = const_info;
+
     // Mimic extensions::TabHelper for fields missing from the manifest.
     if (info.app_url.is_empty())
       info.app_url = web_contents()->GetURL();
@@ -77,9 +73,10 @@ class WebAppReadyMsgWatcher : public content::BrowserMessageFilter {
       info.title = base::UTF8ToUTF16(info.app_url.spec());
 
     bookmark_app_helper_ = base::MakeUnique<TestBookmarkAppHelper>(
-        browser_->profile(), info, web_contents(), quit_closure_);
+        browser()->profile(), info, web_contents(), quit_closure_);
     bookmark_app_helper_->Create(
-        base::Bind(&WebAppReadyMsgWatcher::FinishCreateBookmarkApp, this));
+        base::Bind(&BookmarkAppHelperTest::FinishCreateBookmarkApp,
+                   base::Unretained(this)));
   }
 
   void FinishCreateBookmarkApp(const Extension* extension,
@@ -94,40 +91,6 @@ class WebAppReadyMsgWatcher : public content::BrowserMessageFilter {
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
-
-  // BrowserMessageFilter:
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                content::BrowserThread::ID* thread) override {
-    if (message.type() == ChromeFrameHostMsg_DidGetWebApplicationInfo::ID)
-      *thread = content::BrowserThread::UI;
-  }
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(WebAppReadyMsgWatcher, message)
-      IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_DidGetWebApplicationInfo,
-                          OnDidGetWebApplicationInfo)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- private:
-  ~WebAppReadyMsgWatcher() override {}
-
-  Browser* browser_;
-  base::Closure quit_closure_;
-  std::unique_ptr<TestBookmarkAppHelper> bookmark_app_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebAppReadyMsgWatcher);
-};
-
-}  // namespace
-
-class BookmarkAppHelperTest : public DialogBrowserTest {
- public:
-  BookmarkAppHelperTest() {}
-
   // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -138,14 +101,25 @@ class BookmarkAppHelperTest : public DialogBrowserTest {
     AddTabAtIndex(1, GURL(embedded_test_server()->GetURL(path)),
                   ui::PAGE_TRANSITION_LINK);
 
-    scoped_refptr<WebAppReadyMsgWatcher> filter =
-        new WebAppReadyMsgWatcher(browser());
-    GetActiveRenderWidgetHost(browser())->GetProcess()->AddFilter(filter.get());
-    chrome::ExecuteCommand(browser(), IDC_CREATE_HOSTED_APP);
-    filter->Wait();
+    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+    browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetMainFrame()
+        ->GetRemoteAssociatedInterfaces()
+        ->GetInterface(&chrome_render_frame);
+    // Bind the InterfacePtr into the callback so that it's kept alive
+    // until there's either a connection error or a response.
+    auto* web_app_info_proxy = chrome_render_frame.get();
+    web_app_info_proxy->GetWebApplicationInfo(
+        base::Bind(&BookmarkAppHelperTest::OnDidGetWebApplicationInfo,
+                   base::Unretained(this), base::Passed(&chrome_render_frame)));
+    Wait();
   }
 
  private:
+  base::Closure quit_closure_;
+  std::unique_ptr<TestBookmarkAppHelper> bookmark_app_helper_;
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperTest);
 };
 

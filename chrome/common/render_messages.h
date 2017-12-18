@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
-#include "chrome/common/web_application_info.h"
+#include "chrome/common/web_application_info_provider_param_traits.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -45,25 +45,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebConsoleMessage::Level,
 IPC_ENUM_TRAITS_MAX_VALUE(content::BrowserControlsState,
                           content::BROWSER_CONTROLS_STATE_LAST)
 
-
-IPC_ENUM_TRAITS_MAX_VALUE(WebApplicationInfo::MobileCapable,
-                          WebApplicationInfo::MOBILE_CAPABLE_APPLE)
-
-IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo::IconInfo)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(width)
-  IPC_STRUCT_TRAITS_MEMBER(height)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
-  IPC_STRUCT_TRAITS_MEMBER(title)
-  IPC_STRUCT_TRAITS_MEMBER(description)
-  IPC_STRUCT_TRAITS_MEMBER(app_url)
-  IPC_STRUCT_TRAITS_MEMBER(icons)
-  IPC_STRUCT_TRAITS_MEMBER(mobile_capable)
-IPC_STRUCT_TRAITS_END()
-
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
@@ -84,10 +65,6 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateBrowserControlsState,
                     content::BrowserControlsState /* constraints */,
                     content::BrowserControlsState /* current */,
                     bool /* animate */)
-
-// Requests application info for the frame. The renderer responds back with
-// ChromeFrameHostMsg_DidGetWebApplicationInfo.
-IPC_MESSAGE_ROUTED0(ChromeFrameMsg_GetWebApplicationInfo)
 
 // JavaScript related messages -----------------------------------------------
 
@@ -163,9 +140,6 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
                             GURL /* top origin url */,
                             base::string16 /* database name */,
                             bool /* allowed */)
-
-IPC_MESSAGE_ROUTED1(ChromeFrameHostMsg_DidGetWebApplicationInfo,
-                    WebApplicationInfo)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Sent by the renderer to check if crash reporting is enabled.

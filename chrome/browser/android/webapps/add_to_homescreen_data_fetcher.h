@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -62,7 +63,9 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   ~AddToHomescreenDataFetcher() override;
 
   // IPC message received when the initialization is finished.
-  void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
+  void OnDidGetWebApplicationInfo(
+      chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+      const WebApplicationInfo& web_app_info);
 
   // Accessors, etc.
   const SkBitmap& badge_icon() const { return badge_icon_; }
@@ -70,10 +73,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   ShortcutInfo& shortcut_info() { return shortcut_info_; }
 
  private:
-  // WebContentsObserver:
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* sender) override;
-
   // Called to stop the timeout timer.
   void StopTimer();
 
@@ -114,7 +113,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
 
   // Indicates whether to check WebAPK compatibility.
   bool check_webapk_compatibility_;
-  bool is_waiting_for_web_application_info_;
   bool is_waiting_for_manifest_;
 
   base::WeakPtrFactory<AddToHomescreenDataFetcher> weak_ptr_factory_;

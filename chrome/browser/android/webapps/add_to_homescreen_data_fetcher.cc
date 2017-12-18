@@ -17,7 +17,6 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/web_application_info.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/core/favicon_service.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
@@ -111,22 +111,27 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       shortcut_info_(GetShortcutUrl(web_contents)),
       data_timeout_ms_(base::TimeDelta::FromMilliseconds(data_timeout_ms)),
       check_webapk_compatibility_(check_webapk_compatibility),
-      is_waiting_for_web_application_info_(true),
       is_waiting_for_manifest_(true),
       weak_ptr_factory_(this) {
   DCHECK(shortcut_info_.url.is_valid());
 
   // Send a message to the renderer to retrieve information about the page.
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  main_frame->Send(
-      new ChromeFrameMsg_GetWebApplicationInfo(main_frame->GetRoutingID()));
+  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
+      &chrome_render_frame);
+  // Bind the InterfacePtr into the callback so that it's kept alive
+  // until there's either a connection error or a response.
+  auto* web_app_info_proxy = chrome_render_frame.get();
+  web_app_info_proxy->GetWebApplicationInfo(
+      base::Bind(&AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo,
+                 base::Unretained(this), base::Passed(&chrome_render_frame)));
 }
 
 AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {}
 
 void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
+    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
     const WebApplicationInfo& received_web_app_info) {
-  is_waiting_for_web_application_info_ = false;
   if (!web_contents())
     return;
 
@@ -177,23 +182,6 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
       ParamsToPerformManifestAndIconFetch(check_webapk_compatibility_),
       base::Bind(&AddToHomescreenDataFetcher::OnDidGetManifestAndIcons,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-bool AddToHomescreenDataFetcher::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* sender) {
-  if (!is_waiting_for_web_application_info_)
-    return false;
-
-  bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP(AddToHomescreenDataFetcher, message)
-    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_DidGetWebApplicationInfo,
-                        OnDidGetWebApplicationInfo)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 void AddToHomescreenDataFetcher::StopTimer() {

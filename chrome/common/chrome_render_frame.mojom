@@ -13,6 +13,9 @@ enum ImageFormat {
   PNG,
 };
 
+[Native]
+struct WebApplicationInfo;
+
 // Messages sent from chrome to the render frame.
 interface ChromeRenderFrame {
 
@@ -41,4 +44,7 @@ interface ChromeRenderFrame {
 
   // Sent when the profile changes the kSafeBrowsingEnabled preference.
   SetClientSidePhishingDetection(bool enable_phishing_detection);
+
+  // Requests the web application info from the renderer.
+  GetWebApplicationInfo() => (WebApplicationInfo web_application_info);
 };
