@@ -44,7 +44,7 @@ void CrashKeyStringImpl::Set(base::StringPiece value) {
   NSString* value_ns = base::SysUTF8ToNSString(value.as_string());
 
   WithBreakpadRefSync(^(BreakpadRef ref) {
-    BreakpadAddUploadParameter(ref, key, value_ns);
+    BreakpadSetKeyValue(ref, key, value_ns);
   });
 }
 
@@ -52,14 +52,13 @@ void CrashKeyStringImpl::Clear() {
   NSString* key = base::SysUTF8ToNSString(name_);
 
   WithBreakpadRefSync(^(BreakpadRef ref) {
-    BreakpadRemoveUploadParameter(ref, key);
+    BreakpadRemoveKeyValue(ref, key);
   });
 }
 
 bool CrashKeyStringImpl::is_set() const {
   __block bool is_set = false;
-  NSString* key = base::SysUTF8ToNSString(
-      std::string(BREAKPAD_SERVER_PARAMETER_PREFIX) + name_);
+  NSString* key = base::SysUTF8ToNSString(name_);
 
   WithBreakpadRefSync(^(BreakpadRef ref) {
     is_set = BreakpadKeyValue(ref, key) != nil;
@@ -72,23 +71,6 @@ bool CrashKeyStringImpl::is_set() const {
 
 void InitializeCrashKeys() {
   InitializeCrashKeyBaseSupport();
-}
-
-std::string GetCrashKeyValue(const std::string& key_name) {
-  __block NSString* value;
-  NSString* key = base::SysUTF8ToNSString(
-      std::string(BREAKPAD_SERVER_PARAMETER_PREFIX) + key_name);
-
-  internal::WithBreakpadRefSync(^(BreakpadRef ref) {
-    value = BreakpadKeyValue(ref, key);
-  });
-
-  return base::SysNSStringToUTF8(value);
-}
-
-void ResetCrashKeysForTesting() {
-  // There's no way to do this on iOS without tearing down the
-  // BreakpadController.
 }
 
 }  // namespace crash_reporter

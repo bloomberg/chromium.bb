@@ -217,16 +217,6 @@ void SetCrashKeyStringToStackTrace(CrashKeyString<Size>* key,
 // Initializes the crash key subsystem if it is required.
 CRASH_KEY_EXPORT void InitializeCrashKeys();
 
-#if defined(UNIT_TEST) || defined(CRASH_CORE_COMMON_IMPLEMENTATION)
-// Returns a value for the crash key named |key_name|. For Crashpad-based
-// clients, this returns the first instance found of the name.
-CRASH_KEY_EXPORT std::string GetCrashKeyValue(const std::string& key_name);
-
-// Resets crash key state and, depending on the platform, de-initializes
-// the system.
-CRASH_KEY_EXPORT void ResetCrashKeysForTesting();
-#endif
-
 }  // namespace crash_reporter
 
 #undef USE_CRASHPAD_ANNOTATION

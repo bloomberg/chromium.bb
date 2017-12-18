@@ -7,7 +7,6 @@
 
 #include "components/crash/core/common/crash_key.h"
 
-#include "base/debug/crash_logging.h"
 #include "base/format_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -106,19 +105,6 @@ bool CrashKeyStringImpl::is_set() const {
 void InitializeCrashKeys() {
   internal::GetCrashKeyStorage();
   InitializeCrashKeyBaseSupport();
-}
-
-std::string GetCrashKeyValue(const std::string& key_name) {
-  const char* value =
-      internal::GetCrashKeyStorage()->GetValueForKey(key_name.c_str());
-  if (value)
-    return value;
-  return std::string();
-}
-
-void ResetCrashKeysForTesting() {
-  internal::ResetCrashKeyStorageForTesting();
-  base::debug::SetCrashKeyImplementation(nullptr);
 }
 
 }  // namespace crash_reporter

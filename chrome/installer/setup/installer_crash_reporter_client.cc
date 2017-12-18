@@ -101,7 +101,7 @@ bool InstallerCrashReporterClient::GetCrashDumpLocation(
 }
 
 size_t InstallerCrashReporterClient::RegisterCrashKeys() {
-  return 0;
+  return installer::RegisterCrashKeys();
 }
 
 bool InstallerCrashReporterClient::IsRunningUnattended() {

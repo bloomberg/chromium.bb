@@ -18,20 +18,19 @@
 #include "components/crash/core/common/crash_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using crash_reporter::GetCrashKeyValue;
-
-// The number of switch-N keys declared in SetSwitchesFromCommandLine().
-constexpr int kSwitchesMaxCount = 15;
-
 class CrashKeysTest : public testing::Test {
  public:
   void SetUp() override {
-    ResetData();
-
     crash_reporter::InitializeCrashKeys();
     self_ = this;
     base::debug::SetCrashKeyReportingFunctions(
         &SetCrashKeyValue, &ClearCrashKey);
+  }
+
+  bool InitSwitchesCrashKeys() {
+    std::vector<base::debug::CrashKey> keys;
+    crash_keys::GetCrashKeysForCommandLineSwitches(&keys);
+    return InitCrashKeys(keys);
   }
 
   bool InitVariationsCrashKeys() {
@@ -43,7 +42,6 @@ class CrashKeysTest : public testing::Test {
 
   void TearDown() override {
     base::debug::ResetCrashLoggingForTesting();
-    ResetData();
     self_ = nullptr;
   }
 
@@ -74,14 +72,6 @@ class CrashKeysTest : public testing::Test {
     self_->keys_.erase(key.as_string());
   }
 
-  void ResetData() {
-    crash_reporter::ResetCrashKeysForTesting();
-
-    // Reset static crash key data.
-    crash_keys::SetSwitchesFromCommandLine(
-        base::CommandLine(base::CommandLine::NO_PROGRAM), nullptr);
-  }
-
   static CrashKeysTest* self_;
 
   std::map<std::string, std::string> keys_;
@@ -90,46 +80,49 @@ class CrashKeysTest : public testing::Test {
 CrashKeysTest* CrashKeysTest::self_ = nullptr;
 
 TEST_F(CrashKeysTest, Switches) {
+  ASSERT_TRUE(InitSwitchesCrashKeys());
+
   // Set three switches.
   {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     for (size_t i = 1; i <= 3; ++i)
       command_line.AppendSwitch(base::StringPrintf("--flag-%" PRIuS, i));
     crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
-    EXPECT_EQ("--flag-1", GetCrashKeyValue("switch-1"));
-    EXPECT_EQ("--flag-2", GetCrashKeyValue("switch-2"));
-    EXPECT_EQ("--flag-3", GetCrashKeyValue("switch-3"));
-    EXPECT_TRUE(GetCrashKeyValue("switch-4").empty());
+    EXPECT_EQ("--flag-1", GetKeyValue("switch-1"));
+    EXPECT_EQ("--flag-2", GetKeyValue("switch-2"));
+    EXPECT_EQ("--flag-3", GetKeyValue("switch-3"));
+    EXPECT_FALSE(HasCrashKey("switch-4"));
   }
 
   // Set more than the max switches.
   {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    const size_t kMax = kSwitchesMaxCount + 2;
+    const size_t kMax = crash_keys::kSwitchesMaxCount + 2;
     EXPECT_GT(kMax, static_cast<size_t>(15));
     for (size_t i = 1; i <= kMax; ++i)
       command_line.AppendSwitch(base::StringPrintf("--many-%" PRIuS, i));
     crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
-    EXPECT_EQ("--many-1", GetCrashKeyValue("switch-1"));
-    EXPECT_EQ("--many-9", GetCrashKeyValue("switch-9"));
-    EXPECT_EQ("--many-15", GetCrashKeyValue("switch-15"));
-    EXPECT_TRUE(GetCrashKeyValue("switch-16").empty());
-    EXPECT_TRUE(GetCrashKeyValue("switch-17").empty());
+    EXPECT_EQ("--many-1", GetKeyValue("switch-1"));
+    EXPECT_EQ("--many-9", GetKeyValue("switch-9"));
+    EXPECT_EQ("--many-15", GetKeyValue("switch-15"));
+    EXPECT_FALSE(HasCrashKey("switch-16"));
+    EXPECT_FALSE(HasCrashKey("switch-17"));
   }
 
   // Set fewer to ensure that old ones are erased.
   {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    for (int i = 1; i <= 5; ++i)
-      command_line.AppendSwitch(base::StringPrintf("--fewer-%d", i));
+    for (size_t i = 1; i <= 5; ++i)
+      command_line.AppendSwitch(base::StringPrintf("--fewer-%" PRIuS, i));
     crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
-    EXPECT_EQ("--fewer-1", GetCrashKeyValue("switch-1"));
-    EXPECT_EQ("--fewer-2", GetCrashKeyValue("switch-2"));
-    EXPECT_EQ("--fewer-3", GetCrashKeyValue("switch-3"));
-    EXPECT_EQ("--fewer-4", GetCrashKeyValue("switch-4"));
-    EXPECT_EQ("--fewer-5", GetCrashKeyValue("switch-5"));
-    for (int i = 6; i < 20; ++i)
-      EXPECT_TRUE(GetCrashKeyValue(base::StringPrintf("switch-%d", i)).empty());
+    EXPECT_EQ("--fewer-1", GetKeyValue("switch-1"));
+    EXPECT_EQ("--fewer-2", GetKeyValue("switch-2"));
+    EXPECT_EQ("--fewer-3", GetKeyValue("switch-3"));
+    EXPECT_EQ("--fewer-4", GetKeyValue("switch-4"));
+    EXPECT_EQ("--fewer-5", GetKeyValue("switch-5"));
+    for (size_t i = 6; i < 20; ++i)
+      EXPECT_FALSE(HasCrashKey(base::StringPrintf(crash_keys::kSwitchFormat,
+                                                  i)));
   }
 }
 
@@ -142,6 +135,10 @@ bool IsBoringFlag(const std::string& flag) {
 }  // namespace
 
 TEST_F(CrashKeysTest, FilterFlags) {
+  ASSERT_TRUE(InitSwitchesCrashKeys());
+
+  using crash_keys::kSwitchesMaxCount;
+
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("--not-boring-1");
   command_line.AppendSwitch("--boring");
@@ -155,11 +152,11 @@ TEST_F(CrashKeysTest, FilterFlags) {
 
   // If the boring keys are filtered out, every single key should now be
   // not-boring.
-  for (int i = 1; i <= kSwitchesMaxCount; ++i) {
-    std::string switch_name = base::StringPrintf("switch-%d", i);
-    std::string switch_value = base::StringPrintf("--not-boring-%d", i);
-    EXPECT_EQ(switch_value, GetCrashKeyValue(switch_name))
-        << "switch_name is " << switch_name;
+  for (size_t i = 1; i <= kSwitchesMaxCount; ++i) {
+    std::string switch_name = base::StringPrintf(crash_keys::kSwitchFormat, i);
+    std::string switch_value = base::StringPrintf("--not-boring-%" PRIuS, i);
+    EXPECT_EQ(switch_value, GetKeyValue(switch_name)) << "switch_name is " <<
+        switch_name;
   }
 }
 

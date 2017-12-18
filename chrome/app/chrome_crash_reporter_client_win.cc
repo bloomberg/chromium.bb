@@ -74,6 +74,8 @@ size_t RegisterCrashKeysHelper() {
   // For now these need to be kept relatively up to date with those in
   // chrome/common/crash_keys.cc::RegisterChromeCrashKeys().
   static constexpr base::debug::CrashKey kFixedKeys[] = {
+      {kMetricsClientId, kSmallSize},
+      {kChannel, kSmallSize},
       {kActiveURL, kLargeSize},
       {kNumVariations, kSmallSize},
       {kVariations, kHugeSize},
@@ -94,6 +96,8 @@ size_t RegisterCrashKeysHelper() {
   // a collection of data, like command line switches or extension IDs.
   std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
                                           std::end(kFixedKeys));
+
+  crash_keys::GetCrashKeysForCommandLineSwitches(&keys);
 
   // Register the extension IDs.
   {
