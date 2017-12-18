@@ -993,8 +993,10 @@ void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
 
 void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
   if (IsBrowserSideNavigationEnabled()) {
-    if (rfh == frame_host_)
+    if (rfh == frame_host_) {
       render_frame_alive_ = false;
+      agent_ptr_.reset();
+    }
     DCHECK(CheckConsistency());
     return;
   }
@@ -1375,7 +1377,7 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
 }
 
 bool RenderFrameDevToolsAgentHost::EnsureAgent() {
-  if (!frame_host_)
+  if (!frame_host_ || !render_frame_alive_)
     return false;
   if (!agent_ptr_)
     frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(&agent_ptr_);
