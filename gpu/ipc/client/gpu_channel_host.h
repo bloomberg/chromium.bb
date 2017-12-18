@@ -61,8 +61,7 @@ class GPU_EXPORT GpuChannelHost
     : public IPC::Sender,
       public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
-  GpuChannelHost(scoped_refptr<base::SingleThreadTaskRunner> io_thread,
-                 int channel_id,
+  GpuChannelHost(int channel_id,
                  const gpu::GPUInfo& gpu_info,
                  const gpu::GpuFeatureInfo& gpu_feature_info,
                  mojo::ScopedMessagePipeHandle handle,
@@ -184,9 +183,6 @@ class GPU_EXPORT GpuChannelHost
       base::WeakPtr<IPC::Listener> listener;
       scoped_refptr<base::SingleThreadTaskRunner> task_runner;
     };
-
-    // Called on the IO thread.
-    void Connect();
 
     // Threading notes: most fields are only accessed on the IO thread, except
     // for lost_ which is protected by |lock_|.

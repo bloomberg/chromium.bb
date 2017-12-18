@@ -31,13 +31,12 @@ base::AtomicSequenceNumber g_next_transfer_buffer_id;
 }  // namespace
 
 GpuChannelHost::GpuChannelHost(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread,
     int channel_id,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     mojo::ScopedMessagePipeHandle handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
-    : io_thread_(std::move(io_thread)),
+    : io_thread_(base::ThreadTaskRunnerHandle::Get()),
       channel_id_(channel_id),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
@@ -213,17 +212,13 @@ GpuChannelHost::Listener::Listener(
                                         io_task_runner,
                                         base::ThreadTaskRunnerHandle::Get())) {
   DCHECK(channel_);
-  io_task_runner->PostTask(
-      FROM_HERE, base::Bind(&Listener::Connect, base::Unretained(this)));
+  DCHECK(io_task_runner->BelongsToCurrentThread());
+  bool result = channel_->Connect();
+  DCHECK(result);
 }
 
 GpuChannelHost::Listener::~Listener() {
   DCHECK(pending_syncs_.empty());
-}
-
-void GpuChannelHost::Listener::Connect() {
-  bool result = channel_->Connect();
-  DCHECK(result);
 }
 
 void GpuChannelHost::Listener::Close() {

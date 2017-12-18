@@ -40,10 +40,9 @@ class Gpu::EstablishRequest
                    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
       : parent_(parent), main_task_runner_(main_task_runner) {}
 
-  int client_id() { return client_id_; }
-  mojo::ScopedMessagePipeHandle& channel_handle() { return channel_handle_; }
-  gpu::GPUInfo& gpu_info() { return gpu_info_; }
-  gpu::GpuFeatureInfo& gpu_feature_info() { return gpu_feature_info_; }
+  const scoped_refptr<gpu::GpuChannelHost>& gpu_channel() {
+    return gpu_channel_;
+  }
 
   // Sends EstablishGpuChannel() request using |gpu|. This must be called from
   // the IO thread so that the response is handled on the IO thread.
@@ -120,11 +119,11 @@ class Gpu::EstablishRequest
 
     DCHECK(!received_);
     received_ = true;
-
-    client_id_ = client_id;
-    channel_handle_ = std::move(channel_handle);
-    gpu_info_ = gpu_info;
-    gpu_feature_info_ = gpu_feature_info;
+    if (channel_handle.is_valid()) {
+      gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
+          client_id, gpu_info, gpu_feature_info, std::move(channel_handle),
+          parent_->gpu_memory_buffer_manager());
+    }
 
     if (establish_event_) {
       // Gpu::EstablishGpuChannelSync() was called. Unblock the main thread and
@@ -144,10 +143,7 @@ class Gpu::EstablishRequest
   bool received_ = false;
   bool finished_ = false;
 
-  int client_id_;
-  mojo::ScopedMessagePipeHandle channel_handle_;
-  gpu::GPUInfo gpu_info_;
-  gpu::GpuFeatureInfo gpu_feature_info_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(EstablishRequest);
 };
@@ -290,14 +286,7 @@ void Gpu::OnEstablishedGpuChannel() {
   DCHECK(pending_request_);
   DCHECK(!gpu_channel_);
 
-  if (pending_request_->client_id() &&
-      pending_request_->channel_handle().is_valid()) {
-    gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
-        io_task_runner_, pending_request_->client_id(),
-        pending_request_->gpu_info(), pending_request_->gpu_feature_info(),
-        std::move(pending_request_->channel_handle()),
-        gpu_memory_buffer_manager_.get());
-  }
+  gpu_channel_ = pending_request_->gpu_channel();
   pending_request_ = nullptr;
 
   std::vector<gpu::GpuChannelEstablishedCallback> callbacks;
