@@ -1552,7 +1552,8 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
   }
 
   void ShowKeyboard() {
-    layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
+    layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanging(
+        keyboard_bounds_);
     restore_work_area_insets_ = GetPrimaryDisplay().GetWorkAreaInsets();
     Shell::Get()->SetDisplayWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
@@ -1562,7 +1563,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
   void HideKeyboard() {
     Shell::Get()->SetDisplayWorkAreaInsets(Shell::GetPrimaryRootWindow(),
                                            restore_work_area_insets_);
-    layout_manager_->OnKeyboardBoundsChanging(gfx::Rect());
+    layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanging(gfx::Rect());
   }
 
   // Initializes the keyboard bounds using the bottom half of the work area.

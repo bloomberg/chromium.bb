@@ -145,15 +145,8 @@ void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, keyboard::KeyboardControllerObserver implementation:
 
-void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
+void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanging(
     const gfx::Rect& new_bounds) {
-  // If the keyboard is in sticky mode, change the work area.
-  const bool change_work_area =
-      keyboard::KeyboardController::GetInstance() &&
-      keyboard::KeyboardController::GetInstance()->keyboard_locked();
-  if (!change_work_area)
-    return;
-
   aura::Window* window = wm::GetActiveWindow();
   if (!window)
     return;
