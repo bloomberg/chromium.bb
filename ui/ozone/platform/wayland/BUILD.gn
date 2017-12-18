@@ -61,7 +61,6 @@ source_set("wayland") {
     "//ui/display/manager",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
-    "//ui/events/ozone:events_ozone_evdev",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/events/platform",
     "//ui/gfx",
