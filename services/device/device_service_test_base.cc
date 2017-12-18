@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "device/geolocation/public/cpp/location_provider.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/url_request/url_request_test_util.h"
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -21,6 +22,18 @@ namespace device {
 namespace {
 
 const char kTestServiceName[] = "device_unittests";
+const char kTestGeolocationApiKey[] = "";
+
+// Simple request context producer that immediately produces a
+// TestURLRequestContextGetter.
+void TestRequestContextProducer(
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
+    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
+        response_callback) {
+  std::move(response_callback)
+      .Run(base::MakeRefCounted<net::TestURLRequestContextGetter>(
+          network_task_runner));
+}
 
 // Simply return a nullptr which means no CustomLocationProvider from embedder.
 std::unique_ptr<LocationProvider> GetCustomLocationProviderForTest() {
@@ -56,13 +69,18 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 #if defined(OS_ANDROID)
       device_service_context_.reset(new service_manager::ServiceContext(
           CreateDeviceService(
-              file_task_runner_, io_task_runner_, wake_lock_context_callback_,
+              file_task_runner_, io_task_runner_,
+              base::Bind(&TestRequestContextProducer, io_task_runner_),
+              kTestGeolocationApiKey, wake_lock_context_callback_,
               base::Bind(&GetCustomLocationProviderForTest), nullptr),
           std::move(request)));
 #else
       device_service_context_.reset(new service_manager::ServiceContext(
-          CreateDeviceService(file_task_runner_, io_task_runner_,
-                              base::Bind(&GetCustomLocationProviderForTest)),
+          CreateDeviceService(
+              file_task_runner_, io_task_runner_,
+              base::Bind(&TestRequestContextProducer, io_task_runner_),
+              kTestGeolocationApiKey,
+              base::Bind(&GetCustomLocationProviderForTest)),
           std::move(request)));
 #endif
     }
@@ -90,7 +108,8 @@ DeviceServiceTestBase::DeviceServiceTestBase()
       file_thread_("DeviceServiceTestFileThread"),
       io_thread_("DeviceServiceTestIOThread") {
   file_thread_.Start();
-  io_thread_.Start();
+  io_thread_.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
 
 DeviceServiceTestBase::~DeviceServiceTestBase() {}
