@@ -40,9 +40,9 @@ std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject> ResolveNode(
     return nullptr;
 
   ScriptState::Scope scope(script_state);
-  return v8_session->wrapObject(script_state->GetContext(),
-                                NodeV8Value(script_state->GetContext(), node),
-                                ToV8InspectorStringView(object_group));
+  return v8_session->wrapObject(
+      script_state->GetContext(), NodeV8Value(script_state->GetContext(), node),
+      ToV8InspectorStringView(object_group), false /* generatePreview */);
 }
 
 std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
@@ -60,7 +60,7 @@ NullRemoteObject(v8_inspector::V8InspectorSession* v8_session,
   return v8_session->wrapObject(
       script_state->GetContext(),
       NodeV8Value(script_state->GetContext(), nullptr),
-      ToV8InspectorStringView(object_group));
+      ToV8InspectorStringView(object_group), false /* generatePreview */);
 }
 
 }  // namespace blink
