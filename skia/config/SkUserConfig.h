@@ -237,6 +237,11 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
 #endif
 
+// remove after rebaselining exotic color space layout tests
+#ifndef SK_SUPPORT_LEGACY_ICC_PRECISON
+#define SK_SUPPORT_LEGACY_ICC_PRECISON
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
