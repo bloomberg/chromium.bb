@@ -104,6 +104,7 @@
 #include "media/midi/midi_switches.h"
 #include "net/cert/cert_verify_proc_android.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator_params.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/device/public/cpp/device_features.h"
@@ -835,6 +836,9 @@ const FeatureEntry::Choice kForceEffectiveConnectionTypeChoices[] = {
     {flag_descriptions::kEffectiveConnectionTypeSlow2GDescription,
      switches::kForceEffectiveConnectionType,
      net::kEffectiveConnectionTypeSlow2G},
+    {flag_descriptions::kEffectiveConnectionTypeSlow2GOnCellularDescription,
+     switches::kForceEffectiveConnectionType,
+     net::kEffectiveConnectionTypeSlow2GOnCellular},
     {flag_descriptions::kEffectiveConnectionType2GDescription,
      switches::kForceEffectiveConnectionType, net::kEffectiveConnectionType2G},
     {flag_descriptions::kEffectiveConnectionType3GDescription,
@@ -845,7 +849,7 @@ const FeatureEntry::Choice kForceEffectiveConnectionTypeChoices[] = {
 
 // Ensure that all effective connection types returned by Network Quality
 // Estimator (NQE) are also exposed via flags.
-static_assert(net::EFFECTIVE_CONNECTION_TYPE_LAST + 1 ==
+static_assert(net::EFFECTIVE_CONNECTION_TYPE_LAST + 2 ==
                   arraysize(kForceEffectiveConnectionTypeChoices),
               "ECT enum value is not handled.");
 static_assert(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN == 0,

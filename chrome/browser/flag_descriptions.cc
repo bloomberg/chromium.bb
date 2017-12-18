@@ -666,10 +666,15 @@ const char kForceEffectiveConnectionTypeName[] =
     "Override effective connection type";
 const char kForceEffectiveConnectionTypeDescription[] =
     "Overrides the effective connection type of the current connection "
-    "returned by the network quality estimator.";
+    "returned by the network quality estimator. Slow 2G on Cellular returns "
+    "Slow 2G when connected to a cellular network, and the actual estimate "
+    "effective connection type when not on a cellular network. Previews are "
+    "usually served on 2G networks.";
 const char kEffectiveConnectionTypeUnknownDescription[] = "Unknown";
 const char kEffectiveConnectionTypeOfflineDescription[] = "Offline";
 const char kEffectiveConnectionTypeSlow2GDescription[] = "Slow 2G";
+const char kEffectiveConnectionTypeSlow2GOnCellularDescription[] =
+    "Slow 2G On Cellular";
 const char kEffectiveConnectionType2GDescription[] = "2G";
 const char kEffectiveConnectionType3GDescription[] = "3G";
 const char kEffectiveConnectionType4GDescription[] = "4G";

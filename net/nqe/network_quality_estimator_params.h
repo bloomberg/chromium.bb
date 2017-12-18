@@ -21,6 +21,7 @@ namespace net {
 // Forces NQE to return a specific effective connection type. Set using the
 // |params| provided to the NetworkQualityEstimatorParams constructor.
 NET_EXPORT extern const char kForceEffectiveConnectionType[];
+NET_EXPORT extern const char kEffectiveConnectionTypeSlow2GOnCellular[];
 
 // NetworkQualityEstimatorParams computes the configuration parameters for
 // the network quality estimator.
@@ -95,12 +96,11 @@ class NET_EXPORT NetworkQualityEstimatorParams {
 
   // Returns an unset value if the effective connection type has not been forced
   // via the |params| provided to this class. Otherwise, returns a value set to
-  // the effective connection type that has been forced.
-  base::Optional<EffectiveConnectionType> forced_effective_connection_type()
-      const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return forced_effective_connection_type_;
-  }
+  // the effective connection type that has been forced. Forced ECT can be
+  // forced based on |connection_type| (e.g. Slow-2G on cellular, and default on
+  // other connection type).
+  base::Optional<EffectiveConnectionType> GetForcedEffectiveConnectionType(
+      NetworkChangeNotifier::ConnectionType connection_type);
 
   void SetForcedEffectiveConnectionType(
       EffectiveConnectionType forced_effective_connection_type) {
@@ -271,6 +271,7 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   const double weight_multiplier_per_signal_strength_level_;
   const double correlation_uma_logging_probability_;
   base::Optional<EffectiveConnectionType> forced_effective_connection_type_;
+  const bool forced_effective_connection_type_on_cellular_only_;
   bool persistent_cache_reading_enabled_;
   const base::TimeDelta min_socket_watcher_notification_interval_;
   const double lower_bound_http_rtt_transport_rtt_multiplier_;
