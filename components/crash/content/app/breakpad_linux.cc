@@ -247,7 +247,7 @@ void SetChannelFromCommandLine(const base::CommandLine& command_line) {
   if (!GetEnableCrashReporterSwitchParts(command_line, &switch_parts))
     return;
 
-  SetChannelCrashKey(switch_parts[1]);
+  base::debug::SetCrashKeyValue(crash_keys::kChannel, switch_parts[1]);
 }
 #endif
 
@@ -2015,11 +2015,6 @@ void InitCrashReporter(const std::string& process_type) {
   }
 
   PostEnableBreakpadInitialization();
-}
-
-void SetChannelCrashKey(const std::string& channel) {
-  static crash_reporter::CrashKeyString<16> channel_key("channel");
-  channel_key.Set(channel);
 }
 
 #if defined(OS_ANDROID)
