@@ -970,7 +970,7 @@
     },
     {
       name: "SlimmingPaintV175",
-      implied_by: ["SlimmingPaintV2"],
+      implied_by: ["SlimmingPaintV2", "LayoutNGPaintFragments"],
     },
     {
       name: "SlimmingPaintV2",
