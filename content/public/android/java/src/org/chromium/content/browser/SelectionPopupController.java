@@ -1049,7 +1049,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     // All coordinates are in DIP.
     @CalledByNative
-    private void onSelectionEvent(int eventType, int left, int top, int right, int bottom) {
+    private void onSelectionEvent(int eventType, int left, int top, int right, int bottom,
+            float boundMiddlePointX, float boundMiddlePointY) {
         // Ensure the provided selection coordinates form a non-empty rect, as required by
         // the selection action mode.
         if (left == right) ++right;

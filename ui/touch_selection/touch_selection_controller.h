@@ -120,6 +120,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   gfx::RectF GetStartHandleRect() const;
   gfx::RectF GetEndHandleRect() const;
 
+  // Returns the middle point of selection bound corresponding to the active
+  // selection or insertion handle. If there is no active handle, returns (0,0).
+  gfx::PointF GetActiveHandleBoundPoint() const;
+
   // Returns the focal point of the start and end bounds, as defined by
   // their bottom coordinate.
   const gfx::PointF& GetStartPosition() const;
