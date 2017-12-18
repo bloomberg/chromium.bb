@@ -26,11 +26,11 @@ namespace CSS{{property.namespace_group}} {
 {% endif %}
 // See src/third_party/WebKit/Source/core/css/properties/README.md
   {% if property.alias_for != None%}
-class {{property_classname}} final : public CSSUnresolvedProperty {
+class {{property_classname}} : public CSSUnresolvedProperty {
  public:
   constexpr {{property_classname}}() : CSSUnresolvedProperty() {}
   {% else %}
-class {{property_classname}} final : public {{property.namespace_group}} {
+class {{property_classname}} : public {{property.namespace_group}} {
  public:
   constexpr {{property_classname}}() : {{property.namespace_group}}() {}
   {% endif %}

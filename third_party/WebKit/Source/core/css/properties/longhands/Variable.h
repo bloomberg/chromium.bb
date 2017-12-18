@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class Variable final : public CSSProperty {
+class Variable : public CSSProperty {
  public:
   constexpr Variable() : CSSProperty() {}
 

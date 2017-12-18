@@ -16,6 +16,8 @@ class StyleResolverState;
 
 class Longhand : public CSSProperty {
  public:
+  constexpr Longhand() : CSSProperty() {}
+
   // Parses and consumes a longhand property value from the token range.
   // Returns nullptr if the input is invalid.
   virtual const CSSValue* ParseSingleValue(CSSParserTokenRange&,
@@ -34,9 +36,6 @@ class Longhand : public CSSProperty {
     return Color();
   }
   bool IsLonghand() const override { return true; }
-
- protected:
-  constexpr Longhand() : CSSProperty() {}
 };
 
 DEFINE_TYPE_CASTS(Longhand,

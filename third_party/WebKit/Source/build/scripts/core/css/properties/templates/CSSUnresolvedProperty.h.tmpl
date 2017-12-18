@@ -21,6 +21,8 @@ class CSSUnresolvedProperty {
  public:
   CORE_EXPORT static const CSSUnresolvedProperty& Get(CSSPropertyID);
 
+  constexpr CSSUnresolvedProperty() {}
+
   // For backwards compatibility when passing around CSSUnresolvedProperty
   // references. In case we need to call a function that hasn't been converted
   // to using property classes yet.
@@ -51,7 +53,6 @@ class CSSUnresolvedProperty {
   CORE_EXPORT static const CSSUnresolvedProperty* GetAliasProperty(CSSPropertyID);
 
  protected:
-  constexpr CSSUnresolvedProperty() {}
   static const CSSUnresolvedProperty& GetNonAliasProperty(CSSPropertyID);
 };
 
