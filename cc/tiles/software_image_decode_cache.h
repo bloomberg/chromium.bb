@@ -186,6 +186,7 @@ class CC_EXPORT SoftwareImageDecodeCache
     // scaled image. Either case represents this decode as being valuable and
     // not wasted.
     void mark_used() { usage_stats_.used = true; }
+    void mark_cached() { cached_ = true; }
     void mark_out_of_raster() { usage_stats_.first_lock_out_of_raster = true; }
 
     // Since this is an inner class, we expose these variables publicly for
@@ -219,6 +220,8 @@ class CC_EXPORT SoftwareImageDecodeCache
     SkSize src_rect_offset_;
     uint64_t tracing_id_;
     UsageStats usage_stats_;
+    // Indicates whether this entry was ever in the cache.
+    bool cached_ = false;
   };
 
   // MemoryBudget is a convenience class for memory bookkeeping and ensuring
