@@ -41,10 +41,10 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
         self._outputs = {}
         output_dir = sys.argv[sys.argv.index('--output_dir') + 1]
         properties = self.css_properties.longhands
-        superclass = 'Longhand'
+        namespace_group = 'Longhand'
         if 'shorthands' in output_dir:
             properties = self.css_properties.shorthands
-            superclass = 'Shorthand'
+            namespace_group = 'Shorthand'
         for property_ in properties:
             if property_['property_class'] is None:
                 continue
@@ -54,13 +54,25 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
                 self._property_methods[method_name]
                 for method_name in property_['property_methods']
             ]
-            property_['superclass'] = superclass
+            property_['namespace_group'] = namespace_group
             class_data = self.get_class(property_)
             self.calculate_apply_functions_to_declare(property_)
             self.populate_includes(property_)
             self._outputs[class_data.classname + '.h'] = (
                 self.generate_property_h_builder(
                     class_data.classname, property_))
+        for property_ in self.css_properties.aliases:
+            if ('shorthands' in output_dir and property_['longhands']) or \
+               ('longhands' in output_dir and not property_['longhands']):
+                if property_['property_class'] is None:
+                    continue
+                property_['unique'] = True
+                class_data = self.get_class(property_)
+                property_['namespace_group'] = namespace_group
+                self.populate_includes(property_)
+                self._outputs[class_data.classname + '.h'] = (
+                    self.generate_property_h_builder(
+                        class_data.classname, property_))
 
     def generate_property_h_builder(self, property_classname, property_):
         @template_expander.use_jinja(
@@ -119,30 +131,36 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
 
     def populate_includes(self, property_):
         includes = []
-        if property_['direction_aware_options']:
-            includes.append("core/StylePropertyShorthand.h")
-        if property_['runtime_flag']:
-            includes.append("platform/runtime_enabled_features.h")
-        if property_['should_implement_apply_functions']:
-            includes.append("core/css/resolver/StyleResolverState.h")
-            if property_['converter'] == "CSSPrimitiveValue":
-                includes.append("core/css/CSSPrimitiveValue.h")
-                includes.append("core/css/CSSPrimitiveValueMappings.h")
-            elif property_['converter'] == "CSSIdentifierValue":
-                includes.append("core/css/CSSIdentifierValue.h")
-            elif property_['converter']:
-                includes.append("core/css/CSSPrimitiveValueMappings.h")
-                includes.append("core/css/resolver/StyleBuilderConverter.h")
-            if property_['font']:
-                includes.append("core/css/resolver/FontBuilder.h")
-            elif property_['svg']:
-                includes.append("core/style/ComputedStyle.h")
-                includes.append("core/style/SVGComputedStyle.h")
-            else:
-                includes.append("core/style/ComputedStyle.h")
-            if (property_.get('custom_apply_args') and
-                    property_.get('custom_apply_args').get('modifier_type') in ['Width', 'Slice', 'Outset']):
-                includes.append("core/css/properties/StyleBuildingUtils.h")
+        if property_['alias_for']:
+            includes.append("core/css/properties/CSSUnresolvedProperty.h")
+        else:
+            includes.append("core/css/properties/" + property_['namespace_group'] + ".h")
+            if property_['direction_aware_options']:
+                includes.append("core/StylePropertyShorthand.h")
+            if property_['runtime_flag']:
+                includes.append("platform/runtime_enabled_features.h")
+            if property_['should_implement_apply_functions']:
+                includes.append("core/css/resolver/StyleResolverState.h")
+                if property_['converter'] == "CSSPrimitiveValue":
+                    includes.append("core/css/CSSPrimitiveValue.h")
+                    includes.append("core/css/CSSPrimitiveValueMappings.h")
+                elif property_['converter'] == "CSSIdentifierValue":
+                    includes.append("core/css/CSSIdentifierValue.h")
+                elif property_['converter']:
+                    includes.append("core/css/CSSPrimitiveValueMappings.h")
+                    includes.append("core/css/resolver/StyleBuilderConverter.h")
+                if property_['font']:
+                    includes.append("core/css/resolver/FontBuilder.h")
+                elif property_['svg']:
+                    includes.append("core/css/CSSPrimitiveValueMappings.h")
+                    includes.append("core/style/ComputedStyle.h")
+                    includes.append("core/style/SVGComputedStyle.h")
+                else:
+                    includes.append("core/style/ComputedStyle.h")
+                if (property_.get('custom_apply_args') and
+                        property_.get('custom_apply_args').get('modifier_type')
+                        in ['Width', 'Slice', 'Outset']):
+                    includes.append("core/css/properties/StyleBuildingUtils.h")
         includes.sort()
         property_['includes'] = includes
 

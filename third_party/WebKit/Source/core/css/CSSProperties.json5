@@ -492,7 +492,7 @@
     },
     {
       name: "font-kerning",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       font: true,
       name_for_methods: "Kerning",
@@ -623,7 +623,7 @@
     },
     {
       name: "-webkit-font-smoothing",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       font: true,
       type_name: "FontSmoothingMode",
@@ -640,7 +640,7 @@
     },
     {
       name: "text-orientation",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -652,7 +652,7 @@
     },
     {
       name: "-webkit-text-orientation",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       type_name: "TextOrientation",
       custom_apply_functions_value: true,
@@ -660,7 +660,7 @@
     },
     {
       name: "writing-mode",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_template: "keyword",
       include_paths: ["platform/text/WritingMode.h"],
@@ -672,7 +672,7 @@
     },
     {
       name: "-webkit-writing-mode",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       type_name: "WritingMode",
       custom_apply_functions_value: true,
@@ -680,7 +680,7 @@
     },
     {
       name: "text-rendering",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       font: true,
       type_name: "TextRenderingMode",
@@ -754,6 +754,7 @@
     },
     {
       name: "backface-visibility",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["visible", "hidden"],
@@ -909,7 +910,7 @@
     },
     {
       name: "border-collapse",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1123,6 +1124,7 @@
     },
     {
       name: "box-sizing",
+      property_class: true,
       field_group: "box",
       field_template: "keyword",
       keywords: ["content-box", "border-box"],
@@ -1166,7 +1168,7 @@
     },
     {
       name: "caption-side",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1222,27 +1224,27 @@
     },
     {
       name: "clip-rule",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
       type_name: "WindRule",
     },
     {
       name: "color-interpolation",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
     },
     {
       name: "color-interpolation-filters",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
       type_name: "EColorInterpolation",
     },
     {
       name: "color-rendering",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
     },
@@ -1349,13 +1351,13 @@
     },
     {
       name: "dominant-baseline",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
     },
     {
       name: "empty-cells",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1383,7 +1385,7 @@
     },
     {
       name: "fill-rule",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
       type_name: "WindRule",
@@ -1415,6 +1417,7 @@
     },
     {
       name: "flex-direction",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["row", "row-reverse", "column", "column-reverse"],
@@ -1442,6 +1445,7 @@
     },
     {
       name: "flex-wrap",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["nowrap", "wrap", "wrap-reverse"],
@@ -1620,7 +1624,7 @@
     },
     {
       name: "image-rendering",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -1754,7 +1758,7 @@
     },
     {
       name: "list-style-position",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1763,7 +1767,7 @@
     },
     {
       name: "list-style-type",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_template: "keyword",
       keywords: [
@@ -2105,7 +2109,7 @@
     },
     {
       name: "overflow-wrap",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2205,7 +2209,7 @@
     },
     {
       name: "pointer-events",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2566,7 +2570,7 @@
     },
     {
       name: "shape-rendering",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
     },
@@ -2578,7 +2582,7 @@
     },
     {
       name: "speak",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2636,7 +2640,7 @@
     },
     {
       name: "stroke-linecap",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
       name_for_methods: "CapStyle",
@@ -2644,7 +2648,7 @@
     },
     {
       name: "stroke-linejoin",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
       name_for_methods: "JoinStyle",
@@ -2701,7 +2705,7 @@
     },
     {
       name: "text-align",
-      property_class: "Inherited",
+      property_class: true,
       independent: false,
       inherited: true,
       field_template: "keyword",
@@ -2715,7 +2719,7 @@
     },
     {
       name: "text-align-last",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2724,13 +2728,13 @@
     },
     {
       name: "text-anchor",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       svg: true,
     },
     {
       name: "text-combine-upright",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2839,7 +2843,7 @@
     },
     {
       name: "text-transform",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2920,6 +2924,7 @@
     },
     {
       name: "transform-style",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: ["flat", "preserve-3d"],
@@ -3090,7 +3095,7 @@
     },
     {
       name: "-webkit-box-direction",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3198,6 +3203,7 @@
     },
     {
       name: "column-rule-style",
+      property_class: true,
       field_group: "*",
       field_template: "keyword",
       keywords: [
@@ -3270,7 +3276,7 @@
     },
     {
       name: "-webkit-line-break",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3280,7 +3286,7 @@
     },
     {
       name: "line-break",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       type_name: "LineBreak",
     },
@@ -3425,7 +3431,7 @@
     },
     {
       name: "-webkit-print-color-adjust",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3434,7 +3440,7 @@
     },
     {
       name: "-webkit-rtl-ordering",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3446,7 +3452,7 @@
     },
     {
       name: "-webkit-ruby-position",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3466,7 +3472,7 @@
     },
     {
       name: "-webkit-text-combine",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       name_for_methods: "TextCombine",
     },
@@ -3517,7 +3523,7 @@
     },
     {
       name: "-webkit-text-security",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3579,7 +3585,7 @@
     },
     {
       name: "-webkit-user-modify",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3588,7 +3594,7 @@
     },
     {
       name: "user-select",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3597,7 +3603,7 @@
     },
     {
       name: "white-space",
-      property_class: "Inherited",
+      property_class: true,
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3638,7 +3644,7 @@
     },
     {
       name: "word-break",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3658,7 +3664,7 @@
     // property. So using the same handlers.
     {
       name: "word-wrap",
-      property_class: "Inherited",
+      property_class: true,
       inherited: true,
       name_for_methods: "OverflowWrap",
     },
@@ -4535,284 +4541,353 @@
     // Aliases; these map to the same CSSPropertyID
     {
       name: "-epub-caption-side",
+      property_class: true,
       alias_for: "caption-side",
     },
     {
       name: "-epub-text-combine",
+      property_class: true,
       alias_for: "-webkit-text-combine",
     },
     {
       name: "-epub-text-emphasis",
+      property_class: true,
       alias_for: "-webkit-text-emphasis",
     },
     {
       name: "-epub-text-emphasis-color",
+      property_class: true,
       alias_for: "-webkit-text-emphasis-color",
     },
     {
       name: "-epub-text-emphasis-style",
+      property_class: true,
       alias_for: "-webkit-text-emphasis-style",
     },
     {
       name: "-epub-text-orientation",
+      property_class: true,
       alias_for: "-webkit-text-orientation",
     },
     {
       name: "-epub-text-transform",
+      property_class: true,
       alias_for: "text-transform",
     },
     {
       name: "-epub-word-break",
+      property_class: true,
       alias_for: "word-break",
     },
     {
       name: "-epub-writing-mode",
+      property_class: true,
       alias_for: "-webkit-writing-mode",
     },
     {
       name: "-webkit-align-content",
+      property_class: true,
       alias_for: "align-content",
     },
     {
       name: "-webkit-align-items",
+      property_class: true,
       alias_for: "align-items",
     },
     {
       name: "-webkit-align-self",
+      property_class: true,
       alias_for: "align-self",
     },
     {
       name: "-webkit-animation",
+      property_class: true,
       alias_for: "animation",
     },
     {
       name: "-webkit-animation-delay",
+      property_class: true,
       alias_for: "animation-delay",
     },
     {
       name: "-webkit-animation-direction",
+      property_class: true,
       alias_for: "animation-direction",
     },
     {
       name: "-webkit-animation-duration",
+      property_class: true,
       alias_for: "animation-duration",
     },
     {
       name: "-webkit-animation-fill-mode",
+      property_class: true,
       alias_for: "animation-fill-mode",
     },
     {
       name: "-webkit-animation-iteration-count",
+      property_class: true,
       alias_for: "animation-iteration-count",
     },
     {
       name: "-webkit-animation-name",
+      property_class: true,
       alias_for: "animation-name",
     },
     {
       name: "-webkit-animation-play-state",
+      property_class: true,
       alias_for: "animation-play-state",
     },
     {
       name: "-webkit-animation-timing-function",
+      property_class: true,
       alias_for: "animation-timing-function",
     },
     {
       name: "-webkit-backface-visibility",
+      property_class: true,
       alias_for: "backface-visibility",
     },
     // -webkit-background-clip accepts "content", "padding", and "border" values
     // See crbug.com/604023
     {
       name: "-webkit-background-clip",
+      property_class: true,
       alias_for: "background-clip",
     },
     // -webkit-background-origin accepts "content", "padding", and "border"
     // values. See crbug.com/604023
     {
       name: "-webkit-background-origin",
+      property_class: true,
       alias_for: "background-origin"
     },
     // "-webkit-background-size: 10px" behaves as "background-size: 10px 10px"
     {
       name: "-webkit-background-size",
+      property_class: true,
       alias_for: "background-size",
     },
     {
       name: "-webkit-border-bottom-left-radius",
+      property_class: true,
       alias_for: "border-bottom-left-radius",
     },
     {
       name: "-webkit-border-bottom-right-radius",
+      property_class: true,
       alias_for: "border-bottom-right-radius",
     },
     // "-webkit-border-radius: 1px 2px" behaves as "border-radius: 1px / 2px"
     {
       name: "-webkit-border-radius",
+      property_class: true,
       alias_for: "border-radius",
     },
     {
       name: "-webkit-border-top-left-radius",
+      property_class: true,
       alias_for: "border-top-left-radius",
     },
     {
       name: "-webkit-border-top-right-radius",
+      property_class: true,
       alias_for: "border-top-right-radius",
     },
     {
       name: "-webkit-box-shadow",
+      property_class: true,
       alias_for: "box-shadow",
     },
     {
       name: "-webkit-box-sizing",
+      property_class: true,
       alias_for: "box-sizing",
     },
     {
       name: "-webkit-clip-path",
+      property_class: true,
       alias_for: "clip-path",
     },
     {
       name: "-webkit-column-count",
+      property_class: true,
       alias_for: "column-count",
     },
     {
       name: "-webkit-column-gap",
+      property_class: true,
       alias_for: "column-gap",
     },
     {
       name: "-webkit-column-rule",
+      property_class: true,
       alias_for: "column-rule",
     },
     {
       name: "-webkit-column-rule-color",
+      property_class: true,
       alias_for: "column-rule-color",
     },
     {
       name: "-webkit-column-rule-style",
+      property_class: true,
       alias_for: "column-rule-style",
     },
     {
       name: "-webkit-column-rule-width",
+      property_class: true,
       alias_for: "column-rule-width",
     },
     {
       name: "-webkit-column-span",
+      property_class: true,
       alias_for: "column-span",
     },
     {
       name: "-webkit-column-width",
+      property_class: true,
       alias_for: "column-width",
     },
     {
       name: "-webkit-columns",
+      property_class: true,
       alias_for: "columns",
     },
     {
       name: "-webkit-filter",
+      property_class: true,
       alias_for: "filter",
     },
     {
       name: "-webkit-flex",
+      property_class: true,
       alias_for: "flex",
     },
     {
       name: "-webkit-flex-basis",
+      property_class: true,
       alias_for: "flex-basis",
     },
     {
       name: "-webkit-flex-direction",
+      property_class: true,
       alias_for: "flex-direction",
     },
     {
       name: "-webkit-flex-flow",
+      property_class: true,
       alias_for: "flex-flow",
     },
     {
       name: "-webkit-flex-grow",
+      property_class: true,
       alias_for: "flex-grow",
     },
     {
       name: "-webkit-flex-shrink",
+      property_class: true,
       alias_for: "flex-shrink",
     },
     {
       name: "-webkit-flex-wrap",
+      property_class: true,
       alias_for: "flex-wrap",
     },
     {
       name: "-webkit-font-feature-settings",
+      property_class: true,
       alias_for: "font-feature-settings",
     },
     {
       name: "-webkit-justify-content",
+      property_class: true,
       alias_for: "justify-content",
     },
     {
       name: "-webkit-opacity",
+      property_class: true,
       alias_for: "opacity",
     },
     {
       name: "-webkit-order",
+      property_class: true,
       alias_for: "order",
     },
     {
       name: "-webkit-perspective",
+      property_class: true,
       alias_for: "perspective",
     },
     {
       name: "-webkit-perspective-origin",
+      property_class: true,
       alias_for: "perspective-origin",
     },
     {
       name: "-webkit-shape-image-threshold",
+      property_class: true,
       alias_for: "shape-image-threshold",
     },
     {
       name: "-webkit-shape-margin",
+      property_class: true,
       alias_for: "shape-margin",
     },
     {
       name: "-webkit-shape-outside",
+      property_class: true,
       alias_for: "shape-outside",
     },
     {
       name: "-webkit-text-size-adjust",
+      property_class: true,
       alias_for: "text-size-adjust",
     },
     {
       name: "-webkit-transform",
+      property_class: true,
       alias_for: "transform",
     },
     {
       name: "-webkit-transform-origin",
+      property_class: true,
       alias_for: "transform-origin",
     },
     {
       name: "-webkit-transform-style",
+      property_class: true,
       alias_for: "transform-style",
     },
     {
       name: "-webkit-transition",
+      property_class: true,
       alias_for: "transition",
     },
     {
       name: "-webkit-transition-delay",
+      property_class: true,
       alias_for: "transition-delay",
     },
     {
       name: "-webkit-transition-duration",
+      property_class: true,
       alias_for: "transition-duration",
     },
     {
       name: "-webkit-transition-property",
+      property_class: true,
       alias_for: "transition-property",
     },
     {
       name: "-webkit-transition-timing-function",
+      property_class: true,
       alias_for: "transition-timing-function",
     },
     {
       name: "-webkit-user-select",
+      property_class: true,
       alias_for: "user-select",
     },
   ],

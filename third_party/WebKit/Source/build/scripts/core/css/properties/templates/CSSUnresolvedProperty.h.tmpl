@@ -1,0 +1,57 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+// clang-format off
+
+#ifndef CSSUnresolvedProperty_h
+#define CSSUnresolvedProperty_h
+
+#include "core/CSSPropertyNames.h"
+#include "platform/wtf/text/WTFString.h"
+
+namespace blink {
+
+// TODO(crbug.com/793288): audit and consider redesigning how aliases are
+// handled once more of project Ribbon is done and all use of aliases can be
+// found and (hopefully) constrained.
+class CSSUnresolvedProperty {
+ public:
+  CORE_EXPORT static const CSSUnresolvedProperty& Get(CSSPropertyID);
+
+  explicit constexpr CSSUnresolvedProperty(CSSPropertyID id) : id_(id) {}
+
+  // For backwards compatibility when passing around CSSUnresolvedProperty
+  // references. In case we need to call a function that hasn't been converted
+  // to using property classes yet.
+  CSSPropertyID PropertyID() const { return id_; }
+  bool IDEquals(CSSPropertyID id) const { return id_ == id; }
+  virtual bool IsResolvedProperty() const { return false; }
+  virtual const char* GetPropertyName() const { return getPropertyName(id_); }
+  virtual const WTF::AtomicString& GetPropertyNameAtomicString() const {
+    return getPropertyNameAtomicString(id_);
+  }
+  WTF::String GetPropertyNameString() const {
+    // We share the StringImpl with the AtomicStrings.
+    return GetPropertyNameAtomicString().GetString();
+  }
+
+  static const CSSUnresolvedProperty& GetCSSPropertyVariableInternal();
+  {% for property_class_data in property_classes_by_property_id %}
+  static const CSSUnresolvedProperty& Get{{property_class_data.property_id}}Internal();
+  {% endfor %}
+
+  CORE_EXPORT static const CSSUnresolvedProperty* GetAliasProperty(CSSPropertyID);
+
+ private:
+  const CSSPropertyID id_;
+
+ protected:
+  static const CSSUnresolvedProperty& GetNonAliasProperty(CSSPropertyID);
+};
+
+}  // namespace blink
+
+#endif  // CSSUnresolvedProperty_h

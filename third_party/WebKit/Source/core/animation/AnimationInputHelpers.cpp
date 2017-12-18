@@ -31,25 +31,25 @@ static String RemoveSVGPrefix(const String& property) {
   return property.Substring(kSVGPrefixLength);
 }
 
-static String CSSPropertyToKeyframeAttribute(CSSPropertyID property) {
-  DCHECK_NE(property, CSSPropertyInvalid);
-  DCHECK_NE(property, CSSPropertyVariable);
+static String CSSPropertyToKeyframeAttribute(const CSSProperty& property) {
+  DCHECK_NE(property.PropertyID(), CSSPropertyInvalid);
+  DCHECK_NE(property.PropertyID(), CSSPropertyVariable);
 
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyFloat:
       return "cssFloat";
     case CSSPropertyOffset:
       return "cssOffset";
     default:
-      return getJSPropertyName(property);
+      return property.GetJSPropertyName();
   }
 }
 
 static String PresentationAttributeToKeyframeAttribute(
-    CSSPropertyID presentation_attribute) {
+    const CSSProperty& presentation_attribute) {
   StringBuilder builder;
   builder.Append(kSVGPrefix, kSVGPrefixLength);
-  builder.Append(getPropertyName(presentation_attribute));
+  builder.Append(presentation_attribute.GetPropertyName());
   return builder.ToString();
 }
 
@@ -272,13 +272,12 @@ String AnimationInputHelpers::PropertyHandleToKeyframeAttribute(
   if (property.IsCSSProperty()) {
     return property.IsCSSCustomProperty()
                ? property.CustomPropertyName()
-               : CSSPropertyToKeyframeAttribute(
-                     property.GetCSSProperty().PropertyID());
+               : CSSPropertyToKeyframeAttribute(property.GetCSSProperty());
   }
 
   if (property.IsPresentationAttribute()) {
     return PresentationAttributeToKeyframeAttribute(
-        property.PresentationAttribute().PropertyID());
+        property.PresentationAttribute());
   }
 
   DCHECK(property.IsSVGAttribute());

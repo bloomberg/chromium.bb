@@ -164,6 +164,7 @@ class CSSProperties(object):
                 enum_for_css_property(alias['alias_for'])]
             updated_alias = aliased_property.copy()
             updated_alias['name'] = alias['name']
+            updated_alias['property_class'] = alias['property_class']
             updated_alias['alias_for'] = alias['alias_for']
             updated_alias['property_id'] = enum_for_css_property_alias(
                 alias['name'])

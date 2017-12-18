@@ -165,7 +165,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const {
   CSSPropertyValueSet::PropertyReference property = PropertySet().PropertyAt(i);
   if (property.Id() == CSSPropertyVariable)
     return ToCSSCustomPropertyDeclaration(property.Value()).GetName();
-  return getPropertyName(property.Id());
+  return property.Property().GetPropertyName();
 }
 
 String AbstractPropertySetCSSStyleDeclaration::cssText() const {
@@ -226,7 +226,7 @@ String AbstractPropertySetCSSStyleDeclaration::GetPropertyShorthand(
   CSSPropertyID shorthand_id = PropertySet().GetPropertyShorthand(property_id);
   if (!shorthand_id)
     return String();
-  return getPropertyNameString(shorthand_id);
+  return CSSProperty::Get(shorthand_id).GetPropertyNameString();
 }
 
 bool AbstractPropertySetCSSStyleDeclaration::IsPropertyImplicit(

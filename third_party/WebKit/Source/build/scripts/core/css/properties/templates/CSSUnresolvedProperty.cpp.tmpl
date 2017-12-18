@@ -1,0 +1,82 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+// clang-format off
+
+#include "core/css/properties/CSSUnresolvedProperty.h"
+
+#include "core/css/properties/longhands/Variable.h"
+{% for property_class in longhand_property_classnames %}
+  {% if property_class != "Longhand" %}
+#include "core/css/properties/longhands/{{property_class}}.h"
+  {% endif %}
+{% endfor %}
+{% for property_class in shorthand_property_classnames %}
+#include "core/css/properties/shorthands/{{property_class}}.h"
+{% endfor %}
+
+namespace blink {
+namespace {
+
+static constexpr Variable property_csspropertyvariable(CSSPropertyVariable);
+{% for _, property_id, classname, namespace_group in property_classes_by_property_id %}
+  {% if namespace_group != None %}
+static constexpr CSS{{namespace_group}}::{{classname}} property_{{property_id.lower()}}({{property_id}});
+  {% else %}
+static constexpr {{classname}} property_{{property_id.lower()}}({{property_id}});
+  {% endif %}
+{% endfor %}
+{% for _, property_id, classname, namespace_group in alias_classes_by_property_id %}
+static constexpr CSS{{namespace_group}}::{{classname}} property_{{property_id.lower()}}({{property_id}});
+{% endfor %}
+
+} // namespace
+
+const CSSUnresolvedProperty& CSSUnresolvedProperty::GetCSSPropertyVariableInternal() {
+  return property_csspropertyvariable;
+}
+{% for property_class_data in property_classes_by_property_id %}
+const CSSUnresolvedProperty& CSSUnresolvedProperty::Get{{property_class_data.property_id}}Internal() {
+  return property_{{property_class_data.property_id.lower()}};
+}
+{% endfor %}
+
+const CSSUnresolvedProperty* CSSUnresolvedProperty::GetAliasProperty(CSSPropertyID id) {
+  DCHECK_GT(id, {{last_property_id}}); // last property id
+  DCHECK_LE(id, {{last_unresolved_property_id}}); // last unresolved property id
+  switch (id) {
+    {% for property_class_data in alias_classes_by_property_id %}
+    case {{property_class_data.property_id}}:
+      return &property_{{property_class_data.property_id.lower()}};
+    {% endfor %}
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+const CSSUnresolvedProperty& CSSUnresolvedProperty::GetNonAliasProperty(CSSPropertyID id) {
+  DCHECK_NE(id, CSSPropertyInvalid);
+  DCHECK_LE(id, {{last_property_id}}); // last property id
+  static constexpr const CSSUnresolvedProperty* const property_classes[] = {
+    &property_csspropertyvariable,  // CSSPropertyVariable
+    {% for property_class_data in property_classes_by_property_id %}
+    &property_{{property_class_data.property_id.lower()}},  // {{property_class_data.property_id}}
+    {% endfor %}
+  };
+  // Subtract 1 because CSSPropertyInvalid does not appear in the array.
+  return *property_classes[id - 1];
+}
+
+const CSSUnresolvedProperty& CSSUnresolvedProperty::Get(CSSPropertyID id) {
+  DCHECK_NE(id, CSSPropertyInvalid);
+  DCHECK_LE(id, {{last_unresolved_property_id}});  // last_unresolved_property_id
+  if (id <= {{last_property_id}}) // last property id
+    return GetNonAliasProperty(id);
+  return *GetAliasProperty(id);
+}
+
+}  // namespace blink

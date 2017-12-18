@@ -82,33 +82,6 @@ const AtomicString& getPropertyNameAtomicString(CSSPropertyID id) {
   return propertyString;
 }
 
-String getPropertyNameString(CSSPropertyID id) {
-  // We share the StringImpl with the AtomicStrings.
-  return getPropertyNameAtomicString(id).GetString();
-}
-
-String getJSPropertyName(CSSPropertyID id) {
-  char result[maxCSSPropertyNameLength + 1];
-  const char* cssPropertyName = getPropertyName(id);
-  const char* propertyNamePointer = cssPropertyName;
-  if (!propertyNamePointer)
-    return g_empty_string;
-
-  char* resultPointer = result;
-  while (char character = *propertyNamePointer++) {
-    if (character == '-') {
-      char nextCharacter = *propertyNamePointer++;
-      if (!nextCharacter)
-        break;
-      character = (propertyNamePointer - 2 != cssPropertyName)
-                      ? ToASCIIUpper(nextCharacter) : nextCharacter;
-    }
-    *resultPointer++ = character;
-  }
-  *resultPointer = '\0';
-  return String(result);
-}
-
 CSSPropertyID cssPropertyID(const String& string)
 {
     return resolveCSSPropertyID(unresolvedCSSPropertyID(string));

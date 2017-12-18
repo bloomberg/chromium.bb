@@ -8,54 +8,21 @@
 
 #include "core/css/properties/CSSProperty.h"
 
-#include "core/css/properties/longhands/Variable.h"
-{% for property_class in longhand_property_classnames %}
-  {% if property_class != "Longhand" %}
-#include "core/css/properties/longhands/{{property_class}}.h"
-  {% endif %}
-{% endfor %}
-{% for property_class in shorthand_property_classnames %}
-#include "core/css/properties/shorthands/{{property_class}}.h"
-{% endfor %}
-
 namespace blink {
-namespace {
-
-static constexpr Variable property_csspropertyvariable(CSSPropertyVariable);
-{% for _, property_id, classname, superclass in property_classes_by_property_id %}
-  {% if superclass != None %}
-static constexpr CSS{{superclass}}::{{classname}} property_{{property_id.lower()}}({{property_id}});
-  {% else %}
-static constexpr {{classname}} property_{{property_id.lower()}}({{property_id}});
-  {% endif %}
-{% endfor %}
-
-const CSSProperty& GetProperty(CSSPropertyID id) {
-  static constexpr const CSSProperty* const property_classes[] = {
-    &property_csspropertyvariable,  // CSSPropertyVariable
-    {% for property_class_data in property_classes_by_property_id %}
-    &property_{{property_class_data.property_id.lower()}},  // {{property_class_data.property_id}}
-    {% endfor %}
-  };
-  // Subtract 1 because CSSPropertyInvalid does not appear in the array.
-  return *property_classes[id - 1];
-}
-
-} // namespace
 
 const CSSProperty& GetCSSPropertyVariable() {
-  return property_csspropertyvariable;
+  return ToCSSProperty(CSSUnresolvedProperty::GetCSSPropertyVariableInternal());
 }
 {% for property_class_data in property_classes_by_property_id %}
 const CSSProperty& Get{{property_class_data.property_id}}() {
-  return property_{{property_class_data.property_id.lower()}};
+  return ToCSSProperty(CSSUnresolvedProperty::Get{{property_class_data.property_id}}Internal());
 }
 {% endfor %}
 
 const CSSProperty& CSSProperty::Get(CSSPropertyID id) {
   DCHECK_NE(id, CSSPropertyInvalid);
-  DCHECK_LE(id, {{last_property_id}});  // last_property_id
-  return GetProperty(id);
+  DCHECK_LE(id, {{last_property_id}}); // last property id
+  return ToCSSProperty(CSSUnresolvedProperty::GetNonAliasProperty(id));
 }
 
 }  // namespace blink
