@@ -554,6 +554,11 @@ mojom("mojo_layouttest_bindings") {
   sources = [
     "data/mojo_layouttest_test.mojom",
   ]
+
+  # This mojom interface is exposed publicly to layout tests which use
+  # prepackaged redistributable JS bindings. It is therefore not desirable to
+  # scramble these messages.
+  scramble_message_ids = false
 }
 
 mojom("test_interfaces") {

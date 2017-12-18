@@ -24,24 +24,26 @@ function performChromiumSetup() {
   }
 
   // Load the Chromium-specific resources.
-  let root = window.location.pathname.match(/.*LayoutTests/);
-  let resource_prefix, gen_prefix;
-  if (root === null) {
-    // Use the correct aliases for tests using an HTTP server.
-    resource_prefix = `/js-test-resources`;
-    gen_prefix = `/gen`;
-  } else {
-    resource_prefix = `${root}/resources`;
-    gen_prefix = 'file:///gen/';
+  let prefix = '/resources/chromium';
+  let extra = [];
+  if (window.location.pathname.includes('/LayoutTests/')) {
+    let root = window.location.pathname.match(/.*LayoutTests/);
+    prefix = `${root}/external/wpt/resources/chromium`;
+    extra = [
+      `${root}/resources/bluetooth/bluetooth-fake-adapter.js`,
+    ];
+  } else if (window.location.pathname.startsWith('/bluetooth/https/')) {
+    extra = [
+      '/js-test-resources/bluetooth/bluetooth-fake-adapter.js',
+    ];
   }
   return loadScripts([
-    `${gen_prefix}/layout_test_data/mojo/public/js/mojo_bindings.js`,
-    `${gen_prefix}/content/test/data/mojo_layouttest_test.mojom.js`,
-    `${gen_prefix}/device/bluetooth/public/interfaces/uuid.mojom.js`,
-    `${gen_prefix}/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.js`,
-    `${resource_prefix}/bluetooth/web-bluetooth-test.js`,
-    `${resource_prefix}/bluetooth/bluetooth-fake-adapter.js`,
-  ])
+    `${prefix}/mojo_bindings.js`,
+    `${prefix}/mojo_layouttest_test.mojom.js`,
+    `${prefix}/uuid.mojom.js`,
+    `${prefix}/fake_bluetooth.mojom.js`,
+    `${prefix}/web-bluetooth-test.js`,
+  ].concat(extra))
       // Call setBluetoothFakeAdapter() to clean up any fake adapters left over
       // by legacy tests.
       // Legacy tests that use setBluetoothFakeAdapter() sometimes fail to clean
