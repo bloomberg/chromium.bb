@@ -546,6 +546,7 @@ buildflag_header("chromecast_features") {
     "ENABLE_VOLUME_TABLES_ACCESS=$enable_volume_tables_access",
     "IS_ANDROID_THINGS=$is_android_things",
     "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
+    "IS_CAST_DESKTOP_BUILD=$is_cast_desktop_build",
     "IS_CAST_USING_CMA_BACKEND=$is_cast_using_cma_backend",
     "SUPPORTS_MULTIZONE=$supports_multizone",
     "ENABLE_HEADLESS_MUSIC_MODE=$enable_headless_music_mode",

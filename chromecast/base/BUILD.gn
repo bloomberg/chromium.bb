@@ -84,6 +84,7 @@ cast_source_set("base") {
 
   deps = [
     "//base",
+    "//chromecast:chromecast_features",
   ]
 
   if (is_android) {
