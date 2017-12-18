@@ -26,16 +26,16 @@ using i18n::PhoneNumbersMatch;
 
 TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
   // "Large" digits.
-  base::string16 phone1(UTF8ToUTF16(
-      "\xEF\xBC\x91\xEF\xBC\x96\xEF\xBC\x95\xEF\xBC\x90"
-      "\xEF\xBC\x97\xEF\xBC\x94\xEF\xBC\x99\xEF\xBC\x98"
-      "\xEF\xBC\x93\xEF\xBC\x92\xEF\xBC\x93"));
+  base::string16 phone1(
+      UTF8ToUTF16("\xEF\xBC\x91\xEF\xBC\x96\xEF\xBC\x95\xEF\xBC\x90"
+                  "\xEF\xBC\x97\xEF\xBC\x94\xEF\xBC\x99\xEF\xBC\x98"
+                  "\xEF\xBC\x93\xEF\xBC\x92\xEF\xBC\x93"));
   EXPECT_EQ(NormalizePhoneNumber(phone1, "US"), ASCIIToUTF16("16507498323"));
 
   // Devanagari script digits.
-  base::string16 phone2(UTF8ToUTF16(
-      "\xD9\xA1\xD9\xA6\xD9\xA5\xD9\xA0\xD9\xA8\xD9\xA3"
-      "\xD9\xA2\xD9\xA3\xD9\xA7\xD9\xA4\xD9\xA9"));
+  base::string16 phone2(
+      UTF8ToUTF16("\xD9\xA1\xD9\xA6\xD9\xA5\xD9\xA0\xD9\xA8\xD9\xA3"
+                  "\xD9\xA2\xD9\xA3\xD9\xA7\xD9\xA4\xD9\xA9"));
   EXPECT_EQ(NormalizePhoneNumber(phone2, "US"), ASCIIToUTF16("16508323749"));
 
   base::string16 phone3(UTF8ToUTF16("16503334\xef\xbc\x92\x35\xd9\xa5"));
@@ -50,7 +50,7 @@ TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
 
 struct ParseNumberTestCase {
   // Expected parsing result.
-  bool valid;
+  bool isPossibleNumber;
   // Inputs.
   std::string input;
   std::string assumed_region;
@@ -71,7 +71,7 @@ TEST_P(ParseNumberTest, ParsePhoneNumber) {
   std::string deduced_region;
   ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
   EXPECT_EQ(
-      test_case.valid,
+      test_case.isPossibleNumber,
       ParsePhoneNumber(ASCIIToUTF16(test_case.input), test_case.assumed_region,
                        &country_code, &city_code, &number, &deduced_region,
                        &unused_i18n_number));
@@ -91,10 +91,11 @@ INSTANTIATE_TEST_CASE_P(
         // strings.
         ParseNumberTestCase{false, "1234", "US"},
         // Test for string with exactly 7 digits.
-        // Not a valid number - starts with 1
-        ParseNumberTestCase{false, "17134567", "US"},
-        // Not a valid number - does not have area code.
-        ParseNumberTestCase{false, "7134567", "US"},
+        // Still a possible number with unknown("ZZ") deduced region.
+        ParseNumberTestCase{true, "17134567", "US", "7134567", "", "1", "ZZ"},
+        // Does not have area code, but still a possible number with
+        // unknown("ZZ") deduced region.
+        ParseNumberTestCase{true, "7134567", "US", "7134567", "", "", "ZZ"},
         // Valid Canadian toll-free number.
         ParseNumberTestCase{true, "3101234", "US", "3101234", "", "", "CA"},
         // Test for string with greater than 7 digits but less than 10 digits.
@@ -109,9 +110,11 @@ INSTANTIATE_TEST_CASE_P(
         // Should give back phone number and city code.
         // This one going to fail because of the incorrect area code.
         ParseNumberTestCase{false, "1234567890", "US"},
-        // This one going to fail because of the incorrect number (starts with
-        // 1).
-        ParseNumberTestCase{false, "6501567890", "US"},
+        // This is actually not a valid number because the first number after
+        // area code is 1. But it's still a possible number, just with deduced
+        // country set to unknown("ZZ").
+        ParseNumberTestCase{true, "6501567890", "US", "1567890", "650", "",
+                            "ZZ"},
         ParseNumberTestCase{true, "6504567890", "US", "4567890", "650", "",
                             "US"},
         // Test for string with exactly 10 digits and separators.
@@ -119,10 +122,10 @@ INSTANTIATE_TEST_CASE_P(
         ParseNumberTestCase{true, "(650) 456-7890", "US", "4567890", "650", "",
                             "US"},
         // Tests for string with over 10 digits.
-        // 01 is incorrect prefix in the USA, and if we interpret 011 as prefix,
-        // the
-        // rest is too short for international number - the parsing should fail.
-        ParseNumberTestCase{false, "0116504567890", "US"},
+        // 01 is incorrect prefix in the USA, we interpret 011 as prefix, and
+        // rest is parsed as a Singapore number(country code "SG").
+        ParseNumberTestCase{true, "0116504567890", "US", "04567890", "", "65",
+                            "SG"},
         // 011 is a correct "dial out" prefix in the USA - the parsing should
         // succeed.
         ParseNumberTestCase{true, "01116504567890", "US", "4567890", "650", "1",
@@ -162,116 +165,70 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST(PhoneNumberI18NTest, ConstructPhoneNumber) {
   base::string16 number;
-  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("1"),
-                                   ASCIIToUTF16("650"),
-                                   ASCIIToUTF16("2345678"),
-                                   "US",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("1"), ASCIIToUTF16("650"),
+                                   ASCIIToUTF16("2345678"), "US", &number));
   EXPECT_EQ(ASCIIToUTF16("1 650-234-5678"), number);
-  EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
-                                   ASCIIToUTF16("650"),
-                                   ASCIIToUTF16("2345678"),
-                                   "US",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(base::string16(), ASCIIToUTF16("650"),
+                                   ASCIIToUTF16("2345678"), "US", &number));
   EXPECT_EQ(ASCIIToUTF16("(650) 234-5678"), number);
-  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("1"),
-                                   base::string16(),
-                                   ASCIIToUTF16("6502345678"),
-                                   "US",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("1"), base::string16(),
+                                   ASCIIToUTF16("6502345678"), "US", &number));
   EXPECT_EQ(ASCIIToUTF16("1 650-234-5678"), number);
-  EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
-                                   base::string16(),
-                                   ASCIIToUTF16("6502345678"),
-                                   "US",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(base::string16(), base::string16(),
+                                   ASCIIToUTF16("6502345678"), "US", &number));
   EXPECT_EQ(ASCIIToUTF16("(650) 234-5678"), number);
 
-  EXPECT_FALSE(ConstructPhoneNumber(base::string16(),
-                                    ASCIIToUTF16("650"),
-                                    ASCIIToUTF16("234567890"),
-                                    "US",
-                                    &number));
+  EXPECT_FALSE(ConstructPhoneNumber(base::string16(), ASCIIToUTF16("650"),
+                                    ASCIIToUTF16("234567890"), "US", &number));
   EXPECT_EQ(base::string16(), number);
   // Italian number
-  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("39"),
-                                   ASCIIToUTF16("347"),
-                                   ASCIIToUTF16("2345678"),
-                                   "IT",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("39"), ASCIIToUTF16("347"),
+                                   ASCIIToUTF16("2345678"), "IT", &number));
   EXPECT_EQ(ASCIIToUTF16("+39 347 234 5678"), number);
-  EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
-                                   ASCIIToUTF16("347"),
-                                   ASCIIToUTF16("2345678"),
-                                   "IT",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(base::string16(), ASCIIToUTF16("347"),
+                                   ASCIIToUTF16("2345678"), "IT", &number));
   EXPECT_EQ(ASCIIToUTF16("347 234 5678"), number);
   // German number.
-  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("49"),
-                                   ASCIIToUTF16("024"),
-                                   ASCIIToUTF16("2345678901"),
-                                   "DE",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("49"), ASCIIToUTF16("024"),
+                                   ASCIIToUTF16("2345678901"), "DE", &number));
   EXPECT_EQ(ASCIIToUTF16("+49 2423 45678901"), number);
-  EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
-                                   ASCIIToUTF16("024"),
-                                   ASCIIToUTF16("2345678901"),
-                                   "DE",
-                                   &number));
+  EXPECT_TRUE(ConstructPhoneNumber(base::string16(), ASCIIToUTF16("024"),
+                                   ASCIIToUTF16("2345678901"), "DE", &number));
   EXPECT_EQ(ASCIIToUTF16("02423 45678901"), number);
 }
 
 TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
   // Same numbers, defined country code.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
-                                ASCIIToUTF16("4158889999"),
-                                "US",
-                                "en-US"));
+                                ASCIIToUTF16("4158889999"), "US", "en-US"));
   // Same numbers, undefined country code.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
-                                ASCIIToUTF16("4158889999"),
-                                std::string(),
+                                ASCIIToUTF16("4158889999"), std::string(),
                                 "en-US"));
 
   // Numbers differ by country code only.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("14158889999"),
-                                ASCIIToUTF16("4158889999"),
-                                "US",
-                                "en-US"));
+                                ASCIIToUTF16("4158889999"), "US", "en-US"));
 
   // Same numbers, different formats.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
-                                ASCIIToUTF16("415-888-9999"),
-                                "US",
-                                "en-US"));
+                                ASCIIToUTF16("415-888-9999"), "US", "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
-                                ASCIIToUTF16("(415)888-9999"),
-                                "US",
-                                "en-US"));
+                                ASCIIToUTF16("(415)888-9999"), "US", "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
-                                ASCIIToUTF16("415 888 9999"),
-                                "US",
-                                "en-US"));
+                                ASCIIToUTF16("415 888 9999"), "US", "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
-                                ASCIIToUTF16("415 TUV WXYZ"),
-                                "US",
-                                "en-US"));
+                                ASCIIToUTF16("415 TUV WXYZ"), "US", "en-US"));
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("1(415)888-99-99"),
-                                ASCIIToUTF16("+14158889999"),
-                                "US",
-                                "en-US"));
+                                ASCIIToUTF16("+14158889999"), "US", "en-US"));
 
   // Partial matches don't count.
   EXPECT_FALSE(PhoneNumbersMatch(ASCIIToUTF16("14158889999"),
-                                 ASCIIToUTF16("8889999"),
-                                 "US",
-                                 "en-US"));
+                                 ASCIIToUTF16("8889999"), "US", "en-US"));
 
   // Different numbers don't match.
   EXPECT_FALSE(PhoneNumbersMatch(ASCIIToUTF16("14158889999"),
-                                 ASCIIToUTF16("1415888"),
-                                 "US",
-                                 "en-US"));
+                                 ASCIIToUTF16("1415888"), "US", "en-US"));
 }
 
 // Tests that the phone numbers are correctly formatted for the Payment
@@ -424,9 +381,8 @@ INSTANTIATE_TEST_CASE_P(
         // number.
         PhoneNumberFormatCase("+52 55 5342 8400", "US", "+52 55 5342 8400"),
         PhoneNumberFormatCase("52 55 5342 8400", "US", "+52 55 5342 8400"),
-        // This local MX number fits the length of a US number, so it's
-        // formatted for US.
-        PhoneNumberFormatCase("55 5342 8400", "US", "+1 555-342-8400")));
+        // This number will be recognized as a BR(55) number.
+        PhoneNumberFormatCase("55 5342 8400", "US", "+55 53428400")));
 
 INSTANTIATE_TEST_CASE_P(
     GetFormattedPhoneNumberForDisplay_EdgeCases,
@@ -441,7 +397,7 @@ INSTANTIATE_TEST_CASE_P(
                               "+52 55 5342 8400",
                               "es_MX"),
         PhoneNumberFormatCase("55 5342 8400", "", "+52 55 5342 8400", "es_MX"),
-        PhoneNumberFormatCase("55 5342 8400", "", "+1 555-342-8400", "en_US"),
+        PhoneNumberFormatCase("55 5342 8400", "", "+55 53428400", "en_US"),
         PhoneNumberFormatCase("61 2 9374 4000", "", "+61 2 9374 4000", "en_AU"),
         PhoneNumberFormatCase("02 9374 4000", "", "+61 2 9374 4000", "en_AU"),
 
@@ -452,11 +408,10 @@ INSTANTIATE_TEST_CASE_P(
         PhoneNumberFormatCase("61 2 9374 4000", "", "+61 2 9374 4000"),
         PhoneNumberFormatCase("52 55 5342 8400", "", "+52 55 5342 8400"),
         PhoneNumberFormatCase("1 415 555 5555", "", "+1 415-555-5555"),
+        PhoneNumberFormatCase("55 5342 8400", "", "+55 53428400"),
         // If no country code is found, formats for US.
         PhoneNumberFormatCase("02 9374 4000", "", "+1 029-374-4000"),
         PhoneNumberFormatCase("2 9374 4000", "", "+1 293744000"),
-        PhoneNumberFormatCase("55 5342 8400", "", "+1 555-342-8400"),
-        PhoneNumberFormatCase("52 55 5342 8400", "", "+52 55 5342 8400"),
         PhoneNumberFormatCase("415-555-5555", "", "+1 415-555-5555")));
 
 }  // namespace autofill

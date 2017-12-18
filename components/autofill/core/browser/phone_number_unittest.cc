@@ -127,15 +127,17 @@ TEST(PhoneNumberTest, SetInfo) {
                              ASCIIToUTF16("650111111"), "US"));
   EXPECT_EQ(base::string16(), phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
-  // If the stored number is invalid, we still try to respond to queries
-  // for a complete number with what user has entered.
-  EXPECT_FALSE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
-                             ASCIIToUTF16("5141231234"), "US"));
+  // If the stored number is invalid due to metadata mismatch(non-existing
+  // carrier code for example), but otherwise is a possible number and can be
+  // parsed into different components, we should respond to queries with best
+  // effort as if it is a valid number.
+  EXPECT_TRUE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
+                            ASCIIToUTF16("5141231234"), "US"));
   EXPECT_EQ(ASCIIToUTF16("5141231234"),
             phone.GetInfo(PHONE_HOME_CITY_AND_NUMBER, "CA"));
   EXPECT_EQ(ASCIIToUTF16("5141231234"),
             phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, "CA"));
-  EXPECT_EQ(base::string16(), phone.GetInfo(PHONE_HOME_CITY_CODE, "CA"));
+  EXPECT_EQ(ASCIIToUTF16("514"), phone.GetInfo(PHONE_HOME_CITY_CODE, "CA"));
 }
 
 // Test that cached phone numbers are correctly invalidated and updated.
