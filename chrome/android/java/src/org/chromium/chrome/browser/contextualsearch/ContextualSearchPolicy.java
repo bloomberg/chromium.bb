@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -497,7 +498,7 @@ class ContextualSearchPolicy {
      * @return Whether the given content view is for an HTTP page.
      */
     private boolean isBasePageHTTP(@Nullable URL url) {
-        return url != null && "http".equals(url.getProtocol());
+        return url != null && UrlConstants.HTTP_SCHEME.equals(url.getProtocol());
     }
 
     /**

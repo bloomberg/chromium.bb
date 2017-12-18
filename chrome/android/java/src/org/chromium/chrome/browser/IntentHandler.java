@@ -1013,7 +1013,7 @@ public class IntentHandler {
                 String scheme = getSanitizedUrlScheme(parsedUrl);
                 if (scheme == null) {
                     // If no scheme, assuming this is an http url.
-                    parsedUrl = "http://" + parsedUrl;
+                    parsedUrl = UrlConstants.HTTP_URL_PREFIX + parsedUrl;
                 }
             }
             if (UrlUtilities.isHttpOrHttps(parsedUrl)) return parsedUrl;
