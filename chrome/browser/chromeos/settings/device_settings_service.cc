@@ -13,8 +13,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_policy_applier.h"
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
@@ -331,13 +329,8 @@ void DeviceSettingsService::HandleCompletedOperation(
 }
 
 void DeviceSettingsService::NotifyOwnershipStatusChanged() const {
-  for (auto& observer : observers_) {
+  for (auto& observer : observers_)
     observer.OwnershipStatusChanged();
-  }
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
-      content::Source<DeviceSettingsService>(this),
-      content::NotificationService::NoDetails());
 }
 
 void DeviceSettingsService::NotifyDeviceSettingsUpdated() const {

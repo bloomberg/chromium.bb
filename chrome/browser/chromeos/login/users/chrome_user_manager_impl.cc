@@ -216,8 +216,8 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   if (base::ThreadTaskRunnerHandle::IsSet())
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
-                 content::NotificationService::AllSources());
+  DeviceSettingsService::Get()->AddObserver(this);
+
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
@@ -281,7 +281,10 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
     enterprise_user_session_metrics::RecordStoredSessionLength();
 }
 
-ChromeUserManagerImpl::~ChromeUserManagerImpl() {}
+ChromeUserManagerImpl::~ChromeUserManagerImpl() {
+  if (DeviceSettingsService::IsInitialized())
+    DeviceSettingsService::Get()->RemoveObserver(this);
+}
 
 void ChromeUserManagerImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -492,18 +495,6 @@ void ChromeUserManagerImpl::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED:
-      if (!device_local_account_policy_service_) {
-        policy::BrowserPolicyConnectorChromeOS* connector =
-            g_browser_process->platform_part()
-                ->browser_policy_connector_chromeos();
-        device_local_account_policy_service_ =
-            connector->GetDeviceLocalAccountPolicyService();
-        if (device_local_account_policy_service_)
-          device_local_account_policy_service_->AddObserver(this);
-      }
-      RetrieveTrustedDevicePolicies();
-      break;
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
       Profile* profile = content::Details<Profile>(details).ptr();
       if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsKioskApp() &&
@@ -554,6 +545,18 @@ void ChromeUserManagerImpl::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void ChromeUserManagerImpl::OwnershipStatusChanged() {
+  if (!device_local_account_policy_service_) {
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    device_local_account_policy_service_ =
+        connector->GetDeviceLocalAccountPolicyService();
+    if (device_local_account_policy_service_)
+      device_local_account_policy_service_->AddObserver(this);
+  }
+  RetrieveTrustedDevicePolicies();
 }
 
 void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,

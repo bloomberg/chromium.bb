@@ -14,7 +14,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -50,11 +49,13 @@ LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
       session_started_(false),
       main_frame_loaded_(false) {
   DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
-                 content::NotificationService::AllSources());
+  DeviceSettingsService::Get()->AddObserver(this);
 }
 
-LocaleChangeGuard::~LocaleChangeGuard() {}
+LocaleChangeGuard::~LocaleChangeGuard() {
+  if (DeviceSettingsService::IsInitialized())
+    DeviceSettingsService::Get()->RemoveObserver(this);
+}
 
 void LocaleChangeGuard::OnLogin() {
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
@@ -124,28 +125,24 @@ void LocaleChangeGuard::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED: {
-      if (DeviceSettingsService::Get()->HasPrivateOwnerKey()) {
-        PrefService* local_state = g_browser_process->local_state();
-        if (local_state) {
-          PrefService* prefs = profile_->GetPrefs();
-          if (prefs == NULL) {
-            NOTREACHED();
-            return;
-          }
-          std::string owner_locale =
-              prefs->GetString(prefs::kApplicationLocale);
-          if (!owner_locale.empty())
-            local_state->SetString(prefs::kOwnerLocale, owner_locale);
-        }
-      }
-      break;
-    }
     default: {
       NOTREACHED();
       break;
     }
   }
+}
+
+void LocaleChangeGuard::OwnershipStatusChanged() {
+  if (!DeviceSettingsService::Get()->HasPrivateOwnerKey())
+    return;
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return;
+  PrefService* prefs = profile_->GetPrefs();
+  DCHECK(prefs);
+  std::string owner_locale = prefs->GetString(prefs::kApplicationLocale);
+  if (!owner_locale.empty())
+    local_state->SetString(prefs::kOwnerLocale, owner_locale);
 }
 
 void LocaleChangeGuard::Check() {

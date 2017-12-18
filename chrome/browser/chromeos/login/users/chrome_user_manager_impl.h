@@ -53,6 +53,7 @@ class SessionLengthLimiter;
 class ChromeUserManagerImpl
     : public ChromeUserManager,
       public content::NotificationObserver,
+      public DeviceSettingsService::Observer,
       public policy::CloudExternalDataPolicyObserver::Delegate,
       public policy::DeviceLocalAccountPolicyService::Observer,
       public policy::MinimumVersionPolicyHandler::Observer,
@@ -118,7 +119,10 @@ class ChromeUserManagerImpl
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // policy::CloudExternalDataPolicyObserver::Delegate:
+  // DeviceSettingsService::Observer implementation:
+  void OwnershipStatusChanged() override;
+
+  // policy::CloudExternalDataPolicyObserver::Delegate implementation:
   void OnExternalDataSet(const std::string& policy,
                          const std::string& user_id) override;
   void OnExternalDataCleared(const std::string& policy,

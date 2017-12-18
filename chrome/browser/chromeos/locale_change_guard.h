@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -32,6 +33,7 @@ namespace chromeos {
 // (based on synchronized user preference).  If so: shows notification that
 // allows user to revert change.
 class LocaleChangeGuard : public content::NotificationObserver,
+                          public DeviceSettingsService::Observer,
                           public base::SupportsWeakPtr<LocaleChangeGuard> {
  public:
   explicit LocaleChangeGuard(Profile* profile);
@@ -59,10 +61,13 @@ class LocaleChangeGuard : public content::NotificationObserver,
   void AcceptLocaleChange();
   void RevertLocaleChange();
 
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // DeviceSettingsService::Observer
+  void OwnershipStatusChanged() override;
 
   // Returns true if we should notify user about automatic locale change.
   static bool ShouldShowLocaleChangeNotification(const std::string& from_locale,

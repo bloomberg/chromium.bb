@@ -233,8 +233,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
                                      SessionManagerOperation* operation,
                                      Status status);
 
-  // Run OwnershipStatusChanged() for observers and push
-  // NOTIFICATION_OWNERSHIP_STATUS_CHANGED to NotificationService.
+  // Run OwnershipStatusChanged() for observers.
   void NotifyOwnershipStatusChanged() const;
 
   // Run DeviceSettingsUpdated() for observers.
