@@ -20,7 +20,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 #include "fcint.h"
+#ifndef _WIN32
 #include <uuid/uuid.h>
+#endif
 
 #define FC_HASH_SIZE 227
 
@@ -54,8 +56,10 @@ FcBool
 FcHashUuidCopy (const void  *src,
 		void       **dest)
 {
+#ifndef _WIN32
     *dest = malloc (sizeof (uuid_t));
     uuid_copy (*dest, src);
+#endif
     return FcTrue;
 }
 
