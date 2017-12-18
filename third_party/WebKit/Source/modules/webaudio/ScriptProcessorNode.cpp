@@ -223,7 +223,7 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
         // Fire the event on the main thread with the appropriate buffer
         // index.
         task_runner_->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(&ScriptProcessorHandler::FireProcessEvent,
                             WrapRefCounted(this), double_buffer_index_));
       } else {
@@ -233,7 +233,7 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
             std::make_unique<WaitableEvent>();
 
         task_runner_->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(
                 &ScriptProcessorHandler::FireProcessEventForOfflineAudioContext,
                 WrapRefCounted(this), double_buffer_index_,

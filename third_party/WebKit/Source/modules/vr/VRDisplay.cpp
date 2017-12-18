@@ -597,8 +597,8 @@ void VRDisplay::BeginPresent() {
   if (!pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
     double timestamp = WTF::CurrentTimeTicksInSeconds();
     Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
-                                   WrapWeakPersistent(this), timestamp));
+        FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
+                             WrapWeakPersistent(this), timestamp));
   }
 }
 
@@ -1034,9 +1034,8 @@ void VRDisplay::OnPresentingVSync(
   // but queueing it for immediate execution since it doesn't match
   // the interface being waited on.
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
-                WrapWeakPersistent(this), time_delta.InSecondsF()));
+      FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
+                           WrapWeakPersistent(this), time_delta.InSecondsF()));
 }
 
 void VRDisplay::OnMagicWindowVSync(double timestamp) {

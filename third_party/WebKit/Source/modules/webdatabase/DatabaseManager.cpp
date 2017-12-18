@@ -25,6 +25,7 @@
 
 #include "modules/webdatabase/DatabaseManager.h"
 
+#include "base/location.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -39,7 +40,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 

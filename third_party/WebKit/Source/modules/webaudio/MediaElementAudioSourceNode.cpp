@@ -205,7 +205,7 @@ void MediaElementAudioSourceHandler::Process(size_t number_of_frames) {
         // media element source, and only if we have a document to print to.
         maybe_print_cors_message_ = false;
         task_runner_->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(&MediaElementAudioSourceHandler::PrintCORSMessage,
                             WrapRefCounted(this), current_src_string_));
       }

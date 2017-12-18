@@ -108,7 +108,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
     std::unique_ptr<WaitableEvent> wait_event =
         std::make_unique<WaitableEvent>();
     thread->GetWorkerBackingThread().BackingThread().PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&AnimationWorkletThreadTest::ExecuteScriptInWorklet,
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(thread),

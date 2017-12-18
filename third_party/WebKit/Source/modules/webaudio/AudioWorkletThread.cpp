@@ -67,8 +67,8 @@ void AudioWorkletThread::CollectAllGarbage() {
   if (!worklet_thread_holder)
     return;
   worklet_thread_holder->GetThread()->BackingThread().PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&CollectAllGarbageOnAudioWorkletThread,
-                                       CrossThreadUnretained(&done_event)));
+      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnAudioWorkletThread,
+                                 CrossThreadUnretained(&done_event)));
   done_event.Wait();
 }
 

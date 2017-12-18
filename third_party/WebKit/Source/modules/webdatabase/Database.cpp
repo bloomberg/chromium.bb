@@ -312,8 +312,8 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
                                 creation_callback_);
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kDatabaseAccess)
-          ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
-                                                WrapPersistent(this)));
+          ->PostTask(FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
+                                          WrapPersistent(this)));
     } else {
       creation_callback_ = nullptr;
     }
@@ -919,7 +919,7 @@ void Database::RunTransaction(SQLTransactionCallback* callback,
       std::unique_ptr<SQLErrorData> error = SQLErrorData::Create(
           SQLError::kUnknownErr, "database has been closed");
       GetDatabaseTaskRunner()->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           WTF::Bind(&CallTransactionErrorCallback, WrapPersistent(callback),
                     WTF::Passed(std::move(error))));
     }
@@ -930,8 +930,8 @@ void Database::ScheduleTransactionCallback(SQLTransaction* transaction) {
   // The task is constructed in a database thread, and destructed in the
   // context thread.
   GetDatabaseTaskRunner()->PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&SQLTransaction::PerformPendingCallback,
-                                       WrapCrossThreadPersistent(transaction)));
+      FROM_HERE, CrossThreadBind(&SQLTransaction::PerformPendingCallback,
+                                 WrapCrossThreadPersistent(transaction)));
 }
 
 Vector<String> Database::PerformGetTableNames() {

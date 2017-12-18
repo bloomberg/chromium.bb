@@ -101,8 +101,8 @@ void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
       nullptr, std::move(message.message),
       GetExecutionContext()->GetSecurityOrigin()->ToString());
   event->SetTarget(this);
-  bool success = GetExecutionContext()->GetEventQueue()->EnqueueEvent(
-      BLINK_FROM_HERE, event);
+  bool success =
+      GetExecutionContext()->GetEventQueue()->EnqueueEvent(FROM_HERE, event);
   DCHECK(success);
   ALLOW_UNUSED_LOCAL(success);
 }

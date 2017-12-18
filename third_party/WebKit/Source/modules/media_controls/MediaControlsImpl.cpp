@@ -1110,7 +1110,7 @@ void MediaControlsImpl::HideMediaControlsTimerFired(TimerBase*) {
 
 void MediaControlsImpl::StartHideMediaControlsTimer() {
   hide_media_controls_timer_.StartOneShot(
-      kTimeWithoutMouseMovementBeforeHidingMediaControls, BLINK_FROM_HERE);
+      kTimeWithoutMouseMovementBeforeHidingMediaControls, FROM_HERE);
 }
 
 void MediaControlsImpl::StopHideMediaControlsTimer() {
@@ -1287,7 +1287,7 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
 
   // Don't bother to do any work if this matches the most recent size.
   if (old_size != size_)
-    element_size_changed_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    element_size_changed_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {

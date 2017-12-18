@@ -30,13 +30,12 @@ void AudioWorkletMessagingProxy::CreateProcessor(
   GetWorkerThread()
       ->GetTaskRunner(TaskType::kMiscPlatformAPI)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(
               &AudioWorkletMessagingProxy::CreateProcessorOnRenderingThread,
               WrapCrossThreadPersistent(this),
               CrossThreadUnretained(GetWorkerThread()),
-              CrossThreadUnretained(handler),
-              handler->Name(),
+              CrossThreadUnretained(handler), handler->Name(),
               handler->Context()->sampleRate(),
               std::move(message_port_channel)));
 }

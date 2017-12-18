@@ -30,6 +30,7 @@
 
 #include "modules/websockets/DocumentWebSocketChannel.h"
 
+#include "base/location.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
@@ -62,7 +63,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebSocketHandshakeThrottle.h"
-#include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebURL.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -240,7 +240,7 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
     GetDocument()
         ->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             WTF::Bind(&DocumentWebSocketChannel::TearDownFailedConnection,
                       WrapPersistent(this)));
     return true;

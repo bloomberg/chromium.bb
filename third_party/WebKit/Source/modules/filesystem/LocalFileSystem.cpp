@@ -132,7 +132,7 @@ void LocalFileSystem::RequestFileSystemAccessInternal(
 void LocalFileSystem::FileSystemNotAvailable(ExecutionContext* context,
                                              CallbackWrapper* callbacks) {
   context->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
                            FileError::kAbortErr));
 }
@@ -140,7 +140,7 @@ void LocalFileSystem::FileSystemNotAvailable(ExecutionContext* context,
 void LocalFileSystem::FileSystemNotAllowedInternal(ExecutionContext* context,
                                                    CallbackWrapper* callbacks) {
   context->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
                            FileError::kAbortErr));
 }

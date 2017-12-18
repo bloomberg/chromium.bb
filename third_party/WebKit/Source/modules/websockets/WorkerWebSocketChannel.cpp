@@ -256,8 +256,8 @@ void MainChannelClient::DidConnect(const String& subprotocol,
                                    const String& extensions) {
   DCHECK(IsMainThread());
   worker_networking_task_runner_->PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidConnect, bridge_,
-                                       subprotocol, extensions));
+      FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidConnect, bridge_,
+                                 subprotocol, extensions));
 }
 
 static void WorkerGlobalScopeDidReceiveTextMessage(Bridge* bridge,
@@ -269,8 +269,8 @@ static void WorkerGlobalScopeDidReceiveTextMessage(Bridge* bridge,
 void MainChannelClient::DidReceiveTextMessage(const String& payload) {
   DCHECK(IsMainThread());
   worker_networking_task_runner_->PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidReceiveTextMessage,
-                                       bridge_, payload));
+      FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidReceiveTextMessage,
+                                 bridge_, payload));
 }
 
 static void WorkerGlobalScopeDidReceiveBinaryMessage(
@@ -284,9 +284,8 @@ void MainChannelClient::DidReceiveBinaryMessage(
     std::unique_ptr<Vector<char>> payload) {
   DCHECK(IsMainThread());
   worker_networking_task_runner_->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerGlobalScopeDidReceiveBinaryMessage, bridge_,
-                      WTF::Passed(std::move(payload))));
+      FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidReceiveBinaryMessage,
+                                 bridge_, WTF::Passed(std::move(payload))));
 }
 
 static void WorkerGlobalScopeDidConsumeBufferedAmount(Bridge* bridge,
@@ -298,9 +297,8 @@ static void WorkerGlobalScopeDidConsumeBufferedAmount(Bridge* bridge,
 void MainChannelClient::DidConsumeBufferedAmount(uint64_t consumed) {
   DCHECK(IsMainThread());
   worker_networking_task_runner_->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerGlobalScopeDidConsumeBufferedAmount, bridge_,
-                      consumed));
+      FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidConsumeBufferedAmount,
+                                 bridge_, consumed));
 }
 
 static void WorkerGlobalScopeDidStartClosingHandshake(Bridge* bridge) {
@@ -311,7 +309,7 @@ static void WorkerGlobalScopeDidStartClosingHandshake(Bridge* bridge) {
 void MainChannelClient::DidStartClosingHandshake() {
   DCHECK(IsMainThread());
   worker_networking_task_runner_->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&WorkerGlobalScopeDidStartClosingHandshake, bridge_));
 }
 
@@ -334,9 +332,8 @@ void MainChannelClient::DidClose(
   ReleaseMainChannel();
 
   worker_networking_task_runner_->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerGlobalScopeDidClose, bridge_,
-                      closing_handshake_completion, code, reason));
+      FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidClose, bridge_,
+                                 closing_handshake_completion, code, reason));
 }
 
 static void WorkerGlobalScopeDidError(Bridge* bridge) {
@@ -347,7 +344,7 @@ static void WorkerGlobalScopeDidError(Bridge* bridge) {
 void MainChannelClient::DidError() {
   DCHECK(IsMainThread());
   worker_networking_task_runner_->PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidError, bridge_));
+      FROM_HERE, CrossThreadBind(&WorkerGlobalScopeDidError, bridge_));
 }
 
 void MainChannelClient::ContextDestroyed(WorkerThreadLifecycleContext*) {
@@ -420,7 +417,7 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
 
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(
               &Bridge::ConnectOnMainThread, WrapCrossThreadPersistent(this),
               WTF::Passed(location->Clone()),
@@ -444,7 +441,7 @@ void Bridge::Send(const CString& message) {
 
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&MainChannelClient::SendTextAsCharVector,
                           main_channel_client_, WTF::Passed(std::move(data))));
 }
@@ -464,7 +461,7 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
 
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&MainChannelClient::SendBinaryAsCharVector,
                           main_channel_client_, WTF::Passed(std::move(data))));
 }
@@ -472,7 +469,7 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
 void Bridge::Send(scoped_refptr<BlobDataHandle> data) {
   DCHECK(main_channel_client_);
   parent_frame_task_runners_->Get(TaskType::kNetworking)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&MainChannelClient::SendBlob,
                                  main_channel_client_, std::move(data)));
 }
@@ -480,7 +477,7 @@ void Bridge::Send(scoped_refptr<BlobDataHandle> data) {
 void Bridge::Close(int code, const String& reason) {
   DCHECK(main_channel_client_);
   parent_frame_task_runners_->Get(TaskType::kNetworking)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(&MainChannelClient::Close,
                                  main_channel_client_, code, reason));
 }
@@ -490,10 +487,9 @@ void Bridge::Fail(const String& reason,
                   std::unique_ptr<SourceLocation> location) {
   DCHECK(main_channel_client_);
   parent_frame_task_runners_->Get(TaskType::kNetworking)
-      ->PostTask(
-          BLINK_FROM_HERE,
-          CrossThreadBind(&MainChannelClient::Fail, main_channel_client_,
-                          reason, level, WTF::Passed(location->Clone())));
+      ->PostTask(FROM_HERE, CrossThreadBind(&MainChannelClient::Fail,
+                                            main_channel_client_, reason, level,
+                                            WTF::Passed(location->Clone())));
 }
 
 void Bridge::Disconnect() {
@@ -501,9 +497,8 @@ void Bridge::Disconnect() {
     return;
 
   parent_frame_task_runners_->Get(TaskType::kNetworking)
-      ->PostTask(BLINK_FROM_HERE,
-                 CrossThreadBind(&MainChannelClient::Disconnect,
-                                 main_channel_client_));
+      ->PostTask(FROM_HERE, CrossThreadBind(&MainChannelClient::Disconnect,
+                                            main_channel_client_));
 
   client_ = nullptr;
   main_channel_client_ = nullptr;

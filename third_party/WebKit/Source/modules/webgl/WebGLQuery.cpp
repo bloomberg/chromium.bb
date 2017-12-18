@@ -95,8 +95,8 @@ void WebGLQuery::ScheduleAllowAvailabilityUpdate() {
   if (task_handle_.IsActive())
     return;
   task_handle_ = task_runner_->PostCancellableTask(
-      BLINK_FROM_HERE, WTF::Bind(&WebGLQuery::AllowAvailabilityUpdate,
-                                 WrapWeakPersistent(this)));
+      FROM_HERE, WTF::Bind(&WebGLQuery::AllowAvailabilityUpdate,
+                           WrapWeakPersistent(this)));
 }
 
 void WebGLQuery::AllowAvailabilityUpdate() {

@@ -212,8 +212,8 @@ void XRFrameProvider::OnExclusiveVSync(double timestamp) {
   // execution context caused extreme input delay due to processing
   // multiple frames without yielding, see crbug.com/701444.
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                                 WrapWeakPersistent(this), timestamp));
+      FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+                           WrapWeakPersistent(this), timestamp));
 }
 
 void XRFrameProvider::OnNonExclusiveVSync(double timestamp) {
@@ -226,8 +226,8 @@ void XRFrameProvider::OnNonExclusiveVSync(double timestamp) {
     return;
 
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                                 WrapWeakPersistent(this), timestamp));
+      FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+                           WrapWeakPersistent(this), timestamp));
 }
 
 void XRFrameProvider::OnNonExclusivePose(device::mojom::blink::VRPosePtr pose) {

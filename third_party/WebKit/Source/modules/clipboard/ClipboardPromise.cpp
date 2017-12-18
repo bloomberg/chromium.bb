@@ -20,16 +20,16 @@ namespace blink {
 ScriptPromise ClipboardPromise::CreateForRead(ScriptState* script_state) {
   ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&ClipboardPromise::HandleRead,
-                                 WrapPersistent(clipboard_promise)));
+      FROM_HERE, WTF::Bind(&ClipboardPromise::HandleRead,
+                           WrapPersistent(clipboard_promise)));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
 ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
   ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&ClipboardPromise::HandleReadText,
-                                 WrapPersistent(clipboard_promise)));
+      FROM_HERE, WTF::Bind(&ClipboardPromise::HandleReadText,
+                           WrapPersistent(clipboard_promise)));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
@@ -37,7 +37,7 @@ ScriptPromise ClipboardPromise::CreateForWrite(ScriptState* script_state,
                                                DataTransfer* data) {
   ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       WTF::Bind(&ClipboardPromise::HandleWrite,
                 WrapPersistent(clipboard_promise), WrapPersistent(data)));
   return clipboard_promise->script_promise_resolver_->Promise();
@@ -47,8 +47,8 @@ ScriptPromise ClipboardPromise::CreateForWriteText(ScriptState* script_state,
                                                    const String& data) {
   ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&ClipboardPromise::HandleWriteText,
-                                 WrapPersistent(clipboard_promise), data));
+      FROM_HERE, WTF::Bind(&ClipboardPromise::HandleWriteText,
+                           WrapPersistent(clipboard_promise), data));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 

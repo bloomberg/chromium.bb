@@ -262,7 +262,7 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
       EventTypeNames::connectionavailable, connection);
   request->GetExecutionContext()
       ->GetTaskRunner(TaskType::kPresentation)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&PresentationConnection::DispatchEventAsync,
                            WrapPersistent(request), WrapPersistent(event)));
 
@@ -646,7 +646,7 @@ void PresentationConnection::DidFailLoadingBlob(
 void PresentationConnection::DispatchStateChangeEvent(Event* event) {
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kPresentation)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&PresentationConnection::DispatchEventAsync,
                            WrapPersistent(this), WrapPersistent(event)));
 }

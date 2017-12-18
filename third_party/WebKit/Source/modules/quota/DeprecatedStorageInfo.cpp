@@ -30,6 +30,7 @@
 
 #include "modules/quota/DeprecatedStorageInfo.h"
 
+#include "base/location.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
@@ -39,7 +40,6 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -57,8 +57,8 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
     // Unknown storage type is requested.
     ExecutionContext::From(script_state)
         ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-        ->PostTask(BLINK_FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
-                                        error_callback, kNotSupportedError));
+        ->PostTask(FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
+                                  error_callback, kNotSupportedError));
     return;
   }
   storage_quota->queryUsageAndQuota(script_state, success_callback,
@@ -77,8 +77,8 @@ void DeprecatedStorageInfo::requestQuota(ScriptState* script_state,
     // Unknown storage type is requested.
     ExecutionContext::From(script_state)
         ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-        ->PostTask(BLINK_FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
-                                        error_callback, kNotSupportedError));
+        ->PostTask(FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
+                                  error_callback, kNotSupportedError));
     return;
   }
   storage_quota->requestQuota(script_state, new_quota_in_bytes,

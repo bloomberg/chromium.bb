@@ -214,7 +214,7 @@ void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
   probe::AsyncTaskScheduled(execution_context, TaskNameForInstrumentation(),
                             identifier.get());
   execution_context->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  WTF::Bind(&RunCallback, WrapWeakPersistent(execution_context),
                            WTF::Passed(std::move(task)),
                            WTF::Passed(std::move(identifier))));

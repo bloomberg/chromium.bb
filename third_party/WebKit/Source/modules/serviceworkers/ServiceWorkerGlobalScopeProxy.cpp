@@ -533,7 +533,7 @@ void ServiceWorkerGlobalScopeProxy::PostMessageToPageInspector(
   // run even on a suspended page.
   parent_frame_task_runners_->Get(TaskType::kUnthrottled)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&WebEmbeddedWorkerImpl::PostMessageToPageInspector,
                           CrossThreadUnretained(embedded_worker_), session_id,
                           message));
@@ -564,7 +564,7 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
   WaitableEvent waitable_event;
   parent_frame_task_runners_->Get(TaskType::kUnthrottled)
       ->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(
               &SetContentSecurityPolicyAndReferrerPolicyOnMainThread,
               CrossThreadUnretained(embedded_worker_),

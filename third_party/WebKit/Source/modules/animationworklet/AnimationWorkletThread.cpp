@@ -56,8 +56,8 @@ void AnimationWorkletThread::CollectAllGarbage() {
   if (!holder)
     return;
   holder->GetThread()->BackingThread().PostTask(
-      BLINK_FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThread,
-                                       CrossThreadUnretained(&done_event)));
+      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThread,
+                                 CrossThreadUnretained(&done_event)));
   done_event.Wait();
 }
 

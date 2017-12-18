@@ -7,11 +7,11 @@
 #include <algorithm>
 #include <string>
 
+#include "base/location.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -70,7 +70,7 @@ BytesConsumer::Result BytesConsumerForDataConsumerHandle::EndRead(size_t read) {
   if (has_pending_notification_) {
     has_pending_notification_ = false;
     execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    WTF::Bind(&BytesConsumerForDataConsumerHandle::Notify,
                              WrapPersistent(this)));
   }

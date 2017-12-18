@@ -680,12 +680,12 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
   context_state_ = new_state;
 
   // Notify context that state changed
-  if (GetExecutionContext())
+  if (GetExecutionContext()) {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kMediaElementEvent)
-        ->PostTask(BLINK_FROM_HERE,
-                   WTF::Bind(&BaseAudioContext::NotifyStateChange,
-                             WrapPersistent(this)));
+        ->PostTask(FROM_HERE, WTF::Bind(&BaseAudioContext::NotifyStateChange,
+                                        WrapPersistent(this)));
+  }
 }
 
 void BaseAudioContext::NotifyStateChange() {
@@ -863,9 +863,8 @@ void BaseAudioContext::ScheduleMainThreadCleanup() {
   if (has_posted_cleanup_task_)
     return;
   Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&BaseAudioContext::PerformCleanupOnMainThread,
-                      WrapCrossThreadPersistent(this)));
+      FROM_HERE, CrossThreadBind(&BaseAudioContext::PerformCleanupOnMainThread,
+                                 WrapCrossThreadPersistent(this)));
   has_posted_cleanup_task_ = true;
 }
 

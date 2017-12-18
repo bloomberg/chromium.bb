@@ -202,14 +202,13 @@ void Sensor::OnSensorReadingChanged() {
     pending_reading_notification_ =
         GetExecutionContext()
             ->GetTaskRunner(TaskType::kSensor)
-            ->PostCancellableTask(BLINK_FROM_HERE,
-                                  std::move(sensor_reading_changed));
+            ->PostCancellableTask(FROM_HERE, std::move(sensor_reading_changed));
   } else {
     pending_reading_notification_ =
         GetExecutionContext()
             ->GetTaskRunner(TaskType::kSensor)
             ->PostDelayedCancellableTask(
-                BLINK_FROM_HERE, std::move(sensor_reading_changed),
+                FROM_HERE, std::move(sensor_reading_changed),
                 WTF::TimeDelta::FromSecondsD(waitingTime));
   }
 }
@@ -235,9 +234,8 @@ void Sensor::OnAddConfigurationRequestCompleted(bool result) {
   pending_activated_notification_ =
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kSensor)
-          ->PostCancellableTask(
-              BLINK_FROM_HERE,
-              WTF::Bind(&Sensor::NotifyActivated, WrapWeakPersistent(this)));
+          ->PostCancellableTask(FROM_HERE, WTF::Bind(&Sensor::NotifyActivated,
+                                                     WrapWeakPersistent(this)));
 }
 
 void Sensor::Activate() {
@@ -314,10 +312,9 @@ void Sensor::HandleError(ExceptionCode code,
   pending_error_notification_ =
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kSensor)
-          ->PostCancellableTask(
-              BLINK_FROM_HERE,
-              WTF::Bind(&Sensor::NotifyError, WrapWeakPersistent(this),
-                        WrapPersistent(error)));
+          ->PostCancellableTask(FROM_HERE, WTF::Bind(&Sensor::NotifyError,
+                                                     WrapWeakPersistent(this),
+                                                     WrapPersistent(error)));
 }
 
 void Sensor::NotifyReading() {
@@ -338,7 +335,7 @@ void Sensor::NotifyActivated() {
         GetExecutionContext()
             ->GetTaskRunner(TaskType::kSensor)
             ->PostCancellableTask(
-                BLINK_FROM_HERE,
+                FROM_HERE,
                 WTF::Bind(&Sensor::NotifyReading, WrapWeakPersistent(this)));
   }
 
