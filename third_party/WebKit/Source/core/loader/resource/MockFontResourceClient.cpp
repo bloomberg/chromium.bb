@@ -8,11 +8,9 @@
 
 namespace blink {
 
-MockFontResourceClient::MockFontResourceClient(Resource* resource)
+MockFontResourceClient::MockFontResourceClient()
     : font_load_short_limit_exceeded_called_(false),
-      font_load_long_limit_exceeded_called_(false) {
-  SetResource(resource);
-}
+      font_load_long_limit_exceeded_called_(false) {}
 
 MockFontResourceClient::~MockFontResourceClient() {}
 
@@ -26,10 +24,6 @@ void MockFontResourceClient::FontLoadLongLimitExceeded(FontResource*) {
   ASSERT_TRUE(font_load_short_limit_exceeded_called_);
   ASSERT_FALSE(font_load_long_limit_exceeded_called_);
   font_load_long_limit_exceeded_called_ = true;
-}
-
-void MockFontResourceClient::Dispose() {
-  ClearResource();
 }
 
 }  // namespace blink

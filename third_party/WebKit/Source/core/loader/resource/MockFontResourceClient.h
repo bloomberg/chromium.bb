@@ -15,11 +15,10 @@ namespace blink {
 class MockFontResourceClient final
     : public GarbageCollectedFinalized<MockFontResourceClient>,
       public FontResourceClient {
-  USING_PRE_FINALIZER(MockFontResourceClient, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(MockFontResourceClient);
 
  public:
-  explicit MockFontResourceClient(Resource*);
+  MockFontResourceClient();
   ~MockFontResourceClient() override;
 
   void FontLoadShortLimitExceeded(FontResource*) override;
@@ -33,15 +32,9 @@ class MockFontResourceClient final
     return font_load_long_limit_exceeded_called_;
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    FontResourceClient::Trace(visitor);
-  }
-
   String DebugName() const override { return "MockFontResourceClient"; }
 
  private:
-  void Dispose();
-
   bool font_load_short_limit_exceeded_called_;
   bool font_load_long_limit_exceeded_called_;
 };

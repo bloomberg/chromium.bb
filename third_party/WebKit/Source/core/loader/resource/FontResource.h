@@ -43,7 +43,9 @@ class FontResourceClient;
 
 class CORE_EXPORT FontResource final : public Resource {
  public:
-  static FontResource* Fetch(FetchParameters&, ResourceFetcher*);
+  static FontResource* Fetch(FetchParameters&,
+                             ResourceFetcher*,
+                             FontResourceClient*);
   ~FontResource() override;
 
   void DidAddClient(ResourceClient*) override;

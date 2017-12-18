@@ -606,7 +606,7 @@ void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
       return;
     }
 
-    AddFontToResources(font_face_src_value.Fetch(&document));
+    AddFontToResources(font_face_src_value.Fetch(&document, nullptr));
   } else if (css_value.IsValueList()) {
     const CSSValueList& css_value_list = ToCSSValueList(css_value);
     for (unsigned i = 0; i < css_value_list.length(); i++)
