@@ -1235,6 +1235,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
   import collections
   import base64
   import json
+  import logging
   import urllib2
 
   import auth
@@ -1286,16 +1287,19 @@ def CheckChangedLUCIConfigs(input_api, output_api):
   if not config_sets:
     return [output_api.PresubmitWarning('No config_sets were returned')]
   loc_pref = '%s/+/%s/' % (remote_host_url, remote_branch)
+  logging.debug('Derived location prefix: %s', loc_pref)
   dir_to_config_set = {
     '%s/' % cs['location'][len(loc_pref):].rstrip('/'): cs['config_set']
     for cs in config_sets
     if cs['location'].startswith(loc_pref) or
     ('%s/' % cs['location']) == loc_pref
   }
+  logging.debug('dir_to_config_set: %s', dir_to_config_set)
   cs_to_files = collections.defaultdict(list)
   for f in input_api.AffectedFiles():
     # windows
     file_path = f.LocalPath().replace(_os.sep, '/')
+    logging.debug('Affected file path: %s', file_path)
     for dr, cs in dir_to_config_set.iteritems():
       if dr == '/' or file_path.startswith(dr):
         cs_to_files[cs].append({
@@ -1303,6 +1307,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
           'content': base64.b64encode(
               '\n'.join(f.NewContents()).encode('utf-8'))
         })
+  logging.debug('cs_to_files: %s', cs_to_files)
   outputs = []
   for cs, f in cs_to_files.iteritems():
     try:
