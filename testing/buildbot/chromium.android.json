@@ -933,6 +933,7 @@
               "device_type": "hammerhead"
             }
           ],
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -2458,6 +2459,7 @@
               "device_type": "hammerhead"
             }
           ],
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -3873,7 +3875,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 300,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -4286,7 +4288,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 180,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -5172,7 +5174,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -5630,7 +5632,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -6600,7 +6602,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 300,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -7013,7 +7015,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 300,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -7980,7 +7982,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -8558,7 +8560,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -9543,7 +9545,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -9945,7 +9947,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -11126,7 +11128,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 300,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [
@@ -11539,7 +11541,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 900,
           "output_links": [
             {
               "link": [

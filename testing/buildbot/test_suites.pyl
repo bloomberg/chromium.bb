@@ -482,9 +482,17 @@
   },
 
   'chromium_gtests_for_non_clang_win_devices_with_graphical_output': {
-    'cc_unittests': {},
+    'cc_unittests': {
+      'android_swarming': {
+        'hard_timeout': 900,
+      },
+    },
     'display_unittests': {},
-    'gfx_unittests': {},
+    'gfx_unittests': {
+      'android_swarming': {
+        'hard_timeout': 900,
+      },
+    },
   },
 
   'chromium_junit_tests': {

@@ -601,28 +601,6 @@
         'merge',
       ],
     },
-    'modifications': {
-      'KitKat Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 300,
-        },
-      },
-      'Lollipop Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 300,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
-      'Marshmallow Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 300,
-        },
-      },
-    },
     'remove_from': [
       # chromium.chromiumos
       'Linux ChromiumOS Tests (dbg)(1)',
@@ -1714,28 +1692,6 @@
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
-    'modifications': {
-      'KitKat Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 180,
-        },
-      },
-      'Lollipop Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 300,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
-      'Marshmallow Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 600,
-        },
-      },
-    },
   },
   'gin_unittests': {
     'remove_from': [
