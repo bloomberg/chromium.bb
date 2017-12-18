@@ -713,32 +713,27 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue* src) {
     // An item in the list either specifies a string (local font name) or a URL
     // (remote font to download).
     const CSSFontFaceSrcValue& item = ToCSSFontFaceSrcValue(src_list->Item(i));
-    CSSFontFaceSource* source = nullptr;
 
     if (!item.IsLocal()) {
       if (ContextAllowsDownload(context) && item.IsSupportedFormat()) {
-        FontResource* fetched = item.Fetch(context);
-        if (fetched) {
-          FontSelector* font_selector = nullptr;
-          if (context->IsDocument()) {
-            font_selector =
-                ToDocument(context)->GetStyleEngine().GetFontSelector();
-          } else if (context->IsWorkerGlobalScope()) {
-            font_selector = ToWorkerGlobalScope(context)->GetFontSelector();
-          } else {
-            NOTREACHED();
-          }
-          source =
-              new RemoteFontFaceSource(css_font_face_, fetched, font_selector,
-                                       CSSValueToFontDisplay(display_.Get()));
+        FontSelector* font_selector = nullptr;
+        if (context->IsDocument()) {
+          font_selector =
+              ToDocument(context)->GetStyleEngine().GetFontSelector();
+        } else if (context->IsWorkerGlobalScope()) {
+          font_selector = ToWorkerGlobalScope(context)->GetFontSelector();
+        } else {
+          NOTREACHED();
         }
+        RemoteFontFaceSource* source =
+            new RemoteFontFaceSource(css_font_face_, font_selector,
+                                     CSSValueToFontDisplay(display_.Get()));
+        if (item.Fetch(context, source))
+          css_font_face_->AddSource(source);
       }
     } else {
-      source = new LocalFontFaceSource(item.GetResource());
+      css_font_face_->AddSource(new LocalFontFaceSource(item.GetResource()));
     }
-
-    if (source)
-      css_font_face_->AddSource(source);
   }
 
   if (display_) {
