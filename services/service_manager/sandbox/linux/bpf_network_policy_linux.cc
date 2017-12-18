@@ -35,6 +35,56 @@ NetworkProcessPolicy::~NetworkProcessPolicy() {}
 
 ResultExpr NetworkProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
+// Allowed syscalls:
+#if defined(__NR_accept)
+    case __NR_accept:
+#endif
+#if defined(__NR_bind)
+    case __NR_bind:
+#endif
+#if defined(__NR_connect)
+    case __NR_connect:
+#endif
+#if defined(__NR_getsockname)
+    case __NR_getsockname:
+#endif
+#if defined(__NR_inotify_add_watch)
+    case __NR_inotify_add_watch:
+#endif
+#if defined(__NR_inotify_init)
+    case __NR_inotify_init:
+#endif
+#if defined(__NR_inotify_init1)
+    case __NR_inotify_init1:
+#endif
+#if defined(__NR_inotify_rm_watch)
+    case __NR_inotify_rm_watch:
+#endif
+#if defined(__NR_ioctl)
+    // TODO(tsepez): restrict based on arguments.
+    case __NR_ioctl:
+#endif
+#if defined(__NR_listen)
+    case __NR_listen:
+#endif
+#if defined(__NR_socket)
+    case __NR_socket:
+#endif
+#if defined(__NR_uname)
+    case __NR_uname:
+#endif
+#if defined(__NR_sysinfo)
+    case __NR_sysinfo:
+#endif
+      return Allow();
+
+// Restricted syscalls:
+#if defined(__NR_fcntl)
+    case __NR_fcntl:
+      return sandbox::RestrictFcntlCommands();
+#endif
+
+// Trapped syscalls:
 #if defined(__NR_access)
     case __NR_access:
 #endif
@@ -88,9 +138,9 @@ ResultExpr NetworkProcessPolicy::EvaluateSyscall(int sysno) const {
 #endif
       return Trap(BrokerProcess::SIGSYS_Handler,
                   SandboxLinux::GetInstance()->broker_process());
+
     default:
-      // TODO(tsepez): FIX this.
-      return Allow();
+      return BPFBasePolicy::EvaluateSyscall(errno);
   }
 }
 
