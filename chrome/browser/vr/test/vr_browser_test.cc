@@ -71,7 +71,7 @@ void VrBrowserTest::SetUp() {
 
 GURL VrBrowserTest::GetHtmlTestFile(const std::string& test_name) {
   return ui_test_utils::GetTestUrl(
-      base::FilePath(FILE_PATH_LITERAL("android/webvr_instrumentation/html")),
+      base::FilePath(FILE_PATH_LITERAL("vr/e2e_test_files/html")),
 #ifdef OS_WIN
       base::FilePath(base::UTF8ToWide(test_name + ".html")
 #else

@@ -51,7 +51,7 @@ public class VrTestFramework {
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
 
     private static final String TAG = "VrTestFramework";
-    static final String TEST_DIR = "chrome/test/data/android/webvr_instrumentation";
+    static final String TEST_DIR = "chrome/test/data/vr/e2e_test_files";
 
     // Test status enum
     private static final int STATUS_RUNNING = 0;
