@@ -3404,13 +3404,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"enable-android-signin-promos",
-     flag_descriptions::kAndroidSigninPromosName,
-     flag_descriptions::kAndroidSigninPromosDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidSigninPromos)},
-#endif  // OS_ANDROID
-
-#if defined(OS_ANDROID)
     {"pwa-improved-splash-screen",
      flag_descriptions::kPwaImprovedSplashScreenName,
      flag_descriptions::kPwaImprovedSplashScreenDescription, kOsAndroid,

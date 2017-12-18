@@ -58,7 +58,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
-    &kAndroidSigninPromos,
     &kCCTBackgroundTab,
     &kCCTExternalLinkHandling,
     &kCCTPostMessageAPI,
@@ -167,9 +166,6 @@ const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
 
 const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kAndroidSigninPromos{"AndroidSigninPromos",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTBackgroundTab{"CCTBackgroundTab",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

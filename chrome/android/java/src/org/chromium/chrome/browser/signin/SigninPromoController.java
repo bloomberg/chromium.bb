@@ -18,7 +18,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
@@ -72,7 +71,8 @@ public class SigninPromoController {
      * @return Whether the personalized promos experiment is enabled or not.
      */
     public static boolean arePersonalizedPromosEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SIGNIN_PROMOS);
+        // TODO(https://crbug.com/792430): Remove this method and dead code for old promos.
+        return true;
     }
 
     /**
