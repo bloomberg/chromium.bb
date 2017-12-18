@@ -167,7 +167,7 @@ FcHashTableAdd (FcHashTable *table,
 	    table->value_destroy_func (bucket->value);
 	free (bucket);
 
-	return !ret;
+	return FcFalse;
     }
   retry:
     for (prev = &table->buckets[hash % FC_HASH_SIZE];
