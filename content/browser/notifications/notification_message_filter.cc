@@ -136,7 +136,7 @@ void NotificationMessageFilter::OverrideThreadForMessage(
 }
 
 void NotificationMessageFilter::OnShowPlatformNotification(
-    int non_persistent_notification_id,
+    int request_id,
     const GURL& origin,
     const PlatformNotificationData& notification_data,
     const NotificationResources& notification_resources) {
@@ -158,13 +158,12 @@ void NotificationMessageFilter::OnShowPlatformNotification(
 
   std::string notification_id =
       GetNotificationIdGenerator()->GenerateForNonPersistentNotification(
-          origin, notification_data.tag, non_persistent_notification_id,
-          process_id_);
+          origin, notification_data.tag, request_id, process_id_);
   NotificationEventDispatcherImpl* event_dispatcher =
       NotificationEventDispatcherImpl::GetInstance();
   non_persistent__notification_shown_ = true;
-  event_dispatcher->RegisterNonPersistentNotification(
-      notification_id, process_id_, non_persistent_notification_id);
+  event_dispatcher->RegisterNonPersistentNotification(notification_id,
+                                                      process_id_, request_id);
 
   service->DisplayNotification(browser_context_, notification_id, origin,
                                SanitizeNotificationData(notification_data),
@@ -309,14 +308,14 @@ void NotificationMessageFilter::DidGetNotifications(
 void NotificationMessageFilter::OnClosePlatformNotification(
     const GURL& origin,
     const std::string& tag,
-    int non_persistent_notification_id) {
+    int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!RenderProcessHost::FromID(process_id_))
     return;
 
   std::string notification_id =
       GetNotificationIdGenerator()->GenerateForNonPersistentNotification(
-          origin, tag, non_persistent_notification_id, process_id_);
+          origin, tag, request_id, process_id_);
 
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
