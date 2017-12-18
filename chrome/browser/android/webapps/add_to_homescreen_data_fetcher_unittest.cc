@@ -267,7 +267,7 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
     WebApplicationInfo web_application_info;
     web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
 
-    fetcher->OnDidGetWebApplicationInfo(web_application_info);
+    fetcher->OnDidGetWebApplicationInfo(nullptr, web_application_info);
     waiter.WaitForDataAvailable();
 
     EXPECT_EQ(check_webapk_compatibility(),

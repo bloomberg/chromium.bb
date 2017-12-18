@@ -187,6 +187,7 @@ static_library("common") {
     "url_constants.h",
     "web_application_info.cc",
     "web_application_info.h",
+    "web_application_info_provider_param_traits.h",
     "webui_url_constants.cc",
     "webui_url_constants.h",
   ]
