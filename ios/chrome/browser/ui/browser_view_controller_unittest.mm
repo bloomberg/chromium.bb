@@ -141,7 +141,6 @@ using web::WebStateImpl;
 @interface TestWebToolbarController : UIViewController
 - (void)setTabCount:(NSInteger)tabCount;
 - (void)updateToolbarState;
-- (void)adjustToolbarHeight;
 - (void)setShareButtonEnabled:(BOOL)enabled;
 - (id)toolsPopupController;
 - (BOOL)isOmniboxFirstResponder;
@@ -161,9 +160,6 @@ using web::WebStateImpl;
   return;
 }
 - (void)updateToolbarState {
-  return;
-}
-- (void)adjustToolbarHeight {
   return;
 }
 - (void)setShareButtonEnabled:(BOOL)enabled {

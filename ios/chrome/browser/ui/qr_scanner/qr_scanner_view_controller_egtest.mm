@@ -18,8 +18,6 @@
 #include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller_private.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -411,39 +409,21 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // method to load |searchURL| instead of the generated search URL.
 - (void)swizzleWebToolbarControllerLoadGURLFromLocationBar:
     (const GURL&)searchURL {
-  if (base::FeatureList::IsEnabled(kCleanToolbar)) {
-    void (^loadGURLFromLocationBarBlock)(ToolbarCoordinator*, const GURL&,
-                                         ui::PageTransition) =
-        ^void(ToolbarCoordinator* self, const GURL& url,
-              ui::PageTransition transition) {
-          [self.URLLoader loadURL:searchURL
-                         referrer:web::Referrer()
-                       transition:transition
-                rendererInitiated:NO];
-          [self cancelOmniboxEdit];
-        };
+  void (^loadGURLFromLocationBarBlock)(WebToolbarController*, const GURL&,
+                                       ui::PageTransition) =
+      ^void(WebToolbarController* self, const GURL& url,
+            ui::PageTransition transition) {
+        [self.urlLoader loadURL:searchURL
+                       referrer:web::Referrer()
+                     transition:transition
+              rendererInitiated:NO];
+        [self cancelOmniboxEdit];
+      };
 
-    load_GURL_from_location_bar_swizzler_.reset(
-        new ScopedBlockSwizzler([ToolbarCoordinator class],
-                                @selector(loadGURLFromLocationBar:transition:),
-                                loadGURLFromLocationBarBlock));
-  } else {
-    void (^loadGURLFromLocationBarBlock)(WebToolbarController*, const GURL&,
-                                         ui::PageTransition) =
-        ^void(WebToolbarController* self, const GURL& url,
-              ui::PageTransition transition) {
-          [self.urlLoader loadURL:searchURL
-                         referrer:web::Referrer()
-                       transition:transition
-                rendererInitiated:NO];
-          [self cancelOmniboxEdit];
-        };
-
-    load_GURL_from_location_bar_swizzler_.reset(
-        new ScopedBlockSwizzler([WebToolbarController class],
-                                @selector(loadGURLFromLocationBar:transition:),
-                                loadGURLFromLocationBarBlock));
-  }
+  load_GURL_from_location_bar_swizzler_.reset(
+      new ScopedBlockSwizzler([WebToolbarController class],
+                              @selector(loadGURLFromLocationBar:transition:),
+                              loadGURLFromLocationBarBlock));
 }
 
 // Creates a new CameraController mock with camera permission granted if

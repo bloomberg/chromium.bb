@@ -103,9 +103,8 @@ const int styleCount = 2;
                      imageForDisabledState:
                          NativeImage(
                              tabSwitcherButtonImages[self.style][DISABLED])];
-  SetA11yLabelAndUiAutomationName(tabSwitcherStripButton,
-                                  IDS_IOS_TOOLBAR_SHOW_TABS,
-                                  kToolbarStackButtonIdentifier);
+  tabSwitcherStripButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_TOOLBAR_SHOW_TABS);
   [tabSwitcherStripButton
       setTitleColor:[self.toolbarConfiguration buttonTitleNormalColor]
            forState:UIControlStateNormal];
@@ -133,8 +132,8 @@ const int styleCount = 2;
   ToolbarToolsMenuButton* toolsMenuButton =
       [[ToolbarToolsMenuButton alloc] initWithFrame:CGRectZero style:style];
 
-  SetA11yLabelAndUiAutomationName(toolsMenuButton, IDS_IOS_TOOLBAR_SETTINGS,
-                                  kToolbarToolsMenuButtonIdentifier);
+  toolsMenuButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);
   return toolsMenuButton;
 }
 
@@ -151,8 +150,8 @@ const int styleCount = 2;
                      imageForDisabledState:NativeImage(
                                                shareButtonImages[self.style]
                                                                 [DISABLED])];
-  SetA11yLabelAndUiAutomationName(shareButton, IDS_IOS_TOOLS_MENU_SHARE,
-                                  kToolbarShareButtonIdentifier);
+  shareButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
   return shareButton;
 }
 

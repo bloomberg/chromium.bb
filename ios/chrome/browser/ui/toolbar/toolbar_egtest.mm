@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_row.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -194,10 +193,10 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
   id<GREYMatcher> bookmarkButton =
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
-  id<GREYMatcher> voiceSearchButton =
-      grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                     IDS_IOS_ACCNAME_VOICE_SEARCH),
-                 grey_ancestor(grey_kindOfClass([ToolbarView class])), nil);
+  id<GREYMatcher> voiceSearchButton = grey_allOf(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
+          IDS_IOS_ACCNAME_VOICE_SEARCH),
+      grey_ancestor(grey_kindOfClass([LegacyToolbarView class])), nil);
   NSString* ntpOmniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   NSString* focusedOmniboxLabel = l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
   NSString* omniboxLabel =
