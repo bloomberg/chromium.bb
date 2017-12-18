@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/gtest_util.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -19,201 +19,154 @@ namespace internal {
 
 namespace {
 
-class TaskSchedulerSequenceTest : public testing::Test {
+class MockTask {
  public:
-  TaskSchedulerSequenceTest()
-      : task_a_owned_(new Task(FROM_HERE,
-                               BindOnce(&DoNothing),
-                               {TaskPriority::BACKGROUND},
-                               TimeDelta())),
-        task_b_owned_(new Task(FROM_HERE,
-                               BindOnce(&DoNothing),
-                               {TaskPriority::USER_VISIBLE},
-                               TimeDelta())),
-        task_c_owned_(new Task(FROM_HERE,
-                               BindOnce(&DoNothing),
-                               {TaskPriority::USER_BLOCKING},
-                               TimeDelta())),
-        task_d_owned_(new Task(FROM_HERE,
-                               BindOnce(&DoNothing),
-                               {TaskPriority::USER_BLOCKING},
-                               TimeDelta())),
-        task_e_owned_(new Task(FROM_HERE,
-                               BindOnce(&DoNothing),
-                               {TaskPriority::BACKGROUND},
-                               TimeDelta())),
-        task_a_(task_a_owned_.get()),
-        task_b_(task_b_owned_.get()),
-        task_c_(task_c_owned_.get()),
-        task_d_(task_d_owned_.get()),
-        task_e_(task_e_owned_.get()) {}
-
- protected:
-  // Tasks to be handed off to a Sequence for testing.
-  std::unique_ptr<Task> task_a_owned_;
-  std::unique_ptr<Task> task_b_owned_;
-  std::unique_ptr<Task> task_c_owned_;
-  std::unique_ptr<Task> task_d_owned_;
-  std::unique_ptr<Task> task_e_owned_;
-
-  // Raw pointers to those same tasks for verification. This is needed because
-  // the unique_ptrs above no longer point to the tasks once they have been
-  // moved into a Sequence.
-  const Task* task_a_;
-  const Task* task_b_;
-  const Task* task_c_;
-  const Task* task_d_;
-  const Task* task_e_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerSequenceTest);
+  MOCK_METHOD0(Run, void());
 };
+
+Task CreateTask(MockTask* mock_task) {
+  return Task(FROM_HERE, BindOnce(&MockTask::Run, Unretained(mock_task)),
+              {TaskPriority::BACKGROUND}, TimeDelta());
+}
+
+void ExpectMockTask(MockTask* mock_task, Task* task) {
+  EXPECT_CALL(*mock_task, Run());
+  std::move(task->task).Run();
+  testing::Mock::VerifyAndClear(mock_task);
+}
 
 }  // namespace
 
-TEST_F(TaskSchedulerSequenceTest, PushTakeRemove) {
-  scoped_refptr<Sequence> sequence(new Sequence);
+TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
+  testing::StrictMock<MockTask> mock_task_a;
+  testing::StrictMock<MockTask> mock_task_b;
+  testing::StrictMock<MockTask> mock_task_c;
+  testing::StrictMock<MockTask> mock_task_d;
+  testing::StrictMock<MockTask> mock_task_e;
 
-  // Push task A in the sequence. Its sequenced time should be updated and it
-  // should be in front of the sequence.
-  EXPECT_TRUE(sequence->PushTask(std::move(task_a_owned_)));
-  EXPECT_FALSE(task_a_->sequenced_time.is_null());
-  EXPECT_EQ(task_a_->traits.priority(), sequence->PeekTaskTraits().priority());
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
 
-  // Push task B, C and D in the sequence. Their sequenced time should be
-  // updated and task A should always remain in front of the sequence.
-  EXPECT_FALSE(sequence->PushTask(std::move(task_b_owned_)));
-  EXPECT_FALSE(task_b_->sequenced_time.is_null());
-  EXPECT_EQ(task_a_->traits.priority(), sequence->PeekTaskTraits().priority());
+  // Push task A in the sequence. PushTask() should return true since it's the
+  // first task->
+  EXPECT_TRUE(sequence->PushTask(CreateTask(&mock_task_a)));
 
-  EXPECT_FALSE(sequence->PushTask(std::move(task_c_owned_)));
-  EXPECT_FALSE(task_c_->sequenced_time.is_null());
-  EXPECT_EQ(task_a_->traits.priority(), sequence->PeekTaskTraits().priority());
+  // Push task B, C and D in the sequence. PushTask() should return false since
+  // there is already a task in a sequence.
+  EXPECT_FALSE(sequence->PushTask(CreateTask(&mock_task_b)));
+  EXPECT_FALSE(sequence->PushTask(CreateTask(&mock_task_c)));
+  EXPECT_FALSE(sequence->PushTask(CreateTask(&mock_task_d)));
 
-  EXPECT_FALSE(sequence->PushTask(std::move(task_d_owned_)));
-  EXPECT_FALSE(task_d_->sequenced_time.is_null());
-  EXPECT_EQ(task_a_->traits.priority(), sequence->PeekTaskTraits().priority());
-
-  // Get the task in front of the sequence. It should be task A.
-  EXPECT_EQ(task_a_, sequence->TakeTask().get());
+  // Take the task in front of the sequence. It should be task A.
+  Optional<Task> task = sequence->TakeTask();
+  ExpectMockTask(&mock_task_a, &task.value());
+  EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. Task B should now be in front.
   EXPECT_FALSE(sequence->Pop());
-  EXPECT_EQ(task_b_, sequence->TakeTask().get());
+  task = sequence->TakeTask();
+  ExpectMockTask(&mock_task_b, &task.value());
+  EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. Task C should now be in front.
   EXPECT_FALSE(sequence->Pop());
-  EXPECT_EQ(task_c_, sequence->TakeTask().get());
+  task = sequence->TakeTask();
+  ExpectMockTask(&mock_task_c, &task.value());
+  EXPECT_FALSE(task->sequenced_time.is_null());
 
-  // Remove the empty slot. Task D should now be in front.
+  // Remove the empty slot.
   EXPECT_FALSE(sequence->Pop());
-  EXPECT_EQ(task_d_, sequence->TakeTask().get());
 
-  // Push task E in the sequence. Its sequenced time should be updated.
-  EXPECT_FALSE(sequence->PushTask(std::move(task_e_owned_)));
-  EXPECT_FALSE(task_e_->sequenced_time.is_null());
+  // Push task E in the sequence.
+  EXPECT_FALSE(sequence->PushTask(CreateTask(&mock_task_e)));
+
+  // Task D should be in front.
+  task = sequence->TakeTask();
+  ExpectMockTask(&mock_task_d, &task.value());
+  EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. Task E should now be in front.
   EXPECT_FALSE(sequence->Pop());
-  EXPECT_EQ(task_e_, sequence->TakeTask().get());
+  task = sequence->TakeTask();
+  ExpectMockTask(&mock_task_e, &task.value());
+  EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. The sequence should now be empty.
   EXPECT_TRUE(sequence->Pop());
 }
 
-TEST_F(TaskSchedulerSequenceTest, GetSortKey) {
-  scoped_refptr<Sequence> sequence(new Sequence);
+// Verifies the sort key of a sequence that contains one BACKGROUND task.
+TEST(TaskSchedulerSequenceTest, GetSortKeyBackground) {
+  // Create a sequence with a BACKGROUND task.
+  Task background_task(FROM_HERE, BindOnce(&DoNothing),
+                       {TaskPriority::BACKGROUND}, TimeDelta());
+  scoped_refptr<Sequence> background_sequence = MakeRefCounted<Sequence>();
+  background_sequence->PushTask(std::move(background_task));
 
-  // Push task A in the sequence. The highest priority is from task A
-  // (BACKGROUND). Task A is in front of the sequence.
-  sequence->PushTask(std::move(task_a_owned_));
-  EXPECT_EQ(SequenceSortKey(TaskPriority::BACKGROUND, task_a_->sequenced_time),
-            sequence->GetSortKey());
+  // Get the sort key.
+  const SequenceSortKey background_sort_key = background_sequence->GetSortKey();
 
-  // Push task B in the sequence. The highest priority is from task B
-  // (USER_VISIBLE). Task A is still in front of the sequence.
-  sequence->PushTask(std::move(task_b_owned_));
-  EXPECT_EQ(
-      SequenceSortKey(TaskPriority::USER_VISIBLE, task_a_->sequenced_time),
-      sequence->GetSortKey());
+  // Take the task from the sequence, so that its sequenced time is available
+  // for the check below.
+  auto take_background_task = background_sequence->TakeTask();
 
-  // Push task C in the sequence. The highest priority is from task C
-  // (USER_BLOCKING). Task A is still in front of the sequence.
-  sequence->PushTask(std::move(task_c_owned_));
-  EXPECT_EQ(
-      SequenceSortKey(TaskPriority::USER_BLOCKING, task_a_->sequenced_time),
-      sequence->GetSortKey());
+  // Verify the sort key.
+  EXPECT_EQ(TaskPriority::BACKGROUND, background_sort_key.priority());
+  EXPECT_EQ(take_background_task->sequenced_time,
+            background_sort_key.next_task_sequenced_time());
 
-  // Push task D in the sequence. The highest priority is from tasks C/D
-  // (USER_BLOCKING). Task A is still in front of the sequence.
-  sequence->PushTask(std::move(task_d_owned_));
-  EXPECT_EQ(
-      SequenceSortKey(TaskPriority::USER_BLOCKING, task_a_->sequenced_time),
-      sequence->GetSortKey());
+  // Pop for correctness.
+  background_sequence->Pop();
+}
 
-  // Pop task A. The highest priority is still USER_BLOCKING. The task in front
-  // of the sequence is now task B.
-  sequence->TakeTask();
-  sequence->Pop();
-  EXPECT_EQ(
-      SequenceSortKey(TaskPriority::USER_BLOCKING, task_b_->sequenced_time),
-      sequence->GetSortKey());
+// Same as TaskSchedulerSequenceTest.GetSortKeyBackground, but with a
+// USER_VISIBLE task.
+TEST(TaskSchedulerSequenceTest, GetSortKeyForeground) {
+  // Create a sequence with a USER_VISIBLE task.
+  Task foreground_task(FROM_HERE, BindOnce(&DoNothing),
+                       {TaskPriority::USER_VISIBLE}, TimeDelta());
+  scoped_refptr<Sequence> foreground_sequence = MakeRefCounted<Sequence>();
+  foreground_sequence->PushTask(std::move(foreground_task));
 
-  // Pop task B. The highest priority is still USER_BLOCKING. The task in front
-  // of the sequence is now task C.
-  sequence->TakeTask();
-  sequence->Pop();
-  EXPECT_EQ(
-      SequenceSortKey(TaskPriority::USER_BLOCKING, task_c_->sequenced_time),
-      sequence->GetSortKey());
+  // Get the sort key.
+  const SequenceSortKey foreground_sort_key = foreground_sequence->GetSortKey();
 
-  // Pop task C. The highest priority is still USER_BLOCKING. The task in front
-  // of the sequence is now task D.
-  sequence->TakeTask();
-  sequence->Pop();
-  EXPECT_EQ(
-      SequenceSortKey(TaskPriority::USER_BLOCKING, task_d_->sequenced_time),
-      sequence->GetSortKey());
+  // Take the task from the sequence, so that its sequenced time is available
+  // for the check below.
+  auto take_foreground_task = foreground_sequence->TakeTask();
 
-  // Push task E in the sequence. The highest priority is still USER_BLOCKING.
-  // The task in front of the sequence is still task D.
-  sequence->PushTask(std::move(task_e_owned_));
-  EXPECT_EQ(
-      SequenceSortKey(TaskPriority::USER_BLOCKING, task_d_->sequenced_time),
-      sequence->GetSortKey());
+  // Verify the sort key.
+  EXPECT_EQ(TaskPriority::USER_VISIBLE, foreground_sort_key.priority());
+  EXPECT_EQ(take_foreground_task->sequenced_time,
+            foreground_sort_key.next_task_sequenced_time());
 
-  // Pop task D. The highest priority is now from task E (BACKGROUND). The
-  // task in front of the sequence is now task E.
-  sequence->TakeTask();
-  sequence->Pop();
-  EXPECT_EQ(SequenceSortKey(TaskPriority::BACKGROUND, task_e_->sequenced_time),
-            sequence->GetSortKey());
+  // Pop for correctness.
+  foreground_sequence->Pop();
 }
 
 // Verify that a DCHECK fires if Pop() is called on a sequence whose front slot
 // isn't empty.
-TEST_F(TaskSchedulerSequenceTest, PopNonEmptyFrontSlot) {
-  scoped_refptr<Sequence> sequence(new Sequence);
-  sequence->PushTask(std::make_unique<Task>(FROM_HERE, Bind(&DoNothing),
-                                            TaskTraits(), TimeDelta()));
+TEST(TaskSchedulerSequenceTest, PopNonEmptyFrontSlot) {
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
+  sequence->PushTask(
+      Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
 
   EXPECT_DCHECK_DEATH({ sequence->Pop(); });
 }
 
 // Verify that a DCHECK fires if TakeTask() is called on a sequence whose front
 // slot is empty.
-TEST_F(TaskSchedulerSequenceTest, TakeEmptyFrontSlot) {
-  scoped_refptr<Sequence> sequence(new Sequence);
-  sequence->PushTask(std::make_unique<Task>(FROM_HERE, Bind(&DoNothing),
-                                            TaskTraits(), TimeDelta()));
+TEST(TaskSchedulerSequenceTest, TakeEmptyFrontSlot) {
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
+  sequence->PushTask(
+      Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
 
   EXPECT_TRUE(sequence->TakeTask());
   EXPECT_DCHECK_DEATH({ sequence->TakeTask(); });
 }
 
 // Verify that a DCHECK fires if TakeTask() is called on an empty sequence.
-TEST_F(TaskSchedulerSequenceTest, TakeEmptySequence) {
-  scoped_refptr<Sequence> sequence(new Sequence);
+TEST(TaskSchedulerSequenceTest, TakeEmptySequence) {
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
   EXPECT_DCHECK_DEATH({ sequence->TakeTask(); });
 }
 

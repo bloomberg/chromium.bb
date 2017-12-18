@@ -35,15 +35,16 @@ struct BASE_EXPORT Task : public PendingTask {
   // Task is move-only to avoid mistakes that cause reference counts to be
   // accidentally bumped.
   Task(Task&& other) noexcept;
-  Task(const Task&) = delete;
 
   ~Task();
 
+  Task& operator=(Task&& other);
+
   // The TaskTraits of this task.
-  const TaskTraits traits;
+  TaskTraits traits;
 
   // The delay that must expire before the task runs.
-  const TimeDelta delay;
+  TimeDelta delay;
 
   // The time at which the task was inserted in its sequence. For an undelayed
   // task, this happens at post time. For a delayed task, this happens some
@@ -62,6 +63,9 @@ struct BASE_EXPORT Task : public PendingTask {
   // support TaskRunnerHandles.
   scoped_refptr<SequencedTaskRunner> sequenced_task_runner_ref;
   scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner_ref;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Task);
 };
 
 }  // namespace internal

@@ -108,7 +108,7 @@ class BASE_EXPORT TaskTracker {
 
   // Informs this TaskTracker that |task| is about to be posted. Returns true if
   // this operation is allowed (|task| should be posted if-and-only-if it is).
-  bool WillPostTask(const Task* task);
+  bool WillPostTask(const Task& task);
 
   // Informs this TaskTracker that |sequence| is about to be scheduled. If this
   // returns |sequence|, it is expected that RunNextTask() will soon be called
@@ -155,9 +155,7 @@ class BASE_EXPORT TaskTracker {
   // have run. |sequence| is the sequence from which |task| was extracted. An
   // override is expected to call its parent's implementation but is free to
   // perform extra work before and after doing so.
-  virtual void RunOrSkipTask(std::unique_ptr<Task> task,
-                             Sequence* sequence,
-                             bool can_run_task);
+  virtual void RunOrSkipTask(Task task, Sequence* sequence, bool can_run_task);
 
 #if DCHECK_IS_ON()
   // Returns true if this context should be exempt from blocking shutdown
@@ -219,7 +217,7 @@ class BASE_EXPORT TaskTracker {
 
   // Records the TaskScheduler.TaskLatency.[task priority].[may block] histogram
   // for |task|.
-  void RecordTaskLatencyHistogram(Task* task);
+  void RecordTaskLatencyHistogram(const Task& task);
 
   // Number of tasks blocking shutdown and boolean indicating whether shutdown
   // has started.

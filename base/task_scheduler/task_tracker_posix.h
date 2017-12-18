@@ -52,9 +52,7 @@ class BASE_EXPORT TaskTrackerPosix : public TaskTracker {
 
  protected:
   // TaskTracker:
-  void RunOrSkipTask(std::unique_ptr<Task> task,
-                     Sequence* sequence,
-                     bool can_run_task) override;
+  void RunOrSkipTask(Task task, Sequence* sequence, bool can_run_task) override;
 
  private:
 #if DCHECK_IS_ON()

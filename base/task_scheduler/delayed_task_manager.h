@@ -33,7 +33,7 @@ struct Task;
 class BASE_EXPORT DelayedTaskManager {
  public:
   // Posts |task| for execution immediately.
-  using PostTaskNowCallback = OnceCallback<void(std::unique_ptr<Task> task)>;
+  using PostTaskNowCallback = OnceCallback<void(Task task)>;
 
   // |tick_clock| can be specified for testing.
   DelayedTaskManager(std::unique_ptr<TickClock> tick_clock =
@@ -48,13 +48,12 @@ class BASE_EXPORT DelayedTaskManager {
 
   // Schedules a call to |post_task_now_callback| with |task| as argument when
   // |task| is ripe for execution and Start() has been called.
-  void AddDelayedTask(std::unique_ptr<Task> task,
-                      PostTaskNowCallback post_task_now_callback);
+  void AddDelayedTask(Task task, PostTaskNowCallback post_task_now_callback);
 
  private:
   // Schedules a call to |post_task_now_callback| with |task| as argument when
   // |delay| expires. Start() must have been called before this.
-  void AddDelayedTaskNow(std::unique_ptr<Task> task,
+  void AddDelayedTaskNow(Task task,
                          TimeDelta delay,
                          PostTaskNowCallback post_task_now_callback);
 
@@ -70,8 +69,7 @@ class BASE_EXPORT DelayedTaskManager {
   SchedulerLock lock_;
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
-  std::vector<std::pair<std::unique_ptr<Task>, PostTaskNowCallback>>
-      tasks_added_before_start_;
+  std::vector<std::pair<Task, PostTaskNowCallback>> tasks_added_before_start_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedTaskManager);
 };

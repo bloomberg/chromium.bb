@@ -41,23 +41,23 @@ void DelayedTaskManager::Start(
   const TimeTicks now = tick_clock_->NowTicks();
   for (auto& task_and_callback : tasks_added_before_start) {
     const TimeDelta delay =
-        std::max(TimeDelta(), task_and_callback.first->delayed_run_time - now);
+        std::max(TimeDelta(), task_and_callback.first.delayed_run_time - now);
     AddDelayedTaskNow(std::move(task_and_callback.first), delay,
                       std::move(task_and_callback.second));
   }
 }
 
 void DelayedTaskManager::AddDelayedTask(
-    std::unique_ptr<Task> task,
+    Task task,
     PostTaskNowCallback post_task_now_callback) {
-  DCHECK(task);
+  DCHECK(task.task);
 
-  const TimeDelta delay = task->delay;
+  const TimeDelta delay = task.delay;
   DCHECK(!delay.is_zero());
 
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
-  CHECK(task->task);
+  CHECK(task.task);
 
   // If |started_| is set, the DelayedTaskManager is in a stable state and
   // AddDelayedTaskNow() can be called without synchronization. Otherwise, it is
@@ -78,10 +78,10 @@ void DelayedTaskManager::AddDelayedTask(
 }
 
 void DelayedTaskManager::AddDelayedTaskNow(
-    std::unique_ptr<Task> task,
+    Task task,
     TimeDelta delay,
     PostTaskNowCallback post_task_now_callback) {
-  DCHECK(task);
+  DCHECK(task.task);
   DCHECK(started_.IsSet());
   // TODO(fdoray): Use |task->delayed_run_time| on the service thread
   // MessageLoop rather than recomputing it from |delay|.

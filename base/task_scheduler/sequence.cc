@@ -14,30 +14,27 @@ namespace internal {
 
 Sequence::Sequence() = default;
 
-bool Sequence::PushTask(std::unique_ptr<Task> task) {
-  DCHECK(task);
-
+bool Sequence::PushTask(Task task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
-  CHECK(task->task);
-  DCHECK(task->sequenced_time.is_null());
-  task->sequenced_time = base::TimeTicks::Now();
+  CHECK(task.task);
+  DCHECK(task.sequenced_time.is_null());
+  task.sequenced_time = base::TimeTicks::Now();
 
   AutoSchedulerLock auto_lock(lock_);
-  ++num_tasks_per_priority_[static_cast<int>(task->traits.priority())];
+  ++num_tasks_per_priority_[static_cast<int>(task.traits.priority())];
   queue_.push(std::move(task));
 
   // Return true if the sequence was empty before the push.
   return queue_.size() == 1;
 }
 
-std::unique_ptr<Task> Sequence::TakeTask() {
+Optional<Task> Sequence::TakeTask() {
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(!queue_.empty());
-  DCHECK(queue_.front());
+  DCHECK(queue_.front().task);
 
-  const int priority_index =
-      static_cast<int>(queue_.front()->traits.priority());
+  const int priority_index = static_cast<int>(queue_.front().traits.priority());
   DCHECK_GT(num_tasks_per_priority_[priority_index], 0U);
   --num_tasks_per_priority_[priority_index];
 
@@ -47,14 +44,14 @@ std::unique_ptr<Task> Sequence::TakeTask() {
 TaskTraits Sequence::PeekTaskTraits() const {
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(!queue_.empty());
-  DCHECK(queue_.front());
-  return queue_.front()->traits;
+  DCHECK(queue_.front().task);
+  return queue_.front().traits;
 }
 
 bool Sequence::Pop() {
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(!queue_.empty());
-  DCHECK(!queue_.front());
+  DCHECK(!queue_.front().task);
   queue_.pop();
   return queue_.empty();
 }
@@ -78,7 +75,7 @@ SequenceSortKey Sequence::GetSortKey() const {
     }
 
     // Save the sequenced time of the next task in the sequence.
-    next_task_sequenced_time = queue_.front()->sequenced_time;
+    next_task_sequenced_time = queue_.front().sequenced_time;
   }
 
   return SequenceSortKey(priority, next_task_sequenced_time);

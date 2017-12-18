@@ -13,7 +13,7 @@ namespace base {
 namespace internal {
 namespace test {
 
-scoped_refptr<Sequence> CreateSequenceWithTask(std::unique_ptr<Task> task) {
+scoped_refptr<Sequence> CreateSequenceWithTask(Task task) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
   sequence->PushTask(std::move(task));
   return sequence;
