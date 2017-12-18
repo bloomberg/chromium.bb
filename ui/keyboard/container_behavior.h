@@ -81,6 +81,14 @@ class KEYBOARD_EXPORT ContainerBehavior {
 
   // Sets floating keyboard drggable rect.
   virtual bool SetDraggableArea(const gfx::Rect& rect) = 0;
+
+ protected:
+  // The opacity of virtual keyboard container when show animation
+  // starts or hide animation finishes. This cannot be zero because we
+  // call Show() on the keyboard window before setting the opacity
+  // back to 1.0. Since windows are not allowed to be shown with zero
+  // opacity, we always animate to 0.01 instead.
+  static constexpr float kAnimationStartOrAfterHideOpacity = 0.01f;
 };
 
 }  // namespace keyboard

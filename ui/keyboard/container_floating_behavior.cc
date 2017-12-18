@@ -20,12 +20,6 @@ constexpr int kKeyboardWidth = 600;
 // Length of the animation to show and hide the keyboard.
 constexpr int kAnimationDurationMs = 200;
 
-// The opacity of virtual keyboard container when show animation starts or
-// hide animation finishes. This cannot be zero because we call Show() on the
-// keyboard window before setting the opacity back to 1.0. Since windows are not
-// allowed to be shown with zero opacity, we always animate to 0.01 instead.
-constexpr float kAnimationStartOrAfterHideOpacity = 0.01f;
-
 // Distance the keyboard moves during the animation
 constexpr int kAnimationDistance = 30;
 
