@@ -1904,6 +1904,32 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="TabManager.WindowMetrics">
+  <owner>michaelpg@chromium.org</owner>
+  <summary>
+    Collects information about a browser or app window to associate with the
+    TabManager.TabMetrics entries for tabs in that window.
+  </summary>
+  <metric name="ShowState">
+    <summary>
+      Enumeration of the window show state, such as fullscreen or minimized.
+      Values are enumerated in metrics::WindowMetricsEvent::ShowState.
+    </summary>
+  </metric>
+  <metric name="Type">
+    <summary>
+      Enumeration for the type of the window. Values are enumerated in
+      metrics::WindowMetricsEvent::Type.
+    </summary>
+  </metric>
+  <metric name="WindowId">
+    <summary>
+      Session ID of the browser or app window this entry represents, unique for
+      the browsing session.
+    </summary>
+  </metric>
+</event>
+
 <event name="TabManager.Experimental.BackgroundTabOpening.TabSwitchLoadStopped"
     singular="True">
   <owner>zhenw@chromium.org</owner>
@@ -2233,6 +2259,12 @@ be describing additional metrics about the same event.
     <summary>
       Boolean value indicating whether the tab has played audio within the last
       two seconds.
+    </summary>
+  </metric>
+  <metric name="WindowId">
+    <summary>
+      WindowId of the WindowMetrics entry corresponding to the browser window
+      containing this tab.
     </summary>
   </metric>
 </event>

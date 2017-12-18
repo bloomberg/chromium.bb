@@ -933,6 +933,8 @@ split_static_library("ui") {
       "tabs/tab_utils.h",
       "tabs/web_contents_closer.cc",
       "tabs/web_contents_closer.h",
+      "tabs/window_activity_watcher.cc",
+      "tabs/window_activity_watcher.h",
       "task_manager/task_manager_columns.cc",
       "task_manager/task_manager_columns.h",
       "task_manager/task_manager_table_model.cc",

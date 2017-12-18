@@ -79,3 +79,38 @@ message TabMetricsEvent {
 
   repeated ProtocolHandlerScheme enabled_protocol_handlers = 2;
 }
+
+// Defines specialized fields used by the TabManager.WindowMetrics UKM event
+// for describing the window used by a set of tabs.
+message WindowMetricsEvent {
+  // Represents the type of the window.
+  enum Type {
+    // Could not be determined or not available.
+    TYPE_UNKNOWN = 0;
+
+    // A normal browser window with a tab strip.
+    TYPE_TABBED = 1;
+
+    // A pop-up browser window with no tab strip.
+    TYPE_POPUP = 2;
+
+    // An Extension browser window that is not an AppWindow.
+    TYPE_EXTENSION = 3;
+
+    // An AppWindow for a platform app.
+    TYPE_APP = 4;
+  }
+
+  optional Type type = 1;
+
+  // Represents the show state of the window.
+  enum ShowState {
+    SHOW_STATE_UNKNOWN = 0;
+    SHOW_STATE_NORMAL = 1;
+    SHOW_STATE_MINIMIZED = 2;
+    SHOW_STATE_MAXIMIZED = 3;
+    SHOW_STATE_FULLSCREEN = 4;
+  }
+
+  optional ShowState show_state = 2;
+}

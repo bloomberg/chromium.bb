@@ -167,6 +167,10 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
   DCHECK_NE(index, TabStripModel::kNoTab);
 
   ukm::builders::TabManager_TabMetrics entry(ukm_source_id);
+
+  // The browser window logs its own usage UKMs with its session ID.
+  entry.SetWindowId(browser->session_id().id());
+
   entry.SetKeyEventCount(tab_metrics.page_metrics.key_event_count)
       .SetMouseEventCount(tab_metrics.page_metrics.mouse_event_count)
       .SetTouchEventCount(tab_metrics.page_metrics.touch_event_count);
