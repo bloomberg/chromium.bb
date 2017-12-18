@@ -7,6 +7,8 @@ import("//chromecast/chromecast.gni")
 cast_source_set("test_support") {
   testonly = true
   sources = [
+    "post_processor_benchmark.cc",
+    "post_processor_benchmark.h",
     "post_processor_unittest.cc",
     "post_processor_unittest.h",
   ]

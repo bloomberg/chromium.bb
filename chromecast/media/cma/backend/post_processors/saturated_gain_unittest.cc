@@ -7,6 +7,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "chromecast/media/cma/backend/post_processor_factory.h"
+#include "chromecast/media/cma/backend/post_processors/post_processor_benchmark.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 
 namespace chromecast {
@@ -66,6 +67,22 @@ TEST_P(PostProcessorTest, Gain) {
       << "Expected a gain of 20dB";
 }
 
+TEST_P(PostProcessorTest, SaturatedGainBenchmark) {
+  PostProcessorFactory factory;
+  std::string config = MakeConfigString(20.0);
+  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
+  AudioProcessorBenchmark(pp.get(), sample_rate_);
+}
+
 }  // namespace post_processor_test
 }  // namespace media
 }  // namespace chromecast
+
+/*
+Benchmark results:
+Device: Google Home Max, test audio duration: 1 sec.
+Benchmark                Sample Rate    CPU(%)
+----------------------------------------------------
+SaturatedGainBenchmark   44100          0.0014%
+SaturatedGainBenchmark   48000          0.0016%
+*/
