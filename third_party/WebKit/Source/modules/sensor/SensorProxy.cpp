@@ -235,7 +235,7 @@ void SensorProxy::UpdatePollingStatus() {
     // polling frequency.
     polling_timer_.StartRepeating(
         WTF::TimeDelta::FromSecondsD(1 / active_frequencies_.back()),
-        BLINK_FROM_HERE);
+        FROM_HERE);
   } else {
     polling_timer_.Stop();
   }

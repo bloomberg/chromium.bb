@@ -88,7 +88,7 @@ void MediaControlPanelElement::StartTimer() {
   // such that captions are correctly displayed at the bottom of the video
   // at the end of the fadeout transition.
   // FIXME: Racing a transition with a setTimeout like this is wrong.
-  transition_timer_.StartOneShot(kFadeOutDuration, BLINK_FROM_HERE);
+  transition_timer_.StartOneShot(kFadeOutDuration, FROM_HERE);
 }
 
 void MediaControlPanelElement::StopTimer() {

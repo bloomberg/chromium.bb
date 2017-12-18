@@ -31,7 +31,7 @@ TimedCanvasDrawListener* TimedCanvasDrawListener::Create(
   TimedCanvasDrawListener* listener =
       new TimedCanvasDrawListener(std::move(handler), frame_rate, context);
   listener->request_frame_timer_.StartRepeating(listener->frame_interval_,
-                                                BLINK_FROM_HERE);
+                                                FROM_HERE);
   return listener;
 }
 

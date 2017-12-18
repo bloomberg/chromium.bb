@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <utility>
+#include "base/location.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptRegexp.h"
@@ -51,7 +52,6 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebTraceLocation.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace {
@@ -1144,7 +1144,7 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     return;
   }
 
-  complete_timer_.StartOneShot(kCompleteTimeoutSeconds, BLINK_FROM_HERE);
+  complete_timer_.StartOneShot(kCompleteTimeoutSeconds, FROM_HERE);
 
   show_resolver_->Resolve(new PaymentResponse(
       std::move(response), shipping_address_.Get(), this, id_));

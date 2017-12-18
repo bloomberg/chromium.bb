@@ -216,8 +216,8 @@ void Notification::close() {
   if (type_ == Type::kNonPersistent) {
     GetExecutionContext()
         ->GetTaskRunner(TaskType::kUserInteraction)
-        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Notification::DispatchCloseEvent,
-                                              WrapPersistent(this)));
+        ->PostTask(FROM_HERE, WTF::Bind(&Notification::DispatchCloseEvent,
+                                        WrapPersistent(this)));
     state_ = State::kClosing;
 
     if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {

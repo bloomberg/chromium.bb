@@ -155,7 +155,7 @@ void AudioWorkletHandler::SetProcessorOnRenderThread(
   new_state = processor_ ? AudioWorkletProcessorState::kRunning
                          : AudioWorkletProcessorState::kError;
   task_runner_->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
                       WrapRefCounted(this), new_state));
 }
@@ -170,9 +170,9 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
       ? AudioWorkletProcessorState::kStopped
       : AudioWorkletProcessorState::kError;
   task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
-                        WrapRefCounted(this), new_state));
+      FROM_HERE,
+      CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
+                      WrapRefCounted(this), new_state));
 
   // TODO(hongchan): After this point, The handler has no more pending activity
   // and ready for GC.

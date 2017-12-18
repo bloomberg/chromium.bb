@@ -60,7 +60,7 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
         GetDocument()
             .GetTaskRunner(TaskType::kMediaElementEvent)
             ->PostCancellableTask(
-                BLINK_FROM_HERE,
+                FROM_HERE,
                 WTF::Bind(
                     &MediaControlOverflowMenuListElement::MaybeRecordTimeTaken,
                     WrapWeakPersistent(this), kTimeToDismiss));

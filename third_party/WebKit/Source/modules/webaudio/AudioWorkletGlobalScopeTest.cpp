@@ -84,7 +84,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     WaitableEvent waitable_event;
     thread->GetTaskRunner(TaskType::kInternalTest)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(
                 &AudioWorkletGlobalScopeTest::RunBasicTestOnWorkletThread,
                 CrossThreadUnretained(this), CrossThreadUnretained(thread),
@@ -95,7 +95,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
   void RunSimpleProcessTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
     thread->GetTaskRunner(TaskType::kInternalTest)
-        ->PostTask(BLINK_FROM_HERE,
+        ->PostTask(FROM_HERE,
                    CrossThreadBind(&AudioWorkletGlobalScopeTest::
                                        RunSimpleProcessTestOnWorkletThread,
                                    CrossThreadUnretained(this),
@@ -108,7 +108,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     WaitableEvent waitable_event;
     thread->GetTaskRunner(TaskType::kInternalTest)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(
                 &AudioWorkletGlobalScopeTest::RunParsingTestOnWorkletThread,
                 CrossThreadUnretained(this), CrossThreadUnretained(thread),
@@ -120,7 +120,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     WaitableEvent waitable_event;
     thread->GetTaskRunner(TaskType::kInternalTest)
         ->PostTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             CrossThreadBind(
                 &AudioWorkletGlobalScopeTest::
                     RunParsingParameterDescriptorTestOnWorkletThread,

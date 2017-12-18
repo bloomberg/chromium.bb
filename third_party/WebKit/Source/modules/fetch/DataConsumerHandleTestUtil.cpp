@@ -43,16 +43,14 @@ DataConsumerHandleTestUtil::Thread::Thread(
     : thread_(WebThreadSupportingGC::Create(name)),
       initialization_policy_(initialization_policy),
       waitable_event_(std::make_unique<WaitableEvent>()) {
-  thread_->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&Thread::Initialize, CrossThreadUnretained(this)));
+  thread_->PostTask(FROM_HERE, CrossThreadBind(&Thread::Initialize,
+                                               CrossThreadUnretained(this)));
   waitable_event_->Wait();
 }
 
 DataConsumerHandleTestUtil::Thread::~Thread() {
-  thread_->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&Thread::Shutdown, CrossThreadUnretained(this)));
+  thread_->PostTask(FROM_HERE, CrossThreadBind(&Thread::Shutdown,
+                                               CrossThreadUnretained(this)));
   waitable_event_->Wait();
 }
 
@@ -228,7 +226,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::Notify() {
     return;
   DCHECK(reader_thread_);
   reader_thread_->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&Context::NotifyInternal, WrapRefCounted(this)));
 }
 

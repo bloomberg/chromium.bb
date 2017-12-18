@@ -452,7 +452,7 @@ void MediaControlsOrientationLockDelegate::
       GetDocument()
           .GetTaskRunner(TaskType::kMediaElementEvent)
           ->PostDelayedCancellableTask(
-              BLINK_FROM_HERE,
+              FROM_HERE,
               // Conceptually, this callback will unlock the screen orientation,
               // so that the user can now rotate their device to the opposite
               // orientation in order to exit fullscreen. But unlocking

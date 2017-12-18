@@ -251,11 +251,10 @@ void RemotePlayback::PromptInternal() {
                                 task_id.get());
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kMediaElementEvent)
-          ->PostTask(BLINK_FROM_HERE,
-                     WTF::Bind(RunRemotePlaybackTask,
-                               WrapPersistent(GetExecutionContext()),
-                               WTF::Passed(std::move(task)),
-                               WTF::Passed(std::move(task_id))));
+          ->PostTask(FROM_HERE, WTF::Bind(RunRemotePlaybackTask,
+                                          WrapPersistent(GetExecutionContext()),
+                                          WTF::Passed(std::move(task)),
+                                          WTF::Passed(std::move(task_id))));
     }
     return;
   }
@@ -289,11 +288,10 @@ int RemotePlayback::WatchAvailabilityInternal(
                             task_id.get());
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kMediaElementEvent)
-      ->PostTask(BLINK_FROM_HERE,
-                 WTF::Bind(RunRemotePlaybackTask,
-                           WrapPersistent(GetExecutionContext()),
-                           WTF::Passed(std::move(task)),
-                           WTF::Passed(std::move(task_id))));
+      ->PostTask(FROM_HERE, WTF::Bind(RunRemotePlaybackTask,
+                                      WrapPersistent(GetExecutionContext()),
+                                      WTF::Passed(std::move(task)),
+                                      WTF::Passed(std::move(task_id))));
 
   MaybeStartListeningForAvailability();
   return id;

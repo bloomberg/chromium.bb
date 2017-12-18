@@ -75,7 +75,7 @@ Result BytesConsumerTestUtil::ReplayingBytesConsumer::BeginRead(
       commands_.pop_front();
       state_ = InternalState::kWaiting;
       execution_context_->GetTaskRunner(TaskType::kNetworking)
-          ->PostTask(BLINK_FROM_HERE,
+          ->PostTask(FROM_HERE,
                      WTF::Bind(&ReplayingBytesConsumer::NotifyAsReadable,
                                WrapPersistent(this), notification_token_));
       return Result::kShouldWait;

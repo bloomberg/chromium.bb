@@ -193,7 +193,7 @@ void MediaControlOverlayPlayButtonElement::HandlePlayPauseEvent(
   if (tap_timer_.IsActive())
     return;
 
-  tap_timer_.StartOneShot(delay, BLINK_FROM_HERE);
+  tap_timer_.StartOneShot(delay, FROM_HERE);
 }
 
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {

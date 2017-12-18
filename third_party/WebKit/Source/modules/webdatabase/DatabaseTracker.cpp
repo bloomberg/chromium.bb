@@ -30,6 +30,7 @@
 
 #include "modules/webdatabase/DatabaseTracker.h"
 
+#include "base/location.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/webdatabase/Database.h"
@@ -48,7 +49,6 @@
 #include "public/platform/TaskType.h"
 #include "public/platform/WebDatabaseObserver.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -199,7 +199,7 @@ void DatabaseTracker::CloseDatabasesImmediately(const SecurityOrigin* origin,
   for (DatabaseSet::iterator it = database_set->begin();
        it != database_set->end(); ++it) {
     (*it)->GetDatabaseTaskRunner()->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&DatabaseTracker::CloseOneDatabaseImmediately,
                         CrossThreadUnretained(this), origin_string, name, *it));
   }

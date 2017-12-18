@@ -61,7 +61,7 @@ void DatabaseThread::Start() {
   if (thread_)
     return;
   thread_ = WebThreadSupportingGC::Create("WebCore: Database");
-  thread_->PostTask(BLINK_FROM_HERE,
+  thread_->PostTask(FROM_HERE,
                     CrossThreadBind(&DatabaseThread::SetupDatabaseThread,
                                     WrapCrossThreadPersistent(this)));
 }
@@ -81,7 +81,7 @@ void DatabaseThread::Terminate() {
     termination_requested_ = true;
     cleanup_sync_ = &sync;
     STORAGE_DVLOG(1) << "DatabaseThread " << this << " was asked to terminate";
-    thread_->PostTask(BLINK_FROM_HERE,
+    thread_->PostTask(FROM_HERE,
                       CrossThreadBind(&DatabaseThread::CleanupDatabaseThread,
                                       WrapCrossThreadPersistent(this)));
   }
@@ -117,7 +117,7 @@ void DatabaseThread::CleanupDatabaseThread() {
   }
   open_database_set_.clear();
 
-  thread_->PostTask(BLINK_FROM_HERE,
+  thread_->PostTask(FROM_HERE,
                     WTF::Bind(&DatabaseThread::CleanupDatabaseThreadCompleted,
                               WrapCrossThreadPersistent(this)));
 }
@@ -172,7 +172,7 @@ void DatabaseThread::ScheduleTask(std::unique_ptr<DatabaseTask> task) {
   }
 #endif
   // WebThread takes ownership of the task.
-  thread_->PostTask(BLINK_FROM_HERE,
+  thread_->PostTask(FROM_HERE,
                     CrossThreadBind(&DatabaseTask::Run, std::move(task)));
 }
 

@@ -187,7 +187,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       if (chunks_.IsEmpty() && tee_->GetPublicState() == PublicState::kClosed) {
         // All data has been consumed.
         execution_context_->GetTaskRunner(TaskType::kNetworking)
-            ->PostTask(BLINK_FROM_HERE,
+            ->PostTask(FROM_HERE,
                        WTF::Bind(&Destination::Close, WrapPersistent(this)));
       }
       return Result::kOk;

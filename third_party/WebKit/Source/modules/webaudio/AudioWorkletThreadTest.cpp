@@ -68,7 +68,7 @@ class AudioWorkletThreadTest : public ::testing::Test {
   void CheckWorkletCanExecuteScript(WorkerThread* thread) {
     WaitableEvent wait_event;
     thread->GetWorkerBackingThread().BackingThread().PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&AudioWorkletThreadTest::ExecuteScriptInWorklet,
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(thread),

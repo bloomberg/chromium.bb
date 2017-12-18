@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/location.h"
 #include "core/testing/NullExecutionContext.h"
 #include "gin/public/isolate_holder.h"
 #include "platform/WaitableEvent.h"
@@ -22,7 +23,6 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -120,13 +120,13 @@ class DataConsumerHandleTestUtil {
         DCHECK(holder_);
         holder_ = nullptr;
       }
-      void PostTaskToReadingThread(const WebTraceLocation& location,
+      void PostTaskToReadingThread(const base::Location& location,
                                    CrossThreadClosure task) {
         MutexLocker locker(holder_mutex_);
         DCHECK(holder_);
         holder_->ReadingThread()->PostTask(location, std::move(task));
       }
-      void PostTaskToUpdatingThread(const WebTraceLocation& location,
+      void PostTaskToUpdatingThread(const base::Location& location,
                                     CrossThreadClosure task) {
         MutexLocker locker(holder_mutex_);
         DCHECK(holder_);
@@ -235,20 +235,20 @@ class DataConsumerHandleTestUtil {
     void ResetReader() { reader_ = nullptr; }
     void SignalDone() { waitable_event_->Signal(); }
     String Result() { return context_->Result(); }
-    void PostTaskToReadingThread(const WebTraceLocation& location,
+    void PostTaskToReadingThread(const base::Location& location,
                                  CrossThreadClosure task) {
       context_->PostTaskToReadingThread(location, std::move(task));
     }
-    void PostTaskToUpdatingThread(const WebTraceLocation& location,
+    void PostTaskToUpdatingThread(const base::Location& location,
                                   CrossThreadClosure task) {
       context_->PostTaskToUpdatingThread(location, std::move(task));
     }
-    void PostTaskToReadingThreadAndWait(const WebTraceLocation& location,
+    void PostTaskToReadingThreadAndWait(const base::Location& location,
                                         CrossThreadClosure task) {
       PostTaskToReadingThread(location, std::move(task));
       waitable_event_->Wait();
     }
-    void PostTaskToUpdatingThreadAndWait(const WebTraceLocation& location,
+    void PostTaskToUpdatingThreadAndWait(const base::Location& location,
                                          CrossThreadClosure task) {
       PostTaskToUpdatingThread(location, std::move(task));
       waitable_event_->Wait();
@@ -275,7 +275,7 @@ class DataConsumerHandleTestUtil {
       handle_ = std::move(handle);
 
       PostTaskToReadingThreadAndWait(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&Self::ObtainReader, WrapRefCounted(this)));
     }
 
@@ -284,11 +284,9 @@ class DataConsumerHandleTestUtil {
     void ObtainReader() { reader_ = handle_->ObtainReader(this); }
     void DidGetReadable() override {
       PostTaskToReadingThread(
-          BLINK_FROM_HERE,
-          CrossThreadBind(&Self::ResetReader, WrapRefCounted(this)));
+          FROM_HERE, CrossThreadBind(&Self::ResetReader, WrapRefCounted(this)));
       PostTaskToReadingThread(
-          BLINK_FROM_HERE,
-          CrossThreadBind(&Self::SignalDone, WrapRefCounted(this)));
+          FROM_HERE, CrossThreadBind(&Self::SignalDone, WrapRefCounted(this)));
     }
 
     std::unique_ptr<WebDataConsumerHandle> handle_;
@@ -307,7 +305,7 @@ class DataConsumerHandleTestUtil {
       handle_ = std::move(handle);
 
       PostTaskToReadingThreadAndWait(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&Self::ObtainReader, WrapRefCounted(this)));
     }
 
@@ -317,8 +315,7 @@ class DataConsumerHandleTestUtil {
       reader_ = handle_->ObtainReader(this);
       reader_ = nullptr;
       PostTaskToReadingThread(
-          BLINK_FROM_HERE,
-          CrossThreadBind(&Self::SignalDone, WrapRefCounted(this)));
+          FROM_HERE, CrossThreadBind(&Self::SignalDone, WrapRefCounted(this)));
     }
     void DidGetReadable() override { NOTREACHED(); }
 

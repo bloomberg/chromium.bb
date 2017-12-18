@@ -25,6 +25,7 @@
 
 #include "modules/webaudio/AsyncAudioDecoder.h"
 
+#include "base/location.h"
 #include "bindings/modules/v8/v8_decode_error_callback.h"
 #include "bindings/modules/v8/v8_decode_success_callback.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
@@ -36,7 +37,6 @@
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ void AsyncAudioDecoder::DecodeAsync(DOMArrayBuffer* audio_data,
     return;
 
   BackgroundTaskRunner::PostOnBackgroundThread(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&AsyncAudioDecoder::DecodeOnBackgroundThread,
                       WrapCrossThreadPersistent(audio_data), sample_rate,
                       WrapCrossThreadPersistent(success_callback),
@@ -80,14 +80,13 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
   // exist any more.
   if (context) {
     Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
-                        WrapCrossThreadPersistent(audio_data),
-                        WrapCrossThreadPersistent(success_callback),
-                        WrapCrossThreadPersistent(error_callback),
-                        WTF::RetainedRef(std::move(bus)),
-                        WrapCrossThreadPersistent(resolver),
-                        WrapCrossThreadPersistent(context)));
+        FROM_HERE, CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
+                                   WrapCrossThreadPersistent(audio_data),
+                                   WrapCrossThreadPersistent(success_callback),
+                                   WrapCrossThreadPersistent(error_callback),
+                                   WTF::RetainedRef(std::move(bus)),
+                                   WrapCrossThreadPersistent(resolver),
+                                   WrapCrossThreadPersistent(context)));
   }
 }
 
