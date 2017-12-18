@@ -16,6 +16,7 @@ unstable_protocols =								\
 	unstable/xwayland-keyboard-grab/xwayland-keyboard-grab-unstable-v1.xml	\
 	unstable/keyboard-shortcuts-inhibit/keyboard-shortcuts-inhibit-unstable-v1.xml \
 	unstable/xdg-output/xdg-output-unstable-v1.xml				\
+	unstable/input-timestamps/input-timestamps-unstable-v1.xml	\
 	$(NULL)
 
 stable_protocols =								\
