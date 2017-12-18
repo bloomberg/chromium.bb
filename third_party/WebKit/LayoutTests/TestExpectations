@@ -76,9 +76,7 @@ crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-and-obje
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-creation.svg [ Failure ]
 
 crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
-crbug.com/771643 virtual/spv175/compositing/squashing/squash-overflow-hidden-scrolltop.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/visibility/visibility-image-layers.html [ Failure Pass ]
-crbug.com/771643 virtual/spv175/paint/invalidation/compositing/resize-squashing-layer-that-needs-full-repaint.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/forms/select-option-background-color.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/multicol/multicol-with-overflowing-block-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/overflow/paged-with-overflowing-block-rl.html [ Failure ]

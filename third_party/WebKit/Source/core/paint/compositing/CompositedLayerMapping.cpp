@@ -1110,9 +1110,14 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   // Squashing layer has special paint and invalidation logic that already
   // compensated for compositing bounds, setting it here would end up
   // double adjustment. The value is stored to be used by SPv175.
-  squashing_layer_offset_from_layout_object_ =
-      squash_layer_bounds.Location() - snapped_offset_from_composited_ancestor +
-      ToIntSize(graphics_layer_parent_location);
+  auto new_offset = squash_layer_bounds.Location() -
+                    snapped_offset_from_composited_ancestor +
+                    ToIntSize(graphics_layer_parent_location);
+  if (new_offset != squashing_layer_offset_from_layout_object_) {
+    squashing_layer_offset_from_layout_object_ = new_offset;
+    // Need to update squashing layer state according to the new offset.
+    OwningLayer().GetLayoutObject().SetNeedsPaintPropertyUpdate();
+  }
 
   *offset_from_transformed_ancestor =
       compositing_container_offset_from_transformed_ancestor;
