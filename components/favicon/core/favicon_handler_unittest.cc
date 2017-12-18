@@ -1882,18 +1882,6 @@ class FaviconHandlerManifestsEnabledTest : public FaviconHandlerTest {
   DISALLOW_COPY_AND_ASSIGN(FaviconHandlerManifestsEnabledTest);
 };
 
-// Test that the feature for loading icons from Web Manifests can be disabled.
-TEST_F(FaviconHandlerManifestsEnabledTest, IgnoreWebManifestIfDisabled) {
-  const GURL kManifestURL("http://www.google.com/manifest.json");
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndDisableFeature(kFaviconsFromWebManifest);
-
-  RunHandlerWithSimpleTouchIconCandidates({kIconURL16x16}, kManifestURL);
-  EXPECT_THAT(favicon_service_.fake()->db_requests(),
-              Not(Contains(kManifestURL)));
-  EXPECT_THAT(delegate_.downloads(), Not(Contains(kManifestURL)));
-}
-
 // Test that favicon mappings are deleted when a manifest previously cached in
 // the DB is no longer referenced by the page and the page lists no regular
 // icons.

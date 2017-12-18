@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -25,7 +24,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/favicon/core/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -401,47 +399,6 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, LoadIconFromWebManifest) {
 #endif
 }
 
-// Test that loading a page that contains a Web Manifest without icons and a
-// regular favicon in the HTML reports the icon. The regular icon is initially
-// cached in the Favicon database.
-IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
-                       LoadRegularIconDespiteWebManifestWithoutIcons) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL(
-      "/favicon/page_with_manifest_without_icons.html");
-  GURL icon_url = embedded_test_server()->GetURL("/favicon/icon.png");
-
-  // Initial visit with the feature disabled, to populate the cache.
-  {
-    base::test::ScopedFeatureList override_features;
-    override_features.InitAndDisableFeature(favicon::kFaviconsFromWebManifest);
-
-    PendingTaskWaiter waiter(web_contents());
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url, WindowOpenDisposition::CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
-    waiter.Wait();
-  }
-  ASSERT_NE(
-      nullptr,
-      GetFaviconForPageURL(url, favicon_base::IconType::kFavicon).bitmap_data);
-
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-
-  // Visit the page again now that the feature is enabled (default).
-  {
-    PendingTaskWaiter waiter(web_contents());
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url, WindowOpenDisposition::CURRENT_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
-    waiter.Wait();
-  }
-
-  EXPECT_NE(
-      nullptr,
-      GetFaviconForPageURL(url, favicon_base::IconType::kFavicon).bitmap_data);
-}
-
 // Test that a page which uses a meta refresh tag to redirect gets associated
 // to the favicons listed in the landing page.
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
@@ -721,9 +678,6 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
 #if defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
                        LoadIconFromWebManifestDespitePushState) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(favicon::kFaviconsFromWebManifest);
-
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url =
       embedded_test_server()->GetURL("/favicon/pushstate_with_manifest.html");

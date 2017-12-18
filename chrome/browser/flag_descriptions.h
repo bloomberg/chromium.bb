@@ -1132,9 +1132,6 @@ extern const char kEnableOmniboxClipboardProviderDescription[];
 extern const char kEnableExpandedAutofillCreditCardPopupLayoutName[];
 extern const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[];
 
-extern const char kEnableFaviconsFromWebManifestName[];
-extern const char kEnableFaviconsFromWebManifestDescription[];
-
 extern const char kEnableNtpAssetDownloadSuggestionsName[];
 extern const char kEnableNtpAssetDownloadSuggestionsDescription[];
 
