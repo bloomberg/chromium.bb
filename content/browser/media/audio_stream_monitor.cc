@@ -149,7 +149,9 @@ void AudioStreamMonitor::UpdateStreamAudibleStateOnUIThread(const StreamID& sid,
                                                             bool is_audible) {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto it = streams_.find(sid);
-  DCHECK(it != streams_.end());
+  if (it == streams_.end())
+    return;
+
   it->second = is_audible;
   UpdateStreams();
 }
