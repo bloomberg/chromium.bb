@@ -3810,16 +3810,23 @@ TEST_F(DisplayManagerOrientationTest, DisplayChangeShouldNotSaveUserRotation) {
 
 class MultiMirroringTest : public DisplayManagerTest {
  public:
-  MultiMirroringTest() {
+  MultiMirroringTest() = default;
+  ~MultiMirroringTest() override = default;
+
+  // DisplayManagerTest:
+  void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnableMultiMirroring);
+    DisplayManagerTest::SetUp();
   }
-  ~MultiMirroringTest() override = default;
 
   void ActivateSoftwareMirrorMode(bool active) {
     display_manager()->SetMirrorMode(active);
     RunAllPendingInMessageLoop();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultiMirroringTest);
 };
 
 TEST_F(MultiMirroringTest, HardwareMirrorMode) {
