@@ -441,6 +441,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [_overscrollActionsController setStyle:style];
   [_overscrollActionsController
       setDelegate:overscrollActionsControllerDelegate];
+  [_overscrollActionsController setBrowserState:self.browserState];
   overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
 }
 
