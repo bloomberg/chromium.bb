@@ -11037,8 +11037,8 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         Exit
       </message>
       <!-- TODO(https://crbug.com/774199): Make this <if expr="is_android"> -->
-      <message name="IDS_VR_POWERED_BY_CHROME_MESSAGE" desc="A message indicating that the current page is running in Chrome.">
-        Powered by Chrome
+      <message name="IDS_VR_RUNNING_IN_CHROME_MESSAGE" desc="A message indicating that the current page is running in Chrome.">
+        Running in Chrome
       </message>
       <message name="IDS_VR_NO_SPEECH_RECOGNITION_RESULT" desc="Text to be shown if speech recognition failed to recognize a speech due to either no sound or noise.">
         Sorry, didn't catch that.

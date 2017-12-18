@@ -531,13 +531,13 @@ void UiSceneCreator::CreateSplashScreenForDirectWebVrLaunch() {
   scene_->AddUiElement(kSplashScreenViewportAwareRoot,
                        std::move(transient_parent));
 
-  // Add "Powered by Chrome" text.
+  // Add "Running in Chrome" text.
   auto text_scaler =
       base::MakeUnique<ScaledDepthAdjuster>(kSplashScreenTextDistance);
   auto text = base::MakeUnique<Text>(kSplashScreenTextFontHeightDMM);
   BindColor(model_, text.get(), &ColorScheme::splash_screen_text_color,
             &Text::SetColor);
-  text->SetText(l10n_util::GetStringUTF16(IDS_VR_POWERED_BY_CHROME_MESSAGE));
+  text->SetText(l10n_util::GetStringUTF16(IDS_VR_RUNNING_IN_CHROME_MESSAGE));
   text->SetName(kSplashScreenText);
   text->SetDrawPhase(kPhaseOverlayForeground);
   text->set_hit_testable(false);
