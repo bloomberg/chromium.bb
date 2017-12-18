@@ -15,15 +15,6 @@ namespace content {
 
 namespace {
 
-template <typename T>
-bool Intersects(const std::vector<T>& a, const std::unordered_set<T>& b) {
-  for (const auto& k : a) {
-    if (b.find(k) != b.end())
-      return true;
-  }
-  return false;
-}
-
 // A LockHandle is passed to the client when a lock is granted. As long as the
 // handle is held, the lock is held. Dropping the handle - either explicitly
 // by script or by process termination - causes the lock to be released.
@@ -63,18 +54,15 @@ class LockHandleImpl final : public blink::mojom::LockHandle {
 // and passed to the held callback. Eventually the client will drop the
 // handle, which will notify the context and remove this.
 struct LockManager::Lock {
-  Lock(std::vector<std::string> scope,
+  Lock(const std::string& name,
        LockMode mode,
        int64_t id,
        blink::mojom::LockRequestPtr request)
-      : scope(std::move(scope)),
-        mode(mode),
-        id(id),
-        request(std::move(request)) {}
+      : name(name), mode(mode), id(id), request(std::move(request)) {}
 
   ~Lock() = default;
 
-  const std::vector<std::string> scope;
+  const std::string name;
   const LockMode mode;
   const int64_t id;
   blink::mojom::LockRequestPtr request;
@@ -87,21 +75,18 @@ LockManager::~LockManager() = default;
 LockManager::OriginState::OriginState() = default;
 LockManager::OriginState::~OriginState() = default;
 
-bool LockManager::OriginState::IsGrantable(
-    const std::vector<std::string>& scope,
-    LockMode mode) const {
+bool LockManager::OriginState::IsGrantable(const std::string& name,
+                                           LockMode mode) const {
   if (mode == LockMode::EXCLUSIVE) {
-    return !Intersects(scope, shared) && !Intersects(scope, exclusive);
+    return !shared.count(name) && !exclusive.count(name);
   } else {
-    return !Intersects(scope, exclusive);
+    return !exclusive.count(name);
   }
 }
 
-void LockManager::OriginState::MergeLockState(
-    const std::vector<std::string>& scope,
-    LockMode mode) {
-  (mode == LockMode::SHARED ? shared : exclusive)
-      .insert(scope.begin(), scope.end());
+void LockManager::OriginState::MergeLockState(const std::string& name,
+                                              LockMode mode) {
+  (mode == LockMode::SHARED ? shared : exclusive).insert(name);
 }
 
 void LockManager::CreateService(blink::mojom::LockManagerRequest request) {
@@ -110,13 +95,13 @@ void LockManager::CreateService(blink::mojom::LockManagerRequest request) {
 }
 
 void LockManager::RequestLock(const url::Origin& origin,
-                              const std::vector<std::string>& scope,
+                              const std::string& name,
                               LockMode mode,
                               WaitMode wait,
                               blink::mojom::LockRequestPtr request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (wait == WaitMode::NO_WAIT && !IsGrantable(origin, scope, mode)) {
+  if (wait == WaitMode::NO_WAIT && !IsGrantable(origin, name, mode)) {
     request->Failed();
     return;
   }
@@ -127,8 +112,8 @@ void LockManager::RequestLock(const url::Origin& origin,
       &LockManager::ReleaseLock, base::Unretained(this), origin, lock_id));
 
   origins_[origin].requested.emplace(std::make_pair(
-      lock_id, std::make_unique<Lock>(std::move(scope), mode, lock_id,
-                                      std::move(request))));
+      lock_id,
+      std::make_unique<Lock>(name, mode, lock_id, std::move(request))));
 
   ProcessRequests(origin);
 }
@@ -149,13 +134,13 @@ void LockManager::ReleaseLock(const url::Origin& origin, int64_t id) {
 }
 
 bool LockManager::IsGrantable(const url::Origin& origin,
-                              const std::vector<std::string>& scope,
+                              const std::string& name,
                               LockMode mode) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::ContainsKey(origins_, origin))
     return true;
 
-  return origins_[origin].IsGrantable(scope, mode);
+  return origins_[origin].IsGrantable(name, mode);
 }
 
 void LockManager::ProcessRequests(const url::Origin& origin) {
@@ -172,15 +157,15 @@ void LockManager::ProcessRequests(const url::Origin& origin) {
   state.exclusive.clear();
   for (const auto& id_lock_pair : state.held) {
     const auto& lock = id_lock_pair.second;
-    state.MergeLockState(lock->scope, lock->mode);
+    state.MergeLockState(lock->name, lock->mode);
   }
 
   for (auto it = state.requested.begin(); it != state.requested.end();) {
     auto& lock = it->second;
 
-    bool granted = state.IsGrantable(lock->scope, lock->mode);
+    bool granted = state.IsGrantable(lock->name, lock->mode);
 
-    state.MergeLockState(lock->scope, lock->mode);
+    state.MergeLockState(lock->name, lock->mode);
 
     if (granted) {
       std::unique_ptr<Lock> grantee = std::move(lock);

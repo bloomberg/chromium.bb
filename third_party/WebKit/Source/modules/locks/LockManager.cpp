@@ -30,13 +30,13 @@ class LockManager::LockRequestImpl final
  public:
   LockRequestImpl(V8LockGrantedCallback* callback,
                   ScriptPromiseResolver* resolver,
-                  const Vector<String>& scope,
+                  const String& name,
                   mojom::blink::LockManager::LockMode mode,
                   mojom::blink::LockRequestRequest request,
                   LockManager* manager)
       : callback_(callback),
         resolver_(resolver),
-        scope_(scope),
+        name_(name),
         mode_(mode),
         binding_(this, std::move(request)),
         manager_(manager) {}
@@ -103,7 +103,7 @@ class LockManager::LockRequestImpl final
       return;
     }
 
-    Lock* lock = Lock::Create(script_state, scope_, mode_, std::move(handle));
+    Lock* lock = Lock::Create(script_state, name_, mode_, std::move(handle));
 
     ScriptState::Scope scope(script_state);
     v8::TryCatch try_catch(script_state->GetIsolate());
@@ -126,8 +126,8 @@ class LockManager::LockRequestImpl final
   // |callback_|'s result.
   Member<ScriptPromiseResolver> resolver_;
 
-  // Held to stamp the Lock object's |scope| property.
-  Vector<String> scope_;
+  // Held to stamp the Lock object's |name| property.
+  String name_;
 
   // Held to stamp the Lock object's |mode| property.
   mojom::blink::LockManager::LockMode mode_;
@@ -144,14 +144,13 @@ LockManager::LockManager(ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 
 ScriptPromise LockManager::acquire(ScriptState* script_state,
-                                   const StringOrStringSequence& scope_union,
+                                   const String& name,
                                    V8LockGrantedCallback* callback,
                                    ExceptionState& exception_state) {
-  return acquire(script_state, scope_union, LockOptions(), callback,
-                 exception_state);
+  return acquire(script_state, name, LockOptions(), callback, exception_state);
 }
 ScriptPromise LockManager::acquire(ScriptState* script_state,
-                                   const StringOrStringSequence& scope_union,
+                                   const String& name,
                                    const LockOptions& options,
                                    V8LockGrantedCallback* callback,
                                    ExceptionState& exception_state) {
@@ -175,28 +174,6 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
     }
   }
 
-  // Compute the scope (set of named resources); remove duplicates.
-  HashSet<String> set;
-  if (scope_union.IsString()) {
-    set.insert(scope_union.GetAsString());
-  } else if (scope_union.IsStringSequence()) {
-    for (const auto& name : scope_union.GetAsStringSequence())
-      set.insert(name);
-  } else {
-    NOTREACHED();
-    return ScriptPromise();
-  }
-
-  if (set.IsEmpty()) {
-    exception_state.ThrowTypeError("Scope must not be empty.");
-    return ScriptPromise();
-  }
-
-  Vector<String> scope;
-  for (const auto& name : set)
-    scope.push_back(name);
-  std::sort(scope.begin(), scope.end(), WTF::CodePointCompareLessThan);
-
   mojom::blink::LockManager::LockMode mode = Lock::StringToMode(options.mode());
 
   mojom::blink::LockManager::WaitMode wait =
@@ -207,11 +184,11 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::LockRequestPtr request_ptr;
-  AddPendingRequest(new LockRequestImpl(callback, resolver, scope, mode,
+  AddPendingRequest(new LockRequestImpl(callback, resolver, name, mode,
                                         mojo::MakeRequest(&request_ptr), this));
 
   service_->RequestLock(
-      ExecutionContext::From(script_state)->GetSecurityOrigin(), scope, mode,
+      ExecutionContext::From(script_state)->GetSecurityOrigin(), name, mode,
       wait, std::move(request_ptr));
 
   return promise;

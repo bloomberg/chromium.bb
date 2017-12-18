@@ -10,46 +10,46 @@
 
 promise_test(async t => {
   await promise_rejects(t, new TypeError(), navigator.locks.acquire());
-  await promise_rejects(t, new TypeError(), navigator.locks.acquire('scope'));
-}, 'navigator.locks.acquire requires a scope and a callback');
+  await promise_rejects(t, new TypeError(), navigator.locks.acquire('name'));
+}, 'navigator.locks.acquire requires a name and a callback');
 
 promise_test(async t => {
   await promise_rejects(
     t, new TypeError(),
-    navigator.locks.acquire('scope', {mode: 'foo'}, lock => {}));
+    navigator.locks.acquire('name', {mode: 'foo'}, lock => {}));
   await promise_rejects(
     t, new TypeError(),
-    navigator.locks.acquire('scope', {mode: null }, lock => {}));
+    navigator.locks.acquire('name', {mode: null }, lock => {}));
   assert_equals(await navigator.locks.acquire(
-    'scope', {mode: 'exclusive'}, lock => lock.mode), 'exclusive',
+    'name', {mode: 'exclusive'}, lock => lock.mode), 'exclusive',
                 'mode is exclusive');
   assert_equals(await navigator.locks.acquire(
-    'scope', {mode: 'shared'}, lock => lock.mode), 'shared',
+    'name', {mode: 'shared'}, lock => lock.mode), 'shared',
                 'mode is shared');
 }, 'mode must be "shared" or "exclusive"');
 
 promise_test(async t => {
   await promise_rejects(
-    t, new TypeError(), navigator.locks.acquire('scope', undefined));
+    t, new TypeError(), navigator.locks.acquire('name', undefined));
   await promise_rejects(
-    t, new TypeError(), navigator.locks.acquire('scope', null));
+    t, new TypeError(), navigator.locks.acquire('name', null));
   await promise_rejects(
-    t, new TypeError(), navigator.locks.acquire('scope', 123));
+    t, new TypeError(), navigator.locks.acquire('name', 123));
   await promise_rejects(
-    t, new TypeError(), navigator.locks.acquire('scope', 'abc'));
+    t, new TypeError(), navigator.locks.acquire('name', 'abc'));
   await promise_rejects(
-    t, new TypeError(), navigator.locks.acquire('scope', []));
+    t, new TypeError(), navigator.locks.acquire('name', []));
   await promise_rejects(
-    t, new TypeError(), navigator.locks.acquire('scope', {}));
+    t, new TypeError(), navigator.locks.acquire('name', {}));
   await promise_rejects(
-    t, new TypeError(), navigator.locks.acquire('scope', new Promise(r => {})));
+    t, new TypeError(), navigator.locks.acquire('name', new Promise(r => {})));
 }, 'callback must be a function');
 
 promise_test(async t => {
   let release;
   const promise = new Promise(r => { release = r; });
 
-  let returned = navigator.locks.acquire('scope', lock => { return promise; });
+  let returned = navigator.locks.acquire('name', lock => { return promise; });
 
   const order = [];
 

@@ -24,7 +24,7 @@ class Lock final : public ScriptWrappable, public PausableObject {
 
  public:
   static Lock* Create(ScriptState*,
-                      const Vector<String>& scope,
+                      const String& name,
                       mojom::blink::LockManager::LockMode,
                       mojom::blink::LockHandlePtr);
 
@@ -34,7 +34,7 @@ class Lock final : public ScriptWrappable, public PausableObject {
   EAGERLY_FINALIZE();
 
   // Lock.idl
-  Vector<String> scope() const { return scope_; }
+  String name() const { return name_; }
   String mode() const;
 
   // PausableObject
@@ -51,7 +51,7 @@ class Lock final : public ScriptWrappable, public PausableObject {
   class ThenFunction;
 
   Lock(ScriptState*,
-       const Vector<String>& scope,
+       const String& name,
        mojom::blink::LockManager::LockMode,
        mojom::blink::LockHandlePtr);
 
@@ -59,7 +59,7 @@ class Lock final : public ScriptWrappable, public PausableObject {
 
   Member<ScriptPromiseResolver> resolver_;
 
-  const Vector<String> scope_;
+  const String name_;
   const mojom::blink::LockManager::LockMode mode_;
   mojom::blink::LockHandlePtr handle_;
 };

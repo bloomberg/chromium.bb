@@ -34,7 +34,7 @@ const script = `
   "use strict";
   window.onmessage = async () => {
     try {
-      await navigator.locks.acquire('scope', lock => {});
+      await navigator.locks.acquire('name', lock => {});
       window.parent.postMessage({result: "no exception"}, "*");
     } catch (ex) {
       window.parent.postMessage({result: ex.name}, "*");

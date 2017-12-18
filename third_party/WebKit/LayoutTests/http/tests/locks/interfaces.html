@@ -28,7 +28,7 @@ promise_test(async t => {
   idl_array.add_idls(idls);
 
   let lock;
-  await navigator.locks.acquire('scope', async l => { lock = l; });
+  await navigator.locks.acquire('name', l => { lock = l; });
 
   idl_array.add_objects({
     LockManager: [navigator.locks],

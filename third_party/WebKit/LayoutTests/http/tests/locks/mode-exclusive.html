@@ -12,9 +12,9 @@ promise_test(async t => {
   function log_grant(n) { return () => { granted.push(n); }; }
 
   await Promise.all([
-    navigator.locks.acquire(['a', 'b'], log_grant(1)),
-    navigator.locks.acquire(['b', 'c'], log_grant(2)),
-    navigator.locks.acquire(['c'], log_grant(3))
+    navigator.locks.acquire('a', log_grant(1)),
+    navigator.locks.acquire('a', log_grant(2)),
+    navigator.locks.acquire('a', log_grant(3))
   ]);
   assert_array_equals(granted, [1, 2, 3]);
 }, 'Lock requests are granted in order');
@@ -27,14 +27,14 @@ promise_test(async t => {
   await navigator.locks.acquire('a', async lock => {
     inner_promise = Promise.all([
       // This will be blocked.
-      navigator.locks.acquire(['a', 'b'], log_grant(1)),
+      navigator.locks.acquire('a', log_grant(1)),
       // But this should be grantable immediately.
-      navigator.locks.acquire(['c', 'd'], log_grant(2))
+      navigator.locks.acquire('b', log_grant(2))
     ]);
   });
 
   await inner_promise;
   assert_array_equals(granted, [2, 1]);
-}, 'Requests with non-overlapping scopes can be granted');
+}, 'Requests for distinct resources can be granted');
 
 </script>

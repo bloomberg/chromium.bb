@@ -6,9 +6,13 @@ module blink.mojom;
 
 import "url/mojo/origin.mojom";
 
-// An opaque handle passed from the browser process to a child process to reflect a
-// held lock. The lock is released when the handle is dropped.
+// An opaque handle passed from the browser process to a child process to
+// reflect a held lock. The lock is released when the handle is dropped.
 interface LockHandle {};
+
+// An explicit lock request is used so that requests from terminated
+// contexts (e.g. closed or navigated tabs) can be observed and removed
+// from the lock manager's queue.
 
 interface LockRequest {
   // Request was granted.
@@ -21,6 +25,16 @@ interface LockRequest {
   Abort(string reason);
 };
 
+// Implementation of the proposed "Web Locks API". This provides a "lock"
+// primitive for coordination of resource usage across window and worker
+// contexts in a web application. A resource is identified by an abstract
+// name string selected by the web app. A lock can be requested over the
+// resource. The request will be granted asynchronously depending on
+// availablility and options. Once granted, the lock will be held until
+// explicitly released or the holding context is terminated.
+//
+// Proposal: https://github.com/inexorabletash/web-locks
+
 interface LockManager {
   enum LockMode {
     SHARED,
@@ -32,5 +46,9 @@ interface LockManager {
     NO_WAIT
   };
 
-  RequestLock(url.mojom.Origin origin, array<string> scope, LockMode mode, WaitMode wait, LockRequest request);
+  RequestLock(url.mojom.Origin origin,
+              string name,
+              LockMode mode,
+              WaitMode wait,
+              LockRequest request);
 };

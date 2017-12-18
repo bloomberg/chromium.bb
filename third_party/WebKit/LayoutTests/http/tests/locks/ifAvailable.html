@@ -52,7 +52,7 @@ promise_test(async t => {
 promise_test(async t => {
   let callback_called = false;
   await navigator.locks.acquire('resource', async lock => {
-    // Request with a different scope - should be grantable.
+    // Request with a different name - should be grantable.
     await navigator.locks.acquire('different', {ifAvailable: true}, async lock => {
       callback_called = true;
       assert_not_equals(lock, null, 'lock should be granted');

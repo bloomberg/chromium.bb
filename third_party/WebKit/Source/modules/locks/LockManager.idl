@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://github.com/inexorabletash/web-locks
-typedef (DOMString or sequence<DOMString>) LockScope;
+
 callback LockGrantedCallback = any (Lock lock);
 [
     SecureContext,
@@ -11,10 +11,10 @@ callback LockGrantedCallback = any (Lock lock);
     RuntimeEnabled=LocksAPI
 ] interface LockManager {
     [CallWith=ScriptState, RaisesException] Promise<Lock> acquire(
-        LockScope scope,
+        DOMString name,
         LockGrantedCallback callback);
     [CallWith=ScriptState, RaisesException] Promise<Lock> acquire(
-        LockScope scope,
+        DOMString name,
         LockOptions options,
         LockGrantedCallback callback);
 };
