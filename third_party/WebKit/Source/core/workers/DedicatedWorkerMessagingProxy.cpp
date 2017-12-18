@@ -58,12 +58,14 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
   // TODO(nhiroki): Move ReleaseWorkerClients() to DedicatedWorker for cleanup.
   creation_params->worker_clients = ReleaseWorkerClients();
 
-  // TODO(nhiroki): Support module scripts (https://crbug.com/680046).
-  DCHECK_EQ("classic", options.type());
   InitializeWorkerThread(
       std::move(creation_params),
-      CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())),
-      script_url, stack_id, source_code);
+      CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())));
+
+  // TODO(nhiroki): Support module scripts (https://crbug.com/680046).
+  DCHECK_EQ("classic", options.type());
+  GetWorkerThread()->EvaluateClassicScript(
+      script_url, source_code, nullptr /* cached_meta_data */, stack_id);
 
   // Post all queued tasks to the worker.
   for (auto& queued_task : queued_early_tasks_) {

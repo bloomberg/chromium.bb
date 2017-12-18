@@ -431,13 +431,16 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   worker_thread_->Start(
       std::move(global_scope_creation_params),
       WorkerBackingThreadStartupData::CreateDefault(),
-      std::make_unique<GlobalScopeInspectorCreationParams>(
-          worker_inspector_proxy_->ShouldPauseOnWorkerStart(document)),
-      ParentFrameTaskRunners::Create(), source_code,
-      std::move(cached_meta_data));
+      worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
+      ParentFrameTaskRunners::Create());
 
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                worker_start_data_.script_url);
+
+  // TODO(nhiroki): Support module workers (https://crbug.com/680046).
+  worker_thread_->EvaluateClassicScript(
+      worker_start_data_.script_url, source_code, std::move(cached_meta_data),
+      v8_inspector::V8StackTraceId());
 }
 
 }  // namespace blink

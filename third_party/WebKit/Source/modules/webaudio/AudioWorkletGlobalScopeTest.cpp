@@ -75,9 +75,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
             nullptr /* worker_clients */, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             nullptr /* worker_settings */, kV8CacheOptionsDefault),
-        WTF::nullopt,
-        std::make_unique<GlobalScopeInspectorCreationParams>(
-            WorkerInspectorProxy::PauseOnWorkerStart::kDontPause),
+        WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
         ParentFrameTaskRunners::Create());
     return thread;
   }
