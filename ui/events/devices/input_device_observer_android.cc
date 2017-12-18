@@ -11,7 +11,7 @@ using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 
 // This macro provides the implementation for the observer notification methods.
-#define NOTIFY_OBSERVERS(method_decl, observer_call)           \
+#define NOTIFY_ANDROID_OBSERVERS(method_decl, observer_call)   \
   void InputDeviceObserverAndroid::method_decl {               \
     for (ui::InputDeviceEventObserver & observer : observers_) \
       observer.observer_call;                                  \
@@ -54,11 +54,11 @@ static void JNI_InputDeviceObserver_InputConfigurationChanged(
       ->NotifyObserversMouseDeviceConfigurationChanged();
 }
 
-NOTIFY_OBSERVERS(NotifyObserversMouseDeviceConfigurationChanged(),
-                 OnMouseDeviceConfigurationChanged());
-NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                 OnTouchpadDeviceConfigurationChanged());
-NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                 OnKeyboardDeviceConfigurationChanged());
+NOTIFY_ANDROID_OBSERVERS(NotifyObserversMouseDeviceConfigurationChanged(),
+                         OnMouseDeviceConfigurationChanged());
+NOTIFY_ANDROID_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
+                         OnTouchpadDeviceConfigurationChanged());
+NOTIFY_ANDROID_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
+                         OnKeyboardDeviceConfigurationChanged());
 
 }  // namespace ui
