@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -118,7 +117,6 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     private boolean doesUserQualifyForSurvey() {
         if (DeviceFormFactor.isTablet()) return false;
         if (!isUMAEnabled() && !sForceUmaEnabledForTesting) return false;
-        if (AccessibilityUtil.isAccessibilityEnabled()) return false;
         if (hasInfoBarBeenDisplayed()) return false;
         if (!FeatureUtilities.isChromeHomeEnabled()) return true;
         return wasChromeHomeEnabledForMinimumOneWeek()
