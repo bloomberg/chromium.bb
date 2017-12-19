@@ -55,8 +55,6 @@ bool RemoteFrameClientImpl::InShadowTree() const {
   return web_frame_->InShadowTree();
 }
 
-void RemoteFrameClientImpl::WillBeDetached() {}
-
 void RemoteFrameClientImpl::Detached(FrameDetachType type) {
   // Alert the client that the frame is being detached.
   WebRemoteFrameClient* client = web_frame_->Client();
