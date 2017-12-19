@@ -40,7 +40,7 @@ const gTestCases = [
   {
     value: 'calc(42px + var(--foo, 15em) + var(--bar, var(--far) + 15px))',
     expectedResult: [
-      'calc(42px +',
+      'calc(42px + ',
       new CSSVariableReferenceValue('--foo', new CSSUnparsedValue(' 15em')),
       ' + ',
       new CSSVariableReferenceValue('--bar', new CSSUnparsedValue(' ', new CSSVariableReferenceValue('--far'), ' + 15px')),
