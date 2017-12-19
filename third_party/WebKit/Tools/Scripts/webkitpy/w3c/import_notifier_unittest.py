@@ -134,12 +134,12 @@ class ImportNotifierTest(unittest.TestCase):
 
         def _is_commit_affecting_directory(commit, directory):
             self.assertIn(commit, ('SHA1', 'SHA2'))
-            self.assertEqual(directory, 'directory')
+            self.assertEqual(directory, 'foo')
             return commit == 'SHA1'
 
         self.local_wpt.is_commit_affecting_directory = _is_commit_affecting_directory
         self.assertEqual(
-            self.notifier.format_commit_list(imported_commits, 'directory'),
+            self.notifier.format_commit_list(imported_commits, '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo'),
             'Subject 1: https://github.com/w3c/web-platform-tests/commit/SHA1 [affecting this directory]\n'
             'Subject 2: https://github.com/w3c/web-platform-tests/commit/SHA2\n'
         )
