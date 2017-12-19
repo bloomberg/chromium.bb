@@ -62,6 +62,16 @@ class NetworkConfigurationUpdater : public PolicyService::Observer {
       base::ListValue* network_configs_onc,
       base::DictionaryValue* global_network_config) = 0;
 
+  // Parses the current value of the ONC policy. Clears |network_configs|,
+  // |global_network_config| and |certificates| and fills them with the
+  // validated NetworkConfigurations, GlobalNetworkConfiguration and
+  // Certificates of the current policy. Callers can pass nullptr to any of
+  // |network_configs|, |global_network_config|, |certificates| if they don't
+  // need that specific part of the ONC policy.
+  void ParseCurrentPolicy(base::ListValue* network_configs,
+                          base::DictionaryValue* global_network_config,
+                          base::ListValue* certificates);
+
   onc::ONCSource onc_source_;
 
   // Pointer to the global singleton or a test instance.

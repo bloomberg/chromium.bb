@@ -194,7 +194,7 @@ void BrowserPolicyConnectorChromeOS::Init(
 
   SetTimezoneIfPolicyAvailable();
 
-  network_configuration_updater_ =
+  device_network_configuration_updater_ =
       DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
           GetPolicyService(),
           chromeos::NetworkHandler::Get()
@@ -223,7 +223,7 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
-  network_configuration_updater_.reset();
+  device_network_configuration_updater_.reset();
 
   if (device_local_account_policy_service_)
     device_local_account_policy_service_->Shutdown();

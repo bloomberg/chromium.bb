@@ -46,6 +46,10 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
       chromeos::NetworkDeviceHandler* network_device_handler,
       chromeos::CrosSettings* cros_settings);
 
+  // Returns all authority certificates from the currently applied ONC device
+  // policy.
+  std::vector<std::string> GetAuthorityCertificates();
+
  private:
   DeviceNetworkConfigurationUpdater(
       PolicyService* policy_service,
