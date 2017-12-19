@@ -28,18 +28,18 @@ static const int kNumPeerConnections = 5;
 
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_WebRtcResolutionSwitchBrowserTest \
-  DISABLED_WebRtcResolutionSwitchBrowserTest
+#define MAYBE_WebRtcStressResolutionSwitchBrowserTest \
+  DISABLED_WebRtcStressResolutionSwitchBrowserTest
 #else
-#define MAYBE_WebRtcResolutionSwitchBrowserTest \
-  WebRtcResolutionSwitchBrowserTest
+#define MAYBE_WebRtcStressResolutionSwitchBrowserTest \
+  WebRtcStressResolutionSwitchBrowserTest
 #endif
 
-class MAYBE_WebRtcResolutionSwitchBrowserTest
+class MAYBE_WebRtcStressResolutionSwitchBrowserTest
     : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcResolutionSwitchBrowserTest() {}
-  ~MAYBE_WebRtcResolutionSwitchBrowserTest() override {}
+  MAYBE_WebRtcStressResolutionSwitchBrowserTest() {}
+  ~MAYBE_WebRtcStressResolutionSwitchBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
@@ -53,7 +53,7 @@ class MAYBE_WebRtcResolutionSwitchBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcResolutionSwitchBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcStressResolutionSwitchBrowserTest,
                        MANUAL_SurvivesPeerConnectionResolutionSwitching) {
   // Args: runtimeSeconds, numPeerConnections, iterationDelayMillis.
   MakeTypicalPeerConnectionCall(base::StringPrintf(
