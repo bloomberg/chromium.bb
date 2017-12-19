@@ -23,7 +23,7 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "media/base/limits.h"
 #include "third_party/webrtc/api/videosourceproxy.h"
-#include "third_party/webrtc/api/videotracksource.h"
+#include "third_party/webrtc/pc/videotracksource.h"
 
 namespace content {
 

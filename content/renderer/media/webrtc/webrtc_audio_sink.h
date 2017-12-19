@@ -20,7 +20,7 @@
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_push_fifo.h"
-#include "third_party/webrtc/api/mediastreamtrack.h"
+#include "third_party/webrtc/pc/mediastreamtrack.h"
 
 namespace content {
 
