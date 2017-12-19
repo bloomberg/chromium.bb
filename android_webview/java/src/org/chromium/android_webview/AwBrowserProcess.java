@@ -19,6 +19,7 @@ import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.android_webview.crash.CrashReceiverService;
 import org.chromium.android_webview.crash.ICrashReceiverService;
 import org.chromium.android_webview.policy.AwPolicyProvider;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -46,7 +47,7 @@ import java.nio.channels.FileLock;
  */
 @JNINamespace("android_webview")
 public final class AwBrowserProcess {
-    public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "webview";
+    public static final String WEBVIEW_DIR_BASENAME = "webview";
 
     private static final String TAG = "AwBrowserProcess";
     private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
@@ -58,9 +59,17 @@ public final class AwBrowserProcess {
      * Loads the native library, and performs basic static construction of objects needed
      * to run webview in this process. Does not create threads; safe to call from zygote.
      * Note: it is up to the caller to ensure this is only called once.
+     *
+     * @param processDataDirSuffix The suffix to use when setting the data directory for this
+     *                             process; null to use no suffix.
      */
-    public static void loadLibrary() {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+    public static void loadLibrary(String processDataDirSuffix) {
+        if (processDataDirSuffix == null) {
+            PathUtils.setPrivateDataDirectorySuffix(WEBVIEW_DIR_BASENAME, null);
+        } else {
+            String processDataDirName = WEBVIEW_DIR_BASENAME + "_" + processDataDirSuffix;
+            PathUtils.setPrivateDataDirectorySuffix(processDataDirName, processDataDirName);
+        }
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
@@ -96,7 +105,7 @@ public final class AwBrowserProcess {
      */
     public static void start() {
         final Context appContext = ContextUtils.getApplicationContext();
-        tryObtainingDataDirLock(appContext);
+        tryObtainingDataDirLock();
         // We must post to the UI thread to cover the case that the user
         // has invoked Chromium startup by using the (thread-safe)
         // CookieManager rather than creating a WebView.
@@ -138,10 +147,10 @@ public final class AwBrowserProcess {
         }
     }
 
-    private static void tryObtainingDataDirLock(Context context) {
-        // Too many apps rely on this at present to make this fatal,
-        // even though it's known to be unsafe.
-        boolean dieOnFailure = false;
+    private static void tryObtainingDataDirLock() {
+        // Many existing apps rely on this even though it's known to be unsafe.
+        // Make it fatal for apps that target P or higher.
+        boolean dieOnFailure = BuildInfo.targetsAtLeastP();
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
@@ -157,8 +166,8 @@ public final class AwBrowserProcess {
                 Log.w(TAG, "Failed to create lock file " + lockFile, e);
             }
             if (!success) {
-                final String error = "Using WebView from more than one process at once in a single "
-                        + "app is not supported. https://crbug.com/558377";
+                final String error = "Using WebView from more than one process at once with the "
+                        + "same data directory is not supported. https://crbug.com/558377";
                 if (dieOnFailure) {
                     throw new RuntimeException(error);
                 } else {

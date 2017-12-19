@@ -14,6 +14,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
 
+import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,6 +37,7 @@ public abstract class PathUtils {
     // need the values, we will need the suffix so that we can restart the task synchronously on
     // the UI thread.
     private static String sDataDirectorySuffix;
+    private static String sCacheSubDirectory;
 
     // Prevent instantiation.
     private PathUtils() {}
@@ -97,7 +99,12 @@ public abstract class PathUtils {
         paths[THUMBNAIL_DIRECTORY] = appContext.getDir(
                 THUMBNAIL_DIRECTORY_NAME, Context.MODE_PRIVATE).getPath();
         if (appContext.getCacheDir() != null) {
-            paths[CACHE_DIRECTORY] = appContext.getCacheDir().getPath();
+            if (sCacheSubDirectory == null) {
+                paths[CACHE_DIRECTORY] = appContext.getCacheDir().getPath();
+            } else {
+                paths[CACHE_DIRECTORY] =
+                        new File(appContext.getCacheDir(), sCacheSubDirectory).getPath();
+            }
         }
         return paths;
     }
@@ -112,14 +119,16 @@ public abstract class PathUtils {
      * need to try to re-execute later.
      *
      * @param suffix The private data directory suffix.
+     * @param cacheSubDir The subdirectory in the cache directory to use, if non-null.
      * @see Context#getDir(String, int)
      */
-    public static void setPrivateDataDirectorySuffix(String suffix) {
+    public static void setPrivateDataDirectorySuffix(String suffix, String cacheSubDir) {
         // This method should only be called once, but many tests end up calling it multiple times,
         // so adding a guard here.
         if (!sInitializationStarted.getAndSet(true)) {
             assert ContextUtils.getApplicationContext() != null;
             sDataDirectorySuffix = suffix;
+            sCacheSubDirectory = cacheSubDir;
             sDirPathFetchTask = new AsyncTask<Void, Void, String[]>() {
                 @Override
                 protected String[] doInBackground(Void... unused) {
@@ -127,6 +136,10 @@ public abstract class PathUtils {
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
+    }
+
+    public static void setPrivateDataDirectorySuffix(String suffix) {
+        setPrivateDataDirectorySuffix(suffix, null);
     }
 
     /**

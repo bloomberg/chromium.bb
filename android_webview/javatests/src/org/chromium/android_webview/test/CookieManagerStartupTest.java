@@ -60,7 +60,7 @@ public class CookieManagerStartupTest {
                                      .getTargetContext()
                                      .getApplicationContext();
         ContextUtils.initApplicationContext(appContext);
-        AwBrowserProcess.loadLibrary();
+        AwBrowserProcess.loadLibrary(null);
     }
 
     private void startChromium() throws Exception {
