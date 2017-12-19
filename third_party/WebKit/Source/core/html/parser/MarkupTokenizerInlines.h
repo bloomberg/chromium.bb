@@ -65,17 +65,30 @@ inline void AdvanceStringAndASSERT(SegmentedString& source,
 
 // We use this macro when the HTML5 spec says "reconsume the current input
 // character in the <mumble> state."
-#define RECONSUME_IN(prefix, stateName) \
-  do {                                  \
-    state_ = prefix::stateName;         \
-    goto stateName;                     \
+#define RECONSUME_IN(prefix, stateName)   \
+  do {                                    \
+    DCHECK_NE(state_, prefix::stateName); \
+    state_ = prefix::stateName;           \
+    goto stateName;                       \
   } while (false)
 
 // We use this macro when the HTML5 spec says "consume the next input
 // character ... and switch to the <mumble> state."
 #define ADVANCE_TO(prefix, stateName)                     \
   do {                                                    \
+    DCHECK_NE(state_, prefix::stateName);                 \
     state_ = prefix::stateName;                           \
+    if (!input_stream_preprocessor_.Advance(source))      \
+      return HaveBufferedCharacterToken();                \
+    cc = input_stream_preprocessor_.NextInputCharacter(); \
+    goto stateName;                                       \
+  } while (false)
+
+// We use this macro when the HTML5 spec says "consume the next input
+// character" and it doesn't say "switch to ... state".
+#define CONSUME(prefix, stateName)                        \
+  do {                                                    \
+    DCHECK_EQ(state_, prefix::stateName);                 \
     if (!input_stream_preprocessor_.Advance(source))      \
       return HaveBufferedCharacterToken();                \
     cc = input_stream_preprocessor_.NextInputCharacter(); \
@@ -88,6 +101,7 @@ inline void AdvanceStringAndASSERT(SegmentedString& source,
 // this macro to switch to the indicated state.
 #define SWITCH_TO(prefix, stateName)                                  \
   do {                                                                \
+    DCHECK_NE(state_, prefix::stateName);                             \
     state_ = prefix::stateName;                                       \
     if (source.IsEmpty() || !input_stream_preprocessor_.Peek(source)) \
       return HaveBufferedCharacterToken();                            \
