@@ -205,16 +205,18 @@ class ImportNotifier(object):
 
         Args:
             imported_commits: A list of (SHA, commit subject) pairs.
-            directory: The directory for which the list is formatted (a path
-                relative to the root of Chromium repo).
+            directory: An absolute path of a directory in the Chromium repo, for
+                which the list is formatted.
 
         Returns:
             A multi-line string.
         """
+        path_from_wpt = self.host.filesystem.relpath(
+            directory, self.finder.path_from_layout_tests('external', 'wpt'))
         commit_list = ''
         for sha, subject in imported_commits:
             line = '{}: {}'.format(subject, GITHUB_COMMIT_PREFIX + sha)
-            if self.local_wpt.is_commit_affecting_directory(sha, directory):
+            if self.local_wpt.is_commit_affecting_directory(sha, path_from_wpt):
                 line += ' [affecting this directory]'
             commit_list += line + '\n'
         return commit_list
