@@ -47,12 +47,12 @@ void av1_decode_tg_tiles_and_wrapup(struct AV1Decoder *pbi, const uint8_t *data,
                                     const uint8_t **p_data_end, int startTile,
                                     int endTile, int initialize_flag);
 
-#if CONFIG_OBU
-// replaces av1_decode_frame
-void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
-                                const uint8_t *data_end,
-                                const uint8_t **p_data_end);
-#endif
+void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
+                                           struct aom_read_bit_buffer *rb,
+                                           int allow_lowbitdepth);
+struct aom_read_bit_buffer *av1_init_read_bit_buffer(
+    struct AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
+    const uint8_t *data_end);
 
 #ifdef __cplusplus
 }  // extern "C"

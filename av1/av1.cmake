@@ -94,6 +94,12 @@ set(AOM_AV1_DECODER_SOURCES
     "${AOM_ROOT}/av1/decoder/dthread.h"
     "${AOM_ROOT}/av1/decoder/symbolrate.h")
 
+if (CONFIG_OBU)
+  list(APPEND AOM_AV1_DECODER_SOURCES
+       "${AOM_ROOT}/av1/decoder/obu.c"
+       "${AOM_ROOT}/av1/decoder/obu.h")
+endif()
+
 set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/av1_cx_iface.c"
     "${AOM_ROOT}/av1/encoder/aq_complexity.c"

@@ -32,6 +32,9 @@ AV1_DX_SRCS-yes += decoder/decoder.c
 AV1_DX_SRCS-yes += decoder/decoder.h
 AV1_DX_SRCS-yes += decoder/symbolrate.h
 
+AV1_DX_SRCS-$(CONFIG_OBU) += decoder/obu.c
+AV1_DX_SRCS-$(CONFIG_OBU) += decoder/obu.h
+
 ifeq ($(CONFIG_ACCOUNTING),yes)
 AV1_DX_SRCS-yes += decoder/accounting.h
 AV1_DX_SRCS-yes += decoder/accounting.c

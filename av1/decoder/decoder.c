@@ -35,6 +35,10 @@
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/detokenize.h"
 
+#if CONFIG_OBU
+#include "av1/decoder/obu.h"
+#endif  // CONFIG_OBU
+
 static void initialize_dec(void) {
   static volatile int init_done = 0;
 
