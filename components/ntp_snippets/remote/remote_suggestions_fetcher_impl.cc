@@ -16,10 +16,10 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/user_classifier.h"
-#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using language::UrlLanguageHistogram;
 using net::HttpRequestHeaders;

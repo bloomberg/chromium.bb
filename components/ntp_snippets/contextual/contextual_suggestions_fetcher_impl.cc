@@ -11,10 +11,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category.h"
-#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using net::HttpRequestHeaders;

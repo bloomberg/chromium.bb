@@ -6,6 +6,8 @@ source_set("cpp") {
   sources = [
     "identity_manager.cc",
     "identity_manager.h",
+    "primary_account_access_token_fetcher.cc",
+    "primary_account_access_token_fetcher.h",
   ]
 
   public_deps = [

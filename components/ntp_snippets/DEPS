@@ -25,6 +25,7 @@ include_rules = [
   "+net/traffic_annotation",
   "+net/url_request",
   "+google_apis",
+  "+services/identity/public/cpp",
   "+ui/base",
   "+ui/gfx",
 ]

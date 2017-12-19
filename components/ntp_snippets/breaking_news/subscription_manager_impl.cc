@@ -15,10 +15,10 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/variations/service/variations_service.h"
 #include "net/base/url_util.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 namespace ntp_snippets {
 
