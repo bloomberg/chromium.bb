@@ -1,5 +1,5 @@
 table: |
-  include latinLetterDef6Dots.uti
+  include tables/latinLetterDef6Dots.uti
   begword pilis 1234-24-123-24-234
 
 tests:
@@ -15,7 +15,7 @@ tests:
 # after the lou_translate and this will crash lou_checkyaml (when
 # printing the outputPos.
 table: |
-  include latinLetterDef6Dots.uti
+  include tables/latinLetterDef6Dots.uti
   begword pilis =
 
 tests:
