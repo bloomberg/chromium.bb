@@ -168,20 +168,18 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
         title_error_write_failed_(base::ASCIIToUTF16("ERROR_WRITE_FAILED")),
         title_error_empty_(base::ASCIIToUTF16("ERROR_EMPTY")) {
     // Set up the URL request filtering.
-    std::vector<std::string> test_files;
-    base::FilePath test_file_dir;
-    test_files.push_back("common.js");
-    test_files.push_back("cookies.html");
-    test_files.push_back("local_storage.html");
-    test_files.push_back("post.html");
-    test_files.push_back("post_with_password.html");
-    test_files.push_back("session_cookies.html");
-    test_files.push_back("session_storage.html");
-    test_files.push_back("subdomain_cookies.html");
+    test_files_.push_back("common.js");
+    test_files_.push_back("cookies.html");
+    test_files_.push_back("local_storage.html");
+    test_files_.push_back("post.html");
+    test_files_.push_back("post_with_password.html");
+    test_files_.push_back("session_cookies.html");
+    test_files_.push_back("session_storage.html");
+    test_files_.push_back("subdomain_cookies.html");
 
-    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir));
-    test_file_dir =
-        test_file_dir.AppendASCII("chrome/test/data").AppendASCII(test_path_);
+    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir_));
+    test_file_dir_ =
+        test_file_dir_.AppendASCII("chrome/test/data").AppendASCII(test_path_);
 
     // We are adding a URLLoaderInterceptor here, instead of in
     // SetUpOnMainThread(), because during a session restore the restored tab
@@ -193,11 +191,11 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
               [&](content::URLLoaderInterceptor::RequestParams* params) {
                 std::string path = params->url_request.url.path();
                 std::string path_prefix = std::string("/") + test_path_;
-                for (auto& it : test_files) {
+                for (auto& it : test_files_) {
                   std::string file = path_prefix + it;
                   if (path == file) {
                     base::ScopedAllowBlockingForTesting allow_io;
-                    base::FilePath file_path = test_file_dir.AppendASCII(it);
+                    base::FilePath file_path = test_file_dir_.AppendASCII(it);
                     std::string contents;
                     CHECK(base::ReadFileToString(file_path, &contents));
 
@@ -234,9 +232,9 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
       return;
     }
 
-    for (std::vector<std::string>::const_iterator it = test_files.begin();
-         it != test_files.end(); ++it) {
-      base::FilePath path = test_file_dir.AppendASCII(*it);
+    for (std::vector<std::string>::const_iterator it = test_files_.begin();
+         it != test_files_.end(); ++it) {
+      base::FilePath path = test_file_dir_.AppendASCII(*it);
       std::string contents;
       CHECK(base::ReadFileToString(path, &contents));
       net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
@@ -429,6 +427,8 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
  private:
   std::string last_upload_bytes_;
   const std::string fake_server_address_;
+  std::vector<std::string> test_files_;
+  base::FilePath test_file_dir_;
   const std::string test_path_;
   const base::string16 title_pass_;
   const base::string16 title_storing_;
