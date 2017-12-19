@@ -4,9 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Tests that SourceHTMLTokenizer detects the tokens.\n`);
-  await TestRunner.loadHTML(`
-      <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-    `);
 
   function dumpSyntaxHighlightHTML(str) {
     return TestRunner.dumpSyntaxHighlight(str, 'text/html');

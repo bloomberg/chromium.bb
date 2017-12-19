@@ -10,13 +10,6 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('console');
 
-  await TestRunner.loadHTML(`
-    <p>
-    Test that command line api does not mask values of scope variables while evaluating
-    on a call frame.
-    </p>
-  `);
-
   await TestRunner.evaluateInPagePromise(`
     window.inspect = "inspect";
     var clear = "clear";

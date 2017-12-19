@@ -9,11 +9,6 @@
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-    <p>Tests that console logging dumps properly styled messages, and that
-    the whole message gets the same style, regardless of multiple %c
-    settings.</p>
-  `);
   await TestRunner.evaluateInPagePromise(`
     console.log('%cColors are awesome.', 'color: blue;');
     console.log('%cSo are fonts!', 'font: 1em Helvetica;');

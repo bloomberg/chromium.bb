@@ -7,10 +7,6 @@
       `Verify that removal of one of the multiple projects, all of which are associated with the same frame, doesn't lead navigator to discard the frame treenode.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>Verify that removal of one of the multiple projects, all of which are associated with the same
-      frame, doesn't lead navigator to discard the frame treenode.</p>
-    `);
 
   var rootURL = 'http://localhost:8080/LayoutTests/inspector/debugger/';
   var sourcesNavigatorView = new Sources.SourcesNavigatorView();

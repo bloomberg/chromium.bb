@@ -6,9 +6,6 @@
   TestRunner.addResult(`This test passes if only one deprecation warning is presented in the console.\n`);
   await TestRunner.showPanel('console');
   await TestRunner.loadModule('console_test_runner');
-  await TestRunner.loadHTML(`
-      <!DOCTYPE html>
-  `);
   await TestRunner.evaluateInPagePromise(`
     var x = window.webkitStorageInfo;
     var y = window.webkitStorageInfo;

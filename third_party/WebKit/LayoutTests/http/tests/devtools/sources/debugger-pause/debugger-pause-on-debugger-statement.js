@@ -7,11 +7,6 @@
       `Tests that debugger will stop on "debugger" statement.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that debugger will stop on &quot;debugger&quot; statement.
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

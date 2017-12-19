@@ -7,12 +7,6 @@
       `Verify that navigator is rendered properly when frame with dynamic script and style is added and removed.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.loadModule('bindings_test_runner');
-  await TestRunner.loadHTML(`
-      <p>
-      Verify that navigator is rendered properly when frame with dynamic script and
-      style is added and removed.
-      </p>
-    `);
 
   var sourcesNavigator = new Sources.SourcesNavigatorView();
   sourcesNavigator.show(UI.inspectorView.element);

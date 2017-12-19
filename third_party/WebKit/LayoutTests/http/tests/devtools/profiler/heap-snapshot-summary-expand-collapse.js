@@ -7,12 +7,6 @@
       `https://crbug.com/738932 Tests the snapshot view is not empty on repeatitive expand-collapse.\n`);
   await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
-  await TestRunner.loadHTML(`
-      <p>
-      https://crbug.com/738932
-      Tests the snapshot view is not empty on repeatitive expand-collapse.
-      </p>
-    `);
 
   var instanceCount = 25;
   function createHeapSnapshot() {

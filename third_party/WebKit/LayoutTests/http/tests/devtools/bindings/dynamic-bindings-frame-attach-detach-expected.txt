@@ -3,15 +3,13 @@ Verify that UISourceCodes are added and removed as iframe with dynamic script an
 
 Running: dumpInitialWorkspace
 Removed: 0 uiSourceCodes
-Workspace: 3 uiSourceCodes.
-    debugger:///VM[XXX]
+Workspace: 2 uiSourceCodes.
     debugger:///VM[XXX]
     http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Running: attachFrame
 Removed: 0 uiSourceCodes
-Workspace: 10 uiSourceCodes.
-    debugger:///VM[XXX]
+Workspace: 9 uiSourceCodes.
     debugger:///VM[XXX]
 [+] debugger:///VM[XXX] dynamic-frame.html
 [+] debugger:///VM[XXX] dynamic-script.js
@@ -27,8 +25,7 @@ Removed: 3 uiSourceCodes
 [-] dynamic-script.js
 [-] dynamic-style.css
 [-] http://127.0.0.1:8000/devtools/bindings/resources/dynamic-frame.html
-Workspace: 9 uiSourceCodes.
-    debugger:///VM[XXX]
+Workspace: 8 uiSourceCodes.
     debugger:///VM[XXX]
     debugger:///VM[XXX] dynamic-frame.html
     debugger:///VM[XXX] dynamic-script.js

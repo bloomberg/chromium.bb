@@ -7,12 +7,6 @@
       `Tests Summary view of detailed heap snapshots. Expanded nodes must be preserved after sorting.\n`);
   await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests Summary view of detailed heap snapshots.
-      Expanded nodes must be preserved after sorting.
-      </p>
-    `);
 
   var instanceCount = 25;
   function createHeapSnapshot() {

@@ -7,11 +7,6 @@
       `Test that console.log(new Error().stack) would linkify links in stacks for sourceUrls and sourceMaps Bug 424001.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-      <p>
-      Test that console.log(new Error().stack) would linkify links in stacks for sourceUrls and sourceMaps  <a href="http://crbug.com/424001">Bug 424001.</a>
-      </p>
-    `);
   await TestRunner.addScriptTag('resources/stack-with-sourceUrl.js');
   await TestRunner.addScriptTag('resources/stack-with-sourceMap.js');
   await TestRunner.evaluateInPagePromise(`

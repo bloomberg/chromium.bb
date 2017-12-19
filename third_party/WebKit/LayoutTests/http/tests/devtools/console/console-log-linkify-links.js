@@ -7,11 +7,6 @@
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-    <p>
-    Test that console.log() would linkify the links. <a href="http://crbug.com/231074">Bug 231074.</a>
-    </p>
-  `);
   await TestRunner.evaluateInPagePromise(`
     console.log("http://www.chromium.org/");
     console.log("follow http://www.chromium.org/");

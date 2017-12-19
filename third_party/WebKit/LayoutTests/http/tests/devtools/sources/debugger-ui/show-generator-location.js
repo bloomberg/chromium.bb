@@ -6,11 +6,6 @@
   TestRunner.addResult(`Tests that "Show Generator Location" jumps to the correct location.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that &quot;Show Generator Location&quot; jumps to the correct location.
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function forward(iter, step)
       {

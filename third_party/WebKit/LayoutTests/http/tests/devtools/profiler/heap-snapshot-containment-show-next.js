@@ -7,12 +7,6 @@
       `Tests Containment view of detailed heap snapshots. Repeated clicks on "Show Next" button must show all nodes.\n`);
   await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests Containment view of detailed heap snapshots.
-      Repeated clicks on &quot;Show Next&quot; button must show all nodes.
-      </p>
-    `);
 
   var instanceCount = 25;
   function createHeapSnapshot() {

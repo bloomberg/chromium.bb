@@ -6,9 +6,6 @@
   TestRunner.addResult(`Verifies JavaScript pretty-printing functionality.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <!DOCTYPE HTML><body>hello, world</body>
-    `);
 
   var testFormatter = SourcesTestRunner.testPrettyPrint.bind(SourcesTestRunner, 'text/html');
 
