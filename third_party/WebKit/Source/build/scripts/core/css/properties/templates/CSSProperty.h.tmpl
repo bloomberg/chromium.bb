@@ -34,8 +34,6 @@ class CSSProperty : public CSSUnresolvedProperty {
  public:
   CORE_EXPORT static const CSSProperty& Get(CSSPropertyID);
 
-  constexpr CSSProperty() : CSSUnresolvedProperty() {}
-
   bool IsResolvedProperty() const override { return true; }
   WTF::String GetJSPropertyName() const;
   virtual bool IsInterpolable() const { return false; }
@@ -71,6 +69,8 @@ class CSSProperty : public CSSUnresolvedProperty {
                                                    Vector<const CSSProperty*>&);
 
  protected:
+  constexpr CSSProperty() : CSSUnresolvedProperty() {}
+
   static const StylePropertyShorthand& BorderDirections();
   static const CSSProperty& ResolveAfterToPhysicalProperty(
       TextDirection,
