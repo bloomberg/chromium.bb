@@ -583,7 +583,7 @@ def map_and_run(data, constant_run_path):
     'duration': None,
     'exit_code': None,
     'had_hard_timeout': False,
-    'internal_failure': None,
+    'internal_failure': 'run_isolated did not complete properly',
     'stats': {
     # 'isolated': {
     #    'cipd': {
@@ -704,6 +704,10 @@ def map_and_run(data, constant_run_path):
                 command, cwd, env, data.hard_timeout, data.grace_period)
         finally:
           result['duration'] = max(time.time() - start, 0)
+
+    # We successfully ran the command, set internal_failure back to
+    # None (even if the command failed, it's not an internal error).
+    result['internal_failure'] = None
   except Exception as e:
     # An internal error occurred. Report accordingly so the swarming task will
     # be retried automatically.
