@@ -283,9 +283,10 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
 
   if (should_cvc_be_requested_) {
     // If we're requesting CVC from the user, it should be because the CVC field
-    // was not found or it was found but empty or with an invalid value.
+    // was not found or it was found but empty or with an invalid value. In any
+    // of those cases, CVC will not have been set on the card in the request.
+    DCHECK(upload_request_.cvc.empty());
     upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
-    DCHECK(!found_cvc_field_ || !found_value_in_cvc_field_);
   } else {
     // If we're not requesting CVC from the user, assert that we've either
     // detected the CVC or the send detected values experiment is enabled.
@@ -515,6 +516,7 @@ void CreditCardSaveManager::SendUploadCardRequest() {
 
 AutofillMetrics::CardUploadDecisionMetric
 CreditCardSaveManager::GetCVCCardUploadDecisionMetric() const {
+  // This function assumes a valid CVC was not found.
   if (found_cvc_field_) {
     return found_value_in_cvc_field_ ? AutofillMetrics::INVALID_CVC_VALUE
                                      : AutofillMetrics::CVC_VALUE_NOT_FOUND;
