@@ -1509,6 +1509,14 @@ if (enable_java_templates) {
         args += [ "--resource-dirs=$_rebased_all_resource_dirs" ]
       }
 
+      if (defined(invoker.shared_resources_whitelist)) {
+        inputs += [ invoker.shared_resources_whitelist ]
+        args += [
+          "--shared-resources-whitelist",
+          rebase_path(invoker.shared_resources_whitelist, root_build_dir),
+        ]
+      }
+
       if (defined(invoker.version_code)) {
         args += [
           "--version-code",
