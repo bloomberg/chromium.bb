@@ -119,7 +119,8 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
     if (!IsDicePrepareMigrationEnabled())
       return;
 
-    if (ShouldBlockReconcilorForRequest(request)) {
+    if (ShouldBlockReconcilorForRequest(request) &&
+        !request->GetUserData(kDiceURLRequestUserDataKey)) {
       const content::ResourceRequestInfo* info =
           content::ResourceRequestInfo::ForRequest(request);
       request->SetUserData(kDiceURLRequestUserDataKey,
