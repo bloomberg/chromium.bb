@@ -119,7 +119,8 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
 
   // Returns metric relevant to the CVC field based on values in
   // |found_cvc_field_|, |found_value_in_cvc_field_| and
-  // |found_cvc_value_in_non_cvc_field_|.
+  // |found_cvc_value_in_non_cvc_field_|. Only called when a valid CVC was NOT
+  // found.
   AutofillMetrics::CardUploadDecisionMetric GetCVCCardUploadDecisionMetric()
       const;
 
