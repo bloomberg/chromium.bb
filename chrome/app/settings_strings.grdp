@@ -3489,6 +3489,12 @@
     <message name="IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_LABEL" desc="In Device Settings > Displays, the label for the Night Light feature (which controls the color temperature of the screen) section.">
       Night Light
     </message>
+    <message name="IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_ON_AT_SUNSET" desc="In Device Settings > Displays, the sub label for the automatic schedule which explains that Night Light will turn on automatically at sunset.">
+      Night Light will turn on automatically at sunset
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_OFF_AT_SUNRISE" desc="In Device Settings > Displays, the sub label for the automatic schedule which explains that Night Light will turn off automatically at sunrise.">
+      Night Light will turn off automatically at sunrise
+    </message>
     <message name="IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_CUSTOM" desc="In Device Settings > Displays, the label of the option to set a custom schedule of the Night Light feature.">
       Custom
     </message>
