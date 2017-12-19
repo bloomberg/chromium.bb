@@ -2631,17 +2631,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Offline
       </message>
 
-      <!-- Omnibox Placeholder Experiment -->
-      <message name="IDS_SEARCH_OR_TYPE_WEB_ADDRESS" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a website.">
-        Search or type web address
-      </message>
-      <message name="IDS_TYPE_WHAT_YOU_ARE_LOOKING_FOR" desc="Prompt to enter what user is looking for into the text field that will either perform web searches or navigate to a website.">
-        Type what you’re looking for
-      </message>
-      <message name="IDS_FIND_NEWS_RECIPES_WEATHER" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a website, with suggestions of finding news, recipes or weather.">
-         Find news, recipes, weather...
-      </message>
-
       <!-- Voice search -->
       <message name="IDS_VOICE_SEARCH_ERROR" desc="Toast when the voice search activity couldn't be started. [CHAR-LIMIT=40]">
         No enabled voice search available
