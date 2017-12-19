@@ -24,7 +24,7 @@ v8.compile Properties:
         lineNumber : 0
         producedCacheSize : <number>
         streamed : <boolean>
-        url : .../devtools/service-workers/resources/v8-cache-script.js
+        url : .../devtools/resources/v8-cache-script.js
     }
     endTime : <number>
     startTime : <number>
@@ -40,7 +40,7 @@ v8.compile Properties:
         consumedCacheSize : <number>
         lineNumber : 0
         streamed : <boolean>
-        url : .../devtools/service-workers/resources/v8-cache-script.js
+        url : .../devtools/resources/v8-cache-script.js
     }
     endTime : <number>
     startTime : <number>
