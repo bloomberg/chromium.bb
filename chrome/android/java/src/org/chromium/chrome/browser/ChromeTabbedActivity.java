@@ -1017,19 +1017,24 @@ public class ChromeTabbedActivity
                 return false;
             }
 
-            if (mLayoutManager != null && mLayoutManager.overviewVisible()) {
+            if (isInOverviewMode()) {
                 if (reuseOrCreateNewNtp()) {
-                    // Since reusing/creating a new NTP when using Chrome Home brings up the bottom
-                    // sheet, we need to record it in our metrics.
+                    // Since reusing/creating a new NTP when using Chrome Home brings up the
+                    // bottom sheet, we need to record it in our metrics.
                     bottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
                             StateChangeReason.STARTUP);
                     return true;
                 }
                 return false;
             }
-            bottomSheet.setSheetState(
-                    BottomSheet.SHEET_STATE_HALF, true, StateChangeReason.STARTUP);
-            return true;
+
+            boolean hasTabs = getCurrentTabModel().getCount() > 0
+                    || mTabModelSelectorImpl.getRestoredTabCount() > 0;
+            if (hasTabs) {
+                bottomSheet.setSheetState(
+                        BottomSheet.SHEET_STATE_HALF, true, StateChangeReason.STARTUP);
+            }
+            return false;
         }
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_LAUNCH_AFTER_INACTIVITY)) {
@@ -1056,7 +1061,7 @@ public class ChromeTabbedActivity
             return false;
         }
 
-        if (mLayoutManager != null && mLayoutManager.overviewVisible() && !isTablet()) {
+        if (isInOverviewMode() && !isTablet()) {
             mLayoutManager.hideOverview(false);
         }
 
