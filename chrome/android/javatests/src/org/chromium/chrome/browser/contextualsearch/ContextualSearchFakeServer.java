@@ -624,9 +624,6 @@ class ContextualSearchFakeServer
                 QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch("german", false, 200, "Deutsche", "Deutsche",
                 "alternate-term", "", false, 0, 0, "de", "", "", "", QuickActionCategory.NONE));
-        registerFakeTapSearch(new FakeTapSearch("intelligence", false, 200, "Intelligence",
-                "Intelligence", "alternate-term", "", false, 0, 0, "", "", "", "",
-                QuickActionCategory.NONE));
 
         // Register a resolving search of "States" that expands to "United States".
         registerFakeSlowResolveSearch(new FakeSlowResolveSearch("states", false, 200, "States",

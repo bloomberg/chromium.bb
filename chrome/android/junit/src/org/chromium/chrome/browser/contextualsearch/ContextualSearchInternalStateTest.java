@@ -46,11 +46,6 @@ public class ContextualSearchInternalStateTest {
         }
 
         @Override
-        public void tapGestureCommit() {
-            stubForWorkOnState(InternalState.TAP_GESTURE_COMMIT);
-        }
-
-        @Override
         public void gatherSurroundingText() {
             stubForWorkOnState(InternalState.GATHERING_SURROUNDINGS);
         }

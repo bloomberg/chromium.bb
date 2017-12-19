@@ -179,6 +179,7 @@ public class ContextualSearchManager
     private boolean mIsAccessibilityModeEnabled;
 
     /** Tap Experiments and other variable behavior. */
+    private ContextualSearchHeuristics mHeuristics;
     private QuickAnswersHeuristic mQuickAnswersHeuristic;
 
     // Counter for how many times we've called SelectWordAroundCaret without an ACK returned.
@@ -1389,9 +1390,16 @@ public class ContextualSearchManager
 
     @Override
     public void handleMetricsForWouldSuppressTap(ContextualSearchHeuristics tapHeuristics) {
-        mQuickAnswersHeuristic = tapHeuristics.getQuickAnswersHeuristic();
+        mHeuristics = tapHeuristics;
+
+        // TODO(donnd): QuickAnswersHeuristic is getting added to TapSuppressionHeuristics and
+        // and getting considered in TapSuppressionHeuristics#shouldSuppressTap(). It should
+        // be a part of ContextualSearchHeuristics for logging purposes but not for suppression.
+        mQuickAnswersHeuristic = new QuickAnswersHeuristic();
+        mHeuristics.add(mQuickAnswersHeuristic);
+
         if (mSearchPanel != null) {
-            mSearchPanel.getPanelMetrics().setResultsSeenExperiments(tapHeuristics);
+            mSearchPanel.getPanelMetrics().setResultsSeenExperiments(mHeuristics);
             mSearchPanel.getPanelMetrics().setRankerLogger(mTapSuppressionRankerLogger);
         }
     }
@@ -1486,15 +1494,15 @@ public class ContextualSearchManager
                 // Called when the IDLE state has been entered.
                 if (mContext != null) mContext.destroy();
                 mContext = null;
+                // Make sure we write to ranker and reset at the end of every search, even if it
+                // was a suppressed tap or longpress.
+                // TODO(donnd): Find a better place to just make a single call to this (now two).
+                mTapSuppressionRankerLogger.writeLogAndReset();
                 if (mSearchPanel == null) return;
 
-                // Make sure we write to Ranker and reset at the end of every search, even if the
-                // panel was not showing because it was a suppressed tap.
                 if (isSearchPanelShowing()) {
-                    mSearchPanel.getPanelMetrics().writeRankerLoggerOutcomesAndReset();
                     mSearchPanel.closePanel(reason, false);
                 } else {
-                    mTapSuppressionRankerLogger.writeLogAndReset();
                     if (mSelectionController.getSelectionType() == SelectionType.TAP) {
                         mSelectionController.clearSelection();
                     }
@@ -1540,25 +1548,16 @@ public class ContextualSearchManager
                 }
             }
 
-            /** First step where we're committed to processing the current Tap gesture. */
-            @Override
-            public void tapGestureCommit() {
-                mInternalStateController.notifyStartingWorkOn(InternalState.TAP_GESTURE_COMMIT);
-                // We may be processing a chained search (aka a retap -- a tap near a previous tap).
-                // If it's chained we need to log the outcomes and reset, because we won't be hiding
-                // the panel at the end of the previous search (we'll update it to the new Search).
-                if (isSearchPanelShowing()) {
-                    mSearchPanel.getPanelMetrics().writeRankerLoggerOutcomesAndReset();
-                }
-                // Set up the next batch of Ranker logging.
-                mTapSuppressionRankerLogger.setupLoggingForPage(getBaseWebContents());
-                mInternalStateController.notifyFinishedWorkOn(InternalState.TAP_GESTURE_COMMIT);
-            }
-
             /** Starts the process of deciding if we'll suppress the current Tap gesture or not. */
             @Override
             public void decideSuppression() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.DECIDING_SUPPRESSION);
+
+                // Ranker will handle the suppression, but our legacy implementation uses
+                // TapSuppressionHeuristics (run from the ContextualSearchSelectionController).
+                // Usage includes tap-far-from-previous suppression.
+                mTapSuppressionRankerLogger.setupLoggingForPage(getBaseWebContents());
+
                 // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
                 mSelectionController.handleShouldSuppressTap(mContext, mTapSuppressionRankerLogger);
             }
