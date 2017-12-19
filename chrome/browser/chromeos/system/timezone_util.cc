@@ -347,8 +347,8 @@ void SetTimezoneFromUI(Profile* profile, const std::string& timezone_id) {
 }
 
 bool FineGrainedTimeZoneDetectionEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFineGrainedTimeZoneDetection);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableFineGrainedTimeZoneDetection);
 }
 
 }  // namespace system
