@@ -56,9 +56,6 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
 @interface SelectFileDialogBridge : NSObject<NSOpenSavePanelDelegate> {
  @private
   ui::SelectFileDialogImpl* selectFileDialogImpl_;  // WEAK; owns us
-  // File upload is disabled until the selection is changed, to avoid files
-  // being uploaded without user action.
-  bool enable_;
 }
 
 - (id)initWithSelectFileDialogImpl:(ui::SelectFileDialogImpl*)s;
@@ -69,7 +66,6 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
 
 // NSSavePanel delegate method
 - (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url;
-- (void)panelSelectionDidChange:(id)sender;
 
 @end
 
@@ -383,7 +379,6 @@ SelectFileDialog* CreateSelectFileDialog(
 
 - (id)initWithSelectFileDialogImpl:(ui::SelectFileDialogImpl*)s {
   if ((self = [super init])) {
-    enable_ = false;
     selectFileDialogImpl_ = s;
   }
   return self;
@@ -431,11 +426,7 @@ SelectFileDialog* CreateSelectFileDialog(
 }
 
 - (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url {
-  return enable_ && [url isFileURL];
-}
-
-- (void)panelSelectionDidChange:(id)sender {
-  enable_ = true;
+  return [url isFileURL];
 }
 
 @end
