@@ -27,6 +27,7 @@
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
+#include "net/base/hex_utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_network_session.h"
@@ -229,7 +230,9 @@ bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
   std::string expected_data(next_write.data, next_write.data_len);
   std::string actual_data(data.substr(0, next_write.data_len));
   EXPECT_GE(data.length(), expected_data.length());
-  EXPECT_EQ(expected_data, actual_data);
+  EXPECT_TRUE(actual_data == expected_data)
+      << "Actual write data:\n" << HexDump(actual_data)
+      << "Expected write data:\n" << HexDump(expected_data);
   return expected_data == actual_data;
 }
 
@@ -266,10 +269,10 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
     // Not using mock writes; succeed synchronously.
     return MockWriteResult(SYNCHRONOUS, data.length());
   }
-  EXPECT_FALSE(helper_.AllWriteDataConsumed());
+  EXPECT_FALSE(helper_.AllWriteDataConsumed())
+      << "No more mock data to match write:\n"
+      << HexDump(data);
   if (helper_.AllWriteDataConsumed()) {
-    // Show what the extra write actually consists of.
-    EXPECT_EQ("<unexpected write>", data);
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
   }
 
@@ -445,7 +448,9 @@ MockRead SequencedSocketData::OnRead() {
 
 MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
   CHECK_EQ(IDLE, write_state_);
-  CHECK(!helper_.AllWriteDataConsumed());
+  CHECK(!helper_.AllWriteDataConsumed())
+      << "\nNo more mock data to match write:\n"
+      << HexDump(data);
 
   NET_TRACE(1, " *** ") << "sequence_number: " << sequence_number_;
   const MockWrite& next_write = helper_.PeekWrite();
