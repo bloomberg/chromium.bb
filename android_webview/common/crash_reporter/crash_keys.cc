@@ -13,8 +13,6 @@ using namespace crash_keys;
 namespace android_webview {
 namespace crash_keys {
 
-const char kActiveURL[] = "url-chunk";
-
 const char kAppPackageName[] = "app-package-name";
 const char kAppPackageVersionCode[] = "app-package-version-code";
 
@@ -22,7 +20,6 @@ const char kAndroidSdkInt[] = "android-sdk-int";
 
 size_t RegisterWebViewCrashKeys() {
   base::debug::CrashKey fixed_keys[] = {
-      {kActiveURL, kLargeSize},
       {kNumVariations, kSmallSize},
       {kVariations, kHugeSize},
 

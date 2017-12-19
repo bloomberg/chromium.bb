@@ -49,11 +49,6 @@ class ScopedPrinterInfo {
   DISALLOW_COPY_AND_ASSIGN(ScopedPrinterInfo);
 };
 
-// Crash Key Name Constants ////////////////////////////////////////////////////
-
-// The URL actively being processed in some way.
-extern const char kActiveURL[];
-
 }  // namespace crash_keys
 
 #endif  // CHROME_COMMON_CRASH_KEYS_H_
