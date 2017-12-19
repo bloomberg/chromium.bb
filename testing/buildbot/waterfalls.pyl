@@ -380,7 +380,6 @@
       },
       'Android Tests (trial)(dbg)': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'scripts': 'telemetry_unittests_scripts',
         },
         'use_swarming': False,
@@ -1637,41 +1636,32 @@
     'machines': {
       'WebKit Linux Trusty': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
       },
       'WebKit Linux Trusty (dbg)': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
       },
       'WebKit Linux Trusty ASAN': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'WebKit Linux Trusty Leak': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'WebKit Linux Trusty MSAN': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'WebKit Mac10.10': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1684,9 +1674,7 @@
       },
       'WebKit Mac10.11': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1699,9 +1687,7 @@
       },
       'WebKit Mac10.11 (dbg)': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1714,9 +1700,7 @@
       },
       'WebKit Mac10.11 (retina)': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1731,9 +1715,7 @@
       },
       'WebKit Mac10.12': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
         'swarming': {
           'dimension_sets': [
@@ -1746,33 +1728,35 @@
         },
       },
       'WebKit Win x64 Builder': {
-        'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
-        },
+        # TODO(dpranke): Remove this builder, it is now redundant
+        # w/ Win 7 Tests x64 (1) on chromium.win.
+        'additional_compile_targets': [
+          'base_unittests',
+        ],
       },
       'WebKit Win x64 Builder (dbg)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
-        },
+        # TODO(dpranke): Remove this builder, it is now redundant
+        # w/ Win 7 Tests x64 (1)(dbg) on chromium.win.
+        'additional_compile_targets': [
+          'base_unittests',
+        ],
       },
       'WebKit Win10': {
         'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
       },
       'WebKit Win7': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
-          'scripts': 'chromium_webkit_scripts',
         },
       },
       'WebKit Win7 (dbg)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_webkit_gtests',
-          'scripts': 'chromium_webkit_scripts',
-        },
+        # TODO(dpranke): Remove this builder, it is now redundant
+        # w/ Win 7 Tests (1)(dbg) on chromium.win.
+        'additional_compile_targets': [
+          'base_unittests',
+        ],
       },
     },
   },

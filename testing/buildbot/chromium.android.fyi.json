@@ -845,20 +845,6 @@
     ]
   },
   "Android Tests (trial)(dbg)": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "blink_heap_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "blink_platform_unittests"
-      }
-    ],
     "scripts": [
       {
         "name": "telemetry_unittests",
