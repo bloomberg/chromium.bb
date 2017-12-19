@@ -123,9 +123,9 @@ void OnConnect(
       base::Bind(&DoNothingHandleReadError), true);
   switch (pref_service->GetAllPrefStoresInitializationStatus()) {
     case PrefService::INITIALIZATION_STATUS_WAITING:
-      pref_service->AddPrefInitObserver(base::Bind(&OnPrefServiceInit,
-                                                   base::Passed(&pref_service),
-                                                   base::Passed(&callback)));
+      pref_service->AddPrefInitObserver(
+          base::BindOnce(&OnPrefServiceInit, base::Passed(&pref_service),
+                         base::Passed(&callback)));
       break;
     case PrefService::INITIALIZATION_STATUS_SUCCESS:
     case PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE:

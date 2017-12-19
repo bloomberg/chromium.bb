@@ -74,7 +74,7 @@ OomInterventionDecider::OomInterventionDecider(
   PrefService::PrefInitializationStatus pref_status =
       prefs_->GetInitializationStatus();
   if (pref_status == PrefService::INITIALIZATION_STATUS_WAITING) {
-    prefs_->AddPrefInitObserver(base::BindRepeating(
+    prefs_->AddPrefInitObserver(base::BindOnce(
         &OomInterventionDecider::OnPrefInitialized, base::Unretained(this)));
   } else {
     OnPrefInitialized(pref_status ==

@@ -365,8 +365,8 @@ void PrefService::RemovePrefObserver(const std::string& path,
   pref_notifier_->RemovePrefObserver(path, obs);
 }
 
-void PrefService::AddPrefInitObserver(base::Callback<void(bool)> obs) {
-  pref_notifier_->AddInitObserver(obs);
+void PrefService::AddPrefInitObserver(base::OnceCallback<void(bool)> obs) {
+  pref_notifier_->AddInitObserver(std::move(obs));
 }
 
 PrefRegistry* PrefService::DeprecatedGetPrefRegistry() {

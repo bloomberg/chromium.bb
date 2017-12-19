@@ -43,7 +43,7 @@ class COMPONENTS_PREFS_EXPORT PrefNotifierImpl : public PrefNotifier {
   // We run the callback once, when initialization completes. The bool
   // parameter will be set to true for successful initialization,
   // false for unsuccessful.
-  void AddInitObserver(base::Callback<void(bool)> observer);
+  void AddInitObserver(base::OnceCallback<void(bool)> observer);
 
   void SetPrefService(PrefService* pref_service);
 
@@ -59,7 +59,7 @@ class COMPONENTS_PREFS_EXPORT PrefNotifierImpl : public PrefNotifier {
   typedef base::hash_map<std::string, std::unique_ptr<PrefObserverList>>
       PrefObserverMap;
 
-  typedef std::list<base::Callback<void(bool)>> PrefInitObserverList;
+  typedef std::list<base::OnceCallback<void(bool)>> PrefInitObserverList;
 
   const PrefObserverMap* pref_observers() const { return &pref_observers_; }
 

@@ -128,8 +128,8 @@ TimeZoneResolverManager::TimeZoneResolverManager() : weak_factory_(this) {
       g_browser_process->local_state()->GetInitializationStatus() ==
       PrefService::INITIALIZATION_STATUS_SUCCESS;
   g_browser_process->local_state()->AddPrefInitObserver(
-      base::Bind(&TimeZoneResolverManager::OnLocalStateInitialized,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&TimeZoneResolverManager::OnLocalStateInitialized,
+                     weak_factory_.GetWeakPtr()));
 
   local_state_pref_change_registrar_.Init(g_browser_process->local_state());
   local_state_pref_change_registrar_.Add(
