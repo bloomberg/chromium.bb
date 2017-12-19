@@ -64,7 +64,7 @@ class NET_EXPORT ReportingService {
   // ReportingBrowsingDataRemover for more details.
   virtual void RemoveBrowsingData(
       int data_type_mask,
-      base::RepeatingCallback<bool(const GURL&)> origin_filter) = 0;
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
 
   // Checks whether |request| is a Reporting upload, to avoid loops of reporting
   // about report uploads.

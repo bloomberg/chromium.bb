@@ -51,9 +51,9 @@ class ReportingServiceImpl : public ReportingService {
     ReportingHeaderParser::ParseHeader(context_.get(), url, header_value);
   }
 
-  void RemoveBrowsingData(
-      int data_type_mask,
-      base::RepeatingCallback<bool(const GURL&)> origin_filter) override {
+  void RemoveBrowsingData(int data_type_mask,
+                          const base::RepeatingCallback<bool(const GURL&)>&
+                              origin_filter) override {
     ReportingBrowsingDataRemover::RemoveBrowsingData(
         context_->cache(), data_type_mask, origin_filter);
   }
