@@ -246,7 +246,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLLegendElement(element)) {
+  if (IsHTMLLegendElement(element) && style.Display() != EDisplay::kContents) {
     style.SetDisplay(EDisplay::kBlock);
     return;
   }
