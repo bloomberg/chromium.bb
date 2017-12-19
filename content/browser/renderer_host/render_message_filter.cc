@@ -88,9 +88,7 @@ using blink::mojom::CacheStorageError;
 namespace content {
 namespace {
 
-const uint32_t kRenderFilteredMessageClasses[] = {
-    ChildProcessMsgStart, ViewMsgStart,
-};
+const uint32_t kRenderFilteredMessageClasses[] = {ViewMsgStart};
 
 #if defined(OS_MACOSX)
 void ResizeHelperHandleMsgOnUIThread(int render_process_id,
