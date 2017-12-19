@@ -74,6 +74,9 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
       case GL_MAX_RENDERBUFFER_SIZE:
         *params = 2048;
         break;
+      case GL_MAX_VERTEX_ATTRIBS:
+        *params = 8;
+        break;
       default:
         break;
     }
