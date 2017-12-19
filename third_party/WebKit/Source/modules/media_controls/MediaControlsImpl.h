@@ -154,6 +154,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
     // Playback has stopped to buffer.
     kBuffering,
+
+    // The media is being scrubbed.
+    kScrubbing,
   };
   ControlsState State() const;
 
@@ -302,6 +305,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   unsigned hide_timer_behavior_flags_;
   bool is_mouse_over_controls_ : 1;
   bool is_paused_for_scrubbing_ : 1;
+  bool is_scrubbing_ = false;
 
   // Watches the video element for resize and updates media controls as
   // necessary.

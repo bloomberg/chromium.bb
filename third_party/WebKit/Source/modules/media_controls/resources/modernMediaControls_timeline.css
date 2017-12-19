@@ -25,3 +25,27 @@ div[pseudo="-internal-track-segment-buffering"]:nth-of-type(3) {
   0% { right: 0%; }
   100% { right: 100%; }
 }
+
+/**
+ * Scrubbing
+ */
+
+#thumb {
+  position: relative;
+}
+
+#thumb-current-time {
+  position: absolute;
+  height: 16px;
+  left: 5px;
+  bottom: 16px;
+  padding: 4px 12px;
+  opacity: 0.9;
+  background: #FFFFFF;
+  border-radius: 100px;
+  font-family: Roboto-Regular, Roboto, sans-serif;
+  font-size: 14px;
+  color: #000000;
+  letter-spacing: 0;
+  text-shadow: 0 0 10px #FFFFFF;
+}

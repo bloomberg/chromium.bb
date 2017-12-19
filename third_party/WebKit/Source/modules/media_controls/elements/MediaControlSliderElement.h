@@ -29,6 +29,10 @@ class MODULES_EXPORT MediaControlSliderElement
     double width;
   };
 
+  // Width in CSS pixels * pageZoomFactor (ignores CSS transforms for
+  // simplicity; deliberately ignores pinch zoom's pageScaleFactor).
+  int Width();
+
  protected:
   class MediaControlSliderElementResizeObserverDelegate;
 
@@ -39,10 +43,6 @@ class MODULES_EXPORT MediaControlSliderElement
   void SetAfterSegmentPosition(Position);
 
   void NotifyElementSizeChanged();
-
-  // Width in CSS pixels * pageZoomFactor (ignores CSS transforms for
-  // simplicity; deliberately ignores pinch zoom's pageScaleFactor).
-  int Width();
 
   Element& GetTrackElement();
 

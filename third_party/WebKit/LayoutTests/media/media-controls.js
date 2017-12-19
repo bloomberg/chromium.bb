@@ -193,6 +193,26 @@ function muteButton(videoElement) {
     return mediaControlsButton(videoElement, 'mute-button');
 }
 
+function timelineElement(videoElement) {
+    return mediaControlsButton(videoElement, 'timeline');
+}
+
+function timelineThumb(videoElement) {
+    const timeline = timelineElement(videoElement);
+    const thumb = window.internals.shadowRoot(timeline).getElementById('thumb');
+    if (!thumb)
+        throw 'Failed to find timeline thumb';
+    return thumb;
+}
+
+function timelineThumbCurrentTime(videoElement) {
+    const timeline = timelineElement(videoElement);
+    const thumb = window.internals.shadowRoot(timeline).getElementById('thumb-current-time');
+    if (!thumb)
+        throw 'Failed to find timeline current time';
+    return thumb;
+}
+
 function clickAtCoordinates(x, y)
 {
     eventSender.mouseMoveTo(x, y);
