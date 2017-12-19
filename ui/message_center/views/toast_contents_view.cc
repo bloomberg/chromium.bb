@@ -191,9 +191,15 @@ void ToastContentsView::StartFadeOut() {
     collection_->IncrementDeferCounter();
   fade_animation_->Stop();
 
-  closing_animation_ = (is_closing_ ? fade_animation_.get() : NULL);
-  fade_animation_->Reset(1);
-  fade_animation_->Hide();
+  closing_animation_ = (is_closing_ ? fade_animation_.get() : nullptr);
+  if (GetWidget()->GetLayer()->opacity() > 0.0) {
+    fade_animation_->Reset(1);
+    fade_animation_->Hide();
+  } else {
+    // If the layer is already transparent, do not trigger animation again.
+    // It happens when the toast is removed by touch gesture.
+    OnBoundsAnimationEndedOrCancelled(fade_animation_.get());
+  }
 }
 
 void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
