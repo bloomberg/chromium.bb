@@ -531,7 +531,7 @@ class PortTest(unittest.TestCase):
         self.assertTrue(is_test_file('', 'foo.html'))
         self.assertTrue(is_test_file('', 'foo.svg'))
         self.assertTrue(is_test_file('', 'test-ref-test.html'))
-        self.assertFalse(is_test_file('inspector', 'devtools.js'))
+        self.assertTrue(is_test_file('devtools', 'a.js'))
         self.assertFalse(is_test_file('', 'foo.png'))
         self.assertFalse(is_test_file('', 'foo-expected.html'))
         self.assertFalse(is_test_file('', 'foo-expected.svg'))
