@@ -598,7 +598,6 @@ void FetchManager::Loader::Start() {
   if ((SecurityOrigin::Create(request_->Url())
            ->IsSameSchemeHostPortAndSuborigin(request_->Origin().get())) ||
       (request_->Url().ProtocolIsData() && request_->SameOriginDataURLFlag()) ||
-      (request_->Url().ProtocolIsAbout()) ||
       (request_->Mode() == network::mojom::FetchRequestMode::kNavigate)) {
     // "The result of performing a scheme fetch using request."
     PerformSchemeFetch();
