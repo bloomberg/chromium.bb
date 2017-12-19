@@ -1307,6 +1307,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbar.startLoadProgress();
     }
 
+    public void setProgressBarEnabled(boolean enabled) {
+        mToolbar.getProgressBar().setVisibility(enabled ? View.VISIBLE : View.GONE);
+    }
+
     private boolean shouldShowCusrsorInLocationBar() {
         Tab tab = mToolbarModel.getTab();
         if (tab == null) return false;
