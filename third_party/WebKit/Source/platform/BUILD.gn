@@ -186,6 +186,47 @@ config("blink_platform_config") {
   ]
 }
 
+# Deps and configs required to include platform headers. Applied to all
+# platform constituent targets and exported to dependents.
+group("blink_platform_public_deps") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/Source/platform/*" ]
+  public_deps = [
+    ":make_platform_generated",
+    ":rcs_count_everything",
+    "//base",
+    "//cc",
+    "//cc/animation",
+    "//cc/paint",
+    "//gpu/command_buffer/client:client",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common:common",
+    "//media",
+    "//net",
+    "//services/network/public/cpp:cpp",
+    "//services/network/public/interfaces",
+    "//services/network/public/interfaces:interfaces_blink",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+    "//services/service_manager/public/interfaces:interfaces_blink",
+    "//skia",
+    "//third_party:jpeg",
+    "//third_party/WebKit/Source/platform/network:make_generated",
+    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/WebKit/common:blink_common",
+    "//third_party/WebKit/common:mojo_platform_bindings_blink",
+    "//third_party/WebKit/public:blink_headers",
+    "//third_party/WebKit/public:mojo_bindings_blink",
+    "//third_party/iccjpeg",
+    "//third_party/libpng",
+    "//third_party/libwebp",
+    "//third_party/ots",
+    "//url",
+    "//v8",
+  ]
+  public_configs = [ "//third_party/WebKit/Source:features" ]
+}
+
 declare_args() {
   runtime_call_stats_count_everything = false
 }
@@ -1474,33 +1515,14 @@ jumbo_component("platform") {
   include_dirs = []
 
   public_deps = [
-    ":make_platform_generated",
-    ":rcs_count_everything",
-    "//base",
-    "//cc",
-    "//cc/animation",
-    "//cc/paint",
-    "//gpu/command_buffer/client:client",
-    "//gpu/command_buffer/client:gles2_c_lib",
-    "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/command_buffer/common:common",
-    "//media",
-    "//net",
-    "//services/network/public/interfaces:interfaces_blink",
-    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-    "//services/service_manager/public/interfaces:interfaces_blink",
-    "//skia",
-    "//third_party:jpeg",
-    "//third_party/WebKit/Source/platform/wtf",
-    "//third_party/WebKit/common:blink_common",
-    "//third_party/WebKit/common:mojo_platform_bindings_blink",
-    "//third_party/WebKit/public:mojo_bindings_blink",
-    "//third_party/iccjpeg",
-    "//third_party/libpng",
-    "//third_party/libwebp",
-    "//third_party/ots",
-    "//url",
-    "//v8",
+    ":blink_platform_public_deps",
+    "//third_party/WebKit/Source/platform/blob",
+    "//third_party/WebKit/Source/platform/heap",
+    "//third_party/WebKit/Source/platform/instrumentation",
+    "//third_party/WebKit/Source/platform/loader",
+    "//third_party/WebKit/Source/platform/media",
+    "//third_party/WebKit/Source/platform/network",
+    "//third_party/WebKit/Source/platform/scheduler",
   ]
   deps = [
     "//components/viz/service",
@@ -1510,13 +1532,6 @@ jumbo_component("platform") {
     "//mojo/public/cpp/bindings:wtf_support",
     "//services/service_manager/public/cpp",
     "//third_party:freetype_harfbuzz",
-    "//third_party/WebKit/Source/platform/blob",
-    "//third_party/WebKit/Source/platform/heap",
-    "//third_party/WebKit/Source/platform/instrumentation",
-    "//third_party/WebKit/Source/platform/loader",
-    "//third_party/WebKit/Source/platform/media",
-    "//third_party/WebKit/Source/platform/network",
-    "//third_party/WebKit/Source/platform/scheduler",
     "//third_party/WebKit/public:offscreen_canvas_mojo_bindings_blink",
     "//third_party/ced",
     "//third_party/icu",

@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+import("//third_party/WebKit/Source/platform/platform.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 make_names("make_platform_loader_generated_fetch_initiator_type_names") {
@@ -11,13 +12,7 @@ make_names("make_platform_loader_generated_fetch_initiator_type_names") {
   output_dir = "$blink_platform_output_dir/loader/fetch"
 }
 
-# TODO(toyoshim): Consider to have a blink_core_sources-like template for
-# BUILD.gn files under platform. See code review comments for details.
-jumbo_source_set("loader") {
-  # This target is a logical part of the platform and only the platform target
-  # should depend on it.
-  visibility = [ "//third_party/WebKit/Source/platform" ]
-
+blink_platform_sources("loader") {
   sources = [
     "LinkHeader.cpp",
     "LinkHeader.h",
@@ -84,24 +79,10 @@ jumbo_source_set("loader") {
   sources += get_target_outputs(
           ":make_platform_loader_generated_fetch_initiator_type_names")
 
-  configs += [
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source/platform:blink_platform_config",
-    "//third_party/WebKit/Source/platform:blink_platform_implementation",
-  ]
-
   deps = [
     ":make_platform_loader_generated_fetch_initiator_type_names",
     "//components/link_header_util:link_header_util",
     "//services/network/public/cpp:cpp",
-  ]
-
-  public_deps = [
-    "//services/network/public/cpp:cpp",
-    "//services/network/public/interfaces",
-    "//third_party/WebKit/Source/platform/blob:blob",
-    "//third_party/WebKit/Source/platform/network:network",
-    "//third_party/WebKit/public:blink_headers",
   ]
 }
 

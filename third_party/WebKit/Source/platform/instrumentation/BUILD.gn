@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
+import("//third_party/WebKit/Source/platform/platform.gni")
 
-jumbo_source_set("instrumentation") {
+blink_platform_sources("instrumentation") {
   sources = [
     "PlatformInstrumentation.cpp",
     "PlatformInstrumentation.h",
@@ -25,20 +26,8 @@ jumbo_source_set("instrumentation") {
     "tracing/web_process_memory_dump.h",
   ]
 
-  public_deps = [
-    "//services/network/public/interfaces:interfaces_blink",
-    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-    "//services/service_manager/public/interfaces:interfaces_blink",
-    "//skia",
-  ]
-
   deps = [
     "//services/service_manager/public/cpp",
-  ]
-
-  configs += [
-    "//third_party/WebKit/Source/platform:blink_platform_config",
-    "//third_party/WebKit/Source/platform:blink_platform_implementation",
   ]
 }
 

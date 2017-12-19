@@ -2,14 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
+import("//third_party/WebKit/Source/platform/platform.gni")
 import("//testing/test.gni")
 
-jumbo_source_set("heap") {
-  # This target is a logical part of the platform and only the platform target
-  # should depend on it.
-  visibility = [ "//third_party/WebKit/Source/platform" ]
-
+blink_platform_sources("heap") {
   sources = [
     "BlinkGC.h",
     "BlinkGCMemoryDumpProvider.cpp",
@@ -55,26 +53,12 @@ jumbo_source_set("heap") {
     "VisitorImpl.h",
   ]
 
-  configs += [
-    "//third_party/WebKit/Source:blink_pch",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source:inside_blink",
-    "//third_party/WebKit/Source:features",
-    "//third_party/WebKit/Source/platform:blink_platform_implementation",
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
   deps = [
     "//base",
     "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/heap/asm",
     "//third_party/icu",
     "//v8",
-  ]
-
-  public_deps = [
-    "//third_party/WebKit/public:blink_headers",
   ]
 }
 
