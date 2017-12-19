@@ -5,15 +5,15 @@
 #ifndef BackgroundTaskRunner_h
 #define BackgroundTaskRunner_h
 
+#include "base/location.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Functional.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
 namespace BackgroundTaskRunner {
 
-PLATFORM_EXPORT void PostOnBackgroundThread(const WebTraceLocation&,
+PLATFORM_EXPORT void PostOnBackgroundThread(const base::Location&,
                                             CrossThreadClosure);
 
 }  // BackgroundTaskRunner

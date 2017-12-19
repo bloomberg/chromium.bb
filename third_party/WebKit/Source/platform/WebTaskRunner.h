@@ -7,13 +7,13 @@
 
 #include <memory>
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -71,20 +71,20 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   // Helpers for posting bound functions as tasks.
 
   // For cross-thread posting. Can be called from any thread.
-  void PostTask(const WebTraceLocation&, CrossThreadClosure);
-  void PostDelayedTask(const WebTraceLocation&,
+  void PostTask(const base::Location&, CrossThreadClosure);
+  void PostDelayedTask(const base::Location&,
                        CrossThreadClosure,
                        TimeDelta delay);
 
   // For same-thread posting. Must be called from the associated WebThread.
-  void PostTask(const WebTraceLocation&, base::OnceClosure);
+  void PostTask(const base::Location&, base::OnceClosure);
 
   // For same-thread cancellable task posting. Returns a TaskHandle object for
   // cancellation.
-  WARN_UNUSED_RESULT TaskHandle PostCancellableTask(const WebTraceLocation&,
+  WARN_UNUSED_RESULT TaskHandle PostCancellableTask(const base::Location&,
                                                     base::OnceClosure);
   WARN_UNUSED_RESULT TaskHandle
-  PostDelayedCancellableTask(const WebTraceLocation&,
+  PostDelayedCancellableTask(const base::Location&,
                              base::OnceClosure,
                              TimeDelta delay);
 

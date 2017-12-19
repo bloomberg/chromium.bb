@@ -123,7 +123,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
     scoped_refptr<WebTaskRunner> task_runner =
         Platform::Current()->MainThread()->GetWebTaskRunner();
     task_runner->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&CreateContextProviderOnMainThread,
                         only_if_gpu_compositing,
                         CrossThreadUnretained(&is_gpu_compositing_disabled_),

@@ -214,10 +214,10 @@ static void TestResourcePruningAtEndOfTask(ResourceFetcher* fetcher,
   resource2->FinishForTest();
 
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&RunTask1, WrapPersistent(resource1),
-                                 WrapPersistent(resource2)));
+      FROM_HERE, WTF::Bind(&RunTask1, WrapPersistent(resource1),
+                           WrapPersistent(resource2)));
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       WTF::Bind(&RunTask2,
                 resource1->EncodedSize() + resource1->OverheadSize() +
                     resource2->EncodedSize() + resource2->OverheadSize()));

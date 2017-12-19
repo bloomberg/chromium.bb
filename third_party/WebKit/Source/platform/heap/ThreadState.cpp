@@ -34,6 +34,7 @@
 
 #include <memory>
 
+#include "base/location.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "platform/Histogram.h"
@@ -59,7 +60,6 @@
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 
 #if defined(OS_WIN)
 #include <stddef.h>
@@ -663,8 +663,7 @@ void ThreadState::ScheduleIdleGC() {
     return;
 
   Platform::Current()->CurrentThread()->Scheduler()->PostNonNestableIdleTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&ThreadState::PerformIdleGC, WTF::Unretained(this)));
+      FROM_HERE, WTF::Bind(&ThreadState::PerformIdleGC, WTF::Unretained(this)));
   SetGCState(kIdleGCScheduled);
 }
 
@@ -674,7 +673,7 @@ void ThreadState::ScheduleIdleLazySweep() {
     return;
 
   Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       WTF::Bind(&ThreadState::PerformIdleLazySweep, WTF::Unretained(this)));
 }
 

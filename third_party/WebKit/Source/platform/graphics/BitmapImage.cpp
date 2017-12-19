@@ -575,8 +575,7 @@ Optional<size_t> BitmapImage::StartAnimationInternal(TimeTicks time) {
     frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
         task_runner_, this, &BitmapImage::AdvanceAnimation));
     frame_timer_->StartOneShot(
-        std::max(desired_frame_start_time_ - time, TimeDelta()),
-        BLINK_FROM_HERE);
+        std::max(desired_frame_start_time_ - time, TimeDelta()), FROM_HERE);
 
     // No frames needed to be skipped to advance to the next frame.
     return Optional<size_t>(0u);
@@ -624,9 +623,8 @@ Optional<size_t> BitmapImage::StartAnimationInternal(TimeTicks time) {
   // animation can happen during painting and this invalidation is required
   // after the current paint.
   task_runner_->PostTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&BitmapImage::NotifyObserversOfAnimationAdvance,
-                weak_factory_.GetWeakPtr(), nullptr));
+      FROM_HERE, WTF::Bind(&BitmapImage::NotifyObserversOfAnimationAdvance,
+                           weak_factory_.GetWeakPtr(), nullptr));
 
   // Reset the |desired_frame_start_time_| to the time for starting the
   // |current_frame_index_|. Whenever StartAnimationInternal decides to schedule
@@ -715,7 +713,7 @@ bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
         frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
             task_runner_, this,
             &BitmapImage::NotifyObserversOfAnimationAdvance));
-        frame_timer_->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+        frame_timer_->StartOneShot(TimeDelta(), FROM_HERE);
       }
 
       return false;

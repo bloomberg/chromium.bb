@@ -354,7 +354,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     info->SetLoadFinishTime(info->InitialTime());
     scheduled_resource_timing_reports_.push_back(std::move(info));
     if (!resource_timing_report_timer_.IsActive())
-      resource_timing_report_timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+      resource_timing_report_timer_.StartOneShot(TimeDelta(), FROM_HERE);
   }
 }
 
@@ -1255,7 +1255,7 @@ void ResourceFetcher::ClearContext() {
     // complete or the timer fires.
     keepalive_loaders_task_handle_ =
         Context().GetLoadingTaskRunner()->PostDelayedCancellableTask(
-            BLINK_FROM_HERE,
+            FROM_HERE,
             WTF::Bind(&ResourceFetcher::StopFetchingIncludingKeepaliveLoaders,
                       WrapPersistent(this)),
             kKeepaliveLoadersTimeout);

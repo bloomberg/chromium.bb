@@ -63,7 +63,7 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
   //   };
   //
   //   foo.m_handle = taskRunner->postCancellableTask(
-  //       BLINK_FROM_HERE, WTF::bind(&Foo::bar, wrapPersistent(foo)));
+  //       FROM_HERE, WTF::bind(&Foo::bar, wrapPersistent(foo)));
   //
   // There is a circular reference in the example above as:
   //   foo -> m_handle -> m_runner -> m_task -> Persistent<Foo> in WTF::bind.
@@ -116,26 +116,26 @@ TaskHandle::TaskHandle(scoped_refptr<Runner> runner)
 // avoid copying the closure later in the call chain. Copying the bound state
 // can lead to data races with ref counted objects like StringImpl. See
 // crbug.com/679915 for more details.
-void WebTaskRunner::PostTask(const WebTraceLocation& location,
+void WebTaskRunner::PostTask(const base::Location& location,
                              CrossThreadClosure task) {
   PostDelayedTask(location,
                   base::BindOnce(&RunCrossThreadClosure, std::move(task)),
                   base::TimeDelta());
 }
 
-void WebTaskRunner::PostDelayedTask(const WebTraceLocation& location,
+void WebTaskRunner::PostDelayedTask(const base::Location& location,
                                     CrossThreadClosure task,
                                     TimeDelta delay) {
   PostDelayedTask(
       location, base::BindOnce(&RunCrossThreadClosure, std::move(task)), delay);
 }
 
-void WebTaskRunner::PostTask(const WebTraceLocation& location,
+void WebTaskRunner::PostTask(const base::Location& location,
                              base::OnceClosure task) {
   PostDelayedTask(location, std::move(task), base::TimeDelta());
 }
 
-TaskHandle WebTaskRunner::PostCancellableTask(const WebTraceLocation& location,
+TaskHandle WebTaskRunner::PostCancellableTask(const base::Location& location,
                                               base::OnceClosure task) {
   DCHECK(RunsTasksInCurrentSequence());
   scoped_refptr<TaskHandle::Runner> runner =
@@ -146,7 +146,7 @@ TaskHandle WebTaskRunner::PostCancellableTask(const WebTraceLocation& location,
 }
 
 TaskHandle WebTaskRunner::PostDelayedCancellableTask(
-    const WebTraceLocation& location,
+    const base::Location& location,
     base::OnceClosure task,
     TimeDelta delay) {
   DCHECK(RunsTasksInCurrentSequence());

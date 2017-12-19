@@ -65,7 +65,7 @@ class AsyncMethodRunner final
 
     // FIXME: runAsync should take a TraceLocation and pass it to timer here.
     if (!timer_.IsActive())
-      timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+      timer_.StartOneShot(TimeDelta(), FROM_HERE);
   }
 
   // If it's scheduled to run the method, cancel it and remember to schedule
@@ -94,7 +94,7 @@ class AsyncMethodRunner final
 
     run_when_unpaused_ = false;
     // FIXME: resume should take a TraceLocation and pass it to timer here.
-    timer_.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+    timer_.StartOneShot(TimeDelta(), FROM_HERE);
   }
 
   void Stop() {

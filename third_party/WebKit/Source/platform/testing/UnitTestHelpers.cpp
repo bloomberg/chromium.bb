@@ -27,6 +27,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "platform/SharedBuffer.h"
@@ -37,7 +38,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 namespace testing {
@@ -55,7 +55,7 @@ base::FilePath BlinkRootFilePath() {
 
 void RunPendingTasks() {
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop));
+      FROM_HERE, WTF::Bind(&ExitRunLoop));
 
   // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
   // to run GC with NoHeapPointerOnStack.
@@ -66,7 +66,7 @@ void RunPendingTasks() {
 
 void RunDelayedTasks(TimeDelta delay) {
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop), delay);
+      FROM_HERE, WTF::Bind(&ExitRunLoop), delay);
   EnterRunLoop();
 }
 

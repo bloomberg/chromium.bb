@@ -26,6 +26,7 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 
 #include <memory>
+#include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "platform/CrossThreadFunctional.h"
@@ -41,7 +42,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
@@ -228,9 +228,8 @@ TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
   std::unique_ptr<WebThread> thread =
       Platform::Current()->CreateThread("RasterThread");
   thread->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
-      CrossThreadBind(&RasterizeMain, CrossThreadUnretained(canvas_.get()),
-                      record));
+      FROM_HERE, CrossThreadBind(&RasterizeMain,
+                                 CrossThreadUnretained(canvas_.get()), record));
   thread.reset();
   EXPECT_EQ(0, decode_request_count_);
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));

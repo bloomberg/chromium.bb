@@ -102,7 +102,7 @@ class OnHeapTimerOwner final
       : timer_(this, &OnHeapTimerOwner::Fired), record_(std::move(record)) {}
   ~OnHeapTimerOwner() { record_->SetOwnerIsDestructed(); }
 
-  void StartOneShot(TimeDelta interval, const WebTraceLocation& caller) {
+  void StartOneShot(TimeDelta interval, const base::Location& caller) {
     timer_.StartOneShot(interval, caller);
   }
 
@@ -127,7 +127,7 @@ class GCForbiddenScope final {
 
 TEST_F(TimerTest, StartOneShot_Zero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   double run_time;
   EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
@@ -138,7 +138,7 @@ TEST_F(TimerTest, StartOneShot_Zero) {
 
 TEST_F(TimerTest, StartOneShot_ZeroAndCancel) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   double run_time;
   EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
@@ -151,7 +151,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancel) {
 
 TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   double run_time;
   EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
@@ -161,7 +161,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost) {
   platform_->RunUntilIdle();
   EXPECT_FALSE(run_times_.size());
 
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
 
@@ -171,7 +171,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost) {
 
 TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   double run_time;
   EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
@@ -179,7 +179,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning) {
   platform_->RunUntilIdle();
   EXPECT_THAT(run_times_, ElementsAre(start_time_));
 
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
 
@@ -189,7 +189,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning) {
 
 TEST_F(TimerTest, StartOneShot_NonZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -201,7 +201,7 @@ TEST_F(TimerTest, StartOneShot_NonZero) {
 
 TEST_F(TimerTest, StartOneShot_NonZeroAndCancel) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -216,7 +216,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancel) {
 
 TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -229,7 +229,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost) {
   EXPECT_FALSE(run_times_.size());
 
   double second_post_time = CurrentTimeTicksInSeconds();
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
   EXPECT_FLOAT_EQ(10.0, run_time);
@@ -240,7 +240,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost) {
 
 TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -249,7 +249,7 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning) {
   platform_->RunUntilIdle();
   EXPECT_THAT(run_times_, ElementsAre(start_time_ + 10.0));
 
-  timer.StartOneShot(TimeDelta::FromSeconds(20), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(20), FROM_HERE);
 
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
   EXPECT_FLOAT_EQ(20.0, run_time);
@@ -260,8 +260,8 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning) {
 
 TEST_F(TimerTest, PostingTimerTwiceWithSameRunTimeDoesNothing) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -273,8 +273,8 @@ TEST_F(TimerTest, PostingTimerTwiceWithSameRunTimeDoesNothing) {
 
 TEST_F(TimerTest, PostingTimerTwiceWithNewerRunTimeCancelsOriginalTask) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   platform_->RunUntilIdle();
   EXPECT_THAT(run_times_, ElementsAre(start_time_ + 0.0));
@@ -282,8 +282,8 @@ TEST_F(TimerTest, PostingTimerTwiceWithNewerRunTimeCancelsOriginalTask) {
 
 TEST_F(TimerTest, PostingTimerTwiceWithLaterRunTimeCancelsOriginalTask) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   platform_->RunUntilIdle();
   EXPECT_THAT(run_times_, ElementsAre(start_time_ + 10.0));
@@ -291,7 +291,7 @@ TEST_F(TimerTest, PostingTimerTwiceWithLaterRunTimeCancelsOriginalTask) {
 
 TEST_F(TimerTest, StartRepeatingTask) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(1), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -305,7 +305,7 @@ TEST_F(TimerTest, StartRepeatingTask) {
 
 TEST_F(TimerTest, StartRepeatingTask_ThenCancel) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(1), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -322,7 +322,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenCancel) {
 
 TEST_F(TimerTest, StartRepeatingTask_ThenPostOneShot) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(1), FROM_HERE);
 
   double run_time;
   EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
@@ -331,7 +331,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenPostOneShot) {
   RunUntilDeadline(start_time_ + 2.5);
   EXPECT_THAT(run_times_, ElementsAre(start_time_ + 1.0, start_time_ + 2.0));
 
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
   platform_->RunUntilIdle();
 
   EXPECT_THAT(run_times_, ElementsAre(start_time_ + 1.0, start_time_ + 2.0,
@@ -346,28 +346,28 @@ TEST_F(TimerTest, IsActive_NeverPosted) {
 
 TEST_F(TimerTest, IsActive_AfterPosting_OneShotZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   EXPECT_TRUE(timer.IsActive());
 }
 
 TEST_F(TimerTest, IsActive_AfterPosting_OneShotNonZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   EXPECT_TRUE(timer.IsActive());
 }
 
 TEST_F(TimerTest, IsActive_AfterPosting_Repeating) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(1), FROM_HERE);
 
   EXPECT_TRUE(timer.IsActive());
 }
 
 TEST_F(TimerTest, IsActive_AfterRunning_OneShotZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   platform_->RunUntilIdle();
   EXPECT_FALSE(timer.IsActive());
@@ -375,7 +375,7 @@ TEST_F(TimerTest, IsActive_AfterRunning_OneShotZero) {
 
 TEST_F(TimerTest, IsActive_AfterRunning_OneShotNonZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   platform_->RunUntilIdle();
   EXPECT_FALSE(timer.IsActive());
@@ -383,7 +383,7 @@ TEST_F(TimerTest, IsActive_AfterRunning_OneShotNonZero) {
 
 TEST_F(TimerTest, IsActive_AfterRunning_Repeating) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(1), FROM_HERE);
 
   RunUntilDeadline(start_time_ + 10);
   EXPECT_TRUE(timer.IsActive());  // It should run until cancelled.
@@ -391,14 +391,14 @@ TEST_F(TimerTest, IsActive_AfterRunning_Repeating) {
 
 TEST_F(TimerTest, NextFireInterval_OneShotZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   EXPECT_FLOAT_EQ(0.0, timer.NextFireInterval());
 }
 
 TEST_F(TimerTest, NextFireInterval_OneShotNonZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   EXPECT_FLOAT_EQ(10.0, timer.NextFireInterval());
 }
@@ -407,7 +407,7 @@ TEST_F(TimerTest, NextFireInterval_OneShotNonZero_AfterAFewSeconds) {
   platform_->SetAutoAdvanceNowToPendingTasks(false);
 
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   platform_->AdvanceClockSeconds(2.0);
   EXPECT_FLOAT_EQ(8.0, timer.NextFireInterval());
@@ -415,7 +415,7 @@ TEST_F(TimerTest, NextFireInterval_OneShotNonZero_AfterAFewSeconds) {
 
 TEST_F(TimerTest, NextFireInterval_Repeating) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(20), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(20), FROM_HERE);
 
   EXPECT_FLOAT_EQ(20.0, timer.NextFireInterval());
 }
@@ -428,28 +428,28 @@ TEST_F(TimerTest, RepeatInterval_NeverStarted) {
 
 TEST_F(TimerTest, RepeatInterval_OneShotZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   EXPECT_FLOAT_EQ(0.0, timer.RepeatInterval());
 }
 
 TEST_F(TimerTest, RepeatInterval_OneShotNonZero) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 
   EXPECT_FLOAT_EQ(0.0, timer.RepeatInterval());
 }
 
 TEST_F(TimerTest, RepeatInterval_Repeating) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(20), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(20), FROM_HERE);
 
   EXPECT_FLOAT_EQ(20.0, timer.RepeatInterval());
 }
 
 TEST_F(TimerTest, AugmentRepeatInterval) {
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(10), FROM_HERE);
   EXPECT_FLOAT_EQ(10.0, timer.RepeatInterval());
   EXPECT_FLOAT_EQ(10.0, timer.NextFireInterval());
 
@@ -471,7 +471,7 @@ TEST_F(TimerTest, AugmentRepeatInterval_TimerFireDelayed) {
   platform_->SetAutoAdvanceNowToPendingTasks(false);
 
   Timer<TimerTest> timer(this, &TimerTest::CountingTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(10), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(10), FROM_HERE);
   EXPECT_FLOAT_EQ(10.0, timer.RepeatInterval());
   EXPECT_FLOAT_EQ(10.0, timer.NextFireInterval());
 
@@ -487,7 +487,7 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
   platform_->SetAutoAdvanceNowToPendingTasks(false);
 
   Timer<TimerTest> timer(this, &TimerTest::RecordNextFireTimeTask);
-  timer.StartRepeating(TimeDelta::FromSeconds(2), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(2), FROM_HERE);
 
   RecordNextFireTimeTask(
       &timer);  // Next scheduled task to run at m_startTime + 2.0
@@ -544,7 +544,7 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
       scheduler::WebTaskRunnerImpl::Create(task_runner, base::nullopt);
   TimerForTest<TimerTest> timer(web_task_runner, this,
                                 &TimerTest::CountingTask);
-  timer.StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta(), FROM_HERE);
 
   // Make sure the task was posted on taskRunner.
   EXPECT_FALSE(task_runner->IsEmpty());
@@ -555,7 +555,7 @@ TEST_F(TimerTest, RunOnHeapTimer) {
       OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
-  owner->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  owner->StartOneShot(TimeDelta(), FROM_HERE);
 
   EXPECT_FALSE(record->TimerHasFired());
   platform_->RunUntilIdle();
@@ -568,7 +568,7 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
   record->Dispose();
-  owner->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  owner->StartOneShot(TimeDelta(), FROM_HERE);
 
   owner = nullptr;
   ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
@@ -587,7 +587,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
   record->Dispose();
-  owner->StartOneShot(TimeDelta(), BLINK_FROM_HERE);
+  owner->StartOneShot(TimeDelta(), FROM_HERE);
 
   owner = nullptr;
   ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
@@ -649,7 +649,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 
   double start_time = CurrentTimeTicksInSeconds();
 
-  timer.StartOneShot(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
+  timer.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
 
   platform_->RunForPeriodSeconds(0.5);
 
@@ -689,7 +689,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 
   double start_time = CurrentTimeTicksInSeconds();
 
-  timer.StartRepeating(TimeDelta::FromSeconds(1), BLINK_FROM_HERE);
+  timer.StartRepeating(TimeDelta::FromSeconds(1), FROM_HERE);
 
   platform_->RunForPeriodSeconds(2.5);
 

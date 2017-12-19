@@ -10,13 +10,13 @@
 #include <memory>
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 #include "platform/scheduler/child/compositor_worker_scheduler.h"
 #include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "platform/scheduler/utility/webthread_impl_for_utility_thread.h"
-#include "public/platform/WebTraceLocation.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
 namespace blink {
@@ -92,7 +92,7 @@ void WebThreadBase::RunWebThreadIdleTask(blink::WebThread::IdleTask idle_task,
   std::move(idle_task).Run((deadline - base::TimeTicks()).InSecondsF());
 }
 
-void WebThreadBase::PostIdleTask(const blink::WebTraceLocation& location,
+void WebThreadBase::PostIdleTask(const base::Location& location,
                                  IdleTask idle_task) {
   GetIdleTaskRunner()->PostIdleTask(
       location, base::BindOnce(&WebThreadBase::RunWebThreadIdleTask,

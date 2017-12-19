@@ -18,9 +18,7 @@ BufferingDataPipeWriter::BufferingDataPipeWriter(
     mojo::ScopedDataPipeProducerHandle handle,
     WebTaskRunner* runner)
     : handle_(std::move(handle)),
-      watcher_(BLINK_FROM_HERE,
-               mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-               runner) {
+      watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL, runner) {
   watcher_.Watch(
       handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       MOJO_WATCH_CONDITION_SATISFIED,

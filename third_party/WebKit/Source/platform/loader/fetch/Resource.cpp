@@ -407,9 +407,8 @@ void Resource::TriggerNotificationForFinishObservers(
       std::move(finish_observers_));
   finish_observers_.clear();
 
-  task_runner->PostTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&NotifyFinishObservers, WrapPersistent(new_collections)));
+  task_runner->PostTask(FROM_HERE, WTF::Bind(&NotifyFinishObservers,
+                                             WrapPersistent(new_collections)));
 
   DidRemoveClientOrObserver();
 }
@@ -707,7 +706,7 @@ void Resource::AddClient(ResourceClient* client) {
               ->CurrentThread()
               ->Scheduler()
               ->LoadingTaskRunner()
-              ->PostCancellableTask(BLINK_FROM_HERE,
+              ->PostCancellableTask(FROM_HERE,
                                     WTF::Bind(&Resource::FinishPendingClients,
                                               WrapWeakPersistent(this)));
     }
