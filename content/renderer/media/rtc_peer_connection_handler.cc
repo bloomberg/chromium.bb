@@ -1918,7 +1918,8 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
 bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto it = rtp_senders_.find(web_sender->Id());
-  DCHECK(it != rtp_senders_.end());
+  if (it == rtp_senders_.end())
+    return false;
   if (!it->second->RemoveFromPeerConnection(native_peer_connection_.get()))
     return false;
   rtp_senders_.erase(it);
