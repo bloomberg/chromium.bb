@@ -653,7 +653,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 		if (!l)
 		    goto bail0;
 		dir = FcStrDirname (FcValueString (&l->value));
-		if (FcHashTableFind (config->alias_table, dir, (void **) &alias))
+		if (config && FcHashTableFind (config->alias_table, dir, (void **) &alias))
 		{
 		    FcChar8 *base = FcStrBasename (FcValueString (&l->value));
 		    FcChar8 *s = FcStrBuildFilename (alias, base, NULL);
