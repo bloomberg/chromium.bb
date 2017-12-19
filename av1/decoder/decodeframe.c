@@ -3663,9 +3663,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 static uint32_t read_frame_header_obu(AV1Decoder *pbi, const uint8_t *data,
                                       const uint8_t *data_end,
                                       const uint8_t **p_data_end) {
-  size_t header_size;
-
-  header_size =
+  const size_t header_size =
       av1_decode_frame_headers_and_setup(pbi, data, data_end, p_data_end);
   return (uint32_t)(pbi->uncomp_hdr_size + header_size);
 }
@@ -3734,10 +3732,8 @@ static void read_metadata_hdr_mdcv(const uint8_t *data) {
 }
 
 static size_t read_metadata(const uint8_t *data, size_t sz) {
-  OBU_METADATA_TYPE metadata_type;
-
   assert(sz >= 2);
-  metadata_type = (OBU_METADATA_TYPE)mem_get_le16(data);
+  const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)mem_get_le16(data);
 
   if (metadata_type == OBU_METADATA_TYPE_PRIVATE_DATA) {
     read_metadata_private_data(data + 2, sz - 2);
@@ -3763,8 +3759,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   while (!frame_decoding_finished && !cm->error.error_code) {
     struct aom_read_bit_buffer rb;
     uint8_t clear_data[80];
-    size_t obu_size, obu_header_size, obu_payload_size = 0;
-    OBU_TYPE obu_type;
+    size_t obu_header_size, obu_payload_size = 0;
 
     init_read_bit_buffer(pbi, &rb, data + PRE_OBU_SIZE_BYTES, data_end,
                          clear_data);
@@ -3773,11 +3768,11 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 // payload size)
 // The obu size is only needed for tile group OBUs
 #if CONFIG_ADD_4BYTES_OBUSIZE
-    obu_size = mem_get_le32(data);
+    const size_t obu_size = mem_get_le32(data);
 #else
-    obu_size = (size_t)(data_end - data);
+    const size_t obu_size = (size_t)(data_end - data);
 #endif
-    obu_type = read_obu_header(&rb, &obu_header_size);
+    const OBU_TYPE obu_type = read_obu_header(&rb, &obu_header_size);
     data += (PRE_OBU_SIZE_BYTES + obu_header_size);
 
     switch (obu_type) {
