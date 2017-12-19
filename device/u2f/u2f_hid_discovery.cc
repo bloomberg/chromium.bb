@@ -55,9 +55,8 @@ void U2fHidDiscovery::DeviceRemoved(
 
 void U2fHidDiscovery::OnGetDevices(
     std::vector<device::mojom::HidDeviceInfoPtr> device_infos) {
-  std::for_each(
-      device_infos.begin(), device_infos.end(),
-      [this](auto& device_info) { DeviceAdded(std::move(device_info)); });
+  for (auto& device_info : device_infos)
+    DeviceAdded(std::move(device_info));
   NotifyDiscoveryStarted(true);
 }
 
