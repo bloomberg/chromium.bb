@@ -3,7 +3,7 @@
   "AAAAA2 See generate_buildbot_json.py to make changes": {},
   "Linux ChromiumOS Builder": {
     "additional_compile_targets": [
-      "All"
+      "gn_all"
     ]
   },
   "Linux ChromiumOS Tests (dbg)(1)": {
@@ -794,7 +794,7 @@
   },
   "linux-chromeos-rel": {
     "additional_compile_targets": [
-      "All"
+      "gn_all"
     ],
     "gtest_tests": [
       {
