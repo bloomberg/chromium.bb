@@ -17,9 +17,6 @@
 
 namespace content {
 
-PaymentAppInfoFetcher::PaymentAppInfoFetcher()
-    : fetched_payment_app_info_(std::make_unique<PaymentAppInfo>()) {}
-
 PaymentAppInfoFetcher::PaymentAppInfo::PaymentAppInfo() {}
 
 PaymentAppInfoFetcher::PaymentAppInfo::~PaymentAppInfo() {}
@@ -30,32 +27,53 @@ void PaymentAppInfoFetcher::Start(
     PaymentAppInfoFetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  context_url_ = context_url;
-  callback_ = std::move(callback);
-
   std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts =
       service_worker_context->GetProviderHostIds(context_url.GetOrigin());
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&PaymentAppInfoFetcher::StartFromUIThread, this,
-                     std::move(provider_hosts)));
+      base::BindOnce(&PaymentAppInfoFetcher::StartOnUI, context_url,
+                     std::move(provider_hosts), std::move(callback)));
+}
+
+void PaymentAppInfoFetcher::StartOnUI(
+    const GURL& context_url,
+    const std::unique_ptr<std::vector<std::pair<int, int>>>& provider_hosts,
+    PaymentAppInfoFetchCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  SelfDeleteFetcher* fetcher = new SelfDeleteFetcher(std::move(callback));
+  fetcher->Start(context_url, std::move(provider_hosts));
 }
 
 PaymentAppInfoFetcher::WebContentsHelper::WebContentsHelper(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
-PaymentAppInfoFetcher::WebContentsHelper::~WebContentsHelper() {}
+PaymentAppInfoFetcher::WebContentsHelper::~WebContentsHelper() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
-PaymentAppInfoFetcher::~PaymentAppInfoFetcher() {}
+PaymentAppInfoFetcher::SelfDeleteFetcher::SelfDeleteFetcher(
+    PaymentAppInfoFetchCallback callback)
+    : fetched_payment_app_info_(std::make_unique<PaymentAppInfo>()),
+      callback_(std::move(callback)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
-void PaymentAppInfoFetcher::StartFromUIThread(
+PaymentAppInfoFetcher::SelfDeleteFetcher::~SelfDeleteFetcher() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
+    const GURL& context_url,
     const std::unique_ptr<std::vector<std::pair<int, int>>>& provider_hosts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (provider_hosts->size() == 0U) {
-    PostPaymentAppInfoFetchResultToIOThread();
+    RunCallbackAndDestroy();
     return;
   }
 
@@ -68,22 +86,33 @@ void PaymentAppInfoFetcher::StartFromUIThread(
     WebContentsImpl* web_content = static_cast<WebContentsImpl*>(
         WebContents::FromRenderFrameHost(render_frame_host));
     if (!web_content || web_content->IsHidden() ||
-        context_url_.spec().compare(
-            web_content->GetLastCommittedURL().spec()) != 0) {
+        context_url.spec().compare(web_content->GetLastCommittedURL().spec()) !=
+            0) {
       continue;
     }
 
     web_contents_helper_ = std::make_unique<WebContentsHelper>(web_content);
 
-    web_content->GetManifest(base::Bind(
-        &PaymentAppInfoFetcher::FetchPaymentAppManifestCallback, this));
+    web_content->GetManifest(
+        base::Bind(&PaymentAppInfoFetcher::SelfDeleteFetcher::
+                       FetchPaymentAppManifestCallback,
+                   base::Unretained(this)));
     return;
   }
 
-  PostPaymentAppInfoFetchResultToIOThread();
+  RunCallbackAndDestroy();
 }
 
-void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
+void PaymentAppInfoFetcher::SelfDeleteFetcher::RunCallbackAndDestroy() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(std::move(callback_),
+                                         std::move(fetched_payment_app_info_)));
+  delete this;
+}
+
+void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
     const GURL& url,
     const Manifest& manifest) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -96,7 +125,7 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
         "href=\"some-file-name-here\">. This manifest defines the payment "
         "handler's name and icon. User may not recognize this payment handler "
         "in UI, because it will be labeled only by its origin.");
-    PostPaymentAppInfoFetchResultToIOThread();
+    RunCallbackAndDestroy();
     return;
   }
 
@@ -108,7 +137,7 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
         "manifest defines the payment handler's name and icon. User may not "
         "recognize this payment handler in UI, because it will be labeled only "
         "by its origin.");
-    PostPaymentAppInfoFetchResultToIOThread();
+    RunCallbackAndDestroy();
     return;
   }
 
@@ -163,7 +192,7 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
         manifest_url_.spec() +
         "\" does not contain an \"icons\" field with a valid URL in \"src\" "
         "sub-field. User may not recognize this payment handler in UI.");
-    PostPaymentAppInfoFetchResultToIOThread();
+    RunCallbackAndDestroy();
     return;
   }
 
@@ -177,7 +206,7 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
         manifest_url_.spec() +
         "\". This is most likely due to unsupported MIME types in the "
         "\"icons\" field. User may not recognize this payment handler in UI.");
-    PostPaymentAppInfoFetchResultToIOThread();
+    RunCallbackAndDestroy();
     return;
   }
 
@@ -187,14 +216,15 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
                     "or navigated away during installation. User may not "
                     "recognize this payment handler in UI, because it will be "
                     "labeled only by its name and origin.";
-    PostPaymentAppInfoFetchResultToIOThread();
+    RunCallbackAndDestroy();
     return;
   }
 
   bool can_download = content::ManifestIconDownloader::Download(
       web_contents_helper_->web_contents(), icon_url_, kPaymentAppIdealIconSize,
       kPaymentAppMinimumIconSize,
-      base::Bind(&PaymentAppInfoFetcher::OnIconFetched, this));
+      base::Bind(&PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched,
+                 base::Unretained(this)));
   // |can_download| is false only if web contents are  null or the icon URL is
   // not valid. Both of these conditions are manually checked above, so
   // |can_download| should never be false. The manual checks above are necessary
@@ -202,7 +232,8 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
   DCHECK(can_download);
 }
 
-void PaymentAppInfoFetcher::OnIconFetched(const SkBitmap& icon) {
+void PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched(
+    const SkBitmap& icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (icon.drawsNothing()) {
@@ -211,7 +242,7 @@ void PaymentAppInfoFetcher::OnIconFetched(const SkBitmap& icon) {
                    "\", which is defined in the web app manifest \"" +
                    manifest_url_.spec() +
                    "\". User may not recognize this payment handler in UI.");
-    PostPaymentAppInfoFetchResultToIOThread();
+    RunCallbackAndDestroy();
     return;
   }
 
@@ -220,18 +251,11 @@ void PaymentAppInfoFetcher::OnIconFetched(const SkBitmap& icon) {
   base::Base64Encode(
       base::StringPiece(raw_data->front_as<char>(), raw_data->size()),
       &(fetched_payment_app_info_->icon));
-  PostPaymentAppInfoFetchResultToIOThread();
+  RunCallbackAndDestroy();
 }
 
-void PaymentAppInfoFetcher::PostPaymentAppInfoFetchResultToIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(std::move(callback_),
-                                         std::move(fetched_payment_app_info_)));
-}
-
-void PaymentAppInfoFetcher::WarnIfPossible(const std::string& message) {
+void PaymentAppInfoFetcher::SelfDeleteFetcher::WarnIfPossible(
+    const std::string& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents_helper_);
 

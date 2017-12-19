@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -18,11 +17,8 @@
 
 namespace content {
 
-class PaymentAppInfoFetcher
-    : public base::RefCountedThreadSafe<PaymentAppInfoFetcher> {
+class PaymentAppInfoFetcher {
  public:
-  PaymentAppInfoFetcher();
-
   struct PaymentAppInfo {
     PaymentAppInfo();
     ~PaymentAppInfo();
@@ -34,46 +30,62 @@ class PaymentAppInfoFetcher
   };
   using PaymentAppInfoFetchCallback =
       base::OnceCallback<void(std::unique_ptr<PaymentAppInfo> app_info)>;
-  void Start(const GURL& context_url,
-             scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-             PaymentAppInfoFetchCallback callback);
+
+  // Only accessed on the IO thread.
+  static void Start(
+      const GURL& context_url,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      PaymentAppInfoFetchCallback callback);
 
  private:
-  friend class base::RefCountedThreadSafe<PaymentAppInfoFetcher>;
+  // Only accessed on the UI thread.
+  static void StartOnUI(
+      const GURL& context_url,
+      const std::unique_ptr<std::vector<std::pair<int, int>>>& provider_hosts,
+      PaymentAppInfoFetchCallback callback);
 
   // Keeps track of the web contents.
+  // Only accessed on the UI thread.
   class WebContentsHelper : public WebContentsObserver {
    public:
     explicit WebContentsHelper(WebContents* web_contents);
     ~WebContentsHelper() override;
   };
 
-  ~PaymentAppInfoFetcher();
+  // Only accessed on the UI thread.
+  class SelfDeleteFetcher {
+   public:
+    explicit SelfDeleteFetcher(PaymentAppInfoFetchCallback callback);
+    ~SelfDeleteFetcher();
 
-  void StartFromUIThread(
-      const std::unique_ptr<std::vector<std::pair<int, int>>>& provider_hosts);
+    void Start(const GURL& context_url,
+               const std::unique_ptr<std::vector<std::pair<int, int>>>&
+                   provider_hosts);
 
-  // The WebContents::GetManifestCallback.
-  void FetchPaymentAppManifestCallback(const GURL& url,
-                                       const Manifest& manifest);
+   private:
+    void RunCallbackAndDestroy();
 
-  // The ManifestIconDownloader::IconFetchCallback.
-  void OnIconFetched(const SkBitmap& icon);
-  void PostPaymentAppInfoFetchResultToIOThread();
+    // The WebContents::GetManifestCallback.
+    void FetchPaymentAppManifestCallback(const GURL& url,
+                                         const Manifest& manifest);
 
-  // Prints the warning |message| in the DevTools console, if possible.
-  // Otherwise logs the warning on command line.
-  void WarnIfPossible(const std::string& message);
+    // The ManifestIconDownloader::IconFetchCallback.
+    void OnIconFetched(const SkBitmap& icon);
 
-  GURL context_url_;
-  PaymentAppInfoFetchCallback callback_;
+    // Prints the warning |message| in the DevTools console, if possible.
+    // Otherwise logs the warning on command line.
+    void WarnIfPossible(const std::string& message);
 
-  std::unique_ptr<WebContentsHelper> web_contents_helper_;
-  std::unique_ptr<PaymentAppInfo> fetched_payment_app_info_;
-  GURL manifest_url_;
-  GURL icon_url_;
+    GURL manifest_url_;
+    GURL icon_url_;
+    std::unique_ptr<WebContentsHelper> web_contents_helper_;
+    std::unique_ptr<PaymentAppInfo> fetched_payment_app_info_;
+    PaymentAppInfoFetchCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaymentAppInfoFetcher);
+    DISALLOW_COPY_AND_ASSIGN(SelfDeleteFetcher);
+  };
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PaymentAppInfoFetcher);
 };
 
 }  // namespace content
