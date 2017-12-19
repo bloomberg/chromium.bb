@@ -217,7 +217,7 @@
 
       'ios-simulator': 'ios',
       'Headless Linux (dbg)': 'headless_linux_debug_bot',
-      'Jumbo Linux x64': 'jumbo_release_bot',
+      'Jumbo Linux x64': 'jumbo_large_chunks_release_bot',
       'Jumbo Mac': 'jumbo_release_bot',
       'Jumbo Win x64': 'jumbo_release_bot',
       'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
@@ -1414,6 +1414,10 @@
       'jumbo', 'release_bot'
     ],
 
+    'jumbo_large_chunks_release_bot': [
+      'jumbo_non_goma_chunks', 'release_bot'
+    ],
+
     'linux_chromium_analysis': [
       'analysis'
     ],
@@ -1965,6 +1969,10 @@
 
     'jumbo': {
       'gn_args': 'use_jumbo_build=true',
+    },
+
+    'jumbo_non_goma_chunks': {
+      'gn_args': 'use_jumbo_build=true jumbo_file_merge_limit=50',
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
