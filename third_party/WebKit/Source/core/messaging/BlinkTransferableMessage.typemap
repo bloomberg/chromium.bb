@@ -4,8 +4,8 @@
 
 mojom = "//third_party/WebKit/common/message_port/message_port.mojom"
 public_headers =
-    [ "//third_party/WebKit/Source/core/dom/BlinkTransferableMessage.h" ]
-traits_headers = [ "//third_party/WebKit/Source/core/dom/BlinkTransferableMessageStructTraits.h" ]
+    [ "//third_party/WebKit/Source/core/messaging/BlinkTransferableMessage.h" ]
+traits_headers = [ "//third_party/WebKit/Source/core/messaging/BlinkTransferableMessageStructTraits.h" ]
 
 deps = [
   "//mojo/public/cpp/bindings",

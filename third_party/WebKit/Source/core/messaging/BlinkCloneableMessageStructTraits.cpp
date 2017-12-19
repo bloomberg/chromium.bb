@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/BlinkCloneableMessageStructTraits.h"
+#include "core/messaging/BlinkCloneableMessageStructTraits.h"
 
 #include "platform/blob/BlobData.h"
 #include "platform/runtime_enabled_features.h"

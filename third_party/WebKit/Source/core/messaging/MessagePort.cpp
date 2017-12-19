@@ -24,18 +24,18 @@
  *
  */
 
-#include "core/dom/MessagePort.h"
+#include "core/messaging/MessagePort.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
-#include "core/dom/BlinkTransferableMessageStructTraits.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
+#include "core/messaging/BlinkTransferableMessageStructTraits.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/bindings/ScriptState.h"

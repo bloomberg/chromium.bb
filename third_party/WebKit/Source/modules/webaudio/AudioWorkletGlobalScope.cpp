@@ -16,7 +16,7 @@
 #include "bindings/modules/v8/V8AudioParamDescriptor.h"
 #include "bindings/modules/v8/V8AudioWorkletProcessor.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/MessagePort.h"
+#include "core/messaging/MessagePort.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "modules/webaudio/AudioBuffer.h"

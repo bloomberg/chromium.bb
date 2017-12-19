@@ -33,11 +33,11 @@
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
 #include "core/CoreExport.h"
-#include "core/dom/MessagePort.h"
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/events/MessageEventInit.h"
 #include "core/fileapi/Blob.h"
+#include "core/messaging/MessagePort.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/wtf/Compiler.h"
 

@@ -24,9 +24,9 @@
  *
  */
 
-#include "core/dom/MessageChannel.h"
+#include "core/messaging/MessageChannel.h"
 
-#include "core/dom/MessagePort.h"
+#include "core/messaging/MessagePort.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

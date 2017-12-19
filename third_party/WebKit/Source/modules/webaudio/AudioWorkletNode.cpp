@@ -4,9 +4,9 @@
 
 #include "modules/webaudio/AudioWorkletNode.h"
 
+#include "core/messaging/MessageChannel.h"
+#include "core/messaging/MessagePort.h"
 #include "modules/EventModules.h"
-#include "core/dom/MessageChannel.h"
-#include "core/dom/MessagePort.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"

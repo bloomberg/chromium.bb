@@ -32,9 +32,9 @@
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/Document.h"
-#include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/messaging/MessagePort.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"

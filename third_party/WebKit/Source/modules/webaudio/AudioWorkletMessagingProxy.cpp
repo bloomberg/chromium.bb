@@ -4,7 +4,7 @@
 
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
 
-#include "core/dom/MessagePort.h"
+#include "core/messaging/MessagePort.h"
 #include "modules/webaudio/AudioWorklet.h"
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 #include "modules/webaudio/AudioWorkletNode.h"

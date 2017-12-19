@@ -1,0 +1,10 @@
+mek@chromium.org
+jbroman@chromium.org
+
+per-file *StructTraits*.*=set noparent
+per-file *StructTraits*.*=file://ipc/SECURITY_OWNERS
+per-file *.typemap=set noparent
+per-file *.typemap=file://ipc/SECURITY_OWNERS
+
+# TEAM: platform-architecture-dev@chromium.org
+# COMPONENT: Blink>Messaging

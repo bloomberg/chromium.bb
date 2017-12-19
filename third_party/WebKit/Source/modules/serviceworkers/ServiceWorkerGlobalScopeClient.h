@@ -32,7 +32,7 @@
 #define ServiceWorkerGlobalScopeClient_h
 
 #include <memory>
-#include "core/dom/MessagePort.h"
+#include "core/messaging/MessagePort.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Forward.h"

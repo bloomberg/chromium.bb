@@ -9,8 +9,8 @@
 #include <cstdint>
 
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/MessagePort.h"
 #include "core/frame/Settings.h"
+#include "core/messaging/MessagePort.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PerIsolateData.h"

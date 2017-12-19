@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/CoreExport.h"
-#include "core/dom/MessagePort.h"
+#include "core/messaging/MessagePort.h"
 #include "core/workers/WorkerReportingProxy.h"
 
 namespace blink {
