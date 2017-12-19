@@ -33,6 +33,9 @@ function assert_style_value_equals(a, b) {
       assert_equals(a.variable, b.variable);
       assert_style_value_equals(a.fallback, b.fallback);
       break;
+    default:
+      assert_equals(a, b);
+      break;
   }
 }
 

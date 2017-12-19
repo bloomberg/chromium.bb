@@ -48,7 +48,7 @@ test(() => {
     const [key, result] = custom_entries[i];
 
     assert_equals(key, '--' + expected_var);
-    assert_style_value_equals(result, new CSSUnparsedValue(name));
+    assert_style_value_equals(result, new CSSUnparsedValue(' ' + expected_var));
   }
 }, 'StylePropertyMap iterator returns custom properties with the correct CSSStyleValue');
 
