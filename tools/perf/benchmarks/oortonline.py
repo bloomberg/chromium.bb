@@ -8,7 +8,6 @@ import page_sets
 
 from core import perf_benchmark
 from telemetry import benchmark
-from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
@@ -28,12 +27,6 @@ class OortOnlineTBMv2(perf_benchmark.PerfBenchmark):
       r'(reported_by_chrome:v8|reported_by_os:system_memory:[^:]+$)')
 
   page_set = page_sets.OortOnlineTBMPageSet
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # http://oortonline.gl/#run not disabled.
-    return StoryExpectations()
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     categories = [

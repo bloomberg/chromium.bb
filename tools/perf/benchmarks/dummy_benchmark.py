@@ -13,7 +13,6 @@ import random
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry import story
 from telemetry.value import scalar
 from telemetry.page import legacy_page_test
 from telemetry.web_perf import timeline_based_measurement
@@ -52,12 +51,6 @@ class DummyBenchmarkOne(_DummyBenchmark):
   def Name(cls):
     return 'dummy_benchmark.stable_benchmark_1'
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # Nothing disabled.
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['nednguyen@google.com'])
 class DummyBenchmarkTwo(_DummyBenchmark):
@@ -69,12 +62,6 @@ class DummyBenchmarkTwo(_DummyBenchmark):
   @classmethod
   def Name(cls):
     return 'dummy_benchmark.noisy_benchmark_1'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # Nothing disabled.
-    return StoryExpectations()
 
 
 @benchmark.Owner(emails=['eakuefner@chromium.org', 'simonhatch@chromium.org'])
@@ -91,9 +78,3 @@ class DummyBenchmarkThree(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'dummy_benchmark.histogram_benchmark_1'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark([story.expectations.ALL], 'crbug.com/756210')
-    return StoryExpectations()

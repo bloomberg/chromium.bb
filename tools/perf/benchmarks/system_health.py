@@ -71,9 +71,6 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   def Name(cls):
     return 'system_health.common_desktop'
 
-  def GetExpectations(self):
-    return page_sets.SystemHealthDesktopCommonExpectations()
-
 
 @benchmark.Owner(emails=['charliea@chromium.org', 'nednguyen@chromium.org'])
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
@@ -84,9 +81,6 @@ class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   @classmethod
   def Name(cls):
     return 'system_health.common_mobile'
-
-  def GetExpectations(self):
-    return page_sets.SystemHealthMobileCommonExpectations()
 
 
 class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
@@ -174,9 +168,6 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateStorySet(self, options):
     return page_sets.SystemHealthBlankStorySet()
-
-  def GetExpectations(self):
-    return page_sets.SystemHealthWebviewStartupExpectations()
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options()

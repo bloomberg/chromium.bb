@@ -76,12 +76,6 @@ class MediaDesktop(_MediaBenchmark):
   def Name(cls):
     return 'media.desktop'
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
-
 
 # If any story is failing on svelte, please only disable on svelte.
 @benchmark.Owner(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
@@ -96,12 +90,6 @@ class MediaMobile(_MediaBenchmark):
   @classmethod
   def Name(cls):
     return 'media.mobile'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
 
   def SetExtraBrowserOptions(self, options):
     # By default, Chrome on Android does not allow autoplay

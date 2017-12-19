@@ -7,7 +7,6 @@ from core import perf_benchmark
 from measurements import rasterize_and_record_micro
 import page_sets
 from telemetry import benchmark
-from telemetry import story
 
 
 class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):
@@ -57,24 +56,6 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   def Name(cls):
     return 'rasterize_and_record_micro.top_25'
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        # Should a story need to be disabled, note that story names
-        # for the static top 25 page set used by this benchmark are of
-        # the format "file://static_top_25/page.html" where
-        # "page.html" is substituted with the actual story's static
-        # html filename as found under
-        # tools/perf/page_sets/static_top_25.
-        self.DisableStory(
-            'file://static_top_25/wikipedia.html', [story.expectations.ALL],
-            'crbug.com/764543')
-        self.DisableStory(
-            'file://static_top_25/espn.html', [story.expectations.ANDROID_ONE],
-            'crbug.com/768010')
-
-    return StoryExpectations()
-
 
 @benchmark.Owner(
     emails=['vmpstr@chromium.org', 'wkorman@chromium.org'],
@@ -88,9 +69,3 @@ class RasterizeAndRecordMicroPartialInvalidation(_RasterizeAndRecordMicro):
   @classmethod
   def Name(cls):
     return 'rasterize_and_record_micro.partial_invalidation'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # Nothing disabled.
-    return StoryExpectations()

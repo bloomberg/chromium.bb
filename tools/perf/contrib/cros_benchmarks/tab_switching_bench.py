@@ -59,9 +59,3 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'cros_tab_switching.typical_24'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass  # Nothing disabled.
-    return StoryExpectations()

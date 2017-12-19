@@ -3,19 +3,19 @@ background:media:imgur,mobile,"Load http://imgur.com/gallery/hUita, then put the
 background:news:nytimes,mobile,"Load http://www.nytimes.com/2016/10/04/us/politics/vice-presidential-debate.html?_r=0, then put the browser into the background.", 
 background:search:google,mobile,"Load https://www.google.co.uk/#q=tom+cruise+movies, then put the browser into the background.", 
 background:social:facebook,mobile,"Load https://www.facebook.com/rihanna, then put the browser into the background.", 
-background:tools:gmail,mobile,Load https://mail.google.com/mail/,Nexus 5
+background:tools:gmail,mobile,Load https://mail.google.com/mail/,Nexus_5
 browse:chrome:newtab,mobile,"Story that loads new tab page and performs searches.
 
   Given a list of typical search queries, this story does for each of them:
    - enter the search query on the new tab page search box
    - read results
    - navigates back to new tab page
-  ",Android Webview
+  ",Android_Webview
 browse:chrome:omnibox,mobile,"Story that peforms search by using omnibox search provider
 
   Loads a website and enters a search query on omnibox and navigates to default
   search provider (google).
-  ",Android Webview
+  ",Android_Webview
 browse:media:facebook_photos,mobile,"Load a photo page from Rihanna's facebook page then navigate a few next
   photos.
   ", 
@@ -67,10 +67,10 @@ browse:search:google_india,desktop,"
 
   ", 
 browse:shopping:amazon,mobile,Load https://www.amazon.co.in/s/?field-keywords=Mobile and navigate to some items/articles., 
-browse:shopping:avito,mobile,Load https://www.avito.ru/rossiya and navigate to some items/articles.,Nexus 6
+browse:shopping:avito,mobile,Load https://www.avito.ru/rossiya and navigate to some items/articles.,Nexus_6
 browse:shopping:flipkart,mobile,Load https://flipkart.com/search?q=Sunglasses and navigate to some items/articles.,Android
 browse:shopping:lazada,mobile,Load https://www.lazada.co.id/catalog/?q=Wrist+watch and navigate to some items/articles., 
-browse:social:facebook,mobile,Load https://www.facebook.com/rihanna and navigate to some items/articles.,Nexus 5
+browse:social:facebook,mobile,Load https://www.facebook.com/rihanna and navigate to some items/articles.,Nexus_5
 browse:social:facebook_infinite_scroll,desktop,Load https://www.facebook.com/shakira then make a very long scroll., 
 browse:social:facebook_infinite_scroll,mobile,Load https://m.facebook.com/shakira then make a very long scroll., 
 browse:social:instagram,mobile,Load https://www.instagram.com/badgalriri/ and navigate to some items/articles., 
@@ -114,7 +114,7 @@ load:media:dailymotion,all,Load https://www.dailymotion.com/video/x489k7d_street
 load:media:facebook_photos,mobile,Load a page of rihanna's facebook with a photo., 
 load:media:google_images,all,Load https://www.google.co.uk/search?tbm=isch&q=love, 
 load:media:imgur,all,Load http://imgur.com/gallery/5UlBN, 
-load:media:soundcloud,all,Load https://soundcloud.com/lifeofdesiigner/desiigner-panda,Android Webview
+load:media:soundcloud,all,Load https://soundcloud.com/lifeofdesiigner/desiigner-panda,Android_Webview
 load:media:youtube,all,Load https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false, 
 load:news:bbc,desktop,Load https://www.bbc.co.uk/news/world-asia-china-36189636, 
 load:news:cnn,all,Load http://edition.cnn.com, 
@@ -141,7 +141,7 @@ load:social:pinterest,desktop,Load https://uk.pinterest.com/categories/popular/,
 load:social:twitter,mobile,Load https://www.twitter.com/nasa, 
 load:social:vk,desktop,Load https://vk.com/sbeatles, 
 load:tools:docs,all,Load a typical google doc page., 
-load:tools:drive,all,Load https://drive.google.com/drive/my-drive,"Nexus 5X, Android Webview"
+load:tools:drive,all,Load https://drive.google.com/drive/my-drive,"Nexus_5X, Android_Webview"
 load:tools:dropbox,all,Load https://www.dropbox.com, 
 load:tools:gmail,desktop,Load https://mail.google.com/mail/,Android
 load:tools:gmail,mobile,Load https://mail.google.com/mail/,Android
@@ -149,8 +149,8 @@ load:tools:stackoverflow,all,Load a typical question & answer page of stackoverf
 load:tools:weather,all,Load https://weather.com/en-GB/weather/today/l/USCA0286:1:US, 
 load_accessibility:media:wikipedia,desktop,"Wikipedia page on Accessibility. Long, but very simple, clean layout.", 
 load_accessibility:shopping:amazon,desktop,Amazon results page. Good example of a site with a data table., 
-long_running:tools:gmail-background,desktop,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android Webview, Android Svelte"
-long_running:tools:gmail-background,mobile,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android Webview, Android Svelte"
+long_running:tools:gmail-background,desktop,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android_Webview, Android_Svelte"
+long_running:tools:gmail-background,mobile,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,"Android_Webview, Android_Svelte"
 long_running:tools:gmail-foreground,desktop,Load https://mail.google.com/mail/ then let it stay in foreground for 100 seconds., 
 long_running:tools:gmail-foreground,mobile,Load https://mail.google.com/mail/ then let it stay in foreground for 100 seconds., 
 multitab:misc:typical24,desktop,"Load 24 different web sites in 24 tabs, then cycle through each tab.",Mac
