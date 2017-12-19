@@ -112,6 +112,8 @@ public class VrShellImpl
         mDelegate = delegate;
         mTabModelSelector = tabModelSelector;
 
+        mActivity.getToolbarManager().setProgressBarEnabled(false);
+
         mActivity.getFullscreenManager().addListener(this);
 
         // This overrides the default intent created by GVR to return to Chrome when the DON flow
@@ -602,6 +604,7 @@ public class VrShellImpl
             mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
         }
         mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+        mActivity.getToolbarManager().setProgressBarEnabled(true);
 
         mContentVirtualDisplay.destroy();
         super.shutdown();
