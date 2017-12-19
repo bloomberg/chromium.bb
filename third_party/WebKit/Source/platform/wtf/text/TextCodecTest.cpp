@@ -49,9 +49,9 @@ TEST(TextCodec, URLEntityEncoding) {
   UnencodableReplacementArray replacement;
   int size = TextCodec::GetUnencodableReplacement(
       0xE003, kURLEncodedEntitiesForUnencodables, replacement);
-  EXPECT_EQ(size, 14);
-  EXPECT_EQ(std::string(replacement), "%26%2357347%3B");
-  EXPECT_EQ(replacement[14], 0);
+  EXPECT_EQ(size, 10);
+  EXPECT_EQ(std::string(replacement), "&%2357347;");
+  EXPECT_EQ(replacement[10], 0);
 }
 
 TEST(TextCodec, CSSEntityEncoding) {
