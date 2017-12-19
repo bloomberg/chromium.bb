@@ -185,7 +185,7 @@ void ModuleScriptLoader::NotifyFetchFinished(
   }
 
   // Note: "conditions" referred in Step 8 is implemented in
-  // WasModuleLoadSuccessful() in ModuleScriptFetcher.cpp.
+  // WasModuleLoadSuccessful() in DocumentModuleScriptFetcher.cpp.
   // Step 8. "If any of the following conditions are met, set moduleMap[url] to
   // null, asynchronously complete this algorithm with null, and abort these
   // steps." [spec text]
