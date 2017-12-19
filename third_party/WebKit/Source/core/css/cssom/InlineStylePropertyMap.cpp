@@ -22,7 +22,7 @@ const CSSValue* InlineStylePropertyMap::GetCustomProperty(
 
 void InlineStylePropertyMap::SetProperty(CSSPropertyID property_id,
                                          const CSSValue* value) {
-  owner_element_->SetInlineStyleProperty(property_id, value);
+  owner_element_->SetInlineStyleProperty(property_id, *value);
 }
 
 void InlineStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {

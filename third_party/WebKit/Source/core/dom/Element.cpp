@@ -4484,7 +4484,7 @@ void Element::InlineStyleChanged() {
 void Element::SetInlineStyleProperty(CSSPropertyID property_id,
                                      CSSValueID identifier,
                                      bool important) {
-  SetInlineStyleProperty(property_id, CSSIdentifierValue::Create(identifier),
+  SetInlineStyleProperty(property_id, *CSSIdentifierValue::Create(identifier),
                          important);
 }
 
@@ -4492,15 +4492,15 @@ void Element::SetInlineStyleProperty(CSSPropertyID property_id,
                                      double value,
                                      CSSPrimitiveValue::UnitType unit,
                                      bool important) {
-  SetInlineStyleProperty(property_id, CSSPrimitiveValue::Create(value, unit),
+  SetInlineStyleProperty(property_id, *CSSPrimitiveValue::Create(value, unit),
                          important);
 }
 
 void Element::SetInlineStyleProperty(CSSPropertyID property_id,
-                                     const CSSValue* value,
+                                     const CSSValue& value,
                                      bool important) {
   DCHECK(IsStyledElement());
-  EnsureMutableInlineStyle().SetProperty(property_id, *value, important);
+  EnsureMutableInlineStyle().SetProperty(property_id, value, important);
   InlineStyleChanged();
 }
 
