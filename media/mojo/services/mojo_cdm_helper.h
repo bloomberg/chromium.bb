@@ -12,11 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
+#include "media/mojo/interfaces/cdm_proxy.mojom.h"
 #include "media/mojo/interfaces/cdm_storage.mojom.h"
 #include "media/mojo/interfaces/output_protection.mojom.h"
 #include "media/mojo/interfaces/platform_verification.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_cdm_file_io.h"
+#include "media/mojo/services/mojo_cdm_proxy.h"
 
 namespace service_manager {
 namespace mojom {
@@ -30,7 +32,8 @@ namespace media {
 // additional services (FileIO, memory allocation, output protection, and
 // platform verification) are lazily created.
 class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
-                                              public MojoCdmFileIO::Delegate {
+                                              public MojoCdmFileIO::Delegate,
+                                              public MojoCdmProxy::Delegate {
  public:
   explicit MojoCdmHelper(
       service_manager::mojom::InterfaceProvider* interface_provider);
@@ -39,6 +42,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // CdmAuxiliaryHelper implementation.
   void SetFileReadCB(FileReadCB file_read_cb) final;
   cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client) final;
+  cdm::CdmProxy* CreateCdmProxy() final;
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;
@@ -52,6 +56,9 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // MojoCdmFileIO::Delegate implementation.
   void CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) final;
   void ReportFileReadSize(int file_size_bytes) final;
+
+  // MojoCdmProxy::Delegate implementation.
+  void DestroyCdmProxy(MojoCdmProxy* cdm_proxy) final;
 
  private:
   // All services are created lazily.
@@ -75,7 +82,9 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   FileReadCB file_read_cb_;
 
   // A list of open cdm::FileIO objects.
+  // TODO(xhwang): Switch to use UniquePtrComparator.
   std::vector<std::unique_ptr<MojoCdmFileIO>> cdm_file_io_set_;
+  std::vector<std::unique_ptr<MojoCdmProxy>> cdm_proxy_set_;
 
   base::WeakPtrFactory<MojoCdmHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoCdmHelper);

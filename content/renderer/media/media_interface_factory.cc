@@ -81,6 +81,11 @@ void MediaInterfaceFactory::CreateCdm(
   GetMediaInterfaceFactory()->CreateCdm(key_system, std::move(request));
 }
 
+void MediaInterfaceFactory::CreateCdmProxy(
+    media::mojom::CdmProxyRequest request) {
+  NOTREACHED() << "CdmProxy should only be connected from a library CDM";
+}
+
 media::mojom::InterfaceFactory*
 MediaInterfaceFactory::GetMediaInterfaceFactory() {
   DVLOG(1) << __func__;

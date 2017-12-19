@@ -172,6 +172,11 @@ void MediaInterfaceProxy::CreateCdm(
     factory->CreateCdm(key_system, std::move(request));
 }
 
+void MediaInterfaceProxy::CreateCdmProxy(
+    media::mojom::CdmProxyRequest request) {
+  NOTREACHED() << "The CdmProxy should only be created by a CDM.";
+}
+
 service_manager::mojom::InterfaceProviderPtr
 MediaInterfaceProxy::GetFrameServices(const std::string& cdm_file_system_id) {
   // Register frame services.
@@ -188,13 +193,19 @@ MediaInterfaceProxy::GetFrameServices(const std::string& cdm_file_system_id) {
       BrowserContext::GetDefaultStoragePartition(
           render_frame_host_->GetProcess()->GetBrowserContext())
           ->GetURLRequestContext();
-  provider->registry()->AddInterface(base::Bind(
+  provider->registry()->AddInterface(base::BindRepeating(
       &ProvisionFetcherImpl::Create, base::RetainedRef(context_getter)));
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  DCHECK(!cdm_file_system_id.empty());
-  provider->registry()->AddInterface(base::Bind(
-      &CdmStorageImpl::Create, render_frame_host_, cdm_file_system_id));
+  // Only provide CdmStorageImpl when we have a valid |cdm_file_system_id|,
+  // which is currently only set for the CdmService (not the MediaService).
+  if (!cdm_file_system_id.empty()) {
+    provider->registry()->AddInterface(base::BindRepeating(
+        &CdmStorageImpl::Create, render_frame_host_, cdm_file_system_id));
+  }
+
+  provider->registry()->AddInterface(base::BindRepeating(
+      &MediaInterfaceProxy::CreateCdmProxyInternal, base::Unretained(this)));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
@@ -353,7 +364,18 @@ void MediaInterfaceProxy::OnCdmServiceConnectionError(
   DCHECK(cdm_interface_factory_map_.count(cdm_guid));
   cdm_interface_factory_map_.erase(cdm_guid);
 }
-
 #endif  // BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+void MediaInterfaceProxy::CreateCdmProxyInternal(
+    media::mojom::CdmProxyRequest request) {
+  DVLOG(1) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  if (factory)
+    factory->CreateCdmProxy(std::move(request));
+}
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 }  // namespace content

@@ -34,6 +34,10 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "media/mojo/services/mojo_cdm_proxy_service.h"
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
 namespace media {
 
 namespace {
@@ -108,7 +112,7 @@ void InterfaceFactoryImpl::CreateAudioDecoder(
   std::unique_ptr<AudioDecoder> audio_decoder =
       mojo_media_client_->CreateAudioDecoder(task_runner);
   if (!audio_decoder) {
-    LOG(ERROR) << "AudioDecoder creation failed.";
+    DLOG(ERROR) << "AudioDecoder creation failed.";
     return;
   }
 
@@ -148,7 +152,7 @@ void InterfaceFactoryImpl::CreateRenderer(
       task_runner, task_runner, audio_sink.get(), video_sink.get(),
       RequestOverlayInfoCB(), gfx::ColorSpace());
   if (!renderer) {
-    LOG(ERROR) << "Renderer creation failed.";
+    DLOG(ERROR) << "Renderer creation failed.";
     return;
   }
 
@@ -183,6 +187,21 @@ void InterfaceFactoryImpl::CreateCdm(
       base::MakeUnique<MojoCdmService>(&cdm_service_context_, cdm_factory),
       std::move(request));
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
+}
+
+void InterfaceFactoryImpl::CreateCdmProxy(mojom::CdmProxyRequest request) {
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  auto cdm_proxy = mojo_media_client_->CreateCdmProxy();
+  if (!cdm_proxy) {
+    DLOG(ERROR) << "CdmProxy creation failed.";
+    return;
+  }
+
+  cdm_proxy_bindings_.AddBinding(
+      std::make_unique<MojoCdmProxyService>(std::move(cdm_proxy),
+                                            &cdm_service_context_),
+      std::move(request));
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)

@@ -6,16 +6,15 @@ mojom = "//media/mojo/interfaces/cdm_proxy.mojom"
 
 public_headers = [ "//media/cdm/cdm_proxy.h" ]
 
-public_deps = [
-  "//media",
-]
+traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
 
 deps = [
+  "//media",
   "//media/base/ipc",
 ]
 
 type_mappings = [
-  "media.mojom.CdmProxy.Status=media::CdmProxy::Status",
-  "media.mojom.CdmProxy.Protocol=media::CdmProxy::Protocol",
   "media.mojom.CdmProxy.Function=media::CdmProxy::Function",
+  "media.mojom.CdmProxy.Protocol=media::CdmProxy::Protocol",
+  "media.mojom.CdmProxy.Status=media::CdmProxy::Status",
 ]

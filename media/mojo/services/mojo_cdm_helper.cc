@@ -37,6 +37,20 @@ cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return cdm_file_io;
 }
 
+cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy() {
+  mojom::CdmProxyPtr cdm_proxy_ptr;
+  service_manager::GetInterface<mojom::CdmProxy>(interface_provider_,
+                                                 &cdm_proxy_ptr);
+  auto mojo_cdm_proxy =
+      std::make_unique<MojoCdmProxy>(this, std::move(cdm_proxy_ptr));
+
+  cdm::CdmProxy* cdm_proxy = mojo_cdm_proxy.get();
+  DVLOG(3) << __func__ << ": cdm_proxy = " << cdm_proxy;
+
+  cdm_proxy_set_.push_back(std::move(mojo_cdm_proxy));
+  return cdm_proxy;
+}
+
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {
   return GetAllocator()->CreateCdmBuffer(capacity);
 }
@@ -83,6 +97,14 @@ void MojoCdmHelper::CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) {
   base::EraseIf(cdm_file_io_set_,
                 [cdm_file_io](const std::unique_ptr<MojoCdmFileIO>& ptr) {
                   return ptr.get() == cdm_file_io;
+                });
+}
+
+void MojoCdmHelper::DestroyCdmProxy(MojoCdmProxy* cdm_proxy) {
+  DVLOG(3) << __func__ << ": cdm_proxy = " << cdm_proxy;
+  base::EraseIf(cdm_proxy_set_,
+                [cdm_proxy](const std::unique_ptr<MojoCdmProxy>& ptr) {
+                  return ptr.get() == cdm_proxy;
                 });
 }
 

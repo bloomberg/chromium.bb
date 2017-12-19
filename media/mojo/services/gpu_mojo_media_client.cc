@@ -34,6 +34,10 @@
 #include "media/gpu/windows/d3d11_video_decoder.h"
 #endif  // defined(OS_WIN)
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "media/cdm/cdm_proxy.h"
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
 namespace media {
 
 namespace {
@@ -142,5 +146,12 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
   return nullptr;
 #endif  // defined(OS_ANDROID)
 }
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+std::unique_ptr<CdmProxy> GpuMojoMediaClient::CreateCdmProxy() {
+  // TODO(rkuroiwa): Create the CdmProxy here.
+  return nullptr;
+}
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 }  // namespace media

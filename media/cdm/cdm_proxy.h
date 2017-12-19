@@ -15,7 +15,8 @@
 
 namespace media {
 
-// A proxy for the CDM.
+// A class that proxies part of ContentDecryptionModule (CDM) functionalities to
+// a different entity, e.g. hardware CDM modules.
 // In general, the interpretation of the method and callback parameters are
 // protocol dependent. For enum parameters, values outside the enum range may
 // not work.
@@ -81,7 +82,7 @@ class MEDIA_EXPORT CdmProxy {
                        ProcessCB process_cb) = 0;
 
   // Callback for CreateMediaCryptoSession().
-  // On suceess:
+  // On success:
   // |crypto_session_id| is the ID for the created crypto session.
   // |output_data| is extra value, if any.
   using CreateMediaCryptoSessionCB = base::OnceCallback<

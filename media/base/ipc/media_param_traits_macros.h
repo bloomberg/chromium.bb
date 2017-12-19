@@ -31,12 +31,11 @@
 #include "media/base/video_rotation.h"
 #include "media/base/video_types.h"
 #include "media/base/watch_time_keys.h"
+// TODO(crbug.com/676224): When EnabledIf attribute is supported in mojom files,
+// move CdmProxy related code into #if BUILDFLAG(ENABLE_LIBRARY_CDMS).
+#include "media/cdm/cdm_proxy.h"
 #include "media/media_features.h"
 #include "ui/gfx/ipc/color/gfx_param_traits_macros.h"
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "media/cdm/cdm_proxy.h"  // nogncheck
-#endif                            // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Enum traits.
 
@@ -60,7 +59,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmMessageType,
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
                           media::CdmPromise::Exception::EXCEPTION_MAX)
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Function,
                           media::CdmProxy::Function::kMax)
 
@@ -69,7 +67,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Protocol,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Status,
                           media::CdmProxy::Status::kMax)
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
                           media::CdmSessionType::SESSION_TYPE_MAX)

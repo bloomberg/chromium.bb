@@ -6,11 +6,14 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
+  # TODO(crbug.com/676224): Conditionally add source files in this list when we
+  # support EnabledIf attribute in mojom files.
   sources = [
     "audio_decoder.mojom",
     "audio_input_stream.mojom",
     "audio_output_stream.mojom",
     "audio_parameters.mojom",
+    "cdm_proxy.mojom",
     "cdm_storage.mojom",
     "content_decryption_module.mojom",
     "decryptor.mojom",
@@ -31,16 +34,11 @@ mojom("interfaces") {
     "watch_time_recorder.mojom",
   ]
 
-  if (enable_library_cdms) {
-    sources += [ "cdm_proxy.mojom" ]
-  }
-
   if (is_android) {
-    sources += [ "media_drm_storage.mojom" ]
-  }
-
-  if (is_android) {
-    sources += [ "android_overlay.mojom" ]
+    sources += [
+      "android_overlay.mojom",
+      "media_drm_storage.mojom",
+    ]
   }
 
   public_deps = [
@@ -52,8 +50,8 @@ mojom("interfaces") {
     "//url/mojo:url_mojom_origin",
   ]
 
-  # TODO(xhwang): Remove media_service_mac.mojom when we support EnabledIf
-  # attribute in mojom files. See https://crbug.com/676224
+  # TODO(crbug.com/676224): Remove media_service_mac.mojom when we support
+  # EnabledIf attribute in mojom files.
   if (is_mac) {
     sources += [ "media_service_mac.mojom" ]
 

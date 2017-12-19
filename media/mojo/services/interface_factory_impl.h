@@ -39,6 +39,7 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
                       mojom::RendererRequest request) final;
   void CreateCdm(const std::string& key_system,
                  mojom::ContentDecryptionModuleRequest request) final;
+  void CreateCdmProxy(mojom::CdmProxyRequest request) final;
 
  private:
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -73,6 +74,10 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
   service_manager::mojom::InterfaceProviderPtr interfaces_;
   mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  mojo::StrongBindingSet<mojom::CdmProxy> cdm_proxy_bindings_;
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   std::unique_ptr<DelayedReleaseServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;

@@ -228,6 +228,7 @@ declare_args() {
       mojo_media_host = "gpu"
     } else if (enable_library_cdms) {
       mojo_media_services = [ "cdm" ]
+      mojo_media_host = "gpu"
       enable_standalone_cdm_service = true
     }
 
