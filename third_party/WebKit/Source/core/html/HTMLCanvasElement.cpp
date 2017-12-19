@@ -827,8 +827,12 @@ String HTMLCanvasElement::ToDataURLInternal(
 
   scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
       source_buffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
-  if (image_bitmap)
-    return ImageDataBuffer(image_bitmap).ToDataURL(encoding_mime_type, quality);
+  if (image_bitmap) {
+    std::unique_ptr<ImageDataBuffer> data_buffer =
+        ImageDataBuffer::Create(image_bitmap);
+    if (data_buffer)
+      return data_buffer->ToDataURL(encoding_mime_type, quality);
+  }
   return String("data:,");
 }
 

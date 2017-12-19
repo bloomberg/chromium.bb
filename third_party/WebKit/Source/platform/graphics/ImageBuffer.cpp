@@ -111,6 +111,13 @@ const unsigned char* ImageDataBuffer::Pixels() const {
   return data_;
 }
 
+std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
+    scoped_refptr<StaticBitmapImage> image) {
+  if (!image || !image->PaintImageForCurrentFrame().GetSkImage())
+    return nullptr;
+  return WTF::WrapUnique(new ImageDataBuffer(image));
+}
+
 ImageDataBuffer::ImageDataBuffer(scoped_refptr<StaticBitmapImage> image) {
   image_bitmap_ = image;
   sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
