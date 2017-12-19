@@ -123,11 +123,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // otherwise.
   virtual bool PrepareForCommit() = 0;
 
-  // TODO(japhet): These should all move to LocalFrame.
-  virtual void PrintNavigationErrorMessage(const Frame&,
-                                           const char* reason) = 0;
-  virtual void PrintNavigationWarning(const String&) = 0;
-
   // TODO(pilgrim): Replace all instances of ownerLayoutObject() with
   // ownerLayoutItem(), https://crbug.com/499321
   LayoutEmbeddedContent* OwnerLayoutObject()

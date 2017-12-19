@@ -119,8 +119,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void Detach(FrameDetachType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;
-  void PrintNavigationErrorMessage(const Frame&, const char* reason) override;
-  void PrintNavigationWarning(const String&) override;
+  void PrintNavigationErrorMessage(const Frame&, const char* reason);
+  void PrintNavigationWarning(const String&);
   bool PrepareForCommit() override;
   void DidChangeVisibilityState() override;
   void DidFreeze() override;

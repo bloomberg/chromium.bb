@@ -35,8 +35,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void AddResourceTiming(const ResourceTimingInfo&) override;
   void Detach(FrameDetachType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
-  void PrintNavigationErrorMessage(const Frame&, const char* reason) override {}
-  void PrintNavigationWarning(const String&) override {}
   bool PrepareForCommit() override;
   bool ShouldClose() override;
   void DidFreeze() override;
