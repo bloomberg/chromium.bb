@@ -78,6 +78,8 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   void MaybePlayPause();
   void MaybeJump(int);
 
+  void HandlePlayPauseEvent(Event*, WTF::TimeDelta);
+
   TaskRunnerTimer<MediaControlOverlayPlayButtonElement> tap_timer_;
 
   Member<HTMLDivElement> internal_button_;
