@@ -50,9 +50,53 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
     scoped_refptr<NGLayoutResult> layout_result;
     scoped_refptr<NGPhysicalFragment> fragment;
+    LayoutObject* out_of_flow_positioned_box = nullptr;
+    LayoutObject* out_of_flow_containing_box = nullptr;
     NGLogicalOffset offset;
+    LayoutUnit inline_size;
+    unsigned box_data_index = 0;
+    UBiDiLevel bidi_level = 0xff;
 
-    bool HasFragment() const { return layout_result || fragment; }
+    // Empty constructor needed for |resize()|.
+    Child() {}
+    // Create a placeholder. A placeholder does not have a fragment nor a bidi
+    // level.
+    Child(NGLogicalOffset offset) : offset(offset) {}
+    // Crete a bidi control. A bidi control does not have a fragment, but has
+    // bidi level and affects bidi reordering.
+    Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
+    // Create an in-flow |NGLayoutResult|.
+    Child(scoped_refptr<NGLayoutResult> layout_result,
+          NGLogicalOffset offset,
+          LayoutUnit inline_size,
+          UBiDiLevel bidi_level)
+        : layout_result(std::move(layout_result)),
+          offset(offset),
+          inline_size(inline_size),
+          bidi_level(bidi_level) {}
+    // Create an in-flow |NGPhysicalFragment|.
+    Child(scoped_refptr<NGPhysicalFragment> fragment,
+          LayoutUnit block_offset,
+          LayoutUnit inline_size,
+          UBiDiLevel bidi_level)
+        : fragment(std::move(fragment)),
+          offset({LayoutUnit(), block_offset}),
+          inline_size(inline_size),
+          bidi_level(bidi_level) {}
+    // Create an out-of-flow positioned object.
+    Child(LayoutObject* out_of_flow_positioned_box,
+          LayoutObject* out_of_flow_containing_box,
+          UBiDiLevel bidi_level)
+        : out_of_flow_positioned_box(out_of_flow_positioned_box),
+          out_of_flow_containing_box(out_of_flow_containing_box),
+          bidi_level(bidi_level) {}
+
+    bool HasInFlowFragment() const { return layout_result || fragment; }
+    bool HasOutOfFlowFragment() const { return out_of_flow_positioned_box; }
+    bool HasFragment() const {
+      return HasInFlowFragment() || HasOutOfFlowFragment();
+    }
+    bool HasBidiLevel() const { return bidi_level != 0xff; }
     const NGPhysicalFragment* PhysicalFragment() const;
   };
 
@@ -76,6 +120,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
       children_.ReserveInitialCapacity(capacity);
     }
     void clear() { children_.clear(); }
+    void resize(size_t size) { children_.resize(size); }
 
     using iterator = Vector<Child, 16>::iterator;
     iterator begin() { return children_.begin(); }
@@ -84,13 +129,18 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     const_iterator begin() const { return children_.begin(); }
     const_iterator end() const { return children_.end(); }
 
-    void AddChild(scoped_refptr<NGLayoutResult>, const NGLogicalOffset&);
-    void AddChild(scoped_refptr<NGPhysicalFragment>, const NGLogicalOffset&);
-    // nullptr child is a placeholder until enclosing inline boxes are closed
-    // and we know the final box structure and their positions. This variant
-    // helps to avoid needing static_cast when adding a nullptr.
-    void AddChild(std::nullptr_t, const NGLogicalOffset&);
+    // Add a child. Accepts all constructor arguments for |Child|.
+    template <class... Args>
+    void AddChild(Args&&... args) {
+      children_.push_back(Child(std::forward<Args>(args)...));
+    }
+    void InsertChild(unsigned,
+                     scoped_refptr<NGLayoutResult>,
+                     const NGLogicalOffset&,
+                     LayoutUnit inline_size,
+                     UBiDiLevel);
 
+    void MoveInInlineDirection(LayoutUnit, unsigned start, unsigned end);
     void MoveInBlockDirection(LayoutUnit);
     void MoveInBlockDirection(LayoutUnit, unsigned start, unsigned end);
 

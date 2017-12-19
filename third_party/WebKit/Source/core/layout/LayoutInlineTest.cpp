@@ -54,11 +54,8 @@ TEST_P(ParameterizedLayoutInlineTest, LinesBoundingBox) {
   EXPECT_EQ(
       LayoutRect(LayoutPoint(745, 0), LayoutSize(39, 26)),
       ToLayoutInline(GetLayoutObjectByElementId("rtl1"))->LinesBoundingBox());
-  // TODO(layout-dev): LayoutNG should have same LayoutRect of legacy.
-  // See http://crbug.com/785687
   EXPECT_EQ(
-      LayoutNGEnabled() ? LayoutRect(LayoutPoint(745, 0), LayoutSize(65, 13))
-                        : LayoutRect(LayoutPoint(641, 0), LayoutSize(143, 13)),
+      LayoutRect(LayoutPoint(641, 0), LayoutSize(143, 13)),
       ToLayoutInline(GetLayoutObjectByElementId("rtl2"))->LinesBoundingBox());
   EXPECT_EQ(LayoutRect(LayoutPoint(0, 0), LayoutSize(26, 39)),
             ToLayoutInline(GetLayoutObjectByElementId("vertical"))
