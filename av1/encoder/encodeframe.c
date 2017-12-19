@@ -2448,8 +2448,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_DIST_8X8
 
   // PARTITION_SPLIT
-  // TODO(jingning): use the motion vectors given by the above search as
-  // the starting point of motion search in the following partition type check.
   if (do_square_split) {
     int reached_last_index = 0;
     subsize = get_subsize(bsize, PARTITION_SPLIT);
