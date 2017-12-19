@@ -177,7 +177,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during
 // pending back and forward navigations.
-// TODO(crbug.com/787872): Re-enable this test on devices.
+// TODO(crbug.com/796070): Re-enable this test on devices.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testBackForwardNavigation testBackForwardNavigation
 #else
@@ -227,7 +227,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during
 // pending navigations initialted from back history popover.
-- (void)testHistoryNavigation {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testHistoryNavigation testHistoryNavigation
+#else
+#define MAYBE_testHistoryNavigation FLAKY_testHistoryNavigation
+#endif
+- (void)MAYBE_testHistoryNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -265,7 +271,15 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that stopping a pending Back navigation and reloading reloads committed
 // URL, not pending URL.
-- (void)testStoppingPendingBackNavigationAndReload {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testStoppingPendingBackNavigationAndReload \
+  testStoppingPendingBackNavigationAndReload
+#else
+#define MAYBE_testStoppingPendingBackNavigationAndReload \
+  FLAKY_testStoppingPendingBackNavigationAndReload
+#endif
+- (void)MAYBE_testStoppingPendingBackNavigationAndReload {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -297,7 +311,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during
 // back forward navigations initiated with JS.
-- (void)testJSBackForwardNavigation {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testJSBackForwardNavigation testJSBackForwardNavigation
+#else
+#define MAYBE_testJSBackForwardNavigation FLAKY_testJSBackForwardNavigation
+#endif
+- (void)MAYBE_testJSBackForwardNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -340,7 +360,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during go
 // navigations initiated with JS.
-- (void)testJSGoNavigation {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testJSGoNavigation testJSGoNavigation
+#else
+#define MAYBE_testJSGoNavigation FLAKY_testJSGoNavigation
+#endif
+- (void)MAYBE_testJSGoNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -384,7 +410,15 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during go
 // back navigation started with pending reload in progress.
-- (void)testBackNavigationWithPendingReload {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testBackNavigationWithPendingReload \
+  testBackNavigationWithPendingReload
+#else
+#define MAYBE_testBackNavigationWithPendingReload \
+  FLAKY_testBackNavigationWithPendingReload
+#endif
+- (void)MAYBE_testBackNavigationWithPendingReload {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -421,7 +455,14 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during go
 // back navigation initiated with pending renderer-initiated navigation in
 // progress.
-- (void)testBackNavigationWithPendingRendererInitiatedNavigation {
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation \
+  testBackNavigationWithPendingRendererInitiatedNavigation
+#else
+#define MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation \
+  FLAKY_testBackNavigationWithPendingRendererInitiatedNavigation
+#endif
+- (void)MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -450,7 +491,15 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during
 // renderer-initiated navigation started with pending back navigation in
 // progress.
-- (void)testRendererInitiatedNavigationWithPendingBackNavigation {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testRendererInitiatedNavigationWithPendingBackNavigation \
+  testRendererInitiatedNavigationWithPendingBackNavigation
+#else
+#define MAYBE_testRendererInitiatedNavigationWithPendingBackNavigation \
+  FLAKY_testRendererInitiatedNavigationWithPendingBackNavigation
+#endif
+- (void)MAYBE_testRendererInitiatedNavigationWithPendingBackNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -479,7 +528,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go back commands.
-- (void)testDoubleBackNavigation {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testDoubleBackNavigation testDoubleBackNavigation
+#else
+#define MAYBE_testDoubleBackNavigation FLAKY_testDoubleBackNavigation
+#endif
+- (void)MAYBE_testDoubleBackNavigation {
   // Create 3rd entry in the history, to be able to go back twice.
   [ChromeEarlGrey loadURL:_testURL3];
 
@@ -509,7 +564,15 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go forward commands to WebUI page (crbug.com/711465).
-- (void)testDoubleForwardNavigationToWebUIPage {
+// TODO(crbug.com/796070): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testDoubleForwardNavigationToWebUIPage \
+  testDoubleForwardNavigationToWebUIPage
+#else
+#define MAYBE_testDoubleForwardNavigationToWebUIPage \
+  FLAKY_testDoubleForwardNavigationToWebUIPage
+#endif
+- (void)MAYBE_testDoubleForwardNavigationToWebUIPage {
   // Create 3rd entry in the history, to be able to go back twice.
   GURL URL(kChromeUIVersionURL);
   [ChromeEarlGrey loadURL:GURL(kChromeUIVersionURL)];
