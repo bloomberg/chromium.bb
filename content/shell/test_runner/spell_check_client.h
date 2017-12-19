@@ -41,6 +41,7 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   void Reset();
 
   // blink::WebSpellCheckClient implementation.
+  bool IsSpellCheckingEnabled() const override;
   void CheckSpelling(
       const blink::WebString& text,
       int& offset,

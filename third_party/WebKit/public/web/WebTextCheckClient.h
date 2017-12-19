@@ -15,6 +15,9 @@ class WebTextCheckingCompletion;
 // TODO(xiaochengh): Rename WebTextCheckClient to WebSpellCheckClient.
 class WebTextCheckClient {
  public:
+  // Returns the Chromium setting of whether spell-checking is enabled.
+  virtual bool IsSpellCheckingEnabled() const { return false; }
+
   // The client should perform spell-checking on the given text. If the
   // text contains a misspelled word, then upon return misspelledOffset
   // will point to the start of the misspelled word, and misspelledLength

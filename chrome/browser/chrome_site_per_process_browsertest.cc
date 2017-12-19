@@ -47,8 +47,14 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
@@ -696,9 +702,20 @@ class TestSpellCheckMessageFilter : public content::BrowserMessageFilter,
 
   const base::string16& text() const { return text_; }
 
+  bool HasReceivedText() const { return text_received_; }
+
   void Wait() {
     if (!text_received_)
       message_loop_runner_->Run();
+  }
+
+  void WaitUntilTimeout() {
+    if (text_received_)
+      return;
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
+        message_loop_runner_->QuitClosure(), base::TimeDelta::FromSeconds(1));
+    message_loop_runner_->Run();
   }
 
   bool OnMessageReceived(const IPC::Message& message) override {
@@ -854,6 +871,45 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckTest) {
   EXPECT_EQ(base::ASCIIToUTF16("zz."), filter->text());
 
   content::SetBrowserClientForTesting(old_browser_client);
+}
+
+// Tests that after disabling spellchecking, spelling in new out-of-process
+// subframes is not checked. See crbug.com/789273 for details.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
+  TestBrowserClientForSpellCheck browser_client;
+  content::ContentBrowserClient* old_browser_client =
+      content::SetBrowserClientForTesting(&browser_client);
+
+  content::BrowserContext* browser_context =
+      static_cast<content::BrowserContext*>(browser()->profile());
+
+  // Initiate a SpellcheckService
+  SpellcheckServiceFactory::GetForContext(browser_context);
+
+  // Disable spellcheck
+  PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
+  prefs->SetBoolean(spellcheck::prefs::kEnableSpellcheck, false);
+  base::RunLoop().RunUntilIdle();
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/page_with_contenteditable_in_cross_site_subframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* cross_site_subframe =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+
+  scoped_refptr<TestSpellCheckMessageFilter> filter =
+      browser_client.GetSpellCheckMessageFilterForProcess(
+          cross_site_subframe->GetProcess());
+  filter->WaitUntilTimeout();
+
+  // Shouldn't receive text since spellchecking is disabled.
+  EXPECT_FALSE(filter->HasReceivedText());
+
+  content::SetBrowserClientForTesting(old_browser_client);
+  prefs->SetBoolean(spellcheck::prefs::kEnableSpellcheck, true);
 }
 
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)

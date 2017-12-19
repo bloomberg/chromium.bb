@@ -121,11 +121,15 @@ void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
                            ? WebElement()
                            : frame->GetDocument().FocusedElement();
   bool enabled = !element.IsNull() && element.IsEditable();
-  bool checked = enabled && frame->IsSpellCheckingEnabled();
+  bool checked = enabled && IsSpellCheckingEnabled();
 
   // TODO(crbug.com/714480): convert the ToggleSpellCheck IPC to mojo.
   Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
 #endif  // USE_BROWSER_SPELLCHECKER
+}
+
+bool SpellCheckProvider::IsSpellCheckingEnabled() const {
+  return spellcheck_->IsSpellcheckEnabled();
 }
 
 void SpellCheckProvider::CheckSpelling(

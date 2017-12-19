@@ -86,6 +86,7 @@ class SpellCheckProvider
   void OnDestruct() override;
 
   // blink::WebTextCheckClient:
+  bool IsSpellCheckingEnabled() const override;
   void CheckSpelling(
       const blink::WebString& text,
       int& offset,
