@@ -17,6 +17,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/try_chrome_dialog_win/arrow_border.h"
+#include "chrome/browser/ui/views/try_chrome_dialog_win/button_layout.h"
 #include "chrome/browser/win/taskbar_icon_finder.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -1036,58 +1037,53 @@ void TryChromeDialog::OnContextInitialized() {
   // Padding around the left, top, and right of the logo.
   static constexpr int kLogoPadding = 10;
   static constexpr int kCloseButtonWidth = 24;
+  static constexpr int kCloseButtonTopPadding = 6;
   static constexpr int kCloseButtonRightPadding = 5;
-  static constexpr int kSpacingAfterHeadingHorizontal =
-      40 - kCloseButtonWidth - kCloseButtonRightPadding;
+  static constexpr int kSpacingAfterHeadingHorizontal = 40;
+  static constexpr int kSpacingHeadingToClose = kSpacingAfterHeadingHorizontal -
+                                                kCloseButtonWidth -
+                                                kCloseButtonRightPadding;
 
   // Padding around all sides of the text buttons (but not between them).
   static constexpr int kTextButtonPadding = 12;
-  static constexpr int kPaddingBetweenButtons = 4;
 
-  // First row: [pad][logo][pad][text][pad][close button].
+  // First two rows: [pad][logo][pad][text][pad][close button].
+  // Only the close button is in the first row, spanning both. The logo and main
+  // header are in the second row.
+  const int kLabelWidth = kToastWidth - kLogoPadding - logo_size.width() -
+                          kLogoPadding - kSpacingAfterHeadingHorizontal;
   columns = layout->AddColumnSet(0);
   columns->AddPaddingColumn(0, kLogoPadding - kBorderThickness);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::FIXED, logo_size.width(),
                      logo_size.height());
   columns->AddPaddingColumn(0, kLogoPadding);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kSpacingAfterHeadingHorizontal);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                     views::GridLayout::FIXED, kLabelWidth, 0);
+  columns->AddPaddingColumn(0, kSpacingHeadingToClose);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, kCloseButtonRightPadding - kBorderThickness);
-  const int logo_padding = logo_size.width() + kLogoPadding;
 
-  // Optional second row: [pad][text].
+  // Optional third row: [pad][text].
+  const int logo_padding = logo_size.width() + kLogoPadding;
   columns = layout->AddColumnSet(1);
   columns->AddPaddingColumn(0, kLogoPadding - kBorderThickness + logo_padding);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                     views::GridLayout::FIXED, kLabelWidth, 0);
 
-  // Third row: [pad][optional button][pad][button].
+  // Fourth row: [pad][buttons][pad].
   columns = layout->AddColumnSet(2);
   columns->AddPaddingColumn(0, kTextButtonPadding - kBorderThickness);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kPaddingBetweenButtons);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, kTextButtonPadding - kBorderThickness);
 
   // First row.
-  layout->StartRowWithPadding(0, 0, 0, kLogoPadding - kBorderThickness);
-  layout->AddView(logo.release());
-  // All variants have a main header.
-  auto header = base::MakeUnique<views::Label>(
-      l10n_util::GetStringUTF16(kExperiments[group_].heading_id),
-      CONTEXT_WINDOWS10_NATIVE);
-  header->SetBackgroundColor(kBackgroundColor);
-  header->SetEnabledColor(kHeaderColor);
-  header->SetMultiLine(true);
-  header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(header.release());
-
+  layout->AddPaddingRow(0, kCloseButtonTopPadding - kBorderThickness);
+  layout->StartRow(0, 0, kLogoPadding - kCloseButtonTopPadding);
+  layout->SkipColumns(1);
+  layout->SkipColumns(1);
   // Close button if included in the variant.
   if (kExperiments[group_].close_style ==
           ExperimentVariations::CloseStyle::kCloseX ||
@@ -1100,13 +1096,27 @@ void TryChromeDialog::OnContextInitialized() {
     close_button->set_tag(static_cast<int>(ButtonTag::CLOSE_BUTTON));
     close_button_ = close_button.get();
     DCHECK_EQ(close_button->GetPreferredSize().width(), kCloseButtonWidth);
-    layout->AddView(close_button.release());
+    layout->AddView(close_button.release(), 1, 2);
     close_button_->SetVisible(false);
   } else {
     layout->SkipColumns(1);
   }
 
-  // Second row: May have text or may be blank.
+  // Second row.
+  layout->StartRow(0, 0);
+  layout->AddView(logo.release());
+  // All variants have a main header.
+  auto header = base::MakeUnique<views::Label>(
+      l10n_util::GetStringUTF16(kExperiments[group_].heading_id),
+      CONTEXT_WINDOWS10_NATIVE);
+  header->SetBackgroundColor(kBackgroundColor);
+  header->SetEnabledColor(kHeaderColor);
+  header->SetMultiLine(true);
+  header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->AddView(header.release());
+  layout->SkipColumns(1);
+
+  // Third row: May have text or may be blank.
   layout->StartRow(0, 1);
   const int body_string_id = kExperiments[group_].body_id;
   if (body_string_id) {
@@ -1114,36 +1124,47 @@ void TryChromeDialog::OnContextInitialized() {
         l10n_util::GetStringUTF16(body_string_id), CONTEXT_WINDOWS10_NATIVE);
     body_text->SetBackgroundColor(kBackgroundColor);
     body_text->SetEnabledColor(kBodyColor);
+    body_text->SetMultiLine(true);
+    body_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(body_text.release());
   }
 
-  // Third row: one or two buttons depending on group.
-  layout->StartRowWithPadding(0, 2, 0, kTextButtonPadding);
-  bool has_no_thanks_button =
-      kExperiments[group_].close_style ==
-          ExperimentVariations::CloseStyle::kNoThanksButton ||
-      kExperiments[group_].close_style ==
-          ExperimentVariations::CloseStyle::kNoThanksButtonAndCloseX;
-  if (!has_no_thanks_button)
-    layout->SkipColumns(1);
+  // Fourth row: one or two buttons depending on group.
+  layout->AddPaddingRow(0, kTextButtonPadding);
+
+  static constexpr int kButtonsViewWidth =
+      kToastWidth - kTextButtonPadding - kTextButtonPadding;
+  auto buttons = std::make_unique<views::View>();
+  ButtonLayout::CreateAndInstall(buttons.get(), kButtonsViewWidth);
+
+  layout->StartRow(0, 2);
   auto accept_button = CreateWin10StyleButton(
       this, l10n_util::GetStringUTF16(IDS_WIN10_TOAST_OPEN_CHROME),
       TryChromeButtonType::OPEN_CHROME);
   accept_button->set_tag(static_cast<int>(ButtonTag::OK_BUTTON));
-  layout->AddView(accept_button.release());
+  buttons->AddChildView(accept_button.release());
 
-  if (has_no_thanks_button) {
+  if (kExperiments[group_].close_style ==
+          ExperimentVariations::CloseStyle::kNoThanksButton ||
+      kExperiments[group_].close_style ==
+          ExperimentVariations::CloseStyle::kNoThanksButtonAndCloseX) {
     auto no_thanks_button = CreateWin10StyleButton(
         this, l10n_util::GetStringUTF16(IDS_WIN10_TOAST_NO_THANKS),
         TryChromeButtonType::NO_THANKS);
     no_thanks_button->set_tag(static_cast<int>(ButtonTag::NO_THANKS_BUTTON));
-    layout->AddView(no_thanks_button.release());
+    buttons->AddChildView(no_thanks_button.release());
   }
+
+  layout->AddView(buttons.release());
 
   layout->AddPaddingRow(0, kTextButtonPadding - kBorderThickness);
 
-  const gfx::Size preferred = layout->GetPreferredSize(contents_view.get());
   popup_->SetContentsView(contents_view.release());
+
+  // Compute the preferred size after attaching the contents view to the popup,
+  // as doing such causes the theme to propagate through the view hierarchy.
+  // This propagation can cause views to change their size requirements.
+  const gfx::Size preferred = popup_->GetContentsView()->GetPreferredSize();
   popup_->SetBounds(context_->ComputePopupBounds(popup_, preferred));
   popup_->SetAlwaysOnTop(true);
 
