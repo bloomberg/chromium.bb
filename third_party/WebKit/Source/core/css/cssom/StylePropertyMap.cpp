@@ -40,26 +40,62 @@ const CSSValue* StyleValueToCSSValue(CSSPropertyID property_id,
   return style_value.ToCSSValueWithProperty(property_id, secure_context_mode);
 }
 
-const CSSValue* CoerceStyleValueOrStringToCSSValue(
+const CSSValue* CoerceStyleValuesOrStringsToCSSValues(
     CSSPropertyID property_id,
-    const CSSStyleValueOrString& value,
+    const HeapVector<CSSStyleValueOrString>& values,
     const CSSParserContext* parser_context) {
-  if (value.IsCSSStyleValue()) {
-    if (!value.GetAsCSSStyleValue())
-      return nullptr;
+  DCHECK(!values.IsEmpty());
 
-    return StyleValueToCSSValue(property_id, *value.GetAsCSSStyleValue(),
-                                parser_context->GetSecureContextMode());
+  const bool is_repeated = CSSProperty::Get(property_id).IsRepeated();
+  CSSValueList* result = nullptr;
+  if (is_repeated) {
+    result = CssValueListForPropertyID(property_id);
+  } else {
+    result = CSSValueList::CreateCommaSeparated();
   }
 
-  const auto values = StyleValueFactory::FromString(
-      property_id, value.GetAsString(), parser_context);
-  // TODO(https://github.com/w3c/css-houdini-drafts/issues/512):
-  // What is the correct behaviour here?
-  if (values.size() != 1)
-    return nullptr;
-  return StyleValueToCSSValue(property_id, *values[0],
-                              parser_context->GetSecureContextMode());
+  for (const auto& value : values) {
+    if (value.IsCSSStyleValue()) {
+      if (!value.GetAsCSSStyleValue())
+        return nullptr;
+
+      const CSSValue* css_value =
+          StyleValueToCSSValue(property_id, *value.GetAsCSSStyleValue(),
+                               parser_context->GetSecureContextMode());
+      if (!css_value)
+        return nullptr;
+
+      result->Append(*css_value);
+    } else {
+      DCHECK(value.IsString());
+      const auto subvalues = StyleValueFactory::FromString(
+          property_id, value.GetAsString(), parser_context);
+      if (subvalues.IsEmpty())
+        return nullptr;
+
+      for (const auto& subvalue : subvalues) {
+        const CSSValue* css_value = StyleValueToCSSValue(
+            property_id, *subvalue, parser_context->GetSecureContextMode());
+        if (!css_value)
+          return nullptr;
+
+        result->Append(*css_value);
+      }
+    }
+  }
+
+  const bool contains_wide_keyword =
+      std::any_of(result->begin(), result->end(),
+                  [](const auto& value) { return value->IsCSSWideKeyword(); });
+  if (!is_repeated || contains_wide_keyword) {
+    if (result->length() > 1)
+      return nullptr;
+
+    DCHECK_NE(result->length(), 0U);
+    return &result->Item(0);
+  }
+
+  return result;
 }
 
 }  // namespace
@@ -79,39 +115,14 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     return;
   }
 
-  if (CSSProperty::Get(property_id).IsRepeated()) {
-    CSSValueList* result = CssValueListForPropertyID(property_id);
-    for (const auto& value : values) {
-      const CSSValue* css_value = CoerceStyleValueOrStringToCSSValue(
-          property_id, value, CSSParserContext::Create(*execution_context));
-      if (!css_value || (css_value->IsCSSWideKeyword() && values.size() > 1)) {
-        exception_state.ThrowTypeError("Invalid type for property");
-        return;
-      }
-      result->Append(*css_value);
-    }
-
-    if (result->length() == 1 && result->Item(0).IsCSSWideKeyword())
-      SetProperty(property_id, &result->Item(0));
-    else
-      SetProperty(property_id, result);
-  } else {
-    if (values.size() != 1) {
-      exception_state.ThrowTypeError(
-          "Cannot set " + property_name +
-          " with multiple values as it is not list-valued");
-      return;
-    }
-
-    const CSSValue* result = CoerceStyleValueOrStringToCSSValue(
-        property_id, values[0], CSSParserContext::Create(*execution_context));
-    if (!result) {
-      exception_state.ThrowTypeError("Invalid type for property");
-      return;
-    }
-
-    SetProperty(property_id, result);
+  const CSSValue* result = CoerceStyleValuesOrStringsToCSSValues(
+      property_id, values, CSSParserContext::Create(*execution_context));
+  if (!result) {
+    exception_state.ThrowTypeError("Invalid type for property");
+    return;
   }
+
+  SetProperty(property_id, result);
 }
 
 void StylePropertyMap::append(const ExecutionContext* execution_context,
@@ -134,31 +145,27 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
     return;
   }
 
-  const CSSValue* css_value = GetProperty(property_id);
-
-  CSSValueList* css_value_list = nullptr;
-  if (!css_value) {
-    css_value_list = CssValueListForPropertyID(property_id);
-  } else if (css_value->IsValueList()) {
-    css_value_list = ToCSSValueList(css_value)->Copy();
+  CSSValueList* current_value = nullptr;
+  if (const CSSValue* css_value = GetProperty(property_id)) {
+    DCHECK(css_value->IsValueList());
+    current_value = ToCSSValueList(css_value)->Copy();
   } else {
-    // TODO(meade): Figure out what the correct behaviour here is.
-    NOTREACHED();
-    exception_state.ThrowTypeError("Property is not already list valued");
+    current_value = CssValueListForPropertyID(property_id);
+  }
+
+  const CSSValue* result = CoerceStyleValuesOrStringsToCSSValues(
+      property_id, values, CSSParserContext::Create(*execution_context));
+  if (!result) {
+    exception_state.ThrowTypeError("Invalid type for property");
     return;
   }
 
-  for (auto& value : values) {
-    const CSSValue* css_value = CoerceStyleValueOrStringToCSSValue(
-        property_id, value, CSSParserContext::Create(*execution_context));
-    if (!css_value) {
-      exception_state.ThrowTypeError("Invalid type for property");
-      return;
-    }
-    css_value_list->Append(*css_value);
+  DCHECK(result->IsValueList());
+  for (const auto& value : *ToCSSValueList(result)) {
+    current_value->Append(*value);
   }
 
-  SetProperty(property_id, css_value_list);
+  SetProperty(property_id, current_value);
 }
 
 void StylePropertyMap::remove(const String& property_name,
