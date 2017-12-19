@@ -12,6 +12,7 @@
 #include "components/download/public/download_params.h"
 #include "components/download/public/download_service.h"
 #include "components/offline_pages/core/offline_event_logger.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
@@ -123,6 +124,16 @@ void PrefetchDownloaderImpl::StartDownload(
   if (!experiment_header.empty()) {
     params.request_params.request_headers.AddHeaderFromString(
         experiment_header);
+  }
+
+  // Lessen download restrictions if limitless prefetching is enabled.
+  if (IsLimitlessPrefetchingEnabled()) {
+    params.scheduling_params.network_requirements =
+        download::SchedulingParams::NetworkRequirements::NONE;
+    params.scheduling_params.battery_requirements =
+        download::SchedulingParams::BatteryRequirements::BATTERY_INSENSITIVE;
+    params.scheduling_params.priority =
+        download::SchedulingParams::Priority::HIGH;
   }
 
   // The download service can queue the download even if it is not fully up yet.
