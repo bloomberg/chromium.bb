@@ -1,5 +1,5 @@
 const cacheName = 'c8-cache-test';
-const scriptName = 'v8-cache-script.js';
+const scriptName = '/devtools/resources/v8-cache-script.js';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(

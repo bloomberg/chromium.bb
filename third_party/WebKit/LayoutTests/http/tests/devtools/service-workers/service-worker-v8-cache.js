@@ -19,7 +19,7 @@
           .then(() => waitForActivated(scope));
       }
       function loadScript() {
-        const url = 'v8-cache-script.js';
+        const url = '/devtools/resources/v8-cache-script.js';
         const frameId = 'frame_id';
         let iframeWindow = document.getElementById(frameId).contentWindow;
         return iframeWindow.loadScript(url)
