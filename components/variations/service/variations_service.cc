@@ -432,13 +432,15 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
                                   const std::string& country_code,
                                   base::Time date_fetched,
                                   bool is_delta_compressed,
-                                  bool is_gzip_compressed) {
+                                  bool is_gzip_compressed,
+                                  bool fetched_insecurely) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unique_ptr<VariationsSeed> seed(new VariationsSeed);
   if (!field_trial_creator_.seed_store()->StoreSeedData(
           seed_data, seed_signature, country_code, date_fetched,
-          is_delta_compressed, is_gzip_compressed, seed.get())) {
+          is_delta_compressed, is_gzip_compressed, fetched_insecurely,
+          seed.get())) {
     return false;
   }
 
@@ -689,9 +691,9 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   const std::string signature = GetHeaderValue(headers, "X-Seed-Signature");
   const std::string country_code = GetHeaderValue(headers, "X-Country");
-  const bool store_success = StoreSeed(seed_data, signature, country_code,
-                                       response_date, is_delta_compressed,
-                                       is_gzip_compressed);
+  const bool store_success =
+      StoreSeed(seed_data, signature, country_code, response_date,
+                is_delta_compressed, is_gzip_compressed, !was_https);
   if (!store_success && is_delta_compressed) {
     disable_deltas_for_next_request_ = true;
     request_scheduler_->ScheduleFetchShortly();
