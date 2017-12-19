@@ -1952,19 +1952,6 @@ if (enable_java_templates) {
                ":$_merge_manifest_target",
                ":$_build_config_target",
              ]
-      if (defined(invoker.shared_resources_whitelist_target)) {
-        _whitelist_gen_dir =
-            get_label_info(invoker.shared_resources_whitelist_target,
-                           "target_gen_dir")
-        _whitelist_target_name =
-            get_label_info(invoker.shared_resources_whitelist_target, "name")
-        shared_resources_whitelist =
-            "${_whitelist_gen_dir}/${_whitelist_target_name}" +
-            "__process_resources_R.txt"
-        deps += [
-          "${invoker.shared_resources_whitelist_target}__process_resources",
-        ]
-      }
     }
     _srcjar_deps += [ ":$_process_resources_target" ]
 
