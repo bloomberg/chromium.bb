@@ -114,6 +114,14 @@ bool ChromeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_model_->search_engine_is_google();
 }
 
+std::map<std::string, size_t>
+ChromeAppListModelUpdater::GetIdToAppListIndexMap() {
+  std::map<std::string, size_t> id_to_app_list_index;
+  for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i)
+    id_to_app_list_index[model_->top_level_item_list()->item_at(i)->id()] = i;
+  return id_to_app_list_index;
+}
+
 AppListFolderItem* ChromeAppListModelUpdater::ResolveOemFolderPosition(
     const std::string& oem_folder_id,
     const syncer::StringOrdinal& preffered_oem_position) {

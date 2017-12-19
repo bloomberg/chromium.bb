@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_MODEL_UPDATER_H_
 #define CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_MODEL_UPDATER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -46,6 +47,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   bool TabletMode() override;
   app_list::AppListViewState StateFullscreen() override;
   bool SearchEngineIsGoogle() override;
+  std::map<std::string, size_t> GetIdToAppListIndexMap() override;
 
   // For SynchableService:
   void AddItemToOemFolder(std::unique_ptr<AppListItem> item,

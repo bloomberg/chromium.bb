@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_APP_LIST_MODEL_UPDATER_H_
 #define CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_APP_LIST_MODEL_UPDATER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -35,6 +36,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   AppListFolderItem* FindFolderItem(const std::string& folder_id) override;
   bool FindItemIndex(const std::string& id, size_t* index) override;
   app_list::AppListViewState StateFullscreen() override;
+  std::map<std::string, size_t> GetIdToAppListIndexMap() override;
   // For SearchModel:
   bool TabletMode() override;
   bool SearchEngineIsGoogle() override;

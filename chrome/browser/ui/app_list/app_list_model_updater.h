@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -43,6 +44,7 @@ class AppListModelUpdater {
   virtual AppListFolderItem* FindFolderItem(const std::string& folder_id) = 0;
   virtual bool FindItemIndex(const std::string& id, size_t* index) = 0;
   virtual app_list::AppListViewState StateFullscreen() = 0;
+  virtual std::map<std::string, size_t> GetIdToAppListIndexMap() = 0;
   // For SearchModel:
   virtual bool TabletMode() = 0;
   virtual bool SearchEngineIsGoogle() = 0;
