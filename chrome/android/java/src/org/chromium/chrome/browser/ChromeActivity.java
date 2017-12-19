@@ -1885,7 +1885,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);
             }
             RecordUserAction.record("MobileMenuHistory");
-            HistoryManagerUtils.showHistoryManager(this, currentTab);
+            HistoryManagerUtils.showHistoryManager(this, currentTab, true);
             StartupMetrics.getInstance().recordOpenedHistory();
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,

@@ -26121,6 +26121,7 @@ from previous Chrome versions.
   <int value="1866079109" label="team-drives"/>
   <int value="1867085340" label="brotli-encoding:enabled"/>
   <int value="1872185826" label="LocationHardReload:enabled"/>
+  <int value="1874195462" label="ChromeHomeMenuItemsExpandSheet:disabled"/>
   <int value="1874604540" label="UseSuggestionsEvenIfFew:disabled"/>
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
@@ -26175,6 +26176,7 @@ from previous Chrome versions.
   <int value="2000091128" label="enable-touch-hover"/>
   <int value="2001562962"
       label="enable-manual-fallback-for-password-saving:enabled"/>
+  <int value="2002573873" label="ChromeHomeMenuItemsExpandSheet:enabled"/>
   <int value="2003568209" label="TouchpadAndWheelScrollLatching:disabled"/>
   <int value="2003811018" label="enable-touch-support-for-screen-magnifier"/>
   <int value="2004483175" label="multi-instance-merge-tabs"/>

@@ -70,6 +70,9 @@ public class ChromePreferenceManager {
 
     public static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
 
+    private static final String CHROME_HOME_MENU_ITEM_CLICK_COUNT_KEY =
+            "chrome_home_menu_item_click_count";
+
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }
@@ -459,6 +462,30 @@ public class ChromePreferenceManager {
      */
     public boolean getChromeHomeOptOutSnackbarShown() {
         return mSharedPreferences.getBoolean(CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN, false);
+    }
+
+    /**
+     * @return The number of times that bookmarks, history, or downloads have been triggered from
+     *         the overflow menu while Chrome Home is enabled.
+     */
+    public int getChromeHomeMenuItemClickCount() {
+        return readInt(CHROME_HOME_MENU_ITEM_CLICK_COUNT_KEY);
+    }
+
+    /**
+     * Increment the count for the number of times bookmarks, history, or downloads have been
+     * triggered from the overflow menu while Chrome Home is enabled.
+     */
+    public void incrementChromeHomeMenuItemClickCount() {
+        writeInt(CHROME_HOME_MENU_ITEM_CLICK_COUNT_KEY, getChromeHomeMenuItemClickCount() + 1);
+    }
+
+    /**
+     * Remove the count for number of times bookmarks, history, or downloads were clicked while
+     * Chrome Home is enabled.
+     */
+    public void clearChromeHomeMenuItemClickCount() {
+        mSharedPreferences.edit().remove(CHROME_HOME_MENU_ITEM_CLICK_COUNT_KEY).apply();
     }
 
     /** Marks that the content suggestions surface has been shown. */
