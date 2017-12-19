@@ -50,7 +50,7 @@ public class AwVariationsConfigurationServiceTest {
         ContextUtils.initApplicationContextForTests(InstrumentationRegistry.getInstrumentation()
                                                             .getTargetContext()
                                                             .getApplicationContext());
-        PathUtils.setPrivateDataDirectorySuffix(AwBrowserProcess.PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(AwBrowserProcess.WEBVIEW_DIR_BASENAME);
 
         mSeedInfo = new SeedInfo();
         mSeedInfo.seedData = "SeedData".getBytes();

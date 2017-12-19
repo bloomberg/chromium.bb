@@ -32,7 +32,7 @@ public class AwTestRunnerActivity extends Activity {
         AwShellResourceProvider.registerResources(this);
         ContextUtils.initApplicationContext(getApplicationContext());
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        AwBrowserProcess.loadLibrary();
+        AwBrowserProcess.loadLibrary(null);
         StrictMode.setThreadPolicy(oldPolicy);
 
         mLinearLayout = new LinearLayout(this);

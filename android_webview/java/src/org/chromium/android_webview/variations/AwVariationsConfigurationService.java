@@ -66,7 +66,7 @@ public class AwVariationsConfigurationService extends Service {
         ContextUtils.initApplicationContext(this.getApplicationContext());
         // Ensure that PathUtils.getDataDirectory() will return the app_webview directory in the
         // following code.
-        PathUtils.setPrivateDataDirectorySuffix(AwBrowserProcess.PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(AwBrowserProcess.WEBVIEW_DIR_BASENAME);
     }
 
     @Override

@@ -69,7 +69,7 @@ public class AwShellActivity extends Activity {
         ContentApplication.initCommandLine(this);
 
         ContextUtils.initApplicationContext(getApplicationContext());
-        AwBrowserProcess.loadLibrary();
+        AwBrowserProcess.loadLibrary(null);
 
         if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {
             Log.e(TAG, "Enabling Android trace.");

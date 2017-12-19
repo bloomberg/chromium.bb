@@ -85,6 +85,9 @@ class WebViewDelegateFactory {
 
         /** @see android.webkit.WebViewDelegate#isMultiProcessEnabled */
         boolean isMultiProcessEnabled();
+
+        /** @see android.webkit.WebViewDelegate#getDataDirectorySuffix */
+        String getDataDirectorySuffix();
     }
 
     /**
@@ -205,6 +208,11 @@ class WebViewDelegateFactory {
         @Override
         public boolean isMultiProcessEnabled() {
             return mDelegate.isMultiProcessEnabled();
+        }
+
+        @Override
+        public String getDataDirectorySuffix() {
+            return null;
         }
     }
 
@@ -395,6 +403,11 @@ class WebViewDelegateFactory {
         @Override
         public boolean isMultiProcessEnabled() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getDataDirectorySuffix() {
+            return null;
         }
     }
 }
