@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/stack_view/card_set.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
@@ -121,9 +122,13 @@ class StackViewControllerTest : public BlockCleanupTest {
                      activeCardSet:static_cast<CardSet*>(main_card_set_)
         applicationCommandEndpoint:nil];
     // Resize the view and call VC lifecycle events
-    [view_controller_ view].frame =
-        CGRectMake(0.0, 0.0, kViewportDimension, kViewportDimension);
+    CGRect frame = CGRectMake(0.0, 0.0, kViewportDimension, kViewportDimension);
+    [view_controller_ view].frame = frame;
+
     // Simulate displaying the view.
+    if (TabSwitcherPresentsBVCEnabled()) {
+      [view_controller_ prepareForDisplayAtSize:frame.size];
+    }
     [view_controller_ viewWillAppear:NO];
   }
   void TearDown() override {
