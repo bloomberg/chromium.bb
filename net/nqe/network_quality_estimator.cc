@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -122,40 +121,6 @@ const char* GetHistogramSuffixObservedThroughput(
       return kSuffixes[i];
   }
   return kSuffixes[arraysize(kSuffixes) - 1];
-}
-
-// The least significant kTrimBits of the metric will be discarded. If the
-// trimmed metric value is greater than what can be fit in kBitsPerMetric bits,
-// then the largest value that can be represented in kBitsPerMetric bits is
-// returned.
-const int32_t kTrimBits = 5;
-
-// Maximum number of bits in which one metric should fit. Restricting the amount
-// of space allocated to a single metric makes it possile to fit multiple
-// metrics in a single histogram sample, and ensures that all those metrics
-// are recorded together as a single tuple.
-const int32_t kBitsPerMetric = 7;
-
-static_assert(32 >= kBitsPerMetric * 4,
-              "Four metrics would not fit in a 32-bit int");
-
-// Trims the |metric| by removing the last kTrimBits, and then rounding down
-// the |metric| such that the |metric| fits in kBitsPerMetric.
-int32_t FitInKBitsPerMetricBits(int32_t metric) {
-  // Remove the last kTrimBits. This will allow the metric to fit within
-  // kBitsPerMetric while losing only the least significant bits.
-  DCHECK_LE(0, metric);
-  metric = metric >> kTrimBits;
-
-  // kLargestValuePossible is the largest value that can be recorded using
-  // kBitsPerMetric.
-  static const int32_t kLargestValuePossible = (1 << kBitsPerMetric) - 1;
-  if (metric > kLargestValuePossible) {
-    // Fit |metric| in kBitsPerMetric by clamping it down.
-    metric = kLargestValuePossible;
-  }
-  DCHECK_EQ(0, metric >> kBitsPerMetric) << metric;
-  return metric;
 }
 
 void RecordRTTAccuracy(base::StringPiece prefix,
@@ -577,107 +542,6 @@ void NetworkQualityEstimator::NotifyRequestCompleted(const URLRequest& request,
     return;
 
   throughput_analyzer_->NotifyRequestCompleted(request);
-  RecordCorrelationMetric(request, net_error);
-}
-
-void NetworkQualityEstimator::RecordCorrelationMetric(const URLRequest& request,
-                                                      int net_error) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // The histogram is recorded randomly to reduce overhead involved with sparse
-  // histograms. Furthermore, recording the correlation on each request is
-  // unnecessary.
-  if (RandDouble() >= params_->correlation_uma_logging_probability())
-    return;
-
-  if (request.response_info().was_cached ||
-      !request.response_info().network_accessed) {
-    return;
-  }
-
-  LoadTimingInfo load_timing_info;
-  request.GetLoadTimingInfo(&load_timing_info);
-  // If the load timing info is unavailable, it probably means that the request
-  // did not go over the network.
-  if (load_timing_info.send_start.is_null() ||
-      load_timing_info.receive_headers_end.is_null()) {
-    return;
-  }
-
-  // Record UMA only for successful requests that have completed.
-  if (net_error != OK)
-    return;
-  if (!request.response_info().headers.get() ||
-      request.response_info().headers->response_code() != HTTP_OK) {
-    return;
-  }
-  if (load_timing_info.receive_headers_end < last_main_frame_request_)
-    return;
-
-  // Use the system clock instead of |tick_clock_| to compare the current
-  // timestamp with the |load_timing_info| timestamp since the latter is set by
-  // the system clock, and may be different from |tick_clock_| in tests.
-  const base::TimeTicks now = base::TimeTicks::Now();
-  // Record UMA only for requests that started recently.
-  if (now - last_main_frame_request_ > base::TimeDelta::FromSeconds(15))
-    return;
-
-  if (last_connection_change_ >= last_main_frame_request_)
-    return;
-
-  DCHECK_GE(now, load_timing_info.send_start);
-
-  int32_t rtt = 0;
-
-  if (estimated_quality_at_last_main_frame_.downstream_throughput_kbps() ==
-      nqe::internal::INVALID_RTT_THROUGHPUT) {
-    return;
-  }
-
-  if (UseTransportRTT()) {
-    if (estimated_quality_at_last_main_frame_.transport_rtt() ==
-        nqe::internal::InvalidRTT()) {
-      return;
-    }
-    rtt = FitInKBitsPerMetricBits(
-        estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds());
-  } else {
-    if (estimated_quality_at_last_main_frame_.http_rtt() ==
-        nqe::internal::InvalidRTT()) {
-      return;
-    }
-    rtt = FitInKBitsPerMetricBits(
-        estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds());
-  }
-
-  const int32_t downstream_throughput = FitInKBitsPerMetricBits(
-      estimated_quality_at_last_main_frame_.downstream_throughput_kbps());
-
-  const int32_t resource_load_time = FitInKBitsPerMetricBits(
-      (now - load_timing_info.send_start).InMilliseconds());
-
-  int64_t resource_size = (request.GetTotalReceivedBytes() * 8) / 1024;
-  if (resource_size >= (1 << kBitsPerMetric)) {
-    // Too large resource size (at least 128 Kb).
-    return;
-  }
-
-  DCHECK_EQ(
-      0, (rtt | downstream_throughput | resource_load_time | resource_size) >>
-             kBitsPerMetric);
-
-  // First 32 - (4* kBitsPerMetric) of the sample are unset. Next
-  // kBitsPerMetric of the sample contain |rtt|. Next
-  // kBitsPerMetric contain |downstream_throughput|. Next kBitsPerMetric
-  // contain |resource_load_time|. And, the last kBitsPerMetric
-  // contain |resource_size|.
-  int32_t sample = rtt;
-  sample = (sample << kBitsPerMetric) | downstream_throughput;
-  sample = (sample << kBitsPerMetric) | resource_load_time;
-  sample = (sample << kBitsPerMetric) | resource_size;
-
-  base::UmaHistogramSparse("NQE.Correlation.ResourceLoadTime.0Kb_128Kb",
-                           sample);
 }
 
 void NetworkQualityEstimator::NotifyURLRequestDestroyed(
@@ -1715,10 +1579,6 @@ void NetworkQualityEstimator::SetTickClockForTesting(
       tick_clock_);
   throughput_analyzer_->SetTickClockForTesting(tick_clock_);
   watcher_factory_->SetTickClockForTesting(tick_clock_);
-}
-
-double NetworkQualityEstimator::RandDouble() const {
-  return base::RandDouble();
 }
 
 void NetworkQualityEstimator::OnUpdatedTransportRTTAvailable(

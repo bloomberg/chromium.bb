@@ -68,7 +68,6 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
           net_log->bound().net_log()),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       accuracy_recording_intervals_set_(false),
-      rand_double_(0.0),
       embedded_test_server_(base::FilePath(kTestFilePath)),
       suppress_notifications_for_testing_(suppress_notifications_for_testing),
       net_log_(std::move(net_log)) {
@@ -92,7 +91,6 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
                               net_log->bound().net_log()),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       accuracy_recording_intervals_set_(false),
-      rand_double_(0.0),
       embedded_test_server_(base::FilePath(kTestFilePath)),
       suppress_notifications_for_testing_(false),
       net_log_(std::move(net_log)) {
@@ -260,10 +258,6 @@ TestNetworkQualityEstimator::GetAccuracyRecordingIntervals() const {
     return accuracy_recording_intervals_;
 
   return NetworkQualityEstimator::GetAccuracyRecordingIntervals();
-}
-
-double TestNetworkQualityEstimator::RandDouble() const {
-  return rand_double_;
 }
 
 base::Optional<int32_t>

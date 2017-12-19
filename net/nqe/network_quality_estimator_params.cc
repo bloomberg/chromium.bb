@@ -403,11 +403,6 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "rssi_weight_per_signal_strength_level",
               1.0)),
-      correlation_uma_logging_probability_(
-          GetDoubleValueForVariationParamWithDefaultValue(
-              params_,
-              "correlation_logging_probability",
-              0.01)),
       forced_effective_connection_type_(
           GetInitForcedEffectiveConnectionType(params_)),
       forced_effective_connection_type_on_cellular_only_(
@@ -480,8 +475,6 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               "socket_watchers_min_notification_interval_msec",
               200))),
       use_small_responses_(false) {
-  DCHECK_LE(0.0, correlation_uma_logging_probability_);
-  DCHECK_GE(1.0, correlation_uma_logging_probability_);
   DCHECK(lower_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
          lower_bound_http_rtt_transport_rtt_multiplier_ > 0);
   DCHECK(upper_bound_http_rtt_transport_rtt_multiplier_ == -1 ||

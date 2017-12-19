@@ -196,10 +196,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   const std::vector<base::TimeDelta>& GetAccuracyRecordingIntervals()
       const override;
 
-  void set_rand_double(double rand_double) { rand_double_ = rand_double; }
-
-  double RandDouble() const override;
-
   void set_bandwidth_delay_product_kbits(int32_t value) {
     bandwidth_delay_product_kbits_ = value;
   }
@@ -286,8 +282,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   // If set, GetRTTEstimateInternal() would return the set value.
   base::Optional<base::TimeDelta> rtt_estimate_internal_;
-
-  double rand_double_;
 
   // If set, GetBandwidthDelayProductKbits() would return its set value.
   // Otherwise, the base implementation is called.

@@ -276,9 +276,6 @@ class NET_EXPORT NetworkQualityEstimator
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(base::TickClock* tick_clock);
 
-  // Returns a random double in the range [0.0, 1.0). Virtualized for testing.
-  virtual double RandDouble() const;
-
   // Returns the effective type of the current connection based on only the
   // observations received after |start_time|. |http_rtt|, |transport_rtt| and
   // |downstream_throughput_kbps| must be non-null. |http_rtt|, |transport_rtt|
@@ -515,11 +512,6 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Returns true if the cached network quality estimate was successfully read.
   bool ReadCachedNetworkQualityEstimate();
-
-  // Records a correlation metric that can be used for computing the correlation
-  // between HTTP-layer RTT, transport-layer RTT, throughput and the time
-  // taken to complete |request|.
-  void RecordCorrelationMetric(const URLRequest& request, int net_error) const;
 
   // Returns true if transport RTT should be used for computing the effective
   // connection type.
