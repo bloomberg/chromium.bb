@@ -18,18 +18,23 @@ static bool IsOnBatteryPower() {
   return false;
 }
 
-WatchTimeReporter::WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
-                                     GetMediaTimeCB get_media_time_cb,
-                                     mojom::MediaMetricsProvider* provider)
+WatchTimeReporter::WatchTimeReporter(
+    mojom::PlaybackPropertiesPtr properties,
+    GetMediaTimeCB get_media_time_cb,
+    mojom::MediaMetricsProvider* provider,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : WatchTimeReporter(std::move(properties),
                         false /* is_background */,
                         std::move(get_media_time_cb),
-                        provider) {}
+                        provider,
+                        task_runner) {}
 
-WatchTimeReporter::WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
-                                     bool is_background,
-                                     GetMediaTimeCB get_media_time_cb,
-                                     mojom::MediaMetricsProvider* provider)
+WatchTimeReporter::WatchTimeReporter(
+    mojom::PlaybackPropertiesPtr properties,
+    bool is_background,
+    GetMediaTimeCB get_media_time_cb,
+    mojom::MediaMetricsProvider* provider,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : properties_(std::move(properties)),
       is_background_(is_background),
       get_media_time_cb_(std::move(get_media_time_cb)) {
@@ -53,7 +58,9 @@ WatchTimeReporter::WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
   prop_copy->is_background = true;
   background_reporter_.reset(
       new WatchTimeReporter(std::move(prop_copy), true /* is_background */,
-                            get_media_time_cb_, provider));
+                            get_media_time_cb_, provider, task_runner));
+
+  reporting_timer_.SetTaskRunner(task_runner);
 }
 
 WatchTimeReporter::~WatchTimeReporter() {

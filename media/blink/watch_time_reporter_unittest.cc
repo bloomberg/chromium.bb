@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace media {
 
@@ -227,7 +228,8 @@ class WatchTimeReporterTest
                                        is_encrypted, false, initial_video_size),
         base::Bind(&WatchTimeReporterTest::GetCurrentMediaTime,
                    base::Unretained(this)),
-        &fake_metrics_provider_));
+        &fake_metrics_provider_,
+        blink::scheduler::GetSequencedTaskRunnerForTesting()));
 
     // Setup the reporting interval to be immediate to avoid spinning real time
     // within the unit test.

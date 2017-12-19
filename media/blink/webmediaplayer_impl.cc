@@ -296,6 +296,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   if (observer_)
     observer_->SetClient(this);
+
+  memory_usage_reporting_timer_.SetTaskRunner(
+      frame_->GetTaskRunner(blink::TaskType::kUnthrottled));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -2567,7 +2570,8 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
           pipeline_metadata_.natural_size),
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
-      media_metrics_provider_.get()));
+      media_metrics_provider_.get(),
+      frame_->GetTaskRunner(blink::TaskType::kUnthrottled)));
   watch_time_reporter_->OnVolumeChange(volume_);
 
   if (delegate_->IsFrameHidden())
