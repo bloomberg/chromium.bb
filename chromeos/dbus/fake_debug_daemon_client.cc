@@ -209,7 +209,7 @@ void FakeDebugDaemonClient::SetOomScoreAdj(
     const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
     const SetOomScoreAdjCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, ""));
+      FROM_HERE, base::BindOnce(callback, true, ""));
 }
 
 void FakeDebugDaemonClient::SetDebuggingFeaturesStatus(int featues_mask) {
