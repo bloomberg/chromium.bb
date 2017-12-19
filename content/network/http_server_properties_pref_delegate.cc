@@ -43,7 +43,7 @@ void HttpServerPropertiesPrefDelegate::StartListeningForUpdates(
   // too.
   if (pref_service_->GetInitializationStatus() ==
       PrefService::INITIALIZATION_STATUS_WAITING) {
-    pref_service_->AddPrefInitObserver(base::Bind(
+    pref_service_->AddPrefInitObserver(base::BindOnce(
         [](const base::Closure& callback, bool) { callback.Run(); }, callback));
   }
 }

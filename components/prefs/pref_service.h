@@ -296,7 +296,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // We run the callback once, when initialization completes. The bool
   // parameter will be set to true for successful initialization,
   // false for unsuccessful.
-  void AddPrefInitObserver(base::Callback<void(bool)> callback);
+  void AddPrefInitObserver(base::OnceCallback<void(bool)> callback);
 
   // Returns the PrefRegistry object for this service. You should not
   // use this; the intent is for no registrations to take place after

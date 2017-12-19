@@ -525,7 +525,7 @@ ProfileImpl::ProfileImpl(
     // (successfully or not).  Note that we can use base::Unretained
     // because the PrefService is owned by this class and lives on
     // the same thread.
-    prefs_->AddPrefInitObserver(base::Bind(
+    prefs_->AddPrefInitObserver(base::BindOnce(
         &ProfileImpl::OnPrefsLoaded, base::Unretained(this), create_mode));
   } else {
     // Prefs were loaded synchronously so we can continue directly.

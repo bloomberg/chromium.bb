@@ -323,8 +323,8 @@ void WizardController::Init(OobeScreen first_screen) {
       return;
     } else if (status == PrefService::INITIALIZATION_STATUS_WAITING) {
       GetLocalState()->AddPrefInitObserver(
-          base::Bind(&WizardController::OnLocalStateInitialized,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&WizardController::OnLocalStateInitialized,
+                         weak_factory_.GetWeakPtr()));
     }
   }
 
