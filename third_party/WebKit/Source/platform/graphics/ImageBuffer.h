@@ -101,8 +101,10 @@ class ImageDataBuffer {
       : pixmap_(pixmap),
         uses_pixmap_(true),
         size_(IntSize(pixmap.width(), pixmap.height())) {}
-  PLATFORM_EXPORT ImageDataBuffer(scoped_refptr<StaticBitmapImage>);
+  ImageDataBuffer(scoped_refptr<StaticBitmapImage>);
 
+  static std::unique_ptr<ImageDataBuffer> PLATFORM_EXPORT
+      Create(scoped_refptr<StaticBitmapImage>);
   String PLATFORM_EXPORT ToDataURL(const String& mime_type,
                                    const double& quality) const;
   bool PLATFORM_EXPORT EncodeImage(const String& mime_type,
