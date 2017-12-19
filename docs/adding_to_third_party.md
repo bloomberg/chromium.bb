@@ -74,7 +74,7 @@ license is not included in about:credits page.
 
 If the code is applicable and will be compiled on all supported Chromium
 platforms (Windows, Mac, Linux, Chrome OS, iOS, Android), check it in to
-[src/third_party](http://src.chromium.org/viewvc/chrome/trunk/src/third_party/). 
+[src/third_party](http://src.chromium.org/viewvc/chrome/trunk/src/third_party/).
 
 If the code is only applicable to certain platforms, check it in to
 [src/third_party](http://src.chromium.org/viewvc/chrome/trunk/src/third_party/)
@@ -95,6 +95,7 @@ have a wrong path in DEPS and want to change the path of the existing library in
 DEPS, please ask the infrastructure team before committing the change.
 
 ### Checking in large files
+
 _Accessible to Googlers only. Non-Googlers can email one of the people in
 third_party/OWNERS for help._
 
@@ -117,11 +118,13 @@ All third party additions and substantive changes like re-licensing need the
 following sign-offs. Some of these are accessible to Googlers only. Non-Googlers
 can email one of the people in third_party/OWNERS for help.
 
-* Chrome Eng Review. Googlers should see go/chrome-eng-review (please include information about the additional checkout size, build times, and binary sizes. Please also make sure that the motivation for your project is clear, e.g., a design doc has been circulated).
-* opensource-licensing@google.com (ping the list with relevant details and a
-  link to the CL).
+* Chrome Eng Review. Googlers should see go/chrome-eng-review. (Please include
+  information about the additional checkout size, build times, and binary sizes.
+  Please also make sure that the motivation for your project is clear, e.g.,
+  a design doc has been circulated.)
 * security@chromium.org (ping the list with relevant details and a link to the
   CL).
+* chromium-third-party@google.com (add the list as a reviewer on your change).
 
 Please send separate emails to the three lists.
 
@@ -135,8 +138,7 @@ update your package.
 Subsequent changes don't require third-party-owners approval; you can modify the
 code as much as you want.
 
-## Ask the infrastructure team to add a git mirror for the dependency (or
-configure the git repo, if using googlesource.com)
+## Ask the infrastructure team to add a git mirror for the dependency
 
 Before committing the DEPS, you need to ask the infra team to create a git
 mirror for your dependency. [Create a

@@ -14,6 +14,9 @@
 # Eng reviewer
 file://ENG_REVIEW_OWNERS
 
+# Automatic round-robin assignment of reviewer for third-party licenses.
+chromium-third-party@google.com
+
 thakis@chromium.org
 
 per-file .gitignore=*
