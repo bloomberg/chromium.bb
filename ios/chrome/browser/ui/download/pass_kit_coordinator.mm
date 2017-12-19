@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -16,6 +17,28 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+const char kUmaPresentAddPassesDialogResult[] =
+    "Download.IOSPresentAddPassesDialogResult";
+
+namespace {
+
+// Returns PresentAddPassesDialogResult for the given base view
+// controller.
+PresentAddPassesDialogResult GetUmaResult(
+    UIViewController* base_view_controller) {
+  if (!base_view_controller.presentedViewController)
+    return PresentAddPassesDialogResult::kSuccessful;
+
+  if ([base_view_controller.presentedViewController
+          isKindOfClass:[PKAddPassesViewController class]])
+    return PresentAddPassesDialogResult::
+        kAnotherAddPassesViewControllerIsPresented;
+
+  return PresentAddPassesDialogResult::kAnotherViewControllerIsPresented;
+}
+
+}  // namespace
 
 @interface PassKitCoordinator ()<CRWWebStateObserver,
                                  PKAddPassesViewControllerDelegate> {
@@ -75,6 +98,11 @@
     [self stop];
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION(kUmaPresentAddPassesDialogResult,
+                            GetUmaResult(self.baseViewController),
+                            PresentAddPassesDialogResult::kCount);
+
   _viewController = [[PKAddPassesViewController alloc] initWithPass:self.pass];
   _viewController.delegate = self;
   [self.baseViewController presentViewController:_viewController
