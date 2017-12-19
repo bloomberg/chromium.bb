@@ -370,9 +370,8 @@ class CORE_EXPORT Element : public ContainerNode {
                               double value,
                               CSSPrimitiveValue::UnitType,
                               bool important = false);
-  // TODO(sashab): Make this take a const CSSValue&.
   void SetInlineStyleProperty(CSSPropertyID,
-                              const CSSValue*,
+                              const CSSValue&,
                               bool important = false);
   bool SetInlineStyleProperty(CSSPropertyID,
                               const String& value,
