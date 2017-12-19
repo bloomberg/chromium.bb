@@ -811,6 +811,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // FeatureEngagementTracker). If neither is eligible, neither bubble is
 // presented. This method requires that |self.browserState| is not NULL.
 - (void)presentBubblesIfEligible;
+// Returns whether |tab| is scrolled to the top.
+- (BOOL)isTabScrolledToTop:(Tab*)tab;
 
 // Update find bar with model data. If |shouldFocus| is set to YES, the text
 // field will become first responder.
@@ -2309,10 +2311,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return;
   if (currentTab.webState->GetVisibleURL() == kChromeUINewTabURL)
     return;
-  // Do not present the bubble if the tab is scrolled.
-  if (!CGPointEqualToPoint(
-          currentTab.webState->GetWebViewProxy().scrollViewProxy.contentOffset,
-          CGPointZero))
+
+  // Do not present the bubble if the tab is not scrolled to the top.
+  if (![self isTabScrolledToTop:currentTab])
     return;
 
   NSString* text =
@@ -2378,10 +2379,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   Tab* currentTab = [self.tabModel currentTab];
   if (!currentTab)
     return;
-  // Do not present the bubble if the tab is scrolled.
-  if (!CGPointEqualToPoint(
-          currentTab.webState->GetWebViewProxy().scrollViewProxy.contentOffset,
-          CGPointZero))
+
+  // Do not present the bubble if the tab is not scrolled to the top.
+  if (![self isTabScrolledToTop:currentTab])
     return;
 
   NSString* text = l10n_util::GetNSStringWithFixup(
@@ -2408,6 +2408,19 @@ bubblePresenterForFeature:(const base::Feature&)feature
                          view:self.view
                   anchorPoint:toolsButtonAnchor];
   [_toolbarCoordinator triggerToolsMenuButtonAnimation];
+}
+
+- (BOOL)isTabScrolledToTop:(Tab*)tab {
+  CGPoint scrollOffset =
+      tab.webState->GetWebViewProxy().scrollViewProxy.contentOffset;
+
+  // If there is a native controller, use the native controller's scroll offset.
+  id nativeController = [self nativeControllerForTab:tab];
+  if ([nativeController conformsToProtocol:@protocol(CRWNativeContent)] &&
+      [nativeController respondsToSelector:@selector(scrollOffset)]) {
+    scrollOffset = [nativeController scrollOffset];
+  }
+  return CGPointEqualToPoint(scrollOffset, CGPointZero);
 }
 
 #pragma mark - Tap handling
