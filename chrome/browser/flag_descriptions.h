@@ -1141,9 +1141,6 @@ extern const char kEnableNtpBookmarkSuggestionsDescription[];
 extern const char kEnableNtpForeignSessionsSuggestionsName[];
 extern const char kEnableNtpForeignSessionsSuggestionsDescription[];
 
-extern const char kEnableMidiManagerDynamicInstantiationName[];
-extern const char kEnableMidiManagerDynamicInstantiationDescription[];
-
 extern const char kEnableNtpOfflinePageDownloadSuggestionsName[];
 extern const char kEnableNtpOfflinePageDownloadSuggestionsDescription[];
 

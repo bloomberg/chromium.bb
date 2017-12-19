@@ -1855,37 +1855,6 @@
             ]
         }
     ],
-    "MidiManagerDynamicInstantiation": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MidiManagerDynamicInstantiation"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_WithFullSupport",
-                    "enable_features": [
-                        "MidiManagerDynamicInstantiation"
-                    ]
-                }
-            ]
-        }
-    ],
     "MojoCdm": [
         {
             "platforms": [

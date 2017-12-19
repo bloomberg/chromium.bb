@@ -13,20 +13,6 @@
 
 namespace midi {
 
-namespace {
-
-// TODO(toyoshim): Support on all platforms. See https://crbug.com/672793.
-bool IsDynamicInstantiationEnabled() {
-#if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(
-      features::kMidiManagerDynamicInstantiation);
-#else
-  return true;
-#endif
-}
-
-}  // namespace
-
 std::unique_ptr<MidiManager> MidiService::ManagerFactory::Create(
     MidiService* service) {
   return std::unique_ptr<MidiManager>(MidiManager::Create(service));
@@ -45,8 +31,7 @@ base::TimeDelta MidiService::TimestampToTimeDeltaDelay(double timestamp) {
 }
 
 MidiService::MidiService(void)
-    : MidiService(std::make_unique<ManagerFactory>(),
-                  IsDynamicInstantiationEnabled()) {}
+    : MidiService(std::make_unique<ManagerFactory>(), true) {}
 
 // TODO(toyoshim): Stop enforcing to disable dynamic instantiation mode for
 // testing once the mode is enabled by default.
