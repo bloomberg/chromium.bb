@@ -145,6 +145,7 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
 
   gpu::Mailbox gpu_mailbox_;
   gpu::SyncToken sync_token_;
+  bool mailbox_needs_new_sync_token_ = true;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   GLuint image_id_ = 0;

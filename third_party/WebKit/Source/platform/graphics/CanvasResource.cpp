@@ -272,6 +272,9 @@ const gpu::Mailbox& CanvasResource_GpuMemoryBuffer::GetOrCreateGpuMailbox() {
   if (gpu_mailbox_.IsZero() && gl) {
     gl->GenMailboxCHROMIUM(gpu_mailbox_.name);
     gl->ProduceTextureDirectCHROMIUM(texture_id_, gpu_mailbox_.name);
+  }
+  if (mailbox_needs_new_sync_token_) {
+    mailbox_needs_new_sync_token_ = false;
     gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
   }
   return gpu_mailbox_;
@@ -295,6 +298,7 @@ void CanvasResource_GpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
       source_texture, 0 /*sourceLevel*/, TextureTarget(), texture_id_,
       0 /*destLevel*/, format, type, false /*unpackFlipY*/,
       false /*unpackPremultiplyAlpha*/, false /*unpackUnmultiplyAlpha*/);
+  mailbox_needs_new_sync_token_ = true;
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
