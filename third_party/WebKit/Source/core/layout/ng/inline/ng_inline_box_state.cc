@@ -373,7 +373,9 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
     NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
-    LayoutUnit line_left_offset = start_child.offset.inline_offset;
+    // Clamping left offset is not defined, match to the existing behavior.
+    LayoutUnit line_left_offset =
+        start_child.offset.inline_offset.ClampNegativeToZero();
     LayoutUnit line_right_offset = end < line_box->size()
                                        ? (*line_box)[end].offset.inline_offset
                                        : position;
@@ -437,7 +439,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       margin_border_padding_line_right - margin_line_right;
   offset.inline_offset -= border_padding_line_left;
   size.inline_size += border_padding_line_left + border_padding_line_right;
-  box.SetInlineSize(size.inline_size);
+  box.SetInlineSize(size.inline_size.ClampNegativeToZero());
   box.SetBlockSize(size.block_size);
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
