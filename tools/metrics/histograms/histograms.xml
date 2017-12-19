@@ -56103,6 +56103,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.URLNavigationTimeToRedirectToHTTPS" units="ms">
+  <owner>cthomp@chromium.org</owner>
+  <summary>
+    The amount of time, in milliseconds, between the start of a typed URL
+    navigation in the omnibox (the user typing a URL to completion, or selecting
+    a URL from the inline autocomplete or dropdown) and the start of a redirect
+    upgrading the URL to HTTPS. This is only recorded when the upgraded URL is
+    the same except for the scheme and the addition/removal of a
+    &quot;www.&quot; prefix.
+
+    To calculate the percentage of HTTP URL navigations that have been upgraded
+    in this way, divide the count of this histogram by the count for HTTP in
+    Omnibox.URLNavigationScheme.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.UserTextCleared" enum="OmniboxUserTextCleared">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
