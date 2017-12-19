@@ -13,7 +13,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/search/tokenized_string.h"
 #include "ash/app_list/model/search/tokenized_string_match.h"
 #include "base/bind.h"
@@ -349,9 +348,8 @@ void AppSearchProvider::UpdateResults() {
   new_results.reserve(apps_size);
   if (show_recommendations) {
     // Build a map of app ids to their position in the app list.
-    std::map<std::string, size_t> id_to_app_list_index;
-    for (size_t i = 0; i < model_updater_->ItemCount(); ++i)
-      id_to_app_list_index[model_updater_->ItemAt(i)->id()] = i;
+    std::map<std::string, size_t> id_to_app_list_index =
+        model_updater_->GetIdToAppListIndexMap();
 
     for (auto& app : apps_) {
       std::unique_ptr<AppResult> result =

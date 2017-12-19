@@ -74,6 +74,14 @@ app_list::AppListViewState FakeAppListModelUpdater::StateFullscreen() {
   return app_list::AppListViewState::CLOSED;
 }
 
+std::map<std::string, size_t>
+FakeAppListModelUpdater::GetIdToAppListIndexMap() {
+  std::map<std::string, size_t> id_to_app_list_index;
+  for (size_t i = 0; i < items_.size(); ++i)
+    id_to_app_list_index[items_[i]->id()] = i;
+  return id_to_app_list_index;
+}
+
 bool FakeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_engine_is_google_;
 }
