@@ -3108,6 +3108,7 @@ crbug.com/785931 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManu
 # crbug.com/736177: Failures likely related to different results on Mac with different GPUs
 crbug.com/736177 [ Mac10.12 ] fast/forms/form-element-geometry.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] fast/forms/input-appearance-height.html [ Failure Pass ]
+crbug.com/736177 [ Mac ] svg/as-border-image/svg-as-border-image.html [ Failure Pass ]
 # These tests are failing on Mac-10.12 when using an Intel GPU and Mac Retina
 crbug.com/736177 [ Mac10.12 Retina ] compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] css1/box_properties/acid_test.html [ Failure Pass ]
@@ -3143,9 +3144,6 @@ crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/capti
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/captions2.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
-# fast/css/text-overflow-input.html test is flaky on all Mac platforms
-crbug.com/736177 [ Mac ] fast/css/text-overflow-input.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] svg/as-border-image/svg-as-border-image.html [ Failure Pass ]
 
 crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 
