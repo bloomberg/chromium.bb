@@ -214,6 +214,7 @@ group("blink_platform_public_deps") {
     "//services/service_manager/public/interfaces:interfaces_blink",
     "//skia",
     "//third_party:jpeg",
+    "//third_party/WebKit/Source/platform/heap:blink_heap_incremental_marking",
     "//third_party/WebKit/Source/platform/network:make_generated",
     "//third_party/WebKit/Source/platform/wtf",
     "//third_party/WebKit/common:blink_common",

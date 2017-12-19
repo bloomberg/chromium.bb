@@ -7,6 +7,21 @@ import("//build/config/jumbo.gni")
 import("//third_party/WebKit/Source/platform/platform.gni")
 import("//testing/test.gni")
 
+declare_args() {
+  # Enables incremental marking in Oilpan.
+  enable_blink_heap_incremental_marking = false
+}
+
+buildflag_header("blink_heap_incremental_marking") {
+  header = "IncrementalMarkingFlag.h"
+
+  header_dir = "blink/platform/heap"
+
+  flags = [
+    "BLINK_HEAP_INCREMENTAL_MARKING=$enable_blink_heap_incremental_marking",
+  ]
+}
+
 blink_platform_sources("heap") {
   sources = [
     "BlinkGC.h",
