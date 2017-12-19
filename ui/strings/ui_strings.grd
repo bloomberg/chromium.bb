@@ -655,6 +655,15 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_NOTIFICATION_DURATION_YEARS_SHORTEST" desc="Phrase describing a time duration using years that is as short as possible, preferrably one character. Should be same as AndroidPlatform msgId 7848711145196397042. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_years_shortest) [ICU Syntax]">
         {YEARS, plural, =1 {1y} other {#y}}
       </message>
+      <message name="IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS" desc="The label for the radio button to block all the notifications from this notification origin.">
+        Block all notifications
+      </message>
+      <message name="IDS_MESSAGE_CENTER_DONT_BLOCK_NOTIFICATIONS" desc="The label for the radio button to allow all the notifications from this notification origin.">
+        Don't block
+      </message>
+      <message name="IDS_MESSAGE_CENTER_SETTINGS_DONE" desc="The caption of the button to finish inline notification settings.">
+        Done
+      </message>
       <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the close button in a notification. Usually 'button' is suffixed to this text automatically.">
         Notification close
       </message>

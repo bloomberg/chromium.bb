@@ -70,7 +70,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void OnContainerAnimationEnded();
 
   void OnCloseButtonPressed();
-  void OnSettingsButtonPressed();
+  virtual void OnSettingsButtonPressed();
 
   // views::View
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
