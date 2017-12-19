@@ -20,7 +20,6 @@
 namespace vr {
 
 TEST(UiElement, BoundsContainChildren) {
-  const float epsilon = 1e-3f;
   auto parent = base::MakeUnique<UiElement>();
   parent->set_bounds_contain_children(true);
   parent->set_padding(0.1, 0.2);
@@ -33,7 +32,8 @@ TEST(UiElement, BoundsContainChildren) {
 
   parent->DoLayOutChildren();
   EXPECT_RECT_NEAR(gfx::RectF(2.5f, 2.5f, 3.2f, 3.4f),
-                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+                   gfx::RectF(parent->local_origin(), parent->size()),
+                   kEpsilon);
   EXPECT_EQ(parent->GetCenter().ToString(), c1_ptr->GetCenter().ToString());
 
   auto c2 = base::MakeUnique<UiElement>();
@@ -43,7 +43,8 @@ TEST(UiElement, BoundsContainChildren) {
 
   parent->DoLayOutChildren();
   EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 1.0f, 9.2f, 6.4f),
-                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+                   gfx::RectF(parent->local_origin(), parent->size()),
+                   kEpsilon);
 
   auto c3 = base::MakeUnique<UiElement>();
   c3->SetSize(2.0f, 2.0f);
@@ -52,7 +53,8 @@ TEST(UiElement, BoundsContainChildren) {
 
   parent->DoLayOutChildren();
   EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 0.5f, 9.2f, 7.4f),
-                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+                   gfx::RectF(parent->local_origin(), parent->size()),
+                   kEpsilon);
 
   auto c4 = base::MakeUnique<UiElement>();
   c4->SetSize(2.0f, 2.0f);
@@ -63,7 +65,8 @@ TEST(UiElement, BoundsContainChildren) {
   // We expect no change due to an invisible child.
   parent->DoLayOutChildren();
   EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 0.5f, 9.2f, 7.4f),
-                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+                   gfx::RectF(parent->local_origin(), parent->size()),
+                   kEpsilon);
 
   auto grand_parent = base::MakeUnique<UiElement>();
   grand_parent->set_bounds_contain_children(true);
@@ -73,10 +76,30 @@ TEST(UiElement, BoundsContainChildren) {
   grand_parent->DoLayOutChildren();
   EXPECT_RECT_NEAR(
       gfx::RectF(-0.5f, 0.5f, 9.4f, 7.8f),
-      gfx::RectF(grand_parent->local_origin(), grand_parent->size()), epsilon);
+      gfx::RectF(grand_parent->local_origin(), grand_parent->size()), kEpsilon);
 }
 
-TEST(UiElements, AnimateSize) {
+TEST(UiElement, BoundsContainScaledChildren) {
+  auto a = base::MakeUnique<UiElement>();
+  a->SetSize(0.4, 0.3);
+
+  auto b = base::MakeUnique<UiElement>();
+  b->SetSize(0.2, 0.2);
+  b->SetTranslate(0.6, 0.0, 0.0);
+  b->SetScale(2.0, 3.0, 1.0);
+
+  auto c = base::MakeUnique<UiElement>();
+  c->set_bounds_contain_children(true);
+  c->set_padding(0.05, 0.05);
+  c->AddChild(std::move(a));
+  c->AddChild(std::move(b));
+
+  c->DoLayOutChildren();
+  EXPECT_RECT_NEAR(gfx::RectF(0.3f, 0.0f, 1.1f, 0.7f),
+                   gfx::RectF(c->local_origin(), c->size()), kEpsilon);
+}
+
+TEST(UiElement, AnimateSize) {
   UiScene scene;
   auto rect = base::MakeUnique<UiElement>();
   rect->SetSize(10, 100);
@@ -93,7 +116,7 @@ TEST(UiElements, AnimateSize) {
   EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(20, 200), rect_ptr->size());
 }
 
-TEST(UiElements, AnimationAffectsInheritableTransform) {
+TEST(UiElement, AnimationAffectsInheritableTransform) {
   UiScene scene;
   auto rect = base::MakeUnique<UiElement>();
   UiElement* rect_ptr = rect.get();
@@ -118,7 +141,7 @@ TEST(UiElements, AnimationAffectsInheritableTransform) {
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(20, 200, 2000), p);
 }
 
-TEST(UiElements, HitTest) {
+TEST(UiElement, HitTest) {
   UiElement rect;
   rect.SetSize(1.0, 1.0);
 

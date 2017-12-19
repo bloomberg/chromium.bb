@@ -40,7 +40,8 @@ TEST(LinearLayout, HorizontalLayout) {
   // Two elements should be centered and separated by the margin.
   element = base::MakeUnique<UiElement>();
   UiElement* rect_b = element.get();
-  rect_b->SetSize(20, 20);
+  rect_b->SetSize(10, 10);
+  rect_b->SetScale(2.0f, 2.0f, 0.0f);
   layout.AddChild(std::move(element));
   layout.LayOutChildren();
 
@@ -60,8 +61,6 @@ TEST(LinearLayout, HorizontalLayout) {
 
   rect_a->set_requires_layout(false);
   layout.LayOutChildren();
-  // The child that doesn't require layout should not have an impact.
-  EXPECT_TRUE(rect_b->LocalTransform().IsIdentity());
 }
 
 TEST(LinearLayout, Orientations) {

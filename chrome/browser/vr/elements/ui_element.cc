@@ -596,11 +596,18 @@ void UiElement::DoLayOutChildren() {
       continue;
     }
     gfx::Point3F child_center(child->local_origin());
-    child->LocalTransform().TransformPoint(&child_center);
+    gfx::Vector3dF corner_offset(child->size().width(), child->size().height(),
+                                 0);
+    corner_offset.Scale(-0.5);
+    gfx::Point3F child_upper_left = child_center + corner_offset;
+    gfx::Point3F child_lower_right = child_center - corner_offset;
+
+    child->LocalTransform().TransformPoint(&child_upper_left);
+    child->LocalTransform().TransformPoint(&child_lower_right);
     gfx::RectF local_rect =
-        gfx::RectF(child_center.x() - 0.5 * child->size().width(),
-                   child_center.y() - 0.5 * child->size().height(),
-                   child->size().width(), child->size().height());
+        gfx::RectF(child_upper_left.x(), child_upper_left.y(),
+                   child_lower_right.x() - child_upper_left.x(),
+                   child_lower_right.y() - child_upper_left.y());
     bounds.Union(local_rect);
   }
 
