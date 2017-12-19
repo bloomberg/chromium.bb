@@ -191,6 +191,7 @@ class DownloadTaskImplTest : public PlatformTest {
 
 // Tests DownloadTaskImpl default state after construction.
 TEST_F(DownloadTaskImplTest, DefaultState) {
+  EXPECT_EQ(DownloadTask::State::kNotStarted, task_->GetState());
   EXPECT_FALSE(task_->GetResponseWriter());
   EXPECT_NSEQ(task_delegate_.configuration().identifier,
               task_->GetIndentifier());
@@ -222,6 +223,7 @@ TEST_F(DownloadTaskImplTest, EmptyContentDownload) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     return task_->IsDone();
   }));
+  EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(0, task_->GetTotalBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
@@ -244,6 +246,7 @@ TEST_F(DownloadTaskImplTest, SmallResponseDownload) {
   session_task.countOfBytesExpectedToReceive = kDataSize;
   SimulateDataDownload(session_task, kData);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  EXPECT_EQ(DownloadTask::State::kInProgress, task_->GetState());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kDataSize, task_->GetTotalBytes());
@@ -257,6 +260,7 @@ TEST_F(DownloadTaskImplTest, SmallResponseDownload) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     return task_->IsDone();
   }));
+  EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kDataSize, task_->GetTotalBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
@@ -282,6 +286,7 @@ TEST_F(DownloadTaskImplTest, LargeResponseDownload) {
   session_task.countOfBytesExpectedToReceive = kData1Size + kData2Size;
   SimulateDataDownload(session_task, kData1);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  EXPECT_EQ(DownloadTask::State::kInProgress, task_->GetState());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kData1Size + kData2Size, task_->GetTotalBytes());
@@ -294,6 +299,7 @@ TEST_F(DownloadTaskImplTest, LargeResponseDownload) {
   EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
   SimulateDataDownload(session_task, kData2);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  EXPECT_EQ(DownloadTask::State::kInProgress, task_->GetState());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kData1Size + kData2Size, task_->GetTotalBytes());
@@ -307,6 +313,7 @@ TEST_F(DownloadTaskImplTest, LargeResponseDownload) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     return task_->IsDone();
   }));
+  EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kData1Size + kData2Size, task_->GetTotalBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
@@ -332,6 +339,7 @@ TEST_F(DownloadTaskImplTest, FailureInTheBeginning) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     return task_->IsDone();
   }));
+  EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_TRUE(task_->GetErrorCode() == net::ERR_INTERNET_DISCONNECTED);
   EXPECT_EQ(0, task_->GetTotalBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
@@ -355,6 +363,7 @@ TEST_F(DownloadTaskImplTest, FailureInTheMiddle) {
   session_task.countOfBytesExpectedToReceive = kExpectedDataSize;
   SimulateDataDownload(session_task, kReceivedData);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  EXPECT_EQ(DownloadTask::State::kInProgress, task_->GetState());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kExpectedDataSize, task_->GetTotalBytes());
@@ -372,6 +381,7 @@ TEST_F(DownloadTaskImplTest, FailureInTheMiddle) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     return task_->IsDone();
   }));
+  EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_TRUE(task_->GetErrorCode() == net::ERR_INTERNET_DISCONNECTED);
   EXPECT_EQ(kExpectedDataSize, task_->GetTotalBytes());
   EXPECT_EQ(23, task_->GetPercentComplete());

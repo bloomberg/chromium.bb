@@ -55,6 +55,7 @@ class DownloadTaskImpl : public DownloadTask {
   void ShutDown();
 
   // DownloadTask overrides:
+  DownloadTask::State GetState() const override;
   void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) override;
   net::URLFetcherResponseWriter* GetResponseWriter() const override;
   NSString* GetIndentifier() const override;
@@ -99,9 +100,9 @@ class DownloadTaskImpl : public DownloadTask {
   base::ObserverList<DownloadTaskObserver, true> observers_;
 
   // Back up corresponding public methods of DownloadTask interface.
+  State state_ = State::kNotStarted;
   std::unique_ptr<net::URLFetcherResponseWriter> writer_;
   GURL original_url_;
-  bool is_done_ = false;
   int error_code_ = 0;
   int http_code_ = -1;
   int64_t total_bytes_ = -1;

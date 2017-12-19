@@ -161,11 +161,18 @@ void DownloadTaskImpl::ShutDown() {
   delegate_ = nullptr;
 }
 
+DownloadTask::State DownloadTaskImpl::GetState() const {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return state_;
+}
+
 void DownloadTaskImpl::Start(
     std::unique_ptr<net::URLFetcherResponseWriter> writer) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(!writer_);
+  DCHECK_EQ(state_, State::kNotStarted);
   writer_ = std::move(writer);
+  state_ = State::kInProgress;
   GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
                         weak_factory_.GetWeakPtr()));
 }
@@ -187,7 +194,7 @@ const GURL& DownloadTaskImpl::GetOriginalUrl() const {
 
 bool DownloadTaskImpl::IsDone() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return is_done_;
+  return state_ == State::kComplete;
 }
 
 int DownloadTaskImpl::GetErrorCode() const {
@@ -329,7 +336,7 @@ void DownloadTaskImpl::OnDownloadUpdated() {
 }
 
 void DownloadTaskImpl::OnDownloadFinished(int error_code) {
-  is_done_ = true;
+  state_ = State::kComplete;
   session_task_ = nil;
   OnDownloadUpdated();
 }
