@@ -19,10 +19,18 @@
 #include "av1/common/common.h"
 
 #define OBU_HEADER_SIZE_BYTES 1
+#if CONFIG_SCALABILITY
+#define OBU_HEADER_EXTENSION_SIZE_BYTES 1
+#define OBU_SEQUENCE_HEADER_BYTES 10
+#endif
 
 #if CONFIG_OBU_NO_IVF
 int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
+#if CONFIG_SCALABILITY
+                           size_t *buffer_size, int last_layer_id) {
+#else
                            size_t *buffer_size) {
+#endif
   size_t ret;
   const size_t obu_length_header_size =
       PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES;
@@ -59,6 +67,26 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
       *bytes_read -= obu_length_header_size;
       break;
     }
+
+#if CONFIG_SCALABILITY
+    // break if obu_extension_flag is found and enhancement_id change
+    if ((data[PRE_OBU_SIZE_BYTES] & 0x1)) {
+      uint8_t obu_extension_header;
+      int total_obu_header_size =
+          (int)obu_length_header_size + OBU_HEADER_EXTENSION_SIZE_BYTES;
+      int curr_layer_id;
+      fread(&obu_extension_header, 1, OBU_HEADER_EXTENSION_SIZE_BYTES, infile);
+      curr_layer_id = (obu_extension_header >> 3) & 0x3;
+      if (curr_layer_id && (curr_layer_id > last_layer_id)) {
+        // new enhancement layer
+        *bytes_read -= obu_length_header_size;
+        fseek(infile, -total_obu_header_size, SEEK_CUR);
+        break;
+      } else {
+        fseek(infile, -OBU_HEADER_EXTENSION_SIZE_BYTES, SEEK_CUR);
+      }
+    }
+#endif
 
     // otherwise, read the OBU payload into memory
     obu_size = mem_get_le32(data);
@@ -101,6 +129,7 @@ int file_is_obu(struct AvxInputContext *input_ctx) {
     return 0;
   }
   // fprintf(stderr, "Starting to parse OBU stream\n");
+
   return 1;
 }
 

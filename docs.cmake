@@ -79,6 +79,7 @@ if (CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/examples/lossless_encoder.c"
       "${AOM_ROOT}/examples/set_maps.c"
       "${AOM_ROOT}/examples/simple_encoder.c"
+      "${AOM_ROOT}/examples/scalable_encoder.c"
       "${AOM_ROOT}/examples/twopass_encoder.c")
 
   set(AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS
@@ -87,6 +88,7 @@ if (CONFIG_AV1_ENCODER)
       "Simplified lossless encoder."
       "Set active and ROI maps."
       "Simplified encoder loop."
+      "Scalable encoder loop."
       "Two-pass encoder loop.")
 
   set(AOM_DOXYGEN_SECTIONS ${AOM_DOXYGEN_SECTIONS} "av1_encoder encoder")
