@@ -498,7 +498,7 @@ static INLINE int get_nz_map_ctx_from_stats(
 
 #if 0
     // This is the algorithm to generate table av1_nz_map_ctx_offset[].
-    const int width = 1 << bwl;
+    const int width = tx_size_wide[tx_size];
     const int height = tx_size_high[tx_size];
     if (width < height) {
       if (row < 2) return 11 + ctx;
