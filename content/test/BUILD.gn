@@ -397,12 +397,12 @@ static_library("test_support") {
     ]
 
     deps += [
-      "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/api:libjingle_peerconnection_api",
       "//third_party/webrtc/api:peerconnection_and_implicit_call_api",
       "//third_party/webrtc/api:rtc_stats_api",
       "//third_party/webrtc/media:rtc_media_base",
       "//third_party/webrtc/modules/video_capture",
+      "//third_party/webrtc/pc:libjingle_peerconnection",
       "//third_party/webrtc/rtc_base:rtc_base_approved",
       "//third_party/webrtc/stats:rtc_stats",
       "//third_party/webrtc_overrides:init_webrtc",
@@ -1859,7 +1859,6 @@ test("content_unittests") {
       "//services/device/public/interfaces",
       "//third_party/libyuv",
       "//third_party/opus",
-      "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/api:libjingle_peerconnection_api",
       "//third_party/webrtc/api:peerconnection_and_implicit_call_api",
       "//third_party/webrtc/api:rtc_stats_api",
@@ -1869,6 +1868,7 @@ test("content_unittests") {
       "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/desktop_capture:primitives",
       "//third_party/webrtc/modules/video_capture",
+      "//third_party/webrtc/pc:libjingle_peerconnection",
       "//third_party/webrtc/rtc_base:rtc_base",
       "//third_party/webrtc/stats:rtc_stats_test_utils",
       "//third_party/webrtc_overrides",
