@@ -17,7 +17,7 @@ class TaskRunner;
 }
 
 namespace content {
-class BrowserContext;
+class StoragePartition;
 }
 
 namespace net {
@@ -36,7 +36,7 @@ class MessagePropertyProvider {
   // Gets the DER-encoded public key of the domain-bound cert,
   // aka TLS channel ID, for the given URL.
   // Runs |reply| on the current message loop.
-  void GetChannelID(content::BrowserContext* browser_context,
+  void GetChannelID(content::StoragePartition* storage_partition,
                     const GURL& source_url,
                     const ChannelIDCallback& reply);
 

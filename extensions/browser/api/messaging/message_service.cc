@@ -795,7 +795,8 @@ void MessageService::OnOpenChannelAllowed(
     return;
   }
 
-  BrowserContext* context = source->GetProcess()->GetBrowserContext();
+  content::RenderProcessHost* source_process = source->GetProcess();
+  BrowserContext* context = source_process->GetBrowserContext();
 
   // Note: we use the source's profile here. If the source is an incognito
   // process, we will use the incognito EPM to find the right extension process,
@@ -819,8 +820,11 @@ void MessageService::OnOpenChannelAllowed(
     pending_tls_channel_id_channels_[channel_id].swap(pending_messages);
     // Capture this reference before params is invalidated by base::Passed().
     const GURL& source_url = params->source_url;
+    // Note: use the RenderProcessHost's StoragePartition (which may vary from
+    // the BrowserContext's default StoragePartition, as in the case of platform
+    // apps). See https://crbug.com/781070.
     property_provider_.GetChannelID(
-        context, source_url,
+        source_process->GetStoragePartition(), source_url,
         base::Bind(&MessageService::GotChannelID, weak_factory_.GetWeakPtr(),
                    base::Passed(&params)));
     return;

@@ -11,7 +11,6 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "crypto/ec_private_key.h"
@@ -29,7 +28,7 @@ namespace extensions {
 MessagePropertyProvider::MessagePropertyProvider() {}
 
 void MessagePropertyProvider::GetChannelID(
-    content::BrowserContext* browser_context,
+    content::StoragePartition* storage_partition,
     const GURL& source_url,
     const ChannelIDCallback& reply) {
   if (!source_url.is_valid()) {
@@ -39,9 +38,8 @@ void MessagePropertyProvider::GetChannelID(
     return;
   }
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-      content::BrowserContext::GetDefaultStoragePartition(browser_context)
-          ->GetURLRequestContext());
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+      storage_partition->GetURLRequestContext();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&MessagePropertyProvider::GetChannelIDOnIOThread,
