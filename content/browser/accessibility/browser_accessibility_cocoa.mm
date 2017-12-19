@@ -2739,7 +2739,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (IsMenuRelated(browserAccessibility_->GetRole()))
     [actions addObject:NSAccessibilityCancelAction];
 
-  if ([self internalRole] == ui::AX_ROLE_SLIDER) {
+  if ([self internalRole] == ui::AX_ROLE_SLIDER ||
+      [self internalRole] == ui::AX_ROLE_SPIN_BUTTON) {
     [actions addObjectsFromArray:@[
       NSAccessibilityIncrementAction, NSAccessibilityDecrementAction
     ]];
