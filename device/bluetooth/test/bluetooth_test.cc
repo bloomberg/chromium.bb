@@ -59,6 +59,8 @@ const char BluetoothTestBase::kTestUUIDServerCharacteristicConfiguration[] =
     "00002903-0000-1000-8000-00805f9b34fb";
 const char BluetoothTestBase::kTestUUIDCharacteristicPresentationFormat[] =
     "00002904-0000-1000-8000-00805f9b34fb";
+// Manufacturer kTestAdapterAddress
+const unsigned short BluetoothTestBase::kTestManufacturerId = 0x00E0;
 
 BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 

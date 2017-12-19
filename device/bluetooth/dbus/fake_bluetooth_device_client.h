@@ -167,8 +167,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
       const std::string device_address,
       const std::vector<std::string>& service_uuids,
       device::BluetoothTransport type,
-      const std::unordered_map<std::string, std::vector<uint8_t>>&
-          service_data);
+      const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
+      const std::unordered_map<uint16_t, std::vector<uint8_t>>&
+          manufacturer_data);
 
   void set_delay_start_discovery(bool value) { delay_start_discovery_ = value; }
 
@@ -176,13 +177,14 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   // |object_path| to |rssi|, if the fake device exists.
   void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16_t rssi);
 
-  // Updates the service data property of fake device with object path
-  // |object_path| to merge |service_data| into the existing data,
+  // Updates the service and manufacturer data property of fake device with
+  // object path |object_path| to merge |service_data| into the existing data,
   // if the fake device exists.
-  void UpdateServiceData(
+  void UpdateServiceAndManufacturerData(
       const dbus::ObjectPath& object_path,
-      const std::unordered_map<std::string, std::vector<uint8_t>>&
-          service_data);
+      const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
+      const std::unordered_map<uint16_t, std::vector<uint8_t>>&
+          manufacturer_data);
 
   static const char kTestPinCode[];
   static const int kTestPassKey;
