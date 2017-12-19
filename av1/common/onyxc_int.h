@@ -269,7 +269,6 @@ typedef struct AV1Common {
   int skip_mode_flag;
   int ref_frame_idx_0;
   int ref_frame_idx_1;
-  int tpl_frame_ref0_idx;
 #endif  // CONFIG_EXT_SKIP
 
   int new_fb_idx;

@@ -2078,19 +2078,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_EXT_SKIP
   if (mbmi->skip_mode) {
-#define USE_MV_SELECTION 0
-#if USE_MV_SELECTION
-    // NOTE: For skip mode, above reference selection has been set as compound,
-    // in order to obtain the two nearest mvs, but after the following mv setup,
-    // skip mode may choose either single reference or compound reference mode.
-    av1_setup_skip_mode_mvs(cm, xd, mbmi, mi_row, mi_col, nearestmv, NULL,
-                            NULL);
-#else   // !USE_MV_SELECTION
     assert(mbmi->mode == NEAREST_NEARESTMV);
     mbmi->mv[0].as_int = nearestmv[0].as_int;
     mbmi->mv[1].as_int = nearestmv[1].as_int;
-#endif  // USE_MV_SELECTION
-#undef USE_MV_SELECTION
   } else {
 #endif  // CONFIG_EXT_SKIP
     int mv_corrupted_flag =
