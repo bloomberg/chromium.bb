@@ -38,6 +38,12 @@ WaylandKeyboard::WaylandKeyboard(wl_keyboard* keyboard,
       &WaylandKeyboard::Modifiers, &WaylandKeyboard::RepeatInfo,
   };
 
+#if BUILDFLAG(USE_XKBCOMMON)
+  auto* engine = static_cast<WaylandXkbKeyboardLayoutEngine*>(
+      KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
+  engine->set_event_modifiers(&event_modifiers_);
+#endif
+
   wl_keyboard_add_listener(obj_.get(), &listener, this);
 
   // TODO(tonikitoo): Default auto-repeat to ON here?
@@ -95,7 +101,7 @@ void WaylandKeyboard::Key(void* data,
   if (dom_code == ui::DomCode::NONE)
     return;
 
-  uint8_t flags = keyboard->modifiers_;
+  uint8_t flags = keyboard->event_modifiers_.GetModifierFlags();
   DomKey dom_key;
   KeyboardCode key_code;
   if (!KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
@@ -106,7 +112,7 @@ void WaylandKeyboard::Key(void* data,
   bool down = state == WL_KEYBOARD_KEY_STATE_PRESSED;
   ui::KeyEvent event(
       down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
-      keyboard->modifiers_, dom_key,
+      keyboard->event_modifiers_.GetModifierFlags(), dom_key,
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(time));
   event.set_source_device_id(keyboard->obj_.id());
   keyboard->callback_.Run(&event);
@@ -120,13 +126,9 @@ void WaylandKeyboard::Modifiers(void* data,
                                 uint32_t mods_locked,
                                 uint32_t group) {
 #if BUILDFLAG(USE_XKBCOMMON)
-  WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
   auto* engine = static_cast<WaylandXkbKeyboardLayoutEngine*>(
       KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
-
-  keyboard->modifiers_ =
-      engine->UpdateModifiers(mods_depressed, mods_latched, mods_locked, group);
-
+  engine->UpdateModifiers(mods_depressed, mods_latched, mods_locked, group);
 #endif
 }
 
