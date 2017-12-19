@@ -13,10 +13,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -26,6 +28,13 @@ namespace {
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
 #define OFFLINE_PAGES_TABLE_NAME "offlinepages_v1"
+
+// This is the first version saved in the meta table, which was introduced in
+// the store in M65. It is set once a legacy upgrade is run successfully for the
+// last time in |UpgradeFromLegacyVersion|.
+static const int kFirstPostLegacyVersion = 1;
+static const int kCurrentVersion = 2;
+static const int kCompatibleVersion = kFirstPostLegacyVersion;
 
 void ReportStoreEvent(OfflinePagesStoreEvent event) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.SQLStorage.StoreEvent", event,
@@ -166,19 +175,28 @@ bool UpgradeFrom61(sql::Connection* db) {
   return UpgradeWithQuery(db, kSql);
 }
 
-bool CreateSchema(sql::Connection* db) {
-  // If you create a transaction but don't Commit() it is automatically
-  // rolled back by its destructor when it falls out of scope.
+bool CreateLatestSchema(sql::Connection* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
 
-  if (!db->DoesTableExist(OFFLINE_PAGES_TABLE_NAME)) {
-    if (!CreateOfflinePagesTable(db))
-      return false;
-  }
+  // First time database initialization.
+  if (!CreateOfflinePagesTable(db))
+    return false;
 
-  // Upgrade section. Details are described in the header file.
+  sql::MetaTable meta_table;
+  if (!meta_table.Init(db, kCurrentVersion, kCompatibleVersion))
+    return false;
+
+  return transaction.Commit();
+}
+
+bool UpgradeFromLegacyVersion(sql::Connection* db) {
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
+  // Legacy upgrade section. Details are described in the header file.
   if (!db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "expiration_time") &&
       !db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "title")) {
     if (!UpgradeFrom52(db))
@@ -203,8 +221,56 @@ bool CreateSchema(sql::Connection* db) {
       return false;
   }
 
-  // This would be a great place to add indices when we need them.
+  sql::MetaTable meta_table;
+  if (!meta_table.Init(db, kFirstPostLegacyVersion, kCompatibleVersion))
+    return false;
+
   return transaction.Commit();
+}
+
+bool UpgradeFromVersion1ToVersion2(sql::Connection* db,
+                                   sql::MetaTable* meta_table) {
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
+  static const char kSql[] = "UPDATE " OFFLINE_PAGES_TABLE_NAME
+                             " SET upgrade_attempt = 5 "
+                             " WHERE client_namespace = 'async_loading'"
+                             " OR client_namespace = 'download'"
+                             " OR client_namespace = 'ntp_suggestions'"
+                             " OR client_namespace = 'browser_actions'";
+
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  if (!statement.Run())
+    return false;
+
+  meta_table->SetVersionNumber(2);
+  return transaction.Commit();
+}
+
+bool CreateSchema(sql::Connection* db) {
+  if (!sql::MetaTable::DoesTableExist(db)) {
+    // If this looks like a completely empty DB, simply start from scratch.
+    if (!db->DoesTableExist(OFFLINE_PAGES_TABLE_NAME))
+      return CreateLatestSchema(db);
+
+    // Otherwise we need to run a legacy upgrade.
+    if (!UpgradeFromLegacyVersion(db))
+      return false;
+  }
+
+  sql::MetaTable meta_table;
+  if (!meta_table.Init(db, kCurrentVersion, kCompatibleVersion))
+    return false;
+
+  if (meta_table.GetVersionNumber() == 1) {
+    if (!UpgradeFromVersion1ToVersion2(db, &meta_table))
+      return false;
+  }
+
+  // This would be a great place to add indices when we need them.
+  return true;
 }
 
 bool DeleteByOfflineId(sql::Connection* db, int64_t offline_id) {
