@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
