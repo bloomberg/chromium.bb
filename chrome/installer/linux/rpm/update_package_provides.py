@@ -35,6 +35,7 @@ PACKAGE_FILTER = [
     "libdbus-1.so",
     "libdl.so",
     "libexpat.so",
+    "libfontconfig.so",
     "libgcc_s.so",
     "libgdk-3.so",
     "libgdk_pixbuf-2.0.so",
