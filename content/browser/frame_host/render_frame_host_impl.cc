@@ -3672,9 +3672,30 @@ void RenderFrameHostImpl::FailedNavigation(
   // completing an unload handler.
   ResetWaitingState();
 
-  Send(new FrameMsg_FailedNavigation(routing_id_, common_params, request_params,
-                                     has_stale_copy_in_cache, error_code,
-                                     error_page_content));
+  StoragePartitionImpl* storage_partition =
+      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
+          GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+
+  mojom::URLLoaderFactoryPtr default_factory;
+  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
+    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&default_factory), GetProcess()->GetID());
+  } else {
+    mojom::URLLoaderFactoryPtr original_factory;
+    storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&original_factory), GetProcess()->GetID());
+    g_url_loader_factory_callback_for_test.Get().Run(
+        mojo::MakeRequest(&default_factory), GetProcess()->GetID(),
+        original_factory.PassInterface());
+  }
+
+  base::Optional<URLLoaderFactoryBundle> subresource_loader_factories;
+  subresource_loader_factories.emplace();
+  subresource_loader_factories->SetDefaultFactory(std::move(default_factory));
+
+  GetNavigationControl()->CommitFailedNavigation(
+      common_params, request_params, has_stale_copy_in_cache, error_code,
+      error_page_content, std::move(subresource_loader_factories));
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;

@@ -532,6 +532,13 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::Optional<URLLoaderFactoryBundle> subresource_loaders,
       const base::UnguessableToken& devtools_navigation_token) override;
+  void CommitFailedNavigation(
+      const CommonNavigationParams& common_params,
+      const RequestNavigationParams& request_params,
+      bool has_stale_copy_in_cache,
+      int error_code,
+      const base::Optional<std::string>& error_page_content,
+      base::Optional<URLLoaderFactoryBundle> subresource_loaders) override;
 
   // mojom::HostZoom implementation:
   void SetHostZoomLevel(const GURL& url, double zoom_level) override;
@@ -1042,12 +1049,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);
-  void OnFailedNavigation(
-      const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
-      bool has_stale_copy_in_cache,
-      int error_code,
-      const base::Optional<std::string>& error_page_content);
   void OnReportContentSecurityPolicyViolation(
       const content::CSPViolationParams& violation_params);
   void OnGetSavableResourceLinks();

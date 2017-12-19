@@ -73,6 +73,15 @@ class TestRenderFrameHost::NavigationInterceptor
         std::move(subresource_loader_factories), devtools_navigation_token);
   }
 
+  void CommitFailedNavigation(
+      const content::CommonNavigationParams& common_params,
+      const content::RequestNavigationParams& request_params,
+      bool has_stale_copy_in_cache,
+      int32_t error_code,
+      const base::Optional<std::string>& error_page_content,
+      base::Optional<content::URLLoaderFactoryBundle>
+          subresource_loader_factories) override {}
+
  private:
   TestRenderFrameHost* const frame_host_;
 
