@@ -31,7 +31,8 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // from |enabled| which means that the palette tool is currently selected by
   // the user.
   bool feature_enabled() const {
-    return voice_interaction_enabled_ && voice_interaction_context_enabled_;
+    return voice_interaction_enabled_ && voice_interaction_context_enabled_ &&
+           assistant_allowed_state_ == mojom::AssistantAllowedState::ALLOWED;
   }
 
   // Whether the tool is in "loading" state.
@@ -66,6 +67,8 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
       mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
+  void OnAssistantFeatureAllowedChanged(
+      mojom::AssistantAllowedState state) override;
 
   // Update the state of the tool based on the current availability of the tool.
   void UpdateState();
@@ -82,6 +85,9 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   bool voice_interaction_enabled_ = false;
 
   bool voice_interaction_context_enabled_ = false;
+
+  mojom::AssistantAllowedState assistant_allowed_state_ =
+      mojom::AssistantAllowedState::ALLOWED;
 
   base::TimeTicks previous_stroke_end_;
 
