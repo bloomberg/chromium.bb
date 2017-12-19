@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using blink::WebBlobInfo;
 using blink::WebData;
@@ -125,7 +126,8 @@ class WebIDBCursorImplTest : public testing::Test {
     mock_cursor_ = std::make_unique<MockCursorImpl>(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
     cursor_ = std::make_unique<WebIDBCursorImpl>(
-        ptr.PassInterface(), 1, base::ThreadTaskRunnerHandle::Get());
+        ptr.PassInterface(), 1,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
  protected:

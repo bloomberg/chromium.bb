@@ -31,6 +31,7 @@
 #include "platform/scheduler/base/work_queue_sets.h"
 #include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using ::testing::AnyNumber;
 using ::testing::Contains;
@@ -125,7 +126,7 @@ class TaskQueueManagerTest : public ::testing::Test {
     now_src_.Advance(base::TimeDelta::FromMicroseconds(1000));
     manager_ = std::make_unique<TaskQueueManagerForTest>(
         std::make_unique<ThreadControllerForTest>(
-            message_loop_.get(), base::ThreadTaskRunnerHandle::Get(),
+            message_loop_.get(), GetSingleThreadTaskRunnerForTesting(),
             &now_src_));
 
     for (size_t i = 0; i < num_queues; i++)
@@ -225,7 +226,7 @@ TEST_F(TaskQueueManagerTest,
 
   manager_ = std::make_unique<TaskQueueManagerForTest>(
       std::make_unique<ThreadControllerForTest>(
-          nullptr, base::ThreadTaskRunnerHandle::Get(),
+          nullptr, GetSingleThreadTaskRunnerForTesting(),
           &test_count_uses_time_source));
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);

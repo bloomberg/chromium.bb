@@ -54,7 +54,7 @@ void LazyThreadControllerForTest::AddNestingObserver(
   //       -> LazySchedulerMessageLoopDelegateForTests::AddNestingObserver()
   //   2) Any test framework with a base::MessageLoop member (and not caring
   //      about the blink scheduler) does:
-  //        ThreadTaskRunnerHandle::Get()->PostTask(
+  //        ThreadTaskRunnerHandle::GetForTesting()->PostTask(
   //            FROM_HERE, an_init_task_with_a_nested_loop);
   //        RunLoop.RunUntilIdle();
   //   3) |a_task_with_a_nested_loop| triggers

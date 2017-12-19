@@ -207,6 +207,7 @@ jumbo_source_set("unit_tests") {
     "//components/viz/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/WebKit/public:test_support",
   ]
 
   configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]

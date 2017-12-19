@@ -51,6 +51,7 @@
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -141,7 +142,8 @@ class RenderThreadImplForTest : public RenderThreadImpl {
 class QuitOnTestMsgFilter : public IPC::MessageFilter {
  public:
   explicit QuitOnTestMsgFilter(base::OnceClosure quit_closure)
-      : origin_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      : origin_task_runner_(
+            blink::scheduler::GetSequencedTaskRunnerForTesting()),
         quit_closure_(std::move(quit_closure)) {}
 
   // IPC::MessageFilter overrides:
@@ -180,7 +182,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     browser_threads_.reset(
         new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        base::ThreadTaskRunnerHandle::Get();
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting();
 
     InitializeMojo();
     shell_context_.reset(new TestServiceManagerContext);
@@ -200,8 +202,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
     channel_ = IPC::ChannelProxy::Create(
         IPC::ChannelMojo::CreateServerFactory(
             std::move(pipe.handle0), io_task_runner,
-            base::ThreadTaskRunnerHandle::Get()),
-        nullptr, io_task_runner, base::ThreadTaskRunnerHandle::Get());
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+        nullptr, io_task_runner,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 
     mock_process_.reset(new MockRenderProcess);
     test_task_counter_ = base::MakeRefCounted<TestTaskCounter>();

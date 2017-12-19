@@ -28,6 +28,7 @@
 #include "third_party/WebKit/common/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
 
 namespace content {
@@ -451,7 +452,7 @@ TEST_F(ServiceWorkerProviderContextTest,
   // the refcounts.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
       provider_context->TakeRegistrationForServiceWorkerGlobalScope(
-          base::ThreadTaskRunnerHandle::Get());
+          blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   EXPECT_TRUE(registration);
   EXPECT_EQ(registration_id, registration->RegistrationId());
   EXPECT_EQ(1, remote_registration_object_host().GetBindingCount());

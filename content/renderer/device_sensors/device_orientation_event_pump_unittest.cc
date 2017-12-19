@@ -25,6 +25,7 @@
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace {
 
@@ -378,7 +379,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
       2 /* beta */, 3 /* gamma */);
   listener()->set_did_change_device_orientation(false);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
       FROM_HERE,
       base::BindOnce(&DeviceOrientationEventPumpForTesting::StartFireEvent,
                      base::Unretained(orientation_pump())));
@@ -405,7 +406,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
       2 /* beta */, 3 /* gamma */);
   listener()->set_did_change_device_orientation(false);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
       FROM_HERE,
       base::BindOnce(&DeviceOrientationEventPumpForTesting::StartFireEvent,
                      base::Unretained(orientation_pump())));

@@ -7,6 +7,7 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
@@ -25,7 +26,8 @@ TEST_F(PeerConnectionDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
   MockWebRTCPeerConnectionHandlerClient client_jsep;
   std::unique_ptr<blink::WebRTCPeerConnectionHandler> pc_handler(
       dependency_factory_->CreateRTCPeerConnectionHandler(
-          &client_jsep, base::ThreadTaskRunnerHandle::Get()));
+          &client_jsep,
+          blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   EXPECT_TRUE(pc_handler.get() != nullptr);
 }
 

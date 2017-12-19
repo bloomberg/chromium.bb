@@ -54,6 +54,7 @@
 #include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
@@ -211,7 +212,8 @@ class MockRTCStatsReportCallback : public blink::WebRTCStatsReportCallback {
  public:
   explicit MockRTCStatsReportCallback(
       std::unique_ptr<blink::WebRTCStatsReport>* result)
-      : main_thread_(base::ThreadTaskRunnerHandle::Get()), result_(result) {
+      : main_thread_(blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+        result_(result) {
     DCHECK(result_);
   }
 
@@ -245,9 +247,10 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
   RTCPeerConnectionHandlerUnderTest(
       WebRTCPeerConnectionHandlerClient* client,
       PeerConnectionDependencyFactory* dependency_factory)
-      : RTCPeerConnectionHandler(client,
-                                 dependency_factory,
-                                 base::ThreadTaskRunnerHandle::Get()) {}
+      : RTCPeerConnectionHandler(
+            client,
+            dependency_factory,
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
 
   MockPeerConnectionImpl* native_peer_connection() {
     return static_cast<MockPeerConnectionImpl*>(

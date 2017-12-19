@@ -28,6 +28,7 @@
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace {
 
@@ -353,7 +354,7 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   motion_pump()->set_stop_on_fire_event(false);
   motion_pump()->StartFireEvent();
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(100));
   base::RunLoop().Run();

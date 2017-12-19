@@ -8,6 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
@@ -15,7 +16,7 @@ class StreamTextureWrapperImplTest : public testing::Test {
  public:
   StreamTextureWrapperImplTest() {}
 
-  // Necessary, or else base::ThreadTaskRunnerHandle::Get() fails.
+  // Necessary, or else GetSingleThreadTaskRunnerForTesting() fails.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
@@ -26,8 +27,9 @@ class StreamTextureWrapperImplTest : public testing::Test {
 // be destroyed via StreamTextureWrapper::Deleter.
 TEST_F(StreamTextureWrapperImplTest, ConstructionDestruction_ShouldSucceed) {
   media::ScopedStreamTextureWrapper stream_texture_wrapper =
-      StreamTextureWrapperImpl::Create(false, nullptr,
-                                       base::ThreadTaskRunnerHandle::Get());
+      StreamTextureWrapperImpl::Create(
+          false, nullptr,
+          blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 }
 
 }  // Content

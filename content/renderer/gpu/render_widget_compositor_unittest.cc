@@ -27,6 +27,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using testing::AllOf;
 using testing::Field;
@@ -182,7 +183,7 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
     } else {
       // Post the synchronous composite task so that it is not called
       // reentrantly as a part of RequestNewLayerTreeFrameSink.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
           FROM_HERE,
           base::BindOnce(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
                          base::Unretained(this)));
@@ -273,7 +274,7 @@ class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
     render_widget_compositor_.SetUp(expected_successes, kTries, failure_mode,
                                     &run_loop);
     render_widget_compositor_.SetVisible(true);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
         FROM_HERE,
         base::BindOnce(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
                        base::Unretained(&render_widget_compositor_)));

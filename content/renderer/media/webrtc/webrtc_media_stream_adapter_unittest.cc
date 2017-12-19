@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 using ::testing::_;
@@ -139,7 +140,8 @@ class RemoteWebRtcMediaStreamAdapterTest : public WebRtcMediaStreamAdapterTest {
             &RemoteWebRtcMediaStreamAdapterTest::
                 CreateRemoteStreamAdapterOnSignalingThread,
             base::Unretained(this),
-            base::Unretained(base::ThreadTaskRunnerHandle::Get().get()),
+            base::Unretained(
+                blink::scheduler::GetSingleThreadTaskRunnerForTesting().get()),
             base::Unretained(webrtc_stream), base::Unretained(&adapter)));
     RunMessageLoopsUntilIdle();
     DCHECK(adapter);

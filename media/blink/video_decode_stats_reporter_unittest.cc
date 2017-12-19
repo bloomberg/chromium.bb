@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "ui/gfx/geometry/rect.h"
 
 using ::testing::Invoke;
@@ -170,8 +171,8 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
         std::move(recorder_ptr),
         base::Bind(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
                    base::Unretained(this)),
-        MakeDefaultVideoConfig(), base::ThreadTaskRunnerHandle::Get(),
-        clock_.get());
+        MakeDefaultVideoConfig(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), clock_.get());
   }
 
   // Fast forward the task runner (and associated tick clock) by |milliseconds|.
