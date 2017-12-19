@@ -83,7 +83,7 @@ class URLLoaderClientImpl::DeferredOnUploadProgress final
       : current_(current), total_(total) {}
 
   void HandleMessage(ResourceDispatcher* dispatcher, int request_id) override {
-    dispatcher->OnDownloadedData(request_id, current_, total_);
+    dispatcher->OnUploadProgress(request_id, current_, total_);
   }
   bool IsCompletionMessage() const override { return false; }
 
