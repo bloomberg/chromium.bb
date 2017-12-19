@@ -373,8 +373,8 @@ void NetworkContext::ClearNetworkingHistorySince(
   url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
       time);
 
-  url_request_context_->http_server_properties()->Clear();
-  std::move(completion_callback).Run();
+  url_request_context_->http_server_properties()->Clear(
+      std::move(completion_callback));
 }
 
 void NetworkContext::SetNetworkConditions(

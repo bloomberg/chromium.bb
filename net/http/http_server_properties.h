@@ -13,6 +13,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -313,8 +314,10 @@ class NET_EXPORT HttpServerProperties {
   HttpServerProperties() {}
   virtual ~HttpServerProperties() {}
 
-  // Deletes all data.
-  virtual void Clear() = 0;
+  // Deletes all data. If |callback| is non-null, flushes data to disk
+  // and invokes the callback asynchronously once changes have been written to
+  // disk.
+  virtual void Clear(base::OnceClosure callback) = 0;
 
   // Returns true if |server| supports a network protocol which honors
   // request prioritization.

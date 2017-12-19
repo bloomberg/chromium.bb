@@ -280,9 +280,21 @@ TEST_F(SpdyServerPropertiesTest, Clear) {
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_mail));
 
-  impl_.Clear();
+  base::RunLoop run_loop;
+  bool callback_invoked_ = false;
+  impl_.Clear(base::BindOnce(
+      [](bool* callback_invoked, base::OnceClosure quit_closure) {
+        *callback_invoked = true;
+        std::move(quit_closure).Run();
+      },
+      &callback_invoked_, run_loop.QuitClosure()));
   EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_google));
   EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
+
+  // Callback should be run asynchronously.
+  EXPECT_FALSE(callback_invoked_);
+  run_loop.Run();
+  EXPECT_TRUE(callback_invoked_);
 }
 
 TEST_F(SpdyServerPropertiesTest, MRUOfSpdyServersMap) {
@@ -329,7 +341,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   EXPECT_EQ(alternative_service,
             alternative_service_info_vector[0].alternative_service());
 
-  impl_.Clear();
+  impl_.Clear(base::OnceClosure());
   EXPECT_FALSE(HasAlternativeService(test_server));
 }
 
@@ -933,7 +945,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
                                                    "bar.c.youtube.com", 1234);
 
   SetAlternativeService(canonical_server, canonical_alternative_service);
-  impl_.Clear();
+  impl_.Clear(base::OnceClosure());
   EXPECT_FALSE(HasAlternativeService(test_server));
 }
 
@@ -1093,7 +1105,7 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
   EXPECT_TRUE(impl_.GetSupportsQuic(&address));
   EXPECT_EQ(actual_address, address);
 
-  impl_.Clear();
+  impl_.Clear(base::OnceClosure());
 
   EXPECT_FALSE(impl_.GetSupportsQuic(&address));
 }
@@ -1186,7 +1198,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
   // Https server should have nothing set for server network stats.
   EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
 
-  impl_.Clear();
+  impl_.Clear(base::OnceClosure());
   EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_http_server));
   EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
 }
@@ -1305,7 +1317,7 @@ TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
   EXPECT_EQ(1u, impl_.quic_server_info_map().size());
   EXPECT_EQ(quic_server_info1, *(impl_.GetQuicServerInfo(quic_server_id)));
 
-  impl_.Clear();
+  impl_.Clear(base::OnceClosure());
   EXPECT_EQ(0u, impl_.quic_server_info_map().size());
   EXPECT_EQ(nullptr, impl_.GetQuicServerInfo(quic_server_id));
 }

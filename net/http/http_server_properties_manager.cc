@@ -116,9 +116,9 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
   DCHECK(pref_delegate_);
   DCHECK(clock_);
 
-  pref_delegate_->StartListeningForUpdates(
-      base::Bind(&HttpServerPropertiesManager::OnHttpServerPropertiesChanged,
-                 base::Unretained(this)));
+  pref_delegate_->StartListeningForUpdates(base::BindRepeating(
+      &HttpServerPropertiesManager::OnHttpServerPropertiesChanged,
+      base::Unretained(this)));
   net_log_.BeginEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
 
   http_server_properties_impl_.reset(new HttpServerPropertiesImpl(clock_));
@@ -127,7 +127,7 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
 HttpServerPropertiesManager::~HttpServerPropertiesManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Flush settings on destruction.
-  UpdatePrefsFromCache();
+  UpdatePrefsFromCache(base::OnceClosure());
 }
 
 // static
@@ -141,11 +141,11 @@ void HttpServerPropertiesManager::SetVersion(
     http_server_properties_dict->SetInteger(kVersionKey, version_number);
 }
 
-void HttpServerPropertiesManager::Clear() {
+void HttpServerPropertiesManager::Clear(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  http_server_properties_impl_->Clear();
-  UpdatePrefsFromCache();
+  http_server_properties_impl_->Clear(base::OnceClosure());
+  UpdatePrefsFromCache(std::move(callback));
 }
 
 bool HttpServerPropertiesManager::SupportsRequestPriority(
@@ -978,15 +978,17 @@ void HttpServerPropertiesManager::ScheduleUpdatePrefs(Location location) {
     return;
 
   network_prefs_update_timer_.Start(
-      FROM_HERE, kUpdatePrefsDelay, this,
-      &HttpServerPropertiesManager::UpdatePrefsFromCache);
+      FROM_HERE, kUpdatePrefsDelay,
+      base::Bind(&HttpServerPropertiesManager::UpdatePrefsFromCache,
+                 base::Unretained(this), base::Passed(base::OnceClosure())));
 
   // TODO(rtenneti): Delete the following histogram after collecting some data.
   UMA_HISTOGRAM_ENUMERATION("Net.HttpServerProperties.UpdatePrefs", location,
                             HttpServerPropertiesManager::NUM_LOCATIONS);
 }
 
-void HttpServerPropertiesManager::UpdatePrefsFromCache() {
+void HttpServerPropertiesManager::UpdatePrefsFromCache(
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   typedef base::MRUCache<url::SchemeHostPort, ServerPref> ServerPrefMap;
@@ -1114,7 +1116,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache() {
       &http_server_properties_dict);
 
   setting_prefs_ = true;
-  pref_delegate_->SetServerProperties(http_server_properties_dict);
+  pref_delegate_->SetServerProperties(http_server_properties_dict,
+                                      std::move(callback));
   setting_prefs_ = false;
 
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_PREFS,

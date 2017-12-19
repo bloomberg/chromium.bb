@@ -5,6 +5,7 @@
 #ifndef CONTENT_NETWORK_HTTP_SERVER_PROPERTIES_PREF_DELEGATE_H_
 #define CONTENT_NETWORK_HTTP_SERVER_PROPERTIES_PREF_DELEGATE_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "net/http/http_server_properties.h"
@@ -26,8 +27,10 @@ class HttpServerPropertiesPrefDelegate
 
   // net::HttpServerPropertiesManager::PrefDelegate implementation.
   const base::DictionaryValue* GetServerProperties() const override;
-  void SetServerProperties(const base::DictionaryValue& value) override;
-  void StartListeningForUpdates(const base::Closure& callback) override;
+  void SetServerProperties(const base::DictionaryValue& value,
+                           base::OnceClosure callback) override;
+  void StartListeningForUpdates(
+      const base::RepeatingClosure& callback) override;
 
  private:
   PrefService* pref_service_;
