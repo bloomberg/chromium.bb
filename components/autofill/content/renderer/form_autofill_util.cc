@@ -1015,7 +1015,7 @@ void MatchLabelsAndFields(
       }
     } else if (control.IsFormControlElement()) {
       WebFormControlElement form_control = control.To<WebFormControlElement>();
-      if (form_control.FormControlType() == kHidden)
+      if (form_control.FormControlTypeForAutofill() == kHidden)
         continue;
       // Typical case: look up |field_data| in |element_map|.
       auto iter = element_map->find(form_control);
@@ -1278,7 +1278,8 @@ GURL GetCanonicalOriginForDocument(const WebDocument& document) {
 
 bool IsMonthInput(const WebInputElement* element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kMonth, ("month"));
-  return element && !element->IsNull() && element->FormControlType() == kMonth;
+  return element && !element->IsNull() &&
+         element->FormControlTypeForAutofill() == kMonth;
 }
 
 // All text fields, including password fields, should be extracted.
@@ -1289,13 +1290,14 @@ bool IsTextInput(const WebInputElement* element) {
 bool IsSelectElement(const WebFormControlElement& element) {
   // Static for improved performance.
   CR_DEFINE_STATIC_LOCAL(WebString, kSelectOne, ("select-one"));
-  return !element.IsNull() && element.FormControlType() == kSelectOne;
+  return !element.IsNull() &&
+         element.FormControlTypeForAutofill() == kSelectOne;
 }
 
 bool IsTextAreaElement(const WebFormControlElement& element) {
   // Static for improved performance.
   CR_DEFINE_STATIC_LOCAL(WebString, kTextArea, ("textarea"));
-  return !element.IsNull() && element.FormControlType() == kTextArea;
+  return !element.IsNull() && element.FormControlTypeForAutofill() == kTextArea;
 }
 
 bool IsCheckableElement(const WebInputElement* element) {
@@ -1376,7 +1378,7 @@ void WebFormControlElementToFormField(
   if (id != field->name)
     field->id = id;
 
-  field->form_control_type = element.FormControlType().Utf8();
+  field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = element.GetAttribute(kAutocomplete).Utf8();
   if (field->autocomplete_attribute.size() > kMaxDataLength) {
     // Discard overly long attribute values to avoid DOS-ing the browser

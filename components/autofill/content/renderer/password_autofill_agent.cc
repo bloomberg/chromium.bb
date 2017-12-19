@@ -92,7 +92,7 @@ bool DoesFormContainAmbiguousOrEmptyNames(
                base::ASCIIToUTF16(kDummyUsernameField)));
 }
 
-bool IsPasswordField(const FormFieldData& field) {
+bool IsFieldPasswordField(const FormFieldData& field) {
   return (field.form_control_type == "password");
 }
 
@@ -107,7 +107,7 @@ bool HasPasswordWithAutocompleteAttribute(
 
     const blink::WebInputElement input_element =
         control_element.ToConst<blink::WebInputElement>();
-    if (input_element.IsPasswordField() &&
+    if (input_element.IsPasswordFieldForAutofill() &&
         (HasAutocompleteAttributeValue(input_element, "current-password") ||
          HasAutocompleteAttributeValue(input_element, "new-password")))
       return true;
@@ -121,8 +121,9 @@ bool HasPasswordWithAutocompleteAttribute(
 base::string16 FieldName(const FormFieldData& field,
                          bool ambiguous_or_empty_names) {
   return ambiguous_or_empty_names
-             ? IsPasswordField(field) ? base::ASCIIToUTF16(kDummyPasswordField)
-                                      : base::ASCIIToUTF16(kDummyUsernameField)
+             ? (IsFieldPasswordField(field)
+                    ? base::ASCIIToUTF16(kDummyPasswordField)
+                    : base::ASCIIToUTF16(kDummyUsernameField))
              : field.name;
 }
 
@@ -142,7 +143,7 @@ bool FindFormInputElement(
     FormInputElementMap* result) {
   // Match the first input element, if any.
   bool found_input = false;
-  bool is_password_field = IsPasswordField(field);
+  bool is_password_field = IsFieldPasswordField(field);
   bool does_password_field_has_ambigous_or_empty_name =
       ambiguous_or_empty_names && is_password_field;
   bool ambiguous_and_multiple_password_fields_with_autocomplete =
@@ -163,7 +164,7 @@ bool FindFormInputElement(
     const blink::WebInputElement input_element =
         control_element.ToConst<blink::WebInputElement>();
     if (!input_element.IsTextField() ||
-        input_element.IsPasswordField() != is_password_field)
+        input_element.IsPasswordFieldForAutofill() != is_password_field)
       continue;
 
     // For change password form with ambiguous or empty names keep only the
@@ -507,7 +508,7 @@ bool HasPasswordField(const blink::WebLocalFrame& frame) {
     if (element.IsFormControlElement()) {
       const blink::WebFormControlElement& control =
           element.To<blink::WebFormControlElement>();
-      if (control.FormControlType() == kPassword)
+      if (control.FormControlTypeForAutofill() == kPassword)
         return true;
     }
   }
@@ -539,7 +540,7 @@ blink::WebInputElement FindUsernameElementPrecedingPasswordElement(
   for (auto begin = elements.begin(); iter != begin;) {
     --iter;
     const blink::WebInputElement* input = blink::ToWebInputElement(&*iter);
-    if (input && input->IsTextField() && !input->IsPasswordField() &&
+    if (input && input->IsTextField() && !input->IsPasswordFieldForAutofill() &&
         IsElementAutocompletable(*input) &&
         form_util::IsWebElementVisible(*input)) {
       return *input;
@@ -552,7 +553,7 @@ blink::WebInputElement FindUsernameElementPrecedingPasswordElement(
 bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
                                          const GURL& url) {
   return (
-      element.IsPasswordField() &&
+      element.IsPasswordFieldForAutofill() &&
       !IsCreditCardVerificationPasswordField(element) &&
       !HasCreditCardAutocompleteAttributes(element) &&
       !base::StartsWith(url.scheme(), "chrome", base::CompareCase::SENSITIVE) &&
@@ -693,7 +694,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
   ProvisionallySavePassword(element.Form(), element, RESTRICTION_NONE);
 
-  if (element.IsPasswordField()) {
+  if (element.IsPasswordFieldForAutofill()) {
     PasswordToLoginMap::iterator iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
       web_input_to_password_info_[iter->second].password_was_edited_last = true;
@@ -703,7 +704,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
     }
   }
 
-  if (element.IsPasswordField())
+  if (element.IsPasswordFieldForAutofill())
     GetPasswordManagerDriver()->UserModifiedPasswordField();
 }
 
@@ -727,7 +728,7 @@ bool PasswordAutofillAgent::FillSuggestion(
   }
 
   password_info->password_was_edited_last = false;
-  if (element->IsPasswordField()) {
+  if (element->IsPasswordFieldForAutofill()) {
     password_info->password_field_suggestion_was_accepted = true;
     password_info->password_field = password_element;
   }
@@ -737,7 +738,8 @@ bool PasswordAutofillAgent::FillSuggestion(
   if (password_generation_agent_)
     password_generation_agent_->OnFieldAutofilled(password_element);
 
-  if (IsUsernameAmendable(username_element, element->IsPasswordField()) &&
+  if (IsUsernameAmendable(username_element,
+                          element->IsPasswordFieldForAutofill()) &&
       username_element.Value().Utf16() != username) {
     username_element.SetAutofillValue(blink::WebString::FromUTF16(username));
     username_element.SetAutofilled(true);
@@ -780,7 +782,8 @@ bool PasswordAutofillAgent::PreviewSuggestion(
     return false;
   }
 
-  if (IsUsernameAmendable(username_element, element->IsPasswordField())) {
+  if (IsUsernameAmendable(username_element,
+                          element->IsPasswordFieldForAutofill())) {
     if (username_query_prefix_.empty())
       username_query_prefix_ = username_element.Value().Utf16();
 
@@ -824,7 +827,7 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
   DCHECK(username_element && password_element && password_info);
   username_element->Reset();
   password_element->Reset();
-  if (!element.IsPasswordField()) {
+  if (!element.IsPasswordFieldForAutofill()) {
     *username_element = element;
   } else {
     // If there is a password field, but a request to the store hasn't been sent
@@ -888,7 +891,7 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
   // Note: A site may use a Password field to collect a CVV or a Credit Card
   // number, but showing a slightly misleading warning here is better than
   // showing no warning at all.
-  if (element.IsPasswordField())
+  if (element.IsPasswordFieldForAutofill())
     return true;
 
   // If a field declares itself a username input, show the warning.
@@ -971,7 +974,7 @@ bool PasswordAutofillAgent::ShowSuggestions(
 
   // If the element is a password field, do not to show a popup if the user has
   // already accepted a password suggestion on another password field.
-  if (element.IsPasswordField() &&
+  if (element.IsPasswordFieldForAutofill() &&
       (password_info->password_field_suggestion_was_accepted &&
        element != password_info->password_field))
     return true;
@@ -988,8 +991,8 @@ bool PasswordAutofillAgent::ShowSuggestions(
   // |show_all| is true, check if the element in question is a password element
   // for the call to ShowSuggestionPopup.
   return ShowSuggestionPopup(*password_info, element,
-                             show_all && !element.IsPasswordField(),
-                             element.IsPasswordField());
+                             show_all && !element.IsPasswordFieldForAutofill(),
+                             element.IsPasswordFieldForAutofill());
 }
 
 void PasswordAutofillAgent::ShowNotSecureWarning(
@@ -1405,9 +1408,10 @@ void PasswordAutofillAgent::FillPasswordForm(
 
   for (auto element : elements) {
     blink::WebInputElement username_element =
-        !element.IsPasswordField() ? element : password_to_username_[element];
+        !element.IsPasswordFieldForAutofill() ? element
+                                              : password_to_username_[element];
     blink::WebInputElement password_element =
-        element.IsPasswordField()
+        element.IsPasswordFieldForAutofill()
             ? element
             : web_input_to_password_info_[element].password_field;
     FillFormOnPasswordReceived(
@@ -1489,7 +1493,7 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
     web_input_to_password_info_[main_element] = password_info;
     last_supplied_password_info_iter_ =
         web_input_to_password_info_.find(main_element);
-    if (!main_element.IsPasswordField())
+    if (!main_element.IsPasswordFieldForAutofill())
       password_to_username_[password_element] = username_element;
     if (elements)
       elements->push_back(main_element);
@@ -1562,7 +1566,7 @@ void PasswordAutofillAgent::FindFocusedPasswordForm(
       render_frame()->GetWebFrame()->GetDocument().FocusedElement();
   if (!element.IsNull() && element.HasHTMLTagName("input")) {
     blink::WebInputElement input = element.To<blink::WebInputElement>();
-    if (input.IsPasswordField()) {
+    if (input.IsPasswordFieldForAutofill()) {
       if (!input.Form().IsNull()) {
         password_form = GetPasswordFormFromWebForm(input.Form());
       } else {
@@ -1607,7 +1611,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   if (!webview)
     return false;
 
-  if (user_input.IsPasswordField() && !user_input.IsAutofilled() &&
+  if (user_input.IsPasswordFieldForAutofill() && !user_input.IsAutofilled() &&
       !user_input.Value().IsEmpty()) {
     HidePopup();
     return false;
@@ -1623,7 +1627,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   if (show_on_password_field)
     options |= IS_PASSWORD_FIELD;
 
-  base::string16 username_string(user_input.IsPasswordField()
+  base::string16 username_string(user_input.IsPasswordFieldForAutofill()
                                      ? base::string16()
                                      : user_input.Value().Utf16());
 

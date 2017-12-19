@@ -595,9 +595,10 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
 
   // Password field elements should only have suggestions shown by the password
   // autofill agent.
-  if (input_element && input_element->IsPasswordField() &&
-      !query_password_suggestion_)
+  if (input_element && input_element->IsPasswordFieldForAutofill() &&
+      !query_password_suggestion_) {
     return;
+  }
 
   QueryAutofillSuggestions(element);
 }

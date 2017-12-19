@@ -125,22 +125,22 @@ bool IsButtonOrImageElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kButton, ("button"));
   CR_DEFINE_STATIC_LOCAL(WebString, kImage, ("image"));
 
-  return element.FormControlType() == kButton ||
-         element.FormControlType() == kImage;
+  return element.FormControlTypeForAutofill() == kButton ||
+         element.FormControlTypeForAutofill() == kImage;
 }
 
 // Returns true if |element| has type "submit".
 bool IsSubmitElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kSubmit, ("submit"));
 
-  return element.FormControlType() == kSubmit;
+  return element.FormControlTypeForAutofill() == kSubmit;
 }
 
 // Returns true if |element| has type "hidden";
 bool IsHiddenElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kHidden, ("hidden"));
 
-  return element.FormControlType() == kHidden;
+  return element.FormControlTypeForAutofill() == kHidden;
 }
 
 // Returns true if |element| has type "select-multiple" or "select-one".
@@ -148,8 +148,8 @@ bool IsSelectElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kSelectOne, ("select-one"));
   CR_DEFINE_STATIC_LOCAL(WebString, kSelectMultiple, ("select-multiple"));
 
-  return element.FormControlType() == kSelectOne ||
-         element.FormControlType() == kSelectMultiple;
+  return element.FormControlTypeForAutofill() == kSelectOne ||
+         element.FormControlTypeForAutofill() == kSelectMultiple;
 }
 
 // Return true if |form| contains at least one visible password element.
@@ -160,7 +160,7 @@ bool FormContainsVisiblePasswordFields(const blink::WebFormElement& form) {
     const WebInputElement* input_element = ToWebInputElement(&control_element);
     if (!input_element)
       continue;
-    if (input_element->IsPasswordField() &&
+    if (input_element->IsPasswordFieldForAutofill() &&
         form_util::IsWebElementVisible(*input_element)) {
       return true;
     }
@@ -222,7 +222,7 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
         continue;
 
       if (input_element->IsTextField()) {
-        if (input_element->IsPasswordField()) {
+        if (input_element->IsPasswordFieldForAutofill()) {
           ++number_of_password_input_fields;
           passwords.push_back(*input_element);
         } else {

@@ -63,6 +63,7 @@ class BLINK_EXPORT WebInputElement final : public WebFormControlElement {
   bool IsImageButton() const;
   bool IsRadioButton() const;
   bool IsCheckbox() const;
+  bool IsPasswordFieldForAutofill() const;
   // This has different behavior from 'maxLength' IDL attribute, it returns
   // defaultMaxLength() when no valid has been set, whereas 'maxLength' IDL
   // attribute returns -1.

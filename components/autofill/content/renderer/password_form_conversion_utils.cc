@@ -394,7 +394,7 @@ void GetFieldFilteringLevels(
                                    field_value_and_properties_map,
                                    true /* ignore_autofilled_values */);
 
-    if (input_element->IsPasswordField()) {
+    if (input_element->IsPasswordFieldForAutofill()) {
       if (*password_fields_level < current_field_filtering_level) {
         *password_fields_level = current_field_filtering_level;
         *username_fields_level = max_level_found_for_username_fields;
@@ -444,7 +444,7 @@ bool ScriptModifiedUsernameAcceptable(
     const auto& field_value = *field_prop.second.first;
     const WebInputElement* input_element = ToWebInputElement(&field_prop.first);
     if (input_element && input_element->IsTextField() &&
-        !input_element->IsPasswordField() &&
+        !input_element->IsPasswordFieldForAutofill() &&
         field_value.size() >= kMinMatchSize &&
         username_value.find(base::i18n::ToLower(field_value)) !=
             base::string16::npos) {
@@ -470,7 +470,8 @@ bool GetPasswordForm(
                    [](WebFormControlElement e) {
                      WebInputElement* input_element =
                          GetEnabledTextInputFieldOrNull(&e);
-                     return input_element && input_element->IsPasswordField();
+                     return input_element &&
+                            input_element->IsPasswordFieldForAutofill();
                    }) != form.control_elements.end();
   if (!form_has_password_field)
     return false;
@@ -529,7 +530,7 @@ bool GetPasswordForm(
       continue;
 
     // Fill |...without_heuristics| variables before heuristics are applied.
-    if (input_element->IsPasswordField()) {
+    if (input_element->IsPasswordFieldForAutofill()) {
       passwords_without_heuristics.push_back(*input_element);
       last_text_input_without_heuristics[*input_element] =
           latest_input_element_without_heuristics;
@@ -550,7 +551,7 @@ bool GetPasswordForm(
         control_element, field_value_and_properties_map,
         false /* ignore_autofilled_values */);
 
-    if (input_element->IsPasswordField()) {
+    if (input_element->IsPasswordFieldForAutofill()) {
       if (current_field_level < password_fields_level)
         continue;
       layout_sequence.push_back('P');
@@ -568,7 +569,7 @@ bool GetPasswordForm(
     // passwords for now. Continue processing in case when the password field
     // was made readonly by JavaScript before submission. We can do this by
     // checking whether password element was updated not from JavaScript.
-    if (input_element->IsPasswordField() &&
+    if (input_element->IsPasswordFieldForAutofill() &&
         (!input_element->IsReadOnly() ||
          FieldHasPropertiesMask(field_value_and_properties_map, *input_element,
                                 FieldPropertiesFlags::USER_TYPED |
@@ -592,7 +593,7 @@ bool GetPasswordForm(
     }
 
     // Various input types such as text, url, email can be a username field.
-    if (!input_element->IsPasswordField()) {
+    if (!input_element->IsPasswordFieldForAutofill()) {
       if (!input_element->Value().IsEmpty()) {
         all_possible_usernames.push_back(*input_element);
       }
@@ -850,7 +851,7 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
     // of <input type="hidden" /> elements.
     CR_DEFINE_STATIC_LOCAL(WebString, kHidden, ("hidden"));
     const blink::WebInputElement* input = blink::ToWebInputElement(&element);
-    if (!input || input->FormControlType() != kHidden)
+    if (!input || input->FormControlTypeForAutofill() != kHidden)
       continue;
 
     // There must be a hidden input named "rart".
@@ -968,7 +969,7 @@ bool HasCreditCardAutocompleteAttributes(
 
 bool IsCreditCardVerificationPasswordField(
     const blink::WebInputElement& field) {
-  if (!field.IsPasswordField())
+  if (!field.IsPasswordFieldForAutofill())
     return false;
 
   static const base::string16 kCardCvcReCached = base::UTF8ToUTF16(kCardCvcRe);
