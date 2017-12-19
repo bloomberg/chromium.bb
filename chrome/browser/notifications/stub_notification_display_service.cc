@@ -175,7 +175,8 @@ void StubNotificationDisplayService::Display(
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // This mimics notification replacement behaviour; the Close() method on a
   // notification's delegate is not meant to be invoked in this situation.
-  Close(notification_type, notification.id());
+  RemoveNotification(notification_type, notification.id(), false /* by_user */,
+                     true /* silent */);
 
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   if (notification_type == NotificationHandler::Type::TRANSIENT)
@@ -193,14 +194,8 @@ void StubNotificationDisplayService::Display(
 void StubNotificationDisplayService::Close(
     NotificationHandler::Type notification_type,
     const std::string& notification_id) {
-  notifications_.erase(
-      std::remove_if(
-          notifications_.begin(), notifications_.end(),
-          [notification_type, notification_id](const NotificationData& data) {
-            return data.type == notification_type &&
-                   data.notification.id() == notification_id;
-          }),
-      notifications_.end());
+  RemoveNotification(notification_type, notification_id, false /* by_user */,
+                     false /* silent */);
 }
 
 void StubNotificationDisplayService::GetDisplayed(

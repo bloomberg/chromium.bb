@@ -17,13 +17,11 @@
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "components/cryptauth/remote_device.h"
-#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
 
 class Profile;
 
 namespace message_center {
-class MessageCenter;
 class Notification;
 }  // namespace message_center
 
@@ -33,14 +31,11 @@ namespace tether {
 
 // Produces notifications associated with CrOS tether network events and alerts
 // observers about interactions with those notifications.
-class TetherNotificationPresenter
-    : public NotificationPresenter,
-      public message_center::MessageCenterObserver {
+class TetherNotificationPresenter : public NotificationPresenter {
  public:
-  // Caller must ensure that |profile|, |message_center|, and |network_connect|
-  // outlive this instance.
+  // Caller must ensure that |profile| and |network_connect| outlive this
+  // instance.
   TetherNotificationPresenter(Profile* profile,
-                              message_center::MessageCenter* message_center,
                               NetworkConnect* network_connect);
   ~TetherNotificationPresenter() override;
 
@@ -57,11 +52,6 @@ class TetherNotificationPresenter
   void RemoveSetupRequiredNotification() override;
   void NotifyConnectionToHostFailed() override;
   void RemoveConnectionToHostFailedNotification() override;
-
-  // message_center::MessageCenterObserver:
-  void OnNotificationClicked(const std::string& notification_id) override;
-  void OnNotificationButtonClicked(const std::string& notification_id,
-                                   int button_index) override;
 
   class SettingsUiDelegate {
    public:
@@ -84,6 +74,17 @@ class TetherNotificationPresenter
   // IDs of all notifications which, when clicked, open mobile data settings.
   static const char* const kIdsWhichOpenTetherSettingsOnClick[];
 
+  void OnNotificationClicked(const std::string& notification_id,
+                             base::Optional<int> button_index);
+  void OnNotificationClosed(const std::string& notification_id);
+
+  std::unique_ptr<message_center::Notification> CreateNotification(
+      const std::string& id,
+      const base::string16& title,
+      const base::string16& message,
+      const gfx::ImageSkia& small_image,
+      const message_center::RichNotificationData& rich_notification_data);
+
   void SetSettingsUiDelegateForTesting(
       std::unique_ptr<SettingsUiDelegate> settings_ui_delegate);
   void ShowNotification(
@@ -93,8 +94,10 @@ class TetherNotificationPresenter
   void RemoveNotificationIfVisible(const std::string& notification_id);
 
   Profile* profile_;
-  message_center::MessageCenter* message_center_;
   NetworkConnect* network_connect_;
+
+  // The ID of the currently showing notification.
+  std::string showing_notification_id_;
 
   std::unique_ptr<SettingsUiDelegate> settings_ui_delegate_;
 

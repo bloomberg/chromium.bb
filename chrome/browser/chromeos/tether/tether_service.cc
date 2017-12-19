@@ -118,7 +118,6 @@ TetherService::TetherService(
       notification_presenter_(
           base::MakeUnique<chromeos::tether::TetherNotificationPresenter>(
               profile_,
-              message_center::MessageCenter::Get(),
               chromeos::NetworkConnect::Get())),
       remote_device_provider_(
           cryptauth::RemoteDeviceProviderImpl::Factory::NewInstance(
