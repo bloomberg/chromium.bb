@@ -4279,7 +4279,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
       av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     const int use_filter_intra_mode =
-        mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
+        mbmi->filter_intra_mode_info.use_filter_intra;
 #if CONFIG_ENTROPY_STATS
     if (use_filter_intra_mode) {
       const PREDICTION_MODE above = av1_above_block_mode(above_mi);
@@ -4299,7 +4299,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     if (allow_update_cdf) {
       if (use_filter_intra_mode)
         update_cdf(fc->filter_intra_mode_cdf[0],
-                   mbmi->filter_intra_mode_info.filter_intra_mode[0],
+                   mbmi->filter_intra_mode_info.filter_intra_mode,
                    FILTER_INTRA_MODES);
       update_cdf(fc->filter_intra_cdfs[mbmi->tx_size], use_filter_intra_mode,
                  2);
@@ -4563,9 +4563,9 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
       } else {
 #if CONFIG_FILTER_INTRA
         PREDICTION_MODE intra_dir;
-        if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0])
+        if (mbmi->filter_intra_mode_info.use_filter_intra)
           intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
-                                             .filter_intra_mode[0]];
+                                             .filter_intra_mode];
         else
           intra_dir = mbmi->mode;
 #if CONFIG_ENTROPY_STATS

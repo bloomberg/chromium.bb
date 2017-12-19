@@ -1731,10 +1731,10 @@ static void build_intra_predictors_high(
   const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-  const FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
-      &xd->mi[0]->mbmi.filter_intra_mode_info;
+  const int use_filter_intra =
+      plane > 0 ? 0 : xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra;
   const FILTER_INTRA_MODE filter_intra_mode =
-      filter_intra_mode_info->filter_intra_mode[plane != 0];
+      xd->mi[0]->mbmi.filter_intra_mode_info.filter_intra_mode;
 #endif  // CONFIG_FILTER_INTRA
   int base = 128 << (xd->bd - 8);
 
@@ -1758,8 +1758,7 @@ static void build_intra_predictors_high(
   }
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-  if (filter_intra_mode_info->use_filter_intra_mode[plane != 0])
-    need_left = need_above = need_above_left = 1;
+  if (use_filter_intra) need_left = need_above = need_above_left = 1;
 #endif  // CONFIG_FILTER_INTRA
 
   (void)plane;
@@ -1791,8 +1790,7 @@ static void build_intra_predictors_high(
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA
     int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
 #if CONFIG_FILTER_INTRA
-    if (filter_intra_mode_info->use_filter_intra_mode[plane != 0])
-      need_bottom = 0;
+    if (use_filter_intra) need_bottom = 0;
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
     if (is_dr_mode) need_bottom = p_angle > 180;
@@ -1829,8 +1827,7 @@ static void build_intra_predictors_high(
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA
     int need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
 #if CONFIG_FILTER_INTRA
-    if (filter_intra_mode_info->use_filter_intra_mode[plane != 0])
-      need_right = 1;
+    if (use_filter_intra) need_right = 0;
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
     if (is_dr_mode) need_right = p_angle < 90;
@@ -1883,7 +1880,7 @@ static void build_intra_predictors_high(
   }
 
 #if CONFIG_FILTER_INTRA
-  if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
+  if (use_filter_intra) {
     highbd_filter_intra_predictors(filter_intra_mode, dst, dst_stride, tx_size,
                                    above_row, left_col, xd->bd);
     return;
@@ -1975,10 +1972,10 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   const int is_dr_mode = av1_is_directional_mode(mode, mbmi->sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-  const FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
-      &xd->mi[0]->mbmi.filter_intra_mode_info;
+  const int use_filter_intra =
+      plane > 0 ? 0 : xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra;
   const FILTER_INTRA_MODE filter_intra_mode =
-      filter_intra_mode_info->filter_intra_mode[plane != 0];
+      xd->mi[0]->mbmi.filter_intra_mode_info.filter_intra_mode;
 #endif  // CONFIG_FILTER_INTRA
 
   // 127 127 127 .. 127 127 127 127 127 127
@@ -2002,8 +1999,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-  if (filter_intra_mode_info->use_filter_intra_mode[plane != 0])
-    need_left = need_above = need_above_left = 1;
+  if (use_filter_intra) need_left = need_above = need_above_left = 1;
 #endif  // CONFIG_FILTER_INTRA
 
   (void)xd;
@@ -2036,8 +2032,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA
     int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
 #if CONFIG_FILTER_INTRA
-    if (filter_intra_mode_info->use_filter_intra_mode[plane != 0])
-      need_bottom = 0;
+    if (use_filter_intra) need_bottom = 0;
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
     if (is_dr_mode) need_bottom = p_angle > 180;
@@ -2074,8 +2069,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA
     int need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
 #if CONFIG_FILTER_INTRA
-    if (filter_intra_mode_info->use_filter_intra_mode[plane != 0])
-      need_right = 1;
+    if (use_filter_intra) need_right = 0;
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
     if (is_dr_mode) need_right = p_angle < 90;
@@ -2125,7 +2119,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 
 #if CONFIG_FILTER_INTRA
-  if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
+  if (use_filter_intra) {
     filter_intra_predictors(filter_intra_mode, dst, dst_stride, tx_size,
                             above_row, left_col);
     return;

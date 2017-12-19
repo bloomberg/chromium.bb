@@ -194,9 +194,8 @@ typedef struct {
 
 #if CONFIG_FILTER_INTRA
 typedef struct {
-  // 1: an ext intra mode is used; 0: otherwise.
-  uint8_t use_filter_intra_mode[PLANE_TYPES];
-  FILTER_INTRA_MODE filter_intra_mode[PLANE_TYPES];
+  uint8_t use_filter_intra;
+  FILTER_INTRA_MODE filter_intra_mode;
 } FILTER_INTRA_MODE_INFO;
 
 static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {

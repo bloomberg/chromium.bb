@@ -872,10 +872,10 @@ static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
 
   if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
       av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
-    filter_intra_mode_info->use_filter_intra_mode[0] = aom_read_symbol(
+    filter_intra_mode_info->use_filter_intra = aom_read_symbol(
         r, xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2, ACCT_STR);
-    if (filter_intra_mode_info->use_filter_intra_mode[0]) {
-      filter_intra_mode_info->filter_intra_mode[0] =
+    if (filter_intra_mode_info->use_filter_intra) {
+      filter_intra_mode_info->filter_intra_mode =
           aom_read_symbol(r, xd->tile_ctx->filter_intra_mode_cdf[0],
                           FILTER_INTRA_MODES, ACCT_STR);
     }
@@ -971,9 +971,9 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       } else if (ALLOW_INTRA_EXT_TX) {
 #if CONFIG_FILTER_INTRA
         PREDICTION_MODE intra_dir;
-        if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0])
+        if (mbmi->filter_intra_mode_info.use_filter_intra)
           intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
-                                             .filter_intra_mode[0]];
+                                             .filter_intra_mode];
         else
           intra_dir = mbmi->mode;
         *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
@@ -1211,8 +1211,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, r);
 #if CONFIG_FILTER_INTRA
-  mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
-  mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
+  mbmi->filter_intra_mode_info.use_filter_intra = 0;
   read_filter_intra_mode_info(xd, r);
 #endif  // CONFIG_FILTER_INTRA
 
@@ -1576,8 +1575,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, r);
 #if CONFIG_FILTER_INTRA
-  mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
-  mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
+  mbmi->filter_intra_mode_info.use_filter_intra = 0;
   read_filter_intra_mode_info(xd, r);
 #endif  // CONFIG_FILTER_INTRA
 }
@@ -2126,8 +2124,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->angle_delta[1] = 0;
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-      mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
-      mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
+      mbmi->filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA
       if (is_interintra_wedge_used(bsize)) {
         mbmi->use_wedge_interintra = aom_read_symbol(

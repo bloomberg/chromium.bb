@@ -813,11 +813,11 @@ static void write_filter_intra_mode_info(const MACROBLOCKD *xd,
                                          aom_writer *w) {
   if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
       av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
-    aom_write_symbol(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[0],
+    aom_write_symbol(w, mbmi->filter_intra_mode_info.use_filter_intra,
                      xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2);
-    if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
+    if (mbmi->filter_intra_mode_info.use_filter_intra) {
       const FILTER_INTRA_MODE mode =
-          mbmi->filter_intra_mode_info.filter_intra_mode[0];
+          mbmi->filter_intra_mode_info.filter_intra_mode;
       aom_write_symbol(w, mode, xd->tile_ctx->filter_intra_mode_cdf[0],
                        FILTER_INTRA_MODES);
     }
@@ -1118,9 +1118,9 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       } else if (ALLOW_INTRA_EXT_TX) {
 #if CONFIG_FILTER_INTRA
         PREDICTION_MODE intra_dir;
-        if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0])
+        if (mbmi->filter_intra_mode_info.use_filter_intra)
           intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
-                                             .filter_intra_mode[0]];
+                                             .filter_intra_mode];
         else
           intra_dir = mbmi->mode;
         aom_write_symbol(
