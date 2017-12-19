@@ -2,23 +2,18 @@
 <meta charset="utf-8">
 <title>StylePropertyMap.getAll tests</title>
 <link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#stylepropertymap">
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../resources/testhelper.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../resources/testhelper.js"></script>
 <div id="target" style="width: 10px; --foo: auto; transition-duration: 1s, 2s;"></div>
 <script>
 'use strict';
 
-const styleMap = document.getElementById('target').attributeStyleMap;
+const styleMap = document.getElementById('target').computedStyleMap();
 
 test(() => {
   assert_throws(new TypeError(), () => styleMap.getAll('lemon'));
 }, 'Calling StylePropertyMap.getAll with an unsupported property throws a TypeError');
-
-test(() => {
-  const result = styleMap.getAll('height');
-  assert_equals(result.length, 0);
-}, 'Calling StylePropertyMap.getAll with a property not in the property model returns an empty list');
 
 test(() => {
   const result = styleMap.getAll('--Foo');

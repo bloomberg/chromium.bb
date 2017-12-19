@@ -1,0 +1,42 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>StylePropertyMap.get tests</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#get-a-value-from-a-stylepropertymap">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../resources/testhelper.js"></script>
+<div id="target" style="width: 10px; --foo: auto; transition-duration: 1s, 2s;"></div>
+<script>
+'use strict';
+
+const styleMap = document.getElementById('target').computedStyleMap();
+
+test(() => {
+  assert_throws(new TypeError(), () => styleMap.get('lemon'));
+}, 'Calling StylePropertyMap.get with an unsupported property throws a TypeError');
+
+test(() => {
+  assert_equals(styleMap.get('--Foo'), null);
+}, 'Calling StylePropertyMap.get with a custom property not in the property model returns null');
+
+test(() => {
+  const result = styleMap.get('width');
+  assert_style_value_equals(result, CSS.px(10));
+}, 'Calling StylePropertyMap.get with a valid property returns the correct entry');
+
+test(() => {
+  const result = styleMap.get('wIdTh');
+  assert_style_value_equals(result, CSS.px(10));
+}, 'StylePropertyMap.get with a valid property in mixed case returns the correct entry');
+
+test(() => {
+  const result = styleMap.get('--foo');
+  assert_style_value_equals(result, new CSSUnparsedValue('auto'));
+}, 'Calling StylePropertyMap.get with a valid custom property returns the correct entry');
+
+test(() => {
+  const result = styleMap.get('transition-duration');
+  assert_style_value_equals(result, CSS.s(1));
+}, 'Calling StylePropertyMap.get with a list-valued property returns only the first value');
+
+</script>
