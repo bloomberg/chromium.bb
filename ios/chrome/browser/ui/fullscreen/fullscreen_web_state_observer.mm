@@ -18,14 +18,14 @@
 #endif
 
 namespace {
-// Returns whether |web_state|'s last committed NavigationItem has a broken SSL.
+// Returns whether |web_state|'s visible NavigationItem has a broken SSL.
 bool IsWebStateSSLBroken(web::WebState* web_state) {
   if (!web_state)
     return false;
   web::NavigationManager* manager = web_state->GetNavigationManager();
   if (!manager)
     return false;
-  web::NavigationItem* item = manager->GetLastCommittedItem();
+  web::NavigationItem* item = manager->GetVisibleItem();
   if (!item)
     return false;
   const web::SSLStatus& ssl = item->GetSSL();
