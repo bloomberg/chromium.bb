@@ -76,38 +76,7 @@ ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
 }
 
 ResourceResponse::ResourceResponse()
-    : expected_content_length_(0),
-      connection_id_(0),
-      http_status_code_(0),
-      remote_port_(0),
-      was_cached_(false),
-      connection_reused_(false),
-      is_null_(true),
-      have_parsed_age_header_(false),
-      have_parsed_date_header_(false),
-      have_parsed_expires_header_(false),
-      have_parsed_last_modified_header_(false),
-      has_major_certificate_errors_(false),
-      is_legacy_symantec_cert_(false),
-      was_fetched_via_spdy_(false),
-      was_fetched_via_proxy_(false),
-      was_fetched_via_service_worker_(false),
-      was_fallback_required_by_service_worker_(false),
-      did_service_worker_navigation_preload_(false),
-      response_type_via_service_worker_(
-          network::mojom::FetchResponseType::kDefault),
-      http_version_(kHTTPVersionUnknown),
-      security_style_(kSecurityStyleUnknown),
-      age_(0.0),
-      date_(0.0),
-      expires_(0.0),
-      last_modified_(0.0),
-      app_cache_id_(0),
-      connection_info_(
-          net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN),
-      encoded_data_length_(0),
-      encoded_body_length_(0),
-      decoded_body_length_(0) {}
+    : expected_content_length_(0), is_null_(true) {}
 
 ResourceResponse::ResourceResponse(const KURL& url,
                                    const AtomicString& mime_type,
@@ -117,37 +86,7 @@ ResourceResponse::ResourceResponse(const KURL& url,
       mime_type_(mime_type),
       expected_content_length_(expected_length),
       text_encoding_name_(text_encoding_name),
-      connection_id_(0),
-      http_status_code_(0),
-      remote_port_(0),
-      was_cached_(false),
-      connection_reused_(false),
-      is_null_(false),
-      have_parsed_age_header_(false),
-      have_parsed_date_header_(false),
-      have_parsed_expires_header_(false),
-      have_parsed_last_modified_header_(false),
-      has_major_certificate_errors_(false),
-      is_legacy_symantec_cert_(false),
-      was_fetched_via_spdy_(false),
-      was_fetched_via_proxy_(false),
-      was_fetched_via_service_worker_(false),
-      was_fallback_required_by_service_worker_(false),
-      did_service_worker_navigation_preload_(false),
-      response_type_via_service_worker_(
-          network::mojom::FetchResponseType::kDefault),
-      http_version_(kHTTPVersionUnknown),
-      security_style_(kSecurityStyleUnknown),
-      age_(0.0),
-      date_(0.0),
-      expires_(0.0),
-      last_modified_(0.0),
-      app_cache_id_(0),
-      connection_info_(
-          net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN),
-      encoded_data_length_(0),
-      encoded_body_length_(0),
-      decoded_body_length_(0) {}
+      is_null_(false) {}
 
 ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     : ResourceResponse() {
