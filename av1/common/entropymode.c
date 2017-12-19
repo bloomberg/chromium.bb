@@ -1139,48 +1139,33 @@ static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
 
 // TODO(huisu): tune these cdfs
 const aom_cdf_prob
-    default_palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)] = {
+    default_palette_y_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
       { AOM_CDF7(12288, 19408, 24627, 26662, 28499, 30667) },
       { AOM_CDF7(2815, 4570, 9416, 10875, 13782, 19863) },
-      { AOM_CDF7(3839, 5986, 11949, 13413, 16286, 21823) },
       { AOM_CDF7(12032, 14948, 22187, 23138, 24756, 27635) },
       { AOM_CDF7(14847, 20167, 25433, 26751, 28278, 30119) },
-      { AOM_CDF7(14336, 20240, 24840, 26079, 27908, 30034) },
       { AOM_CDF7(18816, 25574, 29030, 29877, 30656, 31506) },
       { AOM_CDF7(23039, 27333, 30220, 30708, 31070, 31826) },
-      { AOM_CDF7(13696, 18911, 23620, 25371, 29821, 31617) },
       { AOM_CDF7(12543, 20838, 27455, 28762, 29763, 31546) },
     };
 
-const aom_cdf_prob default_palette_uv_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(
-    PALETTE_SIZES)] = {
-  { AOM_CDF7(20480, 29888, 32453, 32715, 32751, 32766) },
-  { AOM_CDF7(11135, 23641, 31056, 31998, 32496, 32668) },
-  { AOM_CDF7(9216, 23108, 30806, 31871, 32414, 32637) },
-  { AOM_CDF7(9984, 21999, 29192, 30645, 31640, 32402) },
-  { AOM_CDF7(7552, 16614, 24880, 27283, 29254, 31203) },
-  { AOM_CDF7(9600, 20279, 27548, 29261, 30494, 31631) },
-  { AOM_CDF7(11391, 18656, 23727, 26058, 27788, 30278) },
-  { AOM_CDF7(8576, 13585, 17632, 20884, 23948, 27152) },
-  { AOM_CDF7(15360, 24200, 26978, 30846, 31409, 32545) },
-  { AOM_CDF7(9216, 14276, 19043, 22689, 25799, 28712) },
-};
+const aom_cdf_prob
+    default_palette_uv_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
+      { AOM_CDF7(20480, 29888, 32453, 32715, 32751, 32766) },
+      { AOM_CDF7(11135, 23641, 31056, 31998, 32496, 32668) },
+      { AOM_CDF7(9984, 21999, 29192, 30645, 31640, 32402) },
+      { AOM_CDF7(7552, 16614, 24880, 27283, 29254, 31203) },
+      { AOM_CDF7(11391, 18656, 23727, 26058, 27788, 30278) },
+      { AOM_CDF7(8576, 13585, 17632, 20884, 23948, 27152) },
+      { AOM_CDF7(9216, 14276, 19043, 22689, 25799, 28712) },
+    };
 
 // When palette mode is enabled, following probability tables indicate the
 // probabilities to code the "is_palette" bit (i.e. the bit that indicates
 // if this block uses palette mode or DC_PRED mode).
-const aom_cdf_prob default_palette_y_mode_cdf[PALETTE_BLOCK_SIZES]
+const aom_cdf_prob default_palette_y_mode_cdf[PALATTE_BSIZE_CTXS]
                                              [PALETTE_Y_MODE_CONTEXTS]
                                              [CDF_SIZE(2)] = {
-                                               { { AOM_CDF2(128 * 240) },
-                                                 { AOM_CDF2(128 * 180) },
-                                                 { AOM_CDF2(128 * 100) } },
-                                               { { AOM_CDF2(128 * 240) },
-                                                 { AOM_CDF2(128 * 180) },
-                                                 { AOM_CDF2(128 * 100) } },
-                                               { { AOM_CDF2(128 * 240) },
-                                                 { AOM_CDF2(128 * 180) },
-                                                 { AOM_CDF2(128 * 100) } },
                                                { { AOM_CDF2(128 * 240) },
                                                  { AOM_CDF2(128 * 180) },
                                                  { AOM_CDF2(128 * 100) } },

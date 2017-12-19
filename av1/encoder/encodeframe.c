@@ -4220,7 +4220,7 @@ static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 
   assert(bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST);
-  const int block_palette_idx = bsize - BLOCK_8X8;
+  const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
 
   if (mbmi->mode == DC_PRED) {
     const int n = pmi->palette_size[0];
@@ -4233,8 +4233,7 @@ static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     }
-    update_cdf(fc->palette_y_mode_cdf[block_palette_idx][palette_y_mode_ctx],
-               n > 0, 2);
+    update_cdf(fc->palette_y_mode_cdf[bsize_ctx][palette_y_mode_ctx], n > 0, 2);
   }
 
   if (mbmi->uv_mode == UV_DC_PRED) {

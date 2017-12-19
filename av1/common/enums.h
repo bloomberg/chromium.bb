@@ -70,15 +70,19 @@ extern "C" {
 #endif
 
 #define MIN_PALETTE_BSIZE BLOCK_8X8
-#define MAX_PALETTE_BSIZE BLOCK_64X64
 #define MAX_PALETTE_SQUARE (64 * 64)
+
 // Maximum number of colors in a palette.
 #define PALETTE_MAX_SIZE 8
 // Minimum number of colors in a palette.
 #define PALETTE_MIN_SIZE 2
-// Palette mode is available for block sizes between MIN_PALETTE_BSIZE and
-// MAX_PALETTE_BSIZE.
-#define PALETTE_BLOCK_SIZES (MAX_PALETTE_BSIZE - MIN_PALETTE_BSIZE + 1)
+// Map the number of pixels in a block size to a context
+//   64(BLOCK_8X8)              -> 0
+//  128(BLOCK_16X8, BLOCK_16X8) -> 1
+//  256(BLOCK_16X16)            -> 2
+//  ...
+// 4096(BLOCK_64X64)            -> 6
+#define PALATTE_BSIZE_CTXS 7
 
 #if CONFIG_FRAME_MARKER
 #define FRAME_OFFSET_BITS 5

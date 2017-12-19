@@ -130,7 +130,7 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     av1_cost_tokens_from_cdf(x->switchable_interp_costs[i],
                              fc->switchable_interp_cdf[i], NULL);
 
-  for (i = 0; i < PALETTE_BLOCK_SIZES; ++i) {
+  for (i = 0; i < PALATTE_BSIZE_CTXS; ++i) {
     av1_cost_tokens_from_cdf(x->palette_y_size_cost[i],
                              fc->palette_y_size_cdf[i], NULL);
     av1_cost_tokens_from_cdf(x->palette_uv_size_cost[i],

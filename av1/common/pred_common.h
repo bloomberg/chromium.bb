@@ -184,6 +184,10 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd);
 int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
                           uint16_t *cache);
 
+static INLINE int av1_get_palette_bsize_ctx(BLOCK_SIZE bsize) {
+  return num_pels_log2_lookup[bsize] - num_pels_log2_lookup[MIN_PALETTE_BSIZE];
+}
+
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
 
 int av1_get_reference_mode_context(const AV1_COMMON *cm, const MACROBLOCKD *xd);

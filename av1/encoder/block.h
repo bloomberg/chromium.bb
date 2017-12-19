@@ -305,13 +305,13 @@ struct macroblock {
 #else
   int partition_cost[PARTITION_CONTEXTS][PARTITION_TYPES];
 #endif  // CONFIG_EXT_PARTITION_TYPES
-  int palette_y_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
-  int palette_uv_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
+  int palette_y_size_cost[PALATTE_BSIZE_CTXS][PALETTE_SIZES];
+  int palette_uv_size_cost[PALATTE_BSIZE_CTXS][PALETTE_SIZES];
   int palette_y_color_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
                           [PALETTE_COLORS];
   int palette_uv_color_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
                            [PALETTE_COLORS];
-  int palette_y_mode_cost[PALETTE_BLOCK_SIZES][PALETTE_Y_MODE_CONTEXTS][2];
+  int palette_y_mode_cost[PALATTE_BSIZE_CTXS][PALETTE_Y_MODE_CONTEXTS][2];
   int palette_uv_mode_cost[PALETTE_UV_MODE_CONTEXTS][2];
 #if CONFIG_CFL
   // The rate associated with each alpha codeword
