@@ -36,6 +36,9 @@ class ReportingServiceImpl : public ReportingService {
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<const base::Value> body) override {
+    DCHECK(context_);
+    DCHECK(context_->delegate());
+
     if (!context_->delegate()->CanQueueReport(url::Origin::Create(url)))
       return;
 
