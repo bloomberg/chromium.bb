@@ -161,6 +161,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void CalculateScrollbarModes(ScrollbarMode& h_mode,
                                ScrollbarMode& v_mode) const;
 
+  void DispatchFakeMouseMoveEventSoon(EventHandler&) override;
+
   LayoutState* GetLayoutState() const { return layout_state_; }
 
   void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) override;

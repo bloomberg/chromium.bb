@@ -4267,8 +4267,8 @@ void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
   Document* document = frame_->GetDocument();
   document->EnqueueScrollEventForNode(document);
 
-  frame_->GetEventHandler().DispatchFakeMouseMoveEventSoon(
-      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
+  GetLayoutView()->DispatchFakeMouseMoveEventSoon(GetFrame().GetEventHandler());
+
   if (scroll_type == kUserScroll || scroll_type == kCompositorScroll) {
     Page* page = GetFrame().GetPage();
     if (page)
