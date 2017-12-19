@@ -629,13 +629,14 @@ bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
                      : SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW);
 }
 
-void AccessibilityManager::HandleAccessibilityGesture(ui::AXGesture gesture) {
+void AccessibilityManager::HandleAccessibilityGesture(
+    const std::string& gesture) {
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
   CHECK(event_router);
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->AppendString(ui::ToString(gesture));
+  event_args->AppendString(gesture);
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE,
       extensions::api::accessibility_private::OnAccessibilityGesture::

@@ -113,6 +113,11 @@ void AccessibilityControllerClient::PlayShutdownSound(
   std::move(callback).Run(sound_duration);
 }
 
+void AccessibilityControllerClient::HandleAccessibilityGesture(
+    const std::string& gesture) {
+  chromeos::AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
+}
+
 void AccessibilityControllerClient::FlushForTesting() {
   accessibility_controller_.FlushForTesting();
 }

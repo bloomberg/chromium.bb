@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/accessibility/ax_enums.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -61,6 +62,10 @@ class ASH_EXPORT AccessibilityController
   // Initiates play of shutdown sound. The base::TimeDelta parameter gets the
   // shutdown duration.
   void PlayShutdownSound(base::OnceCallback<void(base::TimeDelta)> callback);
+
+  // Forwards an accessibility gesture from the touch exploration controller to
+  // ChromeVox.
+  void HandleAccessibilityGesture(ui::AXGesture gesture);
 
   // mojom::AccessibilityController:
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;

@@ -259,10 +259,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     AccessibilityManager::Get()->PlaySpokenFeedbackToggleCountdown(tick_count);
   }
 
-  void HandleAccessibilityGesture(ui::AXGesture gesture) override {
-    AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };

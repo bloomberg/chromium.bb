@@ -64,15 +64,21 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
     std::move(callback).Run(kShutdownSoundDuration);
   }
 
+  void HandleAccessibilityGesture(const std::string& gesture) override {
+    last_a11y_gesture_ = gesture;
+  }
+
   ash::mojom::AccessibilityAlert last_a11y_alert() const {
     return last_a11y_alert_;
   }
   int32_t last_sound_key() const { return last_sound_key_; }
+  std::string last_a11y_gesture() const { return last_a11y_gesture_; }
 
  private:
   ash::mojom::AccessibilityAlert last_a11y_alert_ =
       ash::mojom::AccessibilityAlert::NONE;
   int32_t last_sound_key_ = -1;
+  std::string last_a11y_gesture_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccessibilityControllerClient);
 };
@@ -116,4 +122,9 @@ TEST_F(AccessibilityControllerClientTest, MethodCalls) {
       base::BindOnce(&CopyResult, base::Unretained(&sound_duration)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kShutdownSoundDuration, sound_duration);
+
+  // Tests HandleAccessibilityGesture method call.
+  const std::string gesture("click");
+  client.HandleAccessibilityGesture(gesture);
+  EXPECT_EQ(gesture, client.last_a11y_gesture());
 }
