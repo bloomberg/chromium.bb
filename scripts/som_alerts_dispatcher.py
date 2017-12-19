@@ -420,6 +420,8 @@ def GenerateBuildAlert(build, stages, exceptions, messages, annotations,
   dashboard_url = tree_status.ConstructDashboardURL(build['waterfall'],
                                                     build['builder_name'],
                                                     build['build_number'])
+  annotator_url = tree_status.ConstructAnnotatorURL(build.get('master_build_id',
+                                                              build['id']))
   links = [
       som.Link('build_details', dashboard_url),
       som.Link('goldeneye',
@@ -430,6 +432,7 @@ def GenerateBuildAlert(build, stages, exceptions, messages, annotations,
                tree_status.ConstructBuildStageURL(
                    waterfall.WATERFALL_TO_DASHBOARD[build['waterfall']],
                    build['builder_name'], build['build_number'])),
+      som.Link('annotator', annotator_url),
   ]
 
   notes = SummarizeHistory(build, db)
@@ -437,10 +440,10 @@ def GenerateBuildAlert(build, stages, exceptions, messages, annotations,
     notes.append('Siblings: %s \\[[compare](%s)\\]' %
                  (SummarizeStatuses(siblings)[0],
                   GenerateCompareBuildsLink([build['id']], True)))
-  notes.extend([
-      ('Annotation: %(failure_category)s(%(failure_message)s) '
-       '%(blame_url)s %(notes)s') % a for a in annotations
-  ])
+  # Link to any existing annotations, along with a link back to the annotator.
+  notes.extend([('[Annotation](%(link)s): %(failure_category)s'
+                 '(%(failure_message)s) %(blame_url)s %(notes)s') %
+                dict(a, **{'link': annotator_url}) for a in annotations])
 
   # If the CIDB status was indeterminate (inflight/aborted), provide link
   # for sheriffs.
