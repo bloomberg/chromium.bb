@@ -16,6 +16,9 @@ namespace breakpad {
 // Turns on the crash reporter in any process.
 extern void InitCrashReporter(const std::string& process_type);
 
+// Sets the product/distribution channel crash key.
+void SetChannelCrashKey(const std::string& channel);
+
 #if defined(OS_ANDROID)
 extern void InitCrashKeysForTesting();
 

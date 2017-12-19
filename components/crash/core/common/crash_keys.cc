@@ -8,6 +8,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -17,28 +18,25 @@
 
 namespace crash_keys {
 
-#if defined(OS_MACOSX)
-// Crashpad owns the "guid" key. Chrome's metrics client ID is a separate ID
-// carried in a distinct "metrics_client_id" field.
+namespace {
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+// When using Crashpad, the crash reporting client ID is the responsibility of
+// Crashpad. It is not set directly by Chrome. To make the metrics client ID
+// available on the server, it's stored in a distinct key.
 const char kMetricsClientId[] = "metrics_client_id";
-#elif defined(OS_WIN)
-// TODO(scottmg): While transitioning to Crashpad, there are some executables
-// that use Crashpad (which use kMetricsClientId), and some that use Breakpad
-// (kClientId), and they both use this file. For now we define both, but once
-// Breakpad is no longer used on Windows, we will no longer need kClientId, and
-// this can be combined with the OS_MACOSX block above.
-const char kMetricsClientId[] = "metrics_client_id";
-const char kClientId[] = "guid";
 #else
-const char kClientId[] = "guid";
+// When using Breakpad instead of Crashpad, the crash reporting client ID is the
+// same as the metrics client ID.
+const char kMetricsClientId[] = "guid";
 #endif
 
-const char kChannel[] = "channel";
+crash_reporter::CrashKeyString<40> client_id_key(kMetricsClientId);
+
+}  // namespace
 
 const char kNumVariations[] = "num-experiments";
 const char kVariations[] = "variations";
-
-const char kSwitchFormat[] = "switch-%" PRIuS;
 
 void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid) {
   std::string stripped_guid(metrics_client_guid);
@@ -48,15 +46,7 @@ void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid) {
   if (stripped_guid.empty())
     return;
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  // The crash client ID is maintained by Crashpad and is distinct from the
-  // metrics client ID, which is carried in its own key.
-  base::debug::SetCrashKeyValue(kMetricsClientId, stripped_guid);
-#else
-  // The crash client ID is set by the application when Breakpad is in use.
-  // The same ID as the metrics client ID is used.
-  base::debug::SetCrashKeyValue(kClientId, stripped_guid);
-#endif
+  client_id_key.Set(stripped_guid);
 }
 
 void ClearMetricsClientId() {
@@ -73,7 +63,7 @@ void ClearMetricsClientId() {
   // it needs to use the metrics client ID as its stable crash client ID, so
   // leave its client ID intact even when metrics reporting is disabled while
   // the application is running.
-  base::debug::ClearCrashKey(kMetricsClientId);
+  client_id_key.Clear();
 #endif
 }
 
@@ -96,46 +86,39 @@ void SetVariationsList(const std::vector<std::string>& variations) {
   base::debug::SetCrashKeyValue(kVariations, variations_string);
 }
 
-void GetCrashKeysForCommandLineSwitches(
-    std::vector<base::debug::CrashKey>* keys) {
-  DCHECK(keys);
+using SwitchesCrashKey = crash_reporter::CrashKeyString<64>;
+static SwitchesCrashKey switches_keys[] = {
+    {"switch-1", SwitchesCrashKey::Tag::kArray},
+    {"switch-2", SwitchesCrashKey::Tag::kArray},
+    {"switch-3", SwitchesCrashKey::Tag::kArray},
+    {"switch-4", SwitchesCrashKey::Tag::kArray},
+    {"switch-5", SwitchesCrashKey::Tag::kArray},
+    {"switch-6", SwitchesCrashKey::Tag::kArray},
+    {"switch-7", SwitchesCrashKey::Tag::kArray},
+    {"switch-8", SwitchesCrashKey::Tag::kArray},
+    {"switch-9", SwitchesCrashKey::Tag::kArray},
+    {"switch-10", SwitchesCrashKey::Tag::kArray},
+    {"switch-11", SwitchesCrashKey::Tag::kArray},
+    {"switch-12", SwitchesCrashKey::Tag::kArray},
+    {"switch-13", SwitchesCrashKey::Tag::kArray},
+    {"switch-14", SwitchesCrashKey::Tag::kArray},
+    {"switch-15", SwitchesCrashKey::Tag::kArray},
+};
 
-  // Use static storage for formatted key names, since they will persist for
-  // the duration of the program.
-  static char formatted_keys[kSwitchesMaxCount][sizeof(kSwitchFormat) + 1] =
-      {{ 0 }};
-  const size_t formatted_key_len = sizeof(formatted_keys[0]);
-
-  // sizeof(kSwitchFormat) is platform-dependent, so make sure formatted_keys
-  // actually have space for a 2-digit switch number plus null-terminator.
-  static_assert(formatted_key_len >= 10,
-                "insufficient space for \"switch-NN\"");
-
-  for (size_t i = 0; i < kSwitchesMaxCount; ++i) {
-    // Name the keys using 1-based indexing.
-    int n = base::snprintf(formatted_keys[i], formatted_key_len, kSwitchFormat,
-                           i + 1);
-    DCHECK_GT(n, 0);
-    base::debug::CrashKey crash_key = { formatted_keys[i], kSmallSize };
-    keys->push_back(crash_key);
-  }
-}
+static crash_reporter::CrashKeyString<4> num_switches_key("num-switches");
 
 void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
                                 SwitchFilterFunction skip_filter) {
   const base::CommandLine::StringVector& argv = command_line.argv();
 
   // Set the number of switches in case size > kNumSwitches.
-  // num-switches is capped at 15 entries, so only two digits are stored.
-  static crash_reporter::CrashKeyString<2> num_switches_key("num-switches");
-  num_switches_key.Set(base::StringPrintf("%" PRIuS, argv.size() - 1));
+  num_switches_key.Set(base::NumberToString(argv.size() - 1));
 
-  size_t key_i = 1;  // Key names are 1-indexed.
+  size_t key_i = 0;
 
   // Go through the argv, skipping the exec path. Stop if there are too many
   // switches to hold in crash keys.
-  for (size_t i = 1; i < argv.size() && key_i <= crash_keys::kSwitchesMaxCount;
-       ++i) {
+  for (size_t i = 1; i < argv.size() && key_i < arraysize(switches_keys); ++i) {
 #if defined(OS_WIN)
     std::string switch_str = base::WideToUTF8(argv[i]);
 #else
@@ -146,13 +129,19 @@ void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
     if (skip_filter && (*skip_filter)(switch_str))
       continue;
 
-    std::string key = base::StringPrintf(kSwitchFormat, key_i++);
-    base::debug::SetCrashKeyValue(key, switch_str);
+    switches_keys[key_i++].Set(switch_str);
   }
 
   // Clear any remaining switches.
-  for (; key_i <= kSwitchesMaxCount; ++key_i)
-    base::debug::ClearCrashKey(base::StringPrintf(kSwitchFormat, key_i));
+  for (; key_i < arraysize(switches_keys); ++key_i)
+    switches_keys[key_i].Clear();
+}
+
+void ResetCommandLineForTesting() {
+  num_switches_key.Clear();
+  for (auto& key : switches_keys) {
+    key.Clear();
+  }
 }
 
 }  // namespace crash_keys

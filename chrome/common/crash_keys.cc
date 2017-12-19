@@ -47,12 +47,6 @@ size_t RegisterChromeCrashKeys() {
   //     RegisterWebViewCrashKeys(),
   // chromecast/crash/cast_crash_keys.cc::RegisterCastCrashKeys().
   base::debug::CrashKey fixed_keys[] = {
-#if defined(OS_MACOSX) || defined(OS_WIN)
-    {kMetricsClientId, kSmallSize},
-#else
-    {kClientId, kSmallSize},
-#endif
-    {kChannel, kSmallSize},
     {kActiveURL, kLargeSize},
     {kNumVariations, kSmallSize},
     {kVariations, kHugeSize},
@@ -70,8 +64,6 @@ size_t RegisterChromeCrashKeys() {
   // a collection of data, like command line switches or extension IDs.
   std::vector<base::debug::CrashKey> keys(
       fixed_keys, fixed_keys + arraysize(fixed_keys));
-
-  crash_keys::GetCrashKeysForCommandLineSwitches(&keys);
 
   // Register the extension IDs.
   {
