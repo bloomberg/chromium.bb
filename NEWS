@@ -5,15 +5,31 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+
 ** Bug fixes
+- Fix a regression in inputPositions thanks to Bert Frees
+- Treat characters within the range ~compbrlStart~ and ~compbrlEnd~ as
+  a special case. This fixes many if not most of the problems with
+  cursor position and the ~compbrlAtCursor~ mode. Thanks to Dave Mielke.
+
 ** Braille table improvements
+- Improvements to Unified French Grade 2 thanks to André-Abush Clause
+- Fix braille number input for Greek Braille thanks to Dave Mielke
+
 ** Other changes
 *** Improved documentation
 - Extend the documentation on multipass opcodes. Thanks to Dave Mielke
   and Christian Egli.
-
+*** Major overhaul of the YAML test suite
+- Due to problems in the cursor position computation the YAML test
+  suite was improved to support proper testing of cursor position also
+  in combination with input, output position and modes. In essence all
+  of the liblouis API is now supported and can be tested via the YAML
+  tests. Thanks to Christian Egli.
 ** Deprecation notice
+
 ** Backwards incompatible changes
+
 ** New, renamed or removed tables
 *** New
 *** Renamed
