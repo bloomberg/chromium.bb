@@ -21,6 +21,7 @@ extern const char kTestServerUrl[];
 
 extern const char kStatusHeader[];
 
+extern const char kHelloPath[];
 extern const char kHelloBodyValue[];
 extern const char kHelloStatus[];
 

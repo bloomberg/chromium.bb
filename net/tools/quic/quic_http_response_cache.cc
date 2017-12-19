@@ -330,7 +330,11 @@ void QuicHttpResponseCache::AddResponseImpl(QuicStringPiece host,
 
 string QuicHttpResponseCache::GetKey(QuicStringPiece host,
                                      QuicStringPiece path) const {
-  return host.as_string() + path.as_string();
+  string host_string = host.as_string();
+  size_t port = host_string.find(':');
+  if (port != string::npos)
+    host_string = string(host_string.c_str(), port);
+  return host_string + path.as_string();
 }
 
 void QuicHttpResponseCache::MaybeAddServerPushResources(

@@ -83,10 +83,9 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
   directory = test_files_root;
   std::unique_ptr<net::ProofSourceChromium> proof_source(
       new net::ProofSourceChromium());
-  CHECK(proof_source->Initialize(
-      directory.AppendASCII("quic_test.example.com.crt"),
-      directory.AppendASCII("quic_test.example.com.key.pkcs8"),
-      directory.AppendASCII("quic_test.example.com.key.sct")));
+  CHECK(proof_source->Initialize(directory.AppendASCII("quic-chain.pem"),
+                                 directory.AppendASCII("quic-cert.key"),
+                                 base::FilePath()));
   SetupQuicHttpResponseCache();
 
   g_quic_server = new net::QuicSimpleServer(
