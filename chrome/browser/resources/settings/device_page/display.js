@@ -143,10 +143,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    nightLightScheduleSubLabel_: String,
   },
 
   observers: [
-    'onScheduleTypeChanged_(prefs.ash.night_light.schedule_type.*)',
+    'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
+        ' prefs.ash.night_light.enabled.*)',
   ],
 
   /** @private {number} Selected mode index received from chrome. */
@@ -608,10 +612,24 @@ Polymer({
     }
   },
 
-  /** @private */
-  onScheduleTypeChanged_: function() {
+  /**
+   * Invoked when the status of Night Light or its schedule type are changed, in
+   * order to update the schedule settings, such as whether to show the custom
+   * schedule slider, and the schedule sub label.
+   * @private
+   */
+  updateNightLightScheduleSettings_: function() {
+    var scheduleType = this.getPref('ash.night_light.schedule_type').value;
     this.shouldOpenCustomScheduleCollapse_ =
-        this.getPref('ash.night_light.schedule_type').value ==
-        NightLightScheduleType.CUSTOM;
+        scheduleType == NightLightScheduleType.CUSTOM;
+
+    if (scheduleType == NightLightScheduleType.SUNSET_TO_SUNRISE) {
+      var nightLightStatus = this.getPref('ash.night_light.enabled').value;
+      this.nightLightScheduleSubLabel_ = nightLightStatus ?
+          this.i18n('displayNightLightOffAtSunrise') :
+          this.i18n('displayNightLightOnAtSunset');
+    } else {
+      this.nightLightScheduleSubLabel_ = '';
+    }
   },
 });

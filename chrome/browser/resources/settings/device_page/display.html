@@ -227,8 +227,14 @@
         </div>
         <!-- Schedule settings -->
         <div class="settings-box indented">
-          <div id="nightLightScheduleLabel" class="start text-area">
-            $i18n{displayNightLightScheduleLabel}
+          <div class="start text-area">
+            <div id="nightLightScheduleLabel" class="label">
+              $i18n{displayNightLightScheduleLabel}
+            </div>
+            <div id="nightLightScheduleSubLabel" class="secondary label"
+                hidden$="[[!nightLightScheduleSubLabel_]]">
+              [[nightLightScheduleSubLabel_]]
+            </div>
           </div>
           <settings-dropdown-menu
               id="nightLightScheduleTypeDropDown"
