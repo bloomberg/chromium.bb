@@ -51,11 +51,20 @@ class MAYBE_WebRtcPausePlayBrowserTest : public WebRtcContentBrowserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcPausePlayBrowserTest,
-                       MANUAL_SurvivesPeerConnectionPausePlaying) {
+                       MANUAL_SurvivesPeerConnectionVideoPausePlaying) {
   // Args: runtimeSeconds, numPeerConnections, pausePlayIterationDelayMillis,
   // elementType.
   MakeTypicalPeerConnectionCall(
       base::StringPrintf("runPausePlayTest(%d, %d, 100, 'video');",
+                         kTestDurationSecs, kNumPeerConnections));
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcPausePlayBrowserTest,
+                       MANUAL_SurvivesPeerConnectionAudioPausePlaying) {
+  // Args: runtimeSeconds, numPeerConnections, pausePlayIterationDelayMillis,
+  // elementType.
+  MakeTypicalPeerConnectionCall(
+      base::StringPrintf("runPausePlayTest(%d, %d, 100, 'audio');",
                          kTestDurationSecs, kNumPeerConnections));
 }
 
