@@ -104,13 +104,14 @@ constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
 // LayoutTests/media/media-controls.js.
 const double kTimeWithoutMouseMovementBeforeHidingMediaControls = 3;
 
-const char* kStateCSSClasses[6] = {
+const char* kStateCSSClasses[7] = {
     "phase-pre-ready state-no-source",    // kNoSource
     "phase-pre-ready state-no-metadata",  // kNotLoaded
     "state-loading-metadata",             // kLoadingMetadata
     "phase-ready state-stopped",          // kStopped
     "phase-ready state-playing",          // kPlaying
     "phase-ready state-buffering",        // kBuffering
+    "phase-ready state-scrubbing",        // kScrubbing
 };
 
 // The padding in pixels inside the button panel.
@@ -570,12 +571,14 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
 }
 
 void MediaControlsImpl::UpdateCSSClassFromState() {
+  const ControlsState state = State();
   StringBuilder builder;
-  builder.Append(kStateCSSClasses[State()]);
+  builder.Append(kStateCSSClasses[state]);
 
   if (MediaElement().IsHTMLVideoElement() &&
       !VideoElement().HasAvailableVideoFrame() &&
-      VideoElement().PosterImageURL().IsEmpty()) {
+      VideoElement().PosterImageURL().IsEmpty() &&
+      state != ControlsState::kScrubbing) {
     builder.Append(" ");
     builder.Append(kShowDefaultPosterCSSClass);
   }
@@ -589,6 +592,9 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
 }
 
 MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
+  if (is_scrubbing_)
+    return ControlsState::kScrubbing;
+
   switch (MediaElement().getNetworkState()) {
     case HTMLMediaElement::kNetworkEmpty:
     case HTMLMediaElement::kNetworkNoSource:
@@ -786,6 +792,9 @@ void MediaControlsImpl::BeginScrubbing() {
     is_paused_for_scrubbing_ = true;
     MediaElement().pause();
   }
+
+  is_scrubbing_ = true;
+  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::EndScrubbing() {
@@ -794,6 +803,9 @@ void MediaControlsImpl::EndScrubbing() {
     if (MediaElement().paused())
       MediaElement().Play();
   }
+
+  is_scrubbing_ = false;
+  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::UpdateCurrentTimeDisplay() {

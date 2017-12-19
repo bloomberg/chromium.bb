@@ -551,3 +551,12 @@ audio::-internal-media-controls-loading-panel {
 .state-loading-metadata input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   opacity: 0;
 }
+
+/**
+ * Scrubbing
+ */
+
+.state-scrubbing div[pseudo="-internal-media-controls-button-panel" i],
+.state-scrubbing input[pseudo="-webkit-media-controls-overlay-play-button" i] {
+  display: none;
+}
