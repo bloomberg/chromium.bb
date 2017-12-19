@@ -42,29 +42,19 @@ if (is_official_build) {
   assert(!is_component_build)
 }
 
-# This file defines the following three main targets:
+# This file defines the following two main targets:
 #
-# "gn_all" should (transitively) cause everything to be built; if you run
-# 'ninja gn_all' and then 'ninja all', the second build should do no work.
+# "gn_all" is used to create explicit dependencies from the root BUILD.gn to
+# each top-level component that we wish to include when building everything via
+# "all". This is required since the set of targets built by "all" is determined
+# automatically based on reachability from the root BUILD.gn (for details, see
+# crbug.com/503241). Builders should typically use "all", or list targets
+# explicitly, rather than relying on "gn_all".
 #
 # "gn_visibility": targets that are normally not visible to top-level targets,
 # but are built anyway by "all". Since we don't want any such targets, we have
 # this placeholder to make sure hidden targets that aren't otherwise depended
 # on yet are accounted for.
-#
-# "All" is an alias for "gn_all". It exists for bot compatibility w/ GYP for
-# the iOS bots and the official builders, but should not be generally used
-# during the GYP->GN migration.  We cannot guarantee that GN's "All" builds the
-# same set of targets as GYP's "All" does, because GYP's "All" supports
-# wildcards.
-#
-# Lastly, none of these targets are guaranteed to be the same as what ninja
-# will build with "all". For more on how "all" works and how GN determines
-# "all", see crbug.com/503241.
-#
-# TODO(GYP_GONE): crbug.com/481694. Make sure that the above is true and there
-# are scripts run on the bots that enforce this. Once the GYP migration is
-# over, we can collapse all of these targets as desired.
 
 group("gn_all") {
   testonly = true
@@ -746,16 +736,6 @@ group("gn_all") {
       "//headless:headless_tests",
     ]
   }
-}
-
-# TODO(GYP_GONE): This target exists for compatibility with GYP, specifically
-# for the iOS bots and the official builders.
-group("All") {
-  testonly = true
-
-  deps = [
-    ":gn_all",
-  ]
 }
 
 if (is_fuchsia) {
