@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/common/cross_site_document_classifier.h"
 #include "content/public/common/resource_type.h"
@@ -86,9 +87,8 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   FRIEND_TEST_ALL_PREFIXES(CrossSiteDocumentResourceHandlerTest,
                            OnWillReadDefer);
 
-  // ResourceController that manages the read buffer if a downstream handler
-  // defers during OnWillRead.
-  class OnWillReadController;
+  // A ResourceController subclass for running deferred operations.
+  class Controller;
 
   // Computes whether this response contains a cross-site document that needs to
   // be blocked from the renderer process.  This is a first approximation based
@@ -100,6 +100,9 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // Called by the OnWillReadController.
   void ResumeOnWillRead(scoped_refptr<net::IOBuffer>* buf, int* buf_size);
 
+  // WeakPtrFactory for |next_handler_|.
+  base::WeakPtrFactory<ResourceHandler> weak_next_handler_;
+
   // A local buffer for sniffing content and using for throwaway reads.
   // This is not shared with the renderer process.
   scoped_refptr<net::IOBuffer> local_buffer_;
@@ -107,6 +110,9 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // The buffer allocated by the next ResourceHandler for reads, which is used
   // if sniffing determines that we should proceed with the response.
   scoped_refptr<net::IOBuffer> next_handler_buffer_;
+
+  // The number of bytes written into |local_buffer_| by previous reads.
+  int local_buffer_bytes_read_ = 0;
 
   // The size of |next_handler_buffer_|.
   int next_handler_buffer_size_ = 0;
@@ -147,6 +153,8 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // Whether the next ResourceHandler has already been told that the read has
   // completed, and thus it is safe to cancel or detach on the next read.
   bool blocked_read_completed_ = false;
+
+  base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentResourceHandler);
 };
