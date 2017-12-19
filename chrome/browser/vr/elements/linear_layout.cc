@@ -8,8 +8,14 @@ namespace vr {
 
 namespace {
 
+// NB: this function makes no attempt to account for rotated elements.
 float GetExtent(const UiElement& element, bool horizontal) {
-  return horizontal ? element.size().width() : element.size().height();
+  gfx::Point3F p = horizontal ? gfx::Point3F(element.size().width(), 0, 0)
+                              : gfx::Point3F(0, element.size().height(), 0);
+  gfx::Point3F o;
+  element.LocalTransform().TransformPoint(&p);
+  element.LocalTransform().TransformPoint(&o);
+  return (p - o).Length();
 }
 
 }  // namespace
