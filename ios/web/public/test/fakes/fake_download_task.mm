@@ -19,6 +19,10 @@ FakeDownloadTask::FakeDownloadTask(const GURL& original_url,
 
 FakeDownloadTask::~FakeDownloadTask() = default;
 
+DownloadTask::State FakeDownloadTask::GetState() const {
+  return state_;
+}
+
 void FakeDownloadTask::Start(
     std::unique_ptr<net::URLFetcherResponseWriter> writer) {
   writer_ = std::move(writer);
@@ -38,7 +42,7 @@ const GURL& FakeDownloadTask::GetOriginalUrl() const {
 }
 
 bool FakeDownloadTask::IsDone() const {
-  return is_done_;
+  return state_ == State::kComplete;
 }
 
 int FakeDownloadTask::GetErrorCode() const {
@@ -80,7 +84,7 @@ void FakeDownloadTask::RemoveObserver(DownloadTaskObserver* observer) {
 }
 
 void FakeDownloadTask::SetDone(bool done) {
-  is_done_ = done;
+  state_ = State::kComplete;
   OnDownloadUpdated();
 }
 

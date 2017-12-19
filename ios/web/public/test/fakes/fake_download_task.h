@@ -21,6 +21,7 @@ class FakeDownloadTask : public DownloadTask {
   ~FakeDownloadTask() override;
 
   // DownloadTask overrides:
+  DownloadTask::State GetState() const override;
   void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) override;
   net::URLFetcherResponseWriter* GetResponseWriter() const override;
   NSString* GetIndentifier() const override;
@@ -52,9 +53,9 @@ class FakeDownloadTask : public DownloadTask {
 
   base::ObserverList<DownloadTaskObserver, true> observers_;
 
+  State state_ = State::kNotStarted;
   std::unique_ptr<net::URLFetcherResponseWriter> writer_;
   GURL original_url_;
-  bool is_done_ = false;
   int error_code_ = 0;
   int http_code_ = -1;
   std::string content_disposition_;

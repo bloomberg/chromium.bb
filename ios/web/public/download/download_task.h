@@ -27,6 +27,20 @@ class DownloadTaskObserver;
 // stores all the state for a download. Must be used on the UI thread.
 class DownloadTask {
  public:
+  enum class State {
+    // Download has not started yet.
+    kNotStarted = 0,
+
+    // Download is actively progressing.
+    kInProgress,
+
+    // Download is completely finished.
+    kComplete,
+  };
+
+  // Returns the download task state.
+  virtual State GetState() const = 0;
+
   // Starts the download. |writer| allows clients to perform in-memory or
   // in-file downloads and must not be null. Start() can only be called once.
   virtual void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) = 0;
