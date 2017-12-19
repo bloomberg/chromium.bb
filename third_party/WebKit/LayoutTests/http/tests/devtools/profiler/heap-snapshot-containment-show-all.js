@@ -7,13 +7,6 @@
       `Tests Containment view of detailed heap snapshots. The "Show All" button must show all nodes. Test object distances calculation.\n`);
   await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests Containment view of detailed heap snapshots.
-      The &quot;Show All&quot; button must show all nodes.
-      Test object distances calculation.
-      </p>
-    `);
 
   var instanceCount = 25;
   function createHeapSnapshot() {

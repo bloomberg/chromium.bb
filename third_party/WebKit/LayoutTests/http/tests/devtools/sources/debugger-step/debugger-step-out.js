@@ -6,11 +6,6 @@
   TestRunner.addResult(`Tests "step out" functionality in debugger.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests &quot;step out&quot; functionality in debugger.
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function d()
       {

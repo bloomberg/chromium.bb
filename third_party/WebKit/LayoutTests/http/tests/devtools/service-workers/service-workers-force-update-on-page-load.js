@@ -5,13 +5,10 @@
 (async function() {
   TestRunner.addResult(`Tests "Force update on page load" checkbox\n`);
   await TestRunner.loadModule('application_test_runner');
-    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  // Note: every test that uses a storage API must manually clean-up state from previous tests.
   await ApplicationTestRunner.resetState();
 
   await TestRunner.showPanel('resources');
-  await TestRunner.loadHTML(`
-      <p>Tests &quot;Force update on page load&quot; checkbox</p>
-    `);
 
   const scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/force-update-on-page-load-worker.php';
   const scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-force-update-on-page-load/';

@@ -6,11 +6,6 @@
   TestRunner.addResult(`Tests that "Show Function Definition" jumps to the correct location.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that &quot;Show Function Definition&quot; jumps to the correct location.
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function jumpToMe()
       {

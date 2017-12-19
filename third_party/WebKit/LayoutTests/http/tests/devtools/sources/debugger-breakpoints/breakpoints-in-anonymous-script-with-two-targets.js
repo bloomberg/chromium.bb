@@ -6,9 +6,6 @@
   TestRunner.addResult(`Tests that breakpoints work in anonymous scripts with >1 targets.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>Tests that breakpoints work in anonymous scripts with &gt;1 targets.</p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

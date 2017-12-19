@@ -7,12 +7,6 @@
       `Tests Comparison view of detailed heap snapshots. Shown node count must be preserved after sorting.\n`);
   await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests Comparison view of detailed heap snapshots.
-      Shown node count must be preserved after sorting.
-      </p>
-    `);
 
   var instanceCount = 24;
   function createHeapSnapshotA() {

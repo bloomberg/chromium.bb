@@ -5,10 +5,6 @@
 (async function() {
   TestRunner.addResult(
       `Tests that console warnings are issued for a blocked event listener and that there is no crash when an offending listener is removed by the handler.\n`);
-  await TestRunner.loadHTML(`
-      <p>Tests that console warnings are issued for a blocked event listener and that
-      there is no crash when an offending listener is removed by the handler.</p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function eventListenerSuicidal(event)
       {

@@ -7,11 +7,6 @@
       `Tests XHR network resource type and size for asynchronous requests when "blob" is specified as the response type.\n`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <p>
-       Tests XHR network resource type and size for asynchronous requests when &quot;blob&quot; is specified as the response type.
-      </p>
-    `);
 
   NetworkTestRunner.recordNetwork();
   NetworkTestRunner.makeXHR(

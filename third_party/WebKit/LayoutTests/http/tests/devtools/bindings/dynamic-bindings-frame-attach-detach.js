@@ -6,12 +6,6 @@
   TestRunner.addResult(
       `Verify that UISourceCodes are added and removed as iframe with dynamic script and stylesheet is added and removed.\n`);
   await TestRunner.loadModule('bindings_test_runner');
-  await TestRunner.loadHTML(`
-      <p>
-      Verify that UISourceCodes are added and removed as iframe with dynamic script
-      and stylesheet is added and removed.
-      </p>
-    `);
 
   TestRunner.markStep('dumpInitialWorkspace');
   var snapshot = BindingsTestRunner.dumpWorkspace();

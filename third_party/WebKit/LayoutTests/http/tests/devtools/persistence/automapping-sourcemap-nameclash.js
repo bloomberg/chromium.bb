@@ -8,10 +8,6 @@
   await TestRunner.loadModule('bindings_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>Verify that sourcemap sources are mapped event when sourcemap compiled url matches with one of the
-      source urls.</p>
-    `);
   await TestRunner.addScriptTag('resources/sourcemap-name-clash/out.js');
 
   BindingsTestRunner.initializeTestMapping();

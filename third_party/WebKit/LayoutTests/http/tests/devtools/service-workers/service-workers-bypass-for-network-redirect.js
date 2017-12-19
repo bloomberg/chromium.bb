@@ -5,14 +5,11 @@
 (async function() {
   TestRunner.addResult(`Tests "Bypass for network" checkbox with redirection doesn't cause crash.\n`);
   await TestRunner.loadModule('application_test_runner');
-    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  // Note: every test that uses a storage API must manually clean-up state from previous tests.
   await ApplicationTestRunner.resetState();
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('resources');
-  await TestRunner.loadHTML(`
-      <p>Tests &quot;Bypass for network&quot; checkbox with redirection doesn't cause crash.</p>
-    `);
 
   const url = 'http://localhost:8000/devtools/service-workers/resources/' +
       'bypass-for-network-redirect.php';

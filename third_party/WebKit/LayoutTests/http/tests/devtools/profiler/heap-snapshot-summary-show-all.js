@@ -6,12 +6,6 @@
   TestRunner.addResult(`Tests Summary view of detailed heap snapshots. The "Show All" button must show all nodes.\n`);
   await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests Summary view of detailed heap snapshots.
-      The &quot;Show All&quot; button must show all nodes.
-      </p>
-    `);
 
   var instanceCount = 25;
   function createHeapSnapshot() {

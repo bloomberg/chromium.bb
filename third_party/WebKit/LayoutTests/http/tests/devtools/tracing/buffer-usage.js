@@ -7,12 +7,6 @@
       `Tests that buffer usage update are sent when recording trace events and TimelineLifecycleDelegate methods are properly invoked in the expected order.\n`);
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that buffer usage update are sent when recording trace events and
-      TimelineLifecycleDelegate methods are properly invoked in the expected order.
-      </p>
-    `);
 
   TestTimelineControllerClient = function() {
     this._hadLoadingProgress = false;

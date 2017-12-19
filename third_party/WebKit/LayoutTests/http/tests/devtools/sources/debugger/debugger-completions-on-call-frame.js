@@ -7,12 +7,6 @@
       `Test that completions in the context of the call frame will result in names of its scope variables.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Test that completions in the context of the call frame will result in names
-      of its scope variables.
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       var a = 1;
       function testFunction()

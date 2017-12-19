@@ -10,11 +10,6 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('application_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>Tests that it's possible to set breakpoint in source frame, and that
-      source frame displays breakpoints and console errors.
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function addErrorToConsole()
       {

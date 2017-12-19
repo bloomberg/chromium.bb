@@ -5,13 +5,10 @@
 (async function() {
   TestRunner.addResult(`Tests "Bypass for network" checkbox works with navigations. crbug.com/746220\n`);
   await TestRunner.loadModule('application_test_runner');
-    // Note: every test that uses a storage API must manually clean-up state from previous tests.
+  // Note: every test that uses a storage API must manually clean-up state from previous tests.
   await ApplicationTestRunner.resetState();
 
   await TestRunner.showPanel('resources');
-  await TestRunner.loadHTML(`
-        <p>Tests &quot;Bypass for network&quot; checkbox works with navigations. crbug.com/746220</p>
-      `);
   await TestRunner.evaluateInPagePromise(`
         function getIframeBodyText(id) {
           return document.getElementById(id).contentWindow.document.body.innerText;

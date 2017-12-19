@@ -7,12 +7,6 @@
       `This test checks how text editor updates autocompletion dictionary in a response to user input.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      This test checks how text editor updates autocompletion dictionary in a response
-      to user input.
-      </p>
-    `);
   await TestRunner.addScriptTag('debugger/resources/edit-me.js');
   await TestRunner.addScriptTag('../resources/editor-test.js');
 
