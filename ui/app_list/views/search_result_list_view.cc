@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_result_view.h"
@@ -67,52 +66,6 @@ bool SearchResultListView::IsResultViewSelected(
 
 void SearchResultListView::UpdateAutoLaunchState() {
   SetAutoLaunchTimeout(view_delegate_->GetAutoLaunchTimeout());
-}
-
-bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (features::IsAppListFocusEnabled()) {
-    // TODO(weidongg/766807) Remove this function when the flag is enabled by
-    // default.
-    return false;
-  }
-  if (selected_index() >= 0 &&
-      results_container_->child_at(selected_index())->OnKeyPressed(event)) {
-    return true;
-  }
-
-  int selection_index = -1;
-  const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
-  switch (event.key_code()) {
-    case ui::VKEY_TAB:
-      if (event.IsShiftDown())
-        selection_index = selected_index() - 1;
-      else
-        selection_index = selected_index() + 1;
-      break;
-    case ui::VKEY_UP:
-      selection_index = selected_index() - 1;
-      break;
-    case ui::VKEY_DOWN:
-      selection_index = selected_index() + 1;
-      break;
-    case ui::VKEY_LEFT:
-      selection_index = selected_index() - forward_dir;
-      break;
-    case ui::VKEY_RIGHT:
-      selection_index = selected_index() + forward_dir;
-      break;
-    default:
-      break;
-  }
-
-  if (IsValidSelectionIndex(selection_index)) {
-    SetSelectedIndex(selection_index);
-    if (auto_launch_animation_)
-      CancelAutoLaunchTimeout();
-    return true;
-  }
-
-  return false;
 }
 
 void SearchResultListView::SetAutoLaunchTimeout(

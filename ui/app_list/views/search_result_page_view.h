@@ -24,10 +24,6 @@ class APP_LIST_EXPORT SearchResultPageView
   SearchResultPageView();
   ~SearchResultPageView() override;
 
-  int selected_index() const { return selected_index_; }
-  bool HasSelection() const { return selected_index_ > -1; }
-  void SetSelection(bool select);  // Set or unset result selection.
-
   void AddSearchResultContainerView(
       SearchModel::SearchResults* result_model,
       SearchResultContainerView* result_container);
@@ -46,11 +42,7 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnAnimationUpdated(double progress,
                           AppListModel::State from_state,
                           AppListModel::State to_state) override;
-  void OnHidden() override;
   gfx::Rect GetSearchBoxBounds() const override;
-  views::View* GetSelectedView() const override;
-
-  void ClearSelectedIndex();
 
   // Overridden from SearchResultContainerView::Delegate :
   void OnSearchResultContainerResultsChanged() override;
@@ -63,11 +55,6 @@ class APP_LIST_EXPORT SearchResultPageView
   // Separator between SearchResultContainerView.
   class HorizontalSeparator;
 
-  // |directional_movement| is true if the navigation was caused by directional
-  // controls (eg, arrow keys), as opposed to linear controls (eg, Tab).
-  void SetSelectedIndex(int index, bool directional_movement);
-  bool IsValidSelectionIndex(int index);
-
   // Sort the result container views.
   void ReorderSearchResultContainers();
 
@@ -76,12 +63,6 @@ class APP_LIST_EXPORT SearchResultPageView
   std::vector<SearchResultContainerView*> result_container_views_;
 
   std::vector<HorizontalSeparator*> separators_;
-
-  // -1 indicates no selection.
-  int selected_index_;
-
-  // Whether the app list focus is enabled.
-  const bool is_app_list_focus_enabled_;
 
   // View containing SearchCardView instances. Owned by view hierarchy.
   views::View* const contents_view_;

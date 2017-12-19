@@ -48,7 +48,6 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
   void OnSearchResultInstalled(SearchResultView* view);
 
   // Overridden from views::View:
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   gfx::Size CalculatePreferredSize() const override;
 
   // Overridden from ui::ListModelObserver:

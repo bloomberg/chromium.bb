@@ -233,8 +233,6 @@ void ContentsView::ShowSearchResults(bool show) {
   int search_page = GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
   DCHECK_GE(search_page, 0);
 
-  search_results_page_view_->ClearSelectedIndex();
-
   SetActiveStateInternal(show ? search_page : page_before_search_, show, true);
 }
 
@@ -445,31 +443,6 @@ void ContentsView::Layout() {
         GetSearchBoxView()->GetViewBoundsForSearchBoxContentsBounds(
             search_box_bounds)));
   }
-}
-
-bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (features::IsAppListFocusEnabled())
-    return false;
-  // TODO(weidongg/766807) Remove this function when the flag is enabled by
-  // default.
-  if (app_list_pages_[GetActivePageIndex()]->OnKeyPressed(event))
-    return true;
-  if (event.key_code() != ui::VKEY_TAB &&
-      !GetSearchBoxView()->IsArrowKey(event))
-    return false;
-  if (is_fullscreen_app_list_enabled_) {
-    if (event.key_code() == ui::VKEY_TAB)
-      GetSearchBoxView()->MoveTabFocus(event.IsShiftDown());
-    else
-      GetSearchBoxView()->MoveArrowFocus(event);
-    return true;
-  }
-  if (event.IsShiftDown()) {
-    GetSearchBoxView()->MoveTabFocus(true);
-    return true;
-  }
-
-  return false;
 }
 
 const char* ContentsView::GetClassName() const {

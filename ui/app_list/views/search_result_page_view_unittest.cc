@@ -55,8 +55,6 @@ class SearchResultPageViewTest
       const AnswerCardState answer_card_state = GetParam();
       test_with_answer_card =
           answer_card_state != AnswerCardState::ANSWER_CARD_OFF;
-      test_with_answer_card_result_ =
-          answer_card_state == AnswerCardState::ANSWER_CARD_ON_WITH_RESULT;
     }
 
     // Setting up the feature set.
@@ -99,61 +97,6 @@ class SearchResultPageViewTest
     return delegate_->GetSearchModel()->results();
   }
 
-  void SetUpSearchResults(
-      const std::vector<std::pair<SearchResult::DisplayType, int>>&
-          result_types) {
-    SearchModel::SearchResults* results = GetResults();
-    results->DeleteAll();
-    double relevance = result_types.size();
-    for (const auto& data : result_types) {
-      // Set the relevance of the results in each group in decreasing order (so
-      // the earlier groups have higher relevance, and therefore appear first).
-      relevance -= 1.0;
-      for (int i = 0; i < data.second; ++i) {
-        std::unique_ptr<TestSearchResult> result =
-            std::make_unique<TestSearchResult>();
-        result->set_display_type(data.first);
-        result->set_relevance(relevance);
-        results->Add(std::move(result));
-      }
-    }
-
-    // Adding results will schedule Update().
-    RunPendingMessages();
-  }
-
-  // Add search results for test on focus movement.
-  void SetUpFocusTestEnv() {
-    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-    // 3 tile results, followed by 2 list results.
-    const int kTileResults = 3;
-    const int kListResults = 2;
-    const int kNoneResults = 3;
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_TILE, kTileResults));
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_LIST, kListResults));
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_NONE, kNoneResults));
-    SetUpSearchResults(result_types);
-  }
-
-  int GetSelectedIndex() const { return view_->selected_index(); }
-
-  bool KeyPress(ui::KeyboardCode key_code) { return KeyPress(key_code, false); }
-
-  bool KeyPress(ui::KeyboardCode key_code, bool shift_down) {
-    int flags = ui::EF_NONE;
-    if (shift_down)
-      flags |= ui::EF_SHIFT_DOWN;
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
-    return view_->OnKeyPressed(event);
-  }
-
-  bool test_with_answer_card_result() const {
-    return test_with_answer_card_result_;
-  }
-
  private:
   AppListView* app_list_view_ = nullptr;  // Owned by native widget.
   SearchResultPageView* view_ = nullptr;  // Owned by views hierarchy.
@@ -161,7 +104,6 @@ class SearchResultPageViewTest
       nullptr;                                 // Owned by views hierarchy.
   SearchResultListView* list_view_ = nullptr;  // Owned by views hierarchy.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
-  bool test_with_answer_card_result_ = true;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
@@ -175,55 +117,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(AnswerCardState::ANSWER_CARD_OFF,
                       AnswerCardState::ANSWER_CARD_ON_WITHOUT_RESULT,
                       AnswerCardState::ANSWER_CARD_ON_WITH_RESULT));
-
-// TODO(crbug.com/766807): Remove the test once new focus model is stable.
-TEST_P(SearchResultPageViewTest, DISABLED_TabMovement) {
-  SetUpFocusTestEnv();
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-
-  // Navigate to the second tile in the tile group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(1, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate to the list group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(2, tile_list_view()->selected_index());
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(0, list_view()->selected_index());
-
-  // Navigate to the second result in the list view.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Attempt to navigate off bottom of list items.
-  EXPECT_FALSE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Navigate back to the tile group (should select the last tile result).
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(0, list_view()->selected_index());
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(2, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate off top of list.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(-1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-}
 
 TEST_P(SearchResultPageViewTest, ResultsSorted) {
   SearchModel::SearchResults* results = GetResults();
@@ -264,185 +157,6 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
 
   EXPECT_EQ(list_view(), view()->result_container_views()[0]);
   EXPECT_EQ(tile_list_view(), view()->result_container_views()[1]);
-}
-
-// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
-TEST_P(SearchResultPageViewTest, DISABLED_UpdateWithSelection) {
-  const int kCardResultNum = test_with_answer_card_result() ? 1 : 0;
-  {
-    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 2));
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
-
-    SetUpSearchResults(result_types);
-  }
-
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate to the second result in the list group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(0, list_view()->selected_index());
-
-  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  {
-    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 3));
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
-
-    SetUpSearchResults(result_types);
-  }
-
-  // The second list result should still be selected after the update.
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  {
-    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 1));
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
-
-    SetUpSearchResults(result_types);
-  }
-
-  // The first list result should be selected after the update as the second
-  // result has vanished.
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(0, list_view()->selected_index());
-
-  {
-    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 1));
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
-
-    SetUpSearchResults(result_types);
-  }
-
-  // The tile container should be selected because we hold the selected
-  // container index constant.
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  {
-    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-    result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 3));
-    result_types.push_back(
-        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
-
-    SetUpSearchResults(result_types);
-  }
-
-  // The selected container has vanished so we reset the selection to 0.
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(0, list_view()->selected_index());
-}
-
-using SearchResultPageViewFullscreenTest = SearchResultPageViewTest;
-
-// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
-TEST_F(SearchResultPageViewFullscreenTest, DISABLED_LeftRightMovement) {
-  SetUpFocusTestEnv();
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate to the second tile in the tile group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(1, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate to the list group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
-  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(0, list_view()->selected_index());
-
-  // Navigate to the second result in the list view.
-  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Attempt to navigate off bottom of list items.
-  EXPECT_FALSE(KeyPress(ui::VKEY_RIGHT));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Navigate back to the tile group (should select the last tile result).
-  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(0, list_view()->selected_index());
-  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(2, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate off top of list.
-  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
-  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
-  EXPECT_FALSE(KeyPress(ui::VKEY_LEFT));
-  EXPECT_EQ(-1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-}
-
-// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
-TEST_F(SearchResultPageViewFullscreenTest, DISABLED_UpDownMovement) {
-  SetUpFocusTestEnv();
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate to the first result in the list view.
-  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(0, list_view()->selected_index());
-
-  // Navigate to the second result in the list view.
-  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Attempt to navigate off bottom of list items.
-  EXPECT_FALSE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Navigate back to the tile group (should select the first tile result).
-  EXPECT_TRUE(KeyPress(ui::VKEY_UP));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(0, list_view()->selected_index());
-  EXPECT_TRUE(KeyPress(ui::VKEY_UP));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate off top of list.
-  EXPECT_FALSE(KeyPress(ui::VKEY_UP));
-  EXPECT_EQ(-1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
 }
 
 }  // namespace test

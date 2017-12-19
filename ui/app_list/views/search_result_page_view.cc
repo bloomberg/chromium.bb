@@ -11,7 +11,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
@@ -139,10 +138,7 @@ class SearchResultPageView::HorizontalSeparator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
 };
 
-SearchResultPageView::SearchResultPageView()
-    : selected_index_(0),
-      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()),
-      contents_view_(new views::View) {
+SearchResultPageView::SearchResultPageView() : contents_view_(new views::View) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -172,13 +168,6 @@ SearchResultPageView::SearchResultPageView()
 
 SearchResultPageView::~SearchResultPageView() = default;
 
-void SearchResultPageView::SetSelection(bool select) {
-  if (select)
-    SetSelectedIndex(0, false);
-  else
-    ClearSelectedIndex();
-}
-
 void SearchResultPageView::AddSearchResultContainerView(
     SearchModel::SearchResults* results_model,
     SearchResultContainerView* result_container) {
@@ -194,84 +183,33 @@ void SearchResultPageView::AddSearchResultContainerView(
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (is_app_list_focus_enabled_) {
-    // Let the FocusManager handle Left/Right keys.
-    if (!CanProcessUpDownKeyTraversal(event))
-      return false;
-
-    views::View* next_focusable_view = nullptr;
-    if (event.key_code() == ui::VKEY_UP) {
-      next_focusable_view = GetFocusManager()->GetNextFocusableView(
-          GetFocusManager()->GetFocusedView(), GetWidget(), true, false);
-    } else {
-      DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
-      next_focusable_view = GetFocusManager()->GetNextFocusableView(
-          GetFocusManager()->GetFocusedView(), GetWidget(), false, false);
-    }
-
-    if (next_focusable_view && !Contains(next_focusable_view)) {
-      // Hitting up key when focus is on first search result or hitting down
-      // key when focus is on last search result should move focus onto search
-      // box and select all text.
-      views::Textfield* search_box =
-          AppListPage::contents_view()->GetSearchBoxView()->search_box();
-      search_box->RequestFocus();
-      search_box->SelectAll(false);
-      return true;
-    }
-
-    // Return false to let FocusManager to handle default focus move by key
-    // events.
+  // Let the FocusManager handle Left/Right keys.
+  if (!CanProcessUpDownKeyTraversal(event))
     return false;
+
+  views::View* next_focusable_view = nullptr;
+  if (event.key_code() == ui::VKEY_UP) {
+    next_focusable_view = GetFocusManager()->GetNextFocusableView(
+        GetFocusManager()->GetFocusedView(), GetWidget(), true, false);
+  } else {
+    DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
+    next_focusable_view = GetFocusManager()->GetNextFocusableView(
+        GetFocusManager()->GetFocusedView(), GetWidget(), false, false);
   }
-  // TODO(weidongg/766807) Remove everything below when the flag is enabled by
-  // default.
-  if (HasSelection() &&
-      result_container_views_.at(selected_index_)->OnKeyPressed(event)) {
+
+  if (next_focusable_view && !Contains(next_focusable_view)) {
+    // Hitting up key when focus is on first search result or hitting down
+    // key when focus is on last search result should move focus onto search
+    // box and select all text.
+    views::Textfield* search_box =
+        AppListPage::contents_view()->GetSearchBoxView()->search_box();
+    search_box->RequestFocus();
+    search_box->SelectAll(false);
     return true;
   }
 
-  int dir = 0;
-  bool directional_movement = false;
-  const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
-  switch (event.key_code()) {
-    case ui::VKEY_TAB:
-      dir = event.IsShiftDown() ? -1 : 1;
-      break;
-    case ui::VKEY_UP:
-      dir = -1;
-      directional_movement = true;
-      break;
-    case ui::VKEY_DOWN:
-      dir = 1;
-      directional_movement = true;
-      break;
-    case ui::VKEY_LEFT:
-      dir = -forward_dir;
-      break;
-    case ui::VKEY_RIGHT:
-      dir = forward_dir;
-      break;
-    default:
-      return false;
-  }
-
-  // Find the next result container with results.
-  int new_selected = selected_index_;
-  do {
-    new_selected += dir;
-  } while (IsValidSelectionIndex(new_selected) &&
-           result_container_views_[new_selected]->num_results() == 0);
-
-  if (IsValidSelectionIndex(new_selected)) {
-    SetSelectedIndex(new_selected, directional_movement);
-    return true;
-  }
-
-  if (dir == -1) {
-    // Shift+tab/up/left key could move focus back to search box.
-    ClearSelectedIndex();
-  }
+  // Return false to let FocusManager to handle default focus move by key
+  // events.
   return false;
 }
 
@@ -281,30 +219,6 @@ const char* SearchResultPageView::GetClassName() const {
 
 gfx::Size SearchResultPageView::CalculatePreferredSize() const {
   return gfx::Size(kWidth, kHeight);
-}
-
-void SearchResultPageView::ClearSelectedIndex() {
-  if (HasSelection())
-    result_container_views_[selected_index_]->ClearSelectedIndex();
-
-  selected_index_ = -1;
-}
-
-void SearchResultPageView::SetSelectedIndex(int index,
-                                            bool directional_movement) {
-  bool from_bottom = index < selected_index_;
-
-  // Reset the old selected view's selection.
-  ClearSelectedIndex();
-
-  selected_index_ = index;
-  // Set the new selected view's selection to its first result.
-  result_container_views_[selected_index_]->OnContainerSelected(
-      from_bottom, directional_movement);
-}
-
-bool SearchResultPageView::IsValidSelectionIndex(int index) {
-  return index >= 0 && index < static_cast<int>(result_container_views_.size());
 }
 
 void SearchResultPageView::ReorderSearchResultContainers() {
@@ -354,63 +268,30 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
     }
   }
 
-  if (is_app_list_focus_enabled_) {
-    if (result_container_views_.empty())
-      return;
-    // Set the first result (if it exists) selected when search results are
-    // updated. Note that the focus is not set on the first result to prevent
-    // frequent focus switch between search box and first result during typing
-    // query.
-    SearchResultContainerView* old_first_container_view =
-        result_container_views_[0];
-    ReorderSearchResultContainers();
-
-    views::View* focused_view = GetFocusManager()->GetFocusedView();
-    if (first_result_view_ != focused_view) {
-      // If the old first result is focused, do not clear the selection. (This
-      // happens when the user moved the focus before search results are
-      // updated.)
-      old_first_container_view->SetFirstResultSelected(false);
-    }
-    first_result_view_ = result_container_views_[0]->GetFirstResultView();
-    if (!Contains(focused_view)) {
-      // If one of the search result is focused, do not set the first result
-      // selected.
-      result_container_views_[0]->SetFirstResultSelected(true);
-    }
+  if (result_container_views_.empty())
     return;
-  }
-
-  SearchResultContainerView* old_selection =
-      HasSelection() ? result_container_views_[selected_index_] : nullptr;
-
-  // Truncate the currently selected container's selection if necessary. If
-  // there are no results, the selection will be cleared below.
-  if (old_selection && old_selection->num_results() > 0 &&
-      old_selection->selected_index() >= old_selection->num_results()) {
-    old_selection->SetSelectedIndex(old_selection->num_results() - 1);
-  }
-
+  // Set the first result (if it exists) selected when search results are
+  // updated. Note that the focus is not set on the first result to prevent
+  // frequent focus switch between search box and first result during typing
+  // query.
+  SearchResultContainerView* old_first_container_view =
+      result_container_views_[0];
   ReorderSearchResultContainers();
 
-  SearchResultContainerView* new_selection = nullptr;
-  if (HasSelection() &&
-      result_container_views_[selected_index_]->num_results() > 0) {
-    new_selection = result_container_views_[selected_index_];
+  views::View* focused_view = GetFocusManager()->GetFocusedView();
+  if (first_result_view_ != focused_view) {
+    // If the old first result is focused, do not clear the selection. (This
+    // happens when the user moved the focus before search results are
+    // updated.)
+    old_first_container_view->SetFirstResultSelected(false);
   }
-
-  // If there was no previous selection or the new view at the selection index
-  // is different from the old one, update the selected view.
-  if (!HasSelection() || old_selection != new_selection) {
-    if (old_selection)
-      old_selection->ClearSelectedIndex();
-
-    int new_selection_index = new_selection ? selected_index_ : 0;
-    // Clear the current selection so that the selection always comes in from
-    // the top.
-    ClearSelectedIndex();
-    SetSelectedIndex(new_selection_index, false);
+  first_result_view_ = result_container_views_[0]->GetFirstResultView();
+  if (!Contains(focused_view)) {
+    // If one of the search result is focused, do not set the first result
+    // selected.
+    result_container_views_[0]->SetFirstResultSelected(true);
   }
+  return;
 }
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
@@ -456,10 +337,6 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
   set_clip_path(path);
 }
 
-void SearchResultPageView::OnHidden() {
-  ClearSelectedIndex();
-}
-
 gfx::Rect SearchResultPageView::GetSearchBoxBounds() const {
   gfx::Rect rect(AppListPage::GetSearchBoxBounds());
 
@@ -467,14 +344,6 @@ gfx::Rect SearchResultPageView::GetSearchBoxBounds() const {
   rect.set_size(gfx::Size(kWidth, kSearchBoxHeight));
 
   return rect;
-}
-
-views::View* SearchResultPageView::GetSelectedView() const {
-  if (!HasSelection())
-    return nullptr;
-  SearchResultContainerView* container =
-      result_container_views_[selected_index_];
-  return container->GetSelectedView();
 }
 
 }  // namespace app_list

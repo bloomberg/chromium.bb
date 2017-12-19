@@ -86,7 +86,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(SearchBoxView* sender) override;
   void BackButtonPressed() override;
-  void SetSearchResultSelection(bool select) override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.

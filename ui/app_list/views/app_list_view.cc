@@ -250,7 +250,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       short_animations_for_testing_(false),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
-      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()),
       display_observer_(this),
       animation_observer_(new HideViewAnimationObserver()),
       previous_arrow_key_traversal_enabled_(

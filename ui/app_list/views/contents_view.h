@@ -142,7 +142,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
 
   // Overridden from PaginationModelObserver:
