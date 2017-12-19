@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -964,7 +965,8 @@ public class DownloadNotificationService extends Service {
                 intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, id.id);
                 intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE, id.namespace);
                 intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
-                DownloadUtils.setOriginalUrlAndReferralExtraToIntent(intent, originalUrl, referrer);
+                MediaViewerUtils.setOriginalUrlAndReferralExtraToIntent(
+                        intent, originalUrl, referrer);
             } else {
                 intent = buildActionIntent(mContext, ACTION_DOWNLOAD_OPEN, id, false);
             }
