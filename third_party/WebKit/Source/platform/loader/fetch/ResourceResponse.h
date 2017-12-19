@@ -414,8 +414,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   AtomicString mime_type_;
   long long expected_content_length_;
   AtomicString text_encoding_name_;
-  unsigned connection_id_;
-  int http_status_code_;
+
+  unsigned connection_id_ = 0;
+  int http_status_code_ = 0;
   AtomicString http_status_text_;
   HTTPHeaderMap http_header_fields_;
 
@@ -423,54 +424,55 @@ class PLATFORM_EXPORT ResourceResponse final {
   AtomicString remote_ip_address_;
 
   // Remote port number of the socket which fetched this resource.
-  unsigned short remote_port_;
+  unsigned short remote_port_ = 0;
 
-  bool was_cached_ : 1;
-  bool connection_reused_ : 1;
-  bool is_null_ : 1;
-  mutable bool have_parsed_age_header_ : 1;
-  mutable bool have_parsed_date_header_ : 1;
-  mutable bool have_parsed_expires_header_ : 1;
-  mutable bool have_parsed_last_modified_header_ : 1;
+  bool was_cached_ = false;
+  bool connection_reused_ = false;
+  bool is_null_;
+  mutable bool have_parsed_age_header_ = false;
+  mutable bool have_parsed_date_header_ = false;
+  mutable bool have_parsed_expires_header_ = false;
+  mutable bool have_parsed_last_modified_header_ = false;
 
   // True if the resource was retrieved by the embedder in spite of
   // certificate errors.
-  bool has_major_certificate_errors_ : 1;
+  bool has_major_certificate_errors_ = false;
 
   // True if the resource was retrieved with a legacy Symantec certificate which
   // is slated for distrust in future.
-  bool is_legacy_symantec_cert_ : 1;
+  bool is_legacy_symantec_cert_ = false;
 
   // The time at which the resource's certificate expires. Null if there was no
   // certificate.
   base::Time cert_validity_start_;
 
   // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
-  bool was_fetched_via_spdy_ : 1;
+  bool was_fetched_via_spdy_ = false;
 
   // Was the resource fetched over an explicit proxy (HTTP, SOCKS, etc).
-  bool was_fetched_via_proxy_ : 1;
+  bool was_fetched_via_proxy_ = false;
 
   // Was the resource fetched over a ServiceWorker.
-  bool was_fetched_via_service_worker_ : 1;
+  bool was_fetched_via_service_worker_ = false;
 
   // Was the fallback request with skip service worker flag required.
-  bool was_fallback_required_by_service_worker_ : 1;
+  bool was_fallback_required_by_service_worker_ = false;
 
   // True if service worker navigation preload was performed due to
   // the request for this resource.
-  bool did_service_worker_navigation_preload_ : 1;
+  bool did_service_worker_navigation_preload_ = false;
 
   // The type of the response which was returned by the ServiceWorker.
-  network::mojom::FetchResponseType response_type_via_service_worker_;
+  network::mojom::FetchResponseType response_type_via_service_worker_ =
+      network::mojom::FetchResponseType::kDefault;
 
   // HTTP version used in the response, if known.
-  HTTPVersion http_version_;
+  HTTPVersion http_version_ = kHTTPVersionUnknown;
 
   // The security style of the resource.
   // This only contains a valid value when the DevTools Network domain is
   // enabled. (Otherwise, it contains a default value of Unknown.)
-  SecurityStyle security_style_;
+  SecurityStyle security_style_ = kSecurityStyleUnknown;
 
   // Security details of this request's connection.
   // If m_securityStyle is Unknown or Unauthenticated, this does not contain
@@ -482,14 +484,14 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   mutable CacheControlHeader cache_control_header_;
 
-  mutable double age_;
-  mutable double date_;
-  mutable double expires_;
-  mutable double last_modified_;
+  mutable double age_ = 0.0;
+  mutable double date_ = 0.0;
+  mutable double expires_ = 0.0;
+  mutable double last_modified_ = 0.0;
 
   // The id of the appcache this response was retrieved from, or zero if
   // the response was not retrieved from an appcache.
-  long long app_cache_id_;
+  long long app_cache_id_ = 0;
 
   // The manifest url of the appcache this response was retrieved from, if any.
   // Note: only valid for main resource responses.
@@ -518,17 +520,18 @@ class PLATFORM_EXPORT ResourceResponse final {
   AtomicString alpn_negotiated_protocol_;
 
   // Information about the type of connection used to fetch this resource.
-  net::HttpResponseInfo::ConnectionInfo connection_info_;
+  net::HttpResponseInfo::ConnectionInfo connection_info_ =
+      net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN;
 
   // Size of the response in bytes prior to decompression.
-  long long encoded_data_length_;
+  long long encoded_data_length_ = 0;
 
   // Size of the response body in bytes prior to decompression.
-  long long encoded_body_length_;
+  long long encoded_body_length_ = 0;
 
   // Sizes of the response body in bytes after any content-encoding is
   // removed.
-  long long decoded_body_length_;
+  long long decoded_body_length_ = 0;
 
   // The downloaded file path if the load streamed to a file.
   String downloaded_file_path_;
