@@ -547,6 +547,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   void UpdateAdvertisementData(int8_t rssi,
                                UUIDList advertised_uuids,
                                ServiceDataMap service_data,
+                               ManufacturerDataMap manufacturer_data,
                                const int8_t* tx_power);
 
   // Called by BluetoothAdapter when it stops discoverying.

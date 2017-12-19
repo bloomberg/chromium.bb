@@ -45,6 +45,7 @@ int8_t ToInt8(BluetoothTest::TestTxPower tx_power) {
 
 using UUIDSet = BluetoothDevice::UUIDSet;
 using ServiceDataMap = BluetoothDevice::ServiceDataMap;
+using ManufacturerDataMap = BluetoothDevice::ManufacturerDataMap;
 
 class BluetoothGetServiceTest : public BluetoothTest {
  public:
@@ -174,9 +175,8 @@ TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
   EXPECT_EQ(0u, uuids.size());
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-// TODO(ortuno): Enable on Android once it supports Service Data.
-// http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
 TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -194,6 +194,7 @@ TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
   BluetoothDevice* device1 = SimulateLowEnergyDevice(4);
   EXPECT_TRUE(device1->GetServiceData().empty());
   EXPECT_TRUE(device1->GetServiceDataUUIDs().empty());
+  EXPECT_TRUE(device1->GetManufacturerData().empty());
 
   // Receive Advertisement with service data.
   BluetoothDevice* device2 = SimulateLowEnergyDevice(1);
@@ -204,8 +205,9 @@ TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
             device2->GetServiceDataUUIDs());
   EXPECT_EQ(std::vector<uint8_t>({1}),
             *device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
-
-  // Receive Advertisement with no service data.
+  EXPECT_EQ(std::vector<uint8_t>({1, 2, 3, 4}),
+            *device2->GetManufacturerDataForID(kTestManufacturerId));
+  // Receive Advertisement with no service and manufacturer data.
   SimulateLowEnergyDevice(3);
 
 // TODO(crbug.com/707039): Remove #if once the BlueZ caching behavior is
@@ -223,11 +225,12 @@ TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
 #else
   EXPECT_TRUE(device2->GetServiceData().empty());
   EXPECT_TRUE(device2->GetServiceDataUUIDs().empty());
+  EXPECT_TRUE(device2->GetManufacturerData().empty());
   EXPECT_EQ(nullptr,
             device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
 #endif
 
-  // Receive Advertisement with new service data.
+  // Receive Advertisement with new service data and empty manufacturer data.
   SimulateLowEnergyDevice(2);
 
   EXPECT_EQ(ServiceDataMap(
@@ -239,6 +242,8 @@ TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
             device2->GetServiceDataUUIDs());
   EXPECT_EQ(std::vector<uint8_t>({}),
             *device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
+  EXPECT_EQ(std::vector<uint8_t>({}),
+            *device2->GetManufacturerDataForID(kTestManufacturerId));
   EXPECT_EQ(
       std::vector<uint8_t>({0, 2}),
       *device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDImmediateAlert)));
@@ -260,7 +265,8 @@ TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
                          BluetoothUUID(kTestUUIDImmediateAlert)));
 #endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX) ||
+        // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests that the Advertisement Data fields are correctly updated during
@@ -288,12 +294,10 @@ TEST_F(BluetoothTest, AdvertisementData_Discovery) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess),
                      BluetoothUUID(kTestUUIDGenericAttribute)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
   EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {1}}}),
             device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+  EXPECT_EQ(ManufacturerDataMap({{kTestManufacturerId, {1, 2, 3, 4}}}),
+            device->GetManufacturerData());
   EXPECT_EQ(ToInt8(TestTxPower::LOWEST), device->GetInquiryTxPower().value());
 
   // Receive Advertisement with no UUIDs, Service Data, or Tx Power, should
@@ -307,11 +311,8 @@ TEST_F(BluetoothTest, AdvertisementData_Discovery) {
 
   EXPECT_EQ(ToInt8(TestRSSI::LOW), device->GetInquiryRSSI().value());
   EXPECT_TRUE(device->GetUUIDs().empty());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
   EXPECT_TRUE(device->GetServiceData().empty());
-#endif  // defined(OS_MACOSX)
+  EXPECT_TRUE(device->GetManufacturerData().empty());
   EXPECT_FALSE(device->GetInquiryTxPower());
 
   // Receive Advertisement with different UUIDs, Service Data, and Tx Power,
@@ -327,14 +328,13 @@ TEST_F(BluetoothTest, AdvertisementData_Discovery) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDImmediateAlert),
                      BluetoothUUID(kTestUUIDLinkLoss)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+
   EXPECT_EQ(ServiceDataMap(
                 {{BluetoothUUID(kTestUUIDHeartRate), std::vector<uint8_t>({})},
                  {BluetoothUUID(kTestUUIDImmediateAlert), {0, 2}}}),
             device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+  EXPECT_EQ(ManufacturerDataMap({{kTestManufacturerId, {}}}),
+            device->GetManufacturerData());
   EXPECT_EQ(ToInt8(TestTxPower::LOWER), device->GetInquiryTxPower().value());
 
   // Stop discovery session, should notify of device changed.
@@ -342,6 +342,7 @@ TEST_F(BluetoothTest, AdvertisementData_Discovery) {
   //    discovering.
   //  - GetUUIDs: Should not return any UUIDs.
   //  - GetServiceData: Should return empty map.
+  //  - GetMAnufacturerData: Should return empty map.
   //  - GetInquiryTxPower: Should return nullopt because we are no longer
   //    discovering.
   discovery_sessions_[0]->Stop(GetCallback(Call::EXPECTED),
@@ -353,11 +354,8 @@ TEST_F(BluetoothTest, AdvertisementData_Discovery) {
 
   EXPECT_FALSE(device->GetInquiryRSSI());
   EXPECT_TRUE(device->GetUUIDs().empty());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
   EXPECT_TRUE(device->GetServiceData().empty());
-#endif  // defined(OS_MACOSX)
+  EXPECT_TRUE(device->GetManufacturerData().empty());
   EXPECT_FALSE(device->GetInquiryTxPower());
 
   // Discover the device again with different UUIDs, should notify of device
@@ -375,12 +373,10 @@ TEST_F(BluetoothTest, AdvertisementData_Discovery) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess),
                      BluetoothUUID(kTestUUIDGenericAttribute)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
   EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {1}}}),
             device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+  EXPECT_EQ(ManufacturerDataMap({{kTestManufacturerId, {1, 2, 3, 4}}}),
+            device->GetManufacturerData());
   EXPECT_EQ(ToInt8(TestTxPower::LOWEST), device->GetInquiryTxPower().value());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
@@ -622,12 +618,10 @@ TEST_F(BluetoothTest, AdvertisementData_DiscoveryDuringConnection) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess),
                      BluetoothUUID(kTestUUIDGenericAttribute)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {1}}}),
             device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ToInt8(TestTxPower::LOWEST), device->GetInquiryTxPower().value());
 
   // Discover services, should notify of device changed.
@@ -657,14 +651,12 @@ TEST_F(BluetoothTest, AdvertisementData_DiscoveryDuringConnection) {
                      BluetoothUUID(kTestUUIDImmediateAlert),
                      BluetoothUUID(kTestUUIDHeartRate)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ServiceDataMap(
                 {{BluetoothUUID(kTestUUIDHeartRate), std::vector<uint8_t>({})},
                  {BluetoothUUID(kTestUUIDImmediateAlert), {0, 2}}}),
             device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ToInt8(TestTxPower::LOWER), device->GetInquiryTxPower().value());
 
   // Stop discovery session, should notify of device changed.
@@ -683,11 +675,9 @@ TEST_F(BluetoothTest, AdvertisementData_DiscoveryDuringConnection) {
   EXPECT_EQ(4, observer.device_changed_count());
   EXPECT_FALSE(device->GetInquiryRSSI());
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDHeartRate)}), device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ServiceDataMap(), device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_FALSE(device->GetInquiryTxPower());
 
   // Disconnect device, should notify of device changed.
@@ -731,9 +721,7 @@ TEST_F(BluetoothTest, AdvertisementData_ConnectionDuringDiscovery) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess),
                      BluetoothUUID(kTestUUIDGenericAttribute)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {1}}}),
             device->GetServiceData());
 #endif  // defined(OS_MACOSX)
@@ -764,14 +752,12 @@ TEST_F(BluetoothTest, AdvertisementData_ConnectionDuringDiscovery) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDLinkLoss),
                      BluetoothUUID(kTestUUIDImmediateAlert)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ServiceDataMap(
                 {{BluetoothUUID(kTestUUIDHeartRate), std::vector<uint8_t>({})},
                  {BluetoothUUID(kTestUUIDImmediateAlert), {0, 2}}}),
             device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ToInt8(TestTxPower::LOWER), device->GetInquiryTxPower().value());
 
   // Discover Services, should notify of device changed.
@@ -804,9 +790,7 @@ TEST_F(BluetoothTest, AdvertisementData_ConnectionDuringDiscovery) {
                      BluetoothUUID(kTestUUIDImmediateAlert)}),
             device->GetUUIDs());
 
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ServiceDataMap(
                 {{BluetoothUUID(kTestUUIDHeartRate), std::vector<uint8_t>({})},
                  {BluetoothUUID(kTestUUIDImmediateAlert), {0, 2}}}),
@@ -826,12 +810,10 @@ TEST_F(BluetoothTest, AdvertisementData_ConnectionDuringDiscovery) {
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDGenericAccess),
                      BluetoothUUID(kTestUUIDGenericAttribute)}),
             device->GetUUIDs());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {1}}}),
             device->GetServiceData());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_EQ(ToInt8(TestTxPower::LOWEST), device->GetInquiryTxPower().value());
 
   // Stop discovery session, should notify of device changed.
@@ -848,11 +830,9 @@ TEST_F(BluetoothTest, AdvertisementData_ConnectionDuringDiscovery) {
 
   EXPECT_FALSE(device->GetInquiryRSSI());
   EXPECT_TRUE(device->GetUUIDs().empty());
-#if defined(OS_MACOSX)
-  // TODO(ortuno): Enable on Android once it supports Service Data.
-  // http://crbug.com/639408
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   EXPECT_TRUE(device->GetServiceData().empty());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)  || defined(OS_ANDROID)
   EXPECT_FALSE(device->GetInquiryTxPower());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)

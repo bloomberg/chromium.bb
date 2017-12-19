@@ -523,6 +523,8 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
           << base::SysNSStringToUTF8([advertisement_data description]);
 
   // Get Advertised UUIDs
+  // Core Specification Supplement (CSS) v7, Part 1.1
+  // https://developer.apple.com/documentation/corebluetooth/cbadvertisementdataserviceuuidskey
   BluetoothDevice::UUIDList advertised_uuids;
   NSArray* service_uuids =
       [advertisement_data objectForKey:CBAdvertisementDataServiceUUIDsKey];
@@ -538,6 +540,8 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   }
 
   // Get Service Data.
+  // Core Specification Supplement (CSS) v7, Part 1.11
+  // https://developer.apple.com/documentation/corebluetooth/cbadvertisementdataservicedatakey
   BluetoothDevice::ServiceDataMap service_data_map;
   NSDictionary* service_data =
       [advertisement_data objectForKey:CBAdvertisementDataServiceDataKey];
@@ -549,14 +553,36 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
                              std::vector<uint8_t>(bytes, bytes + length));
   }
 
+  // Get Manufacturer Data.
+  // "Size: 2 or more octets
+  // The first 2 octets contain the Company Identifier Code followed
+  // by additional manufacturer specific data"
+  // Core Specification Supplement (CSS) v7, Part 1.4
+  // https://developer.apple.com/documentation/corebluetooth/cbadvertisementdatamanufacturerdatakey
+  //
+  BluetoothDevice::ManufacturerDataMap manufacturer_data_map;
+  NSData* manufacturer_data =
+      [advertisement_data objectForKey:CBAdvertisementDataManufacturerDataKey];
+  const uint8_t* bytes = static_cast<const uint8_t*>([manufacturer_data bytes]);
+  size_t length = [manufacturer_data length];
+  if (length > 1) {
+    const uint16_t manufacturer_id = bytes[0] | bytes[1] << 8;
+    manufacturer_data_map.emplace(
+        manufacturer_id, std::vector<uint8_t>(bytes + 2, bytes + length));
+  }
+
   // Get Tx Power.
+  // "Size: 1 octet
+  //  0xXX: -127 to +127 dBm"
+  // Core Specification Supplement (CSS) v7, Part 1.5
+  // https://developer.apple.com/documentation/corebluetooth/cbadvertisementdatatxpowerlevelkey
   NSNumber* tx_power =
       [advertisement_data objectForKey:CBAdvertisementDataTxPowerLevelKey];
   int8_t clamped_tx_power = BluetoothDevice::ClampPower([tx_power intValue]);
 
   device_mac->UpdateAdvertisementData(
       BluetoothDevice::ClampPower(rssi), std::move(advertised_uuids),
-      std::move(service_data_map),
+      std::move(service_data_map), std::move(manufacturer_data_map),
       tx_power == nil ? nullptr : &clamped_tx_power);
 
   if (is_new_device) {

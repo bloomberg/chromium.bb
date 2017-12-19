@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/android/wrappers.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_android.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "jni/ChromeBluetoothAdapter_jni.h"
@@ -25,6 +26,9 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using base::android::JavaByteArrayToByteVector;
+using base::android::JavaArrayOfByteArrayToStringVector;
+using base::android::JavaIntArrayToIntVector;
 
 namespace {
 // The poll interval in ms when there is no active discovery. This
@@ -176,7 +180,13 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
         bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
     int32_t rssi,
     const JavaParamRef<jobjectArray>& advertised_uuids,  // Java Type: String[]
-    int32_t tx_power) {
+    int32_t tx_power,
+    const JavaParamRef<jobjectArray>& service_data_keys,  // Java Type: String[]
+    const JavaParamRef<jobjectArray>& service_data_values,  // Java Type: byte[]
+    const JavaParamRef<jintArray>& manufacturer_data_keys,  // Java Type: int[]
+    const JavaParamRef<jobjectArray>&
+        manufacturer_data_values  // Java Type: byte[]
+    ) {
   std::string device_address = ConvertJavaStringToUTF8(env, address);
   auto iter = devices_.find(device_address);
 
@@ -204,11 +214,39 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     advertised_bluetooth_uuids.push_back(BluetoothUUID(std::move(uuid)));
   }
 
+  std::vector<std::string> service_data_keys_vector;
+  std::vector<std::string> service_data_values_vector;
+  AppendJavaStringArrayToStringVector(env, service_data_keys,
+                                      &service_data_keys_vector);
+  JavaArrayOfByteArrayToStringVector(env, service_data_values,
+                                     &service_data_values_vector);
+  BluetoothDeviceAndroid::ServiceDataMap service_data_map;
+  for (size_t i = 0; i < service_data_keys_vector.size(); i++) {
+    service_data_map.insert(
+        {BluetoothUUID(service_data_keys_vector[i]),
+         std::vector<uint8_t>(service_data_values_vector[i].begin(),
+                              service_data_values_vector[i].end())});
+  }
+
+  std::vector<jint> manufacturer_data_keys_vector;
+  std::vector<std::string> manufacturer_data_values_vector;
+  JavaIntArrayToIntVector(env, manufacturer_data_keys,
+                          &manufacturer_data_keys_vector);
+  JavaArrayOfByteArrayToStringVector(env, manufacturer_data_values,
+                                     &manufacturer_data_values_vector);
+  BluetoothDeviceAndroid::ManufacturerDataMap manufacturer_data_map;
+  for (size_t i = 0; i < manufacturer_data_keys_vector.size(); i++) {
+    manufacturer_data_map.insert(
+        {static_cast<uint16_t>(manufacturer_data_keys_vector[i]),
+         std::vector<uint8_t>(manufacturer_data_values_vector[i].begin(),
+                              manufacturer_data_values_vector[i].end())});
+  }
+
   int8_t clamped_tx_power = BluetoothDevice::ClampPower(tx_power);
 
   device_android->UpdateAdvertisementData(
       BluetoothDevice::ClampPower(rssi), std::move(advertised_bluetooth_uuids),
-      {} /* service_data */,
+      service_data_map, manufacturer_data_map,
       // Android uses INT32_MIN to indicate no Advertised Tx Power.
       // https://developer.android.com/reference/android/bluetooth/le/ScanRecord.html#getTxPowerLevel()
       tx_power == INT32_MIN ? nullptr : &clamped_tx_power);

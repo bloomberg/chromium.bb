@@ -109,6 +109,8 @@ class BluetoothTestBase : public testing::Test {
   static const char kTestUUIDClientCharacteristicConfiguration[];
   static const char kTestUUIDServerCharacteristicConfiguration[];
   static const char kTestUUIDCharacteristicPresentationFormat[];
+  // Manufacturer data
+  static const unsigned short kTestManufacturerId;
 
   BluetoothTestBase();
   ~BluetoothTestBase() override;
@@ -164,6 +166,7 @@ class BluetoothTestBase : public testing::Test {
   //      RSSI:              kTestRSSI1
   //      Advertised UUIDs: {kTestUUIDGenericAccess, kTestUUIDGenericAttribute}
   //      Service Data:     {kTestUUIDHeartRate: [1]}
+  //      ManufacturerData: {kTestManufacturerId: [1, 2, 3, 4]}
   //      Tx Power:          kTestTxPower1
   //   2: Name: kTestDeviceName
   //      Address:           kTestDeviceAddress1
@@ -171,18 +174,21 @@ class BluetoothTestBase : public testing::Test {
   //      Advertised UUIDs: {kTestUUIDImmediateAlert, kTestUUIDLinkLoss}
   //      Service Data:     {kTestUUIDHeartRate: [],
   //                         kTestUUIDImmediateAlert: [0, 2]}
+  //      ManufacturerData: {kTestManufacturerId: []}
   //      Tx Power:          kTestTxPower2
   //   3: Name:    kTestDeviceNameEmpty
   //      Address: kTestDeviceAddress1
   //      RSSI:    kTestRSSI3
   //      No Advertised UUIDs
   //      No Service Data
+  //      No Manufacturer Data
   //      No Tx Power
   //   4: Name:    kTestDeviceNameEmpty
   //      Address: kTestDeviceAddress2
   //      RSSI:    kTestRSSI4
   //      No Advertised UUIDs
   //      No Service Data
+  //      No Manufacturer Data
   //      No Tx Power
   //   5: No name device
   //      Address: kTestDeviceAddress1
@@ -195,6 +201,7 @@ class BluetoothTestBase : public testing::Test {
   //      RSSI:    kTestRSSI1,
   //      No Advertised UUIDs
   //      No Service Data
+  //      No Manufacturer Data
   //      No Tx Power
   //      Supports BR/EDR and LE.
   //   7: Name:    kTestDeviceNameU2f
@@ -202,6 +209,7 @@ class BluetoothTestBase : public testing::Test {
   //      RSSI:    kTestRSSI1,
   //      Advertised UUIDs: {kTestUUIDU2fControlPointLength}
   //      Service Data:     {kTestUUIDU2fControlPointLength: [0, 20]}
+  //      No Manufacturer Data
   //      No Tx Power
   //      Supports LE.
   virtual BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal);
