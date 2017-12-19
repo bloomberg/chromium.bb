@@ -526,9 +526,9 @@ const char kEnterpriseDisableLicenseTypeSelection[] =
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 
-// Disables fine grained time zone detection.
-const char kDisableFineGrainedTimeZoneDetection[] =
-    "disable-fine-grained-time-zone-detection";
+// Enables fine grained time zone detection.
+const char kEnableFineGrainedTimeZoneDetection[] =
+    "enable-fine-grained-time-zone-detection";
 
 // Disables client certificate authentication on the sign-in frame on the Chrome
 // OS sign-in profile.
