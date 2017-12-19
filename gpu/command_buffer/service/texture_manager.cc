@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <set>
+#include <tuple>
 #include <utility>
 
 #include "base/bits.h"
@@ -283,21 +284,16 @@ class FormatTypeValidator {
   }
 
  private:
-  // TODO(zmo): once std::tuple is allowed, switch over to that.
-  struct FormatType {
-    GLenum internal_format;
-    GLenum format;
-    GLenum type;
-  };
-
+  // FormatType is a tuple of <internal_format, format, type>
+  typedef std::tuple<GLenum, GLenum, GLenum> FormatType;
   struct FormatTypeCompare {
     bool operator() (const FormatType& lhs, const FormatType& rhs) const {
-      return (lhs.internal_format < rhs.internal_format ||
-              ((lhs.internal_format == rhs.internal_format) &&
-               (lhs.format < rhs.format)) ||
-              ((lhs.internal_format == rhs.internal_format) &&
-               (lhs.format == rhs.format) &&
-               (lhs.type < rhs.type)));
+      return (std::get<0>(lhs) < std::get<0>(rhs) ||
+              ((std::get<0>(lhs) == std::get<0>(rhs)) &&
+               (std::get<1>(lhs) < std::get<1>(rhs))) ||
+              ((std::get<0>(lhs) == std::get<0>(rhs)) &&
+               (std::get<1>(lhs) == std::get<1>(rhs)) &&
+               (std::get<2>(lhs) < std::get<2>(rhs))));
     }
   };
 
