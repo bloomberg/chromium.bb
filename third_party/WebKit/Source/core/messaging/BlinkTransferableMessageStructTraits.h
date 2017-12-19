@@ -6,8 +6,8 @@
 #define BlinkTransferableMessageStructTraits_h
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/dom/BlinkCloneableMessageStructTraits.h"
-#include "core/dom/BlinkTransferableMessage.h"
+#include "core/messaging/BlinkCloneableMessageStructTraits.h"
+#include "core/messaging/BlinkTransferableMessage.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "third_party/WebKit/common/message_port/message_port.mojom-blink.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"

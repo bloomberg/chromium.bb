@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
-#include "core/dom/MessagePort.h"
+#include "core/messaging/MessagePort.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"

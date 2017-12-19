@@ -33,7 +33,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8MessagePort.h"
-#include "core/dom/MessageChannel.h"
+#include "core/messaging/MessageChannel.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/bindings/V8PrivateProperty.h"
 

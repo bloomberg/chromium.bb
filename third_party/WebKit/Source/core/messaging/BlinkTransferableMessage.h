@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
-#include "core/dom/BlinkCloneableMessage.h"
+#include "core/messaging/BlinkCloneableMessage.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 
 namespace blink {

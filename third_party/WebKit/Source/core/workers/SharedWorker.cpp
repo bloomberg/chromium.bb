@@ -33,11 +33,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/MessageChannel.h"
-#include "core/dom/MessagePort.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
+#include "core/messaging/MessageChannel.h"
+#include "core/messaging/MessagePort.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "platform/weborigin/KURL.h"

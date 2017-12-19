@@ -4,8 +4,8 @@
 
 mojom = "//third_party/WebKit/common/message_port/message_port.mojom"
 public_headers =
-    [ "//third_party/WebKit/Source/core/dom/BlinkCloneableMessage.h" ]
-traits_headers = [ "//third_party/WebKit/Source/core/dom/BlinkCloneableMessageStructTraits.h" ]
+    [ "//third_party/WebKit/Source/core/messaging/BlinkCloneableMessage.h" ]
+traits_headers = [ "//third_party/WebKit/Source/core/messaging/BlinkCloneableMessageStructTraits.h" ]
 
 deps = [
   "//mojo/public/cpp/bindings",

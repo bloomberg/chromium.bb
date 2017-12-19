@@ -201,6 +201,7 @@ component("core") {
     "//third_party/WebKit/Source/core/layout/svg:svg_layout",
     "//third_party/WebKit/Source/core/leak_detector",
     "//third_party/WebKit/Source/core/loader",
+    "//third_party/WebKit/Source/core/messaging",
     "//third_party/WebKit/Source/core/mojo",
     "//third_party/WebKit/Source/core/offscreencanvas",
     "//third_party/WebKit/Source/core/origin_trials",

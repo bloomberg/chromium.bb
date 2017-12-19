@@ -6,7 +6,7 @@
 #define BlinkCloneableMessageStructTraits_h
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/dom/BlinkCloneableMessage.h"
+#include "core/messaging/BlinkCloneableMessage.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "third_party/WebKit/common/message_port/message_port.mojom-blink.h"
