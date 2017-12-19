@@ -26,6 +26,7 @@ recordActionTaken:
     ScriptsBreakpointSet : 3
     SelectCommandFromCommandMenu : 25
     SelectFileFromFilePicker : 24
+    ShowedThirdPartyBadges : 31
     StyleRuleCopied : 27
     StyleRuleEdited : 14
     TimelinePageReloadStarted : 18
