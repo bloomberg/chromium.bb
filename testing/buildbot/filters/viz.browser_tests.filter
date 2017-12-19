@@ -21,6 +21,7 @@
 -CertificateReportingServiceBrowserTest.DisableSafebrowsing/0
 -CertificateReportingServiceBrowserTest.DontSendOldReports/0
 -CertificateReportingServiceBrowserTest.DropOldReportsFromQueue/0
+-CertificateReportingServiceBrowserTest.DropOldReportsFromQueue/1
 -CertificateReportingServiceBrowserTest.OptedIn_ShouldQueueFailedReport/0
 -CertificateReportingServiceBrowserTest.OptedOut_ThenOptedIn_ThenOptedOut/0
 -ClipboardApiTest.Extension
@@ -33,6 +34,7 @@
 -ContentSettingsTest.RedirectCrossOrigin
 -ContextMenuBrowserTest.OpenLinkInProfile
 -CrossOriginXHR.AllURLs
+-CrossOriginXHR.ContentScript
 -DevToolsAutoOpenerTest.TestAutoOpenForTabs
 -DidChangeVisibleSecurityStateTest.DidChangeVisibleSecurityStateObserver
 -DomainReliabilityBrowserTest.UploadAtShutdown
@@ -53,6 +55,7 @@
 -ExtensionBrowserTest.PromptToReEnableExtensionsOnNavigation
 -ExtensionTabsTest.GetAllWindows
 -ExtensionTabsTest.GetAllWindowsAllTypes
+-ForceMaximizePolicyFalseTest.GeneralFirstRun
 -GeolocationBrowserTest.CancelPermissionForFrame
 -GeolocationBrowserTest.IFramesWithCachedPosition
 -GeolocationBrowserTest.IFramesWithFreshPosition
@@ -68,6 +71,7 @@
 -JavaScriptBindings/MessagingApiTest.MessagingInterstitial/0
 -JavaScriptBindings/MessagingApiTest.MessagingNoBackground/0
 -LocalNTPTest.EmbeddedSearchAPIExposesStaticFunctions
+-LoginFeedbackTest.Basic
 -LoginPromptBrowserTest.ShouldNotProceedExistingInterstitial
 -LoginPromptBrowserTest.ShouldReplaceExistingInterstitialWhenNavigated
 -MediaRouterUIBrowserTest.OpenDialogFromAppMenu
@@ -103,6 +107,7 @@
 -ProfileBrowserTest.SendHPKPReport
 -ProfileBrowserTest.SendHPKPReportServerHangs
 -ReferrerPolicyTest.ContextMenuRedirect
+-ReferrerPolicyTest.MiddleClickRedirect
 -ReferrerPolicyTest.MiddleClickTargetBlankRedirect
 -ResourcePrefetchPredictorBrowserTest.SubresourceFcpOrder
 -SSLUICaptivePortalListResourceBundleTest.Enabled_DynamicUpdate/0
@@ -125,6 +130,8 @@
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.BackgroundPageIsWokenIfAsleep/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.FetchArbitraryPaths/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.ServiceWorkerSuspensionOnExtensionUnload/0
+-ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus0
+-ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus1
 -SmartSessionRestoreTest.*CorrectLoadingOrder
 -SubresourceFilterPopupBrowserTest.BlockOpenURLFromTab
 -SuperfishSSLUITest.NoSuperfishRecorded/0
