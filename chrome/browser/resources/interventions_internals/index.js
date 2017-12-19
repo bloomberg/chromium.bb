@@ -11,6 +11,19 @@ const URL_THRESHOLD = 40;  // Maximum URL length
 window.logTableMap = {};
 
 /**
+ * Helper method to pad number, used for time format.
+ * @param {number} value The original number.
+ * @param {number} length The desired number length.
+ */
+function getPaddedValue(value, length) {
+  let result = '' + value;
+  while (result.length < length) {
+    result = '0' + result;
+  }
+  return result;
+}
+
+/**
  * Convert milliseconds to human readable date/time format.
  * The return format will be "MM/dd/YYYY hh:mm:ss.sss"
  * @param {number} time Time in millisecond since Unix Epoch.
@@ -25,8 +38,11 @@ function getTimeFormat(time) {
   };
 
   let dateString = date.toLocaleDateString('en-US', options);
-  return dateString + ' ' + date.getHours() + ':' + date.getMinutes() + ':' +
-      date.getSeconds() + '.' + date.getMilliseconds();
+  let hour = getPaddedValue(date.getHours(), 2);
+  let min = getPaddedValue(date.getMinutes(), 2);
+  let sec = getPaddedValue(date.getSeconds(), 2);
+  let millisec = getPaddedValue(date.getMilliseconds(), 3);
+  return dateString + ' ' + hour + ':' + min + ':' + sec + '.' + millisec;
 }
 
 /**
@@ -544,11 +560,6 @@ InterventionsInternalPageImpl.prototype = {
     nqeCol.setAttribute('class', 'nqe-value-column');
     nqeCol.textContent = type;
     nqeRow.appendChild(nqeCol);
-
-    // Insert ECT changed message to message-logs-table.
-    insertMessageRowToMessageLogTable(
-        now, 'ECT Changed', 'Effective Connection Type changed to ' + type,
-        '' /* URL */, 0 /* pageId */);
   },
 };
 

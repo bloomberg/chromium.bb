@@ -9,6 +9,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
@@ -91,7 +92,6 @@ void InterventionsInternalsPageHandler::SetClientPage(
     mojom::InterventionsInternalsPagePtr page) {
   page_ = std::move(page);
   DCHECK(page_);
-  OnEffectiveConnectionTypeChanged(current_estimated_ect_);
   logger_->AddAndNotifyObserver(this);
   ui_nqe_service_->AddEffectiveConnectionTypeObserver(this);
 }
@@ -103,8 +103,15 @@ void InterventionsInternalsPageHandler::OnEffectiveConnectionTypeChanged(
     // Don't try to notify the page if |page_| is not ready.
     return;
   }
-  page_->OnEffectiveConnectionTypeChanged(
-      net::GetNameForEffectiveConnectionType(type));
+  std::string ect_name = net::GetNameForEffectiveConnectionType(type);
+  page_->OnEffectiveConnectionTypeChanged(ect_name);
+
+  // Log change ECT event.
+  previews::PreviewsLogger::MessageLog message(
+      "ECT Changed" /* event_type */,
+      "Effective Connection Type changed to " + ect_name, GURL(""),
+      base::Time::Now(), 0 /* page_id */);
+  OnNewMessageLogAdded(message);
 }
 
 void InterventionsInternalsPageHandler::OnNewMessageLogAdded(

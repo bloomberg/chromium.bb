@@ -86,25 +86,6 @@ InterventionsInternalsUITest.prototype = {
 
     window.testPageHandler = new TestPageHandler();
 
-    /**
-     * Convert milliseconds to human readable date/time format.
-     * The return format will be "MM/dd/YYYY hh:mm:ss.sss"
-     * @param {number} time Time in millisecond since Unix Epoch.
-     * @return The converted string format.
-     */
-    getTimeFormat = function(time) {
-      let date = new Date(time);
-      let options = {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      };
-
-      let timeString = date.toLocaleDateString('en-US', options);
-      return dateString + ' ' + date.getHours() + ':' + date.getMinutes() +
-          ':' + date.getSeconds() + '.' + date.getMilliseconds();
-    };
-
     getBlacklistedStatus = function(blacklisted) {
       return (blacklisted ? 'Blacklisted' : 'Not blacklisted');
     };
@@ -212,6 +193,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
         description: 'Some description_a',
         url: {url: 'Some gurl.spec()_a'},
         time: 1507221689240,  // Oct 05 2017 16:41:29 UTC
+        expectedTime: '10/05/2017 09:41:29.240',
         pageId: 0,
       },
       {
@@ -219,6 +201,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
         description: 'Some description_b',
         url: {url: 'Some gurl.spec()_b'},
         time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+        expectedTime: '01/15/1994 15:14:13.000',
         pageId: 0,
       },
       {
@@ -226,6 +209,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
         description: 'Some description_c',
         url: {url: 'Some gurl.spec()_c'},
         time: -314307870000,  // Jan 16 1960 04:15:30 UTC
+        expectedTime: '01/15/1960 20:15:30.000',
         pageId: 0,
       },
     ];
@@ -238,13 +222,13 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
     expectEquals(logs.length, rows.length);
 
     logs.forEach((log, index) => {
-      let expectedTime = getTimeFormat(log.time);
       let row = rows[logs.length - index - 1];  // Expecting reversed order.
                                                 // (i.e. a new log message is
                                                 // appended to the top of the
                                                 // log table).
 
-      expectEquals(expectedTime, row.querySelector('.log-time').textContent);
+      expectEquals(
+          log.expectedTime, row.querySelector('.log-time').textContent);
       expectEquals(log.type, row.querySelector('.log-type').textContent);
       expectEquals(
           log.description, row.querySelector('.log-description').textContent);
