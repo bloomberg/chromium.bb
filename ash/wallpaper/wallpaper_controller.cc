@@ -506,6 +506,7 @@ void WallpaperController::SetCustomizedDefaultWallpaperImpl(
 
 void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
                                             const WallpaperInfo& info) {
+  current_user_wallpaper_info_ = info;
   wallpaper::WallpaperLayout layout = info.layout;
   VLOG(1) << "SetWallpaper: image_id="
           << wallpaper::WallpaperResizer::GetImageId(image)
@@ -516,7 +517,6 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
     return;
   }
 
-  current_location_ = info.location;
   // Cancel any in-flight color calculation because we have a new wallpaper.
   if (color_calculator_) {
     color_calculator_->RemoveObserver(this);
@@ -664,6 +664,9 @@ bool WallpaperController::IsBlurEnabled() const {
 void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
                                                const WallpaperInfo& info,
                                                bool is_persistent) {
+  // TODO(xdai): Remove this line after wallpaper refactoring is done.
+  // |current_user_wallpaper_info_| will be later updated in SetWallpaperImage()
+  // so theoretically it should be safe to remove the udpate here.
   current_user_wallpaper_info_ = info;
   if (!is_persistent)
     return;
@@ -906,8 +909,8 @@ void WallpaperController::OnColorCalculationComplete() {
   color_calculator_.reset();
   // TODO(crbug.com/787134): The prominent colors of wallpapers with empty
   // location should be cached as well.
-  if (!current_location_.empty())
-    CacheProminentColors(colors, current_location_);
+  if (!current_user_wallpaper_info_.location.empty())
+    CacheProminentColors(colors, current_user_wallpaper_info_.location);
   SetProminentColors(colors);
 }
 
@@ -1117,9 +1120,9 @@ void WallpaperController::CalculateWallpaperColors() {
     color_calculator_.reset();
   }
 
-  if (!current_location_.empty()) {
+  if (!current_user_wallpaper_info_.location.empty()) {
     base::Optional<std::vector<SkColor>> cached_colors =
-        GetCachedColors(current_location_);
+        GetCachedColors(current_user_wallpaper_info_.location);
     if (cached_colors.has_value()) {
       SetProminentColors(cached_colors.value());
       return;
