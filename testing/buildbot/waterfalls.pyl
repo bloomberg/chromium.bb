@@ -1080,7 +1080,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'linux_viz_gtests',
+          'gtest_tests': 'viz_fyi_gtests',
           'isolated_scripts': 'linux_viz_isolated_scripts',
         },
       },

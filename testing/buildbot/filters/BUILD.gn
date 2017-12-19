@@ -50,6 +50,14 @@ source_set("content_browsertests_filters") {
   ]
 }
 
+source_set("content_unittests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/viz.content_unittests.filter",
+  ]
+}
+
 source_set("interactive_ui_tests_filters") {
   testonly = true
 
