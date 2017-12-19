@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">拡張機能を解凍できません。拡張機能を安全に解凍するには、ドライブ文字で始まるプロフィール ディレクトリへのパスが必要です（ジャンクション、マウント ポイント、シンボリック リンクが含まれていないこと）。このようなパスがプロフィール内に存在しません。</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" />（シリアル番号: <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" />（ベンダー: <ph name="VENDOR_ID" />、シリアル番号: <ph name="SERIAL_NUMBER" />）</translation>
-<translation id="3624204664103857160">ランチャー ページ「<ph name="PAGE" />」を読み込めませんでした。</translation>
 <translation id="388442998277590542">オプション ページ「<ph name="OPTIONS_PAGE" />」を読み込むことができませんでした。</translation>
 <translation id="4115165561519362854">このパソコンの管理者により、<ph name="EXTENSION_NAME" /> バージョン <ph name="EXTENSION_VERSION" /> 以上が要件に指定されています。有効にするにはこのバージョン以上に更新する必要があります。</translation>
 <translation id="4233778200880751280">情報ページ「<ph name="ABOUT_PAGE" />」を読み込めませんでした。</translation>

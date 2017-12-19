@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Kursor mouse besar</translation>
 <translation id="1550523713251050646">Klik untuk opsi lainnya</translation>
 <translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Maaf, sandi Anda masih belum dapat diverifikasi. Catatan: jika Anda baru saja mengubah sandi, sandi yang baru akan diterapkan saat Anda logout, gunakan sandi lama di sini.</translation>
 <translation id="1677472565718498478">Sisa waktu <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Alamat IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Perangkat ini dikelola perusahaan</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Sebelum menerima, konfirmasikan bahwa kunci sandi ini ditampilkan pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifikasi</translation>
+<translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk mengganti tata letak keyboard.</translation>
 <translation id="2501920221385095727">Tombol sticky</translation>
 <translation id="2509468283778169019">CAPS LOCK aktif</translation>
 <translation id="2532589005999780174">Mode kontras tinggi</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3465566417615315331">Klik foto Anda</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
+<translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3582792037806681688">Fitur masuk banyak akun telah dilarang untuk pengguna di sesi ini</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Kunci</translation>
 <translation id="3798670284305777884">Speaker (internal)</translation>
 <translation id="3846575436967432996">Tidak tersedia informasi jaringan</translation>
+<translation id="385051799172605136">Mundur</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3893630138897523026">ChromeVox (masukan lisan)</translation>
 <translation id="3899995891769452915">Masukan suara</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Putuskan</translation>
 <translation id="4849058404725798627">Sorot objek dengan fokus keyboard</translation>
 <translation id="4872237917498892622">Alt+Telusuri atau Shift</translation>
+<translation id="4890187583552566966">Asisten Google dinonaktifkan oleh administrator</translation>
 <translation id="4895488851634969361">Baterai penuh.</translation>
 <translation id="4905614135390995787">Pintasan untuk beralih Mode Kontras Tinggi telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Terima</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Keluar sekarang</translation>
 <translation id="6047696787498798094">Berbagi layar akan berhenti saat Anda beralih ke pengguna lain. Ingin melanjutkan?</translation>
 <translation id="6062360702481658777">Anda akan dikeluarkan secara otomatis dalam <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">Maaf, sandi Anda tidak dapat diverifikasi. Harap coba lagi.</translation>
 <translation id="607652042414456612">Komputer Anda dapat ditemukan pada perangkat Bluetooth terdekat dan akan muncul sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Mengisi daya <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
@@ -262,10 +268,12 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7692480393933218409">Mengisi daya perangkat USB-C yang tersambung</translation>
 <translation id="776344839111254542">Klik untuk melihat detail update</translation>
+<translation id="7796353162336583443">Tap tombol stilus di rak untuk mencatat, mengambil screenshot, menggunakan asisten, penunjuk laser, atau kaca pembesar.</translation>
 <translation id="7798302898096527229">Tekan Search atau Shift untuk membatalkan.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinyal kuat</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
+<translation id="7933084174919150729">Asisten Google hanya tersedia untuk profil utama.</translation>
 <translation id="7977927628060636163">Menelusuri jaringan seluler...</translation>
 <translation id="7982789257301363584">Jaringan</translation>
 <translation id="7994370417837006925">Fitur masuk banyak akun</translation>
@@ -282,6 +290,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8351131234907093545">Buat catatan</translation>
+<translation id="8392451568018454956">Menu opsi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
 <translation id="8433977262951327081">Pintasan untuk menampilkan balon menu opsi masukan di rak telah diubah. Harap gunakan <ph name="NEW_SHORTCUT" />, bukan <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambungkan lagi...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
 <translation id="8639760480004882931">Sisa <ph name="PERCENTAGE" /></translation>
+<translation id="8652175077544655965">Tutup setelan</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

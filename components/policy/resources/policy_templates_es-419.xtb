@@ -257,6 +257,7 @@
 <translation id="1969212217917526199">Anula las políticas en compilaciones de depuración del host de acceso remoto.
 
           El valor se analiza como un diccionario JSON de asignaciones de nombre de política a valor de política.</translation>
+<translation id="1969808853498848952">Siempre se ejecutan complementos que requieren autorización (dejó de estar disponible)</translation>
 <translation id="1988371335297483117">Las cargas de actualizaciones automáticas en <ph name="PRODUCT_OS_NAME" /> se pueden descargar a través de HTTP en lugar de HTTPS, lo que permite el almacenamiento transparente en caché HTTP de descargas HTTP.
 
       Si esta política está establecida en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas de actualizaciones automáticas a través de HTTP. Si está establecida en False o no está configurada, se utilizará HTTPS para descargar cargas de actualizaciones automáticas.</translation>
@@ -753,6 +754,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Habilitar la opción para agregar una persona en el Administrador de usuarios</translation>
+<translation id="3737544779868348650">Nombre de host de la red del dispositivo</translation>
 <translation id="3750220015372671395">Bloquear generación de claves en estos sitios</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Te permite establecer el servidor proxy que usa <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración del proxy.
@@ -1173,6 +1175,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5130288486815037971">Si se habilitan los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.</translation>
 <translation id="5142301680741828703">Siempre procesar los siguientes patrones de URL en <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Determina el nombre de host del dispositivo que se usa en solicitudes de DHCP.
+
+      Si se establece esta política como una string no vacía, esa string se usará como el nombre de host del dispositivo para la solicitud de DHCP.
+
+      La string puede contener variables las ${ASSET_ID}, ${SERIAL_NUM} o ${MAC_ADDR}, que se reemplazarán con valores del dispositivo antes de usarse como nombre de host. La sustitución resultante debe ser un nombre de host válido (según RFC 1035, sección 3.1).
+
+      Si no se establece esta política, o si el valor que se obtiene después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud de DHCP. </translation>
 <translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no se configura esta política, se utilizará la línea de comandos predeterminada.</translation>
@@ -1340,6 +1349,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si esta política no se establece, se usará el directorio de perfil predeterminado.</translation>
 <translation id="5826047473100157858">Especifica si el usuario puede abrir páginas en modo incógnito en <ph name="PRODUCT_NAME" />. Si se habilita o si  no se configura la política, las páginas podrán abrirse en modo incógnito. Si se inhabilita, las páginas no podrán abrirse en modo incógnito. Si se fuerza el modo incógnito, las páginas podrán abrirse SOLO en modo incógnito.</translation>
+<translation id="5835124959204887277">Especifica los dominios y URL para los cuales no se mostrarán mensajes cuando se solicitan certificados de atestación de las llaves de seguridad. Además, se enviará una señal a la llave de seguridad para indicar que se puede usar la atestación individual. Sin esto, se mostrará un mensaje a los usuarios con Chrome 65 y versiones posteriores cuando los sitios soliciten atestaciones de llaves de seguridad.
+
+      Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de los comentarios por voz en la pantalla de acceso.
 
@@ -1519,6 +1531,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se inhabilita, no se importan los datos del formulario de Autocompletar.
 
       Si no se configura, se le puede preguntar al usuario si desea importar los datos o la importación puede realizarse de forma automática.</translation>
+<translation id="6224304369267200483">Las URL y los dominios permiten automáticamente la atestación directa de llaves de seguridad</translation>
 <translation id="6233173491898450179">Establecer el directorio de descarga</translation>
 <translation id="6244210204546589761">Direcciones URL que se abrirán al iniciar.</translation>
 <translation id="6258193603492867656">Especifica si el SPN de Kerberos generado debe incluir un puerto no estándar. Si se habilita esta configuración y se ingresa un puerto no estándar (es decir, un puerto que no sea 80 ni 443), se incluirá en el SPN de Kerberos generado. Si se inhabilita esta opción o si no se configura, el SPN de Kerberos generado no incluirá un puerto en ningún caso.</translation>
@@ -1747,6 +1760,13 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7202925763179776247">Permitir las restricciones de descarga</translation>
 <translation id="7207095846245296855">Forzar Google SafeSearch</translation>
 <translation id="7216442368414164495">Permitir que los usuarios acepten informes extendidos de navegación segura</translation>
+<translation id="7221822638060296742">Te permite establecer qué sitios pueden ejecutar automáticamente el complemento de <ph name="FLASH_PLUGIN_NAME" />. La ejecución automática del complemento de <ph name="FLASH_PLUGIN_NAME" /> se puede permitir o denegar para todos los sitios.
+
+          "Haz clic para reproducir" permite la ejecución del complemento de <ph name="FLASH_PLUGIN_NAME" />, pero el usuario debe hacer clic en el marcador de posición para iniciarla.
+
+          La reproducción automática solo se permite para los sitios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitar la reproducción automática para todos los sitios, agrega http://* y https://* a esta lista.
+
+          Si no estableces esta política, el usuario podrá cambiar la configuración de forma manual.</translation>
 <translation id="7234280155140786597">Nombres de los hosts de mensajería nativa prohibidos (o * para todos)</translation>
 <translation id="7236775576470542603">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.
 
@@ -1941,13 +1961,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="787125417158068494">Si se establece en SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las apps de ARC.
 
       Si se establece en CopyCaCerts, todos los certificados de CA de ONC instalado con <ph name="WEB_TRUSTED_BIT" /> estarán disponibles para las apps de ARC.</translation>
-<translation id="7872535148622213208">
-        La política muestra una lista de orígenes (URL) que se considerarán como
-        contexto seguro. El objetivo es permitir que las organizaciones
-        configuren un servidor de etapas de pruebas para desarrollos web internos.
-        Es igual que la marca --unsafely-treat-insecure-origin-as-secure.
-        Para obtener más información sobre contextos seguros, consulta https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo de venta.
 
       Determina la ID de la extensión que se debe utilizar como protector de pantalla en la página de acceso. La extensión debe formar parte del AppPack configurado para este dominio a través de la política DeviceAppPack.</translation>

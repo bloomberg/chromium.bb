@@ -18,6 +18,7 @@
 <translation id="1457721931618994305">Atualizando o Google Chrome...</translation>
 <translation id="1469002951682717133">Inicializador de aplicativos do Google Chrome</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
+<translation id="1585657529869845941">Clique em <ph name="BEGIN_BOLD" />Alterar mesmo assim<ph name="END_BOLD" />, se essa opção for exibida</translation>
 <translation id="1587223624401073077">O Google Chrome está usando sua câmera.</translation>
 <translation id="1587325591171447154">O arquivo <ph name="FILE_NAME" /> é perigoso. Por isso ele foi bloqueado pelo Chrome.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativamos a extensão a seguir, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e pode ter sido adicionada sem seu conhecimento.</translation>
@@ -64,6 +65,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="2664962310688259219">Licenças de código aberto do Chrome OS</translation>
 <translation id="2665296953892887393">Ajude a melhorar o Google Chrome. Envie relatórios de erros e  <ph name="UMA_LINK" /> para o Google</translation>
 <translation id="2689103672227170538">Esta extensão alterou a página que é exibida quando você inicia o Chrome.</translation>
+<translation id="2705403826523567092">Faça login para ter uma experiência de navegação personalizada e sincronizada entre seus dispositivos</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
@@ -94,6 +96,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="3612333635265770873">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="3622797965165704966">Agora ficou mais fácil usar o Chrome com sua Conta do Google e em computadores compartilhados.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Serviço<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome OS</translation>
+<translation id="3716182511346448902">Como esta página usa muita memória, o Chrome a pausou.</translation>
 <translation id="3718181793972440140">Essa ação excluirá 1 item desse dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você inicia o Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -102,6 +105,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Abrir link na janela &amp;sem rastros do Chrome</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
+<translation id="3898493977366060150">Navegação na Web com a tecnologia do Google</translation>
 <translation id="4028693306634653894">Acesse o Chrome mais rapidamente</translation>
 <translation id="4031074602479304239">O Chrome impediu que este site levasse você para</translation>
 <translation id="4042449298237264661">Este computador não receberá mais atualizações do Google Chrome porque o Windows XP e o Windows Vista não são mais compatíveis.</translation>

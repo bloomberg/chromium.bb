@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">ప్రాథమికాలు</translation>
 <translation id="2386793615875593361">1 ఎంచుకోబడింది</translation>
 <translation id="2435457462613246316">పాస్‌వర్డ్‌ను చూపించు</translation>
+<translation id="2523363575747517183">ఈ వెబ్‌సైట్ మరో అప్లికేషన్‌ను తెరవడానికి పలుసార్లు ప్రయత్నిస్తోంది.</translation>
 <translation id="2529021024822217800">అన్నీ తెరువు</translation>
 <translation id="2572712655377361602">ఒక పరికర విధానం మీ ఫోటోలకు ప్రాప్యతను బ్లాక్ చేసింది</translation>
 <translation id="2584132361465095047">ఖాతాను జోడించు...</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">ఫోన్</translation>
 <translation id="441868831736628555">గోప్యతా నోటీసు</translation>
 <translation id="4460091562821778167">ఏ యాప్‌ని ఉపయోగించాలో ప్రతిసారీ నన్ను అడగాలి</translation>
+<translation id="4496373720959965247">ట్యాబ్‌లను జోడించి మరియు పేజీల మధ్య మారండి</translation>
 <translation id="4508750114462689118">సైన్ ఇన్ ప్రోమోను మూసివేయండి</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />లో సేవ్ చేసిన పాస్‌వర్డ్‌లను వీక్షించండి మరియు నిర్వహించండి</translation>
 <translation id="4536418791685807335">మళ్లీ సైన్ ఇన్ చేయడానికి ప్రయత్నించండి.</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">సెటప్ పురోగమనంలో ఉంది...</translation>
 <translation id="5816228676161003208">దీని వలన మీ వాయిస్‌ని ఉపయోగించి వేగంగా శోధించగలుగుతారు.</translation>
 <translation id="5846482154967366008">శోధన ఇంజిన్</translation>
+<translation id="5854790677617711513">30 రోజుల కన్నా పాతవి</translation>
 <translation id="5857090052475505287">క్రొత్త ఫోల్డర్</translation>
 <translation id="5857770089550859117">సమకాలీకరణను ప్రారంభించడానికి రహస్య పదబంధం అవసరం.</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">డౌన్‌లోడ్ చేయి</translation>
 <translation id="7537586195939242955">క్షమించండి, ఈ సమయంలో పాస్‌బుక్‌కు మీ పాస్‌ను ఇన్‌స్టాల్ చేయడం సాధ్యపడదు.</translation>
 <translation id="7561196759112975576">ఎల్లప్పుడూ</translation>
-<translation id="7588950540487816470">భౌతిక వెబ్</translation>
 <translation id="7603852183842204213">పాప్-అప్‌లు బ్లాక్ చేయబడ్డాయి (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">సమకాలీకరణ పని చేయడం లేదు</translation>
 <translation id="7638584964844754484">రహస్య పదబంధం చెల్లదు</translation>

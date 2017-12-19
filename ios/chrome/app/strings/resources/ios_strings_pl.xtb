@@ -78,6 +78,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2381405137052800939">Podstawowe</translation>
 <translation id="2386793615875593361">Wybrano: 1</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
+<translation id="2523363575747517183">Ta strona internetowa wielokrotnie próbuje otworzyć inną aplikację.</translation>
 <translation id="2529021024822217800">Otwórz wszystkie</translation>
 <translation id="2572712655377361602">Zasady dotyczące urządzeń zablokowały dostęp do Twoich zdjęć</translation>
 <translation id="2584132361465095047">Dodaj konto…</translation>
@@ -178,6 +179,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Informacje na temat ochrony prywatności</translation>
 <translation id="4460091562821778167">Za każdym razem pytaj, której aplikacji użyć</translation>
+<translation id="4496373720959965247">Dodaj karty i przełączaj się między stronami</translation>
 <translation id="4508750114462689118">Zamknij okno zachęcające do logowania</translation>
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Spróbuj zalogować się jeszcze raz.</translation>
@@ -237,6 +239,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5771816112378578655">Trwa konfigurowanie...</translation>
 <translation id="5816228676161003208">Umożliwia szybsze wyszukiwanie głosowe.</translation>
 <translation id="5846482154967366008">Wyszukiwarka</translation>
+<translation id="5854790677617711513">Sprzed ponad 30 dni</translation>
 <translation id="5857090052475505287">Nowy folder</translation>
 <translation id="5857770089550859117">Wpisz hasło, by rozpocząć synchronizację.</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
@@ -335,7 +338,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7514365320538308">Pobierz</translation>
 <translation id="7537586195939242955">Twojego hasła nie można teraz umieścić w Passbooku.</translation>
 <translation id="7561196759112975576">Zawsze</translation>
-<translation id="7588950540487816470">Internet rzeczy</translation>
 <translation id="7603852183842204213">Zablokowano pop-upy (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Synchronizacja nie działa</translation>
 <translation id="7638584964844754484">Nieprawidłowe hasło</translation>

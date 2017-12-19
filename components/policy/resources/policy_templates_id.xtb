@@ -692,16 +692,14 @@
 <translation id="332771718998993005">Tentukan nama yang diiklankan sebagai tujuan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
-<translation id="3356249700768900657">
-      CATATAN: Kebijakan ini merupakan eksperimental dan mungkin mengganggu fungsi.
+<translation id="3356249700768900657">CATATAN: Kebijakan ini merupakan eksperimental dan mungkin mengganggu fungsi.
       Anda mungkin ingin melihat setelan kebijakan IsolateOrigins untuk mendapatkan
-      yang terbaik dari kedua kebijakan, isolasi dan dampak terbatas bagi pengguna, dengan
+      manfaat isolasi dan dampak terbatas bagi pengguna, dengan
       menggunakan IsolateOrigins yang berisi daftar situs yang ingin diisolasi. Setelan ini,
       SitePerProcess, mengisolasi semua situs.
       Jika kebijakan ini diaktifkan, setiap situs akan dijalankan dalam prosesnya sendiri.
       Jika kebijakan ini dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku
-      Jika kebijakan ini tidak dikonfigurasi, pengguna akan dapat mengubah setelan ini.
-      </translation>
+      Jika kebijakan ini tidak dikonfigurasi, pengguna akan dapat mengubah setelan ini.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3395348522300156660">Menentukan printer yang dapat digunakan pengguna.
 
@@ -1969,13 +1967,6 @@
 <translation id="787125417158068494">Jika disetel ke SyncDisabled atau tidak dikonfigurasi, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak tersedia untuk aplikasi ARC.
 
       Jika disetel ke CopyCaCerts, semua sertifikat CA yang memasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk aplikasi ARC.</translation>
-<translation id="7872535148622213208">
-        Kebijakan ini menentukan daftar asal (URL) yang akan diperlakukan sebagai konteks yang
-        aman. Tujuannya adalah mengizinkan organisasi untuk menyiapkan server sementara
-        bagi pengembangan web internal.
-        Hal ini sama dengan bendera --unsafely-treat-insecure-origin-as-secure.
-        Untuk informasi lebih lanjut tentang konteks yang aman, lihat https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Kebijakan ini hanya aktif dalam mode ritel.
 
       Menentukan id ekstensi untuk digunakan sebagai tirai layar pada layar masuk. Ekstensi haruslah bagian dari AppPack yang dikonfigurasi untuk domain ini melalui kebijakan DeviceAppPack.</translation>

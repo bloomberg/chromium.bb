@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der mit einem Laufwerksbuchstaben beginnt und keine Verknüpfung, keinen Bereitstellungspunkt und keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (Seriennummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> von Anbieter <ph name="VENDOR_ID" /> (Seriennummer <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Launcher-Seite "<ph name="PAGE" />" konnte nicht geladen werden.</translation>
 <translation id="388442998277590542">Optionsseite "<ph name="OPTIONS_PAGE" />" konnte nicht geladen werden.</translation>
 <translation id="4115165561519362854">Der Administrator dieses Geräts hat festgelegt, dass für <ph name="EXTENSION_NAME" /> mindestens Version <ph name="EXTENSION_VERSION" /> installiert sein muss. Die Erweiterung kann erst aktiviert werden, nachdem sie auf diese oder eine höhere Version aktualisiert wurde.</translation>
 <translation id="4233778200880751280">Infoseite "<ph name="ABOUT_PAGE" />" konnte nicht geladen werden.</translation>

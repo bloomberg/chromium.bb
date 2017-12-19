@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Nie można rozpakować rozszerzenia. Aby bezpiecznie rozpakować rozszerzenie, musi istnieć ścieżka do katalogu profilu, która zaczyna się literą dysku i nie zawiera punktu połączenia, punktu instalacji (montowania) ani dowiązania symbolicznego. W przypadku Twojego profilu taka ścieżka nie istnieje.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (numer seryjny <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> wyprodukowany przez <ph name="VENDOR_ID" /> (numer seryjny <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Nie można wczytać strony programu uruchamiającego „<ph name="PAGE" />”.</translation>
 <translation id="388442998277590542">Nie można wczytać strony opcji „<ph name="OPTIONS_PAGE" />”.</translation>
 <translation id="4115165561519362854">Administrator tego urządzenia wymaga, by rozszerzenie <ph name="EXTENSION_NAME" /> było w wersji co najmniej <ph name="EXTENSION_VERSION" />. Jeśli rozszerzenie nie zostanie zaktualizowane do tej wersji (lub nowszej), nie zostanie włączone.</translation>
 <translation id="4233778200880751280">Nie udało się załadować strony z informacjami: „<ph name="ABOUT_PAGE" />”.</translation>

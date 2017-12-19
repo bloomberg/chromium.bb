@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">Βασικές πληροφορίες</translation>
 <translation id="2386793615875593361">Έχει επιλεγεί 1 φωτογραφία</translation>
 <translation id="2435457462613246316">Εμφάνιση κωδικού πρόσβασης</translation>
+<translation id="2523363575747517183">Αυτός ο ιστότοπος προσπαθεί επανειλημμένως να ανοίξει κάποια άλλη εφαρμογή.</translation>
 <translation id="2529021024822217800">Άνοιγμα όλων</translation>
 <translation id="2572712655377361602">Μια πολιτική συσκευής απέκλεισε την πρόσβαση στις φωτογραφίες σας</translation>
 <translation id="2584132361465095047">Προσθήκη λογαριασμού…</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">Τηλέφωνο</translation>
 <translation id="441868831736628555">Σημείωση απορρήτου</translation>
 <translation id="4460091562821778167">Ερώτηση για την επιθυμητή εφαρμογή κάθε φορά</translation>
+<translation id="4496373720959965247">Προσθέστε καρτέλες και κάντε εναλλαγή μεταξύ σελίδων</translation>
 <translation id="4508750114462689118">Κλείσιμο προσφοράς σύνδεσης</translation>
 <translation id="4526249700380860531">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Δοκιμάστε να συνδεθείτε ξανά.</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">Ρύθμιση σε εξέλιξη...</translation>
 <translation id="5816228676161003208">Σας επιτρέπει να πραγματοποιείτε ταχύτερη αναζήτηση με φωνητικές εντολές.</translation>
 <translation id="5846482154967366008">Μηχανή αναζήτησης</translation>
+<translation id="5854790677617711513">Παλαιότερο από 30 ημέρες</translation>
 <translation id="5857090052475505287">Νέος φάκελος</translation>
 <translation id="5857770089550859117">Απαιτείται φράση πρόσβασης για έναρξη του συγχρονισμού.</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">Λήψη</translation>
 <translation id="7537586195939242955">Δεν είναι δυνατή η εγκατάσταση του πάσου σας στο Passbook.</translation>
 <translation id="7561196759112975576">Πάντα</translation>
-<translation id="7588950540487816470">Φυσικό δίκτυο</translation>
 <translation id="7603852183842204213">Αποκλεισμ. αναδ. (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Ο συγχρονισμός δεν λειτουργεί</translation>
 <translation id="7638584964844754484">Εσφαλμένη φράση πρόσβασης</translation>

@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">ساده</translation>
 <translation id="2386793615875593361">۱ مورد انتخاب شد</translation>
 <translation id="2435457462613246316">نمایش گذرواژه</translation>
+<translation id="2523363575747517183">این وب‌سایت به‌طور مکرر تلاش می‌کند برنامه دیگری را باز کند.</translation>
 <translation id="2529021024822217800">باز کردن همه</translation>
 <translation id="2572712655377361602">خط‌مشی دستگاه دسترسی به عکس‌هایتان را مسدود کرد</translation>
 <translation id="2584132361465095047">افزودن حساب…</translation>
@@ -179,6 +180,7 @@
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="441868831736628555">اعلامیه حریم خصوصی</translation>
 <translation id="4460091562821778167">هر بار از من بپرسید از کدام برنامه استفاده شود</translation>
+<translation id="4496373720959965247">برگه اضافه کنید و بین صفحه‌ها جابه‌جا شوید</translation>
 <translation id="4508750114462689118">بستن تبلیغ ورود به سیستم</translation>
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">دوباره برای ورود به سیستم تلاش کنید.</translation>
@@ -238,6 +240,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5771816112378578655">راه‌اندازی در حال انجام...</translation>
 <translation id="5816228676161003208">این کار به شما اجازه می‌دهد با استفاده از صدایتان سریع‌تر جستجو کنید.</translation>
 <translation id="5846482154967366008">موتور جستجو</translation>
+<translation id="5854790677617711513">قدیمی‌تر از ۳۰ روز</translation>
 <translation id="5857090052475505287">پوشهٔ جدید</translation>
 <translation id="5857770089550859117">برای شروع همگام‌سازی به عبارت عبور نیاز است.</translation>
 <translation id="5860033963881614850">خاموش</translation>
@@ -336,7 +339,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7514365320538308">بارگیری</translation>
 <translation id="7537586195939242955">‏متأسفانه نصب «جواز» در Passbook فعلاً امکان‌پذیر نیست.</translation>
 <translation id="7561196759112975576">همیشه</translation>
-<translation id="7588950540487816470">وب فیزیکی</translation>
 <translation id="7603852183842204213">پنجره‌های بازشوی مسدود (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">همگام‌سازی کار نمی‌کند</translation>
 <translation id="7638584964844754484">عبارت عبور نادرست است</translation>

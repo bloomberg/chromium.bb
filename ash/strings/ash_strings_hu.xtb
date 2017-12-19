@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Nagy egérmutató</translation>
 <translation id="1550523713251050646">Kattintson további lehetőségekért</translation>
 <translation id="1621499497873603021">Akkumulátor lemerüléséig hátralévő idő: <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Sajnos a jelszó ellenőrzése még mindig nem sikerült. Megjegyzés: ha a közelmúltban módosította jelszavát, az új jelszó beállítása a kijelentkezés után megy végbe, ezért itt a régi jelszót használja.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
 <translation id="1698760176351776263">IPv6-cím: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Mielőtt elfogadná, ellenőrizze, hogy ez a biztonsági kód látható-e azon az eszközön is: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Értesítések</translation>
+<translation id="2484513351006226581">A billentyűzetkiosztás átváltásához nyomja meg a(z) <ph name="KEYBOARD_SHORTCUT" /> billentyűparancsot.</translation>
 <translation id="2501920221385095727">Beragadó billentyűk</translation>
 <translation id="2509468283778169019">A CAPS LOCK be van kapcsolva</translation>
 <translation id="2532589005999780174">Nagy kontrasztú mód</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">C típusú USB-vel kompatibilis eszköz</translation>
 <translation id="3465566417615315331">Kattintson a képére</translation>
 <translation id="3473479545200714844">Képernyőnagyító</translation>
+<translation id="3477079411857374384">Control+Shift+szóköz</translation>
 <translation id="3510164367642747937">Egérmutató kiemelése</translation>
 <translation id="3573179567135747900">Visszatérés ehhez: "<ph name="FROM_LOCALE" />" (újraindítás szükséges)</translation>
 <translation id="3582792037806681688">A többfiókos bejelentkezés le van tiltva egy felhasználó miatt ebben a munkamenetben</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Zárolás</translation>
 <translation id="3798670284305777884">Hangszóró (belső)</translation>
 <translation id="3846575436967432996">Nem áll rendelkezésre hálózati információ</translation>
+<translation id="385051799172605136">Vissza</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="3893630138897523026">ChromeVox (beszélt visszajelzés)</translation>
 <translation id="3899995891769452915">Hangbevitel</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
 <translation id="4849058404725798627">Objektum kiemelése billentyűzetfókusszal</translation>
 <translation id="4872237917498892622">Alt + Keresés vagy Shift</translation>
+<translation id="4890187583552566966">A rendszergazda letiltotta a Google Segédet.</translation>
 <translation id="4895488851634969361">Az akkumulátor feltöltve.</translation>
 <translation id="4905614135390995787">Módosult a nagy kontrasztú mód billentyűparancsa. Használja a(z) <ph name="NEW_SHORTCUT" /> billentyűparancsot a(z) <ph name="OLD_SHORTCUT" /> helyett.</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Kijelentkezés most</translation>
 <translation id="6047696787498798094">A képernyőmegosztás leáll, amikor másik felhasználóra vált. Folytatja?</translation>
 <translation id="6062360702481658777">A rendszer automatikusan kijelentkezteti Önt <ph name="LOGOUT_TIME_LEFT" /> idő múlva.</translation>
+<translation id="6064337552080329342">Sajnáljuk, jelszavát nem sikerült megerősíteni. Próbálkozzon újra.</translation>
 <translation id="607652042414456612">Számítógépét felfedezhetik a közeli Bluetooth-eszközök. Számítógépe „<ph name="NAME" />” néven, <ph name="ADDRESS" /> címmel lesz látható</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> töltése folyamatban</translation>
 <translation id="615957422585914272">A képernyő-billentyűzet megjelenítése</translation>
@@ -262,10 +268,12 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7692480393933218409">C típusú USB-vel kompatibilis eszközök töltése</translation>
 <translation id="776344839111254542">Kattintson a frissítés részleteinek megtekintéséhez</translation>
+<translation id="7796353162336583443">Koppintson az érintőceruza gombjára a polcon, ha jegyzetet vagy képernyőképet szeretne készíteni, illetve ha a Google Segédet, a lézermutatót vagy a nagyítót kívánja használni.</translation>
 <translation id="7798302898096527229">A kikapcsoláshoz nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> és <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Erős jel</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
+<translation id="7933084174919150729">A Google Segéd csak az elsődleges profilhoz áll rendelkezésre.</translation>
 <translation id="7977927628060636163">Mobilhálózatok keresése…</translation>
 <translation id="7982789257301363584">Hálózat</translation>
 <translation id="7994370417837006925">Többfiókos bejelentkezés</translation>
@@ -282,6 +290,7 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8308637677604853869">Előző menü</translation>
 <translation id="8351131234907093545">Jegyzet létrehozása</translation>
+<translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> beállításainak menüje</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433186206711564395">Hálózati beállítások</translation>
 <translation id="8433977262951327081">Megváltozott a beviteli lehetőségek menüjének buborékját a polcon megjelenítő gyorsparancs. A(z) <ph name="OLD_SHORTCUT" /> helyett használja a(z) <ph name="NEW_SHORTCUT" /> billentyűkombinációt.</translation>
@@ -292,6 +301,7 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="8484916590211895857"><ph name="NAME" />: Újracsatlakozás…</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> maradt</translation>
+<translation id="8652175077544655965">Beállítások bezárása</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Kis teljesítményű töltő csatlakoztatva</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

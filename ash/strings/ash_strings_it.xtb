@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
 <translation id="1550523713251050646">Fai clic per visualizzare altre opzioni</translation>
 <translation id="1621499497873603021">Tempo rimanente all'esaurimento della batteria: <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Non è stato ancora possibile verificare la password. Nota: se l'hai modificata di recente, la nuova password verrà applicata quando esci dall'account. Utilizza qui la tua vecchia password.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1698760176351776263">Indirizzo IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Questo dispositivo è gestito dall'azienda</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Prima di accettare, conferma che questa passkey viene visualizzata sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifiche</translation>
+<translation id="2484513351006226581">Premi <ph name="KEYBOARD_SHORTCUT" /> per cambiare il layout della tastiera.</translation>
 <translation id="2501920221385095727">Tasti permanenti</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
 <translation id="2532589005999780174">Modalità ad alto contrasto</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3465566417615315331">Fai clic sulla tua foto</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
+<translation id="3477079411857374384">CTRL + MAIUSC + barra spaziatrice</translation>
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
 <translation id="3582792037806681688">L'accesso simultaneo è stato vietato per un utente di questa sessione</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Blocca</translation>
 <translation id="3798670284305777884">Altoparlante (interno)</translation>
 <translation id="3846575436967432996">Nessuna informazione di rete disponibile</translation>
+<translation id="385051799172605136">Indietro</translation>
 <translation id="3891340733213178823">Premi due volte Ctrl+Maiusc+Q per uscire.</translation>
 <translation id="3893630138897523026">ChromeVox (lettura vocale)</translation>
 <translation id="3899995891769452915">Input vocale</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Disconnetti</translation>
 <translation id="4849058404725798627">Evidenzia oggetto con stato attivo della tastiera</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
+<translation id="4890187583552566966">L'Assistente Google è stato disattivato dall'amministratore.</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
 <translation id="4905614135390995787">La scorciatoia per attivare/disattivare la modalità ad alto contrasto è cambiata. Usa <ph name="NEW_SHORTCUT" /> anziché <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accetto</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Esci ora</translation>
 <translation id="6047696787498798094">La condivisione dello schermo verrà interrotta se cambi utente. Vuoi continuare?</translation>
 <translation id="6062360702481658777">Verrai disconnesso automaticamente tra <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">Impossibile verificare la password. Riprova.</translation>
 <translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come "<ph name="NAME" />" con l'indirizzo <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">In carica: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
@@ -262,10 +268,12 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
+<translation id="7796353162336583443">Tocca il pulsante dello stilo nella shelf per creare note, acquisire screenshot, usare l'Assistente Google, il puntatore laser o la lente d'ingrandimento.</translation>
 <translation id="7798302898096527229">Premi il tasto per la ricerca o MAIUSC per annullare.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Segnale forte</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
+<translation id="7933084174919150729">L'Assistente Google è disponibile solo per il profilo principale.</translation>
 <translation id="7977927628060636163">Ricerca di reti mobili...</translation>
 <translation id="7982789257301363584">Rete</translation>
 <translation id="7994370417837006925">Accesso simultaneo</translation>
@@ -282,6 +290,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8308637677604853869">Menu precedente</translation>
 <translation id="8351131234907093545">Crea nota</translation>
+<translation id="8392451568018454956">Menu Opzioni per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433186206711564395">Impostazioni di rete</translation>
 <translation id="8433977262951327081">La scorciatoia per mostrare il fumetto del menu di opzioni di immissione nella shelf è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="8484916590211895857"><ph name="NAME" />: riconnessione in corso...</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> rimanente</translation>
+<translation id="8652175077544655965">Chiudi impostazioni</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

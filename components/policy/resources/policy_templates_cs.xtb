@@ -252,6 +252,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 <translation id="1969212217917526199">Přepíše zásady u ladicích sestavení hostitele vzdáleného připojení.
 
 Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodnoty zásady.</translation>
+<translation id="1969808853498848952">Vždy spustit pluginy, které vyžadují autorizaci (zastaralé)</translation>
 <translation id="1988371335297483117">Datové části automatických aktualizací systému <ph name="PRODUCT_OS_NAME" /> lze namísto protokolu HTTPS stahovat prostřednictvím protokolu HTTP. To umožňuje transparentní ukládání souborů stahovaných pomocí protokolu HTTP do mezipaměti.
 
       Pokud tuto zásadu nastavíte na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> se bude pokoušet stahovat datové části automatických aktualizací prostřednictvím protokolu HTTP. Pokud tuto zásadu nastavíte na hodnotu false nebo ji nenastavíte, ke stahování datových částí automatických aktualizací se bude používat protokol HTTPS.</translation>
@@ -770,6 +771,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
+<translation id="3737544779868348650">Název hostitele používaný pro zařízení v síti</translation>
 <translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>
 <translation id="3756011779061588474">Blokovat režim pro vývojáře</translation>
 <translation id="3758089716224084329">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru.
@@ -1197,6 +1199,13 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
 <translation id="5130288486815037971">Zda jsou v protokolu TLS povoleny šifrovací sady RC4</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Určuje název hostitele používaný pro zařízení v požadavcích DHCP.
+
+      Je-li tato zásada nastavena na neprázdný řetězec, použije se daný řetězec pro zařízení jako název hostitele v požadavku DHCP.
+
+      Řetězec může obsahovat proměnné ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, které se v zařízení nahradí hodnotami, čímž vznikne název hostitele. Po nahrazení by měl vzniknout platný název hostitele (odpovídající sekci 3.1 specifikace RFC 1035).
+
+      Pokud tato zásada není nastavena nebo název hostitele po nahrazení nebude platný, v požadavku DHCP žádný název hostitele nastaven nebude. </translation>
 <translation id="5148753489738115745">Umožňuje nastavit dodatečné parametry, které plugin <ph name="PRODUCT_FRAME_NAME" /> při spouštění aplikace <ph name="PRODUCT_NAME" /> použije.
 
           Když tato zásada není nastavena, bude použit výchozí příkazový řádek.</translation>
@@ -1393,6 +1402,9 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
      Je-li zvolena možnost Zakázáno, stránky nelze otevřít v anonymním režimu. 
 
      Je-li zvolena možnost Povinné, stránky lze otevřít POUZE v anonymním režimu.</translation>
+<translation id="5835124959204887277">Určuje adresy URL a domény, pro které se při žádosti o atestační certifikáty z bezpečnostních klíčů nezobrazí žádná výzva. Kromě toho se bezpečnostnímu klíči odešle signál, že je možné použít individuální atestaci. Bez tohoto nastavení se uživatelům v Chromu verze 65 nebo vyšší při žádosti webů o atestaci bezpečnostních klíčů zobrazí výzva.
+
+      Adresy URL (jako je https://example.com/nejaka/cesta) se budou porovnávat pouze jako U2F appID. Domény (například example.com) se porovnávají pouze jako ID přijímající strany webauthn. K pokrytí rozhraní API U2F i webauthn pro konkrétní web je proto potřeba uvést jak adresu URL appID, tak doménu.</translation>
 <translation id="5836064773277134605">Omezí rozsah portů UDP používaný hostitelem vzdáleného přístupu.</translation>
 <translation id="5862253018042179045">Nastavuje výchozí stav funkce usnadnění přístupu pomocí hlasové odezvy na přihlašovací obrazovce.
 
@@ -1573,6 +1585,7 @@ Klíč platformy určený k podnikovému použití může rozšíření k podepi
 Je-li zásada deaktivovaná, k importu dat automatického vyplňování formulářů nedojde.
 
 Není-li zásada nastavena, může se uživatelům zobrazit výzva, zda chtějí data importovat, nebo může import probíhat automaticky.</translation>
+<translation id="6224304369267200483">Adresy URL/domény s automatickým povolením k přímé atestaci bezpečnostních klíčů</translation>
 <translation id="6233173491898450179">Nastavit adresář pro stahování</translation>
 <translation id="6244210204546589761">Adresy URL otevírané při spuštění</translation>
 <translation id="6258193603492867656">Určuje, zda by měl vygenerovaný hlavní název služby (SPN) protokolu Kerberos obsahovat nestandardní port. 
@@ -1821,6 +1834,13 @@ Pokud je zásada „RestoreOnStartup“ nastavena na obnovení adres URL z před
 <translation id="7202925763179776247">Povolit omezení stahování</translation>
 <translation id="7207095846245296855">Vynutit Bezpečné vyhledávání Google</translation>
 <translation id="7216442368414164495">Umožnit uživatelům přihlášení k rozšířeným přehledům Bezpečného prohlížení</translation>
+<translation id="7221822638060296742">Umožňuje nastavit, zda mohou weby automaticky spouštět plugin <ph name="FLASH_PLUGIN_NAME" />. Automatické spouštění pluginu <ph name="FLASH_PLUGIN_NAME" /> lze buď pro všechny weby povolit, nebo naopak zakázat.
+
+          Plugin <ph name="FLASH_PLUGIN_NAME" /> lze spustit pomocí funkce přehrání kliknutím. Uživatel však jeho spuštění musí aktivovat kliknutím na zástupný symbol.
+
+          Automatické přehrávání je povoleno pouze u domén, které jsou výslovně uvedeny v zásadě <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Chcete-li automatické přehrávání povolit pro všechny weby, přidejte do tohoto seznamu položky http://* a https://*.
+
+          Pokud je tato zásada ponechána nenastavená, uživatel toto nastavení bude moci ručně změnit.</translation>
 <translation id="7234280155140786597">Názvy zakázaných hostitelů zasílání nativních zpráv (nebo * pro vše)</translation>
 <translation id="7236775576470542603">Nastavuje výchozí typ lupy, který je aktivován na přihlašovací obrazovce.
 
@@ -2023,11 +2043,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="787125417158068494">Pokud je tato zásada nastavena na hodnotu SyncDisabled nebo není nakonfigurována, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nejsou k dispozici aplikacím ARC.
 
       Pokud je nastavena na hodnotu CopyCaCerts, všechny certifikáty CA nainstalované prostřednictvím ONC s atributem <ph name="WEB_TRUSTED_BIT" /> jsou k dispozici aplikacím ARC.</translation>
-<translation id="7872535148622213208">
-        Tato zásada udává seznam zdrojů (adres URL), které mají být považovány za bezpečný kontext. Cílem je umožnit organizacím nastavení zkušebního serveru pro vývoj interních webových stránek.
-        Zásada funguje stejně jako příznak --unsafely-treat-insecure-origin-as-secure.
-        Další informace o bezpečných kontextech naleznete na stránce https://www.w3.org/TR/secure-contexts/.
-        </translation>
 <translation id="7882585827992171421">Tato zásada je aktivní pouze v režimu prodeje.
 
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>

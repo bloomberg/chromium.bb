@@ -266,6 +266,7 @@
 <translation id="1969212217917526199">Pakeičiama nuotolinės prieigos prieglobos derinimo versijų politika.
 
           Vertė analizuojama kaip politikos pavadinimo JSON žodynas, susiejant su politikos verte.</translation>
+<translation id="1969808853498848952">Visada paleidžiami papildiniai, kuriuos naudojant reikalinga prieigos teisė (nebenaudojama)</translation>
 <translation id="1988371335297483117">Automatinį naudingųjų apkrovų „<ph name="PRODUCT_OS_NAME" />“ naujinį galima atsisiųsti naudojant HTTP, o ne HTTPS. Taip leidžiama skaidriai HTTP talpykloje saugoti HTTP atsisiuntimus.
 
       Jei ši politika galioja, „<ph name="PRODUCT_OS_NAME" />“ bandys atsisiųsti automatinį naudingųjų apkrovų naujinį naudodama HTTP. Jei ši politika negalioja arba yra nenustatyta, automatinis naudingųjų apkrovų naujinys bus atsisiunčiamas naudojant HTTPS.</translation>
@@ -792,6 +793,7 @@
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
 <translation id="3711895659073496551">Laikinai sustabdyti</translation>
 <translation id="3736879847913515635">Asmens pridėjimo naudotojų tvarkytuvėje įgalinimas</translation>
+<translation id="3737544779868348650">Įrenginio tinklo prieglobos serverio pavadinimas</translation>
 <translation id="3750220015372671395">Blokuoti rakto generavimą šiose svetainėse</translation>
 <translation id="3756011779061588474">Blokuoti kūrėjo režimą</translation>
 <translation id="3758089716224084329">Leidžiama nurodyti „<ph name="PRODUCT_NAME" />“ naudojamą tarpinį serverį ir neleidžiama naudotojams keisti tarpinio serverio nustatymų.
@@ -1232,6 +1234,13 @@
 <translation id="5130288486815037971">Ar įgalinti RC4 šifruotieji programų komplektai TLS</translation>
 <translation id="5141670636904227950">Nustatyti numatytąjį ekrano didinimo tipą, kuris įgalintas prisijungimo ekrane</translation>
 <translation id="5142301680741828703">„<ph name="PRODUCT_FRAME_NAME" />“ visada pateikti šiuos URL šablonus</translation>
+<translation id="5147665094011258322">Galima nustatyti įrenginio, naudoto DHCP užklausose, prieglobos serverio pavadinimą.
+
+      Jei ši politika nustatyta kaip ne tuščia eilutė, ši eilutė bus naudojama kaip įrenginio prieglobos serverio pavadinimas pateikiant DHCP užklausą.
+
+      Eilutėje gali būti kintamųjų ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, kurie bus pakeisti įrenginio vertėmis, prieš naudojant juos kaip prieglobos serverio pavadinimą. Rodomas pakeitimas turi būti tinkamas prieglobos serverio pavadinimas (RFC 1035, 3.1 skiltis).
+
+      Jei ši politika nenustatyta arba po pakeitimo rodoma vertė nėra tinkamas prieglobos serverio pavadinimas, DHCP užklausoje nebus nustatytas joks prieglobos serverio pavadinimas. </translation>
 <translation id="5148753489738115745">Leidžia nurodyti papildomus parametrus, naudojamus, kai „<ph name="PRODUCT_FRAME_NAME" />“ paleidžia „<ph name="PRODUCT_NAME" />“.
 
           Nenustačius šios politikos bus naudojama numatytoji komandinė eilutė.</translation>
@@ -1432,6 +1441,9 @@
       Jei pasirinkta „Neleidžiama“, puslapių negalima atidaryti inkognito režimu.
 
       Jei pasirinkta „Priverstinai“, puslapius galima atidaryti TIK inkognito režimu.</translation>
+<translation id="5835124959204887277">Nurodomi URL ir domenai, kuriuose nebus rodomas raginimas, kai bus pateikiamos saugos raktų atestacijos sertifikatų užklausos. Be to, saugos raktui bus išsiunčiamas signalas, nurodantis, kad galima naudoti individualią atestaciją. Nenustačius šios politikos, naudotojams bus pateikiami raginimai 65 ir naujesnių versijų „Chrome“, kai svetainėse bus reikalaujama saugos raktų atestacijos.
+
+      URL (pvz., https://example.com/some/path) atitiks tik kaip U2F „appID“. Domenai (pvz., example.com) atitiks tik kaip „webauthn“ RP ID. Todėl, kad būtų įtrauktos ir tam tikros svetainės U2F, ir „webauthn“ API, sąraše turi būti ir „appID“ URL, ir domenas.</translation>
 <translation id="5836064773277134605">Apriboti UDP prievado diapazoną, naudojamą nuotolinės prieigos prieglobos</translation>
 <translation id="5862253018042179045">Nustatyti numatytąją ekrano skaitymo balsu būklę prisijungimo ekrane.
 
@@ -1611,6 +1623,7 @@
       Jei ši politika išjungta, automatinio pildymo formų duomenys neimportuojami.
 
       Jei nenustatyta, naudotojo gali būti paklausta, ar importuoti, arba gali būti automatiškai importuojama.</translation>
+<translation id="6224304369267200483">URL / domenams automatiškai leidžiama tiesioginė saugos rakto atestacija</translation>
 <translation id="6233173491898450179">Nustatyti atsisiuntimo katalogą</translation>
 <translation id="6244210204546589761">Paleidžiant atidaromi URL</translation>
 <translation id="6258193603492867656">Nurodoma, ar į sugeneruotą „Kerberos“ SPN turi būti įtrauktas nestandartinis prievadas.
@@ -1863,6 +1876,13 @@
 <translation id="7202925763179776247">Atsisiuntimų apribojimų leidimas</translation>
 <translation id="7207095846245296855">Priverstinis „Google“ saugios paieškos naudojimas</translation>
 <translation id="7216442368414164495">Naudotojams leidžiama pasirinkti Saugaus naršymo išplėstinių ataskaitų teikimą</translation>
+<translation id="7221822638060296742">Galima nustatyti, ar svetainėse leidžiama automatiškai vykdyti papildinį „<ph name="FLASH_PLUGIN_NAME" />“. Automatiškai vykdyti papildinį „<ph name="FLASH_PLUGIN_NAME" />“ gali būti arba leidžiama visose svetainėse, arba draudžiama visose svetainėse.
+
+          Naudojant paleidimo paspaudus funkciją galima vykdyti papildinį „<ph name="FLASH_PLUGIN_NAME" />“, bet naudotojas turi spustelėti rezervuotą vietą, kad pradėtų jo vykdymo procesą.
+
+          Automatinis atkūrimas leidžiamas tik tuose domenuose, kurie yra aiškiai nurodyti politikoje „<ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />“. Jei norite įgalinti atkūrimą visose svetainėse, pabandykite prie šio sąrašo pridėti „http://*“ ir „https://*“.
+
+          Jei ši politika bus nenustatyta, naudotojas galės keisti šį nustatymą patys.</translation>
 <translation id="7234280155140786597">Draudžiamų savųjų susirašinėjimo pranešimais programų prieglobų pavadinimų pavadinimai (arba simbolis *, nurodantis jas visas)</translation>
 <translation id="7236775576470542603">Nustatyti numatytąjį ekrano didinimo tipą, kuris įgalintas prisijungimo ekrane.
 
@@ -2067,13 +2087,6 @@
 <translation id="787125417158068494">Nustačius „SyncDisabled“ arba nesukonfigūravus, <ph name="PRODUCT_OS_NAME" /> sertifikatų nebus galima naudoti ARC programose.
 
       Nustačius „CopyCaCerts“, visi per ONC įdiegti CA sertifikatai su „<ph name="WEB_TRUSTED_BIT" />“ bus prieinami ARC programose.</translation>
-<translation id="7872535148622213208">
-        Politika nurodo šaltinių (URL), kurie turi būti laikomi saugiu kontekstu,
-        sąrašą. Siekiama leisti organizacijoms nustatyti darbinį serverį
-        vidiniams žiniatinklio tobulinimams atlikti.
-        Tai yra tas pats kaip žymė --unsafely-treat-insecure-origin-as-secure.
-        Jei reikia daugiau informacijos apie saugų kontekstą, žr. https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>

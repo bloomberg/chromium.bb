@@ -18,6 +18,7 @@
 <translation id="1457721931618994305">A Google Chrome frissítése...</translation>
 <translation id="1469002951682717133">Chrome Alkalmazásindító</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
+<translation id="1585657529869845941">Ha megjelenik, kattintson a <ph name="BEGIN_BOLD" />Váltás mindenképpen<ph name="END_BOLD" /> lehetőségre</translation>
 <translation id="1587223624401073077">A Google Chrome használja a kamerát.</translation>
 <translation id="1587325591171447154">A(z) <ph name="FILE_NAME" /> veszélyes, ezért a Chrome letiltotta.</translation>
 <translation id="1619887657840448962">A Chrome biztonságosabbá tétele érdekében kikapcsoltuk a következő bővítményt, amely nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származik, és előfordulhat, hogy az Ön tudta nélkül lett telepítve.</translation>
@@ -64,6 +65,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="2664962310688259219">Chrome OS nyílt forráskódú licencek</translation>
 <translation id="2665296953892887393">Segítse a Google Chrome fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Ez a bővítmény módosította, hogy melyik oldal jelenik meg a Chrome indításakor.</translation>
+<translation id="2705403826523567092">Jelentkezzen be a személyre szabott, eszközök között szinkronizált böngészési környezetbe</translation>
 <translation id="2769762047821873045">Nem a Google Chrome az alapértelmezett böngésző.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="2799223571221894425">Újraindítás</translation>
@@ -94,6 +96,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="3612333635265770873">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Google Chrome-mal.</translation>
 <translation id="3622797965165704966">Google-fiókjával most még egyszerűbben használhatja a Chrome-ot közösen használt számítógépeken.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Általános Szerződési Feltételek<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="3716182511346448902">Ez az oldal túl sok memóriát használ, ezért a Chrome szünetelteti.</translation>
 <translation id="3718181793972440140">Ezzel egyetlen elemet töröl az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">A(z) <ph name="EXTENSION_NAME" /> bővítmény módosította, hogy melyik oldal jelenjen meg a Chrome indításakor.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -102,6 +105,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Link megnyitása Chrome-inko&amp;gnitóablakban</translation>
 <translation id="3889417619312448367">A Google Chrome eltávolítása</translation>
+<translation id="3898493977366060150">Webes böngészés Google-okostelefonokkal</translation>
 <translation id="4028693306634653894">A Chrome gyorsabb elérése</translation>
 <translation id="4031074602479304239">A Chrome megakadályozta, hogy ez a webhely átirányítsa ide:</translation>
 <translation id="4042449298237264661">Ez a számítógép a továbbiakban már nem fogja megkapni a Google Chrome frissítéseit, mert a Windows XP és Windows Vista rendszereket már nem támogatjuk.</translation>
@@ -190,9 +194,11 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6634887557811630702">A Google Chrome naprakész.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
 <translation id="6697947395630195233">A Chrome-nak hozzáférésre van szüksége a helyadatokra ahhoz, hogy megoszthassa a webhellyel az Ön tartózkodási helyét.</translation>
+<translation id="6777817260680419853">Átirányítás letiltva</translation>
 <translation id="683440813066116847">Bejövő szabály a Google Chrome Canaryhoz az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="686561893457936865">Vigye magával a Chrome-ot mindenhova</translation>
 <translation id="6885412569789873916">Chrome Beta-alkalmazások</translation>
+<translation id="694592694773692225">Átirányítás letiltva ezen az oldalon.</translation>
 <translation id="6967962315388095737">Bejövő szabály a Google Chrome Bétához az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="6982337800632491844">A(z) <ph name="DOMAIN" /> megköveteli, hogy olvassa el, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Google Chrome OS feltételeit.</translation>

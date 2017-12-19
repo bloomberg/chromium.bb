@@ -26,6 +26,7 @@
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="1550523713251050646">คลิกเพื่อดูตัวเลือกเพิ่มเติม</translation>
 <translation id="1621499497873603021">เวลาที่เหลือกว่าแบตเตอรี่จะหมด, <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">ขออภัย ยังคงยืนยันรหัสผ่านไม่ได้ หมายเหตุ: หากคุณเปลี่ยนแปลงรหัสผ่านไปเมื่อเร็วๆ นี้ รหัสผ่านใหม่จะมีผลเมื่อคุณออกจากระบบ โปรดใช้รหัสผ่านเดิมที่นี่</translation>
 <translation id="1677472565718498478">ใช้ได้อีก <ph name="TIME" /></translation>
 <translation id="1698760176351776263">ที่อยู่ IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">อุปกรณ์นี้ได้รับการจัดการโดยองค์กร</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่ ก่อนที่จะยอมรับ โปรดยืนยันว่ารหัสผ่านนี้ปรากฏบนอุปกรณ์นั้น: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
+<translation id="2484513351006226581">กด <ph name="KEYBOARD_SHORTCUT" /> เพื่อสลับรูปแบบแป้นพิมพ์</translation>
 <translation id="2501920221385095727">คีย์ติดหนึบ</translation>
 <translation id="2509468283778169019">Caps Lock เปิดอยู่</translation>
 <translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">อุปกรณ์ USB-C</translation>
 <translation id="3465566417615315331">คลิกรูปภาพของคุณ</translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
+<translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">ไฮไลต์เคอร์เซอร์เมาส์</translation>
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น "<ph name="FROM_LOCALE" />" (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="3582792037806681688">การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชีไม่ได้รับอนุญาตสำหรับผู้ใช้ในเซสชันนี้</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">ล็อก</translation>
 <translation id="3798670284305777884">ลำโพง (ภายใน)</translation>
 <translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
+<translation id="385051799172605136">กลับ</translation>
 <translation id="3891340733213178823">กด Ctrl+Shift+Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="3893630138897523026">ChromeVox (การตอบสนองด้วยเสียง)</translation>
 <translation id="3899995891769452915">ป้อนข้อมูลด้วยเสียง</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="4849058404725798627">ไฮไลต์วัตถุที่มีโฟกัสแป้นพิมพ์</translation>
 <translation id="4872237917498892622">Alt+ค้นหา หรือ Shift</translation>
+<translation id="4890187583552566966">ผู้ดูแลระบบปิดใช้ Google Assistant</translation>
 <translation id="4895488851634969361">แบตเตอรี่เต็ม</translation>
 <translation id="4905614135390995787">มีการเปลี่ยนแปลงแป้นพิมพ์ลัดสำหรับสลับโหมดคอนทราสต์สูง โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="4918086044614829423">ยอมรับ</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">ออกจากระบบเลย</translation>
 <translation id="6047696787498798094">การแชร์หน้าจอจะหยุดเมื่อคุณสลับไปเป็นผู้ใช้อีกรายหนึ่ง ต้องการดำเนินการต่อไหม</translation>
 <translation id="6062360702481658777">คุณจะออกจากระบบโดยอัตโนมัติใน <ph name="LOGOUT_TIME_LEFT" /></translation>
+<translation id="6064337552080329342">ขออภัย ยืนยันรหัสผ่านไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="607652042414456612">ค้นพบคอมพิวเตอร์ของคุณอยู่ใกล้กับอุปกรณ์บลูทูธและจะปรากฏเป็น "<ph name="NAME" />" พร้อมด้วยที่อยู่ <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">กำลังชาร์จ<ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
@@ -262,10 +268,12 @@
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7692480393933218409">กำลังชาร์จอุปกรณ์ USB-C ที่เชื่อมต่ออยู่</translation>
 <translation id="776344839111254542">คลิกเพื่อดูรายละเอียดการอัปเดต</translation>
+<translation id="7796353162336583443">แตะปุ่มสไตลัสในชั้นวางเพื่อจดโน้ต บันทึกภาพหน้าจอ ตลอดจนใช้ Google Assistant ตัวชี้เลเซอร์ หรือแว่นขยาย</translation>
 <translation id="7798302898096527229">กด Search หรือ Shift เพื่อยกเลิก</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> กับ <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">สัญญาณแรง</translation>
 <translation id="7904094684485781019">ผู้ดูแลระบบของบัญชีนี้ไม่อนุญาตการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
+<translation id="7933084174919150729">Google Assistant ใช้งานได้กับโปรไฟล์หลักเท่านั้น</translation>
 <translation id="7977927628060636163">กำลังค้นหาเครือข่ายมือถือ...</translation>
 <translation id="7982789257301363584">เครือข่าย</translation>
 <translation id="7994370417837006925">การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
@@ -282,6 +290,7 @@
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
 <translation id="8351131234907093545">สร้างโน้ต</translation>
+<translation id="8392451568018454956">เมนูตัวเลือกสำหรับ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433186206711564395">การตั้งค่าเครือข่าย</translation>
 <translation id="8433977262951327081">มีการเปลี่ยนแปลงทางลัดที่ใช้แสดงลูกโป่งเมนูตัวเลือกการป้อนข้อมูลในชั้นวาง โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
@@ -292,6 +301,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: กำลังเชื่อมต่อใหม่...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ของคุณอาจไม่ชาร์จเมื่อเครื่องเปิดอยู่</translation>
 <translation id="8639760480004882931">เหลือ <ph name="PERCENTAGE" />%</translation>
+<translation id="8652175077544655965">ปิดการตั้งค่า</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">เชื่อมต่อกับที่ชาร์จพลังงานต่ำ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

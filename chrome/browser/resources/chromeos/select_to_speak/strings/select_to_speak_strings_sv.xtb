@@ -1,21 +1,26 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1197088940767939838">Orange</translation>
 <translation id="1224275271335624810">Snabbast</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1666326070478924810">Inställningar för uppläsning av markerad text</translation>
 <translation id="1966649499058910679">Markera orden allt eftersom de läses upp</translation>
 <translation id="2089387485033699258">se</translation>
+<translation id="2714180132046334502">Mörk bakgrund</translation>
+<translation id="27349076983469322">Ljus bakgrund</translation>
 <translation id="335581015389089642">Tal</translation>
 <translation id="4274874082286476934">Välj en talhastighet:</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="6017514345406065928">Grön</translation>
 <translation id="6029587122245504742">Långsammast</translation>
+<translation id="6475604559827479857">Markera ord med färgen:</translation>
 <translation id="6837853484260746864">Välj en röst:</translation>
 <translation id="7019805045859631636">Snabb</translation>
 <translation id="7768784765476638775">Markera och få uppläst</translation>
 <translation id="7914870167134465181">Markeringar</translation>
 <translation id="8044899503464538266">Långsamt</translation>
 <translation id="9030754204056345429">Snabbare</translation>
+<translation id="992256792861109788">Rosa</translation>
 </translationbundle>

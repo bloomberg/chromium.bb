@@ -78,6 +78,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2381405137052800939">Setări de bază</translation>
 <translation id="2386793615875593361">1 selectată</translation>
 <translation id="2435457462613246316">Afișați parola</translation>
+<translation id="2523363575747517183">Acest site încearcă în mod repetat să deschidă altă aplicație.</translation>
 <translation id="2529021024822217800">Deschide-le pe toate</translation>
 <translation id="2572712655377361602">O politică a dispozitivului a blocat accesul la fotografii</translation>
 <translation id="2584132361465095047">Adaugă un cont…</translation>
@@ -178,6 +179,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Notificare de confidențialitate</translation>
 <translation id="4460091562821778167">Întreabă de fiecare dată ce aplicație folosesc</translation>
+<translation id="4496373720959965247">Adaugă file și comută între pagini</translation>
 <translation id="4508750114462689118">Închide mesajul promoțional de conectare</translation>
 <translation id="4526249700380860531">Vezi și gestionează parolele salvate la <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Încearcă să te conectezi din nou.</translation>
@@ -237,6 +239,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5771816112378578655">Se configurează...</translation>
 <translation id="5816228676161003208">Astfel, cauți mai rapid folosindu-ți vocea.</translation>
 <translation id="5846482154967366008">Motor de căutare</translation>
+<translation id="5854790677617711513">Mai vechi de 30 de zile</translation>
 <translation id="5857090052475505287">Dosar nou</translation>
 <translation id="5857770089550859117">Pentru a începe sincronizarea este necesară expresia de acces.</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
@@ -335,7 +338,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7514365320538308">Descarcă</translation>
 <translation id="7537586195939242955">Momentan, parola nu poate fi instalată în Agenda de parole.</translation>
 <translation id="7561196759112975576">Întotdeauna</translation>
-<translation id="7588950540487816470">Web material</translation>
 <translation id="7603852183842204213">Pop-upuri blocate (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Sincronizarea nu funcționează</translation>
 <translation id="7638584964844754484">Expresie de acces incorectă</translation>

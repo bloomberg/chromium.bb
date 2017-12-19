@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">기본설정</translation>
 <translation id="2386793615875593361">1장 선택됨</translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
+<translation id="2523363575747517183">다른 애플리케이션을 열려는 반복적인 시도가 실행되는 웹사이트입니다.</translation>
 <translation id="2529021024822217800">모두 열기</translation>
 <translation id="2572712655377361602">기기 정책으로 인해 사진 액세스가 차단되었습니다.</translation>
 <translation id="2584132361465095047">계정 추가...</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">휴대전화</translation>
 <translation id="441868831736628555">개인정보처리방침</translation>
 <translation id="4460091562821778167">항상 사용할 앱 확인</translation>
+<translation id="4496373720959965247">탭 추가 및 페이지 간에 전환</translation>
 <translation id="4508750114462689118">로그인 프로모션 닫기</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="4536418791685807335">다시 로그인해 주세요.</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">설정 진행 중...</translation>
 <translation id="5816228676161003208">액세스를 허용하면 음성으로 더 빨리 검색할 수 있습니다.</translation>
 <translation id="5846482154967366008">검색엔진</translation>
+<translation id="5854790677617711513">30일 이상 전</translation>
 <translation id="5857090052475505287">새 폴더</translation>
 <translation id="5857770089550859117">동기화를 시작하려면 암호가 필요합니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">다운로드</translation>
 <translation id="7537586195939242955">현재 패스를 패스북에 설치할 수 없습니다.</translation>
 <translation id="7561196759112975576">항상</translation>
-<translation id="7588950540487816470">피지컬 웹</translation>
 <translation id="7603852183842204213">팝업 차단(<ph name="NUMBER_OF_BLOCKED_POPUPS" />개)</translation>
 <translation id="7605594153474022051">동기화가 작동하지 않음</translation>
 <translation id="7638584964844754484">암호가 잘못되었습니다.</translation>

@@ -78,6 +78,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2381405137052800939">Grunderna</translation>
 <translation id="2386793615875593361">1 markerat foto</translation>
 <translation id="2435457462613246316">Visa lösenord</translation>
+<translation id="2523363575747517183">Webbplatsen försöker öppna ett annat program upprepade gånger.</translation>
 <translation id="2529021024822217800">Öppna alla</translation>
 <translation id="2572712655377361602">Åtkomsten till bilderna har blockerats av en enhetspolicy</translation>
 <translation id="2584132361465095047">Lägg till konto …</translation>
@@ -178,6 +179,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Sekretessmeddelande</translation>
 <translation id="4460091562821778167">Fråga alltid vilken app som ska användas</translation>
+<translation id="4496373720959965247">Lägg till flikar och byt mellan sidor</translation>
 <translation id="4508750114462689118">Stäng inloggningskampanj</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Försök att logga in igen.</translation>
@@ -237,6 +239,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5771816112378578655">Konfigurationen pågår...</translation>
 <translation id="5816228676161003208">Det här gör att du kan söka snabbare med hjälp av rösten.</translation>
 <translation id="5846482154967366008">Sökmotor</translation>
+<translation id="5854790677617711513">Äldre än 30 dagar</translation>
 <translation id="5857090052475505287">Ny mapp</translation>
 <translation id="5857770089550859117">Lösenfras krävs för att starta synkroniseringen.</translation>
 <translation id="5860033963881614850">Av</translation>
@@ -335,7 +338,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7514365320538308">Ladda ned</translation>
 <translation id="7537586195939242955">Det går tyvärr inte att installera det här objektet i Passbook just nu.</translation>
 <translation id="7561196759112975576">Alltid</translation>
-<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7603852183842204213">Popup blockeras (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Det går inte att synkronisera</translation>
 <translation id="7638584964844754484">Felaktig lösenfras</translation>

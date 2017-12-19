@@ -26,6 +26,7 @@
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1550523713251050646">अधिक विकल्पों के लिए क्लिक करें</translation>
 <translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अभी भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
 <translation id="1698760176351776263">IPv6 पता: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">यह डिवाइस एंटरप्राइज़ द्वारा प्रबंधित है</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
+<translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
 <translation id="2501920221385095727">रोचक कुंजियां</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
 <translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="3465566417615315331">अपनी फ़ोटो क्‍लिक करें</translation>
 <translation id="3473479545200714844">स्क्रीन आवर्द्धक</translation>
+<translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">माउस कर्सर को हाइलाइट करें</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" में पुन: बदलें (फिर से आरंभ करने की आवश्यकता है)</translation>
 <translation id="3582792037806681688">इस सत्र के उपयोगकर्ता के लिए एकाधिक प्रवेश को अक्षम कर दिया गया है</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">लॉक करें</translation>
 <translation id="3798670284305777884">स्पीकर (आंतरिक)</translation>
 <translation id="3846575436967432996">कोई नेटवर्क जानकारी उपलब्ध नहीं</translation>
+<translation id="385051799172605136">वापस</translation>
 <translation id="3891340733213178823">प्रस्थान करने के लिए दो बार Ctrl+Shift+Q दबाएं.</translation>
 <translation id="3893630138897523026">ChromeVox (बोला गया फ़ीडबैक)</translation>
 <translation id="3899995891769452915">ध्‍वनि इनपुट</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
 <translation id="4872237917498892622">Alt+Search या Shift</translation>
+<translation id="4890187583552566966">आपके एडमिन ने Google Assistant को बंद कर दिया है.</translation>
 <translation id="4895488851634969361">बैटरी भरी हुई है.</translation>
 <translation id="4905614135390995787">उच्च कंट्रास्ट मोड को टॉगल करने का शॉर्टकट बदल गया है. कृपया<ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="4918086044614829423">स्वीकार करें</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">अब प्रस्थान करें</translation>
 <translation id="6047696787498798094">आपके द्वारा किसी अन्‍य उपयोगकर्ता पर स्‍विच करने से स्‍क्रीन साझाकरण रुक जाएगा. क्‍या आप जारी रखना चाहते हैं?</translation>
 <translation id="6062360702481658777">आप <ph name="LOGOUT_TIME_LEFT" /> में अपने आप प्रस्थान कर जाएंगे.</translation>
+<translation id="6064337552080329342">माफ़ करें, आपके पासवर्ड की पुष्टि नहीं की जा सकी. कृपया फिर से कोशिश करें.</translation>
 <translation id="607652042414456612">आपका कंप्यूर आस-पास के ब्लूटूथ डिवाइस के लिए खोजे जाने योग्य है और वह "<ph name="NAME" />" के रूप में <ph name="ADDRESS" /> पते के साथ दिखाई देगा</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> चार्ज हो रहा है</translation>
 <translation id="615957422585914272">ऑन-स्क्रीन कीबोर्ड दिखाएं</translation>
@@ -262,10 +268,12 @@
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7692480393933218409">कनेक्ट किए गए USB-C डिवाइस चार्ज कर रहा है</translation>
 <translation id="776344839111254542">अपडेट के विवरण देखने के लिए क्लिक करें</translation>
+<translation id="7796353162336583443">नोट लेने, स्क्रीनशॉट लेने और Google Assistant, लेज़र पॉइंटर या आवर्धक ग्लास का इस्तेमाल करने के लिए अलमारी में मौजूद स्टाइलस बटन पर टैप करें.</translation>
 <translation id="7798302898096527229">रद्द करने के लिए Search या Shift दबाएं.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> और <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मज़बूत सिग्नल</translation>
 <translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एकाधिक प्रवेश को अस्वीकार कर दिया है.</translation>
+<translation id="7933084174919150729">Google Assistant सिर्फ़ प्राथमिक प्रोफ़ाइल के लिए उपलब्ध है.</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क खोजे जा रहे हैं...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="7994370417837006925">एकाधिक प्रवेश</translation>
@@ -282,6 +290,7 @@
 <translation id="8261506727792406068">हटाएं</translation>
 <translation id="8308637677604853869">पिछला मेनू</translation>
 <translation id="8351131234907093545">नोट बनाएं</translation>
+<translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> के लिए विकल्प मेनू</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
 <translation id="8433186206711564395">नेटवर्क सेटिंग</translation>
 <translation id="8433977262951327081">शेल्फ़ में इनपुट विकल्पों का मेनू बबल दिखाने वाला शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
@@ -292,6 +301,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शेष</translation>
+<translation id="8652175077544655965">सेटिंग बंद करें</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>

@@ -78,6 +78,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="2381405137052800939">Základy</translation>
 <translation id="2386793615875593361">Počet vybratých fotografií: 1</translation>
 <translation id="2435457462613246316">Zobraziť heslo</translation>
+<translation id="2523363575747517183">Tento web sa opakovane pokúša otvoriť ďalšiu aplikáciu.</translation>
 <translation id="2529021024822217800">Otvoriť všetky</translation>
 <translation id="2572712655377361602">Pravidlá pre zariadenie zablokovali prístup k vašim fotkám</translation>
 <translation id="2584132361465095047">Pridať účet…</translation>
@@ -178,6 +179,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="4378154925671717803">Telefón</translation>
 <translation id="441868831736628555">Oznámenie o ochrane súkromia</translation>
 <translation id="4460091562821778167">Vždy sa spýtať, ktorú aplikáciu použiť</translation>
+<translation id="4496373720959965247">Pridajte karty a prepínajte medzi stránkami</translation>
 <translation id="4508750114462689118">Zavrieť propagáciu prihlásenia</translation>
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Skúste sa znova prihlásiť.</translation>
@@ -237,6 +239,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="5771816112378578655">Inštaluje sa...</translation>
 <translation id="5816228676161003208">Umožňuje rýchlejšie vyhľadávania pomocou hlasu.</translation>
 <translation id="5846482154967366008">Vyhľadávací nástroj</translation>
+<translation id="5854790677617711513">Staršie ako 30 dní</translation>
 <translation id="5857090052475505287">Nový priečinok</translation>
 <translation id="5857770089550859117">Spustenie synchronizácie vyžaduje prístupovú frázu.</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
@@ -335,7 +338,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7514365320538308">Stiahnuť</translation>
 <translation id="7537586195939242955">Kupón Pass sa momentálne nedá do aplikácie Passbook nainštalovať.</translation>
 <translation id="7561196759112975576">Vždy</translation>
-<translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7603852183842204213">Blokované kontextové okná (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Synchronizácia nefunguje</translation>
 <translation id="7638584964844754484">Nesprávna prístupová fráza</translation>

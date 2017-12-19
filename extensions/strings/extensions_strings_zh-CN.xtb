@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">无法将扩展程序解包。要安全地将扩展程序解包，您的个人资料目录中的解包路径必须以驱动器号开头，并且不能包含交接点、装入点或符号链接。您的个人资料中不存在这样的路径。</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" />（序列号为 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="3466070586188012397">来自供应商 <ph name="VENDOR_ID" /> 的<ph name="PRODUCT_NAME" />（序列号为 <ph name="SERIAL_NUMBER" />）</translation>
-<translation id="3624204664103857160">无法加载启动器页面“<ph name="PAGE" />”。</translation>
 <translation id="388442998277590542">无法加载选项页“<ph name="OPTIONS_PAGE" />”。</translation>
 <translation id="4115165561519362854">此设备的管理员要求“<ph name="EXTENSION_NAME" />”的最低版本为 <ph name="EXTENSION_VERSION" />。此扩展程序必须更新到该版本（或更高版本）后才能启用。</translation>
 <translation id="4233778200880751280">无法加载简介页面“<ph name="ABOUT_PAGE" />”。</translation>

@@ -258,6 +258,7 @@
 <translation id="1969212217917526199">Ohittaa käytännöt etäkäytön isännän vianetsintäversioissa.
 
           Arvoksi merkitään käytännön nimen kohdistus käytännön arvoon JSON-sanastomuodossa.</translation>
+<translation id="1969808853498848952">Suorita aina todennusta edellyttävät laajennukset (poistettu käytöstä)</translation>
 <translation id="1988371335297483117">Automaattisesti päivittyvät tietosisällöt tuotteessa <ph name="PRODUCT_OS_NAME" /> voidaan ladata HTTP:n kautta HTTPS:n sijaan. Tämä mahdollistaa HTTP-latausten avoimen tallentamisen HTTP:n välimuistiin.
 
       Jos tämän käytännön arvoksi on asetettu tosi, <ph name="PRODUCT_OS_NAME" /> yrittää ladata automaattisesti päivittyvät tietosisällöt HTTP:n kautta. Jos käytännön arvoksi on asetettu epätosi tai sitä ei ole asetettu, HTTPS:ää käytetään automaattisesti päivittyvien tietosisältöjen lataamiseen.</translation>
@@ -760,6 +761,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
 <translation id="3711895659073496551">Keskeytä</translation>
 <translation id="3736879847913515635">Salli profiilien luominen käyttäjien hallinnassa</translation>
+<translation id="3737544779868348650">Laitteen verkon isäntänimi</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
 <translation id="3758089716224084329">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
@@ -1177,6 +1179,13 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="5130288486815037971">TLS:n RC4-salaustekniikoiden käyttöönotto</translation>
 <translation id="5141670636904227950">Aseta näytön suurentajan oletustyyppi, jota käytetään kirjautumisnäytössä</translation>
 <translation id="5142301680741828703">Hahmonna aina seuraavat URL-mallit tuotteessa <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">DHCP-pyynnöissä käytetyn laitteen isäntänimen määrittäminen
+
+      Jos tämän käytännön arvo on muu kuin tyhjä merkkijono, merkkijonoa käytetään DHCP-pyynnössä laitteen isäntänimenä.
+
+      Merkkijono voi sisältää muuttujat ${ASSET_ID}, ${SERIAL_NUM} ja ${MAC_ADDR}, jotka korvataan laitteen arvoilla ennen isäntänimenä käyttöä. Kun muuttujat korvataan arvoilla, tuloksena pitäisi olla kelvollinen isäntänimi (RFC 1035, osio 3.1).
+
+      Jos käytäntöä ei ole määritetty tai jos korvaamisen jälkeinen arvo ei ole kelvollinen isäntänimi, DHCP-pyynnölle ei määritetä isäntänimeä. </translation>
 <translation id="5148753489738115745">Voit määrittää muita parametreja, joita käytetään, kun <ph name="PRODUCT_FRAME_NAME" /> käynnistää tuotteen <ph name="PRODUCT_NAME" />.
 
           Jos käytäntöä ei ole määritetty, käytetään oletuskomentoriviä.</translation>
@@ -1348,6 +1357,9 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 
       Jos tätä käytäntöä ei ole määritetty, käytetään oletusprofiilin hakemistoa.</translation>
 <translation id="5826047473100157858">Määrittää, voiko käyttäjä avata sivuja incognito-tilassa tuotteessa <ph name="PRODUCT_NAME" />. Jos "Käytössä" on valittu tai käytäntöä ei ole määritetty, sivuja voi avata incognito-tilassa. Jos "Ei käytössä" on valittu, sivuja ei voi avata incognito-tilassa. Jos "Pakotettu" on valittu, sivuja voidaan avata VAIN incognito-tilassa.</translation>
+<translation id="5835124959204887277">Määrittää URL-osoitteet ja verkkotunnukset, joista ei näytetä kehotetta suojausavaimen todennusvarmenteen pyynnön yhteydessä. Suojausavain saa lisäksi signaalin, joka kertoo, että yksilöllinen todennus saattaa olla käytössä. Muissa tapauksissa käyttäjä saa kehotteen Chrome 65+:ssa, kun sivusto pyytää suojausavainten todennusta.
+
+      URL-osoitteet (esim. https://example.com/joku/polku) vastaavat ainoastaan U2F-sovellustunnuksia. Verkkotunnukset (esim. example.com) vastaavat ainoastaan webauthn RP ‑tunnuksia. Sekä sovellustunnuksen URL-osoitteen että verkkotunnuksen tulee siis olla luettelossa, jotta ne kattavat tietyn sivun U2F- ja webauthn-sovellusliittymän.</translation>
 <translation id="5836064773277134605">Rajoita etäkäytön isännän käyttämää UDP-porttialuetta</translation>
 <translation id="5862253018042179045">Määritä äänipalautteen käytettävyysominaisuuden oletustila kirjautumisnäytössä.
 
@@ -1524,6 +1536,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos käytäntö on pois käytöstä, automaattisen täydennyksen lomaketietoja ei tuoda.
 
       Jos käytäntöä ei aseteta, käyttäjältä saatetaan kysyä, tuodaanko tiedot, tai tiedot saatetaan tuoda automaattisesti.</translation>
+<translation id="6224304369267200483">URL-osoitteet ja verkkotunnukset, joille sallitaan automaattisesti suora suojausavaintodennus</translation>
 <translation id="6233173491898450179">Aseta lataushakemisto</translation>
 <translation id="6244210204546589761">Käynnistettäessä avattavat sivut</translation>
 <translation id="6258193603492867656">Määrittää, tuleeko luodun Kerberos SPN:n sisältää standardista poikkeava portti. Jos otat tämän asetuksen käyttöön ja standardista poikkeava portti (esim. muu portti kuin 80 tai 443) annetaan, se lisätään luotuun Kerberos SPN:ään. Jos poistat asetuksen käytöstä tai et määritä asetusta, luotu Kerberos SPN ei sisällä porttia missään tapauksessa.</translation>
@@ -1750,6 +1763,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7202925763179776247">Salli lataamisen rajoitukset</translation>
 <translation id="7207095846245296855">Pakota Googlen SafeSearch</translation>
 <translation id="7216442368414164495">Anna käyttäjien sallia Selaussuojan laajempi raportointi</translation>
+<translation id="7221822638060296742">Voit määrittää, saavatko sivustot suorittaa laajennuksen <ph name="FLASH_PLUGIN_NAME" /> automaattisesti. <ph name="FLASH_PLUGIN_NAME" /> voidaan joko sallia tai estää kaikille verkkosivustoille.
+
+          Klikkaamalla toistaminen sallii laajennuksen <ph name="FLASH_PLUGIN_NAME" /> suorittamisen, mutta käyttäjän on klikattava paikkamerkkiä sen käynnistämiseksi.
+
+          Automaattinen toisto on sallittu vain käytännössä <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> ilmoitetuille verkkotunnuksille. Jos haluat sallia automaattisen toiston kaikille sivustoille, sinun kannattaa lisätä luetteloon http://* ja https://*.
+
+          Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa asetusta manuaalisesti.</translation>
 <translation id="7234280155140786597">Kiellettyjen laitteen omaa viestijärjestelmää käyttävien isäntien nimet (tai *, jos kaikki kielletään)</translation>
 <translation id="7236775576470542603">Määritä näytön suurentajan oletustyyppi, joka on käytössä kirjautumisnäytössä.
 
@@ -1944,13 +1964,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="787125417158068494">Jos tämän käytännön arvo on SyncDisabled tai sitä ei ole määritetty, ARC-sovellukset eivät voi käyttää <ph name="PRODUCT_OS_NAME" /> -varmenteita.
 
       Jos tämän käytännön arvo on CopyCaCerts, ARC-sovellukset voivat käyttää kaikkia ONC-asennettuja CA-varmenteita, joissa on <ph name="WEB_TRUSTED_BIT" />.</translation>
-<translation id="7872535148622213208">
-        Käytäntö määrittelee ne alkuperät (URL-osoitteet), joita kohdellaan turvallisena
-        kontekstina. Tällöin organisaatiot voivat määrittää valmistelupalvelimen,
-        jota käytetään sisäiseen verkkokehitykseen.
-        Tämä vastaa --unsafely-treat-insecure-origin-as-secure‑merkintää.
-        Lisätietoja turvallisista konteksteista on osoitteessa https://www.w3.org/TR/secure-contexts/.
-        </translation>
 <translation id="7882585827992171421">Tämä käytäntö toimii vain myyntitilassa.
 
       Määrittää tunnuksen perusteella laajennuksen, jota käytetään kirjautumisruudulla näytönsäästäjänä. Laajennuksen täytyy kuulua AppPack-sovelluspakettiin, joka on määritetty käytössä olevalle toimialueelle DeviceAppPack-käytännön kautta.</translation>

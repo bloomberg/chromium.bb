@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Veliki pokazivač miša</translation>
 <translation id="1550523713251050646">Kliknite za više opcija</translation>
 <translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Vaša zaporka i dalje nije mogla biti potvrđena. Napomena: ako ste nedavno promijenili zaporku, vaša nova zaporka primjenjivat će se nakon što se odjavite. Ovdje upotrijebite staru zaporku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adresa: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja tvrtka</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Obavijesti</translation>
+<translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" /> da biste promijenili raspored tipkovnice.</translation>
 <translation id="2501920221385095727">Ljepljive tipke</translation>
 <translation id="2509468283778169019">Opcija CAPS LOCK uključena</translation>
 <translation id="2532589005999780174">Način visokog kontrasta</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">USB-C uređaj</translation>
 <translation id="3465566417615315331">Kliknite svoju fotografiju</translation>
 <translation id="3473479545200714844">Povećalo</translation>
+<translation id="3477079411857374384">Control-Shift-razmaknica</translation>
 <translation id="3510164367642747937">Istakni pokazivač miša</translation>
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
 <translation id="3582792037806681688">Višestruka prijava odbijena je za korisnika u ovoj sesiji</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Zaključaj</translation>
 <translation id="3798670284305777884">Zvučnik (ugrađeni)</translation>
 <translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
+<translation id="385051799172605136">Natrag</translation>
 <translation id="3891340733213178823">Pritisnite Ctrl + Shift + Q dvaput da biste se odjavili.</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
 <translation id="3899995891769452915">Glasovni unos</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="4849058404725798627">Istakni objekt fokusom na tipkovnici</translation>
 <translation id="4872237917498892622">Alt + Pretraživanje ili Shift</translation>
+<translation id="4890187583552566966">Vaš je administrator onemogućio Google asistent.</translation>
 <translation id="4895488851634969361">Baterija je puna.</translation>
 <translation id="4905614135390995787">Promijenio se prečac za uključivanje i isključivanje načina visokog kontrasta. Upotrebljavajte <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Prihvati</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Odjavi se odmah</translation>
 <translation id="6047696787498798094">Dijeljenje zaslona prekinut će se kad se prebacite na drugog korisnika. Želite li nastaviti?</translation>
 <translation id="6062360702481658777">Automatski ćete se odjaviti za <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">Nije bilo moguće potvrditi zaporku. Pokušajte ponovo.</translation>
 <translation id="607652042414456612">Vaše računalo mogu otkriti Bluetooth uređaji u blizini i prikazivat će se kao "<ph name="NAME" />" s adresom <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Puni se putem: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Prikaži tipkovnicu na zaslonu</translation>
@@ -262,10 +268,12 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7692480393933218409">Punjenje povezanih USB-C uređaja</translation>
 <translation id="776344839111254542">Kliknite da biste vidjeli pojedinosti o ažuriranju</translation>
+<translation id="7796353162336583443">Dodirnite gumb pisaljke na polici da biste napisali bilješku, izradili snimku zaslona ili upotrijebili Google asistent, laserski pokazivač ili povećalo.</translation>
 <translation id="7798302898096527229">Pritisnite Pretraživanje ili Shift da biste otkazali.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Jak signal</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
+<translation id="7933084174919150729">Google asistent dostupan je samo za primarni profil.</translation>
 <translation id="7977927628060636163">Traženje mobilnih mreža...</translation>
 <translation id="7982789257301363584">Mreža</translation>
 <translation id="7994370417837006925">Višestruka prijava</translation>
@@ -282,6 +290,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8308637677604853869">Prethodni izbornik</translation>
 <translation id="8351131234907093545">Izrada bilješke</translation>
+<translation id="8392451568018454956">Izbornik opcija za korisnika <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8433186206711564395">Postavke mreže</translation>
 <translation id="8433977262951327081">Promijenio se prečac za prikazivanje oblačića izbornika s opcijama unosa na polici. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponovno povezivanje...</translation>
 <translation id="8517041960877371778">Uređaj <ph name="DEVICE_TYPE" /> možda se neće puniti dok je uključen.</translation>
 <translation id="8639760480004882931">Preostalo <ph name="PERCENTAGE" /></translation>
+<translation id="8652175077544655965">Zatvaranje postavki</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je punjač male snage</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

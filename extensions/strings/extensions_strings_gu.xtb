@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">એક્સ્ટેંશન અનપૅક કરી શકાતું નથી. એક્સ્ટેંશનને સુરક્ષિત રીતે અનપૅક કરવા માટે, તમારી પ્રોફાઇલ નિર્દેશિકાનો પાથ હોવો જોઈએ જે ડ્રાઇવ અક્ષરથી શરૂ થતો હોય અને કોઈ જંક્શન, માઉન્ટ પોઇન્ટ અથવા સિમલિંક ધરાવતો ન હોય. આવો કોઈ પાથ તમારી પ્રોફાઇલ માટે અસ્તિત્વમાં નથી.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> વિક્રેતા તરફથી <ph name="PRODUCT_NAME" /> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">લોન્ચર પૃષ્ઠ '<ph name="PAGE" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="388442998277590542">વિકલ્પોનું પૃષ્ઠ '<ph name="OPTIONS_PAGE" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="4115165561519362854">આ મશીનનાં વ્યવસ્થાપકને <ph name="EXTENSION_VERSION" /> ના ન્યૂનતમ સંસ્કરણ માટે <ph name="EXTENSION_NAME" /> ની જરૂર છે. તે જ્યાં સુધી તે સંસ્કરણ (અથવા તે પછીના) પર અપડેટ ન થાય ત્યાં સુધી સક્ષમ થઈ શકતું નથી.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' વિશે પૃષ્ઠ લોડ કરી શકાયું નથી.</translation>

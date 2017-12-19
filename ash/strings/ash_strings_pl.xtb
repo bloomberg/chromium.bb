@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Nadal nie można zweryfikować Twojego hasła. Uwaga: jeśli ostatnio hasło było zmieniane, nowe hasło zostanie zastosowane, gdy się wylogujesz. Tu podaj stare hasło.</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Tym urządzeniem zarządza firma</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Zanim to zaakceptujesz, sprawdź, czy na tym urządzeniu wyświetla się klucz: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
+<translation id="2484513351006226581">Naciśnij <ph name="KEYBOARD_SHORTCUT" />, by przełączyć układ klawiatury.</translation>
 <translation id="2501920221385095727">Klawisze trwałe</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
 <translation id="2532589005999780174">Tryb wysokiego kontrastu</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Urządzenie USB-C</translation>
 <translation id="3465566417615315331">Kliknij swoje zdjęcie</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3477079411857374384">Control+Shift+spacja</translation>
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
 <translation id="3582792037806681688">Wielokrotne logowanie użytkownika w tej sesji zostało zabronione</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Zablokuj</translation>
 <translation id="3798670284305777884">Głośnik (wewnętrzny)</translation>
 <translation id="3846575436967432996">Brak informacji o sieciach</translation>
+<translation id="385051799172605136">Wstecz</translation>
 <translation id="3891340733213178823">Naciśnij dwukrotnie Ctrl+Shift+Q, by się wylogować.</translation>
 <translation id="3893630138897523026">ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="3899995891769452915">Rozpoznawanie mowy</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
+<translation id="4890187583552566966">Asystenta Google wyłączył administrator.</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
 <translation id="4905614135390995787">Zmieniliśmy skrót, który włącza i wyłącza tryb wysokiego kontrastu. Użyj <ph name="NEW_SHORTCUT" /> zamiast <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
 <translation id="6047696787498798094">Gdy zmienisz użytkownika, udostępnianie ekranu zostanie zakończone. Chcesz kontynuować?</translation>
 <translation id="6062360702481658777">Zostaniesz automatycznie wylogowany za <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">Nie udało się zweryfikować Twojego hasła. Spróbuj ponownie.</translation>
 <translation id="607652042414456612">Twój komputer jest wykrywalny na urządzenia Bluetooth znajdujących się w pobliżu. Będzie prezentowany jako „<ph name="NAME" />” z adresem <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Ładowanie: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Pokaż klawiaturę ekranową</translation>
@@ -262,10 +268,12 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7692480393933218409">Ładowanie urządzeń podłączonych do portu USB-C</translation>
 <translation id="776344839111254542">Kliknij, by wyświetlić szczegóły aktualizacji</translation>
+<translation id="7796353162336583443">Kliknij przycisk rysika na półce, by zrobić notatkę lub zrzut ekranu, skorzystać z Asystenta Google albo użyć wskaźnika laserowego lub lupy.</translation>
 <translation id="7798302898096527229">Aby anulować, naciśnij Szukaj lub Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">silny sygnał</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
+<translation id="7933084174919150729">Asystent Google jest dostępny tylko na profilu głównym.</translation>
 <translation id="7977927628060636163">Szukam sieci komórkowych…</translation>
 <translation id="7982789257301363584">Sieć</translation>
 <translation id="7994370417837006925">Wielokrotne logowanie</translation>
@@ -282,6 +290,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
 <translation id="8351131234907093545">Utwórz notatkę</translation>
+<translation id="8392451568018454956">Menu opcji dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8433186206711564395">Ustawienia sieci</translation>
 <translation id="8433977262951327081">Zmieniliśmy skrót, który pokazuje dymek menu opcji wejścia na półce. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>
+<translation id="8652175077544655965">Zamknij ustawienia</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -268,6 +268,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="1969212217917526199">Remplace des règles sur les versions de débogage de l'hôte d'accès à distance.
 
           La valeur est analysée sous la forme d'un dictionnaire JSON de correspondances nom de règle/valeur de règle.</translation>
+<translation id="1969808853498848952">Toujours exécuter les plug-ins qui nécessitent une autorisation (obsolète)</translation>
 <translation id="1988371335297483117">Il est possible de télécharger les charges utiles de mise à jour automatique pour <ph name="PRODUCT_OS_NAME" /> via HTTP plutôt que HTTPS. Cela permet une mise en cache transparente lors des téléchargements via HTTP.
 
       Si cette règle est définie sur "True", le téléchargement des charges utiles de mise à jour automatique est effectué par <ph name="PRODUCT_OS_NAME" /> via HTTP. Si cette règle est définie sur "False", ou si elle n'est pas configurée, HTTPS est utilisé pour le téléchargement des charges utiles de mise à jour automatique.</translation>
@@ -800,6 +801,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
 <translation id="3711895659073496551">Arrêter</translation>
 <translation id="3736879847913515635">Autoriser l'ajout de personnes dans le gestionnaire d'utilisateurs</translation>
+<translation id="3737544779868348650">Nom d'hôte du réseau de l'appareil</translation>
 <translation id="3750220015372671395">Bloquer la génération de clé sur ces sites</translation>
 <translation id="3756011779061588474">Bloquer le mode développeur</translation>
 <translation id="3758089716224084329">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
@@ -1244,6 +1246,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5130288486815037971">Activation ou non des suites de chiffrement RC4 dans TLS</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
 <translation id="5142301680741828703">Toujours rendre les formats d'URL suivants dans <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Déterminez le nom d'hôte de l'appareil utilisé pour les requêtes DHCP.
+
+      Si cette règle est définie sur une chaîne non vide, la chaîne servira de nom d'hôte de l'appareil lors de la requête DHCP.
+
+      La chaîne peut contenir les variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} qui seront remplacées par des valeurs sur l'appareil avant l'utilisation comme nom d'hôte. Le résultat de cette substitution doit former un nom d'hôte valide (conformément à la RFC 1035, section 3.1).
+
+      Si cette règle n'est pas définie ou si la valeur après substitution ne constitue pas un nom d'hôte valide, aucun nom d'hôte ne sera défini dans la requête DHCP. </translation>
 <translation id="5148753489738115745">Permet de spécifier les paramètres supplémentaires utilisés lorsque <ph name="PRODUCT_FRAME_NAME" /> lance <ph name="PRODUCT_NAME" />.
 
           Si cette règle n'est pas configurée, la ligne de commande par défaut est utilisée.</translation>
@@ -1444,6 +1453,9 @@ Si l'option "Activé" est sélectionnée ou si la règle n'est pas configurée, 
 Si l'option "Désactivé" est sélectionnée, les pages ne peuvent pas être ouvertes en mode navigation privée. 
 
 Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUEMENT en mode navigation privée.</translation>
+<translation id="5835124959204887277">Précise les URL et les domaines pour lesquels aucune boîte de dialogue ne s'affiche lorsque les certificats d'attestation de la clé de sécurité sont demandés. Un signal est également envoyé à la clé de sécurité pour indiquer qu'une attestation individuelle peut être utilisée. Dans les autres cas, les utilisateurs sont avertis dans Chrome 65 et versions ultérieures lorsque des sites demandent une attestation des clés de sécurité.
+
+      Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
 <translation id="5862253018042179045">Définir l'état par défaut de la fonctionnalité d'accessibilité de commentaires audio sur l'écran de connexion
 
@@ -1625,6 +1637,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si elle est désactivée, les données de saisie automatique ne sont pas importées.
 
       Si cette règle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut s'effectuer de façon automatique.</translation>
+<translation id="6224304369267200483">URL/domaines automatiquement autorisés à recevoir une attestation de clé de sécurité</translation>
 <translation id="6233173491898450179">Définir le répertoire de téléchargement</translation>
 <translation id="6244210204546589761">URL à ouvrir au démarrage</translation>
 <translation id="6258193603492867656">Indique si le SPN Kerberos généré doit inclure un port non standard. 
@@ -1877,6 +1890,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="7202925763179776247">Autoriser les restrictions de téléchargement</translation>
 <translation id="7207095846245296855">Forcer Google SafeSearch</translation>
 <translation id="7216442368414164495">Permettre aux utilisateurs d'activer la création de rapports détaillés dans le cadre de la navigation sécurisée</translation>
+<translation id="7221822638060296742">Vous permet de définir si les sites Web peuvent exécuter le plug-in <ph name="FLASH_PLUGIN_NAME" /> automatiquement. L'exécution automatique du plug-in <ph name="FLASH_PLUGIN_NAME" /> peut être autorisée pour tous les sites Web ou refusée pour tous les sites Web.
+
+          La fonctionnalité Cliquer pour lire permet d'exécuter le plug-in <ph name="FLASH_PLUGIN_NAME" />, mais l'utilisateur doit cliquer sur l'espace réservé pour lancer cette exécution.
+
+          La lecture automatique n'est autorisée que pour les domaines indiqués dans la règle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si vous souhaitez autoriser la lecture automatique pour tous les sites, vous pouvez ajouter http://* et https://* à cette liste.
+
+          Si cette règle n'est pas définie, l'utilisateur peut modifier ce paramètre manuellement.</translation>
 <translation id="7234280155140786597">Noms des hôtes de messagerie native non autorisés (ou "*" pour tous)</translation>
 <translation id="7236775576470542603">Définit le type de loupe par défaut activée sur l'écran de connexion.
 
@@ -2082,13 +2102,6 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 <translation id="787125417158068494">Si la règle est définie sur SyncDisabled ou n'est pas configurée, les certificats <ph name="PRODUCT_OS_NAME" /> ne sont pas disponibles pour les applications ARC.
 
       Si la règle est définie sur CopyCaCerts, tous les certificats CA installés via ONC avec <ph name="WEB_TRUSTED_BIT" /> sont disponibles pour les applications ARC.</translation>
-<translation id="7872535148622213208">
-        Cette règle répertorie les origines (URL) à considérer comme contexte
-        sécurisé. L'objectif est de permettre aux organisations de configurer
-        un serveur de test pour les développements Web internes.
-        Le principe est le même que pour l'indicateur "unsafely-treat-insecure-origin-as-secure".
-        Pour en savoir plus sur les contextes sécurisés, consultez le site https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Cette règle n'est active qu'en mode "point de vente".
 
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>

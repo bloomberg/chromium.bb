@@ -78,6 +78,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2381405137052800939">Mga Pangunahing Kaalaman</translation>
 <translation id="2386793615875593361">1 ang napili</translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
+<translation id="2523363575747517183">Paulit-ulit na sinusubukang buksan ng website na ito ang isa pang application.</translation>
 <translation id="2529021024822217800">Buksan Lahat</translation>
 <translation id="2572712655377361602">Na-block ng isang patakaran ng device ang access sa iyong mga larawan</translation>
 <translation id="2584132361465095047">Magdagdag ng Account…</translation>
@@ -178,6 +179,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="4378154925671717803">Telepono</translation>
 <translation id="441868831736628555">Notification ng Privacy</translation>
 <translation id="4460091562821778167">Tanungin ako palagi kung aling app ang gagamitin</translation>
+<translation id="4496373720959965247">Magdagdag ng mga tab at magpalipat-lipat sa mga page</translation>
 <translation id="4508750114462689118">Isara ang promo sa pag-sign in</translation>
 <translation id="4526249700380860531">Tingnan at pamahalaan ang mga naka-save na password sa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Subukang mag-sign in muli.</translation>
@@ -237,6 +239,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5771816112378578655">Kasalukuyang Nag-se-setup...</translation>
 <translation id="5816228676161003208">Binibigyang-daan ka nito upang mas mabilis na makapaghanap gamit ang iyong boses.</translation>
 <translation id="5846482154967366008">Search Engine</translation>
+<translation id="5854790677617711513">Mas matagal sa 30 araw</translation>
 <translation id="5857090052475505287">Bagong Folder</translation>
 <translation id="5857770089550859117">Kinakailangan ang passphrase upang masimulan ang pag-sync.</translation>
 <translation id="5860033963881614850">Naka-off</translation>
@@ -335,7 +338,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7514365320538308">I-download</translation>
 <translation id="7537586195939242955">Paumahin, hindi ma-install ngayon ang Pass mo sa Passbook.</translation>
 <translation id="7561196759112975576">Palagi</translation>
-<translation id="7588950540487816470">Pisikal na Web</translation>
 <translation id="7603852183842204213">Na-block na mga pop-up (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Hindi gumagana ang pag-sync</translation>
 <translation id="7638584964844754484">Maling passphrase</translation>

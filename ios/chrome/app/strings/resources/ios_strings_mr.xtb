@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">मूलतत्त्वे</translation>
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2435457462613246316">पासवर्ड दर्शवा</translation>
+<translation id="2523363575747517183">ही वेबसाइट वारंवार दुसरे अ‍ॅप्लिकेशन उघडण्याचा प्रयत्न करत आहे.</translation>
 <translation id="2529021024822217800">सर्व उघडा</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">फोन</translation>
 <translation id="441868831736628555">गोपनीयता सूचना</translation>
 <translation id="4460091562821778167">कोणते अ‍ॅप वापरायचे ते मला प्रत्येक वेळी विचारा</translation>
+<translation id="4496373720959965247">टॅब जोडा आणि पेजदरम्यान स्विच करा</translation>
 <translation id="4508750114462689118">साइन-इन प्रोमो बंद करा</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />
 वर सेव्ह केलेले पासवर्ड पहा आणि व्यवस्थापित करा</translation>
@@ -238,6 +240,7 @@
 <translation id="5771816112378578655">सेटअप प्रक्रियेत आहे...</translation>
 <translation id="5816228676161003208">हे आपल्याला आपला व्‍हॉइस वापरून अधिक जलद शोधू देते.</translation>
 <translation id="5846482154967366008">शोध इंजिन</translation>
+<translation id="5854790677617711513">30 दिवसांपेक्षा जुना</translation>
 <translation id="5857090052475505287">नवीन फोल्डर</translation>
 <translation id="5857770089550859117">संकालन प्रारंभ करण्यासाठी सांकेतिक वाक्यांश आवश्यक आहे.</translation>
 <translation id="5860033963881614850">बंद</translation>
@@ -336,7 +339,6 @@
 <translation id="7514365320538308">डाउनलोड करा</translation>
 <translation id="7537586195939242955">क्षमस्व, यावेळी आपला पास पासबुकमध्ये इंस्टॉल केला जाऊ शकत नाही.</translation>
 <translation id="7561196759112975576">नेहमी</translation>
-<translation id="7588950540487816470">भौतिक वेब</translation>
 <translation id="7603852183842204213">पॉप-अप अवरोधित (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">संकालन कार्य करत नाही</translation>
 <translation id="7638584964844754484">अयोग्य सांकेतिक वाक्यांश</translation>

@@ -78,6 +78,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2381405137052800939">Grundlæggende</translation>
 <translation id="2386793615875593361">1 valgt</translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
+<translation id="2523363575747517183">Dette website forsøger hele tiden at åbne en anden app.</translation>
 <translation id="2529021024822217800">Åbn alle</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
@@ -178,6 +179,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Erklæring om privatliv</translation>
 <translation id="4460091562821778167">Spørg mig, hvilken app der skal bruges hver gang</translation>
+<translation id="4496373720959965247">Tilføj faner, og skift mellem sider</translation>
 <translation id="4508750114462689118">Luk loginkampagne</translation>
 <translation id="4526249700380860531">Se og administrer gemte adgangskoder på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prøv at logge ind igen.</translation>
@@ -237,6 +239,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5771816112378578655">Konfigurationen er i gang...</translation>
 <translation id="5816228676161003208">Dette gør søgning ved hjælp af din stemme hurtigere.</translation>
 <translation id="5846482154967366008">Søgemaskine</translation>
+<translation id="5854790677617711513">Ældre end 30 dage</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5857770089550859117">Indtast adgangssætningen for at påbegynde synkroniseringen.</translation>
 <translation id="5860033963881614850">Fra</translation>
@@ -335,7 +338,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7514365320538308">Download</translation>
 <translation id="7537586195939242955">Din adgangssætning kan ikke installeres på Passbook lige nu.</translation>
 <translation id="7561196759112975576">Altid</translation>
-<translation id="7588950540487816470">Fysisk web</translation>
 <translation id="7603852183842204213">Pop op-vinduer er blokeret (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7638584964844754484">Forkert adgangssætning</translation>

@@ -16,6 +16,7 @@
 <translation id="1502360822835740515">Estableix Chromium com a navegador predeterminat</translation>
 <translation id="151962892725702025">Chromium OS no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>
 <translation id="1559451348202814456">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb Mac OS X 10.6, 10.7 ni 10.8.</translation>
+<translation id="1585657529869845941">Si es mostra l'opció <ph name="BEGIN_BOLD" />Canvia igualment<ph name="END_BOLD" />, fes-hi clic</translation>
 <translation id="1653828314016431939">D'acord, reinicia ara</translation>
 <translation id="1668054258064581266">Després de suprimir el vostre compte de Chromium, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
 <translation id="1688750314291223739">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Chromium.</translation>
@@ -48,6 +49,7 @@
 <translation id="2647554856022461007">Chromium pot utilitzar serveis web per millorar la navegació, però si vols els pots desactivar. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">S'ha produït un error en el sistema operatiu durant la instal·lació. Torneu a baixar Chromium.</translation>
 <translation id="2685838254101182273">Chromium ha deixat d'actualitzar-se i ja no admet aquesta versió del vostre sistema operatiu.</translation>
+<translation id="2705403826523567092">Inicia la sessió per obtenir una experiència de navegació personalitzada, que se sincronitzi en diferents dispositius</translation>
 <translation id="2711502716910134313">Pestanya de Chromium</translation>
 <translation id="2718390899429598676">Per més seguretat, Chromium encriptarà les vostres dades.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
@@ -85,6 +87,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" />: Chromium</translation>
 <translation id="3852700440713538496">Ancora Chromium a la barra de tasques</translation>
 <translation id="3889543394854987837">Feu clic al vostre nom per obrir Chromium i començar a navegar.</translation>
+<translation id="3898493977366060150">Navegació web amb les eines intel·ligents de Google</translation>
 <translation id="390894725198123737">En un Mac, és possible que les contrasenyes es desin a Keychain i que altres usuaris de Chromium que comparteixin aquest compte d'OS X puguin accedir-hi i sincronitzar-les.</translation>
 <translation id="4036079820698952681">Informa de la <ph name="BEGIN_LINK" />configuració actual<ph name="END_LINK" /> per ajudar-nos a millorar Chromium</translation>
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
@@ -146,6 +149,7 @@
 <translation id="59625444380784159">Disposar de detalls dels vostres contactes us pot ajudar a emplenar formularis amb més rapidesa a Chromium.</translation>
 <translation id="5987687638152509985">Actualitza Chromium per iniciar la sincronització</translation>
 <translation id="6055895534982063517">Hi ha disponible una versió nova de Chromium, i és més ràpida que mai.</translation>
+<translation id="6063093106622310249">&amp;Obre a Chromium</translation>
 <translation id="608189560609172163">Chromium no ha pogut sincronitzar les dades a causa d'un error amb l'inici de sessió.</translation>
 <translation id="6129621093834146363">Chromium ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
 <translation id="6212496753309875659">Aquest equip ja té una versió més recent de Chromium. Si el programari no funciona, desinstal·leu Chromium i torneu-ho a provar.</translation>
@@ -162,16 +166,19 @@
 <translation id="6505742536731484931">Chromium necessita accés a la teva ubicació per compartir-la amb aquest lloc web.</translation>
 <translation id="6510925080656968729">Desinstal·la Chromium</translation>
 <translation id="6526111688217511984">Chromium necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
+<translation id="6598877126913850652">Ves a la configuració de notificacions de Chromium</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
 <translation id="6717134281241384636">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Chromium.
 
 És possible que algunes funcions no estiguin disponibles. Especifiqueu un altre directori de perfil o utilitzeu una versió més nova de Chromium.</translation>
 <translation id="6734080038664603509">Actualitza &amp;Chromium</translation>
 <translation id="6734291798041940871">Ja tens instal·lat Chromium per a tots els usuaris de l'ordinador.</translation>
+<translation id="6777817260680419853">S'ha bloquejat la redirecció</translation>
 <translation id="6810143991807788455">Informa de la configuració actual per ajudar-nos a millorar Chromium</translation>
 <translation id="6857782730669500492">Chromium: <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
 <translation id="6944967875980567883">Mòduls carregats a Chromium</translation>
+<translation id="694592694773692225">S'ha bloquejat la redirecció en aquesta pàgina.</translation>
 <translation id="6964305034639999644">Obre l'enllaç en una finestra d'incò&amp;gnit a Chromium</translation>
 <translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
 <translation id="705851970750939768">Actualitza Chromium</translation>
@@ -206,6 +213,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7745317241717453663">Amb aquesta acció, se suprimiran les teves dades de navegació d'aquest dispositiu. Per recuperar les teves dades més endavant, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">L'instal·lador no ha pogut crear un directori temporal. Comprova que hi ha espai lliure al disc i que tens permís per instal·lar el programari.</translation>
 <translation id="7756122083761163394">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-ne les dades, inicia la sessió a Chrome com a $2.</translation>
+<translation id="7773960292263897147">Advertiment: Chromium no pot evitar que les extensions registrin l'historial de navegació. Per desactivar aquesta extensió en mode d'incògnit, desmarca aquesta opció.</translation>
 <translation id="7774736947049807614">El certificat d'autenticació ha fallat. Torna a iniciar la sessió a Chromium com a <ph name="USER_NAME" /> o contacta amb l'administrador per obtenir més informació. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7867198900892795913">Chromium no s'ha pogut actualitzar a la darrera versió, així que no pots gaudir de les noves funcions ni de les correccions de seguretat.</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
@@ -248,6 +256,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="9013087743919948559">Addició a Chromium</translation>
 <translation id="9019929317751753759">Per tal que Chromium sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="9022552996538154597">Inicia la sessió a Chromium</translation>
+<translation id="9025992965467895364">Com que aquesta pàgina fa servir massa memòria, Chromium l'ha posat en pausa.</translation>
 <translation id="9036189287518468038">Menú d'aplicacions de Chromium</translation>
 <translation id="9089354809943900324">Chromium no està actualitzat</translation>
 <translation id="91086099826398415">Obre l'enllaç en una pes&amp;tanya nova a Chromium</translation>

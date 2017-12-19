@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2435457462613246316">显示密码</translation>
+<translation id="2523363575747517183">该网站屡次尝试打开其他应用。</translation>
 <translation id="2529021024822217800">全部打开</translation>
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
 <translation id="2584132361465095047">添加帐号…</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">电话</translation>
 <translation id="441868831736628555">隐私权声明</translation>
 <translation id="4460091562821778167">每次都询问我要使用哪款应用</translation>
+<translation id="4496373720959965247">添加标签页并在网页之间切换</translation>
 <translation id="4508750114462689118">关闭登录推广元素</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4536418791685807335">请尝试重新登录。</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">正在设置...</translation>
 <translation id="5816228676161003208">这样，您就可以使用语音更快速地进行搜索。</translation>
 <translation id="5846482154967366008">搜索引擎</translation>
+<translation id="5854790677617711513">30 天之前的</translation>
 <translation id="5857090052475505287">新文件夹</translation>
 <translation id="5857770089550859117">必须输入密码才能开始同步。</translation>
 <translation id="5860033963881614850">关闭</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">下载</translation>
 <translation id="7537586195939242955">抱歉，目前无法将您的票证添加到 Passbook。</translation>
 <translation id="7561196759112975576">永远</translation>
-<translation id="7588950540487816470">实物网</translation>
 <translation id="7603852183842204213">拦截了弹出式窗口（<ph name="NUMBER_OF_BLOCKED_POPUPS" /> 个）</translation>
 <translation id="7605594153474022051">同步功能无法正常运行</translation>
 <translation id="7638584964844754484">密码不正确</translation>

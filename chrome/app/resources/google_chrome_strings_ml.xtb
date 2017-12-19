@@ -20,6 +20,7 @@
 <translation id="1457721931618994305">Google Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു...</translation>
 <translation id="1469002951682717133">Chrome അപ്ലിക്കേഷൻ ലോഞ്ചർ</translation>
 <translation id="1553358976309200471">Chrome അപ്‌ഡേറ്റുചെയ്യുക</translation>
+<translation id="1585657529869845941">ഇത് ദൃശ്യമാകുന്നുവെങ്കിൽ, <ph name="BEGIN_BOLD" />എന്തായാലും മാറുക<ph name="END_BOLD" /> എന്നതിൽ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="1587223624401073077">Google Chrome നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നു.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> അപകടകരമായതിനാൽ, Chrome ഇതിനെ ബ്ലോക്കുചെയ്‌തു.</translation>
 <translation id="1619887657840448962">Chrome സുരക്ഷിതമാക്കാൻ, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> എന്നതിൽ ലിസ്റ്റുചെയ്യാത്ത ചില വിപുലീകരണങ്ങൾ ഞങ്ങൾ പ്രവർത്തനരഹിതമാക്കി, അവ നിങ്ങളുടെ അറിവില്ലാതെ ചേർത്തിരിക്കാനിടയുണ്ട്.</translation>
@@ -68,6 +69,7 @@
 <translation id="2664962310688259219">Chrome OS ഓപ്പൺ സോഴ്‌സ് ലൈസൻസുകൾ</translation>
 <translation id="2665296953892887393">Google-ലേക്ക് ക്രാഷ് റിപ്പോർട്ടുകളും <ph name="UMA_LINK" /> എന്നതും അയയ്‌ക്കുന്നതിലൂടെ Google Chrome മികച്ചതാക്കാൻ സഹായിക്കുക</translation>
 <translation id="2689103672227170538">നിങ്ങൾ Chrome ആരംഭിക്കുമ്പോൾ ദൃശ്യമാകുന്ന പേജിനെ ഈ വിപുലീകരണം മാറ്റി.</translation>
+<translation id="2705403826523567092">ഉപകരണങ്ങളിൽ ഉടനീളം സമന്വയിപ്പിച്ച നിലയിലുള്ള, ഒരു വ്യക്തിപരമാക്കിയ ബ്രൗസിംഗ് അനുഭവത്തിനായി സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="2769762047821873045">Google Chrome നിങ്ങളുടെ സ്ഥിരസ്ഥിതി ബ്രൌസറായിരുന്നില്ല.</translation>
 <translation id="2770231113462710648">സ്ഥിരസ്ഥി ബ്രൌസര്‍‌ ഇനിപ്പറയുന്നതിലേക്ക് മാറ്റുക:</translation>
 <translation id="2799223571221894425">വീണ്ടും സമാരംഭിക്കുക</translation>
@@ -98,6 +100,7 @@
 <translation id="3612333635265770873">സമാന നാമമുള്ള ഒരു മൊഡ്യൂളിന് Google Chrome മായി വൈരുദ്ധ്യമുണ്ടെന്ന് അറിഞ്ഞു.</translation>
 <translation id="3622797965165704966">ഇപ്പോൾ നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിച്ച്, പങ്കിട്ട കമ്പ്യൂട്ടറുകളിൽ Chromium ഉപയോഗിക്കാൻ എളുപ്പമാണ്.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />സേവന നിബന്ധനകള്‍<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="3716182511346448902">ഈ പേജ് ഒരുപാട് മെമ്മറി ഉപയോഗിക്കുന്നു, അതിനാൽ Chrome ഇത് താൽക്കാലികമായി അവസാനിപ്പിച്ചു.</translation>
 <translation id="3718181793972440140">ഇത് ഈ ഉപകരണത്തിൽ നിന്നും ഒരിനം ഇല്ലാതാക്കും. പിന്നീട് നിങ്ങളുടെ വിവരങ്ങൾ വീണ്ടെടുക്കാൻ, <ph name="USER_EMAIL" /> എന്നയാളായി Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="3735758079232443276">നിങ്ങൾ Chrome ആരംഭിക്കുമ്പോൾ ദൃശ്യമാകുന്ന പേജിനെ "<ph name="EXTENSION_NAME" />" വിപുലീകരണം മാറ്റി.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -106,6 +109,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome ആൾ&amp;മാറാട്ട വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="3889417619312448367">Google Chrome അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്യുക</translation>
+<translation id="3898493977366060150">Google ഉപയോഗിച്ചുള്ള വെബ് ബ്രൗസിംഗ് മികവുറ്റതാണ്</translation>
 <translation id="4028693306634653894">വേഗതയേറിയ Chrome സ്വന്തമാക്കുക</translation>
 <translation id="4031074602479304239">നിങ്ങളെ ഇനിപ്പറയുന്ന ഇടത്തേക്ക് കൊണ്ടുപോകുന്നതിൽ നിന്ന് ഈ സൈറ്റിനെ Chrome തടഞ്ഞു:</translation>
 <translation id="4042449298237264661">Windows XP അല്ലെങ്കിൽ Windows Vista-യെ ഇനി പിന്തുണയ്‌ക്കാത്തതിനാൽ ഈ കമ്പ്യൂട്ടറിന് ഇനി Google Chrome അപ്‌ഡേറ്റുകൾ സ്വീകരിക്കാനാകില്ല.</translation>
@@ -198,9 +202,11 @@
 <translation id="6634887557811630702">Google Chrome കാലികമാണ്.</translation>
 <translation id="6676384891291319759">ഇന്റര്‍‌നെറ്റ് ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="6697947395630195233">Chrome-ന് ഈ സൈറ്റുമായി ലൊക്കേഷൻ പങ്കിടാൻ നിങ്ങളുടെ ലൊക്കേഷനിലേക്കുള്ള ആക്‌സസ് ആവശ്യമാണ്.</translation>
+<translation id="6777817260680419853">റീഡയറക്ട് ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തു</translation>
 <translation id="683440813066116847">mDNS ട്രാഫിക് അനുവദിക്കാൻ Google Chrome കാനറിയ്‌ക്കുള്ള ഇൻബൗണ്ട് റൂൾ.</translation>
 <translation id="686561893457936865">എല്ലായിടത്ത് നിന്നും Chrome ഉപയോഗിക്കുക</translation>
 <translation id="6885412569789873916">Chrome ബീറ്റ ആപ്പുകൾ</translation>
+<translation id="694592694773692225">ഈ പേജിൽ റീഡയറക്ട് ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തു.</translation>
 <translation id="6967962315388095737">mDNS ട്രാഫിക് അനുവദിക്കുന്നതിന് Google Chrome ബീറ്റയ്ക്ക് വേണ്ടിയുള്ള ഇൻബൗണ്ട് റൂൾ.</translation>
 <translation id="6970811910055250180">നിങ്ങളുടെ ഉപകരണം അപ്‌ഡേറ്റുചെയ്യുന്നു...</translation>
 <translation id="6982337800632491844">ഈ ഉപകരണം ഉപയോഗിക്കുന്നതിന് മുമ്പ് നിങ്ങൾ ഇനിപ്പറയുന്ന സേവന നിബന്ധനകൾ വായിച്ച് അംഗീകരിക്കണമെന്ന് <ph name="DOMAIN" /> ആവശ്യപ്പെടുന്നു. Google Chrome OS നിബന്ധനകൾ വിപുലീകരിക്കുകയോ പരിഷ്‌കരിക്കുകയോ പരിമിതപ്പെടുത്തുകയോ ചെയ്യരുത്.</translation>

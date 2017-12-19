@@ -18,6 +18,7 @@
 <translation id="1457721931618994305">正在更新 Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome 应用启动器</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
+<translation id="1585657529869845941">请点击<ph name="BEGIN_BOLD" />确定切换<ph name="END_BOLD" />（如果显示该按钮的话）</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="1619887657840448962">为了提高 Chrome 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
@@ -64,6 +65,7 @@
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
+<translation id="2705403826523567092">登录后可畅享合乎个人需求的浏览体验，并在不同设备间保持同步</translation>
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2799223571221894425">重新启动</translation>
@@ -94,6 +96,7 @@
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="3622797965165704966">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chrome。</translation>
 <translation id="3637702109597584617">Google Chrome 操作系统<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="3716182511346448902">此网页占用的内存过多，因此 Chrome 已将其暂停。</translation>
 <translation id="3718181793972440140">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="3735758079232443276">“<ph name="EXTENSION_NAME" />”扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -102,6 +105,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">在 Chrome 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
+<translation id="3898493977366060150">利用 Google 的智能技术浏览网页</translation>
 <translation id="4028693306634653894">更快地访问 Chrome</translation>
 <translation id="4031074602479304239">Chrome 已阻止此网站将您重定向至</translation>
 <translation id="4042449298237264661">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 不再受支持。</translation>
@@ -191,9 +195,11 @@
 <translation id="6634887557811630702">Google Chrome 已是最新版本。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
+<translation id="6777817260680419853">已阻止重定向</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="686561893457936865">随时随地使用 Chrome</translation>
 <translation id="6885412569789873916">Chrome 测试版应用</translation>
+<translation id="694592694773692225">已在此网页上阻止重定向。</translation>
 <translation id="6967962315388095737">Google Chrome 测试版的入站规则，允许 mDNS 流量。</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Google Chrome 操作系统条款。</translation>

@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1550523713251050646">Haz clic aquí para obtener más opciones</translation>
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Aún no se ha podido verificar tu contraseña. Nota: Si has cambiado la contraseña recientemente, la nueva contraseña se aplicará una vez que hayas cerrado sesión. Utiliza la antigua contraseña aquí.</translation>
 <translation id="1677472565718498478">Queda: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Dirección IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Este es un dispositivo administrado por la empresa</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
+<translation id="2484513351006226581">Pulsa <ph name="KEYBOARD_SHORTCUT" /> para cambiar el diseño del teclado.</translation>
 <translation id="2501920221385095727">Teclas persistentes</translation>
 <translation id="2509468283778169019">Bloqueo de mayúsculas activado</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3465566417615315331">Haz clic en tu foto</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3477079411857374384">Control + Mayús + barra espaciadora</translation>
 <translation id="3510164367642747937">Resaltar el cursor del ratón</translation>
 <translation id="3573179567135747900">Cambiar de nuevo por "<ph name="FROM_LOCALE" />" (requiere reiniciar)</translation>
 <translation id="3582792037806681688">Se ha inhabilitado el inicio de sesión múltiple para un usuario en esta sesión</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Altavoz (interno)</translation>
 <translation id="3846575436967432996">No hay información de red disponible.</translation>
+<translation id="385051799172605136">Atrás</translation>
 <translation id="3891340733213178823">Pulsa Ctrl+Mayús+Q dos veces para cerrar sesión.</translation>
 <translation id="3893630138897523026">ChromeVox (mensajes de voz)</translation>
 <translation id="3899995891769452915">Entrada de voz</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Desvincular</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el foco del teclado</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
+<translation id="4890187583552566966">Tu administrador ha inhabilitado el Asistente de Google.</translation>
 <translation id="4895488851634969361">La batería está llena.</translation>
 <translation id="4905614135390995787">La combinación de teclas para activar el modo de contraste alto ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Salir ahora</translation>
 <translation id="6047696787498798094">Cuando cambies de usuario, la pantalla dejará de compartirse. ¿Quieres continuar?</translation>
 <translation id="6062360702481658777">Tu sesión se cerrará automáticamente en <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">No se ha podido verificar tu contraseña. Vuelve a intentarlo.</translation>
 <translation id="607652042414456612">Tu ordenador es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Cargando <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
@@ -262,10 +268,12 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7692480393933218409">Cargando los dispositivos USB tipo C conectados</translation>
 <translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>
+<translation id="7796353162336583443">Toca el botón del lápiz óptico situado en la estantería para tomar una nota, hacer una captura de pantalla o utilizar el Asistente de Google, el puntero láser o la lupa.</translation>
 <translation id="7798302898096527229">Pulsa la tecla de búsqueda o Mayús para cancelarlo.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Señal fuerte</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
+<translation id="7933084174919150729">El Asistente de Google solo está disponible en el perfil principal.</translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="7994370417837006925">Inicio de sesión múltiple</translation>
@@ -282,6 +290,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8351131234907093545">Crear nota</translation>
+<translation id="8392451568018454956">Menú de opciones de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Ajustes</translation>
 <translation id="8433186206711564395">Configuración de red</translation>
 <translation id="8433977262951327081">La combinación de teclas para mostrar el cuadro del menú de opciones de entrada en la estantería ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: volviendo a conectar...</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
+<translation id="8652175077544655965">Cerrar ajustes</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

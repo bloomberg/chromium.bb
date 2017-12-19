@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Cannot unpack extension.  To safely unpack an extension, there must be a path to your profile directory that starts with a drive letter and does not contain a junction, mount point or symlink.  No such path exists for your profile.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> from vendor <ph name="VENDOR_ID" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Could not load launcher page '<ph name="PAGE" />'.</translation>
 <translation id="388442998277590542">Could not load options page '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">The administrator of this machine requires <ph name="EXTENSION_NAME" /> to have a minimum version of <ph name="EXTENSION_VERSION" />. It cannot be enabled until it has updated to that version (or higher).</translation>
 <translation id="4233778200880751280">Could not load about page '<ph name="ABOUT_PAGE" />'.</translation>

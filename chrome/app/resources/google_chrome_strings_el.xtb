@@ -18,6 +18,7 @@
 <translation id="1457721931618994305">Ενημέρωση του Google Chrome…</translation>
 <translation id="1469002951682717133">Λειτουργία εκκίνησης εφαρμογών Chrome</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
+<translation id="1585657529869845941">Αν εμφανιστεί, επιλέξτε <ph name="BEGIN_BOLD" />Εναλλαγή ούτως ή άλλως<ph name="END_BOLD" /></translation>
 <translation id="1587223624401073077">Το Google Chrome χρησιμοποιεί την κάμερά σας.</translation>
 <translation id="1587325591171447154">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
 <translation id="1619887657840448962">Για να κάνουμε το Chrome πιο ασφαλές, απενεργοποιήσαμε τις ακόλουθες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
@@ -66,6 +67,7 @@
 <translation id="2664962310688259219">Άδειες λογισμικού ανοικτού κώδικα του Chrome OS</translation>
 <translation id="2665296953892887393">Βοηθήστε μας να κάνουμε το Google Chrome καλύτερο, αποστέλλωντας αναφορές σφαλμάτων και <ph name="UMA_LINK" /> στην Google</translation>
 <translation id="2689103672227170538">Αυτή η επέκταση άλλαξε τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
+<translation id="2705403826523567092">Συνδεθείτε, για να απολαμβάνετε μια εξατομικευμένη εμπειρία περιήγησης, συγχρονισμένη σε όλες τις συσκευές</translation>
 <translation id="2769762047821873045">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
 <translation id="2770231113462710648">Αλλαγή προεπιλεγμένου προγράμματος περιήγησης σε:</translation>
 <translation id="2799223571221894425">Επανεκκίνηση</translation>
@@ -96,6 +98,7 @@
 <translation id="3612333635265770873">Έχει διαπιστωθεί ότι μια λειτουργική μονάδα με το ίδιο όνομα βρίσκεται σε διένεξη με το Google Chrome.</translation>
 <translation id="3622797965165704966">Τώρα μπορείτε να χρησιμοποιείτε πιο εύκολα το Chrome με το Λογαριασμό σας Google και σε κοινόχρηστους υπολογιστές.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Όροι Παροχής Υπηρεσιών<ph name="END_TERMS_OF_SERVICE_LINK" /> του Google Chrome OS</translation>
+<translation id="3716182511346448902">Αυτή η σελίδα χρησιμοποιεί πάρα πολλή μνήμη. Για αυτόν τον λόγο, το Chrome την έθεσε σε παύση.</translation>
 <translation id="3718181793972440140">Με αυτήν την ενέργεια θα διαγραφεί 1 στοιχείο από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Η επέκταση <ph name="EXTENSION_NAME" /> άλλαξε τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -104,6 +107,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Άνοιγμα συνδέσμου σε παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
 <translation id="3889417619312448367">Απεγκατάσταση Google Chrome</translation>
+<translation id="3898493977366060150">Περιήγηση στον ιστό με το Google smarts</translation>
 <translation id="4028693306634653894">Μεταβείτε ταχύτερα στο Chrome</translation>
 <translation id="4031074602479304239">Το Chrome διέκοψε την ανακατεύθυνσή σας από αυτόν τον ιστότοπο στο</translation>
 <translation id="4042449298237264661">Αυτός ο υπολογιστής δεν θα λαμβάνει πια ενημερώσεις Google Chrome, επειδή δεν υποστηρίζονται πλέον τα Windows XP και Windows Vista.</translation>
@@ -194,9 +198,11 @@
 <translation id="6634887557811630702">Το Google Chrome έχει ενημερωθεί.</translation>
 <translation id="6676384891291319759">Πρόσβαση στο Διαδίκτυο</translation>
 <translation id="6697947395630195233">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο.</translation>
+<translation id="6777817260680419853">Η ανακατεύθυνση αποκλείστηκε</translation>
 <translation id="683440813066116847">Εισερχόμενος κανόνας για το Google Chrome Canary για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="686561893457936865">Πάρτε το Chrome μαζί σας παντού</translation>
 <translation id="6885412569789873916">Εφαρμογές Chrome Beta</translation>
+<translation id="694592694773692225">Η ανακατεύθυνση έχει αποκλειστεί σε αυτήν τη σελίδα.</translation>
 <translation id="6967962315388095737">Εισερχόμενος κανόνας για το Google Chrome Beta για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
 <translation id="6970811910055250180">Ενημέρωση της συσκευής σας...</translation>
 <translation id="6982337800632491844">Το <ph name="DOMAIN" /> απαιτεί να διαβάσετε και να αποδεχτείτε τους ακόλουθους Όρους Παροχής Υπηρεσιών πριν από τη χρήση αυτής της συσκευής. Οι συγκεκριμένοι όροι δεν επεκτείνουν, τροποποιούν ή περιορίζουν τους όρους του Google Chrome OS.</translation>

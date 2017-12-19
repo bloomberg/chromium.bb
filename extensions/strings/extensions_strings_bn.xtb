@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">এক্সটেনশন প্যাকমুক্ত করতে পারেনা৷  কোনও এক্সটেনশনকে সুরক্ষিতভাবে প্যাকমুক্ত করতে, আপনার প্রোফাইল ডিরেক্টরিতে অবশ্যই এমন একটি পথ থাকবে যা চালক অক্ষরটি দিয়ে শুরু হবে এবং এতে কোন জাংশন, মাউন্ট পয়েন্ট বা সিমলিঙ্ক থাকবে না৷  আপনার প্রোফাইলে এ জাতীয় কোনও পথ বিদ্যমান নেই৷</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> বিক্রেতার থেকে <ph name="PRODUCT_NAME" /> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">লঞ্চার পৃষ্ঠা '<ph name="PAGE" />' লোড করা যায়নি৷</translation>
 <translation id="388442998277590542">বিকল্প পৃষ্ঠা '<ph name="OPTIONS_PAGE" />' লোড করা যায়নি৷</translation>
 <translation id="4115165561519362854"><ph name="EXTENSION_VERSION" /> এর কোনো সর্বনিম্ন সংস্করণ রাখতে, এই মেশিনের প্রশাসকের জন্য <ph name="EXTENSION_NAME" /> প্রয়োজন৷ এটিকে যতক্ষণ না পর্যন্ত সেই সংস্করণে আপডেট করা হচ্ছে (বা উচ্চতর) এটি সক্ষমিত হবে না৷</translation>
 <translation id="4233778200880751280"><ph name="ABOUT_PAGE" /> সম্পর্কিত পৃষ্ঠা লোড করা গেল না।</translation>

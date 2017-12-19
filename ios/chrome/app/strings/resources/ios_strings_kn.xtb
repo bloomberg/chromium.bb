@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">ಪ್ರಾಥಮಿಕ ಸಂಗತಿಗಳು</translation>
 <translation id="2386793615875593361">1 ಆಯ್ಕೆಮಾಡಿದೆ</translation>
 <translation id="2435457462613246316">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ತೋರಿಸಿ</translation>
+<translation id="2523363575747517183">ಈ ವೆಬ್‌ಸೈಟ್‌ ಪದೇ ಪದೇ ಇನ್ನೊಂದು ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="2529021024822217800">ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ</translation>
 <translation id="2572712655377361602">ಸಾಧನದ ನೀತಿಯೊಂದು ನಿಮ್ಮ ಫೋಟೋಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ</translation>
 <translation id="2584132361465095047">ಖಾತೆ ಸೇರಿಸಿ...</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">ಫೋನ್</translation>
 <translation id="441868831736628555">ಗೌಪ್ಯತೆಯ ಸೂಚನೆ</translation>
 <translation id="4460091562821778167">ಪ್ರತಿ ಬಾರಿ ಯಾವ ಅಪ್ಲಿಕೇಶನ್‌ ಬಳಸಬೇಕು ಎಂಬುದಾಗಿ ನನ್ನನ್ನು ಕೇಳಿ</translation>
+<translation id="4496373720959965247">ಟ್ಯಾಬ್‌ಗಳನ್ನು ಸೇರಿಸಿ ಮತ್ತು ಪುಟಗಳ ನಡುವೆ ಬದಲಿಸಿ</translation>
 <translation id="4508750114462689118">ಸೈನ್-ಇನ್ ಪ್ರೋಮೋ ಮುಚ್ಚಿ</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="4536418791685807335">ಮತ್ತೊಮ್ಮೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">ಸೆಟಪ್ ಪ್ರಗತಿಯಲ್ಲಿದೆ...</translation>
 <translation id="5816228676161003208">ಇದು ನಿಮ್ಮ ಧ್ವನಿ ಬಳಸಿಕೊಂಡು ವೇಗವಾಗಿ ಹುಡುಕಲು ನಿಮ್ಮನ್ನು ಅನುಮತಿಸುತ್ತದೆ.</translation>
 <translation id="5846482154967366008">ಹುಡುಕಾಟ ಎಂಜಿನ್</translation>
+<translation id="5854790677617711513">30 ದಿನಗಳಿಗಿಂತ ಹಳೆಯದು</translation>
 <translation id="5857090052475505287">ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="5857770089550859117">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಪಾಸ್‌ಫ್ರೇಸ್ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="5860033963881614850">ಆಫ್</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">ಡೌನ್‌ಲೋಡ್</translation>
 <translation id="7537586195939242955">ಕ್ಷಮಿಸಿ, ಈ ಸಮಯದಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್ ಅನ್ನು ಪಾಸ್‌ಬುಕ್‌ನಲ್ಲಿ ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="7561196759112975576">ಯಾವಾಗಲೂ</translation>
-<translation id="7588950540487816470">ಭೌತಿಕ ವೆಬ್</translation>
 <translation id="7603852183842204213">ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">ಸಿಂಕ್ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿಲ್ಲ</translation>
 <translation id="7638584964844754484">ತಪ್ಪಾದ ಪಾಸ್‌ಫ್ರೇಸ್</translation>

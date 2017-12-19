@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Laiendust ei saanud lahti pakkida. Laienduse turvaliseks lahtipakkimiseks peab olema tee teie profiili kataloogi, mis algab ketast tähistava tähega ja milles ei ole sõlme, paigalduspunkti või symlinki. Sellist teed teie profiilil ei ole.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (seerianumber <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397">Toode <ph name="PRODUCT_NAME" /> teenusepakkujalt <ph name="VENDOR_ID" /> (seerianumber <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Käivitusprogrammi lehte <ph name="PAGE" /> ei saanud laadida.</translation>
 <translation id="388442998277590542">Valikute lehte <ph name="OPTIONS_PAGE" /> ei õnnestunud laadida.</translation>
 <translation id="4115165561519362854">Seadme administraator nõuab, et kasutaksite laienduse <ph name="EXTENSION_NAME" /> puhul vähemalt versiooni <ph name="EXTENSION_VERSION" />. Laiendust ei saa lubada enne, kui see on värskendatud sellele versioonile (või uuemale versioonile).</translation>
 <translation id="4233778200880751280">Teabelehte „<ph name="ABOUT_PAGE" />” ei õnnestunud laadida.</translation>

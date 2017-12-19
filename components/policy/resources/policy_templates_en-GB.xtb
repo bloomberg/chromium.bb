@@ -2085,13 +2085,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="787125417158068494">If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME" /> certificates are not available for ARC-apps.
 
       If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT" /> are available for ARC-apps.</translation>
-<translation id="7872535148622213208">
-        The policy specifies a list of origins (URLs) to be treated as secure
-        context. The intent is to allow organisations to set up a staging server
-        for internal web developments.
-        This is the same as the – unsafely-treat-insecure-origin-as-secure flag.
-        For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">This policy is active in retail mode only.
 
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>

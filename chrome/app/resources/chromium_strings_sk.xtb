@@ -18,6 +18,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1502360822835740515">Nastavenie prehliadača Chromium ako predvoleného prehliadača</translation>
 <translation id="151962892725702025">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="1559451348202814456">Chromium nemusí fungovať správne, pretože v systéme Mac OS X verzií 10.6, 10.7 a 10.8 už nie je podporovaný.</translation>
+<translation id="1585657529869845941">Kliknite na možnosť <ph name="BEGIN_BOLD" />Napriek tomu prepnúť<ph name="END_BOLD" /> (ak sa zobrazí)</translation>
 <translation id="1653828314016431939">OK — reštartovať</translation>
 <translation id="1668054258064581266">Po odstránení účtu z prehliadača Chromium možno budete musieť znova načítať otvorené karty, aby sa zmena uplatnila.</translation>
 <translation id="1688750314291223739">Ak chcete uložiť svoje prispôsobené funkcie prehliadača na webe a pristupovať k nim z prehliadača Chromium v ktoromkoľvek počítači, nastavte synchronizáciu.</translation>
@@ -50,6 +51,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2647554856022461007">Chromium vám môže uľahčiť prehliadanie pomocou webových služieb. Vybrané webové služby môžete podľa potreby vypnúť. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">V priebehu inštalácie sa vyskytla chyba operačného systému. Stiahnite prehliadač Chromium znova.</translation>
 <translation id="2685838254101182273">Prehliadač Chromium sa prestal aktualizovať a túto verziu vášho operačného systému už nepodporuje.</translation>
+<translation id="2705403826523567092">Ak chcete prehliadať v prispôsobenom prostredí synchronizovanom medzi zariadeniami, prihláste sa</translation>
 <translation id="2711502716910134313">Karta Chromium</translation>
 <translation id="2718390899429598676">V záujme vyššej miery zabezpečenia budú dáta v prehliadači Chromium šifrované.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
@@ -87,6 +89,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Pripnutie prehliadača Chromium na panel úloh</translation>
 <translation id="3889543394854987837">Ak chcete otvoriť prehliadač Chromium a začať prehliadať, kliknite na svoje meno.</translation>
+<translation id="3898493977366060150">Prehliadanie webu pomocou inteligentných doplnkov Googlu</translation>
 <translation id="390894725198123737">Na počítačoch Mac sa heslá môžu ukladať do aplikácie Keychain. Ostatní používatelia prehliadača Chromium, ktorí zdieľajú tento účet systému OS X, k nim môžu pristupovať a môžu ich synchronizovať.</translation>
 <translation id="4036079820698952681">Nahláste <ph name="BEGIN_LINK" />aktuálne nastavenia<ph name="END_LINK" /> a pomôžte tak zlepšiť prehliadač Chromium</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
@@ -148,6 +151,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="59625444380784159">Podrobnosti z vašich kontaktov vám môžu pomôcť rýchlejšie vypĺňať formuláre v prehliadači Chromium.</translation>
 <translation id="5987687638152509985">Ak chcete spustiť synchronizáciu, aktualizujte Chromium</translation>
 <translation id="6055895534982063517">K dispozícii je nová verzia prehliadača Chromium, ktorá je rýchlejšia ako kedykoľvek predtým.</translation>
+<translation id="6063093106622310249">&amp;Otvoriť v prehliadači Chromium</translation>
 <translation id="608189560609172163">Prehliadaču Chromium sa nepodarilo synchronizovať vaše údaje pre chybu prihlásenia.</translation>
 <translation id="6129621093834146363">Súbor <ph name="FILE_NAME" /> je nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="6212496753309875659">Tento počítač už obsahuje novšiu verziu prehliadača Chromium. Ak softvér nefunguje, odinštalujte prehliadač Chromium a skúste to znova.</translation>
@@ -164,16 +168,19 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="6505742536731484931">Chromium potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom.</translation>
 <translation id="6510925080656968729">Odinštalovať Chromium</translation>
 <translation id="6526111688217511984">Chromium potrebuje na sťahovanie súborov prístup k úložisku.</translation>
+<translation id="6598877126913850652">Prejsť do nastavení upozornení prehliadača Chromium</translation>
 <translation id="6676384891291319759">Prístup do siete Internet</translation>
 <translation id="6717134281241384636">Váš profil sa nedá použiť, pretože pochádza z novšej verzie prehliadača Chromium.
 
 Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu alebo použite novšiu verziu prehliadača Chromium.</translation>
 <translation id="6734080038664603509">Aktualizovať prehliadač &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium už majú nainštalovaný všetci používatelia na vašom počítači.</translation>
+<translation id="6777817260680419853">Presmerovanie bolo zablokované</translation>
 <translation id="6810143991807788455">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť prehliadač Chromium</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Prehliadač Chromium bol aktualizovaný, ale najmenej 30 dní ste ho nepoužili.</translation>
 <translation id="6944967875980567883">Moduly načítané do prehliadača Chromium</translation>
+<translation id="694592694773692225">Presmerovanie bolo zablokované na tejto stránke.</translation>
 <translation id="6964305034639999644">Otvoriť odkaz v okne inko&amp;gnito prehliadača Chromium</translation>
 <translation id="6970811910055250180">Prebieha aktualizácia zariadenia...</translation>
 <translation id="705851970750939768">Aktualizovať Chromium</translation>
@@ -208,6 +215,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="7745317241717453663">Táto akcia odstráni zo zariadenia údaje prehliadania. Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do prehliadača Chromium ako <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Inštalátor nemohol vytvoriť dočasný priečinok. Skontrolujte úroveň zaplnenia disku a povolenie na inštaláciu softvéru.</translation>
 <translation id="7756122083761163394">Dáta prehliadania tejto osoby sa odstránia zo zariadenia. Ak chcete dáta obnoviť, prihláste sa do Chromu ako $2.</translation>
+<translation id="7773960292263897147">Upozornenie: Chromium nemôže zabrániť rozšíreniam v zaznamenávaní vašej histórie prehliadania. Ak chcete rozšírenie v režime inkognito zakázať, zrušte výber tejto možnosti.</translation>
 <translation id="7774736947049807614">Certifikát na overenie totožnosti zlyhal. Prihláste sa znova do prehliadača Chromium ako <ph name="USER_NAME" /> alebo kontaktuje správcu a požiadajte ho o ďalšie informácie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7867198900892795913">Chromium sa nepodarilo aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré nové funkcie ani bezpečnostné opravy.</translation>
 <translation id="7937630085815544518">Do prehliadača Chromium ste boli prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Ak sa chcete prihlásiť znova, použite rovnaký účet.</translation>
@@ -250,6 +258,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chromium, ako
 <translation id="9013087743919948559">Pridať do prehliadača Chromium</translation>
 <translation id="9019929317751753759">Z dôvodu zvýšenia bezpečnosti prehliadača Chromium sme zakázali nasledujúce rozšírenie, ktoré nie je uvedené v službe <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo byť pridané bez vášho vedomia.</translation>
 <translation id="9022552996538154597">Prihlásiť sa do prehliadača Chromium</translation>
+<translation id="9025992965467895364">Táto stránka využíva príliš veľa pamäte, a preto ju Chromium pozastavil.</translation>
 <translation id="9036189287518468038">Spúšťač aplikácií Chromium</translation>
 <translation id="9089354809943900324">Prehliadač Chromium je zastaraný</translation>
 <translation id="91086099826398415">Otvoriť odkaz na novej &amp;karte prehliadača Chromium</translation>

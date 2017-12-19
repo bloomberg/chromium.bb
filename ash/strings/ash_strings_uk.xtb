@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Великий курсор миші</translation>
 <translation id="1550523713251050646">Натисніть, щоб побачити більше опцій</translation>
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">На жаль, поки не вдалося підтвердити ваш пароль. Зверніть увагу: якщо ви нещодавно змінили пароль, новий пароль буде застосовано, щойно ви вийдете з облікового запису. Скористайтеся старим паролем тут.</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Адреса IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Цим пристроєм керує адміністратор підприємства</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Перш ніж надати його, підтвердьте, що на пристрої відображається цей ключ доступу: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Сповіщення</translation>
+<translation id="2484513351006226581">Натисніть комбінацію клавіш <ph name="KEYBOARD_SHORTCUT" />, щоб змінити розкладку клавіатури.</translation>
 <translation id="2501920221385095727">Залипання клавіш</translation>
 <translation id="2509468283778169019">Режим CAPS LOCK увімкнено</translation>
 <translation id="2532589005999780174">Режим високого контрасту</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Пристрій із портом USB типу C</translation>
 <translation id="3465566417615315331">Натисніть свою фотографію</translation>
 <translation id="3473479545200714844">Лупа</translation>
+<translation id="3477079411857374384">Комбінація клавіш "Control-Shift-Space"</translation>
 <translation id="3510164367642747937">Підсвічувати курсор миші</translation>
 <translation id="3573179567135747900">Повернутися до мови "<ph name="FROM_LOCALE" />" (потрібно перезавантажитися)</translation>
 <translation id="3582792037806681688">Паралельний вхід для користувача в цьому сеансі заборонено</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Заблокувати</translation>
 <translation id="3798670284305777884">Динамік (внутрішній)</translation>
 <translation id="3846575436967432996">Інформація про мережу не доступна</translation>
+<translation id="385051799172605136">Назад</translation>
 <translation id="3891340733213178823">Щоб вийти, двічі натисніть Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосові підказки)</translation>
 <translation id="3899995891769452915">Голосовий ввід</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="4849058404725798627">Підсвічувати об’єкт, вибраний на клавіатурі</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
+<translation id="4890187583552566966">Ваш адміністратор вимкнув Google Асистент.</translation>
 <translation id="4895488851634969361">Акумулятор заряджений.</translation>
 <translation id="4905614135390995787">Комбінація клавіш для керування режимом високого контрасту змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Прийняти</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Вийти зараз</translation>
 <translation id="6047696787498798094">Якщо змінити користувача, спільний доступ до екрана буде скасовано. Продовжити?</translation>
 <translation id="6062360702481658777">Ви автоматично вийдете за <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">На жаль, не вдалося підтвердити ваш пароль. Повторіть спробу.</translation>
 <translation id="607652042414456612">Ваш комп’ютер видимий для пристроїв Bluetooth поблизу та відображатиметься з назвою "<ph name="NAME" />" та адресою <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Заряджає <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Показувати екранну клавіатуру</translation>
@@ -262,10 +268,12 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7692480393933218409">Заряджає пристрої, під’єднанї до порту USB-C</translation>
 <translation id="776344839111254542">Натисніть, щоб переглянути деталі оновлення</translation>
+<translation id="7796353162336583443">Щоб додавати примітки та знімки екрана, користуватися Google Асистентом або використовувати стилус як лазерний вказівник чи лупу, торкніться кнопки стилуса на полиці.</translation>
 <translation id="7798302898096527229">Щоб скасувати, натисніть клавішу Search або Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> і <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">потужний сигнал</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
+<translation id="7933084174919150729">Google Асистент доступний лише в основному профілі.</translation>
 <translation id="7977927628060636163">Пошук мобільних мереж…</translation>
 <translation id="7982789257301363584">Мережа</translation>
 <translation id="7994370417837006925">Паралельний вхід</translation>
@@ -282,6 +290,7 @@
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8308637677604853869">Попереднє меню</translation>
 <translation id="8351131234907093545">Створити нотатку</translation>
+<translation id="8392451568018454956">Меню параметрів для <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433186206711564395">Налаштування мережі</translation>
 <translation id="8433977262951327081">Комбінація клавіш для виклику спливаючої підказки з опціями введення змінилась. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: під’єднання…</translation>
 <translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений.</translation>
 <translation id="8639760480004882931">Залишилося <ph name="PERCENTAGE" /></translation>
+<translation id="8652175077544655965">Закрити налаштування</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

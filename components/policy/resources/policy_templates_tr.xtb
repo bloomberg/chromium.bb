@@ -269,6 +269,7 @@
 <translation id="1969212217917526199">Uzaktan erişim ana makinesinin Hata Ayıklama yapılarındaki politikaları geçersiz kılar.
 
           Değer, politika adı ile politika değeri eşleşmelerinin olduğu bir JSON sözlüğü olarak ayrıştırılır.</translation>
+<translation id="1969808853498848952">Yetkilendirme gerektiren eklentileri her zaman çalıştırır (kullanımdan kaldırıldı)</translation>
 <translation id="1988371335297483117"><ph name="PRODUCT_OS_NAME" /> üzerindeki otomatik güncelleme verileri, HTTPS yerine HTTP üzerinden indirilebilir. Bu kullanım, indirilen HTTP öğelerinin şeffaf bir şekilde HTTP önbelleğine alınmasına olanak sağlar.
 
       Bu politika doğru seçeneğine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> otomatik güncelleme verilerini HTTP aracılığıyla indirmeye çalışır. Politika yanlış seçeneğine ayarlanırsa veya hiç ayarlanmazsa otomatik güncelleme verilerini indirmek için HTTPS kullanılır.</translation>
@@ -791,6 +792,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="3711895659073496551">Askıya al</translation>
 <translation id="3736879847913515635">Kullanıcı yöneticisinde kişi eklemeyi etkinleştir</translation>
+<translation id="3737544779868348650">Cihaz ağı ana makine adı</translation>
 <translation id="3750220015372671395">Bu sitelerde anahtar oluşturmayı engelle</translation>
 <translation id="3756011779061588474">Geliştirici modunu engelle</translation>
 <translation id="3758089716224084329"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler.
@@ -1244,6 +1246,13 @@ politikayı geçersiz kılamaz.
 <translation id="5130288486815037971">TLS'deki RC4 şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="5141670636904227950">Giriş ekranında varsayılan ekran büyüteci türünü etkin olarak ayarla</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> içinde aşağıdaki URL kalıplarını her zaman oluştur</translation>
+<translation id="5147665094011258322">DHCP isteklerinde kullanılan cihazın ana makine adını belirler.
+
+      Bu politika boş olmayan bir dizeye ayarlanırsa, o dize, DHCP isteği sırasında cihazın ana makine adı olarak kullanılır.
+
+      Dize, değişkenler (${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}) içerebilir. Ana makine adı olarak kullanılmadan önce cihazda bu değişkenlerin yerine değerler getirilir. Bu işlemin sonucunda ortaya çıkan değişikliğin geçerli bir ana makine adı olması gerekir (RFC 1035, bölüm 3.1 uyarınca).
+
+      Bu politika ayarlanmazsa veya değişiklikten sonraki değer, geçerli bir ana makine adı değilse, DHCP isteğinde ana makine adı ayarlanmaz. </translation>
 <translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME" /> tarafından <ph name="PRODUCT_NAME" /> başlatıldığında kullanılan ek parametreleri belirtmenize olanak verir.
 
           Bu politika ayarlanmazsa varsayılan komut satırı kullanılır.</translation>
@@ -1439,6 +1448,9 @@ politikayı geçersiz kılamaz.
       'Devre Dışı' değeri seçilirse, sayfalar Gizli modda açılamaz.
 
       'Zorlama' seçeneği belirlenirse, sayfalar YALNIZCA Gizli modda açılabilir.</translation>
+<translation id="5835124959204887277">Güvenlik Anahtarlarından doğrulama sertifikaları istendiğinde kendisi için hiçbir istemin gösterilmeyeceği URL'leri ve alan adlarını belirtir. Ayrıca, Güvenlik Anahtarına, bireysel doğrulamanın kullanılabileceğini belirten bir sinyal gönderilir. Bu olmadığında kullanıcılar, siteler Güvenlik Anahtarlarının doğrulanmasını istediğinde Chrome 65+ sürümünde istem alırlar.
+
+      URL'ler (https://example.com/herhangibir/yoladı gibi) yalnızca U2F appID'leri olarak eşleşir. Alan adları (example.com gibi) yalnızca webauthn RP ID'leri olarak eşleşir. Dolayısıyla, belirli bir site için hem U2F hem de webauthn API'lerini kapsamak istiyorsanız hem appID URL'sini hem de alan adını listelemeniz gerekir.</translation>
 <translation id="5836064773277134605">Uzaktan erişen ana makine tarafından kullanılan UDP bağlantı noktası aralığını kısıtla</translation>
 <translation id="5862253018042179045">Giriş ekranında sesli geri bildirim erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
@@ -1618,6 +1630,7 @@ politikayı geçersiz kılamaz.
       Devre dışı bırakılırsa, otomatik doldurma form verileri içe aktarılmaz.
 
       Ayarlanmazsa, kullanıcıya içe aktarmak isteyip istemediği sorulur veya aktarma işlemi otomatik olarak yapılabilir.</translation>
+<translation id="6224304369267200483">Doğrudan Güvenlik Anahtarı doğrulamasına otomatik olarak izin verilen URL'ler/alan adları</translation>
 <translation id="6233173491898450179">İndirme dizinini ayarla</translation>
 <translation id="6244210204546589761">Başlangıçta açılacak olan URL'ler</translation>
 <translation id="6258193603492867656">Oluşturulan Kerberos SPN'sinin standart dışı bir bağlantı noktası içermesi gerekip gerekmediğini belirtir. 
@@ -1870,6 +1883,13 @@ politikayı geçersiz kılamaz.
 <translation id="7202925763179776247">İndirme kısıtlamalarına izin ver</translation>
 <translation id="7207095846245296855">Google Güvenli Arama'yı zorla</translation>
 <translation id="7216442368414164495">Kullanıcıların Güvenli Tarama genişletilmiş raporlamasını etkinleştirmesine izin ver</translation>
+<translation id="7221822638060296742">Web sitelerinin, <ph name="FLASH_PLUGIN_NAME" /> eklentisini otomatik olarak çalıştırmasına izin verilip verilmeyeceğini belirlemenize olanak tanır. <ph name="FLASH_PLUGIN_NAME" /> eklentisinin otomatik olarak çalıştırılmasına ya tüm web siteleri için izin verilir ya da tüm web siteleri için izin verilmez.
+
+          Tıkla oynat özelliği, <ph name="FLASH_PLUGIN_NAME" /> eklentisinin çalıştırılmasına olanak tanır. Ancak yer tutucunun çalışması için kullanıcının yer tutucuyu tıklaması gerekir.
+
+          Otomatik oynatma özelliği yalnızca <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> politikasında açıkça listelenen alan adlarında kullanılabilir. Otomatik oynatma özelliğini tüm sitelerde etkinleştirmek istiyorsanız bu listeye http://* ve https://* ekleme seçeneğini değerlendirin.
+
+          Bu politika ayarlanmadan bırakılırsa kullanıcı bu ayarı manuel olarak değiştirebilir.</translation>
 <translation id="7234280155140786597">Yasak yerel mesajlaşma ana makinelerinin adları (veya hepsi için *)</translation>
 <translation id="7236775576470542603">Giriş ekranında etkinleştirilen ekran büyütecinin varsayılan türünü ayarla.
 
@@ -2072,13 +2092,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="787125417158068494">SyncDisabled seçeneğine ayarlanırsa veya hiç yapılandırılmazsa, ARC uygulamaları için <ph name="PRODUCT_OS_NAME" /> sertifikaları kullanılamaz.
 
       CopyCaCerts seçeneğine ayarlanırsa ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikaları ARC uygulamaları için kullanılabilir.</translation>
-<translation id="7872535148622213208">
-        Bu politika, güvenli içerik olarak değerlendirilecek olan başlangıç noktalarının (URL'ler)
-        bir listesini belirtir. Burada amaç, kuruluşların dahili web gelişmeleri için hazırlık
-        sunucusu ayarlamalarına olanak tanımaktır.
-        Bu, --unsafely-treat-insecure-origin-as-secure işaretiyle aynıdır.
-        Güvenli içerikler ile ilgili daha fazla bilgi edinmek için https://www.w3.org/TR/secure-contexts/ adresine bakın
-        </translation>
 <translation id="7882585827992171421">Bu politika yalnızca perakende modunda etkindir.
 
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>

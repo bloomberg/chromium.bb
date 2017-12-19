@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">No se puede desempaquetar la extensión. Para desempaquetar una extensión de manera segura, debe haber una ruta de acceso al directorio de tu perfil que comience con una letra de unidad y que no contenga una unión, un punto de montaje ni un symlink. No existe esa ruta de acceso para tu perfil.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (número de serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> del proveedor <ph name="VENDOR_ID" /> (número de serie <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">No se pudo cargar la página "<ph name="PAGE" />" del selector.</translation>
 <translation id="388442998277590542">No se pudo cargar la página de opciones '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">El administrador de esta computadora requiere una versión de <ph name="EXTENSION_NAME" /> no anterior a <ph name="EXTENSION_VERSION" />. No se puede habilitar hasta que se haya actualizado a dicha versión (o versiones posteriores).</translation>
 <translation id="4233778200880751280">No se pudo cargar la página de información "<ph name="ABOUT_PAGE" />".</translation>

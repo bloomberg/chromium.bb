@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">ไม่สามารถแยกส่วนขยายได้ หากต้องการแยกส่วนขยายอย่างปลอดภัย คุณต้องมีเส้นทางไปยังไดเรกทอรีโปรไฟล์ของคุณซึ่งขึ้นต้นด้วยตัวอักษรของไดรฟ์และจะต้องไม่มีจังก์ชัน จุดต่อเชื่อม หรือลิงก์สัญลักษณ์ ไม่มีเส้นทางในรูปแบบดังกล่าวสำหรับโปรไฟล์ของคุณ</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> จากผู้ขาย <ph name="VENDOR_ID" /> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">ไม่สามารถโหลดหน้า Launcher "<ph name="PAGE" />"</translation>
 <translation id="388442998277590542">ไม่สามารถโหลดหน้าตัวเลือก "<ph name="OPTIONS_PAGE" />"</translation>
 <translation id="4115165561519362854">ผู้ดูแลระบบของเครื่องนี้ต้องการ <ph name="EXTENSION_NAME" /> เวอร์ชัน <ph name="EXTENSION_VERSION" /> ซึ่งเป็นเวอร์ชันขั้นต่ำ จะไม่สามารถเปิดใช้ได้จนกว่าจะมีการอัปเดตส่วนขยายนี้เป็นเวอร์ชันดังกล่าว (หรือสูงกว่า)</translation>
 <translation id="4233778200880751280">ไม่สามารถโหลดหน้าเกี่ยวกับ "<ph name="ABOUT_PAGE" />"</translation>

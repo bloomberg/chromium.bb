@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Lamentamos, mas ainda não foi possível validar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Este dispositivo é gerido pela empresa</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Antes de aceitar, confirme que esta chave está indicada nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notificações</translation>
+<translation id="2484513351006226581">Prima <ph name="KEYBOARD_SHORTCUT" /> para mudar o esquema do teclado.</translation>
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3465566417615315331">Clique na sua fotografia</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3477079411857374384">Control-Shift-Espaço</translation>
 <translation id="3510164367642747937">Realçar cursor do rato</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
 <translation id="3582792037806681688">O início de sessão integrado foi desativado para um utilizador nesta sessão</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Altifalante (interno)</translation>
 <translation id="3846575436967432996">Não existem informações de rede disponíveis</translation>
+<translation id="385051799172605136">Anterior</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
 <translation id="3899995891769452915">Entrada de texto por voz</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Desligar</translation>
 <translation id="4849058404725798627">Realçar objeto com foco do teclado</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
+<translation id="4890187583552566966">O Assistente do Google foi desativado pelo administrador.</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="4905614135390995787">O atalho para ativar/desativar o Modo de alto contraste foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Terminar sessão agora</translation>
 <translation id="6047696787498798094">A partilha do ecrã será interrompida quando mudar para outro utilizador. Pretende continuar?</translation>
 <translation id="6062360702481658777">A sessão será terminada automaticamente dentro de <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">Lamentamos, mas não foi possível validar a sua palavra-passe. Tente novamente.</translation>
 <translation id="607652042414456612">O seu computador é detetável para os dispositivos Bluetooth nas proximidades e aparecerá como "<ph name="NAME" />" com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">A carregar <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
@@ -262,10 +268,12 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7692480393933218409">A carregar os dispositivos USB-C ligados</translation>
 <translation id="776344839111254542">Clique para ver os detalhes da atualização</translation>
+<translation id="7796353162336583443">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã ou utilizar o Assistente do Google, o ponteiro de laser ou a lupa.</translation>
 <translation id="7798302898096527229">Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7904094684485781019">O gestor desta conta removeu a permissão de início de sessão integrado.</translation>
+<translation id="7933084174919150729">O Assistente do Google está disponível apenas no perfil principal.</translation>
 <translation id="7977927628060636163">A pesquisar redes móveis...</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7994370417837006925">Início de sessão integrado</translation>
@@ -282,6 +290,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8351131234907093545">Criar nota</translation>
+<translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433186206711564395">Definições da rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão do menu de opções de introdução na prateleira foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: a restabelecer ligação...</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
+<translation id="8652175077544655965">Fechar definições</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

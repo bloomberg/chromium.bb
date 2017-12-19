@@ -266,6 +266,7 @@
 <translation id="1969212217917526199">Mengatasi dasar pada binaan Nyahpepijat bagi hos akses jauh.
 
           Nilai dihuraikan sebagai kamus JSON bagi nama dasar kepada pemetaan nilai dasar.</translation>
+<translation id="1969808853498848952">Sentiasa jalankan pemalam yang memerlukan keizinan (ditamatkan)</translation>
 <translation id="1988371335297483117">Beban bayar auto kemas kini pada <ph name="PRODUCT_OS_NAME" /> boleh dimuat turun melalui HTTP dan bukannya HTTPS. Tindakan ini membenarkan cache HTTP yang telus bagi muat turun HTTP.
 
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan cuba memuat turun beban bayar auto kemas kini melalui HTTP. Jika dasar ini ditetapkan kepada palsu atau tidak ditetapkan, HTTPS akan digunakan untuk memuat turun beban bayar auto kemas kini.</translation>
@@ -790,6 +791,7 @@
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
 <translation id="3711895659073496551">Gantung</translation>
 <translation id="3736879847913515635">Dayakan tambah orang dalam pengurus pengguna</translation>
+<translation id="3737544779868348650">Nama hos rangkaian peranti</translation>
 <translation id="3750220015372671395">Sekat penghasilan kunci pada tapak ini</translation>
 <translation id="3756011779061588474">Sekat mod pembangun</translation>
 <translation id="3758089716224084329">Membenarkan anda menetapkan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi.
@@ -1230,6 +1232,13 @@
 <translation id="5130288486815037971">Sama ada suit sifer RC4 dalam TLS didayakan</translation>
 <translation id="5141670636904227950">Tetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk</translation>
 <translation id="5142301680741828703">Sentiasa paparkan corak URL berikut dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Tentukan nama hos peranti yang digunakan dalam permintaan DHCP.
+
+      Jika dasar ini ditetapkan kepada rentetan tidak kosong, rentetan itu akan digunakan sebagai nama hos peranti semasa permintaan DHCP.
+
+      Rentetan itu boleh mengandungi pemboleh ubah ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} yang akan digantikan dengan nilai pada peranti sebelum digunakan sebagai nama hos. Penggantian yang terhasil mestilah nama hos yang sah (mengikut RFC 1035, bahagian 3.1).
+
+      Jika dasar ini tidak ditetapkan atau nilai selepas penggantian bukan nama hos yang sah, tiada nama hos akan ditetapkan dalam permintaan DHCP. </translation>
 <translation id="5148753489738115745">Membolehkan anda menentukan parameter tambahan yang digunakan apabila  <ph name="PRODUCT_FRAME_NAME" /> melancarkan <ph name="PRODUCT_NAME" />.
 
           Jika dasar ini tidak ditetapkan, baris perintah lalai akan digunakan.</translation>
@@ -1425,6 +1434,9 @@
       Jika 'Dilumpuhkan' dipilih, halaman tidak akan boleh dibuka dalam mod Inkognito.
 
       Jika 'Dipaksa' dipilih, halaman boleh dibuka HANYA dalam mod Inkognito.</translation>
+<translation id="5835124959204887277">Menentukan URL dan domain yang mana gesaan tidak akan ditunjukkan apabila sijil pembuktian daripada Kunci Keselamatan diminta. Selain itu, isyarat akan dihantar kepada Kunci Keselamatan yang menunjukkan bahawa pembuktian individu boleh digunakan. Tanpa ini, pengguna akan digesa dalam Chrome 65+ apabila tapak meminta pembuktian Kunci Keselamatan.
+
+      URL (seperti https://example.com/some/path) hanya akan sepadan sebagai appID U2F. Domain (seperti example.com) hanya sepadan sebagai ID RP webauthn. Oleh sebab itu, untuk meliputi kedua-dua API U2F dan webauthn bagi tapak tertentu, kedua-dua URL dan domain appID perlu disenaraikan.</translation>
 <translation id="5836064773277134605">Hadkan julat port UDP yang digunakan oleh hos akses jauh</translation>
 <translation id="5862253018042179045">Tetapkan keadaan lalai ciri kebolehcapaian maklum balas pertuturan pada skrin log masuk.
 
@@ -1606,6 +1618,7 @@
      Jika dilumpuhkan, data borang autolengkap tidak diimport.
 
      Jika tidak ditetapkan, pengguna mungkin ditanya sama ada hendak mengimport, atau pengimportan boleh berlaku secara automatik.</translation>
+<translation id="6224304369267200483">URL/domain membenarkan pembuktian Kunci Keselamatan langsung secara automatik</translation>
 <translation id="6233173491898450179">Tetapkan direktori muat turun</translation>
 <translation id="6244210204546589761">URL untuk dibuka pada permulaan</translation>
 <translation id="6258193603492867656">Menentukan sama ada Kerberos SPN yang dihasilkan perlu memasukkan port tidak standard.
@@ -1857,6 +1870,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7202925763179776247">Benarkan sekatan muat turun</translation>
 <translation id="7207095846245296855">Paksa Google SafeSearch</translation>
 <translation id="7216442368414164495">Benarkan pengguna ikut serta untuk pelaporan lanjutan Penyemakan Imbas Selamat</translation>
+<translation id="7221822638060296742">Membolehkan anda menetapkan sama ada tapak web dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik. Tindakan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik boleh dibenarkan atau ditolak untuk semua tapak web.
+
+          Klik untuk main membenarkan pemalam <ph name="FLASH_PLUGIN_NAME" /> dijalankan tetapi pengguna perlu mengklik pada pemegang tempat untuk memulakan pelaksanaannya.
+
+          Main balik automatik hanya dibenarkan untuk domain yang disenaraikan dalam dasar <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> dengan jelas. Jika anda mahu mendayakan main balik automatik untuk semua tapak, pertimbangkan untuk menambahkan http://* dan https://* pada senarai ini.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
 <translation id="7234280155140786597">Nama hos pemesejan natif yang dilarang (atau * untuk semua)</translation>
 <translation id="7236775576470542603">Menetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk.
 
@@ -2061,13 +2081,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="787125417158068494">Jika ditetapkan kepada SyncDisabled atau tidak dikonfigurasikan, sijil <ph name="PRODUCT_OS_NAME" /> tidak  tersedia untuk apl ARC.
 
       Jika ditetapkan kepada CopyCaCerts, semua sijil CA yang dipasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk apl ARC.</translation>
-<translation id="7872535148622213208">
-        Dasar ini menentukan senarai asalan (URL) untuk dikendalikan sebagai konteks
-        selamat. Tujuannya adalah untuk membolehkan organisasi menyediakan pelayan peringkatan
-        untuk pembangunan web dalaman.
-        Ini adalah sama dengan bendera --unsafely-treat-insecure-origin-as-secure.
-        Untuk mendapatkan maklumat lanjut tentang konteks selamat, lihat https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Dasar ini aktif dalam mod runcit sahaja.
 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>

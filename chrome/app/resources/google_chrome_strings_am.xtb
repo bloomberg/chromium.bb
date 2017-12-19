@@ -20,6 +20,7 @@
 <translation id="1457721931618994305">Google Chromeን በማዘመን ላይ...</translation>
 <translation id="1469002951682717133">Chrome የመተግበሪያ አስጀማሪ</translation>
 <translation id="1553358976309200471">Chromeን አዘምን</translation>
+<translation id="1585657529869845941"><ph name="BEGIN_BOLD" />ለማንኛውም ቀይር<ph name="END_BOLD" /> ከመጣ ጠቅ ያድርጉት</translation>
 <translation id="1587223624401073077">Google Chrome ካሜራዎን እየተጠቀመ ነው።</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> አደገኛ ነው፣ ስለዚህ Chrome አግዶታል።</translation>
 <translation id="1619887657840448962">Chromeን ይበልጥ ደህንነቱ የተጠበቀ እንዲሆን ለማድረግ፣ በ<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ውስጥ ያልተዘረዘረውን የሚከተለውን ቅጥያ አሰናክለነዋል እና እርስዎ ሳያውቁት የታከለ ሊሆን ይችላል።</translation>
@@ -68,6 +69,7 @@
 <translation id="2664962310688259219">Chrome OS የክፍት ምንጭ ፈቃዶች</translation>
 <translation id="2665296953892887393">የብልሽት ሪፖርቶችን እና <ph name="UMA_LINK" /> ወደ Google በመላክ Google Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ</translation>
 <translation id="2689103672227170538">ይህ ቅጥያ Chromeን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
+<translation id="2705403826523567092">በመላ መሣሪያዎች ላይ ግላዊነት የተላበሰ የአሰሳ ተሞክሮን ለማግኘት በመለያ ይግቡ</translation>
 <translation id="2769762047821873045">Google Chrome መነሻ ማሰሻዎ አይደለም።</translation>
 <translation id="2770231113462710648">ነባሪ አሳሽን ወደዚህ ቀይር፦</translation>
 <translation id="2799223571221894425">ዳግም አስጀምር</translation>
@@ -98,6 +100,7 @@
 <translation id="3612333635265770873">ተመሳሳይ ስም ያለው አንድ ሞዱል ከGoogle Chrome ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="3622797965165704966">አሁን Chromeን ከGoogle መለያዎ ጋር እና በተጋሩ ኮምፒውተሮች ላይ መጠቀም ይበልጥ ቀላል ነው።</translation>
 <translation id="3637702109597584617">የGoogle Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />አገልግሎት ውል<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="3716182511346448902">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome ባለበት አቁሞታል።</translation>
 <translation id="3718181793972440140">ይሄ 1 ንጥል ከዚህ መሣሪያዎ ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chrome ይግቡ።</translation>
 <translation id="3735758079232443276">ይህ «<ph name="EXTENSION_NAME" />» ቅጥያ Chromeን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -106,6 +109,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">አገናኝ በChrome ማንነት የ&amp;ማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="3889417619312448367">Google Chromeን አራግፍ</translation>
+<translation id="3898493977366060150">የድር አሰሳ በGoogle ዘመናዊ ይሆናል</translation>
 <translation id="4028693306634653894">ወደ Chrome በፍጥነት ይግቡ</translation>
 <translation id="4031074602479304239">Chrome ይህን ጣቢያ ወደዚህ እንዳይወስደዎት አቁሞታል፦</translation>
 <translation id="4042449298237264661">Windows XP እና Windows Vista ከእንግዲህ ስለማይደገፉ ይህ ኮምፒውተር ከአሁን በኋላ የGoogle Chrome ዝማኔዎችን አይቀበልም።</translation>
@@ -198,9 +202,11 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6634887557811630702">Google Chrome የተዘመነ ነው።</translation>
 <translation id="6676384891291319759">በይነመረብን ተዳረስ</translation>
 <translation id="6697947395630195233">Chrome አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ይፈልጋል።</translation>
+<translation id="6777817260680419853">አቅጣጫ ማዞር ታግዷል</translation>
 <translation id="683440813066116847">Google Chrome Canary ለmDNS ትራፊክ ለመፍቀድ የውስጥ ደንብ።</translation>
 <translation id="686561893457936865">Chromeን ​​ወደ ሁሉም ቦታ ይውሰዱት</translation>
 <translation id="6885412569789873916">የChrome ቅድመ-ይሁነታ መተግበሪያዎች</translation>
+<translation id="694592694773692225">በዚህ ገጽ ላይ አቅጣጫ ማዞር ታግዷል።</translation>
 <translation id="6967962315388095737">የmDNS ትራፊክን ለመፍቀድ የGoogle Chrome ቅድመ-ይሁንታ የውስጥ ደንብ።</translation>
 <translation id="6970811910055250180">መሣሪያዎን በማዘመን ላይ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> ይህን መሣሪያ ከመጠቀምዎ በፊት የሚከተለውን የአገልግሎት ውል እንዲያነቡ እና እንዲቀበሉ ይፈለጋል። ይህ ውል የGoogle Chrome ስርዓተ ክወና ውሉን አያስፋፋውም፣ አይቀይረውም ወይም አይገድበውም።</translation>

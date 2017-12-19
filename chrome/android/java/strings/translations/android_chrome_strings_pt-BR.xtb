@@ -11,6 +11,7 @@
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
 <translation id="1105960400813249514">Captura de tela</translation>
 <translation id="1111673857033749125">Favoritos salvos nos seus outros dispositivos serão exibidos aqui.</translation>
+<translation id="1113597929977215864">Mostrar visualização simplificada</translation>
 <translation id="1121094540300013208">Relatórios de uso e falhas</translation>
 <translation id="1145536944570833626">Excluir dados já existentes.</translation>
 <translation id="1146678959555564648">Entrar na RV</translation>
@@ -53,6 +54,7 @@
 <translation id="1406000523432664303">"Não rastrear"</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1409879593029778104">O download de <ph name="FILE_NAME" /> foi impedido porque o arquivo já existe.</translation>
+<translation id="1414981605391750300">Entrando em contato com o Google. Isso pode levar um minuto…</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
 <translation id="1423209968422390786">O acesso a locais está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1430915738399379752">Imprimir</translation>
@@ -127,6 +129,7 @@
 <translation id="2100273922101894616">Login automático</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2122601567107267586">Não foi possível abrir o aplicativo</translation>
+<translation id="2123074103454259350">Ainda não</translation>
 <translation id="2126426811489709554">Em execução no Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> salvo(s)</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechada</translation>
@@ -144,6 +147,7 @@
 <translation id="2266890032547182881">Detalhamento de uso de dados</translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2286841657746966508">Endereço de faturamento</translation>
+<translation id="230115972905494466">Nenhum dispositivo compatível encontrado</translation>
 <translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até a leitura ficar confortável. Depois de um toque duplo em um parágrafo, o texto deve ficar pelo menos deste tamanho.</translation>
 <translation id="2323763861024343754">Armazenamento do site</translation>
@@ -188,6 +192,7 @@
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
+<translation id="2744248271121720757">Toque em uma palavra para pesquisar instantaneamente ou ver as ações relacionadas</translation>
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2781151931089541271">Um segundo restante</translation>
@@ -199,6 +204,7 @@
 <translation id="2876764156902388290">O Chrome está usando menos dados para mostrar esta página</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
 <translation id="2891154217021530873">Para de carregar a página</translation>
+<translation id="2892933203342091350">Ativar a visualização simplificada em todos os artigos</translation>
 <translation id="2900528713135656174">Criar evento</translation>
 <translation id="2902702728133930130">O Chrome falhou durante a inicialização devido a um erro inesperado.</translation>
 <translation id="2903493209154104877">Endereços</translation>
@@ -280,12 +286,12 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3632295766818638029">Reautenticar para ver senha</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3649663272864015643">Guia Início selecionada</translation>
-<translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Websites de terceiros podem ler e armazenar os arquivos "cookies".</translation>
 <translation id="3662546969139119822">Não há histórico aqui</translation>
 <translation id="3672452749423051839">Sugerir opções quando houver erro de navegação</translation>
 <translation id="3712575778697986964">Redefinir a Economia de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
+<translation id="3716182511346448902">Como esta página usa muita memória, o Chrome a pausou.</translation>
 <translation id="3734660163659757482">Deslize para cima para ver favoritos e mais</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3739899004075612870">Adicionado aos favoritos no <ph name="PRODUCT_NAME" /></translation>
@@ -301,7 +307,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3859306556332390985">Avançar</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar zoom</translation>
-<translation id="3917783807003067648">O local está bloqueado</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combinar meus dados</translation>
 <translation id="393697183122708255">Nenhuma pesq. por voz ativada disponível</translation>
@@ -314,6 +319,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3985215325736559418">Deseja fazer o download do arquivo <ph name="FILE_NAME" /> novamente?</translation>
 <translation id="3987993985790029246">Copiar link</translation>
 <translation id="3988213473815854515">Está autorizado a usar informações de localização</translation>
+<translation id="3988466920954086464">Veja neste painel resultados da pesquisa instantâneos</translation>
 <translation id="3997476611815694295">Armazenamento sem importância</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4031074602479304239">O Chrome impediu que este site levasse você para</translation>
@@ -364,6 +370,10 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4508440807153586353">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou desejar alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
 <translation id="451872707440238414">Pesquisar favoritos</translation>
+<translation id="4521489764227272523">Os dados selecionados foram removidos do Chrome e dos seus dispositivos sincronizados.
+
+É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em 
+ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="4526249700380860531">Ver e gerenciar as senhas salvas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Escolher pasta</translation>
@@ -405,6 +415,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4860895144060829044">Ligar</translation>
 <translation id="4874967477260347223">Licenças de mídia</translation>
 <translation id="4875775213178255010">Sugestões de conteúdo</translation>
+<translation id="4876188919622883022">Visualização simplificada</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
 <translation id="4910889077668685004">Apps de pagamento</translation>
@@ -420,6 +431,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5004339818306944878">Use até 60% a menos de dados e deixe a Web mais rápida. Os servidores do Google otimizarão as páginas que você visitar.</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> deseja se conectar</translation>
+<translation id="5013696553129441713">Nenhuma nova sugestão</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
@@ -490,6 +502,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5620928963363755975">Procure seus arquivos e páginas em Downloads, usando o botão Mais opções</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>
+<translation id="5646376287012673985">Local</translation>
 <translation id="5648166631817621825">Últimos sete dias</translation>
 <translation id="5655963694829536461">Pesquisar seus downloads</translation>
 <translation id="5659593005791499971">E-mail</translation>
@@ -507,6 +520,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5748802427693696783">Alternada para guias padrão</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
 <translation id="5763382633136178763">Guias anônimas</translation>
+<translation id="5763514718066511291">Toque para copiar o URL desse app</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5777170031995031090">Controle a maneira como o Google usa seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços nossos.</translation>
 <translation id="5779929835642192302">Sugestões disponíveis</translation>
@@ -518,6 +532,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5833984609253377421">Compartilhar link</translation>
 <translation id="583891442612896534">Não foi possível acessar os servidores do Google para realizar a compactação de dados a partir do Google Chrome. Seu espaço para salvar dados pode estar limitado.</translation>
 <translation id="584615158992327102">acesso a downloads, favoritos e histórico.</translation>
+<translation id="5854790677617711513">Com mais de 30 dias</translation>
 <translation id="5858741533101922242">O Chrome não pôde ativar o adaptador Bluetooth</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5867841422488265304">Pesquisar ou digitar endereço da Web</translation>
@@ -683,6 +698,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7378627244592794276">Não</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7403691278183511381">Tela de apresentação do Chrome</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="7445411102860286510">Permite que os sites reproduzam automaticamente vídeos silenciados (recomendado)</translation>
@@ -860,6 +876,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que sites enviem notificações (recomendado)</translation>
+<translation id="9155898266292537608">Você também pode pesquisar com um toque rápido em uma palavra</translation>
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
 <translation id="9204836675896933765">1 arquivo restante</translation>
 <translation id="9206873250291191720">A</translation>

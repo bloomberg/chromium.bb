@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">За съжаление, паролата ви пак не можа да бъде потвърдена. Забележка: Ако наскоро сте я променили, новата ще влезе в сила, след като излезете от профила си. Моля, използвайте старата парола тук.</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 адрес: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Това устройство се управлява корпоративно</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Известия</translation>
+<translation id="2484513351006226581">Натиснете <ph name="KEYBOARD_SHORTCUT" /> за превключване на клавиатурната подредба.</translation>
 <translation id="2501920221385095727">Оставащи клавиши</translation>
 <translation id="2509468283778169019">„CAPS LOCK“ е включен</translation>
 <translation id="2532589005999780174">Режим на висок контраст</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">USB-C устройство</translation>
 <translation id="3465566417615315331">Кликнете върху снимката си</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
+<translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Открояване на курсора на мишката</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE" />“ (изисква рестартиране)</translation>
 <translation id="3582792037806681688">Централизираният вход е забранен за потребител в тази сесия</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Заключване</translation>
 <translation id="3798670284305777884">Високоговорител (вътрешен)</translation>
 <translation id="3846575436967432996">Не е налице информация за мрежата</translation>
+<translation id="385051799172605136">Назад</translation>
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
 <translation id="3899995891769452915">Гласово въвеждане</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Изключване</translation>
 <translation id="4849058404725798627">Открояване на обекта, върху който е фокусът от клавиатурата</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
+<translation id="4890187583552566966">Администраторът ви е деактивирал Google Асистент.</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
 <translation id="4905614135390995787">Клавишната комбинация за превключване на режима на висок контраст е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Приемам</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Изход сега</translation>
 <translation id="6047696787498798094">Споделянето на екрана ще спре, когато превключите към друг потребител. Искате ли да продължите?</translation>
 <translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">За съжаление, паролата ви не можа да бъде потвърдена. Моля, опитайте отново.</translation>
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Зарежда се <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
@@ -262,10 +268,12 @@
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7692480393933218409">Свързаните устройства с USB-C се зареждат</translation>
 <translation id="776344839111254542">Кликнете, за да видите подробности за актуализацията</translation>
+<translation id="7796353162336583443">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате Google Асистент, лазерната показалка или лупата.</translation>
 <translation id="7798302898096527229">Натиснете клавиша „търсене“ или Shift, за да анулирате.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">силен сигнал</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
+<translation id="7933084174919150729">Google Асистент е налице само за основния потребителски профил.</translation>
 <translation id="7977927628060636163">Търсят се мобилни мрежи...</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="7994370417837006925">Централизиран вход</translation>
@@ -282,6 +290,7 @@
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8308637677604853869">Предишно меню</translation>
 <translation id="8351131234907093545">Създаване на бележка</translation>
+<translation id="8392451568018454956">Меню с опции за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433186206711564395">Настройки на мрежата</translation>
 <translation id="8433977262951327081">Комбинацията за показване в лавицата на балончето с менюто за опциите за въвеждане е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Установява се повторна връзка...</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8639760480004882931">Батерия: <ph name="PERCENTAGE" /></translation>
+<translation id="8652175077544655965">Затваряне на настройките</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

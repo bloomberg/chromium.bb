@@ -16,6 +16,7 @@
 <translation id="1502360822835740515">Gjør Chromium til standard nettleser</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="1559451348202814456">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Mac OS X 10.6, 10.7 eller 10.8.</translation>
+<translation id="1585657529869845941">Klikk på <ph name="BEGIN_BOLD" />Bytt likevel<ph name="END_BOLD" /> (hvis knappen vises)</translation>
 <translation id="1653828314016431939">OK – start på nytt nå</translation>
 <translation id="1668054258064581266">Når du har fjernet kontoen din fra Chromium, kan det hende at du må laste inn de åpne fanene på nytt før endringene trer i kraft.</translation>
 <translation id="1688750314291223739">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Chromium på enhver datamaskin.</translation>
@@ -48,6 +49,7 @@
 <translation id="2647554856022461007">Chromium kan bruke nettjenester for å forbedre brukeropplevelsen din på nettet. Du kan slå av disse tjenestene. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
 <translation id="2685838254101182273">Chromium oppdateres ikke lenger og har mistet støtten for denne versjonen av operativsystemet ditt.</translation>
+<translation id="2705403826523567092">Logg på for å gi surfeopplevelsen et personlig preg, synkronisert mellom alle enheter</translation>
 <translation id="2711502716910134313">Chromium-fane</translation>
 <translation id="2718390899429598676">Chromium krypterer dataene dine for å øke sikkerheten.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
@@ -85,6 +87,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Fest Chromium til oppgavelinjen</translation>
 <translation id="3889543394854987837">Klikk på navnet ditt for å åpne Chromium og starte surfingen.</translation>
+<translation id="3898493977366060150">Surfing med Googles smarte funksjoner</translation>
 <translation id="390894725198123737">På Mac kan det hende at passord blir lagret i nøkkelringen. Andre Chromium-brukere som deler denne OS X-kontoen, har i så fall adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="4036079820698952681">Bidra til å gjøre Chromium bedre ved å rapportere de <ph name="BEGIN_LINK" />nåværende innstillingene<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
@@ -146,6 +149,7 @@
 <translation id="59625444380784159">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chromium.</translation>
 <translation id="5987687638152509985">Oppdater Chromium for å starte synkroniseringen</translation>
 <translation id="6055895534982063517">En nyere versjon av Chromium er tilgjengelig, og den er raskere enn noen gang.</translation>
+<translation id="6063093106622310249">&amp;Åpne i Chromium</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dataene dine på grunn av en feil under påloggingen.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> er farlig, så Chromium har blokkert den.</translation>
 <translation id="6212496753309875659">Denne datamaskinen har allerede en nyere versjon av Chromium. Hvis programvaren ikke fungerer, må du avinstallere Chromium og prøve på nytt.</translation>
@@ -162,16 +166,19 @@
 <translation id="6505742536731484931">Chromium trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
 <translation id="6526111688217511984">Chromium må ha lagringstilgang for å laste ned filer.</translation>
+<translation id="6598877126913850652">Gå til innstillinger for Chromium-varsler</translation>
 <translation id="6676384891291319759">Gå til Internett</translation>
 <translation id="6717134281241384636">Profilen din kan ikke brukes fordi den kommer fra en nyere versjon av Chromium.
 
 Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chromium.</translation>
 <translation id="6734080038664603509">Oppdater &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium er allerede installert for alle brukerne på datamaskinen din.</translation>
+<translation id="6777817260680419853">Viderekobling er blokkert</translation>
 <translation id="6810143991807788455">Bidra til å gjøre Chromium bedre ved å rapportere inn de gjeldende innstillingene</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
+<translation id="694592694773692225">Viderekobling er blokkert på denne siden.</translation>
 <translation id="6964305034639999644">Åpne linken i et inko&amp;gnitovindu i Chromium</translation>
 <translation id="6970811910055250180">Oppdaterer enheten ...</translation>
 <translation id="705851970750939768">Oppdater Chromium</translation>
@@ -206,6 +213,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7745317241717453663">Dette sletter nettlesingsdataene dine fra denne enheten. For å hente dataene dine igjen senere må du logge på Chromium som <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
 <translation id="7756122083761163394">Denne personens nettlesingsdata slettes fra denne enheten. For å gjenopprette dataene, logg på Chrome som $2.</translation>
+<translation id="7773960292263897147">Advarsel: Chromium kan ikke hindre utvidelser fra å spille inn nettlesingsloggen. For å slå av denne utvidelsen i inkognitomodus, fjern avmerkingen for dette alternativet.</translation>
 <translation id="7774736947049807614">Autentiseringssertifikatet mislyktes. Logg på Chromium på nytt som <ph name="USER_NAME" />, eller kontakt administratoren din for å få mer informasjon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7867198900892795913">Chromium kunne ikke oppdateres til den nyeste versjonen, så du går glipp av nye funksjoner og sikkerhetsforbedringer.</translation>
 <translation id="7937630085815544518">Du ble logget på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Du må logge deg på igjen med samme konto.</translation>
@@ -248,6 +256,7 @@ Hvis du logger deg på allikevel, blir Chromium-informasjon som bokmerker, logge
 <translation id="9013087743919948559">Legg til i Chromium</translation>
 <translation id="9019929317751753759">For å gjøre Chromium tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="9022552996538154597">Logg på Chromium</translation>
+<translation id="9025992965467895364">Denne siden bruker for mye minne, så Chromium har satt den på pause.</translation>
 <translation id="9036189287518468038">Chromium-appvelger</translation>
 <translation id="9089354809943900324">Chromium er utdatert</translation>
 <translation id="91086099826398415">Åpne linken i en ny &amp;fane i Chromium</translation>

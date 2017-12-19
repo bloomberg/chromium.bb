@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Не удается распаковать расширение. Для безопасной распаковки расширения необходим путь к каталогу вашего профиля, начинающийся с буквы диска. Он не должен содержать параметр слияния папок, точку монтирования или символьную ссылку. Такого пути для вашего профиля не существует.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (серийный номер <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> от поставщика <ph name="VENDOR_ID" /> (серийный номер <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Не удалось загрузить страницу запуска <ph name="PAGE" />.</translation>
 <translation id="388442998277590542">Не удалось загрузить страницу параметров <ph name="OPTIONS_PAGE" />.</translation>
 <translation id="4115165561519362854">Администратор установил, что для запуска приложения "<ph name="EXTENSION_NAME" />" необходима версия <ph name="EXTENSION_VERSION" /> или выше. Обновите приложение.</translation>
 <translation id="4233778200880751280">Не удалось загрузить страницу <ph name="ABOUT_PAGE" />.</translation>

@@ -252,6 +252,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1969212217917526199">Überschreibt Richtlinien auf Fehlerbehebungs-Builds des Hosts für den Remote-Zugriff
 
           Der Wert wird als JSON-Wörterbuch für die Verknüpfung zwischen Richtliniennamen und Richtlinienwerten geparst.</translation>
+<translation id="1969808853498848952">Führt Plug-ins, die eine Autorisierung erfordern, immer aus (eingestellt)</translation>
 <translation id="1988371335297483117">Die Nutzdaten automatischer Updates von <ph name="PRODUCT_OS_NAME" /> können über HTTP statt über HTTPS heruntergeladen werden. Dadurch wird transparentes HTTP-Caching von HTTP-Downloads zugelassen.
 
       Ist diese Richtlinie auf "true" gesetzt, versucht <ph name="PRODUCT_OS_NAME" />, die Nutzdaten automatischer Updates über HTTP herunterzuladen. Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, wird für solche Downloads HTTPS verwendet.</translation>
@@ -757,6 +758,7 @@ Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der g
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
+<translation id="3737544779868348650">Hostname im Gerätenetzwerk</translation>
 <translation id="3750220015372671395">Schlüsselgenerierung auf diesen Websites blockieren</translation>
 <translation id="3756011779061588474">Entwicklermodus blockieren</translation>
 <translation id="3758089716224084329">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxy-Server anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
@@ -1178,6 +1180,13 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
 <translation id="5142301680741828703">Folgende URL-Muster immer in <ph name="PRODUCT_FRAME_NAME" /> darstellen</translation>
+<translation id="5147665094011258322">Legen Sie den Hostnamen des in DHCP-Anfragen verwendeten Geräts fest.
+
+      Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser String während der DHCP-Anfrage als Geräte-Hostname verwendet.
+
+      Der String kann die Variablen ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} enthalten, die im Gerät durch Werte ersetzt werden, bevor sie als Hostname verwendet werden. Das Ergebnis sollte ein gültiger Hostname gemäß RFC 1035, Abschnitt 3.1 sein.
+
+      Wird diese Richtlinie nicht definiert oder ist der Wert nach dem Ersetzen kein gültiger Hostname, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="5148753489738115745">Ermöglicht die Verwendung zusätzlicher Parameter, die beim Start von <ph name="PRODUCT_NAME" /> durch <ph name="PRODUCT_FRAME_NAME" /> eingesetzt werden.
 
           Wenn diese Richtlinie nicht festgelegt wird, wird die Standardbefehlszeile verwendet.</translation>
@@ -1349,6 +1358,9 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Wird diese Einstellung nicht konfiguriert, wird das Standardverzeichnis des Profils verwendet.</translation>
 <translation id="5826047473100157858">Gibt an, ob der Nutzer Seiten in <ph name="PRODUCT_NAME" /> im Inkognitomodus öffnen kann. Ist diese Richtlinie aktiviert oder nicht konfiguriert, so können Seiten im Inkognitomodus geöffnet werden. Wenn sie deaktiviert ist, so können Seiten nicht im Inkognitomodus geöffnet werden. Mit dem Wert "Forced" können Seiten ausschließlich im Inkognitomodus geöffnet werden.</translation>
+<translation id="5835124959204887277">In der Richtlinie werden URLs und Domains spezifiziert, für die keine Eingabeaufforderung angezeigt werden, wenn Nachweiszertifikate von Sicherheitsschlüsseln angefordert werden. Zusätzlich wird an den Sicherheitsschlüssel ein Signal gesendet, das angibt, dass individuelle Nachweise verwendet werden können. Andernfalls erhalten Nutzer in Chrome 65 und höher eine Eingabeaufforderung, wenn von Websites ein Nachweis für Sicherheitsschlüssel angefordert wird.
+
+      URLs, wie z. B. https://example.com/some/path, werden nur durch U2F-AppIDs bestimmt. Domains, wie z. B. example.com, werden nur durch Webauthn-RP-IDs bestimmt. Um sowohl U2F- als auch Webauthn-APIs in eine bestimmte Website einzubeziehen, müssen deshalb sowohl die AppID-URL als auch die Domain aufgeführt werden.</translation>
 <translation id="5836064773277134605">Vom Host für den Remote-Zugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="5862253018042179045">Hiermit wird der Standardstatus der Bedienungshilfefunktion für das gesprochene Feedback auf der Anmeldeseite festgelegt.
 
@@ -1527,6 +1539,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Wenn die Richtlinie deaktiviert ist, erfolgt kein Import der AutoFill-Formulardaten.
 
       Ist die Richtlinie nicht konfiguriert, wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
+<translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
 <translation id="6244210204546589761">Beim Start zu öffnende URLs</translation>
 <translation id="6258193603492867656">Gibt an, ob der generierte Kerberos-SPN einen Nicht-Standard-Port umfassen soll. Falls Sie diese Einstellung aktivieren und ein Nicht-Standard-Port (ein anderer Port als 80 oder 443) eingegeben wird, wird dieser in den generierten Kerberos-SPN aufgenommen. Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, umfasst der generierte Kerberos-SPN in keinem Fall einen Port.</translation>
@@ -1754,6 +1767,13 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7202925763179776247">Download-Einschränkungen zulassen</translation>
 <translation id="7207095846245296855">Google SafeSearch erzwingen</translation>
 <translation id="7216442368414164495">Ermöglicht Nutzern die Aktivierung erweiterter Berichterstellung bei Verwendung von Safe Browsing</translation>
+<translation id="7221822638060296742">Mit dieser Option können Sie festlegen, ob auf Websites automatisch das Plug-in <ph name="FLASH_PLUGIN_NAME" /> ausgeführt werden darf. Das automatische Ausführen des Plug-ins <ph name="FLASH_PLUGIN_NAME" /> kann entweder für alle Websites erlaubt oder abgelehnt werden.
+
+          Mit "Click-to-Play" wird gestattet, dass das Plug-in <ph name="FLASH_PLUGIN_NAME" /> ausgeführt wird, der Nutzer muss jedoch den Platzhalter anklicken, um die Ausführung zu starten.
+
+          Die automatische Wiedergabe ist nur für Domains erlaubt, die ausdrücklich in der Richtlinie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> aufgeführt werden. Wenn Sie die automatische Wiedergabe für alle Websites aktivieren möchten, können Sie http://* und https://* dieser Liste hinzufügen.
+
+          Wenn diese Richtlinie nicht aktiviert wird, kann der Nutzer diese Einstellung manuell ändern.</translation>
 <translation id="7234280155140786597">Namen der unzulässigen Hosts für natives Messaging (oder "*" für alle)</translation>
 <translation id="7236775576470542603">Hiermit wird der Standardtyp für die Lupe festgelegt, die auf der Anmeldeseite aktiviert ist.
 
@@ -1948,13 +1968,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="787125417158068494"><ph name="PRODUCT_OS_NAME" />-Zertifikate sind nicht für ARC-Apps verfügbar, wenn "SyncDisabled" festgelegt wurde oder die Zertifikate nicht konfiguriert wurden.
 
       Wenn "CopyCaCerts" festgelegt wurde, sind alle über ONC installierten CA-Zertifikate mit <ph name="WEB_TRUSTED_BIT" /> für ARC-Apps verfügbar.</translation>
-<translation id="7872535148622213208">
-        Mit dieser Richtlinie wird eine Liste aller Quellen (URLs) festgelegt, die als 
-        sicherer Kontext eingestuft werden sollen. Auf diese Weise können Organisationen
-        einen Testserver für interne Webentwicklungen einrichten.
-        Diese Richtlinie entspricht der Kennzeichnung "--unsafely-treat-insecure-origin-as-secure".
-        Weitere Informationen zu sicherem Kontext finden Sie unter https://www.w3.org/TR/secure-contexts/.
-        </translation>
 <translation id="7882585827992171421">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>

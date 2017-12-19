@@ -20,6 +20,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1457721931618994305">Posodabljanje Google Chroma ...</translation>
 <translation id="1469002951682717133">Zaganjalnik aplikacij v Chromu</translation>
 <translation id="1553358976309200471">Posodobi Chrome</translation>
+<translation id="1585657529869845941">Kliknite <ph name="BEGIN_BOLD" />Vseeno preklopi<ph name="END_BOLD" />, če se prikaže</translation>
 <translation id="1587223624401073077">Google Chrome uporablja vašo kamero.</translation>
 <translation id="1587325591171447154">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chrome blokiral.</translation>
 <translation id="1619887657840448962">Zaradi večje varnosti smo v Chromu onemogočili to razširitev, ki ni navedena tukaj in je bila morda dodana brez vaše vednosti: <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />.</translation>
@@ -68,6 +69,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2664962310688259219">Odprtokodne licence za Chrome OS</translation>
 <translation id="2665296953892887393">Pomagajte izboljšati Chrome – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko zaženete Chrome.</translation>
+<translation id="2705403826523567092">Prijavite se za prilagojeno izkušnjo brskanja, sinhronizirano v več napravah</translation>
 <translation id="2769762047821873045">Google Chrome ni privzeti brskalnik.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="2799223571221894425">Vnovičen zagon</translation>
@@ -98,6 +100,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="3612333635265770873">Modul z istim imenom je že bil v sporu z Google Chromom.</translation>
 <translation id="3622797965165704966">Zdaj je Chrome lažje uporabljati z Google Računom in v računalnikih, ki so v skupni rabi.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Googlov OS Chrome</translation>
+<translation id="3716182511346448902">Ta stran uporablja preveč pomnilnika, zato jo je Chrome zaustavil.</translation>
 <translation id="3718181793972440140">S tem bo iz te naprave izbrisan 1 element. Če želite pozneje prenesti podatke, se v Chrome prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Zaradi razširitve »<ph name="EXTENSION_NAME" />« se je spremenila stran, ki je prikazana, ko zaženete Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -106,6 +109,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Odpiranje povezave v Chromovem oknu brez belež&amp;enja zgodovine</translation>
 <translation id="3889417619312448367">Odstrani Google Chrome</translation>
+<translation id="3898493977366060150">Brskanje po spletu z Googlovimi pametnimi rešitvami</translation>
 <translation id="4028693306634653894">Hitrejši dostop do Chroma</translation>
 <translation id="4031074602479304239">Chrome je preprečil, da bi vas to spletno mesto preusmerilo na</translation>
 <translation id="4042449298237264661">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista nista več podprta.</translation>
@@ -198,9 +202,11 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6634887557811630702">Google Chrome je posodobljen.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
 <translation id="6697947395630195233">Chrome potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom.</translation>
+<translation id="6777817260680419853">Preusmeritev je blokirana</translation>
 <translation id="683440813066116847">Pravilo za dohodni promet za Google Chrome Canary, ki dovoli promet mDNS.</translation>
 <translation id="686561893457936865">Naj vas Chrome spremlja povsod</translation>
 <translation id="6885412569789873916">Aplikacije za Chrome Beta</translation>
+<translation id="694592694773692225">Preusmeritev je na tej strani blokirana.</translation>
 <translation id="6967962315388095737">Pravilo za dohodni promet za Google Chrome Beta, ki dovoli promet mDNS.</translation>
 <translation id="6970811910055250180">Posodabljanje naprave ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Google Chrome OS.</translation>

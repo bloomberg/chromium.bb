@@ -259,6 +259,7 @@
 <translation id="1969212217917526199">Suprascrie politicile în versiunile de depanare ale gazdei de acces de la distanță.
 
           Valoarea este analizată ca dicționar JSON cu asocieri ale numelor de politici cu valori ale politicilor.</translation>
+<translation id="1969808853498848952">Rulează întotdeauna pluginuri care necesită autorizare (învechită)</translation>
 <translation id="1988371335297483117">Încărcările utile pentru actualizările automate pe <ph name="PRODUCT_OS_NAME" /> pot fi descărcate prin HTTP, în loc de HTTPS. Acest lucru permite stocarea transparentă în memoria cache HTTP a descărcărilor HTTP.
 
       Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> va încerca să descarce încărcările utile pentru actualizările automate prin HTTP. Dacă politica este dezactivată sau nu este configurată, la descărcarea încărcărilor utile pentru actualizări automate se va utiliza HTTPS.</translation>
@@ -763,6 +764,7 @@
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
 <translation id="3711895659073496551">Suspendați</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
+<translation id="3737544779868348650">Numele de gazdă al rețelei dispozitivului</translation>
 <translation id="3750220015372671395">Blochează generarea cheilor pe aceste site-uri</translation>
 <translation id="3756011779061588474">Blocați modul pentru dezvoltatori</translation>
 <translation id="3758089716224084329">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy.
@@ -1186,6 +1188,13 @@
 <translation id="5130288486815037971">Specifică dacă suitele de codificare RC4 din TLS sunt activate</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
 <translation id="5142301680741828703">Redă întotdeauna următoarele șabloane de adrese URL în <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Stabilește numele de gazdă al dispozitivului folosit în solicitările DHCP.
+
+      Dacă această politică este setată la un șir completat, acel șir va fi folosit ca nume de gazdă al dispozitivului în timpul solicitării DHCP.
+
+      Șirul poate să conțină variabilele ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, care vor fi înlocuite cu valori pe dispozitiv, înainte ca acesta să fie folosit ca nume de gazdă. Înlocuirea rezultată trebuie să fie un nume de gazdă valid (conform RFC 1035, secțiunea 3.1).
+
+      Dacă această politică nu este setată sau dacă valoarea după înlocuire nu este un nume de gazdă valid, nu va fi setat niciun nume de gazdă în solicitarea DHCP. </translation>
 <translation id="5148753489738115745">Vă permite să specificați parametri suplimentari, care vor fi utilizați atunci când <ph name="PRODUCT_FRAME_NAME" /> lansează <ph name="PRODUCT_NAME" />.
 
           Dacă această politică nu este setată, va fi utilizată linia de comandă prestabilită.</translation>
@@ -1361,6 +1370,9 @@
 
       Dacă această setare nu este configurată, va fi folosit directorul prestabilit al profilului.</translation>
 <translation id="5826047473100157858">Specifică dacă utilizatorul poate deschide pagini în modul incognito în <ph name="PRODUCT_NAME" />. Dacă politica este activată sau nu este setată, paginile pot fi deschise în modul incognito. Dacă este dezactivată, paginile nu pot fi deschise în modul incognito. Dacă este selectat „Forțat”, paginile pot fi deschise NUMAI în modul incognito.</translation>
+<translation id="5835124959204887277">Specifică adresele URL și domeniile pentru care nu va fi afișată nicio solicitare atunci când sunt solicitate certificate de atestare de la Cheile de securitate. În plus, va fi transmis un semnal către Cheia de securitate, indicând faptul că poate fi folosită atestarea individuală. Fără aceasta, utilizatorii vor fi atenționați în Chrome 65+ atunci când site-urile necesită atestarea Cheilor de securitate.
+
+      Adresele URL (cum ar fi https://example.com/some/path) vor putea fi folosite numai drept coduri ale aplicației U2F. Domeniile (cum ar fi example.com) vor putea fi folosite numai ca ID-uri webauthn RP. Prin urmare, pentru a acoperi atât API-urile U2F, cât și API-urile webauthn pentru un anumit site, trebuie listate atât adresa URL, cât și domeniul cu codul aplicației.</translation>
 <translation id="5836064773277134605">Limitați intervalul pentru portul UDP folosit de gazda de acces la distanță</translation>
 <translation id="5862253018042179045">Setați funcția de accesibilitate pentru feedback vocal ca stare prestabilită pe ecranul de conectare.
 
@@ -1539,6 +1551,7 @@
       Dacă este dezactivată, datele salvate pentru completarea automată a formularelor nu sunt importate.
 
       Dacă nu este configurată, utilizatorul poate fi întrebat dacă importă datele sau este posibil ca acestea să fie importate automat.</translation>
+<translation id="6224304369267200483">Adresele URL/domeniile pentru care se permite automat atestarea directă a Cheilor de securitate</translation>
 <translation id="6233173491898450179">Setează directorul de descărcare</translation>
 <translation id="6244210204546589761">Adrese URL care se deschid la pornire</translation>
 <translation id="6258193603492867656">Specifică dacă în protocolul Kerberos numele SPN generate ar trebui să includă un port non-standard. Dacă activați această setare și este introdus un port non-standard (de exemplu, un alt port decât 80 sau 443), acesta va fi inclus în numele SPN generate în protocolul Kerberos. Dacă dezactivați această setare sau o lăsați nesetată, codurile SPN generate în Kerberos nu vor include un port.</translation>
@@ -1767,6 +1780,13 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7202925763179776247">Permite restricții privind descărcarea</translation>
 <translation id="7207095846245296855">Impune Căutarea sigură Google</translation>
 <translation id="7216442368414164495">Permite utilizatorilor să activeze raportarea detaliată privind Navigarea sigură</translation>
+<translation id="7221822638060296742">Îți permite să setezi dacă site-urile au permisiunea să ruleze automat pluginul <ph name="FLASH_PLUGIN_NAME" />. Rularea automată a pluginului <ph name="FLASH_PLUGIN_NAME" /> poate fi permisă sau refuzată în bloc pentru toate site-urile.
+
+          Opțiunea „Dă clic pentru redare” îi permite pluginului <ph name="FLASH_PLUGIN_NAME" /> să ruleze, dar utilizatorul trebuie să dea clic pe substituent pentru a începe executarea.
+
+          Redarea automată este permisă numai pentru domeniile listate în mod explicit în politica <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Dacă dorești să activezi redarea automată pentru toate site-urile, îți recomandăm să adaugi http://* și https://* în această listă.
+
+          Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
 <translation id="7234280155140786597">Numele gazdelor de mesagerie nativă interzise (sau * pentru toate)</translation>
 <translation id="7236775576470542603">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare.
 
@@ -1961,13 +1981,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="787125417158068494">Dacă politica este setată la SyncDisabled sau nu este configurată, certificatele <ph name="PRODUCT_OS_NAME" /> nu sunt disponibile pentru aplicațiile ARC.
 
       Dacă politica este setată la CopyCaCerts, toate certificatele CA instalate prin ONC cu <ph name="WEB_TRUSTED_BIT" /> sunt disponibile pentru aplicațiile ARC.</translation>
-<translation id="7872535148622213208">
-        Politica specifică o listă de origini (adrese URL) care trebuie tratate drept context
-        securizat. Scopul este să permită organizațiilor să configureze un server de simulare
-        pentru dezvoltările web interne.
-        Acest lucru este identic cu marcajul --unsafely-treat-insecure-origin-as-secure.
-        Pentru mai multe informații despre contextele securizate, accesează https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Această politică este activă numai în modul Vânzare.
 
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>

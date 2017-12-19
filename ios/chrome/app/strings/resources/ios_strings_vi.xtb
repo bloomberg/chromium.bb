@@ -78,6 +78,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2381405137052800939">Thông tin cơ bản</translation>
 <translation id="2386793615875593361">Đã chọn 1 ảnh</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
+<translation id="2523363575747517183">Trang web này đang liên tục tìm cách mở một ứng dụng khác.</translation>
 <translation id="2529021024822217800">Mở tất cả</translation>
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
 <translation id="2584132361465095047">Thêm tài khoản...</translation>
@@ -178,6 +179,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="4378154925671717803">Điện thoại</translation>
 <translation id="441868831736628555">Thông báo bảo mật</translation>
 <translation id="4460091562821778167">Luôn hỏi xem tôi muốn sử dụng ứng dụng nào</translation>
+<translation id="4496373720959965247">Thêm tab và chuyển đổi giữa các trang</translation>
 <translation id="4508750114462689118">Đóng quảng cáo đăng nhập</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Thử đăng nhập lại.</translation>
@@ -237,6 +239,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5771816112378578655">Đang thiết lập...</translation>
 <translation id="5816228676161003208">Điều này cho phép bạn tìm kiếm nhanh hơn bằng giọng nói.</translation>
 <translation id="5846482154967366008">Công cụ tìm kiếm</translation>
+<translation id="5854790677617711513">Đã tồn tại hơn 30 ngày</translation>
 <translation id="5857090052475505287">Thư mục Mới</translation>
 <translation id="5857770089550859117">Yêu cầu cụm mật khẩu để bắt đầu đồng bộ hóa.</translation>
 <translation id="5860033963881614850">Tắt</translation>
@@ -335,7 +338,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7514365320538308">Tải xuống</translation>
 <translation id="7537586195939242955">Rất tiếc, không thể cài đặt Pass (Vé xem) của bạn vào Passbook (Ví điện tử) lúc này.</translation>
 <translation id="7561196759112975576">Luôn luôn</translation>
-<translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7603852183842204213">Cửa sổ bật lên đã bị chặn (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7638584964844754484">Cụm mật khẩu không chính xác</translation>

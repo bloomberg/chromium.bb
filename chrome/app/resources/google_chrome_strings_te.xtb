@@ -18,6 +18,7 @@
 <translation id="1457721931618994305">Google Chromeని నవీకరిస్తోంది...</translation>
 <translation id="1469002951682717133">Chrome అనువర్తన లాంచర్</translation>
 <translation id="1553358976309200471">Chromeని నవీకరించు</translation>
+<translation id="1585657529869845941">ఇది కనిపిస్తే, <ph name="BEGIN_BOLD" />అయిన కూడా మార్చు<ph name="END_BOLD" />ను క్లిక్ చేయండి</translation>
 <translation id="1587223624401073077">Google Chrome మీ కెమెరాను ఉపయోగిస్తోంది.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> హానికరం, కావున Chrome దాన్ని బ్లాక్ చేసింది.</translation>
 <translation id="1619887657840448962">Chromeని సురక్షితం చేయడానికి, మేము క్రింది పొడిగింపుని నిలిపివేసాము, ఇది <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />లో జాబితా చేయబడలేదు మరియు మీకు తెలియకుండా జోడించబడి ఉండవచ్చు.</translation>
@@ -64,6 +65,7 @@
 <translation id="2664962310688259219">Chrome OS ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
 <translation id="2665296953892887393">Googleకు వినియోగ గణాంకాలు మరియు <ph name="UMA_LINK" />ను పంపడం ద్వారా Google Chromeను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="2689103672227170538">ఈ పొడిగింపు మీరు Chromeని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
+<translation id="2705403826523567092">వ్యక్తిగతీకరించిన బ్రౌజింగ్ అనుభవానికి, పరికరాలకు సమకాలీకరించడానికి సైన్ ఇన్ చేయండి</translation>
 <translation id="2769762047821873045">Google Chrome మీ డిఫాల్ట్ బ్రౌజర్ కాదు.</translation>
 <translation id="2770231113462710648">డిఫాల్ట్ బ్రౌజర్‌ను దీనికి మార్చు:</translation>
 <translation id="2799223571221894425">మళ్లీ ప్రారంభించు</translation>
@@ -94,6 +96,7 @@
 <translation id="3612333635265770873">Google Chromeతో వైరుధ్యం అయ్యే అదే పేరుతో మాడ్యూల్ ఉంది.</translation>
 <translation id="3622797965165704966">ఇప్పుడు మీ Google ఖాతాతో మరియు భాగస్వామ్య కంప్యూటర్‌ల్లో Chromeని సులభంగా ఉపయోగించవచ్చు.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="3716182511346448902">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తోంది, కాబట్టి దీన్ని Chrome పాజ్ చేయబడింది.</translation>
 <translation id="3718181793972440140">ఇది ఈ పరికరం నుండి 1 అంశాన్ని తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
 <translation id="3735758079232443276"><ph name="EXTENSION_NAME" /> పొడిగింపు మీరు Chromeని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -102,6 +105,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome అ&amp;జ్ఞాత విండోలో లింక్‌ను తెరువు</translation>
 <translation id="3889417619312448367">Google Chromeను అన్ఇన్స్టాల్ చెయ్యి</translation>
+<translation id="3898493977366060150">Google స్మార్ట్‌లతో వెబ్ బ్రౌజింగ్</translation>
 <translation id="4028693306634653894">Chromeకి వేగవంతంగా వెళ్లండి</translation>
 <translation id="4031074602479304239">ఈ సైట్ మిమ్మల్ని వేరే పేజీకి తీసుకెళ్లనీయకుండా Chrome అడ్డుకుంది</translation>
 <translation id="4042449298237264661">Windows XP మరియు Windows Vistaకు ఇప్పుడు మద్దతు లేనందున ఈ కంప్యూటర్ ఇకపై Google Chrome నవీకరణలను స్వీకరించదు.</translation>
@@ -190,9 +194,11 @@
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
 <translation id="6697947395630195233">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromeకు మీ స్థాన యాక్సెస్ అవసరం.</translation>
+<translation id="6777817260680419853">మళ్ళింపు బ్లాక్ చేయబడింది</translation>
 <translation id="683440813066116847">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome కెనరీ కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="686561893457936865">Chromeని ప్రతిచోటుకు తీసుకెళ్లండి</translation>
 <translation id="6885412569789873916">Chrome బీటా అనువర్తనాలు</translation>
+<translation id="694592694773692225">మళ్ళింపు ఈ పేజీలో బ్లాక్ చేయబడింది.</translation>
 <translation id="6967962315388095737">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome బీటా కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="6970811910055250180">మీ పరికరాన్ని నవీకరిస్తోంది...</translation>
 <translation id="6982337800632491844">మీరు ఈ పరికరాన్ని ఉపయోగించడానికి ముందు సేవా నిబంధనలను చదివి, అంగీకరించాలని <ph name="DOMAIN" /> కోరుతోంది. ఈ నిబంధనలు Google Chrome OS నిబంధనలను విస్తరింపజేయవు, సవరించవు లేదా పరిమితం చేయవు.</translation>

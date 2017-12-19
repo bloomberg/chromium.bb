@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Büyük fare imleci</translation>
 <translation id="1550523713251050646">Daha fazla seçenek için tıklayın</translation>
 <translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Maalesef şifreniz hâlâ doğrulanamadı. Not: Şifrenizi yakın zamanda değiştirdiyseniz, yeni şifreniz oturumu kapatmanızdan sonra geçerli olacaktır. Lütfen burada eski şifrenizi kullanın.</translation>
 <translation id="1677472565718498478">Kalan süre: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adresi: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Bu cihaz kuruluş tarafından yönetiliyor</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Bildirimler</translation>
+<translation id="2484513351006226581">Klavye düzenini değiştirmek için <ph name="KEYBOARD_SHORTCUT" /> tuşlarına basın.</translation>
 <translation id="2501920221385095727">Yapışkan tuşlar</translation>
 <translation id="2509468283778169019">CAPS LOCK açık</translation>
 <translation id="2532589005999780174">Yüksek kontrast modu</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">USB-C cihaz</translation>
 <translation id="3465566417615315331">Fotoğrafınızı tıklayın</translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
+<translation id="3477079411857374384">Control-Üst Karakter-Boşluk</translation>
 <translation id="3510164367642747937">Fare imlecini vurgula</translation>
 <translation id="3573179567135747900">Tekrar "<ph name="FROM_LOCALE" />" ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="3582792037806681688">Bu oturumdaki bir kullanıcı için çoklu oturum açma engellendi</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Kilitle</translation>
 <translation id="3798670284305777884">Hoparlör (dahili)</translation>
 <translation id="3846575436967432996">Hiçbir ağ bilgisi yok</translation>
+<translation id="385051799172605136">Geri</translation>
 <translation id="3891340733213178823">Oturumu kapatmak için Ctrl+ÜstKrktr+Q tuşlarına iki defa basın.</translation>
 <translation id="3893630138897523026">ChromeVox (sesli geri bildirim)</translation>
 <translation id="3899995891769452915">Ses girişi</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="4849058404725798627">Klavye odağının olduğu nesneyi vurgula</translation>
 <translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
+<translation id="4890187583552566966">Google Asistan, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="4895488851634969361">Pil dolu.</translation>
 <translation id="4905614135390995787">Yüksek Kontrast Modunu açma/kapatma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> tuşlarını kullanın.</translation>
 <translation id="4918086044614829423">Kabul et</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Şimdi çıkış yap</translation>
 <translation id="6047696787498798094">Başka bir kullanıcıya geçtiğinizde ekran paylaşma özelliği durur. Devam etmek istiyor musunuz?</translation>
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> içinde otomatik olarak çıkış yapacaksınız.</translation>
+<translation id="6064337552080329342">Maalesef şifreniz doğrulanamadı. Lütfen tekrar deneyin.</translation>
 <translation id="607652042414456612">Bilgisayarınız yakındaki Bluetooth cihazlar tarafından keşfedilebilir durumdadır. Ayrıca,
 <ph name="ADDRESS" /> adresine sahip "<ph name="NAME" />" olarak görünecek</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> şarj ediyor</translation>
@@ -263,10 +269,12 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7692480393933218409">Bağlı USB-C cihazlar şarj ediliyor</translation>
 <translation id="776344839111254542">Güncelleme ayrıntılarını görüntülemek için tıklayın</translation>
+<translation id="7796353162336583443">Not veya ekran görüntüsü almak, Google Asistan, lazer işaretçi veya büyüteç işlevlerini kullanmak için raftaki ekran kalemi düğmesine dokunun.</translation>
 <translation id="7798302898096527229">İptal etmek için Ara veya Üst Karakter tuşuna basın.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ve <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Güçlü sinyal</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
+<translation id="7933084174919150729">Google Asistan yalnızca birincil profilde kullanılabilir.</translation>
 <translation id="7977927628060636163">Mobil ağlar aranıyor...</translation>
 <translation id="7982789257301363584">Ağ</translation>
 <translation id="7994370417837006925">Çoklu oturum açma</translation>
@@ -283,6 +291,7 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
 <translation id="8351131234907093545">Not oluştur</translation>
+<translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> seçenekler menüsü</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
@@ -293,6 +302,7 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yeniden bağlanılıyor...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> kaldı</translation>
+<translation id="8652175077544655965">Ayarları kapat</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
 <translation id="8814190375133053267">Kablosuz</translation>

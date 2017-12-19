@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Kishale kikubwa cha kipanya</translation>
 <translation id="1550523713251050646">Bofya ili upate chaguo zaidi</translation>
 <translation id="1621499497873603021">Muda unaosalia mpaka betri inapoisha, <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Samahani, tumeshindwa kuthibitisha nenosiri lako. Kumbuka: ikiwa ulibadilisha nenosiri lako hivi karibuni, nenosiri lako jipya litaanza kutumika pindi utakapoondoka kwenye akaunti, tafadhali tumia nenosiri la awali hapa.</translation>
 <translation id="1677472565718498478">Zimesalia <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Anwani ya IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Kifaa hiki kinadhibitiwa kibiashara</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Kabla hujakubali, tafadhali thibitisha kwamba nenosiri hili linaonyeshwa kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Arifa</translation>
+<translation id="2484513351006226581">Gonga <ph name="KEYBOARD_SHORTCUT" /> ili ubadilishe mpangilio wa kibodi.</translation>
 <translation id="2501920221385095727">Vitufe vya kusalia kwa muda</translation>
 <translation id="2509468283778169019">Caps Lock imewashwa.</translation>
 <translation id="2532589005999780174">Hali ya juu ya utofautishaji</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Kifaa cha USB-C</translation>
 <translation id="3465566417615315331">Bofya picha yako</translation>
 <translation id="3473479545200714844">Kikuza skrini</translation>
+<translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Angazia kiteuzi cha kipanya</translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
 <translation id="3582792037806681688">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja umezimwa kwa mtumiaji katika kipindi hiki</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Funga</translation>
 <translation id="3798670284305777884">Spika (ya ndani)</translation>
 <translation id="3846575436967432996">Hakuna maelezo ya mtandao yanayopatikana</translation>
+<translation id="385051799172605136">Nyuma</translation>
 <translation id="3891340733213178823">Bonyeza Ctrl+Shift+Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="3893630138897523026">ChromeVox (maoni yaliyotamkwa)</translation>
 <translation id="3899995891769452915">Kuweka data kwa kutamka</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Tenganisha</translation>
 <translation id="4849058404725798627">Angazia kipengee kilicholengwa kwa kibodi</translation>
 <translation id="4872237917498892622">Alt + Utafutaji au Hama</translation>
+<translation id="4890187583552566966">Programu ya Mratibu wa Google imezimwa na msimamizi wako.</translation>
 <translation id="4895488851634969361">Betri imejaa.</translation>
 <translation id="4905614135390995787">Njia ya mkato ya kugeuza Hali ya Utofautishaji wa Juu imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Kubali</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Ondoka kwenye akaunti sasa hivi</translation>
 <translation id="6047696787498798094">Itaacha kushiriki skrini unapobadilisha hadi kwa mtumiaji mwingine. Je, unataka kuendelea?</translation>
 <translation id="6062360702481658777">Utaondolewa kwenye akaunti kiotomatiki baada ya <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">Samahani, tumeshindwa kuthibitisha nenosiri lako. Tafadhali jaribu tena.</translation>
 <translation id="607652042414456612">Kompyuta yako inaweza kutambuliwa na vifaa vyenye Bluetooth vilivyo karibu na itaonekana kama  "<ph name="NAME" />" ikiwa na anwani ya <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Inachaji <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
@@ -262,10 +268,12 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7692480393933218409">Kinachaji vifaa vilivyounganishwa vya USB-C</translation>
 <translation id="776344839111254542">Bofya ili uone maelezo ya masasisho</translation>
+<translation id="7796353162336583443">Gusa kitufe cha stylus kwenye rafu ili uandike kidokezo, upige picha ya skrini, utumie programu ya Mratibu, kielekezi cha leza au lenzi.</translation>
 <translation id="7798302898096527229">Bonyeza Tafuta au Shift ili ughairi.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> na <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Mtandao ni thabiti</translation>
 <translation id="7904094684485781019">Msimamizi wa akaunti hii ameondoa uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
+<translation id="7933084174919150729">Programu ya Mratibu wa Google inapatikana kwenye wasifu wa msingi pekee.</translation>
 <translation id="7977927628060636163">Inatafuta mitandao ya simu...</translation>
 <translation id="7982789257301363584">Mtandao</translation>
 <translation id="7994370417837006925">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
@@ -282,6 +290,7 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8308637677604853869">Menyu ya awali</translation>
 <translation id="8351131234907093545">Unda kidokezo</translation>
+<translation id="8392451568018454956">Menyu ya chaguo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8433186206711564395">Mipangilio ya mtandao</translation>
 <translation id="8433977262951327081">Njia ya mkato ya kuonyesha kiputo cha menyu ya chaguo za kuingiza data katika rafu imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Inaunganisha upya...</translation>
 <translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa.</translation>
 <translation id="8639760480004882931">Imebaki <ph name="PERCENTAGE" />%</translation>
+<translation id="8652175077544655965">Funga mipangilio</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

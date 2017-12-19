@@ -256,6 +256,7 @@
 <translation id="1969212217917526199">Zastępuje zasady w kompilacjach hosta dostępu zdalnego w trybie debugowania.
 
           Wartość jest przetwarzana jako słownik JSON nazwy zasady na mapowanie wartości zasady.</translation>
+<translation id="1969808853498848952">Zawsze uruchamiaj wtyczki wymagające autoryzacji (zasada wycofana)</translation>
 <translation id="1988371335297483117">Ładunki aktualizacji automatycznych można pobierać w <ph name="PRODUCT_OS_NAME" /> przez HTTP zamiast HTTPS. Umożliwia to przejrzyste zapisywanie w pamięci podręcznej HTTP plików pobranych przez HTTP.
 
       Jeśli ustawisz tu wartość prawda, <ph name="PRODUCT_OS_NAME" /> będzie próbować pobierać ładunki aktualizacji automatycznych przez HTTP. Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość fałsz, do pobierania ładunków aktualizacji automatycznych będzie używany protokół HTTPS.</translation>
@@ -754,6 +755,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="3711895659073496551">Wstrzymaj</translation>
 <translation id="3736879847913515635">Włączanie dodawania osób w menedżerze użytkowników</translation>
+<translation id="3737544779868348650">Sieciowa nazwa hosta urządzenia</translation>
 <translation id="3750220015372671395">Blokuj generowanie kluczy w tych witrynach</translation>
 <translation id="3756011779061588474">Zablokuj tryb programisty</translation>
 <translation id="3758089716224084329">Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
@@ -1162,6 +1164,13 @@ Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawien
 <translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
 <translation id="5141670636904227950">Ustaw domyślny typ lupy włączony na ekranie logowania</translation>
 <translation id="5142301680741828703">Zawsze renderuj strony we wtyczce <ph name="PRODUCT_FRAME_NAME" /> według następujących wzorców adresów URL</translation>
+<translation id="5147665094011258322">Określa nazwę hosta urządzenia używaną w żądaniach DHCP.
+
+      Jeśli dla tej zasady ustawiono niepusty ciąg znaków, będzie on używany jako nazwa hosta w żądaniach DHCP.
+
+      Ciąg może zawierać zmienne ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}. Zanim ciąg zostanie użyty jako nazwa hosta, zmienne będą zastąpione wartościami z urządzenia. Utworzony w ten sposób ciąg musi być prawidłową nazwą hosta (zgodnie z sekcją 3.1 wymogów RFC 1035).
+
+      Jeśli ta zasada nie jest ustawiona lub wartość po zastąpieniu zmiennych nie jest prawidłową nazwą hosta, w żądaniu DHCP nazwa hosta nie zostanie skonfigurowana. </translation>
 <translation id="5148753489738115745">Pozwala określić dodatkowe parametry używane, gdy <ph name="PRODUCT_FRAME_NAME" /> uruchamia <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada nie jest ustawiona, używany jest domyślny wiersz polecenia.</translation>
@@ -1332,6 +1341,9 @@ Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawien
 
       Gdy ta opcja nie jest ustawiona, obowiązuje domyślny katalog profilu.</translation>
 <translation id="5826047473100157858">Określa, czy użytkownik może otwierać strony w trybie incognito w <ph name="PRODUCT_NAME" />. W przypadku opcji „Włączone” lub nieskonfigurowania zasady strony mogą być otwierane w tym trybie. Opcja „Wyłączone” uniemożliwia otwieranie stron w tym trybie. Po wybraniu opcji „Wymuszone” strony można otwierać TYLKO w trybie incognito.</translation>
+<translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z Kluczy bezpieczeństwa Google. Oprócz tego do Klucza bezpieczeństwa Google będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie Kluczy bezpieczeństwa Google.
+
+      Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
 <translation id="5862253018042179045">Ustawia domyślny stan funkcji ułatwień dostępu w postaci potwierdzeń głosowych na ekranie logowania.
 
@@ -1510,6 +1522,7 @@ Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawien
       Jeśli zasada zostanie wyłączona, dane autouzupełniania formularzy nie zostaną zaimportowane.
 
       Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować dane, lub operacja ta zostanie wykonana automatycznie.</translation>
+<translation id="6224304369267200483">Adresy URL / domeny automatycznie uprawnione do bezpośredniego poświadczania Kluczy bezpieczeństwa Google</translation>
 <translation id="6233173491898450179">Ustaw katalog pobierania</translation>
 <translation id="6244210204546589761">Adresy URL otwierane po uruchomieniu</translation>
 <translation id="6258193603492867656">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos ma zawierać port niestandardowy. Po włączeniu tego ustawienia i wprowadzeniu portu niestandardowego (tzn. innego niż 80 i 443) jest on umieszczany w generowanej nazwie SPN w protokole Kerberos. Jeśli wyłączysz ustawienie, generowana nazwa SPN w protokole Kerberos nie będzie w żadnym przypadku zawierać portu.</translation>
@@ -1728,6 +1741,13 @@ Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawien
 <translation id="7202925763179776247">Zezwól na ograniczenia pobierania</translation>
 <translation id="7207095846245296855">Wymuś stosowanie filtra Google SafeSearch</translation>
 <translation id="7216442368414164495">Umożliwia użytkownikom wyrażenie zgody na generowanie rozszerzonych raportów przez usługę Bezpieczne przeglądanie</translation>
+<translation id="7221822638060296742">Pozwala określić, czy strony mogą automatycznie uruchamiać wtyczkę <ph name="FLASH_PLUGIN_NAME" />. Automatyczne uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> może być dozwolone dla wszystkich witryn lub zabronione dla wszystkich witryn.
+
+           Wtyczkę <ph name="FLASH_PLUGIN_NAME" /> można uruchomić poleceniem „Kliknij, by odtworzyć”, ale aby to zrobić, użytkownik musi kliknąć symbol zastępczy.
+
+          Automatyczne odtwarzanie jest dozwolone tylko w domenach bezpośrednio wskazanych w zasadzie <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Jeśli chcesz zezwolić na automatyczne odtwarzanie we wszystkich witrynach, dodaj do tej listy http://* i https://*.
+
+          Jeśli ta zasada nie jest ustawiona, użytkownik może zmienić to ustawienie ręcznie.</translation>
 <translation id="7234280155140786597">Nazwy zabronionych hostów wiadomości natywnych (lub * dla wszystkich)</translation>
 <translation id="7236775576470542603">Ustawia domyślny typ lupy włączony na ekranie logowania.
 
@@ -1922,13 +1942,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="787125417158068494">Jeśli ustawisz wartość SyncDisabled lub pozostawisz tę opcję nieskonfigurowaną, certyfikaty <ph name="PRODUCT_OS_NAME" /> nie będą dostępne dla aplikacji ARC.
 
       Jeśli ustawisz wartość CopyCaCerts, dla aplikacji ARC będą dostępne wszystkie certyfikaty CA zainstalowane w ONC z <ph name="WEB_TRUSTED_BIT" />.</translation>
-<translation id="7872535148622213208">
-        Zasada określa listę źródeł (adresów URL), które będą traktowane jako
-        kontekst bezpieczny. Ma ona umożliwić organizacjom skonfigurowanie serwera publikującego
-        wewnętrzne informacje sieciowe.
-        Jest to odpowiednik flagi --unsafely-treat-insecure-origin-as-secure.
-        Więcej informacji o kontekstach bezpiecznych znajdziesz na https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Ta zasada jest aktywna tylko w trybie sklepu.
 
       Określa identyfikator rozszerzenia używanego jako wygaszacz ekranu na ekranie logowania. Rozszerzenie musi być częścią pakietu aplikacji skonfigurowanego dla tej domeny przez zasadę DeviceAppPack.</translation>

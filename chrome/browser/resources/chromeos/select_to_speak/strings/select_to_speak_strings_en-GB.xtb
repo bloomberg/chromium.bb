@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1197088940767939838">Orange</translation>
 <translation id="1224275271335624810">Fastest</translation>
 <translation id="1555130319947370107">Blue</translation>
 <translation id="1588438908519853928">Normal</translation>
@@ -14,10 +15,12 @@
 <translation id="5901630391730855834">Yellow</translation>
 <translation id="6017514345406065928">Green</translation>
 <translation id="6029587122245504742">Slowest</translation>
+<translation id="6475604559827479857">Colour for word highlights:</translation>
 <translation id="6837853484260746864">Select a voice:</translation>
 <translation id="7019805045859631636">Fast</translation>
 <translation id="7768784765476638775">Select-to-speak</translation>
 <translation id="7914870167134465181">Highlighting</translation>
 <translation id="8044899503464538266">Slow</translation>
 <translation id="9030754204056345429">Faster</translation>
+<translation id="992256792861109788">Pink</translation>
 </translationbundle>

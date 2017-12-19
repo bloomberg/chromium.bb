@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">ቅጥያ መበተን አይቻልም።  አንድ ቅጥያ ደህንነቱ በተጠበቀ መልኩ ለመበተን በአንጻፊ ፊደሉ የሚጀምርና መገጣጠሚያ፣ የማፈናጠጫ ነጥብ ወይም ተምሳሌታዊ መጠሪያ ያልያዘ ወደ የመገለጫ ማውጫዎ የሚወስድ ዱካ መኖር አለበት።  እንደዚህ ያሉ ዱካዎች ለመገለጫዎ የሉም።</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (ተከታታይ ቁጥር <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> ከ<ph name="VENDOR_ID" /> ሻጭ (ተከታታይ ቁጥር <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">የማስጀመሪያ ገጽ «<ph name="PAGE" />»ን መጫን አልተቻለም።</translation>
 <translation id="388442998277590542">የአማራጮች ገጽ «<ph name="OPTIONS_PAGE" />»ን መጫን አልተቻለም።</translation>
 <translation id="4115165561519362854">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME" /> ቢያንስ የ<ph name="EXTENSION_VERSION" /> ስሪት እንዲሆን ይፈልጋሉል። ወደዚያ ስሪት (ወይም ከዚያ በላይ) ካልተዘመነ በስተቀር ሊነቃ አይችልም።</translation>
 <translation id="4233778200880751280">የስለ ገጹ «<ph name="ABOUT_PAGE" />» መጫን አልተቻለም።</translation>

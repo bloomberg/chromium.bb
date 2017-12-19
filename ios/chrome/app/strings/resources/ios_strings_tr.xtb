@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">Temel ayarlar</translation>
 <translation id="2386793615875593361">1 fotoğraf seçildi</translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
+<translation id="2523363575747517183">Bu web sitesi sürekli başka bir uygulama açmaya çalışıyor.</translation>
 <translation id="2529021024822217800">Tümünü Aç</translation>
 <translation id="2572712655377361602">Fotoğraflarınıza erişim bir cihaz politikası tarafından engellendi</translation>
 <translation id="2584132361465095047">Hesap Ekle…</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Gizlilik Bildirimi</translation>
 <translation id="4460091562821778167">Kullanılacak uygulamayı her zaman sor</translation>
+<translation id="4496373720959965247">Sekmeler ekleyin ve sayfalar arasında geçiş yapın</translation>
 <translation id="4508750114462689118">Oturum açma tanıtımını kapat</translation>
 <translation id="4526249700380860531">Kaydedilmiş şifreleri <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> adresinden görüntüleyin ve yönetin</translation>
 <translation id="4536418791685807335">Tekrar oturum açmayı deneyin.</translation>
@@ -237,6 +239,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="5771816112378578655">Kurulum devam ediyor...</translation>
 <translation id="5816228676161003208">Böylece, sesinizi kullanarak daha hızlı arama yapabilirsiniz.</translation>
 <translation id="5846482154967366008">Arama Motoru</translation>
+<translation id="5854790677617711513">30 günden daha eski</translation>
 <translation id="5857090052475505287">Yeni Klasör</translation>
 <translation id="5857770089550859117">Senkronizasyonu başlatmak için parola gerekiyor.</translation>
 <translation id="5860033963881614850">Kapalı</translation>
@@ -335,7 +338,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7514365320538308">İndir</translation>
 <translation id="7537586195939242955">Maalesef Pass'iniz şu anda Passbook'a yüklenemiyor.</translation>
 <translation id="7561196759112975576">Her zaman</translation>
-<translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7603852183842204213">Engellen Pop-up'lar (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Senkronizasyon çalışmıyor</translation>
 <translation id="7638584964844754484">Yanlış parola</translation>

@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Nem lehet kicsomagolni a bővítményt. A bővítmények biztonságos kicsomagolásához kell lennie egy olyan elérési útnak a profilkönyvtárban, amely egy meghajtó betűjelével kezdődik, és nem tartalmaz közvetett hivatkozást (junction vagy symlink) vagy csatolási pontot. Ilyen elérési út nem létezik a profiljában.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (sorozatszám: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> termék a következő forgalmazótól: <ph name="VENDOR_ID" /> (sorozatszám: <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Nem lehet betölteni az indítóoldalt: „<ph name="PAGE" />”.</translation>
 <translation id="388442998277590542">Nem lehet betölteni a(z) "<ph name="OPTIONS_PAGE" />" opcióoldalt.</translation>
 <translation id="4115165561519362854">A gép rendszergazdája előírta, hogy a(z) <ph name="EXTENSION_NAME" /> bővítmény verziója legalább <ph name="EXTENSION_VERSION" /> legyen. Nem kapcsolható be addig, amíg nincs frissítve erre a verzióra (vagy újabbra).</translation>
 <translation id="4233778200880751280">A(z) „<ph name="ABOUT_PAGE" />” névjegyoldal betöltése sikertelen volt.</translation>

@@ -18,6 +18,7 @@
 <translation id="1457721931618994305">A atualizar o Google Chrome...</translation>
 <translation id="1469002951682717133">Iniciador de Aplicações do Chrome</translation>
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
+<translation id="1585657529869845941">Clique em <ph name="BEGIN_BOLD" />Mudar mesmo assim<ph name="END_BOLD" />, se esta opção for apresentada.</translation>
 <translation id="1587223624401073077">O Google Chrome está a utilizar a câmara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, por isso o Chrome bloqueou-o.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativámos a seguinte extensão, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, e é possível que tenha sido adicionada sem o seu conhecimento.</translation>
@@ -64,6 +65,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2664962310688259219">Licenças de código aberto do Chrome OS</translation>
 <translation id="2665296953892887393">Ajudar a melhorar o Google Chrome ao enviar relatórios de falhas e <ph name="UMA_LINK" /> à Google</translation>
 <translation id="2689103672227170538">Esta extensão alterou a página apresentada quando inicia o Chrome.</translation>
+<translation id="2705403826523567092">Inicie sessão para obter uma experiência de navegação personalizada, sincronizada entre dispositivos.</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador predefinido.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
@@ -94,6 +96,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
 <translation id="3622797965165704966">Agora é mais fácil utilizar o Chrome com a sua Conta Google e em computadores partilhados.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome OS</translation>
+<translation id="3716182511346448902">Esta página utiliza demasiada memória, pelo que o Chrome a colocou em pausa.</translation>
 <translation id="3718181793972440140">Esta ação elimina 1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">A extensão "<ph name="EXTENSION_NAME" />" alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -102,6 +105,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Abrir link numa janela de nave&amp;gação anónima do Chrome</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
+<translation id="3898493977366060150">Navegação na Web com a inteligência da Google</translation>
 <translation id="4028693306634653894">Aceder mais rapidamente ao Chrome</translation>
 <translation id="4031074602479304239">O Chrome impediu este site de o redirecionar para</translation>
 <translation id="4042449298237264661">Este computador deixará de receber atualizações do Google Chrome, uma vez que o Windows XP e o Windows Vista já não são suportados.</translation>
@@ -190,9 +194,11 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
 <translation id="6676384891291319759">Aceder à Internet</translation>
 <translation id="6697947395630195233">O Chrome precisa de acesso à sua localização para a partilhar com este site.</translation>
+<translation id="6777817260680419853">Redirecionamento bloqueado</translation>
 <translation id="683440813066116847">Regra de importação para o Google Chrome Canary permitir o tráfego mDNS.</translation>
 <translation id="686561893457936865">Leve o Chrome para todo o lado</translation>
 <translation id="6885412569789873916">Aplicações do Chrome Beta</translation>
+<translation id="694592694773692225">O redirecionamento está bloqueado nesta página.</translation>
 <translation id="6967962315388095737">Regra de importação para o Google Chrome Beta permitir o tráfego mDNS.</translation>
 <translation id="6970811910055250180">A atualizar o dispositivo...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requer a leitura e aceitação dos seguintes Termos de Utilização antes de utilizar este dispositivo. Estes termos não ampliam, modificam nem limitam os Termos do SO Google Chrome.</translation>

@@ -26,6 +26,7 @@
 <translation id="15373452373711364">મોટું માઉસ કર્સર</translation>
 <translation id="1550523713251050646">વધુ વિકલ્પો માટે ક્લિક કરો</translation>
 <translation id="1621499497873603021">બેટરી ખાલી થવામાં બાકી સમય, <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">માફ કરશો, તમારો પાસવર્ડ હજી ચકાસી શકાયો નથી. નોંધ: જો તમે તાજેતરમાં તમારો પાસવર્ડ બદલ્યો હોય, તો તમારો નવો પાસવર્ડ તમે એક વાર સાઇન આઉટ કરી લો તે પછી લાગુ થશે, કૃપા કરીને અહીં જૂના પાસવર્ડનો ઉપયોગ કરો.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
 <translation id="1698760176351776263">IPv6 સરનામું: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">આ ઉપકરણ એન્ટરપ્રાઇઝ દ્વારા સંચાલિત થાય છે</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ઉપકરણ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
+<translation id="2484513351006226581">કીબોર્ડ લેઆઉટ સ્વિચ કરવા માટે <ph name="KEYBOARD_SHORTCUT" />ને દબાવો.</translation>
 <translation id="2501920221385095727">સ્ટિકી કી</translation>
 <translation id="2509468283778169019">CAPS LOCK ચાલુ છે</translation>
 <translation id="2532589005999780174">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">USB-C ઉપકરણ</translation>
 <translation id="3465566417615315331">તમારા ફોટો પર ક્લિક કરો</translation>
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
+<translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
 <translation id="3582792037806681688">આ સત્રમાં કોઈ વપરાશકર્તા માટે બહુવિધ સાઇન-ઇન નામંજૂર કરવામાં આવેલ છે</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">લૉક</translation>
 <translation id="3798670284305777884">સ્પીકર (આંતરિક)</translation>
 <translation id="3846575436967432996">કોઈ નેટવર્ક માહિતી ઉપલબ્ધ નથી</translation>
+<translation id="385051799172605136">પાછળ</translation>
 <translation id="3891340733213178823">સાઇન આઉટ કરવા માટે બે વાર Ctrl+Shift+Q દબાવો.</translation>
 <translation id="3893630138897523026">ChromeVox (બોલાયેલ પ્રતિસાદ)</translation>
 <translation id="3899995891769452915">વૉઇસ ઇનપુટ</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
 <translation id="4849058404725798627">કીબોર્ડ ફોકસ વડે ઑબ્જેક્ટને હાઇલાઇટ કરો</translation>
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
+<translation id="4890187583552566966">તમારા વ્યવસ્થાપકે Google સહાયક બંધ કરેલું છે.</translation>
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
 <translation id="4905614135390995787">હાઇ કોન્ટ્રાસ્ટ મોડને ટૉગલ કરવાનો શૉર્ટકટ બદલાઇ ગયો છો. <ph name="OLD_SHORTCUT" />ને બદલે કૃપા કરીને <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
 <translation id="4918086044614829423">સ્વીકારો</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">હવે સાઇન આઉટ કરો</translation>
 <translation id="6047696787498798094">જ્યારે તમે બીજા વપરાશકર્તા પર સ્વિચ કરો ત્યારે સ્ક્રીન શેરિંગ રોકવામાં આવશે. શું તમે ચાલુ રાખવા માંગો છો?</translation>
 <translation id="6062360702481658777">તમે આપમેળે <ph name="LOGOUT_TIME_LEFT" /> માંથી સાઇન આઉટ થઇ જશો.</translation>
+<translation id="6064337552080329342">માફ કરશો, તમારો પાસવર્ડ ચકાસી શકાયો નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="607652042414456612">નજીકનાં Bluetooth ઉપકરણો માટે તમારું કમ્પ્યુટર શોધવાયોગ્ય છે અને તે સરનામાં <ph name="ADDRESS" /> સાથે "<ph name="NAME" />" તરીકે દેખાશે</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> ને ચાર્જ કરી રહ્યાં છે</translation>
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
@@ -262,10 +268,12 @@
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7692480393933218409">કનેક્ટ કરેલા USB-C ઉપકરણોને ચાર્જ કરી રહ્યાં છે</translation>
 <translation id="776344839111254542">અપડેટની વિગતો જોવા માટે ક્લિક કરો</translation>
+<translation id="7796353162336583443">એક નોંધ અથવા સ્ક્રીનશૉટ લેવા, Google સહાયક, લૅઝર પૉઇન્ટર અથવા બૃહદદર્શક કાચનો ઉપયોગ કરવા માટે શેલ્ફ પરના સ્ટાઇલસ બટનને ટૅપ કરો.</translation>
 <translation id="7798302898096527229">રદ કરવા માટે શોધો અથવા Shift દબાવો.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> અને <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">પ્રબળ સિગ્નલ</translation>
 <translation id="7904094684485781019">આ એકાઉન્ટ માટે વ્યસ્થાપકે બહુવિધ સાઇન-ઇનને નામંજૂર કર્યું છે.</translation>
+<translation id="7933084174919150729">Google સહાયક માત્ર પ્રાથમિક પ્રોફાઇલ માટે જ ઉપલબ્ધ છે.</translation>
 <translation id="7977927628060636163">મોબાઇલ નેટવર્કની શોધ કરી રહ્યું છે...</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
@@ -282,6 +290,7 @@
 <translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="8308637677604853869">પહેલાનું મેનૂ</translation>
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
+<translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> માટે વિકલ્પો મેનૂ</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8433186206711564395">નેટવર્ક સેટિંગ્સ</translation>
 <translation id="8433977262951327081">શેલ્ફમાં મેનૂ પરપોટો ઇનપુટ વિકલ્પો બતાવવાનો શૉર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" />ને બદલે <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
@@ -292,6 +301,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>
+<translation id="8652175077544655965">સેટિંગ બંધ કરો</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">નિમ્ન-પાવર ચાર્જર કનેક્ટ કર્યું છે</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

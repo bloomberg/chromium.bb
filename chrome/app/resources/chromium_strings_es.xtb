@@ -18,6 +18,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1502360822835740515">Establece Chromium como navegador predeterminado</translation>
 <translation id="151962892725702025">Chromium OS no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>
 <translation id="1559451348202814456">Es posible que Chromium no funcione correctamente porque ya no es compatible con Mac OS X 10.6, 10.7 o 10.8.</translation>
+<translation id="1585657529869845941">Haz clic en <ph name="BEGIN_BOLD" />Cambiar de todos modos<ph name="END_BOLD" /> (si aparece)</translation>
 <translation id="1653828314016431939">Reiniciar ahora</translation>
 <translation id="1668054258064581266">Después de eliminar tu cuenta de Chromium, es posible que tengas que volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
 <translation id="1688750314291223739">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Chromium en cualquier ordenador.</translation>
@@ -50,6 +51,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2647554856022461007">Chromium puede utilizar los servicios web para mejorar la experiencia de navegación. Puedes inhabilitar estos servicios. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Se ha producido un error de sistema operativo durante el proceso de instalación. Vuelve a descargar Chromium.</translation>
 <translation id="2685838254101182273">Chromium ha dejado de actualizarse y ya no admite la versión de tu sistema operativo.</translation>
+<translation id="2705403826523567092">Inicia sesión para disfrutar de una experiencia de navegación personalizada y sincronizada en todos tus dispositivos</translation>
 <translation id="2711502716910134313">Pestaña de Chromium</translation>
 <translation id="2718390899429598676">Para mayor seguridad, Chromium cifrará tus datos.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
@@ -87,6 +89,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Ancla Chromium a la barra de tareas</translation>
 <translation id="3889543394854987837">Haz clic en tu nombre para abrir Chromium y empezar a navegar.</translation>
+<translation id="3898493977366060150">Navegación web con soluciones inteligentes de Google</translation>
 <translation id="390894725198123737">En los ordenadores Mac, las contraseñas se pueden guardar en el llavero, y otros usuarios de Chromium que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
 <translation id="4036079820698952681">Genera un informe de la <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para ayudar a mejorar Chromium</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
@@ -148,6 +151,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="59625444380784159">Los detalles de tus contactos pueden ayudar a completar los formularios de forma más rápida en Chromium.</translation>
 <translation id="5987687638152509985">Actualiza Chromium para iniciar la sincronización</translation>
 <translation id="6055895534982063517">Hay una nueva versión de Chromium disponible que funciona a una velocidad sin precedentes.</translation>
+<translation id="6063093106622310249">&amp;Abrir en Chromium</translation>
 <translation id="608189560609172163">Chromium no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> es peligroso, por lo que Chromium lo ha bloqueado.</translation>
 <translation id="6212496753309875659">Este ordenador ya cuenta con una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
@@ -164,17 +168,20 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="6505742536731484931">Chromium necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6526111688217511984">Chromium necesita acceso de almacenamiento para descargar archivos.</translation>
+<translation id="6598877126913850652">Ir a los ajustes de notificaciones de Chromium</translation>
 <translation id="6676384891291319759">Accede a Internet.</translation>
 <translation id="6717134281241384636">No se puede utilizar tu perfil porque procede de una versión de Chromium más actualizada.
 
 Es posible que algunas funciones no estén disponibles. Especifica un directorio de perfil diferente o utiliza una versión más actualizada de Chromium.</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium ya está instalado para todos los usuarios en tu ordenador.</translation>
+<translation id="6777817260680419853">Redirección bloqueada</translation>
 <translation id="6810143991807788455">Ayuda a mejorar Chromium informando de la configuración actual</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium se ha actualizado, pero llevas al menos 30 días sin utilizarlo.</translation>
 <translation id="6944967875980567883">Módulos cargados en Chromium 
 </translation>
+<translation id="694592694773692225">Se ha bloqueado la redirección bloqueada en esta página.</translation>
 <translation id="6964305034639999644">Abrir enlace en una ventana de incó&amp;gnito de Chromium</translation>
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="705851970750939768">Actualizar Chromium</translation>
@@ -209,6 +216,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="7745317241717453663">Se eliminarán tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>
 <translation id="7756122083761163394">Los datos de navegación de este usuario se eliminarán de este dispositivo. Para recuperarlos, inicia sesión en Chrome como $2.</translation>
+<translation id="7773960292263897147">Advertencia: Chromium no puede evitar que las extensiones registren el historial de navegación. Para inhabilitar esta extensión en modo incógnito, desactiva esta opción.</translation>
 <translation id="7774736947049807614">No se ha podido autenticar el certificado. Vuelve a iniciar sesión en Chromium como <ph name="USER_NAME" /> o ponte en contacto con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7867198900892795913">No se ha podido actualizar Chromium a la versión más reciente, por lo que no disfrutas de las últimas funciones y correcciones de seguridad.</translation>
 <translation id="7937630085815544518">Habías iniciado sesión en Chromium como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
@@ -251,6 +259,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="9013087743919948559">Añadir a Chromium</translation>
 <translation id="9019929317751753759">Para aumentar la seguridad de Chromium, hemos inhabilitado la siguiente extensión que no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que puede haberse añadido sin tu conocimiento.</translation>
 <translation id="9022552996538154597">Iniciar sesión en Chromium</translation>
+<translation id="9025992965467895364">Esta página utiliza demasiada memoria y Chromium la ha pausado.</translation>
 <translation id="9036189287518468038">Menú de aplicaciones de Chromium</translation>
 <translation id="9089354809943900324">Chromium no está actualizado</translation>
 <translation id="91086099826398415">Abrir enlace en una pes&amp;taña nueva de Chromium</translation>

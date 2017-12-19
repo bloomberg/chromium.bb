@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">विस्तार अनपॅक करणे शक्य नाही. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निर्देशिकेत ड्राइव्ह अक्षरासह प्रारंभ होणारा पथ असणे आणि जंक्शन, माउंट पॉइंट किंवा सिमलिंक नसणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (अनुक्रमांक <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> विक्रेत्याकडील <ph name="PRODUCT_NAME" /> (अनुक्रमांक <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">लाँचर पृष्ठ '<ph name="PAGE" />' लोड करू शकलो नाही.</translation>
 <translation id="388442998277590542">पर्याय पृष्ठ '<ph name="OPTIONS_PAGE" />' लोड करणे शक्य नाही.</translation>
 <translation id="4115165561519362854">या मशीनच्या प्रशासकाला <ph name="EXTENSION_NAME" /> कडे <ph name="EXTENSION_VERSION" /> ची किमान आवृत्ती असणे आवश्यक आहे. ही त्या आवृत्तीवर (किंवा उच्च) अपडेट करेपर्यंत हे सक्षम होऊ शकत नाही.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' पृष्ठाविषयी लोड करू शकलो नाही.</translation>

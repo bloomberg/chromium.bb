@@ -20,6 +20,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1457721931618994305">Atnaujinama „Google Chrome“...</translation>
 <translation id="1469002951682717133">„Chrome“ programų paleidimo priemonė</translation>
 <translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
+<translation id="1585657529869845941">Jei bus rodomas, spustelėkite mygtuką <ph name="BEGIN_BOLD" />Vis tiek perjungti<ph name="END_BOLD" /></translation>
 <translation id="1587223624401073077">„Google Chrome“ naudoja jūsų fotoaparatą.</translation>
 <translation id="1587325591171447154">Failas „<ph name="FILE_NAME" />“ pavojingas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="1619887657840448962">Kad „Chrome“ būtų saugesnė, išjungėme toliau nurodytą plėtinį, kuris nepateiktas <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> sąraše ir tikriausiai buvo pridėtas be jūsų žinios.</translation>
@@ -68,6 +69,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2664962310688259219">„Chrome“ OS atvirojo šaltinio licencijos</translation>
 <translation id="2665296953892887393">Padėkite tobulinti „Google Chrome“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chrome“.</translation>
+<translation id="2705403826523567092">Prisijunkite ir gaukite suasmenintų naršymo funkcijų, sinchronizuojamų skirtinguose įrenginiuose</translation>
 <translation id="2769762047821873045">„Google Chrome“ nėra numatytoji naršyklė.</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
 <translation id="2799223571221894425">Paleisti iš naujo</translation>
@@ -98,6 +100,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="3622797965165704966">Dabar galite lengviau naudoti „Chrome“ naudodami „Google“ paskyrą ir bendrinamus kompiuterius.</translation>
 <translation id="3637702109597584617">„Google Chrome“ OS <ph name="TERMS_OF_SERVICE_LINK" />paslaugų teikimo sąlygos<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="3716182511346448902">Šis puslapis naudoja per daug atminties, todėl „Chrome“ jį pristabdė.</translation>
 <translation id="3718181793972440140">Atlikus šį veiksmą iš šio įrenginio bus ištrintas 1 elementas. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Plėtinys „<ph name="EXTENSION_NAME" />“ pakeitė, kuris puslapis rodomas paleidus „Chrome“.</translation>
 <translation id="3780814664026482060">„Chrome“ – „<ph name="PAGE_TITLE" />“</translation>
@@ -106,6 +109,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="3870154837782082782">„Google Inc.“</translation>
 <translation id="3873044882194371212">Atidaryti nuorodą „Chrome“ inko&amp;gnito lange</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
+<translation id="3898493977366060150">Žiniatinklio naršymas naudojant „Google“ išmaniąsias funkcijas</translation>
 <translation id="4028693306634653894">Greičiau pasiekite „Chrome“</translation>
 <translation id="4031074602479304239">„Chrome“ neleidžia šiai svetainei nukreipti jūsų į</translation>
 <translation id="4042449298237264661">Šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma „Windows XP“ ir „Windows Vista“.</translation>
@@ -199,9 +203,11 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6634887557811630702">„Google Chrome“ naujausios versijos.</translation>
 <translation id="6676384891291319759">Interneto prieiga</translation>
 <translation id="6697947395630195233">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine.</translation>
+<translation id="6777817260680419853">Peradresavimas užblokuotas</translation>
 <translation id="683440813066116847">„Canary“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
 <translation id="686561893457936865">Pasiimkite „Chrome“ bet kur</translation>
 <translation id="6885412569789873916">„Chrome“ beta versijos programos</translation>
+<translation id="694592694773692225">Peradresavimas užblokuotas šiame puslapyje.</translation>
 <translation id="6967962315388095737">Beta versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
 <translation id="6970811910055250180">Įrenginys atnaujinamas...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> reikia, kad prieš naudodami šį įrenginį perskaitytumėte toliau pateiktas paslaugų teikimo sąlygas. Šios sąlygos neišplečia, nepakeičia ir neapriboja „Google Chrome“ OS sąlygų.</translation>

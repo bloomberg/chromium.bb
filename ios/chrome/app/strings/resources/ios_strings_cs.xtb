@@ -78,6 +78,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="2381405137052800939">Základní nastavení</translation>
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>
 <translation id="2435457462613246316">Zobrazit heslo</translation>
+<translation id="2523363575747517183">Tento web se opakovaně pokouší otevřít jinou aplikaci.</translation>
 <translation id="2529021024822217800">Otevřít vše</translation>
 <translation id="2572712655377361602">Přístup k vašim fotkám blokují zásady zařízení.</translation>
 <translation id="2584132361465095047">Přidat účet...</translation>
@@ -178,6 +179,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Oznámení o ochraně soukromí</translation>
 <translation id="4460091562821778167">Pokaždé se zeptat, kterou aplikaci chci použít</translation>
+<translation id="4496373720959965247">Přidejte karty a přepínejte mezi stránkami</translation>
 <translation id="4508750114462689118">Zavřít propagační zprávu ohledně přihlášení</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Zkuste se přihlásit znovu.</translation>
@@ -237,6 +239,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5771816112378578655">Probíhá nastavování...</translation>
 <translation id="5816228676161003208">Toto umožňuje vyhledávat rychleji hlasem.</translation>
 <translation id="5846482154967366008">Vyhledávač</translation>
+<translation id="5854790677617711513">Starší než 30 dnů</translation>
 <translation id="5857090052475505287">Nová složka</translation>
 <translation id="5857770089550859117">K zahájení synchronizace je potřeba heslová fráze.</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
@@ -335,7 +338,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7514365320538308">Stáhnout</translation>
 <translation id="7537586195939242955">Pass v této chvíli do aplikace Passbook nelze nainstalovat.</translation>
 <translation id="7561196759112975576">Vždy</translation>
-<translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7603852183842204213">Blokována vyskakovací okna (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Synchronizace nefunguje</translation>
 <translation id="7638584964844754484">Nesprávná heslová fráze</translation>

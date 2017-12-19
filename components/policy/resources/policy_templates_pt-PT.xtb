@@ -258,6 +258,7 @@
 <translation id="1969212217917526199">Substitui políticas em compilações de Depuração do anfitrião de acesso remoto.
 
           O valor é analisado como um dicionário JSON do nome da política para mapeamentos de valores da política.</translation>
+<translation id="1969808853498848952">Executa sempre plug-ins que requerem autorização (descontinuada)</translation>
 <translation id="1988371335297483117">Os payloads de atualização automática em <ph name="PRODUCT_OS_NAME" /> podem ser transferidos através de HTTP em vez de HTTPS. Isto permite uma colocação em cache de HTTP transparente de transferências HTTP.
 
       Se esta política for definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> tentará transferir payloads de atualização automática através de HTTP. Se esta política for definida como falsa ou não for definida, será utilizado HTTPS para transferir payloads de atualização automática.</translation>
@@ -768,6 +769,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
+<translation id="3737544779868348650">Nome do anfitrião da rede do dispositivo</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
@@ -1186,6 +1188,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5130288486815037971">Determinar se os conjuntos de cifras RC4 no TLS estão ativados</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa predefinida ativada no ecrã de início de sessão</translation>
 <translation id="5142301680741828703">Processar sempre os seguintes padrões de URL no <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Determinar o nome do anfitrião do dispositivo utilizado nos pedidos de DHCP.
+
+      Se esta política estiver definida como uma string não vazia, essa string é utilizada como o nome do anfitrião do dispositivo durante o pedido de DHCP.
+
+      A string pode conter variáveis ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} que são substituídas por valores no dispositivo antes de ser utilizada como nome do anfitrião. A substituição resultante deve ser um nome de anfitrião válido (de acordo com o RFC 1035, secção 3.1).
+
+      Se esta política não estiver definida ou o valor após a substituição não for um nome de anfitrião válido, não é definido um nome de anfitrião no pedido de DHCP. </translation>
 <translation id="5148753489738115745">Permite especificar parâmetros adicionais utilizados quando o <ph name="PRODUCT_FRAME_NAME" /> iniciar o <ph name="PRODUCT_NAME" />.
 
           Se esta política não estiver definida, será utilizada a linha de comandos predefinida.</translation>
@@ -1357,6 +1366,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se deixar esta definição por definir, é utilizado o diretório de perfil predefinido.</translation>
 <translation id="5826047473100157858">Especifica se o utilizador pode abrir páginas em modo de Navegação Anónima no <ph name="PRODUCT_NAME" />. Se selecionar "Ativada" ou deixar a política por definir, as páginas podem ser abertas no modo de Navegação Anónima. Se selecionar "Desativada", as páginas não podem ser abertas no modo de Navegação Anónima. Se selecionar "Forçada", as páginas APENAS podem ser abertas no modo de Navegação Anónima.</translation>
+<translation id="5835124959204887277">Especifica os URLs e os domínios para os quais não é apresentada um pedido quando são solicitados os certificados de comprovação das Chaves de segurança. Além disso, é enviado um sinal para a Chave de segurança a indicar que a comprovação individual pode ser utilizada. Sem isto, os utilizadores do Chrome 65 e superior recebem um pedido quando os sites solicitarem a comprovação das Chaves de segurança.
+
+      Os URLs (como https://example.com/some/path) obtêm correspondência apenas como appIDs de U2F. Os domínios (como example.com) obtêm correspondência apenas como IDs de RP de webauthn. Desta forma, para abranger APIs de U2F e de webauthn de um determinado site, tanto o URL como o domínio do appID têm de constar da lista.</translation>
 <translation id="5836064773277134605">Restringir o intervalo da porta UDP utilizado pelo anfitrião de acesso remoto</translation>
 <translation id="5862253018042179045">Definir o estado predefinido da funcionalidade de acessibilidade de respostas faladas no ecrã de início de sessão.
 
@@ -1535,6 +1547,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se estiver desativada, os dados do formulário de preenchimento automático não são importados.
 
       Se não estiver definida, o utilizador pode ser questionado se pretende importá-los ou a importação pode ocorrer automaticamente.</translation>
+<translation id="6224304369267200483">URLs/domínios com autorização automática da comprovação direta de Chave de segurança</translation>
 <translation id="6233173491898450179">Definir diretório da transferência</translation>
 <translation id="6244210204546589761">URLs a abrir no arranque</translation>
 <translation id="6258193603492867656">Especifica se o SPN do Kerberos gerado deverá incluir uma porta não padrão. Se ativar esta definição e for introduzida uma porta não padrão (ou seja, outra porta que não a 80 ou a 443), essa porta será incluída no SPN do Kerberos gerado. Se desativar esta definição ou não a definir, o SPN do Kerberos gerado não incluirá uma porta em circunstância alguma.</translation>
@@ -1763,6 +1776,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7202925763179776247">Permitir restrições de transferências</translation>
 <translation id="7207095846245296855">Forçar Google Pesquisa segura</translation>
 <translation id="7216442368414164495">Permite aos utilizadores optar por receber relatórios alargados de Navegação segura</translation>
+<translation id="7221822638060296742">Permite-lhe definir se os Websites estão autorizados a executar automaticamente o plugin <ph name="FLASH_PLUGIN_NAME" />. É possível autorizar ou recusar a execução automática do plugin <ph name="FLASH_PLUGIN_NAME" /> para todos os Websites.
+
+          Clicar para reproduzir autoriza a execução do plugin <ph name="FLASH_PLUGIN_NAME" />, mas o utilizador tem de clicar no marcador de posição para iniciar a sua execução.
+
+          A reprodução automática só está autorizada para domínios explicitamente listados na política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se pretender ativar a reprodução automática para todos os sites, pondere adicionar http://* e https://* a esta lista.
+
+          Se esta política não for definida, o utilizador pode alterar manualmente esta definição.</translation>
 <translation id="7234280155140786597">Nomes dos anfitriões de mensagens nativas proibidos (ou * para todos)</translation>
 <translation id="7236775576470542603">Definir o tipo predefinido da lupa que está ativada no ecrã de início de sessão.
 
@@ -1957,13 +1977,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="787125417158068494">Se estiverem definidos para SyncDisabled ou não estiverem configurados, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficam disponíveis para aplicações ARC.
 
       Se estiverem definidos para CopyCaCerts, todos os certificados da AC (Autoridade de certificação) instalados pelo ONC com <ph name="WEB_TRUSTED_BIT" /> ficam disponíveis para aplicações ARC.</translation>
-<translation id="7872535148622213208">
-        A política especifica uma lista de origens (URLs) que devem ser tratadas como contexto
-        seguro. A intenção é permitir que as entidades configurem um servidor
-        experimental para programações Web internas.
-        Trata-se do mesmo que o sinalizador --unsafely-treat-insecure-origin-as-secure.
-        Para mais informações acerca dos contextos seguros, consulte https://www.w3.org/TR/secure-contexts/.
-        </translation>
 <translation id="7882585827992171421">Esta política está ativa apenas no modo de retalho.
 
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>

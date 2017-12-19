@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">Основни положения</translation>
 <translation id="2386793615875593361">1 избрана</translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
+<translation id="2523363575747517183">Този уебсайт многократно се опитва да отвори друго приложение.</translation>
 <translation id="2529021024822217800">Отваряне на всички</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
 <translation id="2584132361465095047">Добавяне на профил…</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Съобщение за поверителност</translation>
 <translation id="4460091562821778167">Всеки път запитване за използваното приложение</translation>
+<translation id="4496373720959965247">Добавяне на раздели и превключване между страници</translation>
 <translation id="4508750114462689118">Затваряне на подканата за вход</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">Извършва се настройка...</translation>
 <translation id="5816228676161003208">Това ви позволява да търсите по-бързо посредством гласа си.</translation>
 <translation id="5846482154967366008">Търсеща машина</translation>
+<translation id="5854790677617711513">По-стари от 30 дни</translation>
 <translation id="5857090052475505287">Нова папка</translation>
 <translation id="5857770089550859117">За старт на синхронизирането е необходим пропуск.</translation>
 <translation id="5860033963881614850">Изключено</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="7537586195939242955">Понастоящем пропускът не може да се инсталира в Passbook.</translation>
 <translation id="7561196759112975576">Винаги</translation>
-<translation id="7588950540487816470">Физическа мрежа</translation>
 <translation id="7603852183842204213">Блок. изск. прозорци (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Синхронизирането не работи</translation>
 <translation id="7638584964844754484">Неправилен пропуск</translation>

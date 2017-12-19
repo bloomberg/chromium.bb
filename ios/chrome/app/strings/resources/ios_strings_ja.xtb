@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">基本設定</translation>
 <translation id="2386793615875593361">1 枚選択されています</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
+<translation id="2523363575747517183">このウェブサイトは別のアプリケーションを繰り返し開こうとしています。</translation>
 <translation id="2529021024822217800">すべて開く</translation>
 <translation id="2572712655377361602">端末ポリシーにより写真へのアクセスがブロックされました</translation>
 <translation id="2584132361465095047">アカウントを追加...</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="441868831736628555">プライバシーに関するお知らせ</translation>
 <translation id="4460091562821778167">使用するアプリを毎回確認する</translation>
+<translation id="4496373720959965247">タブを追加してページを切り替えることができます</translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">セットアップ中...</translation>
 <translation id="5816228676161003208">音声を使ってより速く検索できます。</translation>
 <translation id="5846482154967366008">検索エンジン</translation>
+<translation id="5854790677617711513">30 日以上経過</translation>
 <translation id="5857090052475505287">新しいフォルダ</translation>
 <translation id="5857770089550859117">同期を開始するにはパスフレーズが必要です。</translation>
 <translation id="5860033963881614850">オフ</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="7537586195939242955">現在、Passbookにパスをインストールできません。</translation>
 <translation id="7561196759112975576">常に使用</translation>
-<translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7603852183842204213">ブロックしたポップアップ: <ph name="NUMBER_OF_BLOCKED_POPUPS" /></translation>
 <translation id="7605594153474022051">同期が機能していません</translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>

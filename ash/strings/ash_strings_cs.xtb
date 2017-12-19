@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
 <translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Oznámení</translation>
+<translation id="2484513351006226581">Rozložení klávesnice změníte stisknutím kláves <ph name="KEYBOARD_SHORTCUT" /></translation>
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="2532589005999780174">Režim vysokého kontrastu</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="3465566417615315331">Klikněte na svou fotku</translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
+<translation id="3477079411857374384">Control + Shift + mezerník</translation>
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
 <translation id="3582792037806681688">Některému uživateli v této relaci bylo zakázáno vícenásobné přihlášení.</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Uzamknout</translation>
 <translation id="3798670284305777884">Reproduktor (interní)</translation>
 <translation id="3846575436967432996">Informace o síti nejsou k dispozici</translation>
+<translation id="385051799172605136">Zpět</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová odezva)</translation>
 <translation id="3899995891769452915">Hlasový vstup</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Odpojit</translation>
 <translation id="4849058404725798627">Zvýraznit objekt se zaměřením pro zadávání</translation>
 <translation id="4872237917498892622">Alt + Vyhledávání nebo Shift</translation>
+<translation id="4890187583552566966">Váš administrátor Asistenta Google zakázal.</translation>
 <translation id="4895488851634969361">Baterie je plně nabita.</translation>
 <translation id="4905614135390995787">Zkratka k přepínání režimu vysokého kontrastu se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Přijmout</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Odhlásit se</translation>
 <translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
 <translation id="6062360702481658777">Za <ph name="LOGOUT_TIME_LEFT" /> budete automaticky odhlášeni.</translation>
+<translation id="6064337552080329342">Litujeme, heslo se nepodařilo ověřit. Zkuste to znovu.</translation>
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME" />“ a adresou <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> – nabíjení</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
@@ -262,10 +268,12 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7692480393933218409">Nabíjení připojených zařízení USB Type-C</translation>
 <translation id="776344839111254542">Kliknutím zobrazíte podrobnosti o aktualizaci</translation>
+<translation id="7796353162336583443">Klepnutím na tlačítko dotykového pera na poličce můžete pořídit poznámku nebo snímek obrazovky, případně použít Asistenta Google, laserové ukazovátko nebo lupu.</translation>
 <translation id="7798302898096527229">Vypnete jej stisknutím klávesy Hledat nebo Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Silný signál</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
+<translation id="7933084174919150729">Asistent Google je k dispozici pouze pro primární profil.</translation>
 <translation id="7977927628060636163">Vyhledávání mobilních sítí...</translation>
 <translation id="7982789257301363584">Síť</translation>
 <translation id="7994370417837006925">Vícenásobné přihlášení</translation>
@@ -282,6 +290,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="8261506727792406068">Smazat</translation>
 <translation id="8308637677604853869">Předchozí nabídka</translation>
 <translation id="8351131234907093545">Vytvořit poznámku</translation>
+<translation id="8392451568018454956">Nabídka možností pro uživatele <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433186206711564395">Nastavení sítě</translation>
 <translation id="8433977262951327081">Klávesová zkratka k zobrazení bubliny s možnostmi vstupu na poličce se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Obnovování připojení...</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8639760480004882931">Zbývá <ph name="PERCENTAGE" /> %</translation>
+<translation id="8652175077544655965">Zavřít nastavení</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

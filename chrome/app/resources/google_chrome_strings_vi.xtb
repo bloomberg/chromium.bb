@@ -18,6 +18,7 @@
 <translation id="1457721931618994305">Đang cập nhật Google Chrome...</translation>
 <translation id="1469002951682717133">Trình chạy ứng dụng Chrome</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
+<translation id="1585657529869845941">Hãy nhấp vào nút <ph name="BEGIN_BOLD" />Vẫn chuyển<ph name="END_BOLD" /> khi nút này xuất hiện</translation>
 <translation id="1587223624401073077">Google Chrome đang sử dụng máy ảnh của bạn.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> nguy hiểm, do đó Chrome đã chặn tệp.</translation>
 <translation id="1619887657840448962">Để làm cho Chrome an toàn hơn, chúng tôi đã vô hiệu hóa tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
@@ -66,6 +67,7 @@
 <translation id="2664962310688259219">Giấy phép nguồn mở Chrome OS</translation>
 <translation id="2665296953892887393">Giúp cải thiện Google Chrome bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
 <translation id="2689103672227170538">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
+<translation id="2705403826523567092">Hãy đăng nhập để có trải nghiệm duyệt web tùy chỉnh theo cá nhân, được đồng bộ hóa giữa các thiết bị</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
@@ -96,6 +98,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
 <translation id="3622797965165704966">Giờ đây, việc sử dụng Chrome bằng tài khoản Google của bạn và trên máy tính được chia sẻ trở nên dễ dàng hơn.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Điều khoản dịch vụ<ph name="END_TERMS_OF_SERVICE_LINK" /> của Google Chrome OS</translation>
+<translation id="3716182511346448902">Chrome đã tạm dừng trang này vì trang dùng quá nhiều bộ nhớ.</translation>
 <translation id="3718181793972440140">Thao tác này sẽ xóa 1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -104,6 +107,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Mở liên kết trong cửa sổ ẩn &amp;danh của Chrome</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
+<translation id="3898493977366060150">Duyệt web bằng Google smarts</translation>
 <translation id="4028693306634653894">Truy cập Chrome nhanh hơn</translation>
 <translation id="4031074602479304239">Chrome đã chặn chuyển hướng từ trang web này đến</translation>
 <translation id="4042449298237264661">Máy tính này sẽ không nhận được bản cập nhật Google Chrome nữa do Windows XP và Windows Vista không còn được hỗ trợ.</translation>
@@ -195,9 +199,11 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6634887557811630702">Google Chrome đã được cập nhật.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
 <translation id="6697947395630195233">Chrome cần truy cập vị trí của bạn để chia sẻ thông tin vị trí với trang web này.</translation>
+<translation id="6777817260680419853">Đã chặn chuyển hướng</translation>
 <translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="686561893457936865">Mang Chrome tới mọi nơi</translation>
 <translation id="6885412569789873916">Ứng dụng Chrome Beta</translation>
+<translation id="694592694773692225">Đã chặn chuyển hướng trên trang này.</translation>
 <translation id="6967962315388095737">Quy tắc kết nối để Google Chrome Beta cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> yêu cầu bạn đọc và chấp nhận Điều khoản dịch vụ sau đây trước khi sử dụng thiết bị này. Những điều khoản này không mở rộng, sửa đổi hoặc giới hạn Điều khoản Google Chrome OS.</translation>

@@ -20,6 +20,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1457721931618994305">Updating Google Chrome ...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
+<translation id="1585657529869845941">Click <ph name="BEGIN_BOLD" />Switch anyway<ph name="END_BOLD" />, if it appears</translation>
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is dangerous, so Chrome has blocked it.</translation>
 <translation id="1619887657840448962">To make Chrome safer, we disabled the following extension that isn't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
@@ -68,6 +69,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2664962310688259219">Chrome OS open source licences</translation>
 <translation id="2665296953892887393">Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK" /> to Google</translation>
 <translation id="2689103672227170538">This extension has changed the page that is shown when you start Chrome.</translation>
+<translation id="2705403826523567092">Sign in for a personalised browsing experience, synced across devices</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2799223571221894425">Relaunch</translation>
@@ -98,6 +100,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
+<translation id="3716182511346448902">This page uses too much memory, so Chrome paused it.</translation>
 <translation id="3718181793972440140">This will delete 1 item from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -106,6 +109,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Open link in Chrome inco&amp;gnito window</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
+<translation id="3898493977366060150">Web browsing with Google smarts</translation>
 <translation id="4028693306634653894">Get to Chrome faster</translation>
 <translation id="4031074602479304239">Chrome stopped this site from taking you to</translation>
 <translation id="4042449298237264661">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported.</translation>

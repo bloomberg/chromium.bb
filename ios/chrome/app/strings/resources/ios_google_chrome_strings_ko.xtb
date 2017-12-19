@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
-<translation id="1685087038067318291">근처 사물에서 전송한 웹페이지를 탐색하세요. 블루투스를 사용 설정하면 Chrome은 근처 사물과 관련된 웹페이지를 수집한 후 익명으로 Google로 전달하여 사용자에게 가장 유용한 웹페이지를 찾습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome이 <ph name="ISSUER" />에서 이 웹사이트의 인증서를 발행했음을 확인했습니다.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>

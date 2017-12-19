@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">അടിസ്ഥാനങ്ങൾ</translation>
 <translation id="2386793615875593361">1 തിരഞ്ഞെടുത്തു</translation>
 <translation id="2435457462613246316">പാസ്‌വേഡ് കാണിക്കുക</translation>
+<translation id="2523363575747517183">മറ്റൊരു അപ്ലിക്കേഷൻ തുറക്കാൻ ഈ വെബ്‌സൈറ്റ് ആവർത്തിച്ച് ശ്രമിക്കുന്നു.</translation>
 <translation id="2529021024822217800">എല്ലാം തുറക്കുക</translation>
 <translation id="2572712655377361602">ഒരു ഉപകരണ നയം, നിങ്ങളുടെ ഫോട്ടോകളിലേക്കുള്ള ആക്‌സസ്സ് ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="2584132361465095047">അക്കൗണ്ട് ചേർക്കുക...</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">ഫോണ്‍</translation>
 <translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
 <translation id="4460091562821778167">ഏത് ആപ്പാണ് ഉപയോഗിക്കേണ്ടതെന്ന് എപ്പോഴും എന്നോട് ചോദിക്കുക</translation>
+<translation id="4496373720959965247">ടാബുകൾ ചേർക്കുക, പേജുകൾക്കിടയിൽ മാറുക</translation>
 <translation id="4508750114462689118">സൈൻ ഇൻ പ്രമോ അടയ്‌ക്കുക</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="4536418791685807335">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക.</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">സജ്ജമാക്കല്‍‌ പുരോഗതിയിലാണ്...</translation>
 <translation id="5816228676161003208">നിങ്ങളുടെ ശബ്‌ദം ഉപയോഗിച്ച് കൂടുതൽ വേഗത്തിൽ തിരയാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="5846482154967366008">തിരയൽ എഞ്ചിൻ</translation>
+<translation id="5854790677617711513">30 ദിവസത്തിൽ കൂടുതൽ പഴക്കമുള്ളത്</translation>
 <translation id="5857090052475505287">പുതിയ ഫോള്‍ഡര്‍</translation>
 <translation id="5857770089550859117">സമന്വയിപ്പിക്കാൻ തുടങ്ങുന്നതിന്, പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്.</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="7537586195939242955">ക്ഷമിക്കണം, നിങ്ങളുടെ പാസ് ഈ സമയം പാസ്‌ബുക്കിൽ ഇൻസ്റ്റാൾ ചെയ്യാൻ കഴിയില്ല.</translation>
 <translation id="7561196759112975576">എല്ലായ്പ്പോഴും</translation>
-<translation id="7588950540487816470">ഫിസിക്കൽ വെബ്</translation>
 <translation id="7603852183842204213">പോപ്പ്-അപ്പുകൾ തടഞ്ഞു (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">സമന്വയിപ്പിക്കൽ പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="7638584964844754484">പാസ്‌ഫ്രെയ്‌സ് തെറ്റാണ്</translation>

@@ -261,6 +261,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1969212217917526199">Anula las políticas de compilaciones de depuración del host de acceso remoto.
 
           El valor se analiza como un diccionario JSON del nombre de política para las asignaciones de valores de la política.</translation>
+<translation id="1969808853498848952">Ejecuta siempre complementos que requieran autorización (obsoleta)</translation>
 <translation id="1988371335297483117">Las cargas útiles de actualizaciones automáticas en <ph name="PRODUCT_OS_NAME" /> se pueden descargar a través de HTTP en lugar de HTTPS, lo que permite el almacenamiento en caché HTTP transparente de descargas HTTP.
 
 Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas útiles de actualizaciones automáticas a través de HTTP. Si la política se establece en False o no se configura, se utilizará HTTPS para descargar cargas útiles de actualizaciones automáticas.</translation>
@@ -787,6 +788,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3709266154059827597">Configurar lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Habilitar Añadir persona en el administrador de usuarios</translation>
+<translation id="3737544779868348650">Nombre de host de la red del dispositivo</translation>
 <translation id="3750220015372671395">Bloquear la generación de claves en estos sitios web</translation>
 <translation id="3756011779061588474">Bloquear el modo de desarrollador</translation>
 <translation id="3758089716224084329">Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy.
@@ -1227,6 +1229,13 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5130288486815037971">Indicar si se han habilitado los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establecer el tipo de aumento de pantalla predeterminado habilitado en la pantalla de inicio de sesión</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Determina el nombre de host del dispositivo que se utiliza en las solicitudes DHCP.
+
+      Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre de host del dispositivo durante las solicitudes DHCP.
+
+      La cadena puede incluir variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} que se sustituirían por valores del dispositivo antes de que se utilice como nombre de host. El valor que resulte de la sustitución debe ser un nombre de host válido (de acuerdo con la sección 3.1 de la RFC 1035).
+
+      Si no se asigna ningún valor a esta política o el valor que resulta después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud DHCP. </translation>
 <translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no se establece esta política, se utilizará la línea de comandos predeterminada.</translation>
@@ -1426,6 +1435,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se inhabilita, no se podrán abrir páginas en modo incógnito.
 
       Si se selecciona la opción de modo de incógnito forzado, SOLO se podrán abrir páginas en modo incógnito.</translation>
+<translation id="5835124959204887277">Especifica las URL y los dominios para los que no se muestra ningún mensaje cuando se solicitan certificados de confirmación de las llaves de seguridad. Asimismo, se envía una señal a la llave de seguridad para indicar que es posible que se utilice esa confirmación individual. Sin esta política, se muestra un mensaje a los usuarios de Chrome 65 y versiones posteriores cuando los sitios web soliciten la confirmación de las llaves de seguridad.
+
+      Las URL (como https://example.com/una/ruta) solo se identifican como appIDs U2F, mientras que los dominios (como example.com) se identifican únicamente como IDs RP de WebAuthn. Por ello, para incluir tanto las API WebAuthn como U2F de un determinado sitio web, se deben indican la URL appID y el dominio.</translation>
 <translation id="5836064773277134605">Restringe el intervalo de puertos UDP utilizado por el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de comentarios por voz en la pantalla de inicio de sesión.
 
@@ -1606,6 +1618,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si se inhabilita, no se importarán los datos autocompletados.
 
       Si no se configura, es posible que se solicite al usuario que importe los datos o que la importación se realice automáticamente.</translation>
+<translation id="6224304369267200483">Las URL y los dominios han permitido automáticamente la confirmación directa de la llave de seguridad</translation>
 <translation id="6233173491898450179">Establecer directorio de descargas</translation>
 <translation id="6244210204546589761">URL que se deben abrir al inicio</translation>
 <translation id="6258193603492867656">Permite especificar si el SPN de Kerberos generado debe incluir un puerto no estándar.
@@ -1857,6 +1870,13 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7202925763179776247">Permitir restricciones de descarga</translation>
 <translation id="7207095846245296855">Forzar Google Búsqueda Segura</translation>
 <translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de Navegación Segura</translation>
+<translation id="7221822638060296742">Te permite definir si los sitios web pueden ejecutar automáticamente el complemento <ph name="FLASH_PLUGIN_NAME" />. La ejecución automática del complemento <ph name="FLASH_PLUGIN_NAME" /> se puede permitir o denegar para todos los sitios web.
+
+          La política Hacer clic para ejecutar permite que el complemento <ph name="FLASH_PLUGIN_NAME" /> se ejecute, pero el usuario debe hacer clic en el marcador de posición para iniciar el proceso.
+
+          La reproducción automática solo se permite en dominios indicados de forma explícita en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitarla en todos los sitios web, añade http://* y https://* a esta lista.
+
+          Si no se asigna ningún valor a esta política, el usuario puede cambiar esta configuración manualmente.</translation>
 <translation id="7234280155140786597">Nombres de hosts de mensajes nativos no permitidos (o * para todos)</translation>
 <translation id="7236775576470542603">Establece el tipo predeterminado de aumento de pantalla que se ha habilitado en la pantalla de inicio de sesión.
 
@@ -2061,13 +2081,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="787125417158068494">Si se le asigna el valor SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las aplicaciones ARC.
 
       Si se le asigna el valor CopyCaCerts, todos los certificados de CA instalados en ONC con <ph name="WEB_TRUSTED_BIT" /> estarán disponibles para las aplicaciones ARC.</translation>
-<translation id="7872535148622213208">
-        La política especifica una lista de orígenes (URLs) que se deben considerar contexto
-        seguro. La intención es permitir que las organizaciones configuren un servidor provisional
-        para desarrollar web internas.
-        Coincide con el indicador --unsafely-treat-insecure-origin-as-secure.
-        Para obtener más información sobre los contextos seguros, consulta el sitio web https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo comercial.
 
       Permite determinar el ID de la extensión que se debe utilizar como salvapantallas en la pantalla de inicio de sesión. La extensión debe formar parte del paquete AppPack configurado para ese dominio a través de la política DeviceAppPack.</translation>

@@ -78,6 +78,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
+<translation id="2523363575747517183">Este sitio web está intentando abrir otra aplicación reiteradamente.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
 <translation id="2584132361465095047">Añadir cuenta…</translation>
@@ -178,6 +179,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
 <translation id="4460091562821778167">Preguntarme qué aplicación se usa cada vez</translation>
+<translation id="4496373720959965247">Añade pestañas y cambia de una página a otra</translation>
 <translation id="4508750114462689118">Cierra el inicio de sesión en la promoción</translation>
 <translation id="4526249700380860531">Consulta y administra contraseñas guardadas en la página <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prueba a iniciar sesión de nuevo.</translation>
@@ -237,6 +239,7 @@ Handoff también debe estar habilitado en la sección General de Ajustes, y los 
 <translation id="5771816112378578655">Configuración en curso...</translation>
 <translation id="5816228676161003208">Esto te permite hacer búsquedas más rápido con tu voz.</translation>
 <translation id="5846482154967366008">Motor de búsqueda</translation>
+<translation id="5854790677617711513">Más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere una frase de contraseña para iniciar la sincronización.</translation>
 <translation id="5860033963881614850">No</translation>
@@ -335,7 +338,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7514365320538308">Descargar</translation>
 <translation id="7537586195939242955">No se puede instalar tu tarjeta en Passbook en este momento.</translation>
 <translation id="7561196759112975576">Siempre</translation>
-<translation id="7588950540487816470">Web física</translation>
 <translation id="7603852183842204213">Pop-ups bloqueados (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">La sincronización no funciona</translation>
 <translation id="7638584964844754484">Frase de contraseña incorrecta</translation>

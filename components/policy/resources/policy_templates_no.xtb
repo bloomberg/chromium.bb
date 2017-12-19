@@ -264,6 +264,7 @@
 <translation id="1969212217917526199">Overstyrer reglene i delversjonene for feilsøking på fjerntilgangsverten.
 
           Verdien parses som en JSON-katalog over regelnavn og tilhørende regelverdier.</translation>
+<translation id="1969808853498848952">Kjører alltid programtillegg som krever autorisasjon (avviklet)</translation>
 <translation id="1988371335297483117">Nyttelaster med automatisk oppdatering på <ph name="PRODUCT_OS_NAME" />, kan lastes ned via HTTP i stedet for HTTPS. Dette tillater åpen HTTP-bufring av HTTP-nedlastinger.
 
       Hvis denne innstillingen angis som sann, prøver <ph name="PRODUCT_OS_NAME" /> å laste ned nyttelaster med automatisk oppdatering via HTTP. Hvis innstillingen angis som usann eller ikke angis i det hele tatt, blir HTTPS brukt til å laste ned nyttelaster med automatisk oppdatering.</translation>
@@ -764,6 +765,7 @@
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
+<translation id="3737544779868348650">Vertsnavn for enheten på nettverket</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
 <translation id="3756011779061588474">Blokkering av utviklermodus</translation>
 <translation id="3758089716224084329">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
@@ -1178,6 +1180,13 @@
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Finn vertsnavnet for enheten som brukes i DHCP-forespørsler.
+
+      Hvis denne regelen er angitt som en streng som ikke er tom, blir den strengen brukt som vertsnavnet for enheten ved DHCP-forespørsler.
+
+      Strengen kan inneholde variablene ${ASSET_ID}, ${SERIAL_NUM} og ${MAC_ADDR}. Disse blir erstattet med verdier på enheten før strengen blir tatt i bruk som vertsnavn. Den resulterende strengen må være et gyldig vertsnavn (per RFC 1035, del 3.1).
+
+      Hvis denne regelen ikke er angitt, eller hvis den endelige verdien ikke er et gyldig vertsnavn, blir ikke noe vertsnavn angitt i DHCP-forespørsler. </translation>
 <translation id="5148753489738115745">Lar deg spesifisere ytterligere parametere som brukes når <ph name="PRODUCT_FRAME_NAME" /> kjører <ph name="PRODUCT_NAME" />.
 
           Hvis denne tillatelsen ikke er angitt, blir standardkommandolinjen brukt.</translation>
@@ -1373,6 +1382,9 @@
       Hvis dette er deaktivert, kan ikke sider åpnes i inkognitomodus.
 
       Hvis dette er angitt til Tvunget, kan sider åpnes BARE i inkognitomodus.</translation>
+<translation id="5835124959204887277">Spesifiserer nettadresser og domener som det ikke blir vist noen forespørsel for når det blir bedt om attestsertifikater fra sikkerhetsnøkler. I tillegg blir et signal sendt til sikkerhetsnøkkelen. Dette signalet indikerer at enkeltattester kan brukes. Uten dette kommer brukere til å få opp en forespørsel i Chrome v65+ når nettsteder ber om attest for sikkerhetsnøkler.
+
+      Nettadresser (for eksempel https://example.com/some/path) samsvarer bare som U2F-app-ID-er. Domener (for eksempel example.com) samsvarer bare som webauthn RP-ID-er. For å dekke både U2F- og webauthn-API-er for et bestemt nettsted må derfor både app-ID-nettadressen og domenet listes opp.</translation>
 <translation id="5836064773277134605">Begrens UDP-portområdet som brukes av fjerntilgangsverten</translation>
 <translation id="5862253018042179045">Angi standard tilstand for tilgjengelighetsfunksjonen for muntlig tilbakemelding på påloggingssiden.
 
@@ -1553,6 +1565,7 @@
       Hvis regelen er slått av, importeres ikke autofylldataene for skjemaer.
 
       Hvis den ikke spesifiseres, kan brukeren bli spurt om vedkommende vil importere, eller dataene kan bli importert automatisk.</translation>
+<translation id="6224304369267200483">Nettadresser/domener tillater automatisk direkte Sikkerhetsnøkkel-attestering</translation>
 <translation id="6233173491898450179">Angi nedlastingskatalog</translation>
 <translation id="6244210204546589761">Nettadresser som skal åpnes ved oppstart</translation>
 <translation id="6258193603492867656">Angir om den genererte Kerberos-SPN-en skal inneholde en ikke-standard port.
@@ -1800,6 +1813,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7202925763179776247">Tillat begrensninger for nedlastinger</translation>
 <translation id="7207095846245296855">Fremtving bruk av Google Sikkert Søk</translation>
 <translation id="7216442368414164495">Tillat at brukere velger utvidet rapportering for sikker surfing</translation>
+<translation id="7221822638060296742">Lar deg angi om nettsteder skal tillates å kjøre <ph name="FLASH_PLUGIN_NAME" />-programtillegget automatisk. Automatisk kjøring av <ph name="FLASH_PLUGIN_NAME" />-programtillegget kan enten tillates for alle nettsteder eller nektes for alle nettsteder.
+
+          Med «Klikk for å spille» kan <ph name="FLASH_PLUGIN_NAME" />-programtillegget kjøre, men brukeren må klikke på plassholderen for å kjøre det.
+
+          Automatisk avspilling tillates bare for domener som er oppført eksplisitt i <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />-regelen. Hvis du vil slå på automatisk avspilling for alle nettsteder, kan du vurdere å legge til http://* og https://* i denne listen.
+
+          Hvis denne regelen ikke er angitt, kan brukeren endre denne innstillingen manuelt.</translation>
 <translation id="7234280155140786597">Navnene på de forbudte innebygde meldingsvertene (eller * for alle)</translation>
 <translation id="7236775576470542603">Angi standard type lupe som slås på fra påloggingssiden.
 
@@ -2004,10 +2024,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke <ph name="PRODUCT_OS_NAME" />-sertifikater tilgjengelige for ARC-apper.
 
       Hvis denne er angitt som CopyCaCerts, er alle ONC-installerte CA-sertifikater med <ph name="WEB_TRUSTED_BIT" /> tilgjengelige for ARC-apper.</translation>
-<translation id="7872535148622213208">
-        Regelen spesifiserer en liste over opprinnelser (nettadresser) som skal behandles som sikker kontekst. Hensikten er å la organisasjoner konfigurere en testtjener for intern nettutvikling. Dette er det samme som flagget --unsafely-treat-insecure-origin-as-secure.
-        For å få mer informasjon om sikre kontekster, se https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>

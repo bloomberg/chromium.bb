@@ -1,21 +1,26 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1197088940767939838">สีส้ม</translation>
 <translation id="1224275271335624810">เร็วที่สุด</translation>
 <translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="1588438908519853928">ปกติ</translation>
 <translation id="1666326070478924810">การตั้งค่าการเลือกเพื่อพูด</translation>
 <translation id="1966649499058910679">ไฮไลต์แต่ละคำในขณะที่พูด</translation>
 <translation id="2089387485033699258">th</translation>
+<translation id="2714180132046334502">พื้นหลังสีเข้ม</translation>
+<translation id="27349076983469322">พื้นหลังสีสว่าง</translation>
 <translation id="335581015389089642">คำพูด</translation>
 <translation id="4274874082286476934">เลือกความเร็วในการพูด:</translation>
 <translation id="5901630391730855834">สีเหลือง</translation>
 <translation id="6017514345406065928">สีเขียว</translation>
 <translation id="6029587122245504742">ช้าที่สุด</translation>
+<translation id="6475604559827479857">สีสำหรับการไฮไลต์คำ:</translation>
 <translation id="6837853484260746864">เลือกเสียง:</translation>
 <translation id="7019805045859631636">เร็ว</translation>
 <translation id="7768784765476638775">เลือกเพื่อพูด</translation>
 <translation id="7914870167134465181">การไฮไลต์</translation>
 <translation id="8044899503464538266">ช้า</translation>
 <translation id="9030754204056345429">เร็วขึ้น</translation>
+<translation id="992256792861109788">สีชมพู</translation>
 </translationbundle>
