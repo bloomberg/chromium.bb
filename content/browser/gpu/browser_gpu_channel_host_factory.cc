@@ -51,6 +51,10 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   void Wait();
   void Cancel();
 
+  void AddCallback(gpu::GpuChannelEstablishedCallback callback) {
+    established_callbacks_.push_back(std::move(callback));
+  }
+
   const scoped_refptr<gpu::GpuChannelHost>& gpu_channel() {
     return gpu_channel_;
   }
@@ -66,8 +70,11 @@ class BrowserGpuChannelHostFactory::EstablishRequest
                          const gpu::GpuFeatureInfo& gpu_feature_info,
                          GpuProcessHost::EstablishChannelStatus status);
   void FinishOnIO();
+  void FinishAndRunCallbacksOnMain();
   void FinishOnMain();
+  void RunCallbacksOnMain();
 
+  std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks_;
   base::WaitableEvent event_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
@@ -158,8 +165,15 @@ void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnIO() {
   event_.Signal();
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain, this));
+      base::BindOnce(&BrowserGpuChannelHostFactory::EstablishRequest::
+                         FinishAndRunCallbacksOnMain,
+                     this));
+}
+
+void BrowserGpuChannelHostFactory::EstablishRequest::
+    FinishAndRunCallbacksOnMain() {
+  FinishOnMain();
+  RunCallbacksOnMain();
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain() {
@@ -169,6 +183,13 @@ void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain() {
     factory->GpuChannelEstablished();
     finished_ = true;
   }
+}
+
+void BrowserGpuChannelHostFactory::EstablishRequest::RunCallbacksOnMain() {
+  std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks;
+  established_callbacks_.swap(established_callbacks);
+  for (auto&& callback : std::move(established_callbacks))
+    std::move(callback).Run(gpu_channel_);
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
@@ -189,6 +210,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
 void BrowserGpuChannelHostFactory::EstablishRequest::Cancel() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   finished_ = true;
+  established_callbacks_.clear();
 }
 
 void BrowserGpuChannelHostFactory::CloseChannel() {
@@ -266,10 +288,12 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
   }
 
   if (!callback.is_null()) {
-    if (gpu_channel_.get())
+    if (gpu_channel_.get()) {
       std::move(callback).Run(gpu_channel_);
-    else
-      established_callbacks_.push_back(std::move(callback));
+    } else {
+      DCHECK(pending_request_);
+      pending_request_->AddCallback(std::move(callback));
+    }
   }
 }
 
@@ -310,11 +334,6 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   timeout_.Stop();
   if (gpu_channel_)
     GetContentClient()->SetGpuInfo(gpu_channel_->gpu_info());
-
-  std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks;
-  established_callbacks_.swap(established_callbacks);
-  for (auto&& callback : std::move(established_callbacks))
-    std::move(callback).Run(gpu_channel_);
 }
 
 void BrowserGpuChannelHostFactory::RestartTimeout() {
