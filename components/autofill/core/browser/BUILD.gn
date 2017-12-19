@@ -290,6 +290,8 @@ static_library("test_support") {
     "test_autofill_driver.h",
     "test_autofill_external_delegate.cc",
     "test_autofill_external_delegate.h",
+    "test_autofill_provider.cc",
+    "test_autofill_provider.h",
     "test_personal_data_manager.cc",
     "test_personal_data_manager.h",
     "test_region_data_loader.cc",
