@@ -159,6 +159,10 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Opens the file associated with this download.
   virtual void OpenDownload(DownloadItem* download) {}
 
+  // Returns whether this is the most recent download in the rare event where
+  // multiple downloads are associated with the same file path.
+  virtual bool IsMostRecentDownloadItemAtFilePath(DownloadItem* download);
+
   // Shows the download via the OS shell.
   virtual void ShowDownloadInShell(DownloadItem* download) {}
 

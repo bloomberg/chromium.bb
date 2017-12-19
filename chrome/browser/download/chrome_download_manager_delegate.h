@@ -85,6 +85,8 @@ class ChromeDownloadManagerDelegate
   download::InProgressCache* GetInProgressCache() override;
   void SanitizeSavePackageResourceName(base::FilePath* filename) override;
   void OpenDownload(content::DownloadItem* download) override;
+  bool IsMostRecentDownloadItemAtFilePath(
+      content::DownloadItem* download) override;
   void ShowDownloadInShell(content::DownloadItem* download) override;
   void CheckForFileExistence(
       content::DownloadItem* download,

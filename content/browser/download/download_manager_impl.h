@@ -206,6 +206,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       std::unique_ptr<content::DownloadUrlParameters> params,
       uint32_t id) override;
   void OpenDownload(DownloadItemImpl* download) override;
+  bool IsMostRecentDownloadItemAtFilePath(DownloadItemImpl* download) override;
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;
 
