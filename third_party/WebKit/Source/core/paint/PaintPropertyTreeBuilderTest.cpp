@@ -4222,6 +4222,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
         height: 200px;
         border: 10px solid blue;
         border-radius: 50px;
+        padding: 10px;
       }
     </style>
     <iframe id='iframe'></iframe>
@@ -4230,8 +4231,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
   const auto* properties = PaintPropertiesForElement("iframe");
   const auto* border_radius_clip = properties->InnerBorderRadiusClip();
   ASSERT_NE(nullptr, border_radius_clip);
-  FloatSize radius(40, 40);
-  EXPECT_EQ(FloatRoundedRect(FloatRect(18, 18, 200, 200), radius, radius,
+  FloatSize radius(30, 30);
+  EXPECT_EQ(FloatRoundedRect(FloatRect(28, 28, 200, 200), radius, radius,
                              radius, radius),
             border_radius_clip->ClipRect());
   EXPECT_EQ(FrameContentClip(), border_radius_clip->Parent());
@@ -4249,16 +4250,18 @@ TEST_P(PaintPropertyTreeBuilderTest, NoPropertyForSVGTextWithReflection) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ImageBorderRadius) {
-  SetBodyInnerHTML(
-      "<img id='img' style='width: 50px; height: 50px; border-radius: 20px'>");
+  SetBodyInnerHTML(R"HTML(
+    <img id='img'
+        style='width: 50px; height: 50px; border-radius: 30px; padding: 10px'>
+  )HTML");
 
   const auto* properties = PaintPropertiesForElement("img");
   const auto* border_radius_clip = properties->InnerBorderRadiusClip();
   ASSERT_NE(nullptr, border_radius_clip);
   FloatSize radius(20, 20);
-  EXPECT_EQ(
-      FloatRoundedRect(FloatRect(8, 8, 50, 50), radius, radius, radius, radius),
-      border_radius_clip->ClipRect());
+  EXPECT_EQ(FloatRoundedRect(FloatRect(18, 18, 50, 50), radius, radius, radius,
+                             radius),
+            border_radius_clip->ClipRect());
   EXPECT_EQ(FrameContentClip(), border_radius_clip->Parent());
   EXPECT_EQ(FramePreTranslation(), border_radius_clip->LocalTransformSpace());
   EXPECT_EQ(nullptr, properties->OverflowClip());
