@@ -11,5 +11,6 @@ buildflag_header("features") {
   flags = [
     "ENABLE_VR=$enable_vr",
     "ENABLE_OPENVR=$enable_openvr",
+    "ENABLE_OCULUS_VR=$enable_oculus_vr",
   ]
 }

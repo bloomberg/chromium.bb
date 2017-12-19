@@ -5,6 +5,7 @@ include_rules = [
   "+services/device/public",
   "+third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h",
   "+third_party/gvr-android-sdk/src",
+  "+third_party/libovr/src",
   "+third_party/openvr/src/headers/openvr.h",
   "+ui/display",
   "+ui/gfx",
