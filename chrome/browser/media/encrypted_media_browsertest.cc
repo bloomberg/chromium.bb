@@ -377,19 +377,6 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
                                  command_line);
   }
 };
-
-#if defined(WIDEVINE_CDM_AVAILABLE)
-// Tests encrypted media playback using Widevine key system.
-class WVEncryptedMediaTest : public EncryptedMediaTestBase {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EncryptedMediaTestBase::SetUpCommandLine(command_line);
-    SetUpCommandLineForKeySystem(kWidevineKeySystem, CdmHostType::kPepper,
-                                 command_line);
-  }
-};
-
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Tests encrypted media playback with a combination of parameters:
@@ -727,15 +714,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#if defined(WIDEVINE_CDM_AVAILABLE)
-// The parent key system cannot be used when creating MediaKeys.
-IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
-  RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
-                        kWebMVorbisAudioOnly, "com.widevine", SrcType::MSE,
-                        kNoSessionToLoad, false, PlayCount::ONCE,
-                        kEmeNotSupportedError);
-}
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 INSTANTIATE_TEST_CASE_P(Pepper,
                         ECKEncryptedMediaTest,
