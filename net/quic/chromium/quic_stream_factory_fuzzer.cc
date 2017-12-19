@@ -7,8 +7,8 @@
 #include "base/test/fuzzed_data_provider.h"
 
 #include "net/base/test_completion_callback.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/do_nothing_ct_verifier.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/fuzzed_host_resolver.h"
 #include "net/http/http_server_properties_impl.h"
@@ -22,6 +22,7 @@
 #include "net/socket/fuzzed_socket_factory.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
 
 namespace net {
@@ -30,18 +31,6 @@ namespace {
 
 const char kCertData[] = {
 #include "net/data/ssl/certificates/wildcard.inc"
-};
-
-class MockSSLConfigService : public SSLConfigService {
- public:
-  MockSSLConfigService() {}
-
-  void GetSSLConfig(SSLConfig* config) override { *config = config_; }
-
- private:
-  ~MockSSLConfigService() override {}
-
-  SSLConfig config_;
 };
 
 }  // namespace
@@ -62,12 +51,12 @@ const int kCertVerifyFlags = 0;
 struct Env {
   Env() : host_port_pair(kServerHostName, kServerPort), random_generator(0) {
     clock.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-    ssl_config_service = new MockSSLConfigService;
+    ssl_config_service = base::MakeRefCounted<SSLConfigServiceDefaults>();
     crypto_client_stream_factory.set_use_mock_crypter(true);
-    cert_verifier = CertVerifier::CreateDefault();
+    cert_verifier = std::make_unique<MockCertVerifier>();
     channel_id_service =
         std::make_unique<ChannelIDService>(new DefaultChannelIDStore(nullptr));
-    cert_transparency_verifier = std::make_unique<MultiLogCTVerifier>();
+    cert_transparency_verifier = std::make_unique<DoNothingCTVerifier>();
     verify_details.cert_verify_result.verified_cert =
         X509Certificate::CreateFromBytes(kCertData, arraysize(kCertData));
     CHECK(verify_details.cert_verify_result.verified_cert);
