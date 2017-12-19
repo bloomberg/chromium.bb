@@ -17,7 +17,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 /*
  * This is a helper daemon for Android which makes memtrack graphics information
