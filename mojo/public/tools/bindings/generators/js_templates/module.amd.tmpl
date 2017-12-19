@@ -12,8 +12,8 @@
   }
   mojo.internal.markMojomLoaded(mojomId);
 
-  // TODO(yzshen): Define these aliases to minimize the differences between the
-  // old/new modes. Remove them when the old mode goes away.
+{#- TODO(crbug.com/795977): Change the media router extension to not mess with
+    the mojo namespace, so that we can refer to mojo directly. #}
   var bindings = mojo;
   var associatedBindings = mojo;
   var codec = mojo.internal;
