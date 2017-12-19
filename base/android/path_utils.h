@@ -21,10 +21,6 @@ namespace android {
 // PathService::Get(base::DIR_ANDROID_APP_DATA, ...) gets the data dir.
 BASE_EXPORT bool GetDataDirectory(FilePath* result);
 
-// Retrieves the absolute path to the database directory that Android
-// framework's SQLiteDatabase class uses when creating database files.
-BASE_EXPORT bool GetDatabaseDirectory(FilePath* result);
-
 // Retrieves the absolute path to the cache directory. The result is placed in
 // the FilePath pointed to by 'result'. This method is dedicated for
 // base_paths_android.c, Using PathService::Get(base::DIR_CACHE, ...) gets the
@@ -34,10 +30,6 @@ BASE_EXPORT bool GetCacheDirectory(FilePath* result);
 // Retrieves the path to the thumbnail cache directory. The result is placed
 // in the FilePath pointed to by 'result'.
 BASE_EXPORT bool GetThumbnailCacheDirectory(FilePath* result);
-
-// Retrieves the path to the downloads internal directory. The result is placed
-// in the FilePath pointed to by 'result'.
-BASE_EXPORT bool GetDownloadInternalDirectory(FilePath* result);
 
 // Retrieves the path to the public downloads directory. The result is placed
 // in the FilePath pointed to by 'result'.

@@ -24,14 +24,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @MainDex
 public abstract class PathUtils {
     private static final String THUMBNAIL_DIRECTORY_NAME = "textures";
-    private static final String DOWNLOAD_INTERNAL_DIRECTORY_NAME = "download_internal";
 
     private static final int DATA_DIRECTORY = 0;
     private static final int THUMBNAIL_DIRECTORY = 1;
-    private static final int DATABASE_DIRECTORY = 2;
-    private static final int CACHE_DIRECTORY = 3;
-    private static final int DOWNLOAD_INTERNAL_DIRECTORY = 4;
-    private static final int NUM_DIRECTORIES = 5;
+    private static final int CACHE_DIRECTORY = 2;
+    private static final int NUM_DIRECTORIES = 3;
     private static final AtomicBoolean sInitializationStarted = new AtomicBoolean();
     private static AsyncTask<Void, Void, String[]> sDirPathFetchTask;
 
@@ -99,9 +96,6 @@ public abstract class PathUtils {
                 sDataDirectorySuffix, Context.MODE_PRIVATE).getPath();
         paths[THUMBNAIL_DIRECTORY] = appContext.getDir(
                 THUMBNAIL_DIRECTORY_NAME, Context.MODE_PRIVATE).getPath();
-        paths[DOWNLOAD_INTERNAL_DIRECTORY] =
-                appContext.getDir(DOWNLOAD_INTERNAL_DIRECTORY_NAME, Context.MODE_PRIVATE).getPath();
-        paths[DATABASE_DIRECTORY] = appContext.getDatabasePath("foo").getParent();
         if (appContext.getCacheDir() != null) {
             paths[CACHE_DIRECTORY] = appContext.getCacheDir().getPath();
         }
@@ -153,15 +147,6 @@ public abstract class PathUtils {
     }
 
     /**
-     * @return the private directory that is used to store application database.
-     */
-    @CalledByNative
-    public static String getDatabaseDirectory() {
-        assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
-        return getDirectoryPath(DATABASE_DIRECTORY);
-    }
-
-    /**
      * @return the cache directory.
      */
     @CalledByNative
@@ -174,12 +159,6 @@ public abstract class PathUtils {
     public static String getThumbnailCacheDirectory() {
         assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
         return getDirectoryPath(THUMBNAIL_DIRECTORY);
-    }
-
-    @CalledByNative
-    public static String getDownloadInternalDirectory() {
-        assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
-        return getDirectoryPath(DOWNLOAD_INTERNAL_DIRECTORY);
     }
 
     /**
