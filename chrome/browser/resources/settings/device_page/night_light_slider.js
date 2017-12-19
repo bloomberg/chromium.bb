@@ -83,6 +83,13 @@ Polymer({
 
     this.isRTL_ = window.getComputedStyle(this).direction == 'rtl';
 
+    this.$.sliderContainer.addEventListener('contextmenu', function(e) {
+      // Prevent the context menu from interfering with dragging the knobs using
+      // touch.
+      e.preventDefault();
+      return false;
+    });
+
     this.async(function() {
       // This is needed to make sure that the positions of the knobs and their
       // label bubbles are correctly updated when the display settings page is
