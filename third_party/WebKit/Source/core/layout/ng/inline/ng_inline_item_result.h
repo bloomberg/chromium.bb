@@ -60,6 +60,9 @@ struct CORE_EXPORT NGInlineItemResult {
   // by default.
   int expansion = 0;
 
+  // Has start/end edge for open/close tags.
+  bool has_edge = false;
+
   // Create a box when the box is empty, for open/close tags.
   bool needs_box_when_empty = false;
 
