@@ -1,5 +1,6 @@
 include_rules = [
   "+components/arc/video_accelerator",
+  "+components/crash/core/common/crash_key.h",
   "+gpu/command_buffer",
   "+gpu/config",
   "+gpu/ipc",

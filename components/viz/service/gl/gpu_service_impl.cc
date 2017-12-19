@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
@@ -14,6 +13,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/viz/common/gpu/in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -550,8 +550,8 @@ void GpuServiceImpl::SendAcceleratedSurfaceCreatedChildWindow(
 
 void GpuServiceImpl::SetActiveURL(const GURL& url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  constexpr char kActiveURL[] = "url-chunk";
-  base::debug::SetCrashKeyValue(kActiveURL, url.possibly_invalid_spec());
+  static crash_reporter::CrashKeyString<1024> crash_key("url-chunk");
+  crash_key.Set(url.possibly_invalid_spec());
 }
 
 void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,

@@ -156,6 +156,7 @@ viz_component("service") {
 
   deps = [
     "//cc/paint",
+    "//components/crash/core/common:crash_key",
     "//components/viz/common",
 
     # Note that dependency on //gpu/ipc/client is for GpuMemoryBufferImpl. This

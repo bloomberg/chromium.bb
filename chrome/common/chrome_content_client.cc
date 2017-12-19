@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -478,8 +477,9 @@ void ChromeContentClient::SetPDFEntryFunctions(
 
 void ChromeContentClient::SetActiveURL(const GURL& url,
                                        std::string top_origin) {
-  base::debug::SetCrashKeyValue(crash_keys::kActiveURL,
-                                url.possibly_invalid_spec());
+  static crash_reporter::CrashKeyString<1024> active_url("url-chunk");
+  active_url.Set(url.possibly_invalid_spec());
+
   static crash_reporter::CrashKeyString<64> top_origin_key("top-origin");
   top_origin_key.Set(top_origin);
 }

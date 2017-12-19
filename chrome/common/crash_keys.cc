@@ -25,8 +25,6 @@
 
 namespace crash_keys {
 
-const char kActiveURL[] = "url-chunk";
-
 size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
@@ -37,7 +35,6 @@ size_t RegisterChromeCrashKeys() {
   //     RegisterWebViewCrashKeys(),
   // chromecast/crash/cast_crash_keys.cc::RegisterCastCrashKeys().
   base::debug::CrashKey fixed_keys[] = {
-    {kActiveURL, kLargeSize},
     {kNumVariations, kSmallSize},
     {kVariations, kHugeSize},
 

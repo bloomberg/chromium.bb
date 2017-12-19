@@ -35,8 +35,6 @@ namespace {
 // constants defined below, the RegisterCrashKeysHelper function, the
 // RegisterCrashKeys function in the crash_keys::CrashReporterClient interface
 // and the snprintf function defined here.
-constexpr char kActiveURL[] = "url-chunk";
-
 using namespace crash_keys;
 
 size_t RegisterCrashKeysHelper() {
@@ -46,7 +44,6 @@ size_t RegisterCrashKeysHelper() {
   // For now these need to be kept relatively up to date with those in
   // chrome/common/crash_keys.cc::RegisterChromeCrashKeys().
   static constexpr base::debug::CrashKey kFixedKeys[] = {
-      {kActiveURL, kLargeSize},
       {kNumVariations, kSmallSize},
       {kVariations, kHugeSize},
 
