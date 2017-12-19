@@ -3247,6 +3247,15 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_APP_MENU_IPH" desc="Label for in-product help that appears in the Chrome three-dot menu (navigation menu). In previous versions of Chrome, the menu contained Downloads, Bookmarks, and History. In this version of Chrome, these three items have been moved out of the menu. Tapping this help text will show the user where they can find these three items. 'Downloads', 'Bookmarks', and 'History' should use the same translations as in Chrome settings and menu items. The tone of this string is that of the user asking Chrome, 'where are these 3 things?'">
         Where are downloads, bookmarks, and history?
       </message>
+      <message name="IDS_CHROME_HOME_MENU_BOOKMARKS_HELP_BUBBLE" desc="Help text. Shown after a user taps the ‘Bookmarks’ item in the three-dot menu of mobile Chrome. Context: In Chrome Hub, ‘Bookmarks’ is moving from the three-dot menu to a bottom navigation bar, which can be accessed by swiping the address bar up. This help text notifies the user of the change. Please ensure ‘Bookmarks’ in this message matches the ‘Bookmarks’ menu item and button label.">
+        “Bookmarks” is moving. Next time, pull the address bar up.
+      </message>
+      <message name="IDS_CHROME_HOME_MENU_DOWNLOADS_HELP_BUBBLE" desc="Help text. Shown after a user taps the ‘Downloads’ item in the three-dot menu of mobile Chrome. Context: In Chrome Hub, ‘Downloads’ is moving from the three-dot menu to a bottom navigation bar, which can be accessed by swiping the address bar up. This help text notifies the user of the change. Please ensure ‘Downloads’ in this message matches the ‘Downloads’ menu item and button label.">
+        “Downloads” is moving. Next time, pull the address bar up.
+      </message>
+      <message name="IDS_CHROME_HOME_MENU_HISTORY_HELP_BUBBLE" desc="Help text. Shown after a user taps the ‘History’ item in the three-dot menu of mobile Chrome. Context: In Chrome Hub, ‘History’ is moving from the three-dot menu to a bottom navigation bar, which can be accessed by swiping the address bar up. This help text notifies the user of the change. Please ensure ‘History’ in this message matches the ‘History’ menu item and button label.">
+        “History” is moving. Next time, pull the address bar up.
+      </message>
       <message name="IDS_CHROME_HOME_PROMO_DIALOG_MESSAGE" desc="Dialog body text. Describes the new features available in the new Chrome. “Swipe up” (imperative) refers to the gesture on a mobile phone. “access” is a noun. “Popular” modifies both “sites and articles.” “Downloads” refers to items the user has downloaded in Chrome.">
         Swipe up for easy access to popular sites and articles, downloads, and more
       </message>

@@ -1696,6 +1696,13 @@ const char kChromeHomeInactivitySheetExpansionDescription[] =
     "Expand bottom sheet on startup in Chrome Home after a period of"
     " inactivity.";
 
+const char kChromeHomeMenuItemsName[] =
+    "Show bookmarks, downloads, and history menu items in Chrome Home";
+const char kChromeHomeMenuItemsDescription[] =
+    "Shows bookmarks, downloads, and history menu items in the overflow menu"
+    " when Chrome Home is enabled. These items will open the bottom sheet to"
+    " show the desired content.";
+
 const char kChromeHomeOptOutSnackbarName[] = "Chrome Home Opt-out Snackbar";
 const char kChromeHomeOptOutSnackbarDescription[] =
     "Show a snackbar prompting users to take a survey the first time they"

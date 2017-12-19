@@ -165,6 +165,8 @@ public abstract class ChromeFeatureList {
             "ChromeHomeDropAllButFirstThumbnail";
     public static final String CHROME_HOME_INACTIVITY_SHEET_EXPANSION =
             "ChromeHomeInactivitySheetExpansion";
+    public static final String CHROME_HOME_MENU_ITEMS_EXPAND_SHEET =
+            "ChromeHomeMenuItemsExpandSheet";
     public static final String CHROME_HOME_OPT_OUT_SNACKBAR = "ChromeHomeOptOutSnackbar";
     public static final String CHROME_HOME_PERSISTENT_IPH = "ChromeHomePersistentIph";
     public static final String CHROME_HOME_PERSONALIZED_OMNIBOX_SUGGESTIONS =

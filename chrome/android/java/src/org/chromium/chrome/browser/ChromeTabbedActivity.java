@@ -1693,7 +1693,8 @@ public class ChromeTabbedActivity
                 // Return early if the conditions aren't right to show the Chrome Home IPH menu
                 // header.
                 if (mControlContainer.getVisibility() != View.VISIBLE
-                        || getBottomSheet().isSheetOpen() || !isPageMenu) {
+                        || getBottomSheet().isSheetOpen() || !isPageMenu
+                        || AppMenuPropertiesDelegate.shouldShowNavMenuItems()) {
                     return null;
                 }
 
@@ -1834,7 +1835,7 @@ public class ChromeTabbedActivity
             if (currentTab != null) {
                 getCompositorViewHolder().hideKeyboard(() -> {
                     StartupMetrics.getInstance().recordOpenedBookmarks();
-                    BookmarkUtils.showBookmarkManager(ChromeTabbedActivity.this);
+                    BookmarkUtils.showBookmarkManager(ChromeTabbedActivity.this, true);
                 });
                 if (currentTabIsNtp) {
                     NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
@@ -1873,7 +1874,7 @@ public class ChromeTabbedActivity
                 getToolbarManager().setUrlBarFocus(true);
             }
         } else if (id == R.id.downloads_menu_id) {
-            DownloadUtils.showDownloadManager(this, currentTab);
+            DownloadUtils.showDownloadManager(this, currentTab, true);
             if (currentTabIsNtp) {
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_DOWNLOADS_MANAGER);
             }
