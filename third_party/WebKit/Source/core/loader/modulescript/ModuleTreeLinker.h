@@ -94,7 +94,8 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   void Instantiate();
 
   // [FFPE]
-  bool FindFirstParseError(ModuleScript*, HeapHashSet<Member<ModuleScript>>*);
+  ScriptValue FindFirstParseError(ModuleScript*,
+                                  HeapHashSet<Member<ModuleScript>>*) const;
 
   const Member<Modulator> modulator_;
   HashSet<KURL> visited_set_;
@@ -106,7 +107,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
   TraceWrapperMember<ModuleScript> result_;
 
-  bool found_error_ = false;
+  bool found_parse_error_ = false;
 
   size_t num_incomplete_fetches_ = 0;
 

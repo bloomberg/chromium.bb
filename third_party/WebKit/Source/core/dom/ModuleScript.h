@@ -45,21 +45,13 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   bool HasEmptyRecord() const;
   const KURL& BaseURL() const { return base_url_; }
 
-  // Corresponds to spec concept: module script's record's [[Status]]
-  ScriptModuleState RecordStatus() const;
+  void SetParseErrorAndClearRecord(ScriptValue error);
+  bool HasParseError() const { return !parse_error_.IsEmpty(); }
+  ScriptValue CreateParseError() const;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-has-instantiated
-  bool HasInstantiated() const;
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-is-errored
-  bool IsErrored() const;
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-set-pre-instantiation-error
-  void SetErrorAndClearRecord(ScriptValue error);
-
-  v8::Local<v8::Value> CreateError(v8::Isolate* isolate) const {
-    return preinstantiation_error_.NewLocal(isolate);
-  }
+  void SetErrorToRethrow(ScriptValue error);
+  bool HasErrorToRethrow() const { return !error_to_rethrow_.IsEmpty(); }
+  ScriptValue CreateErrorToRethrow() const;
 
   const TextPosition& StartPosition() const { return start_position_; }
 
@@ -87,13 +79,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   friend class ModulatorImplBase;
   friend class ModuleTreeLinkerTestModulator;
-  // Access this func only via ModulatorImpl::GetError(),
-  // or via Modulator mocks for unit tests.
-  // TODO(kouhei): Needs update after V8 change. The error may also be stored
-  // inside record_.
-  v8::Local<v8::Value> CreateErrorInternal(v8::Isolate* isolate) const {
-    return preinstantiation_error_.NewLocal(isolate);
-  }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
   Member<Modulator> settings_object_;
@@ -104,10 +89,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-base-url
   const KURL base_url_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-pre-instantiation-error
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-parse-error
   //
-  // |record_| and |preinstantiation_error_| are TraceWrappers()ed and kept
-  // alive via one or more of following reference graphs:
+  // |record_|, |parse_error_| and |error_to_rethrow_| are TraceWrappers()ed and
+  // kept alive via one or more of following reference graphs:
   // * non-inline module script case
   //   DOMWindow -> Modulator/ModulatorImpl -> ModuleMap -> ModuleMap::Entry
   //   -> ModuleScript
@@ -127,7 +112,22 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   //   -> ModulePendingScriptTreeClient -> ModuleScript.
   // All the classes/references on the graphs above should be
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
-  TraceWrapperV8Reference<v8::Value> preinstantiation_error_;
+  //
+  // A parse error and an error to rethrow belong to a script, not to a
+  // |parse_error_| and |error_to_rethrow_| should belong to a script (i.e.
+  // blink::Script) according to the spec, but are put here in ModuleScript,
+  // because:
+  // - Error handling for classic and module scripts are somehow separated and
+  //   there are no urgent motivation for merging the error handling and placing
+  //   the errors in Script, and
+  // - Classic scripts are handled according to the spec before
+  //   https://github.com/whatwg/html/pull/2991. This shouldn't cause any
+  //   observable functional changes, and updating the classic script handling
+  //   will require moderate code changes (e.g. to move compilation timing).
+  TraceWrapperV8Reference<v8::Value> parse_error_;
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html##concept-script-error-to-rethrow
+  TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
 
   // For CSP check.
   const String source_text_;

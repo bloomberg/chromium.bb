@@ -3162,7 +3162,19 @@ crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-tchinese [ Timeout Pass
 crbug.com/736056 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-hangul.html [ Timeout Pass ]
 
 # Known issue: module script errors are not derteministic
+# TODO(hiroshige): The tests will pass deterministically after a V8-side CL,
+# so I set [ Failure Pass ] here to allow the transitions, and once the
+# V8-side CL is landed, then I'll remove these expectations.
+
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-1.html [ Failure Pass ]
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-2.html [ Failure Pass ]
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-3.html [ Failure Pass ]
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-4.html [ Failure Pass ]
+
 crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-5.html [ Failure Pass ]
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-script-error.html [ Failure Pass ]
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/error-type-3.html [ Failure ]
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/choice-of-error-2.html [ Failure ]
 
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
