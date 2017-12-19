@@ -126,7 +126,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
                                   kSelectedAreaOverlayColor);
     }
 
-    DrawPseudoCursor(recorder.canvas());
+    DrawPseudoCursor(recorder.canvas(), context.device_scale_factor());
 
     if (!region_.IsEmpty())
       recorder.canvas()->FillRect(region_, SK_ColorBLACK, SkBlendMode::kClear);
@@ -137,7 +137,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 
   // Mouse cursor may move sub DIP, so paint pseudo cursor instead of
   // using platform cursor so that it's aliend with the region.
-  void DrawPseudoCursor(gfx::Canvas* canvas) {
+  void DrawPseudoCursor(gfx::Canvas* canvas, float device_scale_factor) {
     // Don't draw if window selection mode.
     if (cursor_location_in_root_.IsOrigin())
       return;
@@ -152,10 +152,26 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
       pseudo_cursor_point.Offset(0, -1);
 
     cc::PaintFlags flags;
-    flags.setAntiAlias(false);
-    flags.setStrokeWidth(1);
-    flags.setColor(SK_ColorWHITE);
     flags.setBlendMode(SkBlendMode::kSrc);
+
+    // Circle fill.
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(SK_ColorGRAY);
+    flags.setAntiAlias(true);
+    const int stroke_width = 1;
+    flags.setStrokeWidth(stroke_width);
+    gfx::PointF circle_center(pseudo_cursor_point);
+    // For the circle to be exactly centered in the middle of the crosshairs, we
+    // need to take into account the stroke width of the crosshair as well as
+    // the device scale factor.
+    const float center_offset =
+        stroke_width / (2.0f * device_scale_factor * device_scale_factor);
+    circle_center.Offset(center_offset, center_offset);
+    const float circle_radius = (kCursorSize / 2.0f) - 2.5f;
+    canvas->DrawCircle(circle_center, circle_radius, flags);
+
+    flags.setAntiAlias(false);
+    flags.setColor(SK_ColorWHITE);
     gfx::Vector2d width(kCursorSize / 2, 0);
     gfx::Vector2d height(0, kCursorSize / 2);
     gfx::Vector2d white_x_offset(1, -1);
@@ -163,7 +179,6 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     // Horizontal
     canvas->DrawLine(pseudo_cursor_point - width + white_x_offset,
                      pseudo_cursor_point + width + white_x_offset, flags);
-    flags.setStrokeWidth(1);
     // Vertical
     canvas->DrawLine(pseudo_cursor_point - height + white_y_offset,
                      pseudo_cursor_point + height + white_y_offset, flags);
@@ -175,6 +190,12 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     // Vertical
     canvas->DrawLine(pseudo_cursor_point - height, pseudo_cursor_point + height,
                      flags);
+
+    // Circle stroke.
+    flags.setColor(SK_ColorDKGRAY);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setAntiAlias(true);
+    canvas->DrawCircle(circle_center, circle_radius, flags);
   }
 
   bool draw_inactive_overlay_;
