@@ -12,11 +12,18 @@ async_test(t => {
   video.addEventListener('playing', t.step_func(() => {
     // Single tap in the top right hand corner
     const coordinates =
-      coordinatesOutsideElement(mediaControlsOverlayPlayButtonInternal(video));
+      coordinatesOutsideElement(mediaControlsOverlayPlayButton(video));
     singleTapAtCoordinates(coordinates[0] + 1, coordinates[1] + 1);
   }), { once: true });
 
-  video.addEventListener('pause', t.step_func_done(), { once: true });
+  video.addEventListener('pause', t.unreached_func());
+
+  video.addEventListener('webkitfullscreenchange', t.unreached_func());
+
+  video.ontimeupdate = t.step_func(() => {
+    if (video.currentTime > 0)
+      t.done();
+  });
 
   video.play();
 });
