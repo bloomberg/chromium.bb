@@ -35,6 +35,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 using testing::_;
@@ -363,7 +364,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
     if (!create_source_that_fails_) {
       // RunUntilIdle is required for this task to complete.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
           FROM_HERE,
           base::BindOnce(&UserMediaProcessorUnderTest::SignalSourceReady,
                          source_ready, source));

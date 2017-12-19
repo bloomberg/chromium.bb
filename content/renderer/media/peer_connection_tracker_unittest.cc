@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using ::testing::_;
 
@@ -46,9 +47,10 @@ bool MockSendTargetThread::OnMessageReceived(const IPC::Message& msg) {
 class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
  public:
   MockPeerConnectionHandler()
-      : RTCPeerConnectionHandler(&client_,
-                                 &dependency_factory_,
-                                 base::ThreadTaskRunnerHandle::Get()) {}
+      : RTCPeerConnectionHandler(
+            &client_,
+            &dependency_factory_,
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
   MOCK_METHOD0(CloseClientPeerConnection, void());
 
  private:

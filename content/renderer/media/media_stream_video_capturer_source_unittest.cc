@@ -18,6 +18,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 using ::testing::_;
@@ -51,7 +52,7 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
     SetRunning(false);
   }
   void SetRunning(bool is_running) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
         FROM_HERE, base::Bind(running_cb_, is_running));
   }
   const media::VideoCaptureParams& capture_params() const {

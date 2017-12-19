@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 
@@ -50,7 +51,7 @@ class ClientImpl final : public WebDataConsumerHandle::Client {
       : operation_(operation) {}
 
   void DidGetReadable() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
         FROM_HERE, base::BindOnce(&ReadDataOperationBase::ReadMore,
                                   base::Unretained(operation_)));
   }

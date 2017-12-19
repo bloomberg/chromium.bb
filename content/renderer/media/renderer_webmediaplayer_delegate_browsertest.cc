@@ -19,6 +19,7 @@
 #include "content/renderer/render_process.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using testing::NiceMock;
 using testing::Return;
@@ -92,8 +93,8 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
 
   void RunLoopOnce() {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop.QuitClosure());
+    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
+        FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
 

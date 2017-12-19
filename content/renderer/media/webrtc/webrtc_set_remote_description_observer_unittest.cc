@@ -19,6 +19,7 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/media/base/fakemediaengine.h"
@@ -64,7 +65,7 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
         std::unique_ptr<cricket::MediaEngineInterface>(
             new cricket::FakeMediaEngine())));
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
-    main_thread_ = base::ThreadTaskRunnerHandle::Get();
+    main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     scoped_refptr<WebRtcMediaStreamAdapterMap> map =
         new WebRtcMediaStreamAdapterMap(
             dependency_factory_.get(),

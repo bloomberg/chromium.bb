@@ -19,6 +19,7 @@
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 
@@ -52,7 +53,7 @@ class MediaStreamRemoteVideoSourceTest
 
   void SetUp() override {
     scoped_refptr<base::SingleThreadTaskRunner> main_thread =
-        base::ThreadTaskRunnerHandle::Get();
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting();
 
     base::WaitableEvent waitable_event(
         base::WaitableEvent::ResetPolicy::MANUAL,

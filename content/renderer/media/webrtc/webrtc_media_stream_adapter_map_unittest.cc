@@ -26,6 +26,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 using ::testing::_;
@@ -36,7 +37,7 @@ class WebRtcMediaStreamAdapterMapTest : public ::testing::Test {
  public:
   void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
-    main_thread_ = base::ThreadTaskRunnerHandle::Get();
+    main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     map_ = new WebRtcMediaStreamAdapterMap(
         dependency_factory_.get(),
         new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get()));

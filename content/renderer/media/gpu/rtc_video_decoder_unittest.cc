@@ -16,6 +16,7 @@
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "media/video/mock_video_decode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -99,7 +100,8 @@ class RTCVideoDecoderTest
 
   int32_t Decoded(webrtc::VideoFrame& decoded_image) override {
     DVLOG(2) << "Decoded";
-    EXPECT_EQ(vda_task_runner_, base::ThreadTaskRunnerHandle::Get());
+    EXPECT_EQ(vda_task_runner_,
+              blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     return WEBRTC_VIDEO_CODEC_OK;
   }
 

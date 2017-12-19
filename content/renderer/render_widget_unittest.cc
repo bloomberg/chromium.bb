@@ -27,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -137,7 +138,7 @@ class InteractiveRenderWidget : public RenderWidget {
                      false,
                      false,
                      false,
-                     base::ThreadTaskRunnerHandle::Get()),
+                     blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         always_overscroll_(false) {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
 
@@ -379,7 +380,7 @@ class PopupRenderWidget : public RenderWidget {
                      false,
                      false,
                      false,
-                     base::ThreadTaskRunnerHandle::Get()) {
+                     blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
     did_show_ = true;
   }

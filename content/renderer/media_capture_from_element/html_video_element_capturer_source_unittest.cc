@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -91,8 +92,8 @@ class HTMLVideoElementCapturerSourceTest : public testing::Test {
         web_media_player_(new MockWebMediaPlayer()),
         html_video_capturer_(new HtmlVideoElementCapturerSource(
             web_media_player_->AsWeakPtr(),
-            base::ThreadTaskRunnerHandle::Get(),
-            base::ThreadTaskRunnerHandle::Get())) {}
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting())) {}
 
   // Necessary callbacks and MOCK_METHODS for them.
   MOCK_METHOD2(DoOnDeliverFrame,

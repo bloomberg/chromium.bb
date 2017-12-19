@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/lazy_thread_controller_for_test.h"
 
@@ -34,6 +36,15 @@ void RunIdleTasksForTesting(RendererScheduler* scheduler,
   RendererSchedulerImpl* scheduler_impl =
       static_cast<RendererSchedulerImpl*>(scheduler);
   scheduler_impl->RunIdleTasksForTesting(callback);
+}
+
+scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunnerForTesting() {
+  return base::SequencedTaskRunnerHandle::Get();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+GetSingleThreadTaskRunnerForTesting() {
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 }  // namespace scheduler
