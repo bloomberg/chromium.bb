@@ -234,10 +234,6 @@ class MediaCasesStorySet(story.StorySet):
             page_set=self,
             tags=['is_50fps', 'h264', 'aac', 'audio_video']),
         _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=crowd2160.mp4',
-            page_set=self,
-            tags=['is_4k', 'is_50fps', 'h264', 'aac', 'audio_video']),
-        _BeginningToEndPlayPage(
             url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio',
             page_set=self,
             tags=['mp3', 'audio_only']),
