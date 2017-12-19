@@ -60,7 +60,6 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/WebKit/Source/modules/webmidi/MIDIConnectionEvent.idl",
     "//third_party/WebKit/Source/modules/webmidi/MIDIMessageEvent.idl",
     "//third_party/WebKit/Source/modules/websockets/CloseEvent.idl",
-    "//third_party/WebKit/Source/modules/xr/XRDeviceEvent.idl",
     "//third_party/WebKit/Source/modules/xr/XRSessionEvent.idl",
   ]
   output_file = "event_modules_names.json5"

@@ -85,8 +85,6 @@
     "dblclick",
     "defaultsessionstart",
     "devicechange",
-    "deviceconnect",
-    "devicedisconnect",
     "devicemotion",
     "deviceorientation",
     "deviceorientationabsolute",

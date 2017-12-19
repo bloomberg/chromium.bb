@@ -7,8 +7,6 @@
     SecureContext,
     RuntimeEnabled=WebXR
 ] interface XR : EventTarget {
-  attribute EventHandler ondeviceconnect;
-  attribute EventHandler ondevicedisconnect;
-
+  attribute EventHandler ondevicechange;
   [CallWith=ScriptState] Promise requestDevice();
 };
