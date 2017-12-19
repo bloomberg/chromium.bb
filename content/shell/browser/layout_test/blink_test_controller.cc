@@ -319,7 +319,6 @@ BlinkTestController* BlinkTestController::instance_ = nullptr;
 
 // static
 BlinkTestController* BlinkTestController::Get() {
-  DCHECK(instance_);
   return instance_;
 }
 
@@ -332,7 +331,9 @@ BlinkTestController::BlinkTestController()
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableLeakDetection)),
       crash_when_leak_found_(false),
-      render_process_host_observer_(this) {
+      pending_layout_dumps_(0),
+      render_process_host_observer_(this),
+      weak_factory_(this) {
   CHECK(!instance_);
   instance_ = this;
 
@@ -600,7 +601,7 @@ void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(base::IgnoreResult(
                                     &BlinkTestController::DiscardMainWindow),
-                                base::Unretained(this)));
+                                weak_factory_.GetWeakPtr()));
 }
 
 void BlinkTestController::RenderFrameCreated(
@@ -781,14 +782,14 @@ void BlinkTestController::OnTestFinished() {
       BrowserContext::GetStoragePartition(browser_context, nullptr);
   storage_partition->GetServiceWorkerContext()->ClearAllServiceWorkersForTest(
       base::BindOnce(&BlinkTestController::OnAllServiceWorkersCleared,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
   storage_partition->ClearBluetoothAllowedDevicesMapForTesting();
 }
 
 void BlinkTestController::OnAllServiceWorkersCleared() {
   TerminateAllSharedWorkersForTesting(
       base::BindOnce(&BlinkTestController::OnAllSharedWorkersDestroyed,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void BlinkTestController::OnAllSharedWorkersDestroyed() {
@@ -862,6 +863,9 @@ void BlinkTestController::OnTextDump(const std::string& dump,
 }
 
 void BlinkTestController::OnInitiateLayoutDump() {
+  // There should be at most 1 layout dump in progress at any given time.
+  DCHECK_EQ(0, pending_layout_dumps_);
+
   int number_of_messages = 0;
   for (RenderFrameHost* rfh : main_window_->web_contents()->GetAllFrames()) {
     if (!rfh->IsRenderFrameLive())
@@ -870,7 +874,7 @@ void BlinkTestController::OnInitiateLayoutDump() {
     ++number_of_messages;
     GetLayoutTestControlPtr(rfh)->DumpFrameLayout(
         base::BindOnce(&BlinkTestController::OnDumpFrameLayoutResponse,
-                       base::Unretained(this), rfh->GetFrameTreeNodeId()));
+                       weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
   }
 
   pending_layout_dumps_ = number_of_messages;
@@ -1087,7 +1091,7 @@ mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
         &layout_test_control_map_[frame]);
     layout_test_control_map_[frame].set_connection_error_handler(
         base::BindOnce(&BlinkTestController::HandleLayoutTestControlError,
-                       base::Unretained(this), frame));
+                       weak_factory_.GetWeakPtr(), frame));
   }
   DCHECK(layout_test_control_map_[frame].get());
   return layout_test_control_map_[frame].get();
