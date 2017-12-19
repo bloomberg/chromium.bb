@@ -150,18 +150,29 @@ class GlobalDumpGraph {
         double cumulative_owning_coefficient) {
       cumulative_owning_coefficient_ = cumulative_owning_coefficient;
     }
+    base::trace_event::MemoryAllocatorDumpGuid guid() const { return guid_; }
+    void set_guid(base::trace_event::MemoryAllocatorDumpGuid guid) {
+      guid_ = guid;
+    }
     GlobalDumpGraph::Edge* owns_edge() const { return owns_edge_; }
     std::map<std::string, Node*>* children() { return &children_; }
+    const std::map<std::string, Node*>& const_children() const {
+      return children_;
+    }
     std::vector<GlobalDumpGraph::Edge*>* owned_by_edges() {
       return &owned_by_edges_;
     }
     const Node* parent() const { return parent_; }
     const GlobalDumpGraph::Process* dump_graph() const { return dump_graph_; }
     std::map<std::string, Entry>* entries() { return &entries_; }
+    const std::map<std::string, Entry>& const_entries() const {
+      return entries_;
+    }
 
    private:
     GlobalDumpGraph::Process* dump_graph_;
     Node* const parent_;
+    base::trace_event::MemoryAllocatorDumpGuid guid_;
     std::map<std::string, Entry> entries_;
     std::map<std::string, Node*> children_;
     bool explicit_ = false;
