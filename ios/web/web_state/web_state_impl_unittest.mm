@@ -826,4 +826,27 @@ TEST_F(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 }
 
+// Tests that taking a snapshot after disabling web usage or adding an overlay
+// will force the creation of the WebState's view.
+TEST_F(WebStateImplTest, CanTakeSnapshot) {
+  // The view is lazily created, so taking a snapshot is not possible initially.
+  ASSERT_FALSE(web_state_->CanTakeSnapshot());
+
+  // Enabling overlay does not create the creation of the View.
+  [web_state_->GetWebController() setOverlayPreviewMode:YES];
+  EXPECT_FALSE(web_state_->CanTakeSnapshot());
+
+  // Loading the page will create the view (and add the placeholder overlay).
+  [web_state_->GetWebController() loadCurrentURLIfNecessary];
+  EXPECT_TRUE(web_state_->CanTakeSnapshot());
+
+  // Disabling the overlay will remove the view.
+  [web_state_->GetWebController() setOverlayPreviewMode:NO];
+  EXPECT_FALSE(web_state_->CanTakeSnapshot());
+
+  // Loading the page will create the view again.
+  [web_state_->GetWebController() loadCurrentURLIfNecessary];
+  EXPECT_TRUE(web_state_->CanTakeSnapshot());
+}
+
 }  // namespace web

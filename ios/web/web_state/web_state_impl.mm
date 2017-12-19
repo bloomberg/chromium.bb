@@ -713,6 +713,10 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
   created_with_opener_ = has_opener;
 }
 
+bool WebStateImpl::CanTakeSnapshot() const {
+  return [web_controller_ canUseViewForGeneratingOverlayPlaceholderView];
+}
+
 void WebStateImpl::TakeSnapshot(const SnapshotCallback& callback,
                                 CGSize target_size) const {
   UIView* view = [web_controller_ view];
