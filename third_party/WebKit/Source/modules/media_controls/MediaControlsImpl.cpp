@@ -714,6 +714,14 @@ void MediaControlsImpl::MakeOpaque() {
   panel_->MakeOpaque();
 }
 
+void MediaControlsImpl::MakeOpaqueFromPointerEvent() {
+  if (IsVisible())
+    return;
+
+  MakeOpaque();
+  pointer_event_did_show_controls_ = true;
+}
+
 void MediaControlsImpl::MakeTransparent() {
   // Only hide the cursor if the controls are enabled.
   if (MediaElement().ShouldShowControls())
@@ -994,6 +1002,28 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     download_iph_manager_->UpdateInProductHelp();
 }
 
+void MediaControlsImpl::MaybeToggleControlsFromTap() {
+  if (MediaElement().paused())
+    return;
+
+  // If the controls are visible we should try to hide them unless they should
+  // be kept around for another reason. If the controls are not visible then
+  // show them and start the timer to automatically hide them. If a pointer
+  // event showed the controls in this batch of events then we should not hiden
+  // the controls.
+  if (IsVisible() && !pointer_event_did_show_controls_) {
+    MakeTransparent();
+  } else {
+    MakeOpaque();
+    if (ShouldHideMediaControls(kIgnoreWaitForTimer)) {
+      keep_showing_until_timer_fires_ = true;
+      StartHideMediaControlsTimer();
+    }
+
+    pointer_event_did_show_controls_ = false;
+  }
+}
+
 void MediaControlsImpl::DefaultEventHandler(Event* event) {
   HTMLDivElement::DefaultEventHandler(event);
 
@@ -1015,7 +1045,7 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
   // Touch events are treated differently to avoid fake mouse events to trigger
   // random behavior. The expect behaviour for touch is that a tap will show the
   // controls and they will hide when the timer to hide fires.
-  if (is_touch_event) {
+  if (is_touch_event && !IsModern()) {
     if (event->type() != EventTypeNames::gesturetap)
       return;
 
@@ -1041,7 +1071,7 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
     if (!ContainsRelatedTarget(event)) {
       is_mouse_over_controls_ = true;
       if (!MediaElement().paused()) {
-        MakeOpaque();
+        MakeOpaqueFromPointerEvent();
         StartHideMediaControlsIfNecessary();
       }
     }
@@ -1056,10 +1086,21 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
     return;
   }
 
+  if (event->type() == EventTypeNames::click) {
+    MaybeToggleControlsFromTap();
+    return;
+  }
+
+  // The pointer event has finished so we should clear the bit.
+  if (event->type() == EventTypeNames::mouseout) {
+    pointer_event_did_show_controls_ = false;
+    return;
+  }
+
   if (event->type() == EventTypeNames::pointermove) {
     // When we get a mouse move, show the media controls, and start a timer
     // that will hide the media controls after a 3 seconds without a mouse move.
-    MakeOpaque();
+    MakeOpaqueFromPointerEvent();
     if (ShouldHideMediaControls(kIgnoreVideoHover))
       StartHideMediaControlsTimer();
     return;

@@ -8,22 +8,22 @@
 <script>
 async_test(t => {
   const video = document.querySelector('video');
-  let didPause = false;
 
   video.onplaying = t.step_func(() => {
-    if (didPause) {
-      t.done();
-    } else {
-      // Double tap in the top right hand corner
-      const coordinates =
-        coordinatesOutsideElement(mediaControlsOverlayPlayButton(video));
-      doubleTapAtCoordinates(coordinates[0] + 1, coordinates[1] + 1, 400);
-    }
+    // Double tap in the top right hand corner
+    const coordinates =
+      coordinatesOutsideElement(mediaControlsOverlayPlayButton(video));
+    doubleTapAtCoordinates(coordinates[0] + 1, coordinates[1] + 1, 400);
   });
 
-  video.addEventListener('pause', t.step_func(() => {
-    didPause = true;
-  }), { once: true });
+  video.addEventListener('pause', t.unreached_func());
+
+  video.addEventListener('webkitfullscreenchange', t.unreached_func());
+
+  video.ontimeupdate = t.step_func(() => {
+    if (video.currentTime > 0)
+      t.done();
+  });
 
   video.play();
 });
