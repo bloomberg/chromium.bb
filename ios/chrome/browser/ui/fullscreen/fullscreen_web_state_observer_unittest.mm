@@ -78,11 +78,11 @@ TEST_F(FullscreenWebStateObserverTest, DisableDuringLoad) {
 TEST_F(FullscreenWebStateObserverTest, DisableForBrokenSSL) {
   std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
   item->GetSSL().security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
-  navigation_manager().SetLastCommittedItem(item.get());
+  navigation_manager().SetVisibleItem(item.get());
   EXPECT_TRUE(model().enabled());
   web_state().OnVisibleSecurityStateChanged();
   EXPECT_FALSE(model().enabled());
-  navigation_manager().SetLastCommittedItem(nullptr);
+  navigation_manager().SetVisibleItem(nullptr);
   web_state().OnVisibleSecurityStateChanged();
   EXPECT_TRUE(model().enabled());
 }
