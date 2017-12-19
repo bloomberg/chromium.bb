@@ -4022,11 +4022,16 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
 #if CONFIG_AMVR
     if (cm->seq_force_integer_mv == 2) {
-      aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv == 0);
+      aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
     }
-#endif
+    if (cm->cur_frame_force_integer_mv) {
+      cm->allow_high_precision_mv = 0;
+    } else {
+      aom_wb_write_bit(wb, cm->allow_high_precision_mv);
+    }
+#else
     aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-
+#endif
     fix_interp_filter(cm, cpi->td.counts);
     write_frame_interp_filter(cm->interp_filter, wb);
 #if CONFIG_TEMPMV_SIGNALING
