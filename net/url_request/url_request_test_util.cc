@@ -16,7 +16,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
@@ -82,7 +82,7 @@ void TestURLRequestContext::Init() {
   }
   if (!cert_transparency_verifier()) {
     context_storage_.set_cert_transparency_verifier(
-        std::make_unique<MultiLogCTVerifier>());
+        std::make_unique<DoNothingCTVerifier>());
   }
   if (!ct_policy_enforcer()) {
     context_storage_.set_ct_policy_enforcer(

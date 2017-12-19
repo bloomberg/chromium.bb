@@ -14,9 +14,9 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "net/base/mock_network_change_notifier.h"
-#include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/do_nothing_ct_verifier.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -209,10 +209,10 @@ class QuicStreamFactoryTestBase {
                       &clock_,
                       kDefaultServerHostName,
                       Perspective::IS_SERVER),
-        cert_verifier_(CertVerifier::CreateDefault()),
+        cert_verifier_(std::make_unique<MockCertVerifier>()),
         channel_id_service_(
             new ChannelIDService(new DefaultChannelIDStore(nullptr))),
-        cert_transparency_verifier_(new MultiLogCTVerifier()),
+        cert_transparency_verifier_(std::make_unique<DoNothingCTVerifier>()),
         scoped_mock_network_change_notifier_(nullptr),
         factory_(nullptr),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
