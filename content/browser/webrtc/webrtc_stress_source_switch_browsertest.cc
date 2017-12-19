@@ -30,18 +30,18 @@ static const int kNumPeerConnections = 5;
 
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_WebRtcSourceFeedSwitchBrowserTest \
-  DISABLED_WebRtcSourceFeedSwitchBrowserTest
+#define MAYBE_WebRtcStressSourceSwitchBrowserTest \
+  DISABLED_WebRtcStressSourceSwitchBrowserTest
 #else
-#define MAYBE_WebRtcSourceFeedSwitchBrowserTest \
-  WebRtcSourceFeedSwitchBrowserTest
+#define MAYBE_WebRtcStressSourceSwitchBrowserTest \
+  WebRtcStressSourceSwitchBrowserTest
 #endif
 
-class MAYBE_WebRtcSourceFeedSwitchBrowserTest
+class MAYBE_WebRtcStressSourceSwitchBrowserTest
     : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcSourceFeedSwitchBrowserTest() {}
-  ~MAYBE_WebRtcSourceFeedSwitchBrowserTest() override {}
+  MAYBE_WebRtcStressSourceSwitchBrowserTest() {}
+  ~MAYBE_WebRtcStressSourceSwitchBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
@@ -56,7 +56,7 @@ class MAYBE_WebRtcSourceFeedSwitchBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcSourceFeedSwitchBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcStressSourceSwitchBrowserTest,
                        MANUAL_SurvivesPeerConnectionSrcFeedSwitching) {
   // Args: runtimeSeconds, numPeerConnections, iterationDelayMillis.
   MakeTypicalPeerConnectionCall(base::StringPrintf(

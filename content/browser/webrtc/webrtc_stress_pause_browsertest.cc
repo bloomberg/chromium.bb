@@ -28,15 +28,15 @@ static const int kNumPeerConnections = 10;
 
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_WebRtcPausePlayBrowserTest DISABLED_WebRtcPausePlayBrowserTest
+#define MAYBE_WebRtcStressPauseBrowserTest DISABLED_WebRtcStressPauseBrowserTest
 #else
-#define MAYBE_WebRtcPausePlayBrowserTest WebRtcPausePlayBrowserTest
+#define MAYBE_WebRtcStressPauseBrowserTest WebRtcStressPauseBrowserTest
 #endif
 
-class MAYBE_WebRtcPausePlayBrowserTest : public WebRtcContentBrowserTestBase {
+class MAYBE_WebRtcStressPauseBrowserTest : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcPausePlayBrowserTest() {}
-  ~MAYBE_WebRtcPausePlayBrowserTest() override {}
+  MAYBE_WebRtcStressPauseBrowserTest() {}
+  ~MAYBE_WebRtcStressPauseBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
@@ -50,7 +50,7 @@ class MAYBE_WebRtcPausePlayBrowserTest : public WebRtcContentBrowserTestBase {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcPausePlayBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcStressPauseBrowserTest,
                        MANUAL_SurvivesPeerConnectionVideoPausePlaying) {
   // Args: runtimeSeconds, numPeerConnections, pausePlayIterationDelayMillis,
   // elementType.
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcPausePlayBrowserTest,
                          kTestDurationSecs, kNumPeerConnections));
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcPausePlayBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcStressPauseBrowserTest,
                        MANUAL_SurvivesPeerConnectionAudioPausePlaying) {
   // Args: runtimeSeconds, numPeerConnections, pausePlayIterationDelayMillis,
   // elementType.
