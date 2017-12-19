@@ -155,6 +155,9 @@ component("gl") {
   deps = [
     "//base/third_party/dynamic_annotations",
 
+    # Remove after fixing crbug.com/724999.
+    "//components/crash/core/common:crash_key",
+
     # ANGLE includes are used cross-platform.
     "//third_party/angle:includes",
   ]

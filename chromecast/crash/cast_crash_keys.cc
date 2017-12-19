@@ -18,9 +18,6 @@ size_t RegisterCastCrashKeys() {
 
       {::crash_keys::kNumVariations, ::crash_keys::kSmallSize},
       {::crash_keys::kVariations, ::crash_keys::kHugeSize},
-
-      // TODO(sunnyps): Remove after fixing crbug.com/724999.
-      {"gl-context-set-current-stack-trace", ::crash_keys::kMediumSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
