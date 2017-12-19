@@ -112,6 +112,7 @@
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
+#include "media/base/media_switches.h"
 #include "net/base/escape.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"
@@ -601,6 +602,14 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
         loader_path_("/prerender/prerender_loader.html") {}
 
   ~PrerenderBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kNoUserGestureRequiredPolicy);
+
+    test_utils::PrerenderInProcessBrowserTest::SetUpCommandLine(command_line);
+  }
 
   std::unique_ptr<TestPrerender> PrerenderTestURL(
       const std::string& html_file,
