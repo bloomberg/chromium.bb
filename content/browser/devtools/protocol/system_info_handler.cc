@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/public/browser/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
@@ -97,7 +97,7 @@ std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
 }
 
 void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
-  gpu::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
+  gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
   std::unique_ptr<protocol::Array<GPUDevice>> devices =
       protocol::Array<GPUDevice>::create();
   devices->addItem(GPUDeviceToProtocol(gpu_info.gpu));
@@ -153,13 +153,13 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kGPUInfoWatchdogTimeoutMs));
 
-    GpuDataManager::GetInstance()->AddObserver(this);
-    // There's no other method available to request just essential GPU info.
-    GpuDataManager::GetInstance()->RequestCompleteGpuInfoIfNeeded();
+    GpuDataManagerImpl::GetInstance()->AddObserver(this);
+    OnGpuInfoUpdate();
   }
 
   void OnGpuInfoUpdate() override {
-    UnregisterAndSendResponse();
+    if (GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable())
+      UnregisterAndSendResponse();
   }
 
   void OnGpuProcessCrashed(base::TerminationStatus exit_code) override {
@@ -168,11 +168,11 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
 
   void ObserverWatchdogCallback() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    UnregisterAndSendResponse();
+    CHECK(false) << "Gathering system GPU info took more than 5 seconds.";
   }
 
   void UnregisterAndSendResponse() {
-    GpuDataManager::GetInstance()->RemoveObserver(this);
+    GpuDataManagerImpl::GetInstance()->RemoveObserver(this);
     SendGetInfoResponse(std::move(callback_));
     delete this;
   }
@@ -193,29 +193,11 @@ void SystemInfoHandler::Wire(UberDispatcher* dispatcher) {
   SystemInfo::Dispatcher::wire(dispatcher, this);
 }
 
-void SystemInfoHandler::GetInfo(
-    std::unique_ptr<GetInfoCallback> callback) {
-  std::string reason;
-  if (!GpuDataManager::GetInstance()->GpuAccessAllowed(&reason) ||
-      GpuDataManager::GetInstance()->IsEssentialGpuInfoAvailable() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGpuTestingNoCompleteInfoCollection)) {
-    // The GpuDataManager already has all of the information needed to make
-    // GPU-based blacklisting decisions. Post a task to give it to the
-    // client asynchronously.
-    //
-    // Waiting for complete GPU info in the if-test above seems to
-    // frequently hit internal timeouts in the launching of the unsandboxed
-    // GPU process in debug builds on Windows.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&SendGetInfoResponse,
-                                           base::Passed(std::move(callback))));
-  } else {
-    // We will be able to get more information from the GpuDataManager.
-    // Register a transient observer with it to call us back when the
-    // information is available.
-    new SystemInfoHandlerGpuObserver(std::move(callback));
-  }
+void SystemInfoHandler::GetInfo(std::unique_ptr<GetInfoCallback> callback) {
+  // We will be able to get more information from the GpuDataManager.
+  // Register a transient observer with it to call us back when the
+  // information is available.
+  new SystemInfoHandlerGpuObserver(std::move(callback));
 }
 
 }  // namespace protocol

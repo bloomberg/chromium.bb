@@ -94,6 +94,9 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void GetDisabledExtensions(std::string* disabled_extensions) const override;
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
 
+  bool IsGpuFeatureInfoAvailable() const;
+  gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
+
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser
   // startup time in UI thread before the IO restriction is turned on.

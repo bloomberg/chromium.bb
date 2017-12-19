@@ -71,7 +71,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_webgl', 'gpu/functional_webgl.html'),
              ('GpuProcess_video', 'gpu/functional_video.html'),
              ('GpuProcess_gpu_info_complete', 'gpu/functional_3d_css.html'),
-             ('GpuProcess_no_gpu_process', 'about:blank'),
              ('GpuProcess_driver_bug_workarounds_in_gpu_process', 'chrome:gpu'),
              ('GpuProcess_readback_webgl_gpu_process', 'chrome:gpu'),
              ('GpuProcess_driver_bug_workarounds_upon_gl_renderer',
@@ -240,41 +239,10 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Browser must support GPU aux attributes')
     if not 'gl_renderer' in system_info.gpu.aux_attributes:
       self.fail('Browser must have gl_renderer in aux attribs')
-    if len(system_info.gpu.aux_attributes['gl_renderer']) <= 0:
+    if (sys.platform != 'darwin' and
+        len(system_info.gpu.aux_attributes['gl_renderer']) <= 0):
+      # On MacOSX we don't create a context to collect GL strings.1
       self.fail('Must have a non-empty gl_renderer string')
-
-  def _GpuProcess_no_gpu_process(self, test_path):
-    options = self.__class__._original_finder_options.browser_options
-    if options.browser_type.startswith('android'):
-      # Android doesn't support starting up the browser without any
-      # GPU process. This test is skipped on Android in
-      # gpu_process_expectations.py, but we must at least be able to
-      # bring up the browser in order to detect that the test
-      # shouldn't run. Faking a vendor and device ID can get the
-      # browser into a state where it won't launch.
-      return
-    elif sys.platform in ('cygwin', 'win32'):
-      # Hit id 34 from kSoftwareRenderingListEntries.
-      self.RestartBrowserIfNecessaryWithArgs([
-        '--gpu-testing-vendor-id=0x5333',
-        '--gpu-testing-device-id=0x8811'])
-    elif sys.platform.startswith('linux'):
-      # Hit id 50 from kSoftwareRenderingListEntries.
-      self.RestartBrowserIfNecessaryWithArgs([
-        '--gpu-no-complete-info-collection',
-        '--gpu-testing-vendor-id=0x10de',
-        '--gpu-testing-device-id=0x0de1',
-        '--gpu-testing-gl-vendor=VMware',
-        '--gpu-testing-gl-renderer=softpipe',
-        '--gpu-testing-gl-version="2.1 Mesa 10.1"'])
-    elif sys.platform == 'darwin':
-      # Hit id 112 from kSoftwareRenderingListEntries.
-      self.RestartBrowserIfNecessaryWithArgs([
-        '--gpu-testing-vendor-id=0x8086',
-        '--gpu-testing-device-id=0x0116'])
-    self._Navigate(test_path)
-    if self.tab.EvaluateJavaScript('chrome.gpuBenchmarking.hasGpuProcess()'):
-      self.fail('GPU process detected')
 
   def _GpuProcess_driver_bug_workarounds_in_gpu_process(self, test_path):
     self.RestartBrowserIfNecessaryWithArgs([
@@ -301,18 +269,12 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'browserBridge.gpuInfo.featureStatus.featureStatus')
       result = True
       for name, status in feature_status_list.items():
-        if name == 'multiple_raster_threads':
-          result = result and status == 'enabled_on'
-        elif name == 'native_gpu_memory_buffers':
-          result = result and status == 'disabled_software'
-        elif name == 'webgl':
+        if name == 'webgl':
           result = result and status == 'enabled_readback'
         elif name == 'webgl2':
-          result = result and status == 'unavailable_software'
-        elif name == 'checker_imaging':
-          pass
+          result = result and status == 'unavailable_off'
         else:
-          result = result and status == 'unavailable_software'
+          pass
       if not result:
         self.fail('WebGL readback setup failed: %s' % feature_status_list)
 

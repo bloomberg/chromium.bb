@@ -8,17 +8,10 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
 class GpuProcessExpectations(GpuTestExpectations):
   def SetExpectations(self):
-    # Accelerated 2D canvas is not available on Linux due to driver instability
-    self.Fail('GpuProcess_canvas2d', ['linux'], bug=254724)
-
     self.Fail('GpuProcess_video', ['linux'], bug=257109)
 
     # Chrome on Android doesn't support software fallback.
-    self.Skip('GpuProcess_no_gpu_process', ['android'], bug=643282)
     self.Skip('GpuProcess_skip_gpu_process', ['android'], bug=(610951, 610023))
-
-    # TODO(zmo): Consider deleting this test on Linux/Win due to SwiftShader?
-    self.Fail('GpuProcess_no_gpu_process', ['win', 'linux'])
 
     # Chrome on Windows and Linux create a GPU process that uses SwiftShader
     # when using either --disable-gpu or a blacklisted GPU.
@@ -42,7 +35,3 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     # Seems to have become flaky on Windows recently.
     self.Flaky('GpuProcess_only_one_workaround', ['win'], bug=700522)
-
-    # TODO(zmo): Enable this test once about:gpu status reporting is wired
-    # with GpuFeatureInfo from GPU process.
-    self.Fail('GpuProcess_readback_webgl_gpu_process', ['linux'])
