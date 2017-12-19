@@ -540,12 +540,7 @@ FcFontRenderPrepare (FcConfig	    *config,
     FcPatternObjectGetBool (font, FC_VARIABLE_OBJECT, 0, &variable);
     assert (variable != FcDontCare);
     if (variable)
-    {
-	FcChar8 *vars = NULL;
 	FcStrBufInit (&variations, NULL, 0);
-	if (FcPatternObjectGetString (pat, FC_FONT_VARIATIONS_OBJECT, 0, &vars) == FcResultMatch)
-	    FcStrBufString (&variations, vars);
-    }
 
     new = FcPatternCreate ();
     if (!new)
@@ -739,11 +734,18 @@ FcFontRenderPrepare (FcConfig	    *config,
 	}
     }
 
-    if (variable)
+    if (variable && variations.len)
     {
-      FcPatternObjectDel (new, FC_FONT_VARIATIONS_OBJECT);
-      FcPatternObjectAddString (new, FC_FONT_VARIATIONS_OBJECT, FcStrBufDoneStatic (&variations));
-      FcStrBufDestroy (&variations);
+	FcChar8 *vars = NULL;
+	if (FcPatternObjectGetString (new, FC_FONT_VARIATIONS_OBJECT, 0, &vars) == FcResultMatch)
+	{
+	    FcStrBufChar (&variations, ',');
+	    FcStrBufString (&variations, vars);
+	    FcPatternObjectDel (new, FC_FONT_VARIATIONS_OBJECT);
+	}
+
+	FcPatternObjectAddString (new, FC_FONT_VARIATIONS_OBJECT, FcStrBufDoneStatic (&variations));
+	FcStrBufDestroy (&variations);
     }
 
     FcConfigSubstituteWithPat (config, new, pat, FcMatchFont);
