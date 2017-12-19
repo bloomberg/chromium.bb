@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+import("//third_party/WebKit/Source/platform/platform.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 make_names("http_names") {
@@ -22,9 +23,7 @@ group("make_generated") {
   ]
 }
 
-jumbo_source_set("network") {
-  visibility = [ "//third_party/WebKit/Source/platform/*" ]
-
+blink_platform_sources("network") {
   sources = [
     "ContentSecurityPolicyParsers.cpp",
     "ContentSecurityPolicyParsers.h",
@@ -70,20 +69,6 @@ jumbo_source_set("network") {
   ]
 
   sources += get_target_outputs(":http_names")
-
-  configs += [
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source/platform:blink_platform_config",
-    "//third_party/WebKit/Source/platform:blink_platform_implementation",
-  ]
-
-  public_deps = [
-    ":make_generated",
-    "//net",
-    "//third_party/WebKit/Source/platform/blob",
-    "//third_party/WebKit/common:blink_common",
-    "//third_party/WebKit/public:mojo_bindings_blink",
-  ]
 
   deps = [
     "//media",

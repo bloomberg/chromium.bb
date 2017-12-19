@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
+import("//third_party/WebKit/Source/platform/platform.gni")
 
 # Intentionally depends on generator targets so to depend only on generated
 # mojo biding header files. This is needed to use mojo interfaces from a static
@@ -18,9 +19,7 @@ jumbo_source_set("generator") {
   ]
 }
 
-jumbo_source_set("blob") {
-  visibility = [ "//third_party/WebKit/Source/*" ]
-
+blink_platform_sources("blob") {
   sources = [
     "BlobBytesProvider.cpp",
     "BlobBytesProvider.h",
@@ -30,17 +29,6 @@ jumbo_source_set("blob") {
     "BlobRegistry.h",
     "BlobURL.cpp",
     "BlobURL.h",
-  ]
-
-  configs += [
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source/platform:blink_platform_config",
-    "//third_party/WebKit/Source/platform:blink_platform_implementation",
-  ]
-
-  public_deps = [
-    "//third_party/WebKit/common:mojo_platform_bindings_blink",
-    "//third_party/WebKit/public:blink_headers",
   ]
 }
 
