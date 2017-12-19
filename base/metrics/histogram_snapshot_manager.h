@@ -28,10 +28,10 @@ class HistogramFlattener;
 // corruption, this class also validates as much redundancy as it can before
 // calling for the marginal change (a.k.a., delta) in a histogram to be
 // recorded.
-class BASE_EXPORT HistogramSnapshotManager {
+class BASE_EXPORT HistogramSnapshotManager final {
  public:
   explicit HistogramSnapshotManager(HistogramFlattener* histogram_flattener);
-  virtual ~HistogramSnapshotManager();
+  ~HistogramSnapshotManager();
 
   // Snapshot all histograms, and ask |histogram_flattener_| to record the
   // delta. |flags_to_set| is used to set flags for each histogram.
@@ -39,15 +39,13 @@ class BASE_EXPORT HistogramSnapshotManager {
   // Only histograms that have all the flags specified by the argument will be
   // chosen. If all histograms should be recorded, set it to
   // |Histogram::kNoFlags|.
-  template <class ForwardHistogramIterator>
-  void PrepareDeltas(ForwardHistogramIterator begin,
-                     ForwardHistogramIterator end,
+  void PrepareDeltas(const std::vector<HistogramBase*>& histograms,
                      HistogramBase::Flags flags_to_set,
                      HistogramBase::Flags required_flags) {
-    for (ForwardHistogramIterator it = begin; it != end; ++it) {
-      (*it)->SetFlags(flags_to_set);
-      if (((*it)->flags() & required_flags) == required_flags)
-        PrepareDelta(*it);
+    for (HistogramBase* const histogram : histograms) {
+      histogram->SetFlags(flags_to_set);
+      if ((histogram->flags() & required_flags) == required_flags)
+        PrepareDelta(histogram);
     }
   }
 
