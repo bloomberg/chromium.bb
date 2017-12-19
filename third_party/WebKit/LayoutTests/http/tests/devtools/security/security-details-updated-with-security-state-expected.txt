@@ -51,15 +51,38 @@ Origin view ------------------------------------
     <STYLE type=text/css >
     </STYLE>
     <DIV class=title-section >
+        <DIV class=title-section-header >
+Origin
+        </DIV>
         <DIV class=origin-display >
             <SPAN class=security-property security-property-secure >
             </SPAN>
-            <SPAN class=origin >
-https://foo.test
+            <SPAN is=url-text >
+                <SPAN class=url-scheme-secure >
+https
+                </SPAN>
+                <SPAN class=url-scheme-separator >
+://
+                </SPAN>
+                <SPAN >
+foo.test
+                </SPAN>
             </SPAN>
         </DIV>
-        <DIV class=link >
+        <DIV class=view-network-button >
+            <BUTTON is=text-button type=button class=origin-button >
 View requests in Network Panel
+                <#document-fragment >
+                    <STYLE type=text/css >
+                    </STYLE>
+                    <STYLE type=text/css >
+                    </STYLE>
+                    <STYLE type=text/css >
+                    </STYLE>
+                    <CONTENT >
+                    </CONTENT>
+                </#document-fragment>
+            </BUTTON>
         </DIV>
     </DIV>
     <DIV class=origin-view-section >
@@ -149,7 +172,7 @@ Super CA
                 <DIV >
                 </DIV>
                 <DIV >
-                    <BUTTON is=text-button type=button class=security-certificate-button >
+                    <BUTTON is=text-button type=button class=origin-button >
 Open full certificate details
                         <#document-fragment >
                             <STYLE type=text/css >
