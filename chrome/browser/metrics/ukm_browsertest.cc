@@ -157,7 +157,7 @@ class UkmEnabledChecker : public SingleClientStatusChangeChecker {
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoCheck) {
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
   // Enable metrics recording and update MetricsServicesManager.
   bool metrics_enabled = true;
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
@@ -191,6 +191,33 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoCheck) {
   EXPECT_TRUE(ukm_enabled());
   // Client ID should not have been reset.
   EXPECT_EQ(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+// Make sure opening a real window after Incognito doesn't enable UKM.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(
+      false);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  EXPECT_FALSE(ukm_enabled());
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_FALSE(ukm_enabled());
+
+  CloseBrowserSynchronously(incognito_browser);
+  EXPECT_TRUE(ukm_enabled());
 
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
@@ -259,6 +286,32 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
 
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+// Make sure that providing consent doesn't enable UKM when sync is disabled.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = false;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Browser* browser = CreateBrowser(profile);
+  EXPECT_FALSE(ukm_enabled());
+
+  metrics_enabled = true;
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+  EXPECT_FALSE(ukm_enabled());
+
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+  EXPECT_TRUE(ukm_enabled());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(browser);
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
 }
 
