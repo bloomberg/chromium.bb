@@ -79,6 +79,23 @@ interface FrameNavigationControl {
       URLLoaderClientEndpoints? url_loader_client_endpoints,
       URLLoaderFactoryBundle? subresource_loader_factories,
       mojo.common.mojom.UnguessableToken devtools_navigation_token);
+
+  // Tells the renderer that a failed navigation is ready to commit.
+  //
+  // The result of this commit usually results in displaying an error page.
+  // Note |error_page_content| may contain the content of the error page
+  // (i.e. flattened HTML, JS, CSS).
+  //
+  // When the Network Service is enabled, |subresource_loader_factories| may
+  // also be provided by the browser as a a means for the renderer to load
+  // subresources where applicable.
+  CommitFailedNavigation(
+      CommonNavigationParams common_params,
+      RequestNavigationParams request_params,
+      bool has_stale_copy_in_cache,
+      int32 error_code,
+      string? error_page_content,
+      URLLoaderFactoryBundle? subresource_loader_factories);
 };
 
 // Implemented by the frame (e.g. renderer processes).

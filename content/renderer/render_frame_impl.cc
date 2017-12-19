@@ -1788,7 +1788,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
-    IPC_MESSAGE_HANDLER(FrameMsg_FailedNavigation, OnFailedNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_ReportContentSecurityPolicyViolation,
                         OnReportContentSecurityPolicyViolation)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
@@ -3126,6 +3125,128 @@ void RenderFrameImpl::CommitNavigation(
 
   // Don't add code after this since NavigateInternal may have destroyed this
   // RenderFrameImpl.
+}
+
+void RenderFrameImpl::CommitFailedNavigation(
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
+    bool has_stale_copy_in_cache,
+    int error_code,
+    const base::Optional<std::string>& error_page_content,
+    base::Optional<URLLoaderFactoryBundle> subresource_loader_factories) {
+  DCHECK(IsBrowserSideNavigationEnabled());
+  bool is_reload =
+      FrameMsg_Navigate_Type::IsReload(common_params.navigation_type);
+  RenderFrameImpl::PrepareRenderViewForNavigation(common_params.url,
+                                                  request_params);
+
+  GetContentClient()->SetActiveURL(
+      common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
+
+  if (subresource_loader_factories)
+    subresource_loader_factories_ = std::move(subresource_loader_factories);
+
+  // If this frame is navigating cross-process, it may naively assume that this
+  // is the first navigation in the frame, but this may not actually be the
+  // case. Inform the frame's state machine if this frame has already committed
+  // other loads.
+  if (request_params.has_committed_real_load)
+    frame_->SetCommittedFirstRealLoad();
+
+  pending_navigation_params_.reset(new NavigationParams(
+      common_params, StartNavigationParams(), request_params));
+
+  // Send the provisional load failure.
+  WebURLError error(
+      error_code,
+      has_stale_copy_in_cache ? WebURLError::HasCopyInCache::kTrue
+                              : WebURLError::HasCopyInCache::kFalse,
+      WebURLError::IsWebSecurityViolation::kFalse, common_params.url);
+  WebURLRequest failed_request =
+      CreateURLRequestForNavigation(common_params, request_params,
+                                    std::unique_ptr<StreamOverrideParameters>(),
+                                    frame_->IsViewSourceModeEnabled(),
+                                    false);  // is_same_document_navigation
+
+  if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
+    // The browser expects this frame to be loading an error page. Inform it
+    // that the load stopped.
+    Send(new FrameHostMsg_DidStopLoading(routing_id_));
+    browser_side_navigation_pending_ = false;
+    browser_side_navigation_pending_url_ = GURL();
+    return;
+  }
+
+  // On load failure, a frame can ask its owner to render fallback content.
+  // When that happens, don't load an error page.
+  WebLocalFrame::FallbackContentResult fallback_result =
+      frame_->MaybeRenderFallbackContent(error);
+  if (fallback_result != WebLocalFrame::NoFallbackContent) {
+    if (fallback_result == WebLocalFrame::NoLoadInProgress) {
+      // If the frame wasn't loading but was fallback-eligible, the fallback
+      // content won't be shown. However, showing an error page isn't right
+      // either, as the frame has already been populated with something
+      // unrelated to this navigation failure. In that case, just send a stop
+      // IPC to the browser to unwind its state, and leave the frame as-is.
+      Send(new FrameHostMsg_DidStopLoading(routing_id_));
+    }
+    browser_side_navigation_pending_ = false;
+    browser_side_navigation_pending_url_ = GURL();
+    return;
+  }
+
+  // Make sure errors are not shown in view source mode.
+  frame_->EnableViewSourceMode(false);
+
+  // Replace the current history entry in reloads, and loads of the same url.
+  // This corresponds to Blink's notion of a standard commit.
+  // Also replace the current history entry if the browser asked for it
+  // specifically.
+  // TODO(clamy): see if initial commits in subframes should be handled
+  // separately.
+  bool replace = is_reload || common_params.url == GetLoadingUrl() ||
+                 common_params.should_replace_current_entry;
+  std::unique_ptr<HistoryEntry> history_entry;
+  if (request_params.page_state.IsValid())
+    history_entry = PageStateToHistoryEntry(request_params.page_state);
+
+  // The load of the error page can result in this frame being removed.
+  // Use a WeakPtr as an easy way to detect whether this has occured. If so,
+  // this method should return immediately and not touch any part of the object,
+  // otherwise it will result in a use-after-free bug.
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+
+  // For renderer initiated navigations, we send out a didFailProvisionalLoad()
+  // notification.
+  bool had_provisional_document_loader = frame_->GetProvisionalDocumentLoader();
+  if (request_params.nav_entry_id == 0) {
+    blink::WebHistoryCommitType commit_type =
+        replace ? blink::kWebHistoryInertCommit : blink::kWebStandardCommit;
+    if (error_page_content.has_value()) {
+      DidFailProvisionalLoadInternal(error, commit_type, error_page_content);
+    } else {
+      // TODO(https://crbug.com/778824): We only have this branch because a
+      // layout test expects DidFailProvisionalLoad() to be called directly,
+      // rather than DidFailProvisionalLoadInternal(). Once the bug is fixed, we
+      // should be able to call DidFailProvisionalLoadInternal() in all cases.
+      DidFailProvisionalLoad(error, commit_type);
+    }
+    if (!weak_this)
+      return;
+  }
+
+  // If we didn't call didFailProvisionalLoad or there wasn't a
+  // GetProvisionalDocumentLoader(), LoadNavigationErrorPage wasn't called, so
+  // do it now.
+  if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
+    LoadNavigationErrorPage(failed_request, error, replace, history_entry.get(),
+                            error_page_content);
+    if (!weak_this)
+      return;
+  }
+
+  browser_side_navigation_pending_ = false;
+  browser_side_navigation_pending_url_ = GURL();
 }
 
 // mojom::HostZoom implementation ----------------------------------------------
@@ -5487,124 +5608,6 @@ void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
 }
 
 // PlzNavigate
-void RenderFrameImpl::OnFailedNavigation(
-    const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
-    bool has_stale_copy_in_cache,
-    int error_code,
-    const base::Optional<std::string>& error_page_content) {
-  DCHECK(IsBrowserSideNavigationEnabled());
-  bool is_reload =
-      FrameMsg_Navigate_Type::IsReload(common_params.navigation_type);
-  RenderFrameImpl::PrepareRenderViewForNavigation(
-      common_params.url, request_params);
-
-  GetContentClient()->SetActiveURL(
-      common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
-
-  // If this frame is navigating cross-process, it may naively assume that this
-  // is the first navigation in the frame, but this may not actually be the
-  // case. Inform the frame's state machine if this frame has already committed
-  // other loads.
-  if (request_params.has_committed_real_load)
-    frame_->SetCommittedFirstRealLoad();
-
-  pending_navigation_params_.reset(new NavigationParams(
-      common_params, StartNavigationParams(), request_params));
-
-  // Send the provisional load failure.
-  WebURLError error(
-      error_code,
-      has_stale_copy_in_cache ? WebURLError::HasCopyInCache::kTrue
-                              : WebURLError::HasCopyInCache::kFalse,
-      WebURLError::IsWebSecurityViolation::kFalse, common_params.url);
-  WebURLRequest failed_request =
-      CreateURLRequestForNavigation(common_params, request_params,
-                                    std::unique_ptr<StreamOverrideParameters>(),
-                                    frame_->IsViewSourceModeEnabled(),
-                                    false);  // is_same_document_navigation
-
-  if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
-    // The browser expects this frame to be loading an error page. Inform it
-    // that the load stopped.
-    Send(new FrameHostMsg_DidStopLoading(routing_id_));
-    browser_side_navigation_pending_ = false;
-    browser_side_navigation_pending_url_ = GURL();
-    return;
-  }
-
-  // On load failure, a frame can ask its owner to render fallback content.
-  // When that happens, don't load an error page.
-  WebLocalFrame::FallbackContentResult fallback_result =
-      frame_->MaybeRenderFallbackContent(error);
-  if (fallback_result != WebLocalFrame::NoFallbackContent) {
-    if (fallback_result == WebLocalFrame::NoLoadInProgress) {
-      // If the frame wasn't loading but was fallback-eligible, the fallback
-      // content won't be shown. However, showing an error page isn't right
-      // either, as the frame has already been populated with something
-      // unrelated to this navigation failure. In that case, just send a stop
-      // IPC to the browser to unwind its state, and leave the frame as-is.
-      Send(new FrameHostMsg_DidStopLoading(routing_id_));
-    }
-    browser_side_navigation_pending_ = false;
-    browser_side_navigation_pending_url_ = GURL();
-    return;
-  }
-
-  // Make sure errors are not shown in view source mode.
-  frame_->EnableViewSourceMode(false);
-
-  // Replace the current history entry in reloads, and loads of the same url.
-  // This corresponds to Blink's notion of a standard commit.
-  // Also replace the current history entry if the browser asked for it
-  // specifically.
-  // TODO(clamy): see if initial commits in subframes should be handled
-  // separately.
-  bool replace = is_reload || common_params.url == GetLoadingUrl() ||
-                 common_params.should_replace_current_entry;
-  std::unique_ptr<HistoryEntry> history_entry;
-  if (request_params.page_state.IsValid())
-    history_entry = PageStateToHistoryEntry(request_params.page_state);
-
-  // The load of the error page can result in this frame being removed.
-  // Use a WeakPtr as an easy way to detect whether this has occured. If so,
-  // this method should return immediately and not touch any part of the object,
-  // otherwise it will result in a use-after-free bug.
-  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-
-  // For renderer initiated navigations, we send out a didFailProvisionalLoad()
-  // notification.
-  bool had_provisional_document_loader = frame_->GetProvisionalDocumentLoader();
-  if (request_params.nav_entry_id == 0) {
-    blink::WebHistoryCommitType commit_type =
-        replace ? blink::kWebHistoryInertCommit : blink::kWebStandardCommit;
-    if (error_page_content.has_value()) {
-      DidFailProvisionalLoadInternal(error, commit_type, error_page_content);
-    } else {
-      // TODO(crbug.com/778824): We only have this branch because a layout test
-      // expects DidFailProvisionalLoad() to be called directly, rather than
-      // DidFailProvisionalLoadInternal(). Once the bug is fixed, we should be
-      // able to call DidFailProvisionalLoadInternal() in all cases.
-      DidFailProvisionalLoad(error, commit_type);
-    }
-    if (!weak_this)
-      return;
-  }
-
-  // If we didn't call didFailProvisionalLoad or there wasn't a
-  // GetProvisionalDocumentLoader(), LoadNavigationErrorPage wasn't called, so
-  // do it now.
-  if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
-    LoadNavigationErrorPage(failed_request, error, replace, history_entry.get(),
-                            error_page_content);
-    if (!weak_this)
-      return;
-  }
-
-  browser_side_navigation_pending_ = false;
-  browser_side_navigation_pending_url_ = GURL();
-}
-
 void RenderFrameImpl::OnReportContentSecurityPolicyViolation(
     const content::CSPViolationParams& violation_params) {
   frame_->ReportContentSecurityPolicyViolation(
