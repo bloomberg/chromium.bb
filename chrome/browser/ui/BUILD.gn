@@ -2518,6 +2518,8 @@ split_static_library("ui") {
       "views/tabs/window_finder_win.cc",
       "views/try_chrome_dialog_win/arrow_border.cc",
       "views/try_chrome_dialog_win/arrow_border.h",
+      "views/try_chrome_dialog_win/button_layout.cc",
+      "views/try_chrome_dialog_win/button_layout.h",
       "views/try_chrome_dialog_win/try_chrome_dialog.cc",
       "views/try_chrome_dialog_win/try_chrome_dialog.h",
       "views/uninstall_view.cc",

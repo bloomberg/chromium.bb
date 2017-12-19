@@ -2563,9 +2563,11 @@ test("unit_tests") {
   ]
 
   if (is_win) {
+    assert(toolkit_views)
     sources += [
       "../browser/notifications/mock_notification_image_retainer.cc",
       "../browser/notifications/mock_notification_image_retainer.h",
+      "../browser/ui/views/try_chrome_dialog_win/button_layout_unittest.cc",
     ]
   }
 
