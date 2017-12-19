@@ -205,6 +205,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
       gfx::PointF* transformed_point) override;
+  viz::FrameSinkId GetRootFrameSinkId() override;
 
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;

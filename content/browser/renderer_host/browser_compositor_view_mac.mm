@@ -295,6 +295,12 @@ void BrowserCompositorMac::CopyFromCompositingSurfaceToVideoFrame(
       src_subrect, std::move(target), callback_with_decrement);
 }
 
+viz::FrameSinkId BrowserCompositorMac::GetRootFrameSinkId() {
+  if (recyclable_compositor_->compositor())
+    return recyclable_compositor_->compositor()->frame_sink_id();
+  return viz::FrameSinkId();
+}
+
 void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
