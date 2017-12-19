@@ -58,7 +58,7 @@ script:
 
 after_failure:
   - case "$MODE" in
-      build-js)     cat tests/test-suite.log ;;
+      build-mingw|build-gcc) cat tests/test-suite.log ;;
     esac
 
 after_success:
