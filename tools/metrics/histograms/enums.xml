@@ -42481,6 +42481,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="7687691" label="omnibox_zerosuggest"/>
   <int value="8250451" label="data_reduction_proxy_warmup"/>
   <int value="8561691" label="safe_browsing_v4_get_hash"/>
+  <int value="8591273" label="chrome_apps_socket_api"/>
   <int value="9459438" label="external_policy_fetcher"/>
   <int value="13211343" label="suggestions_image_manager"/>
   <int value="13694792" label="desktop_ios_promotion"/>
@@ -42546,6 +42547,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="50816767" label="lib_address_input"/>
   <int value="50859288" label="cloud_print_proxy"/>
   <int value="51164680" label="profile_avatar"/>
+  <int value="52821843" label="geo_language_provider"/>
   <int value="53695122" label="credenential_avatar"/>
   <int value="54836939" label="cryptauth_enrollment_flow_finish"/>
   <int value="56275203" label="save_file_manager"/>
@@ -42597,6 +42599,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="84212388" label="omnibox_suggest_deletion"/>
   <int value="84575287" label="background_performance_tracer"/>
   <int value="84889397" label="cryptauth_enrollment_flow_setup"/>
+  <int value="87775794" label="adb_client_socket"/>
   <int value="88754904" label="captive_portal_service"/>
   <int value="88863520" label="autofill_query"/>
   <int value="89771989" label="asset_links"/>
