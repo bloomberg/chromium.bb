@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -224,6 +225,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // The current access point of sign in.
   const signin_metrics::AccessPoint access_point_;
+
+  CloseBubbleOnTabActivationHelper close_bubble_helper_;
 
   const int menu_width_;
 

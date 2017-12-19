@@ -329,6 +329,7 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
       view_mode_(view_mode),
       gaia_service_type_(service_type),
       access_point_(access_point),
+      close_bubble_helper_(this, browser),
       menu_width_(
           signin::IsDiceEnabledForProfile(browser->profile()->GetPrefs())
               ? kFixedMenuWidthDice
