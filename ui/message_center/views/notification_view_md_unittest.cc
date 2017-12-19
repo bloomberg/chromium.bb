@@ -22,6 +22,7 @@
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/radio_button.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 
@@ -53,10 +54,13 @@ class NotificationTestDelegate : public NotificationDelegate {
     submitted_reply_string_ = reply;
   }
 
+  void DisableNotification() override { disable_notification_called_ = true; }
+
   int clicked_button_index() const { return clicked_button_index_; }
   const base::string16& submitted_reply_string() const {
     return submitted_reply_string_;
   }
+  bool disable_notification_called() { return disable_notification_called_; }
   void set_expecting_button_click(bool expecting) {
     expecting_button_click_ = expecting;
   }
@@ -71,6 +75,7 @@ class NotificationTestDelegate : public NotificationDelegate {
   base::string16 submitted_reply_string_;
   bool expecting_button_click_ = false;
   bool expecting_reply_submission_ = false;
+  bool disable_notification_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationTestDelegate);
 };
@@ -137,6 +142,7 @@ void NotificationViewMDTest::SetUp() {
   // Create a dummy notification.
   delegate_ = new NotificationTestDelegate();
   data_.reset(new RichNotificationData());
+  data_->settings_button_handler = SettingsButtonHandler::TRAY;
   notification_.reset(new Notification(
       NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
@@ -701,6 +707,51 @@ TEST_F(NotificationViewMDTest, UseImageAsIcon) {
   notification_view()->ToggleExpanded();
   EXPECT_TRUE(notification_view()->expanded_);
   EXPECT_FALSE(notification_view()->icon_view_->visible());
+}
+
+TEST_F(NotificationViewMDTest, InlineSettings) {
+  notification()->set_type(NOTIFICATION_TYPE_SIMPLE);
+  UpdateNotificationViews();
+
+  // Inline settings will be shown by clicking settings button.
+  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  notification_view()->OnSettingsButtonPressed();
+  EXPECT_TRUE(notification_view()->settings_row_->visible());
+
+  // By clicking settings button again, it will toggle.
+  notification_view()->OnSettingsButtonPressed();
+  EXPECT_FALSE(notification_view()->settings_row_->visible());
+
+  // Show inline settings again.
+  notification_view()->OnSettingsButtonPressed();
+  EXPECT_TRUE(notification_view()->settings_row_->visible());
+
+  // Construct a mouse click event 1 pixel inside the done button.
+  gfx::Point done_cursor_location(1, 1);
+  views::View::ConvertPointToScreen(notification_view()->settings_done_button_,
+                                    &done_cursor_location);
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  generator.MoveMouseTo(done_cursor_location);
+  generator.ClickLeftButton();
+
+  // Just clicking Done button should not change the setting.
+  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  EXPECT_FALSE(delegate_->disable_notification_called());
+
+  notification_view()->OnSettingsButtonPressed();
+  EXPECT_TRUE(notification_view()->settings_row_->visible());
+
+  // Construct a mouse click event 1 pixel inside the block all button.
+  gfx::Point block_cursor_location(1, 1);
+  views::View::ConvertPointToScreen(notification_view()->block_all_button_,
+                                    &block_cursor_location);
+  generator.MoveMouseTo(block_cursor_location);
+  generator.ClickLeftButton();
+  generator.MoveMouseTo(done_cursor_location);
+  generator.ClickLeftButton();
+
+  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  EXPECT_TRUE(delegate_->disable_notification_called());
 }
 
 }  // namespace message_center
