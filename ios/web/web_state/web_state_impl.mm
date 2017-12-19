@@ -78,8 +78,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       is_being_destroyed_(false),
       web_controller_(nil),
       interstitial_(nullptr),
-      created_with_opener_(params.created_with_opener),
-      weak_factory_(this) {
+      created_with_opener_(params.created_with_opener) {
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     navigation_manager_ = base::MakeUnique<WKBasedNavigationManagerImpl>();
   } else {
@@ -534,10 +533,6 @@ void WebStateImpl::BindInterfaceRequestFromMainFrame(
     GetWebClient()->BindInterfaceRequestFromMainFrame(
         this, interface_name, std::move(interface_pipe));
   }
-}
-
-base::WeakPtr<WebState> WebStateImpl::AsWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 #pragma mark - WebState implementation

@@ -53,7 +53,6 @@ class WebStateDelegate;
 class WebStateInterfaceProvider;
 class WebStateObserver;
 class WebStatePolicyDecider;
-class WebStateWeakPtrFactory;
 
 // Core interface for interaction with the web.
 class WebState : public base::SupportsUserData {
@@ -326,13 +325,6 @@ class WebState : public base::SupportsUserData {
   WebState() {}
 
  private:
-  friend class WebStateWeakPtrFactory;  // For AsWeakPtr.
-
-  // Returns a WeakPtr<WebState> to the current WebState. Must remain private
-  // and only call must be in WebStateWeakPtrFactory. Please consult that class
-  // for more details. Remove as part of http://crbug.com/556736.
-  virtual base::WeakPtr<WebState> AsWeakPtr() = 0;
-
   DISALLOW_COPY_AND_ASSIGN(WebState);
 };
 

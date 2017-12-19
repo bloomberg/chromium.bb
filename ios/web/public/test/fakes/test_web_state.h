@@ -85,7 +85,6 @@ class TestWebState : public WebState {
   bool CanTakeSnapshot() const override;
   void TakeSnapshot(const SnapshotCallback& callback,
                     CGSize target_size) const override;
-  base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Setters for test data.
   void SetBrowserState(BrowserState* browser_state);
