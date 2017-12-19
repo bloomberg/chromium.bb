@@ -250,6 +250,9 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
 </pre>
   <p>Text mistmatch groups "Text failure" tests together.
   </p>
+  <h4>5. Rebaseline</h4>
+    <p>Generates a bash script to rebaseline based on new results. @xiaochengh knows the details on how to use it, and @kojii is
+    our one user.</p>
   <h3>Viewing results of a single test</h3>
   <h4>Image results</h4>
   <p>Click on images to zoom in. Select image viewing mode from the popup.</p>
@@ -324,6 +327,7 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
       <option value="expectation">TestExpectations</option>
       <option value="crashsite">Crash site</option>
       <option value="textmismatch">Text mismatch</option>
+      <option value="rebaseline">Rebaseline script</option>
     </select>
   <span style="margin-left: 20px">
     <button id="copy_report" title="Copy the shown/flagged tests to clipboard in the current format"
@@ -470,6 +474,8 @@ const Report = {
         return {print: Report.printCrashSite, render: Report.renderGroupCrashSite};
       case "textmismatch":
         return {print: Report.printTextMismatch, render: Report.renderGroupTextMismatch};
+      case "rebaseline":
+        return {print: Report.printRebaseline, render: Report.renderResultList};
       case "plain":
       default:
         return {print: Report.printPlainTest, render: Report.renderResultList};
@@ -555,6 +561,44 @@ const Report = {
 
   printTextMismatch: (test, path, traversal) => {
     Report.printWithKey(test, path, traversal, "text_mismatch");
+  },
+
+  printRebaseline: (test, path, traversal) => {
+    let parser = new PathParser(path);
+    let actualNames = [];
+    let expectedNames = [];
+    switch (test.actualFinal) {
+      case "IMAGE+TEXT":
+        actualNames.push("-actual.txt");
+        expectedNames.push("-expected.txt");
+        // fall through IMAGE
+      case "IMAGE":
+        actualNames.push("-actual.png");
+        expectedNames.push("-expected.png");
+      break;
+      case "TEXT":
+        actualNames.push("-actual.txt");
+        expectedNames.push("-expected.txt");
+      break;
+      default:
+        return;
+    }
+    // Change directory if in wrong place
+    let dir = parser.dir;
+    if (dir != traversal.rebaselineDir) {
+      if (traversal.rebaselineDir) {
+        let depth = (traversal.rebaselineDir.match(/\//g) || []).length;
+        traversal.html.push(`<div>cd ${'..' + '/..'.repeat(depth)};</div>`);
+      }
+      traversal.html.push(`<div>mkdir -p ${dir};</div>`);
+      traversal.html.push(`<div>cd ${dir};</div>`);
+      traversal.rebaselineDir = dir;
+    }
+    for (let i=0; i<actualNames.length; i++) {
+      let url = new URL(parser.resultLink(actualNames[i]), window.location.href);
+      traversal.html.push(`<div>wget ${url.href};</div>`);
+      traversal.html.push(`<div>mv ${parser.basename + actualNames[i]} ${parser.basename + expectedNames[i]};</div>`);
+    }
   },
 
   indicateNone: (report) => {
