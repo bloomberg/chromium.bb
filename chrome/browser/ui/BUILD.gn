@@ -1600,6 +1600,8 @@ split_static_library("ui") {
       "sync/one_click_signin_sync_observer.h",
       "sync/one_click_signin_sync_starter.cc",
       "sync/one_click_signin_sync_starter.h",
+      "views/close_bubble_on_tab_activation_helper.cc",
+      "views/close_bubble_on_tab_activation_helper.h",
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
       "views/profiles/avatar_button_style.h",

@@ -1373,6 +1373,7 @@ test("browser_tests") {
         "../browser/ui/views/payments/profile_list_view_controller_browsertest.cc",
         "../browser/ui/views/payments/shipping_address_editor_view_controller_browsertest.cc",
         "../browser/ui/views/payments/shipping_option_view_controller_browsertest.cc",
+        "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
         "../browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog_browsertest.cc",
         "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
@@ -1385,7 +1386,6 @@ test("browser_tests") {
       if (!is_chromeos && (!is_mac || mac_views_browser)) {
         sources += [
           "../browser/ui/views/profiles/forced_reauthentication_dialog_view_browsertest.cc",
-          "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
           "../browser/ui/views/toolbar/outdated_upgrade_bubble_view_browsertest.cc",
         ]
       }
@@ -1630,6 +1630,9 @@ test("browser_tests") {
         # chromeos does not support profile list avatar menu
         "../browser/profiles/profile_list_desktop_browsertest.cc",
         "../browser/ui/views/external_protocol_dialog_browsertest.cc",
+
+        # chromeos does not use the profile chooser view
+        "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
 
         # inline login UI is disabled on chromeos
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
