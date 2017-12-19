@@ -180,9 +180,4 @@ void AppListMainView::BackButtonPressed() {
   contents_view_->Back();
 }
 
-void AppListMainView::SetSearchResultSelection(bool select) {
-  if (contents_view_->GetActiveState() == AppListModel::STATE_SEARCH_RESULTS)
-    contents_view_->search_results_page_view()->SetSelection(select);
-}
-
 }  // namespace app_list

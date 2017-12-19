@@ -373,8 +373,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   const bool is_fullscreen_app_list_enabled_;
   // Whether the background blur is enabled.
   const bool is_background_blur_enabled_;
-  // Whether the app list focus is enabled.
-  const bool is_app_list_focus_enabled_;
   // The state of the app list, controlled via SetState().
   AppListViewState app_list_state_ = AppListViewState::PEEKING;
   // An observer that notifies AppListView when the display has changed.

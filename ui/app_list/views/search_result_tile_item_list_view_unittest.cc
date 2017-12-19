@@ -114,10 +114,6 @@ class SearchResultTileItemListViewTest
 
   int GetResultCount() const { return view_->num_results(); }
 
-  int GetSelectedIndex() const { return view_->selected_index(); }
-
-  void ResetSelectedIndex() const { view_->SetSelectedIndex(0); }
-
   bool KeyPress(ui::KeyboardCode key_code) {
     ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
     return view_->OnKeyPressed(event);
@@ -174,38 +170,12 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
               node_data.GetStringAttribute(ui::AX_ATTR_NAME));
   }
 
-  if (features::IsAppListFocusEnabled()) {
-    ResetOpenResultCount();
-    for (int i = 0; i < results; ++i) {
-      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
-      for (int j = 0; j <= i; ++j)
-        view()->tile_views_for_test()[i]->OnKeyEvent(&event);
-      EXPECT_EQ(i + 1, GetOpenResultCount(i));
-    }
-    return;
-  }
-  // TODO(crbug.com/766807): Remove the selection test below once the new focus
-  // model is stable.
-
-  // Tests item indexing by pressing TAB.
-  for (int i = 1; i < results; ++i) {
-    EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-    EXPECT_EQ(i, GetSelectedIndex());
-  }
-
-  // Extra TAB events won't be handled by the view.
-  EXPECT_FALSE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(results - 1, GetSelectedIndex());
-
-  // Tests app opening.
-  ResetSelectedIndex();
   ResetOpenResultCount();
-  for (int i = 1; i < results; ++i) {
-    EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-    EXPECT_EQ(i, GetSelectedIndex());
-    for (int j = 0; j < i; j++)
-      EXPECT_TRUE(KeyPress(ui::VKEY_RETURN));
-    EXPECT_EQ(i, GetOpenResultCount(i));
+  for (int i = 0; i < results; ++i) {
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+    for (int j = 0; j <= i; ++j)
+      view()->tile_views_for_test()[i]->OnKeyEvent(&event);
+    EXPECT_EQ(i + 1, GetOpenResultCount(i));
   }
 }
 
