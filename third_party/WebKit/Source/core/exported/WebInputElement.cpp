@@ -62,6 +62,15 @@ bool WebInputElement::IsPasswordField() const {
   return ConstUnwrap<HTMLInputElement>()->type() == InputTypeNames::password;
 }
 
+bool WebInputElement::IsPasswordFieldForAutofill() const {
+  if (ConstUnwrap<HTMLInputElement>()->IsTextField() &&
+      ConstUnwrap<HTMLInputElement>()->HasBeenPasswordField()) {
+    return true;
+  }
+
+  return ConstUnwrap<HTMLInputElement>()->type() == InputTypeNames::password;
+}
+
 bool WebInputElement::IsImageButton() const {
   return ConstUnwrap<HTMLInputElement>()->type() == InputTypeNames::image;
 }

@@ -37,6 +37,7 @@
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
+#include "core/input_type_names.h"
 
 #include "base/memory/scoped_refptr.h"
 
@@ -55,6 +56,15 @@ WebString WebFormControlElement::FormControlName() const {
 }
 
 WebString WebFormControlElement::FormControlType() const {
+  return ConstUnwrap<HTMLFormControlElement>()->type();
+}
+
+WebString WebFormControlElement::FormControlTypeForAutofill() const {
+  if (auto* input = ToHTMLInputElementOrNull(*private_)) {
+    if (input->IsTextField() && input->HasBeenPasswordField())
+      return InputTypeNames::password;
+  }
+
   return ConstUnwrap<HTMLFormControlElement>()->type();
 }
 

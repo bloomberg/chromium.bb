@@ -252,6 +252,17 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     }
   }
 
+  void GetFirstForm(WebFormElement* form) {
+    WebLocalFrame* frame = GetMainFrame();
+    ASSERT_TRUE(frame);
+
+    WebVector<WebFormElement> forms;
+    frame->GetDocument().Forms(forms);
+    ASSERT_LE(1U, forms.size());
+
+    *form = forms[0];
+  }
+
   // Loads the given |html| and retrieves the sole WebFormElement from it.
   void LoadWebFormFromHTML(const std::string& html,
                            WebFormElement* form,
@@ -261,14 +272,13 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     else
       LoadHTML(html.c_str());
 
-    WebLocalFrame* frame = GetMainFrame();
-    ASSERT_NE(nullptr, frame);
+    GetFirstForm(form);
+  }
 
-    WebVector<WebFormElement> forms;
-    frame->GetDocument().Forms(forms);
-    ASSERT_EQ(1U, forms.size());
-
-    *form = forms[0];
+  bool ExtractFormDataForFirstForm(FormData* data) {
+    WebFormElement form;
+    GetFirstForm(&form);
+    return form_util::ExtractFormData(form, data);
   }
 
   UsernameDetectorCache username_detector_cache_;
@@ -2351,6 +2361,41 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, ResetPasswordForm) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.UsernameDetectionMethod",
       UsernameDetectionMethod::NO_USERNAME_DETECTED, 1);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, StickyPasswordType) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddTextField("username", "johnsmith", nullptr);
+  builder.AddPasswordField("password", "secret", nullptr);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+  ASSERT_TRUE(password_form);
+
+  FormData old_form_data;
+  ASSERT_TRUE(ExtractFormDataForFirstForm(&old_form_data));
+
+  // Change password field to type="text".
+  ExecuteJavaScriptForTests(
+      "document.getElementById(\"password\").type = \"text\";");
+
+  // Validate that - despite the change - the old password field is still
+  // recognized as a password field.
+  WebFormElement new_form;
+  GetFirstForm(&new_form);
+  std::unique_ptr<PasswordForm> new_password_form =
+      CreatePasswordFormFromWebForm(new_form, nullptr, nullptr,
+                                    &username_detector_cache_);
+  ASSERT_TRUE(new_password_form);
+
+  EXPECT_EQ(*password_form, *new_password_form);
+
+  FormData new_form_data;
+  ASSERT_TRUE(ExtractFormDataForFirstForm(&new_form_data));
+
+  EXPECT_EQ(old_form_data, new_form_data);
 }
 
 }  // namespace autofill
