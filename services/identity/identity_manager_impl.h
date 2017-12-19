@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_IDENTITY_IDENTITY_MANAGER_H_
-#define SERVICES_IDENTITY_IDENTITY_MANAGER_H_
+#ifndef SERVICES_IDENTITY_IDENTITY_MANAGER_IMPL_H_
+#define SERVICES_IDENTITY_IDENTITY_MANAGER_IMPL_H_
 
 #include "base/callback_list.h"
 #include "components/signin/core/browser/account_info.h"
@@ -18,20 +18,20 @@ class AccountTrackerService;
 
 namespace identity {
 
-class IdentityManager : public mojom::IdentityManager,
-                        public OAuth2TokenService::Observer,
-                        public SigninManagerBase::Observer {
+class IdentityManagerImpl : public mojom::IdentityManager,
+                            public OAuth2TokenService::Observer,
+                            public SigninManagerBase::Observer {
  public:
   static void Create(mojom::IdentityManagerRequest request,
                      AccountTrackerService* account_tracker,
                      SigninManagerBase* signin_manager,
                      ProfileOAuth2TokenService* token_service);
 
-  IdentityManager(mojom::IdentityManagerRequest request,
-                  AccountTrackerService* account_tracker,
-                  SigninManagerBase* signin_manager,
-                  ProfileOAuth2TokenService* token_service);
-  ~IdentityManager() override;
+  IdentityManagerImpl(mojom::IdentityManagerRequest request,
+                      AccountTrackerService* account_tracker,
+                      SigninManagerBase* signin_manager,
+                      ProfileOAuth2TokenService* token_service);
+  ~IdentityManagerImpl() override;
 
  private:
   // Makes an access token request to the OAuth2TokenService on behalf of a
@@ -43,7 +43,7 @@ class IdentityManager : public mojom::IdentityManager,
                        const std::string& consumer_id,
                        GetAccessTokenCallback consumer_callback,
                        ProfileOAuth2TokenService* token_service,
-                       IdentityManager* manager);
+                       IdentityManagerImpl* manager);
     ~AccessTokenRequest() override;
 
    private:
@@ -63,7 +63,7 @@ class IdentityManager : public mojom::IdentityManager,
     ProfileOAuth2TokenService* token_service_;
     std::unique_ptr<OAuth2TokenService::Request> token_service_request_;
     GetAccessTokenCallback consumer_callback_;
-    IdentityManager* manager_;
+    IdentityManagerImpl* manager_;
   };
   using AccessTokenRequests =
       std::map<AccessTokenRequest*, std::unique_ptr<AccessTokenRequest>>;
@@ -100,8 +100,8 @@ class IdentityManager : public mojom::IdentityManager,
 
   // Called when |signin_manager_| is shutting down. Destroys this instance,
   // since this instance can't outlive the signin classes that it is depending
-  // on. Note that once IdentityManager manages the lifetime of its dependencies
-  // internally, this will no longer be necessary.
+  // on. Note that once IdentityManagerImpl manages the lifetime of its
+  // dependencies internally, this will no longer be necessary.
   void OnSigninManagerShutdown();
 
   // Called when |binding_| hits a connection error. Destroys this instance,
@@ -127,4 +127,4 @@ class IdentityManager : public mojom::IdentityManager,
 
 }  // namespace identity
 
-#endif  // SERVICES_IDENTITY_IDENTITY_MANAGER_H_
+#endif  // SERVICES_IDENTITY_IDENTITY_MANAGER_IMPL_H_

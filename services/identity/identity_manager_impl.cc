@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/identity/identity_manager.h"
+#include "services/identity/identity_manager_impl.h"
 
 #include <utility>
 
@@ -13,13 +13,13 @@
 
 namespace identity {
 
-IdentityManager::AccessTokenRequest::AccessTokenRequest(
+IdentityManagerImpl::AccessTokenRequest::AccessTokenRequest(
     const std::string& account_id,
     const ScopeSet& scopes,
     const std::string& consumer_id,
     GetAccessTokenCallback consumer_callback,
     ProfileOAuth2TokenService* token_service,
-    IdentityManager* manager)
+    IdentityManagerImpl* manager)
     : OAuth2TokenService::Consumer(consumer_id),
       token_service_(token_service),
       consumer_callback_(std::move(consumer_callback)),
@@ -28,9 +28,9 @@ IdentityManager::AccessTokenRequest::AccessTokenRequest(
       token_service_->StartRequest(account_id, scopes, this);
 }
 
-IdentityManager::AccessTokenRequest::~AccessTokenRequest() = default;
+IdentityManagerImpl::AccessTokenRequest::~AccessTokenRequest() = default;
 
-void IdentityManager::AccessTokenRequest::OnGetTokenSuccess(
+void IdentityManagerImpl::AccessTokenRequest::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
@@ -38,13 +38,13 @@ void IdentityManager::AccessTokenRequest::OnGetTokenSuccess(
                      GoogleServiceAuthError::AuthErrorNone());
 }
 
-void IdentityManager::AccessTokenRequest::OnGetTokenFailure(
+void IdentityManagerImpl::AccessTokenRequest::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   OnRequestCompleted(request, base::nullopt, base::Time(), error);
 }
 
-void IdentityManager::AccessTokenRequest::OnRequestCompleted(
+void IdentityManagerImpl::AccessTokenRequest::OnRequestCompleted(
     const OAuth2TokenService::Request* request,
     const base::Optional<std::string>& access_token,
     base::Time expiration_time,
@@ -56,39 +56,41 @@ void IdentityManager::AccessTokenRequest::OnRequestCompleted(
 }
 
 // static
-void IdentityManager::Create(mojom::IdentityManagerRequest request,
-                             AccountTrackerService* account_tracker,
-                             SigninManagerBase* signin_manager,
-                             ProfileOAuth2TokenService* token_service) {
-  new IdentityManager(std::move(request), account_tracker, signin_manager,
-                      token_service);
-}
-
-IdentityManager::IdentityManager(mojom::IdentityManagerRequest request,
+void IdentityManagerImpl::Create(mojom::IdentityManagerRequest request,
                                  AccountTrackerService* account_tracker,
                                  SigninManagerBase* signin_manager,
-                                 ProfileOAuth2TokenService* token_service)
+                                 ProfileOAuth2TokenService* token_service) {
+  new IdentityManagerImpl(std::move(request), account_tracker, signin_manager,
+                          token_service);
+}
+
+IdentityManagerImpl::IdentityManagerImpl(
+    mojom::IdentityManagerRequest request,
+    AccountTrackerService* account_tracker,
+    SigninManagerBase* signin_manager,
+    ProfileOAuth2TokenService* token_service)
     : binding_(this, std::move(request)),
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       token_service_(token_service) {
   signin_manager_shutdown_subscription_ =
-      signin_manager_->RegisterOnShutdownCallback(base::Bind(
-          &IdentityManager::OnSigninManagerShutdown, base::Unretained(this)));
-  binding_.set_connection_error_handler(
-      base::Bind(&IdentityManager::OnConnectionError, base::Unretained(this)));
+      signin_manager_->RegisterOnShutdownCallback(
+          base::BindRepeating(&IdentityManagerImpl::OnSigninManagerShutdown,
+                              base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindRepeating(
+      &IdentityManagerImpl::OnConnectionError, base::Unretained(this)));
 
   token_service_->AddObserver(this);
   signin_manager_->AddObserver(this);
 }
 
-IdentityManager::~IdentityManager() {
+IdentityManagerImpl::~IdentityManagerImpl() {
   token_service_->RemoveObserver(this);
   signin_manager_->RemoveObserver(this);
   binding_.Close();
 }
 
-void IdentityManager::GetPrimaryAccountInfo(
+void IdentityManagerImpl::GetPrimaryAccountInfo(
     GetPrimaryAccountInfoCallback callback) {
   // It's annoying that this can't be trivially implemented in terms of
   // GetAccountInfoFromGaiaId(), but there's no SigninManagerBase method that
@@ -100,7 +102,7 @@ void IdentityManager::GetPrimaryAccountInfo(
   std::move(callback).Run(account_info, account_state);
 }
 
-void IdentityManager::GetPrimaryAccountWhenAvailable(
+void IdentityManagerImpl::GetPrimaryAccountWhenAvailable(
     GetPrimaryAccountWhenAvailableCallback callback) {
   AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
   AccountState account_state = GetStateOfAccount(account_info);
@@ -117,7 +119,7 @@ void IdentityManager::GetPrimaryAccountWhenAvailable(
   std::move(callback).Run(account_info, account_state);
 }
 
-void IdentityManager::GetAccountInfoFromGaiaId(
+void IdentityManagerImpl::GetAccountInfoFromGaiaId(
     const std::string& gaia_id,
     GetAccountInfoFromGaiaIdCallback callback) {
   AccountInfo account_info = account_tracker_->FindAccountInfoByGaiaId(gaia_id);
@@ -125,7 +127,7 @@ void IdentityManager::GetAccountInfoFromGaiaId(
   std::move(callback).Run(account_info, account_state);
 }
 
-void IdentityManager::GetAccounts(GetAccountsCallback callback) {
+void IdentityManagerImpl::GetAccounts(GetAccountsCallback callback) {
   std::vector<mojom::AccountPtr> accounts;
 
   for (const std::string& account_id : token_service_->GetAccounts()) {
@@ -145,10 +147,10 @@ void IdentityManager::GetAccounts(GetAccountsCallback callback) {
   std::move(callback).Run(std::move(accounts));
 }
 
-void IdentityManager::GetAccessToken(const std::string& account_id,
-                                     const ScopeSet& scopes,
-                                     const std::string& consumer_id,
-                                     GetAccessTokenCallback callback) {
+void IdentityManagerImpl::GetAccessToken(const std::string& account_id,
+                                         const ScopeSet& scopes,
+                                         const std::string& consumer_id,
+                                         GetAccessTokenCallback callback) {
   std::unique_ptr<AccessTokenRequest> access_token_request =
       std::make_unique<AccessTokenRequest>(account_id, scopes, consumer_id,
                                            std::move(callback), token_service_,
@@ -158,16 +160,17 @@ void IdentityManager::GetAccessToken(const std::string& account_id,
       std::move(access_token_request);
 }
 
-void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
+void IdentityManagerImpl::OnRefreshTokenAvailable(
+    const std::string& account_id) {
   OnAccountStateChange(account_id);
 }
 
-void IdentityManager::GoogleSigninSucceeded(const std::string& account_id,
-                                            const std::string& username) {
+void IdentityManagerImpl::GoogleSigninSucceeded(const std::string& account_id,
+                                                const std::string& username) {
   OnAccountStateChange(account_id);
 }
 
-void IdentityManager::OnAccountStateChange(const std::string& account_id) {
+void IdentityManagerImpl::OnAccountStateChange(const std::string& account_id) {
   AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
   AccountState account_state = GetStateOfAccount(account_info);
 
@@ -186,11 +189,12 @@ void IdentityManager::OnAccountStateChange(const std::string& account_id) {
   }
 }
 
-void IdentityManager::AccessTokenRequestCompleted(AccessTokenRequest* request) {
+void IdentityManagerImpl::AccessTokenRequestCompleted(
+    AccessTokenRequest* request) {
   access_token_requests_.erase(request);
 }
 
-AccountState IdentityManager::GetStateOfAccount(
+AccountState IdentityManagerImpl::GetStateOfAccount(
     const AccountInfo& account_info) {
   AccountState account_state;
   account_state.has_refresh_token =
@@ -200,11 +204,11 @@ AccountState IdentityManager::GetStateOfAccount(
   return account_state;
 }
 
-void IdentityManager::OnSigninManagerShutdown() {
+void IdentityManagerImpl::OnSigninManagerShutdown() {
   delete this;
 }
 
-void IdentityManager::OnConnectionError() {
+void IdentityManagerImpl::OnConnectionError() {
   delete this;
 }
 
