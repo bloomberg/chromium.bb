@@ -41,7 +41,6 @@ class ScriptWrappable;
   X(InternalBody, Buffer)                             \
   X(InternalBody, Stream)                             \
   X(IntersectionObserver, Callback)                   \
-  X(LazyEventListener, ToString)                      \
   X(MessageChannel, Port1)                            \
   X(MessageChannel, Port2)                            \
   X(MessageEvent, CachedData)                         \

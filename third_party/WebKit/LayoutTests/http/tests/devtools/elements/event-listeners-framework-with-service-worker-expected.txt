@@ -14,6 +14,6 @@ Dumping listeners
     passive: false
     once: false
     handler: function onload(event) {
-  testFunction()
+testFunction()
 }
 

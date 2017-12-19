@@ -119,13 +119,6 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
   return result;
 }
 
-static void V8LazyEventListenerToString(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  V8SetReturnValue(
-      info, V8PrivateProperty::GetLazyEventListenerToString(info.GetIsolate())
-                .GetOrUndefined(info.Holder()));
-}
-
 v8::Local<v8::Object> V8LazyEventListener::GetListenerObjectInternal(
     ExecutionContext* execution_context) {
   if (!execution_context)
@@ -208,28 +201,6 @@ void V8LazyEventListener::CompileScript(ScriptState* script_state,
     }
   }
 
-  // Change the toString function on the wrapper function to avoid it
-  // returning the source for the actual wrapper function. Instead it
-  // returns source for a clean wrapper function with the event
-  // argument wrapping the event source code. The reason for this is
-  // that some web sites use toString on event functions and eval the
-  // source returned (sometimes a RegExp is applied as well) for some
-  // other use. That fails miserably if the actual wrapper source is
-  // returned.
-  v8::Local<v8::Function> to_string_function;
-  if (!v8::Function::New(script_state->GetContext(),
-                         V8LazyEventListenerToString, v8::Local<v8::Value>(), 0,
-                         v8::ConstructorBehavior::kThrow)
-           .ToLocal(&to_string_function))
-    return;
-  String to_string_string = "function " + function_name_ + "(" +
-                            event_parameter_name_ + ") {\n  " + code_ + "\n}";
-  V8PrivateProperty::GetLazyEventListenerToString(GetIsolate())
-      .Set(wrapped_function, V8String(GetIsolate(), to_string_string));
-  if (!V8CallBoolean(wrapped_function->CreateDataProperty(
-          script_state->GetContext(), V8AtomicString(GetIsolate(), "toString"),
-          to_string_function)))
-    return;
   wrapped_function->SetName(V8String(GetIsolate(), function_name_));
 
   SetListenerObject(wrapped_function);
