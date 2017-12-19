@@ -104,6 +104,8 @@ const char kCryptohomeTpmAttestationSetKeyPayload[] =
     "TpmAttestationSetKeyPayload";
 const char kCryptohomeTpmAttestationDeleteKeys[] =
     "TpmAttestationDeleteKeys";
+const char kCryptohomeTpmAttestationGetEnrollmentId[] =
+    "TpmAttestationGetEnrollmentId";
 // TODO(isandrk): Deprecated, remove on (or before) 2017/09/21 - after the
 // Chromium side has been changed to use the new TpmGetVersionStructured.
 const char kCryptohomeTpmGetVersion[] = "TpmGetVersion";
