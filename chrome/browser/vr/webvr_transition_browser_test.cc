@@ -13,14 +13,29 @@
 
 namespace vr {
 
-// Tests that a successful requestPresent call actually enters VR
-IN_PROC_BROWSER_TEST_F(VrBrowserTest, REQUIRES_GPU(TestPresentation)) {
+// Tests that a successful requestPresent call actually enters VR.
+IN_PROC_BROWSER_TEST_F(VrBrowserTest,
+                       REQUIRES_GPU(TestRequestPresentEntersVr)) {
   LoadUrlAndAwaitInitialization(
       GetHtmlTestFile("test_requestPresent_enters_vr"));
-  enterPresentationAndWait(GetFirstTabWebContents());
+  EnterPresentationAndWait(GetFirstTabWebContents());
   EXPECT_TRUE(RunJavaScriptAndExtractBoolOrFail("vrDisplay.isPresenting",
                                                 GetFirstTabWebContents()))
       << "Was not presenting after requestPresent";
+  EndTest(GetFirstTabWebContents());
+}
+
+// Tests that window.requestAnimationFrame continues to fire while in WebVR
+// presentation since the tab is still visible.
+IN_PROC_BROWSER_TEST_F(VrBrowserTest,
+                       REQUIRES_GPU(TestWindowRafFiresWhilePresenting)) {
+  LoadUrlAndAwaitInitialization(
+      GetHtmlTestFile("test_window_raf_fires_while_presenting"));
+  ExecuteStepAndWait("stepVerifyBeforePresent()", GetFirstTabWebContents());
+  EnterPresentationOrFail(GetFirstTabWebContents());
+  ExecuteStepAndWait("stepVerifyDuringPresent()", GetFirstTabWebContents());
+  ExitPresentationOrFail(GetFirstTabWebContents());
+  ExecuteStepAndWait("stepVerifyAfterPresent()", GetFirstTabWebContents());
   EndTest(GetFirstTabWebContents());
 }
 
