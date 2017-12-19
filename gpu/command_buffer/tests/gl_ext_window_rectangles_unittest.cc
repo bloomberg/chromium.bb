@@ -25,11 +25,11 @@ class GLEXTWindowRectanglesTest : public testing::Test {
   void TearDown() override { gl_.Destroy(); }
 
   bool IsApplicable() const {
-    // If a driver isn't capable of supporting ES3 context, creating
-    // ContextGroup will fail.
-    bool have_es3 = gl_.decoder() && gl_.decoder()->GetContextGroup();
+    // Not applicable for devices not supporting OpenGLES3.
+    if (!gl_.IsInitialized())
+      return false;
     bool have_ext = GLTestHelper::HasExtension("GL_EXT_window_rectangles");
-    return have_es3 && have_ext;
+    return have_ext;
   }
 
   GLuint SetupFramebuffer() {
