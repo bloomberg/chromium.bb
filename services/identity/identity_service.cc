@@ -4,7 +4,7 @@
 
 #include "services/identity/identity_service.h"
 
-#include "services/identity/identity_manager.h"
+#include "services/identity/identity_manager_impl.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace identity {
@@ -54,8 +54,8 @@ void IdentityService::Create(mojom::IdentityManagerRequest request) {
   if (IsShutDown())
     return;
 
-  IdentityManager::Create(std::move(request), account_tracker_, signin_manager_,
-                          token_service_);
+  IdentityManagerImpl::Create(std::move(request), account_tracker_,
+                              signin_manager_, token_service_);
 }
 
 }  // namespace identity

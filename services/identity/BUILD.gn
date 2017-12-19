@@ -8,8 +8,8 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "identity_manager.cc",
-    "identity_manager.h",
+    "identity_manager_impl.cc",
+    "identity_manager_impl.h",
     "identity_service.cc",
     "identity_service.h",
   ]
@@ -48,7 +48,7 @@ source_set("tests") {
     "//testing/gtest",
   ]
   sources = [
-    "identity_manager_unittest.cc",
+    "identity_manager_impl_unittest.cc",
   ]
 }
 
