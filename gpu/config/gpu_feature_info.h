@@ -38,6 +38,9 @@ struct GPU_EXPORT GpuFeatureInfo {
 
   bool IsWorkaroundEnabled(int32_t workaround) const;
 
+  // Return true if GpuFeatureInfo is computed.
+  bool IsValid() const;
+
   GpuFeatureInfo& operator=(const GpuFeatureInfo&);
   GpuFeatureInfo& operator=(GpuFeatureInfo&&);
 
