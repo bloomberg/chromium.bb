@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/layout_test/devtools_protocol_test_bindings.h"
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/devtools_frontend_host.h"
@@ -52,7 +54,10 @@ GURL DevToolsProtocolTestBindings::MapTestURLIfNeeded(const GURL& test_url,
   if (spec.rfind(".js") != spec.length() - 3)
     return test_url;
   spec = spec.substr(0, pos + dir.length()) +
-         "resources/inspector-protocol-test.html?" + spec;
+         "resources/inspector-protocol-test.html?test=" + spec;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDebugDevTools))
+    spec += "&debug=true";
   *is_protocol_test = true;
   return GURL(spec);
 }

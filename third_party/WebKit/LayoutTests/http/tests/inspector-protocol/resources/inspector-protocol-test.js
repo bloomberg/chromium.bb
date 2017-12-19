@@ -492,25 +492,6 @@ DevToolsAPI._sendCommandOrDie = function(method, params) {
   });
 };
 
-function debugTest(testFunction) {
-  var dispatch = DevToolsAPI.dispatchMessage;
-  var messages = [];
-  DevToolsAPI.dispatchMessage = message => {
-    if (!messages.length) {
-      setTimeout(() => {
-        for (var message of messages.splice(0))
-          dispatch(message);
-      }, 0);
-    }
-    messages.push(message);
-  };
-  return testRunner => {
-    testRunner.log = console.log;
-    testRunner.completeTest = () => console.log('Test completed');
-    window.test = () => testFunction(testRunner);
-  };
-};
-
 DevToolsAPI._fetch = function(url) {
   return new Promise(fulfill => {
     var xhr = new XMLHttpRequest();
@@ -532,11 +513,29 @@ window.testRunner.waitUntilDone();
 window.testRunner.setCanOpenWindows(true);
 
 window.addEventListener('load', () => {
-  var testScriptURL = window.location.search.substring(1);
+  var params = new URLSearchParams(window.location.search);
+  var testScriptURL = params.get('test');
   var baseURL = testScriptURL.substring(0, testScriptURL.lastIndexOf('/') + 1);
   DevToolsAPI._fetch(testScriptURL).then(testScript => {
     var testRunner = new TestRunner(baseURL, DevToolsAPI._log, DevToolsAPI._completeTest, DevToolsAPI._fetch);
     var testFunction = eval(`${testScript}\n//# sourceURL=${testScriptURL}`);
+    if (params.get('debug')) {
+      var dispatch = DevToolsAPI.dispatchMessage;
+      var messages = [];
+      DevToolsAPI.dispatchMessage = message => {
+        if (!messages.length) {
+          setTimeout(() => {
+            for (var message of messages.splice(0))
+              dispatch(message);
+          }, 0);
+        }
+        messages.push(message);
+      };
+      testRunner.log = console.log;
+      testRunner.completeTest = () => console.log('Test completed');
+      window.test = () => testFunction(testRunner);
+      return;
+    }
     return testFunction(testRunner);
   }).catch(reason => {
     DevToolsAPI._log(`Error while executing test script: ${reason}\n${reason.stack}`);
