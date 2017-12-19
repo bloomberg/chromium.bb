@@ -42,14 +42,16 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT TracingObserver
       base::trace_event::TracedValue* value,
       bool is_argument_filtering_enabled);
 
- private:
-  // Returns true if the dump mode is allowed for current tracing session.
-  bool IsDumpModeAllowed(base::trace_event::MemoryDumpLevelOfDetail) const;
-
+  // TODO(lalitm): make these private again after TracingObserver is moved
+  // to private space.
   bool ShouldAddToTrace(const base::trace_event::MemoryDumpRequestArgs&);
   void AddToTrace(const base::trace_event::MemoryDumpRequestArgs&,
                   const base::ProcessId,
                   std::unique_ptr<base::trace_event::TracedValue>);
+
+ private:
+  // Returns true if the dump mode is allowed for current tracing session.
+  bool IsDumpModeAllowed(base::trace_event::MemoryDumpLevelOfDetail) const;
 
   base::trace_event::MemoryDumpManager* const memory_dump_manager_;
   base::trace_event::TraceLog* const trace_log_;

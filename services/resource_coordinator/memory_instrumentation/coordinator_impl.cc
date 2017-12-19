@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -21,6 +22,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "services/resource_coordinator/memory_instrumentation/queued_request_dispatcher.h"
+#include "services/resource_coordinator/memory_instrumentation/switches.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -280,14 +282,7 @@ void CoordinatorImpl::OnChromeMemoryDumpResponse(
     VLOG(1) << "Received a memory dump response from an unregistered client";
     return;
   }
-
-  // Only add to trace if requested.
   auto* response = &request->responses[client];
-  if (chrome_memory_dump && request->add_to_trace) {
-    bool added_to_trace = tracing_observer_->AddChromeDumpToTraceIfEnabled(
-        request->args, response->process_id, chrome_memory_dump.get());
-    success = success && added_to_trace;
-  }
   response->chrome_dump = std::move(chrome_memory_dump);
 
   if (!success) {

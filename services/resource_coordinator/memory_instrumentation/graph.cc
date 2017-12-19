@@ -101,6 +101,9 @@ Node* Process::CreateNode(MemoryAllocatorDumpGuid guid,
   current->set_weak(weak);
   current->set_explicit(true);
 
+  // The final node should also have the associated |guid|.
+  current->set_guid(guid);
+
   // Add to the global guid map as well if it exists.
   if (!guid.empty())
     global_graph_->nodes_by_guid_.emplace(guid, current);
