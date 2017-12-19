@@ -1740,6 +1740,12 @@ bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
       point, target_view, transformed_point);
 }
 
+viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {
+  if (window_->GetHost()->compositor())
+    return window_->GetHost()->compositor()->frame_sink_id();
+  return viz::FrameSinkId();
+}
+
 void RenderWidgetHostViewAura::FocusedNodeChanged(
     bool editable,
     const gfx::Rect& node_bounds_in_screen) {

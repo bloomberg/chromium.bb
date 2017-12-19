@@ -356,6 +356,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Returns true if the current view is in virtual reality mode.
   virtual bool IsInVR() const;
 
+  // Obtains the root window FrameSinkId.
+  virtual viz::FrameSinkId GetRootFrameSinkId();
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME

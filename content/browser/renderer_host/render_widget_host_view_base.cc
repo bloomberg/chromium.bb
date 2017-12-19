@@ -151,6 +151,10 @@ bool RenderWidgetHostViewBase::IsInVR() const {
   return false;
 }
 
+viz::FrameSinkId RenderWidgetHostViewBase::GetRootFrameSinkId() {
+  return viz::FrameSinkId();
+}
+
 bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
   return false;
 }
