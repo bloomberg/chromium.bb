@@ -111,7 +111,7 @@ def _GenerateCLDescriptionCommand(webgl_current, webgl_new, bugs):
     return '%s/+log/%s' % (git_repo_url, change_string)
 
   def GetBugString(bugs):
-    bug_str = 'BUG='
+    bug_str = 'Bug: '
     for bug in bugs:
       bug_str += str(bug) + ','
     return bug_str.rstrip(',')
@@ -131,17 +131,14 @@ def _GenerateCLDescriptionCommand(webgl_current, webgl_new, bugs):
       s += t['mastername'] + ':' + ','.join(t['buildernames'])
     return s
 
-  extra_trybot_args = []
-  if extra_trybots:
-    extra_trybot_string = GetExtraTrybotString()
-    extra_trybot_args = ['-m', 'CQ_INCLUDE_TRYBOTS=' + extra_trybot_string]
-
-  return [
-    '-m', 'Roll WebGL ' + change_str,
-    '-m', '%s' % changelog_url,
-    '-m', GetBugString(bugs),
-    '-m', 'TEST=bots',
-  ] + extra_trybot_args
+  return ('Roll WebGL %s\n\n'
+          '%s\n\n'
+          '%s\n'
+          'Cq-Include-Trybots: %s\n') % (
+            change_str,
+            changelog_url,
+            GetBugString(bugs),
+            GetExtraTrybotString())
 
 
 class AutoRoller(object):
@@ -299,7 +296,7 @@ class AutoRoller(object):
           webgl_current, webgl_latest, bugs)
       logging.debug('Committing changes locally.')
       self._RunCommand(['git', 'add', '--update', '.'])
-      self._RunCommand(['git', 'commit'] + description)
+      self._RunCommand(['git', 'commit', '-m', description])
       logging.debug('Uploading changes...')
       self._RunCommand(['git', 'cl', 'upload'],
                        extra_env={'EDITOR': 'true'})
