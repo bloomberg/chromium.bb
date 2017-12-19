@@ -22,7 +22,8 @@ function grabField(field) {
 
     var val = field.value.trim();
     field.value='';
-    assert_equals(val, '', 'The JavaScript should not be able to access the suggested values.');
+    var empty_or_initial = val == "" || val == "Homer";
+    assert_true(empty_or_initial, 'The JavaScript should not be able to access the suggested values.');
 }
 
 // Test that tries to grab the suggested value on empty fields.

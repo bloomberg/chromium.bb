@@ -14,6 +14,7 @@ After setting suggestedValue:
 |       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
+|       "initial value"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"

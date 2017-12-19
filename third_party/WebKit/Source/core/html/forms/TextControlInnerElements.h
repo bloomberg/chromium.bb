@@ -59,11 +59,14 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
 
   void DefaultEventHandler(Event*) override;
 
+  void SetVisibility(bool is_visible);
+
  private:
   explicit TextControlInnerEditorElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   bool SupportsFocus() const override { return false; }
+  bool is_visible_ = true;
 };
 
 class SearchFieldCancelButtonElement final : public HTMLDivElement {

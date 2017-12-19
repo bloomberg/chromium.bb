@@ -1153,10 +1153,9 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = true;
     PreviewForm(form, input_element);
-    // Since the suggestion is previewed as a placeholder, there should be no
-    // selected text.
-    EXPECT_EQ(0, input_element.SelectionStart());
-    EXPECT_EQ(0, input_element.SelectionEnd());
+    // The selection should be set after the second character.
+    EXPECT_EQ(2, input_element.SelectionStart());
+    EXPECT_EQ(2, input_element.SelectionEnd());
 
     // Fill the form.
     FillForm(form, input_element);
@@ -1273,10 +1272,9 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[2].is_autofilled = true;
     form.fields[3].is_autofilled = true;
     PreviewForm(form, input_element);
-    // Since the suggestion is previewed as a placeholder, there should be no
-    // selected text.
-    EXPECT_EQ(0, input_element.SelectionStart());
-    EXPECT_EQ(0, input_element.SelectionEnd());
+    // The selection should be set after the fifth character.
+    EXPECT_EQ(5, input_element.SelectionStart());
+    EXPECT_EQ(5, input_element.SelectionEnd());
 
     // Fill the form.
     FillForm(form, input_element);
@@ -1401,10 +1399,9 @@ class FormAutofillTest : public ChromeRenderViewTest {
     form.fields[1].is_autofilled = true;
     form.fields[2].is_autofilled = true;
     PreviewForm(form, input_element);
-    // Since the suggestion is previewed as a placeholder, there should be no
-    // selected text.
-    EXPECT_EQ(0, input_element.SelectionStart());
-    EXPECT_EQ(0, input_element.SelectionEnd());
+    // The selection should be set after the 19th character.
+    EXPECT_EQ(19, input_element.SelectionStart());
+    EXPECT_EQ(19, input_element.SelectionEnd());
 
     // Fill the form.
     FillForm(form, input_element);
