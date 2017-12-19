@@ -15,30 +15,16 @@ namespace crash_keys {
 
 const char kActiveURL[] = "url-chunk";
 
-const char kShutdownType[] = "shutdown-type";
-const char kBrowserUnpinTrace[] = "browser-unpin-trace";
-
 const char kAppPackageName[] = "app-package-name";
 const char kAppPackageVersionCode[] = "app-package-version-code";
 
 const char kAndroidSdkInt[] = "android-sdk-int";
-
-const char kViewCount[] = "view-count";
-
-const char kZeroEncodeDetails[] = "zero-encode-details";
 
 size_t RegisterWebViewCrashKeys() {
   base::debug::CrashKey fixed_keys[] = {
       {kActiveURL, kLargeSize},
       {kNumVariations, kSmallSize},
       {kVariations, kHugeSize},
-      {kShutdownType, kSmallSize},
-      {kBrowserUnpinTrace, kMediumSize},
-
-      {kViewCount, kSmallSize},
-
-      // media/:
-      {kZeroEncodeDetails, kSmallSize},
 
       // TODO(sunnyps): Remove after fixing crbug.com/724999.
       {"gl-context-set-current-stack-trace", kMediumSize},

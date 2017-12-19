@@ -6,14 +6,14 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "content/public/common/content_switches.h"
 
@@ -26,16 +26,6 @@
 namespace crash_keys {
 
 const char kActiveURL[] = "url-chunk";
-
-const char kExtensionID[] = "extension-%" PRIuS;
-const char kNumExtensionsCount[] = "num-extensions";
-
-const char kShutdownType[] = "shutdown-type";
-const char kBrowserUnpinTrace[] = "browser-unpin-trace";
-
-const char kPrinterInfo[] = "prn-info-%" PRIuS;
-
-const char kViewCount[] = "view-count";
 
 size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
@@ -50,11 +40,6 @@ size_t RegisterChromeCrashKeys() {
     {kActiveURL, kLargeSize},
     {kNumVariations, kSmallSize},
     {kVariations, kHugeSize},
-    {kNumExtensionsCount, kSmallSize},
-    {kShutdownType, kSmallSize},
-    {kBrowserUnpinTrace, kMediumSize},
-
-    {kViewCount, kSmallSize},
 
     // TODO(sunnyps): Remove after fixing crbug.com/724999.
     {"gl-context-set-current-stack-trace", kMediumSize},
@@ -64,35 +49,6 @@ size_t RegisterChromeCrashKeys() {
   // a collection of data, like command line switches or extension IDs.
   std::vector<base::debug::CrashKey> keys(
       fixed_keys, fixed_keys + arraysize(fixed_keys));
-
-  // Register the extension IDs.
-  {
-    static char formatted_keys[kExtensionIDMaxCount][sizeof(kExtensionID) + 1] =
-        {{ 0 }};
-    const size_t formatted_key_len = sizeof(formatted_keys[0]);
-    for (size_t i = 0; i < kExtensionIDMaxCount; ++i) {
-      int n = base::snprintf(
-          formatted_keys[i], formatted_key_len, kExtensionID, i + 1);
-      DCHECK_GT(n, 0);
-      base::debug::CrashKey crash_key = { formatted_keys[i], kSmallSize };
-      keys.push_back(crash_key);
-    }
-  }
-
-  // Register the printer info.
-  {
-    static char formatted_keys[kPrinterInfoCount][sizeof(kPrinterInfo) + 1] =
-        {{ 0 }};
-    const size_t formatted_key_len = sizeof(formatted_keys[0]);
-    for (size_t i = 0; i < kPrinterInfoCount; ++i) {
-      // Key names are 1-indexed.
-      int n = base::snprintf(
-          formatted_keys[i], formatted_key_len, kPrinterInfo, i + 1);
-      DCHECK_GT(n, 0);
-      base::debug::CrashKey crash_key = { formatted_keys[i], kSmallSize };
-      keys.push_back(crash_key);
-    }
-  }
 
   return base::debug::InitCrashKeys(&keys.at(0), keys.size(), kChunkMaxLength);
 }
@@ -156,37 +112,56 @@ void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
 }
 
 void SetActiveExtensions(const std::set<std::string>& extensions) {
-  base::debug::SetCrashKeyValue(kNumExtensionsCount,
-      base::StringPrintf("%" PRIuS, extensions.size()));
+  static crash_reporter::CrashKeyString<4> num_extensions("num-extensions");
+  num_extensions.Set(base::NumberToString(extensions.size()));
+
+  using ExtensionIDKey = crash_reporter::CrashKeyString<64>;
+  static ExtensionIDKey extension_ids[] = {
+      {"extension-1", ExtensionIDKey::Tag::kArray},
+      {"extension-2", ExtensionIDKey::Tag::kArray},
+      {"extension-3", ExtensionIDKey::Tag::kArray},
+      {"extension-4", ExtensionIDKey::Tag::kArray},
+      {"extension-5", ExtensionIDKey::Tag::kArray},
+      {"extension-6", ExtensionIDKey::Tag::kArray},
+      {"extension-7", ExtensionIDKey::Tag::kArray},
+      {"extension-8", ExtensionIDKey::Tag::kArray},
+      {"extension-9", ExtensionIDKey::Tag::kArray},
+      {"extension-10", ExtensionIDKey::Tag::kArray},
+  };
 
   std::set<std::string>::const_iterator it = extensions.begin();
-  for (size_t i = 0; i < kExtensionIDMaxCount; ++i) {
-    std::string key = base::StringPrintf(kExtensionID, i + 1);
+  for (size_t i = 0; i < arraysize(extension_ids); ++i) {
     if (it == extensions.end()) {
-      base::debug::ClearCrashKey(key);
+      extension_ids[i].Clear();
     } else {
-      base::debug::SetCrashKeyValue(key, *it);
+      extension_ids[i].Set(*it);
       ++it;
     }
   }
 }
 
+using PrinterInfoKey = crash_reporter::CrashKeyString<64>;
+static PrinterInfoKey printer_info_keys[] = {
+    {"prn-info-1", PrinterInfoKey::Tag::kArray},
+    {"prn-info-2", PrinterInfoKey::Tag::kArray},
+    {"prn-info-3", PrinterInfoKey::Tag::kArray},
+    {"prn-info-4", PrinterInfoKey::Tag::kArray},
+};
+
 ScopedPrinterInfo::ScopedPrinterInfo(const base::StringPiece& data) {
   std::vector<std::string> info = base::SplitString(
       data.as_string(), ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (size_t i = 0; i < kPrinterInfoCount; ++i) {
-    std::string key = base::StringPrintf(kPrinterInfo, i + 1);
+  for (size_t i = 0; i < arraysize(printer_info_keys); ++i) {
     std::string value;
     if (i < info.size())
       value = info[i];
-    base::debug::SetCrashKeyValue(key, value);
+    printer_info_keys[i].Set(value);
   }
 }
 
 ScopedPrinterInfo::~ScopedPrinterInfo() {
-  for (size_t i = 0; i < kPrinterInfoCount; ++i) {
-    std::string key = base::StringPrintf(kPrinterInfo, i + 1);
-    base::debug::ClearCrashKey(key);
+  for (auto& crash_key : printer_info_keys) {
+    crash_key.Clear();
   }
 }
 

@@ -37,35 +37,7 @@ namespace {
 // and the snprintf function defined here.
 constexpr char kActiveURL[] = "url-chunk";
 
-// Installed extensions. |kExtensionID| should be formatted with an integer,
-// in the range [0, kExtensionIDMaxCount).
-constexpr char kNumExtensionsCount[] = "num-extensions";
-constexpr size_t kExtensionIDMaxCount = 10;
-constexpr char kExtensionID[] = "extension-%" PRIuS;
-
-constexpr char kShutdownType[] = "shutdown-type";
-constexpr char kBrowserUnpinTrace[] = "browser-unpin-trace";
-
-constexpr char kViewCount[] = "view-count";
-constexpr char kZeroEncodeDetails[] = "zero-encode-details";
-
-// The user's printers, up to kPrinterInfoCount. Should be set with
-// ScopedPrinterInfo.
-constexpr size_t kPrinterInfoCount = 4;
-constexpr char kPrinterInfo[] = "prn-info-%" PRIuS;
-
 using namespace crash_keys;
-
-int snprintf(char* buffer,
-             size_t size,
-             _Printf_format_string_ const char* format,
-             ...) {
-  va_list arguments;
-  va_start(arguments, format);
-  int result = vsnprintf(buffer, size, format, arguments);
-  va_end(arguments);
-  return result;
-}
 
 size_t RegisterCrashKeysHelper() {
   // The following keys may be chunked by the underlying crash logging system,
@@ -77,14 +49,6 @@ size_t RegisterCrashKeysHelper() {
       {kActiveURL, kLargeSize},
       {kNumVariations, kSmallSize},
       {kVariations, kHugeSize},
-      {kNumExtensionsCount, kSmallSize},
-      {kShutdownType, kSmallSize},
-      {kBrowserUnpinTrace, kMediumSize},
-
-      {kViewCount, kSmallSize},
-
-      // media/:
-      {kZeroEncodeDetails, kSmallSize},
 
       // TODO(sunnyps): Remove after fixing crbug.com/724999.
       {"gl-context-set-current-stack-trace", kMediumSize},
@@ -94,31 +58,6 @@ size_t RegisterCrashKeysHelper() {
   // a collection of data, like command line switches or extension IDs.
   std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
                                           std::end(kFixedKeys));
-
-  // Register the extension IDs.
-  {
-    static char formatted_keys[kExtensionIDMaxCount]
-                              [sizeof(kExtensionID) + 1] = {{0}};
-    const size_t formatted_key_len = sizeof(formatted_keys[0]);
-    for (size_t i = 0; i < kExtensionIDMaxCount; ++i) {
-      snprintf(formatted_keys[i], formatted_key_len, kExtensionID, i + 1);
-      base::debug::CrashKey crash_key = {formatted_keys[i], kSmallSize};
-      keys.push_back(crash_key);
-    }
-  }
-
-  // Register the printer info.
-  {
-    static char formatted_keys[kPrinterInfoCount]
-                              [sizeof(kPrinterInfo) + 1] = {{0}};
-    const size_t formatted_key_len = sizeof(formatted_keys[0]);
-    for (size_t i = 0; i < kPrinterInfoCount; ++i) {
-      // Key names are 1-indexed.
-      snprintf(formatted_keys[i], formatted_key_len, kPrinterInfo, i + 1);
-      base::debug::CrashKey crash_key = {formatted_keys[i], kSmallSize};
-      keys.push_back(crash_key);
-    }
-  }
 
   return base::debug::InitCrashKeys(&keys[0], keys.size(), kChunkMaxLength);
 }

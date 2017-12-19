@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -81,13 +80,13 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -1366,9 +1365,13 @@ void BrowserProcessImpl::Pin() {
 
   // CHECK(!IsShuttingDown());
   if (IsShuttingDown()) {
-    // TODO(crbug.com/113031, crbug.com/625646): Temporary instrumentation.
-    base::debug::SetCrashKeyToStackTrace(crash_keys::kBrowserUnpinTrace,
-                                         release_last_reference_callstack_);
+    // TODO(rsesek): Consider removing this trace, but it has been helpful
+    // in debugging several shutdown crashes (https://crbug.com/113031,
+    // https://crbug.com/625646, and https://crbug.com/779829).
+    static crash_reporter::CrashKeyString<1024> browser_unpin_trace(
+        "browser-unpin-trace");
+    crash_reporter::SetCrashKeyStringToStackTrace(
+        &browser_unpin_trace, release_last_reference_callstack_);
     CHECK(false);
   }
 }
