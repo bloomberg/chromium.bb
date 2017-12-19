@@ -189,7 +189,9 @@ class Generator(generator.Generator):
 
     self.module.Stylize(JavaScriptStylizer())
 
-    # TODO(yzshen): Remove this method once the old JS bindings go away.
+    # TODO(crbug.com/795977): Change the media router extension to not mess with
+    # the mojo namespace, so that namespaces such as "mojo.common.mojom" are not
+    # affected and we can remove this method.
     self._SetUniqueNameForImports()
 
     self.Write(self._GenerateAMDModule(), "%s.js" % self.module.path)
