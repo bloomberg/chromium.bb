@@ -449,7 +449,15 @@ void AssertIsShowingDistillablePage(bool online) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version via context menu.
-- (void)testSavingToReadingListAndLoadDistilled {
+// TODO(crbug.com/796082): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSavingToReadingListAndLoadDistilled \
+  testSavingToReadingListAndLoadDistilled
+#else
+#define MAYBE_testSavingToReadingListAndLoadDistilled \
+  FLAKY_testSavingToReadingListAndLoadDistilled
+#endif
+- (void)MAYBE_testSavingToReadingListAndLoadDistilled {
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -497,7 +505,15 @@ void AssertIsShowingDistillablePage(bool online) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
-- (void)testSavingToReadingListAndLoadNormal {
+// TODO(crbug.com/796082): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSavingToReadingListAndLoadNormal \
+  testSavingToReadingListAndLoadNormal
+#else
+#define MAYBE_testSavingToReadingListAndLoadNormal \
+  FLAKY_testSavingToReadingListAndLoadNormal
+#endif
+- (void)MAYBE_testSavingToReadingListAndLoadNormal {
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -536,7 +552,15 @@ void AssertIsShowingDistillablePage(bool online) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
-- (void)testSavingToReadingListAndLoadNoNetwork {
+// TODO(crbug.com/796082): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSavingToReadingListAndLoadNoNetwork \
+  testSavingToReadingListAndLoadNoNetwork
+#else
+#define MAYBE_testSavingToReadingListAndLoadNoNetwork \
+  FLAKY_testSavingToReadingListAndLoadNoNetwork
+#endif
+- (void)MAYBE_testSavingToReadingListAndLoadNoNetwork {
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -580,7 +604,15 @@ void AssertIsShowingDistillablePage(bool online) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
-- (void)testSavingToReadingListAndLoadBadNetwork {
+// TODO(crbug.com/796082): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSavingToReadingListAndLoadBadNetwork \
+  testSavingToReadingListAndLoadBadNetwork
+#else
+#define MAYBE_testSavingToReadingListAndLoadBadNetwork \
+  FLAKY_testSavingToReadingListAndLoadBadNetwork
+#endif
+- (void)MAYBE_testSavingToReadingListAndLoadBadNetwork {
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
