@@ -16,6 +16,12 @@
   <message name="IDS_MD_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION" desc="The label indicating that an error was caused within an anonymous function in the code.">
     anonymous function
   </message>
+  <message name="IDS_MD_EXTENSIONS_ERROR_CONTEXT" desc="The label for the error's context url.">
+    Context
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ERROR_CONTEXT_UNKNOWN" desc="The text displayed to the user if an error's context url is unknown.">
+    Unknown
+  </message>
   <message name="IDS_MD_EXTENSIONS_ERROR_CLEAR_ALL" desc="The label for the button that clears all the errors.">
     Clear all
   </message>
