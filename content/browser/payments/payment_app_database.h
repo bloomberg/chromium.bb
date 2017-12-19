@@ -193,7 +193,6 @@ class CONTENT_EXPORT PaymentAppDatabase {
                                          ServiceWorkerStatusCode status);
   void DidSetPaymentAppUserHint(ServiceWorkerStatusCode status);
 
-  scoped_refptr<PaymentAppInfoFetcher> payment_app_info_fetcher_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;
 
