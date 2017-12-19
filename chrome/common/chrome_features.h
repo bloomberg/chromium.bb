@@ -138,6 +138,8 @@ extern const base::Feature kFullscreenToolbarReveal;
 extern const base::Feature kGdiTextPrinting;
 #endif
 
+extern const base::Feature kGeoLanguage;
+
 #if defined(OS_ANDROID)
 extern const base::Feature kGrantNotificationsToDSE;
 #endif
