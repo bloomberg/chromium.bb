@@ -491,12 +491,6 @@
     }
   },
 
-  'chromium_webkit_gtests': {
-    'blink_heap_unittests': {},
-    'blink_platform_unittests': {},
-    'webkit_unit_tests': {},
-    'wtf_unittests': {},
-  },
   'chromium_webkit_isolated_scripts': {
     'webkit_layout_tests': {
       'isolate_name': 'webkit_layout_tests_exparchive',
@@ -512,15 +506,6 @@
       }
     },
   },
-  'chromium_webkit_scripts': {
-    'webkit_lint': {
-      'script': 'webkit_lint.py',
-    },
-    'webkit_python_tests': {
-      'script': 'webkit_python_tests.py',
-    },
-  },
-
   'clang_gl_gtests': {
     'gl_tests': {},
     'gl_unittests': {},

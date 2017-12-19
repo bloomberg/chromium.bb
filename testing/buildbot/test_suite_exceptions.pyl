@@ -236,7 +236,6 @@
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux ChromiumOS MSan Tests',
-      'Linux MSan Tests',
       'Linux TSan Tests',
     ],
     'modifications': {
@@ -305,7 +304,6 @@
       'Linux CFI',
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux ChromiumOS MSan Tests',
-      'Linux MSan Tests',
       'Linux TSan Tests',
     ],
   },
@@ -4273,7 +4271,6 @@
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux ChromiumOS MSan Tests',
-      'Linux MSan Tests',
     ],
     'modifications': {
       # chromium.memory
@@ -4442,7 +4439,6 @@
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux ChromiumOS MSan Tests',
-      'Linux MSan Tests',
       'Linux TSan Tests',
     ],
   },
