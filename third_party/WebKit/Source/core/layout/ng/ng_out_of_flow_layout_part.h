@@ -57,7 +57,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     NGLogicalOffset content_offset;
     // Physical content offset wrt border box.
     NGPhysicalOffset content_physical_offset;
-    // Logical offset wrt default containing block.
+    // Logical offset of container padding box
+    // wrt default containing block padding box.
     NGLogicalOffset default_container_offset;
   };
 

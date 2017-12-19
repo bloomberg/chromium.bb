@@ -275,20 +275,53 @@ void NGFragmentBuilder::ComputeInlineContainerFragments(
               inline_container_fragments->at(key);
           if (!value.start_fragment) {
             value.start_fragment = descendant.fragment;
-            value.start_fragment_offset = descendant.offset_to_container_box;
+            value.start_fragment_union_rect.offset =
+                descendant.offset_to_container_box;
+            value.start_fragment_union_rect =
+                NGPhysicalOffsetRect(descendant.offset_to_container_box,
+                                     value.start_fragment->Size());
             value.start_linebox_fragment = linebox;
             value.start_linebox_offset = offsets_.at(i);
           }
-          value.end_fragment = descendant.fragment;
-          value.end_fragment_offset = descendant.offset_to_container_box;
-          value.end_linebox_fragment = linebox;
-          value.end_linebox_offset = offsets_.at(i);
+          if (!value.end_fragment || value.end_linebox_fragment != linebox) {
+            value.end_fragment = descendant.fragment;
+            value.end_fragment_union_rect = NGPhysicalOffsetRect(
+                descendant.offset_to_container_box, value.end_fragment->Size());
+            value.end_linebox_fragment = linebox;
+            value.end_linebox_offset = offsets_.at(i);
+          }
+          // Extend the union size
+          if (value.start_linebox_fragment == linebox) {
+            // std::max because initial box might have larger extent than its
+            // descendants.
+            value.start_fragment_union_rect.size.width =
+                std::max(descendant.offset_to_container_box.left +
+                             descendant.fragment->Size().width -
+                             value.start_fragment_union_rect.offset.left,
+                         value.start_fragment_union_rect.size.width);
+            value.start_fragment_union_rect.size.height =
+                std::max(descendant.offset_to_container_box.top +
+                             descendant.fragment->Size().height -
+                             value.start_fragment_union_rect.offset.top,
+                         value.start_fragment_union_rect.size.width);
+          }
+          if (value.end_linebox_fragment == linebox) {
+            value.end_fragment_union_rect.size.width =
+                std::max(descendant.offset_to_container_box.left +
+                             descendant.fragment->Size().width -
+                             value.start_fragment_union_rect.offset.left,
+                         value.end_fragment_union_rect.size.width);
+            value.end_fragment_union_rect.size.height =
+                std::max(descendant.offset_to_container_box.top +
+                             descendant.fragment->Size().height -
+                             value.start_fragment_union_rect.offset.top,
+                         value.end_fragment_union_rect.size.height);
+          }
           inline_container_fragments->Set(key, value);
         }
       }
     }
   }
-  // TODO(atotic) need to implement correct RTL handling.
 }
 
 }  // namespace blink
