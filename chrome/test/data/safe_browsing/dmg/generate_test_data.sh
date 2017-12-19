@@ -51,7 +51,7 @@ generate_test_data() {
     DMG_NAME="dmg_${DMG_TEMPLATE_FORMAT}_${layout}"
     hdiutil create -srcfolder "${DMG_SOURCE}" \
       -format "${DMG_TEMPLATE_FORMAT}" -layout "${layout}" \
-      -volname "${DMG_NAME}" \
+      -fs JHFS+ -volname "${DMG_NAME}" \
       "${OUT_DIR}/${DMG_NAME}"
   done
 
@@ -81,7 +81,7 @@ generate_test_data() {
 
   hdiutil create -srcfolder "${DMG_SOURCE}" \
     -format UDZO -layout SPUD -volname "Mach-O in DMG" -ov \
-    "${OUT_DIR}/mach_o_in_dmg"
+    -fs JHFS+ "${OUT_DIR}/mach_o_in_dmg"
 
   rm -rf "${DMG_SOURCE}"
 
