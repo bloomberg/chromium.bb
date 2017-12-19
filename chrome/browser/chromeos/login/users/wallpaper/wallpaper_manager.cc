@@ -790,7 +790,6 @@ void WallpaperManager::ShowUserWallpaper(const AccountId& account_id) {
   }
 
   gfx::ImageSkia user_wallpaper;
-  *GetCachedWallpaperInfo() = info;
   if (GetWallpaperFromCache(account_id, &user_wallpaper)) {
     GetPendingWallpaper()->SetWallpaperFromImage(account_id, user_wallpaper,
                                                  info);
