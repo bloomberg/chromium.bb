@@ -29,6 +29,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutEmbeddedContent.h"
@@ -731,6 +732,11 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
     v_mode = kScrollbarAlwaysOn;
 
 #undef RETURN_SCROLLBAR_MODE
+}
+
+void LayoutView::DispatchFakeMouseMoveEventSoon(EventHandler& event_handler) {
+  event_handler.DispatchFakeMouseMoveEventSoon(
+      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
 }
 
 IntRect LayoutView::DocumentRect() const {

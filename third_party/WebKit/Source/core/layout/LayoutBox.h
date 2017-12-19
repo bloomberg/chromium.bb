@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class EventHandler;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
 struct NGPhysicalBoxStrut;
@@ -1002,6 +1003,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const IntPoint& point_in_root_frame) const;
   static LayoutBox* FindAutoscrollable(LayoutObject*);
   virtual void StopAutoscroll() {}
+  virtual void DispatchFakeMouseMoveEventSoon(EventHandler&);
 
   DISABLE_CFI_PERF bool HasAutoVerticalScrollbar() const {
     return HasOverflowClip() && Style()->HasAutoVerticalScroll();

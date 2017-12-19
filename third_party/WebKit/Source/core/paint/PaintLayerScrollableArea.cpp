@@ -433,18 +433,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     UpdateCompositingLayersAfterScroll();
   }
 
-  const LayoutBoxModelObject& paint_invalidation_container =
-      Box().ContainerForPaintInvalidation();
-
-  FloatQuad quad_for_fake_mouse_move_event = FloatQuad(FloatRect(
-      Layer()->GetLayoutObject().VisualRectIncludingCompositedScrolling(
-          paint_invalidation_container)));
-
-  quad_for_fake_mouse_move_event =
-      paint_invalidation_container.LocalToAbsoluteQuad(
-          quad_for_fake_mouse_move_event);
-  frame->GetEventHandler().DispatchFakeMouseMoveEventSoonInQuad(
-      quad_for_fake_mouse_move_event);
+  Box().DispatchFakeMouseMoveEventSoon(frame->GetEventHandler());
 
   if (scroll_type == kUserScroll || scroll_type == kCompositorScroll) {
     Page* page = frame->GetPage();
