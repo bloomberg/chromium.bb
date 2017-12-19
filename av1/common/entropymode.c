@@ -1485,9 +1485,8 @@ static const aom_prob default_comp_group_idx_probs[COMP_GROUP_IDX_CONTEXTS] = {
 #endif  // CONFIG_JNT_COMP
 
 #if CONFIG_FILTER_INTRA
-static const aom_cdf_prob default_filter_intra_mode_cdf[2][CDF_SIZE(
-    FILTER_INTRA_MODES)] = { { AOM_CDF5(14259, 17304, 20463, 29377) },
-                             { AOM_CDF5(32768, 32768, 32768, 32768) } };
+static const aom_cdf_prob default_filter_intra_mode_cdf[CDF_SIZE(
+    FILTER_INTRA_MODES)] = { AOM_CDF5(14259, 17304, 20463, 29377) };
 
 static const aom_cdf_prob default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)] =
     {

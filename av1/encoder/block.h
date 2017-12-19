@@ -297,7 +297,7 @@ struct macroblock {
   int y_mode_costs[INTRA_MODES][INTRA_MODES][INTRA_MODES];
 #if CONFIG_FILTER_INTRA
   int filter_intra_cost[TX_SIZES_ALL][2];
-  int filter_intra_mode_cost[PLANE_TYPES][FILTER_INTRA_MODES];
+  int filter_intra_mode_cost[FILTER_INTRA_MODES];
 #endif
   int switchable_interp_costs[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS];
 #if CONFIG_EXT_PARTITION_TYPES

@@ -591,34 +591,19 @@ int main(int argc, const char **argv) {
       "static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)]");
 #endif
 
-/* Transform type */
-// TODO(yuec): different trees are used depending on selected ext tx set
-
-/* supertx experiment */
-
 /* filter_intra experiment */
 #if CONFIG_FILTER_INTRA
-  cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = FILTER_INTRA_MODES;
+  cts_each_dim[0] = FILTER_INTRA_MODES;
   optimize_cdf_table(
-      &fc.filter_intra_mode[0][0], probsfile, 2, cts_each_dim,
+      &fc.filter_intra_mode[0], probsfile, 1, cts_each_dim,
       "static const aom_cdf_prob "
-      "default_filter_intra_mode_cdf[2][CDF_SIZE(FILTER_INTRA_MODES)]");
+      "default_filter_intra_mode_cdf[CDF_SIZE(FILTER_INTRA_MODES)]");
 
   cts_each_dim[0] = TX_SIZES_ALL;
   cts_each_dim[1] = 2;
   optimize_cdf_table(&fc.filter_intra_tx[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)]");
-
-  cts_each_dim[0] = KF_MODE_CONTEXTS;
-  cts_each_dim[1] = KF_MODE_CONTEXTS;
-  cts_each_dim[2] = FILTER_INTRA_MODES;
-  optimize_cdf_table(&fc.filter_intra_mode_ctx[0][0][0], probsfile, 3,
-                     cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_filter_intra_mode_cdf[KF_MODE_CONTEXTS][KF_MODE_"
-                     "CONTEXTS][CDF_SIZE(FILTER_INTRA_MODES)]");
 #endif
 
 #if CONFIG_LV_MAP

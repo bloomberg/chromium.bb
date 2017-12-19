@@ -4156,24 +4156,15 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     const int use_filter_intra_mode =
         mbmi->filter_intra_mode_info.use_filter_intra;
 #if CONFIG_ENTROPY_STATS
-    if (use_filter_intra_mode) {
-      const PREDICTION_MODE above = av1_above_block_mode(above_mi);
-      const PREDICTION_MODE left = av1_left_block_mode(left_mi);
-#if CONFIG_KF_CTX
-      int above_ctx = intra_mode_context[above];
-      int left_ctx = intra_mode_context[left];
-#endif
-      ++counts->filter_intra_mode[0][mbmi->filter_intra_mode_info
-                                         .filter_intra_mode[0]];
-      ++counts->filter_intra_mode_ctx[above_ctx][left_ctx]
-                                     [mbmi->filter_intra_mode_info
-                                          .filter_intra_mode[0]];
-    }
     ++counts->filter_intra_tx[mbmi->tx_size][use_filter_intra_mode];
+    if (use_filter_intra_mode) {
+      ++counts
+            ->filter_intra_mode[mbmi->filter_intra_mode_info.filter_intra_mode];
+    }
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf) {
       if (use_filter_intra_mode)
-        update_cdf(fc->filter_intra_mode_cdf[0],
+        update_cdf(fc->filter_intra_mode_cdf,
                    mbmi->filter_intra_mode_info.filter_intra_mode,
                    FILTER_INTRA_MODES);
       update_cdf(fc->filter_intra_cdfs[mbmi->tx_size], use_filter_intra_mode,

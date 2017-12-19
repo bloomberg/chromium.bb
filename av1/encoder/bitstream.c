@@ -818,7 +818,7 @@ static void write_filter_intra_mode_info(const MACROBLOCKD *xd,
     if (mbmi->filter_intra_mode_info.use_filter_intra) {
       const FILTER_INTRA_MODE mode =
           mbmi->filter_intra_mode_info.filter_intra_mode;
-      aom_write_symbol(w, mode, xd->tile_ctx->filter_intra_mode_cdf[0],
+      aom_write_symbol(w, mode, xd->tile_ctx->filter_intra_mode_cdf,
                        FILTER_INTRA_MODES);
     }
   }

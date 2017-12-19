@@ -1270,6 +1270,10 @@ static void filter_intra_predictor(uint8_t *dst, ptrdiff_t stride,
 
   assert(bw <= 32 && bh <= 32);
 
+  // The initialization is just for silencing Jenkins static analysis warnings
+  for (r = 0; r < bh + 1; ++r)
+    memset(buffer[r], 0, (bw + 1) * sizeof(buffer[0][0]));
+
   for (r = 0; r < bh; ++r) buffer[r + 1][0] = (int)left[r];
 
   for (c = 0; c < bw + 1; ++c) buffer[0][c] = (int)above[c - 1];
@@ -1369,6 +1373,10 @@ static void highbd_filter_intra_predictor(uint16_t *dst, ptrdiff_t stride,
   const int bh = tx_size_high[tx_size];
 
   assert(bw <= 32 && bh <= 32);
+
+  // The initialization is just for silencing Jenkins static analysis warnings
+  for (r = 0; r < bh + 1; ++r)
+    memset(buffer[r], 0, (bw + 1) * sizeof(buffer[0][0]));
 
   for (r = 0; r < bh; ++r) buffer[r + 1][0] = (int)left[r];
 

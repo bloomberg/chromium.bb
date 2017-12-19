@@ -2759,7 +2759,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     if (mbmi->filter_intra_mode_info.use_filter_intra) {
       const int mode = mbmi->filter_intra_mode_info.filter_intra_mode;
       mode_cost += x->filter_intra_cost[mbmi->tx_size][1] +
-                   x->filter_intra_mode_cost[0][mode];
+                   x->filter_intra_mode_cost[mode];
     } else {
       mode_cost += x->filter_intra_cost[mbmi->tx_size][0];
     }
@@ -3071,7 +3071,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (tokenonly_rd_stats.rate == INT_MAX) continue;
     this_rate = tokenonly_rd_stats.rate +
                 x->filter_intra_cost[mbmi->tx_size][1] +
-                x->filter_intra_mode_cost[0][mode] + mode_cost;
+                x->filter_intra_mode_cost[mode] + mode_cost;
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
     if (this_rd < *best_rd) {
@@ -9169,8 +9169,7 @@ static void estimate_skip_mode_rdcost(
     }
 
 #if CONFIG_FILTER_INTRA
-    mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
-    mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
+    mbmi->filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
 #if CONFIG_JNT_COMP
@@ -9848,10 +9847,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           super_block_yrd(cpi, x, &rd_stats_y_fi, bsize, best_rd);
           if (rd_stats_y_fi.rate == INT_MAX) continue;
 
-          this_rate_tmp = rd_stats_y_fi.rate +
-                          x->filter_intra_cost[mbmi->tx_size][1] +
-                          x->filter_intra_mode_cost[0][fi_mode] +
-                          intra_mode_cost[mbmi->mode];
+          this_rate_tmp =
+              rd_stats_y_fi.rate + x->filter_intra_cost[mbmi->tx_size][1] +
+              x->filter_intra_mode_cost[fi_mode] + intra_mode_cost[mbmi->mode];
           this_rd_tmp = RDCOST(x->rdmult, this_rate_tmp, rd_stats_y_fi.dist);
 
           if (this_rd_tmp < best_rd_tmp) {
@@ -9953,8 +9951,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             x->filter_intra_cost[mbmi->tx_size]
                                 [mbmi->filter_intra_mode_info.use_filter_intra];
         if (mbmi->filter_intra_mode_info.use_filter_intra) {
-          rate2 += x->filter_intra_mode_cost[0][mbmi->filter_intra_mode_info
-                                                    .filter_intra_mode];
+          rate2 += x->filter_intra_mode_cost[mbmi->filter_intra_mode_info
+                                                 .filter_intra_mode];
         }
       }
 #endif  // CONFIG_FILTER_INTRA
@@ -10714,8 +10712,7 @@ PALETTE_EXIT:
 
       best_mbmode.interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
 #if CONFIG_FILTER_INTRA
-      best_mbmode.filter_intra_mode_info.use_filter_intra_mode[0] = 0;
-      best_mbmode.filter_intra_mode_info.use_filter_intra_mode[1] = 0;
+      best_mbmode.filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA
 
       set_default_interp_filters(&best_mbmode, cm->interp_filter);
