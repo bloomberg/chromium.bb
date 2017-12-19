@@ -26,7 +26,6 @@ extern "C" {
 #endif
 
 #define MAX_TXFM_STAGE_NUM 12
-#define DIVIDE_AND_ROUND(x, y) (((x) + ((y) >> 1)) / (y))
 
 static const int cos_bit_min = 10;
 static const int cos_bit_max = 16;

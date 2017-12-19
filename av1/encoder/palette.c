@@ -23,16 +23,14 @@
 #include "av1/encoder/k_means_template.h"
 #undef AV1_K_MEANS_DIM
 
-static int float_comparer(const void *a, const void *b) {
-  const float fa = *(const float *)a;
-  const float fb = *(const float *)b;
-  return (fa > fb) - (fa < fb);
+static int int_comparer(const void *a, const void *b) {
+  return (*(int *)a - *(int *)b);
 }
 
-int av1_remove_duplicates(float *centroids, int num_centroids) {
+int av1_remove_duplicates(int *centroids, int num_centroids) {
   int num_unique;  // number of unique centroids
   int i;
-  qsort(centroids, num_centroids, sizeof(*centroids), float_comparer);
+  qsort(centroids, num_centroids, sizeof(*centroids), int_comparer);
   // Remove duplicates.
   num_unique = 1;
   for (i = 1; i < num_centroids; ++i) {

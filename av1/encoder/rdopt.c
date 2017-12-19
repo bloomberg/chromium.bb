@@ -2797,20 +2797,19 @@ static void extend_palette_color_map(uint8_t *const color_map, int orig_width,
 // Bias toward using colors in the cache.
 // TODO(huisu): Try other schemes to improve compression.
 static void optimize_palette_colors(uint16_t *color_cache, int n_cache,
-                                    int n_colors, int stride,
-                                    float *centroids) {
+                                    int n_colors, int stride, int *centroids) {
   if (n_cache <= 0) return;
   for (int i = 0; i < n_colors * stride; i += stride) {
-    float min_diff = fabsf(centroids[i] - color_cache[0]);
+    int min_diff = abs(centroids[i] - (int)color_cache[0]);
     int idx = 0;
     for (int j = 1; j < n_cache; ++j) {
-      float this_diff = fabsf(centroids[i] - color_cache[j]);
+      const int this_diff = abs(centroids[i] - color_cache[j]);
       if (this_diff < min_diff) {
         min_diff = this_diff;
         idx = j;
       }
     }
-    if (min_diff < 1.5) centroids[i] = color_cache[idx];
+    if (min_diff <= 1) centroids[i] = color_cache[idx];
   }
 }
 
@@ -2818,19 +2817,13 @@ static void optimize_palette_colors(uint16_t *color_cache, int n_cache,
 // of palette mode.
 static void palette_rd_y(const AV1_COMP *const cpi, MACROBLOCK *x,
                          MB_MODE_INFO *mbmi, BLOCK_SIZE bsize, int palette_ctx,
-                         int dc_mode_cost, const float *data, float *centroids,
+                         int dc_mode_cost, const int *data, int *centroids,
                          int n, uint16_t *color_cache, int n_cache,
                          MB_MODE_INFO *best_mbmi,
                          uint8_t *best_palette_color_map, int64_t *best_rd,
                          int64_t *best_model_rd, int *rate, int *rate_tokenonly,
                          int *rate_overhead, int64_t *distortion,
                          int *skippable) {
-  aom_clear_system_state();
-#ifndef NDEBUG
-  for (int i = 0; i < n; ++i) {
-    assert(!isnan(centroids[i]));
-  }
-#endif  // NDEBUG
   optimize_palette_colors(color_cache, n_cache, n, 1, centroids);
   int k = av1_remove_duplicates(centroids, n);
   if (k < PALETTE_MIN_SIZE) {
@@ -2847,7 +2840,7 @@ static void palette_rd_y(const AV1_COMP *const cpi, MACROBLOCK *x,
   else
 #endif  // CONFIG_HIGHBITDEPTH
     for (int i = 0; i < k; ++i)
-      pmi->palette_colors[i] = clip_pixel((int)centroids[i]);
+      pmi->palette_colors[i] = clip_pixel(centroids[i]);
   pmi->palette_size[0] = k;
   MACROBLOCKD *const xd = &x->e_mbd;
   uint8_t *const color_map = xd->plane[0].color_index_map;
@@ -2928,12 +2921,11 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 
   if (colors > 1 && colors <= 64) {
-    aom_clear_system_state();
     int r, c, i;
     const int max_itr = 50;
-    float *const data = x->palette_buffer->kmeans_data_buf;
-    float centroids[PALETTE_MAX_SIZE];
-    float lb, ub, val;
+    int *const data = x->palette_buffer->kmeans_data_buf;
+    int centroids[PALETTE_MAX_SIZE];
+    int lb, ub, val;
 #if CONFIG_HIGHBITDEPTH
     uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
     if (cpi->common.use_highbitdepth)
@@ -2998,8 +2990,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     // TODO(huisu@google.com): Try to avoid duplicate computation in cases
     // where the dominant colors and the k-means results are similar.
     for (n = AOMMIN(colors, PALETTE_MAX_SIZE); n >= 2; --n) {
-      aom_clear_system_state();
-      for (i = 0; i < n; ++i) centroids[i] = (float)(top_colors[i]);
+      for (i = 0; i < n; ++i) centroids[i] = top_colors[i];
       palette_rd_y(cpi, x, mbmi, bsize, palette_ctx, dc_mode_cost, data,
                    centroids, n, color_cache, n_cache, best_mbmi,
                    best_palette_color_map, best_rd, best_model_rd, rate,
@@ -3008,7 +2999,6 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     // K-means clustering.
     for (n = AOMMIN(colors, PALETTE_MAX_SIZE); n >= 2; --n) {
-      aom_clear_system_state();
       if (colors == PALETTE_MIN_SIZE) {
         // Special case: These colors automatically become the centroids.
         assert(colors == n);
@@ -5174,13 +5164,12 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   colors = colors_u > colors_v ? colors_u : colors_v;
   if (colors > 1 && colors <= 64) {
-    aom_clear_system_state();
     int r, c, n, i, j;
     const int max_itr = 50;
-    float lb_u, ub_u, val_u;
-    float lb_v, ub_v, val_v;
-    float *const data = x->palette_buffer->kmeans_data_buf;
-    float centroids[2 * PALETTE_MAX_SIZE];
+    int lb_u, ub_u, val_u;
+    int lb_v, ub_v, val_v;
+    int *const data = x->palette_buffer->kmeans_data_buf;
+    int centroids[2 * PALETTE_MAX_SIZE];
 
 #if CONFIG_HIGHBITDEPTH
     uint16_t *src_u16 = CONVERT_TO_SHORTPTR(src_u);
@@ -5230,26 +5219,20 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     for (n = colors > PALETTE_MAX_SIZE ? PALETTE_MAX_SIZE : colors; n >= 2;
          --n) {
-      aom_clear_system_state();
       for (i = 0; i < n; ++i) {
         centroids[i * 2] = lb_u + (2 * i + 1) * (ub_u - lb_u) / n / 2;
         centroids[i * 2 + 1] = lb_v + (2 * i + 1) * (ub_v - lb_v) / n / 2;
       }
       av1_k_means(data, centroids, color_map, rows * cols, n, 2, max_itr);
-#ifndef NDEBUG
-      for (i = 0; i < 2 * n; ++i) {
-        assert(!isnan(centroids[i]));
-      }
-#endif  // NDEBUG
       optimize_palette_colors(color_cache, n_cache, n, 2, centroids);
       // Sort the U channel colors in ascending order.
       for (i = 0; i < 2 * (n - 1); i += 2) {
         int min_idx = i;
-        float min_val = centroids[i];
+        int min_val = centroids[i];
         for (j = i + 2; j < 2 * n; j += 2)
           if (centroids[j] < min_val) min_val = centroids[j], min_idx = j;
         if (min_idx != i) {
-          float temp_u = centroids[i], temp_v = centroids[i + 1];
+          int temp_u = centroids[i], temp_v = centroids[i + 1];
           centroids[i] = centroids[min_idx];
           centroids[i + 1] = centroids[min_idx + 1];
           centroids[min_idx] = temp_u, centroids[min_idx + 1] = temp_v;
@@ -9031,8 +9014,8 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   int src_stride = x->plane[1].src.stride;
   const uint8_t *const src_u = x->plane[1].src.buf;
   const uint8_t *const src_v = x->plane[2].src.buf;
-  float *const data = x->palette_buffer->kmeans_data_buf;
-  float centroids[2 * PALETTE_MAX_SIZE];
+  int *const data = x->palette_buffer->kmeans_data_buf;
+  int centroids[2 * PALETTE_MAX_SIZE];
   uint8_t *const color_map = xd->plane[1].color_index_map;
   int r, c;
 #if CONFIG_HIGHBITDEPTH
