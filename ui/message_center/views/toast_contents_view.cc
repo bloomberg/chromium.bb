@@ -83,6 +83,7 @@ ToastContentsView::~ToastContentsView() {
 
 void ToastContentsView::SetContents(MessageView* view,
                                     bool a11y_feedback_for_updates) {
+  message_view_ = view;
   bool already_has_contents = child_count() > 0;
   RemoveAllChildViews(true);
   AddChildView(view);
