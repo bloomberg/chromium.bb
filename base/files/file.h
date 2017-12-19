@@ -24,8 +24,7 @@
 
 namespace base {
 
-#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
-    defined(OS_ANDROID) && __ANDROID_API__ < 21
+#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
 typedef struct stat stat_wrapper_t;
 #elif defined(OS_POSIX)
 typedef struct stat64 stat_wrapper_t;

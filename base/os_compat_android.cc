@@ -10,7 +10,6 @@
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
-#include <unistd.h>
 
 #if !defined(__LP64__)
 #include <time64.h>

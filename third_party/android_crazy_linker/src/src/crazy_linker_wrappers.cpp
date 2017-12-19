@@ -234,8 +234,7 @@ _Unwind_Ptr WrapDl_unwind_find_exidx(_Unwind_Ptr pc, int* pcount) {
   {
     ScopedGlobalLock lock;
     LibraryList* list = Globals::GetLibraries();
-    _Unwind_Ptr result =
-        list->FindArmExIdx(reinterpret_cast<void*>(pc), pcount);
+    _Unwind_Ptr result = list->FindArmExIdx(pc, pcount);
     if (result)
       return result;
   }

@@ -9,8 +9,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <cstdlib>
-#include <cstring>
 
 namespace crazy {
 

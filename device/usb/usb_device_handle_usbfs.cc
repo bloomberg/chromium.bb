@@ -4,7 +4,11 @@
 
 #include "device/usb/usb_device_handle_usbfs.h"
 
+#if defined(OS_ANDROID) && __ANDROID_API__ < 21
+#include <linux/usb_ch9.h>
+#else
 #include <linux/usb/ch9.h>
+#endif
 
 #include <linux/usbdevice_fs.h>
 #include <sys/ioctl.h>
