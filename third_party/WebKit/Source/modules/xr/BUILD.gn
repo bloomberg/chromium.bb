@@ -12,8 +12,6 @@ blink_modules_sources("xr") {
     "XRCoordinateSystem.h",
     "XRDevice.cpp",
     "XRDevice.h",
-    "XRDeviceEvent.cpp",
-    "XRDeviceEvent.h",
     "XRDevicePose.cpp",
     "XRDevicePose.h",
     "XRFrameOfReference.cpp",

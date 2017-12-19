@@ -28,8 +28,7 @@ class XR final : public EventTargetWithInlineData,
  public:
   static XR* Create(LocalFrame& frame) { return new XR(frame); }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(deviceconnect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicedisconnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
 
   ScriptPromise requestDevice(ScriptState*);
 

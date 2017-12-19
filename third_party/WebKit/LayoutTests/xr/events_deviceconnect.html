@@ -11,24 +11,23 @@ let fakeDisplays = fakeVRDisplays();
 
 vr_test((t, mockService) => {
   let watcherDone = new Event("watcherdone");
-  let eventWatcher = new EventWatcher(t, navigator.xr, ["deviceconnect",
+  let eventWatcher = new EventWatcher(t, navigator.xr, ["devicechange",
                                                         "watcherdone"]);
-  eventWatcher.wait_for(["deviceconnect", "watcherdone"])
+  eventWatcher.wait_for(["devicechange", "watcherdone"])
     .then( () => {
       t.done();
     });
 
   // The event should fire when a listener is added even if the devices are not
   // explicity queried with navigator.xr.requestDevice().
-  function onDeviceConnect(event) {
+  function onDeviceChange() {
     t.step( () => {
-      assert_equals(event.device.deviceName, 'Google, Inc. Daydream View');
       navigator.xr.dispatchEvent(watcherDone);
     });
   }
-  navigator.xr.addEventListener("deviceconnect", onDeviceConnect, false);
+  navigator.xr.addEventListener("devicechange", onDeviceChange, false);
 
 }, [fakeDisplays["Pixel"]],
-"Test deviceconnect fires when devices are connected.");
+"Test devicechange fires when devices are connected.");
 
 </script>

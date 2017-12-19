@@ -8,13 +8,12 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 #include "modules/xr/XRDevice.h"
-#include "modules/xr/XRDeviceEvent.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "public/platform/InterfaceProvider.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-
 namespace blink {
 
 namespace {
@@ -121,8 +120,7 @@ void XR::OnDisplayConnected(
 
   devices_.push_back(xr_device);
 
-  DispatchEvent(
-      XRDeviceEvent::Create(EventTypeNames::deviceconnect, xr_device));
+  DispatchEvent(blink::Event::Create(EventTypeNames::devicechange));
 }
 
 // Called when the XRService has called OnDevicesConnected for all active
