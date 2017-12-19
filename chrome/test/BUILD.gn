@@ -342,6 +342,7 @@ test("browser_tests") {
     ":test_support",
     "//base",
     "//chrome/browser/profiling_host:profiling_browsertests",
+    "//components/grpc_support/test:quic_test_server",
     "//components/nacl/common:features",
     "//components/spellcheck:build_features",
     "//components/sync:test_support_model",

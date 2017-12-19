@@ -15,8 +15,10 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_host_resolver.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
@@ -86,6 +88,11 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
     // Register the EmbeddedTestServer's certs, so that any SSL connections to
     // it succeed. Only do this when file I/O is allowed in the current process.
     net::EmbeddedTestServer::RegisterTestCerts();
+
+    // Also add the QUIC test certificate.
+    net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
+    root_certs->AddFromFile(
+        net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
   }
 }
 
