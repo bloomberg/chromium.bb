@@ -80,6 +80,11 @@ class TestReportingService : public ReportingService {
     NOTREACHED();
   }
 
+  bool RequestIsUpload(const URLRequest& request) override {
+    NOTREACHED();
+    return true;
+  }
+
  private:
   std::vector<Report> reports_;
 
@@ -119,6 +124,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
     details.status_code = 0;
     details.elapsed_time = base::TimeDelta::FromSeconds(1);
     details.type = error_type;
+    details.is_reporting_upload = false;
 
     return details;
   }

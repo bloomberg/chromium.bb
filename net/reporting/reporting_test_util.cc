@@ -105,6 +105,11 @@ void TestReportingUploader::StartUpload(const GURL& url,
       base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
 }
 
+bool TestReportingUploader::RequestIsUpload(const URLRequest& request) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 TestReportingDelegate::TestReportingDelegate() = default;
 
 TestReportingDelegate::~TestReportingDelegate() = default;

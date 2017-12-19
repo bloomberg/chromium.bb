@@ -171,6 +171,12 @@ void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
   if (!reporting_service_)
     return;
 
+  // It is expected for Reporting uploads to terminate with ERR_ABORTED, since
+  // the ReportingUploader cancels them after receiving the response code and
+  // headers.
+  if (details.is_reporting_upload && details.type == ERR_ABORTED)
+    return;
+
   url::Origin origin = url::Origin::Create(details.uri);
 
   // NEL is only available to secure origins, so ignore network errors from
