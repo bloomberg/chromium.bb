@@ -16,13 +16,6 @@ enum StorageType {
   kStorageTypeLast = kStorageTypeUnknown
 };
 
-enum QuotaLimitType {
-  kQuotaLimitTypeUnknown,
-  kQuotaLimitTypeLimited,
-  kQuotaLimitTypeUnlimited,
-  kQuotaLimitTypeLast = kQuotaLimitTypeUnlimited
-};
-
 }  // namespace storage
 
 #endif  // STORAGE_COMMON_QUOTA_QUOTA_TYPES_H_

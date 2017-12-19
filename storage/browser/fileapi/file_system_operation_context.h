@@ -13,7 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/quota/quota_types.h"
+#include "storage/common/quota/quota_limit_type.h"
 
 namespace base {
 class SequencedTaskRunner;

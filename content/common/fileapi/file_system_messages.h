@@ -14,7 +14,7 @@
 #include "storage/common/fileapi/directory_entry.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/quota/quota_types.h"
+#include "storage/common/quota/quota_limit_type.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
