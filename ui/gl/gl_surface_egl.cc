@@ -691,8 +691,10 @@ bool GLSurfaceEGL::InitializeExtensionSettingsOneOff() {
 void GLSurfaceEGL::ShutdownOneOff() {
   angle::ResetPlatform(g_display);
 
-  if (g_display != EGL_NO_DISPLAY)
+  if (g_display != EGL_NO_DISPLAY) {
+    DCHECK(g_driver_egl.fn.eglTerminateFn);
     eglTerminate(g_display);
+  }
   g_display = EGL_NO_DISPLAY;
 
   g_egl_extensions = nullptr;

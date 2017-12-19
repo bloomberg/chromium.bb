@@ -41,7 +41,7 @@ void ClearBindingsEGL() {
     delete g_real_egl;
     g_real_egl = NULL;
   }
-  g_current_egl_context = NULL;
+  g_current_egl_context = nullptr;
   g_driver_egl.ClearBindings();
 }
 
