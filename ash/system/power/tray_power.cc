@@ -223,13 +223,12 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
   if (usb_charger_is_connected && !usb_charger_was_connected_ &&
       !usb_notification_dismissed_) {
     std::unique_ptr<Notification> notification =
-        system_notifier::CreateSystemNotification(
+        Notification::CreateSystemNotification(
             message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
             rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
             ui::SubstituteChromeOSDeviceType(
                 IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
-            rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
-            base::string16(), GURL(),
+            gfx::Image(), base::string16(), GURL(),
             message_center::NotifierId(
                 message_center::NotifierId::SYSTEM_COMPONENT,
                 system_notifier::kNotifierPower),

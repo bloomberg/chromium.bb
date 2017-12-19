@@ -17,23 +17,13 @@
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_SETTINGS" file="common/shelf/settings_app_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCALE" file="cros/status/status_locale.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR" file="cros/network/status_cellular_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G" file="cros/network/notification_3g.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_DATASAVER" file="cros/network/notification_datasaver.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE" file="cros/status/status_screenshare.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE_DARK" file="cros/status/status_screenshare_dark.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_CRITICAL" file="cros/notification/notification_battery_critical_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_FLUCTUATING" file="cros/notification/notification_battery_fluctuating_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_LOW" file="cros/notification/notification_battery_low_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BLUETOOTH" file="cros/notification/notification_bluetooth_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification/notification_peripheral_battery_low.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_STYLUS_BATTERY_LOW" file="cros/notification/notification_peripheral_battery_low.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />

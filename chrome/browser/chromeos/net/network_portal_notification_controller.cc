@@ -202,12 +202,6 @@ void NetworkPortalNotificationControllerDelegate::ButtonClick(
   }
 }
 
-gfx::Image& GetImageForNotification() {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  gfx::Image& icon = bundle.GetImageNamed(IDR_PORTAL_DETECTION_ALERT);
-  return icon;
-}
-
 }  // namespace
 
 // static
@@ -331,13 +325,12 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
   scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
       new NetworkPortalNotificationControllerDelegate(
           std::string(), network->guid(), weak_factory_.GetWeakPtr()));
-  gfx::Image& icon = GetImageForNotification();
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierNetworkPortalDetector);
   bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
   std::unique_ptr<message_center::Notification> notification =
-      ash::system_notifier::CreateSystemNotification(
+      message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(
               is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI
@@ -346,8 +339,8 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
               is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI
                       : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
               base::UTF8ToUTF16(network->name())),
-          icon, base::string16(), GURL(), notifier_id, data, delegate.get(),
-          kNotificationCaptivePortalIcon,
+          gfx::Image(), base::string16(), GURL(), notifier_id, data,
+          delegate.get(), kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;
@@ -363,7 +356,6 @@ NetworkPortalNotificationController::
   scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
       new NetworkPortalNotificationControllerDelegate(
           extension->id(), network->guid(), weak_factory_.GetWeakPtr()));
-  gfx::Image& icon = GetImageForNotification();
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierNetworkPortalDetector);
@@ -396,13 +388,13 @@ NetworkPortalNotificationController::
         IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_PORTAL)));
   }
   std::unique_ptr<message_center::Notification> notification =
-      ash::system_notifier::CreateSystemNotification(
+      message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(
               IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI),
-          notification_text, icon, base::string16() /* display_source */,
-          GURL(), notifier_id, data, delegate.get(),
-          kNotificationCaptivePortalIcon,
+          notification_text, gfx::Image(),
+          base::string16() /* display_source */, GURL(), notifier_id, data,
+          delegate.get(), kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;

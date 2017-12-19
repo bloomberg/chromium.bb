@@ -37,7 +37,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/view.h"
@@ -260,19 +259,11 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
     return;
   }
 
-  int icon_id;
-  if (default_network->network_technology() == shill::kNetworkTechnologyLte)
-    icon_id = IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE;
-  else
-    icon_id = IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G;
-  const gfx::Image& icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
-
   std::unique_ptr<message_center::Notification> notification =
-      ash::system_notifier::CreateSystemNotification(
+      message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDataPromoNotificationId,
           l10n_util::GetStringUTF16(IDS_MOBILE_DATA_NOTIFICATION_TITLE),
-          message, icon, base::string16() /* display_source */, GURL(),
+          message, gfx::Image(), base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               ash::system_notifier::kNotifierNetwork),
@@ -312,14 +303,12 @@ bool DataPromoNotification::ShowDataSaverNotification() {
 
   base::string16 title = l10n_util::GetStringUTF16(IDS_3G_DATASAVER_TITLE);
   base::string16 message = l10n_util::GetStringUTF16(IDS_3G_DATASAVER_MESSAGE);
-  const gfx::Image& icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_DATASAVER);
 
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDataSaverNotificationId,
-          title, message, icon, base::string16() /* display_source */, GURL(),
+          title, message, gfx::Image(), base::string16() /* display_source */,
+          GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               ash::system_notifier::kNotifierNetwork),
