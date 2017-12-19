@@ -2138,7 +2138,7 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
 static bool EnabledCopy(LocalFrame& frame, Event*, EditorCommandSource source) {
   if (!CanWriteClipboard(frame, source))
     return false;
-  return frame.GetEditor().CanDHTMLCopy() || frame.GetEditor().CanCopy();
+  return frame.GetEditor().CanDHTMLCopy(source) || frame.GetEditor().CanCopy();
 }
 
 static bool EnabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
@@ -2147,7 +2147,7 @@ static bool EnabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
   if (source == kCommandFromMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
-  return frame.GetEditor().CanDHTMLCut() || frame.GetEditor().CanCut();
+  return frame.GetEditor().CanDHTMLCut(source) || frame.GetEditor().CanCut();
 }
 
 static bool EnabledInEditableText(LocalFrame& frame,

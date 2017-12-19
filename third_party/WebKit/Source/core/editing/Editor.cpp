@@ -309,18 +309,19 @@ bool Editor::CanEditRichly() const {
 // because we allow elements that are not normally selectable to implement
 // copy/paste (like divs, or a document body).
 
-bool Editor::CanDHTMLCut() {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+bool Editor::CanDHTMLCut(EditorCommandSource source) {
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   return !IsInPasswordField(GetFrame()
                                 .Selection()
                                 .ComputeVisibleSelectionInDOMTree()
                                 .Start()) &&
-         !DispatchClipboardEvent(EventTypeNames::beforecut, kDataTransferNumb);
+         !DispatchClipboardEvent(EventTypeNames::beforecut, kDataTransferNumb,
+                                 source);
 }
 
-bool Editor::CanDHTMLCopy() {
+bool Editor::CanDHTMLCopy(EditorCommandSource source) {
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -328,7 +329,8 @@ bool Editor::CanDHTMLCopy() {
                                 .Selection()
                                 .ComputeVisibleSelectionInDOMTree()
                                 .Start()) &&
-         !DispatchClipboardEvent(EventTypeNames::beforecopy, kDataTransferNumb);
+         !DispatchClipboardEvent(EventTypeNames::beforecopy, kDataTransferNumb,
+                                 source);
 }
 
 bool Editor::CanCut() const {
@@ -466,8 +468,10 @@ void Editor::DeleteSelectionWithSmartDelete(
       ->Apply();
 }
 
-void Editor::PasteAsPlainText(const String& pasting_text, bool smart_replace) {
-  Element* target = FindEventTargetFromSelection();
+void Editor::PasteAsPlainText(const String& pasting_text,
+                              bool smart_replace,
+                              EditorCommandSource source) {
+  Element* target = FindEventTargetForClipboardEvent(source);
   if (!target)
     return;
   target->DispatchEvent(TextEvent::CreateForPlainTextPaste(
@@ -476,15 +480,16 @@ void Editor::PasteAsPlainText(const String& pasting_text, bool smart_replace) {
 
 void Editor::PasteAsFragment(DocumentFragment* pasting_fragment,
                              bool smart_replace,
-                             bool match_style) {
-  Element* target = FindEventTargetFromSelection();
+                             bool match_style,
+                             EditorCommandSource source) {
+  Element* target = FindEventTargetForClipboardEvent(source);
   if (!target)
     return;
   target->DispatchEvent(TextEvent::CreateForFragmentPaste(
       GetFrame().DomWindow(), pasting_fragment, smart_replace, match_style));
 }
 
-bool Editor::DispatchCopyEvent() {
+bool Editor::DispatchCopyEvent(EditorCommandSource source) {
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -492,10 +497,11 @@ bool Editor::DispatchCopyEvent() {
           GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start()))
     return true;
 
-  return DispatchClipboardEvent(EventTypeNames::copy, kDataTransferWritable);
+  return DispatchClipboardEvent(EventTypeNames::copy, kDataTransferWritable,
+                                source);
 }
 
-bool Editor::DispatchCutEvent() {
+bool Editor::DispatchCutEvent(EditorCommandSource source) {
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -503,20 +509,24 @@ bool Editor::DispatchCutEvent() {
           GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start()))
     return true;
 
-  return DispatchClipboardEvent(EventTypeNames::cut, kDataTransferWritable);
+  return DispatchClipboardEvent(EventTypeNames::cut, kDataTransferWritable,
+                                source);
 }
 
-bool Editor::DispatchPasteEvent(PasteMode paste_mode) {
+bool Editor::DispatchPasteEvent(PasteMode paste_mode,
+                                EditorCommandSource source) {
   return DispatchClipboardEvent(EventTypeNames::paste, kDataTransferReadable,
-                                paste_mode);
+                                source, paste_mode);
 }
 
-void Editor::PasteAsPlainTextWithPasteboard(Pasteboard* pasteboard) {
+void Editor::PasteAsPlainTextWithPasteboard(Pasteboard* pasteboard,
+                                            EditorCommandSource source) {
   String text = pasteboard->PlainText();
-  PasteAsPlainText(text, CanSmartReplaceWithPasteboard(pasteboard));
+  PasteAsPlainText(text, CanSmartReplaceWithPasteboard(pasteboard), source);
 }
 
-void Editor::PasteWithPasteboard(Pasteboard* pasteboard) {
+void Editor::PasteWithPasteboard(Pasteboard* pasteboard,
+                                 EditorCommandSource source) {
   DocumentFragment* fragment = nullptr;
   bool chose_plain_text = false;
 
@@ -548,9 +558,10 @@ void Editor::PasteWithPasteboard(Pasteboard* pasteboard) {
     }
   }
 
-  if (fragment)
+  if (fragment) {
     PasteAsFragment(fragment, CanSmartReplaceWithPasteboard(pasteboard),
-                    chose_plain_text);
+                    chose_plain_text, source);
+  }
 }
 
 void Editor::WriteSelectionToPasteboard() {
@@ -620,8 +631,9 @@ static void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
 
 bool Editor::DispatchClipboardEvent(const AtomicString& event_type,
                                     DataTransferAccessPolicy policy,
+                                    EditorCommandSource source,
                                     PasteMode paste_mode) {
-  Element* target = FindEventTargetFromSelection();
+  Element* target = FindEventTargetForClipboardEvent(source);
   if (!target)
     return true;
 
@@ -812,6 +824,18 @@ Element* Editor::FindEventTargetFrom(const VisibleSelection& selection) const {
 Element* Editor::FindEventTargetFromSelection() const {
   return FindEventTargetFrom(
       GetFrameSelection().ComputeVisibleSelectionInDOMTreeDeprecated());
+}
+
+Element* Editor::FindEventTargetForClipboardEvent(
+    EditorCommandSource source) const {
+  // https://www.w3.org/TR/clipboard-apis/#fire-a-clipboard-event says:
+  //  "Set target to be the element that contains the start of the selection in
+  //   document order, or the body element if there is no selection or cursor."
+  // We treat hidden selections as "no selection or cursor".
+  if (source == kCommandFromMenuOrKeyBinding && GetFrameSelection().IsHidden())
+    return GetFrameSelection().GetDocument().body();
+
+  return FindEventTargetFromSelection();
 }
 
 void Editor::ApplyStyle(CSSPropertyValueSet* style,
@@ -1124,7 +1148,7 @@ bool Editor::InsertParagraphSeparator() {
 }
 
 void Editor::Cut(EditorCommandSource source) {
-  if (!DispatchCutEvent())
+  if (!DispatchCutEvent(source))
     return;
   if (!CanCut())
     return;
@@ -1154,10 +1178,10 @@ void Editor::Cut(EditorCommandSource source) {
     }
 
     if (source == kCommandFromMenuOrKeyBinding) {
-      if (DispatchBeforeInputDataTransfer(FindEventTargetFromSelection(),
-                                          InputEvent::InputType::kDeleteByCut,
-                                          nullptr) !=
-          DispatchEventResult::kNotCanceled)
+      if (DispatchBeforeInputDataTransfer(
+              FindEventTargetForClipboardEvent(source),
+              InputEvent::InputType::kDeleteByCut,
+              nullptr) != DispatchEventResult::kNotCanceled)
         return;
       // 'beforeinput' event handler may destroy target frame.
       if (frame_->GetDocument()->GetFrame() != frame_)
@@ -1169,8 +1193,8 @@ void Editor::Cut(EditorCommandSource source) {
   }
 }
 
-void Editor::Copy(EditorCommandSource) {
-  if (!DispatchCopyEvent())
+void Editor::Copy(EditorCommandSource source) {
+  if (!DispatchCopyEvent(source))
     return;
   if (!CanCopy())
     return;
@@ -1200,7 +1224,7 @@ void Editor::Copy(EditorCommandSource) {
 
 void Editor::Paste(EditorCommandSource source) {
   DCHECK(GetFrame().GetDocument());
-  if (!DispatchPasteEvent(kAllMimeTypes))
+  if (!DispatchPasteEvent(kAllMimeTypes, source))
     return;
   if (!CanPaste())
     return;
@@ -1225,10 +1249,10 @@ void Editor::Paste(EditorCommandSource source) {
         DataTransfer::Create(DataTransfer::kCopyAndPaste, kDataTransferReadable,
                              DataObject::CreateFromPasteboard(paste_mode));
 
-    if (DispatchBeforeInputDataTransfer(FindEventTargetFromSelection(),
-                                        InputEvent::InputType::kInsertFromPaste,
-                                        data_transfer) !=
-        DispatchEventResult::kNotCanceled)
+    if (DispatchBeforeInputDataTransfer(
+            FindEventTargetForClipboardEvent(source),
+            InputEvent::InputType::kInsertFromPaste,
+            data_transfer) != DispatchEventResult::kNotCanceled)
       return;
     // 'beforeinput' event handler may destroy target frame.
     if (frame_->GetDocument()->GetFrame() != frame_)
@@ -1236,13 +1260,13 @@ void Editor::Paste(EditorCommandSource source) {
   }
 
   if (paste_mode == kAllMimeTypes)
-    PasteWithPasteboard(Pasteboard::GeneralPasteboard());
+    PasteWithPasteboard(Pasteboard::GeneralPasteboard(), source);
   else
-    PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard());
+    PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard(), source);
 }
 
 void Editor::PasteAsPlainText(EditorCommandSource source) {
-  if (!DispatchPasteEvent(kPlainTextOnly))
+  if (!DispatchPasteEvent(kPlainTextOnly, source))
     return;
   if (!CanPaste())
     return;
@@ -1257,7 +1281,7 @@ void Editor::PasteAsPlainText(EditorCommandSource source) {
       !GetFrameSelection().SelectionHasFocus())
     return;
 
-  PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard());
+  PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard(), source);
 }
 
 void Editor::PerformDelete() {

@@ -87,8 +87,8 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool CanEdit() const;
   bool CanEditRichly() const;
 
-  bool CanDHTMLCut();
-  bool CanDHTMLCopy();
+  bool CanDHTMLCut(EditorCommandSource);
+  bool CanDHTMLCopy(EditorCommandSource);
 
   bool CanCut() const;
   bool CanCopy() const;
@@ -227,11 +227,15 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void AddToKillRing(const EphemeralRange&);
 
-  void PasteAsFragment(DocumentFragment*, bool smart_replace, bool match_style);
-  void PasteAsPlainText(const String&, bool smart_replace);
+  void PasteAsFragment(DocumentFragment*,
+                       bool smart_replace,
+                       bool match_style,
+                       EditorCommandSource);
+  void PasteAsPlainText(const String&, bool smart_replace, EditorCommandSource);
 
   Element* FindEventTargetFrom(const VisibleSelection&) const;
   Element* FindEventTargetFromSelection() const;
+  Element* FindEventTargetForClipboardEvent(EditorCommandSource) const;
 
   bool FindString(const String&, FindOptions);
 
@@ -340,16 +344,17 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool CanDeleteRange(const EphemeralRange&) const;
 
   // Returns true if Editor should continue with default processing.
-  bool DispatchCopyEvent();
-  bool DispatchCutEvent();
-  bool DispatchPasteEvent(PasteMode);
+  bool DispatchCopyEvent(EditorCommandSource);
+  bool DispatchCutEvent(EditorCommandSource);
+  bool DispatchPasteEvent(PasteMode, EditorCommandSource);
   bool DispatchClipboardEvent(const AtomicString&,
                               DataTransferAccessPolicy,
+                              EditorCommandSource,
                               PasteMode = kAllMimeTypes);
 
   bool CanSmartReplaceWithPasteboard(Pasteboard*);
-  void PasteAsPlainTextWithPasteboard(Pasteboard*);
-  void PasteWithPasteboard(Pasteboard*);
+  void PasteAsPlainTextWithPasteboard(Pasteboard*, EditorCommandSource);
+  void PasteWithPasteboard(Pasteboard*, EditorCommandSource);
   void WriteSelectionToPasteboard();
 
   void RevealSelectionAfterEditingOperation(
