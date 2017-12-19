@@ -479,13 +479,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return *style_engine_.Get();
   }
 
-  bool GotoAnchorNeededAfterStylesheetsLoad() {
-    return goto_anchor_needed_after_stylesheets_load_;
-  }
-  void SetGotoAnchorNeededAfterStylesheetsLoad(bool b) {
-    goto_anchor_needed_after_stylesheets_load_ = b;
-  }
-
   void ScheduleUseShadowTreeUpdate(SVGUseElement&);
   void UnscheduleUseShadowTreeUpdate(SVGUseElement&);
 
@@ -1642,7 +1635,6 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentReadyState ready_state_;
   ParsingState parsing_state_;
 
-  bool goto_anchor_needed_after_stylesheets_load_;
   bool is_dns_prefetch_enabled_;
   bool have_explicitly_disabled_dns_prefetch_;
   bool contains_validity_style_rules_;

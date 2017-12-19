@@ -240,6 +240,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_intersection_observation_(false),
       needs_forced_compositing_update_(false),
       scroll_gesture_region_is_dirty_(false),
+      needs_focus_on_fragment_(false),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()) {
@@ -1917,14 +1918,6 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
                                               UrlFragmentBehavior behavior) {
   DCHECK(frame_->GetDocument());
 
-  if (behavior == kUrlFragmentScroll &&
-      !frame_->GetDocument()->IsRenderingReady()) {
-    frame_->GetDocument()->SetGotoAnchorNeededAfterStylesheetsLoad(true);
-    return false;
-  }
-
-  frame_->GetDocument()->SetGotoAnchorNeededAfterStylesheetsLoad(false);
-
   Element* anchor_node = frame_->GetDocument()->FindAnchor(name);
 
   // Setting to null will clear the current target.
@@ -1935,12 +1928,12 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
             ToSVGSVGElementOrNull(frame_->GetDocument()->documentElement())) {
       svg->SetupInitialView(name, anchor_node);
       if (!anchor_node)
-        return true;
+        return false;
     }
     // If this is not the top-level frame, then don't scroll to the
     // anchor position.
     if (!frame_->IsMainFrame())
-      behavior = kUrlFragmentDontScroll;
+      return false;
   }
 
   // Implement the rule that "" and "top" both mean top of page as in other
@@ -1949,44 +1942,31 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
       !(name.IsEmpty() || DeprecatedEqualIgnoringCase(name, "top")))
     return false;
 
-  if (behavior == kUrlFragmentScroll) {
-    SetFragmentAnchor(anchor_node ? static_cast<Node*>(anchor_node)
-                                  : frame_->GetDocument());
+  if (behavior == kUrlFragmentDontScroll)
+    return true;
+
+  if (!anchor_node) {
+    fragment_anchor_ = frame_->GetDocument();
+    needs_focus_on_fragment_ = false;
+  } else {
+    fragment_anchor_ = anchor_node;
+    needs_focus_on_fragment_ = true;
   }
 
-  // If the anchor accepts keyboard focus and fragment scrolling is allowed,
-  // move focus there to aid users relying on keyboard navigation.
-  // If anchorNode is not focusable or fragment scrolling is not allowed,
-  // clear focus, which matches the behavior of other browsers.
-  if (anchor_node) {
-    frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-    if (behavior == kUrlFragmentScroll && anchor_node->IsFocusable()) {
-      anchor_node->focus();
-    } else {
-      if (behavior == kUrlFragmentScroll) {
-        frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
-            anchor_node);
-      }
-      frame_->GetDocument()->ClearFocusedElement();
-    }
+  // If rendering is blocked, we'll necessarily have a layout to kick off the
+  // scroll and focus.
+  if (frame_->GetDocument()->IsRenderingReady()) {
+    frame_->GetDocument()->UpdateStyleAndLayoutTree();
+
+    // If layout is needed, we will scroll in performPostLayoutTasks. Otherwise,
+    // scroll and focus immediately.
+    if (NeedsLayout())
+      UpdateLayout();
+    else
+      ScrollAndFocusFragmentAnchor();
   }
+
   return true;
-}
-
-void LocalFrameView::SetFragmentAnchor(Node* anchor_node) {
-  DCHECK(anchor_node);
-  fragment_anchor_ = anchor_node;
-
-  // We need to update the layout tree before scrolling.
-  frame_->GetDocument()->UpdateStyleAndLayoutTree();
-
-  // If layout is needed, we will scroll in performPostLayoutTasks. Otherwise,
-  // scroll immediately.
-  LayoutViewItem layout_view_item = this->GetLayoutViewItem();
-  if (!layout_view_item.IsNull() && layout_view_item.NeedsLayout())
-    UpdateLayout();
-  else
-    ScrollToFragmentAnchor();
 }
 
 void LocalFrameView::ClearFragmentAnchor() {
@@ -2463,7 +2443,7 @@ void LocalFrameView::UpdateBaseBackgroundColorRecursively(
       });
 }
 
-void LocalFrameView::ScrollToFragmentAnchor() {
+void LocalFrameView::ScrollAndFocusFragmentAnchor() {
   Node* anchor_node = fragment_anchor_;
   if (!anchor_node)
     return;
@@ -2506,6 +2486,22 @@ void LocalFrameView::ScrollToFragmentAnchor() {
 
     if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())
       cache->HandleScrolledToAnchor(anchor_node);
+
+    // If the anchor accepts keyboard focus and fragment scrolling is allowed,
+    // move focus there to aid users relying on keyboard navigation.
+    // If anchorNode is not focusable or fragment scrolling is not allowed,
+    // clear focus, which matches the behavior of other browsers.
+    if (needs_focus_on_fragment_) {
+      if (anchor_node->IsElementNode() &&
+          ToElement(anchor_node)->IsFocusable()) {
+        ToElement(anchor_node)->focus();
+      } else {
+        frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
+            anchor_node);
+        frame_->GetDocument()->ClearFocusedElement();
+      }
+      needs_focus_on_fragment_ = false;
+    }
   }
 
   // The fragment anchor should only be maintained while the frame is still
@@ -2632,7 +2628,7 @@ void LocalFrameView::PerformPostLayoutTasks() {
 
   // If we're restoring a scroll position from history, that takes precedence
   // over scrolling to the anchor in the URL.
-  ScrollToFragmentAnchor();
+  ScrollAndFocusFragmentAnchor();
   GetFrame().Loader().RestoreScrollPositionAndViewState();
   SendResizeEventIfNeeded();
 }
