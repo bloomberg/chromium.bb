@@ -260,6 +260,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // mtklein's fiddling with Src / SrcOver.  Will rebaseline these only once when done.
 #define SK_SUPPORT_LEGACY_X86_BLITS
 
+#define GR_TESSELLATOR_LEGACY_INVERSION_HANDLING
+
 // ===== End Chrome-specific definitions =====
 
 #endif
