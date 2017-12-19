@@ -157,6 +157,7 @@ bool VariationsSeedStore::StoreSeedData(
     const base::Time& date_fetched,
     bool is_delta_compressed,
     bool is_gzip_compressed,
+    bool fetched_insecurely,
     VariationsSeed* parsed_seed) {
   UMA_HISTOGRAM_BOOLEAN("Variations.StoreSeed.HasCountry",
                         !country_code.empty());
@@ -184,9 +185,9 @@ bool VariationsSeedStore::StoreSeedData(
   }
 
   if (!is_delta_compressed) {
-    const bool result =
-        StoreSeedDataNoDelta(ungzipped_data, base64_seed_signature,
-                             country_code, date_fetched, parsed_seed);
+    const bool result = StoreSeedDataNoDelta(
+        ungzipped_data, base64_seed_signature, country_code, date_fetched,
+        fetched_insecurely, parsed_seed);
     if (result) {
       UMA_HISTOGRAM_COUNTS_1000("Variations.StoreSeed.Size",
                                 ungzipped_data.length() / 1024);
@@ -210,9 +211,9 @@ bool VariationsSeedStore::StoreSeedData(
     return false;
   }
 
-  const bool result =
-      StoreSeedDataNoDelta(updated_seed_data, base64_seed_signature,
-                           country_code, date_fetched, parsed_seed);
+  const bool result = StoreSeedDataNoDelta(
+      updated_seed_data, base64_seed_signature, country_code, date_fetched,
+      fetched_insecurely, parsed_seed);
   if (result) {
     // Note: |updated_seed_data.length()| is guaranteed to be non-zero, else
     // result would be false.
@@ -300,7 +301,7 @@ void VariationsSeedStore::ImportFirstRunJavaSeed() {
   }
 
   if (!StoreSeedData(seed_data, seed_signature, seed_country, current_date,
-                     false, is_gzip_compressed, nullptr)) {
+                     false, is_gzip_compressed, false, nullptr)) {
     RecordFirstRunSeedImportResult(FirstRunSeedImportResult::FAIL_STORE_FAILED);
     LOG(WARNING) << "First run variations seed is invalid.";
     return;
@@ -335,6 +336,7 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
     const std::string& base64_seed_signature,
     const std::string& country_code,
     const base::Time& date_fetched,
+    bool fetched_insecurely,
     VariationsSeed* parsed_seed) {
   if (seed_data.empty()) {
     RecordStoreSeedResult(StoreSeedResult::FAILED_EMPTY_GZIP_CONTENTS);
@@ -348,7 +350,7 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
     return false;
   }
 
-  if (SignatureVerificationEnabled()) {
+  if (SignatureVerificationEnabled() || fetched_insecurely) {
     const VerifySignatureResult result =
         VerifySeedSignature(seed_data, base64_seed_signature);
     UMA_HISTOGRAM_ENUMERATION("Variations.StoreSeedSignature", result,

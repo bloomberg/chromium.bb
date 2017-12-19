@@ -189,7 +189,8 @@ class VariationsService
                          const std::string& country_code,
                          base::Time date_fetched,
                          bool is_delta_compressed,
-                         bool is_gzip_compressed);
+                         bool is_gzip_compressed,
+                         bool fetched_insecurely);
 
   // Create an entropy provider based on low entropy. This is used to create
   // trials for studies that should only depend on low entropy, such as studies
@@ -229,6 +230,9 @@ class VariationsService
                            SafeMode_SuccessfulFetchClearsFailureStreaks);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            SafeMode_NotModifiedFetchClearsFailureStreaks);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, InsecurelyFetchedSetWhenHTTP);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
+                           InsecurelyFetchedNotSetWhenHTTPS);
 
   // Set of different possible values to report for the
   // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must

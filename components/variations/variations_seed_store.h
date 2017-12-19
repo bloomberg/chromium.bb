@@ -50,6 +50,7 @@ class VariationsSeedStore {
                      const base::Time& date_fetched,
                      bool is_delta_compressed,
                      bool is_gzip_compressed,
+                     bool fetched_insecurely,
                      VariationsSeed* parsed_seed) WARN_UNUSED_RESULT;
 
   // Updates |kVariationsSeedDate| and logs when previous date was from a
@@ -100,6 +101,7 @@ class VariationsSeedStore {
                             const std::string& base64_seed_signature,
                             const std::string& country_code,
                             const base::Time& date_fetched,
+                            bool fetched_insecurely,
                             VariationsSeed* parsed_seed) WARN_UNUSED_RESULT;
 
   // Applies a delta-compressed |patch| to |existing_data|, producing the result
