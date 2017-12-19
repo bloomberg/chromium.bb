@@ -153,6 +153,10 @@ void LoginShelfView::UpdateAfterSessionStateChange(SessionState state) {
   UpdateUi();
 }
 
+const char* LoginShelfView::GetClassName() const {
+  return "LoginShelfView";
+}
+
 void LoginShelfView::OnFocus() {
   LOG(WARNING) << "LoginShelfView was focused, but this should never happen. "
                   "Forwarded focus to shelf widget with an unknown direction.";

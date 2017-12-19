@@ -52,6 +52,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void UpdateAfterSessionStateChange(session_manager::SessionState state);
 
   // views::View:
+  const char* GetClassName() const override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
