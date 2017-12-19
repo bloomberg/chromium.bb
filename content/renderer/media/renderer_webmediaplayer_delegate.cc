@@ -49,6 +49,9 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
   // consider all pre-KitKat devices to be potentially buggy.
   is_jelly_bean_ |= base::android::BuildInfo::GetInstance()->sdk_int() <= 18;
 #endif
+
+  idle_cleanup_timer_.SetTaskRunner(
+      render_frame->GetTaskRunner(blink::TaskType::kUnthrottled));
 }
 
 RendererWebMediaPlayerDelegate::~RendererWebMediaPlayerDelegate() {}
