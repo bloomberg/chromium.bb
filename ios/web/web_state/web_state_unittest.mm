@@ -141,6 +141,28 @@ TEST_F(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
   ASSERT_FALSE(navigation_manager->GetLastCommittedItem());
 }
 
+// Tests that taking a snapshot after disabling web usage or adding an overlay
+// will force the creation of the WebState's view.
+TEST_F(WebStateTest, CanTakeSnapshot) {
+  // The test fixture forces the creation of the view, so it is initially
+  // possible to take a snapshot.
+  ASSERT_TRUE(web_state()->CanTakeSnapshot());
+
+  // Taking snapshot after disabling web usage will cause a reload.
+  web_state()->SetWebUsageEnabled(false);
+  EXPECT_FALSE(web_state()->CanTakeSnapshot());
+
+  // Even after re-enabling web usage, taking a snapshot will create the
+  // WebState's view as it is lazily created.
+  web_state()->SetWebUsageEnabled(true);
+  EXPECT_FALSE(web_state()->CanTakeSnapshot());
+
+  // After re-creating the view, it is possible to take a snapshot without
+  // reloading.
+  web_state()->GetView();
+  EXPECT_TRUE(web_state()->CanTakeSnapshot());
+}
+
 // Tests that the snapshot method returns an image of a rendered html page.
 TEST_F(WebStateTest, Snapshot) {
   LoadHtml(
