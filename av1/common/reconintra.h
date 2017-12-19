@@ -42,14 +42,7 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
 };
 
 #if CONFIG_FILTER_INTRA
-#define FILTER_INTRA_PROC_UNIT_SIZE 42  // ij means a i(cols)xj(rows) unit
-#if FILTER_INTRA_PROC_UNIT_SIZE == 44
-#define FILTER_INTRA_SCALE_BITS 5
-#elif FILTER_INTRA_PROC_UNIT_SIZE == 42
 #define FILTER_INTRA_SCALE_BITS 4
-#else
-#define FILTER_INTRA_SCALE_BITS 3
-#endif
 #endif  // CONFIG_FILTER_INTRA
 
 #define CONFIG_INTRA_EDGE_UPSAMPLE CONFIG_INTRA_EDGE

@@ -3546,8 +3546,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
 #if CONFIG_FILTER_INTRA
-  if (beat_best_rd && av1_filter_intra_allowed_bsize(bsize) &&
-      !xd->lossless[mbmi->segment_id]) {
+  if (beat_best_rd && !xd->lossless[mbmi->segment_id]) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
                                  &best_rd, &best_model_rd)) {
@@ -9818,8 +9817,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       skippable = rd_stats_y.skip;
 
 #if CONFIG_FILTER_INTRA
-      if (mbmi->mode == DC_PRED && !xd->lossless[mbmi->segment_id] &&
-          av1_filter_intra_allowed_bsize(mbmi->sb_type)) {
+      if (mbmi->mode == DC_PRED && !xd->lossless[mbmi->segment_id]) {
         RD_STATS rd_stats_y_fi;
         int filter_intra_selected_flag = 0;
         TX_SIZE best_tx_size = mbmi->tx_size;

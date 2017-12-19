@@ -1207,40 +1207,6 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_FILTER_INTRA
-#if FILTER_INTRA_PROC_UNIT_SIZE == 22
-static int filter_intra_taps_2x2procunit[FILTER_INTRA_MODES][4][5] = {
-  {
-      { -3, 5, 0, 6, 0 },
-      { -2, 1, 5, 4, 0 },
-      { -2, 3, 0, 1, 6 },
-      { -2, 1, 3, 1, 5 },
-  },
-  {
-      { -5, 8, 0, 5, 0 },
-      { -3, 0, 8, 3, 0 },
-      { -5, 8, 0, 0, 5 },
-      { -3, 0, 8, 0, 3 },
-  },
-  {
-      { -4, 4, 0, 8, 0 },
-      { -4, 0, 4, 8, 0 },
-      { -2, 2, 0, 0, 8 },
-      { -2, 0, 2, 0, 8 },
-  },
-  {
-      { -1, 4, 0, 5, 0 },
-      { -1, 2, 4, 3, 0 },
-      { -1, 2, 0, 2, 5 },
-      { -1, 2, 2, 2, 3 },
-  },
-  {
-      { -6, 7, 0, 7, 0 },
-      { -5, 0, 7, 6, 0 },
-      { -5, 6, 0, 0, 7 },
-      { -4, 0, 6, 0, 6 },
-  },
-};
-#elif FILTER_INTRA_PROC_UNIT_SIZE == 42
 static int filter_intra_taps_4x2procunit[FILTER_INTRA_MODES][8][7] = {
   {
       { -6, 10, 0, 0, 0, 12, 0 },
@@ -1293,292 +1259,10 @@ static int filter_intra_taps_4x2procunit[FILTER_INTRA_MODES][8][7] = {
       { -7, 0, 0, 1, 12, 1, 9 },
   },
 };
-#elif FILTER_INTRA_PROC_UNIT_SIZE == 44
-static int filter_intra_taps_4x4procunit[FILTER_INTRA_MODES][16][9] = {
-#if FILTER_INTRA_SCALE_BITS == 5
-  {
-      { -12, 20, 0, 0, 0, 24, 0, 0, 0 },
-      { -9, 3, 20, 0, 0, 18, 0, 0, 0 },
-      { -7, 2, 3, 20, 0, 14, 0, 0, 0 },
-      { -5, 2, 2, 3, 20, 10, 0, 0, 0 },
-      { -8, 13, 0, 0, 0, 3, 24, 0, 0 },
-      { -7, 4, 12, 0, 0, 5, 18, 0, 0 },
-      { -6, 3, 4, 12, 0, 5, 14, 0, 0 },
-      { -5, 3, 3, 4, 12, 5, 10, 0, 0 },
-      { -5, 8, 0, 0, 0, 2, 3, 24, 0 },
-      { -5, 4, 8, 0, 0, 3, 4, 18, 0 },
-      { -5, 3, 4, 8, 0, 4, 5, 13, 0 },
-      { -5, 3, 3, 4, 8, 4, 5, 10, 0 },
-      { -3, 5, 0, 0, 0, 1, 2, 3, 24 },
-      { -4, 3, 5, 0, 0, 2, 3, 5, 18 },
-      { -4, 3, 3, 5, 0, 3, 4, 5, 13 },
-      { -4, 3, 3, 3, 5, 3, 4, 5, 10 },
-  },
-  {
-      { -20, 32, 0, 0, 0, 20, 0, 0, 0 },
-      { -13, 0, 32, 0, 0, 13, 0, 0, 0 },
-      { -8, 0, 0, 32, 0, 8, 0, 0, 0 },
-      { -5, 0, 0, 0, 32, 5, 0, 0, 0 },
-      { -20, 32, 0, 0, 0, 0, 20, 0, 0 },
-      { -13, 0, 32, 0, 0, 0, 13, 0, 0 },
-      { -8, 0, 0, 32, 0, 0, 8, 0, 0 },
-      { -5, 0, 0, 0, 32, 0, 5, 0, 0 },
-      { -20, 32, 0, 0, 0, 0, 0, 20, 0 },
-      { -13, 0, 32, 0, 0, 0, 0, 13, 0 },
-      { -8, 0, 0, 32, 0, 0, 0, 8, 0 },
-      { -5, 0, 0, 0, 32, 0, 0, 5, 0 },
-      { -20, 32, 0, 0, 0, 0, 0, 0, 20 },
-      { -13, 0, 32, 0, 0, 0, 0, 0, 13 },
-      { -8, 0, 0, 32, 0, 0, 0, 0, 8 },
-      { -5, 0, 0, 0, 32, 0, 0, 0, 5 },
-  },
-  {
-      { -16, 16, 0, 0, 0, 32, 0, 0, 0 },
-      { -16, 0, 16, 0, 0, 32, 0, 0, 0 },
-      { -16, 0, 0, 16, 0, 32, 0, 0, 0 },
-      { -16, 0, 0, 0, 16, 32, 0, 0, 0 },
-      { -8, 8, 0, 0, 0, 0, 32, 0, 0 },
-      { -8, 0, 8, 0, 0, 0, 32, 0, 0 },
-      { -8, 0, 0, 8, 0, 0, 32, 0, 0 },
-      { -8, 0, 0, 0, 8, 0, 32, 0, 0 },
-      { -4, 4, 0, 0, 0, 0, 0, 32, 0 },
-      { -4, 0, 4, 0, 0, 0, 0, 32, 0 },
-      { -4, 0, 0, 4, 0, 0, 0, 32, 0 },
-      { -4, 0, 0, 0, 4, 0, 0, 32, 0 },
-      { -2, 2, 0, 0, 0, 0, 0, 0, 32 },
-      { -2, 0, 2, 0, 0, 0, 0, 0, 32 },
-      { -2, 0, 0, 2, 0, 0, 0, 0, 32 },
-      { -2, 0, 0, 0, 2, 0, 0, 0, 32 },
-  },
-  {
-      { -4, 16, 0, 0, 0, 20, 0, 0, 0 },
-      { -3, 6, 16, 0, 0, 13, 0, 0, 0 },
-      { -2, 4, 6, 16, 0, 8, 0, 0, 0 },
-      { -1, 2, 4, 6, 16, 5, 0, 0, 0 },
-      { -2, 8, 0, 0, 0, 6, 20, 0, 0 },
-      { -2, 6, 8, 0, 0, 7, 13, 0, 0 },
-      { -2, 5, 6, 8, 0, 7, 8, 0, 0 },
-      { -2, 4, 5, 6, 8, 6, 5, 0, 0 },
-      { -1, 4, 0, 0, 0, 3, 6, 20, 0 },
-      { -1, 4, 4, 0, 0, 5, 8, 12, 0 },
-      { -1, 4, 4, 4, 0, 6, 7, 8, 0 },
-      { -1, 4, 4, 4, 4, 6, 6, 5, 0 },
-      { -1, 2, 0, 0, 0, 2, 3, 6, 20 },
-      { -1, 3, 2, 0, 0, 3, 5, 7, 13 },
-      { -1, 3, 3, 2, 0, 4, 6, 7, 8 },
-      { -1, 4, 3, 3, 2, 5, 5, 6, 5 },
-  },
-  {
-      { -24, 28, 0, 0, 0, 28, 0, 0, 0 },
-      { -21, 1, 28, 0, 0, 24, 0, 0, 0 },
-      { -18, 0, 1, 28, 0, 21, 0, 0, 0 },
-      { -16, 0, 0, 1, 28, 19, 0, 0, 0 },
-      { -21, 24, 0, 0, 0, 1, 28, 0, 0 },
-      { -19, 1, 24, 0, 0, 1, 25, 0, 0 },
-      { -17, 1, 1, 25, 0, 1, 21, 0, 0 },
-      { -15, 1, 1, 1, 24, 1, 19, 0, 0 },
-      { -18, 21, 0, 0, 0, 0, 1, 28, 0 },
-      { -17, 1, 21, 0, 0, 1, 1, 25, 0 },
-      { -15, 1, 1, 22, 0, 1, 1, 21, 0 },
-      { -14, 1, 1, 1, 22, 1, 1, 19, 0 },
-      { -16, 19, 0, 0, 0, 0, 0, 1, 28 },
-      { -15, 1, 19, 0, 0, 1, 1, 1, 24 },
-      { -14, 1, 1, 19, 0, 1, 1, 1, 22 },
-      { -13, 1, 1, 2, 19, 1, 1, 1, 19 },
-  },
-#elif FILTER_INTRA_SCALE_BITS == 4
-  {
-      { -6, 10, 0, 0, 0, 12, 0, 0, 0 },
-      { -5, 2, 10, 0, 0, 9, 0, 0, 0 },
-      { -3, 1, 1, 10, 0, 7, 0, 0, 0 },
-      { -3, 1, 1, 2, 10, 5, 0, 0, 0 },
-      { -4, 6, 0, 0, 0, 2, 12, 0, 0 },
-      { -3, 2, 6, 0, 0, 2, 9, 0, 0 },
-      { -3, 2, 2, 6, 0, 2, 7, 0, 0 },
-      { -3, 1, 2, 2, 6, 3, 5, 0, 0 },
-      { -2, 4, 0, 0, 0, 1, 1, 12, 0 },
-      { -3, 2, 4, 0, 0, 2, 2, 9, 0 },
-      { -3, 2, 2, 4, 0, 2, 2, 7, 0 },
-      { -2, 1, 2, 2, 4, 2, 2, 5, 0 },
-      { -1, 2, 0, 0, 0, 1, 1, 1, 12 },
-      { -2, 2, 2, 0, 0, 1, 2, 2, 9 },
-      { -2, 1, 2, 2, 0, 1, 2, 3, 7 },
-      { -2, 1, 1, 2, 2, 2, 2, 3, 5 },
-  },
-  {
-      { -10, 16, 0, 0, 0, 10, 0, 0, 0 },
-      { -6, 0, 16, 0, 0, 6, 0, 0, 0 },
-      { -4, 0, 0, 16, 0, 4, 0, 0, 0 },
-      { -2, 0, 0, 0, 16, 2, 0, 0, 0 },
-      { -10, 16, 0, 0, 0, 0, 10, 0, 0 },
-      { -6, 0, 16, 0, 0, 0, 6, 0, 0 },
-      { -4, 0, 0, 16, 0, 0, 4, 0, 0 },
-      { -2, 0, 0, 0, 16, 0, 2, 0, 0 },
-      { -10, 16, 0, 0, 0, 0, 0, 10, 0 },
-      { -6, 0, 16, 0, 0, 0, 0, 6, 0 },
-      { -4, 0, 0, 16, 0, 0, 0, 4, 0 },
-      { -2, 0, 0, 0, 16, 0, 0, 2, 0 },
-      { -10, 16, 0, 0, 0, 0, 0, 0, 10 },
-      { -6, 0, 16, 0, 0, 0, 0, 0, 6 },
-      { -4, 0, 0, 16, 0, 0, 0, 0, 4 },
-      { -2, 0, 0, 0, 16, 0, 0, 0, 2 },
-  },
-  {
-      { -8, 8, 0, 0, 0, 16, 0, 0, 0 },
-      { -8, 0, 8, 0, 0, 16, 0, 0, 0 },
-      { -8, 0, 0, 8, 0, 16, 0, 0, 0 },
-      { -8, 0, 0, 0, 8, 16, 0, 0, 0 },
-      { -4, 4, 0, 0, 0, 0, 16, 0, 0 },
-      { -4, 0, 4, 0, 0, 0, 16, 0, 0 },
-      { -4, 0, 0, 4, 0, 0, 16, 0, 0 },
-      { -4, 0, 0, 0, 4, 0, 16, 0, 0 },
-      { -2, 2, 0, 0, 0, 0, 0, 16, 0 },
-      { -2, 0, 2, 0, 0, 0, 0, 16, 0 },
-      { -2, 0, 0, 2, 0, 0, 0, 16, 0 },
-      { -2, 0, 0, 0, 2, 0, 0, 16, 0 },
-      { -1, 1, 0, 0, 0, 0, 0, 0, 16 },
-      { -1, 0, 1, 0, 0, 0, 0, 0, 16 },
-      { -1, 0, 0, 1, 0, 0, 0, 0, 16 },
-      { -1, 0, 0, 0, 1, 0, 0, 0, 16 },
-  },
-  {
-      { -2, 8, 0, 0, 0, 10, 0, 0, 0 },
-      { -1, 3, 8, 0, 0, 6, 0, 0, 0 },
-      { -1, 2, 3, 8, 0, 4, 0, 0, 0 },
-      { 0, 1, 2, 3, 8, 2, 0, 0, 0 },
-      { -1, 4, 0, 0, 0, 3, 10, 0, 0 },
-      { -1, 3, 4, 0, 0, 4, 6, 0, 0 },
-      { -1, 2, 3, 4, 0, 4, 4, 0, 0 },
-      { -1, 2, 2, 3, 4, 3, 3, 0, 0 },
-      { -1, 2, 0, 0, 0, 2, 3, 10, 0 },
-      { -1, 2, 2, 0, 0, 3, 4, 6, 0 },
-      { -1, 2, 2, 2, 0, 3, 4, 4, 0 },
-      { -1, 2, 2, 2, 2, 3, 3, 3, 0 },
-      { 0, 1, 0, 0, 0, 1, 1, 3, 10 },
-      { 0, 1, 1, 0, 0, 2, 2, 4, 6 },
-      { -1, 2, 1, 1, 0, 2, 3, 4, 4 },
-      { -1, 2, 2, 2, 1, 2, 3, 3, 2 },
-  },
-  {
-      { -12, 14, 0, 0, 0, 14, 0, 0, 0 },
-      { -10, 0, 14, 0, 0, 12, 0, 0, 0 },
-      { -9, 0, 0, 14, 0, 11, 0, 0, 0 },
-      { -8, 0, 0, 0, 14, 10, 0, 0, 0 },
-      { -10, 12, 0, 0, 0, 0, 14, 0, 0 },
-      { -9, 1, 12, 0, 0, 0, 12, 0, 0 },
-      { -8, 0, 0, 12, 0, 1, 11, 0, 0 },
-      { -7, 0, 0, 1, 12, 1, 9, 0, 0 },
-      { -9, 11, 0, 0, 0, 0, 0, 14, 0 },
-      { -8, 1, 11, 0, 0, 0, 0, 12, 0 },
-      { -8, 0, 1, 11, 0, 0, 1, 11, 0 },
-      { -7, 0, 0, 1, 11, 1, 1, 9, 0 },
-      { -8, 10, 0, 0, 0, 0, 0, 0, 14 },
-      { -7, 1, 9, 0, 0, 0, 0, 1, 12 },
-      { -7, 1, 1, 9, 0, 0, 0, 1, 11 },
-      { -6, 0, 1, 1, 9, 0, 1, 1, 9 },
-  },
-#else
-  {
-      { -3, 5, 0, 0, 0, 6, 0, 0, 0 },
-      { -2, 1, 5, 0, 0, 4, 0, 0, 0 },
-      { -2, 1, 1, 5, 0, 3, 0, 0, 0 },
-      { -1, 0, 1, 1, 5, 2, 0, 0, 0 },
-      { -2, 3, 0, 0, 0, 1, 6, 0, 0 },
-      { -2, 1, 3, 0, 0, 1, 5, 0, 0 },
-      { -1, 1, 1, 3, 0, 1, 3, 0, 0 },
-      { -1, 1, 1, 1, 3, 1, 2, 0, 0 },
-      { -1, 2, 0, 0, 0, 0, 1, 6, 0 },
-      { -1, 1, 2, 0, 0, 1, 1, 4, 0 },
-      { -1, 1, 1, 2, 0, 1, 1, 3, 0 },
-      { -1, 1, 1, 1, 2, 1, 1, 2, 0 },
-      { -1, 1, 0, 0, 0, 0, 1, 1, 6 },
-      { -1, 1, 1, 0, 0, 1, 1, 1, 4 },
-      { -1, 1, 1, 1, 0, 1, 1, 1, 3 },
-      { -1, 1, 1, 1, 1, 1, 1, 1, 2 },
-  },
-  {
-      { -5, 8, 0, 0, 0, 5, 0, 0, 0 },
-      { -3, 0, 8, 0, 0, 3, 0, 0, 0 },
-      { -2, 0, 0, 8, 0, 2, 0, 0, 0 },
-      { -1, 0, 0, 0, 8, 1, 0, 0, 0 },
-      { -5, 8, 0, 0, 0, 0, 5, 0, 0 },
-      { -3, 0, 8, 0, 0, 0, 3, 0, 0 },
-      { -2, 0, 0, 8, 0, 0, 2, 0, 0 },
-      { -1, 0, 0, 0, 8, 0, 1, 0, 0 },
-      { -5, 8, 0, 0, 0, 0, 0, 5, 0 },
-      { -3, 0, 8, 0, 0, 0, 0, 3, 0 },
-      { -2, 0, 0, 8, 0, 0, 0, 2, 0 },
-      { -1, 0, 0, 0, 8, 0, 0, 1, 0 },
-      { -5, 8, 0, 0, 0, 0, 0, 0, 5 },
-      { -3, 0, 8, 0, 0, 0, 0, 0, 3 },
-      { -2, 0, 0, 8, 0, 0, 0, 0, 2 },
-      { -1, 0, 0, 0, 8, 0, 0, 0, 1 },
-  },
-  {
-      { -4, 4, 0, 0, 0, 8, 0, 0, 0 },
-      { -4, 0, 4, 0, 0, 8, 0, 0, 0 },
-      { -4, 0, 0, 4, 0, 8, 0, 0, 0 },
-      { -4, 0, 0, 0, 4, 8, 0, 0, 0 },
-      { -2, 2, 0, 0, 0, 0, 8, 0, 0 },
-      { -2, 0, 2, 0, 0, 0, 8, 0, 0 },
-      { -2, 0, 0, 2, 0, 0, 8, 0, 0 },
-      { -2, 0, 0, 0, 2, 0, 8, 0, 0 },
-      { -1, 1, 0, 0, 0, 0, 0, 8, 0 },
-      { -1, 0, 1, 0, 0, 0, 0, 8, 0 },
-      { -1, 0, 0, 1, 0, 0, 0, 8, 0 },
-      { -1, 0, 0, 0, 1, 0, 0, 8, 0 },
-      { -1, 1, 0, 0, 0, 0, 0, 0, 8 },
-      { -1, 0, 1, 0, 0, 0, 0, 0, 8 },
-      { -1, 0, 0, 1, 0, 0, 0, 0, 8 },
-      { -1, 0, 0, 0, 1, 0, 0, 0, 8 },
-  },
-  {
-      { -1, 4, 0, 0, 0, 5, 0, 0, 0 },
-      { -1, 2, 4, 0, 0, 3, 0, 0, 0 },
-      { 0, 1, 1, 4, 0, 2, 0, 0, 0 },
-      { 0, 1, 1, 1, 4, 1, 0, 0, 0 },
-      { -1, 2, 0, 0, 0, 2, 5, 0, 0 },
-      { -1, 2, 2, 0, 0, 2, 3, 0, 0 },
-      { 0, 1, 1, 2, 0, 2, 2, 0, 0 },
-      { 0, 1, 1, 2, 2, 1, 1, 0, 0 },
-      { 0, 1, 0, 0, 0, 1, 1, 5, 0 },
-      { 0, 1, 1, 0, 0, 1, 2, 3, 0 },
-      { 0, 1, 1, 1, 0, 1, 2, 2, 0 },
-      { 0, 1, 1, 1, 1, 1, 2, 1, 0 },
-      { 0, 0, 0, 0, 0, 0, 1, 2, 5 },
-      { 0, 1, 0, 0, 0, 1, 1, 2, 3 },
-      { 0, 1, 1, 0, 0, 1, 1, 2, 2 },
-      { 0, 1, 1, 1, 1, 1, 1, 1, 1 },
-  },
-  {
-      { -6, 7, 0, 0, 0, 7, 0, 0, 0 },
-      { -5, 0, 7, 0, 0, 6, 0, 0, 0 },
-      { -4, 0, 0, 7, 0, 5, 0, 0, 0 },
-      { -4, 0, 0, 0, 7, 5, 0, 0, 0 },
-      { -5, 6, 0, 0, 0, 0, 7, 0, 0 },
-      { -4, 0, 6, 0, 0, 0, 6, 0, 0 },
-      { -4, 0, 0, 6, 0, 0, 6, 0, 0 },
-      { -4, 0, 0, 0, 6, 1, 5, 0, 0 },
-      { -4, 5, 0, 0, 0, 0, 0, 7, 0 },
-      { -4, 0, 6, 0, 0, 0, 0, 6, 0 },
-      { -4, 0, 0, 6, 0, 0, 0, 6, 0 },
-      { -3, 0, 0, 0, 6, 0, 0, 5, 0 },
-      { -4, 5, 0, 0, 0, 0, 0, 0, 7 },
-      { -4, 1, 5, 0, 0, 0, 0, 0, 6 },
-      { -3, 0, 0, 5, 0, 0, 0, 0, 6 },
-      { -3, 0, 0, 1, 5, 0, 0, 0, 5 },
-  },
-#endif
-};
-#else
-static int filter_intra_taps_3[FILTER_INTRA_MODES][3] = {
-  { 5, 6, -3 }, { 8, 5, -5 }, { 4, 8, -4 }, { 4, 5, -1 }, { 7, 7, -6 },
-};
-#endif
 
-static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride,
-                                         TX_SIZE tx_size, const uint8_t *above,
-                                         const uint8_t *left, int mode) {
+static void filter_intra_predictor(uint8_t *dst, ptrdiff_t stride,
+                                   TX_SIZE tx_size, const uint8_t *above,
+                                   const uint8_t *left, int mode) {
   int r, c;
   int buffer[33][33];
   const int bw = tx_size_wide[tx_size];
@@ -1590,29 +1274,6 @@ static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride,
 
   for (c = 0; c < bw + 1; ++c) buffer[0][c] = (int)above[c - 1];
 
-#if FILTER_INTRA_PROC_UNIT_SIZE == 22
-  for (r = 1; r < bh + 1; r += 2)
-    for (c = 1; c < bw + 1; c += 2) {
-      const int p0 = buffer[r - 1][c - 1];
-      const int p1 = buffer[r - 1][c];
-      const int p2 = buffer[r - 1][c + 1];
-      const int p3 = buffer[r][c - 1];
-      const int p4 = buffer[r + 1][c - 1];
-      for (int k = 0; k < 4; ++k) {
-        int r_offset = k >> 1;
-        int c_offset = k & 0x01;
-        buffer[r + r_offset][c + c_offset] =
-            filter_intra_taps_2x2procunit[mode][k][0] * p0 +
-            filter_intra_taps_2x2procunit[mode][k][1] * p1 +
-            filter_intra_taps_2x2procunit[mode][k][2] * p2 +
-            filter_intra_taps_2x2procunit[mode][k][3] * p3 +
-            filter_intra_taps_2x2procunit[mode][k][4] * p4;
-        buffer[r + r_offset][c + c_offset] =
-            clip_pixel(ROUND_POWER_OF_TWO_SIGNED(
-                buffer[r + r_offset][c + c_offset], FILTER_INTRA_SCALE_BITS));
-      }
-    }
-#elif FILTER_INTRA_PROC_UNIT_SIZE == 42
   for (r = 1; r < bh + 1; r += 2)
     for (c = 1; c < bw + 1; c += 4) {
       const int p0 = buffer[r - 1][c - 1];
@@ -1638,49 +1299,7 @@ static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride,
                 buffer[r + r_offset][c + c_offset], FILTER_INTRA_SCALE_BITS));
       }
     }
-#elif FILTER_INTRA_PROC_UNIT_SIZE == 44
-  for (r = 1; r < bh + 1; r += 4)
-    for (c = 1; c < bw + 1; c += 4) {
-      const int p0 = buffer[r - 1][c - 1];
-      const int p1 = buffer[r - 1][c];
-      const int p2 = buffer[r - 1][c + 1];
-      const int p3 = buffer[r - 1][c + 2];
-      const int p4 = buffer[r - 1][c + 3];
-      const int p5 = buffer[r][c - 1];
-      const int p6 = buffer[r + 1][c - 1];
-      const int p7 = buffer[r + 2][c - 1];
-      const int p8 = buffer[r + 3][c - 1];
-      for (int k = 0; k < 16; ++k) {
-        int r_offset = k >> 2;
-        int c_offset = k & 0x03;
-        buffer[r + r_offset][c + c_offset] =
-            filter_intra_taps_4x4procunit[mode][k][0] * p0 +
-            filter_intra_taps_4x4procunit[mode][k][1] * p1 +
-            filter_intra_taps_4x4procunit[mode][k][2] * p2 +
-            filter_intra_taps_4x4procunit[mode][k][3] * p3 +
-            filter_intra_taps_4x4procunit[mode][k][4] * p4 +
-            filter_intra_taps_4x4procunit[mode][k][5] * p5 +
-            filter_intra_taps_4x4procunit[mode][k][6] * p6 +
-            filter_intra_taps_4x4procunit[mode][k][7] * p7 +
-            filter_intra_taps_4x4procunit[mode][k][8] * p8;
-        buffer[r + r_offset][c + c_offset] =
-            clip_pixel(ROUND_POWER_OF_TWO_SIGNED(
-                buffer[r + r_offset][c + c_offset], FILTER_INTRA_SCALE_BITS));
-      }
-    }
-#else
-  int ipred;
-  const int c0 = filter_intra_taps_3[mode][0];
-  const int c1 = filter_intra_taps_3[mode][1];
-  const int c2 = filter_intra_taps_3[mode][2];
-  for (r = 1; r < bh + 1; ++r)
-    for (c = 1; c < bw + 1; ++c) {
-      ipred = c0 * buffer[r - 1][c] + c1 * buffer[r][c - 1] +
-              c2 * buffer[r - 1][c - 1];
-      buffer[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_SCALE_BITS);
-      buffer[r][c] = clip_pixel(buffer[r][c]);
-    }
-#endif
+
   for (r = 0; r < bh; ++r) {
     for (c = 0; c < bw; ++c) {
       dst[c] = buffer[r + 1][c + 1];
@@ -1691,34 +1310,29 @@ static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride,
 
 void av1_dc_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                                const uint8_t *above, const uint8_t *left) {
-  filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                               FILTER_DC_PRED);
+  filter_intra_predictor(dst, stride, tx_size, above, left, FILTER_DC_PRED);
 }
 
 void av1_v_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                               const uint8_t *above, const uint8_t *left) {
-  filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                               FILTER_V_PRED);
+  filter_intra_predictor(dst, stride, tx_size, above, left, FILTER_V_PRED);
 }
 
 void av1_h_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                               const uint8_t *above, const uint8_t *left) {
-  filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                               FILTER_H_PRED);
+  filter_intra_predictor(dst, stride, tx_size, above, left, FILTER_H_PRED);
 }
 
 void av1_d153_filter_predictor_c(uint8_t *dst, ptrdiff_t stride,
                                  TX_SIZE tx_size, const uint8_t *above,
                                  const uint8_t *left) {
-  filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                               FILTER_D153_PRED);
+  filter_intra_predictor(dst, stride, tx_size, above, left, FILTER_D153_PRED);
 }
 
 void av1_paeth_filter_predictor_c(uint8_t *dst, ptrdiff_t stride,
                                   TX_SIZE tx_size, const uint8_t *above,
                                   const uint8_t *left) {
-  filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                               FILTER_PAETH_PRED);
+  filter_intra_predictor(dst, stride, tx_size, above, left, FILTER_PAETH_PRED);
 }
 
 static void filter_intra_predictors(FILTER_INTRA_MODE mode, uint8_t *dst,
@@ -1744,11 +1358,11 @@ static void filter_intra_predictors(FILTER_INTRA_MODE mode, uint8_t *dst,
   }
 }
 #if CONFIG_HIGHBITDEPTH
-static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
-                                                TX_SIZE tx_size,
-                                                const uint16_t *above,
-                                                const uint16_t *left, int mode,
-                                                int bd) {
+static void highbd_filter_intra_predictor(uint16_t *dst, ptrdiff_t stride,
+                                          TX_SIZE tx_size,
+                                          const uint16_t *above,
+                                          const uint16_t *left, int mode,
+                                          int bd) {
   int r, c;
   int buffer[33][33];
   const int bw = tx_size_wide[tx_size];
@@ -1760,30 +1374,6 @@ static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
 
   for (c = 0; c < bw + 1; ++c) buffer[0][c] = (int)above[c - 1];
 
-#if FILTER_INTRA_PROC_UNIT_SIZE == 22
-  for (r = 1; r < bh + 1; r += 2)
-    for (c = 1; c < bw + 1; c += 2) {
-      const int p0 = buffer[r - 1][c - 1];
-      const int p1 = buffer[r - 1][c];
-      const int p2 = buffer[r - 1][c + 1];
-      const int p3 = buffer[r][c - 1];
-      const int p4 = buffer[r + 1][c - 1];
-      for (int k = 0; k < 4; ++k) {
-        int r_offset = k >> 1;
-        int c_offset = k & 0x01;
-        buffer[r + r_offset][c + c_offset] =
-            filter_intra_taps_2x2procunit[mode][k][0] * p0 +
-            filter_intra_taps_2x2procunit[mode][k][1] * p1 +
-            filter_intra_taps_2x2procunit[mode][k][2] * p2 +
-            filter_intra_taps_2x2procunit[mode][k][3] * p3 +
-            filter_intra_taps_2x2procunit[mode][k][4] * p4;
-        buffer[r + r_offset][c + c_offset] = clip_pixel_highbd(
-            ROUND_POWER_OF_TWO_SIGNED(buffer[r + r_offset][c + c_offset],
-                                      FILTER_INTRA_SCALE_BITS),
-            bd);
-      }
-    }
-#elif FILTER_INTRA_PROC_UNIT_SIZE == 42
   for (r = 1; r < bh + 1; r += 2)
     for (c = 1; c < bw + 1; c += 4) {
       const int p0 = buffer[r - 1][c - 1];
@@ -1810,50 +1400,6 @@ static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
             bd);
       }
     }
-#elif FILTER_INTRA_PROC_UNIT_SIZE == 44
-  for (r = 1; r < bh + 1; r += 4)
-    for (c = 1; c < bw + 1; c += 4) {
-      const int p0 = buffer[r - 1][c - 1];
-      const int p1 = buffer[r - 1][c];
-      const int p2 = buffer[r - 1][c + 1];
-      const int p3 = buffer[r - 1][c + 2];
-      const int p4 = buffer[r - 1][c + 3];
-      const int p5 = buffer[r][c - 1];
-      const int p6 = buffer[r + 1][c - 1];
-      const int p7 = buffer[r + 2][c - 1];
-      const int p8 = buffer[r + 3][c - 1];
-      for (int k = 0; k < 16; ++k) {
-        int r_offset = k >> 2;
-        int c_offset = k & 0x03;
-        buffer[r + r_offset][c + c_offset] =
-            filter_intra_taps_4x4procunit[mode][k][0] * p0 +
-            filter_intra_taps_4x4procunit[mode][k][1] * p1 +
-            filter_intra_taps_4x4procunit[mode][k][2] * p2 +
-            filter_intra_taps_4x4procunit[mode][k][3] * p3 +
-            filter_intra_taps_4x4procunit[mode][k][4] * p4 +
-            filter_intra_taps_4x4procunit[mode][k][5] * p5 +
-            filter_intra_taps_4x4procunit[mode][k][6] * p6 +
-            filter_intra_taps_4x4procunit[mode][k][7] * p7 +
-            filter_intra_taps_4x4procunit[mode][k][8] * p8;
-        buffer[r + r_offset][c + c_offset] = clip_pixel_highbd(
-            ROUND_POWER_OF_TWO_SIGNED(buffer[r + r_offset][c + c_offset],
-                                      FILTER_INTRA_SCALE_BITS),
-            bd);
-      }
-    }
-#else
-  int ipred;
-  const int c0 = filter_intra_taps_3[mode][0];
-  const int c1 = filter_intra_taps_3[mode][1];
-  const int c2 = filter_intra_taps_3[mode][2];
-  for (r = 1; r < bh + 1; ++r)
-    for (c = 1; c < bw + 1; ++c) {
-      ipred = c0 * buffer[r - 1][c] + c1 * buffer[r][c - 1] +
-              c2 * buffer[r - 1][c - 1];
-      buffer[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_SCALE_BITS);
-      buffer[r][c] = clip_pixel_highbd(buffer[r][c], bd);
-    }
-#endif
 
   for (r = 0; r < bh; ++r) {
     for (c = 0; c < bw; ++c) {
@@ -1866,36 +1412,36 @@ static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
 void av1_highbd_dc_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                       TX_SIZE tx_size, const uint16_t *above,
                                       const uint16_t *left, int bd) {
-  highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                                      FILTER_DC_PRED, bd);
+  highbd_filter_intra_predictor(dst, stride, tx_size, above, left,
+                                FILTER_DC_PRED, bd);
 }
 
 void av1_highbd_v_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                      TX_SIZE tx_size, const uint16_t *above,
                                      const uint16_t *left, int bd) {
-  highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                                      FILTER_V_PRED, bd);
+  highbd_filter_intra_predictor(dst, stride, tx_size, above, left,
+                                FILTER_V_PRED, bd);
 }
 
 void av1_highbd_h_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                      TX_SIZE tx_size, const uint16_t *above,
                                      const uint16_t *left, int bd) {
-  highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                                      FILTER_H_PRED, bd);
+  highbd_filter_intra_predictor(dst, stride, tx_size, above, left,
+                                FILTER_H_PRED, bd);
 }
 
 void av1_highbd_d153_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                         TX_SIZE tx_size, const uint16_t *above,
                                         const uint16_t *left, int bd) {
-  highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                                      FILTER_D153_PRED, bd);
+  highbd_filter_intra_predictor(dst, stride, tx_size, above, left,
+                                FILTER_D153_PRED, bd);
 }
 
 void av1_highbd_paeth_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                          TX_SIZE tx_size, const uint16_t *above,
                                          const uint16_t *left, int bd) {
-  highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                                      FILTER_PAETH_PRED, bd);
+  highbd_filter_intra_predictor(dst, stride, tx_size, above, left,
+                                FILTER_PAETH_PRED, bd);
 }
 
 static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,

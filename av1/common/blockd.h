@@ -969,27 +969,10 @@ static const uint8_t mode_to_angle_map[] = {
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_FILTER_INTRA
-#define DISABLE_SUB8X8_FILTER_INTRA 0
-
-static INLINE int av1_filter_intra_allowed_bsize(BLOCK_SIZE bs) {
-  (void)bs;
-#if DISABLE_SUB8X8_FILTER_INTRA
-  return block_size_wide[bs] >= 8 && block_size_high[bs] >= 8;
-#else
-  return 1;
-#endif
-}
-
 static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {
-  (void)tx;
   if (tx == TX_INVALID) return 0;
 
-#if DISABLE_SUB8X8_FILTER_INTRA
-  return tx_size_wide[tx] >= 8 && tx_size_high[tx] >= 8 &&
-         tx_size_wide[tx] <= 32 && tx_size_high[tx] <= 32;
-#else
   return tx_size_wide[tx] <= 32 && tx_size_high[tx] <= 32;
-#endif
 }
 
 static INLINE TX_SIZE av1_max_tx_size_for_filter_intra(BLOCK_SIZE bsize,
