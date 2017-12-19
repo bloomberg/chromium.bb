@@ -1064,6 +1064,7 @@ test("content_browsertests") {
       "../browser/webrtc/webrtc_ip_permissions_browsertest.cc",
       "../browser/webrtc/webrtc_media_recorder_browsertest.cc",
       "../browser/webrtc/webrtc_pause_play_browsertest.cc",
+      "../browser/webrtc/webrtc_resolution_switch_browsertest.cc",
       "../browser/webrtc/webrtc_source_feed_switch_browsertest.cc",
       "../browser/webrtc/webrtc_video_capture_browsertest.cc",
       "../browser/webrtc/webrtc_webcam_browsertest.cc",
