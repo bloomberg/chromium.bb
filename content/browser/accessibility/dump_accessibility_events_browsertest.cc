@@ -189,6 +189,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSliderValueBothChange) {
+  RunEventTest(FILE_PATH_LITERAL("aria-slider-value-both-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaSliderValueChange) {
   RunEventTest(FILE_PATH_LITERAL("aria-slider-value-change.html"));
 }
@@ -196,6 +201,21 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaSliderValueTextChange) {
   RunEventTest(FILE_PATH_LITERAL("aria-slider-valuetext-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSpinButtonValueBothChange) {
+  RunEventTest(FILE_PATH_LITERAL("aria-spinbutton-value-both-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSpinButtonValueChange) {
+  RunEventTest(FILE_PATH_LITERAL("aria-spinbutton-value-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSpinButtonValueTextChange) {
+  RunEventTest(FILE_PATH_LITERAL("aria-spinbutton-valuetext-change.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
