@@ -74,6 +74,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "url/gurl.h"
 
@@ -337,6 +339,8 @@ class PageLoadMetricsWaiter
 using TimingField = PageLoadMetricsWaiter::TimingField;
 using WebFeature = blink::mojom::WebFeature;
 }  // namespace
+
+using testing::UnorderedElementsAre;
 
 class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
@@ -1213,6 +1217,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kDataUriHasOctothorpe), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
@@ -1231,11 +1238,19 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
   const auto& entries =
       test_ukm_recorder_->GetEntriesByName(internal::kUkmUseCounterEventName);
-  EXPECT_EQ(1u, entries.size());
-  test_ukm_recorder_->ExpectEntrySourceHasUrl(entries[0], url);
-  test_ukm_recorder_->ExpectEntryMetric(
-      entries[0], internal::kUkmUseCounterFeature,
-      static_cast<int64_t>(WebFeature::kNavigatorVibrate));
+  EXPECT_EQ(2u, entries.size());
+  std::vector<int64_t> ukm_features;
+  for (const auto* entry : entries) {
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
+    const auto* metric =
+        test_ukm_recorder_->FindMetric(entry, internal::kUkmUseCounterFeature);
+    EXPECT_TRUE(metric);
+    ukm_features.push_back(metric->value);
+  }
+  EXPECT_THAT(ukm_features,
+              UnorderedElementsAre(
+                  static_cast<int64_t>(WebFeature::kNavigatorVibrate),
+                  static_cast<int64_t>(WebFeature::kDataUriHasOctothorpe)));
 }
 
 // Test UseCounter Features observed in a child frame are recorded, exactly

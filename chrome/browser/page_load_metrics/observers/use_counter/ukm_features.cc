@@ -18,6 +18,9 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kVibrateWithoutUserGesture,
           WebFeature::kTouchEventPreventedNoTouchAction,
           WebFeature::kTouchEventPreventedForcedDocumentPassiveNoTouchAction,
+          // kDataUriHasOctothorpe may not be recorded correctly for iframes.
+          // See https://crbug.com/796173 for details.
+          WebFeature::kDataUriHasOctothorpe,
       }));
   return opt_in_features.count(feature);
 }
