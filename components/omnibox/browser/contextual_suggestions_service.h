@@ -9,8 +9,8 @@
 #include <string>
 
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "url/gurl.h"
 
 class OAuth2TokenService;

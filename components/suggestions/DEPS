@@ -12,6 +12,7 @@ include_rules = [
   "+components/variations",
   "+google_apis",
   "+net",
+  "+services/identity/public/cpp",
   "+skia/ext",
   "+ui",
   "+url",

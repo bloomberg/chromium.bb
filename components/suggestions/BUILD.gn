@@ -43,6 +43,7 @@ static_library("suggestions") {
     "//components/variations",
     "//components/variations/net",
     "//google_apis",
+    "//services/identity/public/cpp",
   ]
 
   if (is_ios) {

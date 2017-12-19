@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 #include <memory>
 #include <utility>
