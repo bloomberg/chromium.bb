@@ -67,35 +67,54 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
       mojom::VoiceInteractionState::NOT_READY,
       mojom::VoiceInteractionState::STOPPED,
       mojom::VoiceInteractionState::RUNNING};
+  const mojom::AssistantAllowedState kAllowedStates[] = {
+      mojom::AssistantAllowedState::ALLOWED,
+      mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED,
+      mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY,
+      mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE,
+      mojom::AssistantAllowedState::DISALLOWED_BY_FLAG,
+      mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
+      mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
+      mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO,
+  };
   const base::string16 kLoading(base::ASCIIToUTF16("loading"));
 
   // Iterate over every possible combination of states.
   for (mojom::VoiceInteractionState state : kStates) {
-    for (int enabled = 0; enabled <= 1; enabled++) {
-      for (int context = 0; context <= 1; context++) {
-        const bool ready = state != mojom::VoiceInteractionState::NOT_READY;
-        const bool selectable = enabled && context && ready;
+    for (mojom::AssistantAllowedState allowed_state : kAllowedStates) {
+      for (int enabled = 0; enabled <= 1; enabled++) {
+        for (int context = 0; context <= 1; context++) {
+          const bool allowed =
+              allowed_state == mojom::AssistantAllowedState::ALLOWED;
+          const bool ready = state != mojom::VoiceInteractionState::NOT_READY;
+          const bool selectable = allowed && enabled && context && ready;
 
-        Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
-            state);
-        Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(
-            enabled);
-        Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(
-            context);
+          Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
+              state);
+          Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(
+              enabled);
+          Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(
+              context);
+          Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+              allowed_state);
 
-        std::unique_ptr<views::View> view =
-            base::WrapUnique(tool_->CreateView());
-        EXPECT_TRUE(view);
-        EXPECT_EQ(selectable, view->enabled());
+          std::unique_ptr<views::View> view =
+              base::WrapUnique(tool_->CreateView());
+          EXPECT_TRUE(view);
+          EXPECT_EQ(selectable, view->enabled());
 
-        const base::string16 label_text =
-            static_cast<HoverHighlightView*>(view.get())->text_label()->text();
+          const base::string16 label_text =
+              static_cast<HoverHighlightView*>(view.get())
+                  ->text_label()
+                  ->text();
 
-        const bool label_contains_loading =
-            label_text.find(kLoading) != base::string16::npos;
+          const bool label_contains_loading =
+              label_text.find(kLoading) != base::string16::npos;
 
-        EXPECT_EQ(enabled && context && !ready, label_contains_loading);
-        tool_->OnViewDestroyed();
+          EXPECT_EQ(allowed && enabled && context && !ready,
+                    label_contains_loading);
+          tool_->OnViewDestroyed();
+        }
       }
     }
   }

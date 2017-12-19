@@ -157,6 +157,12 @@ void MetalayerMode::OnVoiceInteractionContextEnabled(bool enabled) {
   UpdateState();
 }
 
+void MetalayerMode::OnAssistantFeatureAllowedChanged(
+    mojom::AssistantAllowedState state) {
+  assistant_allowed_state_ = state;
+  UpdateState();
+}
+
 void MetalayerMode::UpdateState() {
   if (enabled() && !selectable())
     delegate()->DisableTool(GetToolId());
