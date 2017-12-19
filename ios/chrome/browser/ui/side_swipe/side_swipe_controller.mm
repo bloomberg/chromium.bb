@@ -495,8 +495,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
     // Add horizontal stack view controller.
     CGFloat headerHeight =
-        [self.snapshotDelegate snapshotContentAreaForTab:[model_ currentTab]]
-            .origin.y;
+        [self.snapshotDelegate snapshotEdgeInsetsForTab:[model_ currentTab]]
+            .top;
     if (tabSideSwipeView_) {
       [tabSideSwipeView_ setFrame:frame];
       [tabSideSwipeView_ setTopMargin:headerHeight];

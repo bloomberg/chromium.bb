@@ -12,9 +12,9 @@
 // A protocol implemented by a snapshotting delegate of Tab.
 @protocol TabSnapshottingDelegate
 
-// Returns the rect (in the |tab.webController.view|'s coordinate space) that is
-// used to render the page's content.
-- (CGRect)snapshotContentAreaForTab:(Tab*)tab;
+// Returns the edge insets used to crop the snapshot during generation. If the
+// snapshot should not be cropped, then UIEdgeInsetsZero can be returned.
+- (UIEdgeInsets)snapshotEdgeInsetsForTab:(Tab*)tab;
 
 @end
 

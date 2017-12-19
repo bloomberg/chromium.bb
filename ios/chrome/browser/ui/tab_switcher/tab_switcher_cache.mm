@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix.h"
 #include "ios/web/public/navigation_item.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -87,14 +88,22 @@ const CGFloat kMaxFloatDelta = 0.01;
   DCHECK(!CGSizeEqualToSize(size, CGSizeZero));
   PendingSnapshotRequest currentRequest;
   UIImage* snapshot = [_cache objectForKey:[self keyForTab:tab]];
-  if (snapshot) {
-    CGFloat tabContentAreaRatio = tab.snapshotContentArea.size.width /
-                                  tab.snapshotContentArea.size.height;
+  if (snapshot && [snapshot size].width >= size.width) {
+    // If tab is not in a state to take a snapshot, use the cached snapshot.
+    if (!tab.webState || !tab.webState->CanTakeSnapshot()) {
+      completionBlock(snapshot);
+      return currentRequest;
+    }
+
+    CGRect tabContentArea = UIEdgeInsetsInsetRect(
+        [tab.webState->GetView() bounds], [tab snapshotEdgeInsets]);
+    CGFloat tabContentAreaRatio =
+        tabContentArea.size.width / tabContentArea.size.height;
     CGFloat cachedSnapshotRatio =
         [snapshot size].width / [snapshot size].height;
+
     // Check that the cached snapshot's ratio matches the content area ratio.
-    if (std::abs(tabContentAreaRatio - cachedSnapshotRatio) < kMaxFloatDelta &&
-        [snapshot size].width >= size.width) {
+    if (std::abs(tabContentAreaRatio - cachedSnapshotRatio) < kMaxFloatDelta) {
       // Cache hit.
       completionBlock(snapshot);
       return currentRequest;
