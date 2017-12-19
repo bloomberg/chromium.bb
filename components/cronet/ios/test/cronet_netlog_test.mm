@@ -5,13 +5,10 @@
 #import <Cronet/Cronet.h>
 #import <Foundation/Foundation.h>
 
+#include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/ios/test/start_cronet.h"
 #include "components/grpc_support/test/quic_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-@interface Cronet (ExposedForTesting)
-+ (void)shutdownForTesting;
-@end
 
 namespace cronet {
 

@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "components/cronet/ios/accept_languages_table.h"
 #include "components/cronet/ios/cronet_environment.h"
+#include "components/cronet/ios/cronet_metrics.h"
 #include "components/cronet/url_request_context_config.h"
 #include "ios/net/crn_http_protocol_handler.h"
 #include "ios/net/empty_nsurlcache.h"
@@ -45,11 +46,15 @@ base::LazyInstance<std::unique_ptr<cronet::CronetEnvironment>>::Leaky
 base::LazyInstance<std::unique_ptr<CronetHttpProtocolHandlerDelegate>>::Leaky
     gHttpProtocolHandlerDelegate = LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<std::unique_ptr<cronet::CronetMetricsDelegate>>::Leaky
+    gMetricsDelegate = LAZY_INSTANCE_INITIALIZER;
+
 // See [Cronet initialize] method to set the default values of the global
 // variables.
 BOOL gHttp2Enabled;
 BOOL gQuicEnabled;
 BOOL gBrotliEnabled;
+BOOL gMetricsEnabled;
 cronet::URLRequestContextConfig::HttpCacheType gHttpCache;
 QuicHintVector gQuicHints;
 NSString* gExperimentalOptions;
@@ -63,7 +68,7 @@ BOOL gEnableTestCertVerifierForTesting;
 std::unique_ptr<net::CertVerifier> gMockCertVerifier;
 NSString* gAcceptLanguages;
 BOOL gEnablePKPBypassForLocalTrustAnchors;
-NSMutableSet<id<CronetMetricsDelegate>>* gMetricsDelegates;
+dispatch_once_t gSwizzleOnceToken;
 
 // CertVerifier, which allows any certificates for testing.
 class TestCertVerifier : public net::CertVerifier {
@@ -187,6 +192,11 @@ class CronetHttpProtocolHandlerDelegate
 + (void)setBrotliEnabled:(BOOL)brotliEnabled {
   [self checkNotStarted];
   gBrotliEnabled = brotliEnabled;
+}
+
++ (void)setMetricsEnabled:(BOOL)metricsEnabled {
+  [self checkNotStarted];
+  gMetricsEnabled = metricsEnabled;
 }
 
 + (BOOL)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort {
@@ -332,6 +342,18 @@ class CronetHttpProtocolHandlerDelegate
           gChromeNet.Get()->GetURLRequestContextGetter(), gRequestFilterBlock));
   net::HTTPProtocolHandlerDelegate::SetInstance(
       gHttpProtocolHandlerDelegate.Get().get());
+
+  if (gMetricsEnabled) {
+    gMetricsDelegate.Get().reset(new cronet::CronetMetricsDelegate());
+    net::MetricsDelegate::SetInstance(gMetricsDelegate.Get().get());
+
+    dispatch_once(&gSwizzleOnceToken, ^{
+      cronet::SwizzleSessionWithConfiguration();
+    });
+  } else {
+    net::MetricsDelegate::SetInstance(nullptr);
+  }
+
   gRequestFilterBlock = nil;
 }
 
@@ -350,7 +372,14 @@ class CronetHttpProtocolHandlerDelegate
   [self startInternal];
 }
 
++ (void)unswizzleForTesting {
+  if (gSwizzleOnceToken)
+    cronet::SwizzleSessionWithConfiguration();
+  gSwizzleOnceToken = 0;
+}
+
 + (void)shutdownForTesting {
+  [Cronet unswizzleForTesting];
   [Cronet initialize];
 }
 
@@ -496,6 +525,7 @@ class CronetHttpProtocolHandlerDelegate
   gHttp2Enabled = YES;
   gQuicEnabled = NO;
   gBrotliEnabled = NO;
+  gMetricsEnabled = NO;
   gHttpCache = cronet::URLRequestContextConfig::HttpCacheType::DISK;
   gQuicHints.clear();
   gExperimentalOptions = @"{}";
@@ -505,32 +535,12 @@ class CronetHttpProtocolHandlerDelegate
   gPkpList.clear();
   gRequestFilterBlock = nil;
   gHttpProtocolHandlerDelegate.Get().reset(nullptr);
+  gMetricsDelegate.Get().reset(nullptr);
   gPreservedSharedURLCache = nil;
   gEnableTestCertVerifierForTesting = NO;
   gMockCertVerifier.reset(nullptr);
   gAcceptLanguages = nil;
   gEnablePKPBypassForLocalTrustAnchors = YES;
-  gMetricsDelegates = [NSMutableSet set];
-}
-
-+ (BOOL)addMetricsDelegate:(id<CronetMetricsDelegate>)delegate {
-  @synchronized(gMetricsDelegates) {
-    if ([gMetricsDelegates containsObject:delegate]) {
-      return NO;
-    }
-    [gMetricsDelegates addObject:delegate];
-    return YES;
-  }
-}
-
-+ (BOOL)removeMetricsDelegate:(id<CronetMetricsDelegate>)delegate {
-  @synchronized(gMetricsDelegates) {
-    if ([gMetricsDelegates containsObject:delegate]) {
-      [gMetricsDelegates removeObject:delegate];
-      return YES;
-    }
-    return NO;
-  }
 }
 
 @end

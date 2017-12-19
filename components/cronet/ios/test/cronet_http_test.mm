@@ -421,4 +421,29 @@ TEST_F(HttpTest, PostRequest) {
   ASSERT_TRUE(block_used);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+TEST_F(HttpTest, LegacyApi) {
+  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerSimpleUrl));
+
+  __block BOOL block_used = NO;
+  [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+    block_used = YES;
+    EXPECT_EQ(request.URL, url);
+    return YES;
+  }];
+
+  NSURLRequest* request = [NSURLRequest requestWithURL:url];
+  NSError* err;
+  NSHTTPURLResponse* response;
+  [NSURLConnection sendSynchronousRequest:request
+                        returningResponse:&response
+                                    error:&err];
+
+  EXPECT_EQ(200, [response statusCode]);
+  EXPECT_TRUE(block_used);
+  EXPECT_FALSE(err);
+}
+#pragma clang diagnostic pop
+
 }  // namespace cronet

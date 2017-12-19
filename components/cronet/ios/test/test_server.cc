@@ -20,15 +20,25 @@
 
 namespace {
 
+const char kSimplePath[] = "/Simple";
 const char kEchoHeaderPath[] = "/EchoHeader?";
 const char kSetCookiePath[] = "/SetCookie?";
 const char kBigDataPath[] = "/BigData?";
 const char kUseEncodingPath[] = "/UseEncoding?";
 const char kEchoRequestBodyPath[] = "/EchoRequestBody";
 
+const char kSimpleResponse[] = "The quick brown fox jumps over the lazy dog.";
+
 std::unique_ptr<net::EmbeddedTestServer> g_test_server;
 base::LazyInstance<std::string>::Leaky g_big_data_body =
     LAZY_INSTANCE_INITIALIZER;
+
+std::unique_ptr<net::test_server::HttpResponse> SimpleRequest() {
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(kSimpleResponse);
+  return std::move(http_response);
+}
 
 std::unique_ptr<net::test_server::HttpResponse> EchoHeaderInRequest(
     const net::test_server::HttpRequest& request) {
@@ -109,6 +119,10 @@ std::unique_ptr<net::test_server::HttpResponse> SetAndEchoCookieInResponse(
 
 std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
     const net::test_server::HttpRequest& request) {
+  if (base::StartsWith(request.relative_url, kSimplePath,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    return SimpleRequest();
+  }
   if (base::StartsWith(request.relative_url, kEchoHeaderPath,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return EchoHeaderInRequest(request);
@@ -149,6 +163,11 @@ bool TestServer::Start() {
 void TestServer::Shutdown() {
   DCHECK(g_test_server.get());
   g_test_server.reset();
+}
+
+std::string TestServer::GetSimpleURL() {
+  DCHECK(g_test_server);
+  return g_test_server->GetURL(kSimplePath).spec();
 }
 
 std::string TestServer::GetEchoHeaderURL(const std::string& header_name) {
