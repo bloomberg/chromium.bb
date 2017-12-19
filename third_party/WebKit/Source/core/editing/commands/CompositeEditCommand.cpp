@@ -1564,6 +1564,7 @@ void CompositeEditCommand::MoveParagraphs(
       editing_state);
   if (editing_state->IsAborted())
     return;
+  ABORT_EDITING_COMMAND_IF(!EndingSelection().IsValidFor(GetDocument()));
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 

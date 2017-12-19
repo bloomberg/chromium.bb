@@ -68,4 +68,29 @@ TEST_F(TypingCommandTest,
             GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
 }
 
+// crbug.com/794397
+TEST_F(TypingCommandTest, ForwardDeleteInvalidatesSelection) {
+  GetDocument().setDesignMode("on");
+  Selection().SetSelection(SetSelectionTextToBody(
+      "<blockquote>^"
+      "<q>"
+      "<table contenteditable=\"false\"><colgroup width=\"-1\">\n</table>|"
+      "</q>"
+      "</blockquote>"
+      "<q>\n<svg></svg></q>"));
+
+  EditingState editing_state;
+  TypingCommand::ForwardDeleteKeyPressed(GetDocument(), &editing_state);
+
+  EXPECT_EQ(
+      "<blockquote>|</blockquote>"
+      "<q>"
+      "<table contenteditable=\"false\">"
+      "<colgroup width=\"-1\"></colgroup>"
+      "</table>\n"
+      "<svg></svg>"
+      "</q>",
+      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink
