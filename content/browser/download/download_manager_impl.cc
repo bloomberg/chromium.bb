@@ -974,6 +974,12 @@ void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
     delegate_->OpenDownload(download);
 }
 
+bool DownloadManagerImpl::IsMostRecentDownloadItemAtFilePath(
+    DownloadItemImpl* download) {
+  return delegate_ ? delegate_->IsMostRecentDownloadItemAtFilePath(download)
+                   : false;
+}
+
 void DownloadManagerImpl::ShowDownloadInShell(DownloadItemImpl* download) {
   if (delegate_)
     delegate_->ShowDownloadInShell(download);

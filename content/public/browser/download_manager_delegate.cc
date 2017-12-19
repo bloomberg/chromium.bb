@@ -35,6 +35,11 @@ bool DownloadManagerDelegate::ShouldOpenDownload(
   return true;
 }
 
+bool DownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
+    DownloadItem* download) {
+  return true;
+}
+
 bool DownloadManagerDelegate::GenerateFileHash() {
   return false;
 }
