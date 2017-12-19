@@ -29,12 +29,13 @@ void NotificationDelegate::DisableNotification() {}
 // HandleNotificationClickDelegate:
 
 HandleNotificationClickDelegate::HandleNotificationClickDelegate(
-    const base::Closure& callback) {
+    const base::RepeatingClosure& callback) {
   if (!callback.is_null()) {
     // Create a callback that consumes and ignores the button index parameter,
     // and just runs the provided closure.
     callback_ = base::Bind(
-        [](const base::Closure& closure, base::Optional<int> button_index) {
+        [](const base::RepeatingClosure& closure,
+           base::Optional<int> button_index) {
           DCHECK(!button_index);
           closure.Run();
         },

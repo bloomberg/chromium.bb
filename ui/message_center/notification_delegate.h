@@ -60,14 +60,16 @@ class MESSAGE_CENTER_EXPORT HandleNotificationClickDelegate
  public:
   // The parameter is the index of the button that was clicked, or nullopt if
   // the body was clicked.
-  using ButtonClickCallback = base::Callback<void(base::Optional<int>)>;
+  using ButtonClickCallback =
+      base::RepeatingCallback<void(base::Optional<int>)>;
 
   // Creates a delegate that handles clicks on a button or on the body.
   explicit HandleNotificationClickDelegate(const ButtonClickCallback& callback);
 
   // Creates a delegate that only handles clicks on the body of the
   // notification.
-  explicit HandleNotificationClickDelegate(const base::Closure& closure);
+  explicit HandleNotificationClickDelegate(
+      const base::RepeatingClosure& closure);
 
   // message_center::NotificationDelegate overrides:
   void Click() override;
