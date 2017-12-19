@@ -48,7 +48,8 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
 }
 
 CoordinatorImpl::CoordinatorImpl(service_manager::Connector* connector)
-    : next_dump_id_(0) {
+    : next_dump_id_(0),
+      client_process_timeout_(base::TimeDelta::FromSeconds(15)) {
   process_map_ = std::make_unique<ProcessMap>(connector);
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;
@@ -201,6 +202,25 @@ void CoordinatorImpl::RequestGlobalMemoryDumpInternal(
   PerformNextQueuedGlobalMemoryDump();
 }
 
+void CoordinatorImpl::OnQueuedRequestTimedOut(uint64_t dump_guid) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  QueuedRequest* request = GetCurrentRequest();
+
+  // TODO(lalitm): add metrics for how often this happens.
+
+  // Only consider the current request timed out if we fired off this
+  // delayed callback in association with this request.
+  if (!request || request->args.dump_guid != dump_guid)
+    return;
+
+  // Fail all remaining dumps being waited upon and clear the vector.
+  request->failed_memory_dump_count += request->pending_responses.size();
+  request->pending_responses.clear();
+
+  // Callback the consumer of the service.
+  FinalizeGlobalMemoryDumpIfAllManagersReplied();
+}
+
 void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedRequest* request = GetCurrentRequest();
@@ -223,6 +243,12 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
                                 base::Unretained(this));
   QueuedRequestDispatcher::SetUpAndDispatch(request, clients, chrome_callback,
                                             os_callback);
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CoordinatorImpl::OnQueuedRequestTimedOut,
+                     base::Unretained(this), request->args.dump_guid),
+      client_process_timeout_);
 
   // Run the callback in case there are no client processes registered.
   FinalizeGlobalMemoryDumpIfAllManagersReplied();

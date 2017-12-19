@@ -108,9 +108,15 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   void RemovePendingResponse(mojom::ClientProcess*,
                              QueuedRequest::PendingResponse::Type);
 
+  void OnQueuedRequestTimedOut(uint64_t dump_guid);
+
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();
   QueuedRequest* GetCurrentRequest();
+
+  void set_client_process_timeout(base::TimeDelta client_process_timeout) {
+    client_process_timeout_ = client_process_timeout;
+  }
 
   // Map of registered client processes.
   std::map<mojom::ClientProcess*, std::unique_ptr<ClientInfo>> clients_;
@@ -126,6 +132,9 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   std::unique_ptr<ProcessMap> process_map_;
   uint64_t next_dump_id_;
   std::unique_ptr<TracingObserver> tracing_observer_;
+
+  // Timeout for registered client processes to respond to dump requests.
+  base::TimeDelta client_process_timeout_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(CoordinatorImpl);
