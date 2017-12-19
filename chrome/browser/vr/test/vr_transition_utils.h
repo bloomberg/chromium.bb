@@ -9,9 +9,13 @@
 
 namespace vr {
 
-void enterPresentation(content::WebContents* web_contents);
-void enterPresentationAndWait(content::WebContents* web_contents);
-void enterPresentationOrFail(content::WebContents* web_contents);
+void EnterPresentation(content::WebContents* web_contents);
+void EnterPresentationAndWait(content::WebContents* web_contents);
+void EnterPresentationOrFail(content::WebContents* web_contents);
+
+void ExitPresentation(content::WebContents* web_contents);
+void ExitPresentationAndWait(content::WebContents* web_contents);
+void ExitPresentationOrFail(content::WebContents* web_contents);
 
 }  // namespace vr
 
