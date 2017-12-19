@@ -232,7 +232,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   bool CanTakeSnapshot() const override;
   void TakeSnapshot(const SnapshotCallback& callback,
                     CGSize target_size) const override;
-  base::WeakPtr<WebState> AsWeakPtr() override;
   void AddObserver(WebStateObserver* observer) override;
   void RemoveObserver(WebStateObserver* observer) override;
 
@@ -369,11 +368,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Whether this WebState has an opener.  See
   // WebState::CreateParams::created_with_opener_ for more details.
   bool created_with_opener_;
-
-  // Member variables should appear before the WeakPtrFactory<> to ensure that
-  // any WeakPtrs to WebStateImpl are invalidated before its member variable's
-  // destructors are executed, rendering them invalid.
-  base::WeakPtrFactory<WebState> weak_factory_;
 
   // Mojo interface registry for this WebState.
   std::unique_ptr<WebStateInterfaceProvider> web_state_interface_provider_;

@@ -321,9 +321,4 @@ void TestWebState::TakeSnapshot(const SnapshotCallback& callback,
   callback.Run(gfx::Image([[UIImage alloc] init]));
 }
 
-base::WeakPtr<WebState> TestWebState::AsWeakPtr() {
-  NOTREACHED();
-  return base::WeakPtr<WebState>();
-}
-
 }  // namespace web
