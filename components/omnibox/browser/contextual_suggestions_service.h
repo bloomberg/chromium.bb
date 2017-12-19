@@ -9,7 +9,7 @@
 #include <string>
 
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/access_token_fetcher.h"
+#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -128,7 +128,7 @@ class ContextualSuggestionsService : public KeyedService {
 
   // Helper for fetching OAuth2 access tokens. This is non-null when an access
   // token request is currently in progress.
-  std::unique_ptr<AccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsService);
 };

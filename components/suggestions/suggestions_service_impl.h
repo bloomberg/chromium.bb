@@ -21,7 +21,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/signin/core/browser/access_token_fetcher.h"
+#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -205,7 +205,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   // Helper for fetching OAuth2 access tokens. This is non-null iff an access
   // token request is currently in progress.
-  std::unique_ptr<AccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete| or

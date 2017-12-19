@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/access_token_fetcher.h"
+#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 
 #include <utility>
 
 #include "base/logging.h"
 
-AccessTokenFetcher::AccessTokenFetcher(
+PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     const std::string& oauth_consumer_name,
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
@@ -25,7 +25,7 @@ AccessTokenFetcher::AccessTokenFetcher(
   Start();
 }
 
-AccessTokenFetcher::~AccessTokenFetcher() {
+PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {
   if (waiting_for_sign_in_) {
     signin_manager_->RemoveObserver(this);
   }
@@ -34,7 +34,7 @@ AccessTokenFetcher::~AccessTokenFetcher() {
   }
 }
 
-void AccessTokenFetcher::Start() {
+void PrimaryAccountAccessTokenFetcher::Start() {
   if (signin_manager_->IsAuthenticated()) {
     // Already signed in: Make sure we have a refresh token, then get the access
     // token.
@@ -49,7 +49,7 @@ void AccessTokenFetcher::Start() {
   signin_manager_->AddObserver(this);
 }
 
-void AccessTokenFetcher::WaitForRefreshToken() {
+void PrimaryAccountAccessTokenFetcher::WaitForRefreshToken() {
   DCHECK(signin_manager_->IsAuthenticated());
   DCHECK(!waiting_for_refresh_token_);
 
@@ -66,7 +66,7 @@ void AccessTokenFetcher::WaitForRefreshToken() {
   token_service_->AddObserver(this);
 }
 
-void AccessTokenFetcher::StartAccessTokenRequest() {
+void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
   // Note: We might get here even in cases where we know that there's no refresh
   // token. We're requesting an access token anyway, so that the token service
   // will generate an appropriate error code that we can return to the client.
@@ -75,8 +75,9 @@ void AccessTokenFetcher::StartAccessTokenRequest() {
       signin_manager_->GetAuthenticatedAccountId(), scopes_, this);
 }
 
-void AccessTokenFetcher::GoogleSigninSucceeded(const std::string& account_id,
-                                               const std::string& username) {
+void PrimaryAccountAccessTokenFetcher::GoogleSigninSucceeded(
+    const std::string& account_id,
+    const std::string& username) {
   DCHECK(waiting_for_sign_in_);
   DCHECK(!waiting_for_refresh_token_);
   DCHECK(signin_manager_->IsAuthenticated());
@@ -86,7 +87,7 @@ void AccessTokenFetcher::GoogleSigninSucceeded(const std::string& account_id,
   WaitForRefreshToken();
 }
 
-void AccessTokenFetcher::GoogleSigninFailed(
+void PrimaryAccountAccessTokenFetcher::GoogleSigninFailed(
     const GoogleServiceAuthError& error) {
   DCHECK(waiting_for_sign_in_);
   DCHECK(!waiting_for_refresh_token_);
@@ -96,7 +97,7 @@ void AccessTokenFetcher::GoogleSigninFailed(
   std::move(callback_).Run(error, std::string());
 }
 
-void AccessTokenFetcher::OnRefreshTokenAvailable(
+void PrimaryAccountAccessTokenFetcher::OnRefreshTokenAvailable(
     const std::string& account_id) {
   DCHECK(waiting_for_refresh_token_);
   DCHECK(!waiting_for_sign_in_);
@@ -111,7 +112,7 @@ void AccessTokenFetcher::OnRefreshTokenAvailable(
   StartAccessTokenRequest();
 }
 
-void AccessTokenFetcher::OnRefreshTokensLoaded() {
+void PrimaryAccountAccessTokenFetcher::OnRefreshTokensLoaded() {
   DCHECK(waiting_for_refresh_token_);
   DCHECK(!waiting_for_sign_in_);
   DCHECK(!access_token_request_);
@@ -125,7 +126,7 @@ void AccessTokenFetcher::OnRefreshTokensLoaded() {
   StartAccessTokenRequest();
 }
 
-void AccessTokenFetcher::OnGetTokenSuccess(
+void PrimaryAccountAccessTokenFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
@@ -137,7 +138,7 @@ void AccessTokenFetcher::OnGetTokenSuccess(
                            access_token);
 }
 
-void AccessTokenFetcher::OnGetTokenFailure(
+void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(request, access_token_request_.get());

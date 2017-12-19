@@ -15,7 +15,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-class AccessTokenFetcher;
+class PrimaryAccountAccessTokenFetcher;
 class OAuth2TokenService;
 class PrefRegistrySimple;
 class PrefService;
@@ -88,7 +88,7 @@ class SubscriptionManagerImpl : public SubscriptionManager {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   std::unique_ptr<internal::SubscriptionJsonRequest> request_;
-  std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> access_token_fetcher_;
 
   PrefService* pref_service_;
 

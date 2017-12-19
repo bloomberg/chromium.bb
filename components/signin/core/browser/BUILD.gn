@@ -32,8 +32,6 @@ static_library("browser") {
   sources = [
     "about_signin_internals.cc",
     "about_signin_internals.h",
-    "access_token_fetcher.cc",
-    "access_token_fetcher.h",
     "account_fetcher_service.cc",
     "account_fetcher_service.h",
     "account_info_fetcher.cc",
@@ -62,6 +60,8 @@ static_library("browser") {
     "gaia_cookie_manager_service.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
+    "primary_account_access_token_fetcher.cc",
+    "primary_account_access_token_fetcher.h",
     "profile_identity_provider.cc",
     "profile_identity_provider.h",
     "profile_management_switches.cc",
@@ -198,13 +198,13 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "access_token_fetcher_unittest.cc",
     "account_info_unittest.cc",
     "account_investigator_unittest.cc",
     "account_reconcilor_unittest.cc",
     "account_tracker_service_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
+    "primary_account_access_token_fetcher_unittest.cc",
     "profile_management_switches_unittest.cc",
     "refresh_token_annotation_request_unittest.cc",
     "signin_error_controller_unittest.cc",

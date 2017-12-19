@@ -15,7 +15,7 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/access_token_fetcher.h"
+#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/variations/service/variations_service.h"
 #include "net/base/url_util.h"
@@ -133,7 +133,7 @@ void SubscriptionManagerImpl::StartAccessTokenRequest(
   }
 
   OAuth2TokenService::ScopeSet scopes = {kContentSuggestionsApiScope};
-  access_token_fetcher_ = base::MakeUnique<AccessTokenFetcher>(
+  access_token_fetcher_ = base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
       "ntp_snippets", signin_manager_, access_token_service_, scopes,
       base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
                      base::Unretained(this), subscription_token));
@@ -145,8 +145,8 @@ void SubscriptionManagerImpl::AccessTokenFetchFinished(
     const std::string& access_token) {
   // Delete the fetcher only after we leave this method (which is called from
   // the fetcher itself).
-  std::unique_ptr<AccessTokenFetcher> access_token_fetcher_deleter(
-      std::move(access_token_fetcher_));
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_deleter(std::move(access_token_fetcher_));
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     // In case of error, we will retry on next Chrome restart.

@@ -20,7 +20,7 @@
 #include "components/ntp_snippets/remote/request_params.h"
 #include "net/url_request/url_request_context_getter.h"
 
-class AccessTokenFetcher;
+class PrimaryAccountAccessTokenFetcher;
 class OAuth2TokenService;
 class PrefService;
 class SigninManagerBase;
@@ -90,7 +90,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
 
-  std::unique_ptr<AccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
