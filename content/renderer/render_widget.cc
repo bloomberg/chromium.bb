@@ -43,6 +43,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/cursor_utils.h"
@@ -2351,8 +2352,13 @@ void RenderWidget::ShowUnhandledTapUIIfNeeded(
                         !tapped_node.IsContentEditable() &&
                         !tapped_node.IsInsideFocusableElementOrARIAWidget();
   if (should_trigger) {
-    Send(new ViewHostMsg_ShowUnhandledTapUIIfNeeded(
-        routing_id_, tapped_position.x, tapped_position.y));
+    float x_px = UseZoomForDSFEnabled()
+                     ? tapped_position.x
+                     : tapped_position.x * device_scale_factor_;
+    float y_px = UseZoomForDSFEnabled()
+                     ? tapped_position.y
+                     : tapped_position.y * device_scale_factor_;
+    Send(new ViewHostMsg_ShowUnhandledTapUIIfNeeded(routing_id_, x_px, y_px));
   }
 }
 #endif

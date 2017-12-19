@@ -167,16 +167,14 @@ bool SelectionPopupController::ShowSelectionMenu(
   return true;
 }
 
-void SelectionPopupController::OnShowUnhandledTapUIIfNeeded(int x_dip,
-                                                            int y_dip,
-                                                            float dip_scale) {
+void SelectionPopupController::OnShowUnhandledTapUIIfNeeded(int x_px,
+                                                            int y_px) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_obj_.get(env);
   if (obj.is_null())
     return;
   Java_SelectionPopupController_onShowUnhandledTapUIIfNeeded(
-      env, obj, static_cast<jint>(x_dip * dip_scale),
-      static_cast<jint>(y_dip * dip_scale));
+      env, obj, static_cast<jint>(x_px), static_cast<jint>(y_px));
 }
 
 void SelectionPopupController::OnSelectWordAroundCaretAck(bool did_select,
