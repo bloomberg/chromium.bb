@@ -181,7 +181,6 @@ void ContainerFloatingBehavior::HandlePointerEvent(
       // If there is no active drag, start a new one.
       drag_descriptor_.reset(
           new DragDescriptor(keyboard_bounds.origin(), kb_offset));
-      container->SetCapture();
     } else {
       // If there is an active drag, use it to determine the new location of the
       // keyboard.
@@ -208,7 +207,6 @@ void ContainerFloatingBehavior::HandlePointerEvent(
 
     // save the current bounds.
     SavePosition(keyboard_bounds.origin());
-    container->ReleaseCapture();
   }
 }
 
