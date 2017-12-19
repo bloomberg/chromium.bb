@@ -281,7 +281,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     device_test_->SetDeviceProperty(kCellularDevicePath, shill::kMinProperty,
                                     base::Value("test_min"));
     device_test_->SetDeviceProperty(kCellularDevicePath,
-                                    shill::kModelIDProperty,
+                                    shill::kModelIdProperty,
                                     base::Value("test_model_id"));
     device_test_->SetSimLocked(kCellularDevicePath, false);
 

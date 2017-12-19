@@ -221,7 +221,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
     device_test_->SetDeviceProperty(kCellularDevicePath, shill::kMinProperty,
                                     base::Value("test_min"));
     device_test_->SetDeviceProperty(kCellularDevicePath,
-                                    shill::kModelIDProperty,
+                                    shill::kModelIdProperty,
                                     base::Value("test_model_id"));
     std::unique_ptr<base::DictionaryValue> apn =
         DictionaryBuilder()
