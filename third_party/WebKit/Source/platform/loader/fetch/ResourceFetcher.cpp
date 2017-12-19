@@ -684,6 +684,9 @@ Resource* ResourceFetcher::RequestResource(
 
   // TODO(crbug.com/123004): Remove once we have enough stats on data URIs that
   // contain fragments ('#' characters).
+  //
+  // TODO(crbug.com/796173): This call happens before commit for iframes that
+  // have data URI sources, which causes UKM to miss the metric recording.
   if (context_) {
     const KURL& url = params.Url();
     if (url.HasFragmentIdentifier() && url.ProtocolIsData()) {
