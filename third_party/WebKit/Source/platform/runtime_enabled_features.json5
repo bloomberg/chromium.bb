@@ -386,7 +386,7 @@
     },
     {
       name: "FeaturePolicyAutoplayFeature",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "FeaturePolicyExperimentalFeatures",
