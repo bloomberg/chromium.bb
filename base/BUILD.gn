@@ -1386,6 +1386,8 @@ jumbo_component("base") {
     ]
 
     if (use_partition_alloc) {
+      defines += [ "USE_PARTITION_ALLOC" ]
+
       # Add stuff that doesn't work in NaCl.
       sources += [
         # PartitionAlloc uses SpinLock, which doesn't work in NaCl (see below).
