@@ -30,8 +30,8 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -120,8 +120,10 @@ ShutdownType GetShutdownType() {
 void OnShutdownStarting(ShutdownType type) {
   if (g_shutdown_type != NOT_VALID)
     return;
-  base::debug::SetCrashKeyValue(crash_keys::kShutdownType,
-                                ToShutdownTypeString(type));
+
+  static crash_reporter::CrashKeyString<8> shutdown_type_key("shutdown-type");
+  shutdown_type_key.Set(ToShutdownTypeString(type));
+
 #if !defined(OS_CHROMEOS)
   // Start the shutdown tracing. Note that On ChromeOS this has already been
   // called in AttemptUserExit().

@@ -6,6 +6,7 @@ include_rules = [
   "+components/cdm/renderer",
   "+components/content_settings/core/common",
   "+components/contextual_search/renderer",
+  "+components/crash/core/common/crash_key.h",
   "+components/crx_file",
   "+components/data_reduction_proxy/content/renderer",
   "+components/data_reduction_proxy/core/common",

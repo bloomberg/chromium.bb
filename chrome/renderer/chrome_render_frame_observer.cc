@@ -20,13 +20,13 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/open_search_description_document_handler.mojom.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/web_apps.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/translate/content/renderer/translate_helper.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
@@ -355,8 +355,8 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
   if (frame->Parent())
     return;
 
-  base::debug::SetCrashKeyValue(
-      crash_keys::kViewCount,
+  static crash_reporter::CrashKeyString<8> view_count_key("view-count");
+  view_count_key.Set(
       base::NumberToString(content::RenderView::GetRenderViewCount()));
 
 #if !defined(OS_ANDROID)

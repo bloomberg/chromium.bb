@@ -19,14 +19,6 @@ size_t RegisterCastCrashKeys() {
       {"url-chunk", ::crash_keys::kLargeSize},
       {::crash_keys::kNumVariations, ::crash_keys::kSmallSize},
       {::crash_keys::kVariations, ::crash_keys::kHugeSize},
-      {"num-extensions", ::crash_keys::kSmallSize},
-      {"shutdown-type", ::crash_keys::kSmallSize},
-      {"browser-unpin-trace", ::crash_keys::kMediumSize},
-
-      {"view-count", ::crash_keys::kSmallSize},
-
-      // media/:
-      {"zero-encode-details", ::crash_keys::kSmallSize},
 
       // TODO(sunnyps): Remove after fixing crbug.com/724999.
       {"gl-context-set-current-stack-trace", ::crash_keys::kMediumSize},

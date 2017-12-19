@@ -54,32 +54,6 @@ class ScopedPrinterInfo {
 // The URL actively being processed in some way.
 extern const char kActiveURL[];
 
-// Installed extensions. |kExtensionID| should be formatted with an integer,
-// in the range [0, kExtensionIDMaxCount).
-const size_t kExtensionIDMaxCount = 10;
-extern const char kExtensionID[];
-// The total number of installed extensions, recorded in case it exceeds
-// kExtensionIDMaxCount. Also used in chrome/app, but defined here to avoid
-// a common->app dependency.
-extern const char kNumExtensionsCount[];
-
-// Type of shutdown. The value is one of "close" for WINDOW_CLOSE,
-// "exit" for BROWSER_EXIT, or "end" for END_SESSION.
-extern const char kShutdownType[];
-
-// Stack trace associated to the browser being unpinned and starting the
-// shutdown sequence. The value is set when we trigger a browser crash due to an
-// invalid attempt to Pin the browser process after that.
-extern const char kBrowserUnpinTrace[];
-
-// The user's printers, up to kPrinterInfoCount. Should be set with
-// ScopedPrinterInfo.
-const size_t kPrinterInfoCount = 4;
-extern const char kPrinterInfo[];
-
-// Numbers of active views.
-extern const char kViewCount[];
-
 }  // namespace crash_keys
 
 #endif  // CHROME_COMMON_CRASH_KEYS_H_
