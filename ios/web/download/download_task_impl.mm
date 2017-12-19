@@ -177,6 +177,14 @@ void DownloadTaskImpl::Start(
                         weak_factory_.GetWeakPtr()));
 }
 
+void DownloadTaskImpl::Cancel() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  [session_task_ cancel];
+  session_task_ = nil;
+  state_ = State::kCancelled;
+  OnDownloadUpdated();
+}
+
 net::URLFetcherResponseWriter* DownloadTaskImpl::GetResponseWriter() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return writer_.get();
@@ -194,7 +202,7 @@ const GURL& DownloadTaskImpl::GetOriginalUrl() const {
 
 bool DownloadTaskImpl::IsDone() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return state_ == State::kComplete;
+  return state_ == State::kComplete || state_ == State::kCancelled;
 }
 
 int DownloadTaskImpl::GetErrorCode() const {

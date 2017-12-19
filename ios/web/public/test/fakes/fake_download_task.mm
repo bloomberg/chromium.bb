@@ -29,6 +29,11 @@ void FakeDownloadTask::Start(
   OnDownloadUpdated();
 }
 
+void FakeDownloadTask::Cancel() {
+  state_ = State::kCancelled;
+  OnDownloadUpdated();
+}
+
 net::URLFetcherResponseWriter* FakeDownloadTask::GetResponseWriter() const {
   return writer_.get();
 }
