@@ -939,13 +939,11 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
 static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
   if (!object.StyleRef().HasBorderRadius())
     return false;
-  // An iframe with border-radius applies border-radius clip on the subdocument.
-  if (object.IsLayoutEmbeddedContent())
-    return true;
   if (NeedsOverflowClip(object))
     return true;
   // LayoutReplaced applies inner border-radius clip on the foreground. This
   // doesn't apply to SVGRoot which uses the NeedsOverflowClip() rule above.
+  // This includes iframes which applies border-radius clip on the subdocument.
   if (object.IsLayoutReplaced() && !object.IsSVGRoot())
     return true;
   return false;
@@ -982,8 +980,19 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
     bool clip_added_or_removed;
     if (NeedsInnerBorderRadiusClip(object_)) {
       const LayoutBox& box = ToLayoutBox(object_);
-      auto inner_border = box.StyleRef().GetRoundedInnerBorderFor(
-          LayoutRect(context_.current.paint_offset, box.Size()));
+      FloatRoundedRect inner_border;
+      if (box.IsLayoutReplaced()) {
+        // LayoutReplaced clips the foreground by rounded inner content box.
+        inner_border = box.StyleRef().GetRoundedInnerBorderFor(
+            LayoutRect(context_.current.paint_offset, box.Size()),
+            LayoutRectOutsets(-(box.PaddingTop() + box.BorderTop()),
+                              -(box.PaddingRight() + box.BorderRight()),
+                              -(box.PaddingBottom() + box.BorderBottom()),
+                              -(box.PaddingLeft() + box.BorderLeft())));
+      } else {
+        inner_border = box.StyleRef().GetRoundedInnerBorderFor(
+            LayoutRect(context_.current.paint_offset, box.Size()));
+      }
       auto result = properties_->UpdateInnerBorderRadiusClip(
           context_.current.clip, context_.current.transform, inner_border);
 

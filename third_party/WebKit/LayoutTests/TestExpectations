@@ -79,6 +79,10 @@ crbug.com/769942 virtual/spv175/paint/invalidation/svg/resource-invalidate-on-ta
 
 crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/visibility/visibility-image-layers.html [ Failure Pass ]
+crbug.com/771643 virtual/spv175/fast/borders/border-image-fill-inline-no-border.html [ Failure ]
+crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
+crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset.html [ Failure ]
+crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/forms/select-option-background-color.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/multicol/multicol-with-overflowing-block-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/overflow/paged-with-overflowing-block-rl.html [ Failure ]
@@ -1447,6 +1451,7 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 
 crbug.com/599670 [ Win ] http/tests/devtools/resource-parameters-ipv6.js [ Timeout Pass ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
+crbug.com/472330 virtual/spv175/fast/borders/border-image-outset-split-inline-vertical-lr.html [ Skip ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
