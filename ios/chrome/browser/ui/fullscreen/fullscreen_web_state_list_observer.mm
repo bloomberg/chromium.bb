@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_scroll_view_replacement_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,6 +47,10 @@ void FullscreenWebStateListObserver::WebStateReplacedAt(
     // Reset the model if the active WebState is replaced.
     web_state_observer_.SetWebState(new_web_state);
     model_->ResetForNavigation();
+    if (new_web_state) {
+      UpdateFullscreenWebViewProxyForReplacedScrollView(
+          new_web_state->GetWebViewProxy(), model_);
+    }
   }
 }
 
