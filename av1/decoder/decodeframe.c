@@ -3062,18 +3062,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   cm->reduced_tx_set_used = aom_rb_read_bit(rb);
 
-#if CONFIG_ADAPT_SCAN
-#if CONFIG_EXT_TILE
-  if (cm->large_scale_tile)
-    cm->use_adapt_scan = 0;
-  else
-#endif  // CONFIG_EXT_TILE
-    cm->use_adapt_scan = aom_rb_read_bit(rb);
-  // TODO(angiebird): call av1_init_scan_order only when use_adapt_scan
-  // switches from 1 to 0
-  if (cm->use_adapt_scan == 0) av1_init_scan_order(cm);
-#endif  // CONFIG_ADAPT_SCAN
-
 #if !CONFIG_TEMPMV_SIGNALING
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as
@@ -3273,9 +3261,6 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
 #endif
 
-#if CONFIG_ADAPT_SCAN
-  av1_deliver_eob_threshold(cm, xd);
-#endif
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
 #endif
@@ -3561,9 +3546,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
                                   num_bwd_ctxs);
       av1_average_tile_loopfilter_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                        num_bwd_ctxs);
-#if CONFIG_ADAPT_SCAN
-      av1_adapt_scan_order(cm, tile_ctxs, num_bwd_ctxs);
-#endif  // CONFIG_ADAPT_SCAN
 
       if (!frame_is_intra_only(cm)) {
         av1_adapt_inter_frame_probs(cm);

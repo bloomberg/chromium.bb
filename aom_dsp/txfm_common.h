@@ -32,10 +32,7 @@ typedef struct txfm_param {
   // bd==8 implies !is_hbd, but that's not certain right now.
   int is_hbd;
   TxSetType tx_set_type;
-// for inverse transforms only
-#if CONFIG_ADAPT_SCAN
-  const int16_t *eob_threshold;
-#endif
+  // for inverse transforms only
   int eob;
 } TxfmParam;
 

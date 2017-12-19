@@ -311,14 +311,6 @@ int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
 #endif  // CONFIG_NEW_QUANT
                    ctx, sc->scan, sc->neighbors, max_scan_line, r);
   av1_set_contexts(xd, pd, plane, tx_size, eob > 0, x, y);
-#if CONFIG_ADAPT_SCAN
-  const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-
-  if (xd->counts)
-    av1_update_scan_count_facade(cm, xd, mi_row, tx_size, tx_type, pd->dqcoeff,
-                                 eob);
-#else
   (void)cm;
-#endif
   return eob;
 }

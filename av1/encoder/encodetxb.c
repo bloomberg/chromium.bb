@@ -523,11 +523,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                    abs(tcoeff[pos]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
     }
   }
-
-#if CONFIG_ADAPT_SCAN
-  const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-  av1_update_scan_count_facade(cm, xd, mi_row, tx_size, tx_type, tcoeff, eob);
-#endif
 }
 
 typedef struct encode_txb_args {
@@ -2306,16 +2301,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
   int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
-
-#if CONFIG_ADAPT_SCAN
-  // Since dqcoeff is not available here, we pass qcoeff into
-  // av1_update_scan_count_facade(). The update behavior should be the same
-  // because av1_update_scan_count_facade() only cares if coefficients are zero
-  // or not.
-  const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-  av1_update_scan_count_facade((AV1_COMMON *)cm, xd, mi_row, tx_size, tx_type,
-                               qcoeff, eob);
-#endif
 }
 
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,

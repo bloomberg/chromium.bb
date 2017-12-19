@@ -1749,10 +1749,6 @@ static const int intra_mode_context[INTRA_MODES] = {
 };
 #endif
 
-#if CONFIG_ADAPT_SCAN
-#define EOB_THRESHOLD_NUM 2
-#endif
-
 #if CONFIG_JNT_COMP
 // Note: this is also used in unit tests. So whenever one changes the table,
 // the unit tests need to be changed accordingly.

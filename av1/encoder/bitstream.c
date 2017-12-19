@@ -3896,15 +3896,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 
   aom_wb_write_bit(wb, cm->reduced_tx_set_used);
 
-#if CONFIG_ADAPT_SCAN
-#if CONFIG_EXT_TILE
-  if (cm->large_scale_tile)
-    assert(cm->use_adapt_scan == 0);
-  else
-#endif  // CONFIG_EXT_TILE
-    aom_wb_write_bit(wb, cm->use_adapt_scan);
-#endif
-
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 
   write_tile_info(cm, wb);

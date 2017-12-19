@@ -514,10 +514,6 @@ typedef struct RefBuffer {
   struct scale_factors sf;
 } RefBuffer;
 
-#if CONFIG_ADAPT_SCAN
-typedef int16_t EobThresholdMD[TX_TYPES][EOB_THRESHOLD_NUM];
-#endif
-
 #if CONFIG_LOOP_RESTORATION
 typedef struct {
   DECLARE_ALIGNED(16, InterpKernel, vfilter);
@@ -695,9 +691,6 @@ typedef struct macroblockd {
   int prev_delta_lf[FRAME_LF_COUNT];
   int curr_delta_lf[FRAME_LF_COUNT];
 #endif  // CONFIG_LOOPFILTER_LEVEL
-#endif
-#if CONFIG_ADAPT_SCAN
-  const EobThresholdMD *eob_threshold_md;
 #endif
 
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);

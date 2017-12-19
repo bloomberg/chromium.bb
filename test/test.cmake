@@ -73,12 +73,6 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/accounting_test.cc")
   endif ()
 
-  if (CONFIG_ADAPT_SCAN)
-    set(AOM_UNIT_TEST_COMMON_SOURCES
-        ${AOM_UNIT_TEST_COMMON_SOURCES}
-        "${AOM_ROOT}/test/scan_test.cc")
-  endif ()
-
   if (HAVE_SSE2)
     set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}

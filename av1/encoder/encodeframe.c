@@ -3697,10 +3697,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   int i;
   const int last_fb_buf_idx = get_ref_frame_buf_idx(cpi, LAST_FRAME);
 
-#if CONFIG_ADAPT_SCAN
-  av1_deliver_eob_threshold(cm, xd);
-#endif
-
   x->min_partition_size = AOMMIN(x->min_partition_size, cm->sb_size);
   x->max_partition_size = AOMMIN(x->max_partition_size, cm->sb_size);
 #if CONFIG_DIST_8X8
@@ -4094,17 +4090,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
   cm->reduced_tx_set_used = 0;
-#if CONFIG_ADAPT_SCAN
-#if CONFIG_EXT_TILE
-  if (cm->large_scale_tile)
-    cm->use_adapt_scan = 0;
-  else
-#endif  // CONFIG_EXT_TILE
-    cm->use_adapt_scan = 1;
-  // TODO(angiebird): call av1_init_scan_order only when use_adapt_scan
-  // switches from 1 to 0
-  if (cm->use_adapt_scan == 0) av1_init_scan_order(cm);
-#endif
 
 #if CONFIG_FRAME_MARKER
   if (cm->show_frame == 0) {

@@ -93,9 +93,7 @@ typedef void (*FwdTxfmFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*InvTxfmFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmFunc, InvTxfmFunc, TX_SIZE, int>
     PartialInvTxfmParam;
-#if !CONFIG_ADAPT_SCAN
 const int kMaxNumCoeffs = 1024;
-#endif
 class AV1PartialIDctTest
     : public ::testing::TestWithParam<PartialInvTxfmParam> {
  public:
@@ -118,7 +116,6 @@ class AV1PartialIDctTest
   InvTxfmFunc partial_itxfm_;
 };
 
-#if !CONFIG_ADAPT_SCAN
 static MB_MODE_INFO get_mbmi() {
   MB_MODE_INFO mbmi;
   mbmi.ref_frame[0] = LAST_FRAME;
@@ -248,7 +245,6 @@ TEST_P(AV1PartialIDctTest, ResultsMatch) {
   EXPECT_EQ(0, max_error)
       << "Error: partial inverse transform produces different results";
 }
-#endif
 using std::tr1::make_tuple;
 
 INSTANTIATE_TEST_CASE_P(

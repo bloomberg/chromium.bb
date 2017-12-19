@@ -125,7 +125,6 @@ LIBAOM_TEST_SRCS-yes                   += divu_small_test.cc
 #LIBAOM_TEST_SRCS-yes                   += encoder_parms_get_to_decoder.cc
 endif
 
-LIBAOM_TEST_SRCS-$(CONFIG_ADAPT_SCAN)  += scan_test.cc
 LIBAOM_TEST_SRCS-yes                   += convolve_test.cc
 LIBAOM_TEST_SRCS-yes                   += lpf_test.cc
 ifeq ($(CONFIG_CDEF_SINGLEPASS),yes)

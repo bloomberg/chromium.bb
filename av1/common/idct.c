@@ -1808,18 +1808,14 @@ void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
 #if !CONFIG_DAALA_TX8
 static void idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
                         const TxfmParam *txfm_param) {
-// If dc is 1, then input[0] is the reconstructed value, do not need
-// dequantization. Also, when dc is 1, dc is counted in eobs, namely eobs >=1.
+  // If dc is 1, then input[0] is the reconstructed value, do not need
+  // dequantization. Also, when dc is 1, dc is counted in eobs, namely eobs >=1.
 
-// The calculation can be simplified if there are not many non-zero dct
-// coefficients. Use eobs to decide what to do.
-// TODO(yunqingwang): "eobs = 1" case is also handled in av1_short_idct8x8_c.
-// Combine that with code here.
-#if CONFIG_ADAPT_SCAN
-  const int16_t half = txfm_param->eob_threshold[0];
-#else
+  // The calculation can be simplified if there are not many non-zero dct
+  // coefficients. Use eobs to decide what to do.
+  // TODO(yunqingwang): "eobs = 1" case is also handled in av1_short_idct8x8_c.
+  // Combine that with code here.
   const int16_t half = 12;
-#endif
 
   const int eob = txfm_param->eob;
   if (eob == 1)
@@ -1835,15 +1831,10 @@ static void idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
 #if !CONFIG_DAALA_TX16
 static void idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
                           const TxfmParam *txfm_param) {
-// The calculation can be simplified if there are not many non-zero dct
-// coefficients. Use eobs to separate different cases.
-#if CONFIG_ADAPT_SCAN
-  const int16_t half = txfm_param->eob_threshold[0];
-  const int16_t quarter = txfm_param->eob_threshold[1];
-#else
+  // The calculation can be simplified if there are not many non-zero dct
+  // coefficients. Use eobs to separate different cases.
   const int16_t half = 38;
   const int16_t quarter = 10;
-#endif
 
   const int eob = txfm_param->eob;
   if (eob == 1) /* DC only DCT coefficient. */
@@ -1860,13 +1851,8 @@ static void idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
 #if !CONFIG_DAALA_TX32
 static void idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
                           const TxfmParam *txfm_param) {
-#if CONFIG_ADAPT_SCAN
-  const int16_t half = txfm_param->eob_threshold[0];
-  const int16_t quarter = txfm_param->eob_threshold[1];
-#else
   const int16_t half = 135;
   const int16_t quarter = 34;
-#endif
 
   const int eob = txfm_param->eob;
   if (eob == 1)
@@ -2556,10 +2542,6 @@ static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
   txfm_param->tx_set_type =
       get_ext_tx_set_type(txfm_param->tx_size, plane_bsize,
                           is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
-#if CONFIG_ADAPT_SCAN
-  txfm_param->eob_threshold =
-      (const int16_t *)&xd->eob_threshold_md[tx_size][tx_type][0];
-#endif
 }
 
 typedef void (*InvTxfmFunc)(const tran_low_t *dqcoeff, uint8_t *dst, int stride,

@@ -566,9 +566,6 @@ typedef struct AV1Common {
 #if CONFIG_LV_MAP
   LV_MAP_CTX_TABLE coeff_ctx_table;
 #endif
-#if CONFIG_ADAPT_SCAN
-  int use_adapt_scan;
-#endif
 #if CONFIG_MFMV
   TPL_MV_REF *tpl_mvs;
   // TODO(jingning): This can be combined with sign_bias later.
