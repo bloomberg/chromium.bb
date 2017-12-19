@@ -64,14 +64,25 @@ space \x000D 0    # cr
 space \x00A0 a    # no-break space
 space \x007f 0
 
-#include text_nabcc.dis
-#include fr-brl6.dis
+punctuation = 2356
+display 0 3456
+display 1 16
+display 2 126
+display 3 146
+display 4 1456
+display 5 156
+display 6 1246
+display 7 12456
+display 8 1256
+display 9 246
+
 include latinLetterDef6Dots.uti
 
 uplow \x00c7\x00e7  12346 # c cédille (Çç)
 uplow \x00c6\x00E6 345     #*ae
 uplow \x0152\x0153    246 # oe liés (Œœ)
-uplow \x00C3\x00E3 1,1		a tilde
+uplow \x00C3\x00E3 1		a tilde
+uplow \x00C3\x00E3 1		a tilde
 noback uplow \x00d1\x00f1 12456 # n tilde (Ññ)
 
 uplow \x00c0\x00e0  12356 # a accent grave (Àà)
@@ -109,10 +120,6 @@ noback math + 235  # plus
 math * 35   # astérisque
 math / 34   # barre oblique
 math = 2356 # égal
-midnum + 235
-endnum + 235
-midnum = 2356
-endnum = 2356
 
 math \x00F7 25     # divisé par
 math \x003c 5-126  # inférieur à
@@ -276,9 +283,12 @@ include fr-bfu-comp68.cti
 # Braille indicators
 numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=
-numericmodechars .,
-numericnocontchars âêîôûëïüœ
+#numericnocontchars âêîôûëïüœ
+numericnocontchars 0123456789
+
+
 capsletter 46
+#begcaps 46-46
 begcapsword 46-46
 endcapsword 46
 begcaps 46-46
@@ -295,6 +305,11 @@ endemphphrase bold before 456
 
 noback midword \x2019 3     # right single quotation mark
 midnum \s 0						# espace entre les chiffres
+midnum - 36
+midnum + 235
+endnum + 235
+midnum = 2356
+endnum = 2356
 decpoint , 2
 
 
@@ -313,4 +328,5 @@ endword = 6-2356
 
 nofor pass2 [@6-235]$d @6-235-6
 nofor pass2 [@6-2356]$d @6-2356-6
+
 
