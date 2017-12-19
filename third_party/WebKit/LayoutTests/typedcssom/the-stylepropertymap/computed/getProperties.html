@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>StylePropertyMap.getProperties tests</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#dom-stylepropertymap-getproperties">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div id="target" style="--A: A; width: 0px; --C: C; transition-duration: 1s, 2s; color: red; --B: B;"></div>
+<script>
+'use strict';
+
+const target = document.getElementById('target');
+
+test(() => {
+  const styleMap = target.computedStyleMap();
+  const expectedProperties = [...getComputedStyle(target)].sort().concat('--A', '--B', '--C');
+  assert_array_equals(styleMap.getProperties(), expectedProperties);
+}, 'StylePropertyMap.getProperties returns property names in correct order');
+
+</script>
