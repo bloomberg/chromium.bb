@@ -15,20 +15,20 @@
   'masters': {
     'chromeos.chrome': {
       'chrome-tot-chromeos-amd64-generic': 'cros_chrome_sdk',
-      'Chrome4CROS Packages': 'chromeos_with_codecs_release_bot',
-      'Linux ChromeOS Buildspec Tests': 'chromeos_with_codecs_release_bot',
+      'Chrome4CROS Packages': 'chromeos_release_bot',
+      'Linux ChromeOS Buildspec Tests': 'chromeos_release_bot',
     },
 
     # Take care when changing any of these builders to ensure that you do not
-    # include a configuration with 'chrome_with_codecs' since these builders
-    # generated publicly advertised non-Official builds which are not allowed
-    # to have proprietary codecs enabled.
+    # have proprietary_codecs enabled, since these builders generate publicly
+    # advertised non-Official builds, and those aren't allowed to include those
+    # codecs.
     'chromium': {
       'Android': 'android_without_codecs_release_bot_minimal_symbols',
-      'Linux x64': 'release_bot',
-      'Mac': 'release_bot_mac_strip',
-      'Win': 'release_bot_x86_minimal_symbols',
-      'Win x64': 'release_bot_minimal_symbols',
+      'Linux x64': 'without_codecs_release_bot',
+      'Mac': 'without_codecs_release_bot_mac_strip',
+      'Win': 'without_codecs_release_bot_x86_minimal_symbols',
+      'Win x64': 'without_codecs_release_bot_minimal_symbols',
     },
 
     'chromium.android': {
@@ -97,14 +97,17 @@
     'chromium.chromiumos': {
       'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk',
       'ChromiumOS daisy Compile': 'cros_chrome_sdk',
-      'Linux ChromiumOS Builder': 'chromeos_with_codecs_release_bot',
-      'Linux ChromiumOS Builder (dbg)': 'chromeos_with_codecs_debug_bot',
-      'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
+      'Linux ChromiumOS Builder': 'chromeos_release_bot',
+      'Linux ChromiumOS Builder (dbg)': 'chromeos_debug_bot',
+
+      # TODO: move this bug to the 'chromium' waterfall since it is
+      # uploading build archives.
+      'Linux ChromiumOS Full': 'chromeos_without_codecs_release_bot',
 
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
-      'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
-      'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
+      'linux-chromeos-rel': 'chromeos_release_bot',
+      'linux-chromeos-dbg': 'chromeos_debug_bot',
     },
 
     'chromium.clang': {
@@ -165,7 +168,7 @@
 
       'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
 
-      'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
+      'Android deterministic': 'android_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
       'Browser Side Navigation Linux': 'release_bot',
       'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
@@ -182,7 +185,7 @@
       'Chromium Mac 10.11 Force Mac Toolchain': 'release_bot_mac_new_sdk',
       'Chromium Mac 10.13': 'release_bot',
 
-      'Mac Builder Goma Canary': 'gpu_tests_release_bot',
+      'Mac Builder Goma Canary': 'release_bot',
       'Mac Goma Canary (clobber)': 'release_bot_mac_strip',
       'Mac Builder (dbg) Goma Canary': 'debug_bot',
       'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
@@ -220,8 +223,8 @@
       'Jumbo Linux x64': 'jumbo_large_chunks_release_bot',
       'Jumbo Mac': 'jumbo_release_bot',
       'Jumbo Win x64': 'jumbo_release_bot',
-      'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
-      'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
+      'MD Top Chrome ChromeOS material-hybrid': 'chromeos_debug_bot',
+      'MD Top Chrome ChromeOS non-material': 'chromeos_debug_bot',
       'MD Top Chrome Win material': 'debug_bot_minimal_symbols',
       'MD Top Chrome Linux material': 'debug_bot',
       'Leak Detection Linux': 'release_bot',
@@ -242,7 +245,7 @@
       'Linux Viz': 'release_trybot',
       'Mac deterministic': 'release_bot_mac_strip',
       'Mac deterministic (dbg)': 'debug_bot',
-      'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
+      'Mojo ChromiumOS': 'chromeos_release_trybot',
       'Mojo Linux': 'release_trybot',
       'Mojo Windows': 'release_bot_x86_minimal_symbols',
       'Ozone Linux': 'ozone_linux_release_bot',
@@ -272,26 +275,26 @@
 
     'chromium.gpu': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
-      'GPU Mac Builder': 'gpu_tests_release_trybot',
-      'GPU Mac Builder (dbg)': 'gpu_tests_debug_trybot',
-      'GPU Linux Builder': 'gpu_tests_release_trybot',
-      'GPU Linux Builder (dbg)': 'gpu_tests_debug_trybot',
-      'GPU Win Builder': 'gpu_tests_release_trybot_x86_minimal_symbols',
-      'GPU Win Builder (dbg)': 'gpu_tests_debug_trybot_x86_minimal_symbols',
-      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
+      'GPU Mac Builder': 'release_trybot',
+      'GPU Mac Builder (dbg)': 'debug_trybot',
+      'GPU Linux Builder': 'release_trybot',
+      'GPU Linux Builder (dbg)': 'debug_trybot',
+      'GPU Win Builder': 'release_trybot_x86',
+      'GPU Win Builder (dbg)': 'debug_trybot_x86_minimal_symbols',
+      'Android Release (Nexus 5X)': 'android_release_trybot_arm64',
     },
 
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
       'Android dEQP Release (Nexus 5X)': 'deqp_android_release_trybot_arm64',
       'Android Release (Nexus 5)': 'android_release_trybot',
-      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
+      'Android Release (Nexus 5X)': 'android_release_trybot_arm64',
       'Android Release (Nexus 6)': 'android_release_trybot',
       'Android Release (Nexus 6P)': 'android_release_trybot_arm64',
       'Android Release (Nexus 9)': 'android_release_trybot_arm64',
       'Android Release (NVIDIA Shield TV)': 'android_release_trybot_arm64',
-      'GPU Android arm Builder': 'gpu_tests_android_release_trybot',
-      'GPU Android arm64 Builder': 'gpu_tests_android_release_trybot_arm64',
+      'GPU Android arm Builder': 'android_release_trybot',
+      'GPU Android arm64 Builder': 'android_release_trybot_arm64',
       'GPU Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU Linux Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
@@ -345,28 +348,28 @@
 
     'chromium.lkgr': {
       'ASAN Debug': 'asan_lsan_edge_debug_bot',
-      'ASAN Release Media': 'asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
+      'ASAN Release Media': 'asan_lsan_edge_fuzzer_v8_heap_chromeos_release_bot',
       'ASAN Release': 'asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'ASan Debug (32-bit x86 with V8-ARM)': 'asan_edge_v8_heap_debug_bot_hybrid',
       'ASan Release (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_release_bot_hybrid',
-      'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
+      'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_edge_fuzzer_v8_heap_chromeos_release_bot_hybrid',
       'ChromiumOS ASAN Release': 'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'MSAN Release (chained origins)': 'msan_edge_release_bot',
       'MSAN Release (no origins)': 'msan_no_origins_edge_release_bot',
       'Mac ASAN Debug': 'asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot',
-      'Mac ASAN Release Media': 'asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot',
+      'Mac ASAN Release Media': 'asan_disable_nacl_edge_fuzzer_v8_heap_release_bot',
       'Mac ASAN Release': 'asan_disable_nacl_edge_fuzzer_v8_heap_release_bot',
       'TSAN Debug': 'tsan_disable_nacl_debug_bot',
       'TSAN Release': 'tsan_disable_nacl_release_bot',
       'UBSan Release': 'ubsan_release_bot',
       'UBSan vptr Release': 'ubsan_vptr_edge_release_bot',
-      'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
+      'Win ASan Release Media': 'asan_fuzzer_v8_heap_release_bot_x86',
       'Win ASan Release': 'asan_fuzzer_v8_heap_release_bot',
       'Win SyzyASAN LKGR': 'syzyasan_no_pch_release_x86',
     },
 
     'chromium.mac': {
-      'Mac Builder': 'gpu_tests_release_bot',
+      'Mac Builder': 'release_bot',
       'Mac Builder (dbg)': 'debug_bot',
       'ios-device': 'ios',
       'ios-device-xcode-clang': 'ios',
@@ -440,13 +443,13 @@
 
     'client.v8.fyi': {
       'Android Builder': 'official_goma_minimal_symbols_android',
-      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
+      'Android Release (Nexus 5X)': 'android_release_trybot_arm64',
       'Linux ASAN Builder': 'asan_lsan_release_bot',
       'Linux Debug Builder': 'debug_bot',
-      'Linux Release (NVIDIA)': 'gpu_tests_release_trybot',
-      'Linux Release - concurrent marking (NVIDIA)': 'gpu_tests_release_trybot_cm',
+      'Linux Release (NVIDIA)': 'release_trybot',
+      'Linux Release - concurrent marking (NVIDIA)': 'release_trybot_cm',
       'Linux Snapshot Builder': 'release_bot',
-      'Mac Release (Intel)': 'gpu_tests_release_trybot',
+      'Mac Release (Intel)': 'release_trybot',
       'V8 Android GN (dbg)': 'android_debug_bot',
       'V8 Linux GN': 'release_bot',
       'V8-Blink Linux 64': 'release_bot',
@@ -454,7 +457,7 @@
       'V8-Blink Linux 64 (dbg)': 'debug_bot',
       'V8-Blink Mac': 'release_bot',
       'V8-Blink Win': 'release_bot_x86_minimal_symbols',
-      'Win Release (NVIDIA)': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'Win Release (NVIDIA)': 'release_trybot_x86',
     },
 
     'chromium.webkit': {
@@ -475,8 +478,8 @@
     },
 
     'chromium.webrtc': {
-      'Linux Builder': 'release_bot_chrome_with_codecs',
-      'Mac Builder': 'release_bot_chrome_with_codecs',
+      'Linux Builder': 'release_bot',
+      'Mac Builder': 'release_bot',
       'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks',
     },
 
@@ -484,9 +487,9 @@
       'Android Builder': 'android_release_bot_minimal_symbols',
       'Android Builder (dbg)': 'android_debug_static_bot',
       'Android Builder ARM64 (dbg)': 'android_debug_static_bot_arm64',
-      'Linux Builder': 'release_bot_chrome_with_codecs',
+      'Linux Builder': 'release_bot',
       'Linux Builder (dbg)': 'debug_bot',
-      'Mac Builder': 'release_bot_chrome_with_codecs',
+      'Mac Builder': 'release_bot',
       'Mac Builder (dbg)': 'debug_bot',
       'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks',
       'Win Builder (dbg)': 'debug_bot_x86_minimal_symbols_no_com_init_hooks',
@@ -558,7 +561,7 @@
 
       'android_n5x_swarming_dbg': 'android_debug_trybot_arm64',
       'android_n5x_swarming_rel': 'android_release_trybot_arm64',
-      'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
+      'android_optional_gpu_tests_rel': 'android_gpu_fyi_tests_release_trybot_arm64',
       'android_unswarmed_n5_rel': 'android_release_trybot',
       'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
       'cast_shell_android': 'android_cast_debug_static_bot',
@@ -568,7 +571,7 @@
 
     # TODO(crbug/786044): Remove non-compile debug configs when migrated.
     'tryserver.chromium.angle': {
-      'android_angle_rel_ng': 'gpu_tests_android_release_trybot_arm64',
+      'android_angle_rel_ng': 'android_release_trybot_arm64',
       'android_angle_deqp_rel_ng': 'deqp_android_release_trybot_arm64',
       'linux_angle_ozone_rel_ng': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'linux_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot',
@@ -592,9 +595,9 @@
     'tryserver.chromium.chromiumos': {
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
       'chromeos-daisy-rel': 'cros_chrome_sdk',
-      'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
-      'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
-      'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
+      'linux-chromeos-rel': 'chromeos_release_trybot',
+      'linux-chromeos-compile-dbg': 'chromeos_debug_bot',
+      'linux-chromeos-dbg': 'chromeos_debug_bot',
     },
 
     'tryserver.chromium.linux': {
@@ -619,11 +622,11 @@
       'linux_chromium_browser_side_navigation_rel': 'release_trybot',
       'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_trybot',
-      'linux_chromium_chromeos_compile_dbg_ng': 'chromeos_with_codecs_debug_trybot',
-      'linux_chromium_chromeos_compile_rel_ng': 'chromeos_with_codecs_release_trybot',
-      'linux_chromium_chromeos_dbg_ng': 'chromeos_with_codecs_debug_trybot',
+      'linux_chromium_chromeos_compile_dbg_ng': 'chromeos_debug_trybot',
+      'linux_chromium_chromeos_compile_rel_ng': 'chromeos_release_trybot',
+      'linux_chromium_chromeos_dbg_ng': 'chromeos_debug_trybot',
       'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot',
-      'linux_chromium_chromeos_rel_ng': 'chromeos_with_codecs_release_trybot',
+      'linux_chromium_chromeos_rel_ng': 'chromeos_release_trybot',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
       'linux_chromium_compile_dbg_32_ng': 'debug_trybot_x86',
@@ -641,16 +644,16 @@
       # on the continuous builder.
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
 
-      'linux_chromium_rel_ng': 'gpu_tests_release_trybot',
+      'linux_chromium_rel_ng': 'release_trybot',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
       'linux_layout_tests_layout_ng': 'release_trybot',
       'linux_layout_tests_root_layer_scrolls': 'release_trybot',
       'linux_layout_tests_slimming_paint_v2': 'release_trybot',
       'linux_mojo': 'release_trybot',
-      'linux_mojo_chromeos': 'chromeos_with_codecs_release_trybot',
-      'linux_nacl_sdk_build': 'release_bot',
+      'linux_mojo_chromeos': 'chromeos_release_trybot',
       'linux_nacl_sdk': 'release_bot',
+      'linux_nacl_sdk_build': 'release_bot',
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'linux_site_isolation': 'release_trybot',
       'linux_vr': 'vr_release_trybot',
@@ -665,16 +668,16 @@
       'ios-simulator-full-configs': 'ios',
       'ios-simulator-cronet': 'ios',
       'ios-simulator-xcode-clang': 'ios',
-      'mac_chromium_10.10': 'gpu_tests_release_trybot',
+      'mac_chromium_10.10': 'release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_release_trybot',
-      'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot',
+      'mac_chromium_10.12_rel_ng': 'release_trybot',
       'mac_chromium_archive_rel_ng': 'release_bot_mac_strip',
       'mac_chromium_asan_rel_ng': 'asan_dcheck_disable_nacl_release_bot',
       'mac_chromium_compile_dbg_ng': 'debug_trybot',
-      'mac_chromium_compile_rel_ng': 'gpu_tests_release_trybot',
+      'mac_chromium_compile_rel_ng': 'release_trybot',
       'mac_chromium_dbg_ng': 'debug_trybot',
       'mac_chromium_gn_upload': 'release_bot',
-      'mac_chromium_rel_ng': 'gpu_tests_release_trybot',
+      'mac_chromium_rel_ng': 'release_trybot',
       'mac_nacl_sdk': 'release_bot',
       'mac_nacl_sdk_build': 'release_bot',
       'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
@@ -726,18 +729,18 @@
     },
 
     'tryserver.chromium.win': {
-      'win7_chromium_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
-      'win7_chromium_rel_loc_exp': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'win7_chromium_rel_ng': 'release_trybot_x86',
+      'win7_chromium_rel_loc_exp': 'release_trybot_x86',
       'win10_chromium_x64_rel_ng': 'release_trybot',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
-      'win_chromium_gn_upload': 'release_bot_x86_minimal_symbols',
+      'win_chromium_gn_upload': 'release_bot_x86',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
-      'win_chromium_compile_dbg_ng': 'debug_trybot_x86_minimal_symbols',
-      'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
-      'win_chromium_dbg_ng': 'debug_trybot_x86_minimal_symbols',
+      'win_chromium_compile_dbg_ng': 'debug_trybot_x86',
+      'win_chromium_compile_rel_ng': 'release_trybot_x86',
+      'win_chromium_dbg_ng': 'debug_trybot_x86',
       'win_chromium_syzyasan_rel': 'syzyasan_no_pch_release_x86',
-      'win_chromium_x64_rel_ng': 'release_trybot_minimal_symbols',
+      'win_chromium_x64_rel_ng': 'release_trybot',
       'win_clang': 'win_clang_release_bot',
       'win-msvc-rel': 'win_msvc_release_bot',
       'win-msvc-dbg': 'win_msvc_debug_bot',
@@ -788,29 +791,29 @@
     ],
 
     'android_clang_tot_asan': [
-      'android_without_codecs', 'clang_tot', 'asan', 'shared', 'debug', 'minimal_symbols',
-      'strip_debug_info',
+      'android', 'clang_tot', 'asan', 'shared', 'debug',
+      'minimal_symbols', 'strip_debug_info',
     ],
 
     'android_clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on': [
-      'android_without_codecs', 'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release',
+      'android', 'clang_tot', 'cfi_full', 'cfi_diag', 'thin_lto', 'release',
       'static', 'dcheck_always_on',
     ],
 
     'android_clang_tot_dbg': [
-      'android_without_codecs', 'clang_tot', 'shared', 'debug',
+      'android', 'clang_tot', 'shared', 'debug',
     ],
 
     'android_clang_tot_release': [
-      'android_without_codecs', 'clang_tot', 'release',
+      'android', 'clang_tot', 'release',
     ],
 
     'android_clang_tot_release_arm64': [
-      'android_without_codecs', 'clang_tot', 'release', 'arm64',
+      'android', 'clang_tot', 'release', 'arm64',
     ],
 
     'android_clang_tot_x64': [
-      'android_without_codecs', 'clang_tot', 'shared', 'x64', 'release',
+      'android', 'clang_tot', 'shared', 'x64', 'release',
       'dcheck_always_on',
     ],
 
@@ -956,6 +959,10 @@
       'android', 'debug_trybot', 'x86', 'strip_debug_info',
     ],
 
+    'android_gpu_fyi_tests_release_trybot_arm64': [
+      'android', 'gpu_fyi_tests', 'release_trybot', 'arm64',
+    ],
+
     'android_ndk_next_release_bot_minimal_symbols': [
       'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'strip_debug_info',
     ],
@@ -981,7 +988,7 @@
     ],
 
     'android_shared_release_bot_x64': [
-      'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
+      'android', 'shared_release_bot', 'x64', 'dcheck_always_on',
     ],
 
     'android_release_trybot': [
@@ -993,7 +1000,7 @@
     ],
 
     'android_without_codecs_release_bot_minimal_symbols': [
-      'android_without_codecs', 'release_bot', 'minimal_symbols', 'strip_debug_info',
+      'android', 'without_codecs', 'release_bot', 'minimal_symbols', 'strip_debug_info',
     ],
 
     'asan_clang_edge_fuzzer_static_v8_heap_x86_full_symbols_release': [
@@ -1016,8 +1023,8 @@
       'asan', 'disable_nacl', 'clang_tot', 'full_symbols', 'static', 'release',
     ],
 
-    'asan_disable_nacl_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
-      'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
+    'asan_disable_nacl_edge_fuzzer_v8_heap_release_bot': [
+      'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'asan_disable_nacl_edge_fuzzer_v8_heap_debug_symbols_static_bot': [
@@ -1028,8 +1035,8 @@
       'asan', 'disable_nacl', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
-    'asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid': [
-      'asan', 'edge', 'fuzzer', 'v8_heap', 'chromeos_codecs', 'release_bot', 'hybrid',
+    'asan_edge_fuzzer_v8_heap_chromeos_release_bot_hybrid': [
+      'asan', 'edge', 'fuzzer', 'v8_heap', 'chromeos', 'release_bot', 'hybrid',
     ],
 
     'asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
@@ -1044,8 +1051,8 @@
       'asan', 'full_symbols', 'disable_nacl', 'release_bot', 'dcheck_always_on',
     ],
 
-    'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86': [
-      'clang', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot', 'x86',
+    'asan_fuzzer_v8_heap_release_bot_x86': [
+      'clang', 'asan', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
     'asan_fuzzer_v8_heap_release_bot': [
@@ -1060,8 +1067,8 @@
       'asan', 'lsan', 'edge', 'debug_bot',
     ],
 
-    'asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot': [
-      'asan', 'lsan', 'edge', 'v8_heap', 'chromeos_codecs', 'release_bot',
+    'asan_lsan_edge_fuzzer_v8_heap_chromeos_release_bot': [
+      'asan', 'lsan', 'edge', 'v8_heap', 'chromeos', 'release_bot',
     ],
 
     'asan_lsan_edge_fuzzer_v8_heap_release_bot': [
@@ -1108,24 +1115,28 @@
       'chromeos', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
+    'chromeos_debug_bot': [
+      'chromeos', 'debug_bot', 'use_vaapi',
+    ],
+
+    'chromeos_debug_trybot': [
+      'chromeos', 'debug_trybot', 'use_vaapi',
+    ],
+
     'chromeos_msan_release_bot': [
       'chromeos', 'msan', 'release_bot',
     ],
 
-    'chromeos_with_codecs_debug_bot': [
-      'chromeos_with_codecs', 'debug_bot', 'use_vaapi',
+    'chromeos_release_bot': [
+      'chromeos', 'release_bot', 'use_vaapi',
     ],
 
-    'chromeos_with_codecs_debug_trybot': [
-      'chromeos_with_codecs', 'debug_trybot', 'use_vaapi',
+    'chromeos_release_trybot': [
+      'chromeos', 'release_trybot', 'use_vaapi',
     ],
 
-    'chromeos_with_codecs_release_bot': [
-      'chromeos_with_codecs', 'release_bot', 'use_vaapi',
-    ],
-
-    'chromeos_with_codecs_release_trybot': [
-      'chromeos_with_codecs', 'release_trybot', 'use_vaapi',
+    'chromeos_without_codecs_release_bot': [
+      'chromeos', 'without_codecs', 'release_bot', 'use_vaapi',
     ],
 
     'clang_debug_trybot_x86': [
@@ -1135,7 +1146,6 @@
     'clang_release_bot_minimal_symbols_x86': [
       'clang', 'release_bot', 'minimal_symbols', 'x86',
     ],
-
 
     'clang_official_release_trybot': [
       'clang', 'official', 'release_trybot',
@@ -1233,7 +1243,7 @@
     ],
 
     'codesearch_gen_chromium_android_bot': [
-      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'arm', 'android_without_codecs',
+      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'arm', 'android',
     ],
 
     'codesearch_gen_chromium_chromiumos_bot': [
@@ -1282,7 +1292,7 @@
     ],
 
     'debug_libfuzzer_asan': [
-      'debug', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'debug', 'libfuzzer', 'asan', 'chromeos', 'pdf_xfa', 'disable_nacl',
     ],
 
     'debug_trybot': [
@@ -1356,39 +1366,7 @@
     ],
 
     'gpu_fyi_tests_win_clang_debug_bot': [
-      'gpu_tests', 'internal_gles2_conform_tests', 'clang', 'debug_bot', 'minimal_symbols',
-    ],
-
-    'gpu_tests_android_release_trybot': [
-      'gpu_tests', 'android', 'release_trybot',
-    ],
-
-    'gpu_tests_android_release_trybot_arm64': [
-      'gpu_tests', 'android', 'release_trybot', 'arm64',
-    ],
-
-    'gpu_tests_debug_trybot': [
-      'gpu_tests', 'debug_trybot',
-    ],
-
-    'gpu_tests_debug_trybot_x86_minimal_symbols': [
-      'gpu_tests', 'debug_trybot', 'x86', 'minimal_symbols',
-    ],
-
-    'gpu_tests_release_trybot': [
-      'gpu_tests', 'release_trybot',
-    ],
-
-    'gpu_tests_release_trybot_cm': [
-      'gpu_tests', 'release_trybot', 'v8_concurrent_marking',
-    ],
-
-    'gpu_tests_release_trybot_x86_minimal_symbols': [
-      'gpu_tests', 'release_trybot', 'x86', 'minimal_symbols',
-    ],
-
-    'gpu_tests_release_bot': [
-      'gpu_tests', 'release_bot',
+      'internal_gles2_conform_tests', 'clang', 'debug_bot', 'minimal_symbols',
     ],
 
     'gn_linux_upload': [
@@ -1504,7 +1482,7 @@
     ],
 
     'release_afl_asan': [
-      'release', 'afl', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'release', 'afl', 'asan', 'chromeos', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_bot': [
@@ -1517,10 +1495,6 @@
 
     'release_bot_arm64': [
       'release_bot', 'arm64',
-    ],
-
-    'release_bot_chrome_with_codecs': [
-      'release_bot', 'chrome_with_codecs',
     ],
 
     'release_bot_fuchsia': [
@@ -1567,31 +1541,31 @@
     ],
 
     'release_libfuzzer_asan': [
-      'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'release', 'libfuzzer', 'asan', 'chromeos', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_libfuzzer_asan_clang_tot': [
-      'clang_tot', 'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'clang_tot', 'release', 'libfuzzer', 'asan', 'chromeos', 'pdf_xfa', 'disable_nacl',
     ],
 
     'release_libfuzzer_mac_asan': [
-      'release', 'libfuzzer', 'asan', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'release', 'libfuzzer', 'asan', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_libfuzzer_msan': [
-      'release', 'libfuzzer', 'msan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'release', 'libfuzzer', 'msan', 'chromeos', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_libfuzzer_ubsan': [
-      'release', 'libfuzzer', 'ubsan_security', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'release', 'libfuzzer', 'ubsan_security', 'chromeos', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_trybot': [
       'release_trybot',
     ],
 
-    'release_trybot_minimal_symbols': [
-      'release_trybot', 'minimal_symbols',
+    'release_trybot_cm': [
+      'release_trybot', 'v8_concurrent_marking',
     ],
 
     'release_trybot_arm': [
@@ -1724,6 +1698,22 @@
     'windows_analyze': [
       'no_symbols', 'no_pch', 'shared', 'x86', 'win_analyze',
     ],
+
+    'without_codecs_release_bot': [
+      'without_codecs', 'release_bot',
+    ],
+
+    'without_codecs_release_bot_mac_strip': [
+      'without_codecs', 'release_bot', 'mac_strip',
+    ],
+
+    'without_codecs_release_bot_x86_minimal_symbols': [
+      'without_codecs', 'release_bot', 'x86', 'minimal_symbols',
+    ],
+
+    'without_codecs_release_bot_minimal_symbols': [
+      'without_codecs', 'release_bot', 'minimal_symbols',
+    ],
   },
 
   # This is a dict mapping a given 'mixin' name to a dict of settings that
@@ -1733,15 +1723,7 @@
 
     'analysis': { 'gn_args': 'use_clang_static_analyzer=true'},
 
-    # We build Android with codecs on most bots to ensure maximum test
-    # coverage, but use 'android_without_codecs' on bots responsible for
-    # building publicly advertised non-Official Android builds --
-    # which are not allowed to have proprietary codecs enabled.
     'android': {
-      'mixins': ['android_without_codecs', 'chrome_with_codecs'],
-    },
-
-    'android_without_codecs': {
       'gn_args': 'target_os="android"',
     },
 
@@ -1772,14 +1754,6 @@
 
     'asan': {
       'gn_args': 'is_asan=true',
-    },
-
-    'ffmpeg_branding_chrome': {
-      'gn_args': 'ffmpeg_branding="Chrome"',
-    },
-
-    'ffmpeg_branding_chromeos': {
-      'gn_args': 'ffmpeg_branding="ChromeOS"',
     },
 
     'cast': {
@@ -1814,20 +1788,10 @@
       'gn_args': 'chrome_pgo_phase=2 is_clang=false',
     },
 
-    'chrome_with_codecs': {
-      'mixins': ['ffmpeg_branding_chrome', 'proprietary_codecs'],
-    },
-
     'chromeos': {
-      'gn_args': 'target_os="chromeos"',
-    },
-
-    'chromeos_codecs': {
-      'mixins': ['ffmpeg_branding_chromeos', 'proprietary_codecs'],
-    },
-
-    'chromeos_with_codecs': {
-      'mixins': ['chromeos', 'chromeos_codecs'],
+      # TODO(crbug.com/795935) - ffmpeg_branding should just be set
+      # automatically based on other flags.
+      'gn_args': 'target_os="chromeos" ffmpeg_branding="ChromeOS"',
     },
 
     'clang_tot': {
@@ -1905,10 +1869,6 @@
       'gn_args': 'error',
     },
 
-    'ffmpeg_branding_chromeos': {
-      'gn_args': 'ffmpeg_branding="ChromeOS"',
-    },
-
     'full_symbols': {
       'gn_args': 'symbol_level=2',
     },
@@ -1935,11 +1895,7 @@
     },
 
     'gpu_fyi_tests': {
-      'mixins': ['gpu_tests', 'internal_gles2_conform_tests'],
-    },
-
-    'gpu_tests': {
-      'mixins': ['chrome_with_codecs'],
+      'mixins': ['internal_gles2_conform_tests'],
     },
 
     'mac_new_sdk': {
@@ -2060,12 +2016,6 @@
       'gn_args': 'pdf_enable_xfa=true',
     },
 
-    # Note: This is probably not what you want to use. Instead use one of the
-    # chrome_with_codecs or chromeos_with_codecs mixins.
-    'proprietary_codecs': {
-      'gn_args': 'proprietary_codecs=true',
-    },
-
     'release': {
       'gn_args': 'is_debug=false',
     },
@@ -2162,6 +2112,10 @@
 
     'win_analyze': {
       'gn_args': 'use_vs_code_analysis=true',
+    },
+
+    'without_codecs': {
+      'gn_args': 'proprietary_codecs=false ffmpeg_branding="Chromium"',
     },
 
     'x64': {
