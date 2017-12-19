@@ -19,7 +19,7 @@ const bool kIncludeSubdomains = true;
 const bool kExcludeSubdomains = false;
 const bool kSuccess = true;
 const bool kError = false;
-const std::string kServerCert = "quic_test.example.com.crt";
+const std::string kServerCert = "quic-chain.pem";
 NSDate* const kDistantFuture = [NSDate distantFuture];
 }  // namespace
 
