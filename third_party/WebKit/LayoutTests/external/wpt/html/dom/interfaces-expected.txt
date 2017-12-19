@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5287 tests; 5165 PASS, 122 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5287 tests; 5166 PASS, 121 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -44,7 +44,7 @@ PASS Document interface: attribute applets
 PASS Document interface: operation clear()
 PASS Document interface: operation captureEvents()
 PASS Document interface: operation releaseEvents()
-FAIL Document interface: attribute all assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
+PASS Document interface: attribute all
 PASS Document interface: attribute onabort
 PASS Document interface: attribute onauxclick
 PASS Document interface: attribute onblur
