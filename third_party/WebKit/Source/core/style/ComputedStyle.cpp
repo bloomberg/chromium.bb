@@ -1359,26 +1359,6 @@ const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
   return g_null_atom;
 }
 
-LineLogicalSide ComputedStyle::GetTextEmphasisLineLogicalSide() const {
-  TextEmphasisPosition position = GetTextEmphasisPosition();
-  if (IsHorizontalWritingMode()) {
-    return position == TextEmphasisPosition::kOverRight ||
-                   position == TextEmphasisPosition::kOverLeft
-               ? LineLogicalSide::kOver
-               : LineLogicalSide::kUnder;
-  }
-  if (GetWritingMode() != WritingMode::kSidewaysLr) {
-    return position == TextEmphasisPosition::kOverRight ||
-                   position == TextEmphasisPosition::kUnderRight
-               ? LineLogicalSide::kOver
-               : LineLogicalSide::kUnder;
-  }
-  return position == TextEmphasisPosition::kOverLeft ||
-                 position == TextEmphasisPosition::kUnderLeft
-             ? LineLogicalSide::kOver
-             : LineLogicalSide::kUnder;
-}
-
 CSSAnimationData& ComputedStyle::AccessAnimations() {
   if (!AnimationsInternal())
     SetAnimationsInternal(CSSAnimationData::Create());

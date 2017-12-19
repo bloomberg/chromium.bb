@@ -98,28 +98,49 @@ inline bool InlineFlowBox::HasEmphasisMarkBefore(
       text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
   if (!text_box->GetEmphasisMarkPosition(style, emphasis_mark_position))
     return false;
-  LineLogicalSide side = style.GetTextEmphasisLineLogicalSide();
-  if (IsHorizontal() || !style.IsFlippedLinesWritingMode())
-    return side == LineLogicalSide::kOver;
-  return side == LineLogicalSide::kUnder;
+  if (IsHorizontal()) {
+    return emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+           emphasis_mark_position == TextEmphasisPosition::kOverLeft;
+  }
+  if (style.IsFlippedLinesWritingMode()) {
+    return emphasis_mark_position == TextEmphasisPosition::kOverLeft ||
+           emphasis_mark_position == TextEmphasisPosition::kUnderLeft;
+  }
+  if (style.IsFlippedBlocksWritingMode()) {
+    return emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+           emphasis_mark_position == TextEmphasisPosition::kUnderRight;
+  }
+  return false;
 }
 
 inline bool InlineFlowBox::HasEmphasisMarkOver(
     const InlineTextBox* text_box) const {
-  const auto& style =
-      text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
   TextEmphasisPosition emphasis_mark_position;
-  return text_box->GetEmphasisMarkPosition(style, emphasis_mark_position) &&
-         style.GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver;
+  if (!text_box->GetEmphasisMarkPosition(
+          text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle()),
+          emphasis_mark_position))
+    return false;
+
+  return IsHorizontal()
+             ? emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+                   emphasis_mark_position == TextEmphasisPosition::kOverLeft
+             : emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+                   emphasis_mark_position == TextEmphasisPosition::kUnderRight;
 }
 
 inline bool InlineFlowBox::HasEmphasisMarkUnder(
     const InlineTextBox* text_box) const {
-  const auto& style =
-      text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
   TextEmphasisPosition emphasis_mark_position;
-  return text_box->GetEmphasisMarkPosition(style, emphasis_mark_position) &&
-         style.GetTextEmphasisLineLogicalSide() == LineLogicalSide::kUnder;
+  if (!text_box->GetEmphasisMarkPosition(
+          text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle()),
+          emphasis_mark_position))
+    return false;
+
+  return IsHorizontal()
+             ? emphasis_mark_position == TextEmphasisPosition::kUnderRight ||
+                   emphasis_mark_position == TextEmphasisPosition::kUnderLeft
+             : emphasis_mark_position == TextEmphasisPosition::kOverLeft ||
+                   emphasis_mark_position == TextEmphasisPosition::kUnderLeft;
 }
 
 void InlineFlowBox::AddToLine(InlineBox* child) {
