@@ -82,6 +82,8 @@ viz_component("service") {
     "display_embedder/display_provider.h",
     "display_embedder/gl_output_surface.cc",
     "display_embedder/gl_output_surface.h",
+    "display_embedder/gl_output_surface_buffer_queue.cc",
+    "display_embedder/gl_output_surface_buffer_queue.h",
     "display_embedder/gpu_display_provider.cc",
     "display_embedder/gpu_display_provider.h",
     "display_embedder/in_process_gpu_memory_buffer_manager.cc",
