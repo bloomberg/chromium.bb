@@ -45,8 +45,11 @@ source_set("video") {
     ]
   }
 
-  deps = [
+  public_deps = [
     "//gpu/command_buffer/client:gles2_interface",
+  ]
+
+  deps = [
     "//gpu/command_buffer/common",
     "//media/base",
     "//third_party/libyuv",

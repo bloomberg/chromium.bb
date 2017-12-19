@@ -284,6 +284,7 @@ component("proxy") {
     ":common",
     "//base",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/ipc/common:command_buffer_traits",
     "//media:shared_memory_support",
     "//mojo/edk/system",

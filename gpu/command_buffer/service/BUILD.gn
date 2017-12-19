@@ -17,6 +17,18 @@ group("service") {
   }
 }
 
+group("gles2") {
+  if (is_component_build) {
+    public_deps = [
+      "//gpu",
+    ]
+  } else {
+    public_deps = [
+      ":gles2_sources",
+    ]
+  }
+}
+
 if (is_component_build) {
   link_target_type = "source_set"
 } else {
@@ -29,15 +41,70 @@ target(link_target_type, "service_sources") {
 
   sources = [
     "async_api_interface.h",
+    "command_buffer_service.cc",
+    "command_buffer_service.h",
+    "common_decoder.cc",
+    "common_decoder.h",
+    "gpu_preferences.cc",
+    "gpu_preferences.h",
+    "gpu_switches.cc",
+    "gpu_switches.h",
+    "image_factory.cc",
+    "image_factory.h",
+    "image_manager.cc",
+    "image_manager.h",
+    "memory_tracking.h",
+    "scheduler.cc",
+    "scheduler.h",
+    "sequence_id.h",
+    "sync_point_manager.cc",
+    "sync_point_manager.h",
+    "transfer_buffer_manager.cc",
+    "transfer_buffer_manager.h",
+  ]
+
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config:precompiled_headers",
+    "//gpu:gpu_implementation",
+    "//third_party/khronos:khronos_headers",
+  ]
+
+  public_deps = [
+    "//gpu/command_buffer/common:common_sources",
+  ]
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//gpu/command_buffer/client:client_sources",
+    "//gpu/config:config_sources",
+    "//gpu/ipc/common:surface_handle_type",
+    "//media:media_features",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (is_android && !is_debug) {
+    # On Android optimize more since this component can be a bottleneck.
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+}
+
+target(link_target_type, "gles2_sources") {
+  # External code should depend on this via //gpu/command_buffer/service:gles2
+  # above rather than depending on this directly or the component build will
+  # break.
+  visibility = [ "//gpu/*" ]
+
+  sources = [
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
     "command_buffer_direct.cc",
     "command_buffer_direct.h",
-    "command_buffer_service.cc",
-    "command_buffer_service.h",
-    "common_decoder.cc",
-    "common_decoder.h",
     "context_group.cc",
     "context_group.h",
     "context_state.cc",
@@ -83,20 +150,12 @@ target(link_target_type, "service_sources") {
     "gles2_cmd_validation_implementation_autogen.h",
     "gpu_fence_manager.cc",
     "gpu_fence_manager.h",
-    "gpu_preferences.cc",
-    "gpu_preferences.h",
     "gpu_state_tracer.cc",
     "gpu_state_tracer.h",
-    "gpu_switches.cc",
-    "gpu_switches.h",
     "gpu_tracer.cc",
     "gpu_tracer.h",
     "id_manager.cc",
     "id_manager.h",
-    "image_factory.cc",
-    "image_factory.h",
-    "image_manager.cc",
-    "image_manager.h",
     "indexed_buffer_binding_host.cc",
     "indexed_buffer_binding_host.h",
     "logger.cc",
@@ -125,9 +184,6 @@ target(link_target_type, "service_sources") {
     "renderbuffer_manager.h",
     "sampler_manager.cc",
     "sampler_manager.h",
-    "scheduler.cc",
-    "scheduler.h",
-    "sequence_id.h",
     "service_discardable_manager.cc",
     "service_discardable_manager.h",
     "service_transfer_cache.cc",
@@ -140,14 +196,10 @@ target(link_target_type, "service_sources") {
     "shader_translator.h",
     "shader_translator_cache.cc",
     "shader_translator_cache.h",
-    "sync_point_manager.cc",
-    "sync_point_manager.h",
     "texture_definition.cc",
     "texture_definition.h",
     "texture_manager.cc",
     "texture_manager.h",
-    "transfer_buffer_manager.cc",
-    "transfer_buffer_manager.h",
     "transform_feedback_manager.cc",
     "transform_feedback_manager.h",
     "vertex_array_manager.cc",
@@ -167,18 +219,18 @@ target(link_target_type, "service_sources") {
 
   public_deps = [
     "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/common:gles2_sources",
   ]
   deps = [
     ":disk_cache_proto",
+    ":service_sources",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
-    "//crypto",
     "//gpu/command_buffer/client:client_sources",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config:config_sources",
     "//gpu/ipc/common:surface_handle_type",
-    "//media:media_features",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",
     "//third_party/angle:translator",

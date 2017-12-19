@@ -132,7 +132,7 @@ bool SoftwareBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle()
   return false;
 }
 
-GLenum
+uint32_t
 SoftwareBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
   // Not used for software surfaces.
   NOTREACHED();
