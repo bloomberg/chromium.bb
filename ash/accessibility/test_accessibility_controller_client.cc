@@ -36,6 +36,11 @@ void TestAccessibilityControllerClient::PlayShutdownSound(
   std::move(callback).Run(kShutdownSoundDuration);
 }
 
+void TestAccessibilityControllerClient::HandleAccessibilityGesture(
+    const std::string& gesture) {
+  last_a11y_gesture_ = gesture;
+}
+
 int32_t TestAccessibilityControllerClient::GetPlayedEarconAndReset() {
   int32_t tmp = sound_key_;
   sound_key_ = -1;

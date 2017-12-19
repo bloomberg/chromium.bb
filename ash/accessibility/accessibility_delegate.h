@@ -119,10 +119,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Play tick sound indicating spoken feedback will be toggled after countdown.
   virtual void PlaySpokenFeedbackToggleCountdown(int tick_count) = 0;
 
-  // Forward an accessibility gesture from the touch exploration controller to
-  // ChromeVox.
-  virtual void HandleAccessibilityGesture(ui::AXGesture gesture) = 0;
-
   // NOTE: Prefer adding methods to AccessibilityController, see class comment.
 };
 

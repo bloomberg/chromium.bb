@@ -133,7 +133,4 @@ bool DefaultAccessibilityDelegate::ShouldToggleSpokenFeedbackViaTouch() {
 void DefaultAccessibilityDelegate::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {}
 
-void DefaultAccessibilityDelegate::HandleAccessibilityGesture(
-    ui::AXGesture gesture) {}
-
 }  // namespace ash

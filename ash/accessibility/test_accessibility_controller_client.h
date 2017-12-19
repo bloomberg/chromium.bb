@@ -30,15 +30,19 @@ class TestAccessibilityControllerClient
   void TriggerAccessibilityAlert(mojom::AccessibilityAlert alert) override;
   void PlayEarcon(int32_t sound_key) override;
   void PlayShutdownSound(PlayShutdownSoundCallback callback) override;
+  void HandleAccessibilityGesture(const std::string& gesture) override;
 
   int32_t GetPlayedEarconAndReset();
 
   mojom::AccessibilityAlert last_a11y_alert() const { return last_a11y_alert_; }
+  std::string last_a11y_gesture() const { return last_a11y_gesture_; }
 
  private:
   mojom::AccessibilityAlert last_a11y_alert_ = mojom::AccessibilityAlert::NONE;
 
   int32_t sound_key_ = -1;
+
+  std::string last_a11y_gesture_;
 
   mojo::Binding<mojom::AccessibilityControllerClient> binding_;
 

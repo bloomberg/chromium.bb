@@ -47,7 +47,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   double GetSavedScreenMagnifierScale() override;
   bool ShouldToggleSpokenFeedbackViaTouch() override;
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
-  void HandleAccessibilityGesture(ui::AXGesture gesture) override;
 
  private:
   bool spoken_feedback_enabled_ = false;

@@ -31,7 +31,6 @@ source_set("chromeos") {
     "//components/policy/proto",
     "//components/wallpaper",
     "//content/app/resources",
-    "//ui/accessibility:ax_gen",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/resources",
