@@ -142,6 +142,11 @@ class CoordinatorImplTest : public testing::Test {
     coordinator_->GetVmRegionsForHeapProfiler(callback);
   }
 
+  void ReduceCoordinatorClientProcessTimeout() {
+    coordinator_->set_client_process_timeout(
+        base::TimeDelta::FromMilliseconds(5));
+  }
+
  private:
   std::unique_ptr<NiceMock<FakeCoordinatorImpl>> coordinator_;
   base::MessageLoop message_loop_;
@@ -358,6 +363,114 @@ TEST_F(CoordinatorImplTest, MissingOsDump) {
       OnCall(true, Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
                                  IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
+  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  run_loop.Run();
+}
+
+TEST_F(CoordinatorImplTest, TimeOutStuckChild) {
+  base::RunLoop run_loop;
+
+  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
+      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
+      MemoryDumpLevelOfDetail::DETAILED));
+
+  // |stuck_callback| should be destroyed after |client_process| or mojo
+  // will complain about the callback being destoyed before the binding.
+  MockClientProcess::RequestChromeMemoryDumpCallback stuck_callback;
+  NiceMock<MockClientProcess> client_process(this, 1,
+                                             mojom::ProcessType::BROWSER);
+
+  // Store a reference to the callback passed to RequestChromeMemoryDump
+  // to emulate "stuck" behaviour.
+  EXPECT_CALL(client_process, RequestChromeMemoryDump(_, _))
+      .WillOnce(
+          Invoke([&stuck_callback](
+                     const MemoryDumpRequestArgs&,
+                     const MockClientProcess::RequestChromeMemoryDumpCallback&
+                         callback) { stuck_callback = callback; }));
+
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(
+      callback,
+      OnCall(false, Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
+                                  IsEmpty()))))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  ReduceCoordinatorClientProcessTimeout();
+  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  run_loop.Run();
+}
+
+TEST_F(CoordinatorImplTest, TimeOutStuckChildMultiProcess) {
+  base::RunLoop run_loop;
+
+  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
+      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
+      MemoryDumpLevelOfDetail::DETAILED));
+
+  static constexpr base::ProcessId kBrowserPid = 1;
+  static constexpr base::ProcessId kRendererPid = 2;
+
+  // |stuck_callback| should be destroyed after |renderer_client| or mojo
+  // will complain about the callback being destoyed before the binding.
+  MockClientProcess::RequestChromeMemoryDumpCallback stuck_callback;
+  MockClientProcess browser_client(this, kBrowserPid,
+                                   mojom::ProcessType::BROWSER);
+  MockClientProcess renderer_client(this, kRendererPid,
+                                    mojom::ProcessType::RENDERER);
+
+// This ifdef is here to match the sandboxing behavior of the client.
+// On Linux, all memory dumps come from the browser client. On all other
+// platforms, they are expected to come from each individual client.
+#if defined(OS_LINUX)
+  EXPECT_CALL(
+      browser_client,
+      RequestOSMemoryDump(
+          true, AllOf(Contains(kBrowserPid), Contains(kRendererPid)), _))
+      .WillOnce(Invoke(
+          [](bool want_mmaps, const std::vector<base::ProcessId>& pids,
+             const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
+            std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+            results[kBrowserPid] = FillRawOSDump(kBrowserPid);
+            results[kRendererPid] = FillRawOSDump(kRendererPid);
+            callback.Run(true, std::move(results));
+          }));
+  EXPECT_CALL(renderer_client, RequestOSMemoryDump(_, _, _)).Times(0);
+#else
+  EXPECT_CALL(browser_client, RequestOSMemoryDump(_, Contains(0), _))
+      .WillOnce(Invoke(
+          [](bool want_mmaps, const std::vector<base::ProcessId>& pids,
+             const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
+            std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+            results[0] = FillRawOSDump(kBrowserPid);
+            callback.Run(true, std::move(results));
+          }));
+  EXPECT_CALL(renderer_client, RequestOSMemoryDump(_, Contains(0), _))
+      .WillOnce(Invoke(
+          [](bool want_mmaps, const std::vector<base::ProcessId>& pids,
+             const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
+            std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+            results[0] = FillRawOSDump(kRendererPid);
+            callback.Run(true, std::move(results));
+          }));
+#endif  // defined(OS_LINUX)
+
+  // Make the browser respond correctly but pretend the renderer is "stuck"
+  // by storing a callback.
+  EXPECT_CALL(renderer_client, RequestChromeMemoryDump(_, _))
+      .WillOnce(
+          Invoke([&stuck_callback](
+                     const MemoryDumpRequestArgs&,
+                     const MockClientProcess::RequestChromeMemoryDumpCallback&
+                         callback) { stuck_callback = callback; }));
+
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(callback, OnCall(false, _))
+      .WillOnce(
+          Invoke([&run_loop](bool success, GlobalMemoryDump* global_dump) {
+            EXPECT_EQ(1U, global_dump->process_dumps.size());
+            run_loop.Quit();
+          }));
+  ReduceCoordinatorClientProcessTimeout();
   RequestGlobalMemoryDump(std::move(args), callback.Get());
   run_loop.Run();
 }
