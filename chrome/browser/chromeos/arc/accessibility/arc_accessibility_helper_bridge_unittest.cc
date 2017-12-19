@@ -16,11 +16,18 @@
 #include "components/exo/shell_surface.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/arc/notification/arc_notification_surface.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 
 namespace arc {
+
+namespace {
+
+const char kNotificationKey[] = "unit.test.notification";
+
+}  // namespace
 
 class ArcAccessibilityHelperBridgeTest : public testing::Test {
  public:
@@ -44,6 +51,40 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     std::unique_ptr<aura::Window> window_;
 
     DISALLOW_COPY_AND_ASSIGN(TestArcAccessibilityHelperBridge);
+  };
+
+  class ArcNotificationSurfaceTest : public ArcNotificationSurface {
+   public:
+    explicit ArcNotificationSurfaceTest(std::string notification_key)
+        : notification_key_(notification_key), ax_tree_id_(-1) {}
+
+    gfx::Size GetSize() const override { return gfx::Size(); }
+
+    aura::Window* GetWindow() const override { return nullptr; }
+
+    aura::Window* GetContentWindow() const override { return nullptr; }
+
+    const std::string& GetNotificationKey() const override {
+      return notification_key_;
+    }
+
+    void Attach(views::NativeViewHost* native_view_host) override {}
+
+    void Detach() override {}
+
+    bool IsAttached() const override { return false; }
+
+    views::NativeViewHost* GetAttachedHost() const override { return nullptr; }
+
+    void FocusSurfaceWindow() override {}
+
+    void SetAXTreeId(int32_t ax_tree_id) override { ax_tree_id_ = ax_tree_id; }
+
+    int32_t GetAXTreeId() const override { return ax_tree_id_; }
+
+   private:
+    const std::string notification_key_;
+    int32_t ax_tree_id_;
   };
 
   ArcAccessibilityHelperBridgeTest() = default;
@@ -151,6 +192,68 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 
   helper_bridge->OnTaskDestroyed(2);
   ASSERT_EQ(0U, task_id_to_tree.size());
+}
+
+// Accessibility event and surface creation/removal are sent in different
+// channels, mojo and wayland. Order of those events can be changed. This is the
+// case where mojo events arrive earlier than surface creation/removal.
+TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableChromeVoxArcSupport);
+
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+
+  const auto& notification_key_to_tree_ =
+      helper_bridge->notification_key_to_tree_for_test();
+  ASSERT_EQ(0U, notification_key_to_tree_.size());
+
+  // Dispatch an accessibility event for creation of notification.
+  auto event1 = arc::mojom::AccessibilityEventData::New();
+  event1->event_type = arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED;
+  event1->notification_key = base::make_optional<std::string>(kNotificationKey);
+  event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  helper_bridge->OnAccessibilityEvent(event1.Clone());
+
+  EXPECT_EQ(1U, notification_key_to_tree_.size());
+
+  // Add notification surface for the first event.
+  ArcNotificationSurfaceTest test_surface(kNotificationKey);
+  helper_bridge->OnNotificationSurfaceAdded(&test_surface);
+
+  // Confirm that axtree id is set to the surface.
+  auto it = notification_key_to_tree_.find(kNotificationKey);
+  EXPECT_NE(notification_key_to_tree_.end(), it);
+  AXTreeSourceArc* tree = it->second->tree.get();
+  ui::AXTreeData tree_data;
+  tree->GetTreeData(&tree_data);
+  EXPECT_EQ(tree_data.tree_id, test_surface.GetAXTreeId());
+
+  // Dispatch second event for notification creation before surface is removed.
+  auto event2 = arc::mojom::AccessibilityEventData::New();
+  event2->event_type = arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED;
+  event2->notification_key = base::make_optional<std::string>(kNotificationKey);
+  event2->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  helper_bridge->OnAccessibilityEvent(event2.Clone());
+
+  EXPECT_EQ(1U, notification_key_to_tree_.size());
+
+  // Remove notification surface for the first event.
+  helper_bridge->OnNotificationSurfaceRemoved(&test_surface);
+
+  // Tree shouldn't be removed as a surface for the second event will come.
+  EXPECT_EQ(1U, notification_key_to_tree_.size());
+
+  // Add notification surface for the second event, and confirm that axtree id
+  // is set.
+  ArcNotificationSurfaceTest test_surface_2(kNotificationKey);
+  helper_bridge->OnNotificationSurfaceAdded(&test_surface_2);
+  EXPECT_EQ(tree_data.tree_id, test_surface_2.GetAXTreeId());
+
+  // Remove notification surface for the second event, and confirm that tree is
+  // deleted.
+  helper_bridge->OnNotificationSurfaceRemoved(&test_surface_2);
+  EXPECT_EQ(0U, notification_key_to_tree_.size());
 }
 
 }  // namespace arc
