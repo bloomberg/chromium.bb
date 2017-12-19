@@ -48,8 +48,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace {
 
@@ -593,29 +591,28 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
     optional_field.use_image_as_icon = true;
   }
 
-  message_center::Notification notification(
-      image.IsEmpty() ? message_center::NOTIFICATION_TYPE_SIMPLE
-                      : message_center::NOTIFICATION_TYPE_IMAGE,
-      kNotificationId,
-      l10n_util::GetStringUTF16(GetScreenshotNotificationTitle(result)),
-      l10n_util::GetStringUTF16(GetScreenshotNotificationText(result)),
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_SCREENSHOT_NOTIFICATION_ICON),
-      l10n_util::GetStringUTF16(IDS_SCREENSHOT_NOTIFICATION_NOTIFIER_NAME),
-      GURL(kNotificationOriginUrl),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 ash::system_notifier::kNotifierScreenshot),
-      optional_field,
-      new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
-                                                screenshot_path));
-  notification.set_clickable(success);
-  notification.set_accent_color(message_center::kSystemNotificationColorNormal);
-  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-      kNotificationImageIcon, message_center::kSystemNotificationColorNormal)));
-  notification.set_vector_small_image(kNotificationImageIcon);
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          image.IsEmpty() ? message_center::NOTIFICATION_TYPE_SIMPLE
+                          : message_center::NOTIFICATION_TYPE_IMAGE,
+          kNotificationId,
+          l10n_util::GetStringUTF16(GetScreenshotNotificationTitle(result)),
+          l10n_util::GetStringUTF16(GetScreenshotNotificationText(result)),
+          gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_SCREENSHOT_NOTIFICATION_NOTIFIER_NAME),
+          GURL(kNotificationOriginUrl),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              ash::system_notifier::kNotifierScreenshot),
+          optional_field,
+          new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
+                                                    screenshot_path),
+          kNotificationImageIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_clickable(success);
 
   NotificationDisplayService::GetForProfile(GetProfile())
-      ->Display(NotificationHandler::Type::TRANSIENT, notification);
+      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 Profile* ChromeScreenshotGrabber::GetProfile() {

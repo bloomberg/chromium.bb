@@ -23,8 +23,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 
 using message_center::MessageCenter;
 using l10n_util::GetStringUTF16;
@@ -147,25 +145,21 @@ void EolNotification::Update() {
   DCHECK_EQ(BUTTON_DISMISS, data.buttons.size());
   data.buttons.emplace_back(GetStringUTF16(IDS_EOL_DISMISS_BUTTON));
 
-  message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
-      GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
-      GetStringUTF16(IDS_EOL_NOTIFICATION_EOL), gfx::Image(),
-      GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
-      GURL(kEolNotificationId),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kEolNotificationId),
-      data, new EolNotificationDelegate(profile_));
-
-  notification.set_accent_color(
-      message_center::kSystemNotificationColorCriticalWarning);
-  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-      kNotificationEndOfSupportIcon,
-      message_center::kSystemNotificationColorCriticalWarning)));
-  notification.set_vector_small_image(kNotificationEndOfSupportIcon);
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
+          GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
+          GetStringUTF16(IDS_EOL_NOTIFICATION_EOL), gfx::Image(),
+          GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
+          GURL(kEolNotificationId),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT, kEolNotificationId),
+          data, new EolNotificationDelegate(profile_),
+          kNotificationEndOfSupportIcon,
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 }  // namespace chromeos
