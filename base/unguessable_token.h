@@ -19,11 +19,17 @@ namespace base {
 struct UnguessableTokenHash;
 
 // A UnguessableToken is an 128-bit token generated from a cryptographically
-// strong random source.
+// strong random source. It can be used as part of a larger aggregate type,
+// or as an ID in and of itself.
 //
-// UnguessableToken should be used when a sensitive ID needs to be unguessable,
-// and is shared across processes. It can be used as part of a larger aggregate
-// type, or as an ID in and of itself.
+// UnguessableToken can be used to implement "Capability-Based Security".
+// In other words, UnguessableToken can be used when the resource associated
+// with the ID needs to be protected against manipulation by other untrusted
+// agents in the system, and there is no other convenient way to verify the
+// authority of the agent to do so (because the resource is part of a table
+// shared across processes, for instance). In such a scheme, knowledge of the
+// token value in and of itself is sufficient proof of authority to carry out
+// an operation against the associated resource.
 //
 // Use Create() for creating new UnguessableTokens.
 //
