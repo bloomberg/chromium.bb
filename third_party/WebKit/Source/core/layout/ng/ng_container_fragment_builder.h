@@ -170,6 +170,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   Vector<scoped_refptr<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;
+
+  bool has_last_resort_break_ = false;
 };
 
 }  // namespace blink

@@ -11,16 +11,20 @@ namespace blink {
 NGBlockBreakToken::NGBlockBreakToken(
     NGLayoutInputNode node,
     LayoutUnit used_block_size,
-    Vector<scoped_refptr<NGBreakToken>>& child_break_tokens)
+    Vector<scoped_refptr<NGBreakToken>>& child_break_tokens,
+    bool has_last_resort_break)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node),
-      used_block_size_(used_block_size) {
+      used_block_size_(used_block_size),
+      has_last_resort_break_(has_last_resort_break) {
   child_break_tokens_.swap(child_break_tokens);
 }
 
 NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node,
-                                     LayoutUnit used_block_size)
+                                     LayoutUnit used_block_size,
+                                     bool has_last_resort_break)
     : NGBreakToken(kBlockBreakToken, kFinished, node),
-      used_block_size_(used_block_size) {}
+      used_block_size_(used_block_size),
+      has_last_resort_break_(has_last_resort_break) {}
 
 #ifndef NDEBUG
 

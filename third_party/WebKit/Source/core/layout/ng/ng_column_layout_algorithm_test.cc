@@ -799,6 +799,40 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedBreakInsideAvoidTall) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidAtColumnBoundary) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="height:90px;"></div>
+        <div>
+          <div style="break-inside:avoid; width:20px; height:20px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x90
+      offset:110,0 size:100x20
+        offset:0,0 size:100x20
+          offset:0,0 size:20x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, MarginTopPastEndOfFragmentainer) {
   // A block whose border box would start past the end of the current
   // fragmentainer should start exactly at the start of the next fragmentainer,
@@ -1186,18 +1220,12 @@ TEST_F(NGColumnLayoutAlgorithmTest,
     </div>
   )HTML");
 
-  // TODO(mstensho): There's a bug here. The second child block shouldn't create
-  // a fragment in the first column, because there's no break opportunity
-  // between that block and its first line box child. The second child block
-  // should therefore be pushed to the second column. In other words, the
-  // fragment "offset:0,40 size:77x10" below shouldn't exist.
   String dump = DumpFragmentTree(GetElementById("container"));
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x50
     offset:0,0 size:320x50
       offset:0,0 size:100x50
         offset:0,0 size:100x40
-        offset:0,40 size:77x10
       offset:110,0 size:100x50
         offset:0,0 size:77x50
           offset:0,0 size:0x20
@@ -1206,6 +1234,51 @@ TEST_F(NGColumnLayoutAlgorithmTest,
             offset:0,9 size:0x1
       offset:220,0 size:100x20
         offset:0,0 size:77x20
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, LineAtColumnBoundaryInFirstBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 50px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 1;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:66px; padding-top:40px;">
+          <br>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  // It's not ideal to break before a first child that's flush with the content
+  // edge of its container, but if there are no earlier break opportunities, we
+  // may still have to do that. There's no class A, B or C break point [1]
+  // between the DIV and the line established for the BR, but since a line is
+  // monolithic content [1], we really have to try to avoid breaking inside it.
+  //
+  // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x50
+    offset:0,0 size:320x50
+      offset:0,0 size:100x50
+        offset:0,0 size:66x50
+      offset:110,0 size:100x20
+        offset:0,0 size:66x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
 )DUMP";

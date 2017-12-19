@@ -200,6 +200,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   LayoutUnit intrinsic_block_size_;
 
   bool abort_when_bfc_resolved_;
+  bool has_processed_first_child_ = false;
 
   std::unique_ptr<NGExclusionSpace> exclusion_space_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
