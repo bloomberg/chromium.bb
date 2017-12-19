@@ -3273,6 +3273,8 @@ split_static_library("browser") {
         "printing/pdf_to_emf_converter.cc",
         "printing/pdf_to_emf_converter.h",
       ]
+    }
+    if (is_win || enable_print_preview) {
       deps += [ "//chrome/services/printing/public/interfaces" ]
     }
     if (enable_print_preview) {
