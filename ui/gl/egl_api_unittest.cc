@@ -8,6 +8,7 @@
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace gl {
 
@@ -18,8 +19,9 @@ class EGLApiTest : public testing::Test {
     fake_extension_string_ = "";
 
     // TODO(dyen): Add a way to bind mock drivers for testing.
-    g_driver_egl.ClearBindings();
+    init::ShutdownGL(false);
     g_driver_egl.fn.eglInitializeFn = &FakeInitialize;
+    g_driver_egl.fn.eglTerminateFn = &FakeTerminate;
     g_driver_egl.fn.eglQueryStringFn = &FakeQueryString;
     g_driver_egl.fn.eglGetCurrentDisplayFn = &FakeGetCurrentDisplay;
     g_driver_egl.fn.eglGetDisplayFn = &FakeGetDisplay;
@@ -30,9 +32,8 @@ class EGLApiTest : public testing::Test {
   }
 
   void TearDown() override {
-    g_current_egl_context = nullptr;
+    init::ShutdownGL(false);
     api_.reset(nullptr);
-    g_driver_egl.ClearBindings();
 
     fake_client_extension_string_ = "";
     fake_extension_string_ = "";
@@ -59,6 +60,10 @@ class EGLApiTest : public testing::Test {
   static EGLBoolean GL_BINDING_CALL FakeInitialize(EGLDisplay display,
                                                    EGLint * major,
                                                    EGLint * minor) {
+    return EGL_TRUE;
+  }
+
+  static EGLBoolean GL_BINDING_CALL FakeTerminate(EGLDisplay dpy) {
     return EGL_TRUE;
   }
 
