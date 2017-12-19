@@ -88,7 +88,7 @@ program_TESTS =					\
 	squash_space				\
 	typeform				\
 	typeform_for_emphclass			\
-	uplow_with_unicode				\
+	uplow_with_unicode			\
 	suggestChunks
 
 check_PROGRAMS = $(program_TESTS)
@@ -111,29 +111,29 @@ XFAIL_TESTS =					\
 	present_progressive			\
 	lastworditalafter			\
 	en_gb_g1_italics			\
-	squash_space				\
-	compbrlAtCursor
+	squash_space
 
 dist_yaml_TESTS =				\
 	yaml/ar-ar-g1_harness.yaml		\
 	yaml/ar-fa_harness.yaml			\
 	yaml/back_cont_then_punc.yaml		\
+	yaml/before_begmidword.yaml		\
 	yaml/begcaps_endcaps.yaml		\
 	yaml/capsnocont.yaml			\
 	yaml/capsword_for_back.yaml		\
 	yaml/chr-us-g1_harness.yaml		\
-	yaml/before_begmidword.yaml		\
+	yaml/compbrlAtCursor_with_equals.yaml	\
 	yaml/da-dk-g08.yaml			\
-	yaml/da-dk-g16.yaml			\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
 	yaml/da-dk-g16-lit.yaml			\
+	yaml/da-dk-g16.yaml			\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g18.yaml			\
-	yaml/da-dk-g26.yaml			\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
 	yaml/da-dk-g26-lit.yaml			\
-	yaml/da-dk-g26l.yaml			\
+	yaml/da-dk-g26.yaml			\
 	yaml/da-dk-g26l-lit.yaml		\
+	yaml/da-dk-g26l.yaml			\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
 	yaml/da-dk-g28.yaml			\
 	yaml/da-dk-g28l.yaml			\
@@ -192,8 +192,8 @@ dist_yaml_TESTS =				\
 	yaml/ko-2006-g2_harness.yaml		\
 	yaml/ko-g2_harness.yaml			\
 	yaml/letterDefTest_harness.yaml		\
-	yaml/lt_harness.yaml			\
 	yaml/lt-6dot_harness.yaml		\
+	yaml/lt_harness.yaml			\
 	yaml/lv_harness.yaml			\
 	yaml/mn-MN_harness.yaml			\
 	yaml/multipass-backward.yaml		\
@@ -224,7 +224,9 @@ LOG_COMPILE = $(WINE)
 
 EXTRA_DIST = $(dist_yaml_TESTS)
 
-XFAIL_TESTS += ueb_test_data.pl
+XFAIL_TESTS +=					\
+	ueb_test_data.pl
+
 
 TESTS =				\
 	$(program_TESTS)	\

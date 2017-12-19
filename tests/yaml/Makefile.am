@@ -1,23 +1,24 @@
-EXTRA_DIST =					\
+stEXTRA_DIST =					\
 	ar-ar-g1_harness.yaml			\
 	ar-fa_harness.yaml			\
 	back_cont_then_punc.yaml		\
+	before_begmidword.yaml			\
 	begcaps_endcaps.yaml			\
 	capsnocont.yaml				\
 	capsword_for_back.yaml			\
 	chr-us-g1_harness.yaml			\
-	before_begmidword.yaml			\
+	compbrlAtCursor_with_equals.yaml	\
 	da-dk-g08.yaml				\
-	da-dk-g16.yaml				\
 	da-dk-g16-dictionary_harness.yaml	\
 	da-dk-g16-lit.yaml			\
+	da-dk-g16.yaml				\
 	da-dk-g18-dictionary_harness.yaml	\
 	da-dk-g18.yaml				\
-	da-dk-g26.yaml				\
 	da-dk-g26-dictionary_harness.yaml	\
 	da-dk-g26-lit.yaml			\
-	da-dk-g26l.yaml				\
+	da-dk-g26.yaml				\
 	da-dk-g26l-lit.yaml			\
+	da-dk-g26l.yaml				\
 	da-dk-g28-dictionary_harness.yaml	\
 	da-dk-g28.yaml				\
 	da-dk-g28l.yaml				\
@@ -55,7 +56,7 @@ EXTRA_DIST =					\
 	fi_harness.yaml				\
 	foo.yaml				\
 	fr-bfu-comp6.yaml			\
-	fr-bfu-g2.yaml			\
+	fr-bfu-g2.yaml				\
 	fr-bfu-g2_harness.yaml			\
 	fr-fr-g1.yaml				\
 	ga-g1_harness.yaml			\
@@ -77,8 +78,8 @@ EXTRA_DIST =					\
 	ko-2006-g2_harness.yaml			\
 	ko-g2_harness.yaml			\
 	letterDefTest_harness.yaml		\
-	lt_harness.yaml				\
 	lt-6dot_harness.yaml			\
+	lt_harness.yaml				\
 	lv_harness.yaml				\
 	mn-MN_harness.yaml			\
 	multipass-backward.yaml			\
