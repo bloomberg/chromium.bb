@@ -53330,6 +53330,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.Correlation.ResourceLoadTime.0Kb_128Kb">
+  <obsolete>
+    Obsoleted in December 2017.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
