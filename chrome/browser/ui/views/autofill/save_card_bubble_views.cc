@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -33,6 +34,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
@@ -68,6 +70,7 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
 
 void SaveCardBubbleViews::Show(DisplayReason reason) {
   ShowForReason(reason);
+  AssignIdsToDialogClientView();
 }
 
 void SaveCardBubbleViews::Hide() {
@@ -84,6 +87,7 @@ views::View* SaveCardBubbleViews::CreateExtraView() {
   learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more_link_->SetUnderline(false);
   learn_more_link_->set_listener(this);
+  learn_more_link_->set_id(DialogViewId::LEARN_MORE_LINK);
   return learn_more_link_;
 }
 
@@ -95,6 +99,7 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
   footnote_view_ = new View();
   footnote_view_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  footnote_view_->set_id(DialogViewId::FOOTNOTE_VIEW);
 
   // Add a StyledLabel for each line of the legal message.
   for (const LegalMessageLine& line : controller_->GetLegalMessageLines()) {
@@ -269,6 +274,10 @@ void SaveCardBubbleViews::ContentsChanged(views::Textfield* sender,
   DialogModelChanged();
 }
 
+views::View* SaveCardBubbleViews::GetFootnoteViewForTesting() {
+  return footnote_view_;
+}
+
 SaveCardBubbleViews::~SaveCardBubbleViews() {}
 
 SaveCardBubbleViews::CurrentFlowStep SaveCardBubbleViews::GetCurrentFlowStep()
@@ -293,26 +302,29 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+  view->set_id(GetCurrentFlowStep() == LOCAL_SAVE_ONLY_STEP
+                   ? DialogViewId::MAIN_CONTENT_VIEW_LOCAL
+                   : DialogViewId::MAIN_CONTENT_VIEW_UPLOAD);
 
   // If applicable, add the upload explanation label.  Appears above the card
   // info.
   base::string16 explanation = controller_->GetExplanatoryMessage();
   if (!explanation.empty()) {
-    views::Label* explanation_label = new views::Label(explanation);
+    auto* explanation_label = new views::Label(explanation);
     explanation_label->SetMultiLine(true);
     explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     view->AddChildView(explanation_label);
   }
 
   // Add the card type icon, last four digits and expiration date.
-  views::View* description_view = new views::View();
+  auto* description_view = new views::View();
   description_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
   view->AddChildView(description_view);
 
   const CreditCard& card = controller_->GetCard();
-  views::ImageView* card_type_icon = new views::ImageView();
+  auto* card_type_icon = new views::ImageView();
   card_type_icon->SetImage(
       ui::ResourceBundle::GetSharedInstance()
           .GetImageNamed(CreditCard::IconResourceId(card.network()))
@@ -339,16 +351,17 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   request_cvc_view->SetBackground(views::CreateThemedSolidBackground(
       request_cvc_view.get(), ui::NativeTheme::kColorId_BubbleBackground));
+  request_cvc_view->set_id(DialogViewId::REQUEST_CVC_VIEW);
 
   const CreditCard& card = controller_->GetCard();
-  views::Label* explanation_label = new views::Label(l10n_util::GetStringFUTF16(
+  auto* explanation_label = new views::Label(l10n_util::GetStringFUTF16(
       IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_EXPLANATION,
       card.NetworkAndLastFourDigits()));
   explanation_label->SetMultiLine(true);
   explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   request_cvc_view->AddChildView(explanation_label);
 
-  views::View* cvc_entry_view = new views::View();
+  auto* cvc_entry_view = new views::View();
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
@@ -359,9 +372,10 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
   DCHECK(!cvc_textfield_);
   cvc_textfield_ = CreateCvcTextfield();
   cvc_textfield_->set_controller(this);
+  cvc_textfield_->set_id(DialogViewId::CVC_TEXTFIELD);
   cvc_entry_view->AddChildView(cvc_textfield_);
 
-  views::ImageView* cvc_image = new views::ImageView();
+  auto* cvc_image = new views::ImageView();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   cvc_image->SetImage(
       rb.GetImageSkiaNamed(controller_->GetCvcImageResourceId()));
@@ -369,6 +383,15 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
 
   request_cvc_view->AddChildView(cvc_entry_view);
   return request_cvc_view;
+}
+
+void SaveCardBubbleViews::AssignIdsToDialogClientView() {
+  auto* ok_button = GetDialogClientView()->ok_button();
+  if (ok_button)
+    ok_button->set_id(DialogViewId::OK_BUTTON);
+  auto* cancel_button = GetDialogClientView()->cancel_button();
+  if (cancel_button)
+    cancel_button->set_id(DialogViewId::CANCEL_BUTTON);
 }
 
 void SaveCardBubbleViews::Init() {

@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "build/build_config.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
@@ -253,7 +252,7 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
 
 void ChromeAutofillClient::LoadRiskData(
     const base::Callback<void(const std::string&)>& callback) {
-  ::autofill::LoadRiskData(0, web_contents(), callback);
+  ::autofill::LoadRiskData(0, web_contents(), callback, connector_);
 }
 
 bool ChromeAutofillClient::HasCreditCardScanFeature() {

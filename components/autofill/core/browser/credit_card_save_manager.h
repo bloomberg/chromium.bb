@@ -56,6 +56,17 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
     HAS_GOOGLE_PAYMENTS_ACCOUNT = 1 << 8,
   };
 
+  // An observer class used by browsertests that gets notified whenever
+  // particular actions occur.
+  class ObserverForTest {
+   public:
+    virtual void OnOfferLocalSave() = 0;
+    virtual void OnDecideToRequestUploadSave() = 0;
+    virtual void OnDecideToNotRequestUploadSave() = 0;
+    virtual void OnReceivedGetUploadDetailsResponse() = 0;
+    virtual void OnSentUploadCardRequest() = 0;
+  };
+
   // The parameters should outlive the CreditCardSaveManager.
   CreditCardSaveManager(AutofillClient* client,
                         payments::PaymentsClient* payments_client,
@@ -85,6 +96,8 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
                        const std::string& server_id) override;
 
  private:
+  friend class SaveCardBubbleViewsBrowserTestBase;
+
   // payments::PaymentsClientSaveDelegate:
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
@@ -129,6 +142,11 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   // |AutofillMetrics::CardUploadDecisionMetric|.
   void LogCardUploadDecisions(int upload_decision_metrics);
 
+  // For testing.
+  void SetEventObserverForTesting(ObserverForTest* observer) {
+    observer_for_testing_ = observer;
+  }
+
   AutofillClient* const client_;
 
   // Handles Payments service requests.
@@ -170,6 +188,9 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
 
   // The origin of the top level frame from which a form is uploaded.
   url::Origin pending_upload_request_origin_;
+
+  // May be null.
+  ObserverForTest* observer_for_testing_ = nullptr;
 
   base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_;
 
