@@ -14,7 +14,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -105,15 +104,13 @@ void LocaleNotificationController::OnLocaleChanged(
           IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE, from)));
   optional.never_timeout = true;
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kLocaleChangeNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_TITLE),
           l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE,
                                      from, to),
-          bundle.GetImageNamed(IDR_AURA_UBER_TRAY_LOCALE),
-          base::string16() /* display_source */, GURL(),
+          gfx::Image(), base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierLocale),

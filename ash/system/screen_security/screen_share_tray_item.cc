@@ -13,7 +13,6 @@
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
@@ -57,14 +56,12 @@ void ScreenShareTrayItem::CreateOrUpdateNotification() {
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kScreenShareNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
-          help_label_text,
-          resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK),
-          base::string16() /* display_source */, GURL(),
+          help_label_text, gfx::Image(), base::string16() /* display_source */,
+          GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierScreenShare),

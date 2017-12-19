@@ -93,12 +93,10 @@ void TraySupervisedUser::OnUserSessionUpdated(const AccountId& account_id) {
 
 void TraySupervisedUser::CreateOrUpdateNotification() {
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL),
-          GetSupervisedUserMessage(),
-          gfx::Image(
-              gfx::CreateVectorIcon(GetSupervisedUserIcon(), kMenuIconColor)),
+          GetSupervisedUserMessage(), gfx::Image(),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,

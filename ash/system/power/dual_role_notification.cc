@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -142,13 +141,11 @@ std::unique_ptr<Notification> DualRoleNotification::CreateNotification() {
   }
 
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDualRoleNotificationId,
           title,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DUAL_ROLE_MESSAGE),
-          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
-          base::string16(), GURL(),
+          gfx::Image(), base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierDualRole),

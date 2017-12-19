@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -348,12 +347,10 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
     return;
   }
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
-          additional_message,
-          bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
+          additional_message, gfx::Image(),
           base::string16(),  // display_source
           GURL(),
           message_center::NotifierId(

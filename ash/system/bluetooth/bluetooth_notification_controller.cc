@@ -19,7 +19,6 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -264,18 +263,15 @@ void BluetoothNotificationController::OnGetAdapter(
 void BluetoothNotificationController::NotifyAdapterDiscoverable() {
   message_center::RichNotificationData optional;
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kBluetoothDeviceDiscoverableNotificationId,
           base::string16() /* title */,
           l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
                                      base::UTF8ToUTF16(adapter_->GetName()),
                                      base::UTF8ToUTF16(adapter_->GetAddress())),
-          bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
-          base::string16() /* display source */, GURL(),
+          gfx::Image(), base::string16() /* display source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierBluetooth),
@@ -296,14 +292,11 @@ void BluetoothNotificationController::NotifyPairing(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_REJECT)));
   }
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kBluetoothDevicePairingNotificationId, base::string16() /* title */,
-          message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
-          base::string16() /* display source */, GURL(),
+          message, gfx::Image(), base::string16() /* display source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierBluetooth),
@@ -325,16 +318,13 @@ void BluetoothNotificationController::NotifyPairedDevice(
 
   message_center::RichNotificationData optional;
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
   std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
+      Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kBluetoothDevicePairedNotificationId, base::string16() /* title */,
           l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED,
                                      device->GetNameForDisplay()),
-          bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
-          base::string16() /* display source */, GURL(),
+          gfx::Image(), base::string16() /* display source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierBluetooth),

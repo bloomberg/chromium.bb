@@ -6,10 +6,8 @@
 #define ASH_SYSTEM_SYSTEM_NOTIFIER_H_
 
 #include <memory>
-#include <string>
 
 #include "ash/ash_export.h"
-#include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_id.h"
 
 namespace ash {
@@ -54,24 +52,6 @@ ASH_EXPORT bool ShouldAlwaysShowPopups(
 // Returns true if |notifier_id| is the system notifier from Ash.
 ASH_EXPORT bool IsAshSystemNotifier(
     const message_center::NotifierId& notifier_id);
-
-// Utility function to call Notification::CreateSystemNotification.
-// |icon| is ignored.
-// TODO(tetsui): Remove this function. https://crbug.com/757703
-ASH_EXPORT std::unique_ptr<message_center::Notification>
-CreateSystemNotification(
-    message_center::NotificationType type,
-    const std::string& id,
-    const base::string16& title,
-    const base::string16& message,
-    const gfx::Image& icon,
-    const base::string16& display_source,
-    const GURL& origin_url,
-    const message_center::NotifierId& notifier_id,
-    const message_center::RichNotificationData& optional_fields,
-    scoped_refptr<message_center::NotificationDelegate> delegate,
-    const gfx::VectorIcon& small_image,
-    message_center::SystemNotificationWarningLevel color_type);
 
 }  // namespace system_notifier
 }  // namespace ash

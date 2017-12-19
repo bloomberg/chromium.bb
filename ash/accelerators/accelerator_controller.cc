@@ -809,14 +809,12 @@ void HandleToggleHighContrast() {
     // high contrast mode, and that they can press it again to toggle back.
     // The message center automatically only shows this once per session.
     std::unique_ptr<Notification> notification =
-        system_notifier::CreateSystemNotification(
+        Notification::CreateSystemNotification(
             message_center::NOTIFICATION_TYPE_SIMPLE,
             kHighContrastToggleAccelNotificationId,
             l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_TITLE),
             l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_MSG),
-            gfx::Image(
-                CreateVectorIcon(kSystemMenuAccessibilityIcon, SK_ColorBLACK)),
-            base::string16() /* display source */, GURL(),
+            gfx::Image(), base::string16() /* display source */, GURL(),
             message_center::NotifierId(
                 message_center::NotifierId::SYSTEM_COMPONENT,
                 system_notifier::kNotifierAccessibility),

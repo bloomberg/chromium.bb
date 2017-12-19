@@ -22,7 +22,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
@@ -82,29 +81,22 @@ std::unique_ptr<message_center::Notification>
 LowDiskNotification::CreateNotification(Severity severity, Profile* profile) {
   base::string16 title;
   base::string16 message;
-  gfx::Image icon;
   message_center::SystemNotificationWarningLevel warning_level;
   if (severity == Severity::HIGH) {
     title =
         l10n_util::GetStringUTF16(IDS_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE);
     message =
         l10n_util::GetStringUTF16(IDS_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE);
-    icon = gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_DISK_SPACE_NOTIFICATION_CRITICAL));
     warning_level =
         message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
   } else {
     title = l10n_util::GetStringUTF16(IDS_LOW_DISK_NOTIFICATION_TITLE);
     message = l10n_util::GetStringUTF16(IDS_LOW_DISK_NOTIFICATION_MESSAGE);
-    icon = gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_DISK_SPACE_NOTIFICATION_LOW));
     warning_level = message_center::SystemNotificationWarningLevel::WARNING;
   }
 
   message_center::ButtonInfo storage_settings(
       l10n_util::GetStringUTF16(IDS_LOW_DISK_NOTIFICATION_BUTTON));
-  storage_settings.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_STORAGE_MANAGER_BUTTON);
   message_center::RichNotificationData optional_fields;
   optional_fields.buttons.push_back(storage_settings);
 
@@ -121,9 +113,9 @@ LowDiskNotification::CreateNotification(Severity severity, Profile* profile) {
       },
       profile);
   std::unique_ptr<message_center::Notification> notification =
-      ash::system_notifier::CreateSystemNotification(
+      message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskId, title, message,
-          icon, base::string16(), GURL(), notifier_id, optional_fields,
+          gfx::Image(), base::string16(), GURL(), notifier_id, optional_fields,
           new message_center::HandleNotificationClickDelegate(on_click),
           kNotificationStorageFullIcon, warning_level);
 

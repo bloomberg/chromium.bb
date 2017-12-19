@@ -160,12 +160,10 @@ void TraySessionLengthLimit::UpdateNotification() {
   data.should_make_spoken_feedback_for_popup_updates =
       (limit_state_ != last_limit_state_);
   std::unique_ptr<message_center::Notification> notification =
-      system_notifier::CreateSystemNotification(
+      message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           base::string16() /* title */,
-          ComposeNotificationMessage() /* message */,
-          gfx::Image(
-              gfx::CreateVectorIcon(kSystemMenuTimerIcon, kMenuIconColor)),
+          ComposeNotificationMessage() /* message */, gfx::Image(),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,

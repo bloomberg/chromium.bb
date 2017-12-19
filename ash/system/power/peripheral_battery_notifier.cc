@@ -125,7 +125,6 @@ struct NotificationParams {
   std::string id;
   base::string16 title;
   base::string16 message;
-  int image_id;
   std::string notifier_name;
   GURL url;
   const gfx::VectorIcon* icon;
@@ -140,7 +139,6 @@ NotificationParams GetNonStylusNotificationParams(const std::string& address,
       base::ASCIIToUTF16(name),
       l10n_util::GetStringFUTF16Int(
           IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT, battery_level),
-      IDR_AURA_NOTIFICATION_PERIPHERAL_BATTERY_LOW,
       kNotifierId,
       GURL(kNotificationOriginUrl),
       is_bluetooth ? &kNotificationBluetoothBatteryWarningIcon
@@ -152,7 +150,6 @@ NotificationParams GetStylusNotificationParams() {
       PeripheralBatteryNotifier::kStylusNotificationId,
       l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_TITLE),
       l10n_util::GetStringUTF16(IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY),
-      IDR_AURA_NOTIFICATION_STYLUS_BATTERY_LOW,
       system_notifier::kNotifierStylusBattery,
       GURL(),
       &kNotificationStylusBatteryWarningIcon};
@@ -281,11 +278,9 @@ bool PeripheralBatteryNotifier::PostNotification(const std::string& path,
           : GetNonStylusNotificationParams(path, battery.name, battery.level,
                                            !battery.bluetooth_address.empty());
 
-  auto notification = system_notifier::CreateSystemNotification(
+  auto notification = message_center::Notification::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, params.id, params.title,
-      params.message,
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(params.image_id),
-      base::string16(), params.url,
+      params.message, gfx::Image(), base::string16(), params.url,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  params.notifier_name),
       message_center::RichNotificationData(), nullptr, *params.icon,
