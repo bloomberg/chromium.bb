@@ -5,17 +5,26 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_MAC_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_MAC_H_
 
-#include "components/viz/service/display_embedder/gl_output_surface.h"
+#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_mac.h"
+#include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
 
 namespace viz {
 
-// TODO(ccameron): This should share most of its implementation with
-// GLOutputSurfaceOzone.
-class GLOutputSurfaceMac : public GLOutputSurface {
+class GLOutputSurfaceMac : public GLOutputSurfaceBufferQueue {
  public:
   GLOutputSurfaceMac(scoped_refptr<InProcessContextProvider> context_provider,
-                     SyntheticBeginFrameSource* synthetic_begin_frame_source);
+                     gpu::SurfaceHandle surface_handle,
+                     SyntheticBeginFrameSource* synthetic_begin_frame_source,
+                     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GLOutputSurfaceMac() override;
+
+ private:
+  // GLOutputSurface implementation:
+  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+
+  std::unique_ptr<CompositorOverlayCandidateValidatorMac> overlay_validator_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceMac);
 };
 
 }  // namespace viz
