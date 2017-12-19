@@ -41,7 +41,7 @@
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/minidump_writer.h"
 
 #if defined(OS_ANDROID) && !defined(__LP64__)
-#include <sys/linux-syscalls.h>
+#include <sys/syscall.h>
 
 #define SYS_read __NR_read
 #endif

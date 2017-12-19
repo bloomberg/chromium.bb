@@ -92,8 +92,33 @@ config("runtime_library") {
   if (!is_mac && !is_ios && sysroot != "") {
     # Pass the sysroot to all C compiler variants, the assembler, and linker.
     sysroot_flags = [ "--sysroot=" + rebase_path(sysroot, root_build_dir) ]
+
+    # Android uses unified headers in NDK r16 and later, meaning that the
+    # compile time sysroot and link time sysroot are different
+    link_sysroot = sysroot
+    if (is_android) {
+      if (current_cpu == "arm") {
+        link_sysroot = "$android_ndk_root/$arm_android_sysroot_subdir"
+      } else if (current_cpu == "arm64") {
+        link_sysroot = "$android_ndk_root/$arm64_android_sysroot_subdir"
+      } else if (current_cpu == "x86") {
+        link_sysroot = "$android_ndk_root/$x86_android_sysroot_subdir"
+      } else if (current_cpu == "x86_64") {
+        link_sysroot = "$android_ndk_root/$x86_64_android_sysroot_subdir"
+      } else if (current_cpu == "mipsel") {
+        link_sysroot = "$android_ndk_root/$mips_android_sysroot_subdir"
+      } else if (current_cpu == "mips64el") {
+        link_sysroot = "$android_ndk_root/$mips64_android_sysroot_subdir"
+      } else {
+        assert(false, "No android link sysroot for cpu: $target_cpu")
+      }
+    }
+
     asmflags += sysroot_flags
-    ldflags += sysroot_flags
+
+    link_sysroot_flags =
+        [ "--sysroot=" + rebase_path(link_sysroot, root_build_dir) ]
+    ldflags += link_sysroot_flags
 
     # When use_custom_libcxx=true, some -isystem flags get passed to
     # cflags_cc to set up libc++ include paths.  We want to make sure
@@ -113,7 +138,7 @@ config("runtime_library") {
                            [
                              rebase_path("//build/linux/sysroot_ld_path.sh",
                                          root_build_dir),
-                             rebase_path(sysroot),
+                             rebase_path(link_sysroot),
                            ],
                            "list lines")
     foreach(ld_path, ld_paths) {

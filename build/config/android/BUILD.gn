@@ -48,26 +48,53 @@ config("compiler") {
     "-Wl,--exclude-libs=libvpx_assembly_arm.a",
   ]
 
+  # $compile_api_level corresponds to the API level used for the sysroot path
+  # calculation in //build/config/android/config.gni
   if (current_cpu == "arm") {
     abi_target = "arm-linux-androideabi"
+    compile_api_level = 16
   } else if (current_cpu == "x86") {
     abi_target = "i686-linux-androideabi"
+    compile_api_level = 16
   } else if (current_cpu == "arm64") {
     abi_target = "aarch64-linux-android"
+    compile_api_level = 21
   } else if (current_cpu == "x64") {
     # Place holder for x64 support, not tested.
     # TODO: Enable clang support for Android x64. http://crbug.com/539781
     abi_target = "x86_64-linux-androideabi"
+    compile_api_level = 21
   } else if (current_cpu == "mipsel") {
     abi_target = "mipsel-linux-android"
+    compile_api_level = 16
   } else if (current_cpu == "mips64el") {
     # Place holder for mips64 support, not tested.
     abi_target = "mips64el-linux-androideabi"
+    compile_api_level = 21
   } else {
     assert(false, "Architecture not supported")
   }
-  cflags += [ "--target=$abi_target" ]
+  cflags += [
+    "--target=$abi_target",
+    "-isystem" +
+        rebase_path("$android_ndk_root/sysroot/usr/include/$abi_target",
+                    root_build_dir),
+    "-D__ANDROID_API__=$compile_api_level",
+
+    # Temporary workaround for third party dependencies requiring this to be
+    # defined.
+    # TODO(crbug.com/771171): Remove this once the third party deps have been
+    # fixed to be compatible with newer NDK versions
+    "-D__NDK_FPABI__=",
+  ]
   ldflags += [ "--target=$abi_target" ]
+
+  # TODO(crbug.com/771171): Remove this define once code that uses it has been
+  # updated to no longer need it. This is leftover from older Android NDK
+  # versions.
+  if (compile_api_level < 20) {
+    cflags += [ "-DHAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC=1" ]
+  }
 
   # Assign any flags set for the C compiler to asmflags so that they are sent
   # to the assembler.

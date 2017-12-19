@@ -6,6 +6,7 @@
 #include <jni.h>
 #include <stdio.h>
 #include <string.h>
+#include <cstdlib>
 
 extern "C" {
 JNIEXPORT void JNICALL
@@ -40,10 +41,9 @@ JNIEXPORT void JNICALL
   }
   g_memory = static_cast<uint32_t*>(malloc(memory));
   if (!g_memory) {
-    __android_log_print(ANDROID_LOG_WARN,
-                        "MemConsumer",
+    __android_log_print(ANDROID_LOG_WARN, "MemConsumer",
                         "Unable to allocate %lld bytes",
-                        memory);
+                        static_cast<long long>(memory));
   }
   // If memory allocation failed, try to allocate as much as possible.
   while (!g_memory) {
