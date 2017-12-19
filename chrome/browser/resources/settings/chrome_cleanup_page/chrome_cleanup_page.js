@@ -285,6 +285,16 @@ Polymer({
   },
 
   /**
+   * Returns the logs upload permission explanation to be displayed.
+   * @param {string} label
+   * @return {string}
+   * @private
+   */
+  getLogsPermissionSubLabel_: function(label) {
+    return this.userInitiatedCleanupsEnabled_ ? label : '';
+  },
+
+  /**
    * Toggles the expand button within the element being listened to.
    * @param {!Event} e
    * @private
