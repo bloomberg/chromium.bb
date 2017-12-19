@@ -81,7 +81,6 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
 
     // A for-testing copy of all the features to log setup so that it will survive a {@link #reset}.
     private Map<Feature, Object> mFeaturesLoggedForTesting;
-    private Map<Feature, Object> mOutcomesLoggedForTesting;
 
     /**
      * Constructs a Ranker Logger and associated native implementation to write Contextual Search
@@ -181,7 +180,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
                 for (Map.Entry<Feature, Object> entry : mFeaturesToLog.entrySet()) {
                     logObject(entry.getKey(), entry.getValue());
                 }
-                mOutcomesLoggedForTesting = mFeaturesToLog;
+                mFeaturesLoggedForTesting = mFeaturesToLog;
             }
             nativeWriteLogAndReset(mNativePointer);
         }
@@ -244,25 +243,14 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
     }
 
     /**
-     * Gets the current set of features that have been logged.  Should only be used for testing
-     * purposes!
-     * @return The current set of features that have been logged, or {@code null}.
+     * Gets the current set of features to log or that have been logged.  Should only be used for
+     * testing purposes!
+     * @return The current set of features to log or that have been logged, or {@code null}.
      */
     @VisibleForTesting
     @Nullable
     Map<Feature, Object> getFeaturesLogged() {
         return mFeaturesLoggedForTesting;
-    }
-
-    /**
-     * Gets the current set of outcomes that have been logged.  Should only be used for
-     * testing purposes!
-     * @return The current set of outcomes that have been logged, or {@code null}.
-     */
-    @VisibleForTesting
-    @Nullable
-    Map<Feature, Object> getOutcomesLogged() {
-        return mOutcomesLoggedForTesting;
     }
 
     // ============================================================================================
