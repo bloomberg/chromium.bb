@@ -60,10 +60,16 @@ class SigninManagerBase : public KeyedService {
 
     // Called when a user signs into Google services such as sync.
     // This method is not called during a reauth.
+    virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}
+
+    // DEPRECATED: Use the above method instead.
     virtual void GoogleSigninSucceeded(const std::string& account_id,
                                        const std::string& username) {}
 
     // Called when the currently signed-in user for a user has been signed out.
+    virtual void GoogleSignedOut(const AccountInfo& account_info) {}
+
+    // DEPRECATED: Use the above method instead.
     virtual void GoogleSignedOut(const std::string& account_id,
                                  const std::string& username) {}
 

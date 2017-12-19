@@ -59,6 +59,7 @@ void FakeSigninManager::CompletePendingSignin() {
   set_auth_in_progress(std::string());
   for (auto& observer : observer_list_) {
     observer.GoogleSigninSucceeded(authenticated_account_id_, username_);
+    observer.GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
     observer.GoogleSigninSucceededWithPassword(authenticated_account_id_,
                                                username_, password_);
   }
@@ -91,14 +92,17 @@ void FakeSigninManager::DoSignOut(
     return;
   set_auth_in_progress(std::string());
   set_password(std::string());
+  AccountInfo account_info = GetAuthenticatedAccountInfo();
   const std::string account_id = GetAuthenticatedAccountId();
-  const std::string username = GetAuthenticatedAccountInfo().email;
+  const std::string username = account_info.email;
   authenticated_account_id_.clear();
   if (token_service_ && remove_all_accounts)
     token_service_->RevokeAllCredentials();
 
-  for (auto& observer : observer_list_)
+  for (auto& observer : observer_list_) {
     observer.GoogleSignedOut(account_id, username);
+    observer.GoogleSignedOut(account_info);
+  }
 }
 
 #endif  // !defined (OS_CHROMEOS)

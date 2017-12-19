@@ -212,8 +212,9 @@ void SigninManager::DoSignOut(
 
   ClearTransientSigninData();
 
+  AccountInfo account_info = GetAuthenticatedAccountInfo();
   const std::string account_id = GetAuthenticatedAccountId();
-  const std::string username = GetAuthenticatedAccountInfo().email;
+  const std::string username = account_info.email;
   const base::Time signin_time =
       base::Time::FromInternalValue(
           client_->GetPrefs()->GetInt64(prefs::kSignedInTime));
@@ -240,8 +241,10 @@ void SigninManager::DoSignOut(
     token_service_->RevokeAllCredentials();
   }
 
-  for (auto& observer : observer_list_)
+  for (auto& observer : observer_list_) {
     observer.GoogleSignedOut(account_id, username);
+    observer.GoogleSignedOut(account_info);
+  }
 }
 
 void SigninManager::Initialize(PrefService* local_state) {
@@ -435,6 +438,7 @@ void SigninManager::FireGoogleSigninSucceeded() {
   std::string email = GetAuthenticatedAccountInfo().email;
   for (auto& observer : observer_list_) {
     observer.GoogleSigninSucceeded(account_id, email);
+    observer.GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
     observer.GoogleSigninSucceededWithPassword(account_id, email, password_);
   }
 }

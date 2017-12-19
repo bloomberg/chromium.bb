@@ -2,6 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("cpp") {
+  sources = [
+    "identity_manager.cc",
+    "identity_manager.h",
+  ]
+
+  public_deps = [
+    "//components/signin/core/browser",
+  ]
+}
+
 # A source_set for types which the public interfaces depend on for typemapping.
 # This cannot itself depend on the main public interfaces target.
 source_set("cpp_types") {

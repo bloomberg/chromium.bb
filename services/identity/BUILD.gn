@@ -41,6 +41,7 @@ source_set("tests") {
     "//components/signin/core/browser:test_support",
     "//components/sync_preferences:test_support",
     "//mojo/public/cpp/bindings:bindings",
+    "//services/identity/public/cpp",
     "//services/identity/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
@@ -49,6 +50,7 @@ source_set("tests") {
   ]
   sources = [
     "identity_manager_impl_unittest.cc",
+    "public/cpp/identity_manager_unittest.cc",
   ]
 }
 
