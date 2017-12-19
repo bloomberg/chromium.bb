@@ -30,6 +30,7 @@ gclient_gn_args_file = 'src/build/config/gclient_args.gni'
 gclient_gn_args = [
   'checkout_libaom',
   'checkout_nacl',
+  'checkout_oculus_sdk',
 ]
 
 
@@ -55,6 +56,9 @@ vars = {
 
   # libaom provides support for AV1 but the bitstream is not frozen.
   'checkout_libaom': True,
+
+  # By default do not check out the Oculus SDK. Only available for Googlers.
+  'checkout_oculus_sdk' : False,
 
   # TODO(dpranke): change to != "small" once != is supported.
   'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
@@ -1292,6 +1296,20 @@ hooks = [
     'condition': 'checkout_android',
     'action': [ 'vpython',
                 'src/third_party/gvr-android-sdk/test-apks/update.py',
+    ],
+  },
+  # Download Oculus SDK if appropriate.
+  {
+    'name': 'libovr',
+    'pattern': '.',
+    'condition': 'checkout_oculus_sdk',
+    'action': ['vpython',
+               'src/third_party/depot_tools/download_from_google_storage.py',
+               '--bucket', 'chrome-oculus-sdk',
+               '--recursive',
+               '--num_threads=10',
+               '--directory',
+               'src/third_party/libovr/src',
     ],
   },
   {
