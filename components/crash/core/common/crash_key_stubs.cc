@@ -28,4 +28,10 @@ bool CrashKeyStringImpl::is_set() const {
 
 void InitializeCrashKeys() {}
 
+std::string GetCrashKeyValue(const std::string& key_name) {
+  return std::string();
+}
+
+void ResetCrashKeysForTesting() {}
+
 }  // namespace crash_reporter

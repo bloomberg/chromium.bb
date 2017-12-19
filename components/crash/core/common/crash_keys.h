@@ -12,6 +12,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 
 namespace base {
 class CommandLine;
@@ -28,10 +29,6 @@ void ClearMetricsClientId();
 // Sets the list of active experiment/variations info.
 void SetVariationsList(const std::vector<std::string>& variations);
 
-// Adds a common set of crash keys for holding command-line switches to |keys|.
-void GetCrashKeysForCommandLineSwitches(
-    std::vector<base::debug::CrashKey>* keys);
-
 // A function returning true if |flag| is a switch that should be filtered out
 // of crash keys.
 using SwitchFilterFunction = bool (*)(const std::string& flag);
@@ -41,6 +38,9 @@ using SwitchFilterFunction = bool (*)(const std::string& flag);
 // for which it returns true.
 void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
                                 SwitchFilterFunction skip_filter);
+
+// Clears all the CommandLine-related crash keys.
+void ResetCommandLineForTesting();
 
 // Crash Key Constants /////////////////////////////////////////////////////////
 
@@ -71,38 +71,12 @@ const size_t kHugeSize = kLargeSize * 2;
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
-// The GUID used to identify this client to the crash system.
-#if defined(OS_MACOSX)
-// When using Crashpad, the crash reporting client ID is the responsibility of
-// Crashpad. It is not set directly by Chrome. To make the metrics client ID
-// available on the server, it's stored in a distinct key.
-extern const char kMetricsClientId[];
-#elif defined(OS_WIN)
-extern const char kMetricsClientId[];
-extern const char kClientId[];
-#else
-// When using Breakpad instead of Crashpad, the crash reporting client ID is the
-// same as the metrics client ID.
-extern const char kClientId[];
-#endif
-
-// The product release/distribution channel.
-extern const char kChannel[];
-
 // The total number of experiments the instance has.
 extern const char kNumVariations[];
 
 // The experiments chunk. Hashed experiment names separated by |,|. This is
 // typically set by SetExperimentList.
 extern const char kVariations[];
-
-// The maximum number of command line switches to process. |kSwitchFormat|
-// should be formatted with an integer in the range [1, kSwitchesMaxCount].
-const size_t kSwitchesMaxCount = 15;
-
-// A printf-style format string naming the set of crash keys corresponding to
-// at most |kSwitchesMaxCount| command line switches.
-extern const char kSwitchFormat[];
 
 }  // namespace crash_keys
 

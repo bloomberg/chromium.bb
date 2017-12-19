@@ -93,17 +93,6 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
     crash_keys::SetMetricsClientIdFromGUID(client_info->client_id);
 }
 
-size_t RegisterCrashKeys() {
-  static constexpr base::debug::CrashKey kFixedKeys[] = {
-      {crash_keys::kMetricsClientId, crash_keys::kSmallSize},
-  };
-  std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
-                                          std::end(kFixedKeys));
-  crash_keys::GetCrashKeysForCommandLineSwitches(&keys);
-  return base::debug::InitCrashKeys(keys.data(), keys.size(),
-                                    crash_keys::kChunkMaxLength);
-}
-
 void SetInitialCrashKeys(const InstallerState& state) {
   using crash_reporter::CrashKeyString;
 
