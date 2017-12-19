@@ -279,7 +279,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self updateLastVisitedTimestamp];
     [[self webController] setDelegate:self];
 
-    _snapshotGenerator = [[SnapshotGenerator alloc] initWithTab:self];
+    _snapshotGenerator =
+        [[SnapshotGenerator alloc] initWithWebState:_webStateImpl
+                                           delegate:self];
   }
   return self;
 }
@@ -341,8 +343,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
-  [_snapshotGenerator retrieveSnapshotWithOverlays:[self snapshotOverlays]
-                                          callback:callback];
+  [_snapshotGenerator retrieveSnapshot:callback];
 }
 
 - (NSString*)title {
@@ -964,10 +965,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
 }
 
-- (NSArray*)snapshotOverlays {
-  return [snapshotOverlayProvider_ snapshotOverlaysForTab:self];
-}
-
 - (BOOL)webController:(CRWWebController*)webController
         shouldOpenURL:(const GURL&)url
       mainDocumentURL:(const GURL&)mainDocumentURL {
@@ -1017,52 +1014,26 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         greyImageForSessionID:sessionID
                      callback:completionHandler];
   } else {
-    [_snapshotGenerator retrieveGreySnapshotWithOverlays:[self snapshotOverlays]
-                                                callback:completionHandler];
+    [_snapshotGenerator retrieveGreySnapshot:completionHandler];
   }
 }
 
 - (UIImage*)updateSnapshotWithOverlay:(BOOL)shouldAddOverlay
                      visibleFrameOnly:(BOOL)visibleFrameOnly {
-  NSArray* overlays = shouldAddOverlay ? [self snapshotOverlays] : nil;
   UIImage* snapshot =
-      [_snapshotGenerator updateSnapshotWithOverlays:overlays
+      [_snapshotGenerator updateSnapshotWithOverlays:shouldAddOverlay
                                     visibleFrameOnly:visibleFrameOnly];
-  [_parentTabModel notifyTabSnapshotChanged:self withImage:snapshot];
   return snapshot;
 }
 
 - (UIImage*)generateSnapshotWithOverlay:(BOOL)shouldAddOverlay
                        visibleFrameOnly:(BOOL)visibleFrameOnly {
-  NSArray* overlays = shouldAddOverlay ? [self snapshotOverlays] : nil;
-  return [_snapshotGenerator generateSnapshotWithOverlays:overlays
+  return [_snapshotGenerator generateSnapshotWithOverlays:shouldAddOverlay
                                          visibleFrameOnly:visibleFrameOnly];
 }
 
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled {
   [_snapshotGenerator setSnapshotCoalescingEnabled:snapshotCoalescingEnabled];
-}
-
-- (CGRect)snapshotContentArea {
-  CGRect snapshotContentArea = CGRectZero;
-  if (self.tabSnapshottingDelegate) {
-    snapshotContentArea =
-        [self.tabSnapshottingDelegate snapshotContentAreaForTab:self];
-  } else {
-    UIEdgeInsets visiblePageInsets = UIEdgeInsetsMake(
-        [self headerHeightForWebController:self.webController], 0.0, 0.0, 0.0);
-    snapshotContentArea = UIEdgeInsetsInsetRect(self.webController.view.bounds,
-                                                visiblePageInsets);
-  }
-  return snapshotContentArea;
-}
-
-- (void)willUpdateSnapshot {
-  if ([[self.webController nativeController]
-          respondsToSelector:@selector(willUpdateSnapshot)]) {
-    [[self.webController nativeController] willUpdateSnapshot];
-  }
-  [_overscrollActionsController clear];
 }
 
 - (void)removeSnapshot {
@@ -1181,6 +1152,43 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       completion:^(BOOL finished) {
         [weakPagePlaceholder removeFromSuperview];
       }];
+}
+
+#pragma mark - SnapshotGeneratorDelegate
+
+- (UIImage*)defaultSnapshotImage {
+  return [CRWWebController defaultSnapshotImage];
+}
+
+- (UIEdgeInsets)snapshotEdgeInsets {
+  if (self.tabSnapshottingDelegate)
+    return [self.tabSnapshottingDelegate snapshotEdgeInsetsForTab:self];
+
+  if (self.tabHeadersDelegate) {
+    CGFloat headerHeight = [self.tabHeadersDelegate headerHeightForTab:self];
+    return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
+  }
+
+  return UIEdgeInsetsZero;
+}
+
+- (NSArray<SnapshotOverlay*>*)snapshotOverlays {
+  return [snapshotOverlayProvider_ snapshotOverlaysForTab:self];
+}
+
+- (void)willUpdateSnapshotForWebState:(web::WebState*)webState {
+  DCHECK_EQ(_webStateImpl, webState);
+  id<CRWNativeContent> nativeContent = [self.webController nativeController];
+  if ([nativeContent respondsToSelector:@selector(willUpdateSnapshot)]) {
+    [nativeContent willUpdateSnapshot];
+  }
+  [_overscrollActionsController clear];
+}
+
+- (void)didUpdateSnapshotForWebState:(web::WebState*)webState
+                           withImage:(UIImage*)snapshot {
+  DCHECK_EQ(_webStateImpl, webState);
+  [_parentTabModel notifyTabSnapshotChanged:self withImage:snapshot];
 }
 
 @end

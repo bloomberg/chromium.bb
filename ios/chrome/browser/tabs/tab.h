@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
 #include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
@@ -80,7 +81,8 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Chrome's WebContents in that it encapsulates rendering. Acts as the
 // delegate for the WebState in order to process info about pages having
 // loaded.
-@interface Tab : NSObject<PagePlaceholderTabHelperDelegate>
+@interface Tab
+    : NSObject<PagePlaceholderTabHelperDelegate, SnapshotGeneratorDelegate>
 
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
@@ -219,12 +221,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // When snapshot coalescing is enabled, mutiple calls to generate a snapshot
 // with the same parameters may be coalesced.
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled;
-
-// Returns the rect (in |view|'s coordinate space) to include for snapshotting.
-- (CGRect)snapshotContentArea;
-
-// Called when the snapshot of the content will be taken.
-- (void)willUpdateSnapshot;
 
 // Requests deletion of the Tab snapshot.
 - (void)removeSnapshot;

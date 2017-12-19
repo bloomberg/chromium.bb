@@ -4,15 +4,20 @@
 
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
 
+// TODO(crbug.com/636188): required to implement ViewHierarchyContainsWKWebView
+// for -drawViewHierarchyInRect:afterScreenUpdates:, remove once the workaround
+// is no longer needed.
+#import <WebKit/WebKit.h>
+
+#include "base/logging.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
-#import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_headers_delegate.h"
-#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -79,7 +84,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 @end
 
-@interface SnapshotGenerator ()
+@interface SnapshotGenerator ()<CRWWebStateObserver>
 
 // Takes a snapshot for the supplied view (which should correspond to the given
 // type of web view). Returns an autoreleased image cropped and scaled
@@ -93,17 +98,30 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 @implementation SnapshotGenerator {
   CoalescingSnapshotContext* _coalescingSnapshotContext;
-  __weak Tab* _tab;
+  std::unique_ptr<web::WebStateObserver> _webStateObserver;
+  __weak id<SnapshotGeneratorDelegate> _delegate;
+  web::WebState* _webState;
 }
 
-- (instancetype)initWithTab:(Tab*)tab {
+- (instancetype)initWithWebState:(web::WebState*)webState
+                        delegate:(id<SnapshotGeneratorDelegate>)delegate {
   if ((self = [super init])) {
-    DCHECK(tab);
-    DCHECK(tab.tabId);
-    DCHECK(tab.webController);
-    _tab = tab;
+    DCHECK(webState);
+    _webState = webState;
+    _delegate = delegate;
+
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+    _webState->AddObserver(_webStateObserver.get());
   }
   return self;
+}
+
+- (void)dealloc {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+    _webState = nullptr;
+  }
 }
 
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled {
@@ -116,79 +134,90 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   }
 }
 
-- (void)retrieveSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                            callback:(void (^)(UIImage*))callback {
+- (void)retrieveSnapshot:(void (^)(UIImage*))callback {
   DCHECK(callback);
   void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
     if (!image) {
-      image = [self updateSnapshotWithOverlays:overlays visibleFrameOnly:YES];
+      image = [self updateSnapshotWithOverlays:YES visibleFrameOnly:YES];
     }
     callback(image);
   };
 
-  [[self snapshotCache] retrieveImageForSessionID:_tab.tabId
+  NSString* sessionID = TabIdTabHelper::FromWebState(_webState)->tab_id();
+  [[self snapshotCache] retrieveImageForSessionID:sessionID
                                          callback:wrappedCallback];
 }
 
-- (void)retrieveGreySnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                                callback:(void (^)(UIImage*))callback {
+- (void)retrieveGreySnapshot:(void (^)(UIImage*))callback {
   DCHECK(callback);
   void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
     if (!image) {
-      image = [self updateSnapshotWithOverlays:overlays visibleFrameOnly:YES];
+      image = [self updateSnapshotWithOverlays:YES visibleFrameOnly:YES];
       image = GreyImage(image);
     }
     callback(image);
   };
 
-  [[self snapshotCache] retrieveGreyImageForSessionID:_tab.tabId
+  NSString* sessionID = TabIdTabHelper::FromWebState(_webState)->tab_id();
+  [[self snapshotCache] retrieveGreyImageForSessionID:sessionID
                                              callback:wrappedCallback];
 }
 
-- (UIImage*)updateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+- (UIImage*)updateSnapshotWithOverlays:(BOOL)shouldAddOverlay
                       visibleFrameOnly:(BOOL)visibleFrameOnly {
-  UIImage* snapshot = [self generateSnapshotWithOverlays:overlays
+  UIImage* snapshot = [self generateSnapshotWithOverlays:shouldAddOverlay
                                         visibleFrameOnly:visibleFrameOnly];
 
   // Return default snapshot without caching it if the generation failed.
   if (!snapshot)
-    return [CRWWebController defaultSnapshotImage];
+    return [_delegate defaultSnapshotImage];
 
   UIImage* snapshotToCache = snapshot;
-  if (!visibleFrameOnly && [_tab legacyFullscreenControllerDelegate]) {
-    // Crops the bottom of the fullscreen snapshot.
-    CGRect cropRect =
-        CGRectMake(0, [[_tab tabHeadersDelegate] headerHeightForTab:_tab],
-                   [snapshot size].width, [snapshot size].height);
-    snapshotToCache = CropImage(snapshot, cropRect);
+  if (!visibleFrameOnly) {
+    UIEdgeInsets insets = [_delegate snapshotEdgeInsets];
+    if (!UIEdgeInsetsEqualToEdgeInsets(insets, UIEdgeInsetsZero)) {
+      CGRect cropRect =
+          UIEdgeInsetsInsetRect(CGRect{CGPointZero, [snapshot size]}, insets);
+      snapshotToCache = CropImage(snapshot, cropRect);
+    }
   }
-  [[self snapshotCache] setImage:snapshotToCache withSessionID:_tab.tabId];
+
+  NSString* sessionID = TabIdTabHelper::FromWebState(_webState)->tab_id();
+  [[self snapshotCache] setImage:snapshotToCache withSessionID:sessionID];
   return snapshot;
 }
 
-- (UIImage*)generateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+- (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay
                         visibleFrameOnly:(BOOL)visibleFrameOnly {
-  if (![_tab.webController canUseViewForGeneratingOverlayPlaceholderView])
+  if (!_webState->CanTakeSnapshot())
     return nil;
 
-  CGRect visibleFrame = (visibleFrameOnly ? [_tab snapshotContentArea]
-                                          : [_tab.webController.view bounds]);
-  if (CGRectIsEmpty(visibleFrame))
+  UIView* view = _webState->GetView();
+  CGRect bounds = [view bounds];
+  if (visibleFrameOnly) {
+    UIEdgeInsets insets = [_delegate snapshotEdgeInsets];
+    bounds = UIEdgeInsetsInsetRect(bounds, insets);
+  }
+
+  if (CGRectIsEmpty(bounds))
     return nil;
 
+  NSArray<SnapshotOverlay*>* overlays =
+      shouldAddOverlay ? [_delegate snapshotOverlays] : nil;
   UIImage* snapshot =
       [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
                                             visibleFrameOnly:visibleFrameOnly];
+
   if (snapshot)
     return snapshot;
 
-  [_tab willUpdateSnapshot];
-  snapshot = [self generateSnapshotForView:_tab.webController.view
-                                  withRect:visibleFrame
-                                  overlays:overlays];
+  [_delegate willUpdateSnapshotForWebState:_webState];
+  snapshot =
+      [self generateSnapshotForView:view withRect:bounds overlays:overlays];
   [_coalescingSnapshotContext setCachedSnapshot:snapshot
                                    withOverlays:overlays
                                visibleFrameOnly:visibleFrameOnly];
+  [_delegate didUpdateSnapshotForWebState:_webState withImage:snapshot];
   return snapshot;
 }
 
@@ -206,10 +235,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   const CGFloat kScale = [[self snapshotCache] snapshotScaleForDevice];
   UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
-  if (!context) {
-    NOTREACHED();
-    return nil;
-  }
+  DCHECK(context);
 
   // TODO(crbug.com/636188): -drawViewHierarchyInRect:afterScreenUpdates: is
   // buggy on iOS 8/9/10 (and state is unknown for iOS 11) causing GPU glitches,
@@ -253,9 +279,18 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 }
 
 - (SnapshotCache*)snapshotCache {
+  DCHECK(_webState);
   return SnapshotCacheFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(
-          _tab.webController.webState->GetBrowserState()));
+      ios::ChromeBrowserState::FromBrowserState(_webState->GetBrowserState()));
+}
+
+#pragma mark - CRWWebStateObserver
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  _webState->RemoveObserver(_webStateObserver.get());
+  _webStateObserver.reset();
+  _webState = nullptr;
 }
 
 @end

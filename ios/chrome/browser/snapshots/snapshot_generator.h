@@ -8,16 +8,21 @@
 #import <UIKit/UIKit.h>
 
 @class SnapshotOverlay;
-@class Tab;
+@protocol SnapshotGeneratorDelegate;
+
+namespace web {
+class WebState;
+}
 
 // A class that takes care of creating, storing and returning snapshots of a
 // tab's web page.
 @interface SnapshotGenerator : NSObject
 
-// Designated initializer. |tab| must not be nil.
-// TODO(crbug.com/380819): Replace the need to use Tab directly here by using a
-// delegate pattern.
-- (instancetype)initWithTab:(Tab*)tab NS_DESIGNATED_INITIALIZER;
+// Designated initializer.
+- (instancetype)initWithWebState:(web::WebState*)webState
+                        delegate:(id<SnapshotGeneratorDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 // If |snapshotCoalescingEnabled| is YES snapshots of the web page are
@@ -27,31 +32,25 @@
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled;
 
 // Gets a color snapshot for the current page, calling |callback| once it has
-// been retrieved or regenerated. |overlays| is the array of SnapshotOverlay
-// objects (views currently overlayed), can be nil.
-- (void)retrieveSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                            callback:(void (^)(UIImage*))callback;
+// been retrieved or regenerated.
+- (void)retrieveSnapshot:(void (^)(UIImage*))callback;
 
 // Gets a grey snapshot for the current page, calling |callback| once it has
-// been retrieved or regenerated. |overlays| is the array of SnapshotOverlay
-// objects (views currently overlayed), can be nil.
-- (void)retrieveGreySnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                                callback:(void (^)(UIImage*))callback;
+// been retrieved or regenerated.
+- (void)retrieveGreySnapshot:(void (^)(UIImage*))callback;
 
 // Invalidates the cached snapshot for the current page, generates and caches
 // a new snapshot. Returns the snapshot with or without the overlayed views
 // (e.g. infobar, voice search button, etc.), and either of the visible frame
-// or of the full screen. |overlays| is the array of SnapshotOverlay objects
-// (views currently overlayed), can be nil.
-- (UIImage*)updateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+// or of the full screen.
+- (UIImage*)updateSnapshotWithOverlays:(BOOL)shouldAddOverlay
                       visibleFrameOnly:(BOOL)visibleFrameOnly;
 
 // Generates a new snapshot for the current page including optional infobars.
 // Returns the snapshot with or without the overlayed views (e.g. infobar,
 // voice search button, etc.), and either of the visible frame or of the full
-// screen. |overlays| is the array of SnapshotOverlay objects (views currently
-// overlayed), can be nil.
-- (UIImage*)generateSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
+// screen.
+- (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay
                         visibleFrameOnly:(BOOL)visibleFrameOnly;
 
 @end

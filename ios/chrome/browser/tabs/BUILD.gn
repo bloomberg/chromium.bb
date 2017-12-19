@@ -26,6 +26,7 @@ source_set("tabs") {
     "//components/sessions",
     "//components/signin/ios/browser",
     "//components/sync_sessions",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/net",
     "//ios/web/public",
@@ -33,6 +34,7 @@ source_set("tabs") {
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/snapshots" ]
 }
 
 source_set("tabs_internal") {

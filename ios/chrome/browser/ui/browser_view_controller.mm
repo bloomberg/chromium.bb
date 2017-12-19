@@ -1799,11 +1799,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     Tab* topTab = [_model currentTab];
     UIImage* image = [topTab updateSnapshotWithOverlay:YES
                                       visibleFrameOnly:self.isToolbarOnScreen];
+
     // The size of the |image| above can be wrong if the snapshot fails, grab
     // the correct size here.
-    CGRect imageFrame = self.isToolbarOnScreen
-                            ? [topTab snapshotContentArea]
-                            : [topTab.webController.view bounds];
+    CGRect imageFrame = CGRectZero;
+    if (self.isToolbarOnScreen) {
+      imageFrame = UIEdgeInsetsInsetRect(
+          _contentArea.bounds, [self snapshotEdgeInsetsForTab:topTab]);
+    } else {
+      imageFrame = [topTab.webState->GetView() bounds];
+    }
 
     // Add three layers in order on top of the contentArea for the animation:
     // 1. The black "background" screen.
@@ -3485,16 +3490,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - TabSnapshottingDelegate methods.
 
-- (CGRect)snapshotContentAreaForTab:(Tab*)tab {
-  CGRect pageContentArea = _contentArea.bounds;
-  if ([_model webUsageEnabled])
-    pageContentArea = tab.view.bounds;
+- (UIEdgeInsets)snapshotEdgeInsetsForTab:(Tab*)tab {
   CGFloat headerHeight = [self headerHeightForTab:tab];
   id nativeController = [self nativeControllerForTab:tab];
   if ([nativeController respondsToSelector:@selector(toolbarHeight)])
     headerHeight += [nativeController toolbarHeight];
-  UIEdgeInsets contentInsets = UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
-  return UIEdgeInsetsInsetRect(pageContentArea, contentInsets);
+  return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
 }
 
 #pragma mark - NewTabPageObserver methods.
