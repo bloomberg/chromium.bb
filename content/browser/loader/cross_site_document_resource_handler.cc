@@ -35,31 +35,57 @@ void LogCrossSiteDocumentAction(
                             CrossSiteDocumentResourceHandler::Action::kCount);
 }
 
+// An IOBuffer to enable writing into a existing IOBuffer at a given offset.
+class LocalIoBufferWithOffset : public net::WrappedIOBuffer {
+ public:
+  LocalIoBufferWithOffset(net::IOBuffer* buf, int offset)
+      : net::WrappedIOBuffer(buf->data() + offset), buf_(buf) {}
+
+ private:
+  ~LocalIoBufferWithOffset() override {}
+
+  scoped_refptr<net::IOBuffer> buf_;
+};
+
+// Helper for the text/plain case.
+CrossSiteDocumentClassifier::Result SniffForHtmlXmlOrJson(
+    base::StringPiece data) {
+  DCHECK_LT(CrossSiteDocumentClassifier::kNo,
+            CrossSiteDocumentClassifier::kMaybe);
+  auto result = CrossSiteDocumentClassifier::SniffForHTML(data);
+  if (result != CrossSiteDocumentClassifier::kYes)
+    result = std::max(CrossSiteDocumentClassifier::SniffForXML(data), result);
+  if (result != CrossSiteDocumentClassifier::kYes)
+    result = std::max(CrossSiteDocumentClassifier::SniffForJSON(data), result);
+  return result;
+}
+
 }  // namespace
 
-// ResourceController used in OnWillRead in cases that sniffing will happen.
-// When invoked, it runs the corresponding method on the ResourceHandler.
-class CrossSiteDocumentResourceHandler::OnWillReadController
-    : public ResourceController {
+// ResourceController that runs a closure on Resume(), and forwards failures
+// back to CrossSiteDocumentHandler. The closure can optionally be run as
+// a PostTask.
+class CrossSiteDocumentResourceHandler::Controller : public ResourceController {
  public:
-  // Keeps track of the addresses of the ResourceLoader's buffer and size,
-  // which will be populated by the downstream ResourceHandler by the time that
-  // Resume() is called.
-  explicit OnWillReadController(
-      CrossSiteDocumentResourceHandler* document_handler,
-      scoped_refptr<net::IOBuffer>* buf,
-      int* buf_size)
-      : document_handler_(document_handler), buf_(buf), buf_size_(buf_size) {}
+  explicit Controller(CrossSiteDocumentResourceHandler* document_handler,
+                      bool post_task,
+                      base::OnceClosure resume_callback)
+      : document_handler_(document_handler),
+        resume_callback_(std::move(resume_callback)),
+        post_task_(post_task) {}
 
-  ~OnWillReadController() override {}
+  ~Controller() override {}
 
   // ResourceController implementation:
   void Resume() override {
     MarkAsUsed();
 
-    // Now that |buf_| has a buffer written into it by the downstream handler,
-    // set up sniffing in the CrossSiteDocumentResourceHandler.
-    document_handler_->ResumeOnWillRead(buf_, buf_size_);
+    if (post_task_) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, std::move(resume_callback_));
+    } else {
+      std::move(resume_callback_).Run();
+    }
   }
 
   void Cancel() override {
@@ -86,14 +112,11 @@ class CrossSiteDocumentResourceHandler::OnWillReadController
 
   CrossSiteDocumentResourceHandler* document_handler_;
 
-  // Address of the ResourceLoader's buffer, which will be populated by the
-  // downstream handler before Resume() is called.
-  scoped_refptr<net::IOBuffer>* buf_;
+  // Runs on Resume().
+  base::OnceClosure resume_callback_;
+  bool post_task_;
 
-  // Address of the size of |buf_|, similarly populated downstream.
-  int* buf_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnWillReadController);
+  DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 
 CrossSiteDocumentResourceHandler::CrossSiteDocumentResourceHandler(
@@ -101,7 +124,9 @@ CrossSiteDocumentResourceHandler::CrossSiteDocumentResourceHandler(
     net::URLRequest* request,
     bool is_nocors_plugin_request)
     : LayeredResourceHandler(request, std::move(next_handler)),
-      is_nocors_plugin_request_(is_nocors_plugin_request) {}
+      weak_next_handler_(next_handler_.get()),
+      is_nocors_plugin_request_(is_nocors_plugin_request),
+      weak_this_(this) {}
 
 CrossSiteDocumentResourceHandler::~CrossSiteDocumentResourceHandler() {}
 
@@ -121,6 +146,15 @@ void CrossSiteDocumentResourceHandler::OnWillRead(
     int* buf_size,
     std::unique_ptr<ResourceController> controller) {
   DCHECK(has_response_started_);
+
+  if (local_buffer_) {
+    // If |local_buffer_| exists, continue buffering data into the end of it.
+    *buf = new LocalIoBufferWithOffset(local_buffer_.get(),
+                                       local_buffer_bytes_read_);
+    *buf_size = next_handler_buffer_size_ - local_buffer_bytes_read_;
+    controller->Resume();
+    return;
+  }
 
   // On the next read attempt after the response was blocked, either cancel the
   // rest of the request or allow it to proceed in a detached state.
@@ -147,7 +181,10 @@ void CrossSiteDocumentResourceHandler::OnWillRead(
   // downstream handler has called Resume on it.
   if (should_block_based_on_headers_ && !allow_based_on_sniffing_) {
     HoldController(std::move(controller));
-    controller = std::make_unique<OnWillReadController>(this, buf, buf_size);
+    controller = std::make_unique<Controller>(
+        this, false /* post_task */,
+        base::BindOnce(&CrossSiteDocumentResourceHandler::ResumeOnWillRead,
+                       weak_this_.GetWeakPtr(), buf, buf_size));
   }
 
   // Have the downstream handler(s) allocate the real buffer to use.
@@ -198,22 +235,31 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
   // response is empty and complete), or copy the sniffed data to the next
   // handler's buffer and resume the response without blocking.
   if (should_block_based_on_headers_ && !allow_based_on_sniffing_) {
-    bool confirmed_blockable = false;
+    auto confirmed_blockable = CrossSiteDocumentClassifier::kNo;
     if (!needs_sniffing_) {
       // TODO(creis): Also consider the MIME type confirmed if |bytes_read| is
       // too small to do sniffing, or restructure to allow buffering enough.
       // For now, responses with small initial reads may be allowed through.
-      confirmed_blockable = true;
+      confirmed_blockable = CrossSiteDocumentClassifier::kYes;
+    } else if (bytes_read == 0) {
+      // We haven't blocked the response yet (because previous reads yielded a
+      // kMaybe result), and there is no more data. Allow the response.
+      confirmed_blockable = CrossSiteDocumentClassifier::kNo;
     } else {
       // Sniff the data to see if it likely matches the MIME type that caused us
       // to decide to block it.  If it doesn't match, it may be JavaScript,
       // JSONP, or another allowable data type and we should let it through.
       // Record how many bytes were read to see how often it's too small.  (This
       // will typically be under 100,000.)
-      UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.Browser.BytesReadForSniffing",
-                           bytes_read);
-      DCHECK_LE(bytes_read, next_handler_buffer_size_);
-      base::StringPiece data(local_buffer_->data(), bytes_read);
+      local_buffer_bytes_read_ += bytes_read;
+      DCHECK_LE(local_buffer_bytes_read_, next_handler_buffer_size_);
+
+      // To ensure determinism with respect to network packet ordering and
+      // sizing, never examine more than kMaxBytesToSniff bytes, even if more
+      // are available.
+      size_t bytes_to_sniff =
+          std::min(local_buffer_bytes_read_, net::kMaxBytesToSniff);
+      base::StringPiece data(local_buffer_->data(), bytes_to_sniff);
 
       // Confirm whether the data is HTML, XML, or JSON.
       if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_HTML) {
@@ -225,13 +271,25 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
       } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN) {
         // For responses labeled as plain text, only block them if the data
         // sniffs as one of the formats we would block in the first place.
-        confirmed_blockable = CrossSiteDocumentClassifier::SniffForHTML(data) ||
-                              CrossSiteDocumentClassifier::SniffForXML(data) ||
-                              CrossSiteDocumentClassifier::SniffForJSON(data);
+        confirmed_blockable = SniffForHtmlXmlOrJson(data);
+      }
+
+      // If sniffing didn't yield a conclusive response, and we haven't read too
+      // many bytes yet, buffer up some more data.
+      if (confirmed_blockable == CrossSiteDocumentClassifier::kMaybe &&
+          local_buffer_bytes_read_ < net::kMaxBytesToSniff &&
+          local_buffer_bytes_read_ < next_handler_buffer_size_) {
+        controller->Resume();
+        return;
       }
     }
 
-    if (confirmed_blockable) {
+    if (needs_sniffing_) {
+      UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.Browser.BytesReadForSniffing",
+                           local_buffer_bytes_read_);
+    }
+
+    if (confirmed_blockable == CrossSiteDocumentClassifier::kYes) {
       // Block the response and throw away the data.  Report zero bytes read.
       bytes_read = 0;
       blocked_read_completed_ = true;
@@ -280,16 +338,48 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
           NOTREACHED();
       }
     } else {
-      // Allow the response through instead and proceed with reading more.
-      // Copy sniffed data into the next handler's buffer before proceeding.
-      // Note that the size of the two buffers is the same (see OnWillRead).
-      DCHECK_LE(bytes_read, next_handler_buffer_size_);
-      memcpy(next_handler_buffer_->data(), local_buffer_->data(), bytes_read);
+      // Choose not block this response. Pass the contents of |local_buffer_|
+      // onto the next handler. Note that the size of the two buffers is the
+      // same (see OnWillRead).
+      DCHECK_LE(local_buffer_bytes_read_, next_handler_buffer_size_);
+      memcpy(next_handler_buffer_->data(), local_buffer_->data(),
+             local_buffer_bytes_read_);
       allow_based_on_sniffing_ = true;
+
+      if (bytes_read == 0 && local_buffer_bytes_read_ != 0) {
+        // |bytes_read == 0| indicates the end-of-stream. In this case, we need
+        // to synthesize an additional OnWillRead() and OnReadCompleted(0) on
+        // |next_handler_|, so that |next_handler_| sees both the full response
+        // and the end-of-stream marker. The resulting operations are as
+        // follows:
+        //
+        //  1. next_handler_->OnReadCompleted(bytes_read = contentLength)
+        //  2. next_handler_->OnWillRead()  [via PostTask]
+        //  3. next_handler_->OnReadCompleted(bytes_read = 0) [via PostTask]
+        //  4. controller->Resume()
+        HoldController(std::move(controller));
+        controller = std::make_unique<Controller>(
+            this, true /* post_task */,
+            base::BindOnce(
+                &ResourceHandler::OnWillRead, weak_next_handler_.GetWeakPtr(),
+                &next_handler_buffer_, &next_handler_buffer_size_,
+                std::make_unique<Controller>(
+                    this, true /* post_task */,
+                    base::BindOnce(
+                        &ResourceHandler::OnReadCompleted,
+                        weak_next_handler_.GetWeakPtr(), 0 /* bytes_read */,
+                        std::make_unique<Controller>(
+                            this, false /* post_task */,
+                            base::BindOnce(
+                                &CrossSiteDocumentResourceHandler::Resume,
+                                weak_this_.GetWeakPtr()))))));
+      }
+      bytes_read = local_buffer_bytes_read_;
     }
 
     // Clean up, whether we'll cancel or proceed from here.
     local_buffer_ = nullptr;
+    local_buffer_bytes_read_ = 0;
     next_handler_buffer_ = nullptr;
     next_handler_buffer_size_ = 0;
   }
@@ -344,6 +434,8 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
 
   // Look up MIME type.  If it doesn't claim to be a blockable type (i.e., HTML,
   // XML, JSON, or plain text), don't block it.
+  // TODO(nick): What if the mime type is omitted? Should that be treated the
+  // same as text/plain? https://crbug.com/795971
   canonical_mime_type_ = CrossSiteDocumentClassifier::GetCanonicalMimeType(
       response->head.mime_type);
   if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS)

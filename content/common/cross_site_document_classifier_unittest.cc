@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
+using Result = content::CrossSiteDocumentClassifier::Result;
 
 namespace content {
 
@@ -78,23 +79,36 @@ TEST(CrossSiteDocumentClassifierTest, SniffForHTML) {
   StringPiece comment_html_data(" <!-- this is comment --> <html><body>");
   StringPiece two_comments_html_data(
       "<!-- this is comment -->\n<!-- this is comment --><html><body>");
+  StringPiece commented_out_html_tag_data("<!-- <html> <?xml> \n<html>--><b");
   StringPiece mixed_comments_html_data(
       "<!-- this is comment <!-- --> <script></script>");
   StringPiece non_html_data("        var name=window.location;\nadfadf");
-  StringPiece comment_js_data(" <!-- this is comment -> document.write(1); ");
+  StringPiece comment_js_data(
+      " <!-- this is comment\n document.write(1);\n// -->window.open()");
   StringPiece empty_data("");
 
-  EXPECT_TRUE(CrossSiteDocumentClassifier::SniffForHTML(html_data));
-  EXPECT_TRUE(CrossSiteDocumentClassifier::SniffForHTML(comment_html_data));
-  EXPECT_TRUE(
-      CrossSiteDocumentClassifier::SniffForHTML(two_comments_html_data));
-  EXPECT_TRUE(
-      CrossSiteDocumentClassifier::SniffForHTML(mixed_comments_html_data));
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForHTML(non_html_data));
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForHTML(comment_js_data));
+  EXPECT_EQ(Result::kYes, CrossSiteDocumentClassifier::SniffForHTML(html_data));
+  EXPECT_EQ(Result::kYes,
+            CrossSiteDocumentClassifier::SniffForHTML(comment_html_data));
+  EXPECT_EQ(Result::kYes,
+            CrossSiteDocumentClassifier::SniffForHTML(two_comments_html_data));
+  EXPECT_EQ(Result::kYes, CrossSiteDocumentClassifier::SniffForHTML(
+                              commented_out_html_tag_data));
+  EXPECT_EQ(Result::kYes, CrossSiteDocumentClassifier::SniffForHTML(
+                              mixed_comments_html_data));
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForHTML(non_html_data));
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForHTML(comment_js_data));
 
-  // Basic bounds check.
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForHTML(empty_data));
+  // Prefixes of |commented_out_html_tag_data| should be indeterminate.
+  StringPiece almost_html = commented_out_html_tag_data;
+  while (!almost_html.empty()) {
+    almost_html.remove_suffix(1);
+    EXPECT_EQ(Result::kMaybe,
+              CrossSiteDocumentClassifier::SniffForHTML(almost_html))
+        << almost_html;
+  }
 }
 
 TEST(CrossSiteDocumentClassifierTest, SniffForXML) {
@@ -102,25 +116,44 @@ TEST(CrossSiteDocumentClassifierTest, SniffForXML) {
   StringPiece non_xml_data("        var name=window.location;\nadfadf");
   StringPiece empty_data("");
 
-  EXPECT_TRUE(CrossSiteDocumentClassifier::SniffForXML(xml_data));
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForXML(non_xml_data));
+  EXPECT_EQ(Result::kYes, CrossSiteDocumentClassifier::SniffForXML(xml_data));
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForXML(non_xml_data));
 
-  // Basic bounds check.
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForXML(empty_data));
+  // Empty string should be indeterminate.
+  EXPECT_EQ(Result::kMaybe,
+            CrossSiteDocumentClassifier::SniffForXML(empty_data));
 }
 
 TEST(CrossSiteDocumentClassifierTest, SniffForJSON) {
   StringPiece json_data("\t\t\r\n   { \"name\" : \"chrome\", ");
+  StringPiece json_corrupt_after_first_key(
+      "\t\t\r\n   { \"name\" :^^^^!!@#\1\", ");
+  StringPiece json_data2("{ \"key   \\\"  \"          \t\t\r\n:");
   StringPiece non_json_data0("\t\t\r\n   { name : \"chrome\", ");
   StringPiece non_json_data1("\t\t\r\n   foo({ \"name\" : \"chrome\", ");
   StringPiece empty_data("");
 
-  EXPECT_TRUE(CrossSiteDocumentClassifier::SniffForJSON(json_data));
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForJSON(non_json_data0));
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForJSON(non_json_data1));
+  EXPECT_EQ(Result::kYes, CrossSiteDocumentClassifier::SniffForJSON(json_data));
+  EXPECT_EQ(Result::kYes, CrossSiteDocumentClassifier::SniffForJSON(
+                              json_corrupt_after_first_key));
 
-  // Basic bounds check.
-  EXPECT_FALSE(CrossSiteDocumentClassifier::SniffForJSON(empty_data));
+  EXPECT_EQ(Result::kYes,
+            CrossSiteDocumentClassifier::SniffForJSON(json_data2));
+
+  // All prefixes prefixes of |json_data2| ought to be indeterminate.
+  StringPiece almost_json = json_data2;
+  while (!almost_json.empty()) {
+    almost_json.remove_suffix(1);
+    EXPECT_EQ(Result::kMaybe,
+              CrossSiteDocumentClassifier::SniffForJSON(almost_json))
+        << almost_json;
+  }
+
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForJSON(non_json_data0));
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForJSON(non_json_data1));
 }
 
 }  // namespace content
