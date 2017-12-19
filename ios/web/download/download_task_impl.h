@@ -57,6 +57,7 @@ class DownloadTaskImpl : public DownloadTask {
   // DownloadTask overrides:
   DownloadTask::State GetState() const override;
   void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) override;
+  void Cancel() override;
   net::URLFetcherResponseWriter* GetResponseWriter() const override;
   NSString* GetIndentifier() const override;
   const GURL& GetOriginalUrl() const override;

@@ -231,6 +231,25 @@ TEST_F(DownloadTaskImplTest, EmptyContentDownload) {
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
+// Tests cancelling the download task.
+TEST_F(DownloadTaskImplTest, Cancelling) {
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  CRWFakeNSURLSessionTask* session_task = Start();
+  ASSERT_TRUE(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+
+  // Cancel the download.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  task_->Cancel();
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    return task_->IsDone();
+  }));
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  EXPECT_EQ(DownloadTask::State::kCancelled, task_->GetState());
+
+  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
+}
+
 // Tests sucessfull download of response with only one
 // URLSession:dataTask:didReceiveData: callback.
 TEST_F(DownloadTaskImplTest, SmallResponseDownload) {

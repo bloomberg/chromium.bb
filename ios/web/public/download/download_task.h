@@ -34,6 +34,9 @@ class DownloadTask {
     // Download is actively progressing.
     kInProgress,
 
+    // Download is cancelled.
+    kCancelled,
+
     // Download is completely finished.
     kComplete,
   };
@@ -44,6 +47,9 @@ class DownloadTask {
   // Starts the download. |writer| allows clients to perform in-memory or
   // in-file downloads and must not be null. Start() can only be called once.
   virtual void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) = 0;
+
+  // Cancels the download.
+  virtual void Cancel() = 0;
 
   // Response writer, which was passed to Start(). Can be used to obtain the
   // download data.
