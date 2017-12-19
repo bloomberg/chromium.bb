@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -110,11 +111,15 @@ class PrefServiceAdapter
     return pref_service_->GetDictionary(path_);
   }
 
-  void SetServerProperties(const base::DictionaryValue& value) override {
-    return pref_service_->Set(path_, value);
+  void SetServerProperties(const base::DictionaryValue& value,
+                           base::OnceClosure callback) override {
+    pref_service_->Set(path_, value);
+    if (callback)
+      pref_service_->CommitPendingWrite(std::move(callback));
   }
 
-  void StartListeningForUpdates(const base::Closure& callback) override {
+  void StartListeningForUpdates(
+      const base::RepeatingClosure& callback) override {
     pref_change_registrar_.Add(path_, callback);
     // Notify the pref manager that settings are already loaded, as a result
     // of initializing the pref store synchornously.

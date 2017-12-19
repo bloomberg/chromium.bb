@@ -8,6 +8,7 @@
 
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/json_pref_store.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_thread.h"
 #include "net/http/http_server_properties_manager.h"
@@ -18,7 +19,7 @@ class PrefServiceAdapter
     : public net::HttpServerPropertiesManager::PrefDelegate,
       public PrefStore::Observer {
  public:
-  explicit PrefServiceAdapter(scoped_refptr<WriteablePrefStore> pref_store)
+  explicit PrefServiceAdapter(scoped_refptr<JsonPrefStore> pref_store)
       : pref_store_(std::move(pref_store)),
         path_(prefs::kHttpServerProperties) {
     pref_store_->AddObserver(this);
@@ -37,11 +38,15 @@ class PrefServiceAdapter
 
     return nullptr;
   }
-  void SetServerProperties(const base::DictionaryValue& value) override {
-    return pref_store_->SetValue(path_, value.CreateDeepCopy(),
-                                 WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  void SetServerProperties(const base::DictionaryValue& value,
+                           base::OnceClosure callback) override {
+    pref_store_->SetValue(path_, value.CreateDeepCopy(),
+                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+    if (callback)
+      pref_store_->CommitPendingWrite(std::move(callback));
   }
-  void StartListeningForUpdates(const base::Closure& callback) override {
+  void StartListeningForUpdates(
+      const base::RepeatingClosure& callback) override {
     on_changed_callback_ = callback;
   }
 
@@ -56,7 +61,7 @@ class PrefServiceAdapter
   }
 
  private:
-  scoped_refptr<WriteablePrefStore> pref_store_;
+  scoped_refptr<JsonPrefStore> pref_store_;
   const std::string path_;
 
   base::Closure on_changed_callback_;
@@ -69,7 +74,7 @@ class PrefServiceAdapter
 // static
 std::unique_ptr<net::HttpServerPropertiesManager>
 HttpServerPropertiesManagerFactory::CreateManager(
-    scoped_refptr<WriteablePrefStore> pref_store,
+    scoped_refptr<JsonPrefStore> pref_store,
     net::NetLog* net_log) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return std::make_unique<net::HttpServerPropertiesManager>(

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -51,13 +52,17 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
     // Returns nullptr if the pref system has no data for the server properties.
     virtual const base::DictionaryValue* GetServerProperties() const = 0;
 
-    // Sets the server properties to the given value.
-    virtual void SetServerProperties(const base::DictionaryValue& value) = 0;
+    // Sets the server properties to the given value. If |callback| is
+    // non-empty, flushes data to persistent storage and invokes |callback|
+    // asynchronously when complete.
+    virtual void SetServerProperties(const base::DictionaryValue& value,
+                                     base::OnceClosure callback) = 0;
 
     // Starts listening for external storage changes. There will only be one
     // callback active at a time. The first time the |callback| is invoked is
     // expected to mean the initial pref store values have been loaded.
-    virtual void StartListeningForUpdates(const base::Closure& callback) = 0;
+    virtual void StartListeningForUpdates(
+        const base::RepeatingClosure& callback) = 0;
   };
 
   // Create an instance of the HttpServerPropertiesManager.
@@ -83,7 +88,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // HttpServerProperties methods:
   // ----------------------------------
 
-  void Clear() override;
+  void Clear(base::OnceClosure callback) override;
   bool SupportsRequestPriority(const url::SchemeHostPort& server) override;
   bool GetSupportsSpdy(const url::SchemeHostPort& server) override;
   void SetSupportsSpdy(const url::SchemeHostPort& server,
@@ -182,8 +187,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void ScheduleUpdatePrefs(Location location);
 
   // Update prefs::kHttpServerProperties in preferences with the cached data
-  // from |http_server_properties_impl_|.
-  void UpdatePrefsFromCache();
+  // from |http_server_properties_impl_|. Invokes |callback| when changes have
+  // been committed, if non-null.
+  void UpdatePrefsFromCache(base::OnceClosure callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,

@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/prefs/writeable_pref_store.h"
+
+class JsonPrefStore;
 
 namespace net {
 class HttpServerPropertiesManager;
@@ -21,7 +22,7 @@ class HttpServerPropertiesManagerFactory {
  public:
   // Create an instance of HttpServerPropertiesManager.
   static std::unique_ptr<net::HttpServerPropertiesManager> CreateManager(
-      scoped_refptr<WriteablePrefStore> pref_store,
+      scoped_refptr<JsonPrefStore> pref_store,
       net::NetLog* net_log);
 
  private:
