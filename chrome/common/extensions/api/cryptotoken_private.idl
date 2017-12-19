@@ -19,5 +19,13 @@ namespace cryptotokenPrivate {
     static void canOriginAssertAppId(DOMString securityOrigin,
                                      DOMString appIdUrl,
                                      AppIdCallback callback);
+
+    // Checks whether the given appId is specified in the
+    // SecurityKeyPermitAttestation policy. This causes a signal to be sent to
+    // the token that informs it that an individually-identifying attestation
+    // certificate may be used. Without that signal, the token is required to
+    // use its batch attestation certificate.
+    static void isAppIdHashInEnterpriseContext(ArrayBuffer appIdHash,
+                                               AppIdCallback callback);
   };
 };

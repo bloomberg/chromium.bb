@@ -7,8 +7,11 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "crypto/sha2.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -18,6 +21,31 @@ const char kGoogleDotCom[] = "google.com";
 constexpr const char* kGoogleGstaticAppIds[] = {
     "https://www.gstatic.com/securitykey/origins.json",
     "https://www.gstatic.com/securitykey/a/google.com/origins.json"};
+
+// ContainsAppIdByHash returns true iff the SHA-256 hash of one of the
+// elements of |list| equals |hash|.
+bool ContainsAppIdByHash(const base::ListValue& list,
+                         const std::vector<char>& hash) {
+  if (hash.size() != crypto::kSHA256Length) {
+    return false;
+  }
+
+  for (const auto& i : list) {
+    const std::string& s = i.GetString();
+    if (s.find('/') == std::string::npos) {
+      // No slashes mean that this is a webauthn RP ID, not a U2F AppID.
+      continue;
+    }
+
+    if (crypto::SHA256HashString(s).compare(0, crypto::kSHA256Length,
+                                            hash.data(),
+                                            crypto::kSHA256Length) == 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 }  // namespace
 
@@ -87,24 +115,27 @@ CryptotokenPrivateCanOriginAssertAppIdFunction::Run() {
   return RespondNow(OneArgument(base::MakeUnique<base::Value>(false)));
 }
 
-// TODO(agl/mab): remove special casing for individual attestation in
-// Javascript in favour of an enterprise policy, which can be accessed like
-// this:
-//
-// #include "chrome/browser/profiles/profile.h"
-// #include "components/prefs/pref_service.h"
-//
-//   Profile* const profile = Profile::FromBrowserContext(browser_context());
-//   const PrefService* const prefs = profile->GetPrefs();
-//   const base::ListValue* const permit_attestation =
-//       prefs->GetList(prefs::kSecurityKeyPermitAttestation);
-//
-//   for (size_t i = 0; i < permit_attestation->GetSize(); i++) {
-//     std::string value;
-//     if (!permit_attestation->GetString(i, &value)) {
-//       continue;
-//     }
-//   }
+CryptotokenPrivateIsAppIdHashInEnterpriseContextFunction::
+    CryptotokenPrivateIsAppIdHashInEnterpriseContextFunction()
+    : chrome_details_(this) {}
+
+ExtensionFunction::ResponseAction
+CryptotokenPrivateIsAppIdHashInEnterpriseContextFunction::Run() {
+  std::unique_ptr<cryptotoken_private::IsAppIdHashInEnterpriseContext::Params>
+      params(
+          cryptotoken_private::IsAppIdHashInEnterpriseContext::Params::Create(
+              *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  const PrefService* const prefs = profile->GetPrefs();
+  const base::ListValue* const permit_attestation =
+      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
+
+  return RespondNow(ArgumentList(
+      cryptotoken_private::IsAppIdHashInEnterpriseContext::Results::Create(
+          ContainsAppIdByHash(*permit_attestation, params->app_id_hash))));
+}
 
 }  // namespace api
 }  // namespace extensions
