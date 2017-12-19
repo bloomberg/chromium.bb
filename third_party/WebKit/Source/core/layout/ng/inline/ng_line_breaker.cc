@@ -581,8 +581,7 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
     item_result->borders_paddings_block_end =
         borders.block_end + paddings.block_end;
     if (item_result->has_edge) {
-      item_result->margins =
-          ComputeMarginsForContainer(constraint_space_, style);
+      item_result->margins = ComputeMarginsForSelf(constraint_space_, style);
       item_result->inline_size = item_result->margins.inline_start +
                                  borders.inline_start + paddings.inline_start;
       line_.position += item_result->inline_size;
@@ -616,7 +615,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleCloseTag(
   if (item_result->has_edge) {
     DCHECK(item.Style());
     const ComputedStyle& style = *item.Style();
-    item_result->margins = ComputeMarginsForContainer(constraint_space_, style);
+    item_result->margins = ComputeMarginsForSelf(constraint_space_, style);
     NGBoxStrut borders = ComputeBorders(constraint_space_, style);
     NGBoxStrut paddings = ComputePadding(constraint_space_, style);
     item_result->inline_size = item_result->margins.inline_end +
