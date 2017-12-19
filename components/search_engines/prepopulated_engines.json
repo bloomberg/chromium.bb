@@ -32,7 +32,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 99
+    "kCurrentDataVersion": 100
   },
 
   // The following engines are included in country lists and are added to the
@@ -48,11 +48,13 @@
       "id": 35
     },
 
+    // Ask and Ask UK have suggestion URLs reachable over HTTPS, but they
+    // throw a certificate error, so those will remain as HTTP for now.
     "ask": {
       "name": "Ask",
       "keyword": "ask.com",
-      "favicon_url": "http://sp.ask.com/sh/i/a16/favicon/favicon.ico",
-      "search_url": "http://www.ask.com/web?q={searchTerms}",
+      "favicon_url": "https://sp.ask.com/sh/i/a16/favicon/favicon.ico",
+      "search_url": "https://www.ask.com/web?q={searchTerms}",
       "suggest_url": "http://ss.ask.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
@@ -61,8 +63,8 @@
     "ask_br": {
       "name": "Ask Brasil",
       "keyword": "br.ask.com",
-      "favicon_url": "http://sp.br.ask.com/sh/i/a14/favicon/favicon.ico",
-      "search_url": "http://br.ask.com/web?q={searchTerms}",
+      "favicon_url": "https://sp.br.ask.com/sh/i/a14/favicon/favicon.ico",
+      "search_url": "https://br.ask.com/web?q={searchTerms}",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
@@ -70,13 +72,15 @@
     "ask_uk": {
       "name": "Ask Jeeves",
       "keyword": "uk.ask.com",
-      "favicon_url": "http://sp.uk.ask.com/sh/i/a16/favicon/favicon.ico",
-      "search_url": "http://uk.ask.com/web?q={searchTerms}",
+      "favicon_url": "https://sp.uk.ask.com/sh/i/a16/favicon/favicon.ico",
+      "search_url": "https://uk.ask.com/web?q={searchTerms}",
       "suggest_url": "http://ss.uk.ask.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
 
+    // Baidu's suggestion URL is not reachable over HTTPS, so it remains as
+    // HTTP for now.
     "baidu": {
       "name": "\u767e\u5ea6",
       "keyword": "baidu.com",
@@ -103,9 +107,9 @@
     "daum": {
       "name": "Daum",
       "keyword": "daum.net",
-      "favicon_url": "http://search.daum.net/favicon.ico",
-      "search_url": "http://search.daum.net/search?ie={inputEncoding}&q={searchTerms}",
-      "suggest_url": "http://sug.search.daum.net/search_nsuggest?mod=fxjson&ie={inputEncoding}&code=utf_in_out&q={searchTerms}",
+      "favicon_url": "https://search.daum.net/favicon.ico",
+      "search_url": "https://search.daum.net/search?ie={inputEncoding}&q={searchTerms}",
+      "suggest_url": "https://sug.search.daum.net/search_nsuggest?mod=fxjson&ie={inputEncoding}&code=utf_in_out&q={searchTerms}",
       "type": "SEARCH_ENGINE_DAUM",
       "id": 68
     },
@@ -173,8 +177,8 @@
     "onet": {
       "name": "Onet.pl",
       "keyword": "onet.pl",
-      "favicon_url": "http://szukaj.onet.pl/favicon.ico",
-      "search_url": "http://szukaj.onet.pl/wyniki.html?qt={searchTerms}",
+      "favicon_url": "https://szukaj.onet.pl/favicon.ico",
+      "search_url": "https://szukaj.onet.pl/wyniki.html?qt={searchTerms}",
       "type": "SEARCH_ENGINE_ONET",
       "id": 75
     },
@@ -665,8 +669,11 @@
     "atlas_cz": {
       "name": "Atlas.cz",
       "keyword": "atlas.cz",
-      "favicon_url": "http://searchatlas.centrum.cz/favicon.ico",
-      "search_url": "http://searchatlas.centrum.cz/?q={searchTerms}",
+      "favicon_url": "https://searchatlas.centrum.cz/favicon.ico",
+      "search_url": "https://searchatlas.centrum.cz/?q={searchTerms}",
+      "alternate_urls": [
+        "http://searchatlas.centrum.cz/?q={searchTerms}"
+      ],
       "suggest_url": "http://radce.centrum.cz/?q={searchTerms}&of=1",
       "type": "SEARCH_ENGINE_ATLAS",
       "id": 27
@@ -676,7 +683,10 @@
       "name": "ATLAS.SK",
       "keyword": "atlas.sk",
       "favicon_url": "http://static.mediacentrum.sk/katalog/atlas.sk/images/favicon.ico",
-      "search_url": "http://hladaj.atlas.sk/fulltext/?phrase={searchTerms}",
+      "search_url": "https://hladaj.atlas.sk/fulltext/?phrase={searchTerms}",
+      "alternate_urls": [
+	"http://hladaj.atlas.sk/fulltext/?phrase={searchTerms}"
+      ],
       "id": 27
     },
 
@@ -722,8 +732,11 @@
     "delfi_lt": {
       "name": "DELFI",
       "keyword": "delfi.lt",
-      "favicon_url": "http://www.delfi.lt/favicon.ico",
-      "search_url": "http://www.delfi.lt/paieska/?q={searchTerms}",
+      "favicon_url": "https://www.delfi.lt/favicon.ico",
+      "search_url": "https://www.delfi.lt/paieska/?q={searchTerms}",
+      "alternate_urls": [
+	"http://www.delfi.lt/paieska/?q={searchTerms}"
+      ],
       "type": "SEARCH_ENGINE_DELFI",
       "id": 45
     },
@@ -1039,8 +1052,11 @@
     "zoznam": {
       "name": "Zoznam",
       "keyword": "zoznam.sk",
-      "favicon_url": "http://www.zoznam.sk/favicon.ico",
-      "search_url": "http://www.zoznam.sk/hladaj.fcgi?s={searchTerms}",
+      "favicon_url": "https://www.zoznam.sk/favicon.ico",
+      "search_url": "https://www.zoznam.sk/hladaj.fcgi?s={searchTerms}",
+      "alternate_urls": [
+        "http://www.zoznam.sk/hladaj.fcgi?s={searchTerms}"
+      ],
       "encoding": "windows-1250",
       "type": "SEARCH_ENGINE_ZOZNAM",
       "id": 85
