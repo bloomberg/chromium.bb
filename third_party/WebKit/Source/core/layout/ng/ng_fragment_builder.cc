@@ -79,6 +79,17 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
 
 NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child) {
+  if (children_.IsEmpty()) {
+    // Ideally, breaking should only occur *between* children, not *before* a
+    // first child.
+    //
+    // TODO(crbug.com/796077): There's one exception here - class C break points
+    // [1]. We should identify them here and not set the "last resort break"
+    // flag in that case.
+    //
+    // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+    has_last_resort_break_ = true;
+  }
   if (child.IsInline()) {
     if (last_inline_break_token_) {
       // We need to resume at this inline location in the next fragmentainer,
@@ -210,10 +221,11 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       child_break_tokens_.push_back(std::move(last_inline_break_token_));
     }
     if (did_break_) {
-      break_token = NGBlockBreakToken::Create(node_, used_block_size_,
-                                              child_break_tokens_);
+      break_token = NGBlockBreakToken::Create(
+          node_, used_block_size_, child_break_tokens_, has_last_resort_break_);
     } else {
-      break_token = NGBlockBreakToken::Create(node_, used_block_size_);
+      break_token = NGBlockBreakToken::Create(node_, used_block_size_,
+                                              has_last_resort_break_);
     }
   }
 

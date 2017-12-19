@@ -385,6 +385,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       }
       if (container_builder_.DidBreak() && IsFragmentainerOutOfSpace())
         break;
+      has_processed_first_child_ = true;
     }
   }
 
@@ -1235,14 +1236,6 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
   if (!ShouldBreakBeforeChild(child, physical_fragment, block_offset))
     return false;
 
-  // TODO(mstensho): Make sure that we're at a valid point [1] before
-  // breaking. It's not allowed to break between the content edge of a
-  // container and its first child, if they are adjacent. If we're not allowed
-  // to break here, we need to attempt to propagate the break further up the
-  // ancestry.
-  //
-  // [1] https://drafts.csswg.org/css-break/#possible-breaks
-
   // The remaining part of the fragmentainer (the unusable space for child
   // content, due to the break) should still be occupied by this container.
   // TODO(mstensho): Figure out if we really need to <0 here. It doesn't seem
@@ -1284,6 +1277,21 @@ bool NGBlockLayoutAlgorithm::ShouldBreakBeforeChild(
   const auto* token = physical_fragment.BreakToken();
   if (!token || token->IsFinished())
     return false;
+  if (token && token->IsBlockType() &&
+      ToNGBlockBreakToken(token)->HasLastResortBreak()) {
+    // If this isn't the first piece of child content, we're at a valid class A
+    // (block) or B (line) break point [1], and we may break between this child
+    // and the preceding one.
+    if (has_processed_first_child_)
+      return true;
+    // TODO(crbug.com/796077): Detect class C break points [1] here. If we're
+    // not at the block content start edge, we may break here, even if it's a
+    // first in-flow child (this situation typically occurs if there are floats
+    // at the beginning of a container, so that the first piece of in-flow
+    // content needs to be pushed down).
+    //
+    // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+  }
   // TODO(mstensho): There are other break-inside values to consider here.
   if (child.Style().BreakInside() != EBreakInside::kAvoid)
     return false;

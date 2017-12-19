@@ -101,6 +101,13 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     scoped_refptr<NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
+  if (!has_last_resort_break_) {
+    if (const auto* token = child->BreakToken()) {
+      if (token->IsBlockType() &&
+          ToNGBlockBreakToken(token)->HasLastResortBreak())
+        has_last_resort_break_ = true;
+    }
+  }
   children_.push_back(std::move(child));
   offsets_.push_back(child_offset);
   return *this;

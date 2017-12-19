@@ -27,15 +27,19 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   static scoped_refptr<NGBlockBreakToken> Create(
       NGLayoutInputNode node,
       LayoutUnit used_block_size,
-      Vector<scoped_refptr<NGBreakToken>>& child_break_tokens) {
-    return base::AdoptRef(
-        new NGBlockBreakToken(node, used_block_size, child_break_tokens));
+      Vector<scoped_refptr<NGBreakToken>>& child_break_tokens,
+      bool has_last_resort_break = false) {
+    return base::AdoptRef(new NGBlockBreakToken(
+        node, used_block_size, child_break_tokens, has_last_resort_break));
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
-  static scoped_refptr<NGBlockBreakToken> Create(NGLayoutInputNode node,
-                                                 LayoutUnit used_block_size) {
-    return base::AdoptRef(new NGBlockBreakToken(node, used_block_size));
+  static scoped_refptr<NGBlockBreakToken> Create(
+      NGLayoutInputNode node,
+      LayoutUnit used_block_size,
+      bool has_last_resort_break = false) {
+    return base::AdoptRef(
+        new NGBlockBreakToken(node, used_block_size, has_last_resort_break));
   }
 
   // Represents the amount of block size used in previous fragments.
@@ -44,6 +48,8 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   // fragments of this block used 150px (used block size), the next fragment
   // should have a size of 50px (assuming no additional fragmentation).
   LayoutUnit UsedBlockSize() const { return used_block_size_; }
+
+  bool HasLastResortBreak() const { return has_last_resort_break_; }
 
   // The break tokens for children of the layout node.
   //
@@ -64,12 +70,20 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
  private:
   NGBlockBreakToken(NGLayoutInputNode node,
                     LayoutUnit used_block_size,
-                    Vector<scoped_refptr<NGBreakToken>>& child_break_tokens);
+                    Vector<scoped_refptr<NGBreakToken>>& child_break_tokens,
+                    bool has_last_resort_break);
 
-  NGBlockBreakToken(NGLayoutInputNode node, LayoutUnit used_block_size);
+  NGBlockBreakToken(NGLayoutInputNode node,
+                    LayoutUnit used_block_size,
+                    bool has_last_resort_break);
 
-  LayoutUnit used_block_size_;
   Vector<scoped_refptr<NGBreakToken>> child_break_tokens_;
+  LayoutUnit used_block_size_;
+
+  // We're attempting to break at an undesirable place. Sometimes that's
+  // unavoidable, but we should only break here if we cannot find a better break
+  // point further up in the ancestry.
+  bool has_last_resort_break_ = false;
 };
 
 DEFINE_TYPE_CASTS(NGBlockBreakToken,
