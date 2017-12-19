@@ -22,14 +22,6 @@ bool GetDataDirectory(FilePath* result) {
   return true;
 }
 
-bool GetDatabaseDirectory(FilePath* result) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> path = Java_PathUtils_getDatabaseDirectory(env);
-  FilePath data_path(ConvertJavaStringToUTF8(path));
-  *result = data_path;
-  return true;
-}
-
 bool GetCacheDirectory(FilePath* result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> path = Java_PathUtils_getCacheDirectory(env);
@@ -44,15 +36,6 @@ bool GetThumbnailCacheDirectory(FilePath* result) {
       Java_PathUtils_getThumbnailCacheDirectory(env);
   FilePath thumbnail_cache_path(ConvertJavaStringToUTF8(path));
   *result = thumbnail_cache_path;
-  return true;
-}
-
-bool GetDownloadInternalDirectory(FilePath* result) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> path =
-      Java_PathUtils_getDownloadInternalDirectory(env);
-  FilePath download_internal_path(ConvertJavaStringToUTF8(path));
-  *result = download_internal_path;
   return true;
 }
 
