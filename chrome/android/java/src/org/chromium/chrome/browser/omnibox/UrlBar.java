@@ -207,8 +207,6 @@ public class UrlBar extends AutocompleteEditText {
         setFocusable(false);
         setFocusableInTouchMode(false);
 
-        setHint(OmniboxPlaceholderFieldTrial.getOmniboxPlaceholder());
-
         mGestureDetector = new GestureDetector(
                 getContext(), new GestureDetector.SimpleOnGestureListener() {
                     @Override

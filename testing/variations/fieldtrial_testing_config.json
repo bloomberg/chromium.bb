@@ -2357,33 +2357,6 @@
             ]
         }
     ],
-    "OmniboxPlaceholderExperiment": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "SearchOrTypeUrl"
-                },
-                {
-                    "name": "SearchOrTypeWebAddress"
-                },
-                {
-                    "name": "TypeWhatYouAreLookingFor"
-                },
-                {
-                    "name": "FindNewsRecipesWeather"
-                },
-                {
-                    "name": "Blank"
-                },
-                {
-                    "name": "Default"
-                }
-            ]
-        }
-    ],
     "OutOfProcessPac": [
         {
             "platforms": [

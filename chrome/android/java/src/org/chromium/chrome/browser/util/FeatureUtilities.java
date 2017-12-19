@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.omnibox.OmniboxPlaceholderFieldTrial;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
@@ -196,7 +195,6 @@ public class FeatureUtilities {
         cacheHerbFlavor();
         cacheChromeHomeEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
-        OmniboxPlaceholderFieldTrial.cacheOmniboxPlaceholderGroup();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
         // be done in LibraryLoader itself because it lives in //base and can't depend

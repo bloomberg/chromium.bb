@@ -64,8 +64,6 @@ public class ChromePreferenceManager {
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
     private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
 
-    private static final String OMNIBOX_PLACEHOLDER_GROUP = "omnibox-placeholder-group";
-
     public static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
 
     public static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
@@ -496,22 +494,6 @@ public class ChromePreferenceManager {
     /** Returns whether the content suggestions surface has ever been shown. */
     public boolean getSuggestionsSurfaceShown() {
         return mSharedPreferences.getBoolean(CONTENT_SUGGESTIONS_SHOWN_KEY, false);
-    }
-
-    /**
-     * Set group of omnibox placeholder experiment
-     * @param group group name of omnibox placeholder experiment
-     */
-    public void setOmniboxPlaceholderGroup(String group) {
-        writeString(OMNIBOX_PLACEHOLDER_GROUP, group);
-    }
-
-    /**
-     * Get group of omnibox placeholder experiment
-     * @return String of omnibox placeholder experiment group name, empty string if not set
-     */
-    public String getOmniboxPlaceholderGroup() {
-        return mSharedPreferences.getString(OMNIBOX_PLACEHOLDER_GROUP, "");
     }
 
     /**

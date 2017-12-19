@@ -793,7 +793,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/SuggestionAnswer.java",
   "java/src/org/chromium/chrome/browser/omnibox/SuggestionView.java",
   "java/src/org/chromium/chrome/browser/omnibox/UrlBar.java",
-  "java/src/org/chromium/chrome/browser/omnibox/OmniboxPlaceholderFieldTrial.java",
   "java/src/org/chromium/chrome/browser/omnibox/UrlFocusChangeListener.java",
   "java/src/org/chromium/chrome/browser/omnibox/VoiceSuggestionProvider.java",
   "java/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeader.java",

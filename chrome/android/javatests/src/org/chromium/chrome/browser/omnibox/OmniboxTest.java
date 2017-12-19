@@ -366,7 +366,7 @@ public class OmniboxTest {
         Assert.assertEquals("Location bar has text.", "", urlBar.getText().toString());
         Assert.assertEquals("Location bar has incorrect hint.",
                 mActivityTestRule.getActivity().getResources().getString(
-                        R.string.search_or_type_url),
+                        R.string.search_or_type_web_address),
                 urlBar.getHint().toString());
 
         // Type something in the omnibox.
