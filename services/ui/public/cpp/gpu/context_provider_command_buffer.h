@@ -29,6 +29,7 @@ namespace gpu {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
 struct GpuFeatureInfo;
+class GpuMemoryBufferManager;
 class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
@@ -54,6 +55,7 @@ class ContextProviderCommandBuffer
  public:
   ContextProviderCommandBuffer(
       scoped_refptr<gpu::GpuChannelHost> channel,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int32_t stream_id,
       gpu::SchedulingPriority stream_priority,
       gpu::SurfaceHandle surface_handle,
@@ -138,6 +140,7 @@ class ContextProviderCommandBuffer
 
   scoped_refptr<SharedProviders> shared_providers_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   base::Lock context_lock_;  // Referenced by command_buffer_.

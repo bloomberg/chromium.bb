@@ -52,9 +52,11 @@ int GetChannelID(gpu::CommandBufferId command_buffer_id) {
 
 CommandBufferProxyImpl::CommandBufferProxyImpl(
     scoped_refptr<GpuChannelHost> channel,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int32_t stream_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : channel_(std::move(channel)),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       channel_id_(channel_->channel_id()),
       route_id_(channel_->GenerateRouteID()),
       stream_id_(stream_id),
@@ -458,8 +460,6 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
 
   int32_t new_id = channel_->ReserveImageId();
 
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
-      channel_->gpu_memory_buffer_manager();
   gfx::GpuMemoryBuffer* gpu_memory_buffer =
       reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
   DCHECK(gpu_memory_buffer);
@@ -504,8 +504,8 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
     EnsureWorkVisible();
     sync_token.SetVerifyFlush();
 
-    gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
-                                                       sync_token);
+    gpu_memory_buffer_manager_->SetDestructionSyncToken(gpu_memory_buffer,
+                                                        sync_token);
   }
 
   return new_id;

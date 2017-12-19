@@ -46,10 +46,8 @@ BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = nullptr;
 class BrowserGpuChannelHostFactory::EstablishRequest
     : public base::RefCountedThreadSafe<EstablishRequest> {
  public:
-  static scoped_refptr<EstablishRequest> Create(
-      int gpu_client_id,
-      uint64_t gpu_client_tracing_id,
-      BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager);
+  static scoped_refptr<EstablishRequest> Create(int gpu_client_id,
+                                                uint64_t gpu_client_tracing_id);
   void Wait();
   void Cancel();
 
@@ -59,9 +57,7 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 
  private:
   friend class base::RefCountedThreadSafe<EstablishRequest>;
-  EstablishRequest(int gpu_client_id,
-                   uint64_t gpu_client_tracing_id,
-                   BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager);
+  EstablishRequest(int gpu_client_id, uint64_t gpu_client_tracing_id);
   ~EstablishRequest() {}
   void RestartTimeout();
   void EstablishOnIO();
@@ -75,7 +71,6 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   base::WaitableEvent event_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
-  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   bool finished_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -84,10 +79,9 @@ class BrowserGpuChannelHostFactory::EstablishRequest
 scoped_refptr<BrowserGpuChannelHostFactory::EstablishRequest>
 BrowserGpuChannelHostFactory::EstablishRequest::Create(
     int gpu_client_id,
-    uint64_t gpu_client_tracing_id,
-    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager) {
-  scoped_refptr<EstablishRequest> establish_request = new EstablishRequest(
-      gpu_client_id, gpu_client_tracing_id, gpu_memory_buffer_manager);
+    uint64_t gpu_client_tracing_id) {
+  scoped_refptr<EstablishRequest> establish_request =
+      new EstablishRequest(gpu_client_id, gpu_client_tracing_id);
   // PostTask outside the constructor to ensure at least one reference exists.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -99,13 +93,11 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(
 
 BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
     int gpu_client_id,
-    uint64_t gpu_client_tracing_id,
-    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
+    uint64_t gpu_client_tracing_id)
     : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
              base::WaitableEvent::InitialState::NOT_SIGNALED),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       finished_(false),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
@@ -156,16 +148,8 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
   }
 
   if (channel_handle.is_valid()) {
-    // Note: We may get here after the BrowserGpuChannelHostFactory is destroyed
-    // on the UI thread, in which case gpu_memory_buffer_manager_ could be
-    // stale.  However GpuChannelHost doesn't dereference it, and it only gets
-    // used by CommandBufferProxyImpl after we returned the GpuChannelHost on
-    // the UI thread, which we won't if indeed BrowserGpuChannelHostFactory was
-    // destroyed.
-    // TODO(piman): clean this.
     gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
-        gpu_client_id_, gpu_info, gpu_feature_info, std::move(channel_handle),
-        gpu_memory_buffer_manager_);
+        gpu_client_id_, gpu_info, gpu_feature_info, std::move(channel_handle));
   }
   FinishOnIO();
 }
@@ -277,8 +261,7 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
   if (!gpu_channel_.get() && !pending_request_.get()) {
     // We should only get here if the context was lost.
     pending_request_ =
-        EstablishRequest::Create(gpu_client_id_, gpu_client_tracing_id_,
-                                 gpu_memory_buffer_manager_.get());
+        EstablishRequest::Create(gpu_client_id_, gpu_client_tracing_id_);
     RestartTimeout();
   }
 

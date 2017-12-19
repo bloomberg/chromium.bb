@@ -60,6 +60,7 @@ struct ContextCreationAttribHelper;
 
 namespace gpu {
 class GpuChannelHost;
+class GpuMemoryBufferManager;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -81,6 +82,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   CommandBufferProxyImpl(
       scoped_refptr<GpuChannelHost> channel,
+      GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int32_t stream_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~CommandBufferProxyImpl() override;
@@ -264,6 +266,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   base::ObserverList<DeletionObserver> deletion_observers_;
 
   scoped_refptr<GpuChannelHost> channel_;
+  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   bool disconnected_ = false;
   const int channel_id_;
   const int32_t route_id_;
