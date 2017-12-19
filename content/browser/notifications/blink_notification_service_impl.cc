@@ -80,15 +80,27 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
     return;
   PlatformNotificationData platform_notification_data;
   platform_notification_data.title = title;
+
+  // TODO(https://crbug.com/595685): Generate a GUID in the
+  // NotificationIdGenerator instead.
+  static int request_id = 0;
+  request_id++;
+
+  std::string notification_id =
+      notification_context_->notification_id_generator()
+          ->GenerateForNonPersistentNotification(
+              origin_.GetURL(), platform_notification_data.tag, request_id,
+              render_process_id_);
+
   // TODO(crbug.com/595685): Plumb through the rest of the notification data and
   // the notification resources from blink.
   // Using base::Unretained is safe because Service() returns a singleton.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&PlatformNotificationService::DisplayNotification,
-                     base::Unretained(Service()), browser_context_, "",
-                     origin_.GetURL(), platform_notification_data,
-                     NotificationResources()));
+                     base::Unretained(Service()), browser_context_,
+                     notification_id, origin_.GetURL(),
+                     platform_notification_data, NotificationResources()));
 }
 
 }  // namespace content
