@@ -1688,7 +1688,7 @@
     'viz_content_unittests': {
       'args': [
         '--enable-viz',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unitests.filter',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter',
       ],
       'test': 'content_unittests',
     }
