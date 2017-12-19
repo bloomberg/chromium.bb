@@ -110,6 +110,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual bool HasWebView() const = 0;  // mainly for assertions
 
+  virtual void WillBeDetached() = 0;
   virtual void DispatchWillSendRequest(ResourceRequest&) = 0;
   virtual void DispatchDidReceiveResponse(const ResourceResponse&) = 0;
   virtual void DispatchDidLoadResourceFromMemoryCache(

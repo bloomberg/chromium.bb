@@ -18,9 +18,6 @@ class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {
  public:
   virtual bool InShadowTree() const = 0;
 
-  // TODO(dcheng): Move this into LocalFrameClient, since remote frames don't
-  // need this.
-  virtual void WillBeDetached() = 0;
   virtual void Detached(FrameDetachType) = 0;
 
   virtual Frame* Opener() const = 0;

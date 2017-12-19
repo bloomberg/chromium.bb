@@ -439,7 +439,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
 
   // FrameClient implementation.
   bool InShadowTree() const override { return false; }
-  void WillBeDetached() override {}
   void Detached(FrameDetachType) override {}
   Frame* Opener() const override { return nullptr; }
   void SetOpener(Frame*) override {}
