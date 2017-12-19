@@ -64,14 +64,10 @@ void NetworkConfigurationUpdater::Init() {
   }
 }
 
-void NetworkConfigurationUpdater::OnPolicyChanged(
-    const base::Value* previous,
-    const base::Value* current) {
-  VLOG(1) << LogHeader() << " changed.";
-  ApplyPolicy();
-}
-
-void NetworkConfigurationUpdater::ApplyPolicy() {
+void NetworkConfigurationUpdater::ParseCurrentPolicy(
+    base::ListValue* network_configs,
+    base::DictionaryValue* global_network_config,
+    base::ListValue* certificates) {
   const PolicyMap& policies = policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const base::Value* policy_value = policies.GetValue(policy_key_);
@@ -82,15 +78,21 @@ void NetworkConfigurationUpdater::ApplyPolicy() {
   else if (!policy_value->GetAsString(&onc_blob))
     LOG(ERROR) << LogHeader() << " is not a string value.";
 
+  chromeos::onc::ParseAndValidateOncForImport(
+      onc_blob, onc_source_, std::string() /* no passphrase */, network_configs,
+      global_network_config, certificates);
+}
+
+void NetworkConfigurationUpdater::OnPolicyChanged(const base::Value* previous,
+                                                  const base::Value* current) {
+  ApplyPolicy();
+}
+
+void NetworkConfigurationUpdater::ApplyPolicy() {
   base::ListValue network_configs;
   base::DictionaryValue global_network_config;
   base::ListValue certificates;
-  chromeos::onc::ParseAndValidateOncForImport(onc_blob,
-                                              onc_source_,
-                                              "" /* no passphrase */,
-                                              &network_configs,
-                                              &global_network_config,
-                                              &certificates);
+  ParseCurrentPolicy(&network_configs, &global_network_config, &certificates);
 
   ImportCertificates(certificates);
   ApplyNetworkPolicy(&network_configs, &global_network_config);

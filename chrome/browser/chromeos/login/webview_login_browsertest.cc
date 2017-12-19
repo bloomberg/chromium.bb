@@ -3,9 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/files/file_util.h"
+#include "base/guid.h"
+#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
@@ -20,6 +25,8 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/onc/onc_constants.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/storage_partition.h"
@@ -41,6 +48,7 @@ namespace chromeos {
 
 namespace {
 
+constexpr char kTestGuid[] = "cccccccc-cccc-4ccc-0ccc-ccccccccccc1";
 constexpr char kTestCookieName[] = "TestCookie";
 constexpr char kTestCookieValue[] = "present";
 constexpr char kTestCookieHost[] = "host1.com";
@@ -433,6 +441,31 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     watcher.Wait();
   }
 
+  // Adds the certificate from |authority_file_path| (PEM) as untrusted
+  // authority in device OpenNetworkConfiguration policy.
+  void SetIntermediateAuthorityInDeviceOncPolicy(
+      const base::FilePath& authority_file_path) {
+    std::string x509_contents;
+    ASSERT_TRUE(base::ReadFileToString(authority_file_path, &x509_contents));
+    base::DictionaryValue onc_dict =
+        BuildDeviceOncDictForUntrustedAuthority(x509_contents);
+
+    em::ChromeDeviceSettingsProto& proto(
+        device_policy_test_helper_.device_policy()->payload());
+    base::JSONWriter::Write(onc_dict,
+                            proto.mutable_open_network_configuration()
+                                ->mutable_open_network_configuration());
+
+    device_policy_test_helper_.device_policy()->Build();
+
+    fake_session_manager_client_->set_device_policy(
+        device_policy_test_helper_.device_policy()->GetBlob());
+    PrefChangeWatcher watcher(onc::prefs::kDeviceOpenNetworkConfiguration,
+                              g_browser_process->local_state());
+    fake_session_manager_client_->OnPropertyChangeComplete(true);
+    watcher.Wait();
+  }
+
   // Starts the Test HTTPS server with |ssl_options|.
   void StartHttpsServer(const net::SpawnedTestServer::SSLOptions& ssl_options) {
     https_server_ = std::make_unique<net::SpawnedTestServer>(
@@ -481,6 +514,29 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     test_system_slot_ = std::make_unique<crypto::ScopedTestSystemNSSKeySlot>();
     *out_system_slot_constructed_successfully =
         test_system_slot_->ConstructedSuccessfully();
+  }
+
+  // Builds a device ONC dictionary defining a single untrusted authority
+  // certificate.
+  base::DictionaryValue BuildDeviceOncDictForUntrustedAuthority(
+      const std::string& x509_authority_cert) {
+    base::DictionaryValue onc_certificate;
+    onc_certificate.SetKey(onc::certificate::kGUID, base::Value(kTestGuid));
+    onc_certificate.SetKey(onc::certificate::kType,
+                           base::Value(onc::certificate::kAuthority));
+    onc_certificate.SetKey(onc::certificate::kX509,
+                           base::Value(x509_authority_cert));
+
+    base::ListValue onc_certificates;
+    onc_certificates.GetList().emplace_back(std::move(onc_certificate));
+
+    base::DictionaryValue onc_dict;
+    onc_dict.SetKey(onc::toplevel_config::kCertificates,
+                    std::move(onc_certificates));
+    onc_dict.SetKey(
+        onc::toplevel_config::kType,
+        base::Value(onc::toplevel_config::kUnencryptedConfiguration));
+    return onc_dict;
   }
 
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
@@ -583,6 +639,64 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   std::string https_reply_content = RequestClientCertTestPageInFrame(
       gaia_frame_parent_, false /* watch_new_webcontents */);
   EXPECT_EQ("got no client cert", https_reply_content);
+}
+
+// Test that client certificate will not be discovered if the server requests
+// certificates signed by a root authority, the installed certificate has been
+// issued by an intermediate authority, and the intermediate authority is not
+// known on the device (it has not been made available through device ONC
+// policy).
+IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
+                       SigninFrameIntermediateAuthorityUnknown) {
+  ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  base::FilePath ca_path = net::GetTestCertsDirectory().Append(
+      FILE_PATH_LITERAL("client_root_ca.pem"));
+  ssl_options.client_authorities.push_back(ca_path);
+  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
+
+  const std::string autoselect_pattern =
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
+  SetAutoSelectCertificatePattern(autoselect_pattern);
+
+  WaitForGaiaPageLoad();
+
+  std::string https_reply_content = RequestClientCertTestPageInFrame(
+      gaia_frame_parent_, false /* watch_new_webcontents */);
+  EXPECT_EQ("got no client cert", https_reply_content);
+}
+
+// Test that client certificate will be discovered if the server requests
+// certificates signed by a root authority, the installed certificate has been
+// issued by an intermediate authority, and the intermediate authority is
+// known on the device (it has been made available through device ONC policy).
+IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
+                       SigninFrameIntermediateAuthorityKnown) {
+  ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  base::FilePath ca_path = net::GetTestCertsDirectory().Append(
+      FILE_PATH_LITERAL("client_root_ca.pem"));
+  ssl_options.client_authorities.push_back(ca_path);
+  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
+
+  const std::string autoselect_pattern =
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
+  SetAutoSelectCertificatePattern(autoselect_pattern);
+  base::FilePath intermediate_ca_path =
+      net::GetTestCertsDirectory().Append(FILE_PATH_LITERAL("client_1_ca.pem"));
+  ASSERT_NO_FATAL_FAILURE(
+      SetIntermediateAuthorityInDeviceOncPolicy(intermediate_ca_path));
+
+  WaitForGaiaPageLoad();
+
+  std::string https_reply_content = RequestClientCertTestPageInFrame(
+      gaia_frame_parent_, false /* watch_new_webcontents */);
+  EXPECT_EQ(
+      "got client cert with fingerprint: "
+      "c66145f49caca4d1325db96ace0f12f615ba4981",
+      https_reply_content);
 }
 
 // Tests that client certificate authentication is not enabled in a webview on

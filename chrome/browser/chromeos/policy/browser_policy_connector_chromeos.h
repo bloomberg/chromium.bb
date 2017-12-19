@@ -45,7 +45,7 @@ class DeviceLocalAccountPolicyService;
 struct EnrollmentConfig;
 class HostnameHandler;
 class MinimumVersionPolicyHandler;
-class NetworkConfigurationUpdater;
+class DeviceNetworkConfigurationUpdater;
 class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
 
@@ -141,6 +141,11 @@ class BrowserPolicyConnectorChromeOS
     return minimum_version_policy_handler_.get();
   }
 
+  DeviceNetworkConfigurationUpdater* GetDeviceNetworkConfigurationUpdater()
+      const {
+    return device_network_configuration_updater_.get();
+  }
+
   // The browser-global PolicyService is created before Profiles are ready, to
   // provide managed values for the local state PrefService. It includes a
   // policy provider that forwards policies from a delegate policy provider.
@@ -215,7 +220,8 @@ class BrowserPolicyConnectorChromeOS
   // pointer to get to the ProxyPolicyProvider at SetUserPolicyDelegate().
   ProxyPolicyProvider* global_user_cloud_policy_provider_ = nullptr;
 
-  std::unique_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
+  std::unique_ptr<DeviceNetworkConfigurationUpdater>
+      device_network_configuration_updater_;
 
   base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_;
 

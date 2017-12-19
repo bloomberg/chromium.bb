@@ -111,9 +111,12 @@ MaskCredentialsInOncObject(const OncValueSignature& signature,
 // Decrypts |onc_blob| with |passphrase| if necessary. Clears |network_configs|,
 // |global_network_config| and |certificates| and fills them with the validated
 // NetworkConfigurations, GlobalNetworkConfiguration and Certificates of
-// |onc_blob|. Returns false if any validation errors or warnings occurred.
-// Still, some configuration might be added to the output arguments and should
-// be further processed by the caller.
+// |onc_blob|. Callers can pass nullptr as any of |network_configs|,
+// |global_network_config|, |certificates| if they're not interested in the
+// respective values. Returns false if any validation errors or warnings
+// occurred in any segments (i.e. not only those requested by the caller). Even
+// if false is returned, some configuration might be added to the output
+// arguments and should be further processed by the caller.
 CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
     const std::string& onc_blob,
     ::onc::ONCSource onc_source,

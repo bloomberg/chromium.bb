@@ -56,6 +56,35 @@ DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(
           base::Unretained(this)));
 }
 
+std::vector<std::string>
+DeviceNetworkConfigurationUpdater::GetAuthorityCertificates() {
+  base::ListValue certificates_onc;
+  ParseCurrentPolicy(nullptr /* network_configs */,
+                     nullptr /* global_network_config */, &certificates_onc);
+
+  std::vector<std::string> x509_authority_certs;
+  for (size_t i = 0; i < certificates_onc.GetSize(); ++i) {
+    const base::DictionaryValue* certificate = nullptr;
+    certificates_onc.GetDictionary(i, &certificate);
+    DCHECK(certificate);
+
+    const base::Value* cert_type_value = certificate->FindKeyOfType(
+        ::onc::certificate::kType, base::Value::Type::STRING);
+    if (cert_type_value &&
+        cert_type_value->GetString() == ::onc::certificate::kAuthority) {
+      const base::Value* cert_x509_value = certificate->FindKeyOfType(
+          ::onc::certificate::kX509, base::Value::Type::STRING);
+      if (!cert_x509_value || cert_x509_value->GetString().empty()) {
+        LOG(ERROR) << "Certificate missing X509 data.";
+        continue;
+      }
+      x509_authority_certs.push_back(cert_x509_value->GetString());
+    }
+  }
+
+  return x509_authority_certs;
+}
+
 void DeviceNetworkConfigurationUpdater::Init() {
   NetworkConfigurationUpdater::Init();
 
@@ -81,9 +110,12 @@ void DeviceNetworkConfigurationUpdater::Init() {
 
 void DeviceNetworkConfigurationUpdater::ImportCertificates(
     const base::ListValue& certificates_onc) {
-  // Importing CA and server certs from device policy is not  allowed, while
-  // importing client is not yet supported (as a system-wide PKCS#11 token to
-  // which they should be imported does not exists at the time).
+  // Importing client certificates from device policy is not implemented.
+  // Permanently importing CA and server certs from device policy or giving such
+  // certificates trust is not allowed. However, we make authority certificates
+  // from device policy available (e.g. for use as intermediates in client
+  // certificate discovery on the sign-in screen), see
+  // GetAuthorityCertificates().
 }
 
 void DeviceNetworkConfigurationUpdater::ApplyNetworkPolicy(

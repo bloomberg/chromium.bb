@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/untrusted_authority_certs_cache.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
@@ -933,6 +934,18 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     } else if (!owner_im.empty()) {
       gaia_ime_state->ChangeInputMethod(owner_im, false /* show_message */);
     }
+  }
+
+  if (!untrusted_authority_certs_cache_) {
+    // Make additional untrusted authority certificates available for client
+    // certificate discovery in case a SAML flow is used which requires a client
+    // certificate to be present.
+    // When the WebUI is destroyed, |untrusted_authority_certs_cache_| will go
+    // out of scope and the certificates will not be held in memory anymore.
+    untrusted_authority_certs_cache_ =
+        std::make_unique<policy::UntrustedAuthorityCertsCache>(
+            policy::UntrustedAuthorityCertsCache::
+                GetUntrustedAuthoritiesFromDeviceOncPolicy());
   }
 
   LoadAuthExtension(!gaia_silent_load_ /* force */, false /* offline */);

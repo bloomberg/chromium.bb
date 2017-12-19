@@ -20,6 +20,10 @@
 
 class AccountId;
 
+namespace policy {
+class UntrustedAuthorityCertsCache;
+}
+
 namespace chromeos {
 
 class ActiveDirectoryPasswordChangeScreenHandler;
@@ -269,6 +273,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Helper to call AuthPolicyClient and cancel calls if needed. Used to
   // authenticate users against Active Directory server.
   std::unique_ptr<AuthPolicyLoginHelper> authpolicy_login_helper_;
+
+  // Makes untrusted authority certificates from device policy available for
+  // client certificate discovery.
+  std::unique_ptr<policy::UntrustedAuthorityCertsCache>
+      untrusted_authority_certs_cache_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 
