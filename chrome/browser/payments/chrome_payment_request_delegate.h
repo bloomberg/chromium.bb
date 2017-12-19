@@ -45,6 +45,7 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   bool IsBrowserWindowActive() const override;
   scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const override;
+  PaymentRequestDisplayManager* GetDisplayManager() override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

@@ -2,6 +2,7 @@ include_rules = [
   "-components/payments/content/android",
   "+components/autofill",
   "+components/keyed_service/content",
+  "+components/keyed_service/core",
   "+components/prefs",
   "+components/strings",
   "+components/url_formatter",

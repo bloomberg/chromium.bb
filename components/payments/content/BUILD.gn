@@ -12,6 +12,8 @@ static_library("content") {
     "payment_request_converter.cc",
     "payment_request_converter.h",
     "payment_request_dialog.h",
+    "payment_request_display_manager.cc",
+    "payment_request_display_manager.h",
     "payment_request_spec.cc",
     "payment_request_spec.h",
     "payment_request_state.cc",

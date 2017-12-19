@@ -13,6 +13,7 @@ class scoped_refptr;
 namespace payments {
 
 class PaymentManifestWebDataService;
+class PaymentRequestDisplayManager;
 
 // The delegate for PaymentRequest that can use content.
 class ContentPaymentRequestDelegate : public PaymentRequestDelegate {
@@ -22,6 +23,10 @@ class ContentPaymentRequestDelegate : public PaymentRequestDelegate {
   // Returns the web data service for caching payment method manifests.
   virtual scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const = 0;
+
+  // Returns the PaymentRequestDisplayManager associated with this
+  // PaymentRequest's BrowserContext.
+  virtual PaymentRequestDisplayManager* GetDisplayManager() = 0;
 };
 
 }  // namespace payments

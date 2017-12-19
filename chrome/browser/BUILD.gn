@@ -3142,6 +3142,8 @@ split_static_library("browser") {
     sources += [
       "payments/chrome_payment_request_delegate.cc",
       "payments/chrome_payment_request_delegate.h",
+      "payments/payment_request_display_manager_factory.cc",
+      "payments/payment_request_display_manager_factory.h",
       "payments/payment_request_factory.cc",
       "payments/payment_request_factory.h",
     ]

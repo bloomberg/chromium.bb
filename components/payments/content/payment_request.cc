@@ -33,11 +33,14 @@ PaymentRequest::PaymentRequest(
     content::WebContents* web_contents,
     std::unique_ptr<ContentPaymentRequestDelegate> delegate,
     PaymentRequestWebContentsManager* manager,
+    PaymentRequestDisplayManager* display_manager,
     mojo::InterfaceRequest<mojom::PaymentRequest> request,
     ObserverForTest* observer_for_testing)
     : web_contents_(web_contents),
       delegate_(std::move(delegate)),
       manager_(manager),
+      display_manager_(display_manager),
+      display_handle_(nullptr),
       binding_(this, std::move(request)),
       top_level_origin_(url_formatter::FormatUrlForSecurityDisplay(
           web_contents_->GetLastCommittedURL())),
@@ -155,7 +158,8 @@ void PaymentRequest::Show() {
   }
 
   // A tab can display only one PaymentRequest UI at a time.
-  if (!manager_->CanShow(this)) {
+  display_handle_ = display_manager_->TryShow();
+  if (!display_handle_) {
     LOG(ERROR) << "A PaymentRequest UI is already showing";
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
@@ -184,7 +188,8 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
   if (methods_supported) {
     journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
 
-    delegate_->ShowDialog(this);
+    DCHECK(display_handle_);
+    display_handle_->Show(delegate_.get(), this);
   } else {
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
@@ -337,6 +342,10 @@ void PaymentRequest::Pay() {
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
   state_->GeneratePaymentResponse();
+}
+
+void PaymentRequest::HideIfNecessary() {
+  display_handle_.reset();
 }
 
 void PaymentRequest::RecordFirstAbortReason(
