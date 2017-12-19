@@ -6721,6 +6721,7 @@ class TextCheckClient : public WebTextCheckClient {
   ~TextCheckClient() override {}
 
   // WebTextCheckClient:
+  bool IsSpellCheckingEnabled() const override { return true; }
   void RequestCheckingOfText(const WebString&,
                              WebTextCheckingCompletion* completion) override {
     ++number_of_times_checked_;
@@ -6879,6 +6880,7 @@ class StubbornTextCheckClient : public WebTextCheckClient {
   ~StubbornTextCheckClient() override {}
 
   // WebTextCheckClient:
+  bool IsSpellCheckingEnabled() const override { return true; }
   void RequestCheckingOfText(const WebString&,
                              WebTextCheckingCompletion* completion) override {
     completion_ = completion;

@@ -6,8 +6,6 @@
 #define SpellCheckTestBase_h
 
 #include "core/editing/testing/EditingTestBase.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
 
 namespace blink {
 

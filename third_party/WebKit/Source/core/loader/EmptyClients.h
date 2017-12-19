@@ -364,7 +364,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
 
+  void SetTextCheckerClientForTesting(WebTextCheckClient*);
   WebTextCheckClient* GetTextCheckerClient() const override;
+
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
     return Platform::Current()->CreateDefaultURLLoaderFactory();
   }
@@ -374,6 +376,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
  protected:
   EmptyLocalFrameClient() = default;
+
+  // Not owned
+  WebTextCheckClient* text_check_client_;
 
   ContentSettingsClient content_settings_client_;
   service_manager::InterfaceProvider interface_provider_;

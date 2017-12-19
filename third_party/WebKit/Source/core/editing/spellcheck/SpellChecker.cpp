@@ -106,13 +106,9 @@ SpellChecker::SpellChecker(LocalFrame& frame)
       idle_spell_check_callback_(IdleSpellCheckCallback::Create(frame)) {}
 
 bool SpellChecker::IsSpellCheckingEnabled() const {
-  if (Page* page = GetFrame().GetPage()) {
-    if (page->GetSpellCheckStatus() == Page::SpellCheckStatus::kForcedOff)
-      return false;
-    if (page->GetSpellCheckStatus() == Page::SpellCheckStatus::kForcedOn)
-      return true;
-  }
-  return ShouldSpellcheckByDefault();
+  if (WebTextCheckClient* client = GetTextCheckerClient())
+    return client->IsSpellCheckingEnabled();
+  return false;
 }
 
 void SpellChecker::ToggleSpellCheckingEnabled() {

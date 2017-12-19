@@ -19,6 +19,15 @@ class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
     return GetSpellChecker().GetIdleSpellCheckCallback();
   }
 
+  void SetUp() override {
+    SpellCheckTestBase::SetUp();
+
+    // The initial cold mode request is on on document startup. This doesn't
+    // work in unit test where SpellChecker is enabled after document startup.
+    // Post another request here to ensure the activation of cold mode checker.
+    IdleChecker().SetNeedsColdModeInvocation();
+  }
+
   void TransitTo(State state) {
     switch (state) {
       case State::kInactive:
