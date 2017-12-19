@@ -13,6 +13,8 @@ import os
 import sys
 import unittest
 
+from core import path_util
+
 from telemetry import benchmark as benchmark_module
 from telemetry import decorators
 from telemetry.testing import options_for_unittests
@@ -87,7 +89,11 @@ def SmokeTestGenerator(benchmark, num_pages=1):
     benchmark.ProcessCommandLineArgs(None, options)
     benchmark_module.ProcessCommandLineArgs(None, options)
 
-    self.assertEqual(0, SinglePageBenchmark().Run(options),
+    single_page_benchmark = SinglePageBenchmark()
+    with open(path_util.GetExpectationsPath()) as fp:
+      single_page_benchmark.AugmentExpectationsWithParser(fp.read())
+
+    self.assertEqual(0, single_page_benchmark.Run(options),
                      msg='Failed: %s' % benchmark)
 
   return BenchmarkSmokeTest
