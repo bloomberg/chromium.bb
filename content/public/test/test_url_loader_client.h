@@ -26,7 +26,7 @@ namespace content {
 //   TestURLLoaderClient client;
 //   factory_->CreateLoaderAndStart(..., client.CreateInterfacePtr(), ...);
 //   client.RunUntilComplete();
-//   EXPECT_EQ(net::OK, client.status().error_code);
+//   EXPECT_EQ(net::OK, client.completion_status().error_code);
 //   ...
 class TestURLLoaderClient final : public mojom::URLLoaderClient {
  public:
