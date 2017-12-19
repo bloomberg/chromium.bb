@@ -193,7 +193,7 @@ class TryserverApi(recipe_api.RecipeApi):
             self.m.properties['patch_gerrit_url'],
             self.m.properties['patch_issue'],
             self.m.properties['patch_set'])
-      elif self.can_apply_issue:
+      elif self.can_apply_issue:  # pragma: no cover
         patch_url = (
             self.m.properties['rietveld'].rstrip('/') + '/' +
             str(self.m.properties['issue']))
