@@ -72,19 +72,6 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     return module_script->Record().Evaluate(script_state_.get());
   }
 
-  ScriptModuleState GetRecordStatus(ScriptModule script_module) final {
-    ScriptState::Scope scope(script_state_.get());
-    return script_module.Status(script_state_.get());
-  }
-
-  ScriptValue GetError(const ModuleScript* module_script) final {
-    ScriptState::Scope scope(script_state_.get());
-    ScriptModule record = module_script->Record();
-    DCHECK(!record.IsNull());
-    return ScriptValue(script_state_.get(),
-                       record.ErrorCompletion(script_state_.get()));
-  }
-
   scoped_refptr<ScriptState> script_state_;
   Member<ModuleTreeClient> pending_client_;
 };

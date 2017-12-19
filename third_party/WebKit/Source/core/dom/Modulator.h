@@ -137,11 +137,6 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual ScriptValue InstantiateModule(ScriptModule) = 0;
 
-  virtual ScriptModuleState GetRecordStatus(ScriptModule) = 0;
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-error
-  virtual ScriptValue GetError(const ModuleScript*) = 0;
-
   struct ModuleRequest {
     String specifier;
     TextPosition position;

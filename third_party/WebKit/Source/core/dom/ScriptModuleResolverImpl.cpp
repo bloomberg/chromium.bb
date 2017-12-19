@@ -80,11 +80,9 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
 
   // Step 6. Assert: resolved module script is a module script (i.e., is not
   // null or "fetching").
+  // Step 7. Assert: resolved module script's record is not null.
   DCHECK(module_script);
-  // Step 7. Assert: resolved module script is not errored.
-  // The below CHECK doesn't hold until V8 forgets about instantiation errors.
-  // TODO(hiroshige,kouhei): Re-introduce the below CHECK once V8 is updated.
-  // CHECK(!module_script->IsErrored());
+  CHECK(!module_script->Record().IsNull());
 
   // Step 8. Return resolved module script's module record.
   return module_script->Record();
