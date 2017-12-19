@@ -78,18 +78,20 @@ InProcessContextProvider::InProcessContextProvider(
 
 InProcessContextProvider::~InProcessContextProvider() = default;
 
+void InProcessContextProvider::AddRef() const {
+  base::RefCountedThreadSafe<InProcessContextProvider>::AddRef();
+}
+
+void InProcessContextProvider::Release() const {
+  base::RefCountedThreadSafe<InProcessContextProvider>::Release();
+}
+
 gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
   return context_result_;
 }
 
 gpu::gles2::GLES2Interface* InProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
-}
-
-gpu::raster::RasterInterface* InProcessContextProvider::RasterContext() {
-  // RasterContext use isn't expected in viz compositor context.
-  DLOG(ERROR) << "Unexpected access to RasterContext()";
-  return nullptr;
 }
 
 gpu::ContextSupport* InProcessContextProvider::ContextSupport() {

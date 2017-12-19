@@ -15,6 +15,7 @@
 #include "cc/cc_export.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
@@ -69,7 +70,7 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
   // (won't be used) unless |context_provider| is present.
   LayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
-      scoped_refptr<viz::ContextProvider> worker_context_provider,
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       viz::SharedBitmapManager* shared_bitmap_manager);
@@ -104,7 +105,7 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
   viz::ContextProvider* context_provider() const {
     return context_provider_.get();
   }
-  viz::ContextProvider* worker_context_provider() const {
+  viz::RasterContextProvider* worker_context_provider() const {
     return worker_context_provider_.get();
   }
   viz::VulkanContextProvider* vulkan_context_provider() const {
@@ -145,7 +146,7 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
 
   struct LayerTreeFrameSink::Capabilities capabilities_;
   scoped_refptr<viz::ContextProvider> context_provider_;
-  scoped_refptr<viz::ContextProvider> worker_context_provider_;
+  scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
   scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;

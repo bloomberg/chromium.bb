@@ -87,7 +87,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
-      scoped_refptr<viz::ContextProvider> worker_context_provider) override {
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider)
+      override {
     base::AutoLock lock(context3d_lock_);
 
     std::unique_ptr<TestWebGraphicsContext3D> compositor_context3d =
@@ -1625,9 +1626,9 @@ class LayerTreeHostContextTestWorkerContextLostRecovery : public LayerTreeTest {
     if (did_lose_context)
       return;
     did_lose_context = true;
-    viz::ContextProvider::ScopedContextLock scoped_context(
+    viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
         host_impl->layer_tree_frame_sink()->worker_context_provider());
-    gpu::raster::RasterInterface* ri = scoped_context.RasterContext();
+    gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
     ri->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                             GL_INNOCENT_CONTEXT_RESET_ARB);
   }

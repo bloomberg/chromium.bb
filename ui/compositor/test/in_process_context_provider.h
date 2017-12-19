@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/native_widget_types.h"
@@ -30,7 +31,10 @@ class GrContextForGLES2Interface;
 
 namespace ui {
 
-class InProcessContextProvider : public viz::ContextProvider {
+class InProcessContextProvider
+    : public base::RefCountedThreadSafe<InProcessContextProvider>,
+      public viz::ContextProvider,
+      public viz::RasterContextProvider {
  public:
   static scoped_refptr<InProcessContextProvider> Create(
       const gpu::gles2::ContextCreationAttribHelper& attribs,
@@ -48,12 +52,14 @@ class InProcessContextProvider : public viz::ContextProvider {
       InProcessContextProvider* shared_context,
       bool support_locking);
 
-  // cc::ContextProvider implementation.
+  // viz::ContextProvider / viz::RasterContextProvider implementation.
+  void AddRef() const override;
+  void Release() const override;
   gpu::ContextResult BindToCurrentThread() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
-  gpu::raster::RasterInterface* RasterContext() override;
+  gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   viz::ContextCacheController* CacheController() override;
@@ -67,6 +73,8 @@ class InProcessContextProvider : public viz::ContextProvider {
   uint32_t GetCopyTextureInternalFormat();
 
  private:
+  friend class base::RefCountedThreadSafe<InProcessContextProvider>;
+
   InProcessContextProvider(
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       InProcessContextProvider* shared_context,

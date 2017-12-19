@@ -1990,9 +1990,10 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
         layer_tree_frame_sink_->worker_context_provider()))
     return;
 
-  viz::ContextProvider* context_provider =
+  viz::RasterContextProvider* context_provider =
       layer_tree_frame_sink_->worker_context_provider();
-  viz::ContextProvider::ScopedContextLock scoped_context(context_provider);
+  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
+      context_provider);
 
   const auto& caps = context_provider->ContextCapabilities();
   *gpu_rasterization_enabled = caps.gpu_rasterization;
@@ -2539,7 +2540,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     return;
   }
 
-  viz::ContextProvider* worker_context_provider =
+  viz::RasterContextProvider* worker_context_provider =
       layer_tree_frame_sink_->worker_context_provider();
   if (use_gpu_rasterization_) {
     DCHECK(worker_context_provider);
@@ -2555,7 +2556,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     // The worker context must support oop raster to enable oop rasterization.
     bool oop_raster_enabled = settings_.enable_oop_rasterization;
     if (oop_raster_enabled) {
-      viz::ContextProvider::ScopedContextLock hold(worker_context_provider);
+      viz::RasterContextProvider::ScopedRasterContextLock hold(
+          worker_context_provider);
       oop_raster_enabled &=
           worker_context_provider->ContextCapabilities().supports_oop_raster;
     }
@@ -2673,8 +2675,8 @@ void LayerTreeHostImpl::CleanUpTileManagerResources() {
       compositor_context->ContextGL()->ShallowFlushCHROMIUM();
     if (auto* worker_context =
             layer_tree_frame_sink_->worker_context_provider()) {
-      viz::ContextProvider::ScopedContextLock hold(worker_context);
-      worker_context->RasterContext()->ShallowFlushCHROMIUM();
+      viz::RasterContextProvider::ScopedRasterContextLock hold(worker_context);
+      hold.RasterInterface()->ShallowFlushCHROMIUM();
     }
   }
 }
@@ -4641,7 +4643,7 @@ void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
   // before we get a chance to go invisible in NotifyAllTileTasksComplete.
   auto* worker_context = layer_tree_frame_sink_->worker_context_provider();
   if (worker_context && is_visible != !!worker_context_visibility_) {
-    viz::ContextProvider::ScopedContextLock hold(worker_context);
+    viz::RasterContextProvider::ScopedRasterContextLock hold(worker_context);
     if (is_visible) {
       worker_context_visibility_ =
           worker_context->CacheController()->ClientBecameVisible();

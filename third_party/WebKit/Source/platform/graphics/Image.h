@@ -218,9 +218,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual bool ApplyShader(PaintFlags&, const SkMatrix& local_matrix);
 
-  // Use ContextProvider() for immediate use only, use ContextProviderWrapper()
-  // to obtain a retainable reference.
-  // Note: Implemented only in sub-classes that use the GPU.
+  // Use ContextProvider() for immediate use only, use
+  // ContextProviderWrapper() to obtain a retainable reference. Note:
+  // Implemented only in sub-classes that use the GPU.
   virtual WebGraphicsContext3DProvider* ContextProvider() const {
     return nullptr;
   }

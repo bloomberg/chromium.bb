@@ -79,7 +79,10 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   }
 };
 
-class PerfContextProvider : public viz::ContextProvider {
+class PerfContextProvider
+    : public base::RefCountedThreadSafe<PerfContextProvider>,
+      public viz::ContextProvider,
+      public viz::RasterContextProvider {
  public:
   PerfContextProvider()
       : context_gl_(new PerfGLES2Interface),
@@ -88,6 +91,14 @@ class PerfContextProvider : public viz::ContextProvider {
 
     raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
         context_gl_.get(), capabilities_);
+  }
+
+  // viz::ContextProvider implementation.
+  void AddRef() const override {
+    base::RefCountedThreadSafe<PerfContextProvider>::AddRef();
+  }
+  void Release() const override {
+    base::RefCountedThreadSafe<PerfContextProvider>::Release();
   }
 
   gpu::ContextResult BindToCurrentThread() override {
@@ -100,7 +111,7 @@ class PerfContextProvider : public viz::ContextProvider {
     return gpu_feature_info_;
   }
   gpu::gles2::GLES2Interface* ContextGL() override { return context_gl_.get(); }
-  gpu::raster::RasterInterface* RasterContext() override {
+  gpu::raster::RasterInterface* RasterInterface() override {
     return raster_context_.get();
   }
   gpu::ContextSupport* ContextSupport() override { return &support_; }
@@ -125,6 +136,8 @@ class PerfContextProvider : public viz::ContextProvider {
   void RemoveObserver(viz::ContextLostObserver* obs) override {}
 
  private:
+  friend class base::RefCountedThreadSafe<PerfContextProvider>;
+
   ~PerfContextProvider() override = default;
 
   std::unique_ptr<PerfGLES2Interface> context_gl_;
@@ -314,7 +327,7 @@ class RasterBufferProviderPerfTestBase {
 
  protected:
   scoped_refptr<viz::ContextProvider> compositor_context_provider_;
-  scoped_refptr<viz::ContextProvider> worker_context_provider_;
+  scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;

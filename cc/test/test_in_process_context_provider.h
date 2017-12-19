@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "cc/test/test_image_factory.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/config/gpu_feature_info.h"
 
@@ -35,14 +36,20 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
     gpu::GLInProcessContext* shared_context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-class TestInProcessContextProvider : public viz::ContextProvider {
+class TestInProcessContextProvider
+    : public base::RefCountedThreadSafe<TestInProcessContextProvider>,
+      public viz::ContextProvider,
+      public viz::RasterContextProvider {
  public:
   explicit TestInProcessContextProvider(
       TestInProcessContextProvider* shared_context);
 
+  // viz::ContextProvider / viz::RasterContextProvider implementation.
+  void AddRef() const override;
+  void Release() const override;
   gpu::ContextResult BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
-  gpu::raster::RasterInterface* RasterContext() override;
+  gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   viz::ContextCacheController* CacheController() override;

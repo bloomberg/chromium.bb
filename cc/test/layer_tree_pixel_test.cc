@@ -42,7 +42,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
     const viz::RendererSettings& renderer_settings,
     double refresh_rate,
     scoped_refptr<viz::ContextProvider>,
-    scoped_refptr<viz::ContextProvider>) {
+    scoped_refptr<viz::RasterContextProvider>) {
   scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<TestInProcessContextProvider> worker_context_provider;
   if (test_type_ == PIXEL_TEST_GL) {
@@ -56,7 +56,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
   auto delegating_output_surface =
       std::make_unique<viz::TestLayerTreeFrameSink>(
-          compositor_context_provider, std::move(worker_context_provider),
+          compositor_context_provider, worker_context_provider,
           shared_bitmap_manager(), gpu_memory_buffer_manager(),
           renderer_settings, ImplThreadTaskRunner(), synchronous_composite,
           disable_display_vsync, refresh_rate);

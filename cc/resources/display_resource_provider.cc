@@ -5,6 +5,7 @@
 #include "cc/resources/display_resource_provider.h"
 
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

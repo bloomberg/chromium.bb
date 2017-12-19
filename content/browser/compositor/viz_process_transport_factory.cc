@@ -463,12 +463,13 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   params.enable_surface_synchronization =
       features::IsSurfaceSynchronizationEnabled();
 
-  scoped_refptr<ui::ContextProviderCommandBuffer> compositor_context;
-  scoped_refptr<ui::ContextProviderCommandBuffer> worker_context;
+  scoped_refptr<viz::ContextProvider> compositor_context;
+  scoped_refptr<viz::RasterContextProvider> worker_context;
   if (gpu_compositing) {
     // Only pass the contexts to the compositor if it will use gpu compositing.
     compositor_context = compositor_context_provider_;
-    worker_context = shared_worker_context_provider_;
+    if (shared_worker_context_provider_)
+      worker_context = shared_worker_context_provider_;
   }
   compositor->SetLayerTreeFrameSink(
       std::make_unique<viz::ClientLayerTreeFrameSink>(

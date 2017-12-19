@@ -14,14 +14,15 @@
 
 namespace viz {
 class ContextProvider;
-}
+class RasterContextProvider;
+}  // namespace viz
 
 namespace cc {
 
 class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
  public:
   GpuRasterBufferProvider(viz::ContextProvider* compositor_context_provider,
-                          viz::ContextProvider* worker_context_provider,
+                          viz::RasterContextProvider* worker_context_provider,
                           LayerTreeResourceProvider* resource_provider,
                           bool use_distance_field_text,
                           int gpu_rasterization_msaa_sample_count,
@@ -91,7 +92,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   };
 
   viz::ContextProvider* const compositor_context_provider_;
-  viz::ContextProvider* const worker_context_provider_;
+  viz::RasterContextProvider* const worker_context_provider_;
   LayerTreeResourceProvider* const resource_provider_;
   const bool use_distance_field_text_;
   const int msaa_sample_count_;

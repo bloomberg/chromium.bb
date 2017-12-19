@@ -11,6 +11,7 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -19,8 +20,8 @@ namespace {
 class TestLayerTreeFrameSink : public LayerTreeFrameSink {
  public:
   explicit TestLayerTreeFrameSink(
-      scoped_refptr<TestContextProvider> context_provider,
-      scoped_refptr<TestContextProvider> worker_context_provider,
+      scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner)
       : LayerTreeFrameSink(std::move(context_provider),
                            std::move(worker_context_provider),
@@ -90,11 +91,11 @@ TEST(LayerTreeFrameSinkTest, WorkerContextLossInformsClient) {
   // Verify DidLoseLayerTreeFrameSink callback is hooked up correctly.
   EXPECT_FALSE(client.did_lose_layer_tree_frame_sink_called());
   {
-    viz::ContextProvider::ScopedContextLock context_lock(
+    viz::RasterContextProvider::ScopedRasterContextLock context_lock(
         layer_tree_frame_sink.worker_context_provider());
-    context_lock.ContextGL()->LoseContextCHROMIUM(
+    context_lock.RasterInterface()->LoseContextCHROMIUM(
         GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
-    context_lock.ContextGL()->Flush();
+    context_lock.RasterInterface()->Flush();
   }
   task_runner->RunPendingTasks();
   EXPECT_TRUE(client.did_lose_layer_tree_frame_sink_called());

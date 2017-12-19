@@ -22,7 +22,7 @@
 #include "base/synchronization/lock.h"
 #include "cc/test/ordered_texture_map.h"
 #include "cc/test/test_texture.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/geometry/rect.h"

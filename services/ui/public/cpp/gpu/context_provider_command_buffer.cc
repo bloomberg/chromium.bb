@@ -202,6 +202,14 @@ uint32_t ContextProviderCommandBuffer::GetCopyTextureInternalFormat() {
   return GL_RGB;
 }
 
+void ContextProviderCommandBuffer::AddRef() const {
+  base::RefCountedThreadSafe<ContextProviderCommandBuffer>::AddRef();
+}
+
+void ContextProviderCommandBuffer::Release() const {
+  base::RefCountedThreadSafe<ContextProviderCommandBuffer>::Release();
+}
+
 gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -371,7 +379,7 @@ gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   return gles2_impl_.get();
 }
 
-gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterContext() {
+gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
   CheckValidThreadOrLockAcquired();
@@ -380,7 +388,7 @@ gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterContext() {
     return raster_impl_.get();
 
   if (!attributes_.enable_raster_interface) {
-    DLOG(ERROR) << "Unexpected access to RasterContext()";
+    DLOG(ERROR) << "Unexpected access to RasterInterface()";
     return nullptr;
   }
 

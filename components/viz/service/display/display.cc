@@ -99,8 +99,8 @@ void Display::Initialize(DisplayClient* client,
   InitializeRenderer();
 
   // This depends on assumptions that Display::Initialize will happen on the
-  // same callstack as the ContextProvider being created/initialized or else it
-  // could miss a callback before setting this.
+  // same callstack as the ContextProvider being created/initialized or else
+  // it could miss a callback before setting this.
   if (auto* context = output_surface_->context_provider())
     context->AddObserver(this);
 }

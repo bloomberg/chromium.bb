@@ -21,7 +21,7 @@
 #include "cc/base/histograms.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu_image_decode_cache.h"
@@ -461,7 +461,7 @@ GpuImageDecodeCache::ImageData::~ImageData() {
   DCHECK(!upload.image());
 }
 
-GpuImageDecodeCache::GpuImageDecodeCache(viz::ContextProvider* context,
+GpuImageDecodeCache::GpuImageDecodeCache(viz::RasterContextProvider* context,
                                          SkColorType color_type,
                                          size_t max_working_set_bytes)
     : color_type_(color_type),
@@ -471,7 +471,7 @@ GpuImageDecodeCache::GpuImageDecodeCache(viz::ContextProvider* context,
   // Acquire the context_lock so that we can safely retrieve the
   // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
   {
-    viz::ContextProvider::ScopedContextLock context_lock(context_);
+    viz::RasterContextProvider::ScopedRasterContextLock context_lock(context_);
     context_threadsafe_proxy_ = sk_sp<GrContextThreadSafeProxy>(
         context_->GrContext()->threadSafeProxy());
   }
@@ -708,7 +708,7 @@ void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
                "GpuImageDecodeCache::SetShouldAggressivelyFreeResources",
                "agressive_free_resources", aggressively_free_resources);
   if (aggressively_free_resources) {
-    viz::ContextProvider::ScopedContextLock context_lock(context_);
+    viz::RasterContextProvider::ScopedRasterContextLock context_lock(context_);
     base::AutoLock lock(lock_);
     aggressively_freeing_resources_ = aggressively_free_resources;
     EnsureCapacity(0);
@@ -854,7 +854,7 @@ void GpuImageDecodeCache::DecodeImage(const DrawImage& draw_image,
 void GpuImageDecodeCache::UploadImage(const DrawImage& draw_image) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::UploadImage");
-  viz::ContextProvider::ScopedContextLock context_lock(context_);
+  viz::RasterContextProvider::ScopedRasterContextLock context_lock(context_);
   base::AutoLock lock(lock_);
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   DCHECK(image_data);
@@ -1337,7 +1337,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     if (image_data->mode == DecodedDataMode::GPU) {
       // Notify the discardable system of this image so it will count against
       // budgets.
-      context_->RasterContext()->InitializeDiscardableTextureCHROMIUM(
+      context_->RasterInterface()->InitializeDiscardableTextureCHROMIUM(
           image_data->upload.gl_id());
     }
   }
@@ -1408,15 +1408,16 @@ void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   images_pending_complete_lock_.clear();
 
   for (auto* image : images_pending_unlock_) {
-    context_->RasterContext()->UnlockDiscardableTextureCHROMIUM(
+    context_->RasterInterface()->UnlockDiscardableTextureCHROMIUM(
         GlIdFromSkImage(image));
   }
   images_pending_unlock_.clear();
 
   for (auto& image : images_pending_deletion_) {
     uint32_t texture_id = GlIdFromSkImage(image.get());
-    if (context_->RasterContext()->LockDiscardableTextureCHROMIUM(texture_id)) {
-      context_->RasterContext()->DeleteTextures(1, &texture_id);
+    if (context_->RasterInterface()->LockDiscardableTextureCHROMIUM(
+            texture_id)) {
+      context_->RasterInterface()->DeleteTextures(1, &texture_id);
     }
   }
   images_pending_deletion_.clear();
@@ -1439,7 +1440,7 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
     return true;
 
   if (have_context_lock == HaveContextLock::kYes &&
-      context_->RasterContext()->LockDiscardableTextureCHROMIUM(
+      context_->RasterInterface()->LockDiscardableTextureCHROMIUM(
           data->upload.gl_id())) {
     // If |have_context_lock|, we can immediately lock the image and send
     // the lock command to the GPU process.

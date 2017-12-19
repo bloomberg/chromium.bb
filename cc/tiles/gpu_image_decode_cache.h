@@ -20,7 +20,7 @@
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 namespace viz {
-class ContextProvider;
+class RasterContextProvider;
 }
 
 namespace cc {
@@ -102,7 +102,7 @@ class CC_EXPORT GpuImageDecodeCache
  public:
   enum class DecodeTaskType { PART_OF_UPLOAD_TASK, STAND_ALONE_DECODE_TASK };
 
-  explicit GpuImageDecodeCache(viz::ContextProvider* context,
+  explicit GpuImageDecodeCache(viz::RasterContextProvider* context,
                                SkColorType color_type,
                                size_t max_working_set_bytes);
   ~GpuImageDecodeCache() override;
@@ -372,7 +372,7 @@ class CC_EXPORT GpuImageDecodeCache
   void RunPendingContextThreadOperations();
 
   const SkColorType color_type_;
-  viz::ContextProvider* context_;
+  viz::RasterContextProvider* context_;
   sk_sp<GrContextThreadSafeProxy> context_threadsafe_proxy_;
 
   // All members below this point must only be accessed while holding |lock_|.

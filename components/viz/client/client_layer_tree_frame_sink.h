@@ -62,7 +62,7 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
 
   ClientLayerTreeFrameSink(
       scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider,
+      scoped_refptr<RasterContextProvider> worker_context_provider,
       InitParams* params);
 
   ClientLayerTreeFrameSink(

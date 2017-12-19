@@ -16,6 +16,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_util.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"

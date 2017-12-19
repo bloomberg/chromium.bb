@@ -504,7 +504,8 @@ class LayerTreeHostMaskAsBlendingPixelTest
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
-      scoped_refptr<viz::ContextProvider> worker_context_provider) override {
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider)
+      override {
     viz::RendererSettings modified_renderer_settings = renderer_settings;
     modified_renderer_settings.force_antialiasing = use_antialiasing_;
     modified_renderer_settings.force_blending_with_shaders = force_shaders_;

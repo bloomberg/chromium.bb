@@ -55,7 +55,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   // is out-of-process and can't return resources synchronously.
   TestLayerTreeFrameSink(
       scoped_refptr<ContextProvider> compositor_context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider,
+      scoped_refptr<RasterContextProvider> worker_context_provider,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const RendererSettings& renderer_settings,

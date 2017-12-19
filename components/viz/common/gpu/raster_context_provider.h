@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_GPU_CONTEXT_PROVIDER_H_
-#define COMPONENTS_VIZ_COMMON_GPU_CONTEXT_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_COMMON_GPU_RASTER_CONTEXT_PROVIDER_H_
+#define COMPONENTS_VIZ_COMMON_GPU_RASTER_CONTEXT_PROVIDER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,27 +27,26 @@ namespace gpu {
 class ContextSupport;
 struct GpuFeatureInfo;
 
-namespace gles2 {
-class GLES2Interface;
+namespace raster {
+class RasterInterface;
 }
-
 }  // namespace gpu
 
 namespace viz {
 
-class VIZ_COMMON_EXPORT ContextProvider {
+class VIZ_COMMON_EXPORT RasterContextProvider {
  public:
-  class VIZ_COMMON_EXPORT ScopedContextLock {
+  class VIZ_COMMON_EXPORT ScopedRasterContextLock {
    public:
-    explicit ScopedContextLock(ContextProvider* context_provider);
-    ~ScopedContextLock();
+    explicit ScopedRasterContextLock(RasterContextProvider* context_provider);
+    ~ScopedRasterContextLock();
 
-    gpu::gles2::GLES2Interface* ContextGL() {
-      return context_provider_->ContextGL();
+    gpu::raster::RasterInterface* RasterInterface() {
+      return context_provider_->RasterInterface();
     }
 
    private:
-    ContextProvider* const context_provider_;
+    RasterContextProvider* const context_provider_;
     base::AutoLock context_lock_;
     std::unique_ptr<ContextCacheController::ScopedBusy> busy_;
   };
@@ -106,14 +105,14 @@ class VIZ_COMMON_EXPORT ContextProvider {
   // calling this.
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
 
-  // Get a GLES2 interface to the 3d context.  The context provider must have
+  // Get a Raster interface to the 3d context.  The context provider must have
   // been successfully bound to a thread before calling this.
-  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+  virtual gpu::raster::RasterInterface* RasterInterface() = 0;
 
  protected:
-  virtual ~ContextProvider() = default;
+  virtual ~RasterContextProvider() = default;
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_GPU_CONTEXT_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_COMMON_GPU_RASTER_CONTEXT_PROVIDER_H_
