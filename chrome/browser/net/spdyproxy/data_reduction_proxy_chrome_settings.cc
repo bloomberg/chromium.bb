@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -206,6 +207,9 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
       base::MakeUnique<data_reduction_proxy::DataReductionProxyService>(
           this, profile_prefs, request_context_getter, std::move(store),
+          base::MakeUnique<
+              data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
+              request_context_getter),
           ui_task_runner, io_data->io_task_runner(), db_task_runner,
           commit_delay);
   data_reduction_proxy::DataReductionProxySettings::

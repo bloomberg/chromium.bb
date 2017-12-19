@@ -59,6 +59,7 @@ class DataReductionProxyService
       PrefService* prefs,
       net::URLRequestContextGetter* request_context_getter,
       std::unique_ptr<DataStore> store,
+      std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,

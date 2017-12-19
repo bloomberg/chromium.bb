@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
+#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 
 #include <stdint.h>
 
@@ -49,18 +49,18 @@ static const int64_t kBytesOriginal = 1000000;
 }  // namespace
 
 // Controls whether a pingback is sent or not.
-class TestDataReductionProxyPingbackClient
-    : public DataReductionProxyPingbackClient {
+class TestDataReductionProxyPingbackClientImpl
+    : public DataReductionProxyPingbackClientImpl {
  public:
-  TestDataReductionProxyPingbackClient(
+  TestDataReductionProxyPingbackClientImpl(
       net::URLRequestContextGetter* url_request_context_getter)
-      : DataReductionProxyPingbackClient(url_request_context_getter),
+      : DataReductionProxyPingbackClientImpl(url_request_context_getter),
         should_override_random_(false),
         override_value_(0.0f),
         current_time_(base::Time::Now()) {}
 
   // Overrides the bahvior of the random float generator in
-  // DataReductionProxyPingbackClient.
+  // DataReductionProxyPingbackClientImpl.
   // If |should_override_random| is true, the typically random value that is
   // compared with reporting fraction will deterministically be
   // |override_value|.
@@ -78,7 +78,7 @@ class TestDataReductionProxyPingbackClient
   float GenerateRandomFloat() const override {
     if (should_override_random_)
       return override_value_;
-    return DataReductionProxyPingbackClient::GenerateRandomFloat();
+    return DataReductionProxyPingbackClientImpl::GenerateRandomFloat();
   }
 
   base::Time CurrentTime() const override { return current_time_; }
@@ -88,20 +88,21 @@ class TestDataReductionProxyPingbackClient
   base::Time current_time_;
 };
 
-class DataReductionProxyPingbackClientTest : public testing::Test {
+class DataReductionProxyPingbackClientImplTest : public testing::Test {
  public:
-  DataReductionProxyPingbackClientTest() {}
+  DataReductionProxyPingbackClientImplTest() {}
 
-  TestDataReductionProxyPingbackClient* pingback_client() const {
+  TestDataReductionProxyPingbackClientImpl* pingback_client() const {
     return pingback_client_.get();
   }
 
   void Init() {
     request_context_getter_ =
         new net::TestURLRequestContextGetter(message_loop_.task_runner());
-    pingback_client_ = base::WrapUnique<TestDataReductionProxyPingbackClient>(
-        new TestDataReductionProxyPingbackClient(
-            request_context_getter_.get()));
+    pingback_client_ =
+        base::WrapUnique<TestDataReductionProxyPingbackClientImpl>(
+            new TestDataReductionProxyPingbackClientImpl(
+                request_context_getter_.get()));
     page_id_ = 0u;
   }
 
@@ -139,7 +140,8 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
     request_data.set_lite_page_received(lite_page_received);
     request_data.set_page_id(page_id_);
     factory()->set_remove_fetcher_on_delete(true);
-    pingback_client()->SendPingback(request_data, *timing_);
+    static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+        ->SendPingback(request_data, *timing_);
     page_id_++;
   }
 
@@ -154,18 +156,19 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
  private:
   base::MessageLoopForIO message_loop_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  std::unique_ptr<TestDataReductionProxyPingbackClient> pingback_client_;
+  std::unique_ptr<TestDataReductionProxyPingbackClientImpl> pingback_client_;
   net::TestURLFetcherFactory factory_;
   std::unique_ptr<DataReductionProxyPageLoadTiming> timing_;
   base::HistogramTester histogram_tester_;
   uint64_t page_id_;
 };
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   uint64_t data_page_id = page_id();
@@ -230,14 +233,15 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyHoldback) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyHoldback) {
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
@@ -255,11 +259,13 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyHoldback) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
+TEST_F(DataReductionProxyPingbackClientImplTest,
+       VerifyTwoPingbacksBatchedContent) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   // First pingback
@@ -344,11 +350,12 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, SendTwoPingbacks) {
+TEST_F(DataReductionProxyPingbackClientImplTest, SendTwoPingbacks) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
@@ -371,11 +378,12 @@ TEST_F(DataReductionProxyPingbackClientTest, SendTwoPingbacks) {
   histogram_tester().ExpectTotalCount(kHistogramAttempted, 2);
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, NoPingbackSent) {
+TEST_F(DataReductionProxyPingbackClientImplTest, NoPingbackSent) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(0.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(0.0f);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
@@ -385,13 +393,14 @@ TEST_F(DataReductionProxyPingbackClientTest, NoPingbackSent) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 
   // Verify that if the random number is less than the reporting fraction, the
   // pingback is created.
-  pingback_client()->SetPingbackReportingFraction(0.5f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(0.5f);
   pingback_client()->OverrideRandom(true, 0.4f);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
@@ -417,7 +426,8 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   // Verify that if the random number is equal to the reporting fraction, the
   // pingback is not created. Specifically, if the reporting fraction is zero,
   // and the random number is zero, no pingback is sent.
-  pingback_client()->SetPingbackReportingFraction(0.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 0.0f);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
@@ -430,7 +440,8 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   // Verify that the command line flag forces a pingback.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyForcePingback);
-  pingback_client()->SetPingbackReportingFraction(0.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 1.0f);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
@@ -443,11 +454,12 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyReportingBehvaior) {
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 2);
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, FailedPingback) {
+TEST_F(DataReductionProxyPingbackClientImplTest, FailedPingback) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback(
       false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
@@ -462,11 +474,12 @@ TEST_F(DataReductionProxyPingbackClientTest, FailedPingback) {
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, false, 1);
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentNoOptOut) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentNoOptOut) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
@@ -489,11 +502,12 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentNoOptOut) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentOptOut) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentOptOut) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
@@ -516,11 +530,13 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentOptOut) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyClientLoFiContentOptOut) {
+TEST_F(DataReductionProxyPingbackClientImplTest,
+       VerifyClientLoFiContentOptOut) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
@@ -543,11 +559,12 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyClientLoFiContentOptOut) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentBackground) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentBackground) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
@@ -570,11 +587,12 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLoFiContentBackground) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyLitePageContent) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLitePageContent) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
@@ -597,11 +615,12 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyLitePageContent) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
 }
 
-TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoLitePagePingbacks) {
+TEST_F(DataReductionProxyPingbackClientImplTest, VerifyTwoLitePagePingbacks) {
   Init();
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
-  pingback_client()->SetPingbackReportingFraction(1.0f);
+  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
+      ->SetPingbackReportingFraction(1.0f);
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(

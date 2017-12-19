@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
+#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 
 #include <stdint.h>
 #include <string>
@@ -148,19 +148,19 @@ std::string AddBatchInfoAndSerializeRequest(
 
 }  // namespace
 
-DataReductionProxyPingbackClient::DataReductionProxyPingbackClient(
+DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
     net::URLRequestContextGetter* url_request_context)
     : url_request_context_(url_request_context),
       pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())),
       pingback_reporting_fraction_(0.0) {}
 
-DataReductionProxyPingbackClient::~DataReductionProxyPingbackClient() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+DataReductionProxyPingbackClientImpl::~DataReductionProxyPingbackClientImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void DataReductionProxyPingbackClient::OnURLFetchComplete(
+void DataReductionProxyPingbackClientImpl::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(source == current_fetcher_.get());
   UMA_HISTOGRAM_BOOLEAN(kHistogramSucceeded, source->GetStatus().is_success());
   current_fetcher_.reset();
@@ -169,10 +169,10 @@ void DataReductionProxyPingbackClient::OnURLFetchComplete(
   }
 }
 
-void DataReductionProxyPingbackClient::SendPingback(
+void DataReductionProxyPingbackClientImpl::SendPingback(
     const DataReductionProxyData& request_data,
     const DataReductionProxyPageLoadTiming& timing) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool send_pingback = ShouldSendPingback();
   UMA_HISTOGRAM_BOOLEAN(kHistogramAttempted, send_pingback);
   if (!send_pingback)
@@ -186,7 +186,7 @@ void DataReductionProxyPingbackClient::SendPingback(
   CreateFetcherForDataAndStart();
 }
 
-void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
+void DataReductionProxyPingbackClientImpl::CreateFetcherForDataAndStart() {
   DCHECK(!current_fetcher_);
   DCHECK_GE(metrics_request_.pageloads_size(), 1);
   std::string serialized_request =
@@ -243,22 +243,22 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
   current_fetcher_->Start();
 }
 
-bool DataReductionProxyPingbackClient::ShouldSendPingback() const {
+bool DataReductionProxyPingbackClientImpl::ShouldSendPingback() const {
   return params::IsForcePingbackEnabledViaFlags() ||
          GenerateRandomFloat() < pingback_reporting_fraction_;
 }
 
-base::Time DataReductionProxyPingbackClient::CurrentTime() const {
+base::Time DataReductionProxyPingbackClientImpl::CurrentTime() const {
   return base::Time::Now();
 }
 
-float DataReductionProxyPingbackClient::GenerateRandomFloat() const {
+float DataReductionProxyPingbackClientImpl::GenerateRandomFloat() const {
   return static_cast<float>(base::RandDouble());
 }
 
-void DataReductionProxyPingbackClient::SetPingbackReportingFraction(
+void DataReductionProxyPingbackClientImpl::SetPingbackReportingFraction(
     float pingback_reporting_fraction) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(0.0f, pingback_reporting_fraction);
   DCHECK_GE(1.0f, pingback_reporting_fraction);
   pingback_reporting_fraction_ = pingback_reporting_fraction;

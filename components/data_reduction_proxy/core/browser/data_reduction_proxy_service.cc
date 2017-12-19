@@ -35,13 +35,13 @@ DataReductionProxyService::DataReductionProxyService(
     PrefService* prefs,
     net::URLRequestContextGetter* request_context_getter,
     std::unique_ptr<DataStore> store,
+    std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::TimeDelta& commit_delay)
     : url_request_context_getter_(request_context_getter),
-      pingback_client_(
-          new DataReductionProxyPingbackClient(request_context_getter)),
+      pingback_client_(std::move(pingback_client)),
       settings_(settings),
       prefs_(prefs),
       db_data_owner_(new DBDataOwner(std::move(store))),

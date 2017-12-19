@@ -25,8 +25,8 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/test/web_contents_tester.h"
@@ -54,10 +54,10 @@ data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
 // Pingback client responsible for recording the timing information it receives
 // from a SendPingback call.
 class TestPingbackClient
-    : public data_reduction_proxy::DataReductionProxyPingbackClient {
+    : public data_reduction_proxy::DataReductionProxyPingbackClientImpl {
  public:
   TestPingbackClient()
-      : data_reduction_proxy::DataReductionProxyPingbackClient(nullptr),
+      : data_reduction_proxy::DataReductionProxyPingbackClientImpl(nullptr),
         send_pingback_called_(false) {}
   ~TestPingbackClient() override {}
 

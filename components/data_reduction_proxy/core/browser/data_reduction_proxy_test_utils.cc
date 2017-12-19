@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -240,6 +241,7 @@ MockDataReductionProxyService::MockDataReductionProxyService(
                                 prefs,
                                 request_context,
                                 base::MakeUnique<TestDataStore>(),
+                                nullptr,
                                 task_runner,
                                 task_runner,
                                 task_runner,
@@ -633,8 +635,8 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
   }
   return base::MakeUnique<DataReductionProxyService>(
       settings, simple_pref_service_.get(), request_context_getter_.get(),
-      base::WrapUnique(new TestDataStore()), task_runner_, task_runner_,
-      task_runner_, base::TimeDelta());
+      base::WrapUnique(new TestDataStore()), nullptr, task_runner_,
+      task_runner_, task_runner_, base::TimeDelta());
 }
 
 void DataReductionProxyTestContext::AttachToURLRequestContext(
