@@ -17440,9 +17440,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="DownloadPassKitResult">
   <owner>gchatz@chromium.org</owner>
   <summary>
-    Result when a user attempts to download a PassKit file on iOS with
-    WKWebView.
+    Result when a user attempts to download a PassKit file on iOS.
   </summary>
+</histogram>
+
+<histogram name="Download.IOSPresentAddPassesDialogResult"
+    enum="PresentAddPassesDialogResult">
+  <owner>eugenebut@chromium.org</owner>
+  <summary>Result of an attempt to present Add Passes dialog on iOS.</summary>
 </histogram>
 
 <histogram name="Download.MaliciousDownloadClassified"
