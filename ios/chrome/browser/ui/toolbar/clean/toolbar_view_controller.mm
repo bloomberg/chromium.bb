@@ -203,6 +203,7 @@
     [self setHorizontalTranslationOffset:-kToolbarButtonAnimationOffset
                                 forViews:@[ self.locationBarLeadingButton ]];
     [animator addAnimations:^{
+      self.locationBarLeadingButton.hidden = NO;
       [self setHorizontalTranslationOffset:0
                                   forViews:@[ self.locationBarLeadingButton ]];
       self.locationBarLeadingButton.alpha = 1;
