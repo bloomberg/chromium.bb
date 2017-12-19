@@ -298,20 +298,6 @@
         'hard_timeout': 300,
       },
     },
-    'renderer_side_navigation_content_shell_test_apk': {
-      'args': [
-        '--disable-browser-side-navigation',
-        '--gs-results-bucket=chromium-result-details',
-      ],
-      'test': 'content_shell_test_apk',
-    },
-    'renderer_side_navigation_webview_instrumentation_test_apk': {
-      'args': [
-        '--disable-browser-side-navigation',
-        '--gs-results-bucket=chromium-result-details',
-      ],
-      'test': 'webview_instrumentation_test_apk',
-    },
     'ui_android_unittests': {},
     'webview_instrumentation_test_apk': {
       'args': [
@@ -334,33 +320,6 @@
   'aura_non_clang_gtests': {
     # TODO(kbr): merge back into 'aura_gtests'.
     'keyboard_unittests': {},
-  },
-
-  'browser_side_navigation_disabled_gtests': {
-    'browser_tests': {
-      'args': [
-        '--disable-browser-side-navigation',
-        '--test-launcher-retry-limit=6',
-      ],
-      'swarming': {
-        'shards': 5,
-      },
-    },
-    'content_browsertests': {
-      'args': [
-        '--disable-browser-side-navigation',
-      ],
-    },
-    'content_unittests': {
-      'args': [
-        '--disable-browser-side-navigation',
-      ],
-    },
-    'unit_tests': {
-      'args': [
-        '--disable-browser-side-navigation',
-      ],
-    },
   },
 
   'cast_audio_specific_chromium_gtests': {
@@ -923,21 +882,6 @@
   'goma_gtests': {
     'base_unittests': {},
     'content_unittests': {},
-  },
-
-  'linux_and_android_and_fyi_specific_chromium_gtests': {
-    'renderer_side_navigation_content_browsertests': {
-      'args': [
-        '--disable-browser-side-navigation',
-      ],
-      'test': 'content_browsertests',
-    },
-    'renderer_side_navigation_content_unittests': {
-      'args': [
-        '--disable-browser-side-navigation',
-      ],
-      'test': 'content_unittests',
-    },
   },
 
   'linux_and_chromeos_non_clang_specific_chromium_gtests': {
@@ -1805,7 +1749,6 @@
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
     'chromium_swarm_android_gtests',
     'clang_gl_gtests',
-    'linux_and_android_and_fyi_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'non_clang_mac_win_chromium_gtests',
     'non_clang_win_chromium_gtests',
@@ -1819,7 +1762,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_android_and_fyi_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'non_clang_android_mac_win_chromium_gtests',
     'non_clang_and_mac_fyi_chromium_gtests',
@@ -1909,7 +1851,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_android_and_fyi_specific_chromium_gtests',
     'linux_and_chromeos_non_clang_specific_chromium_gtests',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
@@ -1947,7 +1888,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_android_and_fyi_specific_chromium_gtests',
     'linux_and_chromeos_non_clang_specific_chromium_gtests',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
@@ -1975,7 +1915,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_android_and_fyi_specific_chromium_gtests',
     'linux_and_chromeos_non_clang_specific_chromium_gtests',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
@@ -2207,7 +2146,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_android_and_fyi_specific_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_chromium_gtests',
     'non_android_and_cast_and_chromeos_and_clang_android_mac_win_chromium_gtests',

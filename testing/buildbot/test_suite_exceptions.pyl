@@ -3988,20 +3988,6 @@
     },
     'modifications': {
       # chromium.fyi
-      'Browser Side Navigation Linux': {
-        'args': [
-          '--additional-driver-flag',
-          '--disable-browser-side-navigation',
-        ],
-        'swarming': {
-          # TODO(kbr): specify this for this builder instead.
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
-        },
-      },
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNG',

@@ -311,73 +311,6 @@
       }
     ]
   },
-  "Browser Side Navigation Linux": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--disable-browser-side-navigation",
-          "--test-launcher-retry-limit=6"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 5
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "unit_tests"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--additional-driver-flag",
-          "--disable-browser-side-navigation"
-        ],
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        }
-      }
-    ]
-  },
   "CFI Linux (icall)": {
     "gtest_tests": [
       {
@@ -2564,26 +2497,6 @@
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "name": "renderer_side_navigation_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "name": "renderer_side_navigation_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
