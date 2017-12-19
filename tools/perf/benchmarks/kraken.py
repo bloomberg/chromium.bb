@@ -124,9 +124,3 @@ class Kraken(perf_benchmark.PerfBenchmark):
         ps, ps.base_dir,
         name='http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html'))
     return ps
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # http://krakenbenchmark.mozilla.org/kraken-1.1/ not disabled
-    return StoryExpectations()

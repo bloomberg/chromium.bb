@@ -51,49 +51,6 @@ class LoadingMobile(_LoadingBase):
                                     cache_temperature.HOT],
         traffic_settings=[traffic_setting.NONE, traffic_setting.REGULAR_3G])
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ANDROID_NEXUS6_WEBVIEW], 'crbug.com/676612')
-        self.DisableStory('GFK', [story.expectations.ALL],
-                          'N5X Timeout issue: crbug.com/702175')
-        self.DisableStory('MLSMatrix', [story.expectations.ALL],
-                          'N5XTimeout issue: crbug.com/702175')
-        self.DisableStory('EBS', [story.expectations.ALL],
-                          'N5XTimeout issue: crbug.com/702175')
-        self.DisableStory('IBI', [story.expectations.ALL],
-                          'N5XTimeout issue: crbug.com/702175')
-        self.DisableStory('SBS', [story.expectations.ALL],
-                          'N5XTimeout issue: crbug.com/702175')
-        self.DisableStory('FuturaSciences', [story.expectations.ALL],
-                          'N5XTimeout issue: crbug.com/702175')
-        self.DisableStory('HashOcean', [story.expectations.ALL],
-                          'N5XTimeout issue: crbug.com/702175')
-        self.DisableStory('163', [story.expectations.ALL],
-                          'N5XTimeout issue: crbug.com/702175')
-        self.DisableStory('G1', [story.expectations.ALL], 'crbug.com/656861')
-        self.DisableStory('Dramaq', [story.expectations.ANDROID_NEXUS5X],
-                          'Test Failure: crbug.com/750747')
-        self.DisableStory('Hongkiat', [story.expectations.ANDROID_NEXUS5X],
-                          'Test Failure: crbug.com/750747')
-        self.DisableStory('Facebook', [story.expectations.ANDROID_NEXUS7],
-                          'Nexus7v2 Timeout: crbug.com/759861')
-        self.DisableStory('GoogleRedirectToGoogleJapan',
-                          [story.expectations.ANDROID_ONE], 'crbug.com/776092')
-        # TODO(rnephew): Uncomment Disablings. crbug.com/728882
-        # self.DisableStory(
-        #     'AirHorner', [story.expectations.ALL], 'crbug.com/653775')
-        # self.DisableStory(
-        #     'BusRouter', [story.expectations.ALL], 'crbug.com/653775')
-        # self.DisableStory('WikiOffline', [story.expectations.ALL],
-        #                   'crbug.com/653775')
-        # self.DisableStory(
-        #     'Detik', [story.expectations.ALL], 'crbug.com/653775')
-        # self.DisableStory(
-        #     'Blogspot', [story.expectations.ALL], 'crbug.com/653775')
-    return StoryExpectations()
-
   @classmethod
   def Name(cls):
     return 'loading.mobile'

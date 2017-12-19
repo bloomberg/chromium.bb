@@ -107,27 +107,6 @@ class V8DesktopBrowsingBenchmark(
   PLATFORM = 'desktop'
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory(
-             'browse:news:hackernews',
-             [story.expectations.ALL_WIN, story.expectations.ALL_MAC],
-             'crbug.com/676336')
-        self.DisableStory(
-             'browse:news:cnn',
-             [story.expectations.ALL_MAC],
-             'mac:crbug.com/728576')
-        self.DisableStory(
-             'browse:tools:maps',
-             [story.expectations.ALL_MAC],
-             'crbug.com/773084')
-        self.DisableStory(
-             'browse:media:imgur',
-             [story.expectations.ALL_LINUX],
-             'crbug.com/788796')
-    return StoryExpectations()
-
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
       '--enable-blink-features=BlinkRuntimeCallStats')
@@ -147,52 +126,6 @@ class V8MobileBrowsingBenchmark(
     options.AppendExtraBrowserArgs(
       '--enable-blink-features=BlinkRuntimeCallStats')
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/788797')
-        self.DisableStory(
-            'browse:shopping:avito',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/767970')
-        self.DisableStory(
-            'browse:news:cnn',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/767970')
-        self.DisableStory(
-            'browse:tech:discourse_infinite_scroll',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/767970')
-        self.DisableStory(
-            'browse:shopping:lazada',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/768472')
-        self.DisableStory(
-            'browse:shopping:flipkart',
-            [story.expectations.ALL_MOBILE],
-            'crbug.com/767970, crbug.com/708300')
-        self.DisableStory(
-             'browse:news:globo',
-             [story.expectations.ALL_ANDROID],
-             'crbug.com/714650')
-        self.DisableStory(
-             'browse:news:toi',
-             [story.expectations.ALL_ANDROID],
-             'crbug.com/728081')
-        # TODO(rnephew): This disabling should move to CanRunOnBrowser.
-        self.DisableStory(
-             'browse:chrome:omnibox',
-             [story.expectations.ANDROID_WEBVIEW],
-             'Webview does not have omnibox')
-        # TODO(rnephew): This disabling should move to CanRunOnBrowser.
-        self.DisableStory(
-             'browse:chrome:newtab',
-             [story.expectations.ANDROID_WEBVIEW],
-             'Webview does not have NTP')
-    return StoryExpectations()
-
   @classmethod
   def Name(cls):
     return 'v8.browsing_mobile'
@@ -203,27 +136,6 @@ class V8FutureDesktopBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'desktop'
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory(
-             'browse:news:hackernews',
-             [story.expectations.ALL_WIN, story.expectations.ALL_MAC],
-             'crbug.com/676336')
-        self.DisableStory(
-             'browse:news:cnn',
-             [story.expectations.ALL_MAC],
-             'mac:crbug.com/728576')
-        self.DisableStory(
-             'browse:tools:maps',
-             [story.expectations.ALL_MAC],
-             'crbug.com/773084')
-        self.DisableStory(
-             'browse:media:imgur',
-             [story.expectations.ALL_LINUX],
-             'crbug.com/788796')
-    return StoryExpectations()
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
@@ -246,52 +158,6 @@ class V8FutureMobileBrowsingBenchmark(
       '--enable-blink-features=BlinkRuntimeCallStats')
     options.AppendExtraBrowserArgs(
       '--enable-features=V8VmFuture')
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/788797')
-        self.DisableStory(
-            'browse:shopping:avito',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/767970')
-        self.DisableStory(
-            'browse:news:cnn',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/767970')
-        self.DisableStory(
-            'browse:tech:discourse_infinite_scroll',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/767970')
-        self.DisableStory(
-            'browse:shopping:lazada',
-            [story.expectations.ANDROID_ONE],
-            'crbug.com/768472')
-        self.DisableStory(
-            'browse:shopping:flipkart',
-            [story.expectations.ALL_MOBILE],
-            'crbug.com/767970, crbug.com/708300')
-        self.DisableStory(
-             'browse:news:globo',
-             [story.expectations.ALL_ANDROID],
-             'crbug.com/714650')
-        self.DisableStory(
-             'browse:news:toi',
-             [story.expectations.ALL_ANDROID],
-             'crbug.com/728081')
-        # TODO(rnephew): This disabling should move to CanRunOnBrowser.
-        self.DisableStory(
-             'browse:chrome:omnibox',
-             [story.expectations.ANDROID_WEBVIEW],
-             'Webview does not have omnibox')
-        # TODO(rnephew): This disabling should move to CanRunOnBrowser.
-        self.DisableStory(
-             'browse:chrome:newtab',
-             [story.expectations.ANDROID_WEBVIEW],
-             'Webview does not have NTP')
-    return StoryExpectations()
 
   @classmethod
   def Name(cls):

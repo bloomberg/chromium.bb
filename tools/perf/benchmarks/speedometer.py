@@ -114,12 +114,6 @@ class Speedometer(perf_benchmark.PerfBenchmark):
         name='http://browserbench.org/Speedometer/'))
     return ps
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # http://browserbench.org/Speedometer/ not disabled.
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['hablich@chromium.org'])
 class V8SpeedometerFuture(Speedometer):

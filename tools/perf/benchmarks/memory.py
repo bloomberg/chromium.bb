@@ -105,12 +105,6 @@ class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     return DefaultValueCanBeAddedPredicateForMemoryMeasurement(value)
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['perezju@chromium.org'])
 class MemoryBenchmarkTop10Mobile(_MemoryInfra):
@@ -130,12 +124,6 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
     return DefaultValueCanBeAddedPredicateForMemoryMeasurement(value)
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
 
 
 class _MemoryV8Benchmark(_MemoryInfra):
@@ -181,14 +169,6 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
   def Name(cls):
     return 'memory.long_running_idle_gmail_tbmv2'
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ANDROID_SVELTE],
-            'Requires a lot of memory: crbug.com/611167')
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['ulan@chromium.org'])
 class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
@@ -203,11 +183,3 @@ class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   @classmethod
   def Name(cls):
     return 'memory.long_running_idle_gmail_background_tbmv2'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ANDROID_SVELTE],
-            'Requires a lot of memory: crbug.com/616530')
-    return StoryExpectations()

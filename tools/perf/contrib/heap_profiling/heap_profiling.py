@@ -68,12 +68,6 @@ class _HeapProfilingBenchmark(perf_benchmark.PerfBenchmark):
       args += ['--enable-heap-profiling=native']
     options.AppendExtraBrowserArgs(args)
 
-  def GetExpectations(self):
-    class DefaultExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass  # No stories disabled.
-    return DefaultExpectations()
-
 
 class PseudoHeapProfilingDesktopBenchmark(_HeapProfilingBenchmark):
   PROFILING_MODE = 'pseudo'

@@ -29,12 +29,6 @@ class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
     path = os.path.join(blink_perf.BLINK_PERF_BASE_DIR, 'BlinkGC')
     return blink_perf.CreateStorySetFromPath(path, blink_perf.SKIPPED_FILE)
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # No tests disabled.
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['peria@chromium.org'])
 class OilpanGCTimesSmoothnessAnimation(perf_benchmark.PerfBenchmark):
@@ -45,12 +39,6 @@ class OilpanGCTimesSmoothnessAnimation(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'oilpan_gc_times.tough_animation_cases'
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # Nothing disabled.
-    return StoryExpectations()
-
 
 class OilpanGCTimesKeySilkCases(perf_benchmark.PerfBenchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
@@ -60,17 +48,6 @@ class OilpanGCTimesKeySilkCases(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'oilpan_gc_times.key_silk_cases'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory('https://polymer-topeka.appspot.com/',
-                          [story.expectations.ALL], 'crbug.com/507865')
-        self.DisableStory('http://plus.google.com/app/basic/stream',
-                          [story.expectations.ALL], 'crbug.com/338838')
-        self.DisableStory('inbox_app.html?slide_drawer',
-                          [story.expectations.ALL], 'crbug.com/446332')
-    return StoryExpectations()
 
 
 class OilpanGCTimesSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
@@ -85,12 +62,3 @@ class OilpanGCTimesSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'oilpan_gc_times.sync_scroll.key_mobile_sites_smooth'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory(
-            'http://digg.com',
-            [story.expectations.ALL],
-            'crbug.com/756119')
-    return StoryExpectations()

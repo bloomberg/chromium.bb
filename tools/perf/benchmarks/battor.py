@@ -41,12 +41,6 @@ class BattOrTrivialPages(_BattOrBenchmark):
   def Name(cls):
     return 'battor.trivial_pages'
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrSteadyStatePages(_BattOrBenchmark):
@@ -59,10 +53,3 @@ class BattOrSteadyStatePages(_BattOrBenchmark):
   @classmethod
   def Name(cls):
     return 'battor.steady_state'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory('http://abcnews.go.com/', [story.expectations.ALL],
-                          'crbug.com/505990')
-    return StoryExpectations()

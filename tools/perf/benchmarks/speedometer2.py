@@ -111,11 +111,3 @@ class V8Speedometer2Future(Speedometer2):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-features=V8VmFuture')
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory('Speedometer2',
-            [story.expectations.ALL_LINUX], 'crbug.com/792495')
-
-    return StoryExpectations()

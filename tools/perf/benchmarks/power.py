@@ -26,12 +26,6 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'power.typical_10_mobile'
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['charliea@chromium.org', 'rnephew@chromium.org'])
 class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
@@ -62,13 +56,3 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'power.idle_platform'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ANDROID_NEXUS5,
-             story.expectations.ANDROID_NEXUS6,
-             story.expectations.ANDROID_NEXUS7,
-             story.expectations.ANDROID_ONE], 'crbug.com/773949')
-    return StoryExpectations()

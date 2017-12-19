@@ -4,7 +4,6 @@
 
 from core import perf_benchmark
 
-from telemetry import story
 from telemetry.web_perf import timeline_based_measurement
 
 import page_sets
@@ -23,9 +22,3 @@ class TracingWithDebugOverhead(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'tracing.tracing_with_debug_overhead'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # No tests disabled.
-    return StoryExpectations()

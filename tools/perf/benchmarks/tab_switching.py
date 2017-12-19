@@ -42,10 +42,3 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'tab_switching.typical_25'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory('multitab:misc:typical24',
-                          [story.expectations.ALL_MAC], 'crbug.com/747026')
-    return StoryExpectations()

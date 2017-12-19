@@ -8,7 +8,6 @@ from measurements import v8_detached_context_age_in_gc
 import page_sets
 
 from telemetry import benchmark
-from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
@@ -24,14 +23,6 @@ class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'v8.detached_context_age_in_gc'
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory('Docs_(1_open_document_tab)',
-                          [story.expectations.ALL_WIN],
-                          'crbug.com/770982')
-    return StoryExpectations()
 
 
 class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
@@ -87,11 +78,3 @@ class V8Top25RuntimeStats(_Top25RuntimeStats):
 
   def CreateStorySet(self, options):
     return page_sets.V8Top25StorySet()
-
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ALL_ANDROID, story.expectations.ALL_WIN],
-            'crbug.com/664318')
-    return StoryExpectations()
