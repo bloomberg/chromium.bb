@@ -74,9 +74,9 @@ class TestReportingService : public ReportingService {
     NOTREACHED();
   }
 
-  void RemoveBrowsingData(
-      int data_type_mask,
-      base::RepeatingCallback<bool(const GURL&)> origin_filter) override {
+  void RemoveBrowsingData(int data_type_mask,
+                          const base::RepeatingCallback<bool(const GURL&)>&
+                              origin_filter) override {
     NOTREACHED();
   }
 

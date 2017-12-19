@@ -33,7 +33,7 @@ class NET_EXPORT ReportingBrowsingDataRemover {
   static void RemoveBrowsingData(
       ReportingCache* cache,
       int data_type_mask,
-      base::RepeatingCallback<bool(const GURL&)> origin_filter);
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReportingBrowsingDataRemover);

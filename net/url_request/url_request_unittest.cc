@@ -7037,9 +7037,9 @@ class TestReportingService : public ReportingService {
     headers_.push_back({url, header_value});
   }
 
-  void RemoveBrowsingData(
-      int data_type_mask,
-      base::Callback<bool(const GURL&)> origin_filter) override {
+  void RemoveBrowsingData(int data_type_mask,
+                          const base::RepeatingCallback<bool(const GURL&)>&
+                              origin_filter) override {
     NOTIMPLEMENTED();
   }
 
