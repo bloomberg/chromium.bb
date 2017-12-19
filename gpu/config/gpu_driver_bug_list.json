@@ -1982,7 +1982,11 @@
       "description": "Emulate GLSL function isnan() on Intel Mac",
       "cr_bugs": [650547],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.13.2"
+        }
       },
       "vendor_id": "0x8086",
       "device_id" : [
