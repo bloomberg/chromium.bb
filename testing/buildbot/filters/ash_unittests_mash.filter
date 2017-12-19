@@ -51,6 +51,9 @@
 -ExtendedDesktopTest.KeyEventsOnLockScreen
 -ExtendedDesktopTest.TestCursor
 
+// Test is flaky. http://crbug.com/794703.
+-HighlighterControllerTest.HighlighterGesturesScaled
+
 # TODO: Top-of-screen mouse reveal doesn't work, maybe problem with
 # EventGenerator. http://crbug.com/698085
 -ImmersiveFullscreenControllerTest.Bubbles
