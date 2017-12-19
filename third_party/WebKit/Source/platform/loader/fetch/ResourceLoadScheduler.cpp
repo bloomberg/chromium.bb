@@ -517,20 +517,12 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
       ("Blink.ResourceLoadScheduler.PeakRequests.MainframeNotThrottled", 0,
        kMaximumReportSize10K, kReportBucketCount));
   DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, main_frame_partially_throttled,
-      ("Blink.ResourceLoadScheduler.PeakRequests.MainframePartiallyThrottled",
-       0, kMaximumReportSize10K, kReportBucketCount));
-  DEFINE_STATIC_LOCAL(
       CustomCountHistogram, sub_frame_throttled,
       ("Blink.ResourceLoadScheduler.PeakRequests.SubframeThrottled", 0,
        kMaximumReportSize10K, kReportBucketCount));
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, sub_frame_not_throttled,
       ("Blink.ResourceLoadScheduler.PeakRequests.SubframeNotThrottled", 0,
-       kMaximumReportSize10K, kReportBucketCount));
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, sub_frame_partially_throttled,
-      ("Blink.ResourceLoadScheduler.PeakRequests.SubframePartiallyThrottled", 0,
        kMaximumReportSize10K, kReportBucketCount));
 
   switch (throttling_history_) {
@@ -548,10 +540,6 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
         sub_frame_throttled.Count(maximum_running_requests_seen_);
       break;
     case ThrottlingHistory::kPartiallyThrottled:
-      if (context_->IsMainFrame())
-        main_frame_partially_throttled.Count(maximum_running_requests_seen_);
-      else
-        sub_frame_partially_throttled.Count(maximum_running_requests_seen_);
       break;
     case ThrottlingHistory::kStopped:
       break;
