@@ -43,6 +43,7 @@ PACKAGE_FILTER = set([
     "libcups2",
     "libdbus-1-3",
     "libexpat1",
+    "libfontconfig1",
     "libgcc1",
     "libgdk-pixbuf2.0-0",
     "libglib2.0-0",
