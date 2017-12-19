@@ -18,6 +18,8 @@
 #include "cc/base/math_util.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -70,7 +72,7 @@ void OneCopyRasterBufferProvider::RasterBufferImpl::Playback(
 OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     base::SequencedTaskRunner* task_runner,
     viz::ContextProvider* compositor_context_provider,
-    viz::ContextProvider* worker_context_provider,
+    viz::RasterContextProvider* worker_context_provider,
     LayerTreeResourceProvider* resource_provider,
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
@@ -229,9 +231,9 @@ void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
 
 void OneCopyRasterBufferProvider::WaitSyncToken(
     const gpu::SyncToken& sync_token) {
-  viz::ContextProvider::ScopedContextLock scoped_context(
+  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_);
-  gpu::raster::RasterInterface* ri = scoped_context.RasterContext();
+  gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
   DCHECK(ri);
   // Synchronize with compositor. Nop if sync token is empty.
   ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
@@ -304,9 +306,9 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
     ResourceProvider::ScopedWriteLockRaster* resource_lock,
     const RasterSource* raster_source,
     const gfx::Rect& rect_to_copy) {
-  viz::ContextProvider::ScopedContextLock scoped_context(
+  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_);
-  gpu::raster::RasterInterface* ri = scoped_context.RasterContext();
+  gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
   DCHECK(ri);
 
   GLuint texture_id = resource_lock->ConsumeTexture(ri);

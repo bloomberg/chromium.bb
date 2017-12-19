@@ -41,7 +41,7 @@ class LayerTreeFrameSink::ContextLostForwarder
 
 LayerTreeFrameSink::LayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
-    scoped_refptr<viz::ContextProvider> worker_context_provider,
+    scoped_refptr<viz::RasterContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     viz::SharedBitmapManager* shared_bitmap_manager)
@@ -87,10 +87,9 @@ bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     DCHECK(context_provider_);
     DCHECK(compositor_task_runner_);
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-    viz::ContextProvider::ScopedContextLock lock(
+    viz::RasterContextProvider::ScopedRasterContextLock lock(
         worker_context_provider_.get());
-    if (worker_context_provider_->RasterContext()
-            ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+    if (lock.RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
       context_provider_->RemoveObserver(this);
       context_provider_ = nullptr;
       return false;
@@ -123,7 +122,7 @@ void LayerTreeFrameSink::DetachFromClient() {
   }
 
   if (worker_context_provider_) {
-    viz::ContextProvider::ScopedContextLock lock(
+    viz::RasterContextProvider::ScopedRasterContextLock lock(
         worker_context_provider_.get());
     worker_context_provider_->RemoveObserver(
         worker_context_lost_forwarder_.get());

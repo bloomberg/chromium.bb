@@ -86,6 +86,14 @@ TestInProcessContextProvider::TestInProcessContextProvider(
 
 TestInProcessContextProvider::~TestInProcessContextProvider() = default;
 
+void TestInProcessContextProvider::AddRef() const {
+  base::RefCountedThreadSafe<TestInProcessContextProvider>::AddRef();
+}
+
+void TestInProcessContextProvider::Release() const {
+  base::RefCountedThreadSafe<TestInProcessContextProvider>::Release();
+}
+
 gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
   return gpu::ContextResult::kSuccess;
 }
@@ -94,7 +102,7 @@ gpu::gles2::GLES2Interface* TestInProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
 }
 
-gpu::raster::RasterInterface* TestInProcessContextProvider::RasterContext() {
+gpu::raster::RasterInterface* TestInProcessContextProvider::RasterInterface() {
   return raster_context_.get();
 }
 

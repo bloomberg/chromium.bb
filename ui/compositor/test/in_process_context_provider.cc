@@ -84,6 +84,14 @@ InProcessContextProvider::~InProcessContextProvider() {
          context_thread_checker_.CalledOnValidThread());
 }
 
+void InProcessContextProvider::AddRef() const {
+  base::RefCountedThreadSafe<InProcessContextProvider>::AddRef();
+}
+
+void InProcessContextProvider::Release() const {
+  base::RefCountedThreadSafe<InProcessContextProvider>::Release();
+}
+
 gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -136,7 +144,7 @@ gpu::gles2::GLES2Interface* InProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
 }
 
-gpu::raster::RasterInterface* InProcessContextProvider::RasterContext() {
+gpu::raster::RasterInterface* InProcessContextProvider::RasterInterface() {
   CheckValidThreadOrLockAcquired();
 
   return raster_context_.get();

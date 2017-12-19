@@ -47,7 +47,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
 
   viz::ContextProvider* compositor_context_provider =
       host_impl->layer_tree_frame_sink()->context_provider();
-  viz::ContextProvider* worker_context_provider =
+  viz::RasterContextProvider* worker_context_provider =
       host_impl->layer_tree_frame_sink()->worker_context_provider();
   LayerTreeResourceProvider* resource_provider = host_impl->resource_provider();
   int max_bytes_per_copy_operation = 1024 * 1024;

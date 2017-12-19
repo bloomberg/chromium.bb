@@ -10,7 +10,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/cc_export.h"
-#include "components/viz/common/gpu/context_provider.h"
+
+namespace viz {
+class ContextProvider;
+}  // namespace viz
 
 namespace cc {
 

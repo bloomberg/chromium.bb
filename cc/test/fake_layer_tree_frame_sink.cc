@@ -32,7 +32,7 @@ FakeLayerTreeFrameSink::Builder::Build() {
 
 FakeLayerTreeFrameSink::FakeLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
-    scoped_refptr<viz::ContextProvider> worker_context_provider)
+    scoped_refptr<viz::RasterContextProvider> worker_context_provider)
     : LayerTreeFrameSink(std::move(context_provider),
                          std::move(worker_context_provider),
                          base::ThreadTaskRunnerHandle::Get(),

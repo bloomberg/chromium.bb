@@ -312,7 +312,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
-      scoped_refptr<viz::ContextProvider> worker_context_provider,
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       CompositorDependencies* deps) override {
     // This could override the GpuChannel for a LayerTreeFrameSink that was

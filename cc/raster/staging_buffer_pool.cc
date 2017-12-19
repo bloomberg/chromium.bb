@@ -13,6 +13,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/container_util.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 
 using base::trace_event::MemoryAllocatorDump;
@@ -127,7 +128,7 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 
 StagingBufferPool::StagingBufferPool(
     base::SequencedTaskRunner* task_runner,
-    viz::ContextProvider* worker_context_provider,
+    viz::RasterContextProvider* worker_context_provider,
     ResourceProvider* resource_provider,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes)
@@ -251,10 +252,10 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
 
   std::unique_ptr<StagingBuffer> staging_buffer;
 
-  viz::ContextProvider::ScopedContextLock scoped_context(
+  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_);
 
-  gpu::raster::RasterInterface* ri = scoped_context.RasterContext();
+  gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
   DCHECK(ri);
 
   // Check if any busy buffers have become available.
@@ -398,10 +399,10 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
   lock_.AssertAcquired();
 
   {
-    viz::ContextProvider::ScopedContextLock scoped_context(
+    viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
         worker_context_provider_);
 
-    gpu::raster::RasterInterface* ri = scoped_context.RasterContext();
+    gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
     DCHECK(ri);
 
     // Note: Front buffer is guaranteed to be LRU so we can stop releasing

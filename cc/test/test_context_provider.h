@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/test/test_context_support.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -30,7 +31,10 @@ namespace cc {
 class TestWebGraphicsContext3D;
 class TestGLES2Interface;
 
-class TestContextProvider : public viz::ContextProvider {
+class TestContextProvider
+    : public base::RefCountedThreadSafe<TestContextProvider>,
+      public viz::ContextProvider,
+      public viz::RasterContextProvider {
  public:
   typedef base::Callback<std::unique_ptr<TestWebGraphicsContext3D>(void)>
       CreateCallback;
@@ -50,11 +54,14 @@ class TestContextProvider : public viz::ContextProvider {
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
 
+  // viz::ContextProvider / viz::RasterContextProvider implementation.
+  void AddRef() const override;
+  void Release() const override;
   gpu::ContextResult BindToCurrentThread() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
-  gpu::raster::RasterInterface* RasterContext() override;
+  gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   viz::ContextCacheController* CacheController() override;
@@ -75,6 +82,8 @@ class TestContextProvider : public viz::ContextProvider {
   TestContextSupport* support() { return support_.get(); }
 
  protected:
+  friend class base::RefCountedThreadSafe<TestContextProvider>;
+
   explicit TestContextProvider(
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,

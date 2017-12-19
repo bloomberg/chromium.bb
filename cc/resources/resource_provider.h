@@ -26,7 +26,6 @@
 #include "cc/cc_export.h"
 #include "cc/resources/return_callback.h"
 #include "components/viz/common/display/renderer_settings.h"
-#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource.h"
@@ -51,7 +50,7 @@
 
 namespace gpu {
 class GpuMemoryBufferManager;
-namespace gles {
+namespace gles2 {
 class GLES2Interface;
 }
 namespace raster {
@@ -60,6 +59,7 @@ class RasterInterface;
 }
 
 namespace viz {
+class ContextProvider;
 class SharedBitmapManager;
 }  // namespace viz
 

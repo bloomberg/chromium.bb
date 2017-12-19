@@ -11,8 +11,12 @@
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/staging_buffer_pool.h"
 #include "cc/resources/layer_tree_resource_provider.h"
-#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
+
+namespace viz {
+class ContextProvider;
+class RasterContextProvider;
+}  // namespace viz
 
 namespace cc {
 struct StagingBuffer;
@@ -20,15 +24,16 @@ class StagingBufferPool;
 
 class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
  public:
-  OneCopyRasterBufferProvider(base::SequencedTaskRunner* task_runner,
-                              viz::ContextProvider* compositor_context_provider,
-                              viz::ContextProvider* worker_context_provider,
-                              LayerTreeResourceProvider* resource_provider,
-                              int max_copy_texture_chromium_size,
-                              bool use_partial_raster,
-                              int max_staging_buffer_usage_in_bytes,
-                              viz::ResourceFormat preferred_tile_format,
-                              bool async_worker_context_enabled);
+  OneCopyRasterBufferProvider(
+      base::SequencedTaskRunner* task_runner,
+      viz::ContextProvider* compositor_context_provider,
+      viz::RasterContextProvider* worker_context_provider,
+      LayerTreeResourceProvider* resource_provider,
+      int max_copy_texture_chromium_size,
+      bool use_partial_raster,
+      int max_staging_buffer_usage_in_bytes,
+      viz::ResourceFormat preferred_tile_format,
+      bool async_worker_context_enabled);
   ~OneCopyRasterBufferProvider() override;
 
   // Overridden from RasterBufferProvider:
@@ -114,7 +119,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   gfx::BufferUsage StagingBufferUsage() const;
 
   viz::ContextProvider* const compositor_context_provider_;
-  viz::ContextProvider* const worker_context_provider_;
+  viz::RasterContextProvider* const worker_context_provider_;
   LayerTreeResourceProvider* const resource_provider_;
   const int max_bytes_per_copy_operation_;
   const bool use_partial_raster_;

@@ -406,9 +406,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       {
         // Note: If context is lost, we delete reference after releasing the
         // lock.
-        viz::ContextProvider::ScopedContextLock lock(
+        viz::RasterContextProvider::ScopedRasterContextLock lock(
             shared_worker_context_provider_.get());
-        lost = lock.RasterContext()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+        lost =
+            lock.RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
       }
       if (lost)
         shared_worker_context_provider_ = nullptr;
@@ -648,6 +649,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the
   // same ContextProvider as the Display's output surface.
+  scoped_refptr<viz::RasterContextProvider> worker_context_provider;
+  if (shared_worker_context_provider_)
+    worker_context_provider = shared_worker_context_provider_;
   auto layer_tree_frame_sink =
       vulkan_context_provider
           ? std::make_unique<viz::DirectLayerTreeFrameSink>(
@@ -660,7 +664,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
                 GetFrameSinkManager(), data->display.get(),
                 data->display_client.get(), context_provider,
-                shared_worker_context_provider_, compositor->task_runner(),
+                worker_context_provider, compositor->task_runner(),
                 GetGpuMemoryBufferManager(),
                 viz::ServerSharedBitmapManager::current());
   data->display->Resize(compositor->size());

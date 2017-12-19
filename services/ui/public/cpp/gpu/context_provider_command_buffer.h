@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
@@ -47,10 +48,12 @@ class GrContextForGLES2Interface;
 
 namespace ui {
 
-// Implementation of viz::ContextProvider that provides a GL implementation over
-// command buffer to the GPU process.
+// Implementation of viz::ContextProvider that provides a GL implementation
+// over command buffer to the GPU process.
 class ContextProviderCommandBuffer
-    : public viz::ContextProvider,
+    : public base::RefCountedThreadSafe<ContextProviderCommandBuffer>,
+      public viz::ContextProvider,
+      public viz::RasterContextProvider,
       public base::trace_event::MemoryDumpProvider {
  public:
   ContextProviderCommandBuffer(
@@ -72,10 +75,12 @@ class ContextProviderCommandBuffer
   // on the default framebuffer.
   uint32_t GetCopyTextureInternalFormat();
 
-  // viz::ContextProvider implementation.
+  // viz::ContextProvider / viz::RasterContextProvider implementation.
+  void AddRef() const override;
+  void Release() const override;
   gpu::ContextResult BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
-  gpu::raster::RasterInterface* RasterContext() override;
+  gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   viz::ContextCacheController* CacheController() override;
@@ -97,6 +102,7 @@ class ContextProviderCommandBuffer
       scoped_refptr<base::SingleThreadTaskRunner> default_task_runner);
 
  protected:
+  friend class base::RefCountedThreadSafe<ContextProviderCommandBuffer>;
   ~ContextProviderCommandBuffer() override;
 
   void OnLostContext();

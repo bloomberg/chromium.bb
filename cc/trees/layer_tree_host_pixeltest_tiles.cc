@@ -177,13 +177,13 @@ class LayerTreeHostTilesTestPartialInvalidation
   void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
     // Issue a GL finish before preparing tiles to ensure resources become
     // available for use in a timely manner. Needed for the one-copy path.
-    viz::ContextProvider* context_provider =
+    viz::RasterContextProvider* context_provider =
         host_impl->layer_tree_frame_sink()->worker_context_provider();
     if (!context_provider)
       return;
 
-    viz::ContextProvider::ScopedContextLock lock(context_provider);
-    lock.RasterContext()->Finish();
+    viz::RasterContextProvider::ScopedRasterContextLock lock(context_provider);
+    lock.RasterInterface()->Finish();
   }
 
  protected:

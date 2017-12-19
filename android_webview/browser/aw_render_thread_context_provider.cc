@@ -95,6 +95,14 @@ uint32_t AwRenderThreadContextProvider::GetCopyTextureInternalFormat() {
   return GL_RGBA;
 }
 
+void AwRenderThreadContextProvider::AddRef() const {
+  base::RefCountedThreadSafe<AwRenderThreadContextProvider>::AddRef();
+}
+
+void AwRenderThreadContextProvider::Release() const {
+  base::RefCountedThreadSafe<AwRenderThreadContextProvider>::Release();
+}
+
 gpu::ContextResult AwRenderThreadContextProvider::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -119,11 +127,6 @@ gpu::gles2::GLES2Interface* AwRenderThreadContextProvider::ContextGL() {
   if (trace_impl_)
     return trace_impl_.get();
   return context_->GetImplementation();
-}
-
-gpu::raster::RasterInterface* AwRenderThreadContextProvider::RasterContext() {
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 gpu::ContextSupport* AwRenderThreadContextProvider::ContextSupport() {

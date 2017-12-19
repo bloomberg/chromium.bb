@@ -38,7 +38,9 @@ namespace viz {
 // the compositor and gpu thread.
 // TODO(kylechar): Rename VizProcessContextProvider and move to
 // components/viz/service.
-class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
+class VIZ_COMMON_EXPORT InProcessContextProvider
+    : public base::RefCountedThreadSafe<InProcessContextProvider>,
+      public ContextProvider {
  public:
   InProcessContextProvider(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
@@ -49,9 +51,11 @@ class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
       const gpu::SharedMemoryLimits& limits,
       InProcessContextProvider* shared_context);
 
+  // ContextProvider implementation.
+  void AddRef() const override;
+  void Release() const override;
   gpu::ContextResult BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
-  gpu::raster::RasterInterface* RasterContext() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   ContextCacheController* CacheController() override;
