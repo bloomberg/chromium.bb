@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"  // For MediaPlayerId.
 
 namespace media {
@@ -25,9 +26,11 @@ class RenderFrameHost;
 
 // MediaSessionControllersManager is a delegate of MediaWebContentsObserver that
 // handles MediaSessionController instances.
-class MediaSessionControllersManager {
+class CONTENT_EXPORT MediaSessionControllersManager {
  public:
   using MediaPlayerId = WebContentsObserver::MediaPlayerId;
+  using ControllersMap =
+      std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
 
   explicit MediaSessionControllersManager(
       MediaWebContentsObserver* media_web_contents_observer);
@@ -52,11 +55,11 @@ class MediaSessionControllersManager {
   void OnEnd(const MediaPlayerId& id);
 
  private:
+  friend class MediaSessionControllersManagerTest;
+
   // Weak pointer because |this| is owned by |media_web_contents_observer_|.
   MediaWebContentsObserver* const media_web_contents_observer_;
 
-  using ControllersMap =
-      std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
   ControllersMap controllers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionControllersManager);
