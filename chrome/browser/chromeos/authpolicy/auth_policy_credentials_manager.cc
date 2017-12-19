@@ -33,8 +33,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace {
 
@@ -320,24 +318,20 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
   // Set |profile_id| for multi-user notification blocker.
   notifier_id.profile_id = profile_->GetProfileUserName();
 
-  message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
-      l10n_util::GetStringUTF16(message_id), gfx::Image(),
-      l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
-      GURL(notification_id), notifier_id, data,
-      new SigninNotificationDelegate());
-  notification.set_accent_color(
-      message_center::kSystemNotificationColorCriticalWarning);
-  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-      kNotificationWarningIcon, message_center::kSmallImageSizeMD,
-      message_center::kSystemNotificationColorWarning)));
-  notification.set_vector_small_image(kNotificationWarningIcon);
-  notification.SetSystemPriority();
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+          l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
+          l10n_util::GetStringUTF16(message_id), gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
+          GURL(notification_id), notifier_id, data,
+          new SigninNotificationDelegate(), kNotificationWarningIcon,
+          message_center::SystemNotificationWarningLevel::WARNING);
+  notification->SetSystemPriority();
 
   // Add the notification.
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
   shown_notifications_.insert(message_id);
 }
 

@@ -29,8 +29,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -197,23 +195,20 @@ void HatsNotificationController::OnPortalDetectionCompleted(
   network_portal_detector::GetInstance()->RemoveObserver(this);
 
   // Create and display the notification for the user.
-  message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-      l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
-      l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY), gfx::Image(),
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
-      GURL(kNotificationOriginUrl),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kNotifierHats),
-      message_center::RichNotificationData(), this);
-  notification.set_accent_color(message_center::kSystemNotificationColorNormal);
-  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-      kNotificationGoogleIcon, message_center::kSmallImageSizeMD,
-      message_center::kSystemNotificationColorNormal)));
-  notification.set_vector_small_image(kNotificationGoogleIcon);
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+          l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
+          l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY), gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
+          GURL(kNotificationOriginUrl),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierHats),
+          message_center::RichNotificationData(), this, kNotificationGoogleIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void HatsNotificationController::UpdateLastInteractionTime() {

@@ -22,8 +22,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace {
 const char* kNotifierId = "app.downloaded-notification";
@@ -43,23 +41,21 @@ void ExtensionInstalledNotification::Show(
 ExtensionInstalledNotification::ExtensionInstalledNotification(
     const extensions::Extension* extension, Profile* profile)
     : extension_id_(extension->id()), profile_(profile) {
-  message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, extension_id_,
-      base::UTF8ToUTF16(extension->name()),
-      l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_INSTALLED),
-      gfx::Image(),
-      l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
-      GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kNotifierId),
-      {}, this);
-  notification.set_accent_color(message_center::kSystemNotificationColorNormal);
-  notification.set_small_image(gfx::Image(
-      gfx::CreateVectorIcon(kNotificationInstalledIcon,
-                            message_center::kSystemNotificationColorNormal)));
-  notification.set_vector_small_image(kNotificationInstalledIcon);
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, extension_id_,
+          base::UTF8ToUTF16(extension->name()),
+          l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_INSTALLED),
+          gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
+          GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
+          {}, this, kNotificationInstalledIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 ExtensionInstalledNotification::~ExtensionInstalledNotification() {}

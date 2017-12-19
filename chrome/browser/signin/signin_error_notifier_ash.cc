@@ -30,8 +30,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace {
 
@@ -96,25 +94,22 @@ void SigninErrorNotifier::OnErrorChanged() {
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
-  message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
-      l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
-      GetMessageBody(), gfx::Image(),
-      l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
-      GURL(notification_id_), notifier_id, data,
-      new message_center::HandleNotificationClickDelegate(
-          base::Bind(&HandleNotificationClick)));
-  notification.set_accent_color(
-      message_center::kSystemNotificationColorWarning);
-  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-      kNotificationWarningIcon, message_center::kSmallImageSizeMD,
-      message_center::kSystemNotificationColorWarning)));
-  notification.set_vector_small_image(kNotificationWarningIcon);
-  notification.SetSystemPriority();
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
+          l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
+          GetMessageBody(), gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
+          GURL(notification_id_), notifier_id, data,
+          new message_center::HandleNotificationClickDelegate(
+              base::Bind(&HandleNotificationClick)),
+          kNotificationWarningIcon,
+          message_center::SystemNotificationWarningLevel::WARNING);
+  notification->SetSystemPriority();
 
   // Update or add the notification.
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 base::string16 SigninErrorNotifier::GetMessageBody() const {

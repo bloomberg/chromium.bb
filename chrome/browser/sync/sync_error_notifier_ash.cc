@@ -27,8 +27,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace {
 
@@ -136,21 +134,19 @@ void SyncErrorNotifier::OnErrorChanged() {
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
   // Add a new notification.
-  message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
-      l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE),
-      l10n_util::GetStringUTF16(IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE),
-      gfx::Image(), l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
-      GURL(notification_id_), notifier_id,
-      message_center::RichNotificationData(),
-      new SyncNotificationDelegate(profile_));
-  notification.set_accent_color(
-      message_center::kSystemNotificationColorWarning);
-  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-      kNotificationWarningIcon, message_center::kSmallImageSizeMD,
-      message_center::kSystemNotificationColorWarning)));
-  notification.set_vector_small_image(kNotificationWarningIcon);
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
+          l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE),
+          l10n_util::GetStringUTF16(
+              IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE),
+          gfx::Image(),
+          l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
+          GURL(notification_id_), notifier_id,
+          message_center::RichNotificationData(),
+          new SyncNotificationDelegate(profile_), kNotificationWarningIcon,
+          message_center::SystemNotificationWarningLevel::WARNING);
 
-  display_service->Display(NotificationHandler::Type::TRANSIENT, notification);
+  display_service->Display(NotificationHandler::Type::TRANSIENT, *notification);
   notification_displayed_ = true;
 }
