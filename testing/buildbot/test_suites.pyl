@@ -1176,12 +1176,6 @@
   'linux_specific_chromium_isolated_scripts': {
     'devtools_closure_compile': {},
     'devtools_eslint': {},
-  },
-
-  'linux_specific_site_per_process_isolated_scripts': {
-    # TODO(crbug.com/786554): merge this into
-    # linux_specific_chromium_isolated_scripts to run on
-    # linux_chromium_rel_ng when we're sure we have the capacity.
     'site_per_process_webkit_layout_tests': {
       'args': [
         '--additional-driver-flag',
