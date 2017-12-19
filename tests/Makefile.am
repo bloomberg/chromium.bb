@@ -225,8 +225,8 @@ LOG_COMPILE = $(WINE)
 EXTRA_DIST = $(dist_yaml_TESTS)
 
 XFAIL_TESTS +=					\
-	ueb_test_data.pl			\
-	yaml/compbrlAtCursor_with_equals.yaml
+	ueb_test_data.pl
+
 
 TESTS =				\
 	$(program_TESTS)	\
