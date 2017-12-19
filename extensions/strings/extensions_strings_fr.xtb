@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Impossible d'extraire les fichiers de l'extension. Pour effectuer cette opération en toute sécurité, vous devez disposer d'un chemin d'accès à votre répertoire de profils commençant par une lettre de lecteur et ne contenant ni jonction, ni point de montage, ni lien symbolique. Aucun chemin de ce type n'existe pour votre profil.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (numéro de série : <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> du fournisseur <ph name="VENDOR_ID" /> (numéro de série : <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Impossible de charger la page du lanceur d'applications "<ph name="PAGE" />".</translation>
 <translation id="388442998277590542">Impossible de charger la page d'options "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">L'administrateur de cette machine exige que <ph name="EXTENSION_NAME" /> dispose, au minimum, de la version <ph name="EXTENSION_VERSION" />. L'activation sera impossible tant que la mise à jour vers cette version (ou une version ultérieure) n'aura pas été effectuée.</translation>
 <translation id="4233778200880751280">Impossible de charger la page "À propos" <ph name="ABOUT_PAGE" />.</translation>

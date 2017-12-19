@@ -26,6 +26,7 @@
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1550523713251050646">Klikk for å se flere alternativer</translation>
 <translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
+<translation id="1658406695958299976">Beklager, men passordet ditt kunne fremdeles ikke bekreftes. Merk: Hvis du endret passordet ditt nylig, trer det nye passordet ditt i kraft så snart du logger av. Bruk det gamle passordet ditt her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Denne enheten er administrert av en bedrift</translation>
@@ -64,6 +65,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Før du godtar dette, må du bekrefte at denne tilgangskoden vises på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Varsler</translation>
+<translation id="2484513351006226581">Trykk på <ph name="KEYBOARD_SHORTCUT" /> for å bytte tastaturoppsett.</translation>
 <translation id="2501920221385095727">Trege taster</translation>
 <translation id="2509468283778169019">Caps Lock er på</translation>
 <translation id="2532589005999780174">Høykontrastmodus</translation>
@@ -110,6 +112,7 @@
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3465566417615315331">Klikk på bildet ditt</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
+<translation id="3477079411857374384">Ctrl+Shift+Mellomrom</translation>
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
 <translation id="3582792037806681688">Multipålogging har blitt deaktivert for en bruker i denne økten.</translation>
@@ -125,6 +128,7 @@
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Høyttaler (intern)</translation>
 <translation id="3846575436967432996">Ingen nettverksinformasjon tilgjengelig</translation>
+<translation id="385051799172605136">Tilbake</translation>
 <translation id="3891340733213178823">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="3893630138897523026">ChromeVox (muntlig tilbakemelding)</translation>
 <translation id="3899995891769452915">Taleinndata</translation>
@@ -154,6 +158,7 @@
 <translation id="4804818685124855865">Koble fra</translation>
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
+<translation id="4890187583552566966">Administratoren din har slått av Google-assistenten.</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
 <translation id="4905614135390995787">Hurtigtasten for å slå høykontrastmodus av eller på er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Godta</translation>
@@ -196,6 +201,7 @@
 <translation id="6043994281159824495">Logg av nå</translation>
 <translation id="6047696787498798094">Skjermdelingen stopper hvis du bytter til en annen bruker.</translation>
 <translation id="6062360702481658777">Du logges automatisk av om <ph name="LOGOUT_TIME_LEFT" />.</translation>
+<translation id="6064337552080329342">Beklager, men passordet ditt kunne ikke bekreftes. Prøv på nytt.</translation>
 <translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME" />» og adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Lader <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
@@ -262,10 +268,12 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7692480393933218409">Lader de tilkoblede USB-C-enhetene</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
+<translation id="7796353162336583443">Trykk på pekepenn-knappen på hyllen for å gjøre et notat, ta en skjermdump eller bruke Google-assistenten, laserpekeren eller forstørrelsesglasset.</translation>
 <translation id="7798302898096527229">Trykk på Søk eller Shift for å avbryte</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sterkt signal</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
+<translation id="7933084174919150729">Google-assistenten er bare tilgjengelig for den primære profilen.</translation>
 <translation id="7977927628060636163">Søker etter mobilnettverk …</translation>
 <translation id="7982789257301363584">Nettverk</translation>
 <translation id="7994370417837006925">Multipålogging</translation>
@@ -282,6 +290,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
+<translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433186206711564395">Nettverksinnstillinger</translation>
 <translation id="8433977262951327081">Hurtigtasten for å vise boblen med menyen for valg av inndataalternativer på hyllen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -292,6 +301,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Kobler til på nytt ...</translation>
 <translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>
+<translation id="8652175077544655965">Lukk innstillingene</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

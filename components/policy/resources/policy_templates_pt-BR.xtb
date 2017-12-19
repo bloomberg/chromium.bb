@@ -1953,13 +1953,6 @@
 <translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
 
       Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
-<translation id="7872535148622213208">
-        A política especifica que uma lista de origens (URLs) seja tratada como contexto0
-        seguro. O objetivo é permitir que organizações possam configurar um servidor temporário
-        para desenvolvimentos internos na Web.
-        Funciona da mesma forma que a sinalização --unsafely-treat-insecure-origin-as-secure.
-        Para mais informações sobre contextos seguros, consulte https://www.w3.org/TR/secure-contexts/ (link em inglês)
-        </translation>
 <translation id="7882585827992171421">Esta política só fica ativada em modo de varejo.
 
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>

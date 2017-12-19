@@ -267,6 +267,7 @@
 <translation id="1969212217917526199">Åsidosätter policyer på felsökningsversioner av fjärråtkomstvärden.
 
           Värdet analyseras som en JSON-ordlista med policyns namn till mappningar av policyns värde.</translation>
+<translation id="1969808853498848952">Kör alltid pluginprogram som kräver auktorisering (utfasad)</translation>
 <translation id="1988371335297483117">Betalningar med automatisk uppdatering i <ph name="PRODUCT_OS_NAME" /> kan laddas ned via HTTP i stället för HTTPS. Detta möjliggör transparent HTTP-cachelagring av HTTP-nedladdningar.
 
       Om policyn är inställd på sant kommer <ph name="PRODUCT_OS_NAME" /> att försöka ladda ned betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på falskt eller inte har angetts kommer HTTPS att användas för att ladda ned betalningar med automatisk uppdatering.</translation>
@@ -794,6 +795,7 @@
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
 <translation id="3736879847913515635">Gör att en person kan läggas till i användarhanteraren</translation>
+<translation id="3737544779868348650">Värdnamn för enhetsnätverk</translation>
 <translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>
 <translation id="3756011779061588474">Blockera utvecklarläget</translation>
 <translation id="3758089716224084329">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och förhindra att användare ändrar sina proxyinställningar.
@@ -1235,6 +1237,13 @@
 <translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Bestäm värdnamn för enheten som används i DHCP-begäranden.
+
+      Om principen är inställd på något annat än en tom sträng används den strängen som enhetens värdnamn under DHCP-begäran.
+
+      Strängen kan innehålla variablerna ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} som ersätts av värden på enheten innan de används som värdnamn. Detta ersättningsvärde ska bara ett giltigt värdnamn (enligt RFC 1035, avsnitt 3.1).
+
+      Om principen inte är inställd eller om värdet efter ersättningen inte är ett giltigt värdnamn så anges inget värdnamn i DHCP-förfrågan. </translation>
 <translation id="5148753489738115745">Innebär att du kan ange ytterligare parametrar som används när <ph name="PRODUCT_FRAME_NAME" /> startar <ph name="PRODUCT_NAME" />.
 
           Om policyn inte anges används standardkommandoraden.</translation>
@@ -1434,6 +1443,9 @@
       Om policyn är inaktiverad kan sidor inte öppnas i inkognitoläge.
 
       Om tvingat läge är valt kan sidor BARA öppnas i inkognitoläge.</translation>
+<translation id="5835124959204887277">Anger webbadresser och domäner som det inte visas meddelanden för när attesteringscertifikat begärs från säkerhetsnycklar. Dessutom skickas en signal till säkerhetsnyckeln som indikerar att enskild attestering kan användas. Utan detta meddelas användare i version 65 eller senare av Chrome när webbplatser begär attestering för säkerhetsnycklar.
+
+      Webbadresser (som https://example.com/some/path) matchar endast som U2F appID. Domäner (som example.com) matchar endast som WebAuthn RP ID. Därför måste både webbadressen och domänen för appID anges om båda API:erna U2F och WebAuthn ska täcka en viss webbplats.</translation>
 <translation id="5836064773277134605">Begränsa UDP-portintervallet som används av värden för fjärråtkomst</translation>
 <translation id="5862253018042179045">Ställer in standardtillståndet för hjälpmedelsfunktionen talad feedback på inloggningsskärmen.
 
@@ -1615,6 +1627,7 @@
       Om den är inaktiverad importeras inte formuläruppgifterna för Autofyll.
 
       Om policyn inte har angetts kan användaren få välja om importen ska göras eller så utförs importen automatiskt.</translation>
+<translation id="6224304369267200483">Webbadresser/domäner tillät direktattestering av säkerhetsnycklar automatiskt</translation>
 <translation id="6233173491898450179">Ange nedladdningskatalog</translation>
 <translation id="6244210204546589761">Webbadresser att öppna vid start</translation>
 <translation id="6258193603492867656">Policyn anger om Kerberos SPN som har genererats ska innehålla en port som inte är standard.
@@ -1867,6 +1880,13 @@
 <translation id="7202925763179776247">Tillåt nedladdningsbegränsningar</translation>
 <translation id="7207095846245296855">Tvinga fram användning av Google SafeSearch</translation>
 <translation id="7216442368414164495">Tillåt användare att välja utökad rapportering i Säker webbsökning</translation>
+<translation id="7221822638060296742">Gör att du kan ange om webbplatser får köra pluginprogrammet <ph name="FLASH_PLUGIN_NAME" /> automatiskt. Du kan tillåta att pluginprogrammet <ph name="FLASH_PLUGIN_NAME" /> körs automatiskt för alla webbplatser eller inte får köras för några webbplatser.
+
+          Med Klicka för att spela kan pluginprogrammet <ph name="FLASH_PLUGIN_NAME" /> köras, men användaren måste klicka på platshållaren för att starta körningen.
+
+          Automatisk uppspelning tillåts endast för domäner som har angetts i principen <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Om du vill aktivera automatisk uppspelning för alla webbplatser kan du lägga till http://* och https://* på denna lista.
+
+          Om denna princip inte anges kan användaren ändra denna inställning manuellt.</translation>
 <translation id="7234280155140786597">Namn på de värdar för Native Messaging som ska vara förbjudna (* betyder alla)</translation>
 <translation id="7236775576470542603">Konfigurera standardtypen av skärmförstorare som är aktiverad på inloggningsskärmen.
           Om den här principen har angetts bestämmer den vilken typ av skärmförstorare som aktiveras när inloggningsskärmen visas. Om principen har värdet Ingen är skärmförstoraren inaktiv.
@@ -2070,13 +2090,6 @@
 <translation id="787125417158068494">Om principen är inställd på SyncDisabled eller inte har konfigurerats blir inga certifikat i <ph name="PRODUCT_OS_NAME" /> tillgängliga för ARC-appar.
 
       Om principen är inställd på CopyCaCerts blir alla CA-certifikat som installerats via ONC med <ph name="WEB_TRUSTED_BIT" /> tillgängliga för ARC-appar.</translation>
-<translation id="7872535148622213208">
-        Principen anger en lista med källor (webbadresser) som ska behandlas som säker
-        kontext. Syftet är att tillåta organisationer att konfigurera en provkörningsserver
-        för intern webbutveckling.
-        Detta är samma som flaggan --unsafely-treat-insecure-origin-as-secure.
-        Du kan läsa mer om säker kontext på https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Den här policyn är bara aktiv i återförsäljarläge.
 
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>

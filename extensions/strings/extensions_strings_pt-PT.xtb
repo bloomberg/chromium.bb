@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Não é possível descompactar a extensão. Para descompactar uma extensão em segurança, é necessário existir um caminho para o seu directório de perfil começado por uma letra de unidade e sem uma junção, ponto de montagem ou ligação simbólica. Não existe um caminho deste tipo para o seu perfil.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> do fornecedor <ph name="VENDOR_ID" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Não foi possível carregar a página de iniciador "<ph name="PAGE" />".</translation>
 <translation id="388442998277590542">Não foi possível carregar a página de opções "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">O gestor deste computador requer que <ph name="EXTENSION_NAME" /> tenha uma versão mínima de <ph name="EXTENSION_VERSION" />. Não pode ser atualizado enquanto não for atualizado para essa versão (ou posterior).</translation>
 <translation id="4233778200880751280">Não foi possível carregar a página acerca de "<ph name="ABOUT_PAGE" />".</translation>

@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">ఎక్స్‌టెన్‌షన్ అన్‌ప్యాక్ చేయబడదు.  ఒక ఎక్స్‌టెన్‌షన్‌‌ను సురక్షితంగా అన్‌ప్యాక్ చేయడానికి, మీ ప్రొఫైల్ డైరెక్టరీకి ఒక డ్రైవ్ అక్షరంతో ప్రారంభమయ్యే మరియు జంక్షన్, మౌంట్ పాయింట్ లేదా సింలింక్ ఉండని గమ్యమార్గం తప్పనిసరిగా ఉండాలి.  మీ ప్రొఫైల్‌కు అటువంటి గమ్యమార్గం లేదు.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> విక్రేత నుండి <ph name="PRODUCT_NAME" /> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">లాంచర్ పేజీ '<ph name="PAGE" />'ని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="388442998277590542">ఎంపికల పేజీ '<ph name="OPTIONS_PAGE" />'ని లోడ్ చెయ్యడం సాధ్యం కాలేదు.</translation>
 <translation id="4115165561519362854">ఈ మెషీన్ నిర్వాహకుడికి <ph name="EXTENSION_NAME" /> కనీస సంస్కరణ అయిన <ph name="EXTENSION_VERSION" /> ఉండటం అవసరం. ఇది ఆ సంస్కరణకు (లేదా తదుపరి దానికి) నవీకరించే వరకు ప్రారంభించబడదు.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' పరిచయ పేజీని లోడ్ చేయడం సాధ్యపడలేదు.</translation>

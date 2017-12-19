@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">No se puede descomprimir la extensión. Para descomprimir de forma segura una extensión, debe existir una ruta al directorio de tu perfil que comience con una letra de unidad y que no incluya ninguna unión, ningún punto de montaje ni ningún enlace simbólico. No existe ninguna ruta de este tipo para tu perfil.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (número de serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> del proveedor <ph name="VENDOR_ID" /> (número de serie <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">No se ha podido cargar la página del menú de aplicaciones "<ph name="PAGE" />".</translation>
 <translation id="388442998277590542">No se ha podido cargar la página de opciones "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">El administrador de este equipo requiere que <ph name="EXTENSION_NAME" /> tenga como mínimo la versión <ph name="EXTENSION_VERSION" />. No se puede habilitar hasta que se haya actualizado a esa versión (o superior).</translation>
 <translation id="4233778200880751280">No se ha podido cargar la página de información (<ph name="ABOUT_PAGE" />).</translation>

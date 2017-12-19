@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Kan ikke pakke ut utvidelse. For å kunne pakke ut en utvidelse på en sikker måte, må det finnes en bane til profilkatalogen din som begynner med en harddiskbokstav og som ikke inneholder en forbindelse, et innsettingspunkt eller en symlink. Det finnes ingen slik bane for profilen din.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (serienummer: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> fra leverandøren <ph name="VENDOR_ID" /> (serienummer: <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Kunne ikke laste inn appvelgersiden «<ph name="PAGE" />».</translation>
 <translation id="388442998277590542">Kan ikke laste inn alternativsiden <ph name="OPTIONS_PAGE" />.</translation>
 <translation id="4115165561519362854">Administratoren for denne maskinen krever at <ph name="EXTENSION_NAME" /> har en minimumsversjon på <ph name="EXTENSION_VERSION" />. Den kan ikke slås på før den er oppdatert til denne versjonen (eller høyere).</translation>
 <translation id="4233778200880751280">Kunne ikke laste inn info-siden «<ph name="ABOUT_PAGE" />».</translation>

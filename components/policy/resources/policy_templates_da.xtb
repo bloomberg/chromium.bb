@@ -258,6 +258,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="1969212217917526199">Tilsidesætter politikker i fejlfindingsbuilds for hosten for fjernadgang.
 
           Værdien parses som en JSON-ordbog for politikkens navn til politikkens værditilknytninger.</translation>
+<translation id="1969808853498848952">Kør altid plugins, der kræver godkendelse (udfaset)</translation>
 <translation id="1988371335297483117">Automatisk opdaterede nyttedata i <ph name="PRODUCT_OS_NAME" /> kan downloades via HTTP i stedet for HTTPS. Dette giver mulighed for åben HTTP-caching af HTTP-downloads.
 
       Hvis denne politik er angivet til Sand, vil <ph name="PRODUCT_OS_NAME" /> forsøge at downloade automatisk opdaterede nyttedata via HTTP. Hvis politikken er angivet til Falsk eller ikke er angivet, anvendes HTTPS til at downloade automatisk opdaterede nyttedata.</translation>
@@ -754,6 +755,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
+<translation id="3737544779868348650">Enhedens hostname på netværket</translation>
 <translation id="3750220015372671395">Bloker nøglegenerering på disse websites</translation>
 <translation id="3756011779061588474">Bloker udviklertilstand</translation>
 <translation id="3758089716224084329">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
@@ -1178,6 +1180,13 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="5130288486815037971">Afgør, om RC4-krypteringsprogrammer i TLS aktiveres</translation>
 <translation id="5141670636904227950">Indstil standardtype for lup til aktiveret på loginskærmen</translation>
 <translation id="5142301680741828703">Gengiv altid følgende webadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Fastlægger det hostname, enheden anvender i DHCP-anmodninger.
+
+      Hvis denne politik er angivet til en udfyldt streng, bruges strengen som enhedens hostname i forbindelse med en DHCP-anmodning.
+
+      Strengen kan indeholde variabler ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, som ville blive erstattet af værdier på enheden, inden de bruges som hostname. Resultatet af udskiftningen skal være et gyldigt hostname (i overensstemmelse med afsnit 3.1 i RFC 1035).
+
+      Hvis denne politik ikke er angivet, eller værdien efter udskiftningen ikke er et gyldigt hostname, angives der ikke noget hostname i DHCP-anmodninger. </translation>
 <translation id="5148753489738115745">Giver dig mulighed for at angive yderligere parametre, som bruges, når <ph name="PRODUCT_FRAME_NAME" /> starter <ph name="PRODUCT_NAME" />.
 
           Hvis denne politik ikke er angivet, bruges standardkommandolinjen.</translation>
@@ -1347,6 +1356,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis denne indstilling ikke angives, anvendes standardprofilmappen.</translation>
 <translation id="5826047473100157858">Angiver, om brugeren kan åbne sider i inkognitotilstand i <ph name="PRODUCT_NAME" />. Hvis "Aktiveret" er valgt, eller hvis politikken ikke angives, kan siderne åbnes i inkognitotilstand. Hvis "Deaktiveret" er valgt, kan sider ikke åbnes i inkognitotilstand. Hvis "Tvunget" er valgt, kan siderne kun åbnes i inkognitotilstand.</translation>
+<translation id="5835124959204887277">Angiver webadresser og domæner, for hvilke der ikke vises en meddelelse, når der anmodes om attesteringscertifikater fra sikkerhedsnøgler. Desuden sendes et signal til sikkerhedsnøglen, som indikerer, at der kan anvendes individuel attestering. Uden dette får brugerne en meddelelse i version 65 og nyere af Chrome, når websites anmoder om attestering af sikkerhedsnøgler.
+
+      Webadresser (såsom https://eksempel.dk/en/sti) matcher kun som U2F-app-id'er. Domæner (såsom eksempel.dk) matcher kun som webauthn RP-id'er. Derfor skal både app-id, webadresse og domæne angives for at dække både U2F- og webauthn-API'er for et givet website.</translation>
 <translation id="5836064773277134605">Begræns rækkevidden for den UDP-port, der bruges af hosten for fjernadgang</translation>
 <translation id="5862253018042179045">Angiv standardtilstanden for hjælpefunktionen Talefeedback på loginskærmen.
 
@@ -1515,6 +1527,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis den er deaktiveret, importeres formulardata for AutoFyld ikke.
 
       Hvis den ikke er indstillet, kan brugeren blive spurgt, om der skal importeres, eller også kan import ske automatisk.</translation>
+<translation id="6224304369267200483">Webadresser/domæner tillader automatisk direkte attestering af sikkerhedsnøgler</translation>
 <translation id="6233173491898450179">Angiv mappen til download</translation>
 <translation id="6244210204546589761">Webadresser, der skal åbnes ved opstart</translation>
 <translation id="6258193603492867656">Angiver, om den genererede Kerberos-SPN skal omfatte en port, der ikke er standard. Hvis du aktiverer denne indstilling, og en port, der ikke er standard (dvs. en anden port end 80 eller 443), angives, vil den indgå i den genererede Kerberos-SPN. Hvis du deaktiverer denne indstilling, vil den genererede Kerberos-SPN aldrig omfatte en port.</translation>
@@ -1739,6 +1752,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7202925763179776247">Tillad begrænsninger af download</translation>
 <translation id="7207095846245296855">Gennemtving Google Beskyttet søgning</translation>
 <translation id="7216442368414164495">Giv brugerne tilladelse til at tilvælge udvidet rapportering af Beskyttet browsing</translation>
+<translation id="7221822638060296742">Giver dig mulighed for at angive, om websites må køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet automatisk. Automatisk kørsel af <ph name="FLASH_PLUGIN_NAME" />-pluginnet kan enten tillades for alle websites eller forbydes for alle websites.
+
+          Klik for at afspille giver tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet, men brugeren skal klikke på pladsholderen for at starte det.
+
+          Automatisk afspilning er kun tilladt på domæner, der udtrykkeligt er angivet i politikken <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Hvis du vil aktivere automatisk afspilning på alle websites, kan du eventuelt føje http://* og https://* til denne liste.
+
+          Hvis denne politik ikke angives, kan brugeren ændre indstillingen manuelt.</translation>
 <translation id="7234280155140786597">Navne på forbudte indbyggede beskedhosts (eller * for alle)</translation>
 <translation id="7236775576470542603">Indstil standardtypen for den lup, der er aktiveret på loginskærmen.
 
@@ -1937,13 +1957,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="787125417158068494">Hvis den er angivet til SyncDisabled eller ikke er konfigureret, er certifikater i <ph name="PRODUCT_OS_NAME" /> ikke tilgængelige for ARC-apps.
 
       Hvis den er angivet til CopyCaCerts, er alle ONC-installerede CA-certifikater med <ph name="WEB_TRUSTED_BIT" /> tilgængelige for ARC-apps.</translation>
-<translation id="7872535148622213208">
-        Denne politik angiver en liste over kilder (webadresser), der skal behandles som sikkert
-        indhold. Formålet er, at organisationer kan konfigurere en testserver
-        til intern webudvikling.
-        Dette er det samme som "--unsafely-treat-insecure-origin-as-secure"-markeringen.
-        Hvis du vil have flere oplysninger om sikre kontekster, kan du gå til https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">Denne politik er kun aktiv i detailtilstand.
 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>

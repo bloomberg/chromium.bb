@@ -78,6 +78,7 @@
 <translation id="2381405137052800939">Основные</translation>
 <translation id="2386793615875593361">Выбрана 1 фотография</translation>
 <translation id="2435457462613246316">Показать пароль</translation>
+<translation id="2523363575747517183">Этот сайт часто пытается открыть другое приложение.</translation>
 <translation id="2529021024822217800">Открыть все</translation>
 <translation id="2572712655377361602">Политика устройства блокирует доступ к фотографиям</translation>
 <translation id="2584132361465095047">Добавить аккаунт</translation>
@@ -178,6 +179,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примечание о конфиденциальности</translation>
 <translation id="4460091562821778167">Всегда спрашивать, какое приложение использовать</translation>
+<translation id="4496373720959965247">Добавляйте вкладки и переключайтесь между ними</translation>
 <translation id="4508750114462689118">Закрыть сообщение о входе</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Войдите в аккаунт снова.</translation>
@@ -237,6 +239,7 @@
 <translation id="5771816112378578655">Идет настройка...</translation>
 <translation id="5816228676161003208">Это нужно, чтобы использовать голосовой поиск</translation>
 <translation id="5846482154967366008">Поисковая система</translation>
+<translation id="5854790677617711513">Сохраненные более 30 дней назад</translation>
 <translation id="5857090052475505287">Новая папка</translation>
 <translation id="5857770089550859117">Чтобы начать синхронизацию, введите кодовую фразу.</translation>
 <translation id="5860033963881614850">Выкл.</translation>
@@ -335,7 +338,6 @@
 <translation id="7514365320538308">Скачать</translation>
 <translation id="7537586195939242955">Не удалось внести данные в Passbook.</translation>
 <translation id="7561196759112975576">Всегда</translation>
-<translation id="7588950540487816470">Интернет вокруг нас</translation>
 <translation id="7603852183842204213">Заблок. вспл. окон: <ph name="NUMBER_OF_BLOCKED_POPUPS" /></translation>
 <translation id="7605594153474022051">Ошибка синхронизации</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>

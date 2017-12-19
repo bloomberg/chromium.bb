@@ -78,6 +78,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2381405137052800939">Basics</translation>
 <translation id="2386793615875593361">1 selected</translation>
 <translation id="2435457462613246316">Show password</translation>
+<translation id="2523363575747517183">This website is repeatedly trying to open another application.</translation>
 <translation id="2529021024822217800">Open All</translation>
 <translation id="2572712655377361602">A device policy blocked access to your photos</translation>
 <translation id="2584132361465095047">Add Account…</translation>
@@ -238,6 +239,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5771816112378578655">Setup in progress...</translation>
 <translation id="5816228676161003208">This lets you search faster using your voice.</translation>
 <translation id="5846482154967366008">Search Engine</translation>
+<translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5857090052475505287">New Folder</translation>
 <translation id="5857770089550859117">Passphrase required to start sync.</translation>
 <translation id="5860033963881614850">Off</translation>
@@ -336,7 +338,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7514365320538308">Download</translation>
 <translation id="7537586195939242955">Sorry, your Pass cannot be installed to Passbook at this time.</translation>
 <translation id="7561196759112975576">Always</translation>
-<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7603852183842204213">Pop-ups blocked (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Sync isn't working</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>

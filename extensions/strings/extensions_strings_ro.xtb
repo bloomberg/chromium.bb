@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Nu se poate despacheta extensia. Pentru a despacheta în siguranță o extensie, trebuie să existe o cale către directorul de profil, care începe cu o literă de unitate și nu conține o joncțiune, un punct de montare sau un link simbolic. Nu există o astfel de cale pentru profilul tău.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (numărul de serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> de la furnizorul <ph name="VENDOR_ID" /> (numărul de serie <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Pagina lansatorului „<ph name="PAGE" />” nu poate fi încărcată.</translation>
 <translation id="388442998277590542">Nu se poate încărca pagina cu opțiuni „<ph name="OPTIONS_PAGE" />”.</translation>
 <translation id="4115165561519362854">Administratorul acestui computer solicită ca versiunea minimă pentru <ph name="EXTENSION_NAME" /> să fie <ph name="EXTENSION_VERSION" />. Extensia poate fi activată doar după actualizarea la acea versiune (sau una superioară).</translation>
 <translation id="4233778200880751280">Pagina informativă „<ph name="ABOUT_PAGE" />” nu s-a putut încărca.</translation>

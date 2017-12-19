@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">Não é possível abrir a extensão. Para abrir uma extensão com segurança, deve haver um caminho para o diretório de seu perfil que comece com uma letra de drive e não contenha uma junção, um mount point ou um symlink. Não existe um caminho assim para seu perfil.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> do fornecedor <ph name="VENDOR_ID" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Não foi possível carregar a página inicial '<ph name="PAGE" />'.</translation>
 <translation id="388442998277590542">Não foi possível carregar a página de opções "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">O administrador desta máquina requer que <ph name="EXTENSION_NAME" /> tenha, no mínimo, a versão <ph name="EXTENSION_VERSION" /> . Ele não pode ser ativado até que tenha sido atualizado para essa versão (ou superior).</translation>
 <translation id="4233778200880751280">Não foi possível carregar a página "Sobre" '<ph name="ABOUT_PAGE" />'.</translation>

@@ -20,7 +20,6 @@
 <translation id="3369521687965833290">एक्सटेंशन को अनपैक नहीं कर सका.  किसी एक्सटेंशन को सुरक्षित रूप से अनपैक करने के लिए आपकी प्रोफ़ाइल निर्देशिका में एक ऐसा पथ होना आवश्यक है, जिसमें कोई सिमलिंक न हो.  ऐसा कोई भी पथ आपकी प्रोफ़ाइल के लिए मौजूद नहीं है.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (क्रमांक <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> (क्रमांक <ph name="SERIAL_NUMBER" />) विक्रेता की ओर से <ph name="PRODUCT_NAME" /></translation>
-<translation id="3624204664103857160">लॉन्‍चर पृष्‍ठ '<ph name="PAGE" />' लोड नहीं हो सका.</translation>
 <translation id="388442998277590542">विकल्‍प पेज '<ph name="OPTIONS_PAGE" />' लोड नहीं कर सका.</translation>
 <translation id="4115165561519362854">इस मशीन का नियंत्रक चाहता है कि <ph name="EXTENSION_NAME" /> के पास <ph name="EXTENSION_VERSION" /> का एक न्‍यूनतम वर्शन हो. इसे तब तक सक्षम नहीं किया जा सकता जब तक कि उसे उस वर्शन (या बाद वाले वर्शन) में अपडेट ना कर दिया गया हो.</translation>
 <translation id="4233778200880751280">संक्षिप्त विवरण पेज '<ph name="ABOUT_PAGE" />' लोड नहीं हो सका.</translation>

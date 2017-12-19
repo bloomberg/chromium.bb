@@ -258,6 +258,7 @@
 <translation id="1969212217917526199">Nadjačava pravila na međuverzijama za otklanjanje pogrešaka hosta daljinskog pristupa.
 
           Vrijednost se analizira kao JSON rječnik mapiranja naziva pravila na vrijednosti pravila.</translation>
+<translation id="1969808853498848952">Uvijek pokreće dodatke koji zahtijevaju autorizaciju (obustavljeno)</translation>
 <translation id="1988371335297483117">Podaci automatskog ažuriranja na sustavu <ph name="PRODUCT_OS_NAME" /> mogu se preuzeti putem HTTP-a, umjesto putem HTTPS-a. Time se omogućuje transparentno HTTP predmemoriranje HTTP preuzimanja.
 
       Ako je ovo pravilo postavljeno na istinito, sustav <ph name="PRODUCT_OS_NAME" />pokušat će preuzeti podatke automatskog ažuriranja putem HTTP-a. Ako je pravilo postavljeno na neistinito ili nije postavljeno, za preuzimanje podataka automatskog ažuriranja upotrebljavat će se HTTPS.</translation>
@@ -757,6 +758,7 @@
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
+<translation id="3737544779868348650">Naziv hosta mreže uređaja</translation>
 <translation id="3750220015372671395">Blokiraj generiranje ključeva na ovim web-lokacijama</translation>
 <translation id="3756011779061588474">Blokiraj način rada razvojnog programera</translation>
 <translation id="3758089716224084329">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
@@ -1175,6 +1177,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5130288486815037971">Omogućivanje RC4 paketa šifri u TLS-u</translation>
 <translation id="5141670636904227950">Postavljanje zadane vrste povećala na "omogućeno" na zaslonu za prijavu</translation>
 <translation id="5142301680741828703">Uvijek prikaži sljedeće URL obrasce u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="5147665094011258322">Odredite naziv hosta uređaja koji se upotrebljava u DHCP zahtjevima.
+
+      Ako je to pravilo postavljeno na niz koji nije prazan, taj će se niz upotrebljavati kao naziv hosta uređaja tijekom DHCP zahtjeva.
+
+      Niz može sadržavati varijable ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} koje bi bile zamijenjene vrijednostima na uređaju prije njegove upotrebe za naziv hosta. Dobivena zamjena treba biti valjani naziv hosta (za RFC 1035, odjeljak 3.1).
+
+      Ako to pravilo nije postavljeno ili vrijednost nakon zamjene nije valjani naziv hosta, u DHCP zahtjevu neće biti postavljen naziv hosta. </translation>
 <translation id="5148753489738115745">Omogućuje vam da odredite dodatne parametre koji se upotrebljavaju kada <ph name="PRODUCT_FRAME_NAME" /> pokreće uslugu <ph name="PRODUCT_NAME" />.
 
           Ako se to pravilo ne postavi, upotrebljavat će se zadani naredbeni redak.</translation>
@@ -1350,6 +1359,9 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se ta postavka ne postavi, upotrebljavat će se zadani direktorij profila.</translation>
 <translation id="5826047473100157858">Određuje može li korisnik otvarati stranice u anonimnom načinu u proizvodu <ph name="PRODUCT_NAME" />. Ako je odabrano "Enabled" (omogućeno) ili pravilo nije postavljeno, stranice se mogu otvarati u anonimnom načinu. Ako je odabrano "Disabled" (onemogućeno), stranice se ne mogu otvarati u anonimnom načinu. Ako je odabrano "Forced" (prisilno), stranice se mogu otvarati SAMO u anonimnom načinu.</translation>
+<translation id="5835124959204887277">Određuje URL-ove i domene za koje se neće prikazivati upit kada se od sigurnosnih ključeva zatraže certifikati za ovjeru. Osim toga, sigurnosnom ključu bit će poslan signal koji pokazuje da se pojedina ovjera može upotrebljavati. Bez toga, korisnicima će se u Chromeu 65+ prikazati upit kada web-lokacije zatraže ovjeru sigurnosnih ključeva.
+
+      URL-ovi (primjerice https://example.com/some/path) bit će odgovarajući samo kao ID-ovi aplikacija za U2F. Domene (primjerice example.com) bit će odgovarajuće samo kao RP ID-ovi za mrežnu provjeru autentičnosti. Znači, kako bi se obuhvatili API-ji i za U2F i za mrežnu provjeru autentičnosti za određenu web-lokaciju, moraju biti navedeni i URL i domena ID-a aplikacije.</translation>
 <translation id="5836064773277134605">Ograniči raspon UDP priključaka koji upotrebljava host za daljinski pristup</translation>
 <translation id="5862253018042179045">Postavi zadano stanje značajke pristupačnosti izgovaranja povratnih informacija na zaslonu za prijavu.
 
@@ -1528,6 +1540,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je onemogućeno, ti se podaci ne uvoze.
 
       Ako se ne postavi, korisnik može dobiti upit želi li uvesti podatke ili uvoz može biti automatski.</translation>
+<translation id="6224304369267200483">URL-ovima/domenama automatski je dopuštena izravna ovjera sigurnosnih ključeva</translation>
 <translation id="6233173491898450179">Postavi imenik za preuzimanje</translation>
 <translation id="6244210204546589761">URL-ovi koji se otvaraju prilikom pokretanja</translation>
 <translation id="6258193603492867656">Određuje treba li generirani Kerberos SPN uključivati nestandardni priključak. Ako omogućite ovu postavku, a bude unesen nestandardni priključak (tj. priključak koji nije 80 ili 443), on će biti uključen u generirani Kerberos SPN. Ako onemogućite ovu postavku ili ju ne postavite, generirani Kerberos SPN neće uključivati priključak ni u kojem slučaju.</translation>
@@ -1754,6 +1767,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7202925763179776247">Dopusti ograničenja za preuzimanja</translation>
 <translation id="7207095846245296855">Nametni Google sigurno pretraživanje</translation>
 <translation id="7216442368414164495">Omogućivanje korisnicima da se uključe u prošireno izvješćivanje Sigurnog pregledavanja</translation>
+<translation id="7221822638060296742">Omogućuje vam da odredite je li web-lokacijama dopušteno automatski pokretati dodatak <ph name="FLASH_PLUGIN_NAME" />. Automatsko pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" /> može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije.
+
+          Opcija "klikni za reprodukciju" omogućuje pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />, no korisnik mora kliknuti rezervirano mjesto da bi pokrenuo njegovo izvršavanje.
+
+          Automatska reprodukcija dopuštena je samo za domene koje su izričito navedene u pravilu <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Ako želite omogućiti automatsku reprodukciju za sve web-lokacije, razmislite o dodavanju http://* i https://* na taj popis.
+
+          Ako se to pravilo ne postavi, korisnik će tu postavku moći promijeniti ručno.</translation>
 <translation id="7234280155140786597">Nazivi zabranjenih hostova za lokalno slanje poruka (ili "*" za sve)</translation>
 <translation id="7236775576470542603">Postavi zadanu vrstu povećala koje je omogućeno na zaslonu za prijavu.
 
@@ -1948,13 +1968,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="787125417158068494">Ako se postavi na SyncDisabled ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> certifikati nisu dostupni za ARC aplikacije.
 
       Ako se postavi na CopyCaCerts, svi CA certifikati instalirani u ONC uz <ph name="WEB_TRUSTED_BIT" /> dostupni su za ARC aplikacije.</translation>
-<translation id="7872535148622213208">
-        Pravilo određuje popis izvora (URL-ova) koji se tretiraju kao siguran
-        kontekst. Namjera je dopustiti organizacijama postavljanje poslužitelja
-        u pokusne svrhe za interni razvoj na webu.
-        Jednako je oznaci --unsafely-treat-insecure-origin-as-secure.
-        Više informacija o sigurnim kontekstima potražite na stranici https://www.w3.org/TR/secure-contexts/
-        </translation>
 <translation id="7882585827992171421">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
