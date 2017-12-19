@@ -524,6 +524,8 @@ post_process_cmdline() {
       soft_enable short_filter
       soft_enable simplify_tx_mode
       soft_enable tx64x64
+      soft_enable rect_tx_ext
+      soft_enable rect_tx_ext_intra
     fi
 
     # Enable low-bitdepth pixel pipeline by default
