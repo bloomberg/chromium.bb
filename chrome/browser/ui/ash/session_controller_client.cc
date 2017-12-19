@@ -40,7 +40,6 @@
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/equals_traits.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
