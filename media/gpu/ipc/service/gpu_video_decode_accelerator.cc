@@ -74,15 +74,16 @@ static bool BindImage(const base::WeakPtr<gpu::CommandBufferStub>& stub,
   return true;
 }
 
-static base::WeakPtr<gpu::gles2::GLES2Decoder> GetGLES2Decoder(
+static gpu::gles2::ContextGroup* GetContextGroup(
     const base::WeakPtr<gpu::CommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; no GLES2Decoder.";
-    return base::WeakPtr<gpu::gles2::GLES2Decoder>();
+    return nullptr;
   }
 
-  return stub->decoder()->AsWeakPtr();
+  return stub->context_group().get();
 }
+
 }  // anonymous namespace
 
 // DebugAutoLock works like AutoLock but only acquires the lock when
@@ -161,11 +162,12 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
       weak_factory_for_io_(this) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
-  get_gl_context_cb_ = base::Bind(&GetGLContext, stub_->AsWeakPtr());
+  get_gl_context_cb_ = base::BindRepeating(&GetGLContext, stub_->AsWeakPtr());
   make_context_current_cb_ =
-      base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
-  bind_image_cb_ = base::Bind(&BindImage, stub_->AsWeakPtr());
-  get_gles2_decoder_cb_ = base::Bind(&GetGLES2Decoder, stub_->AsWeakPtr());
+      base::BindRepeating(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
+  bind_image_cb_ = base::BindRepeating(&BindImage, stub_->AsWeakPtr());
+  get_context_group_cb_ =
+      base::BindRepeating(&GetContextGroup, stub_->AsWeakPtr());
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
@@ -350,7 +352,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory =
       GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
           get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
-          get_gles2_decoder_cb_, overlay_factory_cb_);
+          get_context_group_cb_, overlay_factory_cb_);
 
   if (!vda_factory) {
     LOG(ERROR) << "Failed creating the VDA factory";

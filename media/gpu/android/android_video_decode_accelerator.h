@@ -54,7 +54,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
       AVDACodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
       const MakeGLContextCurrentCallback& make_context_current_cb,
-      const GetGLES2DecoderCallback& get_gles2_decoder_cb,
+      const GetContextGroupCallback& get_context_group_cb,
       const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
       DeviceInfo* device_info);
 
@@ -76,7 +76,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // AVDAStateProvider implementation:
   const gfx::Size& GetSize() const override;
-  base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const override;
+  gpu::gles2::ContextGroup* GetContextGroup() const override;
   // Notifies the client about the error and sets |state_| to |ERROR|.  If we're
   // in the middle of Initialize, we guarantee that Initialize will return
   // failure.  If deferred init is pending, then we'll fail deferred init.
@@ -272,8 +272,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
 
-  // Callback to get the GLES2Decoder instance.
-  GetGLES2DecoderCallback get_gles2_decoder_cb_;
+  // Callback to get the ContextGroup*.
+  GetContextGroupCallback get_context_group_cb_;
 
   // The current state of this class. For now, this is used only for setting
   // error state.
