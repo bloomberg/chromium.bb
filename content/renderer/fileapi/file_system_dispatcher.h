@@ -17,7 +17,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/quota/quota_types.h"
+#include "storage/common/quota/quota_limit_type.h"
 
 namespace base {
 class FilePath;

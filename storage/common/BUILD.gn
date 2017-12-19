@@ -29,6 +29,7 @@ component("common") {
     "fileapi/file_system_types.h",
     "fileapi/file_system_util.cc",
     "fileapi/file_system_util.h",
+    "quota/quota_limit_type.h",
     "quota/quota_types.h",
     "storage_common_export.h",
     "storage_histograms.cc",
