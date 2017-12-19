@@ -2399,6 +2399,25 @@
             ]
         }
     ],
+    "OverflowIconsForMediaControls": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OverflowIconsForMediaControls"
+                    ]
+                }
+            ]
+        }
+    ],
     "PWAFullCodeCache": [
         {
             "platforms": [
