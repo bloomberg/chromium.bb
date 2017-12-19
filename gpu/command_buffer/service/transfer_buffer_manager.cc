@@ -18,7 +18,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 
 using ::base::SharedMemory;

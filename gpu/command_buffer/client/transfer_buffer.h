@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/common/buffer.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/gpu_export.h"
 
 namespace base {

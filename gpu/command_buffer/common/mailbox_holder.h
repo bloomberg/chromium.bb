@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "gpu/command_buffer/common/gl2_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/gpu_export.h"
@@ -30,7 +29,7 @@ struct GPU_EXPORT MailboxHolder {
 
   gpu::Mailbox mailbox;
   gpu::SyncToken sync_token;
-  GLenum texture_target;
+  uint32_t texture_target;
 };
 
 }  // namespace gpu

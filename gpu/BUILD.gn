@@ -20,6 +20,8 @@ component("gpu") {
     "//gpu/command_buffer/client:client_sources",
     "//gpu/command_buffer/client:gles2_cmd_helper_sources",
     "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/common:gles2_sources",
+    "//gpu/command_buffer/service:gles2_sources",
     "//gpu/command_buffer/service:service_sources",
     "//gpu/config:config_sources",
     "//gpu/ipc:command_buffer_sources",
@@ -133,6 +135,7 @@ static_library("test_support") {
     "//gpu/command_buffer/client:gles2_interface",
   ]
   deps = [
+    "//gpu/command_buffer/common:gles2_utils",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gl:gl_unittest_utils",
@@ -466,6 +469,7 @@ test("command_buffer_perftests") {
     "//base",
     "//base/test:test_support",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/common:gles2_utils",
     "//testing/gtest",
     "//testing/perf",
     "//ui/gfx/geometry",

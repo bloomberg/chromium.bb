@@ -19,6 +19,18 @@ group("common") {
   }
 }
 
+group("gles2") {
+  if (is_component_build) {
+    public_deps = [
+      "//gpu",
+    ]
+  } else {
+    public_deps = [
+      ":gles2_sources",
+    ]
+  }
+}
+
 source_set("common_sources") {
   visibility = [ "//gpu/*" ]
 
@@ -36,16 +48,8 @@ source_set("common_sources") {
     "command_buffer_id.h",
     "constants.h",
     "context_result.h",
-    "debug_marker_manager.cc",
-    "debug_marker_manager.h",
     "discardable_handle.cc",
     "discardable_handle.h",
-    "gl2_types.h",
-    "gles2_cmd_format.cc",
-    "gles2_cmd_format.h",
-    "gles2_cmd_format_autogen.h",
-    "gles2_cmd_ids.h",
-    "gles2_cmd_ids_autogen.h",
     "gpu_memory_buffer_support.cc",
     "gpu_memory_buffer_support.h",
     "id_allocator.cc",
@@ -75,8 +79,36 @@ source_set("common_sources") {
   ]
 
   deps = [
+    "//base",
+  ]
+
+  # TODO(piman): needed for gpu_memory_buffer_support.cc. Split common vs gles2
+  # specifics.
+  configs += [ "//third_party/khronos:khronos_headers" ]
+}
+
+source_set("gles2_sources") {
+  visibility = [ "//gpu/*" ]
+
+  sources = [
+    "debug_marker_manager.cc",
+    "debug_marker_manager.h",
+    "gl2_types.h",
+    "gles2_cmd_format.cc",
+    "gles2_cmd_format.h",
+    "gles2_cmd_format_autogen.h",
+    "gles2_cmd_ids.h",
+    "gles2_cmd_ids_autogen.h",
+  ]
+
+  configs += [ "//gpu:gpu_implementation" ]
+
+  deps = [
     ":gles2_utils",
     "//base",
+  ]
+  public_deps = [
+    ":common_sources",
   ]
 }
 
