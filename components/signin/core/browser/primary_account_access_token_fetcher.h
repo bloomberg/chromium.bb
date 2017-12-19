@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCESS_TOKEN_FETCHER_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_ACCESS_TOKEN_FETCHER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_ACCESS_TOKEN_FETCHER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_ACCESS_TOKEN_FETCHER_H_
 
 #include <memory>
 #include <string>
@@ -19,9 +19,9 @@
 // refresh token isn't loaded yet (during startup), or when there is some
 // transient error.
 // May only be used on the UI thread.
-class AccessTokenFetcher : public SigninManagerBase::Observer,
-                           public OAuth2TokenService::Observer,
-                           public OAuth2TokenService::Consumer {
+class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
+                                         public OAuth2TokenService::Observer,
+                                         public OAuth2TokenService::Consumer {
  public:
   // Callback for when a request completes (successful or not). On successful
   // requests, |error| is NONE and |access_token| contains the obtained OAuth2
@@ -33,15 +33,16 @@ class AccessTokenFetcher : public SigninManagerBase::Observer,
 
   // Instantiates a fetcher and immediately starts the process of obtaining an
   // OAuth2 access token for the given |scopes|. The |callback| is called once
-  // the request completes (successful or not). If the AccessTokenFetcher is
-  // destroyed before the process completes, the callback is not called.
-  AccessTokenFetcher(const std::string& oauth_consumer_name,
-                     SigninManagerBase* signin_manager,
-                     OAuth2TokenService* token_service,
-                     const OAuth2TokenService::ScopeSet& scopes,
-                     TokenCallback callback);
+  // the request completes (successful or not). If the
+  // PrimaryAccountAccessTokenFetcher is destroyed before the process completes,
+  // the callback is not called.
+  PrimaryAccountAccessTokenFetcher(const std::string& oauth_consumer_name,
+                                   SigninManagerBase* signin_manager,
+                                   OAuth2TokenService* token_service,
+                                   const OAuth2TokenService::ScopeSet& scopes,
+                                   TokenCallback callback);
 
-  ~AccessTokenFetcher() override;
+  ~PrimaryAccountAccessTokenFetcher() override;
 
  private:
   void Start();
@@ -78,7 +79,7 @@ class AccessTokenFetcher : public SigninManagerBase::Observer,
   // When a token request gets canceled, we want to retry once.
   bool access_token_retried_;
 
-  DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcher);
+  DISALLOW_COPY_AND_ASSIGN(PrimaryAccountAccessTokenFetcher);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_ACCESS_TOKEN_FETCHER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_PRIMARY_ACCOUNT_ACCESS_TOKEN_FETCHER_H_

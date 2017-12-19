@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/access_token_fetcher.h"
+#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 
 #include <memory>
 #include <utility>
@@ -36,12 +36,12 @@ using SigninManagerForTest = FakeSigninManagerBase;
 using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS
 
-class AccessTokenFetcherTest : public testing::Test {
+class PrimaryAccountAccessTokenFetcherTest : public testing::Test {
  public:
   using TestTokenCallback =
-      StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
+      StrictMock<MockCallback<PrimaryAccountAccessTokenFetcher::TokenCallback>>;
 
-  AccessTokenFetcherTest() : signin_client_(&pref_service_) {
+  PrimaryAccountAccessTokenFetcherTest() : signin_client_(&pref_service_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
 #if defined(OS_CHROMEOS)
@@ -52,7 +52,8 @@ class AccessTokenFetcherTest : public testing::Test {
     SigninManager::RegisterPrefs(pref_service_.registry());
 #endif  // OS_CHROMEOS
 
-    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
+    signin::SetGaiaOriginIsolatedCallback(
+        base::BindRepeating([] { return true; }));
 
     account_tracker_ = base::MakeUnique<AccountTrackerService>();
     account_tracker_->Initialize(&signin_client_);
@@ -67,12 +68,12 @@ class AccessTokenFetcherTest : public testing::Test {
 #endif  // OS_CHROMEOS
   }
 
-  ~AccessTokenFetcherTest() override {}
+  ~PrimaryAccountAccessTokenFetcherTest() override {}
 
-  std::unique_ptr<AccessTokenFetcher> CreateFetcher(
-      AccessTokenFetcher::TokenCallback callback) {
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> CreateFetcher(
+      PrimaryAccountAccessTokenFetcher::TokenCallback callback) {
     std::set<std::string> scopes{"scope"};
-    return base::MakeUnique<AccessTokenFetcher>(
+    return base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
         "test_consumer", signin_manager_.get(), &token_service_, scopes,
         std::move(callback));
   }
@@ -97,7 +98,7 @@ class AccessTokenFetcherTest : public testing::Test {
   std::unique_ptr<SigninManagerForTest> signin_manager_;
 };
 
-TEST_F(AccessTokenFetcherTest, ShouldReturnAccessToken) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldReturnAccessToken) {
   TestTokenCallback callback;
 
   SignIn("account");
@@ -116,7 +117,7 @@ TEST_F(AccessTokenFetcherTest, ShouldReturnAccessToken) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   TestTokenCallback callback;
 
   SignIn("account");
@@ -135,7 +136,7 @@ TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldNotReturnWhenSignedOut) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReturnWhenSignedOut) {
   TestTokenCallback callback;
 
   // Signed out -> the fetcher should wait for a sign-in which never happens
@@ -147,7 +148,7 @@ TEST_F(AccessTokenFetcherTest, ShouldNotReturnWhenSignedOut) {
 // that concept).
 #if !defined(OS_CHROMEOS)
 
-TEST_F(AccessTokenFetcherTest, ShouldWaitForSignIn) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
   TestTokenCallback callback;
 
   // Not signed in, so this should wait for a sign-in to complete.
@@ -165,7 +166,7 @@ TEST_F(AccessTokenFetcherTest, ShouldWaitForSignIn) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldWaitForSignInInProgress) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignInInProgress) {
   TestTokenCallback callback;
 
   signin_manager()->set_auth_in_progress("account");
@@ -186,7 +187,7 @@ TEST_F(AccessTokenFetcherTest, ShouldWaitForSignInInProgress) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldWaitForFailedSignIn) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForFailedSignIn) {
   TestTokenCallback callback;
 
   signin_manager()->set_auth_in_progress("account");
@@ -208,7 +209,7 @@ TEST_F(AccessTokenFetcherTest, ShouldWaitForFailedSignIn) {
 
 #endif  // !OS_CHROMEOS
 
-TEST_F(AccessTokenFetcherTest, ShouldWaitForRefreshToken) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
   TestTokenCallback callback;
 
   SignIn("account");
@@ -229,7 +230,8 @@ TEST_F(AccessTokenFetcherTest, ShouldWaitForRefreshToken) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldIgnoreRefreshTokensForOtherAccounts) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       ShouldIgnoreRefreshTokensForOtherAccounts) {
   TestTokenCallback callback;
 
   // Signed-in to "account", but there's only a refresh token for a different
@@ -244,7 +246,8 @@ TEST_F(AccessTokenFetcherTest, ShouldIgnoreRefreshTokensForOtherAccounts) {
   token_service()->GetDelegate()->UpdateCredentials("account 3", "refresh");
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldReturnWhenNoRefreshTokenAvailable) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       ShouldReturnWhenNoRefreshTokenAvailable) {
   TestTokenCallback callback;
 
   SignIn("account");
@@ -272,7 +275,8 @@ TEST_F(AccessTokenFetcherTest, ShouldReturnWhenNoRefreshTokenAvailable) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldRetryCanceledAccessTokenRequest) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       ShouldRetryCanceledAccessTokenRequest) {
   TestTokenCallback callback;
 
   SignIn("account");
@@ -296,7 +300,8 @@ TEST_F(AccessTokenFetcherTest, ShouldRetryCanceledAccessTokenRequest) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldRetryCanceledAccessTokenRequestOnlyOnce) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       ShouldRetryCanceledAccessTokenRequestOnlyOnce) {
   TestTokenCallback callback;
 
   SignIn("account");
@@ -324,7 +329,7 @@ TEST_F(AccessTokenFetcherTest, ShouldRetryCanceledAccessTokenRequestOnlyOnce) {
 
 #if !defined(OS_CHROMEOS)
 
-TEST_F(AccessTokenFetcherTest,
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryCanceledAccessTokenRequestIfSignedOut) {
   TestTokenCallback callback;
 
@@ -350,7 +355,7 @@ TEST_F(AccessTokenFetcherTest,
 
 #endif  // !OS_CHROMEOS
 
-TEST_F(AccessTokenFetcherTest,
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryCanceledAccessTokenRequestIfRefreshTokenRevoked) {
   TestTokenCallback callback;
 
@@ -373,7 +378,8 @@ TEST_F(AccessTokenFetcherTest,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
-TEST_F(AccessTokenFetcherTest, ShouldNotRetryFailedAccessTokenRequest) {
+TEST_F(PrimaryAccountAccessTokenFetcherTest,
+       ShouldNotRetryFailedAccessTokenRequest) {
   TestTokenCallback callback;
 
   SignIn("account");

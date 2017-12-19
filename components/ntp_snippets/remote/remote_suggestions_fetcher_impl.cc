@@ -16,7 +16,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/user_classifier.h"
-#include "components/signin/core/browser/access_token_fetcher.h"
+#include "components/signin/core/browser/primary_account_access_token_fetcher.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -235,7 +235,7 @@ void RemoteSuggestionsFetcherImpl::StartTokenRequest() {
   }
 
   OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
-  token_fetcher_ = base::MakeUnique<AccessTokenFetcher>(
+  token_fetcher_ = base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
       "ntp_snippets", signin_manager_, token_service_, scopes,
       base::BindOnce(&RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished,
                      base::Unretained(this)));
@@ -247,7 +247,7 @@ void RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished(
   // Delete the fetcher only after we leave this method (which is called from
   // the fetcher itself).
   DCHECK(token_fetcher_);
-  std::unique_ptr<AccessTokenFetcher> token_fetcher_deleter(
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_deleter(
       std::move(token_fetcher_));
 
   if (error.state() != GoogleServiceAuthError::NONE) {
