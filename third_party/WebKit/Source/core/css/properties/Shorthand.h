@@ -13,7 +13,7 @@ class CSSPropertyValue;
 
 class Shorthand : public CSSProperty {
  public:
-  constexpr Shorthand(CSSPropertyID id) : CSSProperty(id) {}
+  constexpr Shorthand() : CSSProperty() {}
 
   // Parses and consumes entire shorthand value from the token range and adds
   // all constituent parsed longhand properties to the 'properties' set.
