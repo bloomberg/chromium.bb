@@ -749,6 +749,35 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Basic) {
       IsSupportedByKeySystem(kWidevine, kAudioMP4MimeType, audio_mp4_codecs()));
 }
 
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest,
+                       InvalidKeySystems) {
+  // Case sensitive.
+  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
+      "com.widevine.WideVine", kVideoWebMMimeType, video_webm_codecs()));
+
+  // TLDs are not allowed.
+  EXPECT_UNSUPPORTED(
+      IsSupportedByKeySystem("com.", kVideoWebMMimeType, video_webm_codecs()));
+  EXPECT_UNSUPPORTED(
+      IsSupportedByKeySystem("com", kVideoWebMMimeType, video_webm_codecs()));
+  EXPECT_UNSUPPORTED(IsSupportedByKeySystem("com.widevine.", kVideoWebMMimeType,
+                                            video_webm_codecs()));
+  EXPECT_UNSUPPORTED(IsSupportedByKeySystem("com.widevine", kVideoWebMMimeType,
+                                            video_webm_codecs()));
+
+  // Incomplete.
+  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
+      "com.widevine.alp", kVideoWebMMimeType, video_webm_codecs()));
+
+  // Extra character.
+  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
+      "com.widevine.alphab", kVideoWebMMimeType, video_webm_codecs()));
+
+  // There are no child key systems for Widevine.
+  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
+      "com.widevine.alpha.child", kVideoWebMMimeType, video_webm_codecs()));
+}
+
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, NoCodecs) {
   EXPECT_UNSUPPORTED(
       IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType, no_codecs()));
