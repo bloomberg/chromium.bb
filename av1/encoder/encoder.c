@@ -5510,10 +5510,8 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
       q_high = top_index;
 
       loop_at_this_size = 0;
-    }
 
-    // Decide frame size bounds first time through.
-    if (loop_count == 0) {
+      // Decide frame size bounds first time through.
       av1_rc_compute_frame_size_bounds(cpi, rc->this_frame_target,
                                        &frame_under_shoot_limit,
                                        &frame_over_shoot_limit);
