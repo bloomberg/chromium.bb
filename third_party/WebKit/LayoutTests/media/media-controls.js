@@ -319,7 +319,7 @@ function doubleTapAtCoordinates(x, y, timeout) {
   ]);
 }
 
-function singleTapAtCoordinates(xPos, yPos, callback) {
+function singleTapAtCoordinates(xPos, yPos) {
   chrome.gpuBenchmarking.pointerActionSequence([
     {
       source: 'mouse',
@@ -328,7 +328,7 @@ function singleTapAtCoordinates(xPos, yPos, callback) {
         { name: 'pointerUp' }
       ]
     }
-  ], callback);
+  ]);
 }
 
 function enableDoubleTapToJumpForTest(t) {
