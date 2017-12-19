@@ -14,6 +14,7 @@ instead of "initial value".
 |       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
+|       "initial value"
 | <input>
 |   id="month"
 |   type="month"
@@ -75,6 +76,7 @@ instead of "initial value".
 |       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
+|       "initial value"
 | <select>
 |   id="select"
 |   <option>

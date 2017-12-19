@@ -1469,9 +1469,8 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestionSelectionRange) {
     EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
         selected_element, kAliceUsername, kAlicePassword));
     CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
-    // Since the suggestion is previewed as a placeholder, there should be no
-    // selected text.
-    CheckUsernameSelection(0, 0);
+    // The selection should be set after the third character.
+    CheckUsernameSelection(3, 3);
   }
 }
 

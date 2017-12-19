@@ -91,6 +91,7 @@ Input after setting suggestedValue:
 |       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
+|       "initial value"
 | <br>
 | "
 "
@@ -122,6 +123,7 @@ Input after setting suggestedValue:
 |       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
+|       "initial value"
 | <br>
 | "
 "

@@ -1,6 +1,6 @@
 <input id="input" >
 <script>
-input.focus();
+// TODO(crbug.com/794966): SetFocus once the caret issue is resolved.
 input.value = "initial value";
 internals.setSuggestedValue(input, 'hello');
 internals.setAutofilled(input, true);
