@@ -297,7 +297,13 @@ TEST_F(ContextMenuJsTest, LinkOfTextWithoutCalloutProperty) {
 // Tests that a callout information about a link is displayed when
 // -webkit-touch-callout property is set to default. Please see:
 // https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-touch-callout
-TEST_F(ContextMenuJsTest, LinkOfTextWithCalloutDefault) {
+// TODO(crbug.com/796343): This test is flaky on iOS 11 device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_LinkOfTextWithCalloutDefault LinkOfTextWithCalloutDefault
+#else
+#define MAYBE_LinkOfTextWithCalloutDefault FLAKY_LinkOfTextWithCalloutDefault
+#endif
+TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextWithCalloutDefault) {
   const char kLinkHtml[] =
       "<a href='%s' style='-webkit-touch-callout:default;'>link</a>";
 
