@@ -36,7 +36,7 @@ OfflinePageMetadataStoreTestUtil::OfflinePageMetadataStoreTestUtil(
 OfflinePageMetadataStoreTestUtil::~OfflinePageMetadataStoreTestUtil() {}
 
 void OfflinePageMetadataStoreTestUtil::BuildStore() {
-  if (!temp_directory_.CreateUniqueTempDir()) {
+  if (!temp_directory_.IsValid() && !temp_directory_.CreateUniqueTempDir()) {
     DVLOG(1) << "temp_directory_ not created";
     return;
   }

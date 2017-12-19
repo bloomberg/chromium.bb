@@ -80,6 +80,7 @@ class OfflinePageModelTaskifiedTest
   void PumpLoop() { task_runner_->RunUntilIdle(); }
   void BuildStore();
   void BuildModel();
+  void ResetModel();
   void ResetResults();
 
   // OfflinePageModel::Observer implementation.
@@ -201,7 +202,7 @@ void OfflinePageModelTaskifiedTest::TearDown() {
 }
 
 void OfflinePageModelTaskifiedTest::BuildStore() {
-  store_test_util()->BuildStoreInMemory();
+  store_test_util()->BuildStore();
 }
 
 void OfflinePageModelTaskifiedTest::BuildModel() {
@@ -216,6 +217,11 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
   histogram_tester_ = base::MakeUnique<base::HistogramTester>();
   ResetResults();
   EXPECT_EQ(0UL, model_->pending_archivers_.size());
+}
+
+void OfflinePageModelTaskifiedTest::ResetModel() {
+  model_.reset();
+  PumpLoop();
 }
 
 void OfflinePageModelTaskifiedTest::ResetResults() {
@@ -1190,6 +1196,7 @@ TEST_F(OfflinePageModelTaskifiedTest, GetAllPages) {
 #endif
 TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
   // Rebuild the store so that we can insert pages before the model constructs.
+  ResetModel();
   BuildStore();
 
   // Insert temporary pages
@@ -1226,7 +1233,8 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
 
   // Rebuild the model in order to trigger consistency check.
   BuildModel();
-  task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  task_runner()->FastForwardBy(
+      OfflinePageModelTaskified::kInitializingTaskDelay);
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(0UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
@@ -1236,6 +1244,7 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
 TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   // Rebuilding store and model in order to set clock before executing the clear
   // storage during model initialization so that we can check the time.
+  ResetModel();
   BuildStore();
   BuildModel();
   SetTestingClock(task_runner()->GetMockClock());
@@ -1254,7 +1263,8 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   PumpLoop();
   EXPECT_EQ(task_runner()->Now() - short_delta, last_clear_page_time());
 
-  task_runner()->FastForwardBy(base::TimeDelta::FromMinutes(30));
+  task_runner()->FastForwardBy(
+      OfflinePageModelTaskified::kClearStorageInterval);
   archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
   offline_id = SavePageWithExpectedResult(
       kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,

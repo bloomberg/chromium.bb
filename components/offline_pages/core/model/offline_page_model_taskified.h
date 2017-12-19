@@ -49,6 +49,22 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                                   public KeyedService,
                                   public TaskQueue::Delegate {
  public:
+  // Initial delay after which a list of items for upgrade will be generated.
+  // TODO(fgorski): We need to measure the cost of opening and closing the DB,
+  // before we split |kInitializingTaskDelay| and
+  // |kInitialUpgradeSelectionDelay| further apart, than 20 seconds.
+  static constexpr base::TimeDelta kInitialUpgradeSelectionDelay =
+      base::TimeDelta::FromSeconds(45);
+
+  // Initial delay of other tasks triggered at the startup.
+  static constexpr base::TimeDelta kInitializingTaskDelay =
+      base::TimeDelta::FromSeconds(30);
+
+  // The time that the storage cleanup will be triggered again since the last
+  // one.
+  static constexpr base::TimeDelta kClearStorageInterval =
+      base::TimeDelta::FromMinutes(30);
+
   OfflinePageModelTaskified(
       std::unique_ptr<OfflinePageMetadataStoreSQL> store,
       std::unique_ptr<ArchiveManager> archive_manager,
@@ -162,6 +178,12 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void PostCheckMetadataConsistencyTask(bool is_initializing);
   void CheckTemporaryPagesConsistency();
   void CheckPersistentPagesConsistency();
+
+  // Method for upgrade to public storage.
+  void PostSelectItemsMarkedForUpgrade();
+  void SelectItemsMarkedForUpgrade();
+  void OnSelectItemsMarkedForUpgradeDone(
+      const MultipleOfflinePageItemResult& pages_for_upgrade);
 
   // Other utility methods.
   void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);
