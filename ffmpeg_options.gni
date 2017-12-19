@@ -3,28 +3,17 @@
 # found in the LICENSE file.
 
 import("//build/config/arm.gni")
-import("//build/config/chrome_build.gni")
-import("//build/config/chromecast_build.gni")
+import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
-if (is_chrome_branded) {
-  _default_ffmpeg_branding = "Chrome"
+if (proprietary_codecs) {
+  if (is_chromeos) {
+    _default_ffmpeg_branding = "ChromeOS"
+  } else {
+    _default_ffmpeg_branding = "Chrome"
+  }
 } else {
   _default_ffmpeg_branding = "Chromium"
-}
-
-if (is_chromeos && is_chrome_branded) {
-  _default_ffmpeg_branding = "ChromeOS"
-}
-
-if (is_chromecast) {
-  if (is_android) {
-    _default_ffmpeg_branding = "Chrome"
-  } else {
-    # TODO(alokp): What audio codecs does Chromecast want here?  Sort
-    # out and add configs if necessary.  http://crbug.com/570754
-    _default_ffmpeg_branding = "ChromeOS"
-  }
 }
 
 declare_args() {
