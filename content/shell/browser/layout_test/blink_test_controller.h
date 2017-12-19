@@ -14,6 +14,7 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
@@ -308,6 +309,8 @@ class BlinkTestController : public WebContentsObserver,
 #endif
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<BlinkTestController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestController);
 };
