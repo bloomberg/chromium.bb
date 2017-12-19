@@ -29,6 +29,11 @@ test(() => {
 
 test(() => {
   let styleMap = newDivWithStyle().attributeStyleMap;
+  assert_throws(new TypeError(), () => styleMap.set('width', '1s, 2s'));
+}, 'Setting a non list-valued property with list-valued string throws TypeError');
+
+test(() => {
+  let styleMap = newDivWithStyle().attributeStyleMap;
 
   styleMap.set('width', CSS.px(10));
   assert_style_value_array_equals(styleMap.get('width'), CSS.px(10));
@@ -40,12 +45,19 @@ test(() => {
 test(() => {
   let styleMap = newDivWithStyle().attributeStyleMap;
 
-  styleMap.set('transition-duration', CSS.s(1), CSS.s(2));
+  styleMap.set('transition-duration', CSS.s(1), '2s');
   assert_style_value_array_equals(styleMap.getAll('transition-duration'), [CSS.s(1), CSS.s(2)]);
 
-  styleMap.set('transition-duration', '3s', '4s');
+  styleMap.set('transition-duration', '3s', CSS.s(4));
   assert_style_value_array_equals(styleMap.getAll('transition-duration'), [CSS.s(3), CSS.s(4)]);
 }, 'Setting a list-valued property with CSSStyleValue or String updates its values');
+
+test(() => {
+  let styleMap = newDivWithStyle().attributeStyleMap;
+
+  styleMap.set('transition-duration', '1s, 2s');
+  assert_style_value_array_equals(styleMap.getAll('transition-duration'), [CSS.s(1), CSS.s(2)]);
+}, 'Setting a list-valued property with a list-valued string updates its value');
 
 test(() => {
   let styleMap = newDivWithStyle().attributeStyleMap;
