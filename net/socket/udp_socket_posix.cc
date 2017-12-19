@@ -41,8 +41,6 @@
 
 #if defined(OS_ANDROID)
 #include <dlfcn.h>
-// This was added in Lollipop to dlfcn.h
-#define RTLD_NOLOAD 4
 #include "base/android/build_info.h"
 #include "base/native_library.h"
 #include "base/strings/utf_string_conversions.h"
