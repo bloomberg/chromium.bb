@@ -208,10 +208,8 @@ window.addEventListener('readystatechange', function(event) {
 
   // Deprecated document properties from
   // https://developer.mozilla.org/en/DOM/document.
-  // To deprecate document.all, simply changing its getter and setter would
-  // activate its cache mechanism, and degrade the performance. Here we assign
-  // it first to 'undefined' to avoid this.
-  document.all = undefined;
+  // Disable document.all so that platform apps can not access.
+  delete Document.prototype.all
   disableGetters(document, 'document',
       ['alinkColor', 'all', 'bgColor', 'fgColor', 'linkColor', 'vlinkColor'],
       null, true);
