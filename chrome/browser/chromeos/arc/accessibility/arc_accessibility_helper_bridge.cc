@@ -137,6 +137,14 @@ class ArcAccessibilityHelperBridgeFactory
 
 }  // namespace
 
+ArcAccessibilityHelperBridge::CountedAXTree::CountedAXTree(
+    AXTreeSourceArc* ax_tree)
+    : count(1U) {
+  tree.reset(ax_tree);
+}
+
+ArcAccessibilityHelperBridge::CountedAXTree::~CountedAXTree() {}
+
 // static
 ArcAccessibilityHelperBridge*
 ArcAccessibilityHelperBridge::GetForBrowserContext(
@@ -244,12 +252,11 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     bool is_notification_event = event_data->notification_key.has_value();
     if (is_notification_event) {
       std::string notification_key = event_data->notification_key.value();
-      if (event_data->event_type ==
-          arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED) {
-        tree_source = CreateFromNotificationKey(notification_key);
-      } else {
-        tree_source = GetFromNotificationKey(notification_key);
-      }
+      bool increment_counter =
+          event_data->event_type ==
+          arc::mojom::AccessibilityEventType::WINDOW_STATE_CHANGED;
+      tree_source =
+          GetOrCreateFromNotificationKey(notification_key, increment_counter);
     } else {
       if (event_data->task_id == kNoTaskId)
         return;
@@ -317,21 +324,20 @@ AXTreeSourceArc* ArcAccessibilityHelperBridge::GetOrCreateFromTaskId(
   return tree_source;
 }
 
-AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromNotificationKey(
-    const std::string& notification_key) {
-  CHECK_EQ(0U, notification_key_to_tree_.count(notification_key));
-
-  notification_key_to_tree_[notification_key].reset(new AXTreeSourceArc(this));
-  return notification_key_to_tree_[notification_key].get();
-}
-
-AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromNotificationKey(
-    const std::string& notification_key) const {
+AXTreeSourceArc* ArcAccessibilityHelperBridge::GetOrCreateFromNotificationKey(
+    const std::string& notification_key,
+    bool increment_counter) {
   auto tree_it = notification_key_to_tree_.find(notification_key);
-  if (tree_it == notification_key_to_tree_.end())
-    return nullptr;
+  if (tree_it == notification_key_to_tree_.end()) {
+    notification_key_to_tree_[notification_key].reset(
+        new CountedAXTree(new AXTreeSourceArc(this)));
+    return notification_key_to_tree_[notification_key]->tree.get();
+  }
 
-  return tree_it->second.get();
+  if (increment_counter)
+    tree_it->second->count++;
+
+  return tree_it->second->tree.get();
 }
 
 AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromTreeId(
@@ -346,9 +352,9 @@ AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromTreeId(
   for (auto notification_it = notification_key_to_tree_.begin();
        notification_it != notification_key_to_tree_.end(); ++notification_it) {
     ui::AXTreeData tree_data;
-    notification_it->second->GetTreeData(&tree_data);
+    notification_it->second->tree->GetTreeData(&tree_data);
     if (tree_data.tree_id == tree_id)
-      return notification_it->second.get();
+      return notification_it->second->tree.get();
   }
 
   return nullptr;
@@ -470,12 +476,14 @@ void ArcAccessibilityHelperBridge::OnTaskDestroyed(int32_t task_id) {
 void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
     ArcNotificationSurface* surface) {
   const std::string& notification_key = surface->GetNotificationKey();
-  auto tree_it = notification_key_to_tree_.find(notification_key);
-  if (tree_it == notification_key_to_tree_.end())
+
+  AXTreeSourceArc* tree = GetOrCreateFromNotificationKey(
+      notification_key, false /* increment_counter */);
+  if (!tree)
     return;
 
   ui::AXTreeData tree_data;
-  if (!tree_it->second->GetTreeData(&tree_data))
+  if (!tree->GetTreeData(&tree_data))
     return;
 
   surface->SetAXTreeId(tree_data.tree_id);
@@ -495,7 +503,16 @@ void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
 void ArcAccessibilityHelperBridge::OnNotificationSurfaceRemoved(
     ArcNotificationSurface* surface) {
   const std::string& notification_key = surface->GetNotificationKey();
-  notification_key_to_tree_.erase(notification_key);
+  auto it = notification_key_to_tree_.find(notification_key);
+  if (it == notification_key_to_tree_.end())
+    return;
+
+  it->second->count--;
+
+  CHECK(it->second->count >= 0);
+
+  if (it->second->count == 0)
+    notification_key_to_tree_.erase(notification_key);
 }
 
 }  // namespace arc
