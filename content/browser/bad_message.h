@@ -216,6 +216,7 @@ enum BadMessageReason {
   RFH_INTERFACE_PROVIDER_SUPERFLUOUS = 189,
   AIRH_UNEXPECTED_BITSTREAM = 190,
   ARH_UNEXPECTED_BITSTREAM = 191,
+  RDH_NULL_CLIENT = 192,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

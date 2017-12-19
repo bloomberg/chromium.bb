@@ -2228,6 +2228,12 @@ void ResourceDispatcherHostImpl::OnRequestResourceWithMojo(
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_EQ(mojom::kURLLoadOptionNone,
             options & ~mojom::kURLLoadOptionSynchronous);
+  if (!url_loader_client) {
+    VLOG(1) << "Killed renderer for null client";
+    bad_message::ReceivedBadMessage(requester_info->filter(),
+                                    bad_message::RDH_NULL_CLIENT);
+    return;
+  }
   bool is_sync_load = options & mojom::kURLLoadOptionSynchronous;
   OnRequestResourceInternal(requester_info, routing_id, request_id,
                             is_sync_load, request, std::move(mojo_request),
