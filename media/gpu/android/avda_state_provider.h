@@ -13,7 +13,7 @@
 
 namespace gpu {
 namespace gles2 {
-class GLES2Decoder;
+class ContextGroup;
 }
 }  // namespace gpu
 
@@ -25,7 +25,7 @@ class AVDAStateProvider {
  public:
   // Various handy getters.
   virtual const gfx::Size& GetSize() const = 0;
-  virtual base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const = 0;
+  virtual gpu::gles2::ContextGroup* GetContextGroup() const = 0;
 
   // Report a fatal error. This will post NotifyError(), and transition to the
   // error state.

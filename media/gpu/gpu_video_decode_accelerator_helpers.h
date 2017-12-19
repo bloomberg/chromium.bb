@@ -15,7 +15,7 @@ class GLImage;
 
 namespace gpu {
 namespace gles2 {
-class GLES2Decoder;
+class ContextGroup;
 }
 }
 
@@ -31,25 +31,25 @@ namespace media {
 // thread (i.e. the thread which the VDAs are initialized on).
 
 // Return current GLContext.
-using GetGLContextCallback = base::Callback<gl::GLContext*(void)>;
+using GetGLContextCallback = base::RepeatingCallback<gl::GLContext*(void)>;
 
 // Make the applicable GL context current. To be called by VDAs before
 // executing any GL calls. Return true on success, false otherwise.
-using MakeGLContextCurrentCallback = base::Callback<bool(void)>;
+using MakeGLContextCurrentCallback = base::RepeatingCallback<bool(void)>;
 
 // Bind |image| to |client_texture_id| given |texture_target|. If
 // |can_bind_to_sampler| is true, then the image may be used as a sampler
 // directly, otherwise a copy to a staging buffer is required.
 // Return true on success, false otherwise.
 using BindGLImageCallback =
-    base::Callback<bool(uint32_t client_texture_id,
-                        uint32_t texture_target,
-                        const scoped_refptr<gl::GLImage>& image,
-                        bool can_bind_to_sampler)>;
+    base::RepeatingCallback<bool(uint32_t client_texture_id,
+                                 uint32_t texture_target,
+                                 const scoped_refptr<gl::GLImage>& image,
+                                 bool can_bind_to_sampler)>;
 
-// Return a WeakPtr to a GLES2Decoder, if one is available.
-using GetGLES2DecoderCallback =
-    base::Callback<base::WeakPtr<gpu::gles2::GLES2Decoder>(void)>;
+// Return a ContextGroup*, if one is available.
+using GetContextGroupCallback =
+    base::RepeatingCallback<gpu::gles2::ContextGroup*(void)>;
 
 }  // namespace media
 

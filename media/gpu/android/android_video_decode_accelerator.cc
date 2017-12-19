@@ -232,13 +232,13 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     AVDACodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     const MakeGLContextCurrentCallback& make_context_current_cb,
-    const GetGLES2DecoderCallback& get_gles2_decoder_cb,
+    const GetContextGroupCallback& get_context_group_cb,
     const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
     DeviceInfo* device_info)
     : client_(nullptr),
       codec_allocator_(codec_allocator),
       make_context_current_cb_(make_context_current_cb),
-      get_gles2_decoder_cb_(get_gles2_decoder_cb),
+      get_context_group_cb_(get_context_group_cb),
       state_(BEFORE_OVERLAY_INIT),
       picturebuffers_requested_(false),
       picture_buffer_manager_(this),
@@ -286,7 +286,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoReset<bool> scoper(&during_initialize_, true);
 
-  if (make_context_current_cb_.is_null() || get_gles2_decoder_cb_.is_null()) {
+  if (make_context_current_cb_.is_null() || get_context_group_cb_.is_null()) {
     DLOG(ERROR) << "GL callbacks are required for this VDA";
     return false;
   }
@@ -334,9 +334,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  auto gles_decoder = get_gles2_decoder_cb_.Run();
-  if (!gles_decoder) {
-    DLOG(ERROR) << "Failed to get gles2 decoder instance.";
+  auto* context_group = get_context_group_cb_.Run();
+  if (!context_group) {
+    DLOG(ERROR) << "Failed to get context group.";
     return false;
   }
 
@@ -1357,9 +1357,9 @@ const gfx::Size& AndroidVideoDecodeAccelerator::GetSize() const {
   return size_;
 }
 
-base::WeakPtr<gpu::gles2::GLES2Decoder>
-AndroidVideoDecodeAccelerator::GetGlDecoder() const {
-  return get_gles2_decoder_cb_.Run();
+gpu::gles2::ContextGroup* AndroidVideoDecodeAccelerator::GetContextGroup()
+    const {
+  return get_context_group_cb_.Run();
 }
 
 void AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately(

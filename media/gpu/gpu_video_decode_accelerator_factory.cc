@@ -47,7 +47,7 @@ GpuVideoDecodeAcceleratorFactory::Create(
     const BindGLImageCallback& bind_image_cb) {
   return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
-      GetGLES2DecoderCallback(), AndroidOverlayMojoFactoryCB()));
+      GetContextGroupCallback(), AndroidOverlayMojoFactoryCB()));
 }
 
 // static
@@ -56,11 +56,11 @@ GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
-    const GetGLES2DecoderCallback& get_gles2_decoder_cb,
+    const GetContextGroupCallback& get_context_group_cb,
     const AndroidOverlayMojoFactoryCB& overlay_factory_cb) {
   return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
-      get_gles2_decoder_cb, overlay_factory_cb));
+      get_context_group_cb, overlay_factory_cb));
 }
 
 // static
@@ -242,7 +242,7 @@ GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
       AVDACodecAllocator::GetInstance(base::ThreadTaskRunnerHandle::Get()),
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
-      make_context_current_cb_, get_gles2_decoder_cb_, overlay_factory_cb_,
+      make_context_current_cb_, get_context_group_cb_, overlay_factory_cb_,
       DeviceInfo::GetInstance()));
   return decoder;
 }
@@ -252,12 +252,12 @@ GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
-    const GetGLES2DecoderCallback& get_gles2_decoder_cb,
+    const GetContextGroupCallback& get_context_group_cb,
     const AndroidOverlayMojoFactoryCB& overlay_factory_cb)
     : get_gl_context_cb_(get_gl_context_cb),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
-      get_gles2_decoder_cb_(get_gles2_decoder_cb),
+      get_context_group_cb_(get_context_group_cb),
       overlay_factory_cb_(overlay_factory_cb) {}
 
 GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() = default;

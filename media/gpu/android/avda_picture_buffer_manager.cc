@@ -84,9 +84,7 @@ void AVDAPictureBufferManager::Destroy(const PictureBufferMap& buffers) {
 void AVDAPictureBufferManager::SetImageForPicture(
     const PictureBuffer& picture_buffer,
     gpu::gles2::GLStreamTextureImage* image) {
-  auto gles_decoder = state_provider_->GetGlDecoder();
-  RETURN_IF_NULL(gles_decoder);
-  auto* context_group = gles_decoder->GetContextGroup();
+  auto* context_group = state_provider_->GetContextGroup();
   RETURN_IF_NULL(context_group);
   auto* texture_manager = context_group->texture_manager();
   RETURN_IF_NULL(texture_manager);
