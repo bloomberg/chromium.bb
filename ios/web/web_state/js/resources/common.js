@@ -247,12 +247,13 @@ __gCrWeb['common'] = __gCrWeb.common;
     if (!input || !window['angular']) {
       return;
     }
-    var angular_element = window['angular'].element(input);
+    var angular_element = window['angular'].element &&
+        window['angular'].element(input);
     if (!angular_element) {
       return;
     }
     angular_element.val(value);
-    var angular_model = angular_element.data('ngModel');
+    var angular_model = angular_element.data && angular_element.data('ngModel');
     if (!angular_model) {
       return;
     }
