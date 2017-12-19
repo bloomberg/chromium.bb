@@ -1166,6 +1166,53 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             'failures/unexpected/missing_render_tree_dump',
             expected_extensions=['.txt'])
 
+    def test_reset_results_testharness_no_baseline(self):
+        # Tests that we don't create new result for a testharness test without baselines.
+        host = MockHost()
+        details, log_stream, _ = logging_run(
+            [
+                '--reset-results',
+                'failures/unexpected/testharness.html',
+                'passes/testharness.html'
+            ],
+            tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 5)
+        self.assert_baselines(file_list, log_stream, 'failures/unexpected/testharness', [])
+        self.assert_baselines(file_list, log_stream, 'passes/testharness', [])
+
+    def test_reset_results_testharness_existing_baseline(self):
+        # Tests that we update existing baseline for a testharness test.
+        host = MockHost()
+        host.filesystem.write_text_file(
+            test.LAYOUT_TEST_DIR + '/failures/unexpected/testharness-expected.txt', 'foo')
+        details, log_stream, _ = logging_run(
+            [
+                '--reset-results',
+                'failures/unexpected/testharness.html'
+            ],
+            tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 0)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(len(file_list), 6)
+        self.assert_baselines(file_list, log_stream, 'failures/unexpected/testharness', ['.txt'])
+
+    def test_reset_results_image_first(self):
+        # Tests that we don't create new text results for an image first test without text result.
+        host = MockHost()
+        details, log_stream, _ = logging_run(
+            [
+                '--reset-results',
+                '--image-first-tests=failures/unexpected',
+                'failures/unexpected/image-only.html',
+            ],
+            tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 0)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(len(file_list), 6)
+        self.assert_baselines(file_list, log_stream, 'failures/unexpected/image-only', ['.png'])
+
     def test_copy_baselines(self):
         # Test that we update the baselines in the version-specific directories
         # if the new baseline is different from the fallback baseline.

@@ -110,14 +110,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 129
+TOTAL_TESTS = 135
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 21 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_NON_VIRTUAL_FAILURES = 19
-UNEXPECTED_FAILURES = 45
+UNEXPECTED_NON_VIRTUAL_FAILURES = 21
+UNEXPECTED_FAILURES = 49
 
 
 def unit_test_list():
@@ -176,6 +176,10 @@ layer at (0,0) size 800x34
               actual_checksum='text-image-checksum_fail-checksum')
     tests.add('failures/unexpected/checksum-with-matching-image.html',
               actual_checksum='text-image-checksum_fail-checksum')
+    tests.add('failures/unexpected/image-only.html',
+              expected_text=None, actual_text='text',
+              actual_image='image-only_fail-pngtEXtchecksum\x00checksum_fail',
+              actual_checksum='image-only_fail-checksum')
     tests.add('failures/unexpected/skip_pass.html')
     tests.add('failures/unexpected/text.html', actual_text='text_fail-txt')
     tests.add('failures/unexpected/text_then_crash.html')
@@ -196,6 +200,8 @@ layer at (0,0) size 800x34
     tests.add('passes/checksum_in_image.html',
               expected_image='tEXtchecksum\x00checksum_in_image-checksum')
     tests.add('passes/skipped/skip.html')
+    tests.add('failures/unexpected/testharness.html',
+              actual_text='This is a testharness.js-based test.\nFAIL: bah\nHarness: the test ran to completion.')
 
     # Note that here the checksums don't match/ but the images do, so this test passes "unexpectedly".
     # See https://bugs.webkit.org/show_bug.cgi?id=69444 .
@@ -267,6 +273,18 @@ layer at (0,0) size 800x34
     tests.add('passes/virtual_passes/test-virtual-passes.html')
 
     tests.add('passes_two/test-virtual-passes.html')
+
+    tests.add('passes/testharness.html',
+              actual_text='This is a testharness.js-based test.\nPASS: bah\n'
+                          'Harness: the test ran to completion.',
+              actual_image=None,
+              expected_text=None)
+    tests.add('failures/unexpected/testharness.html',
+              actual_text='This is a testharness.js-based test.\nFAIL: bah\n'
+                          'Harness: the test ran to completion.',
+              actual_image=None,
+              expected_text=None)
+
     return tests
 
 
