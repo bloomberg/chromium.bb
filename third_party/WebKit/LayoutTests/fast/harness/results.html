@@ -776,9 +776,11 @@ const Query = {
       : test => {
           if (test.expectPath.includes(searchText))
             return true;
-          for (let bug of test.bugs) {
-            if (bug.includes(searchText))
-              return true;
+          if (Array.isArray(test.bugs)) {
+            for (let bug of test.bugs) {
+              if (bug.includes(searchText))
+                return true;
+            }
           }
           return false;
         };
