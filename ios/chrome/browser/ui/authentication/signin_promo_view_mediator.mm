@@ -466,7 +466,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)signinPromoViewHidden {
-  DCHECK(![self isInvalidClosedOrNeverVisible]);
+  DCHECK(![self isInvalidOrClosed]);
   _isSigninPromoViewVisible = NO;
 }
 

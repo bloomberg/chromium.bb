@@ -84,10 +84,12 @@ class PrefRegistrySyncable;
 - (SigninPromoViewConfigurator*)createConfigurator;
 
 // Increments the "shown" counter used for histograms. Called when the signin
-// promo view is visible
+// promo view is visible. If the sign-in promo is already visible, this method
+// does nothing.
 - (void)signinPromoViewVisible;
 
-// Called when the sign-in promo view is hidden.
+// Called when the sign-in promo view is hidden. If the sign-in promo view has
+// never been shown, or it is already hidden, this method does nothing.
 - (void)signinPromoViewHidden;
 
 // Called when the sign-in promo view is removed from the view hierarchy (it or

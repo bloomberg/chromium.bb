@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 
 @class ChromeIdentity;
+@class SigninPromoViewConfigurator;
 @class SigninPromoViewMediator;
 
 // Handles identity update notifications.

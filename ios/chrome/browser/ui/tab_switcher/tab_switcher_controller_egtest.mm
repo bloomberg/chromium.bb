@@ -8,6 +8,7 @@
 
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #import "ios/chrome/browser/ui/ui_util.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/blank_page_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -339,6 +341,97 @@ using web::test::HttpServer;
   GREYAssert(testing::WaitUntilConditionOrTimeout(
                  testing::kWaitForUIElementTimeout, condition),
              @"Alert with message was not found: %@", kMessageText);
+}
+
+// Tests sign-in promo view in cold state.
+- (void)testColdSigninPromoView {
+  if (!IsIPadIdiom())
+    return;
+
+  // Enter the tab switcher and press the "Other Devices" button.
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+  // Check the sign-in promo view with cold state.
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                          closeButton:NO];
+}
+
+// Tests sign-in promo view in warm state.
+- (void)testWarmSigninPromoView {
+  if (!IsIPadIdiom())
+    return;
+
+  // Set up a fake identity.
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+
+  // Enter the tab switcher and press the "Other Devices" button.
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+  // Check the sign-in promo view with warm state.
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                          closeButton:NO];
+}
+
+// Tests to reload the other devices tab after sign-in.
+// See crbug.comm/832527
+- (void)testReloadOtherTabDevicesTab {
+  if (!IsIPadIdiom())
+    return;
+
+  // Set up a fake identity.
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+
+  // Enter the tab switcher and press the "Other Devices" tab.
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+  // Close the tab switcher.
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherCloseButton()]
+      performAction:grey_tap()];
+
+  // Open the settings to sign-in.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::PrimarySignInButton()];
+  [ChromeEarlGreyUI confirmSigninConfirmationDialog];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsAccountButton()];
+  // Sign-out.
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SignOutAccountsButton()];
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE)]
+      performAction:grey_tap()];
+
+  // Open the tab switcher to the "Other Devices" tab.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+
+  // Check the sign-in promo view with warm state.
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                          closeButton:NO];
 }
 
 @end
