@@ -103,35 +103,35 @@
         word-break: break-all;
       }
 
-      #devtools-controls {
+      .devtools-controls {
         padding: 0 var(--cr-section-padding);
       }
 
-      #stack-trace-heading {
+      .details-heading {
         @apply(--cr-title-text);
         align-items: center;
         display: flex;
         height: var(--cr-section-min-height);
       }
 
-      #stack-trace-container {
+      .stack-trace-container {
         list-style: none;
         margin-top: 0;
         padding: 0;
       }
 
-      #stack-trace-container li {
+      .stack-trace-container li {
         cursor: pointer;
         font-family: monospace;
         padding: 4px;
       }
 
-      #stack-trace-container li.selected,
-      #stack-trace-container li:hover {
+      .stack-trace-container li.selected,
+      .stack-trace-container li:hover {
         background: var(--google-blue-100);
       }
 
-      #dev-tool-button {
+      .dev-tool-button {
         margin-bottom: 20px;
         max-width: 300px;
       }
@@ -207,11 +207,18 @@
                 </div>
                 <template is="dom-if" if="[[computeIsRuntimeError_(item)]]">
                   <iron-collapse opened="[[isOpened_(index, selectedEntry_)]]">
-                    <div id="devtools-controls">
-                      <div id="stack-trace-heading">
+                    <div class="devtools-controls">
+                      <div class="details-heading">
+                        $i18n{errorContext}
+                      </div>
+                      <span class="context-url">
+                        [[getContextUrl_(
+                            item, '$i18nPolymer{errorContextUnknown}')]]
+                      </span>
+                      <div class="details-heading">
                         $i18n{stackTrace}
                       </div>
-                      <ul id="stack-trace-container">
+                      <ul class="stack-trace-container">
                         <template is="dom-repeat" items="[[item.stackTrace]]">
                           <li on-tap="onStackFrameTap_"
                               hidden="[[!shouldDisplayFrame_(item.url)]]"
@@ -221,7 +228,7 @@
                           </li>
                         </template>
                       </ul>
-                      <paper-button id="dev-tool-button" class="action-button"
+                      <paper-button class="devtool-button action-button"
                           disabled="[[!item.canInspect]]"
                           on-tap="onDevToolButtonTap_">
                         $i18n{openInDevtool}
