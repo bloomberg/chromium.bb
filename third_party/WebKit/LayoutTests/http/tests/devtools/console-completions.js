@@ -43,12 +43,12 @@
   `);
 
   TestRunner.addResult('Completions for objectC.:');
-  let completions = await ObjectUI.JavaScriptAutocomplete.completionsForExpression('objectC.', 'e');
+  let completions = await ObjectUI.javaScriptAutocomplete._completionsForExpression('objectC.', 'e');
   for (var completion of completions)
     TestRunner.addObject(completion);
 
   TestRunner.addResult('Completions for prefix:');
-  completions = await ObjectUI.JavaScriptAutocomplete.completionsForExpression('', 'prefix');
+  completions = await ObjectUI.javaScriptAutocomplete._completionsForExpression('', 'prefix');
   for (var completion of completions)
     TestRunner.addObject(completion);
 
