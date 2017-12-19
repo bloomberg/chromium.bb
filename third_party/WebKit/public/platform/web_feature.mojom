@@ -1783,6 +1783,7 @@ enum WebFeature {
   kFileAccessedSessionStorage = 2274,
   kFileAccessedSharedWorker = 2275,
   kV8MediaKeys_GetStatusForPolicy_Method = 2276,
+  kV8DeoptimizerDisableSpeculation = 2277,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
