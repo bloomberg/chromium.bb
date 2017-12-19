@@ -26,14 +26,14 @@ const TYPE_TXFM txfm_type_ls[2] = { TYPE_DCT, TYPE_ADST };
 const int txfm_size_num = 5;
 const int txfm_size_ls[5] = { 4, 8, 16, 32, 64 };
 
-const TxfmFunc fwd_txfm_func_ls[2][5] = {
+const TxfmFunc fwd_txfm_func_ls[][2] = {
+  { av1_fdct4_new, av1_fadst4_new },
+  { av1_fdct8_new, av1_fadst8_new },
+  { av1_fdct16_new, av1_fadst16_new },
+  { av1_fdct32_new, av1_fadst32_new },
 #if CONFIG_TX64X64
-  { av1_fdct4_new, av1_fdct8_new, av1_fdct16_new, av1_fdct32_new,
-    av1_fdct64_new },
-#else
-  { av1_fdct4_new, av1_fdct8_new, av1_fdct16_new, av1_fdct32_new, NULL },
+  { av1_fdct64_new, NULL },
 #endif
-  { av1_fadst4_new, av1_fadst8_new, av1_fadst16_new, av1_fadst32_new, NULL }
 };
 
 // the maximum stage number of fwd/inv 1d dct/adst txfm is 12
@@ -71,7 +71,7 @@ TEST(av1_fwd_txfm1d, accuracy) {
 
     for (int ti = 0; ti < txfm_type_num; ++ti) {
       TYPE_TXFM txfm_type = txfm_type_ls[ti];
-      TxfmFunc fwd_txfm_func = fwd_txfm_func_ls[ti][si];
+      TxfmFunc fwd_txfm_func = fwd_txfm_func_ls[si][ti];
       int max_error = 7;
 
       const int count_test_block = 5000;
