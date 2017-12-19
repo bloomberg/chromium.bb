@@ -523,6 +523,14 @@ TEST_P(FileMetricsProviderTest, AccessDirectoryWithInvalidFiles) {
             base::PersistentMemoryAllocator::MEMORY_DELETED);
       });
 
+  {
+    base::File empty(metrics_files.GetPath().AppendASCII("h4.pma"),
+                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  }
+  base::TouchFile(metrics_files.GetPath().AppendASCII("h4.pma"),
+                  base_time + base::TimeDelta::FromMinutes(4),
+                  base_time + base::TimeDelta::FromMinutes(4));
+
   // Register the file and allow the "checker" task to run.
   provider()->RegisterSource(FileMetricsProvider::Params(
       metrics_files.GetPath(),
@@ -534,6 +542,7 @@ TEST_P(FileMetricsProviderTest, AccessDirectoryWithInvalidFiles) {
   EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h1.pma")));
   EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h2.pma")));
   EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h3.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h4.pma")));
 
   // H1 should be skipped and H2 available.
   OnDidCreateMetricsLog();
@@ -542,13 +551,16 @@ TEST_P(FileMetricsProviderTest, AccessDirectoryWithInvalidFiles) {
   EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("h1.pma")));
   EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h2.pma")));
   EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h3.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h4.pma")));
 
-  // Nothing else should be found.
+  // Nothing else should be found but the last (valid but empty) file will
+  // stick around to be processed later (should it get expanded).
   OnDidCreateMetricsLog();
   RunTasks();
   EXPECT_EQ(0U, GetIndependentHistogramCount());
   EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("h2.pma")));
   EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("h3.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h4.pma")));
 }
 
 TEST_P(FileMetricsProviderTest, AccessTimeLimitedDirectory) {
