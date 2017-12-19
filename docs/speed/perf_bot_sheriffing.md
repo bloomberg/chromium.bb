@@ -331,97 +331,63 @@ be investigated. When a test fails:
 
 
 ### Disabling Telemetry Tests
-
-If the test is a telemetry test, its name will have a '.' in it, such as
-`thread_times.key_mobile_sites` or `page_cycler.top_10`. The part before the
-first dot will be a python file in [tools/perf/benchmarks](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/benchmarks/).
-
 If a telemetry test is failing and there is no clear culprit to revert
 immediately, disable the story on the failing platforms.
 
-For example:
-*  If a single story is failing on a single platform, disable only that story on that platform.
-*  If multiple stories are failing across all platforms, disable those stories on all platforms.
-*  If all stories are failing on a single platform, disable all stories on that platform.
+You can do this with [Expectations](https://cs.chromium.org/chromium/src/tools/perf/expectations.config).
+An expectation is a line in the expectations file in the following format:
+```
+reason [ conditions ] benchmark/story [ Skip ]
+```
 
-You can do this with [StoryExpectations](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
+Reasons must be in the format `crbug.com/#`. If the same test is failing and
+linked to multiple bugs, an entry for each bug is needed.
+
+A list of supported conditions can be found [here](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
+
+Multiple conditions when listed in a single expectation are treated as logical
+_AND_ so a platform must meet all conditions to be disabled. Each failing
+platform requires its own expectations entry.
 
 To determine which stories are failing in a given run, go to the buildbot page
-for that run and search for `Unexpected failures`.
+for that run and search for `Unexpected failures` in the failing test entry.
 
 Example:
-On platform P, story foo is failing on benchmark bar. On the same benchmark on
-platform Q, story baz is failing. To disable these stories, go
-to where benchmark bar is declared. Using codesearch, you can look for
-benchmark\_baz which will likely be in bar.py. This is where you can disable the
-story.
+On Mac platforms, google\_story is failing on memory\_benchmark.
 
-Once there, find the benchmark's `GetExpectations()` method. Inside there you
-should see a `SetExpectations()` method. That is where stories are disabled.
-
-Buildbot output for failing run on platform P:
+Buildbot output for failing run on Mac:
 ```
-bar.benchmark_baz
+memory_benchmark/google_story
 Bot id: 'buildxxx-xx'
 ...
 Unexpected Failures:
-* foo
+* google_story
 ```
 
-Buildbot output for failing run on platform Q
-```
-bar.benchmark_baz
-Bot id: 'buildxxx-xx'
-...
-Unexpected Failures:
-* baz
-```
+Go to the [expectations config file](https://cs.chromium.org/chromium/src/tools/perf/expectations.config).
+Look for a comment showing the benchmarks name. If the benchmark is not present
+in the expectations file, you may need to add a new section. Please keep them in
+alphabetical ordering.
 
-Code snippet from bar.py benchmark:
+It will look similar to this when the above example is done:
 ```
-class BarBenchmark(perf_benchmark.PerfBenchmark):
-  ...
-  def Name():
-    return 'bar.benchmark_baz'
-  ...
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-     def SetExpectations(self):
-       self.DisableStory(
-           'foo', [story.expectations.PLATFORM_P], 'crbug.com/1234')
-       self.DisableStory(
-           'baz', [story.expectations.PLATFORM_Q], 'crbug.com/5678')
+\# Test Expectation file for telemetry tests.
+\# tags: Mac
+
+\# Benchmark: memory_benchmark
+crbug.com/123 [ Mac ] memory_benchmark/google_story [ Skip ]
 ```
 
-If a story is failing on multiple platforms, you can add more platforms to the
-list in the second argument to `DisableStory()`. If the story is failing on
-different platforms for different reasons, you can have multiple `DisableStory()`
-declarations for the same story with different reasons listed.
-
-If a particular story isn't applicable to a given platform, it should be
-disabled using [CanRunStory](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/page/shared_page_state.py?type=cs&q=CanRunOnBrowser&l=271).
-
-To find the currently supported disabling conditions view the [expectations file](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
-
-In the case that a benchmark is failing in its entirety on a platfrom that it
-should noramally run on, you can temporarily disable it by using
-DisableBenchmark():
-
+In the case that a benchmark is failing in its entirety on a platform that it
+should noramally run on, you can temporarily disable it by using an expectation
+of this format:
 ```
-class BarBenchmark(perf_benchmark.PerfBenchmark):
-  ...
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark([story.expectation.PLATFORM_Q], 'crbug.com/9876')
+crbug.com/123456 [ CONDITIONS ] memory_benchmark/* [ Skip ]
 ```
-
-If for some reason you are unable to disable at the granularity you would like,
-disable the test at the lowest granularity possible and contact rnephew@ to
-suggest new disabling criteria.
 
 Disabling CLs can be TBR-ed to anyone in [tools/perf/OWNERS](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/OWNERS),
-but please do **not** submit with NOTRY=true.
+As long as a disabling CL touches only tools/perf/expectations.config, you can
+use TBR and NOTRY=true to submit the CL immediately.
 
 ### Disabling Other Tests
 
