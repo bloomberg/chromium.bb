@@ -2762,17 +2762,20 @@ def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None,
 
 
 def _CheckCrbugLinksHaveHttps(input_api, output_api):
-  """Checks that crbug(.com) links are correctly prefixed by https://"""
+  """Checks that crbug(.com) links are correctly prefixed by https://,
+   unless they come in the accepted form TODO(crbug.com/...)
+  """
   white_list = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
   black_list = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS)
   sources = lambda f: input_api.FilterSourceFile(
       f, white_list=white_list, black_list=black_list)
 
   pattern = input_api.re.compile(r'//.*(?<!:\/\/)crbug[.com]*')
+  accepted_pattern = input_api.re.compile(r'//.*TODO\(crbug[.com]*');
   problems = []
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
-      if pattern.search(line):
+      if pattern.search(line) and not accepted_pattern.search(line):
         problems.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
 
   if problems:
