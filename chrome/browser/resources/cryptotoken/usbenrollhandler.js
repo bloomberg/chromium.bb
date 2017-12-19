@@ -207,12 +207,40 @@ UsbEnrollHandler.prototype.tryEnroll_ = function(gnubby, version) {
     this.removeWrongVersionGnubby_(gnubby);
     return;
   }
+
+  var appIdHashBase64 = challenge['appIdHash'];
+  if (DEVICE_FACTORY_REGISTRY.getIndividualAttestation()
+          .requestIndividualAttestation(appIdHashBase64)) {
+    this.tryEnrollComplete_(gnubby, version, true);
+    return;
+  }
+
+  if (!chrome.cryptotokenPrivate) {
+    this.tryEnrollComplete_(gnubby, version, false);
+    return;
+  }
+
+  chrome.cryptotokenPrivate.isAppIdHashInEnterpriseContext(
+      decodeWebSafeBase64ToArray(appIdHashBase64),
+      this.tryEnrollComplete_.bind(this, gnubby, version));
+};
+
+/**
+ * Attempts enrolling a particular gnubby with a challenge of the appropriate
+ * version.
+ * @param {Gnubby} gnubby Gnubby instance
+ * @param {string} version Protocol version
+ * @param {boolean} individualAttest whether to send the individual-attestation
+ *     signal to the token.
+ * @private
+ */
+UsbEnrollHandler.prototype.tryEnrollComplete_ = function(
+    gnubby, version, individualAttest) {
+  var challenge = this.getChallengeOfVersion_(version);
   var challengeValue = B64_decode(challenge['challengeHash']);
-  var appIdHash = challenge['appIdHash'];
-  var individualAttest = DEVICE_FACTORY_REGISTRY.getIndividualAttestation()
-                             .requestIndividualAttestation(appIdHash);
+
   gnubby.enroll(
-      challengeValue, B64_decode(appIdHash),
+      challengeValue, B64_decode(challenge['appIdHash']),
       this.enrollCallback_.bind(this, gnubby, version), individualAttest);
 };
 
