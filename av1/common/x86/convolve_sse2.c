@@ -17,12 +17,14 @@
 #include "aom_dsp/aom_filter.h"
 #include "av1/common/convolve.h"
 
-void av1_convolve_y_sse2(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
-                         int dst_stride, int w, int h,
+void av1_convolve_y_sse2(const uint8_t *src, int src_stride,
+                         const uint8_t *dst0, int dst_stride0, int w, int h,
                          InterpFilterParams *filter_params_x,
                          InterpFilterParams *filter_params_y,
                          const int subpel_x_q4, const int subpel_y_q4,
                          ConvolveParams *conv_params) {
+  CONV_BUF_TYPE *dst = conv_params->dst;
+  int dst_stride = conv_params->dst_stride;
   int i, j;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int do_average = conv_params->do_average;
@@ -33,6 +35,8 @@ void av1_convolve_y_sse2(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
 
   (void)filter_params_x;
   (void)subpel_x_q4;
+  (void)dst0;
+  (void)dst_stride0;
 
   const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
@@ -114,12 +118,14 @@ void av1_convolve_y_sse2(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   }
 }
 
-void av1_convolve_x_sse2(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
-                         int dst_stride, int w, int h,
+void av1_convolve_x_sse2(const uint8_t *src, int src_stride,
+                         const uint8_t *dst0, int dst_stride0, int w, int h,
                          InterpFilterParams *filter_params_x,
                          InterpFilterParams *filter_params_y,
                          const int subpel_x_q4, const int subpel_y_q4,
                          ConvolveParams *conv_params) {
+  CONV_BUF_TYPE *dst = conv_params->dst;
+  int dst_stride = conv_params->dst_stride;
   int i, j;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const int do_average = conv_params->do_average;
@@ -130,6 +136,8 @@ void av1_convolve_x_sse2(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
 
   (void)filter_params_y;
   (void)subpel_y_q4;
+  (void)dst0;
+  (void)dst_stride0;
 
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);

@@ -18,12 +18,16 @@
 #include "av1/common/convolve.h"
 
 void av1_convolve_2d_avx2(const uint8_t *src, int src_stride,
-                          CONV_BUF_TYPE *dst, int dst_stride, int w, int h,
+                          const uint8_t *dst0, int dst_stride0, int w, int h,
                           InterpFilterParams *filter_params_x,
                           InterpFilterParams *filter_params_y,
                           const int subpel_x_q4, const int subpel_y_q4,
                           ConvolveParams *conv_params) {
+  CONV_BUF_TYPE *dst = conv_params->dst;
+  int dst_stride = conv_params->dst_stride;
   const int bd = 8;
+  (void)dst0;
+  (void)dst_stride0;
 
   DECLARE_ALIGNED(32, int16_t,
                   im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE]);

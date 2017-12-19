@@ -87,10 +87,10 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
             // Choose random locations within the source block
             int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
             int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
-            av1_convolve_2d_c(input + offset_r * w + offset_c, w, output,
+            av1_convolve_2d_c(input + offset_r * w + offset_c, w, NULL,
                               MAX_SB_SIZE, out_w, out_h, &filter_params_x,
                               &filter_params_y, subx, suby, &conv_params1);
-            test_impl(input + offset_r * w + offset_c, w, output2, MAX_SB_SIZE,
+            test_impl(input + offset_r * w + offset_c, w, NULL, MAX_SB_SIZE,
                       out_w, out_h, &filter_params_x, &filter_params_y, subx,
                       suby, &conv_params2);
 
@@ -155,10 +155,10 @@ void AV1Convolve2DTest::RunCheckOutput2(convolve_2d_func test_impl) {
             // Choose random locations within the source block
             int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
             int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
-            av1_jnt_convolve_2d_c(input + offset_r * w + offset_c, w, output,
+            av1_jnt_convolve_2d_c(input + offset_r * w + offset_c, w, NULL,
                                   MAX_SB_SIZE, out_w, out_h, &filter_params_x,
                                   &filter_params_y, subx, suby, &conv_params1);
-            test_impl(input + offset_r * w + offset_c, w, output2, MAX_SB_SIZE,
+            test_impl(input + offset_r * w + offset_c, w, NULL, MAX_SB_SIZE,
                       out_w, out_h, &filter_params_x, &filter_params_y, subx,
                       suby, &conv_params2);
 
@@ -196,13 +196,13 @@ void AV1Convolve2DTest::RunCheckOutput2(convolve_2d_func test_impl) {
                 // Choose random locations within the source block
                 int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
                 int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
-                av1_jnt_convolve_2d_c(input + offset_r * w + offset_c, w,
-                                      output, MAX_SB_SIZE, out_w, out_h,
+                av1_jnt_convolve_2d_c(input + offset_r * w + offset_c, w, NULL,
+                                      MAX_SB_SIZE, out_w, out_h,
                                       &filter_params_x, &filter_params_y, subx,
                                       suby, &conv_params1);
-                test_impl(input + offset_r * w + offset_c, w, output2,
-                          MAX_SB_SIZE, out_w, out_h, &filter_params_x,
-                          &filter_params_y, subx, suby, &conv_params2);
+                test_impl(input + offset_r * w + offset_c, w, NULL, MAX_SB_SIZE,
+                          out_w, out_h, &filter_params_x, &filter_params_y,
+                          subx, suby, &conv_params2);
 
                 for (j = 0; j < out_h; ++j)
                   for (k = 0; k < out_w; ++k) {
