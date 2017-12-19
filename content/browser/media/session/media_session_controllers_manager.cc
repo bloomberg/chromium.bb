@@ -28,8 +28,7 @@ bool IsMediaSessionEnabled() {
 
 MediaSessionControllersManager::MediaSessionControllersManager(
     MediaWebContentsObserver* media_web_contents_observer)
-    : media_web_contents_observer_(media_web_contents_observer) {
-}
+    : media_web_contents_observer_(media_web_contents_observer) {}
 
 MediaSessionControllersManager::~MediaSessionControllersManager() = default;
 
