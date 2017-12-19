@@ -106,8 +106,10 @@ class SimpleBuilder(generic_builders.Builder):
     # For non-uni builds, we don't pass a model (just board)
     models = [config_lib.ModelTestConfig(None, board)]
 
+    unibuild = False
     if builder_run.config.models:
       models = builder_run.config.models
+      unibuild = True
 
     parallel_stages = []
     for suite_config in builder_run.config.hw_tests:
@@ -121,7 +123,7 @@ class SimpleBuilder(generic_builders.Builder):
 
       # Please see docstring for blocking in the HWTestConfig for more
       # information on this behavior.
-      if suite_config.blocking:
+      if suite_config.blocking and not unibuild:
         self._RunParallelStages(parallel_stages)
         parallel_stages = []
 
