@@ -24,6 +24,10 @@
 #include "device/vr/openvr/openvr_device_provider.h"
 #endif
 
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+#include "device/vr/oculus/oculus_device_provider.h"
+#endif
+
 namespace vr {
 
 namespace {
@@ -51,6 +55,11 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
     if (base::FeatureList::IsEnabled(features::kOpenVR))
       providers.emplace_back(std::make_unique<device::OpenVRDeviceProvider>());
 #endif
+
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    providers.emplace_back(std::make_unique<device::OculusVRDeviceProvider>());
+#endif
+
     new VRDeviceManager(std::move(providers));
   }
   return g_vr_device_manager;
