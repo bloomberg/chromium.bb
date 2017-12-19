@@ -80,6 +80,8 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
 
   const std::string& id() const { return id_; }
 
+  MessageView* message_view() { return message_view_; }
+
   // Overridden from views::View:
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
@@ -140,6 +142,9 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
 
   gfx::Point origin_;
   gfx::Size preferred_size_;
+
+  // Weak reference to the MessageView.
+  MessageView* message_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ToastContentsView);
 };
