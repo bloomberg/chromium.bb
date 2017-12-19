@@ -112,8 +112,9 @@ class WebRtcAudioDebugRecordingsBrowserTest
 // therefore timing dependent and flaky prone. If it becomes flaky, it's
 // probably good enough to change the test to retry deleting after a short
 // sleep.
+// TODO(https://crbug.com/796168): Fails on all platforms. Disabled temporarily.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
-                       MAYBE_CallWithAudioDebugRecordings) {
+                       DISABLED_CallWithAudioDebugRecordings) {
   if (!HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
@@ -248,8 +249,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 #endif
 
 // Same test as CallWithAudioDebugRecordings, but does two parallel calls.
+// TODO(https://crbug.com/796168): Fails on all platforms. Disabled temporarily.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
-                       MAYBE_TwoCallsWithAudioDebugRecordings) {
+                       DISABLED_TwoCallsWithAudioDebugRecordings) {
   if (!HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
