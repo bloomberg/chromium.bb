@@ -120,6 +120,10 @@ component("services") {
       "mojo_cdm_file_io.h",
       "mojo_cdm_helper.cc",
       "mojo_cdm_helper.h",
+      "mojo_cdm_proxy.cc",
+      "mojo_cdm_proxy.h",
+      "mojo_cdm_proxy_service.cc",
+      "mojo_cdm_proxy_service.h",
     ]
     deps += [ "//media/cdm:cdm_api" ]
 

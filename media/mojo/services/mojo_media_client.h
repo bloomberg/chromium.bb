@@ -32,6 +32,7 @@ namespace media {
 class AudioDecoder;
 class AudioRendererSink;
 class CdmFactory;
+class CdmProxy;
 class MediaLog;
 class RendererFactory;
 class VideoDecoder;
@@ -81,6 +82,12 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // nullptr if the host chose not to bind the InterfacePtr.
   virtual std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces);
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  // Creates a CdmProxy that proxies part of CDM functionalities to a different
+  // entity, e.g. hardware CDM modules.
+  virtual std::unique_ptr<CdmProxy> CreateCdmProxy();
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   // Gets a list of CDM host file paths and put them in |cdm_host_file_paths|.

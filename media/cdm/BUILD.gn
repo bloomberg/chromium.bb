@@ -28,6 +28,10 @@ source_set("cdm") {
   sources = [
     "aes_decryptor.cc",
     "aes_decryptor.h",
+
+    # TODO(crbug.com/676224): Move this to |enable_library_cdms| block below
+    # when EnabledIf attribute is supported in mojom.
+    "cdm_proxy.h",
     "cenc_utils.cc",
     "cenc_utils.h",
     "default_cdm_factory.cc",
@@ -72,7 +76,6 @@ source_set("cdm") {
       "cdm_helpers.h",
       "cdm_module.cc",
       "cdm_module.h",
-      "cdm_proxy.h",
       "cdm_wrapper.h",
       "output_protection.h",
       "platform_verification.h",

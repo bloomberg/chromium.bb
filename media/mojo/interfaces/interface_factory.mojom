@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/audio_decoder.mojom";
+import "media/mojo/interfaces/cdm_proxy.mojom";
 import "media/mojo/interfaces/content_decryption_module.mojom";
 import "media/mojo/interfaces/renderer.mojom";
 import "media/mojo/interfaces/video_decoder.mojom";
@@ -27,4 +28,10 @@ interface InterfaceFactory {
   // this call may be initiated by an untrusted process (e.g. renderer), so the
   // implementation must fully validate |key_system| before creating the CDM.
   CreateCdm(string key_system, ContentDecryptionModule& cdm);
+
+  // Creates a CdmProxy that proxies part of CDM functionalities to a different
+  // entity, e.g. hardware CDM modules.
+  // TODO(crbug.com/676224): Conditionally enable this when EnabledIf attribute
+  // is supported in mojom files.
+  CreateCdmProxy(CdmProxy& cdm_proxy);
 };
