@@ -33366,6 +33366,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.ChromeArcVideoDecodeAccelerator.InitializeResult"
     enum="ArcVideoDecodeAcceleratorResult">
+  <obsolete>
+    Deprecated as of Dec 18, 2017. Replaced by
+    Media.GpuArcVideoDecodeAccelerator.InitializeResult.
+  </obsolete>
   <owner>johnylin@chromium.org</owner>
   <summary>
     Counts of status values returned from calls to

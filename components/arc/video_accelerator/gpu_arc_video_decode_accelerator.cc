@@ -370,14 +370,8 @@ void GpuArcVideoDecodeAccelerator::Initialize(
   auto result = InitializeTask(std::move(config));
 
   // Report initialization status to UMA.
-  // TODO(hiroh): crbug.com/793251.
-  //              Not report "Media.ChromeArcVDA.InitializeResult" after
-  //              autototests will be updated as not using ChromeArcVDA.
   const int RESULT_MAX =
       static_cast<int>(mojom::VideoDecodeAccelerator::Result::RESULT_MAX);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.ChromeArcVideoDecodeAccelerator.InitializeResult",
-      static_cast<int>(result), RESULT_MAX);
   UMA_HISTOGRAM_ENUMERATION(
       "Media.GpuArcVideoDecodeAccelerator.InitializeResult",
       static_cast<int>(result), RESULT_MAX);
