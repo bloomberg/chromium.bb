@@ -5288,7 +5288,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       || (cm->allow_intrabc && NO_FILTER_FOR_IBC)
 #endif  // CONFIG_INTRABC
 #if CONFIG_EXT_TILE
-      || cm->single_tile_decoding
+      || cm->large_scale_tile
 #endif  // CONFIG_EXT_TILE
       ) {
 #if CONFIG_LPF_SB
@@ -5307,7 +5307,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       || (cm->allow_intrabc && NO_FILTER_FOR_IBC)
 #endif  // CONFIG_INTRABC
 #if CONFIG_EXT_TILE
-      || cm->single_tile_decoding
+      || cm->large_scale_tile
 #endif
       ) {
     no_cdef = 1;

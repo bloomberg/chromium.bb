@@ -3647,6 +3647,14 @@ static uint32_t read_tile_group_header(AV1Decoder *pbi,
   AV1_COMMON *const cm = &pbi->common;
   uint32_t saved_bit_offset = rb->bit_offset;
 
+#if CONFIG_EXT_TILE
+  if (pbi->common.large_scale_tile) {
+    *startTile = 0;
+    *endTile = pbi->common.tile_rows * pbi->common.tile_cols - 1;
+    return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
+  }
+#endif
+
   *startTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
   *endTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
 
