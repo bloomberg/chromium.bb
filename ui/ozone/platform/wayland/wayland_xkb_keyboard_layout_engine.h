@@ -11,16 +11,22 @@
 
 namespace ui {
 
+class EventModifiers;
+
 class WaylandXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
  public:
   WaylandXkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter);
 
   // Used to sync up client side 'xkb_state' instance with modifiers status
   // update from the compositor.
-  int UpdateModifiers(uint32_t depressed_mods,
-                      uint32_t latched_mods,
-                      uint32_t locked_mods,
-                      uint32_t group);
+  void UpdateModifiers(uint32_t depressed_mods,
+                       uint32_t latched_mods,
+                       uint32_t locked_mods,
+                       uint32_t group);
+
+  void set_event_modifiers(EventModifiers* event_modifiers) {
+    event_modifiers_ = event_modifiers;
+  }
 
  private:
   void SetKeymap(xkb_keymap* keymap) override;
@@ -31,6 +37,8 @@ class WaylandXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
     xkb_mod_index_t alt = 0;
     xkb_mod_index_t shift = 0;
   } xkb_mod_indexes_;
+
+  EventModifiers* event_modifiers_ = nullptr;  // Owned by WaylandKeyboard.
 };
 
 }  // namespace ui
