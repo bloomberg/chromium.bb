@@ -1430,7 +1430,7 @@ static INLINE void transpose_int32(int32_t *dst, int dst_stride,
 }
 
 static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
-#if CONFIG_TX64X64 && !CONFIG_DAALA_TX
+#if CONFIG_TX64X64
   if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64) {
     return 1024;
   }

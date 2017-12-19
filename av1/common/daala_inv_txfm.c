@@ -87,11 +87,41 @@ void daala_inv_txfm_add_c(const tran_low_t *input_coeffs, void *output_pixels,
     int col_flip = tx_flip(vtx_tab[tx_type]);
     int row_flip = tx_flip(htx_tab[tx_type]);
     od_coeff tmpsq[MAX_TX_SQUARE];
+#if CONFIG_TX64X64
+    tran_low_t pad_input[MAX_TX_SQUARE];
+#endif
     int r;
     int c;
 
     assert(col_tx);
     assert(row_tx);
+
+#if CONFIG_TX64X64
+    if (rows > 32 || cols > 32) {
+      int avail_rows;
+      int avail_cols;
+      // TODO(urvang): Can the same array be reused, instead of using a new
+      // array?
+      // Remap 32x32 input into a modified input by:
+      // - Copying over these values in top-left 32x32 locations.
+      // - Setting the rest of the locations to 0.
+      avail_rows = AOMMIN(rows, 32);
+      avail_cols = AOMMIN(cols, 32);
+      for (r = 0; r < avail_rows; r++) {
+        memcpy(pad_input + r * cols, input_coeffs + r * avail_cols,
+               avail_cols * sizeof(*pad_input));
+        if (cols > avail_cols) {
+          memset(pad_input + r * cols + avail_cols, 0,
+                 (cols - avail_cols) * sizeof(*pad_input));
+        }
+      }
+      if (rows > avail_rows) {
+        memset(pad_input + avail_rows * cols, 0,
+               (rows - avail_rows) * cols * sizeof(*pad_input));
+      }
+      input_coeffs = pad_input;
+    }
+#endif
 
     // Inverse-transform rows
     for (r = 0; r < rows; ++r) {

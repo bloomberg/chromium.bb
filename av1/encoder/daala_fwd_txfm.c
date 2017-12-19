@@ -108,6 +108,19 @@ void daala_fwd_txfm(const int16_t *input_pixels, tran_low_t *output_coeffs,
       else
         row_tx(output_coeffs + r * cols, output_coeffs + r * cols, 1);
     }
+#if CONFIG_TX64X64
+    // Re-pack coeffs in the first 32x32 indices.
+    if (cols > 32) {
+      int avail_rows;
+      int avail_cols;
+      avail_rows = AOMMIN(rows, 32);
+      avail_cols = AOMMIN(cols, 32);
+      for (r = 1; r < avail_rows; r++) {
+        memmove(output_coeffs + r * avail_cols, output_coeffs + r * cols,
+                avail_cols * sizeof(*output_coeffs));
+      }
+    }
+#endif
   }
 }
 
