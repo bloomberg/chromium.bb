@@ -2123,10 +2123,18 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestDisplaysInsecureForm) {
                      AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
 }
 
+// TODO(crbug.com/795820): Fails in Windows official builds.
+#if defined(OFFICIAL_BUILD) && defined(OS_WIN)
+#define MAYBE_TestBrokenHTTPSReportingCloseTab \
+  DISABLED_TestBrokenHTTPSReportingCloseTab
+#else
+#define MAYBE_TestBrokenHTTPSReportingCloseTab TestBrokenHTTPSReportingCloseTab
+#endif
+
 // Test that a report is sent if the user closes the tab on an interstitial
 // before making a decision to proceed or go back.
 IN_PROC_BROWSER_TEST_P(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSReportingCloseTab) {
+                       MAYBE_TestBrokenHTTPSReportingCloseTab) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   base::RunLoop run_loop;
