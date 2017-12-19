@@ -177,16 +177,15 @@ void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
   if (details.is_reporting_upload && details.type == ERR_ABORTED)
     return;
 
-  url::Origin origin = url::Origin::Create(details.uri);
-
   // NEL is only available to secure origins, so ignore network errors from
   // insecure origins. (The check in OnHeader prevents insecure origins from
   // setting policies, but this check is needed to ensure that insecure origins
   // can't match wildcard policies from secure origins.)
-  if (!origin.GetURL().SchemeIsCryptographic())
+  if (!details.uri.SchemeIsCryptographic())
     return;
 
-  const OriginPolicy* policy = FindPolicyForOrigin(origin);
+  const OriginPolicy* policy =
+      FindPolicyForOrigin(url::Origin::Create(details.uri));
   if (!policy)
     return;
 
