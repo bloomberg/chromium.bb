@@ -15,7 +15,12 @@ TestContentPaymentRequestDelegate::TestContentPaymentRequestDelegate(
 TestContentPaymentRequestDelegate::~TestContentPaymentRequestDelegate() {}
 
 scoped_refptr<PaymentManifestWebDataService>
-TestContentPaymentRequestDelegate ::GetPaymentManifestWebDataService() const {
+TestContentPaymentRequestDelegate::GetPaymentManifestWebDataService() const {
+  return nullptr;
+}
+
+PaymentRequestDisplayManager*
+TestContentPaymentRequestDelegate::GetDisplayManager() {
   return nullptr;
 }
 

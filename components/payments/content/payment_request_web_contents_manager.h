@@ -56,12 +56,6 @@ class PaymentRequestWebContentsManager
   // Destroys the given |request|.
   void DestroyRequest(PaymentRequest* request);
 
-  // Called when |request| has received the show() call. If the |request| can be
-  // shown, then returns true and assumes that |request| is now showing until
-  // DestroyRequest(|request|) is called with the same pointer. (Only one
-  // request at a time can be shown per tab.)
-  bool CanShow(PaymentRequest* request);
-
   // WebContentsObserver::
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -76,10 +70,6 @@ class PaymentRequestWebContentsManager
   // these requests only get destroyed when the WebContents goes away, or when
   // the requests themselves call DestroyRequest().
   std::map<PaymentRequest*, std::unique_ptr<PaymentRequest>> payment_requests_;
-
-  // The currently displayed instance of PaymentRequest. Points to one of the
-  // elements in |payment_requests_|. Can be null.
-  PaymentRequest* showing_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestWebContentsManager);
 };

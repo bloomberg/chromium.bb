@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/payments/payment_request_display_manager_factory.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -154,6 +155,12 @@ ChromePaymentRequestDelegate::GetPaymentManifestWebDataService() const {
   return WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+PaymentRequestDisplayManager*
+ChromePaymentRequestDelegate::GetDisplayManager() {
+  return PaymentRequestDisplayManagerFactory::GetForBrowserContext(
+      web_contents_->GetBrowserContext());
 }
 
 }  // namespace payments
