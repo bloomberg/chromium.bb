@@ -29,6 +29,7 @@ import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.view.WindowManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -260,7 +261,10 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         }
 
         if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
-            super.onCreate(null);
+            // Some Samsung devices load fonts from disk, crbug.com/691706.
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                super.onCreate(null);
+            }
 
             // Kick the user to the MigrationActivity.
             UpgradeActivity.launchInstance(this, getIntent());
@@ -283,7 +287,10 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             return;
         }
 
-        super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
+        // Some Samsung devices load fonts from disk, crbug.com/691706.
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
+        }
         mOnCreateTimestampMs = SystemClock.elapsedRealtime();
         mOnCreateTimestampUptimeMs = SystemClock.uptimeMillis();
         mSavedInstanceState = savedInstanceState;
