@@ -11,6 +11,7 @@
 
 class FullscreenController;
 class FullscreenModel;
+@class FullscreenWebScrollViewReplacementHandler;
 class ScopedFullscreenDisabler;
 
 // A WebStateObserver that updates a FullscreenModel for navigation events.
@@ -43,6 +44,9 @@ class FullscreenWebStateObserver : public web::WebStateObserver {
   FullscreenController* controller_;
   // The model passed on construction.
   FullscreenModel* model_;
+  // Observer for |web_state_|'s scroll view proxy.
+  __strong FullscreenWebScrollViewReplacementHandler*
+      scroll_view_replacement_handler_;
   // The disabler for broken SSL.
   std::unique_ptr<ScopedFullscreenDisabler> ssl_disabler_;
   // The disabler for loading.

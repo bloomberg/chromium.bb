@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_scroll_view_replacement_handler.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -36,7 +37,11 @@ bool IsWebStateSSLBroken(web::WebState* web_state) {
 FullscreenWebStateObserver::FullscreenWebStateObserver(
     FullscreenController* controller,
     FullscreenModel* model)
-    : controller_(controller), model_(model) {
+    : controller_(controller),
+      model_(model),
+      scroll_view_replacement_handler_(
+          [[FullscreenWebScrollViewReplacementHandler alloc]
+              initWithModel:model_]) {
   DCHECK(controller_);
   DCHECK(model_);
 }
@@ -52,8 +57,11 @@ void FullscreenWebStateObserver::SetWebState(web::WebState* web_state) {
   if (web_state_)
     web_state_->AddObserver(this);
   // Update the model according to the new WebState.
-  SetIsLoading(web_state ? web_state->IsLoading() : false);
-  SetIsSSLBroken(web_state ? IsWebStateSSLBroken(web_state) : false);
+  SetIsLoading(web_state_ ? web_state->IsLoading() : false);
+  SetIsSSLBroken(web_state_ ? IsWebStateSSLBroken(web_state_) : false);
+  // Update the scroll view replacement handler's proxy.
+  scroll_view_replacement_handler_.proxy =
+      web_state_ ? web_state_->GetWebViewProxy() : nil;
 }
 
 void FullscreenWebStateObserver::DidFinishNavigation(

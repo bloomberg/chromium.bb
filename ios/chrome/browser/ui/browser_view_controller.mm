@@ -5160,21 +5160,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
     _infoBarContainer->ChangeInfoBarManager(infoBarManager);
   }
 
-  if (self.active && model.currentTab == newTab) {
-    // Add |newTab|'s view to the hierarchy if it's the current Tab.
+  // Add |newTab|'s view to the hierarchy if it's the current Tab.
+  if (self.active && model.currentTab == newTab)
     [self displayTab:newTab isNewSelection:NO];
-    // Reset the temporary native controller since the current tab is replaced.
-    _temporaryNativeController = nil;
-    // If this is occurring for an inserted prerender tab, update its content
-    // offset so that it's below the toolbar.
-    if (_insertedTabWasPrerenderedTab) {
-      CRWWebViewProxyType webViewProxy = newTab.webState->GetWebViewProxy();
-      CRWWebViewScrollViewProxy* scrollProxy = webViewProxy.scrollViewProxy;
-      CGFloat toolbarHeight = [self toolbarHeight];
-      scrollProxy.contentOffset = CGPointMake(0, -toolbarHeight);
-      webViewProxy.topContentPadding = toolbarHeight;
-    }
-  }
 
   if (newTab)
     [_paymentRequestManager setActiveWebState:newTab.webState];
