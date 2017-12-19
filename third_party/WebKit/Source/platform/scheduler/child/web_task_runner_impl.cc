@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/time_domain.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 namespace scheduler {

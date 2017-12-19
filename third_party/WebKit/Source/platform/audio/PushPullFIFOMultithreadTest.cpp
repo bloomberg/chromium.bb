@@ -37,9 +37,8 @@ class FIFOClient {
     duration_ms_ = duration_ms;
     interval_ms_ = interval_ms;
     client_thread_->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&FIFOClient::RunTaskOnOwnThread,
-                        CrossThreadUnretained(this)));
+        FROM_HERE, CrossThreadBind(&FIFOClient::RunTaskOnOwnThread,
+                                   CrossThreadUnretained(this)));
     return done_event_.get();
   }
 
@@ -59,7 +58,7 @@ class FIFOClient {
     RunTask();
     if (elapsed_ms_ < duration_ms_) {
       client_thread_->GetWebTaskRunner()->PostDelayedTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&FIFOClient::RunTaskOnOwnThread,
                           CrossThreadUnretained(this)),
           TimeDelta::FromMillisecondsD(interval_with_jitter));

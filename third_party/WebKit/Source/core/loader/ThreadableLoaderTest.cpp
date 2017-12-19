@@ -335,7 +335,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     worker_loading_task_runner_ =
         worker_thread_->GetTaskRunner(TaskType::kInternalTest);
 
-    worker_loading_task_runner_->PostTask(BLINK_FROM_HERE,
+    worker_loading_task_runner_->PostTask(FROM_HERE,
                                           CrossThreadBind(&SetUpMockURLs));
     WaitForWorkerThreadSignal();
   }
@@ -343,7 +343,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   void OnServeRequests() override {
     testing::RunPendingTasks();
     worker_loading_task_runner_->PostTask(
-        BLINK_FROM_HERE, CrossThreadBind(&ServeAsynchronousRequests));
+        FROM_HERE, CrossThreadBind(&ServeAsynchronousRequests));
     WaitForWorkerThreadSignal();
   }
 
@@ -411,7 +411,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   void WaitForWorkerThreadSignal() {
     WaitableEvent event;
     worker_loading_task_runner_->PostTask(
-        BLINK_FROM_HERE,
+        FROM_HERE,
         CrossThreadBind(&WaitableEvent::Signal, CrossThreadUnretained(&event)));
     event.Wait();
   }

@@ -26,6 +26,7 @@
 #include "platform/graphics/ImageFrameGenerator.h"
 
 #include <memory>
+#include "base/location.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/SharedBuffer.h"
 #include "platform/WebTaskRunner.h"
@@ -36,7 +37,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -259,7 +259,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
   std::unique_ptr<WebThread> thread =
       Platform::Current()->CreateThread("DecodeThread");
   thread->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE,
+      FROM_HERE,
       CrossThreadBind(&DecodeThreadMain, WTF::RetainedRef(generator_),
                       WTF::RetainedRef(segment_reader_)));
   thread.reset();

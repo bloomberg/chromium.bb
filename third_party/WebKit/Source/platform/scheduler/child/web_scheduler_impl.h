@@ -35,9 +35,9 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   void Shutdown() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() override;
-  void PostIdleTask(const WebTraceLocation& location,
+  void PostIdleTask(const base::Location& location,
                     WebThread::IdleTask task) override;
-  void PostNonNestableIdleTask(const WebTraceLocation& location,
+  void PostNonNestableIdleTask(const base::Location& location,
                                WebThread::IdleTask task) override;
   WebTaskRunner* LoadingTaskRunner() override;
   WebTaskRunner* TimerTaskRunner() override;

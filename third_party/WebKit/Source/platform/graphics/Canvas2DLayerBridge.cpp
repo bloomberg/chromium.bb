@@ -26,6 +26,7 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include <memory>
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -46,7 +47,6 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebTraceLocation.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -431,11 +431,11 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
     hibernation_scheduled_ = true;
     if (dont_use_idle_scheduling_for_testing_) {
       Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-          BLINK_FROM_HERE, WTF::Bind(&HibernateWrapperForTesting,
-                                     weak_ptr_factory_.GetWeakPtr()));
+          FROM_HERE, WTF::Bind(&HibernateWrapperForTesting,
+                               weak_ptr_factory_.GetWeakPtr()));
     } else {
       Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           WTF::Bind(&HibernateWrapper, weak_ptr_factory_.GetWeakPtr()));
     }
   }

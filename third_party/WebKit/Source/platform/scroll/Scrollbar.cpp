@@ -216,7 +216,7 @@ void Scrollbar::StartTimerIfNeeded(double delay) {
       return;
   }
 
-  scroll_timer_.StartOneShot(delay, BLINK_FROM_HERE);
+  scroll_timer_.StartOneShot(delay, FROM_HERE);
 }
 
 void Scrollbar::StopTimerIfNeeded() {

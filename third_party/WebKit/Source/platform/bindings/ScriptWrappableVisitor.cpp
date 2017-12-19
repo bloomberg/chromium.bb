@@ -107,8 +107,8 @@ void ScriptWrappableVisitor::ScheduleIdleLazyCleanup() {
     return;
 
   Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
-      BLINK_FROM_HERE, WTF::Bind(&ScriptWrappableVisitor::PerformLazyCleanup,
-                                 WTF::Unretained(this)));
+      FROM_HERE, WTF::Bind(&ScriptWrappableVisitor::PerformLazyCleanup,
+                           WTF::Unretained(this)));
   idle_cleanup_task_scheduled_ = true;
 }
 

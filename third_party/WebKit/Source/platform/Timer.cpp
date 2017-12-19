@@ -54,7 +54,7 @@ TimerBase::~TimerBase() {
 
 void TimerBase::Start(TimeDelta next_fire_interval,
                       TimeDelta repeat_interval,
-                      const WebTraceLocation& caller) {
+                      const base::Location& caller) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(thread_, CurrentThread());
 #endif

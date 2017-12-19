@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_SCHEDULER_H_
 
+#include "base/location.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 #include <memory>
@@ -58,14 +58,14 @@ class PLATFORM_EXPORT WebScheduler {
   // tasks which may be reordered relative to other task types and may be
   // starved for an arbitrarily long time if no idle time is available.
   // Takes ownership of |IdleTask|. Can be called from any thread.
-  virtual void PostIdleTask(const WebTraceLocation&, WebThread::IdleTask) = 0;
+  virtual void PostIdleTask(const base::Location&, WebThread::IdleTask) = 0;
 
   // Like postIdleTask but guarantees that the posted task will not run
   // nested within an already-running task. Posting an idle task as
   // non-nestable may not affect when the task gets run, or it could
   // make it run later than it normally would, but it won't make it
   // run earlier than it normally would.
-  virtual void PostNonNestableIdleTask(const WebTraceLocation&,
+  virtual void PostNonNestableIdleTask(const base::Location&,
                                        WebThread::IdleTask) = 0;
 
   // Returns a WebTaskRunner for loading tasks. Can be called from any thread.

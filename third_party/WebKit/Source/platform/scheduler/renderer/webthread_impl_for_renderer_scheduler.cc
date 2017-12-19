@@ -4,11 +4,11 @@
 
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
+#include "base/location.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_web_scheduler_impl.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 namespace scheduler {

@@ -606,8 +606,7 @@ void ScrollableArea::ShowOverlayScrollbars() {
   }
 
   if (!scrollbar_captured_ && !mouse_over_scrollbar_) {
-    fade_overlay_scrollbars_timer_->StartOneShot(time_until_disable,
-                                                 BLINK_FROM_HERE);
+    fade_overlay_scrollbars_timer_->StartOneShot(time_until_disable, FROM_HERE);
   }
 }
 

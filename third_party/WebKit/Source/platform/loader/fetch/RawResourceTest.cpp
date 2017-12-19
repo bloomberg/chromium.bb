@@ -130,8 +130,8 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
         ->CurrentThread()
         ->Scheduler()
         ->LoadingTaskRunner()
-        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&AddingClient::RemoveClient,
-                                              WrapPersistent(this)));
+        ->PostTask(FROM_HERE, WTF::Bind(&AddingClient::RemoveClient,
+                                        WrapPersistent(this)));
     resource->AddClient(dummy_client_);
   }
   String DebugName() const override { return "AddingClient"; }

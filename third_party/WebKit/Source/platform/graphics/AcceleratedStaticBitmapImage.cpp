@@ -102,7 +102,7 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
     if (original_skia_image_thread_id_ !=
         Platform::Current()->CurrentThread()->ThreadId()) {
       original_skia_image_task_runner_->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(
               &DestroySkImageOnOriginalThread, std::move(original_skia_image_),
               std::move(original_skia_image_context_provider_wrapper_),

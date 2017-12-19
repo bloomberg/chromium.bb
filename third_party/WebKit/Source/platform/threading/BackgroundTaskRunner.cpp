@@ -6,12 +6,11 @@
 
 #include "base/location.h"
 #include "base/task_scheduler/post_task.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
 void BackgroundTaskRunner::PostOnBackgroundThread(
-    const WebTraceLocation& location,
+    const base::Location& location,
     CrossThreadClosure closure) {
   base::PostTaskWithTraits(location,
                            {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},

@@ -31,6 +31,7 @@
 #include "platform/blob/BlobRegistry.h"
 
 #include <memory>
+#include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
@@ -48,7 +49,6 @@
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 

@@ -125,7 +125,7 @@ void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholder(
       ->MainThread()
       ->Scheduler()
       ->CompositorTaskRunner()
-      ->PostTask(BLINK_FROM_HERE,
+      ->PostTask(FROM_HERE,
                  CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
                                  WTF::Passed(std::move(dispatcher_task_runner)),
                                  placeholder_canvas_id_, std::move(image),

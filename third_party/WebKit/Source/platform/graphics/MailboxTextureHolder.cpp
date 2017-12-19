@@ -140,7 +140,7 @@ MailboxTextureHolder::~MailboxTextureHolder() {
     if (texture_thread_task_runner_ &&
         thread_id_ != Platform::Current()->CurrentThread()->ThreadId()) {
       texture_thread_task_runner_->PostTask(
-          BLINK_FROM_HERE,
+          FROM_HERE,
           CrossThreadBind(&ReleaseTexture, is_converted_from_skia_texture_,
                           texture_id_, WTF::Passed(std::move(passed_mailbox)),
                           WTF::Passed(ContextProviderWrapper()),

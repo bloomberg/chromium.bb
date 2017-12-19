@@ -14,7 +14,6 @@
 #include "platform/scheduler/child/web_scheduler_impl.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 namespace scheduler {

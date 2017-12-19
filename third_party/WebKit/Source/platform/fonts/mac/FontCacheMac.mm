@@ -31,6 +31,7 @@
 
 #import <AppKit/AppKit.h>
 #include <memory>
+#include "base/location.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/font_family_names.h"
@@ -42,7 +43,6 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebTraceLocation.h"
 
 // Forward declare Mac SPIs.
 // Request for public API: rdar://13803570
@@ -68,7 +68,7 @@ const AtomicString& FontCache::LegacySystemFontFamily() {
 static void InvalidateFontCache() {
   if (!IsMainThread()) {
     Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE, WTF::Bind(&InvalidateFontCache));
+        FROM_HERE, WTF::Bind(&InvalidateFontCache));
     return;
   }
   FontCache::GetFontCache()->Invalidate();

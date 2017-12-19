@@ -5,12 +5,12 @@
 #include "platform/scheduler/child/web_scheduler_impl.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 namespace scheduler {
@@ -49,7 +49,7 @@ void WebSchedulerImpl::RunIdleTask(blink::WebThread::IdleTask task,
   std::move(task).Run((deadline - base::TimeTicks()).InSecondsF());
 }
 
-void WebSchedulerImpl::PostIdleTask(const blink::WebTraceLocation& location,
+void WebSchedulerImpl::PostIdleTask(const base::Location& location,
                                     blink::WebThread::IdleTask task) {
   DCHECK(idle_task_runner_);
   idle_task_runner_->PostIdleTask(
@@ -58,7 +58,7 @@ void WebSchedulerImpl::PostIdleTask(const blink::WebTraceLocation& location,
 }
 
 void WebSchedulerImpl::PostNonNestableIdleTask(
-    const blink::WebTraceLocation& location,
+    const base::Location& location,
     blink::WebThread::IdleTask task) {
   DCHECK(idle_task_runner_);
   idle_task_runner_->PostNonNestableIdleTask(
