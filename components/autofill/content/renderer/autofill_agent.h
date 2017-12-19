@@ -245,10 +245,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   virtual bool IsUserGesture() const;
 
   // Attempt to get submitted FormData from last_interacted_form_ or
-  // constructed_form_, return true if |form| is set.
+  // provisionally_saved_form_, return true if |form| is set.
   bool GetSubmittedForm(FormData* form);
 
   void ResetLastInteractedElements();
+  void UpdateLastInteractedForm(blink::WebFormElement form);
 
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.
@@ -273,7 +274,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   // When dealing with forms that don't use a <form> tag, we keep track of the
   // elements the user has modified so we can determine when submission occurs.
   std::set<blink::WebInputElement> formless_elements_user_edited_;
-  std::unique_ptr<FormData> constructed_form_;
+
+  // The form user interacted, it is used if last_interacted_form_ or formless
+  // form can't be converted to FormData at the time of form submission.
+  std::unique_ptr<FormData> provisionally_saved_form_;
 
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;
