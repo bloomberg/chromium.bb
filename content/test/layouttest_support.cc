@@ -319,6 +319,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     // previously being created but in that case the old GpuChannel would be
     // lost as would the LayerTreeFrameSink.
     gpu_channel_ = gpu_channel;
+    gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
 
     auto* task_runner = deps->GetCompositorImplThreadTaskRunner().get();
     bool synchronous_composite = !task_runner;
@@ -378,8 +379,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     auto context_provider =
         base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
-            gpu_channel_, kGpuStreamIdDefault, kGpuStreamPriorityDefault,
-            gpu::kNullSurfaceHandle,
+            gpu_channel_, gpu_memory_buffer_manager_, kGpuStreamIdDefault,
+            kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
             GURL("chrome://gpu/"
                  "LayoutTestDependenciesImpl::CreateOutputSurface"),
             automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
@@ -413,6 +414,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
   std::unordered_map<int32_t, viz::TestLayerTreeFrameSink*>
       layer_tree_frame_sinks_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
 };
 
 void EnableRendererLayoutTestMode() {

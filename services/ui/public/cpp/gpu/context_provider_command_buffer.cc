@@ -134,6 +134,7 @@ ContextProviderCommandBuffer::SharedProviders::~SharedProviders() = default;
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     scoped_refptr<gpu::GpuChannelHost> channel,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int32_t stream_id,
     gpu::SchedulingPriority stream_priority,
     gpu::SurfaceHandle surface_handle,
@@ -156,7 +157,8 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
       shared_providers_(shared_context_provider
                             ? shared_context_provider->shared_providers_
                             : new SharedProviders),
-      channel_(std::move(channel)) {
+      channel_(std::move(channel)),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(channel_);
   context_thread_checker_.DetachFromThread();
@@ -238,7 +240,8 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     // This command buffer is a client-side proxy to the command buffer in the
     // GPU process.
     command_buffer_ = std::make_unique<gpu::CommandBufferProxyImpl>(
-        std::move(channel_), stream_id_, task_runner);
+        std::move(channel_), gpu_memory_buffer_manager_, stream_id_,
+        task_runner);
     bind_result_ =
         command_buffer_->Initialize(surface_handle_, shared_command_buffer,
                                     stream_priority_, attributes_, active_url_);

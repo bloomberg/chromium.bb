@@ -269,8 +269,8 @@ bool PPB_Graphics3D_Impl::InitRaw(
   }
 
   command_buffer_ = std::make_unique<gpu::CommandBufferProxyImpl>(
-      std::move(channel), kGpuStreamIdDefault,
-      base::ThreadTaskRunnerHandle::Get());
+      std::move(channel), render_thread->GetGpuMemoryBufferManager(),
+      kGpuStreamIdDefault, base::ThreadTaskRunnerHandle::Get());
   auto result = command_buffer_->Initialize(
       gpu::kNullSurfaceHandle, share_buffer, kGpuStreamPriorityDefault,
       attrib_helper, GURL::EmptyGURL());

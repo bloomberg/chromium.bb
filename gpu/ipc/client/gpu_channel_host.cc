@@ -30,19 +30,16 @@ base::AtomicSequenceNumber g_next_transfer_buffer_id;
 
 }  // namespace
 
-GpuChannelHost::GpuChannelHost(
-    int channel_id,
-    const gpu::GPUInfo& gpu_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info,
-    mojo::ScopedMessagePipeHandle handle,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
+GpuChannelHost::GpuChannelHost(int channel_id,
+                               const gpu::GPUInfo& gpu_info,
+                               const gpu::GpuFeatureInfo& gpu_feature_info,
+                               mojo::ScopedMessagePipeHandle handle)
     : io_thread_(base::ThreadTaskRunnerHandle::Get()),
       channel_id_(channel_id),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
       listener_(new Listener(std::move(handle), io_thread_),
-                base::OnTaskRunnerDeleter(io_thread_)),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
+                base::OnTaskRunnerDeleter(io_thread_)) {
   next_image_id_.GetNext();
   next_route_id_.GetNext();
 }

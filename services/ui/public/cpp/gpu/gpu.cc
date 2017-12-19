@@ -121,8 +121,7 @@ class Gpu::EstablishRequest
     received_ = true;
     if (channel_handle.is_valid()) {
       gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
-          client_id, gpu_info, gpu_feature_info, std::move(channel_handle),
-          parent_->gpu_memory_buffer_manager());
+          client_id, gpu_info, gpu_feature_info, std::move(channel_handle));
     }
 
     if (establish_event_) {
@@ -199,9 +198,10 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
   attributes.lose_context_when_out_of_memory = true;
   ContextProviderCommandBuffer* shared_context_provider = nullptr;
   return base::MakeRefCounted<ContextProviderCommandBuffer>(
-      std::move(gpu_channel), stream_id, stream_priority,
-      gpu::kNullSurfaceHandle, GURL("chrome://gpu/MusContextFactory"),
-      automatic_flushes, support_locking, gpu::SharedMemoryLimits(), attributes,
+      std::move(gpu_channel), GetGpuMemoryBufferManager(), stream_id,
+      stream_priority, gpu::kNullSurfaceHandle,
+      GURL("chrome://gpu/MusContextFactory"), automatic_flushes,
+      support_locking, gpu::SharedMemoryLimits(), attributes,
       shared_context_provider, command_buffer_metrics::MUS_CLIENT_CONTEXT);
 }
 

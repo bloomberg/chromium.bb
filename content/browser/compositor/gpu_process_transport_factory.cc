@@ -1135,9 +1135,9 @@ GpuProcessTransportFactory::CreateContextCommon(
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
-      std::move(gpu_channel_host), stream_id, stream_priority, surface_handle,
-      url, automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
-      attributes, shared_context_provider, type);
+      std::move(gpu_channel_host), GetGpuMemoryBufferManager(), stream_id,
+      stream_priority, surface_handle, url, automatic_flushes, support_locking,
+      gpu::SharedMemoryLimits(), attributes, shared_context_provider, type);
 }
 
 }  // namespace content

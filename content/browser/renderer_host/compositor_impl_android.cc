@@ -234,6 +234,9 @@ void CreateContextProviderAfterGpuChannelEstablished(
   if (!gpu_channel_host)
     callback.Run(nullptr);
 
+  gpu::GpuChannelEstablishFactory* factory =
+      BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
+
   int32_t stream_id = kGpuStreamIdDefault;
   gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
 
@@ -242,7 +245,8 @@ void CreateContextProviderAfterGpuChannelEstablished(
 
   auto context_provider =
       base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
-          std::move(gpu_channel_host), stream_id, stream_priority, handle,
+          std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
+          stream_id, stream_priority, handle,
           GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
           automatic_flushes, support_locking, shared_memory_limits, attributes,
           nullptr /* shared_context */,
@@ -755,6 +759,9 @@ void CompositorImpl::OnGpuChannelEstablished(
   DCHECK(window_);
   DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
 
+  gpu::GpuChannelEstablishFactory* factory =
+      BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
+
   int32_t stream_id = kGpuStreamIdDefault;
   gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
 
@@ -767,8 +774,8 @@ void CompositorImpl::OnGpuChannelEstablished(
   ui::ContextProviderCommandBuffer* shared_context = nullptr;
   auto context_provider =
       base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
-          std::move(gpu_channel_host), stream_id, stream_priority,
-          surface_handle_,
+          std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
+          stream_id, stream_priority, surface_handle_,
           GURL(std::string("chrome://gpu/CompositorImpl::") +
                std::string("CompositorContextProvider")),
           automatic_flushes, support_locking,

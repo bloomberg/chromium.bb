@@ -29,6 +29,8 @@ namespace {
 
 scoped_refptr<ui::ContextProviderCommandBuffer> CreateContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  gpu::GpuChannelEstablishFactory* factory =
+      content::BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
   // This is for an offscreen context, so the default framebuffer doesn't need
   // any alpha, depth, stencil, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;
@@ -41,10 +43,11 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContext(
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
-      std::move(gpu_channel_host), content::kGpuStreamIdDefault,
-      content::kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle, GURL(),
-      automatic_flushes, support_locking, gpu::SharedMemoryLimits(), attributes,
-      nullptr, ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
+      std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
+      content::kGpuStreamIdDefault, content::kGpuStreamPriorityDefault,
+      gpu::kNullSurfaceHandle, GURL(), automatic_flushes, support_locking,
+      gpu::SharedMemoryLimits(), attributes, nullptr,
+      ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
 }
 
 void OnEstablishedGpuChannel(
@@ -326,8 +329,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
   attributes.bind_generates_resource = false;
 
   auto impl = std::make_unique<gpu::CommandBufferProxyImpl>(
-      GetGpuChannel(), content::kGpuStreamIdDefault,
-      base::ThreadTaskRunnerHandle::Get());
+      GetGpuChannel(), GetFactory()->GetGpuMemoryBufferManager(),
+      content::kGpuStreamIdDefault, base::ThreadTaskRunnerHandle::Get());
   ASSERT_EQ(
       impl->Initialize(gpu::kNullSurfaceHandle, nullptr,
                        content::kGpuStreamPriorityDefault, attributes, GURL()),
