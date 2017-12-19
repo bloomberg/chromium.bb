@@ -10641,56 +10641,9 @@ PALETTE_EXIT:
 // Obtain the rdcost for skip_mode.
 #if CONFIG_JNT_COMP
     x->compound_idx = 1;  // COMPOUND_AVERAGE
-#if SKIP_MODE_WITH_JNT_COMP
-    const int cur_offset = (int)cm->frame_offset;
-    int ref_offset[2];
-    get_skip_mode_ref_offsets(cm, ref_offset);
-    const int cur_to_ref0 = cur_offset - ref_offset[0];
-    const int cur_to_ref1 = abs(cur_offset - ref_offset[0]);
-    if (cur_to_ref0 != cur_to_ref1 && xd->all_one_sided_refs) {
-      // Decide on the JNT_COMP mode.
-      int64_t best_skip_mode_rd = INT64_MAX;
-      int best_compound_idx = 0;
-      int best_skip_mode_rate = 0;
-      int64_t best_skip_mode_sse = 0, best_skip_mode_dist = 0;
-
-      for (int compound_idx = 0; compound_idx < 2; ++compound_idx) {
-        x->compound_idx = compound_idx;
-        estimate_skip_mode_rdcost(cpi, tile_data, x, bsize, mi_row, mi_col,
-                                  frame_mv, yv12_mb);
-
-        if (x->skip_mode_rdcost >= 0 && x->skip_mode_rdcost < INT64_MAX) {
-          // Update skip mode rdcost.
-          const int comp_index_ctx = get_comp_index_context(cm, xd);
-          x->skip_mode_rate += x->comp_idx_cost[comp_index_ctx][compound_idx];
-          x->skip_mode_rdcost =
-              RDCOST(x->rdmult, x->skip_mode_rate, x->skip_mode_dist);
-
-          if (x->skip_mode_rdcost < best_skip_mode_rd) {
-            best_skip_mode_rd = x->skip_mode_rdcost;
-            best_compound_idx = compound_idx;
-            best_skip_mode_rate = x->skip_mode_rate;
-            best_skip_mode_sse = x->skip_mode_sse;
-            best_skip_mode_dist = x->skip_mode_dist;
-          }
-        }
-      }
-
-      if (best_skip_mode_rd < INT64_MAX) {
-        x->compound_idx = best_compound_idx;
-        x->skip_mode_rdcost = best_skip_mode_rd;
-        x->skip_mode_rate = best_skip_mode_rate;
-        x->skip_mode_sse = best_skip_mode_sse;
-        x->skip_mode_dist = best_skip_mode_dist;
-      }
-    } else {
-#endif  // SKIP_MODE_WITH_JNT_COMP
-#endif  // CONFIG_JNT_COMP
-      estimate_skip_mode_rdcost(cpi, tile_data, x, bsize, mi_row, mi_col,
-                                frame_mv, yv12_mb);
-#if CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
-    }
-#endif  // CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
+#endif                    // CONFIG_JNT_COMP
+    estimate_skip_mode_rdcost(cpi, tile_data, x, bsize, mi_row, mi_col,
+                              frame_mv, yv12_mb);
 
     if (x->skip_mode_rdcost >= 0 && x->skip_mode_rdcost < INT64_MAX) {
       // Update skip mode rdcost.

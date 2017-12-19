@@ -2190,26 +2190,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->compound_idx = 1;
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
 
-#if CONFIG_EXT_SKIP
-#if CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
-  if (mbmi->skip_mode) {
-    const int cur_offset = (int)cm->frame_offset;
-    int ref_offset[2];
-    get_skip_mode_ref_offsets(cm, ref_offset);
-    const int cur_to_ref0 = cur_offset - ref_offset[0];
-    const int cur_to_ref1 = abs(cur_offset - ref_offset[1]);
-    if (cur_to_ref0 != cur_to_ref1 && xd->all_one_sided_refs) {
-      const int comp_index_ctx = get_comp_index_context(cm, xd);
-      mbmi->compound_idx = aom_read_symbol(
-          r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
-
-      if (xd->counts)
-        ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-    }
-  }
-#endif  // CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
-#endif  // CONFIG_EXT_SKIP
-
   if (has_second_ref(mbmi)
 #if CONFIG_EXT_SKIP
       && !mbmi->skip_mode

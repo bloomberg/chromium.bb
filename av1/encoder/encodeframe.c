@@ -869,22 +869,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         assert(has_second_ref(mbmi));
         rdc->compound_ref_used_flag = 1;
       }
-#if CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
-      const int cur_offset = (int)cm->frame_offset;
-      int ref_offset[2];
-      get_skip_mode_ref_offsets(cm, ref_offset);
-      const int cur_to_ref0 = cur_offset - ref_offset[0];
-      const int cur_to_ref1 = abs(cur_offset - ref_offset[1]);
-      if (cur_to_ref0 != cur_to_ref1 && xd->all_one_sided_refs) {
-        const int comp_index_ctx = get_comp_index_context(cm, xd);
-        ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-        if (allow_update_cdf)
-          update_cdf(fc->compound_index_cdf[comp_index_ctx], mbmi->compound_idx,
-                     2);
-      }
-#endif  // CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
       set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-
       return;
     }
 #endif  // CONFIG_EXT_SKIP
