@@ -1023,32 +1023,20 @@ bool V4L2VideoDecodeAccelerator::DecodeBufferInitial(const void* data,
   // Recycle buffers.
   Dequeue();
 
-  // Check and see if we have format info yet.
-  struct v4l2_format format;
-  gfx::Size visible_size;
-  bool again = false;
-  if (!GetFormatInfo(&format, &visible_size, &again))
-    return false;
-
   *endpos = size;
 
-  if (again) {
-    // Need more stream to decode format, return true and schedule next buffer.
+  // If an initial resolution change event is not done yet, a driver probably
+  // needs more stream to decode format.
+  // Return true and schedule next buffer without changing status to kDecoding.
+  // If the initial resolution change is done and coded size is known, we may
+  // still have to wait for AssignPictureBuffers() and output buffers to be
+  // allocated.
+  if (coded_size_.IsEmpty() || output_buffer_map_.empty()) {
     return true;
   }
 
-  // Run this initialization only on first startup.
-  if (output_buffer_map_.empty()) {
-    DVLOGF(4) << "running initialization";
-    // Success! Setup our parameters.
-    if (!CreateBuffersForFormat(format, visible_size))
-      return false;
-    // We are waiting for AssignPictureBuffers. Do not set the state to
-    // kDecoding.
-  } else {
-    decoder_state_ = kDecoding;
-    ScheduleDecodeBufferTaskIfNeeded();
-  }
+  decoder_state_ = kDecoding;
+  ScheduleDecodeBufferTaskIfNeeded();
   return true;
 }
 
@@ -1185,6 +1173,25 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   bool resolution_change_pending = false;
   if (event_pending)
     resolution_change_pending = DequeueResolutionChangeEvent();
+
+  if (!resolution_change_pending && coded_size_.IsEmpty()) {
+    // Some platforms do not send an initial resolution change event.
+    // To work around this, we need to keep checking if the initial resolution
+    // is known already by explicitly querying the format after each decode,
+    // regardless of whether we received an event.
+    // This needs to be done on initial resolution change,
+    // i.e. when coded_size_.IsEmpty().
+
+    // Try GetFormatInfo to check if an initial resolution change can be done.
+    struct v4l2_format format;
+    gfx::Size visible_size;
+    bool again;
+    if (GetFormatInfo(&format, &visible_size, &again) && !again) {
+      resolution_change_pending = true;
+      DequeueResolutionChangeEvent();
+    }
+  }
+
   Dequeue();
   Enqueue();
 
@@ -1582,14 +1589,7 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("Video Decoder", "V4L2VDA::FlushTask");
 
-  // Flush outstanding buffers.
-  if (decoder_state_ == kInitialized) {
-    // There's nothing in the pipe, so return done immediately.
-    VLOGF(2) << "returning flush";
-    child_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&Client::NotifyFlushDone, client_));
-    return;
-  } else if (decoder_state_ == kError) {
+  if (decoder_state_ == kError) {
     VLOGF(2) << "early out: kError state";
     return;
   }
