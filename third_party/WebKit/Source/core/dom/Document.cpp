@@ -608,7 +608,6 @@ Document::Document(const DocumentInit& initializer,
       visually_ordered_(false),
       ready_state_(kComplete),
       parsing_state_(kFinishedParsing),
-      goto_anchor_needed_after_stylesheets_load_(false),
       contains_validity_style_rules_(false),
       contains_plugins_(false),
       ignore_destructive_write_count_(0),
@@ -2387,9 +2386,6 @@ void Document::UpdateStyleAndLayout() {
   if (frame_view->NeedsLayout())
     frame_view->UpdateLayout();
 
-  if (goto_anchor_needed_after_stylesheets_load_)
-    frame_view->ProcessUrlFragment(url_);
-
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
 
@@ -3269,12 +3265,6 @@ void Document::ImplicitClose() {
         (!GetLayoutViewItem().FirstChild() ||
          GetLayoutViewItem().NeedsLayout()))
       View()->UpdateLayout();
-
-    // TODO(bokan): This is a temporary fix to https://crbug.com/788486.
-    // There's some better cleanups that should be done to follow-up:
-    // https://crbug.com/795381.
-    if (View() && goto_anchor_needed_after_stylesheets_load_)
-      View()->ProcessUrlFragment(url_);
   }
 
   load_event_progress_ = kLoadEventCompleted;
