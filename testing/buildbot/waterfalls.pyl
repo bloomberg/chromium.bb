@@ -909,12 +909,6 @@
         'os_type': 'android',
         'skip_output_links': True,
       },
-      'Browser Side Navigation Linux': {
-        'test_suites': {
-          'gtest_tests': 'browser_side_navigation_disabled_gtests',
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
-        },
-      },
       'CFI Linux (icall)': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_clang_and_gl_gtests',

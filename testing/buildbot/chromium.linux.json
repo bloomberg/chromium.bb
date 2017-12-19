@@ -663,16 +663,6 @@
       },
       {
         "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "name": "renderer_side_navigation_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--site-per-process",
           "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
@@ -695,16 +685,6 @@
         "test": "content_browsertests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "name": "renderer_side_navigation_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1360,16 +1340,6 @@
       },
       {
         "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "name": "renderer_side_navigation_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--site-per-process",
           "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
         ],
@@ -1392,16 +1362,6 @@
         "test": "content_browsertests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "args": [
-          "--disable-browser-side-navigation"
-        ],
-        "name": "renderer_side_navigation_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
