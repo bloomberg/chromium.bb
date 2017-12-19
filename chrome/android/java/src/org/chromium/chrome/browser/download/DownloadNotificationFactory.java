@@ -29,6 +29,7 @@ import android.os.Bundle;
 import com.google.ipc.invalidation.util.Preconditions;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -197,7 +198,7 @@ public final class DownloadNotificationFactory {
                                 downloadUpdate.getContentId().namespace);
                         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID,
                                 downloadUpdate.getNotificationId());
-                        DownloadUtils.setOriginalUrlAndReferralExtraToIntent(intent,
+                        MediaViewerUtils.setOriginalUrlAndReferralExtraToIntent(intent,
                                 downloadUpdate.getOriginalUrl(), downloadUpdate.getReferrer());
                     } else {
                         intent = buildActionIntent(context, ACTION_DOWNLOAD_OPEN,

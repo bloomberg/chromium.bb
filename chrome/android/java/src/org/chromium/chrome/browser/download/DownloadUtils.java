@@ -5,21 +5,14 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.StrictMode;
-import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -35,13 +28,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
@@ -339,43 +331,6 @@ public class DownloadUtils {
     }
 
     /**
-     * Creates an Intent to open the file in another app by firing an Intent to Android.
-     * @param fileUri  Uri pointing to the file.
-     * @param mimeType MIME type for the file.
-     * @param originalUrl The original url of the downloaded file.
-     * @param referrer Referrer of the downloaded file.
-     * @return Intent that can be used to start an Activity for the file.
-     */
-    public static Intent createViewIntentForDownloadItem(Uri fileUri, String mimeType,
-            String originalUrl, String referrer) {
-        Intent fileIntent = new Intent(Intent.ACTION_VIEW);
-        String normalizedMimeType = Intent.normalizeMimeType(mimeType);
-        if (TextUtils.isEmpty(normalizedMimeType)) {
-            fileIntent.setData(fileUri);
-        } else {
-            fileIntent.setDataAndType(fileUri, normalizedMimeType);
-        }
-        fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        fileIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        fileIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        setOriginalUrlAndReferralExtraToIntent(fileIntent, originalUrl, referrer);
-        return fileIntent;
-    }
-
-    /**
-     * Adds the originating Uri and referrer extras to an intent if they are not null.
-     * @param intent      Intent for adding extras.
-     * @param originalUrl The original url of the downloaded file.
-     * @param referrer    Referrer of the downloaded file.
-     */
-    public static void setOriginalUrlAndReferralExtraToIntent(
-            Intent intent, String originalUrl, String referrer) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
-        if (originalUrl != null) intent.putExtra(Intent.EXTRA_ORIGINATING_URI, originalUrl);
-        if (referrer != null) intent.putExtra(Intent.EXTRA_REFERRER, referrer);
-    }
-
-    /**
      * Creates an Intent to share {@code items} with another app by firing an Intent to Android.
      *
      * Sharing a DownloadItem shares the file itself, while sharing an OfflinePageItem shares the
@@ -480,86 +435,6 @@ public class DownloadUtils {
         return shareIntent;
     }
 
-    private static Intent createShareIntent(Uri fileUri, String mimeType) {
-        if (TextUtils.isEmpty(mimeType)) mimeType = DEFAULT_MIME_TYPE;
-
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.putExtra(Intent.EXTRA_STREAM, fileUri);
-        intent.setType(mimeType);
-        return intent;
-    }
-
-    /**
-     * Creates an Intent that allows viewing the given file in an internal media viewer.
-     * @param fileUri    URI pointing at the file, ideally in file:// form.  Used only when
-     *                   the media viewer is trying to locate the file on disk.
-     * @param contentUri content:// URI pointing at the file.
-     * @param mimeType   MIME type of the file.
-     * @return Intent that can be fired to open the file.
-     */
-    public static Intent getMediaViewerIntentForDownloadItem(
-            Uri fileUri, Uri contentUri, String mimeType) {
-        Context context = ContextUtils.getApplicationContext();
-        Intent viewIntent = createViewIntentForDownloadItem(contentUri, mimeType, null, null);
-
-        Bitmap closeIcon = BitmapFactory.decodeResource(
-                context.getResources(), R.drawable.ic_arrow_back_white_24dp);
-        Bitmap shareIcon = BitmapFactory.decodeResource(
-                context.getResources(), R.drawable.ic_share_white_24dp);
-
-        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        builder.setToolbarColor(Color.BLACK);
-        builder.setCloseButtonIcon(closeIcon);
-        builder.setShowTitle(true);
-
-        // Create a PendingIntent that can be used to view the file externally.
-        // TODO(dfalcantara): Check if this is problematic in multi-window mode, where two
-        //                    different viewers could be visible at the same time.
-        Intent chooserIntent = Intent.createChooser(viewIntent, null);
-        chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        String openWithStr = context.getString(R.string.download_manager_open_with);
-        PendingIntent pendingViewIntent = PendingIntent.getActivity(
-                context, 0, chooserIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.addMenuItem(openWithStr, pendingViewIntent);
-
-        // Create a PendingIntent that shares the file with external apps.
-        PendingIntent pendingShareIntent = PendingIntent.getActivity(
-                context, 0, createShareIntent(contentUri, mimeType),
-                PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.setActionButton(
-                shareIcon, context.getString(R.string.share), pendingShareIntent, true);
-
-        // The color of the media viewer is dependent on the file type.
-        int backgroundRes;
-        if (DownloadFilter.fromMimeType(mimeType) == DownloadFilter.FILTER_IMAGE) {
-            backgroundRes = R.color.image_viewer_bg;
-        } else {
-            backgroundRes = R.color.media_viewer_bg;
-        }
-        int mediaColor = ApiCompatibilityUtils.getColor(context.getResources(), backgroundRes);
-
-        // Build up the Intent further.
-        Intent intent = builder.build().intent;
-        intent.setPackage(context.getPackageName());
-        intent.setData(contentUri);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MEDIA_VIEWER);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MEDIA_VIEWER_URL, fileUri.toString());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE, true);
-        intent.putExtra(
-                CustomTabIntentDataProvider.EXTRA_INITIAL_BACKGROUND_COLOR, mediaColor);
-        intent.putExtra(
-                CustomTabsIntent.EXTRA_TOOLBAR_COLOR, mediaColor);
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        IntentHandler.addTrustedIntentExtras(intent);
-
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(context, ChromeLauncherActivity.class);
-        return intent;
-    }
-
     /**
      * Returns a URI that points at the file.
      * @param file File to get a URI for.
@@ -605,7 +480,7 @@ public class DownloadUtils {
             String normalizedMimeType = Intent.normalizeMimeType(mimeType);
 
             Intent intent =
-                    getMediaViewerIntentForDownloadItem(fileUri, contentUri, normalizedMimeType);
+                    MediaViewerUtils.getMediaViewerIntent(fileUri, contentUri, normalizedMimeType);
             IntentHandler.startActivityForTrustedIntent(intent);
             service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
@@ -617,8 +492,8 @@ public class DownloadUtils {
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             Uri uri = ApiCompatibilityUtils.getUriForDownloadedFile(file);
             StrictMode.setThreadPolicy(oldPolicy);
-            Intent viewIntent = createViewIntentForDownloadItem(
-                    uri, mimeType, originalUrl, referrer);
+            Intent viewIntent =
+                    MediaViewerUtils.createViewIntentForUri(uri, mimeType, originalUrl, referrer);
             context.startActivity(viewIntent);
             service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
