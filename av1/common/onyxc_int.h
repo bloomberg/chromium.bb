@@ -161,9 +161,9 @@ typedef struct {
 #if CONFIG_HASH_ME
   hash_table hash_table;
 #endif
-#if CONFIG_TEMPMV_SIGNALING
+#if CONFIG_TEMPMV_SIGNALING || CONFIG_FWD_KF
   uint8_t intra_only;
-#endif
+#endif  // CONFIG_TEMPMV_SIGNALING || CONFIG_FWD_KF
   // The Following variables will only be used in frame parallel decode.
 
   // frame_worker_owner indicates which FrameWorker owns this buffer. NULL means
@@ -281,6 +281,10 @@ typedef struct AV1Common {
   int show_existing_frame;
   // Flag for a frame used as a reference - not written to the bitstream
   int is_reference_frame;
+
+#if CONFIG_FWD_KF
+  int reset_decoder_state;
+#endif  // CONFIG_FWD_KF
 
   // Flag signaling that the frame is encoded using only INTRA modes.
   uint8_t intra_only;

@@ -226,8 +226,14 @@ static void swap_frame_buffers(AV1Decoder *pbi) {
     ++ref_index;
   }
 
-  // Current thread releases the holding of reference frame.
-  for (; ref_index < REF_FRAMES && !cm->show_existing_frame; ++ref_index) {
+// Current thread releases the holding of reference frame.
+#if CONFIG_FWD_KF
+  const int check_on_show_existing_frame =
+      !cm->show_existing_frame || cm->reset_decoder_state;
+#else
+  const int check_on_show_existing_frame = !cm->show_existing_frame;
+#endif  // CONFIG_FWD_KF
+  for (; ref_index < REF_FRAMES && check_on_show_existing_frame; ++ref_index) {
     const int old_idx = cm->ref_frame_map[ref_index];
     decrease_ref_count(old_idx, frame_bufs, pool);
     cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
@@ -338,8 +344,15 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
         ++ref_index;
       }
 
-      // Current thread releases the holding of reference frame.
-      for (; ref_index < REF_FRAMES && !cm->show_existing_frame; ++ref_index) {
+// Current thread releases the holding of reference frame.
+#if CONFIG_FWD_KF
+      const int check_on_show_existing_frame =
+          !cm->show_existing_frame || cm->reset_decoder_state;
+#else
+      const int check_on_show_existing_frame = !cm->show_existing_frame;
+#endif  // CONFIG_FWD_KF
+      for (; ref_index < REF_FRAMES && check_on_show_existing_frame;
+           ++ref_index) {
         const int old_idx = cm->ref_frame_map[ref_index];
         decrease_ref_count(old_idx, frame_bufs, pool);
       }

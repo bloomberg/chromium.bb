@@ -2433,6 +2433,82 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 }
 
+#if CONFIG_FWD_KF
+static void show_existing_frame_reset(AV1Decoder *const pbi) {
+  assert(cm->show_existing_frame);
+
+  AV1_COMMON *const cm = &pbi->common;
+  BufferPool *const pool = cm->buffer_pool;
+  RefCntBuffer *const frame_bufs = pool->frame_bufs;
+
+  cm->frame_type = KEY_FRAME;
+  cm->current_video_frame = 0;
+  cm->frame_offset = cm->current_video_frame;
+
+  pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
+
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    cm->frame_refs[i].idx = INVALID_IDX;
+    cm->frame_refs[i].buf = NULL;
+  }
+
+  if (pbi->need_resync) {
+    memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+    pbi->need_resync = 0;
+  }
+
+  cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
+
+#if CONFIG_TEMPMV_SIGNALING
+  cm->cur_frame->intra_only = 1;
+#endif  // CONFIG_TEMPMV_SIGNALING
+
+#if CONFIG_REFERENCE_BUFFER
+  if (cm->seq_params.frame_id_numbers_present_flag) {
+    /* If bitmask is set, update reference frame id values and
+       mark frames as valid for reference */
+    int refresh_frame_flags = pbi->refresh_frame_flags;
+    for (int i = 0; i < REF_FRAMES; i++) {
+      if ((refresh_frame_flags >> i) & 1) {
+        cm->ref_frame_id[i] = cm->current_frame_id;
+        cm->valid_for_referencing[i] = 1;
+      }
+    }
+  }
+#endif  // CONFIG_REFERENCE_BUFFER
+
+  cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
+
+  // Generate next_ref_frame_map.
+  lock_buffer_pool(pool);
+  int ref_index = 0;
+  for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+    if (mask & 1) {
+      cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
+      ++frame_bufs[cm->new_fb_idx].ref_count;
+    } else {
+      cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
+    }
+    // Current thread holds the reference frame.
+    if (cm->ref_frame_map[ref_index] >= 0)
+      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+    ++ref_index;
+  }
+
+  for (; ref_index < REF_FRAMES; ++ref_index) {
+    cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
+
+    // Current thread holds the reference frame.
+    if (cm->ref_frame_map[ref_index] >= 0)
+      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
+  }
+  unlock_buffer_pool(pool);
+  pbi->hold_ref_buf = 1;
+
+  av1_setup_past_independence(cm);
+}
+#endif  // CONFIG_FWD_KF
+
 static size_t read_uncompressed_header(AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
@@ -2469,6 +2545,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_EXT_TILE
 
   cm->show_existing_frame = aom_rb_read_bit(rb);
+#if CONFIG_FWD_KF
+  cm->reset_decoder_state = 0;
+#endif  // CONFIG_FWD_KF
 
   if (cm->show_existing_frame) {
     // Show an existing frame directly.
@@ -2484,8 +2563,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
           cm->valid_for_referencing[existing_frame_idx] == 0)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Reference buffer frame ID mismatch");
+#if CONFIG_FWD_KF
+      cm->current_frame_id = display_frame_id;
+#endif  // CONFIG_FWD_KF
     }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
     lock_buffer_pool(pool);
     if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
       unlock_buffer_pool(pool);
@@ -2494,6 +2576,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                          frame_to_show);
     }
     ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
+#if CONFIG_FWD_KF
+    // TODO(zoeliu@google.com): To explore whether reset_decoder_state is only
+    //                          present for INTRA_ONLY_FRAME.
+    const int is_intra_only = frame_bufs[frame_to_show].intra_only;
+#endif  // CONFIG_FWD_KF
     unlock_buffer_pool(pool);
 
 #if CONFIG_LOOPFILTER_LEVEL
@@ -2503,12 +2590,27 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->lf.filter_level = 0;
 #endif
     cm->show_frame = 1;
-    pbi->refresh_frame_flags = 0;
 
-    if (cm->frame_parallel_decode) {
-      for (int i = 0; i < REF_FRAMES; ++i)
-        cm->next_ref_frame_map[i] = cm->ref_frame_map[i];
+#if CONFIG_FWD_KF
+    cm->reset_decoder_state = aom_rb_read_bit(rb);
+    if (cm->reset_decoder_state) {
+      if (!is_intra_only) {
+        aom_internal_error(
+            &cm->error, AOM_CODEC_CORRUPT_FRAME,
+            "Decoder reset on non-intra-only show existing frame");
+      }
+      show_existing_frame_reset(pbi);
+    } else {
+#endif  // CONFIG_FWD_KF
+      pbi->refresh_frame_flags = 0;
+
+      if (cm->frame_parallel_decode) {
+        for (int i = 0; i < REF_FRAMES; ++i)
+          cm->next_ref_frame_map[i] = cm->ref_frame_map[i];
+      }
+#if CONFIG_FWD_KF
     }
+#endif  // CONFIG_FWD_KF
 
     return 0;
   }
@@ -3264,6 +3366,24 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   if (cm->show_existing_frame) {
     // showing a frame directly
     *p_data_end = data + aom_rb_bytes_read(&rb);
+#if CONFIG_FWD_KF
+    if (cm->reset_decoder_state) {
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+      // Use the default frame context values.
+      *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+      cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+#else
+      // NOTE: cm->frame_context_idx has been set to zero in
+      //       av1_setup_past_independence().
+      assert(cm->frame_context_idx == 0);
+      *cm->fc = cm->frame_contexts[cm->frame_context_idx];
+      cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+      if (!cm->fc->initialized)
+        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                           "Uninitialized entropy context.");
+    }
+#endif  // CONFIG_FWD_KF
     return 0;
   }
 
