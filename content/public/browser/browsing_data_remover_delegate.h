@@ -49,7 +49,7 @@ class BrowsingDataRemoverDelegate {
       int remove_mask,
       const BrowsingDataFilterBuilder& filter_builder,
       int origin_type_mask,
-      const base::Closure& callback) = 0;
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace content

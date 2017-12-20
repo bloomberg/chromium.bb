@@ -392,7 +392,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     int remove_mask,
     const BrowsingDataFilterBuilder& filter_builder,
     int origin_type_mask,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(((remove_mask & ~FILTERABLE_DATA_TYPES) == 0) ||
          filter_builder.IsEmptyBlacklist());
 
@@ -433,7 +433,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   //////////////////////////////////////////////////////////////////////////////
   // INITIALIZATION
   synchronous_clear_operations_.Start();
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   delete_begin_ = delete_begin;
   delete_end_ = delete_end;
@@ -1130,7 +1130,7 @@ void ChromeBrowsingDataRemoverDelegate::NotifyIfDone() {
     return;
 
   DCHECK(!callback_.is_null());
-  callback_.Run();
+  std::move(callback_).Run();
 }
 
 bool ChromeBrowsingDataRemoverDelegate::AllDone() {

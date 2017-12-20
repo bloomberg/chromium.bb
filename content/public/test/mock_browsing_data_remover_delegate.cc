@@ -31,11 +31,11 @@ void MockBrowsingDataRemoverDelegate::RemoveEmbedderData(
     int remove_mask,
     const BrowsingDataFilterBuilder& filter_builder,
     int origin_type_mask,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   actual_calls_.emplace_back(delete_begin, delete_end, remove_mask,
                              origin_type_mask, filter_builder.Copy(),
                              true /* should_compare_filter */);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void MockBrowsingDataRemoverDelegate::ExpectCall(
