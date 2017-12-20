@@ -154,6 +154,37 @@ TEST(CrossSiteDocumentClassifierTest, SniffForJSON) {
             CrossSiteDocumentClassifier::SniffForJSON(non_json_data0));
   EXPECT_EQ(Result::kNo,
             CrossSiteDocumentClassifier::SniffForJSON(non_json_data1));
+
+  EXPECT_EQ(Result::kYes,
+            CrossSiteDocumentClassifier::SniffForJSON(R"({"" : 1})"))
+      << "Empty strings are accepted";
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForJSON(R"({'' : 1})"))
+      << "Single quotes are not accepted";
+  EXPECT_EQ(Result::kYes,
+            CrossSiteDocumentClassifier::SniffForJSON("{\"\\\"\" : 1}"))
+      << "Escaped quotes are recognized";
+  EXPECT_EQ(Result::kYes,
+            CrossSiteDocumentClassifier::SniffForJSON(R"({"\\\u000a" : 1})"))
+      << "Escaped control characters are recognized";
+  EXPECT_EQ(Result::kMaybe,
+            CrossSiteDocumentClassifier::SniffForJSON(R"({"\\\u00)"))
+      << "Incomplete escape results in maybe";
+  EXPECT_EQ(Result::kMaybe, CrossSiteDocumentClassifier::SniffForJSON("{\"\\"))
+      << "Incomplete escape results in maybe";
+  EXPECT_EQ(Result::kMaybe,
+            CrossSiteDocumentClassifier::SniffForJSON("{\"\\\""))
+      << "Incomplete escape results in maybe";
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForJSON("{\"\n\" : true}"))
+      << "Unescaped control characters are rejected";
+  EXPECT_EQ(Result::kNo, CrossSiteDocumentClassifier::SniffForJSON("{}"))
+      << "Empty dictionary is not recognized (since it's valid JS too)";
+  EXPECT_EQ(Result::kNo,
+            CrossSiteDocumentClassifier::SniffForJSON("[true, false, 1, 2]"))
+      << "Lists dictionary are not recognized (since they're valid JS too)";
+  EXPECT_EQ(Result::kNo, CrossSiteDocumentClassifier::SniffForJSON(R"({":"})"))
+      << "A colon character inside a string does not trigger a match";
 }
 
 }  // namespace content
