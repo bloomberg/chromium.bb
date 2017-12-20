@@ -28,6 +28,8 @@ class TestGpuImpl : public mojom::Gpu {
     request_will_succeed_ = request_will_succeed;
   }
 
+  void CloseBindingOnRequest() { close_binding_on_request_ = true; }
+
   void BindRequest(mojom::GpuRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -35,6 +37,12 @@ class TestGpuImpl : public mojom::Gpu {
   // ui::mojom::Gpu overrides:
   void EstablishGpuChannel(
       const EstablishGpuChannelCallback& callback) override {
+    if (close_binding_on_request_) {
+      // Don't run |callback| and trigger a connection error on the other end.
+      bindings_.CloseAllBindings();
+      return;
+    }
+
     constexpr int client_id = 1;
     mojo::ScopedMessagePipeHandle handle;
     if (request_will_succeed_) {
@@ -65,6 +73,7 @@ class TestGpuImpl : public mojom::Gpu {
 
  private:
   bool request_will_succeed_ = true;
+  bool close_binding_on_request_ = false;
   mojo::BindingSet<mojom::Gpu> bindings_;
 
   // Closing this handle will result in GpuChannelHost being lost.
@@ -257,6 +266,47 @@ TEST_F(GpuTest, EstablishRequestAsyncThenSync) {
   scoped_refptr<gpu::GpuChannelHost> host = gpu()->EstablishGpuChannelSync();
   EXPECT_EQ(1, counter);
   EXPECT_TRUE(host);
+}
+
+// Tests that Gpu::EstablishGpuChannelSync() returns even if a connection error
+// occurs. The implementation of mojom::Gpu never runs the callback for
+// mojom::Gpu::EstablishGpuChannel() due to the connection error.
+TEST_F(GpuTest, SyncConnectionError) {
+  gpu_impl()->CloseBindingOnRequest();
+
+  scoped_refptr<gpu::GpuChannelHost> channel = gpu()->EstablishGpuChannelSync();
+  EXPECT_FALSE(channel);
+
+  // Subsequent calls should also return.
+  channel = gpu()->EstablishGpuChannelSync();
+  EXPECT_FALSE(channel);
+}
+
+// Tests that Gpu::EstablishGpuChannel() callbacks are run even if a connection
+// error occurs. The implementation of mojom::Gpu never runs the callback for
+// mojom::Gpu::EstablishGpuChannel() due to the connection error.
+TEST_F(GpuTest, AsyncConnectionError) {
+  gpu_impl()->CloseBindingOnRequest();
+
+  int counter = 2;
+  base::RunLoop run_loop;
+  // A callback that decrements the counter, and runs the callback when the
+  // counter reaches 0.
+  auto callback = base::BindRepeating(
+      [](int* counter, const base::RepeatingClosure& callback,
+         scoped_refptr<gpu::GpuChannelHost> channel) {
+        EXPECT_FALSE(channel);
+        --(*counter);
+        if (*counter == 0)
+          callback.Run();
+      },
+      &counter, run_loop.QuitClosure());
+
+  gpu()->EstablishGpuChannel(callback);
+  gpu()->EstablishGpuChannel(callback);
+  EXPECT_EQ(2, counter);
+  run_loop.Run();
+  EXPECT_EQ(0, counter);
 }
 
 // Tests that if EstablishGpuChannelSync() is called after a request for
