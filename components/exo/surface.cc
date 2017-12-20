@@ -433,6 +433,14 @@ void Surface::SetFrame(SurfaceFrameType type) {
     delegate_->OnSetFrame(type);
 }
 
+void Surface::SetFrameColors(SkColor active_color, SkColor inactive_color) {
+  TRACE_EVENT2("exo", "Surface::SetFrameColors", "active_color", active_color,
+               "inactive_color", inactive_color);
+
+  if (delegate_)
+    delegate_->OnSetFrameColors(active_color, inactive_color);
+}
+
 void Surface::SetParent(Surface* parent, const gfx::Point& position) {
   TRACE_EVENT2("exo", "Surface::SetParent", "parent", !!parent, "position",
                position.ToString());

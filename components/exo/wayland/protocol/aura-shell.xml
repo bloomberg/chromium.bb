@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="2">
+  <interface name="zaura_shell" version="3">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -68,7 +68,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_surface" version="2">
+  <interface name="zaura_surface" version="3">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -100,6 +100,16 @@
       <arg name="parent" type="object" interface="zaura_surface" allow-null="true"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
+    </request>
+
+    <!-- Version 3 additions -->
+
+    <request name="set_frame_colors" since="3">
+      <description summary="set the frame colors of this surface">
+	Set the frame colors.
+      </description>
+      <arg name="active_color" type="uint" summary="32 bit ARGB color value, not premultiplied"/>
+      <arg name="inactive_color" type="uint" summary="32 bit ARGB color value, not premultiplied"/>
     </request>
   </interface>
 
