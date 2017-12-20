@@ -344,11 +344,14 @@ hb_icu_unicode_decompose_compatibility (hb_unicode_funcs_t *ufuncs HB_UNUSED,
   return utf32_len;
 }
 
-static hb_unicode_funcs_t* static_icu_funcs = nullptr;
+
+static hb_unicode_funcs_t *static_icu_funcs = nullptr;
 
 #ifdef HB_USE_ATEXIT
-static void free_static_icu_funcs(void) {
-  hb_unicode_funcs_destroy(static_icu_funcs);
+static
+void free_static_icu_funcs (void)
+{
+  hb_unicode_funcs_destroy (static_icu_funcs);
 }
 #endif
 
@@ -356,39 +359,36 @@ hb_unicode_funcs_t *
 hb_icu_get_unicode_funcs (void)
 {
 retry:
-  hb_unicode_funcs_t* funcs =
-      (hb_unicode_funcs_t*)hb_atomic_ptr_get(&static_icu_funcs);
+  hb_unicode_funcs_t *funcs = (hb_unicode_funcs_t *) hb_atomic_ptr_get (&static_icu_funcs);
 
-  if (unlikely(!funcs)) {
+  if (unlikely (!funcs))
+  {
 #if U_ICU_VERSION_MAJOR_NUM >= 49
-    if (!hb_atomic_ptr_get(&normalizer)) {
+    if (!hb_atomic_ptr_get (&normalizer)) {
       UErrorCode icu_err = U_ZERO_ERROR;
       /* We ignore failure in getNFCInstace(). */
-      (void)hb_atomic_ptr_cmpexch(&normalizer, nullptr,
-                                  unorm2_getNFCInstance(&icu_err));
+      (void) hb_atomic_ptr_cmpexch (&normalizer, nullptr, unorm2_getNFCInstance (&icu_err));
     }
 #endif
 
-    funcs = hb_unicode_funcs_create(nullptr);
+    funcs = hb_unicode_funcs_create (nullptr);
 
-#define HB_UNICODE_FUNC_IMPLEMENT(name)                                     \
-  hb_unicode_funcs_set_##name##_func(funcs, hb_icu_unicode_##name, nullptr, \
-                                     nullptr);
-    HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS
+#define HB_UNICODE_FUNC_IMPLEMENT(name) \
+    hb_unicode_funcs_set_##name##_func (funcs, hb_icu_unicode_##name, nullptr, nullptr);
+      HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_UNICODE_FUNC_IMPLEMENT
 
-    hb_unicode_funcs_make_immutable(funcs);
+    hb_unicode_funcs_make_immutable (funcs);
 
-    if (!hb_atomic_ptr_cmpexch(&static_icu_funcs, nullptr, funcs)) {
-      hb_unicode_funcs_destroy(funcs);
+    if (!hb_atomic_ptr_cmpexch (&static_icu_funcs, nullptr, funcs)) {
+      hb_unicode_funcs_destroy (funcs);
       goto retry;
     }
 
 #ifdef HB_USE_ATEXIT
-    atexit(
-        free_static_icu_funcs); /* First person registers atexit() callback. */
+    atexit (free_static_icu_funcs); /* First person registers atexit() callback. */
 #endif
   };
 
-  return hb_unicode_funcs_reference(funcs);
+  return hb_unicode_funcs_reference (funcs);
 }

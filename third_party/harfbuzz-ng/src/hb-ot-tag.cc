@@ -878,9 +878,12 @@ static const LangTagLong ot_languages_zh[] = {
   {"zh-hant",	HB_TAG('Z','H','T',' ')},	/* Chinese (Traditional) */
 };
 
-static int lang_compare_first_component(const void* pa, const void* pb) {
-  const char* a = (const char*)pa;
-  const char* b = (const char*)pb;
+static int
+lang_compare_first_component (const void *pa,
+			      const void *pb)
+{
+  const char *a = (const char *) pa;
+  const char *b = (const char *) pb;
   unsigned int da, db;
   const char *p;
 
@@ -917,12 +920,12 @@ hb_ot_tag_from_language (hb_language_t language)
     char tag[4];
     int i;
     s += 6;
-    for (i = 0; i < 4 && ISALPHA (s[i]); i++)
+    for (i = 0; i < 4 && ISALNUM (s[i]); i++)
       tag[i] = TOUPPER (s[i]);
     if (i) {
       for (; i < 4; i++)
 	tag[i] = ' ';
-      return HB_TAG(tag[0], tag[1], tag[2], tag[3]);
+      return HB_TAG (tag[0], tag[1], tag[2], tag[3]);
     }
   }
 
@@ -969,9 +972,9 @@ hb_ot_tag_from_language (hb_language_t language)
   /* Find a language matching in the first component */
   {
     const LangTag *lang_tag;
-    lang_tag =
-        (LangTag*)bsearch(lang_str, ot_languages, ARRAY_LENGTH(ot_languages),
-                          sizeof(LangTag), lang_compare_first_component);
+    lang_tag = (LangTag *) bsearch (lang_str, ot_languages,
+				    ARRAY_LENGTH (ot_languages), sizeof (LangTag),
+				    lang_compare_first_component);
     if (lang_tag)
       return lang_tag->tag;
   }

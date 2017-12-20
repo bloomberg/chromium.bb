@@ -85,7 +85,7 @@ hb_tag_from_string (const char *str, int len)
   for (; i < 4; i++)
     tag[i] = ' ';
 
-  return HB_TAG(tag[0], tag[1], tag[2], tag[3]);
+  return HB_TAG (tag[0], tag[1], tag[2], tag[3]);
 }
 
 /**
@@ -700,14 +700,14 @@ parse_uint32 (const char **pp, const char *end, uint32_t *pv)
 #if defined (HAVE_NEWLOCALE) && defined (HAVE_STRTOD_L)
 #define USE_XLOCALE 1
 #define HB_LOCALE_T locale_t
-#define HB_CREATE_LOCALE(locName) newlocale(LC_ALL_MASK, locName, nullptr)
-#define HB_FREE_LOCALE(loc) freelocale(loc)
+#define HB_CREATE_LOCALE(locName) newlocale (LC_ALL_MASK, locName, nullptr)
+#define HB_FREE_LOCALE(loc) freelocale (loc)
 #elif defined(_MSC_VER)
 #define USE_XLOCALE 1
 #define HB_LOCALE_T _locale_t
-#define HB_CREATE_LOCALE(locName) _create_locale(LC_ALL, locName)
-#define HB_FREE_LOCALE(loc) _free_locale(loc)
-#define strtod_l(a, b, c) _strtod_l((a), (b), (c))
+#define HB_CREATE_LOCALE(locName) _create_locale (LC_ALL, locName)
+#define HB_FREE_LOCALE(loc) _free_locale (loc)
+#define strtod_l(a, b, c) _strtod_l ((a), (b), (c))
 #endif
 
 #ifdef USE_XLOCALE
@@ -719,21 +719,23 @@ static void
 free_C_locale (void)
 {
   if (C_locale)
-    HB_FREE_LOCALE(C_locale);
+    HB_FREE_LOCALE (C_locale);
 }
 #endif
 
-static HB_LOCALE_T get_C_locale(void) {
+static HB_LOCALE_T
+get_C_locale (void)
+{
 retry:
-  HB_LOCALE_T C = (HB_LOCALE_T)hb_atomic_ptr_get(&C_locale);
+  HB_LOCALE_T C = (HB_LOCALE_T) hb_atomic_ptr_get (&C_locale);
 
   if (unlikely (!C))
   {
-    C = HB_CREATE_LOCALE("C");
+    C = HB_CREATE_LOCALE ("C");
 
     if (!hb_atomic_ptr_cmpexch (&C_locale, nullptr, C))
     {
-      HB_FREE_LOCALE(C_locale);
+      HB_FREE_LOCALE (C_locale);
       goto retry;
     }
 
@@ -782,9 +784,9 @@ parse_bool (const char **pp, const char *end, uint32_t *pv)
     (*pp)++;
 
   /* CSS allows on/off as aliases 1/0. */
-  if (*pp - p == 2 || 0 == strncmp (p, "on", 2))
+  if (*pp - p == 2 && 0 == strncmp (p, "on", 2))
     *pv = 1;
-  else if (*pp - p == 3 || 0 == strncmp (p, "off", 2))
+  else if (*pp - p == 3 && 0 == strncmp (p, "off", 3))
     *pv = 0;
   else
     return false;

@@ -1,8 +1,8 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.7.2
-Date: 20171204
+Version: 1.7.3
+Date: 20171220
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -19,8 +19,5 @@ for removed or added files and update our build recipes in BUILD.gn and
 harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes, and
 bump the version numbers in README.chromium.
 
-Locally patch hb-private.hh to silence unusued variable warnings in MSVC.
-
-Locally patch PAGE_BITS to 8192 in hb-set-private to see whether larger page
-sizes help avoid the set performance regressions we are observing in issue
-782220.
+Cherry-pick 2fe5f885..a9432bde on top of 1.7.3 to incorporate hb_set
+regression fixes.

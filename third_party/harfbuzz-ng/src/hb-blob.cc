@@ -29,8 +29,8 @@
 #define _POSIX_C_SOURCE 199309L
 #endif
 
-#include "hb-debug.hh"
 #include "hb-private.hh"
+#include "hb-debug.hh"
 
 #include "hb-object-private.hh"
 

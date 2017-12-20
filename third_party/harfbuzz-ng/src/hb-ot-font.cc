@@ -30,12 +30,13 @@
 
 #include "hb-font-private.hh"
 
-#include "hb-ot-cbdt-table.hh"
 #include "hb-ot-cmap-table.hh"
+#include "hb-ot-cbdt-table.hh"
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-kern-table.hh"
 #include "hb-ot-post-table.hh"
+
 
 struct hb_ot_font_t
 {
@@ -58,14 +59,12 @@ _hb_ot_font_create (hb_face_t *face)
     return nullptr;
 
   ot_font->cmap.init (face);
-  ot_font->h_metrics.init(face);
-  ot_font->v_metrics.init(
-      face, ot_font->h_metrics.ascender -
-                ot_font->h_metrics.descender); /* TODO Can we do this lazily? */
+  ot_font->h_metrics.init (face);
+  ot_font->v_metrics.init (face, ot_font->h_metrics.ascender - ot_font->h_metrics.descender); /* TODO Can we do this lazily? */
   ot_font->glyf.init (face);
   ot_font->cbdt.init (face);
   ot_font->post.init (face);
-  ot_font->kern.init(face);
+  ot_font->kern.init (face);
 
   return ot_font;
 }
@@ -81,7 +80,7 @@ _hb_ot_font_destroy (void *data)
   ot_font->glyf.fini ();
   ot_font->cbdt.fini ();
   ot_font->post.fini ();
-  ot_font->kern.fini();
+  ot_font->kern.fini ();
 
   free (ot_font);
 }
@@ -131,14 +130,15 @@ hb_ot_get_glyph_v_advance (hb_font_t *font,
   return font->em_scale_y (-(int) ot_font->v_metrics.get_advance (glyph, font));
 }
 
-static hb_position_t hb_ot_get_glyph_h_kerning(hb_font_t* font,
-                                               void* font_data,
-                                               hb_codepoint_t left_glyph,
-                                               hb_codepoint_t right_glyph,
-                                               void* user_data HB_UNUSED) {
-  const hb_ot_font_t* ot_font = (const hb_ot_font_t*)font_data;
-  return font->em_scale_x(
-      ot_font->kern->get_h_kerning(left_glyph, right_glyph));
+static hb_position_t
+hb_ot_get_glyph_h_kerning (hb_font_t *font,
+			   void *font_data,
+			   hb_codepoint_t left_glyph,
+			   hb_codepoint_t right_glyph,
+			   void *user_data HB_UNUSED)
+{
+  const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
+  return font->em_scale_x (ot_font->kern->get_h_kerning (left_glyph, right_glyph));
 }
 
 static hb_bool_t
@@ -238,12 +238,10 @@ retry:
     hb_font_funcs_set_glyph_v_advance_func (funcs, hb_ot_get_glyph_v_advance, nullptr, nullptr);
     //hb_font_funcs_set_glyph_h_origin_func (funcs, hb_ot_get_glyph_h_origin, nullptr, nullptr);
     //hb_font_funcs_set_glyph_v_origin_func (funcs, hb_ot_get_glyph_v_origin, nullptr, nullptr);
-    hb_font_funcs_set_glyph_h_kerning_func(funcs, hb_ot_get_glyph_h_kerning,
-                                           nullptr, nullptr);
+    hb_font_funcs_set_glyph_h_kerning_func (funcs, hb_ot_get_glyph_h_kerning, nullptr, nullptr);
     //hb_font_funcs_set_glyph_v_kerning_func (funcs, hb_ot_get_glyph_v_kerning, nullptr, nullptr);
     hb_font_funcs_set_glyph_extents_func (funcs, hb_ot_get_glyph_extents, nullptr, nullptr);
-    // hb_font_funcs_set_glyph_contour_point_func (funcs,
-    // hb_ot_get_glyph_contour_point, nullptr, nullptr);
+    //hb_font_funcs_set_glyph_contour_point_func (funcs, hb_ot_get_glyph_contour_point, nullptr, nullptr);
     hb_font_funcs_set_glyph_name_func (funcs, hb_ot_get_glyph_name, nullptr, nullptr);
     hb_font_funcs_set_glyph_from_name_func (funcs, hb_ot_get_glyph_from_name, nullptr, nullptr);
 
