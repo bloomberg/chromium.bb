@@ -37,7 +37,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/history_service_observer.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/history_quick_provider.h"
@@ -150,8 +149,7 @@ const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 }  // namespace
 
 class OmniboxViewTest : public InProcessBrowserTest,
-                        public content::NotificationObserver,
-                        public history::HistoryServiceObserver {
+                        public content::NotificationObserver {
  public:
   OmniboxViewTest() {}
 
@@ -318,19 +316,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
                                         history::SOURCE_BROWSED);
     if (entry.starred)
       bookmarks::AddIfNotBookmarked(bookmark_model, url, base::string16());
-    // Wait at least for the AddPageWithDetails() call to finish.
-    {
-      ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-          observer(this);
-      observer.Add(history_service);
-      content::RunMessageLoop();
-      // We don't want to return until all observers have processed this
-      // notification, because some (e.g. the in-memory history database) may do
-      // something important.  Since we don't know where in the observer list we
-      // stand, just spin the message loop once more to allow the current
-      // callstack to complete.
-      content::RunAllPendingInMessageLoop();
-    }
+
+    // Running the task scheduler until idle finishes AddPageWithDetails.
+    content::RunAllTasksUntilIdle();
   }
 
   void SetupHistory() {
@@ -366,11 +354,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
       default:
         FAIL() << "Unexpected notification type";
     }
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
-  void OnURLsModified(history::HistoryService* history_service,
-                      const history::URLRows& changed_urls) override {
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
