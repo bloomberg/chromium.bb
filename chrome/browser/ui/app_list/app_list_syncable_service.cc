@@ -220,9 +220,7 @@ AppListSyncableService::SyncItem::~SyncItem() {
 
 class AppListSyncableService::ModelObserver : public AppListModelObserver {
  public:
-  explicit ModelObserver(AppListSyncableService* owner)
-      : owner_(owner),
-        adding_item_(NULL) {
+  explicit ModelObserver(AppListSyncableService* owner) : owner_(owner) {
     DVLOG(2) << owner_ << ": ModelObserver Added";
     owner_->GetModel()->AddObserver(this);
   }
@@ -235,15 +233,15 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
  private:
   // AppListModelObserver
   void OnAppListItemAdded(AppListItem* item) override {
-    DCHECK(!adding_item_);
-    adding_item_ = item;  // Ignore updates while adding an item.
+    DCHECK(adding_item_id_.empty());
+    adding_item_id_ = item->id();  // Ignore updates while adding an item.
     VLOG(2) << owner_ << " OnAppListItemAdded: " << item->ToDebugString();
     owner_->AddOrUpdateFromSyncItem(item);
-    adding_item_ = NULL;
+    adding_item_id_.clear();
   }
 
   void OnAppListItemWillBeDeleted(AppListItem* item) override {
-    DCHECK(!adding_item_);
+    DCHECK(adding_item_id_.empty());
     VLOG(2) << owner_ << " OnAppListItemDeleted: " << item->ToDebugString();
     // Don't sync folder removal in case the folder still exists on another
     // device (e.g. with device specific items in it). Empty folders will be
@@ -261,10 +259,10 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
   }
 
   void OnAppListItemUpdated(AppListItem* item) override {
-    if (adding_item_) {
+    if (!adding_item_id_.empty()) {
       // Adding an item may trigger update notifications which should be
       // ignored.
-      DCHECK_EQ(adding_item_, item);
+      DCHECK_EQ(adding_item_id_, item->id());
       return;
     }
     VLOG(2) << owner_ << " OnAppListItemUpdated: " << item->ToDebugString();
@@ -272,7 +270,7 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
   }
 
   AppListSyncableService* owner_;
-  AppListItem* adding_item_;  // Unowned pointer to item being added.
+  std::string adding_item_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelObserver);
 };
