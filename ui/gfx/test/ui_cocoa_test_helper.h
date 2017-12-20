@@ -14,9 +14,14 @@
 #import "base/mac/scoped_nsobject.h"
 #include "testing/platform_test.h"
 
-// Background windows normally will not display things such as focus
-// rings.  This class allows -isKeyWindow to be manipulated to test
-// such things.
+// CocoaTestHelperWindow behaves differently from a regular NSWindow in the
+// following ways:
+// - It allows -isKeyWindow to be manipulated to test things like focus rings
+//   (which background windows won't normally display).
+// - It ignores its real occlusion state and returns a value based on
+//   pretendIsOccluded.
+// - It ignores the system setting for full keyboard access and returns a value
+//   based on pretendFullKeyboardAccessIsEnabled.
 @interface CocoaTestHelperWindow : NSWindow
 
 // Value to return for -isKeyWindow.
@@ -26,9 +31,15 @@
 // NSWindowDidChangeOcclusionStateNotification.
 @property(nonatomic) BOOL pretendIsOccluded;
 
+// Whether to handle the key view loop as if full keyboard access is enabled.
+@property(nonatomic) BOOL pretendFullKeyboardAccessIsEnabled;
+
 // Whether to use or ignore the default contraints for window sizing and
 // placement.
 @property(nonatomic) BOOL useDefaultConstraints;
+
+// All of the window's valid key views, in order.
+@property(nonatomic, readonly) NSArray<NSView*>* validKeyViews;
 
 // Init a borderless non-deferred window with a backing store.
 - (id)initWithContentRect:(NSRect)contentRect;
