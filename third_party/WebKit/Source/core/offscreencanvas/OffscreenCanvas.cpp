@@ -133,11 +133,9 @@ scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     return nullptr;
   }
   scoped_refptr<Image> image = context_->GetImage(hint, reason);
-  if (!image) {
-    *status = kInvalidSourceImageStatus;
-  } else {
-    *status = kNormalSourceImageStatus;
-  }
+  if (!image)
+    image = CreateTransparentImage(Size());
+  *status = image ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
   return image;
 }
 
@@ -216,12 +214,6 @@ void OffscreenCanvas::RegisterRenderingContextFactory(
 
 bool OffscreenCanvas::OriginClean() const {
   return origin_clean_ && !disable_reading_from_canvas_;
-}
-
-bool OffscreenCanvas::IsPaintable() const {
-  if (!context_)
-    return IsValidImageSize(size_);
-  return context_->IsPaintable() && size_.Width() && size_.Height();
 }
 
 bool OffscreenCanvas::IsAccelerated() const {
@@ -379,31 +371,35 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
     return exception_state.Reject(script_state);
   }
 
-  if (!this->IsPaintable()) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The size of the OffscreenCanvas is zero.");
-    return exception_state.Reject(script_state);
-  }
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  if (!this->context_) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError, "OffscreenCanvas object has no rendering contexts");
-    return exception_state.Reject(script_state);
+  if (!IsPaintable() || size_.IsEmpty()) {
+    Blob* blob = nullptr;
+    resolver->Resolve(blob);
+    return promise;
   }
 
   double start_time = WTF::CurrentTimeTicksInSeconds();
-  String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
-      options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> snapshot =
-      context_->GetImage(kPreferNoAcceleration, kSnapshotReasonUnknown);
-  async_creator = CanvasAsyncBlobCreator::Create(
-      snapshot, encoding_mime_type, start_time,
-      ExecutionContext::From(script_state), resolver);
-  async_creator->ScheduleAsyncBlobCreation(options.quality());
-  return resolver->Promise();
+      context_
+          ? context_->GetImage(kPreferNoAcceleration, kSnapshotReasonUnknown)
+          : CreateTransparentImage(size_);
+  if (snapshot) {
+    String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
+        options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
+    async_creator = CanvasAsyncBlobCreator::Create(
+        snapshot, encoding_mime_type, start_time,
+        ExecutionContext::From(script_state), resolver);
+    async_creator->ScheduleAsyncBlobCreation(options.quality());
+  } else {
+    Blob* blob = nullptr;
+    resolver->Resolve(blob);
+  }
+
+  return promise;
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {

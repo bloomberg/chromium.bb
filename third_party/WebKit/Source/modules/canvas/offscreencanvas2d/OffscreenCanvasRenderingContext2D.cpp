@@ -138,7 +138,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
 scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
     AccelerationHint hint,
     SnapshotReason reason) const {
-  if (!CanCreateCanvas2DBuffer())
+  if (!HasCanvas2DBuffer())
     return nullptr;
   scoped_refptr<StaticBitmapImage> image =
       GetImageBuffer()->NewImageSnapshot(hint, reason);
@@ -197,7 +197,7 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
-  return CanCreateCanvas2DBuffer();
+  return HasCanvas2DBuffer();
 }
 
 String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {
