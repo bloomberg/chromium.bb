@@ -656,10 +656,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
-  blink::WebColorChooser* CreateColorChooser(
-      blink::WebColorChooserClient* client,
-      const blink::WebColor& initial_color,
-      const blink::WebVector<blink::WebColorSuggestion>& suggestions) override;
   void RunModalAlertDialog(const blink::WebString& message) override;
   bool RunModalConfirmDialog(const blink::WebString& message) override;
   bool RunModalPromptDialog(const blink::WebString& message,

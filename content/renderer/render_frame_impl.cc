@@ -137,7 +137,6 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
-#include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_handle_reference.h"
@@ -192,7 +191,6 @@
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
-#include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebContextFeatures.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -4527,23 +4525,6 @@ bool RenderFrameImpl::HandleCurrentKeyboardEvent() {
   }
 
   return did_execute_command;
-}
-
-blink::WebColorChooser* RenderFrameImpl::CreateColorChooser(
-    blink::WebColorChooserClient* client,
-    const blink::WebColor& initial_color,
-    const blink::WebVector<blink::WebColorSuggestion>& suggestions) {
-  RendererWebColorChooserImpl* color_chooser =
-      new RendererWebColorChooserImpl(this, client);
-  std::vector<mojom::ColorSuggestionPtr> color_suggestions;
-  color_suggestions.reserve(suggestions.size());
-  for (const auto& suggestion : suggestions) {
-    color_suggestions.emplace_back(base::in_place, suggestion.color,
-                                   suggestion.label.Utf8());
-  }
-  color_chooser->Open(static_cast<SkColor>(initial_color),
-                      std::move(color_suggestions));
-  return color_chooser;
 }
 
 void RenderFrameImpl::RunModalAlertDialog(const blink::WebString& message) {

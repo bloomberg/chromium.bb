@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/color_chooser.h"
-#include "content/public/common/color_suggestion.mojom.h"
+#include "third_party/WebKit/common/color_chooser/color_chooser.mojom.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -29,7 +29,7 @@ class ColorChooserAndroid : public content::ColorChooser {
   ColorChooserAndroid(
       content::WebContents* tab,
       SkColor initial_color,
-      const std::vector<content::mojom::ColorSuggestionPtr>& suggestions);
+      const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions);
   ~ColorChooserAndroid() override;
 
   void OnColorChosen(JNIEnv* env,

@@ -33,10 +33,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   ~WebFrameTestClient() override;
 
   // WebFrameClient overrides needed by WebFrameTestProxy.
-  blink::WebColorChooser* CreateColorChooser(
-      blink::WebColorChooserClient* client,
-      const blink::WebColor& initial_color,
-      const blink::WebVector<blink::WebColorSuggestion>& suggestions) override;
   void RunModalAlertDialog(const blink::WebString& message) override;
   bool RunModalConfirmDialog(const blink::WebString& message) override;
   bool RunModalPromptDialog(const blink::WebString& message,

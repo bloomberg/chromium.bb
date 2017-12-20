@@ -2,6 +2,9 @@
 <html>
 <body>
 <script src="../../../resources/js-test.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/common/color_chooser/color_chooser.mojom.js"></script>
+<script src="../../forms/color/mock-colorchooser.js"></script>
 <div id="host" tabindex="1">
   <input id="target" type="color" value="#000000">
 </div>
@@ -11,29 +14,22 @@ shadow = host.createShadowRoot();
 shadow.innerHTML = "<content></content>";
 jsTestIsAsync = true;
 
-function waitUntilShown(then)
-{
-    if (!testRunner.isChooserShown())
-        return window.setTimeout(function() { waitUntilShown(then); }, 0);
-    then();
-}
-
 function ensureOpeningFor(count, then)
 {
-    shouldBeTrue("testRunner.isChooserShown()");
+    shouldBeTrue("mockColorChooser.isChooserShown()");
     if (count)
         return window.setTimeout(function() { ensureOpeningFor(count -1, then); }, 0);
     then();
 }
 
 if (window.eventSender) {
-   shouldBeFalse("testRunner.isChooserShown()");
+   shouldBeFalse("mockColorChooser.isChooserShown()");
    eventSender.dragMode = false;
    eventSender.mouseMoveTo(target.offsetLeft, target.offsetTop + target.offsetHeight / 2);
    eventSender.mouseDown();
    eventSender.mouseUp();
 
-   waitUntilShown(function() {
+   waitUntilChooserShown(function() {
       testRunner.setWindowIsKey(false); // This triggers a style recalc.
       ensureOpeningFor(10, finishJSTest); // Try several times to ensure nothing wrong happens asynchronously.
    });

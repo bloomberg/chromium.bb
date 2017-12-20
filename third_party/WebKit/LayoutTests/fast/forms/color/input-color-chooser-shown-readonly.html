@@ -3,32 +3,27 @@
 <body>
 <script src="../../../resources/js-test.js"></script>
 <script src="../resources/common.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/common/color_chooser/color_chooser.mojom.js"></script>
+<script src="../../forms/color/mock-colorchooser.js"></script>
 <div id="host" tabindex="1">
   <input id="target" type="color" value="#000000" readonly>
 </div>
 <script>
 
 if (window.eventSender) {
-   window.jsTestIsAsync = true
+  window.jsTestIsAsync = true
 
-   clickElement(target);
-   shouldBeTrue("testRunner.isChooserShown()");
+  clickElement(target);
+  waitUntilChooserShown(() => {
+    target.style.display = "none";
 
-   target.style.display = "none";
-
-   var nwait = 5;
-   function testClosed()
-   {
-        nwait--;
-        if (0 < nwait)
-            return window.setTimeout(testClosed, 0);
-        // Let an Oilpan GC finalize the popup controller and bring about closure of color chooser.
-        gc();
-        shouldBeFalse("testRunner.isChooserShown()");
-        finishJSTest();
-   }
-
-   window.setTimeout(testClosed, 0);
+    window.setTimeout(() => {
+      // Let an Oilpan GC finalize the popup controller and bring about closure of color chooser.
+      gc();
+      waitUntilChooserClosed(finishJSTest);
+    }, 0);
+  });
 }
 
 </script>

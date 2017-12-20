@@ -411,8 +411,6 @@ target(link_target_type, "renderer") {
     "renderer_main_platform_delegate_win.cc",
     "renderer_webapplicationcachehost_impl.cc",
     "renderer_webapplicationcachehost_impl.h",
-    "renderer_webcolorchooser_impl.cc",
-    "renderer_webcolorchooser_impl.h",
     "renderer_webcookiejar_impl.cc",
     "renderer_webcookiejar_impl.h",
     "resizing_mode_selector.cc",

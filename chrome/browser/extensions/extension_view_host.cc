@@ -214,7 +214,7 @@ bool ExtensionViewHost::PreHandleGestureEvent(
 content::ColorChooser* ExtensionViewHost::OpenColorChooser(
     WebContents* web_contents,
     SkColor initial_color,
-    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions) {
+    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
   // Similar to the file chooser below, opening a color chooser requires a
   // visible <input> element to click on. Therefore this code only exists for
   // extensions with a view.

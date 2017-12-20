@@ -53,7 +53,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   content::ColorChooser* OpenColorChooser(
       content::WebContents* source,
       SkColor color,
-      const std::vector<content::mojom::ColorSuggestionPtr>& suggestions)
+      const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
       override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;

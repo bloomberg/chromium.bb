@@ -160,10 +160,6 @@ class TestRunner : public WebTestRunner {
 
   midi::mojom::Result midiAccessorResult();
 
-  // Methods used by MockColorChooser:
-  void DidOpenChooser();
-  void DidCloseChooser();
-
   bool ShouldDumpConsoleMessages() const;
   bool ShouldDumpJavaScriptDialogs() const;
 

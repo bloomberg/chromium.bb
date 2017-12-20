@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
-import "content/public/common/color_suggestion.mojom";
+struct ColorSuggestion {
+  uint32 color;
+  string label;
+};
 
 // A ColorChooser window is shown for <input type="color">.
 interface ColorChooserFactory {

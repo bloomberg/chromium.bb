@@ -124,6 +124,7 @@
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
           "blink::mojom::BackgroundFetchService",
+          "blink::mojom::ColorChooserFactory",
           "blink::mojom::DedicatedWorkerFactory",
           "blink::mojom::LockManager",
           "blink::mojom::GeolocationService",
@@ -140,8 +141,6 @@
 
           // TODO(beng): figure out how to overlay test interfaces like this.
           "content::mojom::BrowserTarget",
-
-          "content::mojom::ColorChooserFactory",
 
           // InputInjector is only exposed when gpu benchmarking is enabled.
           "content::mojom::InputInjector",

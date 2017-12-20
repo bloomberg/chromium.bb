@@ -16,7 +16,6 @@ blink_core_sources("exported") {
     "WebAssociatedURLLoaderImpl.h",
     "WebBlob.cpp",
     "WebCSSParser.cpp",
-    "WebColorSuggestion.cpp",
     "WebContextFeatures.cpp",
     "WebCustomElement.cpp",
     "WebDOMActivityLogger.cpp",

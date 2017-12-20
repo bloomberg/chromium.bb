@@ -57,7 +57,7 @@ class ColorInputType final : public InputType,
   IntRect ElementRectRelativeToViewport() const override;
   Color CurrentColor() override;
   bool ShouldShowSuggestions() const override;
-  Vector<ColorSuggestion> Suggestions() const override;
+  Vector<mojom::blink::ColorSuggestionPtr> Suggestions() const override;
   ColorChooserClient* GetColorChooserClient() override;
 
  private:

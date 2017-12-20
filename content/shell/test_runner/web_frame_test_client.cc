@@ -13,7 +13,6 @@
 #include "content/public/test/test_runner_support.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
-#include "content/shell/test_runner/mock_color_chooser.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
@@ -179,14 +178,6 @@ WebFrameTestClient::WebFrameTestClient(
 }
 
 WebFrameTestClient::~WebFrameTestClient() {}
-
-blink::WebColorChooser* WebFrameTestClient::CreateColorChooser(
-    blink::WebColorChooserClient* client,
-    const blink::WebColor& color,
-    const blink::WebVector<blink::WebColorSuggestion>& suggestions) {
-  // This instance is deleted by WebCore::ColorInputType
-  return new MockColorChooser(client, delegate_, test_runner());
-}
 
 void WebFrameTestClient::RunModalAlertDialog(const blink::WebString& message) {
   if (!test_runner()->ShouldDumpJavaScriptDialogs())

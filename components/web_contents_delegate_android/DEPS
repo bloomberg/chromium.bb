@@ -2,6 +2,7 @@ include_rules = [
   "+content/public/browser",
   "+content/public/common",
   "+jni",
+  "+third_party/WebKit/common",
   "+ui/android",
   "+ui/base",
   "+ui/gfx"

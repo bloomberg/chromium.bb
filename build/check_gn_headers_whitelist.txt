@@ -256,7 +256,6 @@ third_party/WebKit/Source/core/editing/finder/FindOptions.h
 third_party/WebKit/Source/core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h
 third_party/WebKit/Source/core/style/ShapeValue.h
 third_party/WebKit/Source/core/style/TransformOrigin.h
-third_party/WebKit/Source/platform/ColorSuggestion.h
 third_party/WebKit/Source/platform/EncryptedMediaRequest.h
 third_party/WebKit/Source/platform/fonts/FontSelector.h
 third_party/WebKit/Source/platform/fonts/Glyph.h

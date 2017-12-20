@@ -89,8 +89,6 @@ enum class WebTreeScopeType;
 class AssociatedInterfaceProvider;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebColorChooser;
-class WebColorChooserClient;
 class WebContentDecryptionModule;
 class WebCookieJar;
 class WebDocumentLoader;
@@ -116,7 +114,6 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
-struct WebColorSuggestion;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebPluginParams;
@@ -551,19 +548,6 @@ class BLINK_EXPORT WebFrameClient {
   virtual bool HandleCurrentKeyboardEvent() { return false; }
 
   // Dialogs -------------------------------------------------------------
-
-  // This method opens the color chooser and returns a new WebColorChooser
-  // instance. If there is a WebColorChooser already from the last time this
-  // was called, it ends the color chooser by calling endChooser, and replaces
-  // it with the new one. The given list of suggestions can be used to show a
-  // simple interface with a limited set of choices.
-
-  virtual WebColorChooser* CreateColorChooser(
-      WebColorChooserClient*,
-      const WebColor&,
-      const WebVector<WebColorSuggestion>&) {
-    return nullptr;
-  }
 
   // Displays a modal alert dialog containing the given message. Returns
   // once the user dismisses the dialog.
