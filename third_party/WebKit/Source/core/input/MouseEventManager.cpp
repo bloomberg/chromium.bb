@@ -1113,8 +1113,8 @@ bool MouseEventManager::MousePressed() {
   return mouse_pressed_;
 }
 
-void MouseEventManager::SetMousePressed(bool mouse_pressed) {
-  mouse_pressed_ = mouse_pressed;
+void MouseEventManager::ReleaseMousePress() {
+  mouse_pressed_ = false;
 }
 
 bool MouseEventManager::CapturesDragging() const {

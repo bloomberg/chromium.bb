@@ -471,8 +471,12 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
       mouse_event_type, mouse_event, coalesced_events,
       frame_->GetDocument()->domWindow());
 
+  bool fake_mouse_event = (mouse_event.GetModifiers() &
+                           WebInputEvent::Modifiers::kRelativeMotionEvent);
+  DCHECK(!fake_mouse_event || mouse_event_type == EventTypeNames::mousemove);
+
   // This is for when the mouse is released outside of the page.
-  if (pointer_event->type() == EventTypeNames::pointermove &&
+  if (!fake_mouse_event && mouse_event_type == EventTypeNames::mousemove &&
       !pointer_event->buttons()) {
     ReleasePointerCapture(pointer_event->pointerId());
     // Send got/lostpointercapture rightaway if necessary.
@@ -487,16 +491,12 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   EventTarget* pointer_event_target = ProcessCaptureAndPositionOfPointerEvent(
       pointer_event, target, canvas_region_id, &mouse_event);
 
+  // Don't send fake mouse event to the DOM.
+  if (fake_mouse_event)
+    return WebInputEventResult::kHandledSuppressed;
+
   EventTarget* effective_target = GetEffectiveTargetForPointerEvent(
       pointer_event_target, pointer_event->pointerId());
-
-  // Do not send the fake mouse move event to the DOM, because the mouse does
-  // not move.
-  if ((mouse_event_type == EventTypeNames::mousemove) &&
-      mouse_event.GetModifiers() &
-          WebInputEvent::Modifiers::kRelativeMotionEvent) {
-    return WebInputEventResult::kHandledSuppressed;
-  }
 
   WebInputEventResult result =
       DispatchPointerEvent(effective_target, pointer_event);
