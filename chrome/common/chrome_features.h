@@ -215,8 +215,6 @@ extern const base::Feature kUseNewAcceptLanguageHeader;
 
 extern const base::Feature kPermissionsBlacklist;
 
-extern const base::Feature kPreconnectMore;
-
 #if defined(OS_WIN)
 extern const base::Feature kDisablePostScriptPrinting;
 #endif

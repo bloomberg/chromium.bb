@@ -2681,25 +2681,6 @@
             ]
         }
     ],
-    "PreconnectMore": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PreconnectMore"
-                    ]
-                }
-            ]
-        }
-    ],
     "PreviewsClientLoFi": [
         {
             "platforms": [

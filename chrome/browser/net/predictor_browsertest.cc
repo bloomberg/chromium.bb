@@ -23,7 +23,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -515,7 +514,6 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         Predictor::kMaxSpeculativeResolveQueueDelayMs + 300);
     rule_based_resolver_proc_->AddRuleWithLatency("delay.google.com",
                                                   "127.0.0.1", 1000 * 60);
-    scoped_feature_list_.InitAndEnableFeature(features::kPreconnectMore);
   }
 
   ~PredictorBrowserTest() override {}
@@ -805,8 +803,6 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         "startFetchesAndWaitForReply()", &result));
     EXPECT_TRUE(result);
   }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   const GURL startup_url_;
   const GURL referring_url_;
