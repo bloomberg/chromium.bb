@@ -150,48 +150,5 @@ TEST_F(ContentFaviconDriverTest, FaviconUpdateNoLastCommittedEntry) {
   EXPECT_TRUE(driver->favicon_urls().empty());
 }
 
-TEST_F(ContentFaviconDriverTest, RecordsHistorgramsForCandidates) {
-  const std::vector<gfx::Size> kSizes16x16and32x32({{16, 16}, {32, 32}});
-  base::HistogramTester tester;
-
-  // Navigation to a page updating one icon.
-  TestFetchFaviconForPage(
-      GURL("http://www.youtube.com"),
-      {content::FaviconURL(GURL("http://www.youtube.com/favicon.ico"),
-                           content::FaviconURL::IconType::kFavicon,
-                           kSizes16x16and32x32)});
-
-  EXPECT_THAT(tester.GetAllSamples("Favicons.CandidatesCount"),
-              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
-  EXPECT_THAT(tester.GetAllSamples("Favicons.CandidatesWithDefinedSizesCount"),
-              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
-  EXPECT_THAT(tester.GetAllSamples("Favicons.CandidatesWithTouchIconsCount"),
-              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
-
-  std::vector<content::FaviconURL> favicon_urls = {
-      content::FaviconURL(GURL("http://www.google.ca/favicon.ico"),
-                          content::FaviconURL::IconType::kFavicon,
-                          kSizes16x16and32x32),
-      content::FaviconURL(GURL("http://www.google.ca/precomposed_icon.png"),
-                          content::FaviconURL::IconType::kTouchPrecomposedIcon,
-                          kEmptyIconSizes),
-      content::FaviconURL(GURL("http://www.google.ca/touch_icon.png"),
-                          content::FaviconURL::IconType::kTouchIcon,
-                          kEmptyIconSizes)};
-
-  // Double navigation to a page with 3 different icons.
-  TestFetchFaviconForPage(GURL("http://www.google.ca"), favicon_urls);
-  TestFetchFaviconForPage(GURL("http://www.google.ca"), favicon_urls);
-
-  EXPECT_THAT(tester.GetAllSamples("Favicons.CandidatesCount"),
-              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1),
-                          base::Bucket(/*min=*/3, /*count=*/2)));
-  EXPECT_THAT(tester.GetAllSamples("Favicons.CandidatesWithDefinedSizesCount"),
-              ElementsAre(base::Bucket(/*min=*/1, /*count=*/3)));
-  EXPECT_THAT(tester.GetAllSamples("Favicons.CandidatesWithTouchIconsCount"),
-              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
-                          base::Bucket(/*min=*/2, /*count=*/2)));
-}
-
 }  // namespace
 }  // namespace favicon
