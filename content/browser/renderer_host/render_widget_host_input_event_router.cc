@@ -170,24 +170,87 @@ RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
 
 RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
     RenderWidgetHostViewBase* root_view,
+    const blink::WebMouseEvent& event,
+    gfx::PointF* transformed_point) const {
+  RenderWidgetHostViewBase* target = nullptr;
+  bool needs_transform_point = true;
+  if (root_view->IsMouseLocked()) {
+    target = root_view->GetRenderWidgetHostImpl()
+                 ->delegate()
+                 ->GetMouseLockWidget()
+                 ->GetView();
+  }
+
+  constexpr int mouse_button_modifiers =
+      blink::WebInputEvent::kLeftButtonDown |
+      blink::WebInputEvent::kMiddleButtonDown |
+      blink::WebInputEvent::kRightButtonDown |
+      blink::WebInputEvent::kBackButtonDown |
+      blink::WebInputEvent::kForwardButtonDown;
+  if (!target && mouse_capture_target_.target &&
+      event.GetType() != blink::WebInputEvent::kMouseDown &&
+      (event.GetType() == blink::WebInputEvent::kMouseUp ||
+       event.GetModifiers() & mouse_button_modifiers)) {
+    target = mouse_capture_target_.target;
+  }
+
+  if (!target) {
+    target = FindViewAtLocation(root_view, event.PositionInWidget(),
+                                event.PositionInScreen(),
+                                viz::EventSource::MOUSE, transformed_point);
+    // |transformed_point| is already transformed.
+    needs_transform_point = false;
+  }
+
+  if (target && target->IsRenderWidgetHostViewGuest()) {
+    RenderWidgetHostViewBase* owner_view =
+        static_cast<RenderWidgetHostViewGuest*>(target)
+            ->GetOwnerRenderWidgetHostView();
+    // In case there is nested RenderWidgetHostViewGuests (i.e., PDF inside
+    // <webview>), we will need the owner view of the top-most guest for input
+    // routing.
+    while (owner_view->IsRenderWidgetHostViewGuest()) {
+      owner_view = static_cast<RenderWidgetHostViewGuest*>(owner_view)
+                       ->GetOwnerRenderWidgetHostView();
+    }
+
+    if (owner_view != root_view) {
+      needs_transform_point = true;
+    } else {
+      needs_transform_point = false;
+      *transformed_point = event.PositionInWidget();
+    }
+    target = owner_view;
+  }
+
+  if (needs_transform_point) {
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), target, transformed_point))
+      return nullptr;
+  }
+  return target;
+}
+
+RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindViewAtLocation(
+    RenderWidgetHostViewBase* root_view,
     const gfx::Point& point,
     const gfx::Point& point_in_screen,
     viz::EventSource source,
-    gfx::Point* transformed_point) {
+    gfx::Point* transformed_point) const {
   gfx::PointF temp_point(*transformed_point);
   RenderWidgetHostViewBase* view =
-      FindEventTarget(root_view, gfx::PointF(point),
-                      gfx::PointF(point_in_screen), source, &temp_point);
+      FindViewAtLocation(root_view, gfx::PointF(point),
+                         gfx::PointF(point_in_screen), source, &temp_point);
   *transformed_point = gfx::ToFlooredPoint(temp_point);
   return view;
 }
 
-RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
+RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindViewAtLocation(
     RenderWidgetHostViewBase* root_view,
     const gfx::PointF& point,
     const gfx::PointF& point_in_screen,
     viz::EventSource source,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point) const {
   viz::FrameSinkId frame_sink_id;
 
   if (enable_viz_) {
@@ -236,95 +299,27 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
 
   // TODO(kenrb): There should be a better way to handle hit tests to surfaces
   // that are no longer valid for hit testing. See https://crbug.com/790044.
-  const FrameSinkIdOwnerMap::iterator iter = owner_map_.find(frame_sink_id);
+  auto iter = owner_map_.find(frame_sink_id);
   // If the point hit a Surface whose namspace is no longer in the map, then
   // it likely means the RenderWidgetHostView has been destroyed but its
   // parent frame has not sent a new compositor frame since that happened.
-  if (iter == owner_map_.end())
-    return root_view;
-
-  return iter->second;
+  return (iter == owner_map_.end()) ? root_view : iter->second;
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebMouseEvent* event,
     const ui::LatencyInfo& latency) {
-  RenderWidgetHostViewBase* target = nullptr;
   gfx::PointF transformed_point;
-
-  // When the mouse is locked, directly route the events to the widget that
-  // holds the lock and return.
-  if (root_view->IsMouseLocked()) {
-    target = root_view->GetRenderWidgetHostImpl()
-                 ->delegate()
-                 ->GetMouseLockWidget()
-                 ->GetView();
-    if (!root_view->TransformPointToCoordSpaceForView(
-            event->PositionInWidget(), target, &transformed_point))
-      return;
-
-    event->SetPositionInWidget(transformed_point.x(), transformed_point.y());
-    target->ProcessMouseEvent(*event, latency);
-    return;
-  }
-
-  const int mouse_button_modifiers = blink::WebInputEvent::kLeftButtonDown |
-                                     blink::WebInputEvent::kMiddleButtonDown |
-                                     blink::WebInputEvent::kRightButtonDown |
-                                     blink::WebInputEvent::kBackButtonDown |
-                                     blink::WebInputEvent::kForwardButtonDown;
-  if (mouse_capture_target_.target &&
-      event->GetType() != blink::WebInputEvent::kMouseDown &&
-      (event->GetType() == blink::WebInputEvent::kMouseUp ||
-       event->GetModifiers() & mouse_button_modifiers)) {
-    target = mouse_capture_target_.target;
-    if (!root_view->TransformPointToCoordSpaceForView(
-            event->PositionInWidget(), target, &transformed_point))
-      return;
-    if (event->GetType() == blink::WebInputEvent::kMouseUp)
-      mouse_capture_target_.target = nullptr;
-  } else {
-    target = FindEventTarget(root_view, event->PositionInWidget(),
-                             event->PositionInScreen(), viz::EventSource::MOUSE,
-                             &transformed_point);
-  }
-
-  // RenderWidgetHostViewGuest does not properly handle direct routing of mouse
-  // events, so they have to go by the double-hop forwarding path through
-  // the embedding renderer and then BrowserPluginGuest.
-  if (target && target->IsRenderWidgetHostViewGuest()) {
-    ui::LatencyInfo latency_info;
-    RenderWidgetHostViewBase* owner_view =
-        static_cast<RenderWidgetHostViewGuest*>(target)
-            ->GetOwnerRenderWidgetHostView();
-    // In case there is nested RenderWidgetHostViewGuests (i.e., PDF inside
-    // <webview>), we will need the owner view of the top-most guest for input
-    // routing.
-    while (owner_view->IsRenderWidgetHostViewGuest()) {
-      owner_view = static_cast<RenderWidgetHostViewGuest*>(owner_view)
-                       ->GetOwnerRenderWidgetHostView();
-    }
-
-    if (owner_view != root_view) {
-      // This happens when the view is embedded inside a cross-process frame
-      // (i.e., owner view is a RenderWidgetHostViewChildFrame).
-      gfx::PointF owner_point;
-      if (!root_view->TransformPointToCoordSpaceForView(
-              event->PositionInWidget(), owner_view, &owner_point)) {
-        return;
-      }
-      event->SetPositionInWidget(owner_point.x(), owner_point.y());
-    }
-    owner_view->ProcessMouseEvent(*event, latency_info);
-    return;
-  }
-
-  if (event->GetType() == blink::WebInputEvent::kMouseDown)
-    mouse_capture_target_.target = target;
-
+  RenderWidgetHostViewBase* const target =
+      FindEventTarget(root_view, *event, &transformed_point);
   if (!target)
     return;
+
+  if (event->GetType() == blink::WebInputEvent::kMouseUp)
+    mouse_capture_target_.target = nullptr;
+  else if (event->GetType() == blink::WebInputEvent::kMouseDown)
+    mouse_capture_target_.target = target;
 
   // SendMouseEnterOrLeaveEvents is called with the original event
   // coordinates, which are transformed independently for each view that will
@@ -362,7 +357,7 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
     }
   } else if (root_view->wheel_scroll_latching_enabled()) {
     if (event->phase == blink::WebMouseWheelEvent::kPhaseBegan) {
-      wheel_target_.target = FindEventTarget(
+      wheel_target_.target = FindViewAtLocation(
           root_view, event->PositionInWidget(), event->PositionInScreen(),
           viz::EventSource::MOUSE, &transformed_point);
       wheel_target_.delta =
@@ -391,9 +386,9 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
 
   } else {  // !root_view->IsMouseLocked() &&
     // !root_view->wheel_scroll_latching_enabled()
-    target = FindEventTarget(root_view, event->PositionInWidget(),
-                             event->PositionInScreen(), viz::EventSource::MOUSE,
-                             &transformed_point);
+    target = FindViewAtLocation(root_view, event->PositionInWidget(),
+                                event->PositionInScreen(),
+                                viz::EventSource::MOUSE, &transformed_point);
   }
 
   if (!target) {
@@ -500,9 +495,9 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         gfx::Point original_point_in_screen(
             event->touches[0].PositionInScreen().x,
             event->touches[0].PositionInScreen().y);
-        touch_target_.target =
-            FindEventTarget(root_view, original_point, original_point_in_screen,
-                            viz::EventSource::TOUCH, &transformed_point);
+        touch_target_.target = FindViewAtLocation(
+            root_view, original_point, original_point_in_screen,
+            viz::EventSource::TOUCH, &transformed_point);
 
         // TODO(wjmaclean): Instead of just computing a delta, we should extract
         // the complete transform. We assume it doesn't change for the duration
@@ -939,8 +934,8 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
   // TODO(kenrb): Pass screen coordinates through this method from all the
   // callers. This will be broken with --enable-viz until then.
   return RenderWidgetHostImpl::From(
-      FindEventTarget(root_view, point, gfx::PointF(), viz::EventSource::MOUSE,
-                      transformed_point)
+      FindViewAtLocation(root_view, point, gfx::PointF(),
+                         viz::EventSource::MOUSE, transformed_point)
           ->GetRenderWidgetHost());
 }
 
@@ -1022,8 +1017,8 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     gfx::Point original_point(event->x, event->y);
     gfx::Point original_point_in_screen(event->global_x, event->global_y);
     touchscreen_gesture_target_.target =
-        FindEventTarget(root_view, original_point, original_point_in_screen,
-                        viz::EventSource::TOUCH, &transformed_point);
+        FindViewAtLocation(root_view, original_point, original_point_in_screen,
+                           viz::EventSource::TOUCH, &transformed_point);
     touchscreen_gesture_target_.delta = transformed_point - original_point;
   } else if (is_gesture_start) {
     touchscreen_gesture_target_ = gesture_target_it->second;
@@ -1063,8 +1058,8 @@ void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
     gfx::Point original_point(event->x, event->y);
     gfx::Point original_point_in_screen(event->global_x, event->global_y);
     touchpad_gesture_target_.target =
-        FindEventTarget(root_view, original_point, original_point_in_screen,
-                        viz::EventSource::TOUCH, &transformed_point);
+        FindViewAtLocation(root_view, original_point, original_point_in_screen,
+                           viz::EventSource::TOUCH, &transformed_point);
     // TODO(mohsen): Instead of just computing a delta, we should extract the
     // complete transform. We assume it doesn't change for the duration of the
     // touchpad gesture sequence, though this could be wrong; a better approach
