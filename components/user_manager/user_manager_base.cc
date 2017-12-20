@@ -75,8 +75,9 @@ const int kLogoutToLoginDelayMaxSec = 1800;
 // interpretes it as UserType. It is used in initial users load.
 UserType GetStoredUserType(const base::DictionaryValue* prefs_user_types,
                            const AccountId& account_id) {
-  const base::Value* stored_user_type =
-      prefs_user_types->FindKey(account_id.GetAccountIdKey());
+  const base::Value* stored_user_type = prefs_user_types->FindKey(
+      account_id.HasAccountIdKey() ? account_id.GetAccountIdKey()
+                                   : account_id.GetUserEmail());
   if (!stored_user_type || !stored_user_type->is_int())
     return USER_TYPE_REGULAR;
 
@@ -924,6 +925,8 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
                         base::UTF8ToUTF16(active_user_->GetAccountName(true)));
     known_user::SetProfileEverInitialized(
         active_user_->GetAccountId(), active_user_->profile_ever_initialized());
+  } else {
+    SaveUserType(active_user_);
   }
 
   AddUserRecord(active_user_);
