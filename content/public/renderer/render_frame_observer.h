@@ -109,9 +109,6 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // The interestingness of layouts is explained in WebMeaningfulLayout.h.
   virtual void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {}
 
-  // Called when a compositor frame has committed.
-  virtual void DidCommitCompositorFrame() {}
-
   // Notifications when |PerformanceTiming| data becomes available
   virtual void DidChangePerformanceTiming() {}
 

@@ -1016,12 +1016,7 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   DidInitiatePaint();
 }
 
-void RenderWidget::DidCommitCompositorFrame() {
-  for (auto& observer : render_frames_)
-    observer.DidCommitCompositorFrame();
-  for (auto& observer : render_frame_proxies_)
-    observer.DidCommitCompositorFrame();
-}
+void RenderWidget::DidCommitCompositorFrame() {}
 
 void RenderWidget::DidCompletePageScaleAnimation() {}
 

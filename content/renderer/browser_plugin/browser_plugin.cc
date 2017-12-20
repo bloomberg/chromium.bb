@@ -231,9 +231,6 @@ void BrowserPlugin::Detach() {
       new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
 }
 
-void BrowserPlugin::DidCommitCompositorFrame() {
-}
-
 #if defined(USE_AURA)
 void BrowserPlugin::CreateMusWindowAndEmbed(
     const base::UnguessableToken& embed_token) {

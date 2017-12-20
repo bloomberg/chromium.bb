@@ -83,18 +83,6 @@ BrowserPlugin* BrowserPluginManager::CreateBrowserPlugin(
   return new BrowserPlugin(render_frame, delegate);
 }
 
-void BrowserPluginManager::DidCommitCompositorFrame(
-    int render_frame_routing_id) {
-  base::IDMap<BrowserPlugin*>::iterator iter(&instances_);
-  while (!iter.IsAtEnd()) {
-    if (iter.GetCurrentValue()->render_frame_routing_id() ==
-        render_frame_routing_id) {
-      iter.GetCurrentValue()->DidCommitCompositorFrame();
-    }
-    iter.Advance();
-  }
-}
-
 bool BrowserPluginManager::OnControlMessageReceived(
     const IPC::Message& message) {
   if (!BrowserPlugin::ShouldForwardToBrowserPlugin(message))

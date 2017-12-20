@@ -121,10 +121,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // when a compositor frame will begin.
   void WillBeginCompositorFrame();
 
-  // Out-of-process child frames receive a signal from RenderWidgetCompositor
-  // when a compositor frame has committed.
-  void DidCommitCompositorFrame();
-
   // Out-of-process child frames receive a signal from RenderWidget when the
   // ScreenInfo has changed.
   void OnScreenInfoChanged(const ScreenInfo& screen_info);
