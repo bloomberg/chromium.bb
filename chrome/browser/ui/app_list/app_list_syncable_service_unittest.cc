@@ -182,7 +182,7 @@ class AppListSyncableServiceTest : public AppListTestBase {
 
   void TearDown() override { app_list_syncable_service_.reset(); }
 
-  app_list::AppListModelUpdater* model_updater() {
+  AppListModelUpdater* model_updater() {
     return app_list_syncable_service_->GetModelUpdater();
   }
 

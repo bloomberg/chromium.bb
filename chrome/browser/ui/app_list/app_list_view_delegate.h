@@ -63,7 +63,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       const scoped_refptr<content::SpeechRecognitionSessionPreamble>& preamble);
 
   // Gets the model updater.
-  app_list::AppListModelUpdater* GetModelUpdater();
+  AppListModelUpdater* GetModelUpdater();
 
   // Overridden from app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
@@ -126,7 +126,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Unowned pointer to the model updater owned by AppListSyncableService.
   // Will change if |profile_| changes.
-  app_list::AppListModelUpdater* model_updater_;
+  AppListModelUpdater* model_updater_;
 
   // Note: order ensures |search_resource_manager_| is destroyed before
   // |speech_ui_|.

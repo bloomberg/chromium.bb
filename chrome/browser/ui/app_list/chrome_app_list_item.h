@@ -12,11 +12,8 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 class AppListControllerDelegate;
-class Profile;
-
-namespace app_list {
 class FakeAppListModelUpdater;
-}  // namespace app_list
+class Profile;
 
 namespace extensions {
 class AppSorting;
@@ -40,7 +37,7 @@ class ChromeAppListItem : public app_list::AppListItem {
  protected:
   // TODO(hejq): Remove this once we break the inheritance from AppListItem and
   //             move those protected methods to public.
-  friend class app_list::FakeAppListModelUpdater;
+  friend class FakeAppListModelUpdater;
 
   ChromeAppListItem(Profile* profile, const std::string& app_id);
 

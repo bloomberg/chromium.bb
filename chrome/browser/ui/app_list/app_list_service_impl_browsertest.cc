@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
 
   // Show the app list to ensure it has loaded a profile.
   service_->ShowForProfile(browser()->profile());
-  app_list::AppListModelUpdater* model_updater = test::GetModelUpdater(service);
+  AppListModelUpdater* model_updater = test::GetModelUpdater(service);
   EXPECT_TRUE(model_updater);
 
   // Get the webstore hosted app, which is always present.

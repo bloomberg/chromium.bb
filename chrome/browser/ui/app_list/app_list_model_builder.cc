@@ -14,10 +14,9 @@ AppListModelBuilder::AppListModelBuilder(AppListControllerDelegate* controller,
 AppListModelBuilder::~AppListModelBuilder() {
 }
 
-void AppListModelBuilder::Initialize(
-    app_list::AppListSyncableService* service,
-    Profile* profile,
-    app_list::AppListModelUpdater* model_updater) {
+void AppListModelBuilder::Initialize(app_list::AppListSyncableService* service,
+                                     Profile* profile,
+                                     AppListModelUpdater* model_updater) {
   DCHECK(!service_ && !profile_ && !model_updater_);
   service_ = service;
   profile_ = profile;

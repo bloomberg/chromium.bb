@@ -54,7 +54,7 @@ class CreateProfileHelper {
 
 }  // namespace
 
-app_list::AppListModelUpdater* GetModelUpdater(AppListService* service) {
+AppListModelUpdater* GetModelUpdater(AppListService* service) {
   return app_list::AppListSyncableServiceFactory::GetForProfile(
              service->GetCurrentAppListProfile())
       ->GetModelUpdater();

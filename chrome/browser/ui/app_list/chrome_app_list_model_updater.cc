@@ -13,11 +13,9 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "extensions/common/constants.h"
 
-namespace app_list {
-
 ChromeAppListModelUpdater::ChromeAppListModelUpdater()
-    : model_(std::make_unique<AppListModel>()),
-      search_model_(std::make_unique<SearchModel>()) {}
+    : model_(std::make_unique<app_list::AppListModel>()),
+      search_model_(std::make_unique<app_list::SearchModel>()) {}
 
 ChromeAppListModelUpdater::~ChromeAppListModelUpdater() = default;
 
@@ -42,28 +40,29 @@ void ChromeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
 
 void ChromeAppListModelUpdater::MoveItemToFolder(const std::string& id,
                                                  const std::string& folder_id) {
-  AppListItem* item = model_->FindItem(id);
+  app_list::AppListItem* item = model_->FindItem(id);
   model_->MoveItemToFolder(item, folder_id);
 }
 
 void ChromeAppListModelUpdater::SetItemPosition(
     const std::string& id,
     const syncer::StringOrdinal& new_position) {
-  AppListItem* item = model_->FindItem(id);
+  app_list::AppListItem* item = model_->FindItem(id);
   model_->SetItemPosition(item, new_position);
 }
 
-void ChromeAppListModelUpdater::SetStatus(AppListModel::Status status) {
+void ChromeAppListModelUpdater::SetStatus(
+    app_list::AppListModel::Status status) {
   model_->SetStatus(status);
 }
 
-void ChromeAppListModelUpdater::SetState(AppListModel::State state) {
+void ChromeAppListModelUpdater::SetState(app_list::AppListModel::State state) {
   model_->SetState(state);
 }
 
 void ChromeAppListModelUpdater::SetItemName(const std::string& id,
                                             const std::string& name) {
-  AppListItem* item = model_->FindItem(id);
+  app_list::AppListItem* item = model_->FindItem(id);
   if (item)
     model_->SetItemName(item, name);
 }
@@ -90,7 +89,7 @@ ChromeAppListItem* ChromeAppListModelUpdater::ItemAtForTest(size_t index) {
       model_->top_level_item_list()->item_at(index));
 }
 
-AppListFolderItem* ChromeAppListModelUpdater::FindFolderItem(
+app_list::AppListFolderItem* ChromeAppListModelUpdater::FindFolderItem(
     const std::string& folder_id) {
   return model_->FindFolderItem(folder_id);
 }
@@ -120,10 +119,11 @@ ChromeAppListModelUpdater::GetIdToAppListIndexMap() {
   return id_to_app_list_index;
 }
 
-AppListFolderItem* ChromeAppListModelUpdater::ResolveOemFolderPosition(
+app_list::AppListFolderItem*
+ChromeAppListModelUpdater::ResolveOemFolderPosition(
     const std::string& oem_folder_id,
     const syncer::StringOrdinal& preffered_oem_position) {
-  AppListFolderItem* oem_folder = FindFolderItem(oem_folder_id);
+  app_list::AppListFolderItem* oem_folder = FindFolderItem(oem_folder_id);
   if (oem_folder) {
     const syncer::StringOrdinal& oem_folder_pos =
         preffered_oem_position.IsValid() ? preffered_oem_position
@@ -136,7 +136,7 @@ AppListFolderItem* ChromeAppListModelUpdater::ResolveOemFolderPosition(
 // For AppListSyncableService:
 void ChromeAppListModelUpdater::AddItemToOemFolder(
     std::unique_ptr<ChromeAppListItem> item,
-    AppListSyncableService::SyncItem* oem_sync_item,
+    app_list::AppListSyncableService::SyncItem* oem_sync_item,
     const std::string& oem_folder_id,
     const std::string& oem_folder_name,
     const syncer::StringOrdinal& preffered_oem_position) {
@@ -146,10 +146,10 @@ void ChromeAppListModelUpdater::AddItemToOemFolder(
 }
 
 void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
-    AppListSyncableService::SyncItem* sync_item,
+    app_list::AppListSyncableService::SyncItem* sync_item,
     bool update_name,
     bool update_folder) {
-  AppListItem* app_item = model_->FindItem(sync_item->item_id);
+  app_list::AppListItem* app_item = model_->FindItem(sync_item->item_id);
   if (!app_item)
     return;
 
@@ -160,7 +160,7 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
   }
   // Only update the item name if it is a Folder or the name is empty.
   if (update_name && sync_item->item_name != app_item->name() &&
-      (app_item->GetItemType() == AppListFolderItem::kItemType ||
+      (app_item->GetItemType() == app_list::AppListFolderItem::kItemType ||
        app_item->name().empty())) {
     model_->SetItemName(app_item, sync_item->item_name);
   }
@@ -171,14 +171,16 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
 }
 
 void ChromeAppListModelUpdater::FindOrCreateOemFolder(
-    AppListSyncableService::SyncItem* oem_sync_item,
+    app_list::AppListSyncableService::SyncItem* oem_sync_item,
     const std::string& oem_folder_id,
     const std::string& oem_folder_name,
     const syncer::StringOrdinal& preffered_oem_position) {
-  AppListFolderItem* oem_folder = model_->FindFolderItem(oem_folder_id);
+  app_list::AppListFolderItem* oem_folder =
+      model_->FindFolderItem(oem_folder_id);
   if (!oem_folder) {
-    std::unique_ptr<AppListFolderItem> new_folder(new AppListFolderItem(
-        oem_folder_id, AppListFolderItem::FOLDER_TYPE_OEM));
+    std::unique_ptr<app_list::AppListFolderItem> new_folder(
+        new app_list::AppListFolderItem(
+            oem_folder_id, app_list::AppListFolderItem::FOLDER_TYPE_OEM));
     syncer::StringOrdinal oem_position;
     if (oem_sync_item) {
       DCHECK(oem_sync_item->item_ordinal.IsValid());
@@ -191,8 +193,8 @@ void ChromeAppListModelUpdater::FindOrCreateOemFolder(
       // Do not create a sync item for the OEM folder here, do it in
       // ResolveFolderPositions() when the item position is finalized.
     }
-    oem_folder =
-        static_cast<AppListFolderItem*>(model_->AddItem(std::move(new_folder)));
+    oem_folder = static_cast<app_list::AppListFolderItem*>(
+        model_->AddItem(std::move(new_folder)));
     model_->SetItemPosition(oem_folder, oem_position);
   }
   model_->SetItemName(oem_folder, oem_folder_name);
@@ -203,7 +205,7 @@ syncer::StringOrdinal ChromeAppListModelUpdater::GetOemFolderPos() {
   // followed by a pre-installed app (e.g. Search), so the poosition should be
   // stable. TODO(stevenjb): consider explicitly setting the OEM folder location
   // along with the name in ServicesCustomizationDocument::SetOemFolderName().
-  AppListItemList* item_list = model_->top_level_item_list();
+  app_list::AppListItemList* item_list = model_->top_level_item_list();
   if (!item_list->item_count()) {
     LOG(ERROR) << "No top level item was found. "
                << "Placing OEM folder at the beginning.";
@@ -221,10 +223,10 @@ syncer::StringOrdinal ChromeAppListModelUpdater::GetOemFolderPos() {
   }
 
   // Skip items with the same position.
-  const AppListItem* web_store_app_item =
+  const app_list::AppListItem* web_store_app_item =
       item_list->item_at(web_store_app_index);
   for (size_t j = web_store_app_index + 1; j < item_list->item_count(); ++j) {
-    const AppListItem* next_item = item_list->item_at(j);
+    const app_list::AppListItem* next_item = item_list->item_at(j);
     DCHECK(next_item->position().IsValid());
     if (!next_item->position().Equals(web_store_app_item->position())) {
       const syncer::StringOrdinal oem_ordinal =
@@ -241,5 +243,3 @@ syncer::StringOrdinal ChromeAppListModelUpdater::GetOemFolderPos() {
           << " position: " << oem_ordinal.ToDebugString();
   return oem_ordinal;
 }
-
-};  // namespace app_list
