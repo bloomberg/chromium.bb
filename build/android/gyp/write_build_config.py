@@ -35,7 +35,7 @@ import xml.dom.minidom
 from util import build_utils
 
 # Types that should never be used as a dependency of another build config.
-_ROOT_TYPES = ('android_apk', 'deps_dex', 'java_binary',
+_ROOT_TYPES = ('android_apk', 'java_binary',
                'java_annotation_processor', 'junit_binary', 'resource_rewriter')
 # Types that should not allow code deps to pass through.
 _RESOURCE_TYPES = ('android_assets', 'android_resources')
@@ -366,7 +366,6 @@ def main(argv):
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
       'android_apk': ['build_config','dex_path'] + jar_path_options,
-      'deps_dex': ['build_config', 'dex_path'],
       'dist_jar': ['build_config'],
       'resource_rewriter': ['build_config'],
       'group': ['build_config'],
@@ -602,7 +601,7 @@ def main(argv):
     config['resources']['extra_package_names'] = extra_package_names
     config['resources']['extra_r_text_files'] = extra_r_text_files
 
-  if options.type in ['android_apk', 'deps_dex']:
+  if options.type == 'android_apk':
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
   if is_java_target:
@@ -706,8 +705,8 @@ def main(argv):
     proguard_config['lib_paths'] = extra_jars
     proguard_config['lib_configs'] = lib_configs
 
-  # Dependencies for the final dex file of an apk or a 'deps_dex'.
-  if options.type in ['android_apk', 'deps_dex']:
+  # Dependencies for the final dex file of an apk.
+  if options.type == 'android_apk':
     config['final_dex'] = {}
     dex_config = config['final_dex']
     dex_config['dependency_dex_files'] = deps_dex_files
