@@ -258,6 +258,9 @@ using ios::material::TimingFunction;
   _keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
   _keyboardDelegate.dispatcher = dispatcher;
   _keyboardDelegate.omniboxTextField = _locationBarView.textField;
+  [_locationBarView
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                      forAxis:UILayoutConstraintAxisHorizontal];
 
   // Disable default drop interactions on the omnibox.
   // TODO(crbug.com/739903): Handle drop events once Chrome iOS is built with

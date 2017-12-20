@@ -7,6 +7,8 @@ source_set("omnibox") {
     "location_bar_controller.cc",
     "location_bar_controller.h",
     "location_bar_delegate.h",
+    "omnibox_clipping_feature.h",
+    "omnibox_clipping_feature.mm",
     "web_omnibox_edit_controller.cc",
     "web_omnibox_edit_controller.h",
   ]
@@ -39,6 +41,12 @@ source_set("omnibox_internal") {
     "autocomplete_suggestion.h",
     "chrome_omnibox_client_ios.h",
     "chrome_omnibox_client_ios.mm",
+    "clipping_mask_view.h",
+    "clipping_mask_view.mm",
+    "clipping_textfield.h",
+    "clipping_textfield.mm",
+    "clipping_textfield_container.h",
+    "clipping_textfield_container.mm",
     "image_retriever.h",
     "location_bar_controller_impl.h",
     "location_bar_controller_impl.mm",
@@ -130,9 +138,11 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "clipping_textfield_container_unittest.mm",
     "omnibox_text_field_ios_unittest.mm",
   ]
   deps = [
+    ":omnibox",
     ":omnibox_internal",
     ":resources_unit_tests",
     "//base",
