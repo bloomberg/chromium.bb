@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -441,14 +442,6 @@ bool AUHALStream::ConfigureAUHAL() {
   if (!local_audio_unit->is_valid())
     return false;
 
-  // Enable output as appropriate.
-  UInt32 enable_io = 1;
-  OSStatus result = AudioUnitSetProperty(
-      local_audio_unit->audio_unit(), kAudioOutputUnitProperty_EnableIO,
-      kAudioUnitScope_Output, AUElement::OUTPUT, &enable_io, sizeof(enable_io));
-  if (result != noErr)
-    return false;
-
   if (!SetStreamFormat(params_.channels(), params_.sample_rate(),
                        local_audio_unit->audio_unit(), &output_format_)) {
     return false;
@@ -466,7 +459,7 @@ bool AUHALStream::ConfigureAUHAL() {
   AURenderCallbackStruct callback;
   callback.inputProc = InputProc;
   callback.inputProcRefCon = this;
-  result = AudioUnitSetProperty(
+  OSStatus result = AudioUnitSetProperty(
       local_audio_unit->audio_unit(), kAudioUnitProperty_SetRenderCallback,
       kAudioUnitScope_Input, AUElement::OUTPUT, &callback, sizeof(callback));
   if (result != noErr)

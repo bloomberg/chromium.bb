@@ -337,6 +337,27 @@ static bool GetDeviceTotalChannelCount(AudioDeviceID device,
   return true;
 }
 
+// Returns the channel count from the |audio_unit|'s stream format for input
+// scope / input element or output scope / output element.
+static bool GetAudioUnitStreamFormatChannelCount(AudioUnit audio_unit,
+                                                 AUElement element,
+                                                 int* channels) {
+  AudioStreamBasicDescription stream_format;
+  UInt32 size = sizeof(stream_format);
+  OSStatus result =
+      AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat,
+                           element == AUElement::OUTPUT ? kAudioUnitScope_Output
+                                                        : kAudioUnitScope_Input,
+                           element, &stream_format, &size);
+  if (result != noErr) {
+    OSSTATUS_DLOG(ERROR, result) << "Failed to get AudioUnit stream format.";
+    return false;
+  }
+
+  *channels = stream_format.mChannelsPerFrame;
+  return true;
+}
+
 // Returns the channel layout for |device| as provided by the AudioUnit attached
 // to that device matching |element|. Returns true if the count could be pulled
 // from the AudioUnit successfully, false otherwise.
@@ -345,6 +366,27 @@ static bool GetDeviceChannels(AudioDeviceID device,
                               int* channels) {
   DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   CHECK(channels);
+
+  // For input, get the channel count directly from the AudioUnit's stream
+  // format.
+  // TODO(https://crbug.com/796163): Find out if we can use channel layout on
+  // input element, or confirm that we can't.
+  if (element == AUElement::INPUT) {
+    ScopedAudioUnit au(device, element);
+    if (!au.is_valid())
+      return false;
+
+    if (!GetAudioUnitStreamFormatChannelCount(au.audio_unit(), element,
+                                              channels)) {
+      return false;
+    }
+
+    DVLOG(1) << "Input channels: " << *channels;
+    return true;
+  }
+
+  // For output, use the channel layout to determine channel count.
+  DCHECK(element == AUElement::OUTPUT);
 
   // If the device has more channels than possible for layouts to express, use
   // the total count of channels on the device; as of this writing, macOS will
@@ -442,8 +484,7 @@ static bool GetDeviceChannels(AudioDeviceID device,
     }
   }
 
-  DVLOG(1) << (element == AUElement::OUTPUT ? "Output" : "Input")
-           << " channels: " << *channels;
+  DVLOG(1) << "Output channels: " << *channels;
   return true;
 }
 
