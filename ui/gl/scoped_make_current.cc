@@ -5,6 +5,7 @@
 #include "ui/gl/scoped_make_current.h"
 
 #include "base/logging.h"
+#include "components/crash/core/common/crash_key.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 
@@ -60,8 +61,14 @@ bool ScopedReleaseCurrent::Restore() {
   DCHECK(!restored_);
   restored_ = true;
 
-  if (previous_context_)
+  if (previous_context_) {
+    // TODO(sunnyps): Remove after fixing https://crbug.com/724999.
+    static crash_reporter::CrashKeyString<4> crash_key(
+        "scoped-release-current-is-current");
+    crash_key.Set(previous_context_->IsCurrent(previous_surface_.get()) ? "1"
+                                                                        : "0");
     return previous_context_->MakeCurrent(previous_surface_.get());
+  }
 
   return true;
 }
