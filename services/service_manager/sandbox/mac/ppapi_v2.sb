@@ -1,0 +1,21 @@
+; Copyright 2017 The Chromium Authors. All rights reserved.
+; Use of this source code is governed by a BSD-style license that can be
+; found in the LICENSE file.
+
+; --- The contents of common.sb implicitly included here. ---
+
+; Needed for Fonts.
+(allow-font-access)
+
+; IOKit
+(allow iokit-open
+  (iokit-registry-entry-class "IOSurfaceRootUserClient"))
+
+; Reads from home dir.
+(allow file-read-data
+  (path (user-homedir-path "/Library/Preferences/com.apple.universalaccess.plist")))
+
+; Reads from /System.
+(allow file-read-data
+  (subpath "/System/Library/CoreServices/SystemAppearance.bundle")
+  (path "/System/Library/Colors/System.clr/System.clr"))

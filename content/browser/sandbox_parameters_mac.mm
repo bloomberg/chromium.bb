@@ -39,6 +39,8 @@ std::string GetOSVersion() {
   return std::to_string(final_os_version);
 }
 
+}  // namespace
+
 void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -87,12 +89,6 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
       service_manager::SandboxMac::GetCanonicalPath(base::GetHomeDir()).value();
   CHECK(client->SetParameter(
       service_manager::SandboxMac::kSandboxHomedirAsLiteral, homedir));
-}
-
-}  // namespace
-
-void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client) {
-  SetupCommonSandboxParameters(client);
 }
 
 void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,

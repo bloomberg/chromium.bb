@@ -456,10 +456,14 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     }
   } else {
 #if defined(OS_MACOSX)
-    // We need to do this after getting |PPP_GetInterface()| (or presumably
-    // doing something nontrivial with the library), else the sandbox
-    // intercedes.
-    CHECK(InitializeSandbox());
+    // TODO(kerrnel): Delete this once the V2 sandbox is default.
+    const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+    if (!cmdline->HasSwitch(switches::kEnableV2Sandbox)) {
+      // We need to do this after getting |PPP_GetInterface()| (or presumably
+      // doing something nontrivial with the library), else the sandbox
+      // intercedes.
+      CHECK(InitializeSandbox());
+    }
 #endif
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
