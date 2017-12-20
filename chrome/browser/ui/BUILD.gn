@@ -2087,6 +2087,7 @@ split_static_library("ui") {
         "cocoa/download/md_download_item_progress_indicator.mm",
         "cocoa/download/md_download_item_view.h",
         "cocoa/download/md_download_item_view.mm",
+        "cocoa/download/md_download_item_view_testing.h",
         "cocoa/drag_util.h",
         "cocoa/drag_util.mm",
         "cocoa/draggable_button.h",

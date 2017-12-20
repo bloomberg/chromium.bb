@@ -33,6 +33,8 @@ void NOINLINE ForceSystemLeaks() {
 
 @synthesize pretendIsKeyWindow = pretendIsKeyWindow_;
 @synthesize pretendIsOccluded = pretendIsOccluded_;
+@synthesize pretendFullKeyboardAccessIsEnabled =
+    pretendFullKeyboardAccessIsEnabled_;
 @synthesize useDefaultConstraints = useDefaultConstraints_;
 
 - (id)initWithContentRect:(NSRect)contentRect {
@@ -73,16 +75,38 @@ void NOINLINE ForceSystemLeaks() {
                     object:self];
 }
 
-- (void)setUseDefaultConstraints:(BOOL)useDefaultConstraints {
-  useDefaultConstraints_ = useDefaultConstraints;
+- (void)setPretendFullKeyboardAccessIsEnabled:(BOOL)enabled {
+  EXPECT_TRUE([NSWindow
+      instancesRespondToSelector:@selector(_allowsAnyValidResponder)]);
+  pretendFullKeyboardAccessIsEnabled_ = enabled;
+  [self recalculateKeyViewLoop];
 }
 
 - (BOOL)isKeyWindow {
   return pretendIsKeyWindow_;
 }
 
+// Override of an undocumented AppKit method which controls call to check if
+// full keyboard access is enabled. Its presence is verified in
+// -setPretendFullKeyboardAccessIsEnabled:.
+- (BOOL)_allowsAnyValidResponder {
+  return pretendFullKeyboardAccessIsEnabled_;
+}
+
 - (NSWindowOcclusionState)occlusionState {
   return pretendIsOccluded_ ? 0 : NSWindowOcclusionStateVisible;
+}
+
+- (NSArray<NSView*>*)validKeyViews {
+  NSMutableArray<NSView*>* validKeyViews = [NSMutableArray array];
+  NSView* contentView = self.contentView;
+  if (contentView.canBecomeKeyView)
+    [validKeyViews addObject:contentView];
+  for (NSView* keyView = contentView.nextValidKeyView;
+       keyView != nil && ![validKeyViews containsObject:keyView];
+       keyView = keyView.nextValidKeyView)
+    [validKeyViews addObject:keyView];
+  return validKeyViews;
 }
 
 - (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen*)screen {
