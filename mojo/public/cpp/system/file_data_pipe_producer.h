@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_FILE_DATA_PIPE_PRODUCER_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_FILE_DATA_PIPE_PRODUCER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -29,8 +31,32 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataPipeProducer {
  public:
   using CompletionCallback = base::OnceCallback<void(MojoResult result)>;
 
+  // Interface definition of an optional object that may be supplied to the
+  // FileDataPipeProducer so that the data being read from the consumer can be
+  // observed.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called once per read attempt. |data| contains the read data (if any).
+    // |num_bytes_read| is the number of read bytes, 0 indicates EOF. Both
+    // parameters may only be used when |read_result| is base::File::FILE_OK.
+    // Can be called on any sequence.
+    virtual void OnBytesRead(const void* data,
+                             size_t num_bytes_read,
+                             base::File::Error read_result) = 0;
+
+    // Called when the FileDataPipeProducer has finished reading all data. Will
+    // be called even if there was an error opening the file or reading the
+    // data. Can be called on any sequence.
+    virtual void OnDoneReading() = 0;
+  };
+
   // Constructs a new FileDataPipeProducer which will write data to |producer|.
-  explicit FileDataPipeProducer(ScopedDataPipeProducerHandle producer);
+  // Caller may supply an optional |observer| if observation of the read file
+  // data is desired.
+  FileDataPipeProducer(ScopedDataPipeProducerHandle producer,
+                       std::unique_ptr<Observer> observer);
   ~FileDataPipeProducer();
 
   // Attempts to eventually write all of |file|'s contents to the pipe. Invokes
@@ -77,6 +103,7 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataPipeProducer {
 
   ScopedDataPipeProducerHandle producer_;
   scoped_refptr<FileSequenceState> file_sequence_state_;
+  std::unique_ptr<Observer> observer_;
   base::WeakPtrFactory<FileDataPipeProducer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileDataPipeProducer);

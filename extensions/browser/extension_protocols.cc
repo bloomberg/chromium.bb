@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -37,6 +38,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_frame_host.h"
@@ -50,6 +52,7 @@
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -652,23 +655,130 @@ ExtensionProtocolHandler::MaybeCreateJob(
                                     verify_job);
 }
 
+class FileLoaderObserver : public content::FileURLLoaderObserver {
+ public:
+  explicit FileLoaderObserver(scoped_refptr<ContentVerifyJob> verify_job)
+      : verify_job_(std::move(verify_job)) {}
+  ~FileLoaderObserver() override {
+    base::AutoLock auto_lock(lock_);
+    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.TotalKbRead", bytes_read_ / 1024);
+    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.SeekPosition", seek_position_);
+    if (request_timer_.get())
+      UMA_HISTOGRAM_TIMES("ExtensionUrlRequest.Latency",
+                          request_timer_->Elapsed());
+  }
+
+  void OnStart() override {
+    base::AutoLock auto_lock(lock_);
+    request_timer_.reset(new base::ElapsedTimer());
+  }
+
+  void OnOpenComplete(int result) override {
+    if (result < 0) {
+      // This can happen when the file is unreadable (which can happen during
+      // corruption or third-party interaction). We need to be sure to inform
+      // the verification job that we've finished reading so that it can
+      // proceed; see crbug.com/703888.
+      if (verify_job_.get()) {
+        std::string tmp;
+        verify_job_->BytesRead(0, base::string_as_array(&tmp));
+        verify_job_->DoneReading();
+      }
+    }
+  }
+
+  void OnSeekComplete(int64_t result) override {
+    DCHECK_EQ(seek_position_, 0);
+    base::AutoLock auto_lock(lock_);
+    seek_position_ = result;
+    // TODO(asargent) - we'll need to add proper support for range headers.
+    // crbug.com/369895.
+    if (result > 0 && verify_job_.get())
+      verify_job_ = nullptr;
+  }
+
+  void OnBytesRead(const void* data,
+                   size_t num_bytes_read,
+                   base::File::Error read_result) override {
+    if (read_result == base::File::FILE_OK) {
+      UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult",
+                           read_result);
+      base::AutoLock auto_lock(lock_);
+      bytes_read_ += num_bytes_read;
+      if (verify_job_.get())
+        verify_job_->BytesRead(num_bytes_read, static_cast<const char*>(data));
+    } else {
+      net::Error net_error = net::FileErrorToNetError(read_result);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("ExtensionUrlRequest.OnReadCompleteError",
+                                  net_error);
+    }
+  }
+
+  void OnDoneReading() override {
+    base::AutoLock auto_lock(lock_);
+    if (verify_job_.get())
+      verify_job_->DoneReading();
+  }
+
+ private:
+  int64_t bytes_read_ = 0;
+  int64_t seek_position_ = 0;
+  std::unique_ptr<base::ElapsedTimer> request_timer_;
+  scoped_refptr<ContentVerifyJob> verify_job_;
+  // To synchronize access to all members.
+  base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileLoaderObserver);
+};
+
 void LoadExtensionResourceFromFileOnBackgroundSequence(
     const content::ResourceRequest& request,
     const std::string& extension_id,
     const base::FilePath& directory_path,
     const base::FilePath& relative_path,
     content::mojom::URLLoaderRequest loader,
-    content::mojom::URLLoaderClientPtrInfo client_info) {
+    content::mojom::URLLoaderClientPtrInfo client_info,
+    scoped_refptr<ContentVerifyJob> verify_job) {
   // NOTE: ExtensionResource::GetFilePath() must be called on a sequence which
   // tolerates blocking operations.
   ExtensionResource resource(extension_id, directory_path, relative_path);
   content::mojom::URLLoaderClientPtr client;
   client.Bind(std::move(client_info));
 
+  auto loader_observer =
+      std::make_unique<FileLoaderObserver>(std::move(verify_job));
+
   content::ResourceRequest file_request = request;
   file_request.url = net::FilePathToFileURL(resource.GetFilePath());
   content::CreateFileURLLoader(file_request, std::move(loader),
-                               std::move(client));
+                               std::move(client), std::move(loader_observer));
+}
+
+void CreateVerifierAndLoadFile(
+    const content::ResourceRequest& request,
+    const std::string& extension_id,
+    const base::FilePath& directory_path,
+    const base::FilePath& relative_path,
+    content::mojom::URLLoaderRequest loader,
+    content::mojom::URLLoaderClientPtr client,
+    scoped_refptr<extensions::InfoMap> extension_info_map) {
+  scoped_refptr<ContentVerifyJob> verify_job;
+  ContentVerifier* verifier = extension_info_map->content_verifier();
+  if (verifier) {
+    verify_job =
+        verifier->CreateJobFor(extension_id, directory_path, relative_path);
+    if (verify_job)
+      verify_job->Start();
+  }
+
+  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND});
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LoadExtensionResourceFromFileOnBackgroundSequence,
+                     request, extension_id, directory_path, relative_path,
+                     std::move(loader), client.PassInterface(),
+                     std::move(verify_job)));
 }
 
 class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
@@ -679,7 +789,9 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
   // |frame_host|.
   explicit ExtensionURLLoaderFactory(content::RenderFrameHost* frame_host,
                                      const GURL& frame_url)
-      : frame_host_(frame_host), frame_url_(frame_url) {}
+      : frame_host_(frame_host),
+        frame_url_(frame_url),
+        extension_info_map_(nullptr) {}
   ~ExtensionURLLoaderFactory() override = default;
 
   // content::mojom::URLLoaderFactory:
@@ -758,7 +870,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
       return;
     }
 
-    // TODO(crbug.com/782015): Support component extension resource loading from
+    // TODO(crbug.com/782025): Support component extension resource loading from
     // the embedder's resource files. This would be the right place to try to
     // resolve such resources, before we attempt to hit other files on disk.
 
@@ -796,18 +908,16 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
       }
     }
 
-    // TODO(crbug.com/782015): Support content verification on extension
-    // resource requests. This is roughly the point at which we'd want to create
-    // a ContentVerifyJob and somehow hook it into the file URLLoader we set up
-    // below.
+    if (!extension_info_map_) {
+      extension_info_map_ =
+          extensions::ExtensionSystem::Get(browser_context)->info_map();
+    }
 
-    auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BACKGROUND});
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LoadExtensionResourceFromFileOnBackgroundSequence,
-                       request, extension_id, directory_path, relative_path,
-                       std::move(loader), client.PassInterface()));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&CreateVerifierAndLoadFile, request, extension_id,
+                       directory_path, relative_path, std::move(loader),
+                       std::move(client), extension_info_map_));
   }
 
   void Clone(content::mojom::URLLoaderFactoryRequest request) override {
@@ -817,6 +927,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
  private:
   content::RenderFrameHost* const frame_host_;
   const GURL frame_url_;
+  scoped_refptr<extensions::InfoMap> extension_info_map_;
 
   mojo::BindingSet<content::mojom::URLLoaderFactory> bindings_;
 

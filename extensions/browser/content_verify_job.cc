@@ -49,11 +49,7 @@ ContentVerifyJob::ContentVerifyJob(ContentHashReader* hash_reader,
       current_hash_byte_count_(0),
       hash_reader_(hash_reader),
       failure_callback_(std::move(failure_callback)),
-      failed_(false) {
-  // It's ok for this object to be constructed on a different thread from where
-  // it's used.
-  thread_checker_.DetachFromThread();
-}
+      failed_(false) {}
 
 ContentVerifyJob::~ContentVerifyJob() {
   UMA_HISTOGRAM_COUNTS("ExtensionContentVerifyJob.TimeSpentUS",
@@ -61,7 +57,7 @@ ContentVerifyJob::~ContentVerifyJob() {
 }
 
 void ContentVerifyJob::Start() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
   if (g_content_verify_job_test_observer)
     g_content_verify_job_test_observer->JobStarted(
         hash_reader_->extension_id(), hash_reader_->relative_path());
@@ -73,7 +69,7 @@ void ContentVerifyJob::Start() {
 
 void ContentVerifyJob::BytesRead(int count, const char* data) {
   ScopedElapsedTimer timer(&time_spent_);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
   if (failed_)
     return;
   if (g_test_delegate) {
@@ -120,7 +116,7 @@ void ContentVerifyJob::BytesRead(int count, const char* data) {
 
 void ContentVerifyJob::DoneReading() {
   ScopedElapsedTimer timer(&time_spent_);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
   if (failed_)
     return;
   if (g_test_delegate) {
