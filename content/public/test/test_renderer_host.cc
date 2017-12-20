@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -145,7 +145,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     message_loop_ = std::make_unique<base::MessageLoop>();
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
-      std::make_unique<NoTransportImageTransportFactory>());
+      std::make_unique<TestImageTransportFactory>());
 #else
   if (!screen_)
     screen_.reset(ui::CreateDummyScreenAndroid());

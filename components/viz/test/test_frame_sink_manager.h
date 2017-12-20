@@ -16,7 +16,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   TestFrameSinkManagerImpl();
   ~TestFrameSinkManagerImpl() override;
 
-  void BindRequest(mojom::FrameSinkManagerRequest request);
+  void BindRequest(mojom::FrameSinkManagerRequest request,
+                   mojom::FrameSinkManagerClientPtr client);
 
  private:
   // mojom::FrameSinkManager:
@@ -50,6 +51,7 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
       mojom::VideoDetectorObserverPtr observer) override {}
 
   mojo::Binding<mojom::FrameSinkManager> binding_;
+  mojom::FrameSinkManagerClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameSinkManagerImpl);
 };

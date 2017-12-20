@@ -11,8 +11,10 @@ TestFrameSinkManagerImpl::TestFrameSinkManagerImpl() : binding_(this) {}
 TestFrameSinkManagerImpl::~TestFrameSinkManagerImpl() {}
 
 void TestFrameSinkManagerImpl::BindRequest(
-    mojom::FrameSinkManagerRequest request) {
+    mojom::FrameSinkManagerRequest request,
+    mojom::FrameSinkManagerClientPtr client) {
   binding_.Bind(std::move(request));
+  client_ = std::move(client);
 }
 
 }  // namespace viz
