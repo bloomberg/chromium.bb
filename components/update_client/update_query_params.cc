@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "build/build_config.h"
 #include "components/update_client/update_query_params_delegate.h"
 #include "components/version_info/version_info.h"
@@ -73,7 +74,8 @@ UpdateQueryParamsDelegate* g_delegate = nullptr;
 // static
 std::string UpdateQueryParams::Get(ProdId prod) {
   return base::StringPrintf(
-      "os=%s&arch=%s&nacl_arch=%s&prod=%s%s&acceptformat=crx2,crx3", kOs, kArch,
+      "os=%s&arch=%s&os_arch=%s&nacl_arch=%s&prod=%s%s&acceptformat=crx2,crx3",
+      kOs, kArch, base::SysInfo().OperatingSystemArchitecture().c_str(),
       GetNaclArch(), GetProdIdString(prod),
       g_delegate ? g_delegate->GetExtraParams().c_str() : "");
 }

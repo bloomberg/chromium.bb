@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "components/crx_file/id_util.h"
@@ -32,6 +33,10 @@ TEST(WebstoreInstallerTest, PlatformParams) {
       Contains(query, StringPrintf("os=%s", UpdateQueryParams::GetOS())));
   EXPECT_TRUE(
       Contains(query, StringPrintf("arch=%s", UpdateQueryParams::GetArch())));
+  EXPECT_TRUE(Contains(
+      query,
+      StringPrintf("os_arch=%s",
+                   base::SysInfo().OperatingSystemArchitecture().c_str())));
   EXPECT_TRUE(Contains(
       query, StringPrintf("nacl_arch=%s", UpdateQueryParams::GetNaclArch())));
   EXPECT_TRUE(
