@@ -1765,7 +1765,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<CanvasFontCache> canvas_font_cache_;
 
-  Member<IntersectionObserverController> intersection_observer_controller_;
+  TraceWrapperMember<IntersectionObserverController>
+      intersection_observer_controller_;
   Member<ResizeObserverController> resize_observer_controller_;
 
   int node_count_;
