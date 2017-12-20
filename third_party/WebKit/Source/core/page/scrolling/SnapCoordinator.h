@@ -13,10 +13,6 @@
 namespace blink {
 
 class LayoutBox;
-struct ScrollSnapType;
-struct ScrollSnapAlign;
-struct SnapAreaData;
-struct SnapContainerData;
 
 // Snap Coordinator keeps track of snap containers and all of their associated
 // snap areas. It also contains the logic to generate the list of valid snap
@@ -48,8 +44,7 @@ class CORE_EXPORT SnapCoordinator final
   // container.
   SnapAreaData CalculateSnapAreaData(const LayoutBox& snap_area,
                                      const LayoutBox& snap_container,
-                                     const ScrollOffset& min_offset,
-                                     const ScrollOffset& max_offset);
+                                     const FloatPoint& max_position);
 
   // Called by LocalFrameView::PerformPostLayoutTasks(), so that the snap data
   // are updated whenever a layout happens.
@@ -65,8 +60,8 @@ class CORE_EXPORT SnapCoordinator final
   bool GetSnapPosition(const LayoutBox& snap_container,
                        bool did_scroll_x,
                        bool did_scroll_y,
-                       ScrollOffset* snap_offset);
-  static ScrollOffset FindSnapOffset(const ScrollOffset& current_offset,
+                       FloatPoint* snap_position);
+  static FloatPoint FindSnapPosition(const FloatPoint& current_position,
                                      const SnapContainerData&,
                                      bool should_snap_on_x,
                                      bool should_snap_on_y);

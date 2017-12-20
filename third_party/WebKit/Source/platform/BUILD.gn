@@ -1331,7 +1331,6 @@ jumbo_component("platform") {
     "scroll/ScrollAnimatorBase.h",
     "scroll/ScrollAnimatorCompositorCoordinator.cpp",
     "scroll/ScrollAnimatorCompositorCoordinator.h",
-    "scroll/ScrollSnapData.cpp",
     "scroll/ScrollSnapData.h",
     "scroll/ScrollStateData.h",
     "scroll/ScrollTypes.h",
