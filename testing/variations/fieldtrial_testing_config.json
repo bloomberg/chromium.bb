@@ -142,27 +142,6 @@
             ]
         }
     ],
-    "AndroidInProductHelpContextualSearchOptIn": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Tracking",
-                    "params": {
-                        "availability": ">=14",
-                        "event_trigger": "name:contextual_search_opt_in_iph_trigger;comparator:==0;window:90;storage:680",
-                        "event_used": "name:contextual_search_opt_in;comparator:any;window:90;storage:680",
-                        "session_rate": "<0"
-                    },
-                    "enable_features": [
-                        "IPH_ContextualSearchOptIn"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidInProductHelpContextualSearchPromotePanelOpen": [
         {
             "platforms": [
@@ -170,12 +149,14 @@
             ],
             "experiments": [
                 {
-                    "name": "Tracking",
+                    "name": "PromotePanelOpeningExperiment2",
                     "params": {
                         "availability": ">=30",
+                        "event_1": "name:contextual_search_promote_panel_open_iph_trigger;comparator:<2;window:680;storage:680",
+                        "event_2": "name:contextual_search_panel_opened;comparator:<3;window:90;storage:90",
                         "event_trigger": "name:contextual_search_promote_panel_open_iph_trigger;comparator:==0;window:90;storage:680",
-                        "event_used": "name:contextual_search_panel_opened_for_entity;comparator:==0;window:30;storage:680",
-                        "session_rate": "<0"
+                        "event_used": "name:contextual_search_panel_opened_for_entity;comparator:==0;window:90;storage:90",
+                        "session_rate": "<1"
                     },
                     "enable_features": [
                         "IPH_ContextualSearchPromotePanelOpen"
@@ -191,13 +172,14 @@
             ],
             "experiments": [
                 {
-                    "name": "Tracking",
+                    "name": "PromoteTapExperiment2",
                     "params": {
                         "availability": ">=30",
-                        "event_1": "name:contextual_search_panel_opened;comparator:>=2;window:90;storage:680",
+                        "event_1": "name:contextual_search_panel_opened;comparator:>=2;window:90;storage:90",
+                        "event_2": "name:contextual_search_promote_tap_iph_trigger;comparator:<2;window:680;storage:680",
                         "event_trigger": "name:contextual_search_promote_tap_iph_trigger;comparator:==0;window:90;storage:680",
-                        "event_used": "name:contextual_search_panel_opened_after_tap;comparator:==0;window:30;storage:680",
-                        "session_rate": "<0"
+                        "event_used": "name:contextual_search_panel_opened_after_tap;comparator:==0;window:30;storage:90",
+                        "session_rate": "<1"
                     },
                     "enable_features": [
                         "IPH_ContextualSearchPromoteTap"
@@ -213,13 +195,15 @@
             ],
             "experiments": [
                 {
-                    "name": "Tracking",
+                    "name": "WebSearchExperiment2",
                     "params": {
                         "availability": ">=30",
-                        "event_1": "name:web_search_performed;comparator:>=2;window:90;storage:680",
+                        "event_1": "name:web_search_performed;comparator:>=1;window:90;storage:90",
+                        "event_2": "name:contextual_search_web_search_iph_trigger;comparator:<2;window:680;storage:680",
+                        "event_3": "name:contextual_search_panel_opened;comparator:>0;window:680;storage:680",
                         "event_trigger": "name:contextual_search_web_search_iph_trigger;comparator:==0;window:90;storage:680",
-                        "event_used": "name:contextual_search_panel_opened;comparator:==0;window:30;storage:680",
-                        "session_rate": "<0"
+                        "event_used": "name:contextual_search_panel_opened;comparator:==0;window:30;storage:90",
+                        "session_rate": "<1"
                     },
                     "enable_features": [
                         "IPH_ContextualSearchWebSearch"
@@ -949,7 +933,8 @@
                 {
                     "name": "Expected",
                     "params": {
-                        "contextual-search-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/contextual_search/test_ranker_model_20171109_short_words_v2.pb.bin"
+                        "contextual-search-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/contextual_search/test_ranker_model_20171109_short_words_v2.pb.bin",
+                        "enable_bar_overlap_suppression": "true"
                     },
                     "enable_features": [
                         "ContextualSearchMlTapSuppression",
