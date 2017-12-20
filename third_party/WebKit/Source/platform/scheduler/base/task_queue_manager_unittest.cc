@@ -2619,23 +2619,23 @@ TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask) {
                                base::TimeDelta::FromSeconds(10));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
-            ComputeDelayTillNextTask(&lazy_now)->Delay());
+            ComputeDelayTillNextTask(&lazy_now)->delay());
 
   runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
                                base::TimeDelta::FromSeconds(15));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
-            ComputeDelayTillNextTask(&lazy_now)->Delay());
+            ComputeDelayTillNextTask(&lazy_now)->delay());
 
   runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
                                base::TimeDelta::FromSeconds(5));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(5),
-            ComputeDelayTillNextTask(&lazy_now)->Delay());
+            ComputeDelayTillNextTask(&lazy_now)->delay());
 
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
-  EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now)->Delay());
+  EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now)->delay());
 }
 
 TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_Disabled) {
@@ -2668,7 +2668,7 @@ TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_FenceUnblocking) {
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   LazyNow lazy_now(&now_src_);
-  EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now)->Delay());
+  EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now)->delay());
 }
 
 TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_DelayedTaskReady) {
@@ -2680,7 +2680,7 @@ TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_DelayedTaskReady) {
   now_src_.Advance(base::TimeDelta::FromSeconds(10));
 
   LazyNow lazy_now(&now_src_);
-  EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now)->Delay());
+  EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now)->delay());
 }
 
 TEST_F(TaskQueueManagerTest, PostDoWorkContinuation_NoMoreWork) {
