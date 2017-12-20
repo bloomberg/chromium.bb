@@ -244,8 +244,7 @@ public class WebApkUma {
             @Override
             protected Void doInBackground(Void... params) {
                 mAvailableSpaceInByte = getAvailableSpaceAboveLowSpaceLimit();
-                mCacheSizeInByte =
-                        getDirectorySizeInByte(ContextUtils.getApplicationContext().getCacheDir());
+                mCacheSizeInByte = getCacheDirSize();
                 return null;
             }
 
@@ -310,8 +309,12 @@ public class WebApkUma {
         return sizeInByte;
     }
 
+    /**
+     * @return The available space that can be used to install WebAPK. Negative value means there is
+     * less free space available than the system's minimum by the given amount.
+     */
     @SuppressWarnings("deprecation")
-    private static long getAvailableSpaceAboveLowSpaceLimit() {
+    public static long getAvailableSpaceAboveLowSpaceLimit() {
         long partitionAvailableBytes;
         long partitionTotalBytes;
         StatFs partitionStats = new StatFs(Environment.getDataDirectory().getAbsolutePath());
@@ -327,6 +330,13 @@ public class WebApkUma {
         long minimumFreeBytes = getLowSpaceLimitBytes(partitionTotalBytes);
 
         return partitionAvailableBytes - minimumFreeBytes;
+    }
+
+    /**
+     * @return Size of the cache directory.
+     */
+    public static long getCacheDirSize() {
+        return getDirectorySizeInByte(ContextUtils.getApplicationContext().getCacheDir());
     }
 
     /**
