@@ -652,16 +652,6 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxy) {
   proxy_delegate()->OnResolveProxy(url, "POST", empty_proxy_retry_info,
                                    &result);
   EXPECT_TRUE(result.is_direct());
-
-  // Without DataCompressionProxyCriticalBypass Finch trial set, the
-  // BYPASS_DATA_REDUCTION_PROXY load flag should be ignored.
-  result.UseDirect();
-  proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info, &result);
-  EXPECT_FALSE(result.is_direct());
-
-  proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info,
-                                   &other_proxy_info);
-  EXPECT_FALSE(other_proxy_info.is_direct());
 }
 
 // Verifies that requests that were not proxied through data saver proxy due to
