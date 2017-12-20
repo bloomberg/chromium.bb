@@ -71,12 +71,14 @@
     {
       'target_name': 'layout_settings',
       'dependencies': [
+        'settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'color_settings',
       'dependencies': [
+        'settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

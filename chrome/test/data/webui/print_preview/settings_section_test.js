@@ -13,6 +13,9 @@ cr.define('settings_sections_tests', function() {
     Dpi: 'dpi',
     Scaling: 'scaling',
     Other: 'other',
+    SetCopies: 'set copies',
+    SetLayout: 'set layout',
+    SetColor: 'set color',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -291,6 +294,64 @@ cr.define('settings_sections_tests', function() {
       page.set('destination_.capabilities', capabilities);
       expectEquals(false, optionsElement.hidden);
       expectEquals(false, duplex.hidden);
+    });
+
+    test(assert(TestNames.SetCopies), function() {
+      const copiesElement = page.$$('print-preview-copies-settings');
+      expectEquals(false, copiesElement.hidden);
+
+      // Default value is 1
+      const copiesInput =
+          copiesElement.$$('print-preview-number-settings-section')
+              .$$('.user-value');
+      expectEquals('1', copiesInput.value);
+      expectEquals(1, page.settings.copies.value);
+
+      // Change to 2
+      copiesInput.value = '2';
+      copiesInput.dispatchEvent(new CustomEvent('input'));
+      expectEquals(2, page.settings.copies.value);
+
+      // Collate is true by default.
+      const collateInput = copiesElement.$.collate;
+      expectEquals(true, collateInput.checked);
+      expectEquals(true, page.settings.collate.value);
+
+      // Uncheck the box.
+      MockInteractions.tap(collateInput);
+      expectEquals(false, collateInput.checked);
+      collateInput.dispatchEvent(new CustomEvent('change'));
+      expectEquals(false, page.settings.collate.value);
+    });
+
+    test(assert(TestNames.SetLayout), function() {
+      const layoutElement = page.$$('print-preview-layout-settings');
+      expectEquals(false, layoutElement.hidden);
+
+      // Default is portrait
+      const layoutInput = layoutElement.$$('select');
+      expectEquals('portrait', layoutInput.value);
+      expectEquals(false, page.settings.layout.value);
+
+      // Change to landscape
+      layoutInput.value = 'landscape';
+      layoutInput.dispatchEvent(new CustomEvent('change'));
+      expectEquals(true, page.settings.layout.value);
+    });
+
+    test(assert(TestNames.SetColor), function() {
+      const colorElement = page.$$('print-preview-color-settings');
+      expectEquals(false, colorElement.hidden);
+
+      // Default is color
+      const colorInput = colorElement.$$('select');
+      expectEquals('color', colorInput.value);
+      expectEquals(true, page.settings.color.value);
+
+      // Change to black and white.
+      colorInput.value = 'bw';
+      colorInput.dispatchEvent(new CustomEvent('change'));
+      expectEquals(false, page.settings.color.value);
     });
   });
 

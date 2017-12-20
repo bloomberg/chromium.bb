@@ -93,6 +93,18 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Other', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Other);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetCopies', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetCopies);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetLayout', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetLayout);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetColor', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetColor);
+});
+
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
