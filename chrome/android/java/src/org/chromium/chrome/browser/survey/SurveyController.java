@@ -33,8 +33,11 @@ public class SurveyController {
      * @param siteId The id of the site from where the survey will be downloaded.
      * @param onSuccessRunnable The runnable to notify when the survey is ready.
      *                          If no survey is available, the runnable will not be run.
+     * @param siteContext Optional parameter to build the download request. Site context can be
+     *                    used for adding metadata.
      */
-    public void downloadSurvey(Context context, String siteId, Runnable onSuccessRunnable) {}
+    public void downloadSurvey(
+            Context context, String siteId, Runnable onSuccessRunnable, String siteContext) {}
 
     /**
      * Show the survey.
