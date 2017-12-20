@@ -6,7 +6,7 @@
 #define ModuleTreeLinker_h
 
 #include "core/CoreExport.h"
-#include "core/dom/Modulator.h"
+#include "core/script/Modulator.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/weborigin/KURL.h"

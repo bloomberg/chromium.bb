@@ -6,12 +6,12 @@
 
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/Modulator.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/WorkerFetchContext.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/probe/CoreProbes.h"
+#include "core/script/Modulator.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"

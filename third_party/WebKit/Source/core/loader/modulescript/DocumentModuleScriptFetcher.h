@@ -5,10 +5,10 @@
 #ifndef DocumentModuleScriptFetcher_h
 #define DocumentModuleScriptFetcher_h
 
-#include "core/dom/Modulator.h"
 #include "core/loader/modulescript/ModuleScriptCreationParams.h"
 #include "core/loader/modulescript/ModuleScriptFetcher.h"
 #include "core/loader/resource/ScriptResource.h"
+#include "core/script/Modulator.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/SecurityOrigin.h"

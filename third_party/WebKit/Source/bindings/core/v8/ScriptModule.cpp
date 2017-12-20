@@ -7,9 +7,9 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/Modulator.h"
-#include "core/dom/ScriptModuleResolver.h"
 #include "core/probe/CoreProbes.h"
+#include "core/script/Modulator.h"
+#include "core/script/ScriptModuleResolver.h"
 
 namespace blink {
 

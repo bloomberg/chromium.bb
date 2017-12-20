@@ -5,7 +5,7 @@
 #include "core/testing/DummyModulator.h"
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/ScriptModuleResolver.h"
+#include "core/script/ScriptModuleResolver.h"
 
 namespace blink {
 

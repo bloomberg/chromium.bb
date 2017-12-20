@@ -6,7 +6,7 @@
 #define DummyModulator_h
 
 #include "bindings/core/v8/ScriptModule.h"
-#include "core/dom/Modulator.h"
+#include "core/script/Modulator.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

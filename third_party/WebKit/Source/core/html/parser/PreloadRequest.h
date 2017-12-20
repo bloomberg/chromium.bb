@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/dom/Script.h"
+#include "core/script/Script.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchParameters.h"

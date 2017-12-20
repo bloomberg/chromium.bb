@@ -1,0 +1,63 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/WebKit/Source/core/core.gni")
+
+blink_core_sources("script") {
+  split_count = 5
+
+  sources = [
+    "ClassicPendingScript.cpp",
+    "ClassicPendingScript.h",
+    "ClassicScript.cpp",
+    "ClassicScript.h",
+    "DocumentModulatorImpl.cpp",
+    "DocumentModulatorImpl.h",
+    "DocumentWriteIntervention.cpp",
+    "DocumentWriteIntervention.h",
+    "DynamicModuleResolver.cpp",
+    "DynamicModuleResolver.h",
+    "HTMLParserScriptRunner.cpp",
+    "HTMLParserScriptRunner.h",
+    "HTMLParserScriptRunnerHost.h",
+    "IgnoreDestructiveWriteCountIncrementer.h",
+    "Modulator.cpp",
+    "Modulator.h",
+    "ModulatorImplBase.cpp",
+    "ModulatorImplBase.h",
+    "ModuleImportMeta.h",
+    "ModuleMap.cpp",
+    "ModuleMap.h",
+    "ModulePendingScript.cpp",
+    "ModulePendingScript.h",
+    "ModuleScript.cpp",
+    "ModuleScript.h",
+    "PendingScript.cpp",
+    "PendingScript.h",
+    "Script.h",
+    "ScriptElementBase.cpp",
+    "ScriptElementBase.h",
+    "ScriptLoader.cpp",
+    "ScriptLoader.h",
+    "ScriptModuleResolver.h",
+    "ScriptModuleResolverImpl.cpp",
+    "ScriptModuleResolverImpl.h",
+    "ScriptRunner.cpp",
+    "ScriptRunner.h",
+    "WorkerModulatorImpl.cpp",
+    "WorkerModulatorImpl.h",
+    "WorkletModulatorImpl.cpp",
+    "WorkletModulatorImpl.h",
+    "XMLParserScriptRunner.cpp",
+    "XMLParserScriptRunner.h",
+    "XMLParserScriptRunnerHost.h",
+  ]
+
+  jumbo_excluded_sources = [ "Modulator.cpp" ]  # https://crbug.com/716395
+
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+}

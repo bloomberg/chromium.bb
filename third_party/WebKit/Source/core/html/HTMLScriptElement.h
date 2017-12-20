@@ -26,9 +26,9 @@
 #define HTMLScriptElement_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ScriptElementBase.h"
-#include "core/dom/ScriptLoader.h"
 #include "core/html/HTMLElement.h"
+#include "core/script/ScriptElementBase.h"
+#include "core/script/ScriptLoader.h"
 
 namespace blink {
 

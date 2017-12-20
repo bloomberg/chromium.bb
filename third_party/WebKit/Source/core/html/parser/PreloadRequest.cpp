@@ -5,9 +5,9 @@
 #include "core/html/parser/PreloadRequest.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/DocumentWriteIntervention.h"
-#include "core/dom/ScriptLoader.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/script/DocumentWriteIntervention.h"
+#include "core/script/ScriptLoader.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchParameters.h"
