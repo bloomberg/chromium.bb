@@ -58,7 +58,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     base::TimeTicks /* current_time */) {
   DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
          frame->format() == media::PIXEL_FORMAT_I420 ||
-         frame->format() == media::PIXEL_FORMAT_YV12A);
+         frame->format() == media::PIXEL_FORMAT_I420A);
 
   if (first_frame_received_)
     return;
@@ -94,7 +94,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
                           pixmap.width() * 4, pixmap.width(), pixmap.height(),
                           destination_pixel_format);
 
-  if (frame->format() == media::PIXEL_FORMAT_YV12A) {
+  if (frame->format() == media::PIXEL_FORMAT_I420A) {
     DCHECK(!info.isOpaque());
     // This function copies any plane into the alpha channel of an ARGB image.
     libyuv::ARGBCopyYToAlpha(frame->visible_data(media::VideoFrame::kAPlane),

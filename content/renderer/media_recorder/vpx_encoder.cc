@@ -78,7 +78,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
     ConfigureEncoderOnEncodingTaskRunner(frame_size, &codec_config_, &encoder_);
   }
 
-  const bool frame_has_alpha = frame->format() == media::PIXEL_FORMAT_YV12A;
+  const bool frame_has_alpha = frame->format() == media::PIXEL_FORMAT_I420A;
   // Split the duration between two encoder instances if alpha is encoded.
   duration = frame_has_alpha ? duration / 2 : duration;
   if (frame_has_alpha && (!IsInitialized(alpha_codec_config_) ||

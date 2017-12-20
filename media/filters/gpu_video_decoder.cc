@@ -177,7 +177,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // TODO(sandersd): This should be moved to capabilities if we ever have a
   // hardware decoder which supports alpha formats.
-  if (config.format() == PIXEL_FORMAT_YV12A) {
+  if (config.format() == PIXEL_FORMAT_I420A) {
     DVLOG(1) << "Alpha transparency formats are not supported.";
     bound_init_cb.Run(false);
     return;

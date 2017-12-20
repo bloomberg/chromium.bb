@@ -222,7 +222,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     const gfx::Rect& visible_rect,
     cc::DisplayResourceProvider* resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider) {
-  const bool with_alpha = (video_frame->format() == media::PIXEL_FORMAT_YV12A);
+  const bool with_alpha = (video_frame->format() == media::PIXEL_FORMAT_I420A);
 
   gfx::ColorSpace video_color_space = video_frame->ColorSpace();
   DCHECK(video_color_space.IsValid());
@@ -1615,7 +1615,7 @@ TEST_F(VideoGLRendererPixelTest, YUVEdgeBleed) {
 
 TEST_F(VideoGLRendererPixelTest, YUVAEdgeBleed) {
   RenderPassList pass_list;
-  CreateEdgeBleedPass(media::PIXEL_FORMAT_YV12A, media::COLOR_SPACE_SD_REC601,
+  CreateEdgeBleedPass(media::PIXEL_FORMAT_I420A, media::COLOR_SPACE_SD_REC601,
                       &pass_list);
   // Set the output color space to match the input primaries and transfer.
   pass_list.back()->color_space =
@@ -1663,7 +1663,7 @@ TEST_F(VideoGLRendererPixelHiLoTest, SimpleYUVARect) {
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
   CreateTestYUVVideoDrawQuad_Striped(
-      shared_state, media::PIXEL_FORMAT_YV12A, media::COLOR_SPACE_SD_REC601,
+      shared_state, media::PIXEL_FORMAT_I420A, media::COLOR_SPACE_SD_REC601,
       false, false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get(),
       child_resource_provider_.get());
@@ -1692,7 +1692,7 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
   CreateTestYUVVideoDrawQuad_Striped(
-      shared_state, media::PIXEL_FORMAT_YV12A, media::COLOR_SPACE_SD_REC601,
+      shared_state, media::PIXEL_FORMAT_I420A, media::COLOR_SPACE_SD_REC601,
       true, false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get(),
       child_resource_provider_.get());

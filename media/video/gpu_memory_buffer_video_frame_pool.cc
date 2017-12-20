@@ -435,7 +435,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_I420:
       break;
     // Unsupported cases.
-    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_I420A:
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_NV12:

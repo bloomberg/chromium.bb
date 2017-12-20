@@ -411,7 +411,7 @@ void VideoDecoderShim::YUVConverter::Convert(
 
     switch (frame->format()) {
       case media::PIXEL_FORMAT_YV12:  // 420
-      case media::PIXEL_FORMAT_YV12A:
+      case media::PIXEL_FORMAT_I420A:
       case media::PIXEL_FORMAT_I420:
         uv_height_divisor_ = 2;
         uv_width_divisor_ = 2;
@@ -465,7 +465,7 @@ void VideoDecoderShim::YUVConverter::Convert(
                     format_, GL_UNSIGNED_BYTE,
                     frame->data(media::VideoFrame::kYPlane));
 
-    if (video_format_ == media::PIXEL_FORMAT_YV12A) {
+    if (video_format_ == media::PIXEL_FORMAT_I420A) {
       DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
                 frame->stride(media::VideoFrame::kAPlane));
       gl_->ActiveTexture(GL_TEXTURE3);
@@ -505,7 +505,7 @@ void VideoDecoderShim::YUVConverter::Convert(
                        GL_UNSIGNED_BYTE,
                        frame->data(media::VideoFrame::kYPlane));
 
-    if (video_format_ == media::PIXEL_FORMAT_YV12A) {
+    if (video_format_ == media::PIXEL_FORMAT_I420A) {
       DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
                 frame->stride(media::VideoFrame::kAPlane));
       gl_->ActiveTexture(GL_TEXTURE3);

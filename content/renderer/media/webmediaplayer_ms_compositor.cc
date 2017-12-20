@@ -88,12 +88,12 @@ scoped_refptr<media::VideoFrame> CopyFrame(
   } else {
     DCHECK(frame->IsMappable());
     DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
-           frame->format() == media::PIXEL_FORMAT_YV12A ||
+           frame->format() == media::PIXEL_FORMAT_I420A ||
            frame->format() == media::PIXEL_FORMAT_I420);
     const gfx::Size& coded_size = frame->coded_size();
     new_frame = media::VideoFrame::CreateFrame(
         media::IsOpaque(frame->format()) ? media::PIXEL_FORMAT_I420
-                                         : media::PIXEL_FORMAT_YV12A,
+                                         : media::PIXEL_FORMAT_I420A,
         coded_size, frame->visible_rect(), frame->natural_size(),
         frame->timestamp());
     libyuv::I420Copy(frame->data(media::VideoFrame::kYPlane),
@@ -109,7 +109,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
                      new_frame->data(media::VideoFrame::kVPlane),
                      new_frame->stride(media::VideoFrame::kVPlane),
                      coded_size.width(), coded_size.height());
-    if (frame->format() == media::PIXEL_FORMAT_YV12A) {
+    if (frame->format() == media::PIXEL_FORMAT_I420A) {
       libyuv::CopyPlane(frame->data(media::VideoFrame::kAPlane),
                         frame->stride(media::VideoFrame::kAPlane),
                         new_frame->data(media::VideoFrame::kAPlane),

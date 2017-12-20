@@ -1407,7 +1407,7 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
 
   gfx::Size frame_size(8, 8);
   VideoPixelFormat opaque_format = PIXEL_FORMAT_YV12;
-  VideoPixelFormat non_opaque_format = PIXEL_FORMAT_YV12A;
+  VideoPixelFormat non_opaque_format = PIXEL_FORMAT_I420A;
 
   QueueFrame(DecodeStatus::OK,
              VideoFrame::CreateFrame(non_opaque_format, frame_size,

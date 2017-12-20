@@ -96,7 +96,7 @@ class CanvasCaptureHandlerTest
     if (opaque)
       EXPECT_EQ(media::PIXEL_FORMAT_I420, video_frame->format());
     else
-      EXPECT_EQ(media::PIXEL_FORMAT_YV12A, video_frame->format());
+      EXPECT_EQ(media::PIXEL_FORMAT_I420A, video_frame->format());
 
     const gfx::Size& size = video_frame->visible_rect().size();
     EXPECT_EQ(expected_width, size.width());

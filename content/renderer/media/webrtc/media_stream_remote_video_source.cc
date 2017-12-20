@@ -127,7 +127,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     if (has_alpha) {
       const webrtc::I420ABufferInterface* yuva_buffer = buffer->GetI420A();
       video_frame = media::VideoFrame::WrapExternalYuvaData(
-          media::PIXEL_FORMAT_YV12A, size, gfx::Rect(size), size,
+          media::PIXEL_FORMAT_I420A, size, gfx::Rect(size), size,
           yuva_buffer->StrideY(), yuva_buffer->StrideU(),
           yuva_buffer->StrideV(), yuva_buffer->StrideA(),
           const_cast<uint8_t*>(yuva_buffer->DataY()),

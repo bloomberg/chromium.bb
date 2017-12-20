@@ -89,7 +89,7 @@ TEST_F(VideoFramePoolTest, SimpleFormatChange) {
 
   // Verify that requesting a frame with a different format causes the pool
   // to get drained.
-  scoped_refptr<VideoFrame> new_frame = CreateFrame(PIXEL_FORMAT_YV12A, 10);
+  scoped_refptr<VideoFrame> new_frame = CreateFrame(PIXEL_FORMAT_I420A, 10);
   CheckPoolSize(0u);
 }
 

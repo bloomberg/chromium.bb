@@ -369,7 +369,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
   // TODO(penghuang): Check |frame->end_of_stream()| and close the track.
   scoped_refptr<media::VideoFrame> frame = video_frame;
   // Drop alpha channel since we do not support it yet.
-  if (frame->format() == media::PIXEL_FORMAT_YV12A)
+  if (frame->format() == media::PIXEL_FORMAT_I420A)
     frame = media::WrapAsI420VideoFrame(video_frame);
   PP_VideoFrame_Format ppformat = ToPpapiFormat(frame->format());
   if (ppformat == PP_VIDEOFRAME_FORMAT_UNKNOWN)

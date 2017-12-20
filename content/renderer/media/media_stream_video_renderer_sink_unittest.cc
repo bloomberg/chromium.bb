@@ -214,7 +214,7 @@ class MediaStreamVideoRendererSinkTransparencyTest
   }
 
   void VerifyTransparentFrame(scoped_refptr<media::VideoFrame> frame) {
-    EXPECT_EQ(media::PIXEL_FORMAT_YV12A, frame->format());
+    EXPECT_EQ(media::PIXEL_FORMAT_I420A, frame->format());
   }
 };
 
@@ -226,7 +226,7 @@ TEST_F(MediaStreamVideoRendererSinkTransparencyTest,
   const gfx::Size kSize(10, 10);
   const base::TimeDelta kTimestamp = base::TimeDelta();
   const scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12A, kSize,
+      media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_I420A, kSize,
                                      gfx::Rect(kSize), kSize, kTimestamp);
   OnVideoFrame(video_frame);
   base::RunLoop().RunUntilIdle();

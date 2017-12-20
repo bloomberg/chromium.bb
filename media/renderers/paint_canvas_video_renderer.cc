@@ -261,7 +261,7 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
         // TODO(rileya): Skia currently doesn't support YUVA conversion. Remove
         // this case once it does. As-is we will fall back on the pure-software
         // path in this case.
-        frame_->format() == PIXEL_FORMAT_YV12A) {
+        frame_->format() == PIXEL_FORMAT_I420A) {
       return false;
     }
 
@@ -294,7 +294,7 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
     DCHECK_EQ(frame_index, 0u);
 
     media::VideoPixelFormat format = frame_->format();
-    DCHECK(media::IsYuvPlanar(format) && format != PIXEL_FORMAT_YV12A);
+    DCHECK(media::IsYuvPlanar(format) && format != PIXEL_FORMAT_I420A);
 
     for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
          ++plane) {
@@ -743,7 +743,7 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
                           video_frame->visible_rect().height());
       break;
 
-    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_I420A:
       LIBYUV_I420ALPHA_TO_ARGB(
           video_frame->visible_data(VideoFrame::kYPlane),
           video_frame->stride(VideoFrame::kYPlane),
