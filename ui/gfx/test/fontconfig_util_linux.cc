@@ -61,15 +61,6 @@ const char* const kCloudStorageSyncedFonts[] = {
 
 const size_t kNumCloudStorageSyncedFonts = arraysize(kCloudStorageSyncedFonts);
 
-const char kFontconfigFileHeader[] =
-    "<?xml version=\"1.0\"?>\n"
-    "<!DOCTYPE fontconfig SYSTEM \"fonts.dtd\">\n"
-    "<fontconfig>\n";
-const char kFontconfigFileFooter[] = "</fontconfig>";
-const char kFontconfigMatchFontHeader[] = "  <match target=\"font\">\n";
-const char kFontconfigMatchPatternHeader[] = "  <match target=\"pattern\">\n";
-const char kFontconfigMatchFooter[] = "  </match>\n";
-
 void SetUpFontconfig() {
   FcInit();
 
