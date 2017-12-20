@@ -714,15 +714,21 @@ StyleContentAlignmentData StyleBuilderConverter::ConvertContentAlignmentData(
       ComputedStyleInitialValues::InitialContentAlignment();
   const CSSContentDistributionValue& content_value =
       ToCSSContentDistributionValue(value);
-  if (content_value.Distribution()->GetValueID() != CSSValueInvalid)
+  if (content_value.Distribution() != CSSValueInvalid) {
     alignment_data.SetDistribution(
-        content_value.Distribution()->ConvertTo<ContentDistributionType>());
-  if (content_value.GetPosition()->GetValueID() != CSSValueInvalid)
+        CSSIdentifierValue::Create(content_value.Distribution())
+            ->ConvertTo<ContentDistributionType>());
+  }
+  if (content_value.Position() != CSSValueInvalid) {
     alignment_data.SetPosition(
-        content_value.GetPosition()->ConvertTo<ContentPosition>());
-  if (content_value.Overflow()->GetValueID() != CSSValueInvalid)
+        CSSIdentifierValue::Create(content_value.Position())
+            ->ConvertTo<ContentPosition>());
+  }
+  if (content_value.Overflow() != CSSValueInvalid) {
     alignment_data.SetOverflow(
-        content_value.Overflow()->ConvertTo<OverflowAlignment>());
+        CSSIdentifierValue::Create(content_value.Overflow())
+            ->ConvertTo<OverflowAlignment>());
+  }
 
   return alignment_data;
 }
