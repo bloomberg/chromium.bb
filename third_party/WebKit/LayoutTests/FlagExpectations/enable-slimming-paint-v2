@@ -1734,3 +1734,5 @@ Bug(none) css3/blending/mix-blend-mode-simple-text.html [ Pass Timeout ]
 crbug.com/708175 virtual/mojo-blobs/external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
 
 crbug.com/529963 paint/invalidation/background/background-attachment-fixed-scrolled.html [ Failure ]
+
+crbug.com/796219 fast/spatial-navigation/snav-media-elements.html [ Skip ]
