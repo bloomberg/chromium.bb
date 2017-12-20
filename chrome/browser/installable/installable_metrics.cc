@@ -9,8 +9,16 @@
 
 // static
 void InstallableMetrics::TrackInstallSource(WebAppInstallSource source) {
+  DCHECK(IsReportableInstallSource(source));
   UMA_HISTOGRAM_ENUMERATION("Webapp.Install.InstallSource", source,
                             WebAppInstallSource::COUNT);
+}
+
+// static
+bool InstallableMetrics::IsReportableInstallSource(WebAppInstallSource source) {
+  return source == WebAppInstallSource::AUTOMATIC_PROMPT ||
+         source == WebAppInstallSource::MENU ||
+         source == WebAppInstallSource::API;
 }
 
 namespace {

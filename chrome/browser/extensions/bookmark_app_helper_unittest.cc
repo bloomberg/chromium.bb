@@ -283,7 +283,10 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   TestBookmarkAppHelper(ExtensionService* service,
                         WebApplicationInfo web_app_info,
                         content::WebContents* contents)
-      : BookmarkAppHelper(service->profile(), web_app_info, contents),
+      : BookmarkAppHelper(service->profile(),
+                          web_app_info,
+                          contents,
+                          WebAppInstallSource::MENU),
         bitmap_(CreateSquareBitmapWithColor(32, SK_ColorRED)) {}
 
   ~TestBookmarkAppHelper() override {}
