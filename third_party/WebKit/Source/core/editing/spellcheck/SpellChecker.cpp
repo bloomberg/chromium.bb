@@ -316,14 +316,14 @@ void SpellChecker::MarkAndReplaceFor(
 
   TextCheckingParagraph paragraph(checking_range, checking_range);
 
-  // TODO(xiaochengh): The following comment does not match the current behavior
-  // and should be rewritten.
+  // TODO(crbug.com/230387): The following comment does not match the current
+  // behavior and should be rewritten.
   // Expand the range to encompass entire paragraphs, since text checking needs
   // that much context.
   int ambiguous_boundary_offset = -1;
 
   if (GetFrame().Selection().ComputeVisibleSelectionInDOMTree().IsCaret()) {
-    // TODO(xiaochengh): The following comment does not match the current
+    // TODO(crbug.com/230387): The following comment does not match the current
     // behavior and should be rewritten.
     // Attempt to save the caret position so we can restore it later if needed
     const Position& caret_position =
