@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
+#include "base/synchronization/lock.h"
 
 namespace base {
 class FilePath;
@@ -29,8 +29,7 @@ class ContentHashReader;
 
 // Objects of this class are responsible for verifying that the actual content
 // read from an extension file matches an expected set of hashes. This class
-// can be created on any thread but the rest of the methods should be called
-// from only one thread.
+// can be created and used on any thread.
 class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
  public:
   enum FailureReason {
@@ -146,8 +145,8 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   // Set to true if we detected a mismatch and called the failure callback.
   bool failed_;
 
-  // For ensuring methods on called on the right thread.
-  base::ThreadChecker thread_checker_;
+  // Used to synchronize all public methods.
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVerifyJob);
 };
