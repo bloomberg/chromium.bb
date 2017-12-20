@@ -65,8 +65,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   void InitSpellcheck(bool enable_spellcheck,
                       const std::string& single_dictionary,
                       const std::string& multiple_dictionaries) {
-    prefs_->SetBoolean(spellcheck::prefs::kEnableSpellcheck,
-                       enable_spellcheck);
+    prefs_->SetBoolean(spellcheck::prefs::kSpellCheckEnable, enable_spellcheck);
     prefs_->SetString(spellcheck::prefs::kSpellCheckDictionary,
                       single_dictionary);
     base::ListValue dictionaries_value;
@@ -88,8 +87,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   }
 
   void EnableSpellcheck(bool enable_spellcheck) {
-    prefs_->SetBoolean(spellcheck::prefs::kEnableSpellcheck,
-                       enable_spellcheck);
+    prefs_->SetBoolean(spellcheck::prefs::kSpellCheckEnable, enable_spellcheck);
   }
 
   void ChangeCustomDictionary() {
@@ -518,13 +516,12 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
   base::ListValue dictionaries;
   dictionaries.AppendString("en-US");
   GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
-  GetPrefs()->SetBoolean(spellcheck::prefs::kEnableSpellcheck, false);
+  GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, false);
 
   // Migrate the preferences.
   SpellcheckServiceFactory::GetForContext(GetContext());
 
-  EXPECT_FALSE(
-      GetPrefs()->GetBoolean(spellcheck::prefs::kEnableSpellcheck));
+  EXPECT_FALSE(GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable));
   EXPECT_EQ(1U, GetPrefs()
                     ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
                     ->GetSize());
@@ -537,13 +534,12 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
   dictionaries.AppendString("en-US");
   dictionaries.AppendString("fr");
   GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
-  GetPrefs()->SetBoolean(spellcheck::prefs::kEnableSpellcheck, true);
+  GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
 
   // Should not migrate any preferences.
   SpellcheckServiceFactory::GetForContext(GetContext());
 
-  EXPECT_TRUE(
-      GetPrefs()->GetBoolean(spellcheck::prefs::kEnableSpellcheck));
+  EXPECT_TRUE(GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable));
   EXPECT_EQ(2U, GetPrefs()
                     ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
                     ->GetSize());

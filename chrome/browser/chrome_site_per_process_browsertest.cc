@@ -888,7 +888,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
 
   // Disable spellcheck
   PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
-  prefs->SetBoolean(spellcheck::prefs::kEnableSpellcheck, false);
+  prefs->SetBoolean(spellcheck::prefs::kSpellCheckEnable, false);
   base::RunLoop().RunUntilIdle();
 
   GURL main_url(embedded_test_server()->GetURL(
@@ -909,7 +909,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
   EXPECT_FALSE(filter->HasReceivedText());
 
   content::SetBrowserClientForTesting(old_browser_client);
-  prefs->SetBoolean(spellcheck::prefs::kEnableSpellcheck, true);
+  prefs->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
 }
 
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
