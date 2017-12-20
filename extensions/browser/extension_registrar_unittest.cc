@@ -281,12 +281,6 @@ class ExtensionRegistrarTest : public ExtensionsTest {
     registrar_->TerminateExtension(extension_->id());
     ExpectInSet(ExtensionRegistry::TERMINATED);
     EXPECT_FALSE(IsExtensionReady());
-
-    // TODO(michaelpg): This notification may not be necessary, but we need to
-    // clear the notification tracker here. See crbug.com/708230.
-    EXPECT_TRUE(notification_tracker_.Check1AndReset(
-        extensions::NOTIFICATION_EXTENSION_REMOVED));
-
     VerifyMock();
   }
 

@@ -229,16 +229,6 @@ void ExtensionRegistrar::TerminateExtension(const ExtensionId& extension_id) {
   registry_->AddTerminated(extension);
   registry_->RemoveEnabled(extension_id);
   DeactivateExtension(extension.get(), UnloadedExtensionReason::TERMINATE);
-
-  // TODO(michaelpg): It's unclear why this notification is sent now, because
-  // this extension isn't being "removed". The notification isn't needed when an
-  // extension is disabled, for example. Furthermore, it will be sent again if
-  // this extension is disabled, then (actually) removed.
-  // See crbug.com/708230.
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_REMOVED,
-      content::Source<content::BrowserContext>(browser_context_),
-      content::Details<const Extension>(extension.get()));
 }
 
 void ExtensionRegistrar::UntrackTerminatedExtension(
