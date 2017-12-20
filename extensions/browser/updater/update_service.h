@@ -6,11 +6,13 @@
 #define EXTENSIONS_BROWSER_UPDATER_UPDATE_SERVICE_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
@@ -22,14 +24,15 @@ class BrowserContext;
 }
 
 namespace update_client {
+enum class Error;
 class UpdateClient;
 }
 
 namespace extensions {
 
 class UpdateDataProvider;
-class UpdateService;
 class UpdateServiceFactory;
+struct ExtensionUpdateCheckParams;
 
 // This service manages the autoupdate of extensions.  It should eventually
 // replace ExtensionUpdater in Chrome.
@@ -44,23 +47,39 @@ class UpdateService : public KeyedService {
                          const base::Version& version,
                          int reason);
 
-  // Starts an update check for each of |extension_ids|. If there are any
-  // updates available, they will be downloaded, checked for integrity,
-  // unpacked, and then passed off to the ExtensionSystem::InstallUpdate method
-  // for install completion.
-  void StartUpdateCheck(const std::vector<std::string>& extension_ids);
+  // Starts an update check for each of extensions stored in |update_params|.
+  // If there are any updates available, they will be downloaded, checked for
+  // integrity, unpacked, and then passed off to the
+  // ExtensionSystem::InstallUpdate method for install completion.
+  void StartUpdateCheck(const ExtensionUpdateCheckParams& update_params);
+
+  // This function verifies if the current implementation can update
+  // |extension_id|.
+  bool CanUpdate(const std::string& extension_id) const;
 
  private:
   friend class UpdateServiceFactory;
+  friend std::unique_ptr<UpdateService>::deleter_type;
 
   UpdateService(content::BrowserContext* context,
                 scoped_refptr<update_client::UpdateClient> update_client);
   ~UpdateService() override;
 
-  content::BrowserContext* context_;
+  // This function is executed by the update client after an update check
+  // request has completed.
+  void UpdateCheckComplete(const std::vector<std::string>& extension_ids,
+                           update_client::Error error);
+
+  content::BrowserContext* browser_context_;
 
   scoped_refptr<update_client::UpdateClient> update_client_;
   scoped_refptr<UpdateDataProvider> update_data_provider_;
+
+  // The set of extensions that are being checked for update.
+  std::set<std::string> updating_extensions_;
+
+  // used to create WeakPtrs to |this|.
+  base::WeakPtrFactory<UpdateService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateService);
 };

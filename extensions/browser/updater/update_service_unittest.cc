@@ -22,8 +22,10 @@
 #include "extensions/browser/mock_extension_system.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/browser/uninstall_ping_sender.h"
+#include "extensions/browser/updater/extension_update_data.h"
 #include "extensions/browser/updater/update_service.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -89,6 +91,7 @@ void FakeUpdateClient::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
                               update_client::Callback callback) {
   std::move(crx_data_callback).Run(ids, &data_);
+  std::move(callback).Run(update_client::Error::NONE);
 }
 
 }  // namespace
@@ -227,12 +230,13 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   scoped_refptr<Extension> extension1(builder.Build());
 
   ExtensionRegistry::Get(browser_context())->AddEnabled(extension1);
-  std::vector<std::string> ids;
-  ids.push_back(extension1->id());
+
+  ExtensionUpdateCheckParams update_check_params;
+  update_check_params.update_info[extension1->id()] = ExtensionUpdateData();
 
   // Start an update check and verify that the UpdateClient was sent the right
   // data.
-  update_service()->StartUpdateCheck(ids);
+  update_service()->StartUpdateCheck(update_check_params);
   std::vector<update_client::CrxComponent>* data = update_client()->data();
   ASSERT_NE(nullptr, data);
   ASSERT_EQ(1u, data->size());

@@ -17,6 +17,8 @@ source_set("updater") {
     "extension_downloader_test_delegate.h",
     "extension_installer.cc",
     "extension_installer.h",
+    "extension_update_data.cc",
+    "extension_update_data.h",
     "manifest_fetch_data.cc",
     "manifest_fetch_data.h",
     "null_extension_cache.cc",

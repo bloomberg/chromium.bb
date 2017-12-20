@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_UPDATE_DATA_PROVIDER_H_
 #define EXTENSIONS_BROWSER_UPDATER_UPDATE_DATA_PROVIDER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/updater/extension_installer.h"
+#include "extensions/browser/updater/extension_update_data.h"
 
 namespace base {
 class FilePath;
@@ -43,7 +45,7 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
   // extension ids, as well as an install callback for proceeding with
   // installation steps once the UpdateClient has downloaded and unpacked
   // an update for an extension.
-  UpdateDataProvider(content::BrowserContext* context,
+  UpdateDataProvider(content::BrowserContext* browser_context,
                      InstallCallback install_callback);
 
   // Notify this object that the associated browser context is being shut down
@@ -52,7 +54,8 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
   void Shutdown();
 
   // Matches update_client::UpdateClient::CrxDataCallback
-  void GetData(const std::vector<std::string>& ids,
+  void GetData(const ExtensionUpdateDataMap& update_info,
+               const std::vector<std::string>& ids,
                std::vector<update_client::CrxComponent>* data);
 
  private:
@@ -65,7 +68,7 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
                           const base::FilePath& unpacked_dir,
                           UpdateClientCallback update_client_callback);
 
-  content::BrowserContext* context_;
+  content::BrowserContext* browser_context_;
   InstallCallback install_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateDataProvider);
