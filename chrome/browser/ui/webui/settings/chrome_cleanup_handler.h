@@ -76,6 +76,16 @@ class ChromeCleanupHandler
   // the "learn more" link was clicked.
   void HandleNotifyChromeCleanupLearnMoreClicked(const base::ListValue* args);
 
+  // Callback for the "getMoreItemsPluralString" message, that obtains the text
+  // string for the "show more" items on the detailed view.
+  void HandleGetMoreItemsPluralString(const base::ListValue* args);
+
+  // Callback for the "getItemsToRemovePluralString" message, that obtains the
+  // text string for the detailed view when user-initiated cleanups are enabled.
+  void HandleGetItemsToRemovePluralString(const base::ListValue* args);
+
+  void GetPluralString(int id, const base::ListValue* args);
+
   // Raw pointer to a singleton. Must outlive this object.
   safe_browsing::ChromeCleanerController* controller_;
 
