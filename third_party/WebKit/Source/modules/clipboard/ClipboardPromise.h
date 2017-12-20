@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/WebKit/common/clipboard/clipboard.mojom-blink.h"
 
 namespace blink {
@@ -35,16 +36,36 @@ class ClipboardPromise final
   ClipboardPromise(ScriptState*);
 
   scoped_refptr<WebTaskRunner> GetTaskRunner();
+  mojom::blink::PermissionService* GetPermissionService();
+
+  bool IsFocusedDocument(ExecutionContext*);
+
+  void RequestReadPermission(
+      mojom::blink::PermissionService::RequestPermissionCallback);
+  void CheckWritePermission(
+      mojom::blink::PermissionService::HasPermissionCallback);
 
   void HandleRead();
+  void HandleReadWithPermission(mojom::blink::PermissionStatus);
+
   void HandleReadText();
+  void HandleReadTextWithPermission(mojom::blink::PermissionStatus);
 
   void HandleWrite(DataTransfer*);
+  void HandleWriteWithPermission(mojom::blink::PermissionStatus);
+
   void HandleWriteText(const String&);
+  void HandleWriteTextWithPermission(mojom::blink::PermissionStatus);
+
+  ScriptState* script_state_;
 
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
+  mojom::blink::PermissionServicePtr permission_service_;
+
   mojom::ClipboardBuffer buffer_;
+
+  WebString write_data_;
 };
 
 }  // namespace blink
