@@ -227,17 +227,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
 
 namespace {
 
-NSEventPhase PhaseForEventType(NSEventType type) {
-  if (type == NSEventTypeBeginGesture)
-    return NSEventPhaseBegan;
-  if (type == NSEventTypeEndGesture)
-    return NSEventPhaseEnded;
-  return NSEventPhaseChanged;
-}
-
-id MockGestureEvent(NSEventType type, double magnification, int x, int y) {
+id MockGestureEvent(NSEventType type,
+                    double magnification,
+                    int x,
+                    int y,
+                    NSEventPhase phase) {
   id event = [OCMockObject mockForClass:[NSEvent class]];
-  NSEventPhase phase = PhaseForEventType(type);
   NSPoint locationInWindow = NSMakePoint(x, y);
   CGFloat deltaX = 0;
   CGFloat deltaY = 0;
@@ -274,21 +269,24 @@ void SendMacTouchpadPinchSequenceWithExpectedTarget(
   auto* root_view_mac = static_cast<RenderWidgetHostViewMac*>(root_view);
   RenderWidgetHostViewCocoa* cocoa_view = root_view_mac->cocoa_view();
 
-  NSEvent* pinchBeginEvent = MockGestureEvent(
-      NSEventTypeBeginGesture, 0, gesture_point.x(), gesture_point.y());
+  NSEvent* pinchBeginEvent =
+      MockGestureEvent(NSEventTypeMagnify, 0, gesture_point.x(),
+                       gesture_point.y(), NSEventPhaseBegan);
   if (ShouldSendGestureEvents())
     [cocoa_view beginGestureWithEvent:pinchBeginEvent];
   [cocoa_view magnifyWithEvent:pinchBeginEvent];
   // We don't check the gesture target yet, since on mac the GesturePinchBegin
   // isn't sent until the first PinchUpdate.
 
-  NSEvent* pinchUpdateEvent = MockGestureEvent(
-      NSEventTypeMagnify, 0.25, gesture_point.x(), gesture_point.y());
+  NSEvent* pinchUpdateEvent =
+      MockGestureEvent(NSEventTypeMagnify, 0.25, gesture_point.x(),
+                       gesture_point.y(), NSEventPhaseChanged);
   [cocoa_view magnifyWithEvent:pinchUpdateEvent];
   EXPECT_EQ(expected_target, router_touchpad_gesture_target);
 
-  NSEvent* pinchEndEvent = MockGestureEvent(
-      NSEventTypeEndGesture, 0, gesture_point.x(), gesture_point.y());
+  NSEvent* pinchEndEvent =
+      MockGestureEvent(NSEventTypeMagnify, 0, gesture_point.x(),
+                       gesture_point.y(), NSEventPhaseEnded);
   [cocoa_view magnifyWithEvent:pinchEndEvent];
   if (ShouldSendGestureEvents())
     [cocoa_view endGestureWithEvent:pinchEndEvent];
