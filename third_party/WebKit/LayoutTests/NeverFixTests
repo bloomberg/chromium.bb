@@ -1817,6 +1817,9 @@ external/wpt/css/css-color/t422-rgba-onscreen-b.xht [ WontFix ]
 external/wpt/css/css-color/t422-rgba-onscreen-multiple-boxes-c.xht [ WontFix ]
 external/wpt/css/css-color/t425-hsla-onscreen-multiple-boxes-c.xht [ WontFix ]
 
+# Percentages are rounded incorrectly in rgb
+external/wpt/css/css-color/color-resolving.html [ WontFix ]
+
 # https://github.com/w3c/web-platform-tests/issues/8547
 external/wpt/css/mediaqueries/device-aspect-ratio-001.html [ WontFix ]
 external/wpt/css/mediaqueries/device-aspect-ratio-005.html [ WontFix ]

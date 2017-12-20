@@ -137,9 +137,6 @@ crbug.com/680917 http/tests/devtools/audits2/ [ Slow ]
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
 
-# This has been Slow in Debug since added in r164270.
-crbug.com/330389 [ Debug ] css-parser/color3_hsl.html [ Slow ]
-
 # Many of the virtual animations tests are slow.
 crbug.com/311482 virtual/threaded/animations/prefixed/keyframes-unprefixed-03.html [ Slow ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
