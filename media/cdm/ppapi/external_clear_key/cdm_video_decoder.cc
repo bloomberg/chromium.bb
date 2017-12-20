@@ -4,10 +4,6 @@
 
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 
-#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-#include "media/cdm/ppapi/external_clear_key/fake_cdm_video_decoder.h"
-#endif
-
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
 #include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
 #endif
@@ -22,12 +18,6 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
     CdmHostProxy* cdm_host_proxy,
     const cdm::VideoDecoderConfig& config) {
   std::unique_ptr<CdmVideoDecoder> video_decoder;
-#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  video_decoder.reset(new FakeCdmVideoDecoder(cdm_host_proxy));
-
-  if (!video_decoder->Initialize(config))
-    video_decoder.reset();
-#else
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
   if (config.codec == cdm::VideoDecoderConfig::kCodecVp8 ||
@@ -47,8 +37,6 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
   if (!video_decoder->Initialize(config))
     video_decoder.reset();
 #endif
-
-#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 
   return video_decoder;
 }

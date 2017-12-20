@@ -20,12 +20,6 @@
 #include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_persistent_session_cdm.h"
 
-// Enable this to use the fake decoder for testing.
-// TODO(tomfinegan): Move fake audio decoder into a separate class.
-#if 0
-#define CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
-#endif
-
 namespace media {
 
 class CdmVideoDecoder;
@@ -135,20 +129,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
       const cdm::InputBuffer& encrypted_buffer,
       scoped_refptr<DecoderBuffer>* decrypted_buffer);
 
-#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  int64_t CurrentTimeStampInMicroseconds() const;
-
-  // Generates fake video frames with |duration_in_microseconds|.
-  // Returns the number of samples generated in the |audio_frames|.
-  int GenerateFakeAudioFramesFromDuration(int64_t duration_in_microseconds,
-                                          cdm::AudioFrames* audio_frames) const;
-
-  // Generates fake video frames given |input_timestamp|.
-  // Returns cdm::kSuccess if any audio frame is successfully generated.
-  cdm::Status GenerateFakeAudioFrames(int64_t timestamp_in_microseconds,
-                                      cdm::AudioFrames* audio_frames);
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
-
   void OnUnitTestComplete(bool success);
 
   void StartFileIOTest();
@@ -176,14 +156,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
   // Indicates whether a renewal timer has been set to prevent multiple timers
   // from running.
   bool renewal_timer_set_;
-
-#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  int channel_count_;
-  int bits_per_channel_;
-  int samples_per_second_;
-  int64_t output_timestamp_base_in_microseconds_;
-  int total_samples_generated_;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   std::unique_ptr<FFmpegCdmAudioDecoder> audio_decoder_;
