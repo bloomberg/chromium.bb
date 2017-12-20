@@ -60,7 +60,7 @@
 }
 
 - (void)updateToolbarState {
-  [self.toolbarCoordinator updateOmniboxState];
+  [self.toolbarCoordinator updateToolbarState];
 }
 
 - (void)showPrerenderingAnimation {

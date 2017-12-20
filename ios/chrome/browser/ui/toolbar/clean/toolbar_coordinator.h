@@ -60,8 +60,8 @@ class WebState;
 
 // TODO(crbug.com/785253): Move this to the LocationBarCoordinator once it is
 // created.
-// Updates the visibility of the omnibox text.
-- (void)updateOmniboxState;
+// Updates the visibility of the Omnibox text and Toolbar buttons.
+- (void)updateToolbarState;
 // Updates the toolbar so it is in a state where a snapshot for |webState| can
 // be taken.
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState;
