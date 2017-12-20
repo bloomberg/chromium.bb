@@ -221,12 +221,6 @@ class CronetPerfTestBenchmark(benchmark.Benchmark):
   def CreateStorySet(self, options):
     return CronetPerfTestStorySet(self._device)
 
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        pass # Nothing disabled.
-    return StoryExpectations()
-
 
 class QuicServer(object):
 
@@ -343,13 +337,15 @@ def main():
   # Chromium checkout in Telemetry.
   perf_config_file = os.path.join(REPOSITORY_ROOT, 'tools', 'perf', 'core',
       'binary_dependencies.json')
+  expectations_file = os.path.join(top_level_dir, 'expectations.config')
   with open(perf_config_file, "w") as config_file:
     config_file.write('{"config_type": "BaseConfig"}')
   runner_config = project_config.ProjectConfig(
       top_level_dir=top_level_dir,
       benchmark_dirs=[top_level_dir],
       client_configs=[perf_config_file],
-      default_chrome_root=REPOSITORY_ROOT)
+      default_chrome_root=REPOSITORY_ROOT,
+      expectations_file=expectations_file)
   sys.argv.insert(1, 'run')
   sys.argv.insert(2, 'run.CronetPerfTestBenchmark')
   benchmark_runner.main(runner_config)
