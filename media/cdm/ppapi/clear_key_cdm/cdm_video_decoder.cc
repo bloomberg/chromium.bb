@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-#include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/ffmpeg_cdm_video_decoder.h"
 #endif
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
-#include "media/cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/libvpx_cdm_video_decoder.h"
 #endif
 
 namespace media {

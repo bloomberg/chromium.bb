@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/external_clear_key/clear_key_cdm.h"
+#include "media/cdm/ppapi/clear_key_cdm/clear_key_cdm.h"
 
 #include <algorithm>
 #include <cstring>
@@ -24,7 +24,7 @@
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_video_decoder.h"
 #include "media/media_features.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
@@ -32,8 +32,8 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "media/base/media.h"
-#include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_audio_decoder.h"
-#include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/ffmpeg_cdm_audio_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/ffmpeg_cdm_video_decoder.h"
 
 // Include FFmpeg avformat.h for av_register_all().
 extern "C" {

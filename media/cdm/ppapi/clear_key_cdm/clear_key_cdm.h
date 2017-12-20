@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_
-#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_
+#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CLEAR_KEY_CDM_H_
+#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CLEAR_KEY_CDM_H_
 
 #include <stdint.h>
 
@@ -17,8 +17,8 @@
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
-#include "media/cdm/ppapi/external_clear_key/clear_key_persistent_session_cdm.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
+#include "media/cdm/ppapi/clear_key_cdm/clear_key_persistent_session_cdm.h"
 
 namespace media {
 
@@ -174,4 +174,4 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_
+#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CLEAR_KEY_CDM_H_

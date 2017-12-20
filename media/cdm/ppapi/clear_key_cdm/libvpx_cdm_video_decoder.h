@@ -2,31 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_VIDEO_DECODER_H_
-#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_VIDEO_DECODER_H_
+#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_LIBVPX_CDM_VIDEO_DECODER_H_
+#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_LIBVPX_CDM_VIDEO_DECODER_H_
 
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/compiler_specific.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
-#include "media/ffmpeg/ffmpeg_deleters.h"
+#include "media/cdm/api/content_decryption_module.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_video_decoder.h"
 
-struct AVCodecContext;
-struct AVFrame;
+struct vpx_codec_ctx;
+struct vpx_image;
 
 namespace media {
 
 class CdmHostProxy;
-class FFmpegDecodingLoop;
 
-class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
+class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
  public:
-  explicit FFmpegCdmVideoDecoder(CdmHostProxy* cdm_host_proxy);
-  ~FFmpegCdmVideoDecoder() override;
+  explicit LibvpxCdmVideoDecoder(CdmHostProxy* cdm_host_proxy);
+  ~LibvpxCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
   bool Initialize(const cdm::VideoDecoderConfig& config) override;
@@ -44,28 +40,20 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
                                   const cdm::Size& data_size);
 
  private:
-  bool OnNewFrame(AVFrame* frame);
-
-  // Allocates storage, then copies video frame stored in |frame| to
+  // Allocates storage, then copies video frame stored in |vpx_image_| to
   // |cdm_video_frame|. Returns true when allocation and copy succeed.
-  bool CopyAvFrameTo(AVFrame* frame, cdm::VideoFrame* cdm_video_frame);
-
-  void ReleaseFFmpegResources();
-
-  // FFmpeg structures owned by this object.
-  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  std::unique_ptr<FFmpegDecodingLoop> decoding_loop_;
+  bool CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame);
 
   bool is_initialized_;
 
   CdmHostProxy* const cdm_host_proxy_;
 
-  base::circular_deque<std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame>>
-      pending_frames_;
+  vpx_codec_ctx* vpx_codec_;
+  vpx_image* vpx_image_;
 
-  DISALLOW_COPY_AND_ASSIGN(FFmpegCdmVideoDecoder);
+  DISALLOW_COPY_AND_ASSIGN(LibvpxCdmVideoDecoder);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_VIDEO_DECODER_H_
+#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_LIBVPX_CDM_VIDEO_DECODER_H_

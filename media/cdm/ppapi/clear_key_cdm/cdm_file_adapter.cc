@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/external_clear_key/cdm_file_adapter.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_file_adapter.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 
 namespace media {
 

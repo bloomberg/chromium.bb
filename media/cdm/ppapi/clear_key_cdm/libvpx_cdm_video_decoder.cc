@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/libvpx_cdm_video_decoder.h"
 
 #include "base/logging.h"
 #include "media/base/limits.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 
 // Include libvpx header files.
 // VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide

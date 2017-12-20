@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_FILE_ADAPTER_H_
-#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_FILE_ADAPTER_H_
+#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CDM_FILE_ADAPTER_H_
+#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CDM_FILE_ADAPTER_H_
 
 #include <stdint.h>
 
@@ -65,4 +65,4 @@ class CdmFileAdapter : public cdm::FileIOClient {
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_FILE_ADAPTER_H_
+#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CDM_FILE_ADAPTER_H_

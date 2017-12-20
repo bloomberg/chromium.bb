@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/clear_key_cdm/ffmpeg_cdm_video_decoder.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "media/base/limits.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_decoding_loop.h"
 
