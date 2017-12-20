@@ -45449,7 +45449,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.QuicSession.CreationError" enum="QuicSessionErrorCodes">
-  <owner>jar@chromium.org</owner>
   <owner>rch@chromium.org</owner>
   <summary>
     Count of errors during attempts to create a QUIC session (before even using
@@ -46507,7 +46506,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced by Net.SocketUnchangeableReceiveBuffer 3/31/2014.
   </obsolete>
-  <owner>jar@chromium.org</owner>
   <summary>
     The size of a socket's receive buffer when the attempt to change it via
     setsockopt failed.
@@ -46632,7 +46630,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SocketUnchangeableReceiveBuffer" units="Bytes">
-  <owner>jar@chromium.org</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The size of a socket's receive buffer when the attempt to change it via
     setsockopt failed.
@@ -46640,7 +46638,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SocketUnchangeableSendBuffer" units="Bytes">
-  <owner>jar@chromium.org</owner>
+  <owner>rch@chromium.org</owner>
   <summary>
     The size of a socket's send buffer when the attempt to change it via
     setsockopt failed.
