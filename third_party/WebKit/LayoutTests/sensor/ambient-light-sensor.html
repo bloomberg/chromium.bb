@@ -24,5 +24,8 @@ function verify_sensor_reading({illuminance, timestamp}, is_null) {
   return illuminance === kDefaultReadingValue && timestamp !== null;
 }
 
-runGenericSensorTests(AmbientLightSensor, update_sensor_reading, verify_sensor_reading);
+runGenericSensorTests(AmbientLightSensor,
+                      update_sensor_reading,
+                      verify_sensor_reading,
+                      ['ambient-light-sensor']);
 </script>

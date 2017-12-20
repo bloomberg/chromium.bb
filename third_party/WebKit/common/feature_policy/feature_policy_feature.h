@@ -51,7 +51,15 @@ enum class FeaturePolicyFeature {
   kAccessibilityEvents,
   // Controls use of WebVR API.
   kWebVr,
-  LAST_FEATURE = kWebVr
+  // The following features control access to the corresponding sensor classes.
+  // Fusion sensor APIs (e.g. LinearAcceleration, OrientationSensor-based
+  // classes)require all of the features that are inputs into that API to be
+  // enabled for the feature to be allowed.
+  kAccelerometer,
+  kAmbientLightSensor,
+  kGyroscope,
+  kMagnetometer,
+  LAST_FEATURE = kMagnetometer
 };
 
 }  // namespace blink

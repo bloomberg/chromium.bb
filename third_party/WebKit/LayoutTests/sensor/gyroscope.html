@@ -24,6 +24,6 @@ function verify_sensor_reading({x, y, z, timestamp}, is_null) {
   return [x, y, z].every((r, i) => r === kDefaultReading[i]) && timestamp !== null;
 }
 
-runGenericSensorTests(Gyroscope, update_sensor_reading, verify_sensor_reading);
+runGenericSensorTests(Gyroscope, update_sensor_reading, verify_sensor_reading, ['gyroscope']);
 
 </script>

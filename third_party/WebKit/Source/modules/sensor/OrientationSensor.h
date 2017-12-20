@@ -26,7 +26,8 @@ class OrientationSensor : public Sensor {
   OrientationSensor(ExecutionContext*,
                     const SensorOptions&,
                     ExceptionState&,
-                    device::mojom::blink::SensorType);
+                    device::mojom::blink::SensorType,
+                    const Vector<FeaturePolicyFeature>& features);
 
  private:
   // SensorProxy override.

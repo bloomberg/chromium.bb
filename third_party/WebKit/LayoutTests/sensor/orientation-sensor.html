@@ -99,13 +99,19 @@ async function checkPopulateMatrix(sensor, sensorType) {
   return mockSensor.removeConfigurationCalled();
 }
 
-runGenericSensorTests(AbsoluteOrientationSensor, update_sensor_reading, verify_sensor_reading);
+runGenericSensorTests(AbsoluteOrientationSensor,
+                      update_sensor_reading,
+                      verify_sensor_reading,
+                      ['accelerometer', 'gyroscope', 'magnetometer']);
 
 sensor_test(sensor => {
   return checkPopulateMatrix(sensor, AbsoluteOrientationSensor);
 }, 'Test AbsoluteOrientationSensor.populateMatrix() method works correctly.');
 
-runGenericSensorTests(RelativeOrientationSensor, update_sensor_reading, verify_sensor_reading);
+runGenericSensorTests(RelativeOrientationSensor,
+                      update_sensor_reading,
+                      verify_sensor_reading,
+                      ['accelerometer', 'gyroscope']);
 
 sensor_test(sensor => {
   return checkPopulateMatrix(sensor, RelativeOrientationSensor);

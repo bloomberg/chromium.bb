@@ -12,7 +12,8 @@ Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
                                      const SensorOptions& options,
                                      ExceptionState& exception_state) {
   return new Accelerometer(execution_context, options, exception_state,
-                           SensorType::ACCELEROMETER);
+                           SensorType::ACCELEROMETER,
+                           {FeaturePolicyFeature::kAccelerometer});
 }
 
 // static
@@ -24,8 +25,13 @@ Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
 Accelerometer::Accelerometer(ExecutionContext* execution_context,
                              const SensorOptions& options,
                              ExceptionState& exception_state,
-                             SensorType sensor_type)
-    : Sensor(execution_context, options, exception_state, sensor_type) {}
+                             SensorType sensor_type,
+                             const Vector<FeaturePolicyFeature>& features)
+    : Sensor(execution_context,
+             options,
+             exception_state,
+             sensor_type,
+             features) {}
 
 double Accelerometer::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
