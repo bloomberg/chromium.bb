@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
-#define CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
+#define IOS_CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace identity {
 class IdentityManager;
 }
 
-class Profile;
+namespace ios {
+class ChromeBrowserState;
+}
 
 // Singleton that owns all IdentityManager instances and associates them with
-// Profiles.
-class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
+// BrowserStates.
+class IdentityManagerFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static identity::IdentityManager* GetForProfile(Profile* profile);
+  static identity::IdentityManager* GetForBrowserState(
+      ios::ChromeBrowserState* browser_state);
 
   // Returns an instance of the IdentityManagerFactory singleton.
   static IdentityManagerFactory* GetInstance();
@@ -29,11 +32,11 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   IdentityManagerFactory();
   ~IdentityManagerFactory() override;
 
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
+  // BrowserStateKeyedServiceFactory:
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
+      web::BrowserState* browser_state) const override;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerFactory);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
