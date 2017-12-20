@@ -40,8 +40,12 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
             toolsMenuConfigurationProvider:
                 (id<ToolsMenuConfigurationProvider>)configurationProvider
-                                dispatcher:(CommandDispatcher*)dispatcher {
-  if (self = [super initWithBaseViewController:viewController]) {
+                                dispatcher:(CommandDispatcher*)dispatcher
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState {
+  if (self = [super initWithBaseViewController:viewController
+                                  browserState:browserState]) {
+    DCHECK(browserState);
     _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc]
         initWithBaseViewController:viewController];
     _toolsMenuCoordinator.dispatcher = dispatcher;
@@ -64,22 +68,13 @@
 }
 
 - (void)start {
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    _fullscreenUpdater =
-        base::MakeUnique<FullscreenUIUpdater>(self.toolbarController);
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.tabModel.browserState)
-        ->AddObserver(_fullscreenUpdater.get());
-  }
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+    [self startObservingFullscreen];
 }
 
 - (void)stop {
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.tabModel.browserState)
-        ->RemoveObserver(_fullscreenUpdater.get());
-    _fullscreenUpdater = nullptr;
-  }
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+    [self stopObservingFullscreen];
   self.toolbarController = nil;
 }
 
@@ -141,6 +136,8 @@
 - (void)browserStateDestroyed {
   [self.toolbarController setBackgroundAlpha:1.0];
   [self.toolbarController browserStateDestroyed];
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
+    [self stopObservingFullscreen];
 }
 
 - (void)updateToolbarState {
@@ -301,6 +298,40 @@
 
 - (void)contractToolbar {
   [self cancelOmniboxEdit];
+}
+
+#pragma mark - Fullscreen helpers
+
+// Creates a FullscreenUIUpdater for the toolbar controller and adds it as a
+// FullscreenControllerObserver.
+- (void)startObservingFullscreen {
+  DCHECK(base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen));
+  if (_fullscreenUpdater)
+    return;
+  if (!self.browserState)
+    return;
+  FullscreenController* fullscreenController =
+      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+          self.browserState);
+  DCHECK(fullscreenController);
+  _fullscreenUpdater =
+      base::MakeUnique<FullscreenUIUpdater>(self.toolbarController);
+  fullscreenController->AddObserver(_fullscreenUpdater.get());
+}
+
+// Removes the FullscreenUIUpdater as a FullscreenControllerObserver.
+- (void)stopObservingFullscreen {
+  DCHECK(base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen));
+  if (!_fullscreenUpdater)
+    return;
+  if (!self.browserState)
+    return;
+  FullscreenController* fullscreenController =
+      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+          self.browserState);
+  DCHECK(fullscreenController);
+  fullscreenController->RemoveObserver(_fullscreenUpdater.get());
+  _fullscreenUpdater = nullptr;
 }
 
 @end

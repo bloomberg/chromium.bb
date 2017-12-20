@@ -60,7 +60,16 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
             toolsMenuConfigurationProvider:
                 (id<ToolsMenuConfigurationProvider>)configurationProvider
-                                dispatcher:(CommandDispatcher*)dispatcher;
+                                dispatcher:(CommandDispatcher*)dispatcher
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 // Returns the different protocols and superclass now implemented by the
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate;
