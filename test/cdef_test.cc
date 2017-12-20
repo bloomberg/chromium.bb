@@ -319,7 +319,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_4X4),
         make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_8X4),
-        make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_ssse3, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(SSSE3, CDEFFindDirTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
@@ -329,10 +329,12 @@ INSTANTIATE_TEST_CASE_P(SSSE3, CDEFFindDirTest,
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, CDEFBlockTest,
-    ::testing::Values(make_tuple(&cdef_filter_block_sse4_1,
-                                 &cdef_filter_block_c, BLOCK_4X4),
-                      make_tuple(&cdef_filter_block_sse4_1,
-                                 &cdef_filter_block_c, BLOCK_8X8)));
+    ::testing::Values(
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c, BLOCK_4X8),
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c, BLOCK_4X8),
+        make_tuple(&cdef_filter_block_sse4_1, &cdef_filter_block_c,
+                   BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(SSE4_1, CDEFFindDirTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
                                                      &cdef_find_dir_c)));
@@ -356,6 +358,8 @@ INSTANTIATE_TEST_CASE_P(
     NEON, CDEFBlockTest,
     ::testing::Values(
         make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_4X4),
+        make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_8X4),
+        make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_4X8),
         make_tuple(&cdef_filter_block_neon, &cdef_filter_block_c, BLOCK_8X8)));
 INSTANTIATE_TEST_CASE_P(NEON, CDEFFindDirTest,
                         ::testing::Values(make_tuple(&cdef_find_dir_neon,
