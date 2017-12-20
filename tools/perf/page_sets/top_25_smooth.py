@@ -8,9 +8,13 @@ from telemetry import story
 from page_sets import top_pages
 
 
-def _IssueMarkerAndScroll(action_runner):
+def _IssueMarkerAndScroll(action_runner, scroll_forever):
   with action_runner.CreateGestureInteraction('ScrollAction'):
     action_runner.ScrollPage()
+    if scroll_forever:
+      while True:
+        action_runner.ScrollPage(direction='up')
+        action_runner.ScrollPage(direction='down')
 
 
 def _CreatePageClassWithSmoothInteractions(page_cls):
@@ -18,7 +22,7 @@ def _CreatePageClassWithSmoothInteractions(page_cls):
 
     def RunPageInteractions(self, action_runner):
       action_runner.Wait(1)
-      _IssueMarkerAndScroll(action_runner)
+      _IssueMarkerAndScroll(action_runner, self.story_set.scroll_forever)
   return DerivedSmoothPage
 
 
@@ -33,7 +37,7 @@ class TopSmoothPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     action_runner.Wait(1)
-    _IssueMarkerAndScroll(action_runner)
+    _IssueMarkerAndScroll(action_runner, self.story_set.scroll_forever)
 
 
 class GmailSmoothPage(top_pages.GmailPage):
@@ -57,6 +61,12 @@ class GmailSmoothPage(top_pages.GmailPage):
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollElement(
           element_function='window.__scrollableElementForTelemetry')
+      if self.story_set.scroll_forever:
+        while True:
+          action_runner.ScrollElement(direction='up',
+              element_function='window.__scrollableElementForTelemetry')
+          action_runner.ScrollElement(direction='down',
+              element_function='window.__scrollableElementForTelemetry')
 
 
 class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
@@ -67,6 +77,12 @@ class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
     action_runner.Wait(1)
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollElement(selector='#scrolltimedeventswk')
+      if self.story_set.scroll_forever:
+        while True:
+          action_runner.ScrollElement(direction='up',
+                                      selector='#scrolltimedeventswk')
+          action_runner.ScrollElement(direction='down',
+                                      selector='#scrolltimedeventswk')
 
 
 class GoogleDocSmoothPage(top_pages.GoogleDocPage):
@@ -77,6 +93,12 @@ class GoogleDocSmoothPage(top_pages.GoogleDocPage):
     action_runner.Wait(1)
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollElement(selector='.kix-appview-editor')
+      if self.story_set.scroll_forever:
+        while True:
+          action_runner.ScrollElement(direction='up',
+                                      selector='.kix-appview-editor')
+          action_runner.ScrollElement(direction='down',
+                                      selector='.kix-appview-editor')
 
 
 class ESPNSmoothPage(top_pages.ESPNPage):
@@ -87,17 +109,22 @@ class ESPNSmoothPage(top_pages.ESPNPage):
     action_runner.Wait(1)
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollPage(left_start_ratio=0.1)
+      if self.story_set.scroll_forever:
+        while True:
+          action_runner.ScrollPage(direction='up', left_start_ratio=0.1)
+          action_runner.ScrollPage(direction='down', left_start_ratio=0.1)
 
 
 class Top25SmoothPageSet(story.StorySet):
 
   """ Pages hand-picked for 2012 CrOS scrolling tuning efforts. """
 
-  def __init__(self, techcrunch=True):
+  def __init__(self, techcrunch=True, scroll_forever=False):
     super(Top25SmoothPageSet, self).__init__(
         archive_data_file='data/top_25_smooth.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
+    self.scroll_forever = scroll_forever
     desktop_state_class = shared_page_state.SharedDesktopPageState
 
     self.AddStory(_CreatePageClassWithSmoothInteractions(

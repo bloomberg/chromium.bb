@@ -42,11 +42,20 @@ class SmoothnessTop25(_Smoothness):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks
   """
-  page_set = page_sets.Top25SmoothPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.top_25_smooth'
+
+  @classmethod
+  def AddBenchmarkCommandLineArgs(cls, parser):
+    parser.add_option('--scroll-forever', action='store_true',
+                      help='If set, continuously scroll up and down forever. '
+                           'This is useful for analysing scrolling behaviour '
+                           'with tools such as perf.')
+
+  def CreateStorySet(self, options):
+    return page_sets.Top25SmoothPageSet(scroll_forever=options.scroll_forever)
 
 
 @benchmark.Owner(emails=['senorblanco@chromium.org'])
