@@ -98,12 +98,12 @@ TEST_F(LayoutTableCellTest, DoNotResetColspanJustBelowBoundary) {
 
 TEST_F(LayoutTableCellTest, ResetRowspanIfTooBig) {
   SetBodyInnerHTML("<table><td id='cell' rowspan='70000'></td></table>");
-  ASSERT_EQ(GetCellByElementId("cell")->RowSpan(), 65534U);
+  ASSERT_EQ(GetCellByElementId("cell")->ResolvedRowSpan(), 65534U);
 }
 
 TEST_F(LayoutTableCellTest, DoNotResetRowspanJustBelowBoundary) {
   SetBodyInnerHTML("<table><td id='cell' rowspan='65534'></td></table>");
-  ASSERT_EQ(GetCellByElementId("cell")->RowSpan(), 65534U);
+  ASSERT_EQ(GetCellByElementId("cell")->ResolvedRowSpan(), 65534U);
 }
 
 TEST_F(LayoutTableCellTest,

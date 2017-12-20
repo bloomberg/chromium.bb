@@ -260,7 +260,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
   if (o.IsTableCell()) {
     const LayoutTableCell& c = ToLayoutTableCell(o);
     ts << " [r=" << c.RowIndex() << " c=" << c.AbsoluteColumnIndex()
-       << " rs=" << c.RowSpan() << " cs=" << c.ColSpan() << "]";
+       << " rs=" << c.ResolvedRowSpan() << " cs=" << c.ColSpan() << "]";
   }
 
   if (o.IsDetailsMarker()) {

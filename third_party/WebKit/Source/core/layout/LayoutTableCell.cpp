@@ -947,7 +947,7 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
 
   // Now check row groups.
   LayoutTableSection* curr_section = Section();
-  if (RowIndex() + RowSpan() >= curr_section->NumRows()) {
+  if (RowIndex() + ResolvedRowSpan() >= curr_section->NumRows()) {
     // (5) Our row group's after border.
     result = ChooseBorder(
         result,
@@ -1087,7 +1087,7 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
     return;
 
   // Invalidate the rows which will paint the collapsed borders.
-  auto row_span = RowSpan();
+  auto row_span = ResolvedRowSpan();
   for (auto r = RowIndex(); r < RowIndex() + row_span; ++r) {
     if (auto* row = Section()->RowLayoutObjectAt(r))
       row->SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
