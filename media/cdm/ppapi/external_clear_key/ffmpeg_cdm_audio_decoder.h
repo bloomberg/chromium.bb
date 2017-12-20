@@ -13,25 +13,25 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
+#include "media/cdm/api/content_decryption_module.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 
 struct AVCodecContext;
 struct AVFrame;
 
 namespace media {
-class AudioTimestampHelper;
-class FFmpegDecodingLoop;
-}
 
-namespace media {
+class AudioTimestampHelper;
+class CdmHostProxy;
+class FFmpegDecodingLoop;
+
 // TODO(xhwang): This class is partially cloned from FFmpegAudioDecoder. When
 // FFmpegAudioDecoder is updated, it's a pain to keep this class in sync with
 // FFmpegAudioDecoder. We need a long term sustainable solution for this. See
 // http://crbug.com/169203
 class FFmpegCdmAudioDecoder {
  public:
-  explicit FFmpegCdmAudioDecoder(ClearKeyCdmHost* host);
+  explicit FFmpegCdmAudioDecoder(CdmHostProxy* cdm_host_proxy);
   ~FFmpegCdmAudioDecoder();
   bool Initialize(const cdm::AudioDecoderConfig& config);
   void Deinitialize();
@@ -63,7 +63,7 @@ class FFmpegCdmAudioDecoder {
 
   bool is_initialized_;
 
-  ClearKeyCdmHost* const host_;
+  CdmHostProxy* const cdm_host_proxy_;
 
   // FFmpeg structures owned by this object.
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;

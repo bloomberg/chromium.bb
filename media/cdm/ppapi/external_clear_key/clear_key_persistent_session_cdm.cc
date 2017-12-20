@@ -87,12 +87,14 @@ class FinishLoadCdmPromise : public SimpleCdmPromise {
 }  // namespace
 
 ClearKeyPersistentSessionCdm::ClearKeyPersistentSessionCdm(
-    ClearKeyCdmHost* host,
+    CdmHostProxy* cdm_host_proxy,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb)
-    : host_(host), session_closed_cb_(session_closed_cb), weak_factory_(this) {
+    : cdm_host_proxy_(cdm_host_proxy),
+      session_closed_cb_(session_closed_cb),
+      weak_factory_(this) {
   cdm_ = base::MakeRefCounted<AesDecryptor>(
       session_message_cb,
       base::Bind(&ClearKeyPersistentSessionCdm::OnSessionClosed,
@@ -133,7 +135,7 @@ void ClearKeyPersistentSessionCdm::LoadSession(
   DCHECK_EQ(CdmSessionType::PERSISTENT_LICENSE_SESSION, session_type);
 
   // Load the saved state for |session_id| and then create the session.
-  std::unique_ptr<CdmFileAdapter> file(new CdmFileAdapter(host_));
+  std::unique_ptr<CdmFileAdapter> file(new CdmFileAdapter(cdm_host_proxy_));
   CdmFileAdapter* file_ref = file.get();
   file_ref->Open(
       session_id,
@@ -229,7 +231,7 @@ void ClearKeyPersistentSessionCdm::UpdateSession(
   }
 
   // Persistent session has been updated, so save the current state.
-  std::unique_ptr<CdmFileAdapter> file(new CdmFileAdapter(host_));
+  std::unique_ptr<CdmFileAdapter> file(new CdmFileAdapter(cdm_host_proxy_));
   CdmFileAdapter* file_ref = file.get();
   file_ref->Open(
       session_id,
@@ -295,7 +297,7 @@ void ClearKeyPersistentSessionCdm::RemoveSession(
   }
 
   // Remove the saved state for |session_id| first.
-  std::unique_ptr<CdmFileAdapter> file(new CdmFileAdapter(host_));
+  std::unique_ptr<CdmFileAdapter> file(new CdmFileAdapter(cdm_host_proxy_));
   CdmFileAdapter* file_ref = file.get();
   file_ref->Open(
       session_id,

@@ -19,11 +19,11 @@
 namespace media {
 
 std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
-    ClearKeyCdmHost* host,
+    CdmHostProxy* cdm_host_proxy,
     const cdm::VideoDecoderConfig& config) {
   std::unique_ptr<CdmVideoDecoder> video_decoder;
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  video_decoder.reset(new FakeCdmVideoDecoder(host));
+  video_decoder.reset(new FakeCdmVideoDecoder(cdm_host_proxy));
 
   if (!video_decoder->Initialize(config))
     video_decoder.reset();
@@ -32,7 +32,7 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
   if (config.codec == cdm::VideoDecoderConfig::kCodecVp8 ||
       config.codec == cdm::VideoDecoderConfig::kCodecVp9) {
-    video_decoder.reset(new LibvpxCdmVideoDecoder(host));
+    video_decoder.reset(new LibvpxCdmVideoDecoder(cdm_host_proxy));
 
     if (!video_decoder->Initialize(config))
       video_decoder.reset();
@@ -42,7 +42,7 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
 #endif
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  video_decoder.reset(new FFmpegCdmVideoDecoder(host));
+  video_decoder.reset(new FFmpegCdmVideoDecoder(cdm_host_proxy));
 
   if (!video_decoder->Initialize(config))
     video_decoder.reset();

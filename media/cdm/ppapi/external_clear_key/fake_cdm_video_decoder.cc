@@ -5,13 +5,12 @@
 #include "media/cdm/ppapi/external_clear_key/fake_cdm_video_decoder.h"
 
 #include "base/logging.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
 
 namespace media {
 
-FakeCdmVideoDecoder::FakeCdmVideoDecoder(cdm::Host* host)
-    : is_initialized_(false),
-      host_(host) {
-}
+FakeCdmVideoDecoder::FakeCdmVideoDecoder(CdmHostProxy* cdm_host_proxy)
+    : is_initialized_(false), cdm_host_proxy_(cdm_host_proxy) {}
 
 FakeCdmVideoDecoder::~FakeCdmVideoDecoder() {
   Deinitialize();
@@ -66,7 +65,7 @@ cdm::Status FakeCdmVideoDecoder::DecodeFrame(const uint8_t* compressed_frame,
   int u_offset = v_offset + uv_stride * uv_rows + kPlanePadding;
   int frame_size = u_offset + uv_stride * uv_rows + kPlanePadding;
 
-  decoded_frame->SetFrameBuffer(host_->Allocate(frame_size));
+  decoded_frame->SetFrameBuffer(cdm_host_proxy_->Allocate(frame_size));
   decoded_frame->FrameBuffer()->SetSize(frame_size);
 
   decoded_frame->SetFormat(cdm::kYv12);

@@ -10,9 +10,10 @@
 #include <memory>
 
 #include "media/cdm/api/content_decryption_module.h"
-#include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 
 namespace media {
+
+class CdmHostProxy;
 
 class CdmVideoDecoder {
  public:
@@ -39,7 +40,7 @@ class CdmVideoDecoder {
 // of |config.codec|. Returns a scoped_ptr containing a non-null initialized
 // CdmVideoDecoder pointer upon success.
 std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
-    ClearKeyCdmHost* host,
+    CdmHostProxy* cdm_host_proxy,
     const cdm::VideoDecoderConfig& config);
 
 }  // namespace media

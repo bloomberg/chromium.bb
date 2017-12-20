@@ -13,18 +13,19 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
-#include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 
 struct AVCodecContext;
 struct AVFrame;
 
 namespace media {
+
+class CdmHostProxy;
 class FFmpegDecodingLoop;
 
 class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
-  explicit FFmpegCdmVideoDecoder(ClearKeyCdmHost* host);
+  explicit FFmpegCdmVideoDecoder(CdmHostProxy* cdm_host_proxy);
   ~FFmpegCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
@@ -57,7 +58,7 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
 
   bool is_initialized_;
 
-  ClearKeyCdmHost* const host_;
+  CdmHostProxy* const cdm_host_proxy_;
 
   base::circular_deque<std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame>>
       pending_frames_;

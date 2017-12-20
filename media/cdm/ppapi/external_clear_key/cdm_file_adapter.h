@@ -17,6 +17,8 @@
 
 namespace media {
 
+class CdmHostProxy;
+
 // This class provides the ability to read and write a file using cdm::FileIO.
 class CdmFileAdapter : public cdm::FileIOClient {
  public:
@@ -26,7 +28,7 @@ class CdmFileAdapter : public cdm::FileIOClient {
       base::OnceCallback<void(bool success, const std::vector<uint8_t>& data)>;
   using WriteCB = base::OnceCallback<void(bool success)>;
 
-  explicit CdmFileAdapter(cdm::ContentDecryptionModule_9::Host* host);
+  explicit CdmFileAdapter(CdmHostProxy* cdm_host_proxy);
   ~CdmFileAdapter() override;
 
   // Open the file with |name|. |open_cb| will be called when the file is
