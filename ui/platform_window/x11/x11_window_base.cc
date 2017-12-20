@@ -39,6 +39,7 @@ X11WindowBase::X11WindowBase(PlatformWindowDelegate* delegate,
       xroot_window_(DefaultRootWindow(xdisplay_)),
       bounds_(bounds) {
   DCHECK(delegate_);
+  Create();
 }
 
 X11WindowBase::~X11WindowBase() {
@@ -141,8 +142,6 @@ void X11WindowBase::Create() {
 void X11WindowBase::Show() {
   if (window_mapped_)
     return;
-  if (xwindow_ == x11::None)
-    Create();
 
   XMapWindow(xdisplay_, xwindow_);
 

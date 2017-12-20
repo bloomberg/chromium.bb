@@ -181,19 +181,10 @@ jumbo_component("aura") {
   ]
 
   if (use_x11) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xrandr",
-    ]
     deps += [
-      "//ui/events:events_base",
-      "//ui/events/devices",
-      "//ui/events/devices/x11",
       "//ui/events/platform/x11",
-      "//ui/gfx/x",
+      "//ui/platform_window/x11",
     ]
-    sources += [ "window_tree_host_x11.cc" ]
-    public += [ "window_tree_host_x11.h" ]
   }
 
   if (is_win) {
