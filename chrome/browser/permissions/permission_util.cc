@@ -46,6 +46,8 @@ std::string PermissionUtil::GetPermissionString(
       return "AccessibilityEvents";
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
       return "ClipboardRead";
+    case CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE:
+      return "ClipboardWrite";
     default:
       break;
   }
