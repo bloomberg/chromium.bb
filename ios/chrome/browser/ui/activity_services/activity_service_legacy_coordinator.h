@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_LEGACY_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_LEGACY_COORDINATOR_H_
 
-#import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;

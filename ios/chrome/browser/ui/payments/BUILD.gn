@@ -85,6 +85,7 @@ source_set("payments") {
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/payments/cells",
     "//ios/chrome/browser/ui/toolbar",

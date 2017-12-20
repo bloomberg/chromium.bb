@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_LEGACY_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_LEGACY_COORDINATOR_H_
 
-#import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @class CommandDispatcher;
 @protocol QRScannerPresenting;

@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COORDINATOR_H_
 
-#import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 
 namespace ios {

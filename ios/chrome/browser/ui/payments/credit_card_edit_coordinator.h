@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_PAYMENTS_CREDIT_CARD_EDIT_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_PAYMENTS_CREDIT_CARD_EDIT_COORDINATOR_H_
 
-#import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/payments/address_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/billing_address_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"

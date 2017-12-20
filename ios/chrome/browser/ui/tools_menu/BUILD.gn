@@ -33,6 +33,7 @@ source_set("tools_menu") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/reading_list:reading_list_ui",

@@ -7,8 +7,8 @@
 
 #import <PassKit/PassKit.h>
 
-#import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper_delegate.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 namespace web {
 class WebState;

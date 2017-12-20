@@ -12,6 +12,7 @@ source_set("context_menu") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/web",
     "//ui/base",
     "//ui/strings",

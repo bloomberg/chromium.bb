@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_toolbar_interacting.h"
