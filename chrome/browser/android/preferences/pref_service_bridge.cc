@@ -1195,6 +1195,34 @@ static void JNI_PrefServiceBridge_UpdateUserAcceptLanguages(
   }
 }
 
+static void JNI_PrefServiceBridge_MoveAcceptLanguage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& language,
+    jint offset) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+
+  std::vector<std::string> languages;
+  translate_prefs->GetLanguageList(&languages);
+
+  std::string language_code(ConvertJavaStringToUTF8(env, language));
+
+  translate::TranslatePrefs::RearrangeSpecifier where =
+      translate::TranslatePrefs::kNone;
+
+  if (offset > 0) {
+    where = translate::TranslatePrefs::kDown;
+  } else {
+    offset = -offset;
+    where = translate::TranslatePrefs::kUp;
+  }
+
+  for (int i = 0; i < offset; ++i) {
+    translate_prefs->RearrangeLanguage(language_code, where, languages);
+  }
+}
+
 static ScopedJavaLocalRef<jstring>
 JNI_PrefServiceBridge_GetDownloadDefaultDirectory(
     JNIEnv* env,

@@ -948,6 +948,16 @@ public final class PrefServiceBridge {
         nativeUpdateUserAcceptLanguages(languageCode, add);
     }
 
+    /**
+     * Move a language to the given postion of the user's accept language.
+     *
+     * @param languageCode A valid language code to set.
+     * @param offset The offset from the original position of the language.
+     */
+    public void moveAcceptLanguage(String languageCode, int offset) {
+        nativeMoveAcceptLanguage(languageCode, offset);
+    }
+
     private native boolean nativeIsContentSettingEnabled(int contentSettingType);
     private native boolean nativeIsContentSettingManaged(int contentSettingType);
     private native void nativeSetContentSettingEnabled(int contentSettingType, boolean allow);
@@ -1135,6 +1145,7 @@ public final class PrefServiceBridge {
     private native void nativeGetChromeAcceptLanguages(List<LanguageItem> list);
     private native void nativeGetUserAcceptLanguages(List<String> list);
     private native void nativeUpdateUserAcceptLanguages(String language, boolean add);
+    private native void nativeMoveAcceptLanguage(String language, int offset);
     private native String nativeGetDownloadDefaultDirectory();
     private native void nativeSetDownloadDefaultDirectory(String directory);
 }

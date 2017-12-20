@@ -16,9 +16,12 @@ import android.widget.Button;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+
+import java.util.ArrayList;
 
 /**
  * A preference that displays the current accept language list.
@@ -27,24 +30,35 @@ public class LanguageListPreference extends Preference {
     // TODO(crbug/783049): Make the item in the list drag-able.
     private static class LanguageListAdapter
             extends LanguageListBaseAdapter implements LanguagesManager.AcceptLanguageObserver {
-        private Context mContext;
 
         LanguageListAdapter(Context context) {
-            super();
-            mContext = context;
+            super(context);
         }
 
         @Override
         public void onBindViewHolder(
                 LanguageListBaseAdapter.LanguageRowViewHolder holder, int position) {
+            super.onBindViewHolder(holder, position);
+
+            holder.setStartIcon(R.drawable.ic_drag_handle_grey600_24dp);
+
             final LanguageItem info = getItemByPosition(position);
-            holder.bindView(info, null, new ListMenuButton.Delegate() {
+            holder.setMenuButtonDelegate(new ListMenuButton.Delegate() {
                 @Override
                 public Item[] getItems() {
-                    return new Item[] {
-                            new Item(mContext, R.string.languages_item_option_offer_to_translate,
-                                    R.drawable.ic_check_googblue_24dp, info.isSupported()),
-                            new Item(mContext, R.string.remove, getItemCount() > 1)};
+                    ArrayList<Item> menuItems = new ArrayList<>();
+                    // Show "Offer to translate" option if "Chrome Translate" is enabled.
+                    if (PrefServiceBridge.getInstance().isTranslateEnabled()) {
+                        menuItems.add(new Item(mContext,
+                                R.string.languages_item_option_offer_to_translate,
+                                info.isSupported()));
+                    }
+
+                    // Show "Remove" option if there are more than 1 accept language.
+                    if (getItemCount() > 1) {
+                        menuItems.add(new Item(mContext, R.string.remove, true));
+                    }
+                    return menuItems.toArray(new Item[menuItems.size()]);
                 }
 
                 @Override
@@ -55,7 +69,7 @@ public class LanguageListPreference extends Preference {
                         LanguagesManager.getInstance().removeFromAcceptLanguages(info.getCode());
                     }
                 }
-            }, R.drawable.ic_drag_handle_grey600_24dp);
+            });
         }
 
         @Override
@@ -96,6 +110,10 @@ public class LanguageListPreference extends Preference {
         mRecyclerView.setLayoutManager(layoutMangager);
         mRecyclerView.addItemDecoration(
                 new DividerItemDecoration(getContext(), layoutMangager.getOrientation()));
+
+        // Due to a known native bug (crbug/640763), the list order written into Preference Service
+        // might be different from the order shown after it's adjusted by dragging.
+        mAdapter.enableDrag(mRecyclerView);
 
         return mView;
     }
