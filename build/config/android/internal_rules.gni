@@ -52,13 +52,13 @@ _default_proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
 # See build/android/gyp/write_build_config.py and
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
-  type = invoker.type
+  _type = invoker.type
 
   # Don't need to enforce naming scheme for these targets since we never
   # consider them in dependency chains.
-  if (type != "android_apk" && type != "java_binary" &&
-      type != "resource_rewriter" && type != "dist_jar" &&
-      type != "java_annotation_processor") {
+  if (_type != "android_apk" && _type != "java_binary" &&
+      _type != "resource_rewriter" && _type != "dist_jar" &&
+      _type != "java_annotation_processor") {
     set_sources_assignment_filter(_java_target_whitelist)
     _parent_invoker = invoker.invoker
     _target_label =
@@ -80,15 +80,6 @@ template("write_build_config") {
   }
 
   action(target_name) {
-    set_sources_assignment_filter([])
-    build_config = invoker.build_config
-
-    assert(type == "android_apk" || type == "java_library" ||
-           type == "android_resources" || type == "dist_jar" ||
-           type == "android_assets" || type == "resource_rewriter" ||
-           type == "java_binary" || type == "group" || type == "junit_binary" ||
-           type == "java_annotation_processor")
-
     forward_variables_from(invoker,
                            [
                              "deps",
@@ -104,6 +95,9 @@ template("write_build_config") {
     script = "//build/android/gyp/write_build_config.py"
     depfile = "$target_gen_dir/$target_name.d"
     inputs = []
+    outputs = [
+      invoker.build_config,
+    ]
 
     _deps_configs = []
     if (defined(invoker.possible_config_deps)) {
@@ -128,45 +122,17 @@ template("write_build_config") {
         }
         sources = []
       }
-      set_sources_assignment_filter([])
     }
     _rebased_deps_configs = rebase_path(_deps_configs, root_build_dir)
 
-    outputs = [
-      build_config,
-    ]
-
     args = [
-      "--type",
-      type,
+      "--type=$_type",
       "--depfile",
       rebase_path(depfile, root_build_dir),
       "--deps-configs=$_rebased_deps_configs",
       "--build-config",
-      rebase_path(build_config, root_build_dir),
+      rebase_path(invoker.build_config, root_build_dir),
     ]
-
-    is_apk = type == "android_apk"
-    is_android_assets = type == "android_assets"
-    is_android_resources = type == "android_resources"
-    is_group = type == "group"
-
-    supports_android = is_android_assets || is_android_resources
-    if (defined(invoker.supports_android)) {
-      supports_android = invoker.supports_android
-    }
-    requires_android = is_android_assets || is_android_resources
-    if (defined(invoker.requires_android)) {
-      requires_android = invoker.requires_android
-    }
-
-    assert(!requires_android || supports_android,
-           "requires_android requires" + " supports_android")
-
-    # Mark these variables as used.
-    assert(is_apk || true)
-    assert(is_android_resources || true)
-    assert(is_group || true)
 
     if (defined(invoker.jar_path)) {
       args += [
@@ -212,10 +178,10 @@ template("write_build_config") {
         rebase_path(invoker.dex_path, root_build_dir),
       ]
     }
-    if (supports_android) {
+    if (defined(invoker.supports_android) && invoker.supports_android) {
       args += [ "--supports-android" ]
     }
-    if (requires_android) {
+    if (defined(invoker.requires_android) && invoker.requires_android) {
       args += [ "--requires-android" ]
     }
     if (defined(invoker.is_prebuilt) && invoker.is_prebuilt) {
@@ -239,27 +205,26 @@ template("write_build_config") {
       ]
     }
 
-    if (is_android_assets) {
-      if (defined(invoker.asset_sources)) {
-        _rebased_asset_sources =
-            rebase_path(invoker.asset_sources, root_build_dir)
-        args += [ "--asset-sources=$_rebased_asset_sources" ]
-      }
-      if (defined(invoker.asset_renaming_sources)) {
-        _rebased_asset_renaming_sources =
-            rebase_path(invoker.asset_renaming_sources, root_build_dir)
-        args += [ "--asset-renaming-sources=$_rebased_asset_renaming_sources" ]
+    if (defined(invoker.asset_sources)) {
+      _rebased_asset_sources =
+          rebase_path(invoker.asset_sources, root_build_dir)
+      args += [ "--asset-sources=$_rebased_asset_sources" ]
+    }
+    if (defined(invoker.asset_renaming_sources)) {
+      _rebased_asset_renaming_sources =
+          rebase_path(invoker.asset_renaming_sources, root_build_dir)
+      args += [ "--asset-renaming-sources=$_rebased_asset_renaming_sources" ]
 
-        # These are zip paths, so no need to rebase.
-        args += [ "--asset-renaming-destinations=${invoker.asset_renaming_destinations}" ]
-      }
-      if (defined(invoker.disable_compression) && invoker.disable_compression) {
-        args += [ "--disable-asset-compression" ]
-      }
-      if (defined(invoker.treat_as_locale_paks) &&
-          invoker.treat_as_locale_paks) {
-        args += [ "--treat-as-locale-paks" ]
-      }
+      # These are zip paths, so no need to rebase.
+      args += [
+        "--asset-renaming-destinations=${invoker.asset_renaming_destinations}",
+      ]
+    }
+    if (defined(invoker.disable_compression) && invoker.disable_compression) {
+      args += [ "--disable-asset-compression" ]
+    }
+    if (defined(invoker.treat_as_locale_paks) && invoker.treat_as_locale_paks) {
+      args += [ "--treat-as-locale-paks" ]
     }
 
     if (defined(invoker.android_manifest)) {
@@ -269,72 +234,68 @@ template("write_build_config") {
         rebase_path(invoker.android_manifest, root_build_dir),
       ]
     }
-    if (is_android_resources || is_apk) {
-      if (defined(invoker.resources_zip)) {
-        args += [
-          "--resources-zip",
-          rebase_path(invoker.resources_zip, root_build_dir),
-        ]
-      }
-      if (defined(invoker.custom_package)) {
-        args += [
-          "--package-name",
-          invoker.custom_package,
-        ]
-      }
-      if (defined(invoker.r_text)) {
-        args += [
-          "--r-text",
-          rebase_path(invoker.r_text, root_build_dir),
-        ]
-      }
+    if (defined(invoker.resources_zip)) {
+      args += [
+        "--resources-zip",
+        rebase_path(invoker.resources_zip, root_build_dir),
+      ]
+    }
+    if (defined(invoker.custom_package)) {
+      args += [
+        "--package-name",
+        invoker.custom_package,
+      ]
+    }
+    if (defined(invoker.r_text)) {
+      args += [
+        "--r-text",
+        rebase_path(invoker.r_text, root_build_dir),
+      ]
     }
 
-    if (is_android_resources && defined(invoker.resource_dirs)) {
+    if (defined(invoker.resource_dirs)) {
       resource_dirs = rebase_path(invoker.resource_dirs, root_build_dir)
       args += [ "--resource-dirs=$resource_dirs" ]
     }
 
-    if (is_apk) {
-      if (defined(invoker.shared_libraries_runtime_deps_file)) {
-        # Don't list shared_libraries_runtime_deps_file as an input in order to
-        # avoid having to depend on the runtime_deps target. See comment in
-        # rules.gni for why we do this.
-        args += [
-          "--shared-libraries-runtime-deps",
-          rebase_path(invoker.shared_libraries_runtime_deps_file,
-                      root_build_dir),
-        ]
-      }
+    if (defined(invoker.shared_libraries_runtime_deps_file)) {
+      # Don't list shared_libraries_runtime_deps_file as an input in order to
+      # avoid having to depend on the runtime_deps target. See comment in
+      # rules.gni for why we do this.
+      args += [
+        "--shared-libraries-runtime-deps",
+        rebase_path(invoker.shared_libraries_runtime_deps_file, root_build_dir),
+      ]
+    }
 
-      if (defined(invoker.secondary_abi_shared_libraries_runtime_deps_file)) {
-        # Don't list secondary_abi_shared_libraries_runtime_deps_file as an
-        # input in order to avoid having to depend on the runtime_deps target.
-        # See comment in rules.gni for why we do this.
-        args += [
-          "--secondary-abi-shared-libraries-runtime-deps",
-          rebase_path(invoker.secondary_abi_shared_libraries_runtime_deps_file,
-                      root_build_dir),
-        ]
-      }
+    if (defined(invoker.secondary_abi_shared_libraries_runtime_deps_file)) {
+      # Don't list secondary_abi_shared_libraries_runtime_deps_file as an
+      # input in order to avoid having to depend on the runtime_deps target.
+      # See comment in rules.gni for why we do this.
+      args += [
+        "--secondary-abi-shared-libraries-runtime-deps",
+        rebase_path(invoker.secondary_abi_shared_libraries_runtime_deps_file,
+                    root_build_dir),
+      ]
+    }
 
-      if (defined(invoker.apk_path)) {
-        _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
-        _rebased_incremental_apk_path =
-            rebase_path(invoker.incremental_apk_path, root_build_dir)
-        _rebased_incremental_install_json_path =
-            rebase_path(invoker.incremental_install_json_path, root_build_dir)
-        _incremental_allowed =
-            defined(invoker.incremental_allowed) && invoker.incremental_allowed
-        args += [ "--apk-path=$_rebased_apk_path" ]
-        args += [ "--incremental-install-json-path=$_rebased_incremental_install_json_path" ]
+    if (defined(invoker.apk_path)) {
+      _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
+      _rebased_incremental_apk_path =
+          rebase_path(invoker.incremental_apk_path, root_build_dir)
+      _rebased_incremental_install_json_path =
+          rebase_path(invoker.incremental_install_json_path, root_build_dir)
+      _incremental_allowed =
+          defined(invoker.incremental_allowed) && invoker.incremental_allowed
+      args += [ "--apk-path=$_rebased_apk_path" ]
+      args += [ "--incremental-install-json-path=$_rebased_incremental_install_json_path" ]
 
-        assert(_rebased_incremental_apk_path != "")  # Mark as used.
-        if (_incremental_allowed) {
-          args += [ "--incremental-apk-path=$_rebased_incremental_apk_path" ]
-        }
+      assert(_rebased_incremental_apk_path != "")  # Mark as used.
+      if (_incremental_allowed) {
+        args += [ "--incremental-apk-path=$_rebased_incremental_apk_path" ]
       }
     }
+
     if (defined(invoker.non_native_packed_relocations) &&
         invoker.non_native_packed_relocations) {
       args += [ "--non-native-packed-relocations" ]
