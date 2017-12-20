@@ -13,15 +13,15 @@ shared_library("clearkeycdm") {
   sources = [
     "cdm_file_io_test.cc",
     "cdm_file_io_test.h",
-    "external_clear_key/cdm_file_adapter.cc",
-    "external_clear_key/cdm_file_adapter.h",
-    "external_clear_key/cdm_host_proxy.h",
-    "external_clear_key/cdm_video_decoder.cc",
-    "external_clear_key/cdm_video_decoder.h",
-    "external_clear_key/clear_key_cdm.cc",
-    "external_clear_key/clear_key_cdm.h",
-    "external_clear_key/clear_key_persistent_session_cdm.cc",
-    "external_clear_key/clear_key_persistent_session_cdm.h",
+    "clear_key_cdm/cdm_file_adapter.cc",
+    "clear_key_cdm/cdm_file_adapter.h",
+    "clear_key_cdm/cdm_host_proxy.h",
+    "clear_key_cdm/cdm_video_decoder.cc",
+    "clear_key_cdm/cdm_video_decoder.h",
+    "clear_key_cdm/clear_key_cdm.cc",
+    "clear_key_cdm/clear_key_cdm.h",
+    "clear_key_cdm/clear_key_persistent_session_cdm.cc",
+    "clear_key_cdm/clear_key_persistent_session_cdm.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -40,10 +40,10 @@ shared_library("clearkeycdm") {
 
   if (media_use_ffmpeg) {
     sources += [
-      "external_clear_key/ffmpeg_cdm_audio_decoder.cc",
-      "external_clear_key/ffmpeg_cdm_audio_decoder.h",
-      "external_clear_key/ffmpeg_cdm_video_decoder.cc",
-      "external_clear_key/ffmpeg_cdm_video_decoder.h",
+      "clear_key_cdm/ffmpeg_cdm_audio_decoder.cc",
+      "clear_key_cdm/ffmpeg_cdm_audio_decoder.h",
+      "clear_key_cdm/ffmpeg_cdm_video_decoder.cc",
+      "clear_key_cdm/ffmpeg_cdm_video_decoder.h",
     ]
     defines += [ "CLEAR_KEY_CDM_USE_FFMPEG_DECODER" ]
     deps += [ "//third_party/ffmpeg" ]
@@ -58,7 +58,7 @@ process_version_rc_template("clearkeycdmadapter_resources") {
   visibility = [ ":*" ]
   sources = [
     "clearkeycdmadapter.ver",
-    "external_clear_key/BRANDING",
+    "clear_key_cdm/BRANDING",
   ]
   output = "$target_gen_dir/clearkeycdmadapter_version.rc"
 }

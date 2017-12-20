@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_PERSISTENT_SESSION_CDM_H_
-#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_PERSISTENT_SESSION_CDM_H_
+#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CLEAR_KEY_PERSISTENT_SESSION_CDM_H_
+#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CLEAR_KEY_PERSISTENT_SESSION_CDM_H_
 
 #include <stdint.h>
 
@@ -17,8 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/content_decryption_module.h"
 #include "media/cdm/aes_decryptor.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_file_adapter.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_file_adapter.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 
 namespace media {
 
@@ -116,4 +116,4 @@ class ClearKeyPersistentSessionCdm : public ContentDecryptionModule {
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_PERSISTENT_SESSION_CDM_H_
+#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CLEAR_KEY_PERSISTENT_SESSION_CDM_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/external_clear_key/clear_key_persistent_session_cdm.h"
+#include "media/cdm/ppapi/clear_key_cdm/clear_key_persistent_session_cdm.h"
 
 #include "base/bind.h"
 #include "base/callback.h"

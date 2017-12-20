@@ -2,27 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_LIBVPX_CDM_VIDEO_DECODER_H_
-#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_LIBVPX_CDM_VIDEO_DECODER_H_
+#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_FFMPEG_CDM_VIDEO_DECODER_H_
+#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_FFMPEG_CDM_VIDEO_DECODER_H_
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "media/cdm/api/content_decryption_module.h"
-#include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
+#include <memory>
 
-struct vpx_codec_ctx;
-struct vpx_image;
+#include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
+#include "base/macros.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_video_decoder.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
+
+struct AVCodecContext;
+struct AVFrame;
 
 namespace media {
 
 class CdmHostProxy;
+class FFmpegDecodingLoop;
 
-class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
+class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
-  explicit LibvpxCdmVideoDecoder(CdmHostProxy* cdm_host_proxy);
-  ~LibvpxCdmVideoDecoder() override;
+  explicit FFmpegCdmVideoDecoder(CdmHostProxy* cdm_host_proxy);
+  ~FFmpegCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
   bool Initialize(const cdm::VideoDecoderConfig& config) override;
@@ -40,20 +44,28 @@ class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
                                   const cdm::Size& data_size);
 
  private:
-  // Allocates storage, then copies video frame stored in |vpx_image_| to
+  bool OnNewFrame(AVFrame* frame);
+
+  // Allocates storage, then copies video frame stored in |frame| to
   // |cdm_video_frame|. Returns true when allocation and copy succeed.
-  bool CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame);
+  bool CopyAvFrameTo(AVFrame* frame, cdm::VideoFrame* cdm_video_frame);
+
+  void ReleaseFFmpegResources();
+
+  // FFmpeg structures owned by this object.
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  std::unique_ptr<FFmpegDecodingLoop> decoding_loop_;
 
   bool is_initialized_;
 
   CdmHostProxy* const cdm_host_proxy_;
 
-  vpx_codec_ctx* vpx_codec_;
-  vpx_image* vpx_image_;
+  base::circular_deque<std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame>>
+      pending_frames_;
 
-  DISALLOW_COPY_AND_ASSIGN(LibvpxCdmVideoDecoder);
+  DISALLOW_COPY_AND_ASSIGN(FFmpegCdmVideoDecoder);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_LIBVPX_CDM_VIDEO_DECODER_H_
+#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_FFMPEG_CDM_VIDEO_DECODER_H_
