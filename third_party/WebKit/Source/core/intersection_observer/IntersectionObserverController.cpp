@@ -64,10 +64,10 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
     callback_fired_while_suspended_ = true;
     return;
   }
-  HeapHashSet<Member<IntersectionObserver>> observers;
-  pending_intersection_observers_.swap(observers);
-  for (auto& observer : observers)
+  pending_intersection_observers_.swap(intersection_observers_being_invoked_);
+  for (auto& observer : intersection_observers_being_invoked_)
     observer->Deliver();
+  intersection_observers_being_invoked_.clear();
 }
 
 void IntersectionObserverController::ComputeTrackedIntersectionObservations() {
@@ -98,7 +98,16 @@ void IntersectionObserverController::RemoveTrackedObserversForRoot(
 void IntersectionObserverController::Trace(blink::Visitor* visitor) {
   visitor->Trace(tracked_intersection_observers_);
   visitor->Trace(pending_intersection_observers_);
+  visitor->Trace(intersection_observers_being_invoked_);
   PausableObject::Trace(visitor);
+}
+
+void IntersectionObserverController::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
+  for (const auto& observer : pending_intersection_observers_)
+    visitor->TraceWrappers(observer);
+  for (const auto& observer : intersection_observers_being_invoked_)
+    visitor->TraceWrappers(observer);
 }
 
 }  // namespace blink

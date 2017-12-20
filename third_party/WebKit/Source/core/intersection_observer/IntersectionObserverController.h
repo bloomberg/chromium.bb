@@ -7,6 +7,7 @@
 
 #include "core/dom/PausableObject.h"
 #include "core/intersection_observer/IntersectionObserver.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 
@@ -19,7 +20,8 @@ class Document;
 
 class IntersectionObserverController
     : public GarbageCollectedFinalized<IntersectionObserverController>,
-      public PausableObject {
+      public PausableObject,
+      public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 
  public:
@@ -35,6 +37,7 @@ class IntersectionObserverController
   void RemoveTrackedObserversForRoot(const Node&);
 
   void Trace(blink::Visitor*);
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   explicit IntersectionObserverController(Document*);
@@ -45,7 +48,12 @@ class IntersectionObserverController
   HeapHashSet<WeakMember<IntersectionObserver>> tracked_intersection_observers_;
   // IntersectionObservers for which this is the execution context of the
   // callback.
-  HeapHashSet<Member<IntersectionObserver>> pending_intersection_observers_;
+  HeapHashSet<TraceWrapperMember<IntersectionObserver>>
+      pending_intersection_observers_;
+  // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
+  // get supported by either of wrapper-tracing or unified GC.
+  HeapHashSet<TraceWrapperMember<IntersectionObserver>>
+      intersection_observers_being_invoked_;
 
   bool callback_fired_while_suspended_;
 };
