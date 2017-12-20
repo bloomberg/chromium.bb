@@ -613,6 +613,9 @@ def main(argv):
     # rebuilt.
     javac_interface_classpath = [
         c['interface_jar_path'] for c in direct_library_deps]
+    # The classpath used for error prone.
+    javac_full_interface_classpath = [
+        c['interface_jar_path'] for c in all_library_deps]
     # The classpath used for bytecode-rewritting.
     javac_full_classpath = [c['unprocessed_jar_path'] for c in all_library_deps]
     # The classpath to use to run this target (or as an input to ProGuard).
@@ -633,6 +636,8 @@ def main(argv):
     extra_jars = [p for p in extra_jars if p not in javac_classpath]
     javac_classpath.extend(extra_jars)
     javac_interface_classpath.extend(extra_jars)
+    javac_full_interface_classpath.extend(
+        p for p in extra_jars if p not in javac_full_classpath)
     javac_full_classpath.extend(
         p for p in extra_jars if p not in javac_full_classpath)
     if extra_jars:
@@ -671,7 +676,13 @@ def main(argv):
     # Include in the classpath classes that are added directly to the apk under
     # test (those that are not a part of a java_library).
     javac_classpath.append(tested_apk_config['unprocessed_jar_path'])
+    javac_full_classpath.append(tested_apk_config['unprocessed_jar_path'])
     javac_interface_classpath.append(tested_apk_config['interface_jar_path'])
+    javac_full_interface_classpath.append(
+        tested_apk_config['interface_jar_path'])
+    javac_full_interface_classpath.extend(
+        p for p in tested_apk_config['javac_full_interface_classpath']
+        if p not in javac_full_interface_classpath)
     javac_full_classpath.extend(
         p for p in tested_apk_config['javac_full_classpath']
         if p not in javac_full_classpath)
@@ -721,6 +732,7 @@ def main(argv):
     config['javac']['processor_classes'] = [
         c['main_class'] for c in processor_deps.Direct()]
     deps_info['javac_full_classpath'] = javac_full_classpath
+    deps_info['javac_full_interface_classpath'] = javac_full_interface_classpath
 
     if options.type in (
         'android_apk', 'dist_jar', 'java_binary', 'junit_binary'):

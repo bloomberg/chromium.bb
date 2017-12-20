@@ -390,13 +390,13 @@ def main(argv):
   javac_cmd = [javac_path]
 
   javac_cmd.extend((
-      '-g',
-      # Chromium only allows UTF8 source files.  Being explicit avoids
-      # javac pulling a default encoding from the user's environment.
-      '-encoding', 'UTF-8',
-      # Prevent compiler from compiling .java files not listed as inputs.
-      # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
-      '-sourcepath', ':',
+    '-g',
+    # Chromium only allows UTF8 source files.  Being explicit avoids
+    # javac pulling a default encoding from the user's environment.
+    '-encoding', 'UTF-8',
+    # Prevent compiler from compiling .java files not listed as inputs.
+    # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
+    '-sourcepath', ':',
   ))
 
   if options.java_version:
