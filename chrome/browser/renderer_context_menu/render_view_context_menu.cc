@@ -116,6 +116,7 @@
 #include "content/public/common/menu_item.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/features/features.h"
+#include "media/base/media_switches.h"
 #include "net/base/escape.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/features/features.h"
@@ -1536,8 +1537,7 @@ void RenderViewContextMenu::AppendPasswordItems() {
 }
 
 void RenderViewContextMenu::AppendPictureInPictureItem() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePictureInPicture))
+  if (base::FeatureList::IsEnabled(media::kPictureInPicture))
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTENT_PICTUREINPICTURE,
                                     IDS_CONTENT_CONTENT_PICTUREINPICTURE);
 }
@@ -2612,8 +2612,7 @@ void RenderViewContextMenu::ExecProtocolHandlerSettings(int event_flags) {
 }
 
 void RenderViewContextMenu::ExecPictureInPicture() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePictureInPicture))
+  if (!base::FeatureList::IsEnabled(media::kPictureInPicture))
     return;
 
   PictureInPictureWindowController* window_controller =

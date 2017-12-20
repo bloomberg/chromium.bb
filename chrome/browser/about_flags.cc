@@ -3302,7 +3302,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-picture-in-picture",
      flag_descriptions::kEnablePictureInPictureName,
      flag_descriptions::kEnablePictureInPictureDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnablePictureInPicture)},
+     FEATURE_VALUE_TYPE(media::kPictureInPicture)},
 #endif  // !defined(OS_ANDROID)
     {"navigation-mojo-response", flag_descriptions::kNavigationMojoResponseName,
      flag_descriptions::kNavigationMojoResponseDescription, kOsAll,
