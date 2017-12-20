@@ -35,6 +35,7 @@ typedef struct ConvolveParams {
   int round_1;
   int plane;
   int do_post_rounding;
+  int is_compound;
 #if CONFIG_JNT_COMP
   int use_jnt_comp_avg;
   int fwd_offset;
@@ -107,13 +108,17 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
 
 static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
                                                       int plane, int32_t *dst,
-                                                      int dst_stride) {
+                                                      int dst_stride,
+                                                      int is_compound) {
   ConvolveParams conv_params;
   conv_params.ref = ref;
   conv_params.do_average = do_average;
   conv_params.round = CONVOLVE_OPT_NO_ROUND;
   conv_params.round_0 = 5;
   conv_params.round_1 = 0;
+  conv_params.is_compound = is_compound;
+  // TODO(yunqing): The following dst should only be valid while
+  // is_compound = 1;
   conv_params.dst = dst;
   conv_params.dst_stride = dst_stride;
   conv_params.plane = plane;
