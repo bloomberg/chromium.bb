@@ -195,11 +195,23 @@
       #blacklisted-warning:empty {
         display: none;
       }
+
+      #a11yAssociation {
+        height: 0;
+        overflow: hidden;
+      }
     </style>
+    <!-- Invisible instead of hidden because VoiceOver refuses to read text of
+      element that's hidden when referenced by an aria label.  Unfortunately,
+      this text can be found by Ctrl + F because it isn't hidden. -->
+    <div id="a11yAssociation" aria-hidden="true">
+      [[a11yAssociation_(data.name)]]
+    </div>
     <div id="card" class$="[[computeClasses_(data.state, inDevMode)]]">
       <div id="main">
         <div id="icon-wrapper">
           <img id="icon" src="[[data.iconUrl]]"
+              aria-describedby="a11yAssociation"
               alt$="[[appOrExtension(
                   data.type,
                   '$i18nPolymer{appIcon}',
@@ -208,6 +220,7 @@
               if="[[computeSourceIndicatorIcon_(data.*)]]">
             <div id="source-indicator">
               <div class="source-icon-wrapper" role="img"
+                  aria-describedby="a11yAssociation"
                   aria-label$="[[computeSourceIndicatorText_(data.*)]]">
                 <iron-icon icon="[[computeSourceIndicatorIcon_(data.*)]]">
                 </iron-icon>
@@ -220,7 +233,7 @@
         <template is="dom-if"
             if="[[computeSourceIndicatorIcon_(data.*)]]">
           <paper-tooltip id="source-indicator-text" for="source-indicator"
-              position="top" fit-to-visible-bounds>
+              position="top" fit-to-visible-bounds aria-hidden="true">
             [[computeSourceIndicatorText_(data.*)]]
           </paper-tooltip>
         </template>
@@ -241,15 +254,15 @@
           </div>
           <template is="dom-if" if="[[hasWarnings_(data.*)]]">
             <div id="warnings" >
-              <div id="suspicious-warning"
-                   hidden$="[[!data.disableReasons.suspiciousInstall]]">
+              <div id="suspicious-warning" aria-describedby="a11yAssociation"
+                  hidden$="[[!data.disableReasons.suspiciousInstall]]">
                 $i18n{itemSuspiciousInstall}
                 <a target="_blank" id="learn-more-link"
                     href="$i18n{suspiciousInstallHelpUrl}">
                   $i18n{learnMore}
                 </a>
               </div>
-              <div id="corrupted-warning"
+              <div id="corrupted-warning" aria-describedby="a11yAssociation"
                   hidden$="[[!data.disableReasons.corruptInstall]]">
                 $i18n{itemCorruptInstall}
               </div>
@@ -266,7 +279,9 @@
                   doesn't shrink (because it's not display: flex).-->
               <div>
                 <div id="inspect-views">
-                  <span>$i18n{itemInspectViews}</span>
+                  <span aria-describedby="a11yAssociation">
+                    $i18n{itemInspectViews}
+                  </span>
                   <a class="clippable-flex-text" is="action-link"
                       title="[[computeFirstInspectTitle_(data.views)]]"
                       on-tap="onInspectTap_">
@@ -285,34 +300,37 @@
       </div>
       <div id="button-strip" class="layout horizontal center">
         <div class="layout flex horizontal center">
-          <paper-button id="details-button" on-tap="onDetailsTap_">
+          <paper-button id="details-button" on-tap="onDetailsTap_"
+              aria-describedby="a11yAssociation">
             $i18n{itemDetails}
           </paper-button>
           <paper-button id="remove-button" on-tap="onRemoveTap_"
+              aria-describedby="a11yAssociation"
               hidden="[[isControlled_(data.controlledInfo)]]">
             $i18n{itemRemove}
           </paper-button>
           <template is="dom-if" if="[[shouldShowErrorsButton_(data.*)]]">
-            <paper-button id="errors-button" on-tap="onErrorsTap_">
+            <paper-button id="errors-button" on-tap="onErrorsTap_"
+                aria-describedby="a11yAssociation">
               $i18n{itemErrors}
             </paper-button>
           </template>
         </div>
         <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
           <button id="dev-reload-button" is="paper-icon-button-light"
-              aria-label="$i18n{itemReload}"
+              aria-label="$i18n{itemReload}" aria-describedby="a11yAssociation"
               class="icon-refresh no-overlap" on-tap="onReloadTap_">
           </button>
         </template>
         <template is="dom-if" if="[[data.disableReasons.corruptInstall]]">
           <paper-button id="repair-button" class="action-button"
-              on-tap="onRepairTap_">
+              aria-describedby="a11yAssociation" on-tap="onRepairTap_">
             $i18n{itemRepair}
           </paper-button>
         </template>
         <template is="dom-if" if="[[isTerminated_(data.state)]]">
           <paper-button id="terminated-reload-button" on-tap="onReloadTap_"
-              class="action-button">
+              aria-describedby="a11yAssociation" class="action-button">
             $i18n{itemReload}
           </paper-button>
         </template>
@@ -321,7 +339,7 @@
                 data.type,
                 '$i18nPolymer{appEnabled}',
                 '$i18nPolymer{extensionEnabled}')]]"
-            aria-describedby="name"
+            aria-describedby="a11yAssociation"
             checked="[[isEnabled_(data.state)]]" on-change="onEnableChange_"
             disabled="[[!isEnableToggleEnabled_(data.*)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">
