@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/numerics/safe_conversions.h"
 #include "content/browser/webauth/authenticator_utils.h"
 #include "content/browser/webauth/cbor/cbor_writer.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 
 namespace content {
 
@@ -22,60 +22,30 @@ constexpr char kX509CertKey[] = "x5c";
 std::unique_ptr<FidoAttestationStatement>
 FidoAttestationStatement::CreateFromU2fRegisterResponse(
     const std::vector<uint8_t>& u2f_data) {
-  std::vector<std::vector<uint8_t>> x509_certificates;
-  std::vector<uint8_t> x509_cert;
+  CBS response, cert;
+  CBS_init(&response, u2f_data.data(), u2f_data.size());
 
-  // Extract the length length of the credential (i.e. of U2FResponse key
-  // handle). Length is big endian and is located at position 66 in the data.
-  // Note that U2F responses only use one byte for length.
-  std::vector<uint8_t> id_length(2, 0);
-  CHECK_GE(u2f_data.size(), authenticator_utils::kU2fResponseLengthPos + 1);
-  id_length[1] = u2f_data[authenticator_utils::kU2fResponseLengthPos];
-  size_t id_end_byte = authenticator_utils::kU2fResponseKeyHandleStartPos +
-                       ((base::strict_cast<uint32_t>(id_length[0]) << 8) |
-                        (base::strict_cast<uint32_t>(id_length[1])));
-
-  // Parse x509 cert to get cert length (which is variable).
-  // TODO: Support responses with multiple certs.
-  int num_bytes = 0;
-  uint32_t cert_length = 0;
-  // The first x509 byte is a tag, so we skip it.
-  size_t first_length_byte =
-      base::strict_cast<size_t>(u2f_data[id_end_byte + 1]);
-
-  // If the first length byte is less than 127, it is the length. If it is
-  // greater than 128, it indicates the number of following bytes that encode
-  // the length.
-  if (first_length_byte > 127) {
-    num_bytes = first_length_byte - 128;
-
-    // x509 cert length, interpreted big-endian.
-    for (int i = 1; i <= num_bytes; i++) {
-      // Account for tag byte and length details byte.
-      cert_length |= base::checked_cast<uint32_t>(u2f_data[id_end_byte + 1 + i]
-                                                  << ((num_bytes - i) * 8));
-    }
-  } else {
-    cert_length = first_length_byte;
+  // The format of |u2f_data| is specified here:
+  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-response-message-success
+  uint8_t credential_length;
+  if (!CBS_skip(&response,
+                authenticator_utils::kU2fResponseKeyHandleLengthPos) ||
+      !CBS_get_u8(&response, &credential_length) ||
+      !CBS_skip(&response, credential_length) ||
+      !CBS_get_asn1_element(&response, &cert, CBS_ASN1_SEQUENCE)) {
+    // TODO(https://crbug.com/796581): Handle errors in a more civilized way.
+    CHECK(false) << "Invalid U2F response";
   }
 
-  size_t x509_length = 1 /* tag byte */ + 1 /* first length byte */
-                       + num_bytes /* # bytes of length */ + cert_length;
-
-  authenticator_utils::Append(
-      &x509_cert,
-      authenticator_utils::Extract(u2f_data, id_end_byte, x509_length));
-  x509_certificates.push_back(x509_cert);
+  std::vector<std::vector<uint8_t>> x509_certificates;
+  x509_certificates.emplace_back(CBS_data(&cert),
+                                 CBS_data(&cert) + CBS_len(&cert));
 
   // The remaining bytes are the signature.
-  std::vector<uint8_t> signature;
-  size_t signature_start_byte = id_end_byte + x509_length;
-  authenticator_utils::Append(
-      &signature,
-      authenticator_utils::Extract(u2f_data, signature_start_byte,
-                                   u2f_data.size() - signature_start_byte));
-  return std::make_unique<FidoAttestationStatement>(signature,
-                                                    x509_certificates);
+  const std::vector<uint8_t> signature(
+      CBS_data(&response), CBS_data(&response) + CBS_len(&response));
+  return std::make_unique<FidoAttestationStatement>(
+      std::move(signature), std::move(x509_certificates));
 }
 
 FidoAttestationStatement::FidoAttestationStatement(
