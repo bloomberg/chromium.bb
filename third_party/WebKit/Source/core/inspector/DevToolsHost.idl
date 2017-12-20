@@ -46,6 +46,5 @@
     DOMString getInactiveSelectionBackgroundColor();
     DOMString getInactiveSelectionForegroundColor();
 
-    boolean isUnderTest();
     boolean isHostedMode();
 };

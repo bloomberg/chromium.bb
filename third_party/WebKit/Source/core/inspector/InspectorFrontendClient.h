@@ -45,8 +45,6 @@ class InspectorFrontendClient : public GarbageCollectedMixin {
 
   virtual void SendMessageToEmbedder(const String&) = 0;
 
-  virtual bool IsUnderTest() = 0;
-
   virtual void ShowContextMenu(LocalFrame* target_frame,
                                float x,
                                float y,
