@@ -11,6 +11,7 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -86,6 +87,14 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return intrinsic_block_size_;
   }
 
+  // The break-before value on the first child needs to be propagated to the
+  // container, in search of a valid class A break point.
+  EBreakBetween InitialBreakBefore() const { return initial_break_before_; }
+
+  // The break-after value on the last child needs to be propagated to the
+  // container, in search of a valid class A break point.
+  EBreakBetween FinalBreakAfter() const { return final_break_after_; }
+
   scoped_refptr<NGLayoutResult> CloneWithoutOffset() const;
 
  private:
@@ -102,6 +111,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       const WTF::Optional<NGBfcOffset> bfc_offset,
       const NGMarginStrut end_margin_strut,
       const LayoutUnit intrinsic_block_size,
+      EBreakBetween initial_break_before,
+      EBreakBetween final_break_after,
       NGLayoutResultStatus status);
 
   scoped_refptr<NGPhysicalFragment> physical_fragment_;
@@ -114,6 +125,9 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const WTF::Optional<NGBfcOffset> bfc_offset_;
   const NGMarginStrut end_margin_strut_;
   const LayoutUnit intrinsic_block_size_;
+
+  EBreakBetween initial_break_before_;
+  EBreakBetween final_break_after_;
 
   unsigned status_ : 1;
 };

@@ -1454,6 +1454,59 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideWithBorder) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreaks) {
+  // This tests that forced breaks are honored, but only at valid class A break
+  // points (i.e. *between* in-flow block siblings).
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="float:left; width:1px; height:1px;"></div>
+        <div style="break-before:column; break-after:column;">
+          <div style="float:left; width:1px; height:1px;"></div>
+          <div style="break-after:column; width:50px; height:10px;"></div>
+          <div style="break-before:column; width:60px; height:10px;"></div>
+          <div>
+            <div>
+              <div style="break-after:column; width:70px; height:10px;"></div>
+            </div>
+          </div>
+          <div style="width:80px; height:10px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:1x1
+        offset:0,0 size:100x100
+          offset:1,0 size:1x1
+          offset:0,0 size:50x10
+      offset:110,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:60x10
+          offset:0,10 size:100x10
+            offset:0,0 size:100x10
+              offset:0,0 size:70x10
+      offset:220,0 size:100x10
+        offset:0,0 size:100x10
+          offset:0,0 size:80x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   // The multicol container here contains two inline-blocks with a line break
   // opportunity between them. We'll test what min/max values we get for the

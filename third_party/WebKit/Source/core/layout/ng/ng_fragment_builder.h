@@ -13,6 +13,7 @@
 #include "core/layout/ng/ng_container_fragment_builder.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 namespace blink {
@@ -74,6 +75,19 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
     did_break_ = true;
     return *this;
   }
+
+  void SetInitialBreakBefore(EBreakBetween break_before) {
+    initial_break_before_ = break_before;
+  }
+
+  void SetPreviousBreakAfter(EBreakBetween break_after) {
+    previous_break_after_ = break_after;
+  }
+
+  // Join/"collapse" the previous (stored) break-after value with the next
+  // break-before value, to determine how to deal with breaking between two
+  // in-flow siblings.
+  EBreakBetween JoinedBreakBetweenValue(EBreakBetween break_before) const;
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
@@ -143,6 +157,13 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   bool is_old_layout_root_;
   bool did_break_;
   LayoutUnit used_block_size_;
+
+  // The break-before value on the initial child we cannot honor. There's no
+  // valid class A break point before a first child, only *between* siblings.
+  EBreakBetween initial_break_before_ = EBreakBetween::kAuto;
+
+  // The break-after value of the previous in-flow sibling.
+  EBreakBetween previous_break_after_ = EBreakBetween::kAuto;
 
   Vector<scoped_refptr<NGBreakToken>> child_break_tokens_;
   scoped_refptr<NGBreakToken> last_inline_break_token_;

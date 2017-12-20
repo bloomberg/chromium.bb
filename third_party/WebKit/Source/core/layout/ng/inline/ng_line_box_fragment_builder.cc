@@ -141,7 +141,8 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
       std::move(fragment), oof_positioned_descendants_, positioned_floats_,
       unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
       end_margin_strut_,
-      /* intrinsic_block_size */ LayoutUnit(), NGLayoutResult::kSuccess));
+      /* intrinsic_block_size */ LayoutUnit(), EBreakBetween::kAuto,
+      EBreakBetween::kAuto, NGLayoutResult::kSuccess));
 }
 
 }  // namespace blink

@@ -369,6 +369,13 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       HandleFloat(previous_inflow_position, ToNGBlockNode(child),
                   ToNGBlockBreakToken(child_break_token));
     } else {
+      // We need to propagate the initial break-before value up our container
+      // chain, until we reach a container that's not a first child. If we get
+      // all the way to the root of the fragmentation context without finding
+      // any such container, we have no valid class A break point, and if a
+      // forced break was requested, none will be inserted.
+      container_builder_.SetInitialBreakBefore(child.Style().BreakBefore());
+
       bool success =
           child.CreatesNewFormattingContext()
               ? HandleNewFormattingContext(child, child_break_token,
@@ -663,8 +670,11 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
   if (ConstraintSpace().HasBlockFragmentation() &&
-      BreakBeforeChild(child, physical_fragment, logical_offset.block_offset))
+      BreakBeforeChild(child, *layout_result, logical_offset.block_offset))
     return true;
+  EBreakBetween break_after = JoinFragmentainerBreakValues(
+      layout_result->FinalBreakAfter(), child.Style().BreakAfter());
+  container_builder_.SetPreviousBreakAfter(break_after);
 
   intrinsic_block_size_ =
       std::max(intrinsic_block_size_,
@@ -990,8 +1000,11 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       CalculateLogicalOffset(fragment, child_data.margins, child_bfc_offset);
 
   if (ConstraintSpace().HasBlockFragmentation() &&
-      BreakBeforeChild(child, physical_fragment, logical_offset.block_offset))
+      BreakBeforeChild(child, *layout_result, logical_offset.block_offset))
     return true;
+  EBreakBetween break_after = JoinFragmentainerBreakValues(
+      layout_result->FinalBreakAfter(), child.Style().BreakAfter());
+  container_builder_.SetPreviousBreakAfter(break_after);
 
   // Only modify intrinsic_block_size_ if the fragment is non-empty block.
   //
@@ -1230,10 +1243,10 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
 
 bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     NGLayoutInputNode child,
-    const NGPhysicalFragment& physical_fragment,
+    const NGLayoutResult& layout_result,
     LayoutUnit block_offset) {
   DCHECK(ConstraintSpace().HasBlockFragmentation());
-  if (!ShouldBreakBeforeChild(child, physical_fragment, block_offset))
+  if (!ShouldBreakBeforeChild(child, layout_result, block_offset))
     return false;
 
   // The remaining part of the fragmentainer (the unusable space for child
@@ -1250,10 +1263,13 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
 
 bool NGBlockLayoutAlgorithm::ShouldBreakBeforeChild(
     NGLayoutInputNode child,
-    const NGPhysicalFragment& physical_fragment,
+    const NGLayoutResult& layout_result,
     LayoutUnit block_offset) const {
   if (!container_builder_.BfcOffset().has_value())
     return false;
+
+  const NGPhysicalFragment& physical_fragment =
+      *layout_result.PhysicalFragment();
 
   // If we haven't used any space at all in the fragmentainer yet, we cannot
   // break, or there'd be no progress. We'd end up creating an infinite number
@@ -1273,6 +1289,17 @@ bool NGBlockLayoutAlgorithm::ShouldBreakBeforeChild(
   // margins.
   if (space_left <= LayoutUnit())
     return true;
+
+  EBreakBetween break_before = JoinFragmentainerBreakValues(
+      child.Style().BreakBefore(), layout_result.InitialBreakBefore());
+  EBreakBetween break_between =
+      container_builder_.JoinedBreakBetweenValue(break_before);
+  if (IsForcedBreakValue(ConstraintSpace(), break_between)) {
+    // There should be a forced break before this child, and if we're not at the
+    // first in-flow child, just go ahead and break.
+    if (has_processed_first_child_)
+      return true;
+  }
 
   const auto* token = physical_fragment.BreakToken();
   if (!token || token->IsFinished())
