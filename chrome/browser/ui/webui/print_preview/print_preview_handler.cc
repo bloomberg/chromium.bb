@@ -28,6 +28,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/bad_message.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -1250,11 +1251,20 @@ void PrintPreviewHandler::OnGotExtensionPrinterInfo(
 
 void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
                                         const base::Value& error) {
-  if (error.is_none()) {
+  if (error.is_none())
     ResolveJavascriptCallback(base::Value(callback_id), error);
-    return;
+  else
+    RejectJavascriptCallback(base::Value(callback_id), error);
+  // Remove the preview dialog from the background printing manager if it is
+  // being stored there. Since the PDF has been sent and the callback is
+  // resolved or rejected, it is no longer needed and can be destroyed.
+  printing::BackgroundPrintingManager* background_printing_manager =
+      g_browser_process->background_printing_manager();
+  if (background_printing_manager->HasPrintPreviewDialog(
+          preview_web_contents())) {
+    background_printing_manager->OnPrintRequestCancelled(
+        preview_web_contents());
   }
-  RejectJavascriptCallback(base::Value(callback_id), error);
 }
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
