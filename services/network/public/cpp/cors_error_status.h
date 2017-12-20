@@ -28,6 +28,7 @@ struct CORSErrorStatus {
   ~CORSErrorStatus();
 
   bool operator==(const CORSErrorStatus& rhs) const;
+  bool operator!=(const CORSErrorStatus& rhs) const { return !(*this == rhs); }
 
   network::mojom::CORSError cors_error;
 
