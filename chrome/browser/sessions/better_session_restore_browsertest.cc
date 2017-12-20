@@ -614,7 +614,12 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
 }
 
 // Check that form data is restored after wrench menu quit.
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PostCloseAllBrowsers) {
+#if defined(OS_LINUX)
+#define MAYBE_PostCloseAllBrowsers DISABLED_PostCloseAllBrowsers
+#else
+#define MAYBE_PostCloseAllBrowsers PostCloseAllBrowsers
+#endif
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, MAYBE_PostCloseAllBrowsers) {
   PostFormWithPage("post.html", false);
   Browser* new_browser = QuitBrowserAndRestore(browser(), true);
   CheckFormRestored(new_browser, true, false);
