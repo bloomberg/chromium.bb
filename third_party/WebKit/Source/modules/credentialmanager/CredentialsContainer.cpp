@@ -121,22 +121,27 @@ bool CheckBoilerplate(ScriptPromiseResolver* resolver) {
   return true;
 }
 
-bool IsIconURLInsecure(const Credential* credential) {
+bool IsIconURLEmptyOrSecure(const Credential* credential) {
   PlatformCredential* platform_credential = credential->GetPlatformCredential();
-  auto is_insecure = [](const KURL& url) {
-    return !url.IsEmpty() && !url.ProtocolIs("https");
-  };
-  if (platform_credential->IsFederated()) {
-    return is_insecure(
-        static_cast<PlatformFederatedCredential*>(platform_credential)
-            ->IconURL());
+  if (!platform_credential->IsPassword() &&
+      !platform_credential->IsFederated()) {
+    return true;
   }
-  if (platform_credential->IsPassword()) {
-    return is_insecure(
-        static_cast<PlatformPasswordCredential*>(platform_credential)
-            ->IconURL());
-  }
-  return false;
+
+  const KURL& url =
+      platform_credential->IsFederated()
+          ? static_cast<const PlatformFederatedCredential*>(platform_credential)
+                ->IconURL()
+          : static_cast<const PlatformPasswordCredential*>(platform_credential)
+                ->IconURL();
+
+  if (url.IsEmpty())
+    return true;
+
+  // https://www.w3.org/TR/mixed-content/#a-priori-authenticated-url
+  return url.IsAboutSrcdocURL() || url.IsAboutBlankURL() ||
+         url.ProtocolIsData() ||
+         SecurityOrigin::Create(url)->IsPotentiallyTrustworthy();
 }
 
 }  // namespace
@@ -352,7 +357,7 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
         "Store operation not permitted for PublicKey credentials."));
   }
 
-  if (IsIconURLInsecure(credential)) {
+  if (!IsIconURLEmptyOrSecure(credential)) {
     resolver->Reject(DOMException::Create(kSecurityError,
                                           "'iconURL' should be a secure URL"));
     return promise;
