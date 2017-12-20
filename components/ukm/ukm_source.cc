@@ -39,14 +39,18 @@ void UkmSource::SetCustomTabVisible(bool visible) {
   g_custom_tab_state = visible ? kCustomTabTrue : kCustomTabFalse;
 }
 
-UkmSource::UkmSource()
-    : custom_tab_state_(g_custom_tab_state),
-      creation_time_(base::TimeTicks::Now()) {}
+UkmSource::UkmSource(ukm::SourceId id, const GURL& url)
+    : id_(id),
+      url_(url),
+      custom_tab_state_(g_custom_tab_state),
+      creation_time_(base::TimeTicks::Now()) {
+  DCHECK(!url_.is_empty());
+}
 
 UkmSource::~UkmSource() = default;
 
 void UkmSource::UpdateUrl(const GURL& url) {
-  DCHECK(!url_.is_empty());
+  DCHECK(!url.is_empty());
   if (url_ == url)
     return;
   if (initial_url_.is_empty())
