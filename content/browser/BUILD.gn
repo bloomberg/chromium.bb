@@ -1153,6 +1153,7 @@ jumbo_source_set("browser") {
     "net/view_http_cache_job_factory.h",
     "network_service_client.cc",
     "network_service_client.h",
+    "network_service_instance.cc",
     "notification_service_impl.cc",
     "notification_service_impl.h",
     "notifications/blink_notification_service_impl.cc",

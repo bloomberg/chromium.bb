@@ -36,7 +36,6 @@ void DisableQuicOnIOThread(
     safe_browsing::SafeBrowsingService* safe_browsing_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // Disable QUIC for HttpNetworkSessions using IOThread's NetworkService.
   io_thread->DisableQuic();
 
   // Safebrowsing isn't yet using the IOThread's NetworkService, so must be
@@ -82,8 +81,8 @@ void SystemNetworkContextManager::SetUp(
     content::mojom::NetworkContextRequest* network_context_request,
     content::mojom::NetworkContextParamsPtr* network_context_params,
     bool* is_quic_allowed) {
-  *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+    *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
     *network_context_params = CreateNetworkContextParams();
   } else {
     // Just use defaults if the network service is enabled, since
@@ -112,8 +111,7 @@ void SystemNetworkContextManager::DisableQuic() {
   // Profiles will also have QUIC disabled (because both IOThread's
   // NetworkService and the network service, if enabled will disable QUIC).
 
-  if (base::FeatureList::IsEnabled(features::kNetworkService))
-    content::GetNetworkService()->DisableQuic();
+  content::GetNetworkService()->DisableQuic();
 
   IOThread* io_thread = g_browser_process->io_thread();
   // Nothing more to do if IOThread has already been shut down.

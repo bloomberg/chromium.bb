@@ -30,6 +30,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/network_service.mojom.h"
+#include "content/public/network/url_request_context_owner.h"
 #include "extensions/features/features.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
@@ -599,9 +600,11 @@ class ProfileIOData {
   mutable std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
 #endif
 
-  // The NetworkContext that owns and configures |main_request_context_|. It's
-  // set up through IOThread's NetworkService.
+  // When the network service is enabled, this holds on to a
+  // content::NetworkContext class that owns |main_request_context_|.
   mutable std::unique_ptr<content::mojom::NetworkContext> main_network_context_;
+  // When the network service is disabled, this owns |system_request_context|.
+  mutable content::URLRequestContextOwner main_request_context_owner_;
   mutable net::URLRequestContext* main_request_context_;
 
   // Pointed to by the TransportSecurityState (owned by

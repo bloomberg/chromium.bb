@@ -100,10 +100,12 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -6660,6 +6662,26 @@ IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, ManySubresources) {
     EXPECT_TRUE(
         base::MatchPattern(console_observer.message(), "*SSL certificates*"));
   }
+}
+
+// Checks that SimpleURLLoader, which uses content/network/url_loader.cc, goes
+// through the new NetworkServiceClient interface to deliver cert error
+// notifications to the browser which then overrides the certificate error.
+IN_PROC_BROWSER_TEST_F(SSLUITestBase, SimpleURLLoaderCertError) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NO_FATAL_FAILURE(SetUpUnsafeContentsWithUserException(
+      "/ssl/page_with_unsafe_contents.html"));
+  CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+
+  auto* frame = tab->GetMainFrame();
+  EXPECT_EQ(net::OK,
+            content::LoadBasicRequest(
+                partition->GetNetworkContext(),
+                https_server_mismatched_.GetURL("/anchor_download_test.png"),
+                frame->GetProcess()->GetID(), frame->GetRoutingID()));
 }
 
 // TODO(jcampan): more tests to do below.

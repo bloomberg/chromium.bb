@@ -76,6 +76,7 @@ jumbo_source_set("network_sources") {
     "upload_progress_tracker.h",
     "url_loader.cc",
     "url_loader.h",
+    "url_request_context_builder_mojo.cc",
   ]
 
   configs += [ "//content:content_implementation" ]

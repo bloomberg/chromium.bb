@@ -39,9 +39,7 @@ class SystemNetworkContextManager {
   // NetworkContext. If the network service is disabled,
   // |network_context_request| will be for the NetworkContext used by the
   // SystemNetworkContextManager. Otherwise, this method can still be used to
-  // help set up the IOThread's in-process URLRequestContext, and
-  // |network_context_request| will still be populated, but the associated
-  // NetworkContext will not be used by the SystemNetworkContextManager.
+  // help set up the IOThread's in-process URLRequestContext.
   //
   // Must be called before the system NetworkContext is first used.
   //
