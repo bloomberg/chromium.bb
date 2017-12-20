@@ -98,9 +98,7 @@ PrintPreviewUIBrowserTest.prototype = {
   'NoPDFPluginErrorMessage',
   'CustomPaperNames',
   'InitIssuesOneRequest',
-  // TODO(https://crbug.com/795626): Re-enable this test when test flakiness on
-  // the Mac bot is fixed.
-  'DISABLED_InvalidSettingsError',
+  'InvalidSettingsError',
   // TODO(thestig): Re-enable this test when the feature works properly.
   // https://crbug.com/746768
   'DISABLED_GenerateDraft',
@@ -142,9 +140,7 @@ GEN('#endif');
 
 GEN('#if defined(OS_WIN)');
 [
-  // TODO(https://crbug.com/795658): Re-enable this test when test flakiness is
-  // fixed.
-  'DISABLED_WinSystemDialogLink',
+  'WinSystemDialogLink',
   'WinSystemDialogLinkBadPrintTicket',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
