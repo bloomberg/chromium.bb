@@ -361,6 +361,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     exitDocument: function() {
+      this.cancelTimeout();
       print_preview.Component.prototype.exitDocument.call(this);
       this.overlayEl_ = null;
       this.openSystemDialogButton_ = null;
