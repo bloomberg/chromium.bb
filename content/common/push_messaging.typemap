@@ -6,7 +6,6 @@ mojom = "//content/common/push_messaging.mojom"
 public_headers = [
   "//content/public/common/push_subscription_options.h",
   "//third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h",
-  "//third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h",
 ]
 traits_headers = [ "//content/common/push_messaging_param_traits.h" ]
 sources = [
@@ -20,6 +19,5 @@ public_deps = [
 ]
 type_mappings = [
   "content.mojom.PushErrorType=blink::WebPushError::ErrorType",
-  "content.mojom.PushPermissionStatus=blink::WebPushPermissionStatus",
   "content.mojom.PushSubscriptionOptions=content::PushSubscriptionOptions",
 ]

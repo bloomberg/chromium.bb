@@ -31,8 +31,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/push_event_payload.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 class Profile;
 class PushMessagingAppIdentifier;
@@ -66,6 +64,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   explicit PushMessagingServiceImpl(Profile* profile);
   ~PushMessagingServiceImpl() override;
+
+  // Gets the permission status for the given |origin|.
+  blink::mojom::PermissionStatus GetPermissionStatus(const GURL& origin,
+                                                     bool user_visible);
 
   // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
@@ -103,9 +105,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                    int64_t service_worker_registration_id,
                    const std::string& sender_id,
                    const UnregisterCallback&) override;
-  blink::WebPushPermissionStatus GetPermissionStatus(
-      const GURL& origin,
-      bool user_visible) override;
   bool SupportNonVisibleMessages() override;
   void DidDeleteServiceWorkerRegistration(
       const GURL& origin,

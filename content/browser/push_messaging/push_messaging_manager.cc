@@ -30,7 +30,7 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.mojom.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace content {
 
@@ -197,13 +197,6 @@ class PushMessagingManager::Core {
       GetSubscriptionCallback callback,
       mojom::PushGetRegistrationStatus get_status,
       mojom::PushUnregistrationStatus unsubscribe_status);
-
-  // Public GetPermission methods on UI thread ---------------------------------
-
-  // Called via PostTask from IO thread.
-  void GetPermissionStatusOnUI(GetPermissionStatusCallback callback,
-                               const GURL& requesting_origin,
-                               bool user_visible);
 
   // Public helper methods on UI thread ----------------------------------------
 
@@ -974,70 +967,6 @@ void PushMessagingManager::Core::GetSubscriptionDidUnsubscribe(
       base::BindOnce(std::move(callback), get_status,
                      base::nullopt /* endpoint */, base::nullopt /* options */,
                      base::nullopt /* p256dh */, base::nullopt /* auth */));
-}
-
-// GetPermission methods on both IO and UI threads, merged in order of use from
-// PushMessagingManager and Core.
-// -----------------------------------------------------------------------------
-
-void PushMessagingManager::GetPermissionStatus(
-    int64_t service_worker_registration_id,
-    bool user_visible,
-    GetPermissionStatusCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->GetLiveRegistration(
-          service_worker_registration_id);
-  if (!service_worker_registration) {
-    // Return error: ErrorTypeAbort.
-    std::move(callback).Run(blink::WebPushError::kErrorTypeAbort,
-                            blink::kWebPushPermissionStatusDenied);
-    return;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&Core::GetPermissionStatusOnUI,
-                     base::Unretained(ui_core_.get()), base::Passed(&callback),
-                     service_worker_registration->pattern().GetOrigin(),
-                     user_visible));
-}
-
-void PushMessagingManager::Core::GetPermissionStatusOnUI(
-    GetPermissionStatusCallback callback,
-    const GURL& requesting_origin,
-    bool user_visible) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  blink::WebPushPermissionStatus permission_status;
-  PushMessagingService* push_service = service();
-  if (push_service) {
-    if (!user_visible && !push_service->SupportNonVisibleMessages()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          // Return error: ErrorTypeNotSupported.
-          base::BindOnce(std::move(callback),
-                         blink::WebPushError::kErrorTypeNotSupported,
-                         blink::kWebPushPermissionStatusDenied));
-      return;
-    }
-    permission_status =
-        push_service->GetPermissionStatus(requesting_origin, user_visible);
-  } else if (is_incognito()) {
-    // Return prompt, so the website can't detect incognito mode.
-    permission_status = blink::kWebPushPermissionStatusPrompt;
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        // Return error: ErrorTypeAbort.
-        base::BindOnce(std::move(callback),
-                       blink::WebPushError::kErrorTypeAbort,
-                       blink::kWebPushPermissionStatusDenied));
-    return;
-  }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(std::move(callback), blink::WebPushError::kErrorTypeNone,
-                     permission_status));
 }
 
 // Helper methods on both IO and UI threads, merged from

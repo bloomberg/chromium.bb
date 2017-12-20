@@ -26,13 +26,6 @@ enum PushErrorType {
   LAST = INVALID_STATE
 };
 
-enum PushPermissionStatus {
-  GRANTED = 0,
-  DENIED = 1,
-  PROMPT = 2,
-  LAST = PROMPT
-};
-
 interface PushMessaging {
   Subscribe(int32 render_frame_id,
             int64 service_worker_registration_id,
@@ -58,12 +51,4 @@ interface PushMessaging {
                      PushSubscriptionOptions? options,
                      array<uint8>? p256dh,
                      array<uint8>? auth);
-
-  // We use the value of |error_type| as a flag. If |error_type| == NONE, it
-  // means no error and returns |status|. Else, it means there is an error and
-  // returns |error_type|.
-  GetPermissionStatus(int64 service_worker_registration_id,
-                      bool user_visible)
-                     => (PushErrorType error_type,
-                         PushPermissionStatus status);
 };

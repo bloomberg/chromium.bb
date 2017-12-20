@@ -36,15 +36,6 @@ struct EnumTraits<content::mojom::PushErrorType,
                         blink::WebPushError::ErrorType* output);
 };
 
-template <>
-struct EnumTraits<content::mojom::PushPermissionStatus,
-                  blink::WebPushPermissionStatus> {
-  static content::mojom::PushPermissionStatus ToMojom(
-      blink::WebPushPermissionStatus input);
-  static bool FromMojom(content::mojom::PushPermissionStatus input,
-                        blink::WebPushPermissionStatus* output);
-};
-
 }  // namespace mojo
 
 #endif  // CONTENT_COMMON_PUSH_MESSAGING_PARAM_TRAITS_H_

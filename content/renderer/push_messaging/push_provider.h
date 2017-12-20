@@ -60,11 +60,6 @@ class PushProvider : public blink::WebPushProvider,
   void GetSubscription(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) override;
-  void GetPermissionStatus(
-      blink::WebServiceWorkerRegistration* service_worker_registration,
-      const blink::WebPushSubscriptionOptions& options,
-      std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks)
-      override;
 
  private:
   explicit PushProvider(const scoped_refptr<base::SingleThreadTaskRunner>&
@@ -93,11 +88,6 @@ class PushProvider : public blink::WebPushProvider,
       const base::Optional<PushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
-
-  void DidGetPermissionStatus(
-      std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks,
-      blink::WebPushError::ErrorType error_type,
-      blink::WebPushPermissionStatus status);
 
   mojom::PushMessagingPtr push_messaging_manager_;
 

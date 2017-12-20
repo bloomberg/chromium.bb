@@ -51,9 +51,6 @@ class PushMessagingManager : public mojom::PushMessaging {
                    UnsubscribeCallback callback) override;
   void GetSubscription(int64_t service_worker_registration_id,
                        GetSubscriptionCallback callback) override;
-  void GetPermissionStatus(int64_t service_worker_registration_id,
-                           bool user_visible,
-                           GetPermissionStatusCallback callback) override;
 
  private:
   struct RegisterData;

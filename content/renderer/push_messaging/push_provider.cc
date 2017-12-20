@@ -301,42 +301,4 @@ void PushProvider::DidGetSubscription(
   }
 }
 
-void PushProvider::GetPermissionStatus(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    const blink::WebPushSubscriptionOptions& options,
-    std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks) {
-  DCHECK(service_worker_registration);
-  DCHECK(callbacks);
-
-  int64_t service_worker_registration_id =
-      GetServiceWorkerRegistrationId(service_worker_registration);
-
-  push_messaging_manager_->GetPermissionStatus(
-      service_worker_registration_id, options.user_visible_only,
-      // Safe to use base::Unretained because |push_messaging_manager_ |is owned
-      // by |this|.
-      base::BindOnce(&PushProvider::DidGetPermissionStatus,
-                     base::Unretained(this), base::Passed(&callbacks)));
-}
-
-void PushProvider::DidGetPermissionStatus(
-    std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks,
-    blink::WebPushError::ErrorType error_type,
-    blink::WebPushPermissionStatus status) {
-  DCHECK(callbacks);
-  // ErrorTypeNone indicates success.
-  if (error_type == blink::WebPushError::kErrorTypeNone) {
-    callbacks->OnSuccess(status);
-  } else {
-    std::string error_message;
-    if (error_type == blink::WebPushError::kErrorTypeNotSupported) {
-      error_message =
-          "Push subscriptions that don't enable userVisibleOnly are not "
-          "supported.";
-    }
-    callbacks->OnError(blink::WebPushError(
-        error_type, blink::WebString::FromUTF8(error_message)));
-  }
-}
-
 }  // namespace content

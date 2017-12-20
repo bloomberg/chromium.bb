@@ -33,7 +33,7 @@ async_test(function(test) {
         .then(function(pushSubscription) {
             assert_equals(pushSubscription, null,
                           "pushSubscription should be null if there is no active push registration.")
-            return swRegistration.pushManager.subscribe();
+            return swRegistration.pushManager.subscribe({ userVisibleOnly: true });
         })
         .then(function(pushSubscription) {
             previousPushSubscription = pushSubscription;
@@ -51,7 +51,7 @@ async_test(function(test) {
         .then(function(pushSubscription) {
             assert_equals(pushSubscription, null,
                           "pushSubscription should be null after unsubscribing.")
-            return swRegistration.pushManager.subscribe();
+            return swRegistration.pushManager.subscribe({ userVisibleOnly: true });
         })
         .then(function(pushSubscription) {
             assert_not_equals(pushSubscription, null,

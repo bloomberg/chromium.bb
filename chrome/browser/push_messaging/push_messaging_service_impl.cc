@@ -55,6 +55,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -108,20 +109,20 @@ void RecordUnsubscribeIIDResult(InstanceID::Result result) {
                             InstanceID::LAST_RESULT + 1);
 }
 
-blink::WebPushPermissionStatus ToPushPermission(
+blink::mojom::PermissionStatus ToPermissionStatus(
     ContentSetting content_setting) {
   switch (content_setting) {
     case CONTENT_SETTING_ALLOW:
-      return blink::kWebPushPermissionStatusGranted;
+      return blink::mojom::PermissionStatus::GRANTED;
     case CONTENT_SETTING_BLOCK:
-      return blink::kWebPushPermissionStatusDenied;
+      return blink::mojom::PermissionStatus::DENIED;
     case CONTENT_SETTING_ASK:
-      return blink::kWebPushPermissionStatusPrompt;
+      return blink::mojom::PermissionStatus::ASK;
     default:
       break;
   }
   NOTREACHED();
-  return blink::kWebPushPermissionStatusDenied;
+  return blink::mojom::PermissionStatus::DENIED;
 }
 
 void UnregisterCallbackToClosure(
@@ -517,10 +518,10 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
     return;
   }
 
-  blink::WebPushPermissionStatus permission_status =
+  blink::mojom::PermissionStatus permission_status =
       GetPermissionStatus(requesting_origin, options.user_visible_only);
 
-  if (permission_status != blink::kWebPushPermissionStatusGranted) {
+  if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
     SubscribeEndWithError(
         register_callback,
         content::mojom::PushRegistrationStatus::PERMISSION_DENIED);
@@ -531,16 +532,16 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
               CONTENT_SETTING_ALLOW);
 }
 
-blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
+blink::mojom::PermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
     const GURL& origin,
     bool user_visible) {
   if (!user_visible)
-    return blink::kWebPushPermissionStatusDenied;
+    return blink::mojom::PermissionStatus::DENIED;
 
   // Because the Push API is tied to Service Workers, many usages of the API
   // won't have an embedding origin at all. Only consider the requesting
   // |origin| when checking whether permission to use the API has been granted.
-  return ToPushPermission(
+  return ToPermissionStatus(
       PermissionManager::Get(profile_)
           ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin,
                                 origin)
@@ -1061,7 +1062,7 @@ std::string PushMessagingServiceImpl::NormalizeSenderInfo(
 // if the permission was previously granted and not revoked.
 bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
   return GetPermissionStatus(origin, true /* user_visible */) ==
-         blink::kWebPushPermissionStatusGranted;
+         blink::mojom::PermissionStatus::GRANTED;
 }
 
 void PushMessagingServiceImpl::GetEncryptionInfoForAppId(

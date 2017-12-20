@@ -138,7 +138,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebSecurityStyle.h",
   "+third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
-  "+third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h",
   "+third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
   "+third_party/WebKit/public/public_features.h",

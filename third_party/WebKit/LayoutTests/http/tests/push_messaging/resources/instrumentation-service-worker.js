@@ -13,7 +13,7 @@ self.addEventListener('message', function(workerEvent) {
     port.onmessage = function(event) {
         if (typeof event.data != 'object' || !event.data.command)
             return;
-        var options = event.data.options || {}
+        var options = event.data.options || { userVisibleOnly: true };
         switch (event.data.command) {
             case 'permissionState':
                 self.registration.pushManager.permissionState(options).then(function(permissionStatus) {

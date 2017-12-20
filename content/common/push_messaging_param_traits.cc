@@ -49,27 +49,6 @@ static_assert(blink::WebPushError::ErrorType::kErrorTypeLast ==
                       content::mojom::PushErrorType::LAST),
               "PushErrorType enums must match, LAST");
 
-// PushPermissionStatus
-static_assert(blink::WebPushPermissionStatus::kWebPushPermissionStatusGranted ==
-                  static_cast<blink::WebPushPermissionStatus>(
-                      content::mojom::PushPermissionStatus::GRANTED),
-              "PushPermissionStatus enums must match, GRANTED");
-
-static_assert(blink::WebPushPermissionStatus::kWebPushPermissionStatusDenied ==
-                  static_cast<blink::WebPushPermissionStatus>(
-                      content::mojom::PushPermissionStatus::DENIED),
-              "PushPermissionStatus enums must match, DENIED");
-
-static_assert(blink::WebPushPermissionStatus::kWebPushPermissionStatusPrompt ==
-                  static_cast<blink::WebPushPermissionStatus>(
-                      content::mojom::PushPermissionStatus::PROMPT),
-              "PushPermissionStatus enums must match, PROMPT");
-
-static_assert(blink::WebPushPermissionStatus::kWebPushPermissionStatusLast ==
-                  static_cast<blink::WebPushPermissionStatus>(
-                      content::mojom::PushPermissionStatus::LAST),
-              "PushPermissionStatus enums must match, LAST");
-
 // static
 bool StructTraits<content::mojom::PushSubscriptionOptionsDataView,
                   content::PushSubscriptionOptions>::
@@ -102,36 +81,6 @@ bool EnumTraits<content::mojom::PushErrorType, blink::WebPushError::ErrorType>::
   if (input >= content::mojom::PushErrorType::ABORT &&
       input <= content::mojom::PushErrorType::INVALID_STATE) {
     *output = static_cast<blink::WebPushError::ErrorType>(input);
-    return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-content::mojom::PushPermissionStatus EnumTraits<
-    content::mojom::PushPermissionStatus,
-    blink::WebPushPermissionStatus>::ToMojom(blink::WebPushPermissionStatus
-                                                 input) {
-  if (input >=
-          blink::WebPushPermissionStatus::kWebPushPermissionStatusGranted &&
-      input <= blink::WebPushPermissionStatus::kWebPushPermissionStatusLast) {
-    return static_cast<content::mojom::PushPermissionStatus>(input);
-  }
-
-  NOTREACHED();
-  return content::mojom::PushPermissionStatus::DENIED;
-}
-
-// static
-bool EnumTraits<content::mojom::PushPermissionStatus,
-                blink::WebPushPermissionStatus>::
-    FromMojom(content::mojom::PushPermissionStatus input,
-              blink::WebPushPermissionStatus* output) {
-  if (input >= content::mojom::PushPermissionStatus::GRANTED &&
-      input <= content::mojom::PushPermissionStatus::LAST) {
-    *output = static_cast<blink::WebPushPermissionStatus>(input);
     return true;
   }
 
