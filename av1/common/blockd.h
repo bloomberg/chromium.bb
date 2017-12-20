@@ -1244,7 +1244,12 @@ static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
   // mustn't be used for the subsampled plane (because it would be bigger than
   // a 64x64 luma block) so we round down to TX_32X32.
   if (subsampled && txsize_sqr_up_map[max_txsize] == TX_64X64) {
-    max_txsize = TX_32X32;
+    if (max_txsize == TX_16X64)
+      max_txsize = TX_16X32;
+    else if (max_txsize == TX_64X16)
+      max_txsize = TX_32X16;
+    else
+      max_txsize = TX_32X32;
   }
 #else
   (void)subsampled;
