@@ -57,7 +57,7 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   // Called asynchronously to calculate and update the size of the app displayed
   // in the dialog.
   void StartCalculatingAppSize();
-  void OnAppSizeCalculated(int64_t app_size_in_bytes);
+  void OnAppSizeCalculated(const base::string16& size);
 
   // Returns the launch type of the app (e.g. pinned tab, fullscreen, etc).
   extensions::LaunchType GetLaunchType() const;

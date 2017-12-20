@@ -4,9 +4,16 @@
 
 #include "extensions/browser/path_util.h"
 
+#include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "extensions/browser/extension_file_task_runner.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
@@ -39,6 +46,20 @@ std::string GetDisplayBaseName(const base::FilePath& path) {
 #endif  // defined(OS_MACOSX)
 
 const base::FilePath::CharType kHomeShortcut[] = FILE_PATH_LITERAL("~");
+
+void OnDirectorySizeCalculated(
+    int message_id,
+    base::OnceCallback<void(const base::string16&)> callback,
+    int64_t size_in_bytes) {
+  const int one_mebibyte_in_bytes = 1024 * 1024;
+  base::string16 response =
+      size_in_bytes < one_mebibyte_in_bytes
+          ? l10n_util::GetStringUTF16(message_id)
+          : ui::FormatBytesWithUnits(size_in_bytes, ui::DATA_UNITS_MEBIBYTE,
+                                     true);
+
+  std::move(callback).Run(response);
+}
 
 }  // namespace
 
@@ -81,6 +102,17 @@ base::FilePath PrettifyPath(const base::FilePath& source_path) {
     return display_path;
   return source_path;
 #endif  // defined(OS_MACOSX)
+}
+
+void CalculateAndFormatExtensionDirectorySize(
+    const base::FilePath& extension_path,
+    int message_id,
+    base::OnceCallback<void(const base::string16&)> callback) {
+  base::PostTaskAndReplyWithResult(
+      GetExtensionFileTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&base::ComputeDirectorySize, extension_path),
+      base::BindOnce(&OnDirectorySizeCalculated, message_id,
+                     std::move(callback)));
 }
 
 }  // namespace path_util
