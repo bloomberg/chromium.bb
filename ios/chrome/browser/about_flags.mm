@@ -296,10 +296,10 @@ class FlagsStateSingleton {
 
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line) {
+  AppendSwitchesFromExperimentalSettings(command_line);
   FlagsStateSingleton::GetFlagsState()->ConvertFlagsToSwitches(
       flags_storage, command_line, flags_ui::kAddSentinels,
       switches::kEnableFeatures, switches::kDisableFeatures);
-  AppendSwitchesFromExperimentalSettings(command_line);
 }
 
 std::vector<std::string> RegisterAllFeatureVariationParameters(
