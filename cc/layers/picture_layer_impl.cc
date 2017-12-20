@@ -1599,14 +1599,12 @@ bool PictureLayerImpl::HasValidTilePriorities() const {
          (contributes_to_drawn_render_surface() || raster_even_if_not_drawn());
 }
 
-void PictureLayerImpl::InvalidateRegionForImages(
+PictureLayerImpl::ImageInvalidationResult
+PictureLayerImpl::InvalidateRegionForImages(
     const PaintImageIdFlatSet& images_to_invalidate) {
-  TRACE_EVENT0("cc", "PictureLayerImpl::InvalidateRegionForImages");
-
   if (!raster_source_ || !raster_source_->GetDisplayItemList() ||
       raster_source_->GetDisplayItemList()->discardable_image_map().empty()) {
-    TRACE_EVENT0("cc", "PictureLayerImpl::InvalidateRegionForImages NoImages");
-    return;
+    return ImageInvalidationResult::kNoImages;
   }
 
   InvalidationRegion image_invalidation;
@@ -1620,11 +1618,8 @@ void PictureLayerImpl::InvalidateRegionForImages(
   Region invalidation;
   image_invalidation.Swap(&invalidation);
 
-  if (invalidation.IsEmpty()) {
-    TRACE_EVENT0("cc",
-                 "PictureLayerImpl::InvalidateRegionForImages NoInvalidation");
-    return;
-  }
+  if (invalidation.IsEmpty())
+    return ImageInvalidationResult::kNoInvalidation;
 
   // Make sure to union the rect from this invalidation with the update_rect
   // instead of over-writing it. We don't want to reset the update that came
@@ -1638,8 +1633,7 @@ void PictureLayerImpl::InvalidateRegionForImages(
   invalidation_.Union(invalidation);
   tilings_->Invalidate(invalidation);
   SetNeedsPushProperties();
-  TRACE_EVENT1("cc", "PictureLayerImpl::InvalidateRegionForImages Invalidation",
-               "Invalidation", invalidation.ToString());
+  return ImageInvalidationResult::kInvalidated;
 }
 
 void PictureLayerImpl::RegisterAnimatedImages() {

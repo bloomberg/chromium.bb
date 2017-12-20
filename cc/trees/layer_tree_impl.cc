@@ -298,15 +298,37 @@ void LayerTreeImpl::BuildLayerListForTesting() {
 
 void LayerTreeImpl::InvalidateRegionForImages(
     const PaintImageIdFlatSet& images_to_invalidate) {
+  TRACE_EVENT_BEGIN1("cc", "LayerTreeImpl::InvalidateRegionForImages",
+                     "total_layer_count", picture_layers_.size());
   DCHECK(IsSyncTree());
 
-  if (images_to_invalidate.empty())
-    return;
-
-  // TODO(khushalsagar): It might be better to keep track of layers with images
-  // and only iterate through those here.
-  for (auto* picture_layer : picture_layers_)
-    picture_layer->InvalidateRegionForImages(images_to_invalidate);
+  size_t no_images_count = 0;
+  size_t no_invalidation_count = 0;
+  size_t invalidated_count = 0;
+  if (!images_to_invalidate.empty()) {
+    // TODO(khushalsagar): It might be better to keep track of layers with
+    // images and only iterate through those here.
+    for (auto* picture_layer : picture_layers_) {
+      auto result =
+          picture_layer->InvalidateRegionForImages(images_to_invalidate);
+      switch (result) {
+        case PictureLayerImpl::ImageInvalidationResult::kNoImages:
+          ++no_images_count;
+          break;
+        case PictureLayerImpl::ImageInvalidationResult::kNoInvalidation:
+          ++no_invalidation_count;
+          break;
+        case PictureLayerImpl::ImageInvalidationResult::kInvalidated:
+          ++invalidated_count;
+          break;
+      }
+    }
+  }
+  TRACE_EVENT_END1(
+      "cc", "LayerTreeImpl::InvalidateRegionForImages", "counts",
+      base::StringPrintf("no_images[%zu] no_invalidaton[%zu] invalidated[%zu]",
+                         no_images_count, no_invalidation_count,
+                         invalidated_count));
 }
 
 bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
@@ -368,6 +390,7 @@ void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
 }
 
 void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
+  TRACE_EVENT0("cc", "LayerTreeImpl::PushPropertyTreesTo");
   // Property trees may store damage status. We preserve the active tree
   // damage status by pushing the damage status from active tree property
   // trees to pending tree property trees or by moving it onto the layers.
@@ -405,6 +428,7 @@ void LayerTreeImpl::PushSurfaceIdsTo(LayerTreeImpl* target_tree) {
 }
 
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
+  TRACE_EVENT0("cc", "LayerTreeImpl::PushPropertiesTo");
   // The request queue should have been processed and does not require a push.
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
