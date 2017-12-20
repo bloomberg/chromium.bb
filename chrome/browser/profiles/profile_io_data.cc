@@ -116,7 +116,6 @@
 #include "third_party/WebKit/public/public_features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_cookie_notifier.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_throttle_manager.h"
@@ -433,8 +432,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
-  params->extension_cookie_notifier =
-      base::MakeUnique<ExtensionCookieNotifier>(profile);
 #endif
 
   if (auto* loading_predictor =
@@ -1240,14 +1237,6 @@ void ProfileIOData::Init(
         !GetMetricsEnabledStateOnIOThread());
   }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extension_cookie_notifier_ =
-      std::move(profile_params_->extension_cookie_notifier);
-  // Cookie store will outlive notifier by order of declaration in
-  // profile_io_data.h.
-  extension_cookie_notifier_->AddStore(main_request_context_->cookie_store());
-#endif
-
   // Attach some things to the URLRequestContextBuilder's
   // TransportSecurityState.  Since no requests have been made yet, safe to do
   // this even after the call to Build().
@@ -1262,7 +1251,7 @@ void ProfileIOData::Init(
             "stricter security policies, such as with HTTP Public Key Pinning. "
             "Websites can use this feature to discover misconfigurations that "
             "prevent them from complying with stricter security policies that "
-            "they've opted in to."
+            "they\'ve opted in to."
           trigger:
             "Chrome observes that a user is loading a resource from a website "
             "that has opted in for security policy reports, and the connection "

@@ -146,32 +146,28 @@ void CookiesEventRouter::CookieChanged(
   switch (details->cause) {
     // Report an inserted cookie as an "explicit" change cause. All other causes
     // only make sense for deletions.
-    case net::CookieStore::ChangeCause::INSERTED:
-    case net::CookieStore::ChangeCause::EXPLICIT:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_BETWEEN:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_PREDICATE:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_SINGLE:
-    case net::CookieStore::ChangeCause::EXPLICIT_DELETE_CANONICAL:
+    case network::mojom::CookieChangeCause::INSERTED:
+    case network::mojom::CookieChangeCause::EXPLICIT:
       cause = keys::kExplicitChangeCause;
       break;
 
-    case net::CookieStore::ChangeCause::OVERWRITE:
+    case network::mojom::CookieChangeCause::OVERWRITE:
       cause = keys::kOverwriteChangeCause;
       break;
 
-    case net::CookieStore::ChangeCause::EXPIRED:
+    case network::mojom::CookieChangeCause::EXPIRED:
       cause = keys::kExpiredChangeCause;
       break;
 
-    case net::CookieStore::ChangeCause::EVICTED:
+    case network::mojom::CookieChangeCause::EVICTED:
       cause = keys::kEvictedChangeCause;
       break;
 
-    case net::CookieStore::ChangeCause::EXPIRED_OVERWRITE:
+    case network::mojom::CookieChangeCause::EXPIRED_OVERWRITE:
       cause = keys::kExpiredOverwriteChangeCause;
       break;
 
-    case net::CookieStore::ChangeCause::UNKNOWN_DELETION:
+    case network::mojom::CookieChangeCause::UNKNOWN_DELETION:
       NOTREACHED();
   }
   dict->SetString(keys::kCauseKey, cause);

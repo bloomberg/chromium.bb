@@ -52,7 +52,7 @@ void AppShellTest::PreRunTestOnMainThread() {
 
   extension_system_ = static_cast<ShellExtensionSystem*>(
       ExtensionSystem::Get(browser_context_));
-  extension_system_->Init();
+  extension_system_->FinishInitialization();
   DCHECK(base::MessageLoopForUI::IsCurrent());
   base::RunLoop().RunUntilIdle();
 }

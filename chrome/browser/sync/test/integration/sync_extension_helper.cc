@@ -312,7 +312,8 @@ bool SyncExtensionHelper::ExtensionNameToIndex(const std::string& name,
 }
 
 void SyncExtensionHelper::SetupProfile(Profile* profile) {
-  extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(true);
+  extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
+      true /* extensions_enabled */);
   profile_extensions_.insert(make_pair(profile, ExtensionNameMap()));
 }
 

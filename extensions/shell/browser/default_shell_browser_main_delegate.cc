@@ -92,7 +92,7 @@ void DefaultShellBrowserMainDelegate::Start(
     content::BrowserContext* browser_context) {
   ShellExtensionSystem* extension_system =
       static_cast<ShellExtensionSystem*>(ExtensionSystem::Get(browser_context));
-  extension_system->Init();
+  extension_system->FinishInitialization();
 
   LoadExtensionsFromCommandLine(extension_system);
   LoadAppsFromCommandLine(extension_system, browser_context);
