@@ -19,7 +19,7 @@
 namespace {
 
 // SourceUrlRecorderWebContentsObserver is responsible for recording UKM source
-// URLs, for all main frame navigations in a given WebContents.
+// URLs, for all (any only) main frame navigations in a given WebContents.
 // SourceUrlRecorderWebContentsObserver records both the final URL for a
 // navigation, and, if the navigation was redirected, the initial URL as well.
 class SourceUrlRecorderWebContentsObserver
@@ -112,6 +112,9 @@ ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId() {
 void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
     content::NavigationHandle* navigation_handle,
     const GURL& initial_url) {
+  DCHECK(navigation_handle->IsInMainFrame());
+  DCHECK(!navigation_handle->IsSameDocument());
+
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (!ukm_recorder)
     return;
