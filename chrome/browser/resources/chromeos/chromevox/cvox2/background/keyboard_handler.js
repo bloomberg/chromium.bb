@@ -40,7 +40,7 @@ BackgroundKeyboardHandler.prototype = {
     if (cvox.ChromeVox.passThroughMode)
       return false;
 
-    if (cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
+    if (!cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
       evt.preventDefault();
       evt.stopPropagation();
       this.eatenKeyDowns_.add(evt.keyCode);

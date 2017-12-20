@@ -349,10 +349,7 @@ Background.prototype = {
 
         var command = BrailleCommandHandler.getCommand(evt.brailleDots);
         if (command) {
-          if (!ChromeVoxState.instance.currentRange ||
-              !ChromeVoxState.instance.currentRange.start.node
-                   .state[StateType.EDITABLE] ||
-              BrailleCommandHandler.onEditCommand(command))
+          if (BrailleCommandHandler.onEditCommand(command))
             CommandHandler.onCommand(command);
         }
         break;

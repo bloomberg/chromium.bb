@@ -12,6 +12,7 @@ goog.require('BackgroundKeyboardHandler');
 
 goog.scope(function() {
 var Mod = constants.ModifierFlag;
+var StateType = chrome.automation.StateType;
 
 /**
  * Maps a dot pattern to a command.
@@ -98,6 +99,12 @@ BrailleCommandHandler.getDots = function(command) {
  * @return {boolean} True if the command should propagate.
  */
 BrailleCommandHandler.onEditCommand = function(command) {
+  var current = ChromeVoxState.instance.currentRange;
+  if (cvox.ChromeVox.isStickyModeOn() || !current || !current.start ||
+      !current.start.node || !current.start.node.state[StateType.EDITABLE])
+    return true;
+
+  var isMultiline = AutomationPredicate.multiline(current.start.node);
   switch (command) {
     case 'previousCharacter':
       BackgroundKeyboardHandler.sendKeyPress(37, 'ArrowLeft');
@@ -113,10 +120,14 @@ BrailleCommandHandler.onEditCommand = function(command) {
       break;
     case 'previousObject':
     case 'previousLine':
+      if (!isMultiline)
+        return true;
       BackgroundKeyboardHandler.sendKeyPress(38, 'ArrowUp');
       break;
     case 'nextObject':
     case 'nextLine':
+      if (!isMultiline)
+        return true;
       BackgroundKeyboardHandler.sendKeyPress(40, 'ArrowDown');
       break;
     case 'previousGroup':
