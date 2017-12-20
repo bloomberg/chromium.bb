@@ -16,7 +16,6 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "ui/display/types/display_mode.h"
-#include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/edid_parser.h"
 
 #if !defined(DRM_FORMAT_R16)
@@ -333,6 +332,47 @@ std::unique_ptr<display::DisplayMode> CreateDisplayMode(
       mode.flags & DRM_MODE_FLAG_INTERLACE, GetRefreshRate(mode));
 }
 
+display::DisplaySnapshot::DisplayModeList ExtractDisplayModes(
+    HardwareDisplayControllerInfo* info,
+    const gfx::Size& active_pixel_size,
+    const display::DisplayMode** out_current_mode,
+    const display::DisplayMode** out_native_mode) {
+  DCHECK(out_current_mode);
+  DCHECK(out_native_mode);
+
+  *out_current_mode = nullptr;
+  *out_native_mode = nullptr;
+  display::DisplaySnapshot::DisplayModeList modes;
+  for (int i = 0; i < info->connector()->count_modes; ++i) {
+    const drmModeModeInfo& mode = info->connector()->modes[i];
+    modes.push_back(CreateDisplayMode(mode));
+
+    if (info->crtc()->mode_valid && SameMode(info->crtc()->mode, mode))
+      *out_current_mode = modes.back().get();
+
+    if (mode.type & DRM_MODE_TYPE_PREFERRED)
+      *out_native_mode = modes.back().get();
+  }
+
+  // If we couldn't find a preferred mode, then try to find a mode that has the
+  // same size as the first detailed timing descriptor in the EDID.
+  if (!*out_native_mode && !active_pixel_size.IsEmpty()) {
+    for (const auto& mode : modes) {
+      if (mode->size() == active_pixel_size) {
+        *out_native_mode = mode.get();
+        break;
+      }
+    }
+  }
+
+  // If we still have no preferred mode, then use the first one since it should
+  // be the best mode.
+  if (!*out_native_mode && !modes.empty())
+    *out_native_mode = modes.front().get();
+
+  return modes;
+}
+
 std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     HardwareDisplayControllerInfo* info,
     int fd,
@@ -355,6 +395,10 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   bool has_overscan = false;
   gfx::ColorSpace display_color_space;
 
+  // This is the size of the active pixels from the first detailed timing
+  // descriptor in the EDID.
+  gfx::Size active_pixel_size;
+
   ScopedDrmPropertyBlobPtr edid_blob(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));
   if (edid_blob) {
@@ -364,7 +408,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     display::GetDisplayIdFromEDID(edid, display_id, &display_id, &product_id);
 
     display::ParseOutputDeviceData(edid, nullptr, nullptr, &display_name,
-                                   nullptr, nullptr);
+                                   &active_pixel_size, nullptr);
     display::ParseOutputOverscanFlag(edid, &has_overscan);
 
     display_color_space = GetColorSpaceFromEdid(edid);
@@ -373,24 +417,10 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
             << info->connector()->connector_id;
   }
 
-  display::DisplaySnapshot::DisplayModeList modes;
   const display::DisplayMode* current_mode = nullptr;
   const display::DisplayMode* native_mode = nullptr;
-  for (int i = 0; i < info->connector()->count_modes; ++i) {
-    const drmModeModeInfo& mode = info->connector()->modes[i];
-    modes.push_back(CreateDisplayMode(mode));
-
-    if (info->crtc()->mode_valid && SameMode(info->crtc()->mode, mode))
-      current_mode = modes.back().get();
-
-    if (mode.type & DRM_MODE_TYPE_PREFERRED)
-      native_mode = modes.back().get();
-  }
-
-  // If no preferred mode is found then use the first one. Using the first one
-  // since it should be the best mode.
-  if (!native_mode && !modes.empty())
-    native_mode = modes.front().get();
+  display::DisplaySnapshot::DisplayModeList modes =
+      ExtractDisplayModes(info, active_pixel_size, &current_mode, &native_mode);
 
   return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,

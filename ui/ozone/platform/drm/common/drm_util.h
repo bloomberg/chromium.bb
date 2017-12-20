@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
@@ -20,7 +21,6 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace display {
 class DisplayMode;
-class DisplaySnapshot;
 }  // namespace display
 
 namespace gfx {
@@ -60,6 +60,15 @@ bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
 
 std::unique_ptr<display::DisplayMode> CreateDisplayMode(
     const drmModeModeInfo& mode);
+
+// Extracts the display modes list from |info| as well as the current and native
+// display modes given the |active_pixel_size| which is retrieved from the first
+// detailed timing descriptor in the EDID.
+display::DisplaySnapshot::DisplayModeList ExtractDisplayModes(
+    HardwareDisplayControllerInfo* info,
+    const gfx::Size& active_pixel_size,
+    const display::DisplayMode** out_current_mode,
+    const display::DisplayMode** out_native_mode);
 
 // |info| provides the DRM information related to the display, |fd| is the
 // connection to the DRM device.
