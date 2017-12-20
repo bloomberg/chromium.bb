@@ -32,6 +32,7 @@
 
 #include <v8.h>
 
+#include <iomanip>
 #include <memory>
 
 #include "base/location.h"
@@ -53,7 +54,6 @@
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/DataLog.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StackUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
@@ -83,7 +83,9 @@ uint8_t ThreadState::main_thread_state_storage_[sizeof(ThreadState)];
 
 const size_t kDefaultAllocatedObjectSizeThreshold = 100 * 1024;
 
-const char* ThreadState::GcReasonString(BlinkGC::GCReason reason) {
+namespace {
+
+const char* GcReasonString(BlinkGC::GCReason reason) {
   switch (reason) {
     case BlinkGC::kIdleGC:
       return "IdleGC";
@@ -102,6 +104,30 @@ const char* ThreadState::GcReasonString(BlinkGC::GCReason reason) {
   }
   return "<Unknown>";
 }
+
+const char* GcTypeString(BlinkGC::GCType type) {
+  switch (type) {
+    case BlinkGC::kGCWithSweep:
+      return "GCWithSweep";
+    case BlinkGC::kGCWithoutSweep:
+      return "GCWithoutSweep";
+    case BlinkGC::kTakeSnapshot:
+      return "TakeSnapshot";
+  }
+  return "<Unknown>";
+}
+
+const char* StackStateString(BlinkGC::StackState state) {
+  switch (state) {
+    case BlinkGC::kNoHeapPointersOnStack:
+      return "NoHeapPointersOnStack";
+    case BlinkGC::kHeapPointersOnStack:
+      return "HeapPointersOnStack";
+  }
+  return "<Unknown>";
+}
+
+}  // namespace
 
 ThreadState::ThreadState()
     : thread_(CurrentThread()),
@@ -354,12 +380,13 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
           allocated_object_size_threshold ||
       TotalMemorySize() < total_memory_size_threshold)
     return false;
-// If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
-// trigger a GC.
-#if PRINT_HEAP_STATS
-  DataLogF("heapGrowingRate=%.1lf, partitionAllocGrowingRate=%.1lf\n",
-           HeapGrowingRate(), PartitionAllocGrowingRate());
-#endif
+
+  VLOG(2) << "[state:" << this << "] JudgeGCThreshold:"
+          << " heapGrowingRate=" << std::setprecision(1) << HeapGrowingRate()
+          << " partitionAllocGrowingRate=" << std::setprecision(1)
+          << PartitionAllocGrowingRate();
+  // If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
+  // trigger a GC.
   return HeapGrowingRate() >= heap_growing_rate_threshold ||
          PartitionAllocGrowingRate() >= heap_growing_rate_threshold;
 }
@@ -412,13 +439,10 @@ bool ThreadState::ShouldForceMemoryPressureGC() {
 }
 
 void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
+  VLOG(2) << "[state:" << this << "] ScheduleV8FollowupGCIfNeeded: v8_gc_type="
+          << ((gc_type == BlinkGC::kV8MajorGC) ? "MajorGC" : "MinorGC");
   DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
-
-#if PRINT_HEAP_STATS
-  DataLogF("ThreadState::scheduleV8FollowupGCIfNeeded (gcType=%s)\n",
-           gc_type == BlinkGC::kV8MajorGC ? "MajorGC" : "MinorGC");
-#endif
 
   if (IsGCForbidden())
     return;
@@ -431,16 +455,14 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
 
   if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
       ShouldScheduleV8FollowupGC()) {
-#if PRINT_HEAP_STATS
-    DataLogF("Scheduled PreciseGC\n");
-#endif
+    VLOG(2) << "[state:" << this << "] "
+            << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
     SchedulePreciseGC();
     return;
   }
   if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
-#if PRINT_HEAP_STATS
-    DataLogF("Scheduled IdleGC\n");
-#endif
+    VLOG(2) << "[state:" << this << "] "
+            << "ScheduleV8FollowupGCIfNeeded: Scheduled idle GC";
     ScheduleIdleGC();
     return;
   }
@@ -460,15 +482,11 @@ void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
 
 void ThreadState::SchedulePageNavigationGCIfNeeded(
     float estimated_removal_ratio) {
+  VLOG(2) << "[state:" << this << "] SchedulePageNavigationGCIfNeeded: "
+          << "estimatedRemovalRatio=" << std::setprecision(2)
+          << estimated_removal_ratio;
   DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
-
-#if PRINT_HEAP_STATS
-  DataLogF(
-      "ThreadState::schedulePageNavigationGCIfNeeded "
-      "(estimatedRemovalRatio=%.2lf)\n",
-      estimated_removal_ratio);
-#endif
 
   if (IsGCForbidden())
     return;
@@ -481,17 +499,15 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
   DCHECK(!SweepForbidden());
 
   if (ShouldForceMemoryPressureGC()) {
-#if PRINT_HEAP_STATS
-    DataLogF("Scheduled MemoryPressureGC\n");
-#endif
+    VLOG(2) << "[state:" << this << "] "
+            << "SchedulePageNavigationGCIfNeeded: Scheduled memory pressure GC";
     CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithoutSweep,
                    BlinkGC::kMemoryPressureGC);
     return;
   }
   if (ShouldSchedulePageNavigationGC(estimated_removal_ratio)) {
-#if PRINT_HEAP_STATS
-    DataLogF("Scheduled PageNavigationGC\n");
-#endif
+    VLOG(2) << "[state:" << this << "] "
+            << "SchedulePageNavigationGCIfNeeded: Scheduled page navigation GC";
     SchedulePageNavigationGC();
   }
 }
@@ -503,12 +519,9 @@ void ThreadState::SchedulePageNavigationGC() {
 }
 
 void ThreadState::ScheduleGCIfNeeded() {
+  VLOG(2) << "[state:" << this << "] ScheduleGCIfNeeded";
   DCHECK(CheckThread());
   ThreadHeap::ReportMemoryUsageForTracing();
-
-#if PRINT_HEAP_STATS
-  DataLogF("ThreadState::scheduleGCIfNeeded\n");
-#endif
 
   // Allocation is allowed during sweeping, but those allocations should not
   // trigger nested GCs.
@@ -520,9 +533,8 @@ void ThreadState::ScheduleGCIfNeeded() {
   if (ShouldForceMemoryPressureGC()) {
     CompleteSweep();
     if (ShouldForceMemoryPressureGC()) {
-#if PRINT_HEAP_STATS
-      DataLogF("Scheduled MemoryPressureGC\n");
-#endif
+      VLOG(2) << "[state:" << this << "] "
+              << "ScheduleGCIfNeeded: Scheduled memory pressure GC";
       CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithoutSweep,
                      BlinkGC::kMemoryPressureGC);
       return;
@@ -532,9 +544,8 @@ void ThreadState::ScheduleGCIfNeeded() {
   if (ShouldForceConservativeGC()) {
     CompleteSweep();
     if (ShouldForceConservativeGC()) {
-#if PRINT_HEAP_STATS
-      DataLogF("Scheduled ConservativeGC\n");
-#endif
+      VLOG(2) << "[state:" << this << "] "
+              << "ScheduleGCIfNeeded: Scheduled conservative GC";
       CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithoutSweep,
                      BlinkGC::kConservativeGC);
       return;
@@ -542,17 +553,15 @@ void ThreadState::ScheduleGCIfNeeded() {
   }
 
   if (ShouldScheduleIdleGC()) {
-#if PRINT_HEAP_STATS
-    DataLogF("Scheduled IdleGC\n");
-#endif
+    VLOG(2) << "[state:" << this << "] "
+            << "ScheduleGCIfNeeded: Scheduled idle GC";
     ScheduleIdleGC();
     return;
   }
 
   if (ShouldScheduleIncrementalMarking()) {
-#if PRINT_HEAP_STATS
-    DataLogF("Scheduled IncrementalMarking\n");
-#endif
+    VLOG(2) << "[state:" << this << "] "
+            << "ScheduleGCIfNeeded: Scheduled incremental marking";
     ScheduleIncrementalMarkingStart();
   }
 }
@@ -945,18 +954,15 @@ void ThreadState::PostSweep() {
   ThreadHeap::ReportMemoryUsageForTracing();
 
   if (IsMainThread()) {
-    double collection_rate = 0;
-    if (heap_->HeapStats().ObjectSizeAtLastGC() > 0)
-      collection_rate = 1 - 1.0 * heap_->HeapStats().MarkedObjectSize() /
-                                heap_->HeapStats().ObjectSizeAtLastGC();
+    double collection_rate =
+        1.0 - heap_->HeapStats().LiveObjectRateSinceLastGC();
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                    "ThreadState::collectionRate",
                    static_cast<int>(100 * collection_rate));
 
-#if PRINT_HEAP_STATS
-    DataLogF("ThreadState::postSweep (collectionRate=%d%%)\n",
-             static_cast<int>(100 * collection_rate));
-#endif
+    VLOG(1) << "[state:" << this << "]"
+            << " PostSweep: collection_rate: " << std::setprecision(2)
+            << (100 * collection_rate) << "%";
 
     // ThreadHeap::markedObjectSize() may be underestimated here if any other
     // thread has not yet finished lazy sweeping.
@@ -1219,18 +1225,21 @@ void ThreadState::InvokePreFinalizers() {
 }
 
 void ThreadState::IncrementalMarkingStart() {
-  DataLogF("IncrementalMarkingStart\n");
+  VLOG(2) << "[state:" << this << "] "
+          << "IncrementalMarking: Start";
   Heap().EnableIncrementalMarkingBarrier();
   ScheduleIncrementalMarkingStep();
 }
 
 void ThreadState::IncrementalMarkingStep() {
-  DataLogF("IncrementalMarkingStep\n");
+  VLOG(2) << "[state:" << this << "] "
+          << "IncrementalMarking: Step";
   ScheduleIncrementalMarkingFinalize();
 }
 
 void ThreadState::IncrementalMarkingFinalize() {
-  DataLogF("IncrementalMarkingFinalize\n");
+  VLOG(2) << "[state:" << this << "] "
+          << "IncrementalMarking: Finalize";
   Heap().DisableIncrementalMarkingBarrier();
   SetGCState(kNoGCScheduled);
 }
@@ -1238,6 +1247,8 @@ void ThreadState::IncrementalMarkingFinalize() {
 void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
                                  BlinkGC::GCType gc_type,
                                  BlinkGC::GCReason reason) {
+  double start_time = WTF::CurrentTimeTicksInMilliseconds();
+
   // Nested garbage collection invocations are not supported.
   CHECK(!IsGCForbidden());
   // Garbage collection during sweeping is not supported. This can happen when
@@ -1272,15 +1283,14 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     }
   }
 
-#if PRINT_HEAP_STATS
-  DataLogF(
-      "ThreadHeap::collectGarbage (gcReason=%s, lazySweeping=%d, "
-      "time=%.1lfms)\n",
-      GcReasonString(reason), gc_type == BlinkGC::kGCWithoutSweep,
-      current_gc_data_.marking_time_in_milliseconds);
-#endif
-
   PreSweep(gc_type);
+
+  VLOG(1) << "[state:" << this << "]"
+          << " CollectGarbage: time: " << std::setprecision(2)
+          << (WTF::CurrentTimeTicksInMilliseconds() - start_time) << "ms"
+          << " stack: " << StackStateString(stack_state)
+          << " type: " << GcTypeString(gc_type)
+          << " reason: " << GcReasonString(reason);
 }
 
 void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,

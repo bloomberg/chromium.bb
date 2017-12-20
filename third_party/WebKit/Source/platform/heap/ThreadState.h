@@ -508,8 +508,6 @@ class PLATFORM_EXPORT ThreadState {
     }
   };
 
-  static const char* GcReasonString(BlinkGC::GCReason);
-
   // Returns |true| if |object| resides on this thread's heap.
   // It is well-defined to call this method on any heap allocated
   // reference, provided its associated heap hasn't been detached

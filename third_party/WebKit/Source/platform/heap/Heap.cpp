@@ -146,6 +146,12 @@ void ThreadHeapStats::DecreaseAllocatedSpace(size_t delta) {
   ProcessHeap::DecreaseTotalAllocatedSpace(delta);
 }
 
+double ThreadHeapStats::LiveObjectRateSinceLastGC() const {
+  if (ObjectSizeAtLastGC() > 0)
+    return static_cast<double>(MarkedObjectSize()) / ObjectSizeAtLastGC();
+  return 0.0;
+}
+
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
       region_tree_(std::make_unique<RegionTree>()),
