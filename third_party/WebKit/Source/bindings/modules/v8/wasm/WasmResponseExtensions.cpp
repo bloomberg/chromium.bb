@@ -114,7 +114,7 @@ class WasmDataLoaderClient final
   USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
  public:
-  explicit WasmDataLoaderClient() {}
+  explicit WasmDataLoaderClient() = default;
   void DidFetchDataLoadedCustomFormat() override {}
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
 };

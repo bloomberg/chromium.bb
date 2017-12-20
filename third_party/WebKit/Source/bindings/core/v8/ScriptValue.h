@@ -67,7 +67,7 @@ class CORE_EXPORT ScriptValue final {
     return To<T>(isolate, value.V8Value(), exception_state, arguments...);
   }
 
-  ScriptValue() {}
+  ScriptValue() = default;
 
   ScriptValue(ScriptState* script_state, v8::Local<v8::Value> value)
       : script_state_(script_state),

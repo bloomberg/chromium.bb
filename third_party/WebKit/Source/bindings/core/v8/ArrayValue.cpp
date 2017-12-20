@@ -30,11 +30,7 @@
 
 namespace blink {
 
-ArrayValue& ArrayValue::operator=(const ArrayValue& other) {
-  array_ = other.array_;
-  isolate_ = other.isolate_;
-  return *this;
-}
+ArrayValue& ArrayValue::operator=(const ArrayValue& other) = default;
 
 bool ArrayValue::IsUndefinedOrNull() const {
   return blink::IsUndefinedOrNull(array_);

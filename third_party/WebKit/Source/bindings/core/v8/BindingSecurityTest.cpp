@@ -26,7 +26,7 @@ class BindingSecurityCounterTest
  public:
   enum class OriginDisposition { CrossOrigin, SameOrigin };
 
-  BindingSecurityCounterTest() {}
+  BindingSecurityCounterTest() = default;
 
   void LoadWindowAndAccessProperty(OriginDisposition which_origin,
                                    const String& property) {

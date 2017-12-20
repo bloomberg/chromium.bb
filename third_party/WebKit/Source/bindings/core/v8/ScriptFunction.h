@@ -53,7 +53,7 @@ namespace blink {
 class CORE_EXPORT ScriptFunction
     : public GarbageCollectedFinalized<ScriptFunction> {
  public:
-  virtual ~ScriptFunction() {}
+  virtual ~ScriptFunction() = default;
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:

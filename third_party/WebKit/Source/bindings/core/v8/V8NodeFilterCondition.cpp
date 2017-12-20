@@ -51,7 +51,7 @@ V8NodeFilterCondition::V8NodeFilterCondition(v8::Local<v8::Value> filter,
     filter_.Set(script_state->GetIsolate(), filter.As<v8::Object>());
 }
 
-V8NodeFilterCondition::~V8NodeFilterCondition() {}
+V8NodeFilterCondition::~V8NodeFilterCondition() = default;
 
 void V8NodeFilterCondition::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {

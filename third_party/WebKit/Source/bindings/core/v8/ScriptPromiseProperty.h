@@ -56,7 +56,7 @@ class ScriptPromiseProperty : public ScriptPromisePropertyBase {
   template <typename PassHolderType>
   ScriptPromiseProperty(ExecutionContext*, PassHolderType, Name);
 
-  ~ScriptPromiseProperty() override {}
+  ~ScriptPromiseProperty() override = default;
 
   template <typename PassResolvedType>
   void Resolve(PassResolvedType);

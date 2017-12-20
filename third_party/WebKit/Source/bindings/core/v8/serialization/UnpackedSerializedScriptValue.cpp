@@ -42,7 +42,7 @@ UnpackedSerializedScriptValue::UnpackedSerializedScriptValue(
   }
 }
 
-UnpackedSerializedScriptValue::~UnpackedSerializedScriptValue() {}
+UnpackedSerializedScriptValue::~UnpackedSerializedScriptValue() = default;
 
 void UnpackedSerializedScriptValue::Trace(blink::Visitor* visitor) {
   visitor->Trace(array_buffers_);

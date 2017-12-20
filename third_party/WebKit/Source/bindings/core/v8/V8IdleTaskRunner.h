@@ -44,7 +44,7 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
 
  public:
   V8IdleTaskRunner(WebScheduler* scheduler) : scheduler_(scheduler) {}
-  ~V8IdleTaskRunner() override {}
+  ~V8IdleTaskRunner() override = default;
   void PostIdleTask(v8::IdleTask* task) override {
     DCHECK(RuntimeEnabledFeatures::V8IdleTasksEnabled());
     scheduler_->PostIdleTask(

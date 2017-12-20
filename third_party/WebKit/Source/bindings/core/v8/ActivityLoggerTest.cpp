@@ -22,7 +22,7 @@ using blink::FrameTestHelpers::PumpPendingRequestsForFrameToLoad;
 
 class TestActivityLogger : public V8DOMActivityLogger {
  public:
-  ~TestActivityLogger() override {}
+  ~TestActivityLogger() override = default;
 
   void LogGetter(const String& api_name) override {
     logged_activities_.push_back(api_name);

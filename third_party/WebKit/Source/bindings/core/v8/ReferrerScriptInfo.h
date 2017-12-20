@@ -22,7 +22,7 @@ namespace blink {
 // https://github.com/tc39/proposal-dynamic-import/blob/master/HTML%20Integration.md#hostimportmoduledynamicallyreferencingscriptormodule-specifier-promisecapability
 class CORE_EXPORT ReferrerScriptInfo {
  public:
-  ReferrerScriptInfo() {}
+  ReferrerScriptInfo() = default;
   ReferrerScriptInfo(network::mojom::FetchCredentialsMode credentials_mode,
                      const String& nonce,
                      ParserDisposition parser_state)

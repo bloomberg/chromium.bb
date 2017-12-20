@@ -73,7 +73,7 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
       start_position_(TextPosition::MinimumPosition()),
       source_location_type_(ScriptSourceLocationType::kExternalFile) {}
 
-ScriptSourceCode::~ScriptSourceCode() {}
+ScriptSourceCode::~ScriptSourceCode() = default;
 
 void ScriptSourceCode::Trace(blink::Visitor* visitor) {
   visitor->Trace(cache_handler_);

@@ -53,7 +53,7 @@ class CORE_EXPORT SerializedScriptValueFactory {
 
   // Following methods are expected to be called in
   // SerializedScriptValueFactory{ForModules}.
-  SerializedScriptValueFactory() {}
+  SerializedScriptValueFactory() = default;
 
  private:
   static SerializedScriptValueFactory& Instance() {

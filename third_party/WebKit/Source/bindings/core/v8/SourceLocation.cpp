@@ -168,7 +168,7 @@ SourceLocation::SourceLocation(
       stack_trace_(std::move(stack_trace)),
       script_id_(script_id) {}
 
-SourceLocation::~SourceLocation() {}
+SourceLocation::~SourceLocation() = default;
 
 void SourceLocation::ToTracedValue(TracedValue* value, const char* name) const {
   if (!stack_trace_ || stack_trace_->isEmpty())
