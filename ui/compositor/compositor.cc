@@ -70,11 +70,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       external_begin_frames_enabled_(external_begin_frames_enabled),
       force_software_compositor_(force_software_compositor),
       layer_animator_collection_(this),
-      scheduled_timeout_(base::TimeTicks()),
-      allow_locks_to_extend_timeout_(false),
       is_pixel_canvas_(enable_pixel_canvas),
-      weak_ptr_factory_(this),
-      lock_timeout_weak_ptr_factory_(this),
+      lock_manager_(task_runner, this),
       context_creation_weak_ptr_factory_(this) {
   if (context_factory_private) {
     auto* host_frame_sink_manager =
@@ -617,71 +614,15 @@ void Compositor::SetLayerTreeDebugState(
   host_->SetDebugState(debug_state);
 }
 
-std::unique_ptr<CompositorLock> Compositor::GetCompositorLock(
-    CompositorLockClient* client,
-    base::TimeDelta timeout) {
-  // This uses the main WeakPtrFactory to break the connection from the lock to
-  // the Compositor when the Compositor is destroyed.
-  auto lock =
-      std::make_unique<CompositorLock>(client, weak_ptr_factory_.GetWeakPtr());
-  bool was_empty = active_locks_.empty();
-  active_locks_.push_back(lock.get());
-
-  bool should_extend_timeout = false;
-  if ((was_empty || allow_locks_to_extend_timeout_) && !timeout.is_zero()) {
-    const base::TimeTicks time_to_timeout = base::TimeTicks::Now() + timeout;
-    // For the first lock, scheduled_timeout.is_null is true,
-    // |time_to_timeout| will always larger than |scheduled_timeout_|. And it
-    // is ok to invalidate the weakptr of |lock_timeout_weak_ptr_factory_|.
-    if (time_to_timeout > scheduled_timeout_) {
-      scheduled_timeout_ = time_to_timeout;
-      should_extend_timeout = true;
-      lock_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
-    }
-  }
-
-  if (was_empty) {
-    host_->SetDeferCommits(true);
-    for (auto& observer : observer_list_)
-      observer.OnCompositingLockStateChanged(this);
-  }
-
-  if (should_extend_timeout) {
-    // The timeout task uses an independent WeakPtrFactory that is invalidated
-    // when all locks are ended to prevent the timeout from leaking into
-    // another lock that should have its own timeout.
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&Compositor::TimeoutLocks,
-                   lock_timeout_weak_ptr_factory_.GetWeakPtr()),
-        timeout);
-  }
-  return lock;
+void Compositor::OnCompositorLockStateChanged(bool locked) {
+  host_->SetDeferCommits(locked);
+  for (auto& observer : observer_list_)
+    observer.OnCompositingLockStateChanged(this);
 }
 
 void Compositor::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
   host_->RequestPresentationTimeForNextFrame(std::move(callback));
-}
-
-void Compositor::RemoveCompositorLock(CompositorLock* lock) {
-  base::Erase(active_locks_, lock);
-  if (active_locks_.empty()) {
-    host_->SetDeferCommits(false);
-    for (auto& observer : observer_list_)
-      observer.OnCompositingLockStateChanged(this);
-    lock_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
-    scheduled_timeout_ = base::TimeTicks();
-  }
-}
-
-void Compositor::TimeoutLocks() {
-  // Make a copy, we're going to cause |active_locks_| to become
-  // empty.
-  std::vector<CompositorLock*> locks = active_locks_;
-  for (auto* lock : locks)
-    lock->TimeoutLock();
-  DCHECK(active_locks_.empty());
 }
 
 }  // namespace ui

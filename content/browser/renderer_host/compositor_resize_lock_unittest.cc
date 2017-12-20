@@ -7,23 +7,21 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/null_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/compositor/test/fake_compositor_lock.h"
 
 namespace content {
 namespace {
 
 class FakeCompositorResizeLockClient : public CompositorResizeLockClient,
-                                       public ui::CompositorLockDelegate {
+                                       public ui::CompositorLockManagerClient {
  public:
-  FakeCompositorResizeLockClient() : weak_ptr_factory_(this) {}
-
+  FakeCompositorResizeLockClient()
+      : lock_manager_(new base::NullTaskRunner(), this) {}
   std::unique_ptr<ui::CompositorLock> GetCompositorLock(
       ui::CompositorLockClient* client) override {
     created_ = true;
-    compositor_lock_ =
-        new ui::FakeCompositorLock(client, weak_ptr_factory_.GetWeakPtr());
-    return base::WrapUnique(compositor_lock_);
+    return lock_manager_.GetCompositorLock(client, base::TimeDelta());
   }
 
   // CompositorResizeLockClient implementation.
@@ -33,13 +31,15 @@ class FakeCompositorResizeLockClient : public CompositorResizeLockClient,
     ended_ = true;
   }
 
-  // CompositorLockDelegate implementation.
-  void RemoveCompositorLock(ui::CompositorLock* lock) override {
-    // This is where the ui::Compositor would be physically unlocked.
-    unlocked_ = true;
+  // ui::CompositorLockManagerClient implementation.
+  void OnCompositorLockStateChanged(bool locked) override {
+    if (!locked) {
+      // This is where the ui::Compositor would be physically unlocked.
+      unlocked_ = true;
+    }
   }
 
-  void CauseTimeout() { compositor_lock_->TimeoutLock(); }
+  void CauseTimeout() { lock_manager_.TimeoutLocksForTesting(); }
 
   bool created() const { return created_; }
   bool unlocked() const { return unlocked_; }
@@ -49,8 +49,7 @@ class FakeCompositorResizeLockClient : public CompositorResizeLockClient,
   bool created_ = false;
   bool unlocked_ = false;
   bool ended_ = false;
-  ui::FakeCompositorLock* compositor_lock_ = nullptr;
-  base::WeakPtrFactory<FakeCompositorResizeLockClient> weak_ptr_factory_;
+  ui::CompositorLockManager lock_manager_;
 };
 
 TEST(CompositorResizeLockTest, EndWithoutLock) {
