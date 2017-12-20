@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <type_traits>
 
 #include "base/logging.h"
@@ -47,6 +48,7 @@ struct BufferRegion {
 
 namespace internal {
 
+// TODO(huangs): Rename to BasicBufferView.
 // BufferViewBase should not be used directly; it is an implementation used for
 // both BufferView and MutableBufferView.
 template <class T>
@@ -138,6 +140,10 @@ class BufferViewBase {
 
   // Returns a BufferRegion describing the full view.
   BufferRegion region() const { return BufferRegion{0, size()}; }
+
+  bool equals(BufferViewBase other) const {
+    return size() == other.size() && std::equal(begin(), end(), other.begin());
+  }
 
   // Modifiers
 

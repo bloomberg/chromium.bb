@@ -16,6 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/installer/zucchini/disassembler.h"
 #include "chrome/installer/zucchini/element_detection.h"
+#include "chrome/installer/zucchini/ensemble_matcher.h"
+#include "chrome/installer/zucchini/heuristic_ensemble_matcher.h"
 #include "chrome/installer/zucchini/io_utils.h"
 
 namespace zucchini {
@@ -110,6 +112,20 @@ status::Code DetectAll(ConstBufferView image,
   out << "Detected " << total_bytes_found << "/" << size << " bytes => ";
   double percent = total_bytes_found * 100.0 / size;
   out << base::StringPrintf("%.2f", percent) << "%." << std::endl;
+
+  return status::kStatusSuccess;
+}
+
+status::Code MatchAll(ConstBufferView old_image,
+                      ConstBufferView new_image,
+                      std::ostream& out) {
+  HeuristicEnsembleMatcher matcher(&out);
+  if (!matcher.RunMatch(old_image, new_image)) {
+    out << "RunMatch() failed.";
+    return status::kStatusFatal;
+  }
+  out << "Found " << matcher.matches().size() << " nontrivial matches and "
+      << matcher.num_identical() << " identical matches." << std::endl;
 
   return status::kStatusSuccess;
 }
