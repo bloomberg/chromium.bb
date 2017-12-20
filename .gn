@@ -65,7 +65,7 @@ default_args = {
 
   # Changes some setup for the Crashpad build to set them to build against
   # Chromium's zlib, base, etc.
-  crashpad_in_chromium = true
+  crashpad_dependencies = "chromium"
 }
 
 # These are the targets to check headers for by default. The files in targets

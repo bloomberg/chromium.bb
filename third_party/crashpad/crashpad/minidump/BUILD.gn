@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//testing/test.gni")
+import("../build/crashpad_buildconfig.gni")
 
 static_library("minidump") {
   sources = [
@@ -77,11 +77,11 @@ static_library("minidump") {
 
   deps = [
     "../snapshot",
+    "../third_party/mini_chromium:base",
     "../util",
-    "//base",
   ]
 
-  if (is_win) {
+  if (crashpad_is_win) {
     cflags = [
       "/wd4201",  # nonstandard extension used : nameless struct/union
       "/wd4324",  # 'struct' : structure was padded due to __declspec(align())
@@ -118,11 +118,11 @@ static_library("test_support") {
   ]
 
   deps = [
-    "//base",
-    "//testing/gtest",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
   ]
 
-  if (is_win) {
+  if (crashpad_is_win) {
     cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
   }
 }
@@ -158,12 +158,12 @@ source_set("minidump_test") {
     ":test_support",
     "../snapshot:test_support",
     "../test",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
     "../util",
-    "//base",
-    "//testing/gtest",
   ]
 
-  if (is_win) {
+  if (crashpad_is_win) {
     cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
   }
 }

@@ -12,29 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../build/crashpad_buildconfig.gni")
+
 config("compat_config") {
   include_dirs = []
 
-  if (is_win) {
+  if (crashpad_is_mac) {
+    include_dirs += [ "mac" ]
+  }
+
+  if (crashpad_is_linux) {
+    include_dirs += [ "linux" ]
+  }
+
+  if (crashpad_is_win) {
     include_dirs += [ "win" ]
   } else {
     include_dirs += [ "non_win" ]
   }
+}
 
-  if (is_mac) {
-    include_dirs += [ "mac" ]
+template("compat_target") {
+  if (crashpad_is_mac) {
+    # There are no sources to compile, which doesn’t mix will with a
+    # static_library.
+    group(target_name) {
+      forward_variables_from(invoker, "*")
+    }
+  } else {
+    static_library(target_name) {
+      forward_variables_from(invoker, "*")
+    }
   }
 }
 
-static_library("compat") {
+compat_target("compat") {
   sources = []
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     sources += [
       "mac/AvailabilityMacros.h",
       "mac/kern/exc_resource.h",
-      "mac/mach-o/getsect.cc",
-      "mac/mach-o/getsect.h",
       "mac/mach-o/loader.h",
       "mac/mach/mach.h",
       "mac/sys/resource.h",
@@ -43,7 +61,14 @@ static_library("compat") {
     sources += [ "non_mac/mach/mach.h" ]
   }
 
-  if (is_win) {
+  if (crashpad_is_linux) {
+    sources += [
+      "linux/signal.h",
+      "linux/sys/ptrace.h",
+    ]
+  }
+
+  if (crashpad_is_win) {
     sources += [
       "win/getopt.h",
       "win/strings.cc",
@@ -73,10 +98,7 @@ static_library("compat") {
 
   deps = []
 
-  if (is_mac) {
-    deps += [ "../third_party/apple_cctools" ]
-  }
-  if (is_win) {
+  if (crashpad_is_win) {
     deps += [ "../third_party/getopt" ]
   }
 }

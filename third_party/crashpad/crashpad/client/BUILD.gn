@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//testing/test.gni")
+import("../build/crashpad_buildconfig.gni")
 
 static_library("client") {
   sources = [
@@ -34,7 +34,7 @@ static_library("client") {
     "simulate_crash.h",
   ]
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     sources += [
       "capture_context_mac.S",
       "capture_context_mac.h",
@@ -45,7 +45,7 @@ static_library("client") {
     ]
   }
 
-  if (is_win) {
+  if (crashpad_is_win) {
     sources += [
       "crash_report_database_win.cc",
       "crashpad_client_win.cc",
@@ -53,7 +53,7 @@ static_library("client") {
     ]
   }
 
-  if (is_fuchsia) {
+  if (crashpad_is_fuchsia) {
     sources += [
       "crash_report_database_fuchsia.cc",
       "crashpad_client_fuchsia.cc",
@@ -64,11 +64,11 @@ static_library("client") {
 
   deps = [
     "../compat",
+    "../third_party/mini_chromium:base",
     "../util",
-    "//base",
   ]
 
-  if (is_win) {
+  if (crashpad_is_win) {
     libs = [ "rpcrt4.lib" ]
     cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
   }
@@ -87,14 +87,14 @@ source_set("client_test") {
     "simple_string_dictionary_test.cc",
   ]
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     sources += [
       "capture_context_mac_test.cc",
       "simulate_crash_mac_test.cc",
     ]
   }
 
-  if (is_win) {
+  if (crashpad_is_win) {
     sources += [ "crashpad_client_win_test.cc" ]
   }
 
@@ -102,17 +102,17 @@ source_set("client_test") {
     ":client",
     "../compat",
     "../test",
+    "../third_party/gtest:gmock",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
     "../util",
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
   ]
 
   data_deps = [
     "../handler:crashpad_handler",
   ]
 
-  if (is_win) {
+  if (crashpad_is_win) {
     data_deps += [ "../handler:crashpad_handler_console" ]
   }
 }
