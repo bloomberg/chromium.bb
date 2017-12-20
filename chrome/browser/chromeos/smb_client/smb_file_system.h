@@ -176,6 +176,12 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
       smbprovider::ErrorType error,
       const smbprovider::DirectoryEntryList& entries) const;
 
+  void HandleRequestGetMetadataEntryCallback(
+      ProvidedFileSystemInterface::MetadataFieldMask fields,
+      const ProvidedFileSystemInterface::GetMetadataCallback& callback,
+      smbprovider::ErrorType error,
+      const smbprovider::DirectoryEntry& entry) const;
+
   int32_t GetMountId() const;
 
   SmbProviderClient* GetSmbProviderClient() const;
