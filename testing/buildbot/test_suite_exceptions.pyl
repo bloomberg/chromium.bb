@@ -2754,19 +2754,16 @@
       'KitKat Tablet Tester': {
         'swarming': {
           'hard_timeout': 1800,
-          'shards': 2,
         },
       },
       'Lollipop Phone Tester': {
         'swarming': {
           'hard_timeout': 1800,
-          'shards': 2,
         },
       },
       'Lollipop Tablet Tester': {
         'swarming': {
           'hard_timeout': 1800,
-          'shards': 2,
         },
       },
       'Marshmallow 64 bit Tester': {
