@@ -1497,25 +1497,6 @@
             ]
         }
     ],
-    "GeoLanguage": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "GeoLanguage",
-                    "enable_features": [
-                        "GeoLanguage"
-                    ]
-                }
-            ]
-        }
-    ],
     "GoogleBrandedContextMenu": [
         {
             "platforms": [
