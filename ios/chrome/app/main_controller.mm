@@ -2066,7 +2066,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
   DCHECK(_settingsNavigationController);
-  [_settingsNavigationController settingsWillBeDismissed];
   UIViewController* presentingViewController =
       [_settingsNavigationController presentingViewController];
   DCHECK(presentingViewController);
