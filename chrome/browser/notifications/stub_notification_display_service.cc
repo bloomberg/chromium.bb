@@ -86,6 +86,9 @@ void StubNotificationDisplayService::SimulateClick(
     DCHECK(!handler);
 
     auto* delegate = iter->notification.delegate();
+    if (!delegate)
+      return;
+
     if (reply.has_value()) {
       DCHECK(action_index.has_value());
       delegate->ButtonClickWithReply(action_index.value(), reply.value());
@@ -94,13 +97,14 @@ void StubNotificationDisplayService::SimulateClick(
     } else {
       delegate->Click();
     }
-  } else {
-    DCHECK(handler);
-    base::RunLoop run_loop;
-    handler->OnClick(profile_, iter->notification.origin_url(), notification_id,
-                     action_index, reply, run_loop.QuitClosure());
-    run_loop.Run();
+    return;
   }
+
+  DCHECK(handler);
+  base::RunLoop run_loop;
+  handler->OnClick(profile_, iter->notification.origin_url(), notification_id,
+                   action_index, reply, run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 void StubNotificationDisplayService::SimulateSettingsClick(
@@ -113,7 +117,8 @@ void StubNotificationDisplayService::SimulateSettingsClick(
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   if (notification_type == NotificationHandler::Type::TRANSIENT) {
     DCHECK(!handler);
-    iter->notification.delegate()->SettingsClick();
+    if (iter->notification.delegate())
+      iter->notification.delegate()->SettingsClick();
   } else {
     DCHECK(handler);
     handler->OpenSettings(profile_, iter->notification.origin_url());
@@ -133,7 +138,8 @@ void StubNotificationDisplayService::RemoveNotification(
     NotificationHandler* handler = GetNotificationHandler(notification_type);
     if (notification_type == NotificationHandler::Type::TRANSIENT) {
       DCHECK(!handler);
-      iter->notification.delegate()->Close(by_user);
+      if (iter->notification.delegate())
+        iter->notification.delegate()->Close(by_user);
     } else {
       base::RunLoop run_loop;
       handler->OnClose(profile_, iter->notification.origin_url(),
@@ -159,7 +165,7 @@ void StubNotificationDisplayService::RemoveAllNotifications(
                          iter->notification.id(), by_user,
                          run_loop.QuitClosure());
         run_loop.Run();
-      } else {
+      } else if (iter->notification.delegate()) {
         iter->notification.delegate()->Close(by_user);
       }
       iter = notifications_.erase(iter);
