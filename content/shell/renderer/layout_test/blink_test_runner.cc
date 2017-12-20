@@ -430,17 +430,6 @@ void BlinkTestRunner::EvaluateInWebInspector(int call_id,
       routing_id(), call_id, script));
 }
 
-std::string BlinkTestRunner::EvaluateInWebInspectorOverlay(
-    const std::string& script) {
-  WebDevToolsAgent* agent =
-      render_view()->GetMainRenderFrame()->GetWebFrame()->DevToolsAgent();
-  if (!agent)
-    return std::string();
-
-  return agent->EvaluateInWebInspectorOverlay(WebString::FromUTF8(script))
-      .Utf8();
-}
-
 void BlinkTestRunner::ClearAllDatabases() {
   Send(new LayoutTestHostMsg_ClearAllDatabases(routing_id()));
 }

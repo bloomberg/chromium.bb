@@ -261,6 +261,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void SetVirtualTimePauser(WebScopedVirtualTimePauser) override;
 
+  String evaluateInInspectorOverlayForTesting(const String& script) override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 

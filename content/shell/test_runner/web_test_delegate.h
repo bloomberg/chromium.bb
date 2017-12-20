@@ -143,10 +143,6 @@ class WebTestDelegate {
   virtual void EvaluateInWebInspector(int call_id,
                                       const std::string& script) = 0;
 
-  // Evaluate the given script in the inspector overlay page.
-  virtual std::string EvaluateInWebInspectorOverlay(
-      const std::string& script) = 0;
-
   // Controls WebSQL databases.
   virtual void ClearAllDatabases() = 0;
   // Setting quota to kDefaultDatabaseQuota will reset it to the default value.

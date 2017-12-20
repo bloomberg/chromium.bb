@@ -54,9 +54,6 @@ class WebDevToolsAgent {
   virtual void InspectElementAt(int session_id, const WebPoint&) = 0;
   virtual void FailedToRequestDevTools(int session_id) = 0;
 
-  // Exposed for TestRunner.
-  virtual WebString EvaluateInWebInspectorOverlay(const WebString& script) = 0;
-
   class MessageDescriptor {
    public:
     virtual ~MessageDescriptor() {}
