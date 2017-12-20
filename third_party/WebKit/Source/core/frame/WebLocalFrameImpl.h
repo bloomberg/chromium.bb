@@ -177,8 +177,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetTextDirection(WebTextDirection) override;
   void SetTextCheckClient(WebTextCheckClient*) override;
   void SetSpellCheckPanelHostClient(WebSpellCheckPanelHostClient*) override;
-  void EnableSpellChecking(bool) override;
-  bool IsSpellCheckingEnabled() const override;
   void ReplaceMisspelledRange(const WebString&) override;
   void RemoveSpellingMarkers() override;
   void RemoveSpellingMarkersUnderWords(

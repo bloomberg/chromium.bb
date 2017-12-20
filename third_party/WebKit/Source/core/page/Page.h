@@ -145,14 +145,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   EditorClient& GetEditorClient() const { return *editor_client_; }
 
-  // This flag controls whether spell check for this page is manually
-  // turned on/off. The default setting is kAutomatic.
-  enum class SpellCheckStatus { kAutomatic, kForcedOn, kForcedOff };
-  void SetSpellCheckStatus(SpellCheckStatus status) {
-    spell_check_status_ = status;
-  }
-  SpellCheckStatus GetSpellCheckStatus() { return spell_check_status_; }
-
   void SetMainFrame(Frame*);
   Frame* MainFrame() const { return main_frame_; }
   // Escape hatch for existing code that assumes that the root frame is
@@ -363,7 +355,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<PluginData> plugin_data_;
 
   EditorClient* const editor_client_;
-  SpellCheckStatus spell_check_status_ = SpellCheckStatus::kAutomatic;
   Member<ValidationMessageClient> validation_message_client_;
 
   UseCounter use_counter_;

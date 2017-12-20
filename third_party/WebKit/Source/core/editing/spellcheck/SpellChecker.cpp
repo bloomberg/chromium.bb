@@ -26,12 +26,10 @@
 
 #include "core/editing/spellcheck/SpellChecker.h"
 
-#include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/Range.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
@@ -39,9 +37,6 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/commands/CompositeEditCommand.h"
-#include "core/editing/commands/ReplaceSelectionCommand.h"
-#include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/SpellCheckMarker.h"
@@ -49,16 +44,13 @@
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/TextCheckingParagraph.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
 #include "core/layout/LayoutTextControl.h"
 #include "core/loader/EmptyClients.h"
-#include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/text/TextBreakIterator.h"
-#include "platform/wtf/Assertions.h"
 #include "public/platform/WebSpellCheckPanelHostClient.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebTextCheckClient.h"
@@ -109,16 +101,6 @@ bool SpellChecker::IsSpellCheckingEnabled() const {
   if (WebTextCheckClient* client = GetTextCheckerClient())
     return client->IsSpellCheckingEnabled();
   return false;
-}
-
-void SpellChecker::ToggleSpellCheckingEnabled() {
-  Page* page = GetFrame().GetPage();
-  if (!page)
-    return;
-  if (IsSpellCheckingEnabled())
-    page->SetSpellCheckStatus(Page::SpellCheckStatus::kForcedOff);
-  else
-    page->SetSpellCheckStatus(Page::SpellCheckStatus::kForcedOn);
 }
 
 void SpellChecker::IgnoreSpelling() {
@@ -254,28 +236,6 @@ void SpellChecker::ShowSpellingGuessPanel() {
 
   AdvanceToNextMisspelling(true);
   SpellCheckPanelHostClient().ShowSpellingUI(true);
-}
-
-bool SpellChecker::IsSpellCheckingEnabledInFocusedNode() const {
-  // To avoid regression on speedometer benchmark[1] test, we should not
-  // update layout tree in this code block.
-  // [1] http://browserbench.org/Speedometer/
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      GetFrame().GetDocument()->Lifecycle());
-
-  Node* focused_node = GetFrame()
-                           .Selection()
-                           .GetSelectionInDOMTree()
-                           .ComputeStartPosition()
-                           .AnchorNode();
-  if (!focused_node)
-    return false;
-  const Element* focused_element = focused_node->IsElementNode()
-                                       ? ToElement(focused_node)
-                                       : focused_node->parentElement();
-  if (!focused_element)
-    return false;
-  return focused_element->IsSpellCheckingEnabled();
 }
 
 static void AddMarker(Document* document,
@@ -655,37 +615,6 @@ void SpellChecker::Trace(blink::Visitor* visitor) {
 void SpellChecker::PrepareForLeakDetection() {
   spell_check_requester_->PrepareForLeakDetection();
   idle_spell_check_callback_->Deactivate();
-}
-
-bool SpellChecker::ShouldSpellcheckByDefault() const {
-  // Spellcheck should be enabled for all editable areas (such as textareas,
-  // contentEditable regions, designMode docs and inputs).
-  Page* page = GetFrame().GetPage();
-  if (!page)
-    return false;
-  Frame* focused_frame = page->GetFocusController().FocusedOrMainFrame();
-  if (!focused_frame->IsLocalFrame())
-    return false;
-  const LocalFrame* frame = ToLocalFrame(focused_frame);
-  if (frame->GetSpellChecker().IsSpellCheckingEnabledInFocusedNode())
-    return true;
-  const Document* document = frame->GetDocument();
-  if (!document)
-    return false;
-  const Element* element = document->FocusedElement();
-  // If |element| is null, we default to allowing spellchecking. This is done
-  // in order to mitigate the issue when the user clicks outside the textbox,
-  // as a result of which |element| becomes null, resulting in all the spell
-  // check markers being deleted. Also, the LocalFrame will decide not to do
-  // spellchecking if the user can't edit - so returning true here will not
-  // cause any problems to the LocalFrame's behavior.
-  if (!element)
-    return true;
-  const LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object)
-    return false;
-
-  return true;
 }
 
 Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {

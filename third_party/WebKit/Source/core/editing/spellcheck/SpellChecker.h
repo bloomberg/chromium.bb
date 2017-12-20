@@ -58,9 +58,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
 
   static bool IsSpellCheckingEnabledAt(const Position&);
   bool IsSpellCheckingEnabled() const;
-  void ToggleSpellCheckingEnabled();
   void IgnoreSpelling();
-  bool IsSpellCheckingEnabledInFocusedNode() const;
   void MarkAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
   void AdvanceToNextMisspelling(bool start_before_selection);
   void ShowSpellingGuessPanel();
@@ -108,15 +106,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
     DCHECK(frame_);
     return *frame_;
   }
-
-  // Returns whether or not the focused control needs spell-checking.
-  // Currently, this function just retrieves the focused node and determines
-  // whether or not it is a <textarea> element or an element whose
-  // contenteditable attribute is true.
-  // FIXME: Bug 740540: This code just implements the default behavior
-  // proposed in this issue. We should also retrieve "spellcheck" attributes
-  // for text fields and create a flag to over-write the default behavior.
-  bool ShouldSpellcheckByDefault() const;
 
   // Helper functions for advanceToNextMisspelling()
   Vector<TextCheckingResult> FindMisspellings(const String&);

@@ -190,16 +190,6 @@ void AwContentRendererClient::RenderFrameCreated(
 void AwContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   AwRenderViewExt::RenderViewCreated(render_view);
-
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-  // This is a workaround keeping the behavior that, the Blink side spellcheck
-  // enabled state is initialized on RenderView creation.
-  // TODO(xiaochengh): Design better way to sync between Chrome-side and
-  // Blink-side spellcheck enabled states.  See crbug.com/710097.
-  if (SpellCheckProvider* provider =
-          SpellCheckProvider::Get(render_view->GetMainRenderFrame()))
-    provider->EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
-#endif
 }
 
 bool AwContentRendererClient::HasErrorPage(int http_status_code) {

@@ -1126,16 +1126,6 @@ void WebLocalFrameImpl::SetTextDirection(WebTextDirection direction) {
   }
 }
 
-void WebLocalFrameImpl::EnableSpellChecking(bool enable) {
-  if (enable == IsSpellCheckingEnabled())
-    return;
-  GetFrame()->GetSpellChecker().ToggleSpellCheckingEnabled();
-}
-
-bool WebLocalFrameImpl::IsSpellCheckingEnabled() const {
-  return GetFrame()->GetSpellChecker().IsSpellCheckingEnabled();
-}
-
 void WebLocalFrameImpl::ReplaceMisspelledRange(const WebString& text) {
   // If this caret selection has two or more markers, this function replace the
   // range covered by the first marker with the specified word as Microsoft Word
