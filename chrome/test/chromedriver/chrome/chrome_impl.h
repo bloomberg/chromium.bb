@@ -39,6 +39,7 @@ class ChromeImpl : public Chrome {
   Status GetWebViewById(const std::string& id, WebView** web_view) override;
   Status CloseWebView(const std::string& id) override;
   Status ActivateWebView(const std::string& id) override;
+  Status SetAcceptInsecureCerts() override;
   bool IsMobileEmulationEnabled() const override;
   bool HasTouchScreen() const override;
   std::string page_load_strategy() const override;

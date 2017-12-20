@@ -146,6 +146,8 @@ struct Capabilities {
 
   bool network_emulation_enabled;
 
+  bool accept_insecure_certs;
+
   PerfLoggingPrefs perf_logging_prefs;
 
   std::unique_ptr<base::ListValue> devtools_events_logging_prefs;

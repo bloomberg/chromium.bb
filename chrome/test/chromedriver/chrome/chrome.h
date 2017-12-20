@@ -42,6 +42,9 @@ class Chrome {
   // Activates the specified WebView.
   virtual Status ActivateWebView(const std::string& id) = 0;
 
+  // Enables acceptInsecureCerts mode for the browser.
+  virtual Status SetAcceptInsecureCerts() = 0;
+
   // Get the operation system where Chrome is running.
   virtual std::string GetOperatingSystemName() = 0;
 

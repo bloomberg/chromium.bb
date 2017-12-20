@@ -64,6 +64,8 @@
 
 namespace {
 
+// TODO(eseckler): Remove --ignore-certificate-errors for newer Chrome versions
+// that support the Security DevTools domain on the browser target.
 const char* const kCommonSwitches[] = {
     "disable-popup-blocking", "enable-automation", "ignore-certificate-errors",
     "metrics-recording-only",

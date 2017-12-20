@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
@@ -140,6 +141,23 @@ Status ChromeImpl::CloseWebView(const std::string& id) {
 
 Status ChromeImpl::ActivateWebView(const std::string& id) {
   return devtools_http_client_->ActivateWebView(id);
+}
+
+Status ChromeImpl::SetAcceptInsecureCerts() {
+  Status status = devtools_websocket_client_->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue params;
+  params.SetBoolean("ignore", true);
+  // We ignore the status returned by this command - If it is an error, the
+  // target likely doesn't yet support the command. In that case, we'll fall
+  // back to --ignore-certificate-errors.
+  // TODO(eseckler): Handle status once we remove support for
+  // --ignore-certificate-errors.
+  devtools_websocket_client_->SendCommand("Security.setIgnoreCertificateErrors",
+                                          params);
+  return Status(kOk);
 }
 
 bool ChromeImpl::IsMobileEmulationEnabled() const {

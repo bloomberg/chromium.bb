@@ -44,6 +44,10 @@ Status StubChrome::ActivateWebView(const std::string& id) {
   return Status(kOk);
 }
 
+Status StubChrome::SetAcceptInsecureCerts() {
+  return Status(kOk);
+}
+
 std::string StubChrome::GetOperatingSystemName() {
   return std::string();
 }
