@@ -712,8 +712,10 @@
     AutomationNode? lastChild;
     AutomationNode? previousSibling;
     AutomationNode? nextSibling;
-    AutomationNode? nextOnLine;
     AutomationNode? previousOnLine;
+    AutomationNode? nextOnLine;
+    AutomationNode? previousFocus;
+    AutomationNode? nextFocus;
 
     // The index of this node in its parent node's list of children. If this is
     // the root node, this will be undefined.

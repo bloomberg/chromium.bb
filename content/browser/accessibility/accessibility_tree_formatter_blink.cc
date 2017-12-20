@@ -96,8 +96,10 @@ std::string AccessibilityTreeFormatterBlink::IntAttrToString(
     case ui::AX_ATTR_HIERARCHICAL_LEVEL:
     case ui::AX_ATTR_IN_PAGE_LINK_TARGET_ID:
     case ui::AX_ATTR_MEMBER_OF_ID:
+    case ui::AX_ATTR_NEXT_FOCUS_ID:
     case ui::AX_ATTR_NEXT_ON_LINE_ID:
     case ui::AX_ATTR_POS_IN_SET:
+    case ui::AX_ATTR_PREVIOUS_FOCUS_ID:
     case ui::AX_ATTR_PREVIOUS_ON_LINE_ID:
     case ui::AX_ATTR_SCROLL_X:
     case ui::AX_ATTR_SCROLL_X_MAX:

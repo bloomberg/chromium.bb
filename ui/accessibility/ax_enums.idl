@@ -459,7 +459,11 @@
     text_direction,
 
     // Bold, italic, underline, etc.
-    text_style
+    text_style,
+
+    // Focus traversal in views and Android.
+    previous_focus_id,
+    next_focus_id
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXFloatAttribute {
