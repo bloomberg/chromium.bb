@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.languages;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -44,9 +45,14 @@ public class AddLanguageFragment extends Fragment {
     }
 
     private class LanguageSearchListAdapter extends LanguageListBaseAdapter {
+        LanguageSearchListAdapter(Context context) {
+            super(context);
+        }
+
         @Override
         public void onBindViewHolder(LanguageRowViewHolder holder, int position) {
-            holder.bindView(getItemByPosition(position), mItemClickListener, null, 0);
+            super.onBindViewHolder(holder, position);
+            holder.setItemClickListener(getItemByPosition(position), mItemClickListener);
         }
 
         /**
@@ -107,16 +113,13 @@ public class AddLanguageFragment extends Fragment {
                 new DividerItemDecoration(activity, layoutMangager.getOrientation()));
 
         mFullLanguageList = LanguagesManager.getInstance().getLanguageItemsExcludingUserAccept();
-        mItemClickListener = new LanguageListBaseAdapter.ItemClickListener() {
-            @Override
-            public void onLanguageClicked(LanguageItem item) {
-                Intent intent = new Intent();
-                intent.putExtra(INTENT_NEW_ACCEPT_LANGAUGE, item.getCode());
-                activity.setResult(activity.RESULT_OK, intent);
-                activity.finish();
-            }
+        mItemClickListener = item -> {
+            Intent intent = new Intent();
+            intent.putExtra(INTENT_NEW_ACCEPT_LANGAUGE, item.getCode());
+            activity.setResult(activity.RESULT_OK, intent);
+            activity.finish();
         };
-        mAdapter = new LanguageSearchListAdapter();
+        mAdapter = new LanguageSearchListAdapter(activity);
 
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.reload(mFullLanguageList);
@@ -131,13 +134,10 @@ public class AddLanguageFragment extends Fragment {
         mSearchView = (SearchView) menu.findItem(R.id.search).getActionView();
         mSearchView.setImeOptions(EditorInfo.IME_FLAG_NO_FULLSCREEN);
 
-        mSearchView.setOnCloseListener(new SearchView.OnCloseListener() {
-            @Override
-            public boolean onClose() {
-                mSearch = "";
-                mAdapter.reload(mFullLanguageList);
-                return false;
-            }
+        mSearchView.setOnCloseListener(() -> {
+            mSearch = "";
+            mAdapter.reload(mFullLanguageList);
+            return false;
         });
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
