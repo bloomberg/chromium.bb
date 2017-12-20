@@ -401,7 +401,7 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
   }
 
   OAuth2TokenService::ScopeSet scopes{GaiaConstants::kChromeSyncOAuth2Scope};
-  token_fetcher_ = base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = base::MakeUnique<identity::PrimaryAccountAccessTokenFetcher>(
       "suggestions_service", signin_manager_, token_service_, scopes,
       base::BindOnce(&SuggestionsServiceImpl::AccessTokenAvailable,
                      base::Unretained(this), url));
@@ -412,8 +412,8 @@ void SuggestionsServiceImpl::AccessTokenAvailable(
     const GoogleServiceAuthError& error,
     const std::string& access_token) {
   DCHECK(token_fetcher_);
-  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_deleter(
-      std::move(token_fetcher_));
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      token_fetcher_deleter(std::move(token_fetcher_));
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     blacklist_upload_backoff_.InformOfRequest(/*succeeded=*/false);

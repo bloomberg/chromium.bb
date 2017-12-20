@@ -133,10 +133,11 @@ void SubscriptionManagerImpl::StartAccessTokenRequest(
   }
 
   OAuth2TokenService::ScopeSet scopes = {kContentSuggestionsApiScope};
-  access_token_fetcher_ = base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
-      "ntp_snippets", signin_manager_, access_token_service_, scopes,
-      base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
-                     base::Unretained(this), subscription_token));
+  access_token_fetcher_ =
+      base::MakeUnique<identity::PrimaryAccountAccessTokenFetcher>(
+          "ntp_snippets", signin_manager_, access_token_service_, scopes,
+          base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
+                         base::Unretained(this), subscription_token));
 }
 
 void SubscriptionManagerImpl::AccessTokenFetchFinished(
@@ -145,7 +146,7 @@ void SubscriptionManagerImpl::AccessTokenFetchFinished(
     const std::string& access_token) {
   // Delete the fetcher only after we leave this method (which is called from
   // the fetcher itself).
-  std::unique_ptr<PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_deleter(std::move(access_token_fetcher_));
 
   if (error.state() != GoogleServiceAuthError::NONE) {

@@ -110,8 +110,8 @@ void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
 }
 
 void ContextualSuggestionsService::StopCreatingContextualSuggestionsRequest() {
-  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_deleter(
-      std::move(token_fetcher_));
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      token_fetcher_deleter(std::move(token_fetcher_));
 }
 
 // static
@@ -298,7 +298,7 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   // Create the oauth2 token fetcher.
   const OAuth2TokenService::ScopeSet scopes{
       "https://www.googleapis.com/auth/cusco-chrome-extension"};
-  token_fetcher_ = std::make_unique<PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
       "contextual_suggestions_service", signin_manager_, token_service_, scopes,
       base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(fetcher),
@@ -311,8 +311,8 @@ void ContextualSuggestionsService::AccessTokenAvailable(
     const GoogleServiceAuthError& error,
     const std::string& access_token) {
   DCHECK(token_fetcher_);
-  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_deleter(
-      std::move(token_fetcher_));
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      token_fetcher_deleter(std::move(token_fetcher_));
 
   // If there were no errors obtaining the access token, append it to the
   // request as a header.

@@ -128,7 +128,7 @@ class ContextualSuggestionsService : public KeyedService {
 
   // Helper for fetching OAuth2 access tokens. This is non-null when an access
   // token request is currently in progress.
-  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsService);
 };

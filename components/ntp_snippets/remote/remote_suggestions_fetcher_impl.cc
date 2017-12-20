@@ -235,7 +235,7 @@ void RemoteSuggestionsFetcherImpl::StartTokenRequest() {
   }
 
   OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
-  token_fetcher_ = base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = base::MakeUnique<identity::PrimaryAccountAccessTokenFetcher>(
       "ntp_snippets", signin_manager_, token_service_, scopes,
       base::BindOnce(&RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished,
                      base::Unretained(this)));
@@ -247,8 +247,8 @@ void RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished(
   // Delete the fetcher only after we leave this method (which is called from
   // the fetcher itself).
   DCHECK(token_fetcher_);
-  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher_deleter(
-      std::move(token_fetcher_));
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      token_fetcher_deleter(std::move(token_fetcher_));
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     AccessTokenError(error);

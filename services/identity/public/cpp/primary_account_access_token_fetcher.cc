@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 
+namespace identity {
+
 PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     const std::string& oauth_consumer_name,
     SigninManagerBase* signin_manager,
@@ -167,3 +169,5 @@ void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
 
   std::move(callback_).Run(error, std::string());
 }
+
+}  // namespace identity
