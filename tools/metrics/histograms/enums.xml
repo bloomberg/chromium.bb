@@ -24811,6 +24811,7 @@ from previous Chrome versions.
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
   <int value="-1691281364" label="enable-notification-action-icons"/>
   <int value="-1686782572" label="ChromeHomeInactivitySheetExpansion:disabled"/>
+  <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
   <int value="-1670137340"
       label="OptimizeLoadingIPCForSmallResources:disabled"/>
   <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
@@ -24994,6 +24995,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlScheme:disabled"/>
   <int value="-1203955801" label="enable-password-change-support:disabled"/>
   <int value="-1203742042" label="enable-gesture-selection"/>
+  <int value="-1201741587" label="DataReductionProxyDecidesTransform:disabled"/>
   <int value="-1201183153" label="enable-centered-app-list"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>

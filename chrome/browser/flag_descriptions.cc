@@ -165,16 +165,9 @@ const char kCrossProcessGuestViewIsolationDescription[] =
     "Highly experimental where guests such as &lt;webview> are implemented on "
     "the out-of-process iframe infrastructure.";
 
-const char kDataReductionProxyLoFiName[] = "Data Saver Lo-Fi mode";
-const char kDataReductionProxyLoFiDescription[] =
-    "Forces Data Saver Lo-Fi mode to be always enabled, enabled only on "
-    "cellular connections, or disabled. Data Saver must be enabled for Lo-Fi "
-    "mode to be used.";
-const char kDataReductionProxyLoFiAlwaysOn[] = "Always on";
-const char kDataReductionProxyLoFiCellularOnly[] = "Cellular only";
-const char kDataReductionProxyLoFiDisabled[] = "Disable";
-const char kDataReductionProxyLoFiSlowConnectionsOnly[] =
-    "Slow connections only";
+const char kDataSaverServerPreviewsName[] = "Data Saver Server Previews";
+const char kDataSaverServerPreviewsDescription[] =
+    "Allow the Data Reduction Proxy to serve previews.";
 
 const char kDatasaverPromptName[] = "Cellular Data Saver Prompt";
 const char kDatasaverPromptDescription[] =
@@ -332,13 +325,6 @@ const char kEnableNoScriptPreviewsName[] = "NoScript previews";
 
 const char kEnableNoScriptPreviewsDescription[] =
     "Enable disabling JavaScript on some pages on slow networks.";
-
-const char kEnableDataReductionProxyLitePageName[] =
-    "Lite pages for Data Saver Lo-Fi mode";
-const char kEnableDataReductionProxyLitePageDescription[] =
-    "Enable lite pages in Data Saver Lo-Fi mode. Previews of pages will be "
-    "shown instead of image placeholders when Lo-Fi is on. Data Saver and "
-    "Lo-Fi must be enabled for lite pages to be shown.";
 
 const char kDataReductionProxyServerAlternative1[] = "Use alt. server config 1";
 const char kDataReductionProxyServerAlternative2[] = "Use alt. server config 2";

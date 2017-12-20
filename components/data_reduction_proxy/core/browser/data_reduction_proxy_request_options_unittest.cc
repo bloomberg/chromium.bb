@@ -353,53 +353,11 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(expected_header, kPageIdValue);
 
-  // "force_lite_page" has the next lowest priority.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueAlwaysOn);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLitePage);
-  expected_experiments.clear();
-  expected_experiments.push_back(chrome_proxy_experiment_force_lite_page());
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        expected_experiments, &expected_header);
-  CreateRequestOptions(kVersion);
-  VerifyExpectedHeader(expected_header, kPageIdValue);
-
   // Setting the experiment explicitly has the highest priority.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       data_reduction_proxy::switches::kDataReductionProxyExperiment, "bar");
   expected_experiments.clear();
   expected_experiments.push_back("bar");
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        expected_experiments, &expected_header);
-  CreateRequestOptions(kVersion);
-  VerifyExpectedHeader(expected_header, kPageIdValue);
-}
-
-TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentOtherLoFiFlags) {
-  std::string expected_header;
-  std::vector<std::string> expected_experiments;
-
-  // No "exp=force_*" is set for SlowConnectionOnly flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
-  expected_experiments.clear();
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
-                        expected_experiments, &expected_header);
-  CreateRequestOptions(kVersion);
-  VerifyExpectedHeader(expected_header, kPageIdValue);
-
-  // "exp=force_empty_image" is set for CellularOnly flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueAlwaysOn);
-  expected_experiments.clear();
-  expected_experiments.push_back(chrome_proxy_experiment_force_empty_image());
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
                         kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
                         expected_experiments, &expected_header);
