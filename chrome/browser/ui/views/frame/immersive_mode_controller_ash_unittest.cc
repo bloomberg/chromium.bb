@@ -8,6 +8,8 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -281,4 +283,13 @@ TEST_F(ImmersiveModeControllerAshTest, LayeredSpinners) {
 
   ToggleFullscreen();
   EXPECT_TRUE(tabstrip->CanPaintThrobberToLayer());
+}
+
+// Make sure that going from regular fullscreen to locked fullscreen does not
+// cause a crash. crbug.com/796171
+TEST_F(ImmersiveModeControllerAshTest, RegularFullscreenToLockedFullscreen) {
+  ToggleFullscreen();
+  // Set locked fullscreen state.
+  browser()->window()->GetNativeWindow()->SetProperty(
+      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
 }
