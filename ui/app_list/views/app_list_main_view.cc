@@ -144,12 +144,12 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
     UMA_HISTOGRAM_ENUMERATION(kAppListFolderOpenedHistogram, kOldFolders,
                               kMaxFolderOpened);
   } else {
+    base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
     item->Activate(event_flags);
     UMA_HISTOGRAM_BOOLEAN(features::IsFullscreenAppListEnabled()
                               ? kAppListAppLaunchedFullscreen
                               : kAppListAppLaunched,
                           false /*not a suggested app*/);
-    base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
   }
 }
 
