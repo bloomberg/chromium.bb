@@ -3628,6 +3628,9 @@ split_static_library("browser") {
         "media/cdm_storage_id_key.cc",
         "media/cdm_storage_id_key.h",
       ]
+      if (is_chrome_branded) {
+        sources += [ "internal/google_chrome_cdm_storage_id_key.h" ]
+      }
     }
     deps += [ "//media/mojo/interfaces" ]
     if (mojo_media_host == "browser") {

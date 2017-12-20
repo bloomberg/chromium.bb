@@ -6,7 +6,11 @@
 
 #include "media/media_features.h"
 
-#if BUILDFLAG(ENABLE_CDM_STORAGE_ID) && defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(ENABLE_CDM_STORAGE_ID)
+#error This should only be compiled if "enable_cdm_storage_id" specified.
+#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/internal/google_chrome_cdm_storage_id_key.h"
 #endif
 
@@ -14,6 +18,9 @@ std::string GetCdmStorageIdKey() {
 #if defined(CDM_STORAGE_ID_KEY)
   return CDM_STORAGE_ID_KEY;
 #else
-#error CDM_STORAGE_ID_KEY must be defined if enable_cdm_storage_id specified.
+  // For non-Google-Chrome builds, the GN flag "alternate_cdm_storage_id_key"
+  // must be set if "enable_cdm_storage_id" specified. See comments in
+  // media/media_options.gni.
+  return BUILDFLAG(ALTERNATE_CDM_STORAGE_ID_KEY);
 #endif
 }
