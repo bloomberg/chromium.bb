@@ -248,7 +248,6 @@ HAVE_LIST="
 "
 EXPERIMENT_LIST="
     fp_mb_stats
-    cdef_singlepass
     rect_tx_ext
     rect_tx_ext_intra
     short_filter
@@ -491,7 +490,6 @@ post_process_cmdline() {
     # Enable adopted experiments by default
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
-      soft_enable cdef_singlepass
       soft_enable ext_intra
       soft_enable intra_edge
       soft_enable mv_compress

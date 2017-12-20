@@ -130,16 +130,9 @@ if (NOT BUILD_SHARED_LIBS)
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/motion_vector_test.cc")
 
-    if (CONFIG_CDEF_SINGLEPASS)
-      set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/cdef_test.cc")
-    else ()
-      set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/clpf_test.cc"
-          "${AOM_ROOT}/test/dering_test.cc")
-    endif ()
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/cdef_test.cc")
 
     if (CONFIG_INTRABC)
         set(AOM_UNIT_TEST_COMMON_SOURCES

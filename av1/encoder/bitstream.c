@@ -2501,13 +2501,8 @@ static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
   int i;
-#if CONFIG_CDEF_SINGLEPASS
   aom_wb_write_literal(wb, cm->cdef_pri_damping - 3, 2);
   assert(cm->cdef_pri_damping == cm->cdef_sec_damping);
-#else
-  aom_wb_write_literal(wb, cm->cdef_pri_damping - 5, 1);
-  aom_wb_write_literal(wb, cm->cdef_sec_damping - 3, 2);
-#endif
   aom_wb_write_literal(wb, cm->cdef_bits, 2);
   for (i = 0; i < cm->nb_cdef_strengths; i++) {
     aom_wb_write_literal(wb, cm->cdef_strengths[i], CDEF_STRENGTH_BITS);

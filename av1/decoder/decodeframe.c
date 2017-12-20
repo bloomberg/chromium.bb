@@ -1034,12 +1034,7 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
-#if CONFIG_CDEF_SINGLEPASS
   cm->cdef_pri_damping = cm->cdef_sec_damping = aom_rb_read_literal(rb, 2) + 3;
-#else
-  cm->cdef_pri_damping = aom_rb_read_literal(rb, 1) + 5;
-  cm->cdef_sec_damping = aom_rb_read_literal(rb, 2) + 3;
-#endif
   cm->cdef_bits = aom_rb_read_literal(rb, 2);
   cm->nb_cdef_strengths = 1 << cm->cdef_bits;
   for (int i = 0; i < cm->nb_cdef_strengths; i++) {
