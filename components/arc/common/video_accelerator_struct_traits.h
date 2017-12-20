@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_ARC_COMMON_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
 #define COMPONENTS_ARC_COMMON_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
 
-#include "components/arc/common/video_decode_accelerator_deprecated.mojom.h"
+#include "components/arc/common/video_common.mojom.h"
 #include "components/arc/video_accelerator/video_frame_plane.h"
 #include "media/base/video_codecs.h"
 #include "ui/gfx/geometry/size.h"

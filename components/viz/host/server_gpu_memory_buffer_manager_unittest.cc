@@ -59,10 +59,6 @@ class TestGpuService : public mojom::GpuService {
 
   void CloseChannel(int32_t client_id) override {}
 
-  void CreateArcVideoDecodeAcceleratorDeprecated(
-      arc::mojom::VideoDecodeAcceleratorDeprecatedRequest vda_request)
-      override {}
-
   void CreateArcVideoDecodeAccelerator(
       arc::mojom::VideoDecodeAcceleratorRequest vda_request) override {}
 
