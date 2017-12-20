@@ -204,6 +204,22 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     self.mock(subprocess42, 'Popen', Popen)
 
+  def test_get_command_env(self):
+    old_env = os.environ
+    try:
+      os.environ = os.environ.copy()
+      os.environ.pop('B', None)
+      self.assertNotIn('B', os.environ)
+      os.environ['C'] = 'foo'
+      os.environ['D'] = 'bar'
+      env = run_isolated.get_command_env(
+          '/a', None, '/b', {'A': 'a', 'B': None, 'C': None}, {'D': ['foo']})
+      self.assertNotIn('B', env)
+      self.assertNotIn('C', env)
+      self.assertEqual('/b/foo:bar', env['D'])
+    finally:
+      os.environ = old_env
+
   def test_main(self):
     self.mock(tools, 'disable_buffering', lambda: None)
     isolated = json_dumps(

@@ -353,7 +353,7 @@ def process_command(command, out_dir, bot_file):
   return [fix(arg) for arg in command]
 
 
-def get_command_env(tmp_dir, cipd_info, cwd, env, env_prefixes):
+def get_command_env(tmp_dir, cipd_info, run_dir, env, env_prefixes):
   """Returns full OS environment to run a command in.
 
   Sets up TEMP, puts directory with cipd binary in front of PATH, exposes
@@ -362,14 +362,14 @@ def get_command_env(tmp_dir, cipd_info, cwd, env, env_prefixes):
   Args:
     tmp_dir: temp directory.
     cipd_info: CipdInfo object is cipd client is used, None if not.
-    cwd: The directory the command will run in
+    run_dir: The root directory the isolated tree is mapped in.
     env: environment variables to use
     env_prefixes: {"ENV_KEY": ['cwd', 'relative', 'paths', 'to', 'prepend']}
   """
   out = os.environ.copy()
   for k, v in env.iteritems():
     if not v:
-      del out[k]
+      out.pop(k, None)
     else:
       out[k] = v
 
@@ -379,7 +379,8 @@ def get_command_env(tmp_dir, cipd_info, cwd, env, env_prefixes):
     out['CIPD_CACHE_DIR'] = _to_str(cipd_info.cache_dir)
 
   for key, paths in env_prefixes.iteritems():
-    paths = [os.path.normpath(os.path.join(cwd, p)) for p in paths]
+    assert isinstance(paths, list), paths
+    paths = [os.path.normpath(os.path.join(run_dir, p)) for p in paths]
     cur = out.get(key)
     if cur:
       paths.append(cur)
@@ -699,7 +700,7 @@ def map_and_run(data, constant_run_path):
           # so it can grab correct value of LUCI_CONTEXT env var.
           with set_luci_context_account(data.switch_to_account, tmp_dir):
             env = get_command_env(
-                tmp_dir, cipd_info, cwd, data.env, data.env_prefix)
+                tmp_dir, cipd_info, run_dir, data.env, data.env_prefix)
             result['exit_code'], result['had_hard_timeout'] = run_command(
                 command, cwd, env, data.hard_timeout, data.grace_period)
         finally:
