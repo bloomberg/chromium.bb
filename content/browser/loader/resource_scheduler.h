@@ -66,14 +66,20 @@ class ResourceThrottle;
 // the URLRequest.
 class CONTENT_EXPORT ResourceScheduler {
  public:
-  // A struct that stores a bandwidth delay product (BDP) and the maximum number
-  // of delayable requests when the observed BDP is below (inclusive) the
-  // specified BDP.
-  struct MaxRequestsForBDPRange {
-    int64_t max_bdp_kbits;
-    size_t max_requests;
+  // A struct that stores the Network Quality values and loading parameters when
+  // the observed Network Quality matches the specified network quality value.
+  struct ParamsForNetworkQuality {
+    // The observed Effective Connection Type (ECT) should be
+    // |effective_connection_type| for the loading parameters specified in this
+    // struct to apply.
+    net::EffectiveConnectionType effective_connection_type;
+    // The maximum number of delayable requests allowed.
+    size_t max_delayable_requests;
+    // The weight of a non-delayable request when counting the effective number
+    // of non-delayable requests in-flight.
+    double non_delayable_weight;
   };
-  typedef std::vector<MaxRequestsForBDPRange> MaxRequestsForBDPRanges;
+  typedef std::vector<ParamsForNetworkQuality> ParamsForNetworkQualityContainer;
 
   explicit ResourceScheduler(bool enabled);
   ~ResourceScheduler();
@@ -134,9 +140,9 @@ class CONTENT_EXPORT ResourceScheduler {
                            net::RequestPriority new_priority);
 
   // Public for tests.
-  static MaxRequestsForBDPRanges
-  GetMaxDelayableRequestsExperimentConfigForTests() {
-    return ThrottleDelayble::GetMaxRequestsForBDPRanges();
+  static ParamsForNetworkQualityContainer
+  GetParamsForNetworkQualityContainerForTests() {
+    return ThrottleDelayable::GetParamsForNetworkQualityContainer();
   }
 
   bool priority_requests_delayable() const {
@@ -180,30 +186,17 @@ class CONTENT_EXPORT ResourceScheduler {
   };
 
   // Experiment parameters and helper functions for varying the maximum number
-  // of delayable requests in-flight based on the observed bandwidth delay
-  // product (BDP), or in the presence of non-delayable requests in-flight.
-  class ThrottleDelayble {
+  // of delayable requests in-flight based on the observed Effective Connection
+  // Type (ECT), or in the presence of non-delayable requests in-flight.
+  class ThrottleDelayable {
    public:
-    ThrottleDelayble();
+    ThrottleDelayable();
+    ~ThrottleDelayable();
 
-    ~ThrottleDelayble();
-
-    // Returns the maximum delayable requests based on the current
-    // value of the bandwidth delay product (BDP). It falls back to the default
-    // limit on three conditions:
-    // 1. |network_quality_estimator| is null.
-    // 2. The current effective connection type is
-    // net::EFFECTIVE_CONNECTION_TYPE_OFFLINE or
-    // net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN.
-    // 3. The current value of the BDP is not in any of the ranges in
-    // |max_requests_for_bdp_ranges_|.
-    size_t GetMaxDelayableRequests(
-        const net::NetworkQualityEstimator* network_quality_estimator) const;
-
-    // This method computes the correct weight for the non-delayable requests
-    // based on the current effective connection type. If it is out of bounds,
-    // it returns 0, effectively disabling the experiment.
-    double GetCurrentNonDelayableWeight(
+    // Returns the parameters for resource loading based on the current
+    // value of the network quality and the parameters set by ThrottleDelayable
+    // experiment.
+    ParamsForNetworkQuality GetParamsForNetworkQuality(
         const net::NetworkQualityEstimator* network_quality_estimator) const;
 
    private:
@@ -211,32 +204,29 @@ class CONTENT_EXPORT ResourceScheduler {
     friend class ResourceScheduler;
 
     // Reads experiment parameters and creates a vector  of
-    // |MaxRequestsForBDPRange| to populate |max_requests_for_bdp_ranges_|. It
-    // looks for configuration parameters with sequential numeric suffixes, and
-    // stops looking after the first failure to find an experimetal parameter.
-    // The BDP values are specified in kilobits. A sample configuration is given
-    // below:
-    // "MaxBDPKbits1": "150",
-    // "MaxDelayableRequests1": "2",
-    // "MaxBDPKbits2": "200",
-    // "MaxDelayableRequests2": "4",
-    // "MaxEffectiveConnectionType": "3G"
-    // This config implies that when BDP <= 150, then the maximum number of
-    // non-delayable requests should be limited to 2. When BDP > 150 and <= 200,
-    // it should be limited to 4. For BDP > 200, the default value should be
-    // used.
-    static MaxRequestsForBDPRanges GetMaxRequestsForBDPRanges();
+    // |ParamsForNetworkQualityContainer| to populate
+    // |params_for_network_quality_container_|. It looks for configuration
+    // parameters with sequential numeric suffixes, and stops looking after the
+    // first failure to find an experimetal parameter. A sample configuration is
+    // given below:
+    // "EffectiveConnectionType1": "Slow-2G",
+    // "MaxDelayableRequests1": "6",
+    // "NonDelayableWeight1": "2.0",
+    // "EffectiveConnectionType2": "3G",
+    // "MaxDelayableRequests2": "12",
+    // "NonDelayableWeight2": "3.0",
+    // This config implies that when Effective Connection Type (ECT) is Slow-2G,
+    // then the maximum number of non-delayable requests should be
+    // limited to 6, and the non-delayable request weight should be set to 2.
+    // When ECT is 3G, it should be limited to 12. For all other values of ECT,
+    // the default values should be used.
+    static ParamsForNetworkQualityContainer
+    GetParamsForNetworkQualityContainer();
 
     // The number of delayable requests in-flight for different ranges of the
-    // bandwidth delay product (BDP).
-    const MaxRequestsForBDPRanges max_requests_for_bdp_ranges_;
-
-    // The maximum ECT for which the experiment should be enabled.
-    const net::EffectiveConnectionType max_effective_connection_type_;
-
-    // The weight of a non-delayable request when counting the effective number
-    // of non-delayable requests in-flight.
-    const double non_delayable_weight_;
+    // network quality.
+    const ParamsForNetworkQualityContainer
+        params_for_network_quality_container_;
   };
 
   typedef int64_t ClientId;
@@ -274,7 +264,7 @@ class CONTENT_EXPORT ResourceScheduler {
   int max_requests_before_yielding_;
   base::TimeDelta yield_time_;
 
-  const ThrottleDelayble throttle_delayable_;
+  const ThrottleDelayable throttle_delayable_;
 
   // The TaskRunner to post tasks on. Can be overridden for tests.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
