@@ -1022,6 +1022,7 @@
       "media_perftests",
       "--single-process-tests",
       "--test-launcher-retry-limit=0",
+      "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned",
     ],
   },
   "load_library_perf_tests": {
