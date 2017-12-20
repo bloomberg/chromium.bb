@@ -160,7 +160,7 @@ bool SpellingServiceClient::IsAvailable(content::BrowserContext* context,
   // If prefs don't allow spellchecking, if the context is off the record, or if
   // multilingual spellchecking is enabled the spelling service should be
   // unavailable.
-  if (!pref->GetBoolean(spellcheck::prefs::kSpellCheckEnable) ||
+  if (!pref->GetBoolean(spellcheck::prefs::kEnableSpellcheck) ||
       !pref->GetBoolean(spellcheck::prefs::kSpellCheckUseSpellingService) ||
       context->IsOffTheRecord())
     return false;

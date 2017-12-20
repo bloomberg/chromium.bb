@@ -125,7 +125,8 @@ using content::RenderViewHost;
       Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
       DCHECK(profile);
       NSCellStateValue checkedState =
-          profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable)
+          profile->GetPrefs()->GetBoolean(
+              spellcheck::prefs::kEnableSpellcheck)
               ? NSOnState
               : NSOffState;
       [(id)item setState:checkedState];
@@ -216,8 +217,9 @@ using content::RenderViewHost;
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   DCHECK(profile);
   PrefService* pref = profile->GetPrefs();
-  pref->SetBoolean(spellcheck::prefs::kSpellCheckEnable,
-                   !pref->GetBoolean(spellcheck::prefs::kSpellCheckEnable));
+  pref->SetBoolean(
+      spellcheck::prefs::kEnableSpellcheck,
+      !pref->GetBoolean(spellcheck::prefs::kEnableSpellcheck));
 }
 
 // END Spellchecking methods

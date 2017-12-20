@@ -100,7 +100,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::OnAcceptLanguagesChanged,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
-      spellcheck::prefs::kSpellCheckEnable,
+      spellcheck::prefs::kEnableSpellcheck,
       base::BindRepeating(&SpellcheckService::InitForAllRenderers,
                           base::Unretained(this)));
 
@@ -192,7 +192,7 @@ void SpellcheckService::InitForRenderer(
         hunspell_dictionary->GetLanguage()));
   }
 
-  bool enable = prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
+  bool enable = prefs->GetBoolean(spellcheck::prefs::kEnableSpellcheck) &&
                 !dictionaries.empty();
 
   std::vector<std::string> custom_words;
