@@ -75,7 +75,7 @@ class DragController;
 class FocusManager;
 class FocusTraversable;
 class LayoutManager;
-class NativeViewAccessibility;
+class ViewAccessibility;
 class ScrollView;
 class ViewObserver;
 class Widget;
@@ -1095,6 +1095,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accessibility -------------------------------------------------------------
 
+  // Get the object managing the accessibility interface for this View.
+  ViewAccessibility& GetViewAccessibility();
+
   // Modifies |node_data| to reflect the current accessible state of this view.
   virtual void GetAccessibleNodeData(ui::AXNodeData* node_data) {}
 
@@ -1830,8 +1833,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accessibility -------------------------------------------------------------
 
-  // The accessibility element used to represent this View.
-  std::unique_ptr<NativeViewAccessibility> native_view_accessibility_;
+  // Manages the accessibility interface for this View.
+  std::unique_ptr<ViewAccessibility> view_accessibility_;
 
   // Observers -------------------------------------------------------------
 

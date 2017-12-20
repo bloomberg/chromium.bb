@@ -48,8 +48,7 @@ aura::Window* GetWindowParentIncludingTransient(aura::Window* window) {
 }  // namespace
 
 // static
-std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
-    View* view) {
+std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
   return std::make_unique<NativeViewAccessibilityWin>(view);
 }
 
@@ -60,12 +59,12 @@ NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {}
 
 gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
   // If the View has a parent View, return that View's IAccessible.
-  if (view_->parent())
-    return view_->parent()->GetNativeViewAccessible();
+  if (view()->parent())
+    return view()->parent()->GetNativeViewAccessible();
 
   // Otherwise we must be the RootView, get the corresponding Widget
   // and Window.
-  Widget* widget = view_->GetWidget();
+  Widget* widget = view()->GetWidget();
   if (!widget)
     return nullptr;
 
@@ -84,7 +83,7 @@ gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
   }
 
   // If that fails, return the NativeViewAccessible for our owning HWND.
-  HWND hwnd = HWNDForView(view_);
+  HWND hwnd = HWNDForView(view());
   if (!hwnd)
     return nullptr;
 
@@ -99,12 +98,12 @@ gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
 
 gfx::AcceleratedWidget
 NativeViewAccessibilityWin::GetTargetForNativeAccessibilityEvent() {
-  return HWNDForView(view_);
+  return HWNDForView(view());
 }
 
 gfx::RectF NativeViewAccessibilityWin::GetBoundsInScreen() const {
-  gfx::RectF bounds = gfx::RectF(view_->GetBoundsInScreen());
-  gfx::NativeView native_view = view_->GetWidget()->GetNativeView();
+  gfx::RectF bounds = gfx::RectF(view()->GetBoundsInScreen());
+  gfx::NativeView native_view = view()->GetWidget()->GetNativeView();
   float device_scale = ui::GetScaleFactorForNativeView(native_view);
   bounds.Scale(device_scale);
   return bounds;
