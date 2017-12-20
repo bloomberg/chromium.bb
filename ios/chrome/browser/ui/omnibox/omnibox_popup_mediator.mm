@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,6 +27,8 @@
 }
 @synthesize consumer = _consumer;
 @synthesize incognito = _incognito;
+@synthesize open = _open;
+@synthesize presenter = _presenter;
 
 - (instancetype)initWithFetcher:
                     (std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)
@@ -36,6 +39,7 @@
     DCHECK(delegate);
     _delegate = delegate;
     _imageFetcher = std::move(imageFetcher);
+    _open = NO;
   }
   return self;
 }
@@ -64,6 +68,29 @@
   }
 
   return wrappedMatches;
+}
+
+- (void)updateWithResults:(const AutocompleteResult&)result {
+  if (!self.open && !result.empty()) {
+    // The popup is not currently open and there are results to display. Update
+    // and animate the cells
+    [self updateMatches:result withAnimation:YES];
+  } else {
+    // The popup is already displayed or there are no results to display. Update
+    // the cells without animating.
+    [self updateMatches:result withAnimation:NO];
+  }
+  self.open = !result.empty();
+
+  if (self.open) {
+    [self.presenter updateHeightAndAnimateAppearanceIfNecessary];
+  } else {
+    [self.presenter animateCollapse];
+  }
+}
+
+- (void)setTextAlignment:(NSTextAlignment)alignment {
+  [self.consumer setTextAlignment:alignment];
 }
 
 #pragma mark - AutocompleteResultConsumerDelegate

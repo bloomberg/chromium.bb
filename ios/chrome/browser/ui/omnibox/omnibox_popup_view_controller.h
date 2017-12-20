@@ -26,9 +26,6 @@
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
-// Set text alignment for popup cells.
-- (void)setTextAlignment:(NSTextAlignment)alignment;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_CONTROLLER_H_

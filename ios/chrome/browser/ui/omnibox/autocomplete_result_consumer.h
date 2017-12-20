@@ -34,6 +34,8 @@
 // CALayer animations to fade the OmniboxPopupRows in.
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
         withAnimation:(BOOL)animation;
+// Sets the text alignment of the popup content.
+- (void)setTextAlignment:(NSTextAlignment)alignment;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_AUTOCOMPLETE_RESULT_CONSUMER_H_

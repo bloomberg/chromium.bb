@@ -53,6 +53,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -127,7 +128,7 @@ using ios::material::TimingFunction;
   UIView* _clippingView;
 
   std::unique_ptr<LocationBarControllerImpl> _locationBar;
-  std::unique_ptr<OmniboxPopupViewIOS> _popupView;
+  OmniboxPopupCoordinator* _omniboxPopupCoordinator;
   BOOL _initialLayoutComplete;
   // If |YES|, toolbar is incognito.
   BOOL _incognito;
@@ -495,7 +496,8 @@ using ios::material::TimingFunction;
   [_webToolbar setFrame:[self specificControlsArea]];
   _locationBar = base::MakeUnique<LocationBarControllerImpl>(
       _locationBarView, _browserState, self, self.dispatcher);
-  _popupView = _locationBar->CreatePopupView(self);
+  _omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
+  [_omniboxPopupCoordinator start];
 
   // Create the determinate progress bar (phone only).
   if (idiom == IPHONE_IDIOM) {
@@ -596,7 +598,7 @@ using ios::material::TimingFunction;
 - (void)browserStateDestroyed {
   // The location bar has a browser state reference, so must be destroyed at
   // this point. The popup has to be destroyed before the location bar.
-  _popupView.reset();
+  [_omniboxPopupCoordinator stop];
   _locationBar.reset();
   _browserState = nullptr;
 }
