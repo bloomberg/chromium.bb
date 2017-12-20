@@ -402,7 +402,7 @@ void NavigationSimulator::ReadyToCommit() {
         render_frame_host_, scoped_refptr<net::HttpResponseHeaders>(),
         net::HttpResponseInfo::ConnectionInfo(), socket_address_,
         net::SSLInfo(), global_id, false /* should_replace_current_entry */,
-        false /* is_download */, false /* is_stream */, base::Closure(),
+        false /* is_download */, false /* is_stream */,
         base::Callback<void(NavigationThrottle::ThrottleCheckResult)>());
   }
 

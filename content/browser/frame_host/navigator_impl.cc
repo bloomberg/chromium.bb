@@ -1289,12 +1289,6 @@ void NavigatorImpl::DidStartMainFrameNavigation(
       entry->SetRedirectChain(pending_entry->GetRedirectChain());
     }
 
-    // If there's a current NavigationHandle, update its pending NavEntry ID.
-    // This is necessary for transfer navigations.  The handle may be null in
-    // PlzNavigate.
-    if (navigation_handle)
-      navigation_handle->update_entry_id_for_transfer(entry->GetUniqueID());
-
     controller_->SetPendingEntry(std::move(entry));
     if (delegate_)
       delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);

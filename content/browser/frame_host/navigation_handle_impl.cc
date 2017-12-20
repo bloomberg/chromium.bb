@@ -57,12 +57,6 @@ void UpdateThrottleCheckResult(
   *to_update = result;
 }
 
-void NotifyAbandonedTransferNavigation(const GlobalRequestID& id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get())
-    rdh->CancelRequest(id.child_id, id.request_id);
-}
-
 }  // namespace
 
 // static
@@ -198,22 +192,8 @@ NavigationHandleImpl::~NavigationHandleImpl() {
     }
   }
 
-  // Transfer requests that have not matched up with another navigation request
-  // from the renderer need to be cleaned up. These are marked as protected in
-  // the RDHI, so they do not get cancelled when frames are destroyed.
-  if (is_transferring()) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&NotifyAbandonedTransferNavigation,
-                                           GetGlobalRequestID()));
-  }
-
   if (!IsRendererDebugURL(url_))
     GetDelegate()->DidFinishNavigation(this);
-
-  // Cancel the navigation on the IO thread if the NavigationHandle is being
-  // destroyed in the middle of the NavigationThrottles checks.
-  if (!IsBrowserSideNavigationEnabled() && !complete_callback_.is_null())
-    RunCompleteCallback(NavigationThrottle::CANCEL_AND_IGNORE);
 
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
@@ -467,7 +447,7 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
                       headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
                       net::HostPortPair(), net::SSLInfo(), GlobalRequestID(),
-                      false, false, false, base::Closure(),
+                      false, false, false,
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -545,14 +525,12 @@ bool NavigationHandleImpl::IsDownload() {
 
 void NavigationHandleImpl::InitServiceWorkerHandle(
     ServiceWorkerContextWrapper* service_worker_context) {
-  DCHECK(IsBrowserSideNavigationEnabled());
   service_worker_handle_.reset(
       new ServiceWorkerNavigationHandle(service_worker_context));
 }
 
 void NavigationHandleImpl::InitAppCacheHandle(
     ChromeAppCacheService* appcache_service) {
-  DCHECK(IsBrowserSideNavigationEnabled());
   appcache_handle_.reset(new AppCacheNavigationHandle(appcache_service));
 }
 
@@ -608,8 +586,7 @@ void NavigationHandleImpl::WillStartRequest(
   if (!IsRendererDebugURL(url_))
     RegisterNavigationThrottles();
 
-  if (IsBrowserSideNavigationEnabled())
-    navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
+  navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
 
   // Notify each throttle of the request.
   base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
@@ -741,7 +718,6 @@ void NavigationHandleImpl::WillProcessResponse(
     bool should_replace_current_entry,
     bool is_download,
     bool is_stream,
-    const base::Closure& transfer_callback,
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillProcessResponse");
@@ -758,7 +734,6 @@ void NavigationHandleImpl::WillProcessResponse(
   ssl_info_ = ssl_info;
   socket_address_ = socket_address;
   complete_callback_ = callback;
-  transfer_callback_ = transfer_callback;
 
   // Notify each throttle of the response.
   base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
@@ -772,13 +747,10 @@ void NavigationHandleImpl::WillProcessResponse(
   }
 
   // If the navigation is done processing the response, then it's ready to
-  // commit. Determine which RenderFrameHost should render the response, based
-  // on its site (after any redirects).
-  // Note: if MaybeTransferAndProceed returns false, this means that this
-  // NavigationHandle was deleted, so return immediately.
-  if (result.action() == NavigationThrottle::PROCEED &&
-      !MaybeTransferAndProceed())
-    return;
+  // commit. Inform observers that the navigation is now ready to commit, unless
+  // it is not set to commit (204/205s/downloads).
+  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_)
+    ReadyToCommitNavigation(render_frame_host_);
 
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "ProcessResponse", "result", result.action());
@@ -806,8 +778,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
                         ready_to_commit_time_ - navigation_start_);
   }
 
-  if (IsBrowserSideNavigationEnabled())
-    SetExpectedProcess(render_frame_host->GetProcess());
+  SetExpectedProcess(render_frame_host->GetProcess());
 
   if (!IsRendererDebugURL(url_) && !IsSameDocument())
     GetDelegate()->ReadyToCommitNavigation(this);
@@ -904,19 +875,6 @@ void NavigationHandleImpl::SetExpectedProcess(
       expected_process, site_url_);
 }
 
-void NavigationHandleImpl::Transfer() {
-  DCHECK(!IsBrowserSideNavigationEnabled());
-  // This is an actual transfer. Inform the NavigationResourceThrottle. This
-  // will allow to mark the URLRequest as transferring. When it is marked as
-  // transferring, the URLRequest can no longer be cancelled by its original
-  // RenderFrame. Instead it will persist until being picked up by the transfer
-  // RenderFrame, even if the original RenderFrame is destroyed.
-  // Note: |transfer_callback_| can be null in unit tests.
-  if (!transfer_callback_.is_null())
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, transfer_callback_);
-  transfer_callback_.Reset();
-}
-
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CheckWillStartRequest() {
   DCHECK(state_ == WILL_SEND_REQUEST || state_ == DEFERRING_START);
@@ -995,9 +953,6 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
       case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
         frame_tree_node_->SetCollapsed(true);  // Fall through.
       case NavigationThrottle::BLOCK_REQUEST:
-        CHECK(IsBrowserSideNavigationEnabled())
-            << "BLOCK_REQUEST and BLOCK_REQUEST_AND_COLLAPSE must not be used "
-               "on redirect without PlzNavigate";
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
         state_ = CANCELING;
@@ -1161,14 +1116,11 @@ void NavigationHandleImpl::ResumeInternal() {
     }
 
     // If the navigation is about to proceed after having been deferred while
-    // processing the response, then it's ready to commit. Determine which
-    // RenderFrameHost should render the response, based on its site (after any
-    // redirects).
-    // Note: if MaybeTransferAndProceed returns false, this means that this
-    // NavigationHandle was deleted, so return immediately.
-    if (result.action() == NavigationThrottle::PROCEED &&
-        !MaybeTransferAndProceed())
-      return;
+    // processing the response, then it's ready to commit. Inform observers that
+    // the navigation is now ready to commit, unless it is not set to commit
+    // (204/205s/downloads).
+    if (result.action() == NavigationThrottle::PROCEED && render_frame_host_)
+      ReadyToCommitNavigation(render_frame_host_);
   }
   DCHECK_NE(NavigationThrottle::DEFER, result.action());
 
@@ -1185,8 +1137,7 @@ void NavigationHandleImpl::CancelDeferredNavigationInternal(
          result.action() == NavigationThrottle::CANCEL ||
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
-         state_ == DEFERRING_START ||
-         (state_ == DEFERRING_REDIRECT && IsBrowserSideNavigationEnabled()));
+         state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT);
 
   if (result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE)
     frame_tree_node_->SetCollapsed(true);
@@ -1195,85 +1146,6 @@ void NavigationHandleImpl::CancelDeferredNavigationInternal(
                                "CancelDeferredNavigation");
   state_ = CANCELING;
   RunCompleteCallback(result);
-}
-
-bool NavigationHandleImpl::MaybeTransferAndProceed() {
-  DCHECK_EQ(WILL_PROCESS_RESPONSE, state_);
-
-  // Check if the navigation should transfer. This may result in the
-  // destruction of this NavigationHandle, and the cancellation of the request.
-  if (!MaybeTransferAndProceedInternal())
-    return false;
-
-  // Inform observers that the navigation is now ready to commit, unless a
-  // transfer of the navigation failed.
-  // PlzNavigate: when a navigation is not set to commit (204/205s/downloads) do
-  // not call ReadyToCommitNavigation.
-  DCHECK(!IsBrowserSideNavigationEnabled() || render_frame_host_ ||
-         net_error_code_ == net::ERR_ABORTED);
-  if (!IsBrowserSideNavigationEnabled() || render_frame_host_)
-    ReadyToCommitNavigation(render_frame_host_);
-  return true;
-}
-
-bool NavigationHandleImpl::MaybeTransferAndProceedInternal() {
-  DCHECK(render_frame_host_ || (IsBrowserSideNavigationEnabled() &&
-                                net_error_code_ == net::ERR_ABORTED));
-
-  // PlzNavigate: the final RenderFrameHost handling this navigation has been
-  // decided before calling WillProcessResponse in
-  // NavigationRequest::OnResponseStarted.
-  // TODO(clamy): See if PlzNavigate could use this code to check whether to
-  // use the RFH determined at the start of the navigation or to switch to
-  // another one.
-  if (IsBrowserSideNavigationEnabled())
-    return true;
-
-  // A navigation from a RenderFrame that is no longer active should not attempt
-  // to transfer.
-  if (!render_frame_host_->is_active()) {
-    // This will cause the deletion of this NavigationHandle and the
-    // cancellation of the navigation.
-    render_frame_host_->SetNavigationHandle(nullptr);
-    return false;
-  }
-
-  // If this is a download, do not do a cross-site check. The renderer will
-  // see it is a download and abort the request.
-  //
-  // Similarly, HTTP 204 (No Content) responses leave the renderer showing the
-  // previous page. The navigation should be allowed to finish without running
-  // the unload handler or swapping in the pending RenderFrameHost.
-  if (is_download_ || is_stream_ ||
-      (response_headers_.get() && response_headers_->response_code() == 204)) {
-    return true;
-  }
-
-  // In the site-per-process model, the RenderFrameHostManager may decide
-  // that a process transfer is needed. Process transfers are skipped for
-  // WebUI processes for now, since e.g. chrome://settings has multiple
-  // "cross-site" chrome:// frames, and that doesn't yet work cross-process.
-  RenderFrameHostManager* manager =
-      render_frame_host_->frame_tree_node()->render_manager();
-  bool should_transfer = false;
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          render_frame_host_->GetProcess()->GetID())) {
-    should_transfer |= manager->IsRendererTransferNeededForNavigation(
-        render_frame_host_, url_);
-  }
-
-  // Start the transfer if needed.
-  if (should_transfer) {
-    // This may destroy the NavigationHandle if the transfer fails.
-    base::WeakPtr<NavigationHandleImpl> weak_self = weak_factory_.GetWeakPtr();
-    manager->OnCrossSiteResponse(render_frame_host_, request_id_,
-                                 redirect_chain_, sanitized_referrer_,
-                                 transition_, should_replace_current_entry_);
-    if (!weak_self)
-      return false;
-  }
-
-  return true;
 }
 
 void NavigationHandleImpl::RunCompleteCallback(

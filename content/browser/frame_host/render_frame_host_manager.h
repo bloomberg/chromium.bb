@@ -294,16 +294,6 @@ class CONTENT_EXPORT RenderFrameHostManager
                          bool proceed,
                          const base::TimeTicks& proceed_time);
 
-  // The |pending_render_frame_host| is ready to commit a page.  We should
-  // ensure that the old RenderFrameHost runs its unload handler first and
-  // determine whether a RenderFrameHost transfer is needed.
-  void OnCrossSiteResponse(RenderFrameHostImpl* pending_render_frame_host,
-                           const GlobalRequestID& global_request_id,
-                           const std::vector<GURL>& transfer_url_chain,
-                           const Referrer& referrer,
-                           ui::PageTransition page_transition,
-                           bool should_replace_current_entry);
-
   // Determines whether a navigation to |dest_url| may be completed using an
   // existing RenderFrameHost, or whether transferring to a new RenderFrameHost
   // backed by a different render process is required. This is a security policy

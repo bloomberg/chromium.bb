@@ -42,39 +42,12 @@ class ResourceRequestBody;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 
-// This class keeps track of a single navigation. It is created upon receipt of
-// a DidStartProvisionalLoad IPC in a RenderFrameHost. The RenderFrameHost owns
-// the newly created NavigationHandleImpl as long as the navigation is ongoing.
-// The NavigationHandleImpl in the RenderFrameHost will be reset when the
-// navigation stops, that is if one of the following events happen:
-//   - The RenderFrameHost receives a DidStartProvisionalLoad IPC for a new
-//   navigation (see below for special cases where the DidStartProvisionalLoad
-//   message does not indicate the start of a new navigation).
-//   - The RenderFrameHost stops loading.
-//   - The RenderFrameHost receives a DidDropNavigation IPC.
-//
-// When the navigation encounters an error, the DidStartProvisionalLoad marking
-// the start of the load of the error page will not be considered as marking a
-// new navigation. It will not reset the NavigationHandleImpl in the
-// RenderFrameHost.
-//
-// If the navigation needs a cross-site transfer, then the NavigationHandleImpl
-// will briefly be held by the RenderFrameHostManager, until a suitable
-// RenderFrameHost for the navigation has been found. The ownership of the
-// NavigationHandleImpl will then be transferred to the new RenderFrameHost.
-// The DidStartProvisionalLoad received by the new RenderFrameHost for the
-// transferring navigation will not reset the NavigationHandleImpl, as it does
-// not mark the start of a new navigation.
-//
-// PlzNavigate: the NavigationHandleImpl is created just after creating a new
-// NavigationRequest. It is then owned by the NavigationRequest until the
-// navigation is ready to commit. The NavigationHandleImpl ownership is then
-// transferred to the RenderFrameHost in which the navigation will commit.
-//
-// When PlzNavigate is enabled, the NavigationHandleImpl will never be reset
-// following the receipt of a DidStartProvisionalLoad IPC. There are also no
-// transferring navigations. The other causes of NavigationHandleImpl reset in
-// the RenderFrameHost still apply.
+// This class keeps track of a single navigation. It is created after the
+// BeforeUnload for the navigation has run. It is then owned by the
+// NavigationRequest until the navigation is ready to commit. The
+// NavigationHandleImpl ownership is then transferred to the RenderFrameHost in
+// which the navigation will commit. It is finaly destroyed when the navigation
+// commits.
 class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  public:
   // If |redirect_chain| is empty, then the redirect chain will be created to
@@ -188,8 +161,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void SetOnDeferCallbackForTesting(const base::Closure& on_defer_callback);
 
   // Whether or not the navigation has been initiated by a form submission.
-  // TODO(arthursonzogni): This value is correct only when PlzNavigate is
-  // enabled. Make it work in both modes.
   bool is_form_submission() const { return is_form_submission_; }
 
   // The NavigatorDelegate to notify/query for various navigation events.
@@ -219,14 +190,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // will not have a NavigationEntry associated with it, and this will return 0.
   int pending_nav_entry_id() const { return pending_nav_entry_id_; }
 
-  // Changes the pending NavigationEntry ID for this handle.  This is currently
-  // required during transfer navigations.
-  // TODO(creis): Remove this when transfer navigations do not require pending
-  // entries.  See https://crbug.com/495161.
-  void update_entry_id_for_transfer(int nav_entry_id) {
-    pending_nav_entry_id_ = nav_entry_id;
-  }
-
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
   }
@@ -246,14 +209,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     render_frame_host_ = render_frame_host;
   }
 
-  // PlzNavigate
   void InitServiceWorkerHandle(
       ServiceWorkerContextWrapper* service_worker_context);
   ServiceWorkerNavigationHandle* service_worker_handle() const {
     return service_worker_handle_.get();
   }
 
-  // PlzNavigate
   void InitAppCacheHandle(ChromeAppCacheService* appcache_service);
   AppCacheNavigationHandle* appcache_handle() const {
     return appcache_handle_.get();
@@ -292,7 +253,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // will allow the caller to cancel the navigation or let it proceed.
   // This will also inform the delegate that the request was redirected.
   //
-  // PlzNavigate: |post_redirect_process| is the renderer process we expect to
+  // |post_redirect_process| is the renderer process we expect to
   // use to commit the navigation now that it has been redirected. It can be
   // null if there is no live process that can be used. In that case, a suitable
   // renderer process will be created at commit time.
@@ -319,9 +280,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // NavigationHandle will not call |callback| with a result of DEFER.
   // If the result is PROCEED, then 'ReadyToCommitNavigation' will be called
   // with |render_frame_host| and |response_headers| just before calling
-  // |callback|. Should a transfer navigation happen, |transfer_callback| will
-  // be run on the IO thread.
-  // PlzNavigate: transfer navigations are not possible.
+  // |callback|.
   void WillProcessResponse(
       RenderFrameHostImpl* render_frame_host,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
@@ -332,7 +291,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool should_replace_current_entry,
       bool is_download,
       bool is_stream,
-      const base::Closure& transfer_callback,
       const ThrottleChecksFinishedCallback& callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
@@ -363,9 +321,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void set_navigation_data(std::unique_ptr<NavigationData> navigation_data) {
     navigation_data_ = std::move(navigation_data);
   }
-
-  // Called when the navigation is transferred to a different renderer.
-  void Transfer();
 
   NavigationUIData* navigation_ui_data() const {
     return navigation_ui_data_.get();
@@ -402,7 +357,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     source_location_ = source_location;
   }
 
-  // PlzNavigate
   // Sets ID of the RenderProcessHost we expect the navigation to commit in.
   // This is used to inform the RenderProcessHost to expect a navigation to the
   // url we're navigating to.
@@ -431,19 +385,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void CancelDeferredNavigationInternal(
       NavigationThrottle::ThrottleCheckResult result);
 
-  // Called when WillProcessResponse checks are done, to find the final
-  // RenderFrameHost for the navigation. Checks whether the navigation should be
-  // transferred. Returns false if the transfer attempt results in the
-  // destruction of this NavigationHandle and the navigation should no longer
-  // proceed. This can happen when the RenderFrameHostManager determines a
-  // transfer is needed, but WebContentsDelegate::ShouldTransferNavigation
-  // returns false.
-  bool MaybeTransferAndProceed();
-
-  // Helper method for MaybeTransferAndProceed. Returns false if the transfer
-  // attempt results in the destruction of this NavigationHandle.
-  bool MaybeTransferAndProceedInternal();
-
   // Helper function to run and reset the |complete_callback_|. This marks the
   // end of a round of NavigationThrottleChecks.
   void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
@@ -463,8 +404,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSelfReferentialURL();
 
   // Updates the destination site URL for this navigation. This is called on
-  // redirects.
-  // PlzNavigate: |post_redirect_process| is the renderer process that should
+  // redirects. |post_redirect_process| is the renderer process that should
   // handle the navigation following the redirect if it can be handled by an
   // existing RenderProcessHost. Otherwise, it should be null.
   void UpdateSiteURL(RenderProcessHost* post_redirect_process);
@@ -549,12 +489,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // TODO(clamy): Revisit the unit test architecture when PlzNavigate ships.
   ThrottleChecksFinishedCallback complete_callback_for_testing_;
 
-  // PlzNavigate
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding ServiceWorkerNetworkProvider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
-  // PlzNavigate
   // Manages the lifetime of a pre-created AppCacheHost until a browser side
   // navigation is ready to be committed, i.e we have a renderer process ready
   // to service the navigation request.
@@ -563,7 +501,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Embedder data from the IO thread tied to this navigation.
   std::unique_ptr<NavigationData> navigation_data_;
 
-  // PlzNavigate
   // Embedder data from the UI thread tied to this navigation.
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
 
@@ -578,9 +515,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The chain of redirects.
   std::vector<GURL> redirect_chain_;
-
-  // A callback to run on the IO thread if the navigation transfers.
-  base::Closure transfer_callback_;
 
   // Whether the navigation ended up being a download or a stream.
   bool is_download_;
@@ -612,12 +546,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Whether or not the navigation results from the submission of a form.
   bool is_form_submission_;
 
-  // PlzNavigate
   // Information about the JavaScript that started the navigation. For
   // navigations initiated by Javascript.
   SourceLocation source_location_;
 
-  // PlzNavigate
   // Used to inform a RenderProcessHost that we expect this navigation to commit
   // in it.
   int expected_render_process_host_id_;

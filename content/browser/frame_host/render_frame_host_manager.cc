@@ -351,86 +351,6 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
   }
 }
 
-void RenderFrameHostManager::OnCrossSiteResponse(
-    RenderFrameHostImpl* transferring_render_frame_host,
-    const GlobalRequestID& global_request_id,
-    const std::vector<GURL>& transfer_url_chain,
-    const Referrer& referrer,
-    ui::PageTransition page_transition,
-    bool should_replace_current_entry) {
-  // A transfer should only have come from our pending or current RFH.  If it
-  // started as a cross-process navigation via OpenURL, this is the pending
-  // one.  If it wasn't cross-process until the transfer, this is the current
-  // one.
-  //
-  // Note that having a pending RFH does not imply that it was the one that
-  // made the request.  Suppose that during a pending cross-site navigation,
-  // the frame performs a different same-site navigation which redirects
-  // cross-site.  In this case, there will be a pending RFH, but this request
-  // is made by the current RFH. Later, this will create a new pending RFH and
-  // clean up the old one.
-  //
-  // TODO(creis): We need to handle the case that the pending RFH has changed
-  // in the mean time, while this was being posted from the IO thread.  We
-  // should probably cancel the request in that case.
-  DCHECK(transferring_render_frame_host == pending_render_frame_host_.get() ||
-         transferring_render_frame_host == render_frame_host_.get());
-
-  // Check if the FrameTreeNode is loading. This will be used later to notify
-  // the FrameTreeNode that the load stop if the transfer fails.
-  bool frame_tree_node_was_loading = frame_tree_node_->IsLoading();
-
-  // Store the NavigationHandle to give it to the appropriate RenderFrameHost
-  // after it started navigating.
-  transfer_navigation_handle_ =
-      transferring_render_frame_host->PassNavigationHandleOwnership();
-  CHECK(transfer_navigation_handle_);
-
-  // Set the transferring RenderFrameHost as not loading, so that it does not
-  // emit a DidStopLoading notification if it is destroyed when creating the
-  // new navigating RenderFrameHost.
-  transferring_render_frame_host->set_is_loading(false);
-
-  // Treat the last URL in the chain as the destination and the remainder as
-  // the redirect chain.
-  CHECK(transfer_url_chain.size());
-  GURL transfer_url = transfer_url_chain.back();
-  std::vector<GURL> rest_of_chain = transfer_url_chain;
-  rest_of_chain.pop_back();
-
-  // |extra_headers| passed to RequestTransferURL below are always empty for
-  // now, because there are no known scenarios where headers (from POST request
-  // made from one renderer) need to be forwarded into the renderer where that
-  // request ends up being transfered to.  In particular, XSSAuditor doesn't
-  // look at the headers (e.g. the Content-Type header) when analyzing the body
-  // of the POST request.
-  std::string extra_headers;
-
-  transferring_render_frame_host->frame_tree_node()
-      ->navigator()
-      ->RequestTransferURL(
-          transferring_render_frame_host, transfer_url, nullptr, rest_of_chain,
-          referrer, page_transition, global_request_id,
-          should_replace_current_entry,
-          transfer_navigation_handle_->IsPost() ? "POST" : "GET",
-          transfer_navigation_handle_->GetResourceRequestBody(), extra_headers);
-
-  // If the navigation continued, the NavigationHandle should have been
-  // transfered to a RenderFrameHost. In the other cases, it should be cleared.
-  // If the NavigationHandle wasn't claimed, this will lead to the cancelation
-  // of the request in the network stack.
-  if (transfer_navigation_handle_) {
-    transfer_navigation_handle_->set_net_error_code(net::ERR_ABORTED);
-    transfer_navigation_handle_->set_is_transferring(false);
-    transfer_navigation_handle_.reset();
-  }
-
-  // If the navigation in the new renderer did not start, inform the
-  // FrameTreeNode that it stopped loading.
-  if (!frame_tree_node_->IsLoading() && frame_tree_node_was_loading)
-    frame_tree_node_->DidStopLoading();
-}
-
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
@@ -2367,6 +2287,7 @@ void RenderFrameHostManager::CommitPending() {
   CHECK(!GetRenderFrameProxyHost(render_frame_host_->GetSiteInstance()));
 }
 
+// TODO(clamy): Remove this function.
 RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     const GURL& dest_url,
     SiteInstance* source_instance,
@@ -2390,31 +2311,6 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       frame_tree_node_->IsMainFrame() ||
       CanSubframeSwapProcess(dest_url, source_instance, dest_instance,
                              was_server_redirect);
-
-  // Inform the transferring NavigationHandle of a transfer to a different
-  // SiteInstance.  It is important do so now, in order to mark the request as
-  // transferring on the IO thread before attempting to destroy the pending RFH.
-  // This ensures the network request will not be destroyed along the pending
-  // RFH but will persist until it is picked up by the new RFH.
-  if (transfer_navigation_handle_.get() &&
-      transfer_navigation_handle_->GetGlobalRequestID() ==
-          transferred_request_id) {
-    // The transfer is needed when switching to a new SiteInstance.  One
-    // exception is if the process swap is not allowed and the transfer started
-    // in the current RFH, the navigation will stay in the current RFH (even
-    // when there is a new SiteInstance), so avoid calling Transfer() on it.
-    // This matters for some renderer-initiated data URLs navigations, see
-    // https://crbug.com/697513.
-    RenderFrameHostImpl* transferring_rfh =
-        transfer_navigation_handle_->GetRenderFrameHost();
-    bool transfer_started_from_current_rfh =
-        transferring_rfh == render_frame_host_.get();
-    bool should_transfer =
-        new_instance.get() != transferring_rfh->GetSiteInstance() &&
-        (!transfer_started_from_current_rfh || allowed_to_swap_process);
-    if (should_transfer)
-      transfer_navigation_handle_->Transfer();
-  }
 
   // If we are currently navigating cross-process to a pending RFH for a
   // different SiteInstance, we want to get back to normal and then navigate as
