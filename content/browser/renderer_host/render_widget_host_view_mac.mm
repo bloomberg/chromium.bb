@@ -2458,17 +2458,25 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
 
 - (void)handleEndGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ endGestureWithEvent:event];
-  gestureBeginEvent_.reset();
 
-  if (!renderWidgetHostView_->render_widget_host_)
-    return;
+  // On macOS 10.11+, the end event has type = NSEventTypeMagnify and phase =
+  // NSEventPhaseEnded. On macOS 10.10 and older, the event has type =
+  // NSEventTypeEndGesture.
+  if ([event type] == NSEventTypeMagnify ||
+      [event type] == NSEventTypeEndGesture) {
+    gestureBeginEvent_.reset();
 
-  if (gestureBeginPinchSent_) {
-    WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
-    endEvent.SetType(WebInputEvent::kGesturePinchEnd);
-    endEvent.source_device = blink::WebGestureDevice::kWebGestureDeviceTouchpad;
-    renderWidgetHostView_->SendGesturePinchEvent(&endEvent);
-    gestureBeginPinchSent_ = NO;
+    if (!renderWidgetHostView_->render_widget_host_)
+      return;
+
+    if (gestureBeginPinchSent_) {
+      WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
+      endEvent.SetType(WebInputEvent::kGesturePinchEnd);
+      endEvent.source_device =
+          blink::WebGestureDevice::kWebGestureDeviceTouchpad;
+      renderWidgetHostView_->SendGesturePinchEvent(&endEvent);
+      gestureBeginPinchSent_ = NO;
+    }
   }
 }
 
