@@ -780,16 +780,16 @@ void HTMLInputElement::ParseAttribute(
   } else if (name == minlengthAttr) {
     SetNeedsValidityCheck();
   } else if (name == sizeAttr) {
-    int old_size = size_;
-    size_ = kDefaultSize;
-    int value_as_integer;
-    if (!value.IsEmpty() && ParseHTMLInteger(value, value_as_integer) &&
-        value_as_integer > 0)
-      size_ = value_as_integer;
-    if (size_ != old_size && GetLayoutObject()) {
-      GetLayoutObject()
-          ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-              LayoutInvalidationReason::kAttributeChanged);
+    unsigned size = 0;
+    if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, size) ||
+        size == 0 || size > 0x7fffffffu)
+      size = kDefaultSize;
+    if (size_ != size) {
+      size_ = size;
+      if (GetLayoutObject())
+        GetLayoutObject()
+            ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+                LayoutInvalidationReason::kAttributeChanged);
     }
   } else if (name == altAttr) {
     input_type_view_->AltAttributeChanged();
@@ -1011,7 +1011,7 @@ void HTMLInputElement::setIndeterminate(bool new_value) {
     o->InvalidateIfControlStateChanged(kCheckedControlState);
 }
 
-int HTMLInputElement::size() const {
+unsigned HTMLInputElement::size() const {
   return size_;
 }
 
@@ -1439,16 +1439,13 @@ bool HTMLInputElement::Multiple() const {
   return FastHasAttribute(multipleAttr);
 }
 
-void HTMLInputElement::setSize(unsigned size) {
-  SetUnsignedIntegralAttribute(sizeAttr, size);
-}
-
 void HTMLInputElement::setSize(unsigned size, ExceptionState& exception_state) {
   if (size == 0) {
     exception_state.ThrowDOMException(
         kIndexSizeError, "The value provided is 0, which is an invalid size.");
   } else {
-    setSize(size);
+    SetUnsignedIntegralAttribute(sizeAttr, size ? size : kDefaultSize,
+                                 kDefaultSize);
   }
 }
 
