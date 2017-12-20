@@ -14,6 +14,10 @@
 class AppListControllerDelegate;
 class Profile;
 
+namespace app_list {
+class FakeAppListModelUpdater;
+}  // namespace app_list
+
 namespace extensions {
 class AppSorting;
 }  // namespace extensions
@@ -25,6 +29,7 @@ class ImageSkia;
 // Base class of all chrome app list items.
 class ChromeAppListItem : public app_list::AppListItem {
  public:
+  ~ChromeAppListItem() override;
   // AppListControllerDelegate is not properly implemented in tests. Use mock
   // |controller| for unit_tests.
   static void OverrideAppListControllerDelegateForTesting(
@@ -33,8 +38,11 @@ class ChromeAppListItem : public app_list::AppListItem {
   static gfx::ImageSkia CreateDisabledIcon(const gfx::ImageSkia& icon);
 
  protected:
+  // TODO(hejq): Remove this once we break the inheritance from AppListItem and
+  //             move those protected methods to public.
+  friend class app_list::FakeAppListModelUpdater;
+
   ChromeAppListItem(Profile* profile, const std::string& app_id);
-  ~ChromeAppListItem() override;
 
   Profile* profile() const { return profile_; }
 

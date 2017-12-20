@@ -21,12 +21,13 @@ ChromeAppListModelUpdater::ChromeAppListModelUpdater()
 
 ChromeAppListModelUpdater::~ChromeAppListModelUpdater() = default;
 
-void ChromeAppListModelUpdater::AddItem(std::unique_ptr<AppListItem> app_item) {
+void ChromeAppListModelUpdater::AddItem(
+    std::unique_ptr<ChromeAppListItem> app_item) {
   model_->AddItem(std::move(app_item));
 }
 
 void ChromeAppListModelUpdater::AddItemToFolder(
-    std::unique_ptr<AppListItem> app_item,
+    std::unique_ptr<ChromeAppListItem> app_item,
     const std::string& folder_id) {
   model_->AddItemToFolder(std::move(app_item), folder_id);
 }
@@ -43,10 +44,6 @@ void ChromeAppListModelUpdater::MoveItemToFolder(const std::string& id,
                                                  const std::string& folder_id) {
   AppListItem* item = model_->FindItem(id);
   model_->MoveItemToFolder(item, folder_id);
-}
-
-void ChromeAppListModelUpdater::MoveItem(size_t from_index, size_t to_index) {
-  model_->top_level_item_list()->MoveItem(from_index, to_index);
 }
 
 void ChromeAppListModelUpdater::SetItemPosition(
@@ -80,16 +77,17 @@ void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
   search_model_->SetSearchEngineIsGoogle(is_google);
 }
 
-AppListItem* ChromeAppListModelUpdater::FindItem(const std::string& id) {
-  return model_->FindItem(id);
+ChromeAppListItem* ChromeAppListModelUpdater::FindItem(const std::string& id) {
+  return static_cast<ChromeAppListItem*>(model_->FindItem(id));
 }
 
 size_t ChromeAppListModelUpdater::ItemCount() {
   return model_->top_level_item_list()->item_count();
 }
 
-AppListItem* ChromeAppListModelUpdater::ItemAt(size_t index) {
-  return model_->top_level_item_list()->item_at(index);
+ChromeAppListItem* ChromeAppListModelUpdater::ItemAtForTest(size_t index) {
+  return static_cast<ChromeAppListItem*>(
+      model_->top_level_item_list()->item_at(index));
 }
 
 AppListFolderItem* ChromeAppListModelUpdater::FindFolderItem(
@@ -97,8 +95,8 @@ AppListFolderItem* ChromeAppListModelUpdater::FindFolderItem(
   return model_->FindFolderItem(folder_id);
 }
 
-bool ChromeAppListModelUpdater::FindItemIndex(const std::string& id,
-                                              size_t* index) {
+bool ChromeAppListModelUpdater::FindItemIndexForTest(const std::string& id,
+                                                     size_t* index) {
   return model_->top_level_item_list()->FindItemIndex(id, index);
 }
 
@@ -137,7 +135,7 @@ AppListFolderItem* ChromeAppListModelUpdater::ResolveOemFolderPosition(
 
 // For AppListSyncableService:
 void ChromeAppListModelUpdater::AddItemToOemFolder(
-    std::unique_ptr<AppListItem> item,
+    std::unique_ptr<ChromeAppListItem> item,
     AppListSyncableService::SyncItem* oem_sync_item,
     const std::string& oem_folder_id,
     const std::string& oem_folder_name,

@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/app_list/model/app_list_item.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
@@ -24,6 +23,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
@@ -278,7 +278,7 @@ class ChromeAppIconWithModelTest : public ChromeAppIconTest {
     model_updater_.reset();
   }
 
-  app_list::AppListItem* FindAppListItem(const std::string& app_id) {
+  ChromeAppListItem* FindAppListItem(const std::string& app_id) {
     return model_updater_->FindItem(app_id);
   }
 
@@ -300,9 +300,9 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
 
   // App list item is already created. Wait until all image representations are
   // updated and take image snapshot.
-  app_list::AppListItem* app_list_item = FindAppListItem(kTestAppId);
+  ChromeAppListItem* app_list_item = FindAppListItem(kTestAppId);
   ASSERT_TRUE(app_list_item);
-  WaitForIconUpdates<app_list::AppListItem>(*app_list_item);
+  WaitForIconUpdates<ChromeAppListItem>(*app_list_item);
   std::unique_ptr<gfx::ImageSkia> app_list_item_image =
       app_list_item->icon().DeepCopy();
 

@@ -12,18 +12,20 @@ FakeAppListModelUpdater::FakeAppListModelUpdater() {}
 
 FakeAppListModelUpdater::~FakeAppListModelUpdater() {}
 
-void FakeAppListModelUpdater::AddItem(std::unique_ptr<AppListItem> item) {
+void FakeAppListModelUpdater::AddItem(std::unique_ptr<ChromeAppListItem> item) {
   items_.push_back(std::move(item));
 }
 
-void FakeAppListModelUpdater::AddItemToFolder(std::unique_ptr<AppListItem> item,
-                                              const std::string& folder_id) {
+void FakeAppListModelUpdater::AddItemToFolder(
+    std::unique_ptr<ChromeAppListItem> item,
+    const std::string& folder_id) {
+  item->set_folder_id(folder_id);
   items_.push_back(std::move(item));
 }
 
 void FakeAppListModelUpdater::RemoveItem(const std::string& id) {
   size_t index;
-  if (FindItemIndex(id, &index))
+  if (FindItemIndexForTest(id, &index))
     items_.erase(items_.begin() + index);
 }
 
@@ -31,13 +33,28 @@ void FakeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
   RemoveItem(id);
 }
 
+void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
+                                               const std::string& folder_id) {
+  size_t index;
+  if (FindItemIndexForTest(id, &index))
+    items_[index]->set_folder_id(folder_id);
+}
+
+void FakeAppListModelUpdater::SetItemPosition(
+    const std::string& id,
+    const syncer::StringOrdinal& new_position) {
+  size_t index;
+  if (FindItemIndexForTest(id, &index))
+    items_[index]->set_position(new_position);
+}
+
 void FakeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
   search_engine_is_google_ = is_google;
 }
 
-AppListItem* FakeAppListModelUpdater::FindItem(const std::string& id) {
+ChromeAppListItem* FakeAppListModelUpdater::FindItem(const std::string& id) {
   size_t index;
-  if (FindItemIndex(id, &index))
+  if (FindItemIndexForTest(id, &index))
     return items_[index].get();
   return nullptr;
 }
@@ -46,12 +63,12 @@ size_t FakeAppListModelUpdater::ItemCount() {
   return items_.size();
 }
 
-AppListItem* FakeAppListModelUpdater::ItemAt(size_t index) {
+ChromeAppListItem* FakeAppListModelUpdater::ItemAtForTest(size_t index) {
   return index < items_.size() ? items_[index].get() : nullptr;
 }
 
-bool FakeAppListModelUpdater::FindItemIndex(const std::string& id,
-                                            size_t* index) {
+bool FakeAppListModelUpdater::FindItemIndexForTest(const std::string& id,
+                                                   size_t* index) {
   for (size_t i = 0; i < items_.size(); ++i) {
     if (items_[i]->id() == id) {
       *index = i;

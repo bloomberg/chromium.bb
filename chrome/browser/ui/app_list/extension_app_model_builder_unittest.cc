@@ -46,7 +46,7 @@ std::set<std::string> GetModelContent(
     app_list::AppListModelUpdater* model_updater) {
   std::set<std::string> content;
   for (size_t i = 0; i < model_updater->ItemCount(); ++i)
-    content.insert(model_updater->ItemAt(i)->name());
+    content.insert(model_updater->ItemAtForTest(i)->name());
   return content;
 }
 

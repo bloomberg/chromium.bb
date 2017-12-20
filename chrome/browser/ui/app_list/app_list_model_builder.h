@@ -43,7 +43,7 @@ class AppListModelBuilder {
   app_list::AppListModelUpdater* model_updater() { return model_updater_; }
 
   // Inserts an app based on app ordinal prefs.
-  void InsertApp(std::unique_ptr<app_list::AppListItem> app);
+  void InsertApp(std::unique_ptr<ChromeAppListItem> app);
 
   // Removes an app based on app id. If |unsynced_change| is set to true then
   // app is removed only from model and sync service is not used.
@@ -53,7 +53,7 @@ class AppListModelBuilder {
       const std::string& id);
 
   // Returns app instance matching |id| or nullptr.
-  app_list::AppListItem* GetAppItem(const std::string& id);
+  ChromeAppListItem* GetAppItem(const std::string& id);
 
  private:
   // Unowned pointers to the service that owns this and associated profile.
