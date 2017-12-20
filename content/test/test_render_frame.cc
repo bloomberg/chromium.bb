@@ -95,6 +95,10 @@ class MockFrameHost : public mojom::FrameHost {
       blink::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& parsed_header) override {}
 
+  void CancelInitialHistoryLoad() override {}
+
+  void UpdateEncoding(const std::string& encoding_name) override {}
+
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
       last_commit_params_;

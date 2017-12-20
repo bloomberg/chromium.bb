@@ -887,8 +887,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_CancelInitialHistoryLoad,
-                        OnCancelInitialHistoryLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DocumentOnLoadCompleted,
                         OnDocumentOnLoadCompleted)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
@@ -913,7 +911,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidBlockFramebust, OnDidBlockFramebust)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AbortNavigation, OnAbortNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
@@ -1429,7 +1426,7 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
       params.triggering_event_info);
 }
 
-void RenderFrameHostImpl::OnCancelInitialHistoryLoad() {
+void RenderFrameHostImpl::CancelInitialHistoryLoad() {
   // A Javascript navigation interrupted the initial history load.  Check if an
   // initial subframe cross-process navigation needs to be canceled as a result.
   // TODO(creis, clamy): Cancel any cross-process navigation in PlzNavigate.
@@ -2386,7 +2383,7 @@ void RenderFrameHostImpl::OnUpdateTitle(
       this, title, WebTextDirectionToChromeTextDirection(title_direction));
 }
 
-void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
+void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->UpdateEncoding(this, encoding_name);
