@@ -131,8 +131,7 @@ public class SignInPreference
             return;
         }
 
-        if (SigninPromoController.hasNotReachedImpressionLimit(SigninAccessPoint.SETTINGS)
-                && SigninPromoController.arePersonalizedPromosEnabled()) {
+        if (SigninPromoController.hasNotReachedImpressionLimit(SigninAccessPoint.SETTINGS)) {
             setupPersonalizedPromo();
             return;
         }

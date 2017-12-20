@@ -35,16 +35,6 @@
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/no_thanks"
-            style="@style/ButtonCompatBorderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/no_thanks"
-            android:textAllCaps="true"
-            android:textColor="@color/light_active_color"
-            android:textSize="15sp" />
-
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/sign_in"
             android:layout_width="wrap_content"

@@ -57,13 +57,11 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         void onUpdated();
     }
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({PromoState.PROMO_NONE, PromoState.PROMO_SIGNIN_PERSONALIZED,
-            PromoState.PROMO_SIGNIN_GENERIC, PromoState.PROMO_SYNC})
+    @IntDef({PromoState.PROMO_NONE, PromoState.PROMO_SIGNIN_PERSONALIZED, PromoState.PROMO_SYNC})
     @interface PromoState {
         int PROMO_NONE = 0;
         int PROMO_SIGNIN_PERSONALIZED = 1;
-        int PROMO_SIGNIN_GENERIC = 2;
-        int PROMO_SYNC = 3;
+        int PROMO_SYNC = 2;
     }
 
     private static final int RECENTLY_CLOSED_MAX_TAB_COUNT = 5;
@@ -359,23 +357,19 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     @PromoState
     int getPromoType() {
-        if (ChromeSigninController.get().isSignedIn()) {
-            if (AndroidSyncSettings.isSyncEnabled(mContext)
-                    && AndroidSyncSettings.isChromeSyncEnabled(mContext)
-                    && !mForeignSessions.isEmpty()) {
+        if (!ChromeSigninController.get().isSignedIn()) {
+            if (!SigninManager.get(mContext).isSignInAllowed()) {
                 return PromoState.PROMO_NONE;
             }
-            return PromoState.PROMO_SYNC;
-        }
-
-        if (!SigninManager.get(mContext).isSignInAllowed()) {
-            return PromoState.PROMO_NONE;
-        }
-
-        if (SigninPromoController.arePersonalizedPromosEnabled()) {
             return PromoState.PROMO_SIGNIN_PERSONALIZED;
         }
-        return PromoState.PROMO_SIGNIN_GENERIC;
+
+        if (AndroidSyncSettings.isSyncEnabled(mContext)
+                && AndroidSyncSettings.isChromeSyncEnabled(mContext)
+                && !mForeignSessions.isEmpty()) {
+            return PromoState.PROMO_NONE;
+        }
+        return PromoState.PROMO_SYNC;
     }
 
     void recordRecentTabMetrics() {
