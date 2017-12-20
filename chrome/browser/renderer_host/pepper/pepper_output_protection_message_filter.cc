@@ -17,8 +17,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ui/display/types/display_constants.h"
 
-namespace chrome {
-
 namespace {
 
 static_assert(static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NONE) ==
@@ -161,5 +159,3 @@ void PepperOutputProtectionMessageFilter::OnEnableProtectionCompleteOnIOThread(
   SendReply(reply_context,
             PpapiPluginMsg_OutputProtection_EnableProtectionReply());
 }
-
-}  // namespace chrome
