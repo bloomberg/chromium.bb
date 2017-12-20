@@ -90,10 +90,17 @@ using LightSS = std::vector<LightDS>;
 - (void)signInPanelChangedTo:(TabSwitcherSignInPanelsType)panelType {
   NOTREACHED();
 }
+
 - (CGSize)sizeForItemAtIndex:(NSUInteger)index
                    inSession:(TabSwitcherSessionType)session {
   return CGSizeZero;
 }
+
+- (BOOL)isSigninInProgress {
+  NOTREACHED();
+  return NO;
+}
+
 @end
 
 namespace {

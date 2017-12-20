@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -60,7 +59,7 @@ const CGFloat kTitleMinimumLineHeight = 32.0;
 const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
-@interface TabSwitcherPanelOverlayView ()<SigninPromoViewConsumer>
+@interface TabSwitcherPanelOverlayView ()
 
 // Updates the texts of labels and button according to the current
 // |overlayType|.
@@ -81,7 +80,6 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   MDCButton* _floatingButton;
   MDCActivityIndicator* _activityIndicator;
   std::string _recordedMetricString;
-  SigninPromoViewMediator* _signinPromoViewMediator;
   // |_signinPromoView| should only be shown when |overlayType| is set to
   // |OVERLAY_PANEL_USER_SIGNED_OUT|.
   SigninPromoView* _signinPromoView;
@@ -90,6 +88,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 @synthesize overlayType = _overlayType;
 @synthesize presenter = _presenter;
 @synthesize dispatcher = _dispatcher;
+@synthesize signinPromoViewMediator = _signinPromoViewMediator;
 
 - (instancetype)initWithFrame:(CGRect)frame
                  browserState:(ios::ChromeBrowserState*)browserState
@@ -192,10 +191,6 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   return self;
 }
 
-- (void)dealloc {
-  [_signinPromoViewMediator signinPromoViewRemoved];
-}
-
 - (void)layoutSubviews {
   [super layoutSubviews];
   CGRect containerFrame = [_container frame];
@@ -217,9 +212,6 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     _container.hidden = NO;
     [_signinPromoView removeFromSuperview];
     _signinPromoView = nil;
-    _signinPromoViewMediator.consumer = nil;
-    [_signinPromoViewMediator signinPromoViewRemoved];
-    _signinPromoViewMediator = nil;
     [self updateText];
     [self updateButtonTarget];
   }
@@ -233,14 +225,21 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   [_signinPromoViewMediator signinPromoViewHidden];
 }
 
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged {
+  DCHECK(_signinPromoView);
+  DCHECK(_signinPromoViewMediator);
+  [configurator configureSigninPromoView:_signinPromoView];
+}
+
 #pragma mark - Private
 
 // Creates the sign-in view and its mediator if it doesn't exist.
 - (void)createSigninPromoViewIfNeeded {
-  if (_signinPromoView) {
-    DCHECK(_signinPromoViewMediator);
+  DCHECK(_signinPromoViewMediator);
+  if (_signinPromoView)
     return;
-  }
   _signinPromoView = [[SigninPromoView alloc] initWithFrame:CGRectZero];
   _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
   _signinPromoView.textLabel.text =
@@ -259,13 +258,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       constraintEqualToAnchor:self.centerYAnchor
                      constant:kContainerOriginYOffset]
       .active = YES;
-  _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-      initWithBrowserState:_browserState
-               accessPoint:signin_metrics::AccessPoint::
-                               ACCESS_POINT_TAB_SWITCHER
-                 presenter:self.presenter /* id<SigninPresenter> */];
   _signinPromoView.delegate = _signinPromoViewMediator;
-  _signinPromoViewMediator.consumer = self;
   [[_signinPromoViewMediator createConfigurator]
       configureSigninPromoView:_signinPromoView];
 }
@@ -492,16 +485,6 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   if (!_recordedMetricString.length())
     return;
   base::RecordAction(base::UserMetricsAction(_recordedMetricString.c_str()));
-}
-
-#pragma mark - SigninPromoViewConsumer
-
-- (void)configureSigninPromoWithConfigurator:
-            (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged {
-  DCHECK(_signinPromoView);
-  DCHECK(_signinPromoViewMediator);
-  [configurator configureSigninPromoView:_signinPromoView];
 }
 
 @end

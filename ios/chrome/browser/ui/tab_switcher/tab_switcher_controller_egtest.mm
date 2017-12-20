@@ -380,6 +380,20 @@ using web::test::HttpServer;
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
                           closeButton:NO];
+
+  // Tap the secondary button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   chrome_test_util::PrimarySignInButton(),
+                                   grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  // Tap the UNDO button.
+  [[EarlGrey selectElementWithMatcher:grey_buttonTitle(@"UNDO")]
+      performAction:grey_tap()];
+  // Check the sign-in promo view with warm state.
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                          closeButton:NO];
 }
 
 // Tests to reload the other devices tab after sign-in.
