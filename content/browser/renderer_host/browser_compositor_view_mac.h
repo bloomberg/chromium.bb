@@ -179,6 +179,11 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   const bool enable_viz_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
+  // The surface for the delegated frame host, rendered into by the renderer
+  // process.
+  viz::LocalSurfaceId delegated_frame_host_surface_id_;
+  // The surface for the ui::Compositor, which will embed
+  // |delegated_frame_host_surface_id_| into its tree.
   viz::LocalSurfaceId compositor_surface_id_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
