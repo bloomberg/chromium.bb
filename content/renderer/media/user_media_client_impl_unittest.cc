@@ -342,7 +342,6 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
   MediaStreamAudioSource* CreateAudioSource(
       const MediaStreamDevice& device,
-      const blink::WebMediaConstraints& constraints,
       const MediaStreamSource::ConstraintsCallback& source_ready,
       bool* has_sw_echo_cancellation) override {
     MediaStreamAudioSource* source;
