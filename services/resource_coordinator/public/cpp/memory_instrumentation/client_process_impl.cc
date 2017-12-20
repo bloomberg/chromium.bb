@@ -113,10 +113,8 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
     return;
   }
 
-  mojom::GlobalRequestArgsPtr args(
-      mojom::GlobalRequestArgs::New(dump_type, level_of_detail));
   coordinator_->RequestGlobalMemoryDumpAndAppendToTrace(
-      std::move(args),
+      dump_type, level_of_detail,
       mojom::Coordinator::RequestGlobalMemoryDumpAndAppendToTraceCallback());
 }
 

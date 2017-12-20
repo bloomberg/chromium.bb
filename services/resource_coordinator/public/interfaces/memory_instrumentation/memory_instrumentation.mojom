@@ -144,11 +144,6 @@ struct RawOSMemDump {
 
 // These structs are public:
 
-struct GlobalRequestArgs {
-  DumpType dump_type;
-  LevelOfDetail level_of_detail;
-};
-
 struct OSMemDump {
   uint32 resident_set_kb = 0;
 
@@ -234,12 +229,13 @@ interface Coordinator {
 
   // Broadcasts a dump request to all registered client processes and returns a
   // summarized dump back (if args.dump_type == SUMMARY_ONLY).
-  RequestGlobalMemoryDump(GlobalRequestArgs args) =>
+  RequestGlobalMemoryDump(DumpType dump_type, LevelOfDetail level_of_detail) =>
       (bool success, GlobalMemoryDump? global_memory_dump);
 
   // Broadcasts a dump request to all registered client processes and injects the
   // dump in the trace buffer (if tracing is enabled).
-  RequestGlobalMemoryDumpAndAppendToTrace(GlobalRequestArgs args) =>
+  RequestGlobalMemoryDumpAndAppendToTrace(DumpType dump_type,
+                                          LevelOfDetail level_of_detail) =>
       (bool success, uint64 dump_id);
 
   // Broadcasts a RequestOSMemoryDump-only request for all registered client

@@ -125,16 +125,22 @@ class CoordinatorImplTest : public testing::Test {
                                         process_type);
   }
 
-  void RequestGlobalMemoryDump(mojom::GlobalRequestArgsPtr args,
+  void RequestGlobalMemoryDump(RequestGlobalMemoryDumpCallback callback) {
+    RequestGlobalMemoryDump(MemoryDumpType::SUMMARY_ONLY,
+                            MemoryDumpLevelOfDetail::BACKGROUND, callback);
+  }
+
+  void RequestGlobalMemoryDump(MemoryDumpType dump_type,
+                               MemoryDumpLevelOfDetail level_of_detail,
                                RequestGlobalMemoryDumpCallback callback) {
-    coordinator_->RequestGlobalMemoryDump(std::move(args), callback);
+    coordinator_->RequestGlobalMemoryDump(dump_type, level_of_detail, callback);
   }
 
   void RequestGlobalMemoryDumpAndAppendToTrace(
-      mojom::GlobalRequestArgsPtr args,
       RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
-    coordinator_->RequestGlobalMemoryDumpAndAppendToTrace(std::move(args),
-                                                          callback);
+    coordinator_->RequestGlobalMemoryDumpAndAppendToTrace(
+        MemoryDumpType::EXPLICITLY_TRIGGERED, MemoryDumpLevelOfDetail::DETAILED,
+        callback);
   }
 
   void GetVmRegionsForHeapProfiler(
@@ -279,12 +285,9 @@ mojom::RawOSMemDumpPtr FillRawOSDump(int pid) {
 
 // Tests that the global dump is acked even in absence of clients.
 TEST_F(CoordinatorImplTest, NoClients) {
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      MemoryDumpType::SUMMARY_ONLY, MemoryDumpLevelOfDetail::DETAILED));
-
   MockGlobalMemoryDumpCallback callback;
   EXPECT_CALL(callback, OnCall(true, NotNull()));
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
 }
 
 // Nominal behavior: several clients contributing to the global dump.
@@ -298,23 +301,15 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
   EXPECT_CALL(client_process_1, RequestChromeMemoryDump(_, _)).Times(1);
   EXPECT_CALL(client_process_2, RequestChromeMemoryDump(_, _)).Times(1);
 
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED));
-
   MockGlobalMemoryDumpCallback callback;
   EXPECT_CALL(callback, OnCall(true, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
 TEST_F(CoordinatorImplTest, MissingChromeDump) {
   base::RunLoop run_loop;
-
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED));
 
   NiceMock<MockClientProcess> client_process(this, 1,
                                              mojom::ProcessType::BROWSER);
@@ -335,16 +330,12 @@ TEST_F(CoordinatorImplTest, MissingChromeDump) {
       OnCall(true, Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
                                  IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
 TEST_F(CoordinatorImplTest, MissingOsDump) {
   base::RunLoop run_loop;
-
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED));
 
   NiceMock<MockClientProcess> client_process(this, 1,
                                              mojom::ProcessType::BROWSER);
@@ -363,16 +354,12 @@ TEST_F(CoordinatorImplTest, MissingOsDump) {
       OnCall(true, Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
                                  IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
 TEST_F(CoordinatorImplTest, TimeOutStuckChild) {
   base::RunLoop run_loop;
-
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED));
 
   // |stuck_callback| should be destroyed after |client_process| or mojo
   // will complain about the callback being destoyed before the binding.
@@ -396,16 +383,12 @@ TEST_F(CoordinatorImplTest, TimeOutStuckChild) {
                                   IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   ReduceCoordinatorClientProcessTimeout();
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
 TEST_F(CoordinatorImplTest, TimeOutStuckChildMultiProcess) {
   base::RunLoop run_loop;
-
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED));
 
   static constexpr base::ProcessId kBrowserPid = 1;
   static constexpr base::ProcessId kRendererPid = 2;
@@ -422,10 +405,9 @@ TEST_F(CoordinatorImplTest, TimeOutStuckChildMultiProcess) {
 // On Linux, all memory dumps come from the browser client. On all other
 // platforms, they are expected to come from each individual client.
 #if defined(OS_LINUX)
-  EXPECT_CALL(
-      browser_client,
-      RequestOSMemoryDump(
-          true, AllOf(Contains(kBrowserPid), Contains(kRendererPid)), _))
+  EXPECT_CALL(browser_client,
+              RequestOSMemoryDump(
+                  _, AllOf(Contains(kBrowserPid), Contains(kRendererPid)), _))
       .WillOnce(Invoke(
           [](bool want_mmaps, const std::vector<base::ProcessId>& pids,
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
@@ -471,7 +453,7 @@ TEST_F(CoordinatorImplTest, TimeOutStuckChildMultiProcess) {
             run_loop.Quit();
           }));
   ReduceCoordinatorClientProcessTimeout();
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
@@ -479,10 +461,6 @@ TEST_F(CoordinatorImplTest, TimeOutStuckChildMultiProcess) {
 // to a crash) while a global dump is happening.
 TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
   base::RunLoop run_loop;
-
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED));
 
   auto client_process_1 = std::make_unique<NiceMock<MockClientProcess>>(
       this, 1, mojom::ProcessType::BROWSER);
@@ -516,7 +494,7 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
   MockGlobalMemoryDumpCallback callback;
   EXPECT_CALL(callback, OnCall(false, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
@@ -524,10 +502,6 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
 // client. Regression testing for crbug.com/742265.
 TEST_F(CoordinatorImplTest, SingleClientCrashDuringGlobalDump) {
   base::RunLoop run_loop;
-
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::DETAILED));
 
   auto client_process = std::make_unique<NiceMock<MockClientProcess>>(
       this, 1, mojom::ProcessType::BROWSER);
@@ -547,7 +521,7 @@ TEST_F(CoordinatorImplTest, SingleClientCrashDuringGlobalDump) {
   MockGlobalMemoryDumpCallback callback;
   EXPECT_CALL(callback, OnCall(false, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
@@ -689,10 +663,7 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
         run_loop.Quit();
       }));
 
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      MemoryDumpLevelOfDetail::BACKGROUND));
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(callback.Get());
   run_loop.Run();
 }
 
@@ -791,10 +762,6 @@ TEST_F(CoordinatorImplTest, DumpsArentAddedToTraceUnlessRequested) {
 
   base::RunLoop run_loop;
 
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-      MemoryDumpLevelOfDetail::DETAILED));
-
   NiceMock<MockClientProcess> client_process(this, 1,
                                              mojom::ProcessType::BROWSER);
 
@@ -818,7 +785,8 @@ TEST_F(CoordinatorImplTest, DumpsArentAddedToTraceUnlessRequested) {
   TraceLog::GetInstance()->SetEnabled(
       TraceConfig(MemoryDumpManager::kTraceCategory, ""),
       TraceLog::RECORDING_MODE);
-  RequestGlobalMemoryDump(std::move(args), callback.Get());
+  RequestGlobalMemoryDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                          MemoryDumpLevelOfDetail::DETAILED, callback.Get());
   run_loop.Run();
   TraceLog::GetInstance()->SetDisabled();
 
@@ -835,10 +803,6 @@ TEST_F(CoordinatorImplTest, DumpsAreAddedToTraceWhenRequested) {
   using trace_analyzer::Query;
 
   base::RunLoop run_loop;
-
-  mojom::GlobalRequestArgsPtr args(mojom::GlobalRequestArgs::New(
-      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-      MemoryDumpLevelOfDetail::DETAILED));
 
   NiceMock<MockClientProcess> client_process(this, 1,
                                              mojom::ProcessType::BROWSER);
@@ -860,7 +824,7 @@ TEST_F(CoordinatorImplTest, DumpsAreAddedToTraceWhenRequested) {
   TraceLog::GetInstance()->SetEnabled(
       TraceConfig(MemoryDumpManager::kTraceCategory, ""),
       TraceLog::RECORDING_MODE);
-  RequestGlobalMemoryDumpAndAppendToTrace(std::move(args), callback.Get());
+  RequestGlobalMemoryDumpAndAppendToTrace(callback.Get());
   run_loop.Run();
   TraceLog::GetInstance()->SetDisabled();
 

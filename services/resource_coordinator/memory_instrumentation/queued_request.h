@@ -14,6 +14,9 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
+using base::trace_event::MemoryDumpLevelOfDetail;
+using base::trace_event::MemoryDumpType;
+
 namespace memory_instrumentation {
 
 // Holds data for pending requests enqueued via RequestGlobalMemoryDump().
@@ -23,6 +26,17 @@ struct QueuedRequest {
                          memory_instrumentation::mojom::RawOSMemDumpPtr>;
   using RequestGlobalMemoryDumpInternalCallback = base::Callback<
       void(bool, uint64_t, memory_instrumentation::mojom::GlobalMemoryDumpPtr)>;
+
+  struct Args {
+    Args(MemoryDumpType dump_type,
+         MemoryDumpLevelOfDetail level_of_detail,
+         bool add_to_trace);
+    ~Args();
+
+    const MemoryDumpType dump_type;
+    const MemoryDumpLevelOfDetail level_of_detail;
+    const bool add_to_trace;
+  };
 
   struct PendingResponse {
     enum Type {
@@ -47,10 +61,12 @@ struct QueuedRequest {
     OSMemDumpMap os_dumps;
   };
 
-  QueuedRequest(const base::trace_event::MemoryDumpRequestArgs& args,
-                const RequestGlobalMemoryDumpInternalCallback& callback,
-                bool add_to_trace);
+  QueuedRequest(const Args& args,
+                const uint64_t dump_guid,
+                const RequestGlobalMemoryDumpInternalCallback& callback);
   ~QueuedRequest();
+
+  base::trace_event::MemoryDumpRequestArgs GetRequestArgs();
 
   bool wants_mmaps() const {
     return args.level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::
@@ -70,9 +86,9 @@ struct QueuedRequest {
     return args.dump_type == base::trace_event::MemoryDumpType::SUMMARY_ONLY;
   }
 
-  const base::trace_event::MemoryDumpRequestArgs args;
+  const Args args;
+  const uint64_t dump_guid;
   const RequestGlobalMemoryDumpInternalCallback callback;
-  const bool add_to_trace;
 
   // When a dump, requested via RequestGlobalMemoryDump(), is in progress this
   // set contains a |PendingResponse| for each |RequestChromeMemoryDump| and
