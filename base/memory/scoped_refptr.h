@@ -159,28 +159,24 @@ class scoped_refptr {
 
   scoped_refptr() {}
 
+  // Constructs from raw pointer.
   scoped_refptr(T* p) : ptr_(p) {
     if (ptr_)
       AddRef(ptr_);
   }
 
-  // Copy constructor.
-  scoped_refptr(const scoped_refptr& r) : ptr_(r.ptr_) {
-    if (ptr_)
-      AddRef(ptr_);
-  }
+  // Copy constructor. This is required in addition to the copy conversion
+  // constructor below.
+  scoped_refptr(const scoped_refptr& r) : scoped_refptr(r.ptr_) {}
 
   // Copy conversion constructor.
   template <typename U,
             typename = typename std::enable_if<
                 std::is_convertible<U*, T*>::value>::type>
-  scoped_refptr(const scoped_refptr<U>& r) : ptr_(r.get()) {
-    if (ptr_)
-      AddRef(ptr_);
-  }
+  scoped_refptr(const scoped_refptr<U>& r) : scoped_refptr(r.ptr_) {}
 
-  // Move constructor. This is required in addition to the conversion
-  // constructor below in order for clang to warn about pessimizing moves.
+  // Move constructor. This is required in addition to the move conversion
+  // constructor below.
   scoped_refptr(scoped_refptr&& r) noexcept : ptr_(r.ptr_) { r.ptr_ = nullptr; }
 
   // Move conversion constructor.
