@@ -1610,7 +1610,7 @@
       },
       'Linux Swarm': {
         'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
+           'gtest_tests': 'chromium_swarm_linux_gtests',
         },
       },
       'Mac Swarm': {
