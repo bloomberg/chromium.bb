@@ -205,8 +205,6 @@ blink_core_sources("dom") {
     "PausableObject.h",
     "PendingScript.cpp",
     "PendingScript.h",
-    "Policy.cpp",
-    "Policy.h",
     "PresentationAttributeStyle.cpp",
     "PresentationAttributeStyle.h",
     "ProcessingInstruction.cpp",

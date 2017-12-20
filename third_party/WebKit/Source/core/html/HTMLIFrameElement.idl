@@ -37,9 +37,14 @@ interface HTMLIFrameElement : HTMLElement {
     // https://w3c.github.io/webappsec-csp/embedded/#dom-htmliframeelement-csp
     [RuntimeEnabled=EmbedderCSPEnforcement, CEReactions, Reflect] attribute DOMString csp;
 
-    // Feature Policy allow attribute
+    // Feature Policy
     // https://wicg.github.io/feature-policy/
     [RuntimeEnabled=FeaturePolicy, CEReactions, Reflect] attribute DOMString allow;
+    // TODO(iclelland): add spec for JS exposure in the spec for Feature Policy.
+    // Please refer to this doc for more details for now:
+    // https://docs.google.com/a/chromium.org/document/d/1wvk3cXkblNnbkMcsKayseK-k0SMGiP9b9fQFgfpqQpc/edit?usp=sharing
+    [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute Policy policy;
+
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLIFrameElement-partial
     [CEReactions, Reflect] attribute DOMString align;

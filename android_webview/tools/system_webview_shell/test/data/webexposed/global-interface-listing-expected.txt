@@ -1732,6 +1732,7 @@ interface HTMLIFrameElement : HTMLElement
     getter marginHeight
     getter marginWidth
     getter name
+    getter policy
     getter sandbox
     getter scrolling
     getter src
