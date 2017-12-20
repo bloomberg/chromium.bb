@@ -76,7 +76,7 @@ uint32_t ZLIB_INTERNAL adler32_simd_(  /* SSSE3 */
     {
         unsigned n = NMAX / BLOCK_SIZE;  /* The NMAX constraint. */
         if (n > blocks)
-            n = blocks;
+            n = (unsigned) blocks;
         blocks -= n;
 
         const __m128i tap1 =
@@ -237,7 +237,7 @@ uint32_t ZLIB_INTERNAL adler32_simd_(  /* NEON */
     {
         unsigned n = NMAX / BLOCK_SIZE;  /* The NMAX constraint. */
         if (n > blocks)
-            n = blocks;
+            n = (unsigned) blocks;
         blocks -= n;
 
         /*
