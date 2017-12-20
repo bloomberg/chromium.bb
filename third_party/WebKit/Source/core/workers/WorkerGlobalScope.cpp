@@ -36,7 +36,6 @@
 #include "core/css/OffscreenFontSelector.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/Modulator.h"
 #include "core/dom/PausableObject.h"
 #include "core/dom/events/Event.h"
 #include "core/events/ErrorEvent.h"
@@ -51,7 +50,6 @@
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/InstalledScriptsManager.h"
 #include "core/workers/WorkerLocation.h"
-#include "core/workers/WorkerModuleTreeClient.h"
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
@@ -311,14 +309,6 @@ service_manager::InterfaceProvider* WorkerGlobalScope::GetInterfaceProvider() {
 
 ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
-}
-
-void WorkerGlobalScope::ImportModuleScript(
-    const KURL& module_url_record,
-    network::mojom::FetchCredentialsMode credentials_mode) {
-  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
-  FetchModuleScript(module_url_record, credentials_mode,
-                    new WorkerModuleTreeClient(modulator));
 }
 
 WorkerGlobalScope::WorkerGlobalScope(
