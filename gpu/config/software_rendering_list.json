@@ -1543,6 +1543,24 @@
       "features": [
         "gpu_rasterization"
       ]
+    },
+    {
+      "id": 151,
+      "description": "Rendering artifacts on older macOS releases and Intel GPUs",
+      "cr_bugs": [794819],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<=",
+          "value": "10.11"
+        }
+      },
+      "vendor_id": "0x8086",
+      "multi_gpu_category": "any",
+      "features": [
+        "accelerated_2d_canvas",
+        "gpu_rasterization"
+      ]
     }
   ]
 }
