@@ -148,7 +148,7 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
   return static_cast<AwBrowserContext*>(web_contents->GetBrowserContext());
 }
 
-void AwBrowserContext::PreMainMessageLoopRun() {
+void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   FilePath cache_path;
   PathService::Get(base::DIR_CACHE, &cache_path);
   cache_path =
@@ -158,8 +158,9 @@ void AwBrowserContext::PreMainMessageLoopRun() {
 
   InitUserPrefService();
 
-  url_request_context_getter_ = new AwURLRequestContextGetter(
-      cache_path, CreateProxyConfigService(), user_pref_service_.get());
+  url_request_context_getter_ =
+      new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
+                                    user_pref_service_.get(), net_log);
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(

@@ -49,7 +49,6 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_stream_factory.h"
 #include "net/log/file_net_log_observer.h"
-#include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_util.h"
 #include "net/net_features.h"
@@ -180,9 +179,10 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
 AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path,
     std::unique_ptr<net::ProxyConfigService> config_service,
-    PrefService* user_pref_service)
+    PrefService* user_pref_service,
+    net::NetLog* net_log)
     : cache_path_(cache_path),
-      net_log_(new net::NetLog()),
+      net_log_(net_log),
       proxy_config_service_(std::move(config_service)),
       http_user_agent_settings_(new AwHttpUserAgentSettings()) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
@@ -243,7 +243,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
 
     file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
         net_log_path, std::move(constants_dict));
-    file_net_log_observer_->StartObserving(net_log_.get(),
+    file_net_log_observer_->StartObserving(net_log_,
                                            net::NetLogCaptureMode::Default());
   }
 }
@@ -290,9 +290,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
     builder.set_proxy_service(net::ProxyService::CreateFixed(proxy));
   } else {
     builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
-        std::move(proxy_config_service_), net_log_.get()));
+        std::move(proxy_config_service_), net_log_));
   }
-  builder.set_net_log(net_log_.get());
+  builder.set_net_log(net_log_);
   builder.SetCookieAndChannelIdStores(std::make_unique<AwCookieStoreWrapper>(),
                                       std::move(channel_id_service));
 
@@ -348,10 +348,6 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   std::swap(protocol_handlers_, *protocol_handlers);
   request_interceptors_.swap(request_interceptors);
-}
-
-net::NetLog* AwURLRequestContextGetter::GetNetLog() {
-  return net_log_.get();
 }
 
 // static

@@ -32,6 +32,10 @@ class SSLHostStateDelegate;
 class WebContents;
 }
 
+namespace net {
+class NetLog;
+}
+
 namespace policy {
 class URLBlacklistManager;
 class BrowserPolicyConnectorBase;
@@ -76,7 +80,7 @@ class AwBrowserContext : public content::BrowserContext,
       content::WebContents* web_contents);
 
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
-  void PreMainMessageLoopRun();
+  void PreMainMessageLoopRun(net::NetLog* net_log);
 
   // These methods map to Add methods in visitedlink::VisitedLinkMaster.
   void AddVisitedURLs(const std::vector<GURL>& urls);

@@ -38,16 +38,13 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   AwURLRequestContextGetter(
       const base::FilePath& cache_path,
       std::unique_ptr<net::ProxyConfigService> config_service,
-      PrefService* pref_service);
+      PrefService* pref_service,
+      net::NetLog* net_log);
 
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
-
-  // NetLog is thread-safe, so clients can call this method from arbitrary
-  // threads (UI and IO).
-  net::NetLog* GetNetLog();
 
   static void set_check_cleartext_permitted(bool permitted);
 
@@ -78,7 +75,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   const base::FilePath cache_path_;
 
-  std::unique_ptr<net::NetLog> net_log_;
+  net::NetLog* net_log_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::URLRequestJobFactory> job_factory_;
   std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;

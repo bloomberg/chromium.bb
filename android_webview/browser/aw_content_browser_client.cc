@@ -62,6 +62,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/web_preferences.h"
 #include "net/android/network_library.h"
+#include "net/log/net_log.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -191,7 +192,7 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
   return AwBrowserContext::GetDefault();
 }
 
-AwContentBrowserClient::AwContentBrowserClient() {
+AwContentBrowserClient::AwContentBrowserClient() : net_log_(new net::NetLog()) {
   frame_interfaces_.AddInterface(
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver));
   // Although WebView does not support password manager feature, renderer code
@@ -436,7 +437,7 @@ void AwContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
 net::NetLog* AwContentBrowserClient::GetNetLog() {
-  return browser_context_->GetAwURLRequestContext()->GetNetLog();
+  return net_log_.get();
 }
 
 base::FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {
