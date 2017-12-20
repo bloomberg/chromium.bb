@@ -70,6 +70,7 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -1350,7 +1351,8 @@ void SigninScreenHandler::HandleSignOutUser() {
 }
 
 void SigninScreenHandler::HandleOpenInternetDetailDialog() {
-  LoginDisplayHost::default_host()->OpenInternetDetailDialog("");
+  // Empty string opens the internet detail dialog for the default network.
+  InternetDetailDialog::ShowDialog("");
 }
 
 void SigninScreenHandler::HandleLoginVisible(const std::string& source) {

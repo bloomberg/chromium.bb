@@ -29,7 +29,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
     MockFinalize(&completion_callback);
   }
 
-  MOCK_METHOD1(OpenInternetDetailDialog, void(const std::string&));
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
   MOCK_METHOD1(StartWizard, void(OobeScreen));

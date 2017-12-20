@@ -58,7 +58,6 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -617,11 +616,6 @@ void LoginDisplayHostWebUI::Finalize(base::OnceClosure completion_callback) {
     default:
       break;
   }
-}
-
-void LoginDisplayHostWebUI::OpenInternetDetailDialog(
-    const std::string& network_id) {
-  InternetDetailDialog::ShowDialog(network_id);
 }
 
 void LoginDisplayHostWebUI::SetStatusAreaVisible(bool visible) {

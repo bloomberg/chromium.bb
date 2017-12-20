@@ -105,7 +105,6 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   }
   void BeforeSessionStart() override {}
   void Finalize(base::OnceClosure) override {}
-  void OpenInternetDetailDialog(const std::string& network_id) override {}
   void SetStatusAreaVisible(bool visible) override {}
   void StartWizard(chromeos::OobeScreen first_screen) override {
     // Reset the controller first since there could only be one wizard
