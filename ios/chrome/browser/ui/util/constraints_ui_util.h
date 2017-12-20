@@ -97,6 +97,9 @@ void AddSameCenterYConstraint(UIView* unused_parentView,
 // trailing, top and bottom anchors.
 void AddSameConstraints(UIView* view1, UIView* view2);
 
+// Adds constraints such as the |layoutGuide| matches the |view|.
+void AddSameConstraints(UIView* view, UILayoutGuide* layoutGuide);
+
 // Adds constraints to make |innerView| leading, trailing, top and bottom
 // anchors equals to |outerView| safe area (or view bounds) anchors.
 void PinToSafeArea(UIView* innerView, UIView* outerView);
