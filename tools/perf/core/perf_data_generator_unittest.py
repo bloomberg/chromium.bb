@@ -7,7 +7,6 @@ from core import perf_data_generator
 from core.perf_data_generator import BenchmarkMetadata
 
 from telemetry import benchmark
-from telemetry import story
 
 import mock
 
@@ -277,24 +276,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
       @classmethod
       def Name(cls):
         return 'regular'
-    valid_os_list = ['mac', 'android', 'windows', 'linux']
-    for os in valid_os_list:
-      self.assertTrue(
-          perf_data_generator.ShouldBenchmarksBeScheduled(
-              RegularBenchmark, 'bot_name', os, None))
-
-  def testShouldBenchmarksBeScheduledDisabledButScheduled(self):
-    class RegularBenchmark(benchmark.Benchmark):
-      @classmethod
-      def Name(cls):
-        return 'regular'
-
-      def GetExpectations(self):
-        class Expectations(story.expectations.StoryExpectations):
-          def SetExpectations(self):
-            self.DisableBenchmark([story.expectations.ALL], 'reason')
-        return Expectations()
-
     valid_os_list = ['mac', 'android', 'windows', 'linux']
     for os in valid_os_list:
       self.assertTrue(
