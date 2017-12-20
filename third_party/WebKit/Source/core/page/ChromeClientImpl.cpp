@@ -96,8 +96,6 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebAutofillClient.h"
-#include "public/web/WebColorChooser.h"
-#include "public/web/WebColorSuggestion.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebInputElement.h"

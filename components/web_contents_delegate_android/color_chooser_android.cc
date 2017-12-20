@@ -20,7 +20,7 @@ namespace web_contents_delegate_android {
 ColorChooserAndroid::ColorChooserAndroid(
     content::WebContents* web_contents,
     SkColor initial_color,
-    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions)
+    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
     : web_contents_(web_contents) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> suggestions_array;

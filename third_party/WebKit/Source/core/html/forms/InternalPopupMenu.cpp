@@ -29,7 +29,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebMouseEvent.h"
-#include "public/web/WebColorChooser.h"
 
 namespace blink {
 

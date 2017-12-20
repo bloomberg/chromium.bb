@@ -168,14 +168,6 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::DidChangeSelection(is_selection_empty);
   }
 
-  blink::WebColorChooser* CreateColorChooser(
-      blink::WebColorChooserClient* client,
-      const blink::WebColor& initial_color,
-      const blink::WebVector<blink::WebColorSuggestion>& suggestions) override {
-    return test_client()->CreateColorChooser(client, initial_color,
-                                             suggestions);
-  }
-
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override {
     if (test_client()->GetEffectiveConnectionType() !=
         blink::WebEffectiveConnectionType::kTypeUnknown) {

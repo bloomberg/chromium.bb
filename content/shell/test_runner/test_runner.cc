@@ -2362,15 +2362,6 @@ void TestRunner::DisableMockScreenOrientation() {
   mock_screen_orientation_client_->SetDisabled(true);
 }
 
-void TestRunner::DidOpenChooser() {
-  chooser_count_++;
-}
-
-void TestRunner::DidCloseChooser() {
-  chooser_count_--;
-  DCHECK_LE(0, chooser_count_);
-}
-
 void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
   delegate_->SetPopupBlockingEnabled(block_popups);
 }

@@ -35,7 +35,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
-#include "content/common/color_chooser.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -54,6 +53,7 @@
 #include "ppapi/features/features.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/WebKit/common/color_chooser/color_chooser.mojom.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "ui/accessibility/ax_modes.h"
 #include "ui/base/page_transition_types.h"
@@ -127,7 +127,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                        public RenderViewHostDelegate,
                                        public RenderWidgetHostDelegate,
                                        public RenderFrameHostManager::Delegate,
-                                       public mojom::ColorChooserFactory,
+                                       public blink::mojom::ColorChooserFactory,
                                        public NotificationObserver,
                                        public NavigationControllerDelegate,
                                        public NavigatorDelegate {
@@ -776,14 +776,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   int GetOuterDelegateFrameTreeNodeId() override;
   RenderWidgetHostImpl* GetFullscreenRenderWidgetHost() const override;
 
-  // content::mojom::ColorChooserFactory ---------------------------------------
+  // blink::mojom::ColorChooserFactory ---------------------------------------
 
-  void OnColorChooserFactoryRequest(mojom::ColorChooserFactoryRequest request);
+  void OnColorChooserFactoryRequest(
+      blink::mojom::ColorChooserFactoryRequest request);
   void OpenColorChooser(
-      mojom::ColorChooserRequest chooser,
-      mojom::ColorChooserClientPtr client,
+      blink::mojom::ColorChooserRequest chooser,
+      blink::mojom::ColorChooserClientPtr client,
       SkColor color,
-      std::vector<mojom::ColorSuggestionPtr> suggestions) override;
+      std::vector<blink::mojom::ColorSuggestionPtr> suggestions) override;
 
   // NotificationObserver ------------------------------------------------------
 
@@ -1587,7 +1588,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   service_manager::BinderRegistry registry_;
 
-  mojo::BindingSet<mojom::ColorChooserFactory> color_chooser_factory_bindings_;
+  mojo::BindingSet<blink::mojom::ColorChooserFactory>
+      color_chooser_factory_bindings_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<NFCHost> nfc_host_;

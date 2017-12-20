@@ -29,30 +29,33 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/html/forms/ColorChooser.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/PlatformLocale.h"
-#include "public/web/WebColorChooserClient.h"
+#include "third_party/WebKit/common/color_chooser/color_chooser.mojom-blink.h"
 
 namespace blink {
 
 class ColorChooserClient;
 class LocalFrame;
-class WebColorChooser;
 
 class CORE_EXPORT ColorChooserUIController
     : public GarbageCollectedFinalized<ColorChooserUIController>,
-      public WebColorChooserClient,
+      public mojom::blink::ColorChooserClient,
       public ColorChooser {
   USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
+  USING_PRE_FINALIZER(ColorChooserUIController, Dispose);
 
  public:
   static ColorChooserUIController* Create(LocalFrame* frame,
-                                          ColorChooserClient* client) {
+                                          blink::ColorChooserClient* client) {
     return new ColorChooserUIController(frame, client);
   }
 
   ~ColorChooserUIController() override;
   void Trace(blink::Visitor*) override;
+
+  void Dispose();
 
   virtual void OpenUI();
 
@@ -61,18 +64,21 @@ class CORE_EXPORT ColorChooserUIController
   void EndChooser() override;
   AXObject* RootAXObject() override;
 
-  // WebColorChooserClient functions:
-  void DidChooseColor(const WebColor&) final;
-  void DidEndChooser() final;
+  // mojom::blink::ColorChooserClient functions:
+  void DidChooseColor(uint32_t color) final;
 
  protected:
-  ColorChooserUIController(LocalFrame*, ColorChooserClient*);
+  ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
 
   void OpenColorChooser();
-  std::unique_ptr<WebColorChooser> chooser_;
-  Member<ColorChooserClient> client_;
+  mojom::blink::ColorChooserPtr chooser_;
+  Member<blink::ColorChooserClient> client_;
 
   Member<LocalFrame> frame_;
+
+ private:
+  mojom::blink::ColorChooserFactoryPtr color_chooser_factory_;
+  mojo::Binding<mojom::blink::ColorChooserClient> binding_;
 };
 
 }  // namespace blink

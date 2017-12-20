@@ -393,11 +393,11 @@ class WebContentsImpl::DestructionObserver : public WebContentsObserver {
 };
 
 // WebContentsImpl::ColorChooser ----------------------------------------------
-class WebContentsImpl::ColorChooser : public mojom::ColorChooser {
+class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
  public:
   ColorChooser(content::ColorChooser* chooser,
-               mojom::ColorChooserRequest request,
-               mojom::ColorChooserClientPtr client)
+               blink::mojom::ColorChooserRequest request,
+               blink::mojom::ColorChooserClientPtr client)
       : chooser_(chooser),
         binding_(this, std::move(request)),
         client_(std::move(client)) {
@@ -421,10 +421,10 @@ class WebContentsImpl::ColorChooser : public mojom::ColorChooser {
   std::unique_ptr<content::ColorChooser> chooser_;
 
   // mojo bindings.
-  mojo::Binding<mojom::ColorChooser> binding_;
+  mojo::Binding<blink::mojom::ColorChooser> binding_;
 
   // mojo renderer client.
-  content::mojom::ColorChooserClientPtr client_;
+  blink::mojom::ColorChooserClientPtr client_;
 };
 
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
@@ -4213,15 +4213,15 @@ void WebContentsImpl::OnAppCacheAccessed(RenderViewHostImpl* source,
 }
 
 void WebContentsImpl::OnColorChooserFactoryRequest(
-    mojom::ColorChooserFactoryRequest request) {
+    blink::mojom::ColorChooserFactoryRequest request) {
   color_chooser_factory_bindings_.AddBinding(this, std::move(request));
 }
 
 void WebContentsImpl::OpenColorChooser(
-    mojom::ColorChooserRequest chooser_request,
-    mojom::ColorChooserClientPtr client,
+    blink::mojom::ColorChooserRequest chooser_request,
+    blink::mojom::ColorChooserClientPtr client,
     SkColor color,
-    std::vector<mojom::ColorSuggestionPtr> suggestions) {
+    std::vector<blink::mojom::ColorSuggestionPtr> suggestions) {
   content::ColorChooser* new_color_chooser =
       delegate_ ? delegate_->OpenColorChooser(this, color, suggestions)
                 : nullptr;

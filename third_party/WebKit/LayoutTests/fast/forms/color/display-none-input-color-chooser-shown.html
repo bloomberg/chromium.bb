@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/common/color_chooser/color_chooser.mojom.js"></script>
+<script src="../../forms/color/mock-colorchooser.js"></script>
 <input id="colorPick" type="color" />
 <label for="colorPick" id="labelPick">Pick a color</label>
 <script>
@@ -8,7 +11,7 @@ test (function() {
     assert_true(window.eventSender !== null);
 }, "window.eventSender is required for the test to run");
 
-test (function() {
+async_test (t => {
     var colorPicker = document.getElementById("colorPick");
     colorPicker.style.display = "none";
     var labelPick = document.getElementById("labelPick");
@@ -17,6 +20,6 @@ test (function() {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
-    assert_true(testRunner.isChooserShown());
+    waitUntilChooserShown(() => { t.done(); });
 }, "Tests click on label for color picker with display none should show chooser");
 </script>

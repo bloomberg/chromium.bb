@@ -869,7 +869,7 @@ bool AppWindow::ShouldSuppressDialogs(WebContents* source) {
 content::ColorChooser* AppWindow::OpenColorChooser(
     WebContents* web_contents,
     SkColor initial_color,
-    const std::vector<content::mojom::ColorSuggestionPtr>& suggestions) {
+    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
   return app_delegate_->ShowColorChooser(web_contents, initial_color);
 }
 
