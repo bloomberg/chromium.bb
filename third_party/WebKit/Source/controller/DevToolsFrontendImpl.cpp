@@ -38,7 +38,6 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/inspector/DevToolsHost.h"
 #include "core/page/Page.h"
-#include "platform/LayoutTestSupport.h"
 
 namespace blink {
 
@@ -118,10 +117,6 @@ void DevToolsFrontendImpl::SetupDevToolsExtensionAPI(
 void DevToolsFrontendImpl::SendMessageToEmbedder(const String& message) {
   if (host_)
     host_->DispatchEmbedderMessage(message);
-}
-
-bool DevToolsFrontendImpl::IsUnderTest() {
-  return LayoutTestSupport::IsRunningLayoutTest();
 }
 
 void DevToolsFrontendImpl::ShowContextMenu(LocalFrame* target_frame,

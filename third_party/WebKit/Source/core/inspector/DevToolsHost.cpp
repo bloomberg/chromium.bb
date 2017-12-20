@@ -232,9 +232,6 @@ String DevToolsHost::getInactiveSelectionForegroundColor() {
       .Serialized();
 }
 
-bool DevToolsHost::isUnderTest() {
-  return client_ && client_->IsUnderTest();
-}
 
 bool DevToolsHost::isHostedMode() {
   return false;

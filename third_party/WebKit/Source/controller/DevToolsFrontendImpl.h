@@ -77,7 +77,6 @@ class DevToolsFrontendImpl final
 
   // InspectorFrontendClient implementation.
   void SendMessageToEmbedder(const String&) override;
-  bool IsUnderTest() override;
   void ShowContextMenu(LocalFrame*,
                        float x,
                        float y,

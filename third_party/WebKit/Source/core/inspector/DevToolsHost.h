@@ -71,7 +71,6 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
   String getInactiveSelectionBackgroundColor();
   String getInactiveSelectionForegroundColor();
 
-  bool isUnderTest();
   bool isHostedMode();
 
   LocalFrame* FrontendFrame() { return frontend_frame_; }
