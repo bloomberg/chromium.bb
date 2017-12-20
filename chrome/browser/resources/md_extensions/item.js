@@ -107,6 +107,11 @@ cr.define('extensions', function() {
       'observeIdVisibility_(inDevMode, showingDetails_, data.id)',
     ],
 
+    /** @private string */
+    a11yAssociation_: function() {
+      return this.i18n('extensionA11yAssociation', this.data.name);
+    },
+
     /** @private */
     observeIdVisibility_: function(inDevMode, showingDetails, id) {
       Polymer.dom.flush();
@@ -336,8 +341,8 @@ cr.define('extensions', function() {
      * @private
      */
     computeExtraInspectLabel_: function() {
-      return loadTimeData.getStringF(
-          'itemInspectViewsExtra', this.data.views.length - 1);
+      return this.i18n(
+          'itemInspectViewsExtra', (this.data.views.length - 1).toString());
     },
 
     /**
