@@ -25,6 +25,7 @@
           "chrome::mojom::ChromeRenderFrame",
           "contextual_search::mojom::OverlayPageNotifierService",
           "dom_distiller::mojom::DistillerPageNotifierService",
+          "extensions::mojom::AppWindow",
           "spellcheck::mojom::SpellCheckPanel"
         ]
       }

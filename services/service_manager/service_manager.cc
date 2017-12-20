@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
@@ -141,6 +142,43 @@ bool HasCapability(const InterfaceProviderSpec& spec,
   return it->second.find(capability) != it->second.end();
 }
 
+void ReportBlockedInterface(const std::string& source_service_name,
+                            const std::string& target_service_name,
+                            const std::string& target_interface_name) {
+#if DCHECK_IS_ON()
+  // While it would not be correct to assert that this never happens (e.g. a
+  // compromised process may request invalid interfaces), we do want to
+  // effectively treat all occurrences of this branch in production code as
+  // bugs that must be fixed. This crash allows such bugs to be caught in
+  // testing rather than relying on easily overlooked log messages.
+  NOTREACHED()
+#else
+  LOG(ERROR)
+#endif
+      << "The Service Manager prevented service \"" << source_service_name
+      << "\" from binding interface \"" << target_interface_name << "\""
+      << " in target service \"" << target_service_name << "\". You probably "
+      << "need to update one or more service manifests to ensure that \""
+      << target_service_name << "\" exposes \"" << target_interface_name
+      << "\" through a capability and that \"" << source_service_name
+      << "\" requires that capability from the \"" << target_service_name
+      << "\" service.";
+}
+
+void ReportBlockedStartService(const std::string& source_service_name,
+                               const std::string& target_service_name) {
+#if DCHECK_IS_ON()
+  // See the note in ReportBlockedInterface above.
+  NOTREACHED()
+#else
+  LOG(ERROR)
+#endif
+      << "Service \"" << source_service_name << "\" has attempted to manually "
+      << "start service \"" << target_service_name << "\", but it is not "
+      << "sufficiently privileged to do so. You probably need to update one or "
+      << "services' manifests in order to remedy this situation.";
+}
+
 bool AllowsInterface(const Identity& source,
                      const InterfaceProviderSpec& source_spec,
                      const Identity& target,
@@ -150,13 +188,8 @@ bool AllowsInterface(const Identity& source,
       GetInterfacesToExpose(source_spec, target, target_spec);
   bool allowed = (exposed.size() == 1 && exposed.count("*") == 1) ||
                  exposed.count(interface_name) > 0;
-  if (!allowed) {
-    std::stringstream ss;
-    ss << "Connection InterfaceProviderSpec prevented service: "
-       << source.name() << " from binding interface: " << interface_name
-       << " exposed by: " << target.name();
-    LOG(ERROR) << ss.str();
-  }
+  if (!allowed)
+    ReportBlockedInterface(source.name(), target.name(), interface_name);
   return allowed;
 }
 
@@ -419,7 +452,7 @@ class ServiceManager::Instance
                      BindInterfaceCallback callback) override {
     Identity target = in_target;
     mojom::ConnectResult result =
-        ValidateConnectParams(&target, nullptr, nullptr);
+        ValidateConnectParams(&target, nullptr, nullptr, &interface_name);
     if (!Succeeded(result)) {
       std::move(callback).Run(result, Identity());
       return;
@@ -447,7 +480,7 @@ class ServiceManager::Instance
                     StartServiceCallback callback) override {
     Identity target = in_target;
     mojom::ConnectResult result =
-        ValidateConnectParams(&target, nullptr, nullptr);
+        ValidateConnectParams(&target, nullptr, nullptr, nullptr);
     if (!Succeeded(result)) {
       std::move(callback).Run(result, Identity());
       return;
@@ -468,8 +501,8 @@ class ServiceManager::Instance
     Identity target = in_target;
     mojom::ServicePtr service;
     service.Bind(mojom::ServicePtrInfo(std::move(service_handle), 0));
-    mojom::ConnectResult result =
-        ValidateConnectParams(&target, &service, &pid_receiver_request);
+    mojom::ConnectResult result = ValidateConnectParams(
+        &target, &service, &pid_receiver_request, nullptr);
     if (!Succeeded(result)) {
       std::move(callback).Run(result, Identity());
       return;
@@ -514,7 +547,8 @@ class ServiceManager::Instance
   mojom::ConnectResult ValidateConnectParams(
       Identity* target,
       mojom::ServicePtr* service,
-      mojom::PIDReceiverRequest* pid_receiver_request) {
+      mojom::PIDReceiverRequest* pid_receiver_request,
+      const std::string* target_interface_name) {
     if (target->user_id() == mojom::kInheritUserID)
       target->set_user_id(identity_.user_id());
 
@@ -525,7 +559,7 @@ class ServiceManager::Instance
     result = ValidateClientProcessInfo(service, pid_receiver_request, *target);
     if (!Succeeded(result))
       return result;
-    return ValidateConnectionSpec(*target);
+    return ValidateConnectionSpec(*target, target_interface_name);
   }
 
   mojom::ConnectResult ValidateIdentity(const Identity& identity) {
@@ -570,7 +604,9 @@ class ServiceManager::Instance
     return mojom::ConnectResult::SUCCEEDED;
   }
 
-  mojom::ConnectResult ValidateConnectionSpec(const Identity& target) {
+  mojom::ConnectResult ValidateConnectionSpec(
+      const Identity& target,
+      const std::string* target_interface_name) {
     const InterfaceProviderSpec& connection_spec = GetConnectionSpec();
     // TODO(beng): Need to do the following additional policy validation of
     // whether this instance is allowed to connect using:
@@ -605,8 +641,12 @@ class ServiceManager::Instance
             connection_spec.requires.end()) {
       return mojom::ConnectResult::SUCCEEDED;
     }
-    LOG(ERROR) << "InterfaceProviderSpec prevented connection from: "
-               << identity_.name() << " to: " << target.name();
+    if (target_interface_name) {
+      ReportBlockedInterface(identity_.name(), target.name(),
+                             *target_interface_name);
+    } else {
+      ReportBlockedStartService(identity_.name(), target.name());
+    }
     return mojom::ConnectResult::ACCESS_DENIED;
   }
 
@@ -1127,8 +1167,14 @@ bool ServiceManager::ConnectToExistingInstance(
   if (!instance)
     return false;
 
-  if ((*params)->HasInterfaceRequestInfo())
+  if ((*params)->HasInterfaceRequestInfo()) {
     instance->CallOnBindInterface(params);
+  } else {
+    // This is a StartService request and the instance is already running.
+    // Make sure the response identity is properly resolved.
+    (*params)->set_response_data(mojom::ConnectResult::SUCCEEDED,
+                                 instance->identity());
+  }
   return true;
 }
 

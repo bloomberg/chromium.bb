@@ -25,6 +25,7 @@
           "connect_unittests:standalone_app",
           "connect_unittests:user_id_test"
         ],
+        "connect_test_singleton_app": [],
         "service_manager": [
           "service_manager:instance_name",
           "service_manager:user_id"
