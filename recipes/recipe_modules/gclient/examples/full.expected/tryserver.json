@@ -30,8 +30,6 @@
       "--with_branch_heads",
       "--with_tags",
       "--delete_unversioned_trees",
-      "--revision",
-      "src@HEAD",
       "--output-json",
       "/path/to/tmp/json"
     ],
@@ -117,8 +115,6 @@
       "--with_branch_heads",
       "--with_tags",
       "--delete_unversioned_trees",
-      "--revision",
-      "Angle@HEAD",
       "--revision",
       "src/third_party/angle@refs/heads/lkgr",
       "--output-json",
