@@ -128,7 +128,6 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
 void PictureLayerTiling::TakeTilesAndPropertiesFrom(
     PictureLayerTiling* pending_twin,
     const Region& layer_invalidation) {
-  TRACE_EVENT0("cc", "TakeTilesAndPropertiesFrom");
   SetRasterSourceAndResize(pending_twin->raster_source_);
 
   RemoveTilesInRegion(layer_invalidation, false /* recreate tiles */);
