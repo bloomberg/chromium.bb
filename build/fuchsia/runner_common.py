@@ -133,11 +133,9 @@ def _ExpandDirectories(file_mapping, mapper):
   return expanded
 
 
-def _GetSymbolsMapping(dry_run, file_mapping, output_directory):
-  """For each stripped executable or dynamic library in |file_mapping|, looks
-  for an unstripped version in [exe|lib].unstripped under |output_directory|.
-  Returns a map from target filenames to un-stripped binary, if available, or
-  to the run-time binary otherwise."""
+def _GetSymbolsMapping(dry_run, file_mapping):
+  """Generates symbols mapping from |file_mapping| by filtering out all files
+  that are not ELF binaries."""
   symbols_mapping = {}
   for target, source in file_mapping.iteritems():
     with open(source, 'rb') as f:
@@ -145,22 +143,7 @@ def _GetSymbolsMapping(dry_run, file_mapping, output_directory):
     if file_tag != '\x7fELF':
       continue
 
-    # TODO(wez): Rather than bake-in assumptions about the naming of unstripped
-    # binaries, once we have ELF Build-Id values in the stack printout we should
-    # just scan the two directories to populate an Id->path mapping.
-    binary_name = os.path.basename(source)
-    exe_unstripped_path = os.path.join(
-        output_directory, 'exe.unstripped', binary_name)
-    lib_unstripped_path = os.path.join(
-        output_directory, 'lib.unstripped', binary_name)
-    if os.path.exists(exe_unstripped_path):
-      symbols_mapping[target] = exe_unstripped_path
-    elif os.path.exists(lib_unstripped_path):
-      # TODO(wez): libraries are named by basename in stacks, not by path.
-      symbols_mapping[binary_name] = lib_unstripped_path
-      symbols_mapping[target] = lib_unstripped_path
-    else:
-      symbols_mapping[target] = source
+    symbols_mapping[target] = source
 
     if dry_run:
       print 'Symbols:', binary_name, '->', symbols_mapping[target]
@@ -403,8 +386,7 @@ def _BuildBootfsManifest(image_creation_data):
       lambda x: _MakeTargetImageName(DIR_SOURCE_ROOT, icd.output_directory, x))
 
   # Determine the locations of unstripped versions of each binary, if any.
-  symbols_mapping = _GetSymbolsMapping(
-      icd.dry_run, file_mapping, icd.output_directory)
+  symbols_mapping = _GetSymbolsMapping(icd.dry_run, file_mapping)
 
   return file_mapping, symbols_mapping
 
@@ -495,8 +477,8 @@ def _SymbolizeEntries(entries):
   return results
 
 
-def _LookupDebugBinary(entry, file_mapping):
-  """Looks up the binary listed in |entry| in the |file_mapping|, and returns
+def _LookupDebugBinary(entry, symbols_mapping):
+  """Looks up the binary listed in |entry| in the |symbols_mapping|, and returns
   the corresponding host-side binary's filename, or None."""
   binary = entry['binary']
   if not binary:
@@ -517,25 +499,25 @@ def _LookupDebugBinary(entry, file_mapping):
     binary = binary[len(system_prefix):]
   # Allow any other paths to pass-through; sometimes neither prefix is present.
 
-  if binary in file_mapping:
-    return file_mapping[binary]
+  if binary in symbols_mapping:
+    return symbols_mapping[binary]
 
   # |binary| may be truncated by the crashlogger, so if there is a unique
-  # match for the truncated name in |file_mapping|, use that instead.
-  matches = filter(lambda x: x.startswith(binary), file_mapping.keys())
+  # match for the truncated name in |symbols_mapping|, use that instead.
+  matches = filter(lambda x: x.startswith(binary), symbols_mapping.keys())
   if len(matches) == 1:
-    return file_mapping[matches[0]]
+    return symbols_mapping[matches[0]]
 
   return None
 
 
-def _SymbolizeBacktrace(backtrace, file_mapping):
+def _SymbolizeBacktrace(backtrace, symbols_mapping):
   # Group |backtrace| entries according to the associated binary, and locate
   # the path to the debug symbols for that binary, if any.
   batches = {}
 
   for entry in backtrace:
-    debug_binary = _LookupDebugBinary(entry, file_mapping)
+    debug_binary = _LookupDebugBinary(entry, symbols_mapping)
     if debug_binary:
       entry['debug_binary'] = debug_binary
     batches.setdefault(debug_binary, []).append(entry)
