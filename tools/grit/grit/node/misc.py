@@ -457,6 +457,11 @@ class GritNode(base.Node):
 
     # Check if the input is required for any output configuration.
     input_files = set()
+    # Collect even inactive PartNodes since they affect ID assignments.
+    for node in self:
+      if isinstance(node, misc.PartNode):
+        input_files.add(self.ToRealPath(node.GetInputPath()))
+
     old_output_language = self.output_language
     for lang, ctx, fallback in self.GetConfigurations():
       self.SetOutputLanguage(lang or self.GetSourceLanguage())
@@ -464,7 +469,7 @@ class GritNode(base.Node):
       self.SetFallbackToDefaultLayout(fallback)
 
       for node in self.ActiveDescendants():
-        if isinstance(node, (io.FileNode, include.IncludeNode, misc.PartNode,
+        if isinstance(node, (io.FileNode, include.IncludeNode,
                              structure.StructureNode, variant.SkeletonNode)):
           input_path = node.GetInputPath()
           if input_path is not None:
