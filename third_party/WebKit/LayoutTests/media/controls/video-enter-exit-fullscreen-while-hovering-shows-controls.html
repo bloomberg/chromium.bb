@@ -4,7 +4,6 @@ whilst hovering over the controls. Opposite of
 video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 
 <video controls></video>
@@ -80,6 +79,6 @@ async_test(function(t) {
     });
   });
 
-  video.src = findMediaFile("video", "../content/test-25fps");
+  video.src = "../content/test-25fps.ogv";
 });
 </script>

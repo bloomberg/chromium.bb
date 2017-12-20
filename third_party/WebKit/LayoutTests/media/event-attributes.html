@@ -2,7 +2,6 @@
 <title>Test event attributes for media element.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video controls></video>
 <script>
 async_test(function(t) {
@@ -61,7 +60,7 @@ async_test(function(t) {
 
     video.onended = t.step_func(function(event) {
         actual_events.push(event.type);
-        video.src = findMediaFile("video", "content/garbage");
+        video.src = "content/garbage.ogv";
         progressEventCount = 0;
     });
 
@@ -89,6 +88,6 @@ async_test(function(t) {
     video.onplay = defaultEventStepFunction;
     video.onseeking = defaultEventStepFunction;
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

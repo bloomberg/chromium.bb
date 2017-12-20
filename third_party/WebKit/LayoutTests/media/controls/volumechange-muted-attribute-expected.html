@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html>
-<script src="../media-file.js"></script>
 <audio controls></audio>
 <video controls></video>
 <script>
   var audio = document.querySelector('audio')
-  audio.src = findMediaFile('audio', '../content/test');
+  audio.src = '../content/test.oga';
   audio.muted = true;
 
   var video = document.querySelector('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   video.muted = true;
 </script>
 </html>

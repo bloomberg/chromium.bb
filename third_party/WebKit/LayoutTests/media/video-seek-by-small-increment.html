@@ -2,7 +2,6 @@
 <title>Test seeking by very small increments.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -22,9 +21,10 @@ async_test(function(t) {
 
     function seekIncrement() {
         // We want to verify that seeking by an increment smaller than the test movie's
-        // time scale(the smallest unit of time in that file) succeeds. test.mp4 has a time // scale of 2500, 0.0004 seconds, so start with that and decrease by half each time.
+        // time scale(the smallest unit of time in that file) succeeds. test.mp4 has a time
+        // scale of 1 millisecond, so start with that and decrease by half each time.
         if (!increment)
-            increment = 0.0004;
+            increment = 0.001;
         else
             increment /= 2;
         return increment;
@@ -34,6 +34,6 @@ async_test(function(t) {
     video.onplay = t.step_func(function() {});
     video.onpause = t.step_func(function() {});
 
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

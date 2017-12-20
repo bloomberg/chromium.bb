@@ -2,12 +2,11 @@
 <p>This test intentionally lets the video keep playing past end of test to ensure
 that shutdown is clean, since DumpRenderTree used to crash in this case.</p>
 <video autoplay></video>
-<script src="media-file.js"></script>
 <script>
 testRunner.dumpAsText();
 var video = document.querySelector("video");
 video.onplaying = function() {
     testRunner.notifyDone();
 };
-video.src = findMediaFile("video", "content/test");
+video.src = "content/test.ogv";
 </script>
