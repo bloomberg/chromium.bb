@@ -19,6 +19,15 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * True if the current profile manages supervised users.
+     * Set in people-page.
+     */
+    profileManagesSupervisedUsers: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private */
     isOwner_: {
       type: Boolean,
