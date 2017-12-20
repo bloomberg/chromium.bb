@@ -249,8 +249,7 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
       event->SetDefaultHandled();
     }
   }
-
-  // TODO(mlamouri): should call MediaControlInputElement::DefaultEventHandler.
+  MediaControlInputElement::DefaultEventHandler(event);
 }
 
 bool MediaControlOverlayPlayButtonElement::KeepEventInNode(Event* event) {
