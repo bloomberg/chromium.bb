@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_LOADING_ALERT_COORDINATOR_H_
 
 #include "base/ios/block_types.h"
-#import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 // Coordinator displaying an activity indicator with a title and a cancel
 // button.

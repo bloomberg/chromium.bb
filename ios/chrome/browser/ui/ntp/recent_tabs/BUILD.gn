@@ -36,6 +36,7 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/context_menu",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp/recent_tabs/views",

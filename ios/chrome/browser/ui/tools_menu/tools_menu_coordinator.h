@@ -5,8 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_COORDINATOR_H_
 
-#import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"

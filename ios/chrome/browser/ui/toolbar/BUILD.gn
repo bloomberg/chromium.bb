@@ -69,6 +69,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:new_fullscreen",

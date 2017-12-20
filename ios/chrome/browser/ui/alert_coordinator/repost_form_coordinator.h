@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
-#import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/web/public/web_state/web_state.h"
 
 // Creates and manages a repost form dialog that has Continue and Cancel

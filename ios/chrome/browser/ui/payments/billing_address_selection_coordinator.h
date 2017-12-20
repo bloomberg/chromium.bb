@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/payments/address_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
 
