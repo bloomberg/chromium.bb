@@ -7498,8 +7498,17 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_DICE_SIGNIN_BUTTON" desc="Button in the profile user menu to sign in and turn on Sync.">
         Sign in
       </message>
+      <message name="IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON" desc="Button to sign in and turn on Sync for a specific web account.">
+        Sync to <ph name="ACCOUNT_FULL_NAME">$1<ex>John Doe</ex></ph>
+      </message>
+      <message name="IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME" desc="Button to sign in and turn on Sync for a web account when the name is empty.">
+        Sync to your account
+      </message>
       <message name="IDS_PROFILES_DICE_SIGNIN_PROMO" desc="Text describing the benefits of signing in and turning on Sync.">
         Sign in for a personalized browsing experience, synced across your devices
+      </message>
+      <message name="IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON" desc="Button to sign in and turn on Sync with another web account.">
+        Sync to another account
       </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account

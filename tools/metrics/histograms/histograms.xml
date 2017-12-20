@@ -67784,6 +67784,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Profile.DiceUI.GaiaAccountsStale" enum="BooleanStale">
+  <owner>tangltom@chromium.org</owner>
+  <summary>
+    This histogram tracks whether the accounts cached in the GAIA cookie service
+    manager are stale when presenting the user menu when DICE is enabled.
+  </summary>
+</histogram>
+
 <histogram name="Profile.ExtensionSize" units="MB">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Size of the extension cookies database.</summary>

@@ -24,6 +24,8 @@ class View;
 // when hovered over.
 class HoverButton : public views::LabelButton {
  public:
+  enum Style { STYLE_PROMINENT, STYLE_ERROR };
+
   // Creates a single line hover button with no icon.
   HoverButton(views::ButtonListener* button_listener,
               const base::string16& text);
@@ -53,6 +55,9 @@ class HoverButton : public views::LabelButton {
   // This method is only supported for |HoverButton|s created with a title and
   // non-empty subtitle.
   void SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior);
+
+  // Adjusts the background and the text color according to |style|.
+  void SetStyle(Style style);
 
   // Sets the text style of the title considering the color of the background.
   // Passing |background_color| makes sure that the text color will not be
