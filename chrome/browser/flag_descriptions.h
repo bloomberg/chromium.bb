@@ -1187,6 +1187,9 @@ extern const char kHerbPrototypeFlavorElderberry[];
 extern const char kKeepPrefetchedContentSuggestionsName[];
 extern const char kKeepPrefetchedContentSuggestionsDescription[];
 
+extern const char kLanguagesPreferenceName[];
+extern const char kLanguagesPreferenceDescription[];
+
 extern const char kLsdPermissionPromptName[];
 extern const char kLsdPermissionPromptDescription[];
 

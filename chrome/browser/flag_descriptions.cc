@@ -1953,6 +1953,10 @@ const char kKeepPrefetchedContentSuggestionsDescription[] =
     "If enabled, some of prefetched content suggestions are not replaced by "
     "the new fetched suggestions.";
 
+const char kLanguagesPreferenceName[] = "Language Settings";
+const char kLanguagesPreferenceDescription[] =
+    "Enable this option for Language Settings feature on Android.";
+
 const char kLsdPermissionPromptName[] =
     "Location Settings Dialog Permission Prompt";
 const char kLsdPermissionPromptDescription[] =
