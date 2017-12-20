@@ -18238,6 +18238,7 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="MergeHistogramDeltasFromSource"/>
   <int value="9" label="RecordHistogramSnapshotsFromSource"/>
   <int value="10" label="ProvideIndependentMetrics"/>
+  <int value="11" label="ScheduleSourcesCheck Failed"/>
 </enum>
 
 <enum name="FileReaderSyncWorkerType">
