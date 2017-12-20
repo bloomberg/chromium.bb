@@ -1,3 +1,4 @@
+// This file is generated. Do not edit.
 #ifndef VPX_SCALE_RTCD_H_
 #define VPX_SCALE_RTCD_H_
 
