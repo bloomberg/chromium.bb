@@ -17,6 +17,15 @@ namespace path_util {
 // replace the home directory component with "~".
 base::FilePath PrettifyPath(const base::FilePath& source_path);
 
+// Calculates the size of the directory containing an extension, and formats it
+// to a localized string that can be placed directly in the UI. |message_id| is
+// the ID of the string to use when the size is less than 1 MB, basically
+// IDS_APPLICATION_INFO_SIZE_SMALL_LABEL.
+void CalculateAndFormatExtensionDirectorySize(
+    const base::FilePath& extension_path,
+    int message_id,
+    base::OnceCallback<void(const base::string16&)> callback);
+
 }  // namespace path_util
 }  // namespace extensions
 

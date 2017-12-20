@@ -9,10 +9,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -23,13 +21,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/path_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -283,21 +281,13 @@ void AppInfoSummaryPanel::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void AppInfoSummaryPanel::StartCalculatingAppSize() {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&base::ComputeDirectorySize, app_->path()),
+  extensions::path_util::CalculateAndFormatExtensionDirectorySize(
+      app_->path(), IDS_APPLICATION_INFO_SIZE_SMALL_LABEL,
       base::Bind(&AppInfoSummaryPanel::OnAppSizeCalculated, AsWeakPtr()));
 }
 
-void AppInfoSummaryPanel::OnAppSizeCalculated(int64_t app_size_in_bytes) {
-  const int one_mebibyte_in_bytes = 1024 * 1024;
-  if (app_size_in_bytes < one_mebibyte_in_bytes) {
-    size_value_->SetText(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_SMALL_LABEL));
-  } else {
-    size_value_->SetText(ui::FormatBytesWithUnits(
-        app_size_in_bytes, ui::DATA_UNITS_MEBIBYTE, true));
-  }
+void AppInfoSummaryPanel::OnAppSizeCalculated(const base::string16& size) {
+  size_value_->SetText(size);
 }
 
 extensions::LaunchType AppInfoSummaryPanel::GetLaunchType() const {
