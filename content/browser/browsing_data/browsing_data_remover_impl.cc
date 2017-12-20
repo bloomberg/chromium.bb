@@ -105,7 +105,7 @@ void ClearHttpAuthCacheOnIOThread(
 }
 
 void OnClearedChannelIDsOnIOThread(net::URLRequestContextGetter* rq_context,
-                                   const base::Closure& callback) {
+                                   base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Need to close open SSL connections which may be using the channel ids we
@@ -115,52 +115,26 @@ void OnClearedChannelIDsOnIOThread(net::URLRequestContextGetter* rq_context,
   rq_context->GetURLRequestContext()
       ->ssl_config_service()
       ->NotifySSLConfigChange();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
 }
 
 void ClearChannelIDsOnIOThread(
     const base::Callback<bool(const std::string&)>& domain_predicate,
     base::Time delete_begin,
     base::Time delete_end,
-    scoped_refptr<net::URLRequestContextGetter> rq_context,
-    const base::Closure& callback) {
+    scoped_refptr<net::URLRequestContextGetter> request_context,
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::ChannelIDService* channel_id_service =
-      rq_context->GetURLRequestContext()->channel_id_service();
+      request_context->GetURLRequestContext()->channel_id_service();
   channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
       domain_predicate, delete_begin, delete_end,
       base::Bind(&OnClearedChannelIDsOnIOThread,
-                 base::RetainedRef(std::move(rq_context)), callback));
+                 base::RetainedRef(std::move(request_context)),
+                 base::Passed(std::move(callback))));
 }
 
 }  // namespace
-
-BrowsingDataRemoverImpl::SubTask::SubTask(const base::Closure& forward_callback)
-    : is_pending_(false),
-      forward_callback_(forward_callback),
-      weak_ptr_factory_(this) {
-  DCHECK(!forward_callback_.is_null());
-}
-
-BrowsingDataRemoverImpl::SubTask::~SubTask() {}
-
-void BrowsingDataRemoverImpl::SubTask::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_pending_);
-  is_pending_ = true;
-}
-
-base::Closure BrowsingDataRemoverImpl::SubTask::GetCompletionCallback() {
-  return base::Bind(&BrowsingDataRemoverImpl::SubTask::CompletionCallback,
-                    weak_ptr_factory_.GetWeakPtr());
-}
-
-void BrowsingDataRemoverImpl::SubTask::CompletionCallback() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(is_pending_);
-  is_pending_ = false;
-  forward_callback_.Run();
-}
 
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
     BrowserContext* browser_context)
@@ -168,16 +142,6 @@ BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
       remove_mask_(-1),
       origin_type_mask_(-1),
       is_removing_(false),
-      sub_task_forward_callback_(
-          base::Bind(&BrowsingDataRemoverImpl::NotifyIfDone,
-                     base::Unretained(this))),
-      synchronous_clear_operations_(sub_task_forward_callback_),
-      clear_embedder_data_(sub_task_forward_callback_),
-      clear_cache_(sub_task_forward_callback_),
-      clear_networking_history_(sub_task_forward_callback_),
-      clear_channel_ids_(sub_task_forward_callback_),
-      clear_http_auth_cache_(sub_task_forward_callback_),
-      clear_storage_partition_data_(sub_task_forward_callback_),
       storage_partition_for_testing_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(browser_context_);
@@ -324,7 +288,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // 3. Do not support partial deletion, i.e. only delete your data if
   //    |filter_builder.IsEmptyBlacklist()|. Add a comment explaining why this
   //    is acceptable.
-  synchronous_clear_operations_.Start();
+  base::OnceClosure synchronous_clear_operations(
+      CreatePendingTaskCompletionClosure());
 
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max().
@@ -373,16 +338,15 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
-    scoped_refptr<net::URLRequestContextGetter> rq_context =
+    scoped_refptr<net::URLRequestContextGetter> request_context =
         BrowserContext::GetDefaultStoragePartition(browser_context_)
             ->GetURLRequestContext();
-    clear_channel_ids_.Start();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ClearChannelIDsOnIOThread,
                        filter_builder.BuildChannelIDFilter(), delete_begin_,
-                       delete_end_, std::move(rq_context),
-                       clear_channel_ids_.GetCompletionCallback()));
+                       delete_end_, std::move(request_context),
+                       CreatePendingTaskCompletionClosure()));
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -443,8 +407,6 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   }
 
   if (storage_partition_remove_mask) {
-    clear_storage_partition_data_.Start();
-
     uint32_t quota_storage_remove_mask =
         ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
 
@@ -471,10 +433,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
-        base::Bind(&DoesOriginMatchMaskAndURLs, origin_type_mask_, filter,
-                   embedder_matcher),
+        base::BindRepeating(&DoesOriginMatchMaskAndURLs, origin_type_mask_,
+                            filter, embedder_matcher),
         cookie_matcher, delete_begin_, delete_end_,
-        clear_storage_partition_data_.GetCompletionCallback());
+        CreatePendingTaskCompletionClosure());
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -484,18 +446,16 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     // TODO(msramek): Clear the cache of all renderers.
 
-    clear_cache_.Start();
     storage_partition->ClearHttpAndMediaCaches(
         delete_begin, delete_end,
         filter_builder.IsEmptyBlacklist() ? base::Callback<bool(const GURL&)>()
                                           : filter,
-        clear_cache_.GetCompletionCallback());
+        CreatePendingTaskCompletionClosure());
 
     // When clearing cache, wipe accumulated network related data
     // (TransportSecurityState and HttpServerPropertiesManager data).
-    clear_networking_history_.Start();
     storage_partition->GetNetworkContext()->ClearNetworkingHistorySince(
-        delete_begin, clear_networking_history_.GetCompletionCallback());
+        delete_begin, CreatePendingTaskCompletionClosure());
 
     // Tell the shader disk cache to clear.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
@@ -509,25 +469,23 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     scoped_refptr<net::URLRequestContextGetter> request_context =
         BrowserContext::GetDefaultStoragePartition(browser_context_)
             ->GetURLRequestContext();
-    clear_http_auth_cache_.Start();
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ClearHttpAuthCacheOnIOThread,
                        std::move(request_context), delete_begin_),
-        clear_http_auth_cache_.GetCompletionCallback());
+        CreatePendingTaskCompletionClosure());
   }
 
   //////////////////////////////////////////////////////////////////////////////
   // Embedder data.
   if (embedder_delegate_) {
-    clear_embedder_data_.Start();
     embedder_delegate_->RemoveEmbedderData(
         delete_begin_, delete_end_, remove_mask, filter_builder,
-        origin_type_mask, clear_embedder_data_.GetCompletionCallback());
+        origin_type_mask, CreatePendingTaskCompletionClosure());
   }
 
   // Notify in case all actions taken were synchronous.
-  synchronous_clear_operations_.GetCompletionCallback().Run();
+  std::move(synchronous_clear_operations).Run();
 }
 
 void BrowsingDataRemoverImpl::AddObserver(Observer* observer) {
@@ -584,15 +542,6 @@ BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
 
 BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() {}
 
-bool BrowsingDataRemoverImpl::AllDone() {
-  return !synchronous_clear_operations_.is_pending() &&
-         !clear_embedder_data_.is_pending() && !clear_cache_.is_pending() &&
-         !clear_networking_history_.is_pending() &&
-         !clear_channel_ids_.is_pending() &&
-         !clear_http_auth_cache_.is_pending() &&
-         !clear_storage_partition_data_.is_pending();
-}
-
 void BrowsingDataRemoverImpl::Notify() {
   // Some tests call |RemoveImpl| directly, without using the task scheduler.
   // TODO(msramek): Improve those tests so we don't have to do this. Tests
@@ -629,12 +578,15 @@ void BrowsingDataRemoverImpl::Notify() {
       base::BindOnce(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
 }
 
-void BrowsingDataRemoverImpl::NotifyIfDone() {
+void BrowsingDataRemoverImpl::OnTaskComplete() {
   // TODO(brettw) http://crbug.com/305259: This should also observe session
   // clearing (what about other things such as passwords, etc.?) and wait for
   // them to complete before continuing.
 
-  if (!AllDone())
+  DCHECK_GT(num_pending_tasks_, 0);
+  num_pending_tasks_--;
+
+  if (num_pending_tasks_ > 0)
     return;
 
   if (!would_complete_callback_.is_null()) {
@@ -644,6 +596,13 @@ void BrowsingDataRemoverImpl::NotifyIfDone() {
   }
 
   Notify();
+}
+
+base::OnceClosure
+BrowsingDataRemoverImpl::CreatePendingTaskCompletionClosure() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  num_pending_tasks_++;
+  return base::Bind(&BrowsingDataRemoverImpl::OnTaskComplete, GetWeakPtr());
 }
 
 base::WeakPtr<BrowsingDataRemoverImpl> BrowsingDataRemoverImpl::GetWeakPtr() {

@@ -29,7 +29,7 @@ class MockBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate {
                           int remove_mask,
                           const BrowsingDataFilterBuilder& filter_builder,
                           int origin_type_mask,
-                          const base::Closure& callback) override;
+                          base::OnceClosure callback) override;
 
   // Add an expected call for testing.
   void ExpectCall(const base::Time& delete_begin,

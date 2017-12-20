@@ -188,7 +188,7 @@ class ChromeBrowsingDataRemoverDelegate
       int remove_mask,
       const content::BrowsingDataFilterBuilder& filter_builder,
       int origin_type_mask,
-      const base::Closure& callback) override;
+      base::OnceClosure callback) override;
 
 #if defined(OS_ANDROID)
   void OverrideWebappRegistryForTesting(
@@ -246,7 +246,7 @@ class ChromeBrowsingDataRemoverDelegate
   base::Time delete_end_;
 
   // Completion callback to call when all data are deleted.
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   // A callback to NotifyIfDone() used by SubTasks instances.
   const base::Closure sub_task_forward_callback_;
