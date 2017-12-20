@@ -19,7 +19,7 @@ Verifying layout still hasn't been triggered
 PASS internals.needsLayoutCount() is 3
 Verifying non-fast regions have been updated
 PASS nonFastScrollableRects.length is 1
-PASS rectToString(nonFastScrollableRects[0]) is "[100, 0, 222, 222]"
+PASS rectToString(nonFastScrollableRects[0]) is "[110, 10, 222, 222]"
 PASS successfullyParsed is true
 
 TEST COMPLETE

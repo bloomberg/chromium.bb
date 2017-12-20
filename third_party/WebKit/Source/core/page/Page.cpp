@@ -239,12 +239,10 @@ const OverscrollController& Page::GetOverscrollController() const {
 }
 
 DOMRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
-  DisableCompositingQueryAsserts disabler;
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator()) {
-    // Hits in compositing/iframes/iframe-composited-scrolling.html
-    scrolling_coordinator->UpdateAfterCompositingChangeIfNeeded(frame->View());
-  }
+  // Update lifecycle to kPrePaintClean.  This includes the compositing update
+  // and ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded, which
+  // computes the non-fast scrollable region.
+  frame->View()->UpdateAllLifecyclePhasesExceptPaint();
 
   GraphicsLayer* layer =
       frame->View()->LayoutViewportScrollableArea()->LayerForScrolling();
