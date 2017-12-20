@@ -43,108 +43,9 @@
 namespace blink {
 namespace {
 
-bool IsSameOriginWithAncestors(Frame* frame) {
-  if (!frame)
-    return true;
-
-  Frame* current = frame;
-  const SecurityOrigin* origin =
-      frame->GetSecurityContext()->GetSecurityOrigin();
-  while (current->Tree().Parent()) {
-    current = current->Tree().Parent();
-    if (!origin->CanAccess(current->GetSecurityContext()->GetSecurityOrigin()))
-      return false;
-  }
-  return true;
-}
-
-void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
-                                       WebCredentialManagerError reason) {
-  switch (reason) {
-    case kWebCredentialManagerDisabledError:
-      resolver->Reject(DOMException::Create(
-          kInvalidStateError, "The credential manager is disabled."));
-      break;
-    case kWebCredentialManagerPendingRequestError:
-      resolver->Reject(DOMException::Create(kInvalidStateError,
-                                            "A request is already pending."));
-      break;
-    case kWebCredentialManagerNotAllowedError:
-      resolver->Reject(DOMException::Create(kNotAllowedError,
-                                            "The operation is not allowed."));
-      break;
-    case kWebCredentialManagerNotSupportedError:
-      resolver->Reject(DOMException::Create(
-          kNotSupportedError,
-          "Parameters for this operation are not supported."));
-      break;
-    case kWebCredentialManagerSecurityError:
-      resolver->Reject(DOMException::Create(kSecurityError,
-                                            "The operation is insecure and "
-                                            "is not allowed."));
-      break;
-    case kWebCredentialManagerCancelledError:
-      resolver->Reject(DOMException::Create(
-          kNotAllowedError, "The user cancelled the operation."));
-      break;
-    case kWebCredentialManagerNotImplementedError:
-      resolver->Reject(DOMException::Create(
-          kNotAllowedError, "The operation is not implemented."));
-      break;
-    case kWebCredentialManagerUnknownError:
-    default:
-      resolver->Reject(DOMException::Create(kNotReadableError,
-                                            "An unknown error occurred while "
-                                            "talking to the credential "
-                                            "manager."));
-      break;
-  }
-}
-
-bool CheckBoilerplate(ScriptPromiseResolver* resolver) {
-  String error_message;
-  if (!ExecutionContext::From(resolver->GetScriptState())
-           ->IsSecureContext(error_message)) {
-    resolver->Reject(DOMException::Create(kSecurityError, error_message));
-    return false;
-  }
-
-  CredentialManagerClient* client = CredentialManagerClient::From(
-      ExecutionContext::From(resolver->GetScriptState()));
-  if (!client) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError,
-        "Could not establish connection to the credential manager."));
-    return false;
-  }
-
-  return true;
-}
-
-bool IsIconURLEmptyOrSecure(const Credential* credential) {
-  PlatformCredential* platform_credential = credential->GetPlatformCredential();
-  if (!platform_credential->IsPassword() &&
-      !platform_credential->IsFederated()) {
-    return true;
-  }
-
-  const KURL& url =
-      platform_credential->IsFederated()
-          ? static_cast<const PlatformFederatedCredential*>(platform_credential)
-                ->IconURL()
-          : static_cast<const PlatformPasswordCredential*>(platform_credential)
-                ->IconURL();
-
-  if (url.IsEmpty())
-    return true;
-
-  // https://www.w3.org/TR/mixed-content/#a-priori-authenticated-url
-  return url.IsAboutSrcdocURL() || url.IsAboutBlankURL() ||
-         url.ProtocolIsData() ||
-         SecurityOrigin::Create(url)->IsPotentiallyTrustworthy();
-}
-
-}  // namespace
+bool IsSameOriginWithAncestors(Frame*);
+void RejectDueToCredentialManagerError(ScriptPromiseResolver*,
+                                       WebCredentialManagerError);
 
 class NotificationCallbacks
     : public WebCredentialManagerClient::NotificationCallbacks {
@@ -271,6 +172,109 @@ class PublicKeyCallbacks : public WebAuthenticationClient::PublicKeyCallbacks {
 
   const Persistent<ScriptPromiseResolver> resolver_;
 };
+
+bool IsSameOriginWithAncestors(Frame* frame) {
+  if (!frame)
+    return true;
+
+  Frame* current = frame;
+  const SecurityOrigin* origin =
+      frame->GetSecurityContext()->GetSecurityOrigin();
+  while (current->Tree().Parent()) {
+    current = current->Tree().Parent();
+    if (!origin->CanAccess(current->GetSecurityContext()->GetSecurityOrigin()))
+      return false;
+  }
+  return true;
+}
+
+bool CheckBoilerplate(ScriptPromiseResolver* resolver) {
+  String error_message;
+  if (!ExecutionContext::From(resolver->GetScriptState())
+           ->IsSecureContext(error_message)) {
+    resolver->Reject(DOMException::Create(kSecurityError, error_message));
+    return false;
+  }
+
+  CredentialManagerClient* client = CredentialManagerClient::From(
+      ExecutionContext::From(resolver->GetScriptState()));
+  if (!client) {
+    resolver->Reject(DOMException::Create(
+        kInvalidStateError,
+        "Could not establish connection to the credential manager."));
+    return false;
+  }
+
+  return true;
+}
+
+bool IsIconURLEmptyOrSecure(const Credential* credential) {
+  PlatformCredential* platform_credential = credential->GetPlatformCredential();
+  if (!platform_credential->IsPassword() &&
+      !platform_credential->IsFederated()) {
+    return true;
+  }
+
+  const KURL& url =
+      platform_credential->IsFederated()
+          ? static_cast<const PlatformFederatedCredential*>(platform_credential)
+                ->IconURL()
+          : static_cast<const PlatformPasswordCredential*>(platform_credential)
+                ->IconURL();
+
+  if (url.IsEmpty())
+    return true;
+
+  // https://www.w3.org/TR/mixed-content/#a-priori-authenticated-url
+  return url.IsAboutSrcdocURL() || url.IsAboutBlankURL() ||
+         url.ProtocolIsData() ||
+         SecurityOrigin::Create(url)->IsPotentiallyTrustworthy();
+}
+
+void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
+                                       WebCredentialManagerError reason) {
+  switch (reason) {
+    case kWebCredentialManagerDisabledError:
+      resolver->Reject(DOMException::Create(
+          kInvalidStateError, "The credential manager is disabled."));
+      break;
+    case kWebCredentialManagerPendingRequestError:
+      resolver->Reject(DOMException::Create(kInvalidStateError,
+                                            "A request is already pending."));
+      break;
+    case kWebCredentialManagerNotAllowedError:
+      resolver->Reject(DOMException::Create(kNotAllowedError,
+                                            "The operation is not allowed."));
+      break;
+    case kWebCredentialManagerNotSupportedError:
+      resolver->Reject(DOMException::Create(
+          kNotSupportedError,
+          "Parameters for this operation are not supported."));
+      break;
+    case kWebCredentialManagerSecurityError:
+      resolver->Reject(DOMException::Create(kSecurityError,
+                                            "The operation is insecure and "
+                                            "is not allowed."));
+      break;
+    case kWebCredentialManagerCancelledError:
+      resolver->Reject(DOMException::Create(
+          kNotAllowedError, "The user cancelled the operation."));
+      break;
+    case kWebCredentialManagerNotImplementedError:
+      resolver->Reject(DOMException::Create(
+          kNotAllowedError, "The operation is not implemented."));
+      break;
+    case kWebCredentialManagerUnknownError:
+    default:
+      resolver->Reject(DOMException::Create(kNotReadableError,
+                                            "An unknown error occurred while "
+                                            "talking to the credential "
+                                            "manager."));
+      break;
+  }
+}
+
+}  // namespace
 
 CredentialsContainer* CredentialsContainer::Create() {
   return new CredentialsContainer();
