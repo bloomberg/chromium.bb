@@ -562,6 +562,72 @@
     'net_unittests': {},
     'unit_tests': {},
   },
+  'chromium_swarm_linux_gtests': {
+    'base_unittests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'cores': '2',
+          },
+        ],
+      },
+    },
+    'browser_tests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'cores': '8',
+          },
+        ],
+        'shards': 2,
+      },
+    },
+    'content_browsertests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'cores': '8',
+          },
+        ],
+      },
+    },
+    'content_unittests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'cores': '2',
+          },
+        ],
+      },
+    },
+    'interactive_ui_tests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'cores': '8',
+          },
+        ],
+      },
+    },
+    'net_unittests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'cores': '8',
+          },
+        ],
+      },
+    },
+    'unit_tests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'cores': '2',
+          },
+        ],
+      },
+    },
+  },
 
   'client_v8_chromium_gtests': {
     'app_shell_unittests': {},
