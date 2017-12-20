@@ -432,11 +432,6 @@ const base::Feature kPolicyTool{"PolicyTool",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Triggers the preconnector on renderer-initiated navigations. This captures
-// more navigations.
-const base::Feature kPreconnectMore{"PreconnectMore",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728
