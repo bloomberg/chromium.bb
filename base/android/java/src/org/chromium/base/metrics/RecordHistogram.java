@@ -212,6 +212,18 @@ public class RecordHistogram {
     }
 
     /**
+     * Records a sample in a histogram of times. Useful for recording long durations. This is the
+     * Java equivalent of the UMA_HISTOGRAM_LONG_TIMES_100 C++ macro.
+     * @param name name of the histogram
+     * @param duration duration to be recorded
+     * @param timeUnit the unit of the duration argument
+     */
+    public static void recordLongTimesHistogram100(String name, long duration, TimeUnit timeUnit) {
+        recordCustomTimesHistogramMilliseconds(
+                name, timeUnit.toMillis(duration), 1, TimeUnit.HOURS.toMillis(1), 100);
+    }
+
+    /**
      * Records a sample in a histogram of times with custom buckets. This is the Java equivalent of
      * the UMA_HISTOGRAM_CUSTOM_TIMES C++ macro.
      * @param name name of the histogram
