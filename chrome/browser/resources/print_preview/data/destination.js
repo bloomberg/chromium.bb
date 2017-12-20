@@ -109,6 +109,15 @@ print_preview.CddCapabilities;
 print_preview.Cdd;
 
 /**
+ * Enumeration of color modes used by Chromium.
+ * @enum {number}
+ */
+print_preview.ColorMode = {
+  GRAY: 1,
+  COLOR: 2
+};
+
+/**
  * @typedef {{id: string,
  *            origin: print_preview.DestinationOrigin,
  *            account: string,
@@ -291,6 +300,19 @@ cr.define('print_preview', function() {
                       .NEEDS_USB_PERMISSION ||
               this.isExtension,
           'Provisional USB destination only supprted with extension origin.');
+
+      /**
+       * @private {!Array<string>} List of capability types considered color.
+       * @const
+       */
+      this.COLOR_TYPES_ = ['STANDARD_COLOR', 'CUSTOM_COLOR'];
+
+      /**
+       * @private {!Array<string>} List of capability types considered
+       *     monochrome.
+       * @const
+       */
+      this.MONOCHROME_TYPES_ = ['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'];
     }
 
     /** @return {string} ID of the destination. */
@@ -585,6 +607,90 @@ cr.define('print_preview', function() {
      */
     get isEnterprisePrinter() {
       return this.isEnterprisePrinter_;
+    }
+
+    /**
+     * @return {Object} Color capability of this destination.
+     * @private
+     */
+    colorCapability_() {
+      return this.capabilities && this.capabilities.printer &&
+              this.capabilities.printer.color ?
+          this.capabilities.printer.color :
+          null;
+    }
+
+    /**
+     * @return {boolean} Whether the printer supports both black and white and
+     *     color printing.
+     */
+    get hasColorCapability() {
+      const capability = this.colorCapability_();
+      if (!capability || !capability.option)
+        return false;
+      let hasColor = false;
+      let hasMonochrome = false;
+      capability.option.forEach(option => {
+        const type = assert(option.type);
+        hasColor = hasColor || this.COLOR_TYPES_.includes(option.type);
+        hasMonochrome =
+            hasMonochrome || this.MONOCHROME_TYPES_.includes(option.type);
+      });
+      return hasColor && hasMonochrome;
+    }
+
+    /**
+     * @param {boolean} isColor Whether to use a color printing mode.
+     * @return {Object} Selected color option.
+     */
+    getSelectedColorOption(isColor) {
+      const typesToLookFor =
+          isColor ? this.COLOR_TYPES_ : this.MONOCHROME_TYPES_;
+      const capability = this.colorCapability_();
+      if (!capability || !capability.option)
+        return null;
+      for (let i = 0; i < typesToLookFor.length; i++) {
+        const matchingOptions = capability.option.filter(option => {
+          return option.type == typesToLookFor[i];
+        });
+        if (matchingOptions.length > 0)
+          return matchingOptions[0];
+      }
+      return null;
+    }
+
+    /**
+     * @param {boolean} isColor Whether to use a color printing mode.
+     * @return {number} Native color model of the destination.
+     */
+    getNativeColorModel(isColor) {
+      // For non-local printers or printers without capability, native color
+      // model is ignored.
+      const capability = this.colorCapability_();
+      if (!capability || !capability.option || !this.isLocal) {
+        return isColor ? print_preview.ColorMode.COLOR :
+                         print_preview.ColorMode.GRAY;
+      }
+      const selected = this.getSelectedColorOption(isColor);
+      const mode = parseInt(selected ? selected.vendor_id : null, 10);
+      if (isNaN(mode)) {
+        return isColor ? print_preview.ColorMode.COLOR :
+                         print_preview.ColorMode.GRAY;
+      }
+      return mode;
+    }
+
+    /**
+     * @return {Object} The default color option for the destination.
+     */
+    get defaultColorOption() {
+      const capability = this.colorCapability_();
+      if (!capability || !capability.option)
+        return null;
+      const defaultOptions = capability.option.filter(option => {
+        return option.is_default;
+      });
+      return defaultOptions.length != 0 ? defaultOptions[0] : null;
     }
   }
 

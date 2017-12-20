@@ -177,18 +177,6 @@ Polymer({
        'documentInfo.hasSelection)'],
 
   /**
-   * @private {!Array<string>} List of capability types considered color.
-   * @const
-   */
-  COLOR_TYPES_: ['STANDARD_COLOR', 'CUSTOM_COLOR'],
-
-  /**
-   * @private {!Array<string>} List of capability types considered monochrome.
-   * @const
-   */
-  MONOCHROME_TYPES_: ['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'],
-
-  /**
    * Updates the availability of the settings sections.
    * @private
    */
@@ -205,7 +193,7 @@ Polymer({
     this.set('settings.copies.available', !!caps && !!(caps.copies));
     this.set('settings.collate.available', !!caps && !!(caps.collate));
     this.set('settings.layout.available', this.isLayoutAvailable_(caps));
-    this.set('settings.color.available', this.isColorAvailable_(caps));
+    this.set('settings.color.available', this.destination.hasColorCapability);
     this.set('settings.margins.available', this.documentInfo.isModifiable);
     this.set(
         'settings.mediaSize.available',
@@ -252,20 +240,5 @@ Polymer({
       hasLandscapeOption = hasLandscapeOption || option.type == 'LANDSCAPE';
     });
     return hasLandscapeOption && hasAutoOrPortraitOption;
-  },
-
-  /** @param {?print_preview.CddCapabilities} caps The printer capabilities. */
-  isColorAvailable_: function(caps) {
-    if (!caps || !caps.color || !caps.color.option)
-      return false;
-    let hasColor = false;
-    let hasMonochrome = false;
-    caps.color.option.forEach(option => {
-      const type = assert(option.type);
-      hasColor = hasColor || this.COLOR_TYPES_.includes(option.type);
-      hasMonochrome =
-          hasMonochrome || this.MONOCHROME_TYPES_.includes(option.type);
-    });
-    return hasColor && hasMonochrome;
   },
 });

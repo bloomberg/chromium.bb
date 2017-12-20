@@ -608,8 +608,7 @@ cr.define('print_preview_test', function() {
             expectEquals(ticket.duplex,
                          print_preview.PreviewGenerator.DuplexMode.LONG_EDGE);
             expectTrue(ticket.landscape);
-            expectEquals(ticket.color,
-                         print_preview.PreviewGenerator.ColorMode.COLOR);
+            expectEquals(ticket.color, print_preview.ColorMode.COLOR);
             expectEquals(print_preview.ticket_items.MarginsTypeValue.CUSTOM,
                          ticket.marginsType);
             expectEquals(74, ticket.marginsCustom.marginTop);
