@@ -672,9 +672,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
   } else if (sender == current_profile_card_) {
-    avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
-    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
-    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
+    if (signin::IsDiceEnabledForProfile(browser_->profile()->GetPrefs())) {
+      chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+    } else {
+      avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
+      PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
+      PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME);
+    }
   } else if (sender == manage_accounts_button_) {
     // This button can either mean show/hide the account management view,
     // depending on which view it is displayed.
