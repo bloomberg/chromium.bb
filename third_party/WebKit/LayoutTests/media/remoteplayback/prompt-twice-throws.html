@@ -4,7 +4,8 @@
         <title>Test that calling prompt() before the promise returned by the previous call is resolved throws an exception</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
-                <script src="util.js"></script>
+        <script src="../media-file.js"></script>
+        <script src="util.js"></script>
     </head>
     <body>
         <button id="button">Click me</button>
@@ -28,7 +29,7 @@
                 enableRemotePlaybackBackendForTest(test);
 
                 var v = document.createElement('video');
-                v.src = '../content/test.ogv';
+                v.src = findMediaFile('video', '../content/test');
                 document.body.appendChild(v);
 
                 var btn = document.getElementById('button');

@@ -2,6 +2,7 @@
 <title>Test the play() behaviour with regards to the returned promise for media elements.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script>
 // This is testing the behavior of play() with regards to the returned
 // promise. This test file is creating a small framework in order to be able
@@ -13,7 +14,7 @@ var tests = [
     // Test that play() on an element that doesn't have enough data will
     // return a promise that resolves successfully.
     function playBeforeCanPlay(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
         assert_equals(audio.readyState, HTMLMediaElement.HAVE_NOTHING);
         playExpectingResolvedPromise(t, audio);
     },
@@ -21,7 +22,7 @@ var tests = [
     // Test that play() on an element that has enough data will return a
     // promise that resolves successfully.
     function playWhenCanPlay(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
 
         audio.oncanplay = t.step_func(function() {
             assert_greater_than_equal(audio.readyState, HTMLMediaElement.HAVE_FUTURE_DATA);
@@ -34,7 +35,7 @@ var tests = [
     // promise that resolves successfully.
     function playAfterPlaybackStarted(t, audio) {
         audio.preload = "auto";
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
 
         audio.onplaying = t.step_func(function() {
             assert_equals(audio.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
@@ -50,7 +51,7 @@ var tests = [
     // Test that play() on an element with an unsupported content will
     // return a rejected promise.
     function playNotSupportedContent(t, audio) {
-        audio.src = "data:,.oga";
+        audio.src = findMediaFile("audio", "data:,");
 
         audio.onerror = t.step_func(function() {
             assert_true(audio.error instanceof MediaError);
@@ -64,7 +65,7 @@ var tests = [
     // This test doesn't test a spec behaviour but tests that the Blink
     // implementation properly changed after the spec changed.
     function playDecodeError(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
 
         audio.onerror = t.step_func(function() {
             assert_true(audio.error instanceof MediaError);
@@ -83,7 +84,7 @@ var tests = [
     // This test doesn't test a spec behaviour but tests that the Blink
     // implementation properly changed after the spec changed
     function playNetworkError(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
 
         audio.onerror = t.step_func(function() {
             assert_true(audio.error instanceof MediaError);
@@ -100,7 +101,7 @@ var tests = [
     // Test that play() returns a rejected promise if the element is
     // sufferring from a not supported error.
     function playWithErrorAlreadySet(t, audio) {
-        audio.src = "data:,.oga";
+        audio.src = findMediaFile("audio", "data:,");
 
         audio.onerror = t.step_func(function() {
             assert_true(audio.error instanceof MediaError);
@@ -112,12 +113,12 @@ var tests = [
     // Test that play() returns a resolved promise if the element had its
     // source changed after suffering from an error.
     function playSrcChangedAfterError(t, audio) {
-        audio.src = "data:,.oga";
+        audio.src = findMediaFile("audio", "data:,");
 
         audio.onerror = t.step_func(function() {
             assert_true(audio.error instanceof MediaError);
             assert_equals(audio.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
-            audio.src = "content/test.oga";
+            audio.src = findMediaFile("audio", "content/test");
 
             audio.onloadedmetadata = t.step_func(function() {
                 playExpectingResolvedPromise(t, audio);
@@ -128,12 +129,12 @@ var tests = [
     // Test that play() returns a rejected promise if the element had an
     // error and just changed its source.
     function playRaceWithSrcChangeError(t, audio) {
-        audio.src = "data:,.oga";
+        audio.src = findMediaFile("audio", "data:,");
 
         audio.onerror = t.step_func(function() {
             assert_true(audio.error instanceof MediaError);
             assert_equals(audio.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
-            audio.src = "content/test.oga";
+            audio.src = findMediaFile("audio", "content/test");
             assert_equals(audio.error, null);
             assert_equals(audio.readyState, HTMLMediaElement.HAVE_NOTHING);
             playExpectingResolvedPromise(t, audio);
@@ -145,7 +146,7 @@ var tests = [
     // words, pause() doesn't cancel play() because it was resolved
     // immediately.
     function playAndPauseWhenCanplay(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
 
         audio.oncanplaythrough = t.step_func(function() {
             assert_equals(audio.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
@@ -178,13 +179,13 @@ var tests = [
     // Test that changing the src rejects the pending play() promises.
     function newSrcRejectPendingPromises(t, audio) {
         playExpectingRejectedPromise(t, audio, "AbortError"); // the promise will be left pending.
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
     },
 
     // Test ordering of events and promises.
     // This is testing a bug in Blink, see https://crbug.com/587871
     function testEventAndPromiseOrdering(t, audio) {
-        audio.src = "data:,.oga";
+        audio.src = findMediaFile("audio", "data:,");
 
         audio.onerror = t.step_func(function() {
             // Until https://crbug.com/587871 is fixed, the events will be
@@ -207,7 +208,7 @@ var tests = [
     // playing returns a promise that resolves successfully.
     function pausePlayAfterPlaybackStarted(t, audio) {
         audio.preload = "auto";
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
 
         audio.onplaying = t.step_func(function() {
             assert_equals(audio.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
@@ -224,11 +225,11 @@ var tests = [
     // Test that running the load algorithm will not drop all the promises about
     // to be resolved.
     function loadAlgorithmDoesNotCancelTasks(t, audio) {
-        audio.src = 'content/test.oga';
+        audio.src = findMediaFile('audio', 'content/test');
         audio.addEventListener('canplaythrough', t.step_func(function() {
             // The play() promise will be queued to be resolved.
             playExpectingResolvedPromise(t, audio);
-            audio.src = 'content/test.oga';
+            audio.src = findMediaFile('audio', 'content/test');
             assert_true(audio.paused);
         }));
     },
@@ -238,7 +239,7 @@ var tests = [
     function loadAlgorithmKeepPromisesPendingWhenNotPausing(t, audio) {
         playExpectingResolvedPromise(t, audio);
         setTimeout(t.step_func(function() {
-            audio.src = 'content/test.oga';
+            audio.src = findMediaFile('audio', 'content/test');
             assert_false(audio.paused);
         }), 0);
     },
@@ -246,7 +247,7 @@ var tests = [
     // Test that when the load algorithm is run, if it resolves multiple
     // promises, they are resolved in the order in which they were added.
     function loadAlgorithmResolveOrdering(t, audio) {
-        audio.src = 'content/test.oga';
+        audio.src = findMediaFile('audio', 'content/test');
         audio.addEventListener('canplaythrough', t.step_func(function() {
             var firstPromiseResolved = false;
             audio.play().then(t.step_func(_ => firstPromiseResolved = true),
@@ -256,7 +257,7 @@ var tests = [
                 assert_true(firstPromiseResolved);
             }), t.unreached_func());
 
-            audio.src = 'content/test.oga';
+            audio.src = findMediaFile('audio', 'content/test');
         }));
     },
 
@@ -268,14 +269,14 @@ var tests = [
     // function loadAlgorithmKeepPromisesPendingWhenNotPausingAndPreloadNone(t, audio) {
     //     audio.preload = 'none';
     //     playExpectingRejectedPromise(t, audio, 'AbortError');
-    //     setTimeout(_ => audio.src = 'content/test.oga', 0);
+    //     setTimeout(_ => audio.src = findMediaFile('audio', 'content/test'), 0);
     // },
 
     // Test that when the load algorithm is run, if it does pause the playback,
     // it will reject the pending promises.
     function loadAlgorithmRejectPromisesWhenPausing(t, audio) {
         playExpectingRejectedPromise(t, audio, 'AbortError');
-        audio.src = 'content/test.oga';
+        audio.src = findMediaFile('audio', 'content/test');
         assert_true(audio.paused);
     },
 
@@ -284,7 +285,7 @@ var tests = [
     function loadAlgorithmRejectPromisesWhenPausingAndPreloadNone(t, audio) {
         audio.preload = 'none';
         playExpectingRejectedPromise(t, audio, 'AbortError');
-        audio.src = 'content/test.oga';
+        audio.src = findMediaFile('audio', 'content/test');
         assert_true(audio.paused);
     },
 
@@ -308,7 +309,7 @@ var tests = [
 
         setTimeout(t.step_func(function() {
             audio.pause();
-            audio.src = 'content/test.oga';
+            audio.src = findMediaFile('audio', 'content/test');
         }), 0);
     },
 ];
@@ -325,14 +326,14 @@ var testsWithUserGesture = [
     // Test that play() on an element when media playback requires a gesture
     // returns a resolved promise if there is a user gesture.
     function playRequiresUserGestureAndHasIt(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
         playWithUserGesture(t, audio);
     },
 
     // Test that play() on an element when media playback requires a gesture
     // returns a rejected promise if there is no user gesture.
     function playRequiresUserGestureAndDoesNotHaveIt(t, audio) {
-        audio.src = "content/test.oga";
+        audio.src = findMediaFile("audio", "content/test");
         playExpectingRejectedPromise(t, audio, "NotAllowedError");
     }
 ];

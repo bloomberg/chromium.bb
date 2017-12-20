@@ -9,6 +9,7 @@
 <meta name='viewport' content='width=800'>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 </head>
 <style>
@@ -34,7 +35,7 @@ test(_ => {
 
   var videos = document.querySelectorAll('video');
   for (var i=0; i < videos.length; ++i) {
-    videos[i].src = 'content/test.ogv';
+    videos[i].src = findMediaFile('video', 'content/test');
   }
 
   var forceLayout = document.body.offsetHeight;

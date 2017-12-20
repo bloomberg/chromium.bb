@@ -68,7 +68,7 @@ async_test(function(t) {
         setTimeout(t.step_func(checkProgressCount), maxProgressFiringIntervalInMS);
     });
 
-    var mediaFile = 'resources/test.ogv';
+    var mediaFile = findMediaFile('video', 'resources/test');
     var mimeType = mimeTypeForFile(mediaFile);
     // Assumes minimum file size selected is > 100 kB.
     // At least 4*maxProgressFiringIntervalInMS is how long we want to stretch the full

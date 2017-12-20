@@ -1,5 +1,6 @@
 <!doctype html>
 <title>WebVTT overscan margin test</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -20,7 +21,7 @@
       video.appendChild(track);
       document.body.appendChild(video);
 
-      video.src = '../content/test.ogv';
+      video.src = findMediaFile('video', '../content/test');
       video.oncanplaythrough = function() { video.currentTime = time; };
       video.onseeked = t.step_func(function() {
         var testCueDisplayBox = textTrackDisplayElement(video);

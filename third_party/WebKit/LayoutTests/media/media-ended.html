@@ -2,6 +2,7 @@
 <title>Test "ended" event fires again after changing source after "ended" event.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <audio autoplay></audio>
 <script>
 async_test(function(t) {
@@ -28,7 +29,7 @@ async_test(function(t) {
                 }
 
                 // Change src but don't seek so that internal state isn't reset.
-                audio.src = "content/silence.oga";
+                audio.src = findMediaFile("audio", "content/silence");
                 assert_false(audio.ended);
 
                 break;
@@ -39,6 +40,6 @@ async_test(function(t) {
         }
     });
 
-    audio.src = "content/silence.oga"
+    audio.src = findMediaFile("audio", "content/silence")
 });
 </script>

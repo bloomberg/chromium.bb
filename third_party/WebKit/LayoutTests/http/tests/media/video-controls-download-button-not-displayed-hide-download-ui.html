@@ -3,12 +3,13 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../../media-resources/media-controls.js"></script>
+<script src="../../media-resources/media-file.js"></script>
 <video controls></video>
 <script>
 async_test(function(t) {
   window.internals.settings.setHideDownloadUI(true);
   var video = document.querySelector("video");
-  video.src = "resources/test.ogv";
+  video.src = findMediaFile("video", "resources/test");
   var controlID = "-internal-media-controls-download-button";
   var downloadButton = mediaControlsElement(internals.shadowRoot(video).firstChild, controlID);
   video.onloadeddata = t.step_func_done(function() {

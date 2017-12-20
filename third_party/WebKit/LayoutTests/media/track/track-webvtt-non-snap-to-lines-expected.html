@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Reference test for track-webvtt-non-snap-to-lines.html.</title>
+<script src="../media-file.js"></script>
 <style>
 .container {
   position: relative;
@@ -18,7 +19,7 @@
 <div class="container">
   <video>
     <script>
-    document.currentScript.parentNode.src = '../content/test.ogv';
+    document.currentScript.parentNode.src = findMediaFile('video', '../content/test');
     </script>
   </video>
   <span class="cue">Bear is Coming!!!!!</div>

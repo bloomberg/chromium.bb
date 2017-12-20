@@ -2,6 +2,7 @@
 <title>Test that removing valid "src" attribute doesn't trigger load of "source" elements.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video>
     <source></source>
 </video>
@@ -25,8 +26,8 @@ async_test(function(t) {
         assert_false(isNaN(video.duration));
     }
 
-    document.querySelector("source").src = "content/counting.ogv";
-    var mediaFile = "content/test.ogv";
+    document.querySelector("source").src = findMediaFile("video", "content/counting");
+    var mediaFile = findMediaFile("video", "content/test");
     video.src = mediaFile;
 });
 </script>

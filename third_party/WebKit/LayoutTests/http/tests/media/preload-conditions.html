@@ -2,6 +2,7 @@
 <title>Test media preloading behaviour with different conditions.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
 <script>
 var tests = [
   {
@@ -134,7 +135,7 @@ function runTest(t, test) {
   [ '', 'none', 'metadata', 'auto' ].forEach(preload => {
     var media = document.createElement('video');
     media.preload = preload;
-    media.src = 'resources/test.ogv';
+    media.src = findMediaFile('video', 'resources/test');
     assert_equals(media.readyState, HTMLMediaElement.HAVE_NOTHING);
 
     switch (media.preload) {

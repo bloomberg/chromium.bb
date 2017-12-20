@@ -21,7 +21,7 @@ async_test(function(t) {
     }
   });
 
-  iframe.src = '../content/test.ogv';
+  iframe.src = findMediaFile('video', '../content/test');
   document.body.appendChild(iframe);
 });
 </script>

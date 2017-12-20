@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that the controls repaint correctly on resize.</title>
+<script src="../media-file.js"></script>
 <video controls width=300></video>
 <script>
 var video = document.querySelector("video");
@@ -14,5 +15,5 @@ video.onloadedmetadata = function() {
     testRunner.notifyDone();
 };
 
-video.src = "../content/test.ogv";
+video.src = findMediaFile("video", "../content/test");
 </script>

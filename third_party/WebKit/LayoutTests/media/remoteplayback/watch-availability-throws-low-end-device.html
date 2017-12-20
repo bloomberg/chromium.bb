@@ -4,7 +4,8 @@
         <title>Test that watchAvailability() throws on low-end devices.</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
-                <script src="util.js"></script>
+        <script src="../media-file.js"></script>
+        <script src="util.js"></script>
     </head>
     <body>
         <script>
@@ -14,7 +15,7 @@
             {
                 enableRemotePlaybackBackendForTest(t);
                 var v = document.createElement('video');
-                v.src = '../content/test.ogv';
+                v.src = findMediaFile('video', '../content/test');
                 document.body.appendChild(v);
                 internals.setIsLowEndDevice(true);
                 v.remote.watchAvailability(t.unreached_func()).then(

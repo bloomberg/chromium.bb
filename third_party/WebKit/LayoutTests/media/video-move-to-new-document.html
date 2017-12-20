@@ -2,12 +2,13 @@
 <title>Verify that moving a video element to a new document, still loads it normally</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <iframe></iframe>
 <script>
     async_test(function(t) {
         var video = document.querySelector('video');
-        video.src = "content/test.ogv";
+        video.src = findMediaFile("video", "content/test");
         video.onloadeddata = this.step_func(function() {
             video.onloadeddata = null;
             assert_true(video.networkState == video.NETWORK_IDLE || video.networkState == video.NETWORK_LOADING);

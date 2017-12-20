@@ -10,7 +10,7 @@
       margin: 10px;
       border: 1px solid black;
     }
-
+    
     #details {
      width: 300px;
      height: 150px;
@@ -28,6 +28,7 @@
     </style>
 
     <script src="resources/media-testing.js"></script>
+    <script src="../media/media-file.js"></script>
 
     <script type="text/javascript" charset="utf-8">
       function testDone()
@@ -40,7 +41,7 @@
       function doTest()
       {
         var video = document.getElementsByTagName('video')[0];
-        setupVideo(video, 'resources/video.ogv', testDone);
+        setupVideo(video, 'resources/video', testDone);
       }
     </script>
   </head>

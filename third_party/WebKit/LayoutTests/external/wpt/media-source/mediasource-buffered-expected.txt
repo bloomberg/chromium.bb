@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL Demuxed content with different lengths assert_equals: mediaSource.activeSourceBuffers[1] expected "{ [0.067, 2.067) }" but got "{ [0.000, 2.000) }"
-FAIL Muxed content with different lengths assert_equals: mediaSource.activeSourceBuffers[0] expected "{ [0.067, 2.043) }" but got "{ [0.000, 2.000) }"
-PASS Demuxed content with an empty buffered range on one SourceBuffer
+FAIL Demuxed content with different lengths assert_equals: mediaSource.activeSourceBuffers[0] expected "{ [0.000, 2.023) }" but got "{ [0.000, 2.022) }"
+FAIL Muxed content with different lengths assert_equals: mediaSource.activeSourceBuffers[0] expected "{ [0.003, 2.004) }" but got "{ [0.000, 2.003) }"
+FAIL Demuxed content with an empty buffered range on one SourceBuffer assert_equals: mediaSource.activeSourceBuffers[0] expected "{ [0.000, 2.023) }" but got "{ [0.000, 2.022) }"
 PASS Muxed content empty buffered ranges.
 PASS Get buffered range when sourcebuffer is empty.
 PASS Get buffered range when only init segment is appended.

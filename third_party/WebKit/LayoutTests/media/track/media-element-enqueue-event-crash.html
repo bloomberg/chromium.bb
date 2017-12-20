@@ -3,6 +3,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/gc.js"></script>
+<script src="../media-file.js"></script>
 <video autoplay>
     <track src="captions-webvtt/captions-fast.vtt" default>
 </video>
@@ -20,7 +21,7 @@ async_test(function(t) {
 
     function CFcrash() {
         var video = document.querySelector("video");
-        video.src = "content/test.ogv";
+        video.src = findMediaFile("video", "content/test");
         var document1 = document.implementation.createDocument("", null);
         document1.appendChild(video);
         delete document1;

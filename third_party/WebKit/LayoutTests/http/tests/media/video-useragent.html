@@ -9,7 +9,7 @@
 </video>
 <script>
 async_test(function(t) {
-    var movie = 'test.ogv';
+    var movie = findMediaFile('video', 'test');
     var type = mimeTypeForExtension(movie.split('.').pop());
     var iframe = document.createElement('iframe');
 

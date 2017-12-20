@@ -4,13 +4,14 @@
         <title>AudioTrack.enabled change</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
-            </head>
+        <script src="../media-file.js"></script>
+    </head>
     <body>
         <script>
             async_test(function(t)
             {
                 var audio = document.createElement("audio");
-                audio.src = "../content/test.oga";
+                audio.src = findMediaFile("audio", "../content/test");
 
                 audio.onloadedmetadata = t.step_func(function()
                 {

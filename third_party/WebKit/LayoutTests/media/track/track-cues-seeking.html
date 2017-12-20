@@ -2,6 +2,7 @@
 <title>Tests TextTrack's activeCues are indexed and updated during video playback.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <video>
     <track src="captions-webvtt/cues-overlapping.vtt" kind="subtitles" default>
 </video>
@@ -11,7 +12,7 @@ async_test(function(t) {
     var track = document.querySelector("track");
     track.onload = t.step_func(function() {
         assert_equals(track.track.cues.length, 3);
-        video.src = "../content/test.ogv";
+        video.src = findMediaFile("video", "../content/test");
         video.currentTime = 0.5;
     });
 

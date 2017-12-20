@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that WebVTT objects are being styled correctly based on user settings that should override author settings.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -21,7 +22,7 @@ video::cue(c) {
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     video.oncanplaythrough = t.step_func_done(function() {
         var cue = textTrackCueElementByIndex(video, 0).firstChild.firstElementChild;
@@ -33,7 +34,7 @@ async_test(function(t) {
         assert_equals(cueStyle.fontFamily, "arial");
         assert_equals(cueStyle.fontStyle, "normal");
         assert_equals(cueStyle.fontVariant, "normal");
-
+        
         // Apply user settings and verify they override author-specified settings
         internals.settings.setTextTrackTextColor("cyan");
         internals.settings.setTextTrackBackgroundColor("green");
@@ -42,7 +43,7 @@ async_test(function(t) {
         internals.settings.setTextTrackFontFamily("fantasy");
         internals.settings.setTextTrackFontStyle("italic");
         internals.settings.setTextTrackFontVariant("small-caps");
-
+        
         video.currentTime = 0.3;
 
         cue = textTrackCueElementByIndex(video, 0).firstChild.firstElementChild;

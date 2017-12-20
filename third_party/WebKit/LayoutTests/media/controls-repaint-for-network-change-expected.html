@@ -13,7 +13,7 @@
 testRunner.waitUntilDone();
 
 function test() {
-    var src = "content/empty.oga";
+    var src = findMediaFile("audio", "content/empty");
     document.getElementById("audio1").src = src;
 
     runAfterLayoutAndPaint(function() {

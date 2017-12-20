@@ -10,7 +10,7 @@ async_test(function(t) {
     var iframe = document.createElement('iframe');
 
     iframe.onload = t.step_func(function() {
-        var movie = 'test.ogv';
+        var movie = findMediaFile('video', 'test');
         var type = mimeTypeForExtension(movie.split('.').pop());
         var video = document.querySelector('video');
         video.onerror = t.unreached_func();

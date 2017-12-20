@@ -2,11 +2,12 @@
 <title>Test that pause() from EMPTY network state triggers load().</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
     assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
 
     video.onloadstart = t.step_func(function() {});

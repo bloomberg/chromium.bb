@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that cue fragment is mutable.</title>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <style>
@@ -80,6 +81,6 @@ async_test(function(t) {
         fragment.appendChild(document.createTextNode(" amet,"));
     }
 
-    video.src = "../content/counting.ogv";
+    video.src = findMediaFile("video", "../content/counting");
 });
 </script>

@@ -4,10 +4,10 @@
         <script>
             if (window.testRunner)
                 testRunner.waitUntilDone();
-
+    
             function start()
             {
-                setSrcByTagName("video", "content/counting.ogv");
+                setSrcByTagName("video", findMediaFile("video", "content/counting"));
             }
 
             function finish()

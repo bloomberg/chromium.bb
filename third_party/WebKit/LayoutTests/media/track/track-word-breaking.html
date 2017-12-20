@@ -2,6 +2,7 @@
 <title>Test that line breaks are forced in captions.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <video>
     <track src="captions-webvtt/long-word.vtt" kind="captions" default>
@@ -21,7 +22,7 @@ async_test(function(t) {
         assert_greater_than(multiLineCaptionHeight / singleLineCaptionHeight, 2);
     });
 
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     function getCaptionLineHeight() {
         var captionElement = textTrackContainerElement(video).firstChild.firstChild;

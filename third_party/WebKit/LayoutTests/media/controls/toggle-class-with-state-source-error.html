@@ -4,6 +4,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
+<script src="../media-file.js"></script>
 <video controls width=400></video>
 <script>
 async_test(t => {
@@ -14,7 +15,7 @@ async_test(t => {
     checkControlsClassName(video, "phase-pre-ready state-no-source use-default-poster");
   });
 
-  video.src = "../content/missing.ogv";
+  video.src = findMediaFile("video", "../content/missing");
   // Catch the error promise.
   video.play().catch(() => {});
 });

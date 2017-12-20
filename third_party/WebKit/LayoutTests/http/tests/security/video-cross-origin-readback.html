@@ -7,7 +7,7 @@
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    var mediaFile = "../../media/resources/test.ogv";
+    var mediaFile = findMediaFile("video", "../../media/resources/test");
     var type = mimeTypeForExtension(mediaFile.split('.').pop());
 
     video.onerror = t.unreached_func();

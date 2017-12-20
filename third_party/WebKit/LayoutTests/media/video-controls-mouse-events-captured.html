@@ -2,6 +2,7 @@
 <title>This tests that a mouse/keyboard event on the controls will not be seen by the video element.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <video controls></video>
 <script>
@@ -61,6 +62,6 @@ async_test(function(t) {
         eventSender.keyDown('A');
     }
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 });
 </script>

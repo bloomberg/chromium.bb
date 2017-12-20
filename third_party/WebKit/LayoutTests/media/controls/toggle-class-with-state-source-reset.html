@@ -4,6 +4,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
+<script src="../media-file.js"></script>
 <video controls width=400></video>
 <script>
 async_test(t => {
@@ -24,11 +25,11 @@ async_test(t => {
 
   video.onpause = t.step_func(() => {
     checkControlsClassName(video, "phase-ready state-stopped");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
     video.play();
   });
 
-  video.src = "../content/counting.ogv";
+  video.src = findMediaFile("video", "../content/counting");
   video.play();
 });
 </script>

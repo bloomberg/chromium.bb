@@ -2,6 +2,7 @@
 <title>Test controls with zooming.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <style>
 video {
@@ -34,6 +35,6 @@ async_test(function(t) {
         }, 50);
     });
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 });
 </script>

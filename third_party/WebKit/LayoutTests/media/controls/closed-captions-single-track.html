@@ -3,6 +3,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
+<script src="../media-file.js"></script>
 <video controls></video>
 <script>
 async_test(t => {
@@ -47,6 +48,6 @@ async_test(t => {
     }));
   });
 
-  video.src = "../content/counting.ogv";
+  video.src = findMediaFile("video", "../content/counting");
 });
 </script>

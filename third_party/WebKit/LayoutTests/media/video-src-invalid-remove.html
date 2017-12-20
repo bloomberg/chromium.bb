@@ -2,6 +2,7 @@
 <title>Test that removing "src" attribute does not trigger load of "source" elements.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -17,7 +18,7 @@ async_test(function(t) {
 
     video.src = "bogus.mov";
     var source = document.createElement("source");
-    source.src = "content/test.ogv";
+    source.src = findMediaFile("video", "content/test");
     video.appendChild(source);
 });
 </script>

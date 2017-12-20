@@ -4,6 +4,7 @@
 <title>Test that overflow-x: hidden with a small viewport doesn't clip the controls when in a scrollable iframe</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 </head>
 <style>
@@ -55,7 +56,7 @@ test(_ => {
 
     let videos = iframedoc.querySelectorAll('video');
     for (let i=0; i < videos.length; ++i) {
-      videos[i].src = 'content/test.ogv';
+      videos[i].src = findMediaFile('video', 'content/test');
     }
   }
 

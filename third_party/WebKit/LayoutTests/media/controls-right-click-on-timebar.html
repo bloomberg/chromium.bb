@@ -2,6 +2,7 @@
 <title>Test that right clicking on the timebar does not cause a seek.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <video controls></video>
 <script>
@@ -15,7 +16,7 @@ async_test(function(t) {
     video.onseeked = t.unreached_func();
 
     video.autoplay = true;
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 
     function click() {
         var seekCoords = mediaControlsButtonCoordinates(video, "timeline");

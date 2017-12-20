@@ -2,6 +2,7 @@
 <title>Test behaviour of autoplay muted videos with regards to visibility</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <body>
 <script>
   window.internals.settings.setAutoplayPolicy('user-gesture-required');
@@ -12,7 +13,7 @@
     {
       var video = document.createElement('video');
       video.id = 'offscreen';
-      video.src = 'content/test.ogv';
+      video.src = findMediaFile('video', 'content/test');
       video.muted = true;
       video.autoplay = true;
       video.loop = true;
@@ -25,7 +26,7 @@
     {
       var video = document.createElement('video');
       video.id = 'inscreen';
-      video.src = 'content/test.ogv';
+      video.src = findMediaFile('video', 'content/test');
       video.muted = true;
       video.autoplay = true;
       video.loop = true;
@@ -35,7 +36,7 @@
     // Create an audio in screen.
     {
       var audio = document.createElement('audio');
-      audio.src = 'content/test.oga';
+      audio.src = findMediaFile('audio', 'content/test');
       audio.muted = true;
       audio.autoplay = true;
       audio.loop = true;
@@ -47,7 +48,7 @@
     {
       var video = document.createElement('video');
       video.id = 'offscreen-no-autoplay';
-      video.src = 'content/test.ogv';
+      video.src = findMediaFile('video', 'content/test');
       video.muted = true;
       video.loop = true;
       video.style.position = 'absolute';

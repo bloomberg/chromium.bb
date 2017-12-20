@@ -29,7 +29,7 @@
     {
         video.removeEventListener("canplaythrough", canplaythrough);
 
-        video.src = "content/test.ogv";
+        video.src = findMediaFile("video", "content/test");
         video.addEventListener("playing", playing);
         video.play();
     }
@@ -38,8 +38,8 @@
     {
         video = document.getElementsByTagName('video')[0];
         video.addEventListener("canplaythrough", canplaythrough);
-
-        video.src = "content/counting.ogv";
+        
+        video.src = findMediaFile("video", "content/counting");
     }
     </script>
 </head>

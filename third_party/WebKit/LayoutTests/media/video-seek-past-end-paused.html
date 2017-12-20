@@ -2,6 +2,7 @@
 <title>Test that seeking a paused video past its end sets currentTime to duration and leaves the video paused.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -35,7 +36,7 @@ async_test(function(t) {
         video.pause();
     });
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
     video.play();
 });
 </script>

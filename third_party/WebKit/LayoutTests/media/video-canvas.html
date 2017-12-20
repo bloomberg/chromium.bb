@@ -2,6 +2,7 @@
 <title>Test "video" as a source for "canvas".</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <canvas width="160" height="120"></canvas>
 <script>
@@ -57,6 +58,6 @@ async_test(function(t) {
             video.currentTime = results.values[results.current].time;
     }
 
-    video.src = "content/counting.ogv";
+    video.src = findMediaFile("video", "content/counting");
 });
 </script>

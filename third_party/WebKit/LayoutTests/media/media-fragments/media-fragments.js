@@ -2,7 +2,7 @@
     var consoleDiv = null;
     var currentTest = null;
     var fragmentEndTime;
-    var testData =
+    var testData = 
     {
         // http://www.w3.org/2008/WebVideo/Fragments/TC/ua-test-cases
 
@@ -231,10 +231,10 @@
     function start()
     {
         video = document.createElement('video');
-        video.setAttribute('id', 'vid');
-        video.setAttribute('width', '320');
-        video.setAttribute('height', '240');
-        video.setAttribute('controls', '');
+        video.setAttribute('id', 'vid'); 
+        video.setAttribute('width', '320'); 
+        video.setAttribute('height', '240'); 
+        video.setAttribute('controls', ''); 
         var paragraph = document.createElement('p');
         paragraph.appendChild(video);
         document.body.appendChild(paragraph);
@@ -249,6 +249,6 @@
         consoleWrite("<br>Title: <b>" + currentTest + "</b>");
         consoleWrite("Fragment: '<i>" + info.fragment + "</i>'");
         consoleWrite("Comment: <i>" + info.comment + "</i>");
-        url = "../content/counting.ogv" + "#" + info.fragment;
+        url = findMediaFile("video", "../content/counting") + "#" + info.fragment;
         video.src = url;
     }

@@ -2,6 +2,7 @@
 <title>Test that a "source" element is not used when a bogus "src" attribute is present.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video>
     <source></source>
 </video>
@@ -22,7 +23,7 @@ async_test(function(t) {
         setTimeout(t.step_func_done(), 200) ;
     });
 
-    document.querySelector("source").src = "content/test.ogv";
+    document.querySelector("source").src = findMediaFile("video", "content/test");
     var mediaFile = "content/bogus.mpeg";
     video.src = mediaFile;
 });

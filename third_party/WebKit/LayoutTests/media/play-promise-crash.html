@@ -6,12 +6,13 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script>
   window.internals.settings.setAutoplayPolicy('user-gesture-required');
 
   async_test(function(t) {
     var video = document.createElement('video');
-    video.src = 'content/test.ogv';
+    video.src = findMediaFile('video', 'content/test');
     video.play().then(t.step_func_done(function() {
       assert_unreached();
     }), t.step_func(function() {
