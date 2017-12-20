@@ -4537,14 +4537,7 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist) {
   const int16_t *src_diff = x->plane[0].src_diff;
   for (int row = 0; row < bh; row += tx_h) {
     for (int col = 0; col < bw; col += tx_w) {
-#if CONFIG_TXMG
       av1_highbd_fwd_txfm(src_diff + col, DCT_coefs, bw, &param);
-#else   // CONFIG_TXMG
-      if (param.is_hbd)
-        av1_highbd_fwd_txfm(src_diff + col, DCT_coefs, bw, &param);
-      else
-        av1_fwd_txfm(src_diff + col, DCT_coefs, bw, &param);
-#endif  // CONFIG_TXMG
 
       // Operating on TX domain, not pixels; we want the QTX quantizers
       for (int i = 0; i < tx_w * tx_h; ++i) {

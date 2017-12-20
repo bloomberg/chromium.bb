@@ -2498,8 +2498,6 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
 }
 
-#if CONFIG_TXMG
-
 void av1_inv_txfm_add_txmg(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
                            TxfmParam *txfm_param) {
   const TX_SIZE tx_size = txfm_param->tx_size;
@@ -2523,8 +2521,6 @@ void av1_inv_txfm_add_txmg(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
   }
 }
 
-#endif
-
 static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
                             TX_TYPE tx_type, int eob, int reduced_tx_set,
                             TxfmParam *txfm_param) {
@@ -2546,12 +2542,7 @@ typedef void (*InvTxfmFunc)(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
                             TxfmParam *txfm_param);
 
 static InvTxfmFunc inv_txfm_func[2] = {
-#if CONFIG_TXMG
-  av1_inv_txfm_add_txmg,
-#else
-  av1_inv_txfm_add,
-#endif
-  av1_highbd_inv_txfm_add,
+  av1_inv_txfm_add_txmg, av1_highbd_inv_txfm_add,
 };
 
 void av1_inverse_transform_block(const MACROBLOCKD *xd,

@@ -464,17 +464,6 @@ static AV1_QUANT_FACADE
       { NULL, NULL }
     };
 
-typedef void (*fwdTxfmFunc)(const int16_t *diff, tran_low_t *coeff, int stride,
-                            TxfmParam *txfm_param);
-static const fwdTxfmFunc fwd_txfm_func[2] = {
-#if CONFIG_TXMG
-  av1_highbd_fwd_txfm,
-#else
-  av1_fwd_txfm,
-#endif
-  av1_highbd_fwd_txfm,
-};
-
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
                      TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx) {
@@ -537,7 +526,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   txfm_param.bd = xd->bd;
   txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
 
-  fwd_txfm_func[txfm_param.is_hbd](src_diff, coeff, diff_stride, &txfm_param);
+  av1_highbd_fwd_txfm(src_diff, coeff, diff_stride, &txfm_param);
 
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     const int n_coeffs = av1_get_max_eob(tx_size);
