@@ -127,12 +127,24 @@ void WorkerThread::EvaluateClassicScript(
     const String& source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(IsMainThread());
   GetTaskRunner(TaskType::kUnthrottled)
       ->PostTask(
           FROM_HERE,
           CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
                           CrossThreadUnretained(this), script_url, source_code,
                           WTF::Passed(std::move(cached_meta_data)), stack_id));
+}
+
+void WorkerThread::ImportModuleScript(
+    const KURL& script_url,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  DCHECK(IsMainThread());
+  GetTaskRunner(TaskType::kUnthrottled)
+      ->PostTask(FROM_HERE, CrossThreadBind(
+                                &WorkerThread::ImportModuleScriptOnWorkerThread,
+                                CrossThreadUnretained(this), script_url,
+                                credentials_mode));
 }
 
 void WorkerThread::Terminate() {
@@ -452,6 +464,16 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
   GlobalScope()->EvaluateClassicScript(script_url, std::move(source_code),
                                        std::move(cached_meta_data));
   debugger->ExternalAsyncTaskFinished(stack_id);
+}
+
+void WorkerThread::ImportModuleScriptOnWorkerThread(
+    const KURL& script_url,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  // Worklets have a different code path to import module scripts.
+  // TODO(nhiroki): Consider excluding this code path from WorkerThread like
+  // Worklets.
+  ToWorkerGlobalScope(GlobalScope())
+      ->ImportModuleScript(script_url, credentials_mode);
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {

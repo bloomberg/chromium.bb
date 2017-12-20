@@ -63,6 +63,8 @@ blink_core_sources("workers") {
     "WorkerInspectorProxy.cpp",
     "WorkerInspectorProxy.h",
     "WorkerLocation.h",
+    "WorkerModuleTreeClient.cpp",
+    "WorkerModuleTreeClient.h",
     "WorkerNavigator.cpp",
     "WorkerNavigator.h",
     "WorkerOrWorkletGlobalScope.cpp",
