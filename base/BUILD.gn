@@ -38,9 +38,6 @@ declare_args() {
   # details and the expected format.
   override_build_date = "N/A"
 
-  # Partition alloc is included by default except iOS.
-  use_partition_alloc = !is_ios
-
   # Indicates if the Location object contains the source code information
   # (file, function, line). False means only the program counter (and currently
   # file name) is saved.
