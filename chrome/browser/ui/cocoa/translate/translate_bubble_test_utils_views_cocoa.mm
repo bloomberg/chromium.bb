@@ -6,9 +6,11 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
+#include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
 // TODO(groby): Share with translate_bubble_controller_unittest.mm
 @implementation BrowserWindowController (ForTesting)
@@ -25,6 +27,11 @@ namespace test_utils {
 
 const TranslateBubbleModel* GetCurrentModel(Browser* browser) {
   DCHECK(browser);
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
+    TranslateBubbleView* view = TranslateBubbleView::GetCurrentBubble();
+    return view ? view->model() : nullptr;
+  }
+
   NSWindow* native_window = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       [BrowserWindowController browserWindowControllerForWindow:native_window];
@@ -33,6 +40,14 @@ const TranslateBubbleModel* GetCurrentModel(Browser* browser) {
 
 void PressTranslate(Browser* browser) {
   DCHECK(browser);
+
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
+    TranslateBubbleView* bubble = TranslateBubbleView::GetCurrentBubble();
+    DCHECK(bubble);
+    bubble->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_TRANSLATE);
+    return;
+  }
+
   NSWindow* native_window = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       [BrowserWindowController browserWindowControllerForWindow:native_window];

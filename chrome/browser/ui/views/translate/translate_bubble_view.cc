@@ -14,7 +14,9 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -134,6 +136,17 @@ views::Widget* TranslateBubbleView::ShowBubble(
       new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   TranslateBubbleView* view = new TranslateBubbleView(
       anchor_view, anchor_point, std::move(model), error_type, web_contents);
+
+#if defined(OS_MACOSX)
+  // On Mac, there's no anchor view (|anchor_point| is used to position).
+  // However, the bubble will be set up with no parent and no anchor. That needs
+  // to be set up before showing the bubble.
+  DCHECK(!anchor_view);
+  view->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  view->set_parent_window(
+      platform_util::GetViewForWindow(web_contents->GetTopLevelNativeWindow()));
+#endif
+
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(view);
   view->ShowForReason(reason);
