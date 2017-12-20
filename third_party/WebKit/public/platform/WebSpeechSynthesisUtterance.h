@@ -36,7 +36,7 @@ class PlatformSpeechSynthesisUtterance;
 
 class WebSpeechSynthesisUtterance {
  public:
-  WebSpeechSynthesisUtterance() {}
+  WebSpeechSynthesisUtterance() = default;
   WebSpeechSynthesisUtterance(const WebSpeechSynthesisUtterance& other) {
     Assign(other);
   }

@@ -9,7 +9,7 @@ namespace blink {
 
 class WebPlatformEventListener {
  public:
-  virtual ~WebPlatformEventListener() {}
+  virtual ~WebPlatformEventListener() = default;
 };
 
 }  // namespace blink

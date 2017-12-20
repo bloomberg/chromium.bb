@@ -35,7 +35,7 @@ class WebRTCDTMFSenderHandlerClient;
 
 class WebRTCDTMFSenderHandler {
  public:
-  virtual ~WebRTCDTMFSenderHandler() {}
+  virtual ~WebRTCDTMFSenderHandler() = default;
 
   virtual void SetClient(WebRTCDTMFSenderHandlerClient*) = 0;
 

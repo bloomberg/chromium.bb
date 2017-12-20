@@ -37,7 +37,7 @@ class WebString;
 
 class WebInbandTextTrackClient {
  public:
-  virtual ~WebInbandTextTrackClient() {}
+  virtual ~WebInbandTextTrackClient() = default;
 
   virtual void AddWebVTTCue(double start,
                             double end,

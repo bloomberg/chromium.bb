@@ -54,7 +54,7 @@ struct WebFileInfo;
 class WebFileSystemCallbacks {
  public:
   ~WebFileSystemCallbacks() { Reset(); }
-  WebFileSystemCallbacks() {}
+  WebFileSystemCallbacks() = default;
   WebFileSystemCallbacks(const WebFileSystemCallbacks& c) { Assign(c); }
   WebFileSystemCallbacks& operator=(const WebFileSystemCallbacks& c) {
     Assign(c);

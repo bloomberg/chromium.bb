@@ -15,7 +15,7 @@ class WebLockOrientationCallback;
 // Client handling screen orientation locking for a given WebFrame.
 class WebScreenOrientationClient {
  public:
-  virtual ~WebScreenOrientationClient() {}
+  virtual ~WebScreenOrientationClient() = default;
 
   // Request a screen orientation lock. The implementation will own the
   // callback.

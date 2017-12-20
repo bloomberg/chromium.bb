@@ -50,7 +50,7 @@ class WebCookieJar {
   }
 
  protected:
-  ~WebCookieJar() {}
+  ~WebCookieJar() = default;
 };
 
 }  // namespace blink

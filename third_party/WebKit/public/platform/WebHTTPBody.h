@@ -70,7 +70,7 @@ class WebHTTPBody {
 
   ~WebHTTPBody() { Reset(); }
 
-  WebHTTPBody() {}
+  WebHTTPBody() = default;
   WebHTTPBody(const WebHTTPBody& b) { Assign(b); }
   WebHTTPBody& operator=(const WebHTTPBody& b) {
     Assign(b);

@@ -28,7 +28,7 @@ class WebSocketHandshakeThrottle {
  public:
   // Destruction implies that the handshake has been aborted. Any ongoing work
   // should be cleaned up if possible.
-  virtual ~WebSocketHandshakeThrottle() {}
+  virtual ~WebSocketHandshakeThrottle() = default;
 
   // The WebCallbacks OnSuccess or OnError should be called asychronously to
   // permit Javascript to use the connection or not. OnError should be passed

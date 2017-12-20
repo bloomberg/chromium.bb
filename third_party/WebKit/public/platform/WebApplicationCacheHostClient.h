@@ -55,7 +55,7 @@ class WebApplicationCacheHostClient {
 
  protected:
   // Should not be deleted by the embedder.
-  virtual ~WebApplicationCacheHostClient() {}
+  virtual ~WebApplicationCacheHostClient() = default;
 };
 
 }  // namespace blink

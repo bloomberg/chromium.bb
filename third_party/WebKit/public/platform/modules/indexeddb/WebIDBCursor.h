@@ -36,7 +36,7 @@ namespace blink {
 
 class WebIDBCursor {
  public:
-  virtual ~WebIDBCursor() {}
+  virtual ~WebIDBCursor() = default;
 
   virtual void Advance(unsigned long, WebIDBCallbacks*) = 0;
   virtual void Continue(const WebIDBKey&,
@@ -45,7 +45,7 @@ class WebIDBCursor {
   virtual void PostSuccessHandlerCallback() {}  // Only used in frontend.
 
  protected:
-  WebIDBCursor() {}
+  WebIDBCursor() = default;
 };
 
 }  // namespace blink

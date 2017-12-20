@@ -17,13 +17,13 @@ class WebDocumentSubresourceFilter {
   // thread to create the subresource filter for the worker thread.
   class Builder {
    public:
-    virtual ~Builder() {}
+    virtual ~Builder() = default;
     virtual std::unique_ptr<WebDocumentSubresourceFilter> Build() = 0;
   };
 
   enum LoadPolicy { kAllow, kDisallow, kWouldDisallow };
 
-  virtual ~WebDocumentSubresourceFilter() {}
+  virtual ~WebDocumentSubresourceFilter() = default;
   virtual LoadPolicy GetLoadPolicy(const WebURL& resource_url,
                                    WebURLRequest::RequestContext) = 0;
   virtual LoadPolicy GetLoadPolicyForWebSocketConnect(const WebURL&) = 0;

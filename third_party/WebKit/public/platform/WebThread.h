@@ -58,7 +58,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
 
   class BLINK_PLATFORM_EXPORT TaskObserver {
    public:
-    virtual ~TaskObserver() {}
+    virtual ~TaskObserver() = default;
     virtual void WillProcessTask() = 0;
     virtual void DidProcessTask() = 0;
   };
@@ -94,7 +94,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
   // Returns the scheduler associated with the thread.
   virtual WebScheduler* Scheduler() const = 0;
 
-  virtual ~WebThread() {}
+  virtual ~WebThread() = default;
 };
 
 }  // namespace blink

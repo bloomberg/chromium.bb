@@ -35,7 +35,7 @@ class WebScrollbar;
 
 class BLINK_PLATFORM_EXPORT WebScrollbarThemeGeometry {
  public:
-  virtual ~WebScrollbarThemeGeometry() {}
+  virtual ~WebScrollbarThemeGeometry() = default;
 
   virtual bool HasButtons(WebScrollbar*) = 0;
   virtual bool HasThumb(WebScrollbar*) = 0;

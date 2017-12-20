@@ -44,7 +44,7 @@ class WebSourceBuffer {
  public:
   enum AppendMode { kAppendModeSegments, kAppendModeSequence };
 
-  virtual ~WebSourceBuffer() {}
+  virtual ~WebSourceBuffer() = default;
 
   // This will only be called once and only with a non-null pointer to a
   // client whose ownership is not transferred to this WebSourceBuffer.

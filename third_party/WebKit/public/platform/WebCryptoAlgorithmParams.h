@@ -53,8 +53,8 @@ namespace blink {
 
 class WebCryptoAlgorithmParams {
  public:
-  WebCryptoAlgorithmParams() {}
-  virtual ~WebCryptoAlgorithmParams() {}
+  WebCryptoAlgorithmParams() = default;
+  virtual ~WebCryptoAlgorithmParams() = default;
   virtual WebCryptoAlgorithmParamsType GetType() const = 0;
 };
 

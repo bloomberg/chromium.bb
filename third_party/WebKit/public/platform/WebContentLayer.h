@@ -33,7 +33,7 @@ namespace blink {
 
 class WebContentLayer {
  public:
-  virtual ~WebContentLayer() {}
+  virtual ~WebContentLayer() = default;
 
   // The WebContentLayer has ownership of this wrapper.
   virtual WebLayer* Layer() = 0;

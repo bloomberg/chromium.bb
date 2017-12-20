@@ -32,7 +32,7 @@ using WebNotificationShowCallbacks = WebCallbacks<void, void>;
 // Provides the services to show platform notifications to the user.
 class WebNotificationManager {
  public:
-  virtual ~WebNotificationManager() {}
+  virtual ~WebNotificationManager() = default;
 
   // Shows a page notification on the user's system. These notifications will
   // have their events delivered to the delegate specified in this call.

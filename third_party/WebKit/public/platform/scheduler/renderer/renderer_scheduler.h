@@ -145,8 +145,8 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // at least one pause handle exists.
   class BLINK_PLATFORM_EXPORT RendererPauseHandle {
    public:
-    RendererPauseHandle() {}
-    virtual ~RendererPauseHandle() {}
+    RendererPauseHandle() = default;
+    virtual ~RendererPauseHandle() = default;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(RendererPauseHandle);

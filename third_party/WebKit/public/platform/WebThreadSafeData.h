@@ -48,7 +48,7 @@ class RawData;
 // object.  It is safe to pass a WebThreadSafeData across threads.
 class WebThreadSafeData {
  public:
-  WebThreadSafeData() {}
+  WebThreadSafeData() = default;
   BLINK_PLATFORM_EXPORT WebThreadSafeData(const char* data, size_t length);
 
   ~WebThreadSafeData() { Reset(); }

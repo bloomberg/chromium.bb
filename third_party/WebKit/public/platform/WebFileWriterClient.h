@@ -51,7 +51,7 @@ class WebFileWriterClient {
   virtual void DidFail(WebFileError) = 0;
 
  protected:
-  virtual ~WebFileWriterClient() {}
+  virtual ~WebFileWriterClient() = default;
 };
 
 }  // namespace blink

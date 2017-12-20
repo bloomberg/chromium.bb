@@ -31,7 +31,7 @@ namespace blink {
 
 class WebAudioDestinationConsumer {
  public:
-  virtual ~WebAudioDestinationConsumer() {}
+  virtual ~WebAudioDestinationConsumer() = default;
 
   virtual void SetFormat(size_t number_of_channels, float sample_rate) = 0;
 

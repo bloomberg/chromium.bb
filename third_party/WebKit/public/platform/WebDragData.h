@@ -92,21 +92,11 @@ class WebDragData {
 
   WebDragData() : valid_(false), modifier_key_state_(0) {}
 
-  WebDragData(const WebDragData& object)
-      : valid_(object.valid_),
-        item_list_(object.item_list_),
-        modifier_key_state_(object.modifier_key_state_),
-        filesystem_id_(object.filesystem_id_) {}
+  WebDragData(const WebDragData& object) = default;
 
-  WebDragData& operator=(const WebDragData& object) {
-    valid_ = object.valid_;
-    item_list_ = object.item_list_;
-    modifier_key_state_ = object.modifier_key_state_;
-    filesystem_id_ = object.filesystem_id_;
-    return *this;
-  }
+  WebDragData& operator=(const WebDragData& object) = default;
 
-  ~WebDragData() {}
+  ~WebDragData() = default;
 
   WebVector<Item> Items() const { return item_list_; }
 

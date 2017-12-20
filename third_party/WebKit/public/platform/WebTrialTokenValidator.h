@@ -22,7 +22,7 @@ enum class OriginTrialTokenStatus;
 
 class WebTrialTokenValidator {
  public:
-  virtual ~WebTrialTokenValidator() {}
+  virtual ~WebTrialTokenValidator() = default;
 
   // Returns whether the given token is valid for the specified origin. If the
   // token is valid, it also returns the feature the token is valid for in

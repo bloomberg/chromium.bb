@@ -20,7 +20,7 @@ class WebURLRequest;
 // loading context holds its own per-context WebURLLoaderFactory.
 class WebURLLoaderFactory {
  public:
-  virtual ~WebURLLoaderFactory() {}
+  virtual ~WebURLLoaderFactory() = default;
 
   // Returns a new WebURLLoader instance. This should internally choose
   // the most appropriate URLLoaderFactory implementation.

@@ -48,7 +48,7 @@ class WebCryptoKeyAlgorithmDictionary {
   STACK_ALLOCATED();
 #endif
  public:
-  virtual ~WebCryptoKeyAlgorithmDictionary() {}
+  virtual ~WebCryptoKeyAlgorithmDictionary() = default;
 
   virtual void SetString(const char*, const char*) = 0;
   virtual void SetUint(const char*, unsigned) = 0;
@@ -66,7 +66,7 @@ enum WebCryptoKeyAlgorithmParamsType {
 
 class WebCryptoKeyAlgorithmParams {
  public:
-  virtual ~WebCryptoKeyAlgorithmParams() {}
+  virtual ~WebCryptoKeyAlgorithmParams() = default;
   virtual WebCryptoKeyAlgorithmParamsType GetType() const {
     return kWebCryptoKeyAlgorithmParamsTypeNone;
   }

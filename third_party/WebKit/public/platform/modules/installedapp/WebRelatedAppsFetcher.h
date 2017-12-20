@@ -19,7 +19,7 @@ using AppInstalledCallbacks =
 
 class WebRelatedAppsFetcher {
  public:
-  virtual ~WebRelatedAppsFetcher() {}
+  virtual ~WebRelatedAppsFetcher() = default;
 
   // Gets the list of related applications from the web frame's manifest.
   virtual void GetManifestRelatedApplications(

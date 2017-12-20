@@ -61,8 +61,8 @@ class WebPrerenderingSupport {
   virtual void PrefetchFinished() = 0;
 
  protected:
-  WebPrerenderingSupport() {}
-  virtual ~WebPrerenderingSupport() {}
+  WebPrerenderingSupport() = default;
+  virtual ~WebPrerenderingSupport() = default;
 
  private:
   static WebPrerenderingSupport* platform_;

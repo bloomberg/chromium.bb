@@ -34,7 +34,7 @@ class WebString;
 
 class WebRTCDTMFSenderHandlerClient {
  public:
-  virtual ~WebRTCDTMFSenderHandlerClient() {}
+  virtual ~WebRTCDTMFSenderHandlerClient() = default;
 
   virtual void DidPlayTone(const WebString& tone) = 0;
 };

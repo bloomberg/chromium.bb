@@ -17,7 +17,7 @@ namespace blink {
 // failure.
 class WebLockOrientationCallback {
  public:
-  virtual ~WebLockOrientationCallback() {}
+  virtual ~WebLockOrientationCallback() = default;
 
   virtual void OnSuccess() = 0;
   virtual void OnError(WebLockOrientationError) = 0;

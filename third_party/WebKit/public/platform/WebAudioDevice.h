@@ -54,7 +54,7 @@ class WebAudioDevice {
     virtual ~RenderCallback();
   };
 
-  virtual ~WebAudioDevice() {}
+  virtual ~WebAudioDevice() = default;
 
   virtual void Start() = 0;
   virtual void Stop() = 0;

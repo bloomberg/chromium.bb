@@ -42,7 +42,7 @@ class StorageQuotaCallbacks;
 class WebStorageQuotaCallbacks {
  public:
   ~WebStorageQuotaCallbacks() { Reset(); }
-  WebStorageQuotaCallbacks() {}
+  WebStorageQuotaCallbacks() = default;
   WebStorageQuotaCallbacks(const WebStorageQuotaCallbacks& c) { Assign(c); }
   WebStorageQuotaCallbacks& operator=(const WebStorageQuotaCallbacks& c) {
     Assign(c);

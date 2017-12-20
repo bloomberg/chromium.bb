@@ -51,7 +51,7 @@ class WebMediaStreamSource {
   class ExtraData {
    public:
     ExtraData() : owner_(0) {}
-    virtual ~ExtraData() {}
+    virtual ~ExtraData() = default;
 
     BLINK_PLATFORM_EXPORT WebMediaStreamSource Owner();
 #if INSIDE_BLINK
@@ -73,7 +73,7 @@ class WebMediaStreamSource {
     kReadyStateEnded = 2
   };
 
-  WebMediaStreamSource() {}
+  WebMediaStreamSource() = default;
   WebMediaStreamSource(const WebMediaStreamSource& other) { Assign(other); }
   ~WebMediaStreamSource() { Reset(); }
 

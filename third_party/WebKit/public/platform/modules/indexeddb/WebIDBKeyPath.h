@@ -52,19 +52,11 @@ class WebIDBKeyPath {
   explicit WebIDBKeyPath(const WebVector<WebString>& array)
       : type_(kWebIDBKeyPathTypeArray), array_(array) {}
 
-  WebIDBKeyPath(const WebIDBKeyPath& key_path)
-      : type_(key_path.type_),
-        array_(key_path.array_),
-        string_(key_path.string_) {}
+  WebIDBKeyPath(const WebIDBKeyPath& key_path) = default;
 
-  ~WebIDBKeyPath() {}
+  ~WebIDBKeyPath() = default;
 
-  WebIDBKeyPath& operator=(const WebIDBKeyPath& key_path) {
-    type_ = key_path.type_;
-    array_ = key_path.array_;
-    string_ = key_path.string_;
-    return *this;
-  }
+  WebIDBKeyPath& operator=(const WebIDBKeyPath& key_path) = default;
 
   WebIDBKeyPathType KeyPathType() const { return type_; }
   const WebVector<WebString>& Array() const {

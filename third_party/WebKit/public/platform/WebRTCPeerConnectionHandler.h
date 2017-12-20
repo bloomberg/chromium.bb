@@ -56,7 +56,7 @@ struct WebRTCDataChannelInit;
 
 class WebRTCPeerConnectionHandler {
  public:
-  virtual ~WebRTCPeerConnectionHandler() {}
+  virtual ~WebRTCPeerConnectionHandler() = default;
 
   virtual bool Initialize(const WebRTCConfiguration&,
                           const WebMediaConstraints&) = 0;

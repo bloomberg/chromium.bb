@@ -18,7 +18,7 @@ class WebSourceBufferClient {
   // Parser notification types used to monitor problematic usage.
   enum ParseWarning { kKeyframeTimeGreaterThanDependant, kMuxedSequenceMode };
 
-  virtual ~WebSourceBufferClient() {}
+  virtual ~WebSourceBufferClient() = default;
 
   // Complete media track info: track type, unique track id, kind, label,
   // language.

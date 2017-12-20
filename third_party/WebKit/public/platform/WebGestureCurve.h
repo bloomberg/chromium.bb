@@ -37,7 +37,7 @@ namespace blink {
 // animation.
 class WebGestureCurve {
  public:
-  virtual ~WebGestureCurve() {}
+  virtual ~WebGestureCurve() = default;
 
   // Returns false if curve has finished and can no longer be applied.
   // TODO(sahel): This will get removed once touchscreen and autoscroll flings

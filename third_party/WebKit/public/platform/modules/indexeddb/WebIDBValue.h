@@ -14,7 +14,7 @@
 namespace blink {
 
 struct WebIDBValue {
-  WebIDBValue() {}
+  WebIDBValue() = default;
   explicit WebIDBValue(const WebData& data) : data(data) {}
   WebIDBValue(const WebData& data, const WebVector<WebBlobInfo>& blob_info)
       : data(data), web_blob_info(blob_info) {}

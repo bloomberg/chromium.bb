@@ -51,7 +51,7 @@ using WebRTCCertificateCallback =
 // asynchronously.
 class WebRTCCertificateGenerator {
  public:
-  virtual ~WebRTCCertificateGenerator() {}
+  virtual ~WebRTCCertificateGenerator() = default;
 
   // Start generating a certificate asynchronously. |observer| is invoked on the
   // same thread that called generateCertificate when the operation is

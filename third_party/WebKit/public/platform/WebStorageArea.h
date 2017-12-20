@@ -40,7 +40,7 @@ class WebURL;
 
 class WebStorageArea {
  public:
-  virtual ~WebStorageArea() {}
+  virtual ~WebStorageArea() = default;
 
   enum Result {
     kResultOK = 0,

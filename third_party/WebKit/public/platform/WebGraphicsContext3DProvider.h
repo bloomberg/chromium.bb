@@ -52,7 +52,7 @@ namespace blink {
 
 class WebGraphicsContext3DProvider {
  public:
-  virtual ~WebGraphicsContext3DProvider() {}
+  virtual ~WebGraphicsContext3DProvider() = default;
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual bool BindToCurrentThread() = 0;

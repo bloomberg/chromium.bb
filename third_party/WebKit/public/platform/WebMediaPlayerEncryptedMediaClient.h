@@ -45,7 +45,7 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerEncryptedMediaClient {
   virtual void DidResumePlaybackBlockedForKey() = 0;
 
  protected:
-  ~WebMediaPlayerEncryptedMediaClient() {}
+  ~WebMediaPlayerEncryptedMediaClient() = default;
 };
 
 }  // namespace blink

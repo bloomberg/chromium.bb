@@ -38,7 +38,7 @@ class WebIDBKeyRange {
  public:
   ~WebIDBKeyRange() { Reset(); }
 
-  WebIDBKeyRange() {}
+  WebIDBKeyRange() = default;
   WebIDBKeyRange(const WebIDBKeyRange& key_range) { Assign(key_range); }
   WebIDBKeyRange(const WebIDBKey& lower,
                  const WebIDBKey& upper,

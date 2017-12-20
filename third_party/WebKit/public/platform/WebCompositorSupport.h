@@ -82,7 +82,7 @@ class WebCompositorSupport {
       bool is_left_side_vertical_scrollbar) = 0;
 
  protected:
-  virtual ~WebCompositorSupport() {}
+  virtual ~WebCompositorSupport() = default;
 };
 }
 

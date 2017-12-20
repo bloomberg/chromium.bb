@@ -50,7 +50,7 @@ class WebCryptoKeyAlgorithmPrivate;
 //   * Copiable (cheaply)
 class WebCryptoKeyAlgorithm {
  public:
-  WebCryptoKeyAlgorithm() {}
+  WebCryptoKeyAlgorithm() = default;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebCryptoKeyAlgorithm(

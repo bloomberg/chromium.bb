@@ -34,7 +34,7 @@ class WebServiceWorkerCache {
   using CacheBatchCallbacks =
       WebCallbacks<void, blink::mojom::CacheStorageError>;
 
-  virtual ~WebServiceWorkerCache() {}
+  virtual ~WebServiceWorkerCache() = default;
 
   // Options that affect the scope of searches.
   struct QueryParams {
@@ -63,7 +63,7 @@ class WebServiceWorkerCache {
     QueryParams match_params;
   };
 
-  WebServiceWorkerCache() {}
+  WebServiceWorkerCache() = default;
 
   // Ownership of the Cache*Callbacks methods passes to the
   // WebServiceWorkerCache instance, which will delete it after calling

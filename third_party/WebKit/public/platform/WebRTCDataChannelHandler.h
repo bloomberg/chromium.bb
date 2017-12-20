@@ -34,7 +34,7 @@ namespace blink {
 
 class WebRTCDataChannelHandler {
  public:
-  virtual ~WebRTCDataChannelHandler() {}
+  virtual ~WebRTCDataChannelHandler() = default;
 
   virtual void SetClient(WebRTCDataChannelHandlerClient*) = 0;
 

@@ -10,7 +10,7 @@
 namespace blink {
 
 struct WebRelatedApplication {
-  WebRelatedApplication() {}
+  WebRelatedApplication() = default;
 
   WebString platform;
   WebString url;

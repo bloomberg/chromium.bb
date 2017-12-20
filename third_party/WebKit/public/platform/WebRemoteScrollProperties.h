@@ -58,7 +58,7 @@ struct WebRemoteScrollProperties {
   Behavior behavior = kAuto;
   bool is_for_scroll_sequence;
 
-  WebRemoteScrollProperties() {}
+  WebRemoteScrollProperties() = default;
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRemoteScrollProperties(Alignment,
                                                   Alignment,

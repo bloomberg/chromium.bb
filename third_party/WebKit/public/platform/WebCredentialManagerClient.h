@@ -39,7 +39,7 @@ class WebCredentialManagerClient {
                            RequestCallbacks*) {}
 
  protected:
-  virtual ~WebCredentialManagerClient() {}
+  virtual ~WebCredentialManagerClient() = default;
 };
 
 }  // namespace blink

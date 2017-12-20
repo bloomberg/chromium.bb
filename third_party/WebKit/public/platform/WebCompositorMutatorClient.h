@@ -15,7 +15,7 @@ namespace blink {
 class BLINK_PLATFORM_EXPORT WebCompositorMutatorClient
     : public cc::LayerTreeMutator {
  public:
-  ~WebCompositorMutatorClient() override {}
+  ~WebCompositorMutatorClient() override = default;
 };
 
 }  // namespace blink

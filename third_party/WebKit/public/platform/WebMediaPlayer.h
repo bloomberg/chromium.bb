@@ -116,7 +116,7 @@ class WebMediaPlayer {
     bool skipped = false;
   };
 
-  virtual ~WebMediaPlayer() {}
+  virtual ~WebMediaPlayer() = default;
 
   virtual void Load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
 

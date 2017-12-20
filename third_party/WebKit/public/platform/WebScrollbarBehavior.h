@@ -14,7 +14,7 @@ struct WebRect;
 
 class WebScrollbarBehavior {
  public:
-  virtual ~WebScrollbarBehavior() {}
+  virtual ~WebScrollbarBehavior() = default;
   virtual bool ShouldCenterOnThumb(WebPointerProperties::Button,
                                    bool shift_key_pressed,
                                    bool alt_key_pressed) {

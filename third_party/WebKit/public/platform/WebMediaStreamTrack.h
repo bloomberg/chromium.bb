@@ -76,8 +76,8 @@ class WebMediaStreamTrack {
 
   class TrackData {
    public:
-    TrackData() {}
-    virtual ~TrackData() {}
+    TrackData() = default;
+    virtual ~TrackData() = default;
     virtual void GetSettings(Settings&) = 0;
   };
 
@@ -89,7 +89,7 @@ class WebMediaStreamTrack {
     kVideoDetail
   };
 
-  WebMediaStreamTrack() {}
+  WebMediaStreamTrack() = default;
   WebMediaStreamTrack(const WebMediaStreamTrack& other) { Assign(other); }
   ~WebMediaStreamTrack() { Reset(); }
 

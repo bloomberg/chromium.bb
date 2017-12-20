@@ -26,7 +26,7 @@ class WebServiceWorkerRegistrationProxy {
   virtual void SetActive(std::unique_ptr<WebServiceWorker::Handle>) = 0;
 
  protected:
-  virtual ~WebServiceWorkerRegistrationProxy() {}
+  virtual ~WebServiceWorkerRegistrationProxy() = default;
 };
 
 }  // namespace blink

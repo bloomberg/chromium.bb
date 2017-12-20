@@ -81,7 +81,7 @@ class WebApplicationCacheHost {
 
   static const int kAppCacheNoHostId = 0;
 
-  virtual ~WebApplicationCacheHost() {}
+  virtual ~WebApplicationCacheHost() = default;
 
   // Called for every request made within the context.
   virtual void WillStartMainResourceRequest(

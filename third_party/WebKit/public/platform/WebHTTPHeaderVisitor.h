@@ -40,7 +40,7 @@ class WebHTTPHeaderVisitor {
   virtual void VisitHeader(const WebString& name, const WebString& value) = 0;
 
  protected:
-  virtual ~WebHTTPHeaderVisitor() {}
+  virtual ~WebHTTPHeaderVisitor() = default;
 };
 
 }  // namespace blink

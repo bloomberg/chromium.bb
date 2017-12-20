@@ -77,7 +77,7 @@ class WebDatabaseObserver {
                                           int sqlite_error_code) {}
 
  protected:
-  ~WebDatabaseObserver() {}
+  ~WebDatabaseObserver() = default;
 };
 
 }  // namespace blink

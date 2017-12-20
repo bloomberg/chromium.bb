@@ -53,7 +53,7 @@ class WebURLRequest;
 // DocumentLoader.
 class WebServiceWorkerNetworkProvider {
  public:
-  virtual ~WebServiceWorkerNetworkProvider() {}
+  virtual ~WebServiceWorkerNetworkProvider() = default;
 
   // A request is about to be sent out, and the client may modify it. Request
   // is writable, and changes to the URL, for example, will change the request

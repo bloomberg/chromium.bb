@@ -44,7 +44,7 @@ class WebIDBKeyRange;
 
 class WebIDBDatabase {
  public:
-  virtual ~WebIDBDatabase() {}
+  virtual ~WebIDBDatabase() = default;
 
   virtual void CreateObjectStore(long long transaction_id,
                                  long long object_store_id,
@@ -146,7 +146,7 @@ class WebIDBDatabase {
   virtual void AckReceivedBlobs(const WebVector<WebString>& uuids) = 0;
 
  protected:
-  WebIDBDatabase() {}
+  WebIDBDatabase() = default;
 };
 
 }  // namespace blink

@@ -52,11 +52,11 @@ class WebPrerender {
  public:
   class ExtraData {
    public:
-    virtual ~ExtraData() {}
+    virtual ~ExtraData() = default;
   };
 
   ~WebPrerender() { Reset(); }
-  WebPrerender() {}
+  WebPrerender() = default;
   WebPrerender(const WebPrerender& other) { Assign(other); }
   WebPrerender& operator=(const WebPrerender& other) {
     Assign(other);
