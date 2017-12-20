@@ -282,6 +282,16 @@ inline ScrollGranularity ToPlatformScrollGranularity(
   }
 }
 
+inline ScrollOffset ScrollPositionToOffset(FloatPoint position,
+                                           FloatPoint origin) {
+  return position - origin;
+}
+
+inline FloatPoint ScrollOffsetToPosition(ScrollOffset offset,
+                                         FloatPoint origin) {
+  return origin + offset;
+}
+
 typedef unsigned ScrollbarControlPartMask;
 
 }  // namespace blink
