@@ -117,7 +117,7 @@ class CORE_EXPORT SerializedScriptValue
     };
     STACK_ALLOCATED();
 
-    SerializeOptions() {}
+    SerializeOptions() = default;
     explicit SerializeOptions(StoragePolicy for_storage)
         : for_storage(for_storage) {}
 

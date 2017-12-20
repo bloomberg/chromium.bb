@@ -185,7 +185,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
         queue_lead_position_(0),
         queue_tail_position_(0) {}
 
-  virtual ~SourceStream() override {}
+  ~SourceStream() override = default;
 
   // Called by V8 on a background thread. Should block until we can return
   // some data.
@@ -523,7 +523,7 @@ ScriptStreamer::ScriptStreamer(
       encoding_(v8::ScriptCompiler::StreamedSource::TWO_BYTE),
       loading_task_runner_(std::move(loading_task_runner)) {}
 
-ScriptStreamer::~ScriptStreamer() {}
+ScriptStreamer::~ScriptStreamer() = default;
 
 void ScriptStreamer::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_script_);

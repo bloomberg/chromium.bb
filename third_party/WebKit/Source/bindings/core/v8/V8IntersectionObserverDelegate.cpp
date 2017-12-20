@@ -20,7 +20,7 @@ V8IntersectionObserverDelegate::V8IntersectionObserverDelegate(
     : ContextClient(ExecutionContext::From(script_state)),
       callback_(callback) {}
 
-V8IntersectionObserverDelegate::~V8IntersectionObserverDelegate() {}
+V8IntersectionObserverDelegate::~V8IntersectionObserverDelegate() = default;
 
 void V8IntersectionObserverDelegate::Deliver(
     const HeapVector<Member<IntersectionObserverEntry>>& entries,

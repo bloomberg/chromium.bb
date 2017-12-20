@@ -26,7 +26,7 @@ class CORE_EXPORT Transferables final {
   WTF_MAKE_NONCOPYABLE(Transferables);
 
  public:
-  Transferables() {}
+  Transferables() = default;
 
   ArrayBufferArray array_buffers;
   ImageBitmapArray image_bitmaps;

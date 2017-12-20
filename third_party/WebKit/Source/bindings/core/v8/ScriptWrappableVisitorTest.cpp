@@ -244,7 +244,7 @@ class HandleContainer
       blink::TraceWrapperBase {
  public:
   static HandleContainer* Create() { return new HandleContainer(); }
-  virtual ~HandleContainer() {}
+  virtual ~HandleContainer() = default;
 
   void Trace(blink::Visitor* visitor) {}
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const {

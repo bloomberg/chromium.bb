@@ -19,8 +19,8 @@ class CORE_EXPORT IDLDictionaryBase {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  IDLDictionaryBase() {}
-  virtual ~IDLDictionaryBase() {}
+  IDLDictionaryBase() = default;
+  virtual ~IDLDictionaryBase() = default;
 
   virtual v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object> creation_context,
                                         v8::Isolate*) const;

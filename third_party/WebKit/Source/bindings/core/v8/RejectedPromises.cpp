@@ -186,9 +186,9 @@ class RejectedPromises::Message final {
   AccessControlStatus cors_status_;
 };
 
-RejectedPromises::RejectedPromises() {}
+RejectedPromises::RejectedPromises() = default;
 
-RejectedPromises::~RejectedPromises() {}
+RejectedPromises::~RejectedPromises() = default;
 
 void RejectedPromises::RejectedWithNoHandler(
     ScriptState* script_state,

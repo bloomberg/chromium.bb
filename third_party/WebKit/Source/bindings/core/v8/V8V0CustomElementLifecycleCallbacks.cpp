@@ -132,7 +132,8 @@ V8PerContextData* V8V0CustomElementLifecycleCallbacks::CreationContextData() {
   return V8PerContextData::From(context);
 }
 
-V8V0CustomElementLifecycleCallbacks::~V8V0CustomElementLifecycleCallbacks() {}
+V8V0CustomElementLifecycleCallbacks::~V8V0CustomElementLifecycleCallbacks() =
+    default;
 
 bool V8V0CustomElementLifecycleCallbacks::SetBinding(
     std::unique_ptr<V0CustomElementBinding> binding) {

@@ -22,8 +22,8 @@ namespace {
 
 class TestScriptModuleResolver final : public ScriptModuleResolver {
  public:
-  TestScriptModuleResolver() {}
-  virtual ~TestScriptModuleResolver() {}
+  TestScriptModuleResolver() = default;
+  virtual ~TestScriptModuleResolver() = default;
 
   size_t ResolveCount() const { return specifiers_.size(); }
   const Vector<String>& Specifiers() const { return specifiers_; }
@@ -55,7 +55,7 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
 class ScriptModuleTestModulator final : public DummyModulator {
  public:
   ScriptModuleTestModulator();
-  virtual ~ScriptModuleTestModulator() {}
+  virtual ~ScriptModuleTestModulator() = default;
 
   void Trace(blink::Visitor*);
 

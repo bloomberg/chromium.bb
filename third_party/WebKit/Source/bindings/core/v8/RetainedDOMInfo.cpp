@@ -51,7 +51,7 @@ RetainedDOMInfo::RetainedDOMInfo(Node* root) : root_(root) {
   DCHECK(root_);
 }
 
-RetainedDOMInfo::~RetainedDOMInfo() {}
+RetainedDOMInfo::~RetainedDOMInfo() = default;
 
 void RetainedDOMInfo::Dispose() {
   delete this;
@@ -97,7 +97,7 @@ PausableObjectsInfo::PausableObjectsInfo(
     : number_of_objects_with_pending_activity_(
           number_of_objects_with_pending_activity) {}
 
-PausableObjectsInfo::~PausableObjectsInfo() {}
+PausableObjectsInfo::~PausableObjectsInfo() = default;
 
 void PausableObjectsInfo::Dispose() {
   delete this;

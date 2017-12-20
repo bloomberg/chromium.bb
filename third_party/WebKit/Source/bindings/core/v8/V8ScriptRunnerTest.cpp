@@ -23,8 +23,8 @@ namespace {
 
 class V8ScriptRunnerTest : public ::testing::Test {
  public:
-  V8ScriptRunnerTest() {}
-  ~V8ScriptRunnerTest() override {}
+  V8ScriptRunnerTest() = default;
+  ~V8ScriptRunnerTest() override = default;
 
   void SetUp() override {
     // To trick various layers of caching, increment a counter for each
