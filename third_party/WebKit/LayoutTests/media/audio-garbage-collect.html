@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 <title>Tests that we don't garbage collect audio object while it is still playing.</title>
+<script src="media-file.js"></script>
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
@@ -14,9 +15,9 @@
 async_test(function(t) {
     var audioPlayers = 4;
     var playedCount = 0;
-    var audioFile = "content/silence.oga";
+    var audioFile = findMediaFile("audio", "content/silence");
     var audio = new Audio(audioFile);
-
+    
     audio.onended = t.step_func(function() {
         playedCount ++;
         if (playedCount <= audioPlayers) {

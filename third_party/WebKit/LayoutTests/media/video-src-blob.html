@@ -2,6 +2,7 @@
 <title>This tests the ability of the "video" element to load blob URLs. In the browser, select a video file.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <input type="file">
 <video></video>
 <script>
@@ -15,7 +16,7 @@ async_test(function(t) {
         video.src = URL.createObjectURL(event.target.files[0]);
     });
 
-    eventSender.beginDragWithFiles(["content/test.ogv"]);
+    eventSender.beginDragWithFiles([findMediaFile("video", "content/test")]);
     var centerX = inputFile.offsetLeft + inputFile.offsetWidth / 2;
     var centerY = inputFile.offsetTop + inputFile.offsetHeight / 2;
     eventSender.mouseMoveTo(centerX, centerY);

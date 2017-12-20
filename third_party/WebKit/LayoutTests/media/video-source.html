@@ -2,6 +2,7 @@
 <title>Test "source" element.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video>
     <source></source>
 </video>
@@ -9,7 +10,7 @@
 async_test(function(t) {
     var video = document.querySelector("video");
     var source = document.querySelector("source");
-    var mediaFile = "content/test.ogv";
+    var mediaFile = findMediaFile("video", "content/test");
     source.src = mediaFile;
 
     video.onloadstart = t.step_func_done(function() {

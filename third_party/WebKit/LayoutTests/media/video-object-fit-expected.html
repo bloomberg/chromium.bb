@@ -27,7 +27,7 @@
 
         function init()
         {
-            setSrcByTagName("video", "content/test.ogv");
+            setSrcByTagName("video", findMediaFile("video", "content/test"));
 
             var totalCount = document.getElementsByTagName('video').length;
             var count = totalCount;

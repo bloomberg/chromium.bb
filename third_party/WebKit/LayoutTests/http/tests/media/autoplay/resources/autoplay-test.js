@@ -40,7 +40,7 @@ function receivedResult(data) {
 
 function runVideoTest() {
   const video = document.createElement('video');
-  video.src = '/media-resources/content/test.ogv';
+  video.src = findMediaFile('video', '/media-resources/content/test');
   video.play().then(tearDown, tearDown);
 }
 

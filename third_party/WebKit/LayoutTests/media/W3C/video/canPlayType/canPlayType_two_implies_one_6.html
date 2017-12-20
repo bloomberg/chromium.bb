@@ -15,7 +15,7 @@ test(function() {
  if (v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"') == "probably") {
   assert_equals(
    v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"'),
-   v.canPlayType('video/mp4; codecs="mp4a.40.2"'),
+   v.canPlayType('video/ogg; codecs="mp4a.40.2"'),
    "ability to play two codecs implies the ability to play one");
  }
 });

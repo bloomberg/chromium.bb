@@ -1,12 +1,13 @@
 <!DOCTYPE HTML>
 <title>Test that an invalid video file generates a MEDIA_ERR_SRC_NOT_SUPPORTED error and sets networkState to NETWORK_NO_SOURCE.</title>
+<script src="media-file.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "content/garbage.ogv";
+    video.src = findMediaFile("video", "content/garbage");
     video.onerror = t.step_func_done(function () {
         assert_true(video.error instanceof MediaError);
         assert_equals(video.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);

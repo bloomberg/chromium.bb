@@ -16,7 +16,7 @@ async_test(function(t) {
     }));
 
     // Find a supported media file.
-    var mediaFile = "content/test.ogv";
+    var mediaFile = findMediaFile("video", "content/test");
     var mimeType = mimeTypeForFile(mediaFile);
 
     // Load should stall very early in the loading process.

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test that WebVTT objects are being styled correctly based on user settings that should override default settings.</title>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -9,7 +10,7 @@
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     video.oncanplaythrough = t.step_func_done(function() {
         var cue = textTrackCueElementByIndex(video, 0).firstChild;
@@ -19,7 +20,7 @@ async_test(function(t) {
         assert_equals(cueStyle.color, "rgb(255, 255, 255)");
         assert_equals(cueStyle.backgroundColor, "rgba(0, 0, 0, 0.8)");
         assert_equals(cueStyle.fontFamily, "sans-serif");
-
+        
         // Apply user settings for color and font-size and verify that the other internal settings are retained.
         internals.settings.setTextTrackTextColor("purple");
         internals.settings.setTextTrackTextSize("14px");

@@ -2,6 +2,7 @@
 <title>Test that video is not reloaded on showing a dialog.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
 <video></video>
 <script>
 // Make sure we don't reload a "video" element after a dialog is shown.
@@ -9,7 +10,7 @@
 // "loadstart" event handler is called. If the movie is reloaded when
 // the dialog is "dismissed", another "loadstart" event will be fired.
 async_test(function(t) {
-    var movie = "../resources/test.ogv";
+    var movie = findMediaFile("video", "../resources/test");
     var video = document.querySelector("video");
 
     video.onloadstart = t.step_func(function() {

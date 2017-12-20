@@ -2,6 +2,7 @@
 <title>Verify that media controls are always visible when hovered.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <video controls loop></video>
 <script>
@@ -25,6 +26,6 @@ async_test(function(t) {
         }), video);
     });
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 });
 </script>

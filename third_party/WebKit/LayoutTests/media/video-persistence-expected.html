@@ -29,6 +29,7 @@
 }
 
 </style>
+<script src='media-file.js'></script>
 <div id='player'>
   <div id='container'>
     <video></video>
@@ -37,7 +38,7 @@
 <div id='fs'>fullscreen</div>
 <script>
   var video = document.querySelector('video');
-  video.src = 'content/test.ogv';
+  video.src = findMediaFile('video', 'content/test');
 
   document.querySelector('#fs').addEventListener('click', e => {
     document.querySelector('#player').webkitRequestFullscreen();

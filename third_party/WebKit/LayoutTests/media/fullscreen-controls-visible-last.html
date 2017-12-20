@@ -2,13 +2,14 @@
 <title>Tests that the fullscreen button control is the antepenultimate media controls button visible.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <script src="overflow-menu.js"></script>
 <video controls></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
     // Since this is a video, we'll have three elements visible when the width
     // is 120. These three should be: play, fullscreen, overflow.
     video.setAttribute("width", "120");

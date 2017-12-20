@@ -2,12 +2,13 @@
 <title>media controls volume slider</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <audio controls></audio>
 <script>
 async_test(function(t) {
     var audio = document.querySelector("audio");
-    audio.src = "content/test.oga";
+    audio.src = findMediaFile("audio", "content/test");
     assert_equals(audio.volume, 1);
 
     audio.onloadedmetadata = t.step_func(function() {

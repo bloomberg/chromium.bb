@@ -2,6 +2,7 @@
 <title>Test double seek currentTime.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 // Seek to same time twice and make sure "seeking" is fired twice and that
@@ -26,6 +27,6 @@ async_test(function(t) {
         assert_equals(video.currentTime, timeToTest);
     }));
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 });
 </script>

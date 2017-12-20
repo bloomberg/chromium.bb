@@ -2,11 +2,12 @@
 <title>Test that QuickTime file with unsupported track types only, generates an error.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "content/unsupported_track.ogv";
+    video.src = findMediaFile("video", "content/unsupported_track");
     video.onerror = t.step_func_done();
 });
 </script>

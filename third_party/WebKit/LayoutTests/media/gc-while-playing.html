@@ -2,12 +2,13 @@
 <title>GC while playing</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script>
 async_test(function(t)
 {
     var a = document.createElement("audio");
     a.foo = "bar";
-    a.src = "content/test.oga";
+    a.src = findMediaFile("audio", "content/test");
     a.onsuspend = t.step_func(function()
     {
         assert_equals(a.networkState, a.NETWORK_IDLE);

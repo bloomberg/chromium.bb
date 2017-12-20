@@ -2,6 +2,7 @@
 <title>Test that multiple audio elements can play concurrently.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script>
 async_test(function(t) {
     // Number of concurrent audio elements to test.
@@ -45,7 +46,7 @@ async_test(function(t) {
             }
         });
 
-        audioElement.src = "content/silence.oga";
+        audioElement.src = findMediaFile("audio", "content/silence");
     }
 });
 </script>

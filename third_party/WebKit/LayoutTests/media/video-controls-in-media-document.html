@@ -2,6 +2,7 @@
 <title>Test that controls don't increase the size of the container (i.e. are rendered overlapping with the video canvas).</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <iframe style="width: 400px; height: 300px; border: 0px;"></iframe>
 <script>
 async_test(function(t) {
@@ -16,6 +17,6 @@ async_test(function(t) {
         });
     });
 
-    iframe.src = "content/test.ogv";
+    iframe.src = findMediaFile("video", "content/test");
 });
 </script>

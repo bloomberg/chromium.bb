@@ -2,6 +2,7 @@
 <title>Tests that the video is paused after cues that have pause-on-exit flag are processed.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <video controls>
     <track src="captions-webvtt/simple-captions.vtt" default>
 </video>
@@ -25,7 +26,7 @@ async_test(function(t) {
                 });
             }
         }
-        video.src = "../content/test.ogv";
+        video.src = findMediaFile("video", "../content/test");
         video.currentTime = 4.00;
         video.play();
         assert_false(video.paused);

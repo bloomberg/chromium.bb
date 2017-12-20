@@ -2,6 +2,7 @@
 <title>Test "abort" event.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -25,7 +26,7 @@ async_test(function(t) {
         assert_equals(video.error, null);
     }));
 
-    var movie = "../resources/test.ogv";
+    var movie = findMediaFile("video", "../resources/test");
     video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + movie + "&throttle=256";
 });
 </script>

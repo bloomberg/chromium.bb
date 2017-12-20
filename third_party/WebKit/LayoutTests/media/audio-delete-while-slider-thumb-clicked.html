@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>This tests that events don't continue to target a slider thumb if the media element is deleted while scrubbing.</title>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
@@ -8,7 +9,7 @@
 <script>
 async_test(function(t) {
     var audio = document.querySelector("audio");
-    audio.src = "content/test.oga";
+    audio.src = findMediaFile("audio", "content/test");
     audio.onplaying = t.step_func(function() {
         var seekCoords = mediaControlsButtonCoordinates(audio, "timeline");
         var x = seekCoords[0];

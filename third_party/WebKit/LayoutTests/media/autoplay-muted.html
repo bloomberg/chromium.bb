@@ -2,6 +2,7 @@
 <title>Test for autoplay of muted video</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <body>
 <script>
@@ -19,7 +20,7 @@
 
     function createMutedMediaElement(type) {
         var e = document.createElement(type);
-        e.src = type == 'audio' ? 'content/test.oga' : 'content/test.ogv';
+        e.src = findMediaFile(type, 'content/test');
         e.muted = true;
         return e;
     }

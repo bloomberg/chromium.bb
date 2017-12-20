@@ -1,5 +1,6 @@
 <html>
  <head>
+  <script src="../media/media-file.js"></script>
 
   <script>
     if (window.testRunner) {
@@ -8,7 +9,7 @@
 
     function onLoad() {
       video = document.getElementsByTagName('video')[0];
-      video.src = "../media/content/test.ogv";
+      video.src = findMediaFile("video", "../media/content/test");
 
       canvas = document.getElementsByTagName('canvas')[0];
       ctx = canvas.getContext('2d');

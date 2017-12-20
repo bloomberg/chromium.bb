@@ -3,7 +3,7 @@
 <html>
 <head>
   <style>
-
+    
       #box {
         position: absolute;
         top: 50px;
@@ -13,14 +13,15 @@
         overflow: hidden;
         border: 10px solid green;
       }
-
+    
   </style>
   <script src="../resources/media-testing.js"></script>
+  <script src="../../media/media-file.js"></script>
 
   <script type="text/javascript" charset="utf-8">
     if (window.testRunner)
       testRunner.dumpAsText();
-
+  
     function testDone()
     {
       if (window.testRunner)
@@ -30,7 +31,7 @@
     function doTest()
     {
       var video = document.getElementsByTagName('video')[0];
-      setupVideo(video, '../resources/video.ogv', testDone);
+      setupVideo(video, '../resources/video', testDone);
     }
   </script>
 </head>

@@ -2,6 +2,7 @@
 <title>Test that setting a non-zero rate causes an async timeupdate event.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -12,7 +13,7 @@ async_test(function(t) {
         video.playbackRate = 1;
     });
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
     video.playbackRate = 0;
     video.play();
 });

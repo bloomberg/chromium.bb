@@ -2,6 +2,7 @@
 <title>Video elements without controls should not absborb click events</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 test(_ => {
@@ -21,6 +22,6 @@ async_test(t => {
     t.done();
   }));
 
-  video.src = 'content/test.ogv';
+  video.src = findMediaFile('video', 'content/test');
 });
 </script>

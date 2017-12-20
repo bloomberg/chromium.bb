@@ -2,6 +2,7 @@
 <title>media controls overlay play button narrow</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="overlay-play-button.js"></script>
 <body>
@@ -12,7 +13,7 @@ async_test(function(t) {
   enableOverlayPlayButtonForTest(t);
 
   var video = document.createElement('video');
-  video.src = "../content/test.ogv";
+  video.src = findMediaFile("video", "../content/test");
   video.width = NORMAL_VIDEO_WIDTH;
   video.height = NORMAL_VIDEO_HEIGHT;
   video.controls = true;

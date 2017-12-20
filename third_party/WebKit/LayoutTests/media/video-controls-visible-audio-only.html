@@ -2,7 +2,7 @@
 <html>
     <head>
         <style>
-            #no-video-media { background-color: yellow; width: 320px; height: 100px;}
+            #no-video-media { background-color: yellow; width: 320px; height: 100px;} 
             #mouse-parking:hover { padding:8; background-color: blue; }
         </style>
         <script src=media-file.js></script>
@@ -20,15 +20,15 @@
                 var console = document.getElementById("console");
                 console.innerHTML += text + "<br>";
             }
-
+            
             function testcondition(testFuncString, endit)
             {
                 if (eval(testFuncString))
                     consoleWrite("TEST(" + testFuncString + ") <span style='color:green'>OK</span>");
                 else
-                    consoleWrite("TEST(" + testFuncString + ") <span style='color:red'>FAIL</span>");
+                    consoleWrite("TEST(" + testFuncString + ") <span style='color:red'>FAIL</span>");    
             }
-
+            
             function start()
             {
                 video = document.getElementById("no-video-media");
@@ -62,8 +62,8 @@
             }
 
             if (window.testRunner) {
-                setTimeout(function() {
-                    document.body.appendChild(document.createTextNode('FAIL'));
+                setTimeout(function() { 
+                    document.body.appendChild(document.createTextNode('FAIL')); 
                     if (window.testRunner)
                         testRunner.notifyDone();
                 } , 8000);
@@ -81,7 +81,7 @@
         <video id="no-video-media" controls loop oncanplaythrough="start()"></video>
         <br><br><div id="console"></div>
         <script>
-            setSrcById("no-video-media", "content/test.oga");
+            setSrcById("no-video-media", findMediaFile("audio", "content/test"));
         </script>
     </body>
 </html>

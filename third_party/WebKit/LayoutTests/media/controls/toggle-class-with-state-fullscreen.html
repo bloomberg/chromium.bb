@@ -4,6 +4,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
+<script src="../media-file.js"></script>
 <video controls width=400></video>
 <script>
 async_test(t => {
@@ -22,7 +23,7 @@ async_test(t => {
     clickAtCoordinates(1, 1);
   });
 
-  video.src = "../content/counting.ogv";
+  video.src = findMediaFile("video", "../content/counting");
   video.play();
 });
 </script>

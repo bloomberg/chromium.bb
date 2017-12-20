@@ -8,13 +8,13 @@
     body {
       height: 1000px;
     }
-
+    
     video {
       margin-top: 80px;
       width: 400px;
       height: 300px;
     }
-
+    
     #fixed-bar {
       position: fixed;
       left: 0;
@@ -25,7 +25,8 @@
     }
   </style>
   <script src="../resources/media-testing.js"></script>
-    <script type="text/javascript" charset="utf-8">
+  <script src="../../media/media-file.js"></script>
+  <script type="text/javascript" charset="utf-8">
     function testDone()
     {
       window.scrollBy(50, 50);
@@ -36,7 +37,7 @@
     function doTest()
     {
       var video = document.getElementsByTagName('video')[0];
-      setupVideo(video, '../resources/video.ogv', testDone);
+      setupVideo(video, '../resources/video', testDone);
     }
   </script>
 </head>

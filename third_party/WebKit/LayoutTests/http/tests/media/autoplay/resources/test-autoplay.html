@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <title>Test document user gesture autoplay policy across navigation</title>
 <script src="/js-test-resources/js-test.js"></script>
+<script src='../../../media-resources/media-file.js'></script>
 <script>
 var jsTestIsAsync = true;
 function tearDown(result) {
@@ -11,7 +12,7 @@ function tearDown(result) {
 
 function runVideoTest() {
   var video = document.createElement('video');
-  video.src = "/resources/test.ogv";
+  video.src = findMediaFile("video", "/resources/test");
   video.play().then(tearDown, tearDown);
 }
 

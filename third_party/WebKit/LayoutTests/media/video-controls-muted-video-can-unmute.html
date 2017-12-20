@@ -2,6 +2,7 @@
 <title>Test that muted video has an unmute button.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <video controls></video>
 <script>
@@ -16,6 +17,6 @@ async_test(function(t) {
         assert_not_equals(getComputedStyle(muteButton).display, "none");
     });
 
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 });
 </script>

@@ -29,7 +29,8 @@
     </style>
 
     <script src="../resources/media-testing.js"></script>
-        <script type="text/javascript" charset="utf-8">
+    <script src="../../media/media-file.js"></script>
+    <script type="text/javascript" charset="utf-8">
       if (window.testRunner)
           testRunner.dumpAsTextWithPixelResults();
 
@@ -42,9 +43,9 @@
 
       function doTest()
       {
-          setupVideo(document.getElementsByTagName('video')[0], '../resources/video.ogv', notifyVideoDone);
-          setupVideo(document.getElementsByTagName('video')[1], '../resources/video.ogv', notifyVideoDone);
-          setupVideo(document.getElementsByTagName('video')[2], '../resources/video.ogv', notifyVideoDone);
+          setupVideo(document.getElementsByTagName('video')[0], '../resources/video', notifyVideoDone);
+          setupVideo(document.getElementsByTagName('video')[1], '../resources/video', notifyVideoDone);
+          setupVideo(document.getElementsByTagName('video')[2], '../resources/video', notifyVideoDone);
       }
     </script>
   </head>

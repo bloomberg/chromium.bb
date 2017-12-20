@@ -2,10 +2,11 @@
 <title>Test that moving video element to a new document and performing an operation on it doesn't crash.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script>
 async_test(function(t) {
     var v = document.createElement('video');
-    v.src = 'content/test.ogv';
+    v.src = findMediaFile('video', 'content/test');
     v.oncanplaythrough = t.step_func(function() {
         var newDoc = document.implementation.createDocument( "", null);
         newDoc.adoptNode(v);

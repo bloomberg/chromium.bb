@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Tests proper parsing of various regions present in WebVTT header area.</title>
+<script src="../../media-file.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script>
@@ -34,7 +35,7 @@ function checkCueRegions(cues) {
 
 async_test(function(t) {
     var video = document.createElement('video');
-    video.src = '../../content/test.ogv';
+    video.src = findMediaFile('video', '../../content/test');
     var testTrack = document.createElement('track');
     testTrack.onload = t.step_func_done(function() {
         var track = testTrack.track;

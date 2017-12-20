@@ -2,12 +2,13 @@
 <title>This tests that controls do not fade out when the video is playing remotely.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <video controls loop></video>
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     video.onplaying = t.step_func(function() {
         internals.mediaPlayerPlayingRemotelyChanged(video, true);

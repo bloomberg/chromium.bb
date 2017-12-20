@@ -2,13 +2,14 @@
 <title>Tests that added cue object wrappers live across garbage collections.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var cueIndex = 0;
     var cueLimit = 10;
     var video = document.querySelector("video");
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 
     video.textTracks.custom = "trackList";
     assert_true(video.textTracks.hasOwnProperty("custom"));

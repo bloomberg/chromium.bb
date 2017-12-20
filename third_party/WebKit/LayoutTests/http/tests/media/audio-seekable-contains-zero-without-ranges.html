@@ -24,7 +24,7 @@ async_test(function(t) {
     t.done();
   });
 
-  var mediaFile = '../../../../media/content/silence.oga';
+  var mediaFile = findMediaFile('audio', '../../../../media/content/silence');
   var type = mimeTypeForExtension(mediaFile.split('.').pop());
 
   audio.src = 'http://127.0.0.1:8000/media/resources/load-video.php' +

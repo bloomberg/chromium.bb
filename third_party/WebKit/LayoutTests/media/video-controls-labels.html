@@ -3,6 +3,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-controls.js"></script>
+<script src="media-file.js"></script>
 <video controls>
   <track kind="subtitles" src="captions.vtt" srclang="is" label="Icelandic">
   <track kind="subtitles" src="captions-fast.vtt" srclang="fr" label="">
@@ -25,6 +26,6 @@ async_test(function(t) {
         assert_equals(captionsList.children[3].innerText, "Track 3");
     });
 
-    video.src = "content/counting.ogv";
+    video.src = findMediaFile("video", "content/counting");
 });
 </script>

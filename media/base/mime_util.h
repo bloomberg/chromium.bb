@@ -85,6 +85,12 @@ MEDIA_EXPORT SupportsType
 IsSupportedEncryptedMediaFormat(const std::string& mime_type,
                                 const std::vector<std::string>& codecs);
 
+// Test only method that removes proprietary media types and codecs from the
+// list of supported MIME types and codecs. These types and codecs must be
+// removed to ensure consistent layout test results across all Chromium
+// variations.
+MEDIA_EXPORT void RemoveProprietaryMediaTypesAndCodecsForTests();
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_MIME_UTIL_H_

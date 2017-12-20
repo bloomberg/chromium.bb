@@ -3,12 +3,13 @@
 <video>
     <track src="captions-webvtt/tc004-no-webvtt.vtt" kind="captions" default>
 </video>
+<script src="../media-file.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
     var video = document.querySelector('video');
-    video.src = '../content/test.ogv';
+    video.src = findMediaFile('video', '../content/test');
     video.oncanplaythrough = t.step_func(canplaythrough);
 
     function canplaythrough() {
@@ -22,7 +23,7 @@ async_test(function(t) {
         document.body.removeChild(video);
 
         // Reset the video src attribute to re-trigger resource selection for tracks.
-        video.src = '../content/test.ogv';
+        video.src = findMediaFile('video', '../content/test');
 
         // Append the video element back to the body.
         document.body.appendChild(video);

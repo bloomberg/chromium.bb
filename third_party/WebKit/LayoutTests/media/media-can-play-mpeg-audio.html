@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<title>Test HTMLMediaElement's "canPlayType" method with multiple audio mpeg MIME types.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<audio></audio>
+<script>
+test(function() {
+    var audio = document.querySelector("audio");
+    // Currently no platform supports the below formats.
+    assert_equals(audio.canPlayType("audio/x-mpeg"), "");
+    assert_equals(audio.canPlayType("audio/x-mp3"), "");
+    assert_equals(audio.canPlayType("audio/mp3"), "");
+    assert_equals(audio.canPlayType("audio/mpeg"), "");
+
+    assert_equals(audio.canPlayType("audio/mp4"), "");
+    assert_equals(audio.canPlayType("audio/aac"), "");
+});
+</script>

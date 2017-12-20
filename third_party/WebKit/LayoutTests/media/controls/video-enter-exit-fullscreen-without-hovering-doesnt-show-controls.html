@@ -5,6 +5,7 @@ video-enter-exit-fullscreen-while-hovering-shows-controls.html</title>
 <script src="../../fullscreen/full-screen-test.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 
 <video controls></video>
@@ -64,6 +65,6 @@ async_test(function(t) {
     });
   });
 
-  video.src = "../content/test-25fps.ogv";
+  video.src = findMediaFile("video", "../content/test-25fps");
 });
 </script>

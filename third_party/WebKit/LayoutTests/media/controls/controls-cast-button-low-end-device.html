@@ -2,6 +2,7 @@
 <title>media controls cast button low end device</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <script src="../remoteplayback/util.js"></script>
 <video width="500"></video>
@@ -22,6 +23,6 @@ async_test(function(t) {
       assert_true(isVisible(castButton(video)));
     });
 
-    video.src = "../content/test.ogv";
+    video.src = findMediaFile("video", "../content/test");
 });
 </script>

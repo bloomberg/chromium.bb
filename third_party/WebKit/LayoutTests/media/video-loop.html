@@ -2,6 +2,7 @@
 <title>Test video looping.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video autoplay></video>
 <script>
 // Test looping by:
@@ -67,6 +68,6 @@ async_test(function(t) {
 
     // Set "loop" to true and begin playing.
     video.loop = true;
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
 });
 </script>

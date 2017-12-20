@@ -2,6 +2,7 @@
 <title>This tests that a standalone media document has viewport settings.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <iframe></iframe>
 <script>
 async_test(function(t) {
@@ -13,6 +14,6 @@ async_test(function(t) {
         assert_equals(metaElement.content, "width=device-width");
     });
 
-    iframe.src = "content/test.ogv";
+    iframe.src = findMediaFile("video", "content/test");
 });
 </script>

@@ -2,12 +2,13 @@
 <title>Test that pausing the media element has an immediate effect on the clock.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
     var timeAfterPause;
     var video = document.querySelector("video");
-    video.src = "content/test.ogv";
+    video.src = findMediaFile("video", "content/test");
     video.oncanplay = t.step_func(function() {
         video.play();
     });

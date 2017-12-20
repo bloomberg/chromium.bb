@@ -31,7 +31,7 @@
             function start()
             {
                 video = document.getElementsByTagName('video')[0];
-                video.src = 'content/test.ogv';
+                video.src = findMediaFile('video', 'content/test');
                 video.addEventListener('canplaythrough', canplaythrough);
                 video.addEventListener('playing', playing);
                 video.addEventListener('seeked', seeked);
