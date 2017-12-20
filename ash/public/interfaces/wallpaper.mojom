@@ -130,6 +130,10 @@ interface WallpaperController {
                                 mojo.common.mojom.FilePath file_path,
                                 mojo.common.mojom.FilePath resized_directory);
 
+  // Sets whether device wallpaper policy is enforced on this device. Updates/
+  // clears the device policy controlled wallpaper if applicable.
+  SetDeviceWallpaperPolicyEnforced(bool enforced);
+
   // Shows the user's wallpaper, which is determined in the following order:
   // 1) Use device policy wallpaper if it exists AND we are at the login screen.
   // 2) Use user policy wallpaper if it exists.

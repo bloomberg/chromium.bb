@@ -1305,6 +1305,8 @@ split_static_library("ui") {
       "ash/vpn_list_forwarder.h",
       "ash/wallpaper_controller_client.cc",
       "ash/wallpaper_controller_client.h",
+      "ash/wallpaper_policy_handler.cc",
+      "ash/wallpaper_policy_handler.h",
       "browser_commands_chromeos.cc",
       "browser_commands_chromeos.h",
       "extensions/extension_installed_notification.cc",
