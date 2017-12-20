@@ -340,7 +340,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kPromptForDownload,
     base::Value::Type::BOOLEAN },
   { key::kSpellcheckEnabled,
-    spellcheck::prefs::kEnableSpellcheck,
+    spellcheck::prefs::kSpellCheckEnable,
     base::Value::Type::BOOLEAN },
 
   // First run import.

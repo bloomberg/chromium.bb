@@ -136,7 +136,7 @@ bool SpellingOptionsSubMenuObserver::IsCommandIdChecked(int command_id) {
   if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
     return profile->GetPrefs()->GetBoolean(
-        spellcheck::prefs::kEnableSpellcheck);
+        spellcheck::prefs::kSpellCheckEnable);
   }
 
   return false;
@@ -151,7 +151,7 @@ bool SpellingOptionsSubMenuObserver::IsCommandIdEnabled(int command_id) {
   if ((command_id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
        command_id < IDC_SPELLCHECK_LANGUAGES_LAST) ||
       command_id == IDC_SPELLCHECK_MULTI_LINGUAL) {
-    return pref->GetBoolean(spellcheck::prefs::kEnableSpellcheck);
+    return pref->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
   }
 
   switch (command_id) {
@@ -185,9 +185,9 @@ void SpellingOptionsSubMenuObserver::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       profile->GetPrefs()->SetBoolean(
-          spellcheck::prefs::kEnableSpellcheck,
+          spellcheck::prefs::kSpellCheckEnable,
           !profile->GetPrefs()->GetBoolean(
-              spellcheck::prefs::kEnableSpellcheck));
+              spellcheck::prefs::kSpellCheckEnable));
       break;
 
     case IDC_SPELLCHECK_MULTI_LINGUAL:
