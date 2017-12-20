@@ -137,8 +137,8 @@ class SchedulerTaskRunOrderTest : public SchedulerTest {
 
     uint64_t release = release_sync + 1;
     sync_tokens_.emplace(std::make_pair(
-        release_sync, SyncToken(kNamespaceId, 0,
-                                info_it->second.command_buffer_id, release)));
+        release_sync,
+        SyncToken(kNamespaceId, info_it->second.command_buffer_id, release)));
   }
 
   void ScheduleTask(int sequence_key, int wait_sync, int release_sync) {
@@ -380,7 +380,7 @@ TEST_F(SchedulerTest, ReleaseSequenceShouldYield) {
                       std::vector<SyncToken>()));
 
   bool ran2 = false;
-  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
+  SyncToken sync_token(namespace_id, command_buffer_id, release);
   SequenceId sequence_id2 =
       scheduler()->CreateSequence(SchedulingPriority::kHigh);
   scheduler()->ScheduleTask(Scheduler::Task(
@@ -414,7 +414,7 @@ TEST_F(SchedulerTest, ReentrantEnableSequenceShouldNotDeadlock) {
           namespace_id, command_buffer_id2, sequence_id2);
 
   uint64_t release = 1;
-  SyncToken sync_token(namespace_id, 0, command_buffer_id2, release);
+  SyncToken sync_token(namespace_id, command_buffer_id2, release);
 
   bool ran1, ran2 = false;
 
@@ -535,8 +535,8 @@ TEST_F(SchedulerTest, StreamPriorities) {
   EXPECT_EQ(SchedulingPriority::kNormal, seq2->current_priority());
   EXPECT_EQ(SchedulingPriority::kHigh, seq3->current_priority());
 
-  SyncToken sync_token1(namespace_id, 0, command_buffer_id1, 1);
-  SyncToken sync_token2(namespace_id, 0, command_buffer_id2, 1);
+  SyncToken sync_token1(namespace_id, command_buffer_id1, 1);
+  SyncToken sync_token2(namespace_id, command_buffer_id2, 1);
 
   // Wait priorities propagate.
   seq2->AddWaitFence(sync_token1, 1, seq_id1, seq1);
@@ -593,8 +593,8 @@ TEST_F(SchedulerTest, StreamDestroyRemovesPriorities) {
   Scheduler::Sequence* seq2 = scheduler()->GetSequence(seq_id2);
   Scheduler::Sequence* seq3 = scheduler()->GetSequence(seq_id3);
 
-  SyncToken sync_token1(namespace_id, 0, command_buffer_id1, 1);
-  SyncToken sync_token2(namespace_id, 0, command_buffer_id2, 1);
+  SyncToken sync_token1(namespace_id, command_buffer_id1, 1);
+  SyncToken sync_token2(namespace_id, command_buffer_id2, 1);
 
   // Wait priorities propagate.
   seq2->AddWaitFence(sync_token1, 1, seq_id1, seq1);
@@ -643,8 +643,8 @@ TEST_F(SchedulerTest, StreamPriorityChangeWhileReleasing) {
   Scheduler::Sequence* seq2 = scheduler()->GetSequence(seq_id2);
   Scheduler::Sequence* seq3 = scheduler()->GetSequence(seq_id3);
 
-  SyncToken sync_token1(namespace_id, 0, command_buffer_id1, 1);
-  SyncToken sync_token2(namespace_id, 0, command_buffer_id2, 2);
+  SyncToken sync_token1(namespace_id, command_buffer_id1, 1);
+  SyncToken sync_token2(namespace_id, command_buffer_id2, 2);
 
   // Wait on same fence multiple times.
   seq2->AddWaitFence(sync_token1, 1, seq_id1, seq1);
@@ -704,10 +704,10 @@ TEST_F(SchedulerTest, CircularPriorities) {
   EXPECT_EQ(SchedulingPriority::kLow, seq2->current_priority());
   EXPECT_EQ(SchedulingPriority::kNormal, seq3->current_priority());
 
-  SyncToken sync_token_seq2_1(namespace_id, 0, command_buffer_id2, 1);
-  SyncToken sync_token_seq2_2(namespace_id, 0, command_buffer_id2, 2);
-  SyncToken sync_token_seq2_3(namespace_id, 0, command_buffer_id2, 3);
-  SyncToken sync_token_seq3_1(namespace_id, 0, command_buffer_id3, 1);
+  SyncToken sync_token_seq2_1(namespace_id, command_buffer_id2, 1);
+  SyncToken sync_token_seq2_2(namespace_id, command_buffer_id2, 2);
+  SyncToken sync_token_seq2_3(namespace_id, command_buffer_id2, 3);
+  SyncToken sync_token_seq3_1(namespace_id, command_buffer_id3, 1);
 
   seq3->AddWaitFence(sync_token_seq2_1, 1, seq_id2, seq2);
   EXPECT_EQ(SchedulingPriority::kHigh, seq1->current_priority());

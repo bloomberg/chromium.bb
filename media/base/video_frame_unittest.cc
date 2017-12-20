@@ -300,7 +300,7 @@ static void TextureCallback(gpu::SyncToken* called_sync_token,
 // Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
 // destroyed with the default release sync point.
 TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
-  gpu::SyncToken called_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+  gpu::SyncToken called_sync_token(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId::FromUnsafeValue(1), 1);
 
   {
@@ -355,10 +355,10 @@ TEST(VideoFrame,
     mailbox[i].name[0] = 50 + 1;
   }
 
-  gpu::SyncToken sync_token(kNamespace, 0, kCommandBufferId, 7);
+  gpu::SyncToken sync_token(kNamespace, kCommandBufferId, 7);
   sync_token.SetVerifyFlush();
   uint32_t target = 9;
-  gpu::SyncToken release_sync_token(kNamespace, 0, kCommandBufferId, 111);
+  gpu::SyncToken release_sync_token(kNamespace, kCommandBufferId, 111);
   release_sync_token.SetVerifyFlush();
 
   gpu::SyncToken called_sync_token;

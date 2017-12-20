@@ -4103,7 +4103,7 @@ error::Error GLES2DecoderPassthroughImpl::DoWaitSyncTokenCHROMIUM(
     CommandBufferNamespace namespace_id,
     CommandBufferId command_buffer_id,
     GLuint64 release_count) {
-  SyncToken sync_token(namespace_id, 0, command_buffer_id, release_count);
+  SyncToken sync_token(namespace_id, command_buffer_id, release_count);
   return client_->OnWaitSyncToken(sync_token) ? error::kDeferCommandUntilLater
                                               : error::kNoError;
 }

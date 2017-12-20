@@ -122,7 +122,7 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
   void RetireTextureId(GLuint) override {}
 
   void genSyncToken(GLbyte* sync_token) override {
-    gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0,
+    gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId::FromUnsafeValue(0x123),
                                    next_fence_sync_++);
     sync_token_data.SetVerifyFlush();
@@ -198,7 +198,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
 
   void genSyncToken(GLbyte* sync_token) override {
     uint64_t fence_sync = shared_data_->InsertFenceSync();
-    gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0,
+    gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId::FromUnsafeValue(0x123),
                                    fence_sync);
     sync_token_data.SetVerifyFlush();
@@ -2575,7 +2575,7 @@ class ResourceProviderTestImportedResourceGLFilters
         CreateResourceSettings()));
 
     unsigned texture_id = 1;
-    gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+    gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                               gpu::CommandBufferId::FromUnsafeValue(0x12),
                               0x34);
     const GLuint64 current_fence_sync = child_context->GetNextFenceSync();
@@ -2739,7 +2739,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
       gpu_memory_buffer_manager_.get(), kDelegatedSyncPointsRequired,
       CreateResourceSettings()));
 
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
   const GLuint64 current_fence_sync = child_context->GetNextFenceSync();
 
@@ -2836,7 +2836,7 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_ResourceFromChild) {
       context_provider.get(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), CreateResourceSettings());
 
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
   const GLuint64 current_fence_sync = context->GetNextFenceSync();
 
@@ -2893,7 +2893,7 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_WithSyncToken) {
       context_provider.get(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), CreateResourceSettings());
 
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
   const GLuint64 current_fence_sync = context->GetNextFenceSync();
 
@@ -3362,7 +3362,7 @@ TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
     ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
                                              id);
     gpu::SyncToken token;
-    token.Set(gpu::CommandBufferNamespace::INVALID, 0, gpu::CommandBufferId(),
+    token.Set(gpu::CommandBufferNamespace::INVALID, gpu::CommandBufferId(),
               release_counts[i]);
     lock.set_sync_token(token);
   }

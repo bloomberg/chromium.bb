@@ -4163,7 +4163,7 @@ TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUMErrors) {
 
   // Unverified sync token should produce INVALID_OPERATION.
   ClearCommands();
-  gpu::SyncToken unverified_sync_token(CommandBufferNamespace::GPU_IO, 0,
+  gpu::SyncToken unverified_sync_token(CommandBufferNamespace::GPU_IO,
                                        gpu::CommandBufferId(), 0);
   EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(unverified_sync_token))
       .WillOnce(Return(false));

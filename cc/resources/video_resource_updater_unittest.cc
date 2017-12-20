@@ -253,7 +253,6 @@ class VideoResourceUpdaterTest : public testing::Test {
 
 const gpu::SyncToken VideoResourceUpdaterTest::kMailboxSyncToken =
     gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
-                   0,
                    gpu::CommandBufferId::FromUnsafeValue(0x123),
                    7);
 
@@ -617,7 +616,7 @@ TEST_F(VideoResourceUpdaterTest, PassReleaseSyncToken) {
                                resource_provider3d_.get(),
                                false /* use_stream_video_draw_quad */);
 
-  const gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+  const gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                                   gpu::CommandBufferId::FromUnsafeValue(0x123),
                                   123);
 
@@ -641,11 +640,11 @@ TEST_F(VideoResourceUpdaterTest, GenerateReleaseSyncToken) {
                                resource_provider3d_.get(),
                                false /* use_stream_video_draw_quad */);
 
-  const gpu::SyncToken sync_token1(gpu::CommandBufferNamespace::GPU_IO, 0,
+  const gpu::SyncToken sync_token1(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId::FromUnsafeValue(0x123),
                                    123);
 
-  const gpu::SyncToken sync_token2(gpu::CommandBufferNamespace::GPU_IO, 0,
+  const gpu::SyncToken sync_token2(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId::FromUnsafeValue(0x234),
                                    234);
 

@@ -73,7 +73,7 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   }
   void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override {
     // Copy the data over after setting the data to ensure alignment.
-    gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0,
+    gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId(), 0);
     memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
   }

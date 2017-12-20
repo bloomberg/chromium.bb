@@ -81,7 +81,7 @@ CONTEXT_TEST_F(SignalTest, InvalidSignalSyncTokenTest) {
 
   // Signalling something that doesn't exist should run the callback
   // immediately.
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(1297824234),
                             9123743439);
   TestSignalSyncToken(sync_token);

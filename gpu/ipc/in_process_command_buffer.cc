@@ -768,7 +768,7 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
 
   if (fence_sync) {
     flushed_fence_sync_release_ = fence_sync;
-    SyncToken sync_token(GetNamespaceID(), 0, GetCommandBufferID(), fence_sync);
+    SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(), fence_sync);
     sync_token.SetVerifyFlush();
     gpu_memory_buffer_manager_->SetDestructionSyncToken(gpu_memory_buffer,
                                                         sync_token);
@@ -864,7 +864,7 @@ void InProcessCommandBuffer::CacheShader(const std::string& key,
 }
 
 void InProcessCommandBuffer::OnFenceSyncRelease(uint64_t release) {
-  SyncToken sync_token(GetNamespaceID(), 0, GetCommandBufferID(), release);
+  SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(), release);
 
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();

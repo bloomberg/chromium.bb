@@ -62,7 +62,7 @@ gpu::Mailbox MailboxFromChar(char value) {
 }
 
 gpu::SyncToken SyncTokenFromUInt(uint32_t value) {
-  return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0,
+  return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferId::FromUnsafeValue(0x123), value);
 }
 
@@ -112,11 +112,9 @@ struct CommonResourceObjects {
       : mailbox_name1_(MailboxFromChar('1')),
         mailbox_name2_(MailboxFromChar('2')),
         sync_token1_(gpu::CommandBufferNamespace::GPU_IO,
-                     123,
                      gpu::CommandBufferId::FromUnsafeValue(0x234),
                      1),
         sync_token2_(gpu::CommandBufferNamespace::GPU_IO,
-                     123,
                      gpu::CommandBufferId::FromUnsafeValue(0x234),
                      2) {
     release_callback1_ =

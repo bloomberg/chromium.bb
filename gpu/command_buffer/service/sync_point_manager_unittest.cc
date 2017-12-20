@@ -104,7 +104,7 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncRelease) {
   CommandBufferId kBufferId = CommandBufferId::FromUnsafeValue(0x123);
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kBufferId, release_count);
 
   // Can't wait for sync token before client is registered.
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -133,10 +133,10 @@ TEST_F(SyncPointManagerTest, MultipleClientsPerOrderData) {
                           kCmdBufferId2);
 
   uint64_t release_count = 1;
-  SyncToken sync_token1(kNamespaceId, 0, kCmdBufferId1, release_count);
+  SyncToken sync_token1(kNamespaceId, kCmdBufferId1, release_count);
   stream1.AllocateOrderNum();
 
-  SyncToken sync_token2(kNamespaceId, 0, kCmdBufferId2, release_count);
+  SyncToken sync_token2(kNamespaceId, kCmdBufferId2, release_count);
   stream2.AllocateOrderNum();
 
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token1));
@@ -164,7 +164,7 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncWaitRelease) {
   wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kReleaseCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
@@ -195,7 +195,7 @@ TEST_F(SyncPointManagerTest, WaitOnSelfFails) {
   wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kWaitCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kWaitCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
@@ -222,7 +222,7 @@ TEST_F(SyncPointManagerTest, OutOfOrderRelease) {
   release_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kReleaseCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
@@ -249,7 +249,7 @@ TEST_F(SyncPointManagerTest, HigherOrderNumberRelease) {
   release_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kReleaseCmdBufferId, release_count);
 
   // Order number was higher but it was actually released.
   release_stream.BeginProcessing();
@@ -281,7 +281,7 @@ TEST_F(SyncPointManagerTest, DestroyedClientRelease) {
   wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kReleaseCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
 
@@ -318,7 +318,7 @@ TEST_F(SyncPointManagerTest, NonExistentRelease) {
   wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kReleaseCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
@@ -358,7 +358,7 @@ TEST_F(SyncPointManagerTest, NonExistentRelease2) {
   wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kReleaseCmdBufferId, release_count);
 
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
   // Have wait with order [3] to wait on release.
@@ -416,7 +416,7 @@ TEST_F(SyncPointManagerTest, NonExistentOrderNumRelease) {
   release_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kReleaseCmdBufferId, release_count);
 
   // Have wait with order [3] to wait on release order [1] or [2].
   wait_stream.BeginProcessing();
@@ -468,7 +468,7 @@ TEST_F(SyncPointManagerTest, WaitOnSameSequenceFails) {
   stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
-  SyncToken sync_token(kNamespaceId, 0, kCmdBufferId, release_count);
+  SyncToken sync_token(kNamespaceId, kCmdBufferId, release_count);
 
   int test_num = 10;
   bool valid_wait = sync_point_manager_->Wait(
