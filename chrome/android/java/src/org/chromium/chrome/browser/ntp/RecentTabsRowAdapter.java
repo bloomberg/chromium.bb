@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
-import org.chromium.chrome.browser.signin.SigninAndSyncView;
+import org.chromium.chrome.browser.signin.SyncPromoView;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -402,7 +402,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         View getChildView(
                 int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
             if (convertView == null) {
-                convertView = SigninAndSyncView.create(parent, SigninAccessPoint.RECENT_TABS);
+                convertView = SyncPromoView.create(parent, SigninAccessPoint.RECENT_TABS);
             }
             return convertView;
         }

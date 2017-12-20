@@ -25,12 +25,11 @@ import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObser
 
 /**
  * A View that shows the user the next step they must complete to start syncing their data (eg.
- * Recent Tabs or Bookmarks). For example, if the user is not signed in, the View will prompt them
- * to do so and link to the AccountSigninActivity.
- * If inflated manually, {@link SigninAndSyncView#init(int)} must be called before
+ * Recent Tabs or Bookmarks).
+ * If inflated manually, {@link SyncPromoView#init(int)} must be called before
  * attaching this View to a ViewGroup.
  */
-public class SigninAndSyncView extends LinearLayout implements AndroidSyncSettingsObserver {
+public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsObserver {
     private @AccessPoint int mAccessPoint;
     private boolean mInitialized;
 
@@ -39,22 +38,22 @@ public class SigninAndSyncView extends LinearLayout implements AndroidSyncSettin
     private Button mPositiveButton;
 
     /**
-     * A convenience method to inflate and initialize a SigninAndSyncView.
-     * @param parent A parent used to provide LayoutParams (the SigninAndSyncView will not be
+     * A convenience method to inflate and initialize a SyncPromoView.
+     * @param parent A parent used to provide LayoutParams (the SyncPromoView will not be
      *         attached).
-     * @param accessPoint Where the SigninAndSyncView is used.
+     * @param accessPoint Where the SyncPromoView is used.
      */
-    public static SigninAndSyncView create(ViewGroup parent, @AccessPoint int accessPoint) {
-        SigninAndSyncView signinView = (SigninAndSyncView) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.signin_and_sync_view, parent, false);
-        signinView.init(accessPoint);
-        return signinView;
+    public static SyncPromoView create(ViewGroup parent, @AccessPoint int accessPoint) {
+        SyncPromoView result = (SyncPromoView) LayoutInflater.from(parent.getContext())
+                                       .inflate(R.layout.sync_promo_view, parent, false);
+        result.init(accessPoint);
+        return result;
     }
 
     /**
      * Constructor for inflating from xml.
      */
-    public SigninAndSyncView(Context context, AttributeSet attrs) {
+    public SyncPromoView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -77,7 +76,7 @@ public class SigninAndSyncView extends LinearLayout implements AndroidSyncSettin
 
         assert mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER
                 || mAccessPoint == SigninAccessPoint.RECENT_TABS
-                : "SigninAndSyncView only has strings for bookmark manager and recent tabs.";
+                : "SyncPromoView only has strings for bookmark manager and recent tabs.";
 
         // The title stays the same no matter what action the user must take.
         if (mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER) {
@@ -160,7 +159,7 @@ public class SigninAndSyncView extends LinearLayout implements AndroidSyncSettin
         int descId = R.string.recent_tabs_sync_promo_enable_android_sync;
 
         ButtonState positiveButton = new ButtonPresent(R.string.open_settings_button, view -> {
-            // TODO(crbug.com/557784): Like AccountManagementFragment, this would also
+            // TODO(https://crbug.com/557784): Like AccountManagementFragment, this would also
             // benefit from going directly to an account.
             Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
             intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[] {"com.google"});
@@ -193,7 +192,7 @@ public class SigninAndSyncView extends LinearLayout implements AndroidSyncSettin
 
     @Override
     protected void onAttachedToWindow() {
-        assert mInitialized : "init(...) must be called on SigninAndSyncView before use.";
+        assert mInitialized : "init(...) must be called on SyncPromoView before use.";
 
         super.onAttachedToWindow();
         AndroidSyncSettings.registerObserver(getContext(), this);

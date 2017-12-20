@@ -374,7 +374,6 @@ Still reading?
   <issue id="WrongConstant">
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/payments/ui/EditorDialog.java"/>
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/signin/SigninAndSyncView.java"/>
   </issue>
   <issue id="IconLauncherFormat" severity="ignore">
     <!-- TODO(crbug.com/739746): Remove after lint version has been updated. -->
