@@ -631,19 +631,24 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     base::TimeTicks current_task_start_time;
     base::TimeDelta most_recent_expected_queueing_time;
     base::TimeDelta compositor_frame_interval;
-    base::TimeDelta longest_jank_free_task_duration;
+    TraceableCounter<base::TimeDelta, kTracingCategoryNameDebug>
+        longest_jank_free_task_duration;
     base::Optional<base::TimeTicks> last_audio_state_change;
-    int renderer_pause_count;  // Renderer is paused if non-zero.
-    int navigation_task_expected_count;
+    TraceableCounter<int, kTracingCategoryNameInfo>
+        renderer_pause_count;  // Renderer is paused if non-zero.
+    TraceableCounter<int, kTracingCategoryNameDebug>
+        navigation_task_expected_count;
     TraceableState<ExpensiveTaskPolicy, kTracingCategoryNameInfo>
         expensive_task_policy;
     TraceableState<v8::RAILMode, kTracingCategoryNameInfo>
         rail_mode_for_tracing;  // Don't use except for tracing.
-    bool renderer_hidden;
+    TraceableState<bool, kTracingCategoryNameDebug> renderer_hidden;
     TraceableState<bool, kTracingCategoryNameDefault> renderer_backgrounded;
-    bool stopping_when_backgrounded_enabled;
-    bool stopped_when_backgrounded;
-    bool was_shutdown;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        stopping_when_backgrounded_enabled;
+    TraceableState<bool, kTracingCategoryNameInfo>
+        stopped_when_backgrounded;
+    TraceableState<bool, kTracingCategoryNameInfo> was_shutdown;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
         loading_task_estimated_cost;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
@@ -651,17 +656,23 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     TraceableState<bool, kTracingCategoryNameInfo> loading_tasks_seem_expensive;
     TraceableState<bool, kTracingCategoryNameInfo> timer_tasks_seem_expensive;
     TraceableState<bool, kTracingCategoryNameDefault> touchstart_expected_soon;
-    bool have_seen_a_begin_main_frame;
-    bool have_reported_blocking_intervention_in_current_policy;
-    bool have_reported_blocking_intervention_since_navigation;
-    bool has_visible_render_widget_with_touch_handler;
-    bool begin_frame_not_expected_soon;
-    bool in_idle_period_for_testing;
-    bool use_virtual_time;
+    TraceableState<bool, kTracingCategoryNameDebug>
+        have_seen_a_begin_main_frame;
+    TraceableState<bool, kTracingCategoryNameDebug>
+        have_reported_blocking_intervention_in_current_policy;
+    TraceableState<bool, kTracingCategoryNameDebug>
+        have_reported_blocking_intervention_since_navigation;
+    TraceableState<bool, kTracingCategoryNameDebug>
+        has_visible_render_widget_with_touch_handler;
+    TraceableState<bool, kTracingCategoryNameDebug>
+        begin_frame_not_expected_soon;
+    TraceableState<bool, kTracingCategoryNameDebug> in_idle_period_for_testing;
+    TraceableState<bool, kTracingCategoryNameInfo> use_virtual_time;
     TraceableState<bool, kTracingCategoryNameDefault> is_audio_playing;
-    bool compositor_will_send_main_frame_not_expected;
-    bool has_navigated;
-    bool pause_timers_for_webview;
+    TraceableState<bool, kTracingCategoryNameDebug>
+        compositor_will_send_main_frame_not_expected;
+    TraceableState<bool, kTracingCategoryNameDebug> has_navigated;
+    TraceableState<bool, kTracingCategoryNameDebug> pause_timers_for_webview;
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
     base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
@@ -669,8 +680,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
     RendererMetricsHelper metrics_helper;
-    RendererProcessType process_type;
-
+    TraceableState<RendererProcessType, kTracingCategoryNameDefault>
+        process_type;
     base::ObserverList<VirtualTimeObserver> virtual_time_observers;
     base::TimeTicks initial_virtual_time;
     VirtualTimePolicy virtual_time_policy;
