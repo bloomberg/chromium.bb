@@ -8,33 +8,48 @@
 #include "base/macros.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
-@class ExternalAppLauncher;
+@class ExternalAppsLaunchPolicyDecider;
 class GURL;
 
-// Handles the UI behaviors when opening a URL in an external application.
+// A customized external app launcher that optionally shows a modal
+// confirmation dialog before switching context to an external application.
 class ExternalAppLauncherTabHelper
     : public web::WebStateUserData<ExternalAppLauncherTabHelper> {
  public:
   ~ExternalAppLauncherTabHelper() override;
 
   // Requests to open URL in an external application.
-  // Returns NO if |url| is invalid, or the application for |url| is not
-  // available, or it is not possible to open the application for |url|.
-  // If the application for |url| has been opened repeatedly by
-  // |source_page_url| page in a short time frame, the user will be prompted
-  // with an option to block the application from launching.
-  // The user may be prompted with a confirmation dialog to open the application
-  // for certain schemes (e.g., facetime and mailto). |link_clicked| indicates
-  // whether the user tapped on the link element.
-  BOOL RequestToOpenUrl(const GURL& url,
+  // The method checks if the application for |url| has been opened repeatedly
+  // by the |source_page_url| page in a short time frame, in that case a prompt
+  // will appear to the user with an option to block the application from
+  // launching. Then the method also checks for user interaction and for schemes
+  // that require special handling (eg. facetime, mailto) and may present the
+  // user with a confirmation dialog to open the application. If there is no
+  // such application available or it's not possible to open the application the
+  // method returns NO.
+  bool RequestToOpenUrl(const GURL& url,
                         const GURL& source_page_url,
-                        BOOL link_clicked);
+                        bool link_clicked);
 
  private:
   friend class web::WebStateUserData<ExternalAppLauncherTabHelper>;
   explicit ExternalAppLauncherTabHelper(web::WebState* web_state);
 
-  ExternalAppLauncher* launcher_;
+  // Handles launching an external app for |url| when there are repeated
+  // attempts by |source_page_url|. |allowed| indicates whether the user has
+  // explicitly allowed the external app to launch.
+  void HandleRepeatedAttemptsToLaunch(const GURL& url,
+                                      const GURL& source_page_url,
+                                      bool allowed);
+
+  // Used to check for repeated launches and provide policy for launching apps.
+  ExternalAppsLaunchPolicyDecider* policy_decider_ = nil;
+
+  // Returns whether there is a prompt shown by |RequestToOpenUrl| or not.
+  bool is_prompt_active_ = false;
+
+  // Must be last member to ensure it is destroyed last.
+  base::WeakPtrFactory<ExternalAppLauncherTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalAppLauncherTabHelper);
 };
