@@ -4,7 +4,6 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
-<script src="../media-file.js"></script>
 <video controls width=400 preload=auto poster="../content/greenbox.png"></video>
 <script>
 async_test(t => {
@@ -16,7 +15,7 @@ async_test(t => {
     checkControlsClassName(video, 'phase-ready state-stopped');
   });
 
-  video.src = findMediaFile('video', '../content/counting');
+  video.src = '../content/counting.ogv';
 });
 </script>
 </html>

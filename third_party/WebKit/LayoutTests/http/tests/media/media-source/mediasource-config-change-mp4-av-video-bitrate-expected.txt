@@ -1,4 +1,5 @@
+CONSOLE WARNING: line 106: Ignore this warning. See https://crbug.com/568704#c2
 This is a testharness.js-based test.
-FAIL Tests mp4 video bitrate changes in multiplexed content. assert_true: video/mp4;codecs="avc1.4D4001,mp4a.40.2" is supported. expected true got false
+PASS Tests mp4 video bitrate changes in multiplexed content.
 Harness: the test ran to completion.
 

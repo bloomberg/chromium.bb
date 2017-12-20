@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <title>Captions menu always visible - expected</title>
-<script src="../media-file.js"></script>
 <script src="../media-controls.js"></script>
 <style>
   video {
@@ -15,7 +14,7 @@
     testRunner.waitUntilDone();
 
   var video = document.querySelector('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   video.addTextTrack('captions', 'foo');
   video.addTextTrack('captions', 'bar');
 

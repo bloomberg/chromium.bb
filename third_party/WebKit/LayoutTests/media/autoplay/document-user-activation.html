@@ -2,7 +2,6 @@
 <title>Test document user gesture autoplay policy</title>
 <script src='../../resources/testharness.js'></script>
 <script src='../../resources/testharnessreport.js'></script>
-<script src='../media-file.js'></script>
 <body>
   <div id='target'>target</div>
 </body>
@@ -15,7 +14,7 @@ promise_test(t => {
   window.internals.settings.setAutoplayPolicy('document-user-activation-required');
 
   var video = document.createElement('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   return promise_rejects(t, 'NotAllowedError', video.play());
 }, 'Not allowed to autoplay without some sort of user gesture');
 
@@ -29,7 +28,7 @@ promise_test(t => {
   eventSender.keyDown('a');
 
   var video = document.createElement('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   return video.play();
 }, 'Allowed to autoplay if the document received a key event');
 
@@ -51,7 +50,7 @@ promise_test(t => {
   }]);
 
   var video = document.createElement('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   return video.play();
 }, 'Allowed to autoplay if the document received a click');
 
@@ -79,7 +78,7 @@ promise_test(t => {
   }]);
 
   var video = document.createElement('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   return video.play();
 }, 'Allowed to autoplay if the document received a tap');
 
@@ -109,7 +108,7 @@ promise_test(t => {
 
   var video =
       document.implementation.createHTMLDocument().createElement('video');
-  video.src = findMediaFile('video', '../content/test');
+  video.src = '../content/test.ogv';
   document.body.appendChild(video);  // Moved to `window.document`.
   document.body.removeChild(video);  // To avoid polluting the DOM.
   return video.play();
@@ -138,7 +137,7 @@ promise_test(t => {
       }]);
 
       var video = document.createElement('video');
-      video.src = findMediaFile('video', '../content/test');
+      video.src = '../content/test.ogv';
       video.play().then(resolve, reject);
     });
 

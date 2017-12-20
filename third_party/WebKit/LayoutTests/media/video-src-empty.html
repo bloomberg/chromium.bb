@@ -2,7 +2,6 @@
 <title>Video element with src="" should invoke media element's load algorithm and should fire "error" event. Network state should be NETWORK_NO_SOURCE and the error code should be MEDIA_ERR_SRC_NOT_SUPPORTED.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <video></video>
 <script>
 async_test(function(t) {
@@ -26,6 +25,6 @@ async_test(function(t) {
     });
 
     // video with valid non-empty "src" attribute.
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
 });
 </script>

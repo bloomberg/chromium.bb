@@ -2,7 +2,6 @@
 <title>Test that media autoplay should not work if user gesture is required for playback.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="media-file.js"></script>
 <script>
 internals.settings.setAutoplayPolicy('user-gesture-required');
 </script>
@@ -10,7 +9,7 @@ internals.settings.setAutoplayPolicy('user-gesture-required');
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
-    video.src = findMediaFile("video", "content/test");
+    video.src = "content/test.ogv";
     assert_true(video.paused);
 
     video.onplay = t.unreached_func();

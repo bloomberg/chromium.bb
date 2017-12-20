@@ -5,7 +5,6 @@
   background: green;
 }
 </style>
-<script src="../media-file.js"></script>
 <video></video>
 <script>
 var video = document.querySelector("video");
@@ -16,5 +15,5 @@ cue.line = 20;
 cue.align = "left";
 track.addCue(cue);
 track.mode = "showing";
-video.src = findMediaFile("video", "../content/test");
+video.src = "../content/test.ogv";
 </script>
