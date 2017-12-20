@@ -216,6 +216,21 @@ sk_sp<SkImage> TakeOwnershipOfSkImageBacking(GrContext* context,
                                   kPremul_SkAlphaType, std::move(color_space));
 }
 
+// Immediately deletes an SkImage, preventing caching of that image. Must be
+// called while holding the context lock.
+void DeleteSkImageAndPreventCaching(viz::RasterContextProvider* context,
+                                    sk_sp<SkImage>&& image) {
+  sk_sp<SkImage> image_owned =
+      TakeOwnershipOfSkImageBacking(context->GrContext(), std::move(image));
+  // If context is lost, we may get a null image here.
+  if (image_owned) {
+    // Delete |original_image_owned| as Skia will not clean it up. We are
+    // holding the context lock here, so we can delete immediately.
+    uint32_t texture_id = GlIdFromSkImage(image_owned.get());
+    context->RasterInterface()->DeleteTextures(1, &texture_id);
+  }
+}
+
 }  // namespace
 
 // static
@@ -1303,11 +1318,18 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   }
   image_data->decode.mark_used();
 
-  if (uploaded_image && draw_image.target_color_space().IsValid()) {
+  if (uploaded_image && SupportsColorSpaces() &&
+      draw_image.target_color_space().IsValid()) {
     TRACE_EVENT0("cc", "GpuImageDecodeCache::UploadImage - color conversion");
+    sk_sp<SkImage> pre_converted_image = uploaded_image;
     uploaded_image = uploaded_image->makeColorSpace(
         draw_image.target_color_space().ToSkColorSpace(),
         SkTransferFunctionBehavior::kIgnore);
+
+    // If we created a new image while converting colorspace, we should destroy
+    // the previous image without caching it.
+    if (uploaded_image != pre_converted_image)
+      DeleteSkImageAndPreventCaching(context_, std::move(pre_converted_image));
   }
 
   // At-raster may have decoded this while we were unlocked. If so, ignore our
@@ -1544,6 +1566,18 @@ void GpuImageDecodeCache::OnPurgeMemory() {
   base::AutoReset<base::MemoryState> reset(&memory_state_,
                                            base::MemoryState::SUSPENDED);
   EnsureCapacity(0);
+}
+
+bool GpuImageDecodeCache::SupportsColorSpaces() const {
+  lock_.AssertAcquired();
+  switch (color_type_) {
+    case kRGBA_8888_SkColorType:
+    case kBGRA_8888_SkColorType:
+    case kRGBA_F16_SkColorType:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace cc

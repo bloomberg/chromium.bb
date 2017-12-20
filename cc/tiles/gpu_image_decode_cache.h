@@ -379,6 +379,8 @@ class CC_EXPORT GpuImageDecodeCache
   // These including deleting, unlocking, and locking textures.
   void RunPendingContextThreadOperations();
 
+  bool SupportsColorSpaces() const;
+
   const SkColorType color_type_;
   viz::RasterContextProvider* context_;
   int max_texture_size_ = 0;
