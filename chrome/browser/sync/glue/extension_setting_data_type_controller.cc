@@ -33,7 +33,8 @@ ExtensionSettingDataTypeController::~ExtensionSettingDataTypeController() {}
 
 bool ExtensionSettingDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
-  extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
+  extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(
+      true /* extensions_enabled */);
   return true;
 }
 

@@ -389,7 +389,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   // Create a different profile and then lock it.
   Profile* signed_in = CreateTestingProfile("signed_in");
   SetupProfilesForLock(signed_in);
-  extensions::ExtensionSystem::Get(signed_in)->InitForRegularProfile(true);
+  extensions::ExtensionSystem::Get(signed_in)->InitForRegularProfile(
+      true /* extensions_enabled */);
   Browser* browser_to_lock = CreateBrowser(signed_in);
   EXPECT_EQ(2U, BrowserList::GetInstance()->size());
 

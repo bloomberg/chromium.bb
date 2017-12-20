@@ -93,7 +93,7 @@ const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
   return LoadExtension(app_dir);
 }
 
-void ShellExtensionSystem::Init() {
+void ShellExtensionSystem::FinishInitialization() {
   // Inform the rest of the extensions system to start.
   ready_.Signal();
   content::NotificationService::current()->Notify(
@@ -123,6 +123,10 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
       new RuntimeData(ExtensionRegistry::Get(browser_context_)));
   quota_service_.reset(new QuotaService);
   app_sorting_.reset(new NullAppSorting);
+}
+
+void ShellExtensionSystem::InitForIncognitoProfile() {
+  NOTREACHED();
 }
 
 ExtensionService* ShellExtensionSystem::extension_service() {

@@ -313,7 +313,7 @@ void ShellBrowserMainParts::CreateExtensionSystem() {
   DCHECK(browser_context_);
   extension_system_ = static_cast<ShellExtensionSystem*>(
       ExtensionSystem::Get(browser_context_.get()));
-  extension_system_->InitForRegularProfile(true);
+  extension_system_->InitForRegularProfile(true /* extensions_enabled */);
 }
 
 }  // namespace extensions
