@@ -92,6 +92,8 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "AudioCapture";
     case PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA:
       return "VideoCapture";
+    case PermissionRequestType::PERMISSION_CLIPBOARD_READ:
+      return "ClipboardRead";
     default:
       NOTREACHED();
       return "";
@@ -500,9 +502,9 @@ void PermissionUmaUtil::RecordPermissionAction(
   bool secure_origin = content::IsOriginSecure(requesting_origin);
 
   switch (permission) {
-    // Geolocation, MidiSysEx, Push, and Media permissions are disabled on
-    // insecure origins, so there's no need to record separate metrics for
-    // secure/insecure.
+    // Geolocation, MidiSysEx, Push, Media and Clipboard permissions are
+    // disabled on insecure origins, so there's no need to record separate
+    // metrics for secure/insecure.
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.Geolocation", action,
                                 PermissionAction::NUM);
@@ -535,6 +537,10 @@ void PermissionUmaUtil::RecordPermissionAction(
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Flash",
                             "Permissions.Action.SecureOrigin.Flash",
                             "Permissions.Action.InsecureOrigin.Flash", action);
+      break;
+    case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.ClipboardRead", action,
+                                PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no
     // permission action recorded for them.
