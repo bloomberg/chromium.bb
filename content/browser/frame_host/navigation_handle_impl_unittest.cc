@@ -956,7 +956,6 @@ TEST_F(NavigationHandleImplTest, BlockRequestCustomNetErrorAndErrorHTML) {
 
 TEST_F(NavigationHandleImplTest, BlockRequestCustomNetErrorInRedirect) {
   // BLOCK_REQUEST on redirect requires PlzNavigate.
-  EnableBrowserSideNavigation();
   TestNavigationThrottle* block_throttle = CreateTestNavigationThrottle(
       {NavigationThrottle::BLOCK_REQUEST, net::ERR_FILE_NOT_FOUND});
   EXPECT_TRUE(call_counts_match(block_throttle, 0, 0, 0, 0));
@@ -977,7 +976,6 @@ TEST_F(NavigationHandleImplTest, BlockRequestCustomNetErrorInRedirect) {
 TEST_F(NavigationHandleImplTest,
        BlockRequestCustomNetErrorAndErrorHTMLInRedirect) {
   // BLOCK_REQUEST on redirect requires PlzNavigate.
-  EnableBrowserSideNavigation();
   std::string expected_error_page_content("<html><body>test</body></html>");
   TestNavigationThrottle* block_throttle = CreateTestNavigationThrottle(
       {NavigationThrottle::BLOCK_REQUEST, net::ERR_FILE_NOT_FOUND,

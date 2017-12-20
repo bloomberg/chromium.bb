@@ -134,10 +134,6 @@ class NavigationURLLoaderTest : public testing::Test {
     job_factory_.SetProtocolHandler(
         "download", std::make_unique<DownloadProtocolHandler>());
     request_context->set_job_factory(&job_factory_);
-
-    // NavigationURLLoader is only used for browser-side navigations.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableBrowserSideNavigation);
   }
 
   std::unique_ptr<NavigationURLLoader> MakeTestLoader(

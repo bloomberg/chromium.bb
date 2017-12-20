@@ -47,10 +47,6 @@ const base::Feature kDataSaverHoldback{"DataSaverHoldback",
 const base::Feature kBrotliEncoding{"brotli-encoding",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables browser side navigation (aka PlzNavigate). http://crbug.com/368813
-const base::Feature kBrowserSideNavigation{"browser-side-navigation",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Browser side navigation (aka PlzNavigate) is using blob URLs to deliver
 // the body of the main resource to the renderer process. When enabled, the
 // NavigationMojoResponse feature replaces this mechanism by a Mojo DataPipe.

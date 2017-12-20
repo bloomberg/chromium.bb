@@ -24,7 +24,6 @@ CONTENT_EXPORT extern const base::Feature kAsyncWheelEvents;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
 CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
-CONTENT_EXPORT extern const base::Feature kBrowserSideNavigation;
 CONTENT_EXPORT extern const base::Feature kNavigationMojoResponse;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kCheckerImaging;

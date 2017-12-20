@@ -1596,13 +1596,10 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnRedirect) {
 
 // This class allows running tests with PlzNavigate enabled, regardless of
 // default test configuration.
+// TODO(clamy): Make those regular NavigationHandleImplBrowserTests.
 class PlzNavigateNavigationHandleImplBrowserTest : public ContentBrowserTest {
  public:
   PlzNavigateNavigationHandleImplBrowserTest() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableBrowserSideNavigation);
-  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
