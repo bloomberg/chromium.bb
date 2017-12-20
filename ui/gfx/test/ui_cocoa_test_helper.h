@@ -17,12 +17,18 @@
 // Background windows normally will not display things such as focus
 // rings.  This class allows -isKeyWindow to be manipulated to test
 // such things.
-@interface CocoaTestHelperWindow : NSWindow {
- @private
-  BOOL pretendIsKeyWindow_;
-  BOOL pretendIsOccluded_;
-  BOOL useDefaultConstraints_;
-}
+@interface CocoaTestHelperWindow : NSWindow
+
+// Value to return for -isKeyWindow.
+@property(nonatomic) BOOL pretendIsKeyWindow;
+
+// Value to return for -occlusionState. Setting posts a
+// NSWindowDidChangeOcclusionStateNotification.
+@property(nonatomic) BOOL pretendIsOccluded;
+
+// Whether to use or ignore the default contraints for window sizing and
+// placement.
+@property(nonatomic) BOOL useDefaultConstraints;
 
 // Init a borderless non-deferred window with a backing store.
 - (id)initWithContentRect:(NSRect)contentRect;
@@ -38,17 +44,6 @@
 // Clears the first responder duty for the window and returns the window
 // to being non-key.
 - (void)clearPretendKeyWindowAndFirstResponder;
-
-// Set value to return for -isKeyWindow.
-- (void)setPretendIsKeyWindow:(BOOL)isKeyWindow;
-
-// Set value to return for -occlusionState and posts a
-// NSWindowDidChangeOcclusionStateNotification.
-- (void)setPretendIsOccluded:(BOOL)isOccluded;
-
-// Whether to use or ignore the default contraints for window sizing and
-// placement.
-- (void)setUseDefaultConstraints:(BOOL)useDefaultConstraints;
 
 - (BOOL)isKeyWindow;
 
