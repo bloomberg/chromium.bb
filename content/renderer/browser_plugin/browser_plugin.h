@@ -88,10 +88,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // currently attached to, if any.
   void Detach();
 
-  // Notify the plugin about a compositor commit so that frame ACKs could be
-  // sent, if needed.
-  void DidCommitCompositorFrame();
-
   void WasResized();
 
   // Returns whether a message should be forwarded to BrowserPlugin.

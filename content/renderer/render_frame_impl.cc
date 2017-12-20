@@ -2756,13 +2756,6 @@ void RenderFrameImpl::DidMeaningfulLayout(
     observer.DidMeaningfulLayout(layout_type);
 }
 
-void RenderFrameImpl::DidCommitCompositorFrame() {
-  if (BrowserPluginManager::Get())
-    BrowserPluginManager::Get()->DidCommitCompositorFrame(GetRoutingID());
-  for (auto& observer : observers_)
-    observer.DidCommitCompositorFrame();
-}
-
 void RenderFrameImpl::DidCommitAndDrawCompositorFrame() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Notify all instances that we painted.  The same caveats apply as for

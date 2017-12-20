@@ -257,9 +257,6 @@ void RenderFrameProxy::WillBeginCompositorFrame() {
   }
 }
 
-void RenderFrameProxy::DidCommitCompositorFrame() {
-}
-
 void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
   pending_resize_params_.screen_info = screen_info;
   WasResized();

@@ -277,10 +277,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // See RenderFrameObserver::DidMeaningfulLayout declaration for details.
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type);
 
-  // Out-of-process child frames receive a signal from RenderWidgetCompositor
-  // when a compositor frame has committed.
-  void DidCommitCompositorFrame();
-
   // Draw commands have been issued by RenderWidgetCompositor.
   void DidCommitAndDrawCompositorFrame();
 
