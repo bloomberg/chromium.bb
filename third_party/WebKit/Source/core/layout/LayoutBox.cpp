@@ -5739,7 +5739,7 @@ bool LayoutBox::MustInvalidateFillLayersPaintOnHeightChange(
   if (layer.YPosition().IsPercentOrCalc() && !layer.YPosition().IsZero())
     return true;
 
-  if (layer.BackgroundYOrigin() != kTopEdge)
+  if (layer.BackgroundYOrigin() != BackgroundEdgeOrigin::kTop)
     return true;
 
   EFillSizeType size_type = layer.SizeType();
@@ -5781,7 +5781,7 @@ bool LayoutBox::MustInvalidateFillLayersPaintOnWidthChange(
   if (layer.XPosition().IsPercentOrCalc() && !layer.XPosition().IsZero())
     return true;
 
-  if (layer.BackgroundXOrigin() != kLeftEdge)
+  if (layer.BackgroundXOrigin() != BackgroundEdgeOrigin::kLeft)
     return true;
 
   EFillSizeType size_type = layer.SizeType();

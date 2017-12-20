@@ -522,16 +522,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(BackgroundEdgeOrigin e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kTopEdge:
+    case BackgroundEdgeOrigin::kTop:
       value_id_ = CSSValueTop;
       break;
-    case kRightEdge:
+    case BackgroundEdgeOrigin::kRight:
       value_id_ = CSSValueRight;
       break;
-    case kBottomEdge:
+    case BackgroundEdgeOrigin::kBottom:
       value_id_ = CSSValueBottom;
       break;
-    case kLeftEdge:
+    case BackgroundEdgeOrigin::kLeft:
       value_id_ = CSSValueLeft;
       break;
   }
@@ -541,19 +541,19 @@ template <>
 inline BackgroundEdgeOrigin CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueTop:
-      return kTopEdge;
+      return BackgroundEdgeOrigin::kTop;
     case CSSValueRight:
-      return kRightEdge;
+      return BackgroundEdgeOrigin::kRight;
     case CSSValueBottom:
-      return kBottomEdge;
+      return BackgroundEdgeOrigin::kBottom;
     case CSSValueLeft:
-      return kLeftEdge;
+      return BackgroundEdgeOrigin::kLeft;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTopEdge;
+  return BackgroundEdgeOrigin::kTop;
 }
 
 template <>
