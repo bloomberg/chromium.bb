@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/shell_integration.h"
@@ -365,8 +366,8 @@ void TabHelper::OnDidGetWebApplicationInfo(
       if (web_app_info_.title.empty())
         web_app_info_.title = base::UTF8ToUTF16(web_app_info_.app_url.spec());
 
-      bookmark_app_helper_.reset(
-          new BookmarkAppHelper(profile_, web_app_info_, web_contents()));
+      bookmark_app_helper_.reset(new BookmarkAppHelper(
+          profile_, web_app_info_, web_contents(), WebAppInstallSource::MENU));
       bookmark_app_helper_->Create(base::Bind(
           &TabHelper::FinishCreateBookmarkApp, weak_ptr_factory_.GetWeakPtr()));
       break;

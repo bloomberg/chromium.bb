@@ -36,6 +36,8 @@ void TrackInstallSource(WebAppInstallSource event) {
       break;
     case WebAppInstallSource::MENU:
       source = InstallSource::INSTALL_SOURCE_MENU;
+    case WebAppInstallSource::MANAGEMENT_API:
+    // MANAGEMENT_API is not reported. Fallthrough to NOTREACHED().
     case WebAppInstallSource::COUNT:
       NOTREACHED();
       return;

@@ -83,16 +83,14 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebAppInstallSource install_source) {
-  // TODO(mcgreevy): log install_source to Webapp.Install.InstallSource
-  // histogram.
   content::WebContents* contents = web_contents();
   DCHECK(contents && !manifest_.IsEmpty());
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   WebApplicationInfo web_app_info;
 
-  bookmark_app_helper_.reset(
-      new extensions::BookmarkAppHelper(profile, web_app_info, contents));
+  bookmark_app_helper_.reset(new extensions::BookmarkAppHelper(
+      profile, web_app_info, contents, install_source));
 
   if (IsExperimentalAppBannersEnabled()) {
     RecordDidShowBanner("AppBanner.WebApp.Shown");

@@ -31,8 +31,9 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   TestBookmarkAppHelper(Profile* profile,
                         WebApplicationInfo web_app_info,
                         content::WebContents* contents,
-                        base::Closure on_icons_downloaded_closure)
-      : BookmarkAppHelper(profile, web_app_info, contents),
+                        base::Closure on_icons_downloaded_closure,
+                        WebAppInstallSource install_source)
+      : BookmarkAppHelper(profile, web_app_info, contents, install_source),
         on_icons_downloaded_closure_(on_icons_downloaded_closure) {}
 
   // TestBookmarkAppHelper:
@@ -73,7 +74,8 @@ class BookmarkAppHelperTest : public DialogBrowserTest {
       info.title = base::UTF8ToUTF16(info.app_url.spec());
 
     bookmark_app_helper_ = base::MakeUnique<TestBookmarkAppHelper>(
-        browser()->profile(), info, web_contents(), quit_closure_);
+        browser()->profile(), info, web_contents(), quit_closure_,
+        WebAppInstallSource::MENU);
     bookmark_app_helper_->Create(
         base::Bind(&BookmarkAppHelperTest::FinishCreateBookmarkApp,
                    base::Unretained(this)));
