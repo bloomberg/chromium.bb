@@ -11,6 +11,8 @@
 #import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 
+@class OmniboxPopupPresenter;
+
 namespace image_fetcher {
 class IOSImageDataFetcherWrapper;
 }  // namespace
@@ -36,8 +38,19 @@ class OmniboxPopupMediatorDelegate {
 - (void)updateMatches:(const AutocompleteResult&)result
         withAnimation:(BOOL)animated;
 
+// Sets the text alignment of the popup content.
+- (void)setTextAlignment:(NSTextAlignment)alignment;
+
+// Updates the popup with the |results|.
+- (void)updateWithResults:(const AutocompleteResult&)results;
+
 @property(nonatomic, weak) id<AutocompleteResultConsumer> consumer;
 @property(nonatomic, assign, getter=isIncognito) BOOL incognito;
+// Whether the popup is open.
+@property(nonatomic, assign, getter=isOpen) BOOL open;
+// Presenter for the popup, handling the positioning and the presentation
+// animations.
+@property(nonatomic, strong) OmniboxPopupPresenter* presenter;
 
 @end
 

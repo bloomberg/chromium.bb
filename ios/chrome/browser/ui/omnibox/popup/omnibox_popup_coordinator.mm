@@ -10,16 +10,18 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface OmniboxPopupCoordinator ()
+@interface OmniboxPopupCoordinator () {
+  std::unique_ptr<OmniboxPopupViewIOS> _popupView;
+}
 
 @property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
-@property(nonatomic, strong) OmniboxPopupPresenter* presenter;
 
 @end
 
@@ -27,57 +29,45 @@
 
 @synthesize browserState = _browserState;
 @synthesize mediator = _mediator;
-@synthesize mediatorDelegate = _mediatorDelegate;
-@synthesize open = _open;
 @synthesize popupViewController = _popupViewController;
 @synthesize positioner = _positioner;
-@synthesize presenter = _presenter;
 
 #pragma mark - Public
 
+- (instancetype)initWithPopupView:
+    (std::unique_ptr<OmniboxPopupViewIOS>)popupView {
+  self = [super init];
+  if (self) {
+    _popupView = std::move(popupView);
+  }
+  return self;
+}
+
 - (void)start {
-  self.open = NO;
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher =
       std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
           self.browserState->GetRequestContext());
 
   self.mediator =
       [[OmniboxPopupMediator alloc] initWithFetcher:std::move(imageFetcher)
-                                           delegate:self.mediatorDelegate];
+                                           delegate:_popupView.get()];
   self.popupViewController = [[OmniboxPopupViewController alloc] init];
-  self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
   self.mediator.incognito = self.browserState->IsOffTheRecord();
   self.mediator.consumer = self.popupViewController;
-  self.popupViewController.imageRetriever = self.mediator;
-  self.popupViewController.delegate = self.mediator;
-
-  self.presenter = [[OmniboxPopupPresenter alloc]
+  self.mediator.presenter = [[OmniboxPopupPresenter alloc]
       initWithPopupPositioner:self.positioner
           popupViewController:self.popupViewController];
+
+  self.popupViewController.imageRetriever = self.mediator;
+  self.popupViewController.delegate = self.mediator;
+  self.popupViewController.incognito = self.browserState->IsOffTheRecord();
+
+  _popupView->SetMediator(self.mediator);
 }
 
-- (void)updateWithResults:(const AutocompleteResult&)result {
-  if (!self.open && !result.empty()) {
-    // The popup is not currently open and there are results to display. Update
-    // and animate the cells
-    [self.mediator updateMatches:result withAnimation:YES];
-  } else {
-    // The popup is already displayed or there are no results to display. Update
-    // the cells without animating.
-    [self.mediator updateMatches:result withAnimation:NO];
-  }
-  self.open = !result.empty();
-
-  if (self.open) {
-    [self.presenter updateHeightAndAnimateAppearanceIfNecessary];
-  } else {
-    [self.presenter animateCollapse];
-  }
-}
-
-- (void)setTextAlignment:(NSTextAlignment)alignment {
-  [self.popupViewController setTextAlignment:alignment];
+- (void)stop {
+  _popupView.reset();
 }
 
 @end

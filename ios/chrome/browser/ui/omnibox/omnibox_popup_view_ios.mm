@@ -20,11 +20,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_mediator.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -39,23 +36,11 @@
 using base::UserMetricsAction;
 
 OmniboxPopupViewIOS::OmniboxPopupViewIOS(
-    ios::ChromeBrowserState* browser_state,
     OmniboxEditModel* edit_model,
-    OmniboxPopupViewSuggestionsDelegate* delegate,
-    id<OmniboxPopupPositioner> positioner)
+    OmniboxPopupViewSuggestionsDelegate* delegate)
     : model_(new OmniboxPopupModel(this, edit_model)), delegate_(delegate) {
   DCHECK(delegate);
-  DCHECK(browser_state);
   DCHECK(edit_model);
-
-  // TODO(crbug.com/788640): The coordinator should own the OmniboxPopupViewIOS,
-  // not the other way around.
-  coordinator_.reset([[OmniboxPopupCoordinator alloc] init]);
-  [coordinator_ setBrowserState:browser_state];
-  [coordinator_ setMediatorDelegate:this];
-  [coordinator_ setPositioner:positioner];
-
-  [coordinator_ start];
 }
 
 OmniboxPopupViewIOS::~OmniboxPopupViewIOS() {
@@ -76,8 +61,8 @@ void OmniboxPopupViewIOS::UpdateEditViewIcon() {
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {
   const AutocompleteResult& result = model_->result();
 
-  [coordinator_ updateWithResults:result];
-  if ([coordinator_ isOpen]) {
+  [mediator_ updateWithResults:result];
+  if ([mediator_ isOpen]) {
     UpdateEditViewIcon();
   }
 
@@ -89,7 +74,7 @@ gfx::Rect OmniboxPopupViewIOS::GetTargetBounds() {
 }
 
 bool OmniboxPopupViewIOS::IsOpen() const {
-  return [coordinator_ isOpen];
+  return [mediator_ isOpen];
 }
 
 OmniboxPopupModel* OmniboxPopupViewIOS::model() const {
@@ -99,11 +84,11 @@ OmniboxPopupModel* OmniboxPopupViewIOS::model() const {
 #pragma mark - OmniboxPopupProvider
 
 bool OmniboxPopupViewIOS::IsPopupOpen() {
-  return [coordinator_ isOpen];
+  return [mediator_ isOpen];
 }
 
 void OmniboxPopupViewIOS::SetTextAlignment(NSTextAlignment alignment) {
-  [coordinator_ setTextAlignment:alignment];
+  [mediator_ setTextAlignment:alignment];
 }
 
 #pragma mark - OmniboxPopupViewControllerDelegate

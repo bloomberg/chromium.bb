@@ -31,8 +31,8 @@
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
@@ -64,7 +64,6 @@
 
 @interface ToolbarCoordinator ()<LocationBarDelegate, OmniboxPopupPositioner> {
   std::unique_ptr<LocationBarControllerImpl> _locationBar;
-  std::unique_ptr<OmniboxPopupViewIOS> _popupView;
   // Observer that updates |toolbarViewController| for fullscreen events.
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
@@ -84,7 +83,8 @@
 // Button observer for the ToolsMenu button.
 @property(nonatomic, strong)
     ToolsMenuButtonObserverBridge* toolsMenuButtonObserverBridge;
-
+// Coordinator for the omnibox popup.
+@property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
 @end
 
 @implementation ToolbarCoordinator
@@ -95,6 +95,7 @@
 @synthesize keyboardDelegate = _keyboardDelegate;
 @synthesize locationBarView = _locationBarView;
 @synthesize mediator = _mediator;
+@synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
 @synthesize started = _started;
 @synthesize toolbarViewController = _toolbarViewController;
 @synthesize toolsMenuButtonObserverBridge = _toolsMenuButtonObserverBridge;
@@ -173,7 +174,8 @@
   ConfigureAssistiveKeyboardViews(self.locationBarView.textField, kDotComTLD,
                                   self.keyboardDelegate);
 
-  _popupView = _locationBar->CreatePopupView(self);
+  self.omniboxPopupCoordinator = _locationBar->CreatePopupCoordinator(self);
+  [self.omniboxPopupCoordinator start];
   // End of TODO(crbug.com/785253):.
 
   ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
@@ -219,7 +221,7 @@
   self.started = NO;
   [self.mediator disconnect];
   // The popup has to be destroyed before the location bar.
-  _popupView.reset();
+  [self.omniboxPopupCoordinator stop];
   _locationBar.reset();
   self.locationBarView = nil;
   [self stopObservingTTSNotifications];

@@ -39,6 +39,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/omnibox",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
+    "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/qr_scanner/requirements",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist",
     "//ios/chrome/browser/ui/toolbar/public",

@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/omnibox/location_bar_view.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -166,17 +167,21 @@ LocationBarControllerImpl::LocationBarControllerImpl(
 
 LocationBarControllerImpl::~LocationBarControllerImpl() {}
 
-std::unique_ptr<OmniboxPopupViewIOS> LocationBarControllerImpl::CreatePopupView(
+OmniboxPopupCoordinator* LocationBarControllerImpl::CreatePopupCoordinator(
     id<OmniboxPopupPositioner> positioner) {
   std::unique_ptr<OmniboxPopupViewIOS> popup_view =
-      base::MakeUnique<OmniboxPopupViewIOS>(edit_view_->browser_state(),
-                                            edit_view_->model(),
-                                            edit_view_.get(), positioner);
+      base::MakeUnique<OmniboxPopupViewIOS>(edit_view_->model(),
+                                            edit_view_.get());
 
   edit_view_->model()->set_popup_model(popup_view->model());
   edit_view_->SetPopupProvider(popup_view.get());
 
-  return popup_view;
+  OmniboxPopupCoordinator* coordinator =
+      [[OmniboxPopupCoordinator alloc] initWithPopupView:std::move(popup_view)];
+  coordinator.browserState = browser_state_;
+  coordinator.positioner = positioner;
+
+  return coordinator;
 }
 
 void LocationBarControllerImpl::HideKeyboardAndEndEditing() {

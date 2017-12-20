@@ -29,11 +29,11 @@ class WebState;
 @class PageInfoBridge;
 class OmniboxViewIOS;
 @class OmniboxClearButtonBridge;
+@class OmniboxPopupCoordinator;
 @protocol OmniboxPopupPositioner;
 @class LocationBarView;
 class ScopedFullscreenDisabler;
 class ToolbarModel;
-class OmniboxPopupViewIOS;
 
 // Concrete implementation of the LocationBarController interface.
 class LocationBarControllerImpl : public LocationBarController,
@@ -45,8 +45,8 @@ class LocationBarControllerImpl : public LocationBarController,
                             id<BrowserCommands> dispatcher);
   ~LocationBarControllerImpl() override;
 
-  // Creates a popup view and wires it to |edit_view_|.
-  std::unique_ptr<OmniboxPopupViewIOS> CreatePopupView(
+  // Creates a popup coordinator and wires it to |edit_view_|.
+  OmniboxPopupCoordinator* CreatePopupCoordinator(
       id<OmniboxPopupPositioner> positioner);
 
   // OmniboxEditController implementation
