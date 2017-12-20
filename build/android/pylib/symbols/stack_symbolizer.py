@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 import zipfile
 
 from devil.utils import cmd_helper
@@ -38,6 +39,7 @@ class Symbolizer(object):
     self._libs_dir = None
     self._apk_libs = []
     self._has_unzipped = False
+    self._time_spent_symbolizing = 0
 
 
   def __del__(self):
@@ -52,6 +54,9 @@ class Symbolizer(object):
     if self._libs_dir:
       shutil.rmtree(self._libs_dir)
       self._libs_dir = None
+    if self._time_spent_symbolizing > 0:
+      logging.info(
+          'Total time spent symbolizing: %.2fs', self._time_spent_symbolizing)
 
 
   def UnzipAPKIfNecessary(self):
@@ -97,7 +102,11 @@ class Symbolizer(object):
     with tempfile.NamedTemporaryFile() as f:
       f.write('\n'.join(data_to_symbolize))
       f.flush()
-      _, output = cmd_helper.GetCmdStatusAndOutput(cmd + [f.name], env=env)
+      start = time.time()
+      try:
+        _, output = cmd_helper.GetCmdStatusAndOutput(cmd + [f.name], env=env)
+      finally:
+        self._time_spent_symbolizing += time.time() - start
     for line in output.splitlines():
       if not include_stack and 'Stack Data:' in line:
         break
