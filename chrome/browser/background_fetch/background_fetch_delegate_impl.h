@@ -81,9 +81,9 @@ class BackgroundFetchDelegateImpl
   void PauseDownload(const offline_items_collection::ContentId& id) override;
   void ResumeDownload(const offline_items_collection::ContentId& id,
                       bool has_user_gesture) override;
-  const offline_items_collection::OfflineItem* GetItemById(
-      const offline_items_collection::ContentId& id) override;
-  OfflineItemList GetAllItems() override;
+  void GetItemById(const offline_items_collection::ContentId& id,
+                   SingleItemCallback callback) override;
+  void GetAllItems(MultipleItemCallback callback) override;
   void GetVisualsForItem(const offline_items_collection::ContentId& id,
                          const VisualsCallback& callback) override;
   void AddObserver(Observer* observer) override;

@@ -31,6 +31,7 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   ~MockOfflineContentProvider() override;
 
   bool HasObserver(Observer* observer);
+  void SetItems(const OfflineItemList& items);
   void NotifyOnItemsAvailable();
   void NotifyOnItemsAdded(const OfflineItemList& items);
   void NotifyOnItemRemoved(const ContentId& id);
@@ -43,16 +44,17 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   MOCK_METHOD1(CancelDownload, void(const ContentId&));
   MOCK_METHOD1(PauseDownload, void(const ContentId&));
   MOCK_METHOD2(ResumeDownload, void(const ContentId&, bool));
-  MOCK_METHOD1(GetItemById, const OfflineItem*(const ContentId&));
   MOCK_METHOD2(GetVisualsForItem,
                void(const ContentId&, const VisualsCallback&));
-  MOCK_METHOD0(GetAllItems, OfflineItemList());
+  void GetAllItems(MultipleItemCallback callback) override;
+  void GetItemById(const ContentId& id, SingleItemCallback callback) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
  private:
   base::ObserverList<Observer> observers_;
   bool items_available_;
+  OfflineItemList items_;
 };
 
 }  // namespace offline_items_collection

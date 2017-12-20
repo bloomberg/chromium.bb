@@ -396,19 +396,23 @@ void BackgroundFetchDelegateImpl::ResumeDownload(
   // TODO(delphick): Start new downloads that weren't started because of pause.
 }
 
-const offline_items_collection::OfflineItem*
-BackgroundFetchDelegateImpl::GetItemById(
-    const offline_items_collection::ContentId& id) {
+void BackgroundFetchDelegateImpl::GetItemById(
+    const offline_items_collection::ContentId& id,
+    SingleItemCallback callback) {
   auto it = job_details_map_.find(id.id);
-  return (it != job_details_map_.end()) ? &it->second.offline_item : nullptr;
+  base::Optional<offline_items_collection::OfflineItem> offline_item;
+  if (it != job_details_map_.end())
+    offline_item = it->second.offline_item;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), offline_item));
 }
 
-BackgroundFetchDelegateImpl::OfflineItemList
-BackgroundFetchDelegateImpl::GetAllItems() {
+void BackgroundFetchDelegateImpl::GetAllItems(MultipleItemCallback callback) {
   OfflineItemList item_list;
   for (auto& entry : job_details_map_)
     item_list.push_back(entry.second.offline_item);
-  return item_list;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), item_list));
 }
 
 void BackgroundFetchDelegateImpl::GetVisualsForItem(

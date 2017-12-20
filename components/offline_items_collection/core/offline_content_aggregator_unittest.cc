@@ -70,14 +70,49 @@ class OpenItemRemovalOfflineContentProvider
 class OfflineContentAggregatorTest : public testing::Test {
  public:
   OfflineContentAggregatorTest()
-      : task_runner_(new base::TestMockTimeTaskRunner), handle_(task_runner_) {}
+      : task_runner_(new base::TestMockTimeTaskRunner),
+        handle_(task_runner_),
+        weak_ptr_factory_(this) {}
   ~OfflineContentAggregatorTest() override {}
 
  protected:
+  MOCK_METHOD1(OnGetAllItemsDone,
+               void(const OfflineContentProvider::OfflineItemList&));
+  MOCK_METHOD1(OnGetItemByIdDone, void(const base::Optional<OfflineItem>&));
+
+  void GetAllItemsAndVerify(
+      OfflineContentProvider* provider,
+      const OfflineContentProvider::OfflineItemList& expected);
+  void GetSingleItemAndVerify(OfflineContentProvider* provider,
+                              const ContentId& id,
+                              const base::Optional<OfflineItem>& expected);
+
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle handle_;
   OfflineContentAggregator aggregator_;
+  base::WeakPtrFactory<OfflineContentAggregatorTest> weak_ptr_factory_;
 };
+
+void OfflineContentAggregatorTest::GetAllItemsAndVerify(
+    OfflineContentProvider* provider,
+    const OfflineContentProvider::OfflineItemList& expected) {
+  EXPECT_CALL(*this, OnGetAllItemsDone(expected)).Times(1);
+  provider->GetAllItems(
+      base::BindOnce(&OfflineContentAggregatorTest::OnGetAllItemsDone,
+                     weak_ptr_factory_.GetWeakPtr()));
+  task_runner_->RunUntilIdle();
+}
+
+void OfflineContentAggregatorTest::GetSingleItemAndVerify(
+    OfflineContentProvider* provider,
+    const ContentId& id,
+    const base::Optional<OfflineItem>& expected) {
+  EXPECT_CALL(*this, OnGetItemByIdDone(expected)).Times(1);
+  provider->GetItemById(
+      id, base::BindOnce(&OfflineContentAggregatorTest::OnGetItemByIdDone,
+                         weak_ptr_factory_.GetWeakPtr()));
+  task_runner_->RunUntilIdle();
+}
 
 TEST_F(OfflineContentAggregatorTest, ObserversAddedBeforeProvidersAvailable) {
   ScopedMockOfflineContentProvider provider1("1", &aggregator_);
@@ -145,14 +180,16 @@ TEST_F(OfflineContentAggregatorTest,
     items.push_back(OfflineItem());
 
     ScopedMockOfflineContentProvider provider2("2", &aggregator_);
+    provider2.SetItems(items);
     EXPECT_TRUE(provider2.HasObserver(&aggregator_));
+    GetAllItemsAndVerify(&provider2, items);
 
-    EXPECT_CALL(provider2, GetAllItems()).WillOnce(Return(items));
     EXPECT_CALL(observer1, OnItemsAvailable(&aggregator_)).Times(0);
     EXPECT_CALL(observer2, OnItemsAvailable(&aggregator_)).Times(0);
     EXPECT_CALL(observer1, OnItemsAdded(items)).Times(1);
     EXPECT_CALL(observer2, OnItemsAdded(items)).Times(1);
     provider2.NotifyOnItemsAvailable();
+    task_runner_->RunUntilIdle();
   }
 }
 
@@ -161,6 +198,7 @@ TEST_F(OfflineContentAggregatorTest, QueryingItemsWithProviderThatIsntReady) {
   ScopedMockOfflineContentProvider provider2("2", &aggregator_);
   EXPECT_FALSE(aggregator_.AreItemsAvailable());
 
+  OfflineContentProvider::OfflineItemList empty;
   OfflineContentProvider::OfflineItemList items1;
   items1.push_back(OfflineItem(ContentId("1", "A")));
   items1.push_back(OfflineItem(ContentId("1", "B")));
@@ -169,17 +207,20 @@ TEST_F(OfflineContentAggregatorTest, QueryingItemsWithProviderThatIsntReady) {
   items2.push_back(OfflineItem(ContentId("2", "C")));
   items2.push_back(OfflineItem(ContentId("2", "D")));
 
-  EXPECT_CALL(provider1, GetAllItems()).WillRepeatedly(Return(items1));
-  EXPECT_CALL(provider2, GetAllItems()).WillRepeatedly(Return(items2));
+  provider1.SetItems(items1);
+  provider2.SetItems(items2);
+
+  GetAllItemsAndVerify(&provider1, items1);
+  GetAllItemsAndVerify(&provider2, items2);
+  GetAllItemsAndVerify(&aggregator_, empty);
 
   provider1.NotifyOnItemsAvailable();
-  EXPECT_TRUE(VectorContentsEq(items1, aggregator_.GetAllItems()));
+  GetAllItemsAndVerify(&aggregator_, items1);
 
   OfflineContentProvider::OfflineItemList combined_items(items1);
   combined_items.insert(combined_items.end(), items2.begin(), items2.end());
   provider2.NotifyOnItemsAvailable();
-
-  EXPECT_TRUE(VectorContentsEq(combined_items, aggregator_.GetAllItems()));
+  GetAllItemsAndVerify(&aggregator_, combined_items);
 }
 
 TEST_F(OfflineContentAggregatorTest, QueryingItemFromRemovedProvider) {
@@ -191,11 +232,11 @@ TEST_F(OfflineContentAggregatorTest, QueryingItemFromRemovedProvider) {
     provider.NotifyOnItemsAvailable();
     EXPECT_TRUE(aggregator_.AreItemsAvailable());
 
-    EXPECT_CALL(provider, GetItemById(id)).WillRepeatedly(Return(&item));
-    EXPECT_EQ(&item, aggregator_.GetItemById(id));
+    provider.SetItems({item});
+    GetSingleItemAndVerify(&aggregator_, id, item);
   }
 
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id));
+  GetSingleItemAndVerify(&aggregator_, id, base::nullopt);
 }
 
 TEST_F(OfflineContentAggregatorTest, QueryingItemWithProviderThatIsntReady) {
@@ -210,22 +251,22 @@ TEST_F(OfflineContentAggregatorTest, QueryingItemWithProviderThatIsntReady) {
   OfflineItem item1(id1);
   OfflineItem item2(id2);
 
-  EXPECT_CALL(provider1, GetItemById(id1)).WillRepeatedly(Return(&item1));
-  EXPECT_CALL(provider2, GetItemById(id2)).WillRepeatedly(Return(&item2));
+  provider1.SetItems({item1});
+  provider2.SetItems({item2});
 
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id1));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id2));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id3));
+  GetSingleItemAndVerify(&aggregator_, id1, base::nullopt);
+  GetSingleItemAndVerify(&aggregator_, id2, base::nullopt);
+  GetSingleItemAndVerify(&aggregator_, id3, base::nullopt);
 
   provider1.NotifyOnItemsAvailable();
-  EXPECT_EQ(&item1, aggregator_.GetItemById(id1));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id2));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id3));
+  GetSingleItemAndVerify(&aggregator_, id1, item1);
+  GetSingleItemAndVerify(&aggregator_, id2, base::nullopt);
+  GetSingleItemAndVerify(&aggregator_, id3, base::nullopt);
 
   provider2.NotifyOnItemsAvailable();
-  EXPECT_EQ(&item1, aggregator_.GetItemById(id1));
-  EXPECT_EQ(&item2, aggregator_.GetItemById(id2));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id3));
+  GetSingleItemAndVerify(&aggregator_, id1, item1);
+  GetSingleItemAndVerify(&aggregator_, id2, item2);
+  GetSingleItemAndVerify(&aggregator_, id3, base::nullopt);
 }
 
 TEST_F(OfflineContentAggregatorTest, GetItemByIdPropagatesToRightProvider) {
@@ -241,14 +282,12 @@ TEST_F(OfflineContentAggregatorTest, GetItemByIdPropagatesToRightProvider) {
   OfflineItem item1(id1);
   OfflineItem item2(id2);
 
-  EXPECT_CALL(provider1, GetItemById(id1)).WillRepeatedly(Return(&item1));
-  EXPECT_CALL(provider2, GetItemById(id2)).WillRepeatedly(Return(&item2));
-  EXPECT_CALL(provider1, GetItemById(id3)).WillRepeatedly(Return(nullptr));
-
-  EXPECT_EQ(&item1, aggregator_.GetItemById(id1));
-  EXPECT_EQ(&item2, aggregator_.GetItemById(id2));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id3));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id4));
+  provider1.SetItems({item1});
+  provider2.SetItems({item2});
+  GetSingleItemAndVerify(&aggregator_, id1, item1);
+  GetSingleItemAndVerify(&aggregator_, id2, item2);
+  GetSingleItemAndVerify(&aggregator_, id3, base::nullopt);
+  GetSingleItemAndVerify(&aggregator_, id4, base::nullopt);
 }
 
 TEST_F(OfflineContentAggregatorTest, AreItemsAvailable) {
@@ -452,26 +491,23 @@ TEST_F(OfflineContentAggregatorTest, SameProviderWithMultipleNamespaces) {
   OfflineContentProvider::OfflineItemList items;
   items.push_back(item1);
   items.push_back(item2);
+  provider.SetItems(items);
 
   aggregator_.RegisterProvider("1", &provider);
   aggregator_.RegisterProvider("2", &provider);
   EXPECT_TRUE(provider.HasObserver(&aggregator_));
 
-  EXPECT_CALL(provider, GetAllItems()).WillRepeatedly(Return(items));
-  EXPECT_CALL(provider, GetItemById(id1)).WillRepeatedly(Return(&item1));
-  EXPECT_CALL(provider, GetItemById(id2)).WillRepeatedly(Return(&item2));
-
   EXPECT_CALL(observer, OnItemsAvailable(&aggregator_)).Times(1);
   provider.NotifyOnItemsAvailable();
 
-  EXPECT_TRUE(VectorContentsEq(items, aggregator_.GetAllItems()));
-  EXPECT_EQ(&item1, aggregator_.GetItemById(id1));
-  EXPECT_EQ(&item2, aggregator_.GetItemById(id2));
+  GetAllItemsAndVerify(&aggregator_, items);
+  GetSingleItemAndVerify(&aggregator_, id1, item1);
+  GetSingleItemAndVerify(&aggregator_, id2, item2);
 
   aggregator_.UnregisterProvider("1");
   EXPECT_TRUE(provider.HasObserver(&aggregator_));
-  EXPECT_EQ(nullptr, aggregator_.GetItemById(id1));
-  EXPECT_EQ(&item2, aggregator_.GetItemById(id2));
+  GetSingleItemAndVerify(&aggregator_, id1, base::nullopt);
+  GetSingleItemAndVerify(&aggregator_, id2, item2);
 
   aggregator_.UnregisterProvider("2");
   EXPECT_FALSE(provider.HasObserver(&aggregator_));
