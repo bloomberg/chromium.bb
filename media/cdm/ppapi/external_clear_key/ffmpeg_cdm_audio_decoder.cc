@@ -17,6 +17,7 @@
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/timestamp_constants.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_decoding_loop.h"
 
@@ -128,9 +129,9 @@ static void CopySamples(cdm::AudioFormat cdm_format,
   }
 }
 
-FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(ClearKeyCdmHost* host)
+FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(CdmHostProxy* cdm_host_proxy)
     : is_initialized_(false),
-      host_(host),
+      cdm_host_proxy_(cdm_host_proxy),
       samples_per_second_(0),
       channels_(0),
       av_sample_format_(0),
@@ -270,7 +271,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
     return cdm::kNeedMoreData;
 
   const size_t allocation_size = total_size + 2 * sizeof(int64_t);
-  decoded_frames->SetFrameBuffer(host_->Allocate(allocation_size));
+  decoded_frames->SetFrameBuffer(cdm_host_proxy_->Allocate(allocation_size));
   if (!decoded_frames->FrameBuffer()) {
     LOG(ERROR) << "DecodeBuffer() ClearKeyCdmHost::Allocate failed.";
     return cdm::kDecodeError;

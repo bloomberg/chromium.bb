@@ -15,11 +15,11 @@ shared_library("clearkeycdm") {
     "cdm_file_io_test.h",
     "external_clear_key/cdm_file_adapter.cc",
     "external_clear_key/cdm_file_adapter.h",
+    "external_clear_key/cdm_host_proxy.h",
     "external_clear_key/cdm_video_decoder.cc",
     "external_clear_key/cdm_video_decoder.h",
     "external_clear_key/clear_key_cdm.cc",
     "external_clear_key/clear_key_cdm.h",
-    "external_clear_key/clear_key_cdm_common.h",
     "external_clear_key/clear_key_persistent_session_cdm.cc",
     "external_clear_key/clear_key_persistent_session_cdm.h",
   ]

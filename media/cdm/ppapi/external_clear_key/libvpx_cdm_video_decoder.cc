@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/limits.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
 
 // Include libvpx header files.
 // VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
@@ -25,12 +26,11 @@ namespace media {
 
 static const int kDecodeThreads = 2;
 
-LibvpxCdmVideoDecoder::LibvpxCdmVideoDecoder(CdmHost* host)
+LibvpxCdmVideoDecoder::LibvpxCdmVideoDecoder(CdmHostProxy* cdm_host_proxy)
     : is_initialized_(false),
-      host_(host),
+      cdm_host_proxy_(cdm_host_proxy),
       vpx_codec_(NULL),
-      vpx_image_(NULL) {
-}
+      vpx_image_(NULL) {}
 
 LibvpxCdmVideoDecoder::~LibvpxCdmVideoDecoder() {
   Deinitialize();
@@ -151,7 +151,7 @@ bool LibvpxCdmVideoDecoder::CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame) {
   const int space_required = y_size + u_size + v_size;
 
   DCHECK(!cdm_video_frame->FrameBuffer());
-  cdm_video_frame->SetFrameBuffer(host_->Allocate(space_required));
+  cdm_video_frame->SetFrameBuffer(cdm_host_proxy_->Allocate(space_required));
   if (!cdm_video_frame->FrameBuffer()) {
     LOG(ERROR) << "CopyVpxImageTo() CdmHost::Allocate failed.";
     return false;

@@ -17,9 +17,11 @@ struct vpx_image;
 
 namespace media {
 
+class CdmHostProxy;
+
 class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
  public:
-  explicit LibvpxCdmVideoDecoder(CdmHost* host);
+  explicit LibvpxCdmVideoDecoder(CdmHostProxy* cdm_host_proxy);
   ~LibvpxCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
@@ -44,7 +46,7 @@ class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
 
   bool is_initialized_;
 
-  CdmHost* const host_;
+  CdmHostProxy* const cdm_host_proxy_;
 
   vpx_codec_ctx* vpx_codec_;
   vpx_image* vpx_image_;

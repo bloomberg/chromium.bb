@@ -18,7 +18,7 @@
 #include "media/base/content_decryption_module.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_file_adapter.h"
-#include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
 
 namespace media {
 
@@ -28,7 +28,7 @@ namespace media {
 class ClearKeyPersistentSessionCdm : public ContentDecryptionModule {
  public:
   ClearKeyPersistentSessionCdm(
-      ClearKeyCdmHost* host,
+      CdmHostProxy* cdm_host_proxy,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
@@ -100,7 +100,7 @@ class ClearKeyPersistentSessionCdm : public ContentDecryptionModule {
   void OnSessionClosed(const std::string& session_id);
 
   scoped_refptr<AesDecryptor> cdm_;
-  ClearKeyCdmHost* host_;
+  CdmHostProxy* const cdm_host_proxy_;
 
   // Callbacks for firing session events. Other events aren't intercepted.
   SessionClosedCB session_closed_cb_;

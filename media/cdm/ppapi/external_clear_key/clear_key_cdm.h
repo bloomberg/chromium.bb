@@ -17,7 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
-#include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_host_proxy.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_persistent_session_cdm.h"
 
 // Enable this to use the fake decoder for testing.
@@ -27,18 +27,21 @@
 #endif
 
 namespace media {
+
 class CdmVideoDecoder;
 class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
 class FileIOTestRunner;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
-class ClearKeyCdm : public ClearKeyCdmInterface {
+class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
  public:
+  using Host = cdm::ContentDecryptionModule::Host;
+
   ClearKeyCdm(Host* host, const std::string& key_system);
   ~ClearKeyCdm() override;
 
-  // ClearKeyCdmInterface implementation.
+  // cdm::ContentDecryptionModule implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state) override;
   void GetStatusForPolicy(uint32_t promise_id,
@@ -88,6 +91,10 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnStorageId(uint32_t version,
                    const uint8_t* storage_id,
                    uint32_t storage_id_size) override;
+
+  // CdmHostProxy implementation.
+  cdm::Buffer* Allocate(uint32_t capacity) override;
+  cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) override;
 
  private:
   // ContentDecryptionModule callbacks.
@@ -154,9 +161,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void VerifyCdmHostTest();
   void StartStorageIdTest();
 
+  Host* const host_;
   scoped_refptr<ContentDecryptionModule> cdm_;
-
-  ClearKeyCdmHost* host_;
 
   const std::string key_system_;
   bool allow_persistent_state_;

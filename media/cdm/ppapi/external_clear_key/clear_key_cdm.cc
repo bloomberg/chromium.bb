@@ -268,11 +268,12 @@ void* CreateCdmInstance(int cdm_interface_version,
     return nullptr;
   }
 
-  if (cdm_interface_version != media::ClearKeyCdmInterface::kVersion)
+  using CdmInterface = cdm::ContentDecryptionModule;
+  if (cdm_interface_version != CdmInterface::kVersion)
     return nullptr;
 
-  media::ClearKeyCdmHost* host = static_cast<media::ClearKeyCdmHost*>(
-      get_cdm_host_func(media::ClearKeyCdmHost::kVersion, user_data));
+  using Host = CdmInterface::Host;
+  Host* host = static_cast<Host*>(get_cdm_host_func(Host::kVersion, user_data));
   if (!host)
     return nullptr;
 
@@ -339,15 +340,15 @@ bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
 
 namespace media {
 
-ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
-    : cdm_(new ClearKeyPersistentSessionCdm(
-          host,
+ClearKeyCdm::ClearKeyCdm(Host* host, const std::string& key_system)
+    : host_(host),
+      cdm_(new ClearKeyPersistentSessionCdm(
+          this,
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionKeysChange, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionExpirationUpdate,
                      base::Unretained(this)))),
-      host_(host),
       key_system_(key_system),
       allow_persistent_state_(false),
       timer_delay_ms_(kInitialTimerDelayMs),
@@ -591,7 +592,7 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
-    audio_decoder_.reset(new media::FFmpegCdmAudioDecoder(host_));
+    audio_decoder_.reset(new media::FFmpegCdmAudioDecoder(this));
 
   if (!audio_decoder_->Initialize(audio_decoder_config))
     return cdm::kInitializationError;
@@ -619,7 +620,7 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
   }
 
   // Any uninitialized decoder will be replaced.
-  video_decoder_ = CreateVideoDecoder(host_, video_decoder_config);
+  video_decoder_ = CreateVideoDecoder(this, video_decoder_config);
   if (!video_decoder_)
     return cdm::kInitializationError;
 
@@ -853,6 +854,14 @@ void ClearKeyCdm::OnStorageId(uint32_t version,
 #endif
 }
 
+cdm::Buffer* ClearKeyCdm::Allocate(uint32_t capacity) {
+  return host_->Allocate(capacity);
+}
+
+cdm::FileIO* ClearKeyCdm::CreateFileIO(cdm::FileIOClient* client) {
+  return host_->CreateFileIO(client);
+}
+
 void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
                                    CdmMessageType message_type,
                                    const std::vector<uint8_t>& message) {
@@ -988,7 +997,7 @@ void ClearKeyCdm::OnUnitTestComplete(bool success) {
 
 void ClearKeyCdm::StartFileIOTest() {
   file_io_test_runner_.reset(new FileIOTestRunner(
-      base::Bind(&ClearKeyCdmHost::CreateFileIO, base::Unretained(host_))));
+      base::Bind(&Host::CreateFileIO, base::Unretained(host_))));
   file_io_test_runner_->RunAllTests(
       base::Bind(&ClearKeyCdm::OnFileIOTestComplete, base::Unretained(this)));
 }
