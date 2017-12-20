@@ -5,7 +5,7 @@
 #include "modules/fetch/BlobBytesConsumer.h"
 
 #include "core/loader/ThreadableLoader.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/blob/BlobData.h"
@@ -125,15 +125,9 @@ class BlobBytesConsumerTestClient final
   int num_on_state_change_called_ = 0;
 };
 
-class BlobBytesConsumerTest : public ::testing::Test {
+class BlobBytesConsumerTest : public PageTestBase {
  public:
-  BlobBytesConsumerTest()
-      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
-
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  void SetUp() override { PageTestBase::SetUp(IntSize(1, 1)); }
 };
 
 TEST_F(BlobBytesConsumerTest, TwoPhaseRead) {

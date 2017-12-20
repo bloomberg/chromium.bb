@@ -13,7 +13,7 @@
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/origin_trials/OriginTrialContext.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThread.h"
@@ -67,12 +67,12 @@ class TestAnimationWorkletProxyClient
 
 }  // namespace
 
-class AnimationWorkletThreadTest : public ::testing::Test {
+class AnimationWorkletThreadTest : public PageTestBase {
  public:
   void SetUp() override {
     AnimationWorkletThread::CreateSharedBackingThreadForTest();
-    page_ = DummyPageHolder::Create();
-    Document* document = page_->GetFrame().GetDocument();
+    PageTestBase::SetUp(IntSize());
+    Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
@@ -89,7 +89,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
 
     std::unique_ptr<AnimationWorkletThread> thread =
         AnimationWorkletThread::Create(nullptr, *reporting_proxy_);
-    Document* document = page_->GetFrame().GetDocument();
+    Document* document = &GetDocument();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), document->UserAgent(),
@@ -134,7 +134,6 @@ class AnimationWorkletThreadTest : public ::testing::Test {
     wait_event->Signal();
   }
 
-  std::unique_ptr<DummyPageHolder> page_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
   ScopedTestingPlatformSupport<AnimationWorkletTestPlatform> platform_;
 };
