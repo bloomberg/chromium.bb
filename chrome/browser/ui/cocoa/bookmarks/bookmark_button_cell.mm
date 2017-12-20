@@ -402,19 +402,19 @@ const CGFloat kKernAmount = 0.2;
 }
 
 - (NSRect)titleRectForBounds:(NSRect)theRect {
+  // This lays out textRect for LTR and flips it for RTL at the end, if needed.
   NSRect textRect = [super titleRectForBounds:theRect];
   NSRect imageRect = [self imageRectForBounds:theRect];
-  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-    textRect.origin.x = kTrailingPadding;
-    if (drawFolderArrow_) {
-      textRect.origin.x +=
-          [arrowImage_ size].width + kHierarchyButtonTrailingPadding;
-    }
-    textRect.size.width =
-        NSMinX(imageRect) - textRect.origin.x - kIconTextSpacer;
-  } else {
-    textRect.origin.x = NSMaxX(imageRect) + kIconTextSpacer;
-  }
+  CGFloat imageEnd = cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+                         ? NSWidth(theRect) - NSMinX(imageRect)  // Un-flip
+                         : NSMaxX(imageRect);
+  textRect.origin.x = imageEnd + kIconTextSpacer;
+  textRect.size.width = NSWidth(theRect) - NSMinX(textRect) - kTrailingPadding;
+  if (drawFolderArrow_)
+    textRect.size.width -=
+        [arrowImage_ size].width + kHierarchyButtonTrailingPadding;
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    textRect.origin.x = NSWidth(theRect) - NSWidth(textRect) - NSMinX(textRect);
   return textRect;
 }
 
