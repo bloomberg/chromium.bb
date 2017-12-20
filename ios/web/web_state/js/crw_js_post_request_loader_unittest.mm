@@ -36,15 +36,7 @@ NSString* const kBlobToBase64StringScript =
      "  };"
      "};";
 
-// Tests that the POST request is correctly executed through XMLHttpRequest.
-// TODO(crbug.com/592034): This test is flaky on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_LoadsCorrectHTML LoadsCorrectHTML
-#else
-#define MAYBE_LoadsCorrectHTML DISABLED_LoadsCorrectHTML
-#endif
-
-TEST_F(CRWJSPOSTRequestLoaderTest, MAYBE_LoadsCorrectHTML) {
+TEST_F(CRWJSPOSTRequestLoaderTest, LoadsCorrectHTML) {
   // Set up necessary objects.
   CRWJSPOSTRequestLoader* loader = [[CRWJSPOSTRequestLoader alloc] init];
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, GetBrowserState());
