@@ -25,9 +25,6 @@ class ArcClient : public mojom::Arc {
 
  private:
   // mojom::Arc overrides:
-  void CreateVideoDecodeAcceleratorDeprecated(
-      arc::mojom::VideoDecodeAcceleratorDeprecatedRequest vda_request) override;
-
   void CreateVideoDecodeAccelerator(
       arc::mojom::VideoDecodeAcceleratorRequest vda_request) override;
 

@@ -6,14 +6,9 @@ module ui.mojom;
 
 import "components/arc/common/protected_buffer_manager.mojom";
 import "components/arc/common/video_decode_accelerator.mojom";
-import "components/arc/common/video_decode_accelerator_deprecated.mojom";
 import "components/arc/common/video_encode_accelerator.mojom";
 
 interface Arc {
-  // Create a new VideoDecodeAcceleratorDepreacted and binds it to |vda|.
-  CreateVideoDecodeAcceleratorDeprecated(
-      arc.mojom.VideoDecodeAcceleratorDeprecated& vda);
-
   // Create a new VideoDecodeAccelerator and binds it to |vda|.
   CreateVideoDecodeAccelerator(arc.mojom.VideoDecodeAccelerator& vda);
 

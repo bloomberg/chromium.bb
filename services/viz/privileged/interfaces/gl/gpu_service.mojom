@@ -6,7 +6,6 @@ module viz.mojom;
 
 import "components/arc/common/protected_buffer_manager.mojom";
 import "components/arc/common/video_decode_accelerator.mojom";
-import "components/arc/common/video_decode_accelerator_deprecated.mojom";
 import "components/arc/common/video_encode_accelerator.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/memory_stats.mojom";
@@ -28,10 +27,6 @@ interface GpuService {
   // Tells the GPU process to close the channel identified by |client_id|.
   // If no channel can be identified, do nothing.
   CloseChannel(int32 client_id);
-
-  // Create a new ARC VideoDecodeAcceleratorDeprecated and binds it to |vda|.
-  CreateArcVideoDecodeAcceleratorDeprecated(
-      arc.mojom.VideoDecodeAcceleratorDeprecated& vda);
 
   // Create a new ARC VideoDecodeAccelerator and binds it to |vda|.
   CreateArcVideoDecodeAccelerator(arc.mojom.VideoDecodeAccelerator& vda);
