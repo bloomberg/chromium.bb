@@ -20,6 +20,7 @@
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
+#include "headless/lib/browser/headless_net_log.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
 #include "headless/public/internal/headless_devtools_client_impl.h"
@@ -136,6 +137,18 @@ void HeadlessBrowserImpl::set_browser_main_parts(
     HeadlessBrowserMainParts* browser_main_parts) {
   DCHECK(!browser_main_parts_);
   browser_main_parts_ = browser_main_parts;
+}
+
+void HeadlessBrowserImpl::PreMainMessageLoopRun() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(::switches::kLogNetLog)) {
+    base::FilePath log_path =
+        command_line->GetSwitchValuePath(::switches::kLogNetLog);
+    net_log_.reset(new HeadlessNetLog(log_path));
+  } else {
+    net_log_.reset(new net::NetLog());
+  }
 }
 
 void HeadlessBrowserImpl::RunOnStartCallback() {

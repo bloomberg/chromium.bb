@@ -120,7 +120,8 @@ int AwBrowserMainParts::PreCreateThreads() {
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
-  browser_client_->InitBrowserContext()->PreMainMessageLoopRun();
+  browser_client_->InitBrowserContext()->PreMainMessageLoopRun(
+      browser_client_->GetNetLog());
 
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 

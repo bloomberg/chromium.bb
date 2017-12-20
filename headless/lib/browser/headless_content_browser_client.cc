@@ -319,7 +319,7 @@ void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
 net::NetLog* HeadlessContentBrowserClient::GetNetLog() {
-  return browser_->browser_main_parts()->net_log();
+  return browser_->net_log();
 }
 
 bool HeadlessContentBrowserClient::AllowGetCookie(

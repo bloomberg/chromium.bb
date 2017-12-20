@@ -621,7 +621,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual SpeechRecognitionManagerDelegate*
       CreateSpeechRecognitionManagerDelegate();
 
-  // Getters for common objects.
+  // Getter for the net logging object. This can be called on any thread.
   virtual net::NetLog* GetNetLog();
 
   // Called by WebContents to override the WebKit preferences that are used by

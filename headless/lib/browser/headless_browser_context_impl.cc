@@ -280,7 +280,7 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
               content::BrowserThread::IO),
           protocol_handlers, context_options_->TakeProtocolHandlers(),
           std::move(request_interceptors), context_options_.get(),
-          browser_->browser_main_parts()->net_log(), this));
+          browser_->net_log(), this));
   resource_context_->set_url_request_context_getter(url_request_context_getter);
   return url_request_context_getter.get();
 }
