@@ -1526,26 +1526,6 @@ if (enable_java_templates) {
     }
   }
 
-  # Declare a target that packages a set of Java dependencies into a standalone
-  # .dex.jar.
-  #
-  # Variables
-  #   deps: specifies the dependencies of this target. Android libraries in deps
-  #     will be packaged into the resulting .dex.jar file.
-  #   dex_path: location at which the output file will be put
-  template("android_standalone_library") {
-    deps_dex(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "dex_path",
-                               "excluded_jars",
-                             ])
-    }
-    supports_android = true
-    requires_android = true
-  }
-
   # Declare an Android library target for a prebuilt jar
   #
   # This target creates an Android library containing java code and Android
