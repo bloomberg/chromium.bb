@@ -36,7 +36,7 @@ using namespace HTMLNames;
 LabelsNodeList::LabelsNodeList(ContainerNode& owner_node)
     : LiveNodeList(owner_node,
                    kLabelsNodeListType,
-                   kInvalidateOnForAttrChange,
+                   kInvalidateForFormControls,
                    NodeListRootType::kTreeScope) {}
 
 LabelsNodeList::~LabelsNodeList() {}
