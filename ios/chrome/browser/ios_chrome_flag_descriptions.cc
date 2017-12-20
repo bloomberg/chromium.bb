@@ -35,6 +35,11 @@ const char kCleanToolbarDescription[] =
     "When enabled, the Clean Toolbar will be used instead of "
     "WebToolbarController.";
 
+const char kClippingTextfieldName[] = "Clipping Textfield";
+const char kClippingTextfieldDescription[] =
+    "When enabled, the new URL clipping implementation compatible with iOS 11 "
+    "is used.";
+
 const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";

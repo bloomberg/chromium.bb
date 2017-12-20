@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -143,6 +144,12 @@ TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_change) {
 }
 
 TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_entireURLFits) {
+  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
+    // This test is expected to not work with new text field clipping because
+    // the code to implement clipping will be removed.
+    return;
+  }
+
   NSString* text = @"http://www.google.com";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -154,6 +161,12 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_entireURLFits) {
 }
 
 TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedPrefix) {
+  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
+    // This test is expected to not work with new text field clipping because
+    // the code to implement clipping will be removed.
+    return;
+  }
+
   NSString* text = @"http://www.google.com";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -168,6 +181,12 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedPrefix) {
 }
 
 TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedSuffix) {
+  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
+    // This test is expected to not work with new text field clipping because
+    // the code to implement clipping will be removed.
+    return;
+  }
+
   NSString* text = @"http://www.google.com/somelongpath";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -180,6 +199,12 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedSuffix) {
 }
 
 TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_noScheme) {
+  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
+    // This test is expected to not work with new text field clipping because
+    // the code to implement clipping will be removed.
+    return;
+  }
+
   NSString* text = @"www.google.com";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -192,6 +217,12 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_noScheme) {
 // When the text doesn't contain a host the method bails early and returns
 // the |rect| passed in.
 TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_noHost) {
+  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
+    // This test is expected to not work with new text field clipping because
+    // the code to implement clipping will be removed.
+    return;
+  }
+
   NSString* text = @"http://";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
