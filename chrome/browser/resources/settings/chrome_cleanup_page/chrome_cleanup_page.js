@@ -99,6 +99,14 @@ settings.ChromeCleanupCardActionButton;
 settings.ChromeCleanupCardComponents;
 
 /**
+ * @typedef {{
+ *   files: Array<string>,
+ *   registryKeys: Array<string>,
+ * }}
+ */
+settings.ChromeCleanerScannerResults;
+
+/**
  * @fileoverview
  * 'settings-chrome-cleanup-page' is the settings page containing Chrome
  * Cleanup settings.
@@ -116,6 +124,12 @@ Polymer({
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
+    /** @private */
+    userInitiatedCleanupsEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private */
     title_: {
       type: String,
@@ -175,16 +189,43 @@ Polymer({
     },
 
     /** @private */
-    filesToRemoveListExpanded_: {
+    itemsToRemoveSectionExpanded_: {
       type: Boolean,
       value: false,
-      observer: 'filesToRemoveListExpandedChanged_',
+      observer: 'itemsToRemoveSectionExpandedChanged_',
     },
 
     /** @private */
-    filesToRemove_: {
+    showItemsLinkLabel_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
+    showingAllFiles_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {!settings.ChromeCleanerScannerResults} */
+    scannerResults_: {
       type: Array,
-      value: [],
+      value: function() {
+        return {'files': [], 'registryKeys': []};
+      },
+    },
+
+    /** @private */
+    hasFilesToShow_: {
+      type: Boolean,
+      computed: 'computeHasFilesToShow_(scannerResults_)',
+    },
+
+    /** @private */
+    hasRegistryKeysToShow_: {
+      type: Boolean,
+      computed: 'computeHasRegistryKeysToShow_(' +
+          'userInitiatedCleanupsEnabled_, scannerResults_)',
     },
 
     /** @private */
@@ -217,6 +258,9 @@ Polymer({
     },
   },
 
+  /** @private {!settings.ChromeCleanerScannerResults} */
+  emptyChromeCleanerScannerResults_: {'files': [], 'registryKeys': []},
+
   /** @private {?settings.ChromeCleanupProxy} */
   browserProxy_: null,
 
@@ -229,9 +273,6 @@ Polymer({
 
   /** @private {settings.ChromeCleanupOngoingAction} */
   ongoingAction_: settings.ChromeCleanupOngoingAction.NONE,
-
-  /** @private {boolean} */
-  userInitiatedCleanupsEnabled_: false,
 
   /**
    * If true, the scan offered view is rendered on state idle, regardless of
@@ -312,16 +353,16 @@ Polymer({
   },
 
   /**
-   * Notify Chrome that the details section was opened or closed.
+   * Notifies Chrome that the details section was opened or closed.
    * @private
    */
-  filesToRemoveListExpandedChanged_: function() {
-    if (this.browserProxy_)
-      this.browserProxy_.notifyShowDetails(this.filesToRemoveListExpanded_);
+  itemsToRemoveSectionExpandedChanged_: function(newVal, oldVal) {
+    if (!oldVal && newVal)
+      this.browserProxy_.notifyShowDetails(this.itemsToRemoveSectionExpanded_);
   },
 
   /**
-   * Notfies Chrome that the "learn more" link was clicked.
+   * Notifies Chrome that the "learn more" link was clicked.
    * @private
    */
   learnMore_: function() {
@@ -333,7 +374,7 @@ Polymer({
    * @private
    */
   showPoweredBy_: function() {
-    return this.filesToRemoveListExpanded_ && this.isPartnerPowered_;
+    return this.itemsToRemoveSectionExpanded_ && this.isPartnerPowered_;
   },
 
   /**
@@ -346,12 +387,37 @@ Polymer({
   },
 
   /**
+   * Returns true if there are files to show to the user.
+   * @param {!settings.ChromeCleanerScannerResults} scannerResults The cleanup
+   *     items to be presented to the user.
+   * @return {boolean}
+   * @private
+   */
+  computeHasFilesToShow_(scannerResults) {
+    return scannerResults.files.length > 0;
+  },
+
+  /**
+   * Returns true if user-initiated cleanups are enabled and there are registry
+   * keys to show to the user.
+   * @param {!settings.ChromeCleanerScannerResults} scannerResults The cleanup
+   *     items to be presented to the user.
+   * @return {boolean}
+   * @private
+   */
+  computeHasRegistryKeysToShow_(userInitiatedCleanupsEnabled, scannerResults) {
+    return userInitiatedCleanupsEnabled &&
+        scannerResults.registryKeys.length > 0;
+  },
+
+  /**
    * Listener of event 'chrome-cleanup-on-idle'.
    * @param {string} idleReason
    * @private
    */
   onIdle_: function(idleReason) {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
+    this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
 
     // If user-initiated cleanups are disabled, then the card will be shown at
     // the top of the settings page.
@@ -433,6 +499,7 @@ Polymer({
    */
   onScanning_: function() {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.SCANNING;
+    this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
     this.renderScanOfferedByDefault_ = false;
     this.renderCleanupCard_(
         this.userInitiatedCleanupsEnabled_ ?
@@ -443,27 +510,32 @@ Polymer({
   /**
    * Listener of event 'chrome-cleanup-on-infected'.
    * Offers a cleanup to the user and enables presenting files to be removed.
-   * @param {!Array<string>} files The list of files to present to the user.
+   * @param {!settings.ChromeCleanerScannerResults} scannerResults The cleanup
+   *     items to be presented to the user.
    * @private
    */
-  onInfected_: function(files) {
+  onInfected_: function(scannerResults) {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
     this.renderScanOfferedByDefault_ = false;
-    this.renderCleanupCard_(
-        settings.ChromeCleanerCardState.CLEANUP_OFFERED, files);
+    this.scannerResults_ = scannerResults;
+    this.updateShowItemsLinklabel_();
+    this.renderCleanupCard_(settings.ChromeCleanerCardState.CLEANUP_OFFERED);
   },
 
   /**
    * Listener of event 'chrome-cleanup-on-cleaning'.
    * Shows a spinner indicating that an on-going action and enables presenting
    * files to be removed.
-   * @param {!Array<string>} files The list of files to present to the user.
+   * @param {!settings.ChromeCleanerScannerResults} scannerResults The cleanup
+   *     items to be presented to the user.
    * @private
    */
-  onCleaning_: function(files) {
+  onCleaning_: function(scannerResults) {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.CLEANING;
     this.renderScanOfferedByDefault_ = false;
-    this.renderCleanupCard_(settings.ChromeCleanerCardState.CLEANING, files);
+    this.scannerResults_ = scannerResults;
+    this.updateShowItemsLinklabel_();
+    this.renderCleanupCard_(settings.ChromeCleanerCardState.CLEANING);
   },
 
   /**
@@ -474,6 +546,7 @@ Polymer({
    */
   onRebootRequired_: function() {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
+    this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
     this.renderScanOfferedByDefault_ = false;
     this.renderCleanupCard_(settings.ChromeCleanerCardState.REBOOT_REQUIRED);
   },
@@ -482,14 +555,12 @@ Polymer({
    * Renders the cleanup card given the state and list of files.
    * @param {!settings.ChromeCleanerCardState} state The card state to be
    *     rendered.
-   * @param {Array<string>=} opt_files The list of files to present to the user.
    * @private
    */
-  renderCleanupCard_: function(state, opt_files) {
+  renderCleanupCard_: function(state) {
     var components = this.cardStateToComponentsMap_.get(state);
     assert(components);
 
-    this.filesToRemove_ = opt_files || [];
     this.title_ = components.title || '';
     this.explanation_ = components.explanation || '';
     this.updateIcon_(components.icon);
@@ -550,8 +621,8 @@ Polymer({
 
     // Files to remove list should only be expandable if details are being
     // shown, otherwise it will add extra padding at the bottom of the card.
-    if (!this.showExplanation_)
-      this.filesToRemoveListExpanded_ = false;
+    if (!this.showExplanation_ || !this.showItemsToRemove_)
+      this.itemsToRemoveSectionExpanded_ = false;
   },
 
   /**
@@ -624,6 +695,25 @@ Polymer({
    */
   restartComputer_: function() {
     this.browserProxy_.restartComputer();
+  },
+
+  /**
+   * Updates the label for the collapsed detailed view. If user-initiated
+   * cleanups are enabled, the string is obtained from the browser proxy, since
+   * it may require a plural version. Otherwise, use the default value for
+   * |chromeCleanupLinkShowItems|.
+   */
+  updateShowItemsLinklabel_: function() {
+    var setShowItemsLabel = text => this.showItemsLinkLabel_ = text;
+    if (this.userInitiatedCleanupsEnabled_) {
+      this.browserProxy_
+          .getItemsToRemovePluralString(
+              this.scannerResults_.files.length +
+              this.scannerResults_.registryKeys.length)
+          .then(setShowItemsLabel);
+    } else {
+      setShowItemsLabel(this.i18n('chromeCleanupLinkShowItems'));
+    }
   },
 
   /**

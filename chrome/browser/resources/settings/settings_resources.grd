@@ -318,6 +318,12 @@
                    file="chrome_cleanup_page/chrome_cleanup_page.js"
                    type="chrome_html"
                    preprocess="true" />
+        <structure name="IDR_SETTINGS_CHROME_CLEANUP_ITEMS_TO_REMOVE_LIST_HTML"
+                   file="chrome_cleanup_page/items_to_remove_list.html"
+                   type="chrome_html"/>
+        <structure name="IDR_SETTINGS_CHROME_CLEANUP_ITEMS_TO_REMOVE_LIST_JS"
+                   file="chrome_cleanup_page/items_to_remove_list.js"
+                   type="chrome_html"/>
       </if>
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_BROWSER_PROXY_HTML"
                  file="clear_browsing_data_dialog/clear_browsing_data_browser_proxy.html"
