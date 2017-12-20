@@ -65,6 +65,8 @@ void FullscreenModel::AnimationEndedWithProgress(CGFloat progress) {
 }
 
 void FullscreenModel::SetToolbarHeight(CGFloat toolbar_height) {
+  if (AreCGFloatsEqual(toolbar_height_, toolbar_height))
+    return;
   DCHECK_GE(toolbar_height, 0.0);
   toolbar_height_ = toolbar_height;
   ResetForNavigation();
