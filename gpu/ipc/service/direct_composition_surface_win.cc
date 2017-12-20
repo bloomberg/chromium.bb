@@ -112,6 +112,13 @@ bool HardwareSupportsOverlays() {
     return false;
   }
 
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
+  if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
+    DLOG(ERROR) << "Failing to create overlay swapchain because couldn't "
+                   "retrieve video device from D3D11 device.";
+    return false;
+  }
+
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
   d3d11_device.CopyTo(dxgi_device.GetAddressOf());
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
@@ -304,16 +311,21 @@ class DCLayerTree::SwapChainPresenter {
 };
 
 bool DCLayerTree::Initialize(HWND window) {
-  d3d11_device_.CopyTo(video_device_.GetAddressOf());
+  HRESULT hr = d3d11_device_.CopyTo(video_device_.GetAddressOf());
+  if (FAILED(hr))
+    return false;
+
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(context.GetAddressOf());
-  context.CopyTo(video_context_.GetAddressOf());
+  hr = context.CopyTo(video_context_.GetAddressOf());
+  if (FAILED(hr))
+    return false;
 
   Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> desktop_device;
   dcomp_device_.CopyTo(desktop_device.GetAddressOf());
 
-  HRESULT hr = desktop_device->CreateTargetForHwnd(
-      window, TRUE, dcomp_target_.GetAddressOf());
+  hr = desktop_device->CreateTargetForHwnd(window, TRUE,
+                                           dcomp_target_.GetAddressOf());
   if (FAILED(hr))
     return false;
 
@@ -370,10 +382,12 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
     DCLayerTree* surface,
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device)
     : surface_(surface), d3d11_device_(d3d11_device) {
-  d3d11_device_.CopyTo(video_device_.GetAddressOf());
+  HRESULT hr = d3d11_device_.CopyTo(video_device_.GetAddressOf());
+  CHECK(SUCCEEDED(hr));
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(context.GetAddressOf());
-  context.CopyTo(video_context_.GetAddressOf());
+  hr = context.CopyTo(video_context_.GetAddressOf());
+  CHECK(SUCCEEDED(hr));
   HMODULE dcomp = ::GetModuleHandleA("dcomp.dll");
   CHECK(dcomp);
   create_surface_handle_function_ =
