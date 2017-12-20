@@ -31,6 +31,14 @@ namespace content {
 class BrowserContext;
 }
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.webapps
+enum class SpaceStatus {
+  ENOUGH_SPACE = 0,
+  ENOUGH_SPACE_AFTER_FREE_UP_CACHE = 1,
+  NOT_ENOUGH_SPACE = 2,
+};
+
 // Talks to Chrome WebAPK server to download metadata about a WebAPK and issue
 // a request for it to be installed. The native WebApkInstaller owns the Java
 // WebApkInstaller counterpart.
@@ -79,6 +87,14 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                          const base::android::JavaParamRef<jobject>& obj,
                          jint result);
 
+  // Checks if there is enough space to install a WebAPK.
+  // If yes, continue the WebAPK installation process. If there is not enough
+  // space to install (even after clearing Chrome's cache), fails the
+  // installation process immediately.
+  void OnGotSpaceStatus(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jint status);
+
   // Asynchronously builds the WebAPK proto on a background thread for an update
   // or install request. Runs |callback| on the calling thread when complete.
   static void BuildProto(
@@ -115,6 +131,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                                      int version,
                                      const std::string& token);
 
+  // Checks if there is enough space to install a WebAPK.
+  virtual void CheckFreeSpace();
+
   // Called when the install or update process has completed or failed.
   void OnResult(WebApkInstallResult result);
 
@@ -143,6 +162,12 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   void UpdateAsync(const base::FilePath& update_request_path,
                    const FinishCallback& finish_callback);
 
+  // Called once there is sufficient space on the user's device to install a
+  // WebAPK. The user may already have had sufficient space on their device
+  // prior to initiating the install process. This method might be called as a
+  // result of freeing up memory by clearing Chrome's cache.
+  void OnHaveSufficientSpaceForInstall();
+
   // Called with the contents of the update request file.
   void OnReadUpdateRequest(std::unique_ptr<std::string> update_request);
 
@@ -164,7 +189,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Google Play.
   void SendRequest(std::unique_ptr<std::string> serialized_proto);
 
-  net::URLRequestContextGetter* request_context_getter_;
+  content::BrowserContext* browser_context_;
 
   // Sends HTTP request to WebAPK server.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
