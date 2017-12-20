@@ -106,22 +106,18 @@ class LoadingMobileStorySet(story.StorySet):
       ('http://www.dawn.com', 'Dawn'),
       ('http://www.thairath.co.th', 'Thairath'),
       ('http://www.hashocean.com', 'HashOcean'),
-      ('http://www.163.com', '163'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['easy_ttfmp'], [
       ('http://www.slideshare.net', 'SlideShare'),
       ('http://www.bradesco.com.br', 'Bradesco'),
       ('http://www.gsshop.com', 'GSShop'),
-      ('http://www.sbs.co.kr', 'SBS'),
-      ('http://www.futura-sciences.com', 'FuturaSciences'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['tough_tti'], [
       ('http://www.thestar.com.my', 'TheStar'),
       ('http://www.58pic.com', '58Pic'),
       ('http://www.hongkiat.com', 'Hongkiat'),
-      ('http://www.ebs.in', 'EBS'),
       ('http://www.ibicn.com', 'IBI'),
     ], cache_temperatures, traffic_settings)
 
@@ -129,8 +125,6 @@ class LoadingMobileStorySet(story.StorySet):
       ('http://www.dramaq.com.tw', 'Dramaq'),
       ('http://www.locanto.in', 'Locanto'),
       ('http://www.francetvinfo.fr', 'FranceTVInfo'),
-      ('http://www.gfk.com', 'GFK'),
-      ('http://www.mlsmatrix.com', 'MLSMatrix'),
     ], cache_temperatures, traffic_settings)
 
   def AddStories(self, tags, urls, cache_temperatures, traffic_settings):
