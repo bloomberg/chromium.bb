@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -31,7 +32,12 @@ using SystemInfo::GPUInfo;
 using GetInfoCallback = SystemInfo::Backend::GetInfoCallback;
 
 // Give the GPU process a few seconds to provide GPU info.
+// Linux Debug builds need more time -- see Issue 796437.
+#if defined(OS_LINUX) && !defined(NDEBUG)
+const int kGPUInfoWatchdogTimeoutMs = 20000;
+#else
 const int kGPUInfoWatchdogTimeoutMs = 5000;
+#endif
 
 class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
  public:
