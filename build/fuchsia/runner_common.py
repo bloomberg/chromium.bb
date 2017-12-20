@@ -316,11 +316,11 @@ def WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
   autorun_file.write('\n')
 
   if shutdown_machine:
-    autorun_file.write('echo Sleeping and shutting down...\n')
+    autorun_file.write('echo Shutting down...\n')
 
-    # A delay is required to give the guest OS or remote device a chance to
-    # flush its output before it terminates.
-    autorun_file.write('msleep 8000\n')
+    # Sleep 1 second to let test outputs get flushed to the console.
+    autorun_file.write('msleep 1000\n')
+
     if use_device:
       autorun_file.write('dm reboot\n')
     else:
