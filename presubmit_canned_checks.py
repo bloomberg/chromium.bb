@@ -1244,13 +1244,16 @@ def CheckChangedLUCIConfigs(input_api, output_api):
   LUCI_CONFIG_HOST_NAME = 'luci-config.appspot.com'
 
   cl = git_cl.Changelist()
-  remote, remote_branch = cl.GetRemoteBranch()
-  if remote_branch.startswith('refs/remotes/%s/' % remote):
-    remote_branch = remote_branch.replace(
-        'refs/remotes/%s/' % remote, 'refs/heads/', 1)
-  if remote_branch.startswith('refs/remotes/branch-heads/'):
-    remote_branch = remote_branch.replace(
-        'refs/remotes/branch-heads/', 'refs/branch-heads/', 1)
+  if input_api.change.issue and input_api.gerrit:
+    remote_branch = input_api.gerrit.GetDestRef(input_api.change.issue)
+  else:
+    remote, remote_branch = cl.GetRemoteBranch()
+    if remote_branch.startswith('refs/remotes/%s/' % remote):
+      remote_branch = remote_branch.replace(
+          'refs/remotes/%s/' % remote, 'refs/heads/', 1)
+    if remote_branch.startswith('refs/remotes/branch-heads/'):
+      remote_branch = remote_branch.replace(
+          'refs/remotes/branch-heads/', 'refs/branch-heads/', 1)
 
   remote_host_url = cl.GetRemoteUrl()
   if not remote_host_url:
