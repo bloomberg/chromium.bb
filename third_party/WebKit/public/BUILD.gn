@@ -418,7 +418,6 @@ source_set("blink_headers") {
     "platform/modules/presentation/WebPresentationReceiver.h",
     "platform/modules/push_messaging/WebPushClient.h",
     "platform/modules/push_messaging/WebPushError.h",
-    "platform/modules/push_messaging/WebPushPermissionStatus.h",
     "platform/modules/push_messaging/WebPushProvider.h",
     "platform/modules/push_messaging/WebPushSubscription.h",
     "platform/modules/push_messaging/WebPushSubscriptionOptions.h",

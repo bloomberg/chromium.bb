@@ -17,7 +17,7 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
-#include "modules/push_messaging/PushPermissionStatusCallbacks.h"
+#include "modules/push_messaging/PushMessagingBridge.h"
 #include "modules/push_messaging/PushSubscription.h"
 #include "modules/push_messaging/PushSubscriptionCallbacks.h"
 #include "modules/push_messaging/PushSubscriptionOptions.h"
@@ -117,14 +117,8 @@ ScriptPromise PushManager::permissionState(
                                "Document is detached from window."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  PushProvider()->GetPermissionStatus(
-      registration_->WebRegistration(),
-      PushSubscriptionOptions::ToWeb(options, exception_state),
-      std::make_unique<PushPermissionStatusCallbacks>(resolver));
-  return promise;
+  return PushMessagingBridge::From(registration_)
+      ->GetPermissionState(script_state, options);
 }
 
 void PushManager::Trace(blink::Visitor* visitor) {

@@ -40,7 +40,7 @@
                         if (window.testRunner)
                             testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
 
-                        return swRegistration.pushManager.subscribe();
+                        return swRegistration.pushManager.subscribe({ userVisibleOnly: true });
                     })
                     .then(function(pushSubscription) {
                         assert_own_property(PushSubscription.prototype, 'getKey');

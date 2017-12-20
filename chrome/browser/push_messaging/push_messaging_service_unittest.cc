@@ -158,7 +158,7 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   const GURL origin(kTestOrigin);
 
   // (1) Make sure that |kExampleOrigin| has access to use Push Messaging.
-  ASSERT_EQ(blink::kWebPushPermissionStatusGranted,
+  ASSERT_EQ(blink::mojom::PermissionStatus::GRANTED,
             push_service->GetPermissionStatus(origin, true));
 
   std::string subscription_id;

@@ -27,7 +27,7 @@ async_test(function(test) {
 
             // 1. Call subscribe in document context. The manifest details are stored in the service
             // worker storage for later use in a service worker context where there is no manifest.
-            return registration.pushManager.subscribe();
+            return registration.pushManager.subscribe({ userVisibleOnly: true });
         })
         .then(function(subscription) {
             assert_true(subscription instanceof window.PushSubscription);

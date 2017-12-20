@@ -9,7 +9,7 @@ function subscribeAndUnsubscribePush(registration) {
     // 1. Call subscribe in document context. The manifest details are stored
     // in the service worker storage for later use in a service worker context
     // where there is no manifest.
-    registration.pushManager.subscribe().then(function(subscription) {
+    registration.pushManager.subscribe({ userVisibleOnly: true }).then(function(subscription) {
       // 2. Call unsubscribe so we can subscribe again later inside a
       // service worker.
       return subscription.unsubscribe();

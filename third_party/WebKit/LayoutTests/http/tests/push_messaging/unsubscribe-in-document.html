@@ -23,7 +23,7 @@ async_test(function(test) {
             // If running manually, grant permission when prompted.
             if (window.testRunner)
                 testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
-            return swRegistration.pushManager.subscribe();
+            return swRegistration.pushManager.subscribe({ userVisibleOnly: true });
         })
         .then(function(subscription) {
             pushSubscription = subscription;

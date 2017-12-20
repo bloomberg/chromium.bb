@@ -22,7 +22,7 @@ async_test(test => {
     PermissionsHelper.setPermission('push-messaging', 'prompt')
         .then(() => getActiveServiceWorkerWithMessagePort(test, script, scope))
         .then(workerInfo => {
-            workerInfo.port.postMessage({command: 'permissionState'});
+            workerInfo.port.postMessage({command: 'permissionState', options: {}});
             workerInfo.port.addEventListener('message', event => {
                 assert_equals(
                     event.data.errorMessage,

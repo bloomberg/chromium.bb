@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "content/public/browser/push_messaging_service.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 namespace content {
 
@@ -41,9 +40,6 @@ class LayoutTestPushMessagingService : public PushMessagingService {
                            const std::string& sender_id,
                            const std::string& subscription_id,
                            const SubscriptionInfoCallback& callback) override;
-  blink::WebPushPermissionStatus GetPermissionStatus(const GURL& origin,
-                                                     bool user_visible)
-      override;
   bool SupportNonVisibleMessages() override;
   void Unsubscribe(mojom::PushUnregistrationReason reason,
                    const GURL& requesting_origin,

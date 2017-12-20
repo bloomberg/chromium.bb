@@ -41,21 +41,6 @@ const uint8_t kAuthentication[] = {
 static_assert(sizeof(kAuthentication) == 12,
               "The fake authentication key must be at least 12 bytes in size.");
 
-blink::WebPushPermissionStatus ToWebPushPermissionStatus(
-    blink::mojom::PermissionStatus status) {
-  switch (status) {
-    case blink::mojom::PermissionStatus::GRANTED:
-      return blink::kWebPushPermissionStatusGranted;
-    case blink::mojom::PermissionStatus::DENIED:
-      return blink::kWebPushPermissionStatusDenied;
-    case blink::mojom::PermissionStatus::ASK:
-      return blink::kWebPushPermissionStatusPrompt;
-  }
-
-  NOTREACHED();
-  return blink::kWebPushPermissionStatusLast;
-}
-
 }  // anonymous namespace
 
 LayoutTestPushMessagingService::LayoutTestPushMessagingService()
@@ -87,8 +72,18 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     int64_t service_worker_registration_id,
     const PushSubscriptionOptions& options,
     const RegisterCallback& callback) {
-  if (GetPermissionStatus(requesting_origin, options.user_visible_only) ==
-      blink::kWebPushPermissionStatusGranted) {
+  blink::mojom::PermissionStatus permission_status =
+      LayoutTestContentBrowserClient::Get()
+          ->browser_context()
+          ->GetPermissionManager()
+          ->GetPermissionStatus(PermissionType::NOTIFICATIONS,
+                                requesting_origin, requesting_origin);
+
+  // The `userVisibleOnly` option is still required when subscribing.
+  if (!options.user_visible_only)
+    permission_status = blink::mojom::PermissionStatus::DENIED;
+
+  if (permission_status == blink::mojom::PermissionStatus::GRANTED) {
     std::vector<uint8_t> p256dh(
         kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
     std::vector<uint8_t> auth(
@@ -116,16 +111,6 @@ void LayoutTestPushMessagingService::GetSubscriptionInfo(
         kAuthentication, kAuthentication + arraysize(kAuthentication));
 
   callback.Run(true /* is_valid */, p256dh, auth);
-}
-
-blink::WebPushPermissionStatus
-LayoutTestPushMessagingService::GetPermissionStatus(const GURL& origin,
-                                                    bool user_visible) {
-  return ToWebPushPermissionStatus(
-      LayoutTestContentBrowserClient::Get()
-          ->browser_context()
-          ->GetPermissionManager()
-          ->GetPermissionStatus(PermissionType::NOTIFICATIONS, origin, origin));
 }
 
 bool LayoutTestPushMessagingService::SupportNonVisibleMessages() {

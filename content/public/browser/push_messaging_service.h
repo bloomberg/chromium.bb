@@ -11,8 +11,13 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 #include "url/gurl.h"
+
+namespace blink {
+namespace mojom {
+enum class PermissionStatus;
+}
+}  // namespace blink
 
 namespace content {
 
@@ -91,13 +96,6 @@ class CONTENT_EXPORT PushMessagingService {
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
                            const UnregisterCallback& callback) = 0;
-
-  // Checks the permission status for the |origin|. The |user_visible| boolean
-  // indicates whether the permission status only has to cover push messages
-  // resulting in visible effects to the user.
-  virtual blink::WebPushPermissionStatus GetPermissionStatus(
-      const GURL& origin,
-      bool user_visible) = 0;
 
   // Returns whether subscriptions that do not mandate user visible UI upon
   // receiving a push message are supported. Influences permission request and
