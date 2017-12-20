@@ -587,7 +587,6 @@ void UserMediaProcessor::OnStreamGenerated(
   blink::WebVector<blink::WebMediaStreamTrack> audio_track_vector(
       audio_devices.size());
   CreateAudioTracks(audio_devices,
-                    current_request_info_->web_request().AudioConstraints(),
                     &audio_track_vector);
 
   blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
@@ -716,7 +715,6 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
 
 blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
     const MediaStreamDevice& device,
-    const blink::WebMediaConstraints& constraints,
     bool* is_pending) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -744,8 +742,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
 
   bool has_sw_echo_cancellation = false;
-  MediaStreamAudioSource* const audio_source = CreateAudioSource(
-      device, constraints, source_ready, &has_sw_echo_cancellation);
+  MediaStreamAudioSource* const audio_source =
+      CreateAudioSource(device, source_ready, &has_sw_echo_cancellation);
   audio_source->SetStopCallback(base::Bind(
       &UserMediaProcessor::OnLocalSourceStopped, weak_factory_.GetWeakPtr()));
   source.SetExtraData(audio_source);  // Takes ownership.
@@ -760,7 +758,6 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 
 MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
     const MediaStreamDevice& device,
-    const blink::WebMediaConstraints& constraints,
     const MediaStreamSource::ConstraintsCallback& source_ready,
     bool* has_sw_echo_cancellation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -818,7 +815,6 @@ void UserMediaProcessor::CreateVideoTracks(
 
 void UserMediaProcessor::CreateAudioTracks(
     const MediaStreamDevices& devices,
-    const blink::WebMediaConstraints& constraints,
     blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
@@ -839,8 +835,8 @@ void UserMediaProcessor::CreateAudioTracks(
 
   for (size_t i = 0; i < overridden_audio_devices.size(); ++i) {
     bool is_pending = false;
-    blink::WebMediaStreamSource source = InitializeAudioSourceObject(
-        overridden_audio_devices[i], constraints, &is_pending);
+    blink::WebMediaStreamSource source =
+        InitializeAudioSourceObject(overridden_audio_devices[i], &is_pending);
     (*webkit_tracks)[i].Initialize(source);
     current_request_info_->StartAudioTrack((*webkit_tracks)[i], is_pending);
     // At this point the source has started, and its audio parameters have been

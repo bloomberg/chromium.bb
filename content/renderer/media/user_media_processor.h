@@ -24,7 +24,6 @@
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
 namespace blink {
-class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamSource;
 class WebString;
@@ -127,7 +126,6 @@ class CONTENT_EXPORT UserMediaProcessor
   // http://crbug.com/764293
   virtual MediaStreamAudioSource* CreateAudioSource(
       const MediaStreamDevice& device,
-      const blink::WebMediaConstraints& constraints,
       const MediaStreamSource::ConstraintsCallback& source_ready,
       bool* has_sw_echo_cancellation);
   virtual MediaStreamVideoSource* CreateVideoSource(
@@ -171,7 +169,6 @@ class CONTENT_EXPORT UserMediaProcessor
 
   blink::WebMediaStreamSource InitializeAudioSourceObject(
       const MediaStreamDevice& device,
-      const blink::WebMediaConstraints& constraints,
       bool* is_pending);
 
   void CreateVideoTracks(
@@ -180,7 +177,6 @@ class CONTENT_EXPORT UserMediaProcessor
 
   void CreateAudioTracks(
       const MediaStreamDevices& devices,
-      const blink::WebMediaConstraints& constraints,
       blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   // Callback function triggered when all native versions of the
