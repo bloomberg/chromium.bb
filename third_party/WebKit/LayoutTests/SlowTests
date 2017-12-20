@@ -123,6 +123,7 @@ crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-resources.js 
 crbug.com/451577 [ Win10 ] http/tests/devtools/extensions/extensions-sidebar.js [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.js [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.js [ Slow ]
+crbug.com/789111 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-worker-v8-cache.js [ Slow ]
 
 # Random slow tests
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-border-radius.html [ Slow ]
