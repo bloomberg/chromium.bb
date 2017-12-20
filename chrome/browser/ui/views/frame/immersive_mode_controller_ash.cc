@@ -353,6 +353,8 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
     // case if the user exits fullscreen via the restore button.
     if (controller_->IsEnabled() &&
         new_state != ash::mojom::WindowStateType::FULLSCREEN &&
+        new_state != ash::mojom::WindowStateType::PINNED &&
+        new_state != ash::mojom::WindowStateType::TRUSTED_PINNED &&
         new_state != ash::mojom::WindowStateType::MINIMIZED &&
         old_state == ash::mojom::WindowStateType::FULLSCREEN) {
       browser_view_->FullscreenStateChanged();
