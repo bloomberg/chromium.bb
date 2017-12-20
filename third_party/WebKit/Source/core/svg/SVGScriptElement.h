@@ -21,7 +21,7 @@
 #ifndef SVGScriptElement_h
 #define SVGScriptElement_h
 
-#include "core/dom/ScriptElementBase.h"
+#include "core/script/ScriptElementBase.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg_names.h"

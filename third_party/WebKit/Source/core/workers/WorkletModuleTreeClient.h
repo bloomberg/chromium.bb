@@ -5,7 +5,7 @@
 #ifndef WorkletModuleTreeClient_h
 #define WorkletModuleTreeClient_h
 
-#include "core/dom/Modulator.h"
+#include "core/script/Modulator.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/GarbageCollected.h"

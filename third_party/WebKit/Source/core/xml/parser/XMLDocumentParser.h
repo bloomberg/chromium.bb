@@ -30,9 +30,9 @@
 #include <memory>
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
+#include "core/script/XMLParserScriptRunner.h"
+#include "core/script/XMLParserScriptRunnerHost.h"
 #include "core/xml/parser/XMLErrors.h"
-#include "core/xml/parser/XMLParserScriptRunner.h"
-#include "core/xml/parser/XMLParserScriptRunnerHost.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/text/SegmentedString.h"
