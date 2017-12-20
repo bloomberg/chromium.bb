@@ -1804,6 +1804,8 @@ class CORE_EXPORT Document : public ContainerNode,
   int64_t ukm_source_id_;
 
   bool needs_to_record_ukm_outlive_time_;
+
+  Member<Policy> policy_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

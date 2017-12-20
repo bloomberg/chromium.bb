@@ -2,28 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/Policy.h"
+#include "core/policy/Policy.h"
 
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 
 namespace blink {
 
-// static
-Policy* Policy::Create(Document* document) {
-  return new Policy(document);
-}
-
-// explicit
-Policy::Policy(Document* document) : document_(document) {}
-
 bool Policy::allowsFeature(const String& feature) const {
   if (GetDefaultFeatureNameMap().Contains(feature)) {
-    return document_->GetFeaturePolicy()->IsFeatureEnabled(
+    return GetPolicy()->IsFeatureEnabled(
         GetDefaultFeatureNameMap().at(feature));
   }
 
@@ -32,10 +23,10 @@ bool Policy::allowsFeature(const String& feature) const {
 }
 
 bool Policy::allowsFeature(const String& feature, const String& url) const {
-  const scoped_refptr<const SecurityOrigin> origin =
+  scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsUnique()) {
-    document_->AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
         "Invalid origin url for feature '" + feature + "': " + url + "."));
     return false;
@@ -46,14 +37,14 @@ bool Policy::allowsFeature(const String& feature, const String& url) const {
     return false;
   }
 
-  return document_->GetFeaturePolicy()->IsFeatureEnabledForOrigin(
+  return GetPolicy()->IsFeatureEnabledForOrigin(
       GetDefaultFeatureNameMap().at(feature), origin->ToUrlOrigin());
 }
 
 Vector<String> Policy::allowedFeatures() const {
   Vector<String> allowed_features;
   for (const auto& entry : GetDefaultFeatureNameMap()) {
-    if (document_->GetFeaturePolicy()->IsFeatureEnabled(entry.value))
+    if (GetPolicy()->IsFeatureEnabled(entry.value))
       allowed_features.push_back(entry.key);
   }
   return allowed_features;
@@ -62,7 +53,7 @@ Vector<String> Policy::allowedFeatures() const {
 Vector<String> Policy::getAllowlistForFeature(const String& feature) const {
   if (GetDefaultFeatureNameMap().Contains(feature)) {
     const FeaturePolicy::Whitelist whitelist =
-        document_->GetFeaturePolicy()->GetWhitelistForFeature(
+        GetPolicy()->GetWhitelistForFeature(
             GetDefaultFeatureNameMap().at(feature));
     if (whitelist.MatchesAll())
       return Vector<String>({"*"});
@@ -78,13 +69,12 @@ Vector<String> Policy::getAllowlistForFeature(const String& feature) const {
 }
 
 void Policy::AddWarningForUnrecognizedFeature(const String& feature) const {
-  document_->AddConsoleMessage(
+  GetDocument()->AddConsoleMessage(
       ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
                              "Unrecognized feature: '" + feature + "'."));
 }
 
 void Policy::Trace(blink::Visitor* visitor) {
-  visitor->Trace(document_);
   ScriptWrappable::Trace(visitor);
 }
 
