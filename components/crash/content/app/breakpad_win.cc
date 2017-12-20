@@ -129,21 +129,11 @@ DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
 }  // namespace
 
 extern "C" HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInput(
-    HANDLE process,
-    void* serialized_crash_keys) {
+    HANDLE process) {
   // |serialized_crash_keys| is not propagated in breakpad but is in crashpad
   // since breakpad is deprecated.
   return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread,
                             0, 0, NULL);
-}
-
-extern "C" HANDLE __declspec(
-    dllexport) __cdecl InjectDumpForHungInputNoCrashKeys(HANDLE process,
-                                                         int reason) {
-  // |reason| is not propagated in breakpad but is in crashpad since breakpad
-  // is deprecated.
-  return CreateRemoteThread(process, NULL, 0, DumpProcessWithoutCrashThread, 0,
-                            0, NULL);
 }
 
 // Returns a string containing a list of all modifiers for the loaded profile.

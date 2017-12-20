@@ -558,12 +558,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                         const gfx::Range& range);
 
   size_t in_flight_event_count() const { return in_flight_event_count_; }
-  blink::WebInputEvent::Type hang_monitor_event_type() const {
-    return hang_monitor_event_type_;
-  }
-  blink::WebInputEvent::Type last_event_type() const {
-    return last_event_type_;
-  }
 
   bool renderer_initialized() const { return renderer_initialized_; }
 
@@ -749,8 +743,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& event,
       const ui::LatencyInfo& latency_info) override;
-  void IncrementInFlightEventCount(
-      blink::WebInputEvent::Type event_type) override;
+  void IncrementInFlightEventCount() override;
   void DecrementInFlightEventCount(InputEventAckSource ack_source) override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
@@ -785,8 +778,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
   // left on the existing timeouts.
-  void StartHangMonitorTimeout(base::TimeDelta delay,
-                               blink::WebInputEvent::Type event_type);
+  void StartHangMonitorTimeout(base::TimeDelta delay);
 
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
@@ -980,12 +972,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;
-
-  // Type of the last blocking event that started the hang monitor.
-  blink::WebInputEvent::Type hang_monitor_event_type_;
-
-  // Type of the last blocking event sent to the renderer.
-  blink::WebInputEvent::Type last_event_type_;
 
   // This value indicates how long to wait for a new compositor frame from a
   // renderer process before clearing any previously displayed content.

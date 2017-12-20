@@ -135,10 +135,9 @@ namespace internal {
 void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations);
 
-// The thread functions that implement the InjectDumpForHungInput and
-// InjectDumpForHungInputNoCrashKeys in the target process.
-DWORD WINAPI DumpProcessForHungInputThread(void* crash_keys_str);
-DWORD WINAPI DumpProcessForHungInputNoCrashKeysThread(void* reason);
+// The thread functions that implement the InjectDumpForHungInput in the
+// target process.
+DWORD WINAPI DumpProcessForHungInputThread(void* param);
 
 #if defined(ARCH_CPU_X86_64)
 // V8 support functions.

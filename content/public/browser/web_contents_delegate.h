@@ -73,7 +73,6 @@ class WebGestureEvent;
 namespace content {
 
 struct OpenURLParams;
-struct WebContentsUnresponsiveState;
 
 enum class KeyboardEventProcessingResult;
 
@@ -318,9 +317,7 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   WebContents* new_contents) {}
 
   // Notification that the tab is hung.
-  virtual void RendererUnresponsive(
-      WebContents* source,
-      const WebContentsUnresponsiveState& unresponsive_state) {}
+  virtual void RendererUnresponsive(WebContents* source) {}
 
   // Notification that the tab is no longer hung.
   virtual void RendererResponsive(WebContents* source) {}

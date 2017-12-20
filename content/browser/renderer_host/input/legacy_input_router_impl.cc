@@ -423,7 +423,7 @@ bool LegacyInputRouterImpl::OfferToRenderer(
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.
     if (dispatch_type == InputEventDispatchType::DISPATCH_TYPE_BLOCKING)
-      client_->IncrementInFlightEventCount(input_event.GetType());
+      client_->IncrementInFlightEventCount();
     return true;
   }
   return false;

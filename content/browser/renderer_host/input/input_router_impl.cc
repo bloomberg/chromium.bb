@@ -407,7 +407,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
       ScaleEvent(input_event, device_scale_factor_), latency_info);
   if (WebInputEventTraits::ShouldBlockEventStream(
           input_event, wheel_scroll_latching_enabled_)) {
-    client_->IncrementInFlightEventCount(input_event.GetType());
+    client_->IncrementInFlightEventCount();
     client_->GetWidgetInputHandler()->DispatchEvent(std::move(event),
                                                     std::move(callback));
   } else {

@@ -63,9 +63,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                            bool to_different_document) override;
   void LoadProgressChanged(content::WebContents* source,
                            double load_progress) override;
-  void RendererUnresponsive(
-      content::WebContents* source,
-      const content::WebContentsUnresponsiveState& unresponsive_state) override;
+  void RendererUnresponsive(content::WebContents* source) override;
   void RendererResponsive(content::WebContents* source) override;
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_process_id,
