@@ -261,7 +261,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void GenSyncTokenCHROMIUM(GLbyte* sync_token) override {
     static uint64_t unique_id = 1;
     gpu::SyncToken source(
-        gpu::GPU_IO, 1, gpu::CommandBufferId::FromUnsafeValue(unique_id++), 2);
+        gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(unique_id++), 2);
     memcpy(sync_token, &source, sizeof(source));
   }
 

@@ -762,7 +762,7 @@ void CommandBufferStub::OnGetGpuFenceHandle(uint32_t gpu_fence_id) {
 }
 
 void CommandBufferStub::OnFenceSyncRelease(uint64_t release) {
-  SyncToken sync_token(CommandBufferNamespace::GPU_IO, 0, command_buffer_id_,
+  SyncToken sync_token(CommandBufferNamespace::GPU_IO, command_buffer_id_,
                        release);
   gles2::MailboxManager* mailbox_manager = context_group_->mailbox_manager();
   if (mailbox_manager->UsesSync() && MakeCurrent())

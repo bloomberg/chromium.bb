@@ -2192,7 +2192,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
           child_context_provider.get(), shared_bitmap_manager.get());
 
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
   auto transfer_resource = TransferableResource::MakeGLOverlay(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token,

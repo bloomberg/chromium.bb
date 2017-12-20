@@ -16517,7 +16517,7 @@ error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
   const uint64_t release = c.release_count();
 
   gpu::SyncToken sync_token;
-  sync_token.Set(namespace_id, 0, command_buffer_id, release);
+  sync_token.Set(namespace_id, command_buffer_id, release);
   return client_->OnWaitSyncToken(sync_token) ? error::kDeferCommandUntilLater
                                               : error::kNoError;
 }

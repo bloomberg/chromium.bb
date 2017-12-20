@@ -27,7 +27,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 
   void GenSyncTokenCHROMIUM(GLbyte* sync_token) override {
     gpu::SyncToken sync_token_data;
-    sync_token_data.Set(gpu::CommandBufferNamespace::GPU_IO, 0,
+    sync_token_data.Set(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferId(), next_fence_sync_++);
     sync_token_data.SetVerifyFlush();
     memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
@@ -35,7 +35,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 
   void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override {
     gpu::SyncToken sync_token_data;
-    sync_token_data.Set(gpu::CommandBufferNamespace::GPU_IO, 0,
+    sync_token_data.Set(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferId(), next_fence_sync_++);
     memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
   }

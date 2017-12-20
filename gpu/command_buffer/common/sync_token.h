@@ -29,18 +29,15 @@ struct GPU_EXPORT SyncToken {
   SyncToken();
 
   SyncToken(CommandBufferNamespace namespace_id,
-            int32_t extra_data_field,
             CommandBufferId command_buffer_id,
             uint64_t release_count);
 
   SyncToken(const SyncToken& other);
 
   void Set(CommandBufferNamespace namespace_id,
-           int32_t extra_data_field,
            CommandBufferId command_buffer_id,
            uint64_t release_count) {
     namespace_id_ = namespace_id;
-    extra_data_field_ = extra_data_field;
     command_buffer_id_ = command_buffer_id;
     release_count_ = release_count;
   }
@@ -48,7 +45,6 @@ struct GPU_EXPORT SyncToken {
   void Clear() {
     verified_flush_ = false;
     namespace_id_ = CommandBufferNamespace::INVALID;
-    extra_data_field_ = 0;
     command_buffer_id_ = CommandBufferId();
     release_count_ = 0;
   }
@@ -72,12 +68,6 @@ struct GPU_EXPORT SyncToken {
   CommandBufferId command_buffer_id() const { return command_buffer_id_; }
   uint64_t release_count() const { return release_count_; }
 
-  // This extra data field can be used by command buffers to add extra
-  // information to identify unverified sync tokens. The current purpose
-  // of this field is only for unverified sync tokens which only exist within
-  // the same process so this information will not survive cross-process IPCs.
-  int32_t extra_data_field() const { return extra_data_field_; }
-
   bool operator<(const SyncToken& other) const {
     return std::tie(namespace_id_, command_buffer_id_, release_count_) <
            std::tie(other.namespace_id_, other.command_buffer_id_,
@@ -87,7 +77,6 @@ struct GPU_EXPORT SyncToken {
   bool operator==(const SyncToken& other) const {
     return verified_flush_ == other.verified_flush() &&
            namespace_id_ == other.namespace_id() &&
-           extra_data_field_ == other.extra_data_field() &&
            command_buffer_id_ == other.command_buffer_id() &&
            release_count_ == other.release_count();
   }
@@ -97,7 +86,6 @@ struct GPU_EXPORT SyncToken {
  private:
   bool verified_flush_;
   CommandBufferNamespace namespace_id_;
-  int32_t extra_data_field_;
   CommandBufferId command_buffer_id_;
   uint64_t release_count_;
 };

@@ -58,7 +58,7 @@ TEST(TextureLayerImplTest, Occlusion) {
   gl->GenMailboxCHROMIUM(mailbox.name);
   auto resource = viz::TransferableResource::MakeGL(
       std::move(mailbox), GL_LINEAR, GL_TEXTURE_2D,
-      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
+      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456));
 
   TextureLayerImpl* texture_layer_impl =
@@ -119,7 +119,7 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
   resource.is_software = false;
   gl->GenMailboxCHROMIUM(resource.mailbox_holder.mailbox.name);
   resource.mailbox_holder.sync_token =
-      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
+      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456);
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
 
