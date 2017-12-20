@@ -2097,6 +2097,10 @@ void LayerTreeImpl::UpdateImageDecodingHints(
   host_impl_->UpdateImageDecodingHints(std::move(decoding_mode_map));
 }
 
+bool LayerTreeImpl::IsActivelyScrolling() const {
+  return host_impl_->IsActivelyScrolling();
+}
+
 void LayerTreeImpl::SetPendingPageScaleAnimation(
     std::unique_ptr<PendingPageScaleAnimation> pending_animation) {
   pending_page_scale_animation_ = std::move(pending_animation);
