@@ -190,15 +190,16 @@ bool WriteAnnotationsFile(const base::FilePath& filepath,
                           const std::vector<AnnotationInstance>& annotations) {
   std::vector<std::string> lines;
   std::string title =
-      "Unique ID\tReview by pconunsel\tSender\tDescription\tTrigger\t"
-      "Data\tDestination\tEmpty Policy Justification\tCookies Allowed\t"
-      "Cookies Store\tSetting\tChrome Policy\tComments\tSource File\tHash Code";
+      "Unique ID\tLast Update\tSender\tDescription\tTrigger\tData\t"
+      "Destination\tEmpty Policy Justification\tCookies Allowed\t"
+      "Cookies Store\tSetting\tChrome Policy\tComments\tSource File\t"
+      "ID Hash Code\tContent Hash Code";
 
   for (auto& instance : annotations) {
     // Unique ID
     std::string line = instance.proto.unique_id();
 
-    // Place holder for Review by pcounsel.
+    // Place holder for Last Update Date, will be updated in the scripts.
     line += "\t";
 
     // Semantics.
@@ -273,8 +274,11 @@ bool WriteAnnotationsFile(const base::FilePath& filepath,
     line += base::StringPrintf("\t%s%s?l=%i", kCodeSearchLink.c_str(),
                                source.file().c_str(), source.line());
 
-    // Hash code.
+    // ID Hash code.
     line += base::StringPrintf("\t%i", instance.unique_id_hash_code);
+
+    // Content Hash code.
+    line += base::StringPrintf("\t%i", instance.GetContentHashCode());
 
     lines.push_back(line);
   }

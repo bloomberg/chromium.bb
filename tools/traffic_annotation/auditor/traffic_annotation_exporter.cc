@@ -61,16 +61,6 @@ void ExtractXMLItems(const std::string& serialized_xml,
   }
 }
 
-// Compute a hashcode for the annotation content. Source field is not used in
-// this computation as we don't need sensitivity to changes in source location,
-// i.e. filepath, line number and function.
-int GetContentHashCode(AnnotationInstance annotation) {
-  std::string content;
-  annotation.proto.clear_source();
-  google::protobuf::TextFormat::PrintToString(annotation.proto, &content);
-  return TrafficAnnotationAuditor::ComputeHashValue(content);
-}
-
 }  // namespace
 
 TrafficAnnotationExporter::AnnotationItem::AnnotationItem()
@@ -193,7 +183,7 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
     if (annotation.is_merged)
       continue;
 
-    int content_hash_code = GetContentHashCode(annotation);
+    int content_hash_code = annotation.GetContentHashCode();
     // If annotation unique id is already in the imported annotations list,
     // check if other fields have changed.
     if (base::ContainsKey(annotation_items_, annotation.proto.unique_id())) {

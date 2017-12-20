@@ -470,6 +470,14 @@ AuditorResult AnnotationInstance::CreateCompleteAnnotation(
   return AuditorResult::Type::RESULT_OK;
 }
 
+int AnnotationInstance::GetContentHashCode() const {
+  AnnotationInstance source_free(*this);
+  std::string content;
+  source_free.proto.clear_source();
+  google::protobuf::TextFormat::PrintToString(source_free.proto, &content);
+  return TrafficAnnotationAuditor::ComputeHashValue(content);
+}
+
 CallInstance::CallInstance() : line_number(0), is_annotated(false) {}
 
 CallInstance::CallInstance(const CallInstance& other)

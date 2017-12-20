@@ -82,6 +82,11 @@ class AnnotationInstance : public InstanceBase {
            type == Type::ANNOTATION_BRANCHED_COMPLETING;
   }
 
+  // Computes a hashcode for the annotation content. Source field is not used in
+  // this computation as we don't need sensitivity to changes in source
+  // location, i.e. filepath, line number and function.
+  int GetContentHashCode() const;
+
   // Combines |*this| partial annotation with a completing/branched_completing
   // annotation and returns the combined complete annotation.
   AuditorResult CreateCompleteAnnotation(
