@@ -33,16 +33,39 @@ ScopedAudioUnit::ScopedAudioUnit(AudioDeviceID device, AUElement element) {
     return;
   }
 
-  result = AudioUnitSetProperty(
-      audio_unit, kAudioOutputUnitProperty_CurrentDevice,
-      kAudioUnitScope_Global, element, &device, sizeof(AudioDeviceID));
-  if (result == noErr) {
-    audio_unit_ = audio_unit;
+  const UInt32 enable_input_io = element == AUElement::INPUT ? 1 : 0;
+  result = AudioUnitSetProperty(audio_unit, kAudioOutputUnitProperty_EnableIO,
+                                kAudioUnitScope_Input, AUElement::INPUT,
+                                &enable_input_io, sizeof(enable_input_io));
+  if (result != noErr) {
+    OSSTATUS_DLOG(ERROR, result)
+        << "Failed to set input enable IO for audio unit.";
+    DestroyAudioUnit(audio_unit);
     return;
   }
-  OSSTATUS_DLOG(ERROR, result)
-      << "Failed to set current device for audio unit.";
-  DestroyAudioUnit(audio_unit);
+
+  const UInt32 enable_output_io = !enable_input_io;
+  result = AudioUnitSetProperty(audio_unit, kAudioOutputUnitProperty_EnableIO,
+                                kAudioUnitScope_Output, AUElement::OUTPUT,
+                                &enable_output_io, sizeof(enable_output_io));
+  if (result != noErr) {
+    OSSTATUS_DLOG(ERROR, result)
+        << "Failed to set output enable IO for audio unit.";
+    DestroyAudioUnit(audio_unit);
+    return;
+  }
+
+  result = AudioUnitSetProperty(
+      audio_unit, kAudioOutputUnitProperty_CurrentDevice,
+      kAudioUnitScope_Global, 0, &device, sizeof(AudioDeviceID));
+  if (result != noErr) {
+    OSSTATUS_DLOG(ERROR, result)
+        << "Failed to set current device for audio unit.";
+    DestroyAudioUnit(audio_unit);
+    return;
+  }
+
+  audio_unit_ = audio_unit;
 }
 
 ScopedAudioUnit::~ScopedAudioUnit() {
