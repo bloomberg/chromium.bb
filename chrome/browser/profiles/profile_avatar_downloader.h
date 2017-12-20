@@ -14,7 +14,7 @@ namespace gfx {
 class Image;
 }
 
-class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
+class ProfileAvatarDownloader : public BitmapFetcherDelegate {
  public:
   using FetchCompleteCallback = base::Callback<void(const gfx::Image*,
                                                     const std::string&,
@@ -31,7 +31,7 @@ class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
 
  private:
   // Downloads the avatar image from a url.
-  std::unique_ptr<chrome::BitmapFetcher> fetcher_;
+  std::unique_ptr<BitmapFetcher> fetcher_;
 
   // Index of the avatar being downloaded.
   size_t icon_index_;

@@ -11,8 +11,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
-namespace chrome {
-
 BitmapFetcher::BitmapFetcher(
     const GURL& url,
     BitmapFetcherDelegate* delegate,
@@ -72,5 +70,3 @@ void BitmapFetcher::OnDecodeImageFailed() {
 void BitmapFetcher::ReportFailure() {
   delegate_->OnFetchComplete(url_, NULL);
 }
-
-}  // namespace chrome

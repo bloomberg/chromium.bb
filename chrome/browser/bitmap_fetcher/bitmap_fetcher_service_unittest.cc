@@ -48,11 +48,10 @@ class TestService : public BitmapFetcherService {
 
   // Create a fetcher, but don't start downloading. That allows side-stepping
   // the decode step, which requires a utility process.
-  std::unique_ptr<chrome::BitmapFetcher> CreateFetcher(
+  std::unique_ptr<BitmapFetcher> CreateFetcher(
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    return base::MakeUnique<chrome::BitmapFetcher>(url, this,
-                                                   traffic_annotation);
+    return base::MakeUnique<BitmapFetcher>(url, this, traffic_annotation);
   }
 };
 
@@ -75,8 +74,7 @@ class BitmapFetcherServiceTest : public testing::Test,
   const std::vector<std::unique_ptr<BitmapFetcherRequest>>& requests() const {
     return service_->requests_;
   }
-  const std::vector<std::unique_ptr<chrome::BitmapFetcher>>& active_fetchers()
-      const {
+  const std::vector<std::unique_ptr<BitmapFetcher>>& active_fetchers() const {
     return service_->active_fetchers_;
   }
   size_t cache_size() const { return service_->cache_.size(); }
@@ -87,7 +85,7 @@ class BitmapFetcherServiceTest : public testing::Test,
 
   // Simulate finishing a URL fetch and decode for the given fetcher.
   void CompleteFetch(const GURL& url) {
-    const chrome::BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
+    const BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
     ASSERT_TRUE(fetcher);
 
     // Create a non-empty bitmap.
@@ -95,20 +93,20 @@ class BitmapFetcherServiceTest : public testing::Test,
     image.allocN32Pixels(2, 2);
     image.eraseColor(SK_ColorGREEN);
 
-    const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(image);
+    const_cast<BitmapFetcher*>(fetcher)->OnImageDecoded(image);
   }
 
   void FailFetch(const GURL& url) {
-    const chrome::BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
+    const BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
     ASSERT_TRUE(fetcher);
-    const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(SkBitmap());
+    const_cast<BitmapFetcher*>(fetcher)->OnImageDecoded(SkBitmap());
   }
 
   // A failed decode results in a nullptr image.
   void FailDecode(const GURL& url) {
-    const chrome::BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
+    const BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
     ASSERT_TRUE(fetcher);
-    const_cast<chrome::BitmapFetcher*>(fetcher)->OnDecodeImageFailed();
+    const_cast<BitmapFetcher*>(fetcher)->OnDecodeImageFailed();
   }
 
  protected:

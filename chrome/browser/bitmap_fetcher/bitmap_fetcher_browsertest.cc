@@ -35,8 +35,6 @@ using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 
-namespace chrome {
-
 // Class to catch events from the BitmapFetcher for testing.
 class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
  public:
@@ -230,5 +228,3 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, HandleImageFailedTest) {
 
   EXPECT_FALSE(delegate.success());
 }
-
-}  // namespace chrome

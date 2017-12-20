@@ -81,8 +81,7 @@ void WebstoreInstallHelper::Start(
               "Not implemented, considered not useful."
           })");
 
-    icon_fetcher_.reset(
-        new chrome::BitmapFetcher(icon_url_, this, traffic_annotation));
+    icon_fetcher_.reset(new BitmapFetcher(icon_url_, this, traffic_annotation));
     icon_fetcher_->Init(
         std::string(),
         blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,

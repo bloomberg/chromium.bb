@@ -51,7 +51,7 @@ ProfileAvatarDownloader::ProfileAvatarDownloader(
             "No content is being uploaded or saved; this request merely "
             "downloads a publicly available PNG file."
         })");
-  fetcher_.reset(new chrome::BitmapFetcher(url, this, traffic_annotation));
+  fetcher_.reset(new BitmapFetcher(url, this, traffic_annotation));
 }
 
 ProfileAvatarDownloader::~ProfileAvatarDownloader() {
