@@ -51,9 +51,3 @@ class IdleAfterLoadingStories(story.StorySet):
     # https://crbug.com/638365.
     for url in SITES:
       self.AddStory(_BasePage(self, url, wait_in_seconds, url))
-
-
-class IdleAfterLoadingStoryExpectations(story.expectations.StoryExpectations):
-  def SetExpectations(self):
-    self.DisableStory(
-        'http://abcnews.go.com/', [story.expectations.ALL], 'crbug.com/505990')

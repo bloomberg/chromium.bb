@@ -63,8 +63,3 @@ class IntlJaZhPageSet(story.StorySet):
     for url in urls_list:
       for temp in cache_temperatures:
         self.AddStory(IntlJaZhPage(url, self, cache_temperature=temp))
-
-
-class IntlJaZhStoryExpectations(story.expectations.StoryExpectations):
-  def SetExpectations(self):
-    pass

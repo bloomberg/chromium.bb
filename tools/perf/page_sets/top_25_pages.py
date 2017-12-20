@@ -61,8 +61,3 @@ class Top25PageSet(story.StorySet):
       self.AddStory(
           page.Page(url, self, shared_page_state_class=shared_desktop_state,
                     name=url))
-
-class Top25StoryExpectations(story.expectations.StoryExpectations):
-  def SetExpectations(self):
-    self.DisableStory(
-        'http://www.cnn.com', [story.expectations.ALL], 'crbug.com/528472')
