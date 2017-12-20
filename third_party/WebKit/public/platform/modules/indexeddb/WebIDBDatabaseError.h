@@ -41,16 +41,11 @@ class WebIDBDatabaseError {
   WebIDBDatabaseError(unsigned short code, const WebString& message)
       : code_(code), message_(message) {}
 
-  WebIDBDatabaseError(const WebIDBDatabaseError& error)
-      : code_(error.code_), message_(error.message_) {}
+  WebIDBDatabaseError(const WebIDBDatabaseError& error) = default;
 
-  ~WebIDBDatabaseError() {}
+  ~WebIDBDatabaseError() = default;
 
-  WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error) {
-    code_ = error.code_;
-    message_ = error.message_;
-    return *this;
-  }
+  WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error) = default;
 
   unsigned short Code() const { return code_; }
   const WebString& Message() const { return message_; }

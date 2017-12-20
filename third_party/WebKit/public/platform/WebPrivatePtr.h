@@ -230,8 +230,8 @@ class PtrStorage : public PtrStorageImpl<T,
 
  private:
   // Prevent construction via normal means.
-  PtrStorage();
-  PtrStorage(const PtrStorage&);
+  PtrStorage() = delete;
+  PtrStorage(const PtrStorage&) = delete;
 };
 #endif
 

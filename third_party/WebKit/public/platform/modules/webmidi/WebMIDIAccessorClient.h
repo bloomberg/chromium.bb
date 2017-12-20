@@ -66,7 +66,7 @@ class WebMIDIAccessorClient {
                                   double time_stamp) = 0;
 
  protected:
-  virtual ~WebMIDIAccessorClient() {}
+  virtual ~WebMIDIAccessorClient() = default;
 };
 
 }  // namespace blink

@@ -51,7 +51,7 @@ class WebNetworkStateNotifier {
   BLINK_PLATFORM_EXPORT static void SetSaveDataEnabled(bool enabled);
 
  private:
-  WebNetworkStateNotifier();
+  WebNetworkStateNotifier() = delete;
 };
 
 }  // namespace blink

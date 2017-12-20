@@ -44,7 +44,7 @@ class WebSecurityOrigin;
 // entire browser.
 class WebStorageNamespace {
  public:
-  virtual ~WebStorageNamespace() {}
+  virtual ~WebStorageNamespace() = default;
 
   // Create a new WebStorageArea object. Two subsequent calls with the same
   // origin will return two different WebStorageArea objects that share the same

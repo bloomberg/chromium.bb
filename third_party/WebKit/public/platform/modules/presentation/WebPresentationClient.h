@@ -25,7 +25,7 @@ class WebVector;
 // onion souped (crbug.com/749327).
 class WebPresentationClient {
  public:
-  virtual ~WebPresentationClient() {}
+  virtual ~WebPresentationClient() = default;
 
   // Passes the Blink-side delegate to the embedder.
   virtual void SetReceiver(WebPresentationReceiver*) = 0;

@@ -36,7 +36,7 @@ class WebGestureCurveTarget {
                         const WebFloatSize& velocity) = 0;
 
  protected:
-  virtual ~WebGestureCurveTarget() {}
+  virtual ~WebGestureCurveTarget() = default;
 };
 
 }  // namespace blink

@@ -29,7 +29,7 @@ class WebDocumentSubresourceFilter;
 // used to create a new WebURLLoader instance in the worker thread.
 class WebWorkerFetchContext {
  public:
-  virtual ~WebWorkerFetchContext() {}
+  virtual ~WebWorkerFetchContext() = default;
 
   virtual void InitializeOnWorkerThread(
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;

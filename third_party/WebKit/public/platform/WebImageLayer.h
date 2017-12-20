@@ -40,7 +40,7 @@ namespace blink {
 
 class WebImageLayer {
  public:
-  virtual ~WebImageLayer() {}
+  virtual ~WebImageLayer() = default;
 
   virtual WebLayer* Layer() = 0;
   virtual void SetImage(PaintImage) = 0;

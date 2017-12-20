@@ -294,7 +294,7 @@ struct WebMediaTrackConstraintSet {
 
 class WebMediaConstraints {
  public:
-  WebMediaConstraints() {}
+  WebMediaConstraints() = default;
   WebMediaConstraints(const WebMediaConstraints& other) { Assign(other); }
   ~WebMediaConstraints() { Reset(); }
 

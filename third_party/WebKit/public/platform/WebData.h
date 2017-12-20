@@ -50,7 +50,7 @@ class BLINK_PLATFORM_EXPORT WebData {
  public:
   ~WebData() { Reset(); }
 
-  WebData() {}
+  WebData() = default;
 
   WebData(const char* data, size_t size) { Assign(data, size); }
 

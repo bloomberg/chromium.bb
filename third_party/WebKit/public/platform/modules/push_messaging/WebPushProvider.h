@@ -25,7 +25,7 @@ using WebPushUnsubscribeCallbacks = WebCallbacks<bool, const WebPushError&>;
 
 class WebPushProvider {
  public:
-  virtual ~WebPushProvider() {}
+  virtual ~WebPushProvider() = default;
 
   // Takes ownership of the WebPushSubscriptionCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.

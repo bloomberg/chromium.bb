@@ -71,7 +71,7 @@ class WebRTCICECandidate final : public base::RefCounted<WebRTCICECandidate> {
         sdp_mid_(sdp_mid),
         sdp_m_line_index_(sdp_m_line_index) {}
 
-  ~WebRTCICECandidate() {}
+  ~WebRTCICECandidate() = default;
 
   WebString candidate_;
   WebString sdp_mid_;

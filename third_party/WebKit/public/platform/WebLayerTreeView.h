@@ -70,7 +70,7 @@ class WebLayerTreeView {
   };
   using ReportTimeCallback = base::Callback<void(SwapResult, double)>;
 
-  virtual ~WebLayerTreeView() {}
+  virtual ~WebLayerTreeView() = default;
 
   // Initialization and lifecycle --------------------------------------
 

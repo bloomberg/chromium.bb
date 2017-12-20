@@ -76,7 +76,7 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
   virtual size_t ApproximateUnsharedMemoryUsage() const { return 0; }
 
  protected:
-  virtual ~WebContentLayerClient() {}
+  virtual ~WebContentLayerClient() = default;
 };
 
 }  // namespace blink

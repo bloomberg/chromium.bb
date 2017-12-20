@@ -41,7 +41,7 @@ struct WebIDBValue;
 
 class WebIDBCallbacks {
  public:
-  virtual ~WebIDBCallbacks() {}
+  virtual ~WebIDBCallbacks() = default;
 
   // Pointers transfer ownership.
   virtual void OnError(const WebIDBDatabaseError&) = 0;

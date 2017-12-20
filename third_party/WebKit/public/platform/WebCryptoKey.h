@@ -90,7 +90,7 @@ class WebCryptoKeyHandle;
 class WebCryptoKey {
  public:
   // Constructs a "null" key (One for which isNull() returns true).
-  WebCryptoKey() {}
+  WebCryptoKey() = default;
   ~WebCryptoKey() { Reset(); }
 
   WebCryptoKey(const WebCryptoKey& other) { Assign(other); }
@@ -137,7 +137,7 @@ class WebCryptoKey {
 // of this object is controlled by WebCryptoKey using reference counting.
 class WebCryptoKeyHandle {
  public:
-  virtual ~WebCryptoKeyHandle() {}
+  virtual ~WebCryptoKeyHandle() = default;
 };
 
 }  // namespace blink

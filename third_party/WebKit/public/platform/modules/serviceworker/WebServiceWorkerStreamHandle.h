@@ -19,7 +19,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerStreamHandle {
   // end of the body or it has accidentally finished.
   class Listener {
    public:
-    virtual ~Listener(){};
+    virtual ~Listener() = default;
+    ;
     virtual void OnAborted() = 0;
     virtual void OnCompleted() = 0;
   };

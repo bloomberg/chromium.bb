@@ -18,7 +18,7 @@ class WebServiceWorkerProxy {
   virtual void DispatchStateChangeEvent() = 0;
 
  protected:
-  virtual ~WebServiceWorkerProxy() {}
+  virtual ~WebServiceWorkerProxy() = default;
 };
 
 }  // namespace blink

@@ -59,7 +59,7 @@ class WebFileUtilities {
   virtual WebURL FilePathToURL(const WebString& path) { return WebURL(); }
 
  protected:
-  ~WebFileUtilities() {}
+  ~WebFileUtilities() = default;
 };
 
 }  // namespace blink

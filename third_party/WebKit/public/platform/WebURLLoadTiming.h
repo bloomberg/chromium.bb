@@ -46,7 +46,7 @@ class WebURLLoadTiming {
  public:
   ~WebURLLoadTiming() { Reset(); }
 
-  WebURLLoadTiming() {}
+  WebURLLoadTiming() = default;
   WebURLLoadTiming(const WebURLLoadTiming& d) { Assign(d); }
   WebURLLoadTiming& operator=(const WebURLLoadTiming& d) {
     Assign(d);

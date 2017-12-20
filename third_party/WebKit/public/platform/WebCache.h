@@ -75,7 +75,7 @@ class WebCache {
   BLINK_PLATFORM_EXPORT static void GetResourceTypeStats(ResourceTypeStats*);
 
  private:
-  WebCache();  // Not intended to be instanced.
+  WebCache() = delete;  // Not intended to be instanced.
 };
 
 }  // namespace blink

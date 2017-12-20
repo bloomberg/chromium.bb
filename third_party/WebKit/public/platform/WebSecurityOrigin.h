@@ -49,7 +49,7 @@ class WebSecurityOrigin {
  public:
   ~WebSecurityOrigin() { Reset(); }
 
-  WebSecurityOrigin() {}
+  WebSecurityOrigin() = default;
   WebSecurityOrigin(const WebSecurityOrigin& s) { Assign(s); }
   WebSecurityOrigin& operator=(const WebSecurityOrigin& s) {
     Assign(s);

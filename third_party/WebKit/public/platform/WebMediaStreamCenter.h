@@ -40,7 +40,7 @@ class WebMediaStreamSource;
 
 class WebMediaStreamCenter {
  public:
-  virtual ~WebMediaStreamCenter() {}
+  virtual ~WebMediaStreamCenter() = default;
 
   // Track functionality.
   virtual void DidCreateMediaStreamTrack(const WebMediaStreamTrack&) {}

@@ -195,7 +195,7 @@ class WebFileSystem {
   virtual bool WaitForAdditionalResult(int callbacks_id) = 0;
 
  protected:
-  virtual ~WebFileSystem() {}
+  virtual ~WebFileSystem() = default;
 };
 
 }  // namespace blink

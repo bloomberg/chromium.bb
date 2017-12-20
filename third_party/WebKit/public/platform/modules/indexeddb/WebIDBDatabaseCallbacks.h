@@ -40,7 +40,7 @@ struct WebIDBObservation;
 
 class WebIDBDatabaseCallbacks {
  public:
-  virtual ~WebIDBDatabaseCallbacks() {}
+  virtual ~WebIDBDatabaseCallbacks() = default;
 
   virtual void OnForcedClose() = 0;
   virtual void OnVersionChange(long long old_version,

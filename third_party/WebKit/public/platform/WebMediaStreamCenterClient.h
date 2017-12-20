@@ -39,7 +39,7 @@ class WebMediaStream;
 
 class BLINK_PLATFORM_EXPORT WebMediaStreamCenterClient {
  public:
-  virtual ~WebMediaStreamCenterClient() {}
+  virtual ~WebMediaStreamCenterClient() = default;
 
   virtual void StopLocalMediaStream(const WebMediaStream&) = 0;
 };

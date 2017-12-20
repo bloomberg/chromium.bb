@@ -45,19 +45,13 @@ class KURL;
 
 class WebURL {
  public:
-  ~WebURL() {}
+  ~WebURL() = default;
 
   WebURL() : is_valid_(false) {}
 
-  WebURL(const WebURL& url)
-      : string_(url.string_), parsed_(url.parsed_), is_valid_(url.is_valid_) {}
+  WebURL(const WebURL& url) = default;
 
-  WebURL& operator=(const WebURL& url) {
-    string_ = url.string_;
-    parsed_ = url.parsed_;
-    is_valid_ = url.is_valid_;
-    return *this;
-  }
+  WebURL& operator=(const WebURL& url) = default;
 
   const WebString& GetString() const { return string_; }
 

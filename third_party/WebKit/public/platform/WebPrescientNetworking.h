@@ -39,7 +39,7 @@ namespace blink {
 
 class WebPrescientNetworking {
  public:
-  virtual ~WebPrescientNetworking() {}
+  virtual ~WebPrescientNetworking() = default;
 
   // When a page navigation is speculated, DNS prefetch is triggered to hide
   // the host resolution latency.

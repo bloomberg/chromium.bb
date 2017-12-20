@@ -35,7 +35,7 @@ namespace blink {
 // http://dev.chromium.org/blink/slimming-paint.
 class WebDisplayItemList {
  public:
-  virtual ~WebDisplayItemList() {}
+  virtual ~WebDisplayItemList() = default;
 
   virtual void AppendDrawingItem(const WebRect& visual_rect,
                                  sk_sp<const cc::PaintRecord>) {}

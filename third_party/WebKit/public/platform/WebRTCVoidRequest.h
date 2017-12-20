@@ -41,7 +41,7 @@ class RTCVoidRequest;
 
 class WebRTCVoidRequest {
  public:
-  WebRTCVoidRequest() {}
+  WebRTCVoidRequest() = default;
   WebRTCVoidRequest(const WebRTCVoidRequest& other) { Assign(other); }
   ~WebRTCVoidRequest() { Reset(); }
 

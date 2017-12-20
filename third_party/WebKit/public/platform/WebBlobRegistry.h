@@ -60,7 +60,7 @@ class WebBlobRegistry {
   // * Append.* methods are invalid after Build() is called.
   class Builder {
    public:
-    virtual ~Builder() {}
+    virtual ~Builder() = default;
     virtual void AppendData(const WebThreadSafeData&) = 0;
     virtual void AppendFile(const WebString& path,
                             uint64_t offset,
@@ -81,7 +81,7 @@ class WebBlobRegistry {
     virtual void Build() = 0;
   };
 
-  virtual ~WebBlobRegistry() {}
+  virtual ~WebBlobRegistry() = default;
 
   // TODO(dmurph): Deprecate and migrate to CreateBuilder
   virtual void RegisterBlobData(const WebString& uuid, const WebBlobData&) {}

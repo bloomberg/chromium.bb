@@ -40,7 +40,7 @@ namespace blink {
 // the WebLayerTreeView is destroyed.
 class WebExternalTextureLayer {
  public:
-  virtual ~WebExternalTextureLayer() {}
+  virtual ~WebExternalTextureLayer() = default;
 
   virtual WebLayer* Layer() = 0;
 

@@ -132,7 +132,7 @@ class WebServiceWorkerProvider {
     return false;
   }
 
-  virtual ~WebServiceWorkerProvider() {}
+  virtual ~WebServiceWorkerProvider() = default;
 };
 
 }  // namespace blink

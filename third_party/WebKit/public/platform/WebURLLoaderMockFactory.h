@@ -23,7 +23,7 @@ class WebURLLoaderMockFactory {
  public:
   static std::unique_ptr<WebURLLoaderMockFactory> Create();
 
-  virtual ~WebURLLoaderMockFactory() {}
+  virtual ~WebURLLoaderMockFactory() = default;
 
   // Create a WebURLLoader that takes care of mocked requests.
   // Non-mocked request are forwarded to given loader which should not

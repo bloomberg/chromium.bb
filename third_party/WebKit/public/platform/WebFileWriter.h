@@ -40,7 +40,7 @@ class WebString;
 
 class WebFileWriter {
  public:
-  virtual ~WebFileWriter() {}
+  virtual ~WebFileWriter() = default;
 
   // Only one write or one truncate operation can be in progress at a time.
   // These functions are asynchronous and will report results through the

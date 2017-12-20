@@ -34,7 +34,7 @@ namespace blink {
 
 class WebSpeechSynthesizerClient {
  public:
-  virtual ~WebSpeechSynthesizerClient() {}
+  virtual ~WebSpeechSynthesizerClient() = default;
 
   virtual void SetVoiceList(const WebVector<WebSpeechSynthesisVoice>&) = 0;
   virtual void DidStartSpeaking(const WebSpeechSynthesisUtterance&) = 0;

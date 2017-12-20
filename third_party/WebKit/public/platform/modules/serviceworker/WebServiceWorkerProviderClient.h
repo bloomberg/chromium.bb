@@ -51,7 +51,7 @@ class WebString;
 // MockServiceWorkerProviderClient for unit tests.
 class WebServiceWorkerProviderClient {
  public:
-  virtual ~WebServiceWorkerProviderClient() {}
+  virtual ~WebServiceWorkerProviderClient() = default;
 
   virtual void SetController(std::unique_ptr<WebServiceWorker::Handle>,
                              bool should_notify_controller_change) = 0;

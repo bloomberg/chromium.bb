@@ -37,7 +37,7 @@ class RTCStatsResponseBase;
 class WebRTCStatsResponse {
  public:
   WebRTCStatsResponse(const WebRTCStatsResponse& other) { Assign(other); }
-  WebRTCStatsResponse() {}
+  WebRTCStatsResponse() = default;
   ~WebRTCStatsResponse() { Reset(); }
 
   WebRTCStatsResponse& operator=(const WebRTCStatsResponse& other) {

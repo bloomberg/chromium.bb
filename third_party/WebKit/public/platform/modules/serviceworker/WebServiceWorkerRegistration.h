@@ -23,7 +23,7 @@ struct WebNavigationPreloadState;
 // implementation via the handle to update or unregister the registration.
 class WebServiceWorkerRegistration {
  public:
-  virtual ~WebServiceWorkerRegistration() {}
+  virtual ~WebServiceWorkerRegistration() = default;
 
   using WebServiceWorkerUpdateCallbacks =
       WebCallbacks<void, const WebServiceWorkerError&>;
@@ -43,7 +43,7 @@ class WebServiceWorkerRegistration {
   // registration representation while Blink is owning this handle.
   class Handle {
    public:
-    virtual ~Handle() {}
+    virtual ~Handle() = default;
     virtual WebServiceWorkerRegistration* Registration() { return nullptr; }
   };
 

@@ -52,7 +52,7 @@ class WebMediaSource {
     kEndOfStreamStatusDecodeError,
   };
 
-  virtual ~WebMediaSource() {}
+  virtual ~WebMediaSource() = default;
   virtual AddStatus AddSourceBuffer(const WebString& type,
                                     const WebString& codecs,
                                     WebSourceBuffer**) = 0;

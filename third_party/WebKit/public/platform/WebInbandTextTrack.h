@@ -48,7 +48,7 @@ class WebInbandTextTrack {
     kKindNone
   };
 
-  virtual ~WebInbandTextTrack() {}
+  virtual ~WebInbandTextTrack() = default;
 
   virtual void SetClient(WebInbandTextTrackClient*) = 0;
   virtual WebInbandTextTrackClient* Client() = 0;

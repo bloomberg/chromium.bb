@@ -17,7 +17,7 @@ struct WebPushSubscriptionOptions;
 
 class WebPushClient {
  public:
-  virtual ~WebPushClient() {}
+  virtual ~WebPushClient() = default;
 
   // Ownership of the WebServiceWorkerRegistration is not transferred.
   // Ownership of the callbacks is transferred to the client.

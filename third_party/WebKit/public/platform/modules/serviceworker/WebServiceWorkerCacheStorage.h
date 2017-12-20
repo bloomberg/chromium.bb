@@ -36,7 +36,7 @@ class WebServiceWorkerCacheStorage {
       WebCallbacks<const WebServiceWorkerResponse&,
                    blink::mojom::CacheStorageError>;
 
-  virtual ~WebServiceWorkerCacheStorage() {}
+  virtual ~WebServiceWorkerCacheStorage() = default;
 
   // Ownership of the CacheStorage*Callbacks methods passes to the
   // WebServiceWorkerCacheStorage instance, which will delete it after calling

@@ -41,7 +41,7 @@ class WebIDBKey {
  public:
   // Please use one of the factory methods. This is public only to allow
   // WebVector.
-  WebIDBKey() {}
+  WebIDBKey() = default;
   ~WebIDBKey() { Reset(); }
 
   BLINK_EXPORT static WebIDBKey CreateArray(const WebVector<WebIDBKey>&);

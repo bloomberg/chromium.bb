@@ -40,7 +40,7 @@ class WebRTCDataChannelHandlerClient {
     kReadyStateClosed = 3,
   };
 
-  virtual ~WebRTCDataChannelHandlerClient() {}
+  virtual ~WebRTCDataChannelHandlerClient() = default;
 
   virtual void DidChangeReadyState(ReadyState) = 0;
   // TODO(bemasc): Make this pure virtual once Chromium unit tests are updated

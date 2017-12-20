@@ -40,7 +40,7 @@ class WebString;
 
 class WebIDBFactory {
  public:
-  virtual ~WebIDBFactory() {}
+  virtual ~WebIDBFactory() = default;
 
   virtual void GetDatabaseNames(WebIDBCallbacks*, const WebSecurityOrigin&) = 0;
   virtual void Open(const WebString& name,

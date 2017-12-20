@@ -12,7 +12,7 @@ namespace blink {
 // WebEnabledClientHints stores all the client hints along with whether the hint
 // is enabled or not.
 struct WebEnabledClientHints {
-  WebEnabledClientHints() {}
+  WebEnabledClientHints() = default;
 
   bool IsEnabled(mojom::WebClientHintsType type) const {
     return enabled_types_[static_cast<int>(type)];

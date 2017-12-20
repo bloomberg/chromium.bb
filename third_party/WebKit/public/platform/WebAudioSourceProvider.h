@@ -34,7 +34,7 @@ class WebAudioSourceProviderClient;
 // Abstract interface for a pull-model client.
 class WebAudioSourceProvider {
  public:
-  virtual ~WebAudioSourceProvider() {}
+  virtual ~WebAudioSourceProvider() = default;
 
   // ProvideInput() gets called repeatedly to render time-slices of a continuous
   // audio stream. May be called from any thread.

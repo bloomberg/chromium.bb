@@ -32,7 +32,7 @@ class WebAudioSourceProviderClient {
   virtual void SetFormat(size_t number_of_channels, float sample_rate) = 0;
 
  protected:
-  virtual ~WebAudioSourceProviderClient() {}
+  virtual ~WebAudioSourceProviderClient() = default;
 };
 
 }  // namespace blink

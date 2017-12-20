@@ -34,7 +34,7 @@ class WebSpeechSynthesisUtterance;
 
 class WebSpeechSynthesizer {
  public:
-  virtual ~WebSpeechSynthesizer() {}
+  virtual ~WebSpeechSynthesizer() = default;
 
   virtual void UpdateVoiceList() = 0;
 

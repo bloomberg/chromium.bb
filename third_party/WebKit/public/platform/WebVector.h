@@ -66,7 +66,7 @@ class WebVector {
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
 
-  ~WebVector() {}
+  ~WebVector() = default;
 
   explicit WebVector(size_t size = 0) : data_(size) {}
 

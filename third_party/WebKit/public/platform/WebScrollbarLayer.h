@@ -39,7 +39,7 @@ namespace blink {
 
 class WebScrollbarLayer {
  public:
-  virtual ~WebScrollbarLayer() {}
+  virtual ~WebScrollbarLayer() = default;
 
   virtual WebLayer* Layer() = 0;
 

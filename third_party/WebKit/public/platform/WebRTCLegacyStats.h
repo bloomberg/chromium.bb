@@ -23,7 +23,7 @@ enum WebRTCLegacyStatsMemberType {
 
 class WebRTCLegacyStats {
  public:
-  virtual ~WebRTCLegacyStats() {}
+  virtual ~WebRTCLegacyStats() = default;
 
   virtual WebString Id() const = 0;
   virtual WebString GetType() const = 0;
@@ -36,7 +36,7 @@ class WebRTCLegacyStats {
 
 class WebRTCLegacyStatsMemberIterator {
  public:
-  virtual ~WebRTCLegacyStatsMemberIterator() {}
+  virtual ~WebRTCLegacyStatsMemberIterator() = default;
   virtual bool IsEnd() const = 0;
   virtual void Next() = 0;
 

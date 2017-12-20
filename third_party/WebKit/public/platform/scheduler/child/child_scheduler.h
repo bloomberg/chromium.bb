@@ -20,7 +20,7 @@ namespace scheduler {
 
 class BLINK_PLATFORM_EXPORT ChildScheduler {
  public:
-  virtual ~ChildScheduler() {}
+  virtual ~ChildScheduler() = default;
 
   // Returns the default task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() = 0;
@@ -63,7 +63,7 @@ class BLINK_PLATFORM_EXPORT ChildScheduler {
   virtual void Shutdown() = 0;
 
  protected:
-  ChildScheduler() {}
+  ChildScheduler() = default;
   DISALLOW_COPY_AND_ASSIGN(ChildScheduler);
 };
 

@@ -480,7 +480,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns an interface to run nested message loop. Used for debugging.
   class NestedMessageLoopRunner {
    public:
-    virtual ~NestedMessageLoopRunner() {}
+    virtual ~NestedMessageLoopRunner() = default;
     virtual void Run() = 0;
     virtual void QuitNow() = 0;
   };

@@ -37,7 +37,7 @@ namespace blink {
 
 class WebMIDIAccessor {
  public:
-  virtual ~WebMIDIAccessor() {}
+  virtual ~WebMIDIAccessor() = default;
 
   virtual void StartSession() {}
   virtual void Open(unsigned port_index) {}

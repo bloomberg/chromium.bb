@@ -42,7 +42,7 @@ class WebRTCSessionDescription;
 
 class WebRTCSessionDescriptionRequest {
  public:
-  WebRTCSessionDescriptionRequest() {}
+  WebRTCSessionDescriptionRequest() = default;
   WebRTCSessionDescriptionRequest(
       const WebRTCSessionDescriptionRequest& other) {
     Assign(other);

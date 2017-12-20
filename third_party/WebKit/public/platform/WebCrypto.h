@@ -110,7 +110,7 @@ class WebCryptoResult {
 
 class WebCryptoDigestor {
  public:
-  virtual ~WebCryptoDigestor() {}
+  virtual ~WebCryptoDigestor() = default;
 
   // Consume() will return |true| on the successful addition of data to the
   // partially generated digest. It will return |false| when that fails. After
@@ -130,7 +130,7 @@ class WebCryptoDigestor {
   }
 
  protected:
-  WebCryptoDigestor() {}
+  WebCryptoDigestor() = default;
 };
 
 class WebCrypto {
@@ -353,7 +353,7 @@ class WebCrypto {
   }
 
  protected:
-  virtual ~WebCrypto() {}
+  virtual ~WebCrypto() = default;
 };
 
 }  // namespace blink

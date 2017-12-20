@@ -40,7 +40,7 @@ class WebPublicSuffixList {
   virtual size_t GetPublicSuffixLength(const WebString&) = 0;
 
  protected:
-  virtual ~WebPublicSuffixList() {}
+  virtual ~WebPublicSuffixList() = default;
 };
 
 }  // namespace blink

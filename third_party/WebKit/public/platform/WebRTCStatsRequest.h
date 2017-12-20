@@ -60,7 +60,7 @@ class WebRTCStatsResponse;
 
 class WebRTCStatsRequest {
  public:
-  WebRTCStatsRequest() {}
+  WebRTCStatsRequest() = default;
   WebRTCStatsRequest(const WebRTCStatsRequest& other) { Assign(other); }
   ~WebRTCStatsRequest() { Reset(); }
 

@@ -116,7 +116,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   static const int64_t kUnknownEncodedDataLength = -1;
 
  protected:
-  virtual ~WebURLLoaderClient() {}
+  virtual ~WebURLLoaderClient() = default;
 };
 
 }  // namespace blink

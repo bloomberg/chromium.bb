@@ -19,7 +19,7 @@ class WebContentSettingCallbacksPrivate;
 class WebContentSettingCallbacks {
  public:
   ~WebContentSettingCallbacks() { Reset(); }
-  WebContentSettingCallbacks() {}
+  WebContentSettingCallbacks() = default;
   WebContentSettingCallbacks(const WebContentSettingCallbacks& c) { Assign(c); }
   WebContentSettingCallbacks& operator=(const WebContentSettingCallbacks& c) {
     Assign(c);

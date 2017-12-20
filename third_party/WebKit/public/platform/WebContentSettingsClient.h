@@ -115,7 +115,7 @@ class WebContentSettingsClient {
       base::TimeDelta duration,
       const blink::WebURL& url) {}
 
-  virtual ~WebContentSettingsClient() {}
+  virtual ~WebContentSettingsClient() = default;
 };
 
 }  // namespace blink

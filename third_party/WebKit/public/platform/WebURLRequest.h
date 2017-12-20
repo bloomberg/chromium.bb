@@ -162,7 +162,7 @@ class WebURLRequest {
 
   class ExtraData {
    public:
-    virtual ~ExtraData() {}
+    virtual ~ExtraData() = default;
   };
 
   BLINK_PLATFORM_EXPORT ~WebURLRequest();

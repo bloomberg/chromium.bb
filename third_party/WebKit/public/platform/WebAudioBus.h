@@ -42,7 +42,7 @@ class AudioBus;
 //
 class BLINK_PLATFORM_EXPORT WebAudioBus {
  public:
-  WebAudioBus() {}
+  WebAudioBus() = default;
   ~WebAudioBus() { Reset(); }
 
   // Initialize() allocates memory of the given length for the given number of
@@ -71,8 +71,8 @@ class BLINK_PLATFORM_EXPORT WebAudioBus {
 
  private:
   // Disallow copy and assign.
-  WebAudioBus(const WebAudioBus&);
-  void operator=(const WebAudioBus&);
+  WebAudioBus(const WebAudioBus&) = delete;
+  void operator=(const WebAudioBus&) = delete;
 
   AudioBus* private_ = nullptr;
 };

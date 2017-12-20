@@ -52,11 +52,11 @@ class WebServiceWorker {
   // Blink is owning this handle.
   class Handle {
    public:
-    virtual ~Handle() {}
+    virtual ~Handle() = default;
     virtual WebServiceWorker* ServiceWorker() { return nullptr; }
   };
 
-  virtual ~WebServiceWorker() {}
+  virtual ~WebServiceWorker() = default;
 
   // Sets ServiceWorkerProxy, with which callee can start making upcalls
   // to the ServiceWorker object via the client. This doesn't pass the

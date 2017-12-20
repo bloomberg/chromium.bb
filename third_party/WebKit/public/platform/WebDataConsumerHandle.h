@@ -41,7 +41,7 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
   // Client gets notification from the pipe.
   class BLINK_PLATFORM_EXPORT Client {
    public:
-    virtual ~Client() {}
+    virtual ~Client() = default;
     // The associated handle gets readable. This function will be called
     // when the associated reader was waiting but is not waiting any more.
     // This means this function can be called when handle gets errored or
@@ -65,7 +65,7 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
    public:
     // Destructing a reader means it is released and a user can get another
     // Reader by calling |ObtainReader| on any thread again.
-    virtual ~Reader() {}
+    virtual ~Reader() = default;
 
     // Reads data into |data| up to |size| bytes. The actual read size will
     // be stored in |*read_size|. This function cannot be called when a

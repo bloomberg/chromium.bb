@@ -43,7 +43,7 @@ class BLINK_PLATFORM_EXPORT WebLayerScrollClient {
   virtual void DidScroll(const gfx::ScrollOffset&, const cc::ElementId&) = 0;
 
  protected:
-  virtual ~WebLayerScrollClient() {}
+  virtual ~WebLayerScrollClient() = default;
 };
 
 }  // namespace blink

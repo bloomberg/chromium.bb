@@ -53,7 +53,7 @@ class WebRTCSessionDescriptionPrivate;
 
 class WebRTCSessionDescription {
  public:
-  WebRTCSessionDescription() {}
+  WebRTCSessionDescription() = default;
   WebRTCSessionDescription(const WebRTCSessionDescription& other) {
     Assign(other);
   }
