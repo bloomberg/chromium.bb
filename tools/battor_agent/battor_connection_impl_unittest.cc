@@ -310,6 +310,98 @@ TEST_F(BattOrConnectionImplTest, FlushFailsWithNonTimeoutError) {
   ASSERT_FALSE(GetOpenSuccess());
 }
 
+TEST_F(BattOrConnectionImplTest, ControlSendEscapesStartBytesCorrectly) {
+  OpenConnection();
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  SendControlMessage(
+      BATTOR_CONTROL_MESSAGE_TYPE_INIT,
+      BATTOR_CONTROL_BYTE_START,
+      BATTOR_CONTROL_BYTE_START);
+
+  const char expected_data[] = {
+      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_MESSAGE_TYPE_INIT,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_BYTE_START,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_BYTE_START,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_END,
+  };
+
+  ASSERT_TRUE(GetSendSuccess());
+  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(13)->data(), expected_data, 13));
+}
+
+TEST_F(BattOrConnectionImplTest, ControlSendEscapesEndBytesCorrectly) {
+  OpenConnection();
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  SendControlMessage(
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+      BATTOR_CONTROL_BYTE_END,
+      BATTOR_CONTROL_BYTE_END);
+
+  const char expected_data[] = {
+      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_BYTE_END,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_BYTE_END,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_END,
+  };
+
+  ASSERT_TRUE(GetSendSuccess());
+  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(13)->data(), expected_data, 13));
+}
+
+TEST_F(BattOrConnectionImplTest, ControlSendEscapesEscapeBytesCorrectly) {
+  OpenConnection();
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  SendControlMessage(
+      BATTOR_CONTROL_MESSAGE_TYPE_SELF_TEST,
+      BATTOR_CONTROL_BYTE_ESCAPE,
+      BATTOR_CONTROL_BYTE_ESCAPE);
+
+  const char expected_data[] = {
+      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_MESSAGE_TYPE_SELF_TEST,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_BYTE_ESCAPE,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_BYTE_ESCAPE,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_END,
+  };
+
+  ASSERT_TRUE(GetSendSuccess());
+  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(13)->data(), expected_data, 13));
+}
+
+TEST_F(BattOrConnectionImplTest, ControlSendEscapesParametersCorrectly) {
+  OpenConnection();
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  // Check if the two control parameters are ordered and escaped properly.
+  // This also checks the byte ordering of the two 16-bit control message
+  // parameters, which should be little-endian on the wire.
+  SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART, 0x0100, 0x0002);
+
+  const char expected_data[] = {
+      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x01,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x02,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_END,
+  };
+
+  ASSERT_TRUE(GetSendSuccess());
+  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(12)->data(), expected_data, 12));
+}
+
 TEST_F(BattOrConnectionImplTest, InitSendsCorrectBytes) {
   OpenConnection();
   AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
