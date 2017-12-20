@@ -111,7 +111,7 @@ static inline unsigned char FAR* chunkcopy_core_safe(
     unsigned len,
     unsigned char FAR* limit) {
   Assert(out + len <= limit, "chunk copy exceeds safety limit");
-  if (limit - out < CHUNKCOPY_CHUNK_SIZE) {
+  if ((limit - out) < (ptrdiff_t)CHUNKCOPY_CHUNK_SIZE) {
     const unsigned char FAR* Z_RESTRICT rfrom = from;
     if (len & 8) {
       Z_BUILTIN_MEMCPY(out, rfrom, 8);
@@ -396,7 +396,7 @@ static inline unsigned char FAR* chunkcopy_lapped_safe(
     unsigned len,
     unsigned char FAR* limit) {
   Assert(out + len <= limit, "chunk copy exceeds safety limit");
-  if (limit - out < CHUNKCOPY_CHUNK_SIZE * 3) {
+  if ((limit - out) < (ptrdiff_t)(3 * CHUNKCOPY_CHUNK_SIZE)) {
     /* TODO(cavalcantii): try harder to optimise this */
     while (len-- > 0) {
       *out = *(out - dist);
