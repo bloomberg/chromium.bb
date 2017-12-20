@@ -113,12 +113,19 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
 ShelfWidget::DelegateView::~DelegateView() = default;
 
 // static
-bool ShelfWidget::IsUsingMdLoginShelf() {
-  return !switches::IsUsingWebUiLock() &&
-         (Shell::Get()->session_controller()->GetSessionState() ==
-              session_manager::SessionState::LOCKED ||
-          Shell::Get()->session_controller()->GetSessionState() ==
-              session_manager::SessionState::LOGIN_SECONDARY);
+bool ShelfWidget::IsUsingViewsShelf() {
+  switch (Shell::Get()->session_controller()->GetSessionState()) {
+    case session_manager::SessionState::ACTIVE:
+      return true;
+    case session_manager::SessionState::LOCKED:
+    case session_manager::SessionState::LOGIN_SECONDARY:
+      return !switches::IsUsingWebUiLock();
+    case session_manager::SessionState::UNKNOWN:
+    case session_manager::SessionState::OOBE:
+    case session_manager::SessionState::LOGIN_PRIMARY:
+    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
+      return switches::IsUsingViewsLogin();
+  }
 }
 
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
@@ -143,7 +150,7 @@ void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
 views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
   // If views-based login shelf is shown, we want to focus either its first or
   // last child, otherwise focus on the first child as default.
-  if (IsUsingMdLoginShelf())
+  if (IsUsingViewsShelf())
     return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
                                          default_last_focusable_child_);
   return GetFirstFocusableChild();
@@ -358,26 +365,34 @@ void ShelfWidget::WillDeleteShelfLayoutManager() {
 }
 
 void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
-  switch (state) {
-    case session_manager::SessionState::ACTIVE:
-      login_shelf_view_->SetVisible(false);
-      shelf_view_->SetVisible(true);
-      // TODO(wzang): Combine with the codes specific to SessionState::ACTIVE
-      // in PostCreateShelf() when view-based shelf on login screen is
-      // supported.
-      break;
-    case session_manager::SessionState::LOCKED:
-    case session_manager::SessionState::LOGIN_SECONDARY:
-      shelf_view_->SetVisible(false);
-      login_shelf_view_->SetVisible(true);
-      break;
-    case session_manager::SessionState::OOBE:
-    case session_manager::SessionState::LOGIN_PRIMARY:
-    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
-    case session_manager::SessionState::UNKNOWN:
-      login_shelf_view_->SetVisible(false);
-      shelf_view_->SetVisible(false);
-      break;
+  if (!IsUsingViewsShelf()) {
+    login_shelf_view_->SetVisible(false);
+    shelf_view_->SetVisible(false);
+  } else {
+    switch (state) {
+      case session_manager::SessionState::ACTIVE:
+        login_shelf_view_->SetVisible(false);
+        shelf_view_->SetVisible(true);
+        // TODO(wzang): Combine with the codes specific to SessionState::ACTIVE
+        // in PostCreateShelf() when view-based shelf on login screen is
+        // supported.
+        break;
+      case session_manager::SessionState::LOCKED:
+      case session_manager::SessionState::LOGIN_SECONDARY:
+        shelf_view_->SetVisible(false);
+        login_shelf_view_->SetVisible(true);
+        break;
+      case session_manager::SessionState::OOBE:
+      case session_manager::SessionState::LOGIN_PRIMARY:
+      case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
+        login_shelf_view_->SetVisible(true);
+        shelf_view_->SetVisible(false);
+        break;
+      case session_manager::SessionState::UNKNOWN:
+        login_shelf_view_->SetVisible(false);
+        shelf_view_->SetVisible(false);
+        break;
+    }
   }
   login_shelf_view_->UpdateAfterSessionStateChange(state);
 }

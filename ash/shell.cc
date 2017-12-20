@@ -1238,10 +1238,12 @@ void Shell::OnWindowActivated(
 }
 
 void Shell::OnSessionStateChanged(session_manager::SessionState state) {
-  // Initialize the shelf when a session becomes active. It's safe to do this
-  // multiple times (e.g. initial login vs. multiprofile add session).
+  // Initialize the |shelf_window_watcher_| when a session becomes active.
+  // Shelf itself is initialized in RootWindowController.
   if (state == session_manager::SessionState::ACTIVE) {
-    InitializeShelf();
+    if (!shelf_window_watcher_)
+      shelf_window_watcher_ =
+          std::make_unique<ShelfWindowWatcher>(shelf_model());
   }
   // Recreates keyboard on user profile change, to refresh keyboard
   // extensions with the new profile and the extensions call proper IME.
@@ -1274,18 +1276,6 @@ void Shell::OnLockStateChanged(bool locked) {
       DCHECK(container->children().empty());
   }
 #endif
-}
-
-void Shell::InitializeShelf() {
-  // Must occur after SessionController creation and user login.
-  DCHECK(session_controller());
-  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
-
-  if (!shelf_window_watcher_)
-    shelf_window_watcher_ = std::make_unique<ShelfWindowWatcher>(shelf_model());
-
-  for (RootWindowController* root : GetAllRootWindowControllers())
-    root->InitializeShelf();
 }
 
 void Shell::OnLocalStatePrefServiceInitialized(

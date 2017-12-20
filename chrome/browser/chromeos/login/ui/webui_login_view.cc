@@ -603,7 +603,7 @@ bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
   // goes to the system tray, because the web-UI shelf has already been
   // traversed when we reach here.
   ash::Shelf* shelf = ash::Shelf::ForWindow(GetWidget()->GetNativeWindow());
-  if (!reverse && ash::ShelfWidget::IsUsingMdLoginShelf()) {
+  if (!reverse && ash::ShelfWidget::IsUsingViewsShelf()) {
     shelf->shelf_widget()->set_default_last_focusable_child(reverse);
     ash::Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
     return true;

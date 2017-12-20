@@ -341,8 +341,7 @@ void RootWindowController::InitializeShelf() {
 
   // TODO(jamescook): Pass |shelf_| into the constructors for these layout
   // managers.
-  if (panel_layout_manager_)
-    panel_layout_manager_->SetShelf(shelf_.get());
+  panel_layout_manager_->SetShelf(shelf_.get());
 
   // TODO(jamescook): Eliminate this. Refactor AttachedPanelWidgetTargeter's
   // access to Shelf.
@@ -702,6 +701,10 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   InitLayoutManagers();
   InitTouchHuds();
+  // Initializing views shelf here will cause it being visible on login screen
+  // on secondary display once views based login is enabled. See
+  // https://crbug.com/796239.
+  InitializeShelf();
 
   if (Shell::GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(nullptr)
@@ -715,10 +718,6 @@ void RootWindowController::Init(RootWindowType root_window_type) {
       shell->CreateKeyboard();
   } else {
     window_tree_host_->Show();
-
-    // At the login screen the shelf will be hidden because its container window
-    // is hidden. InitializeShelf() will make it visible.
-    InitializeShelf();
 
     // Notify shell observers about new root window.
     shell->OnRootWindowAdded(root_window);
@@ -880,11 +879,7 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(app_list_container);
   app_list_container->SetProperty(kUsesScreenCoordinatesKey, true);
 
-  // The shelf should be displayed on lock screen if md-based login/lock UI is
-  // enabled.
-  aura::Window* shelf_container_parent = switches::IsUsingWebUiLock()
-                                             ? non_lock_screen_containers
-                                             : lock_screen_related_containers;
+  aura::Window* shelf_container_parent = lock_screen_related_containers;
   aura::Window* shelf_container = CreateContainer(
       kShellWindowId_ShelfContainer, "ShelfContainer", shelf_container_parent);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(shelf_container);

@@ -121,9 +121,6 @@ class ASH_EXPORT RootWindowController {
 
   Shelf* shelf() const { return shelf_.get(); }
 
-  // Initializes the shelf for this root window and notifies observers.
-  void InitializeShelf();
-
   // Returns the instance of the sidebar.
   Sidebar* sidebar() { return sidebar_.get(); }
 
@@ -268,6 +265,9 @@ class ASH_EXPORT RootWindowController {
   void Init(RootWindowType root_window_type);
 
   void InitLayoutManagers();
+
+  // Initializes the shelf for this root window and notifies observers.
+  void InitializeShelf();
 
   // Creates the containers (aura::Windows) used by the shell.
   void CreateContainers();
