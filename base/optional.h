@@ -6,6 +6,7 @@
 #define BASE_OPTIONAL_H_
 
 #include <type_traits>
+#include <utility>
 
 #include "base/logging.h"
 
@@ -37,14 +38,8 @@ struct OptionalStorage {
   // to avoid errors in g++ 4.8.
   constexpr OptionalStorage() : empty_('\0') {}
 
-  constexpr explicit OptionalStorage(const T& value)
-      : is_null_(false), value_(value) {}
-
-  constexpr explicit OptionalStorage(T&& value)
-      : is_null_(false), value_(std::move(value)) {}
-
   template <class... Args>
-  constexpr explicit OptionalStorage(base::in_place_t, Args&&... args)
+  constexpr explicit OptionalStorage(in_place_t, Args&&... args)
       : is_null_(false), value_(std::forward<Args>(args)...) {}
 
   // When T is not trivially destructible we must call its
@@ -70,14 +65,8 @@ struct OptionalStorage<T, true> {
   // to avoid errors in g++ 4.8.
   constexpr OptionalStorage() : empty_('\0') {}
 
-  constexpr explicit OptionalStorage(const T& value)
-      : is_null_(false), value_(value) {}
-
-  constexpr explicit OptionalStorage(T&& value)
-      : is_null_(false), value_(std::move(value)) {}
-
   template <class... Args>
-  constexpr explicit OptionalStorage(base::in_place_t, Args&&... args)
+  constexpr explicit OptionalStorage(in_place_t, Args&&... args)
       : is_null_(false), value_(std::forward<Args>(args)...) {}
 
   // When T is trivially destructible (i.e. its destructor does nothing) there
@@ -93,6 +82,84 @@ struct OptionalStorage<T, true> {
     char empty_;
     T value_;
   };
+};
+
+// Base class to support conditionally usable copy-/move- constructors
+// and assign operators.
+template <typename T>
+class OptionalBase {
+  // This class provides implementation rather than public API, so everything
+  // should be hidden. Often we use composition, but we cannot in this case
+  // because of C++ language restriction.
+ protected:
+  constexpr OptionalBase() = default;
+
+  // TODO(dcheng): Make these constexpr iff T is trivially constructible.
+  OptionalBase(const OptionalBase& other) {
+    if (!other.storage_.is_null_)
+      Init(other.storage_.value_);
+  }
+
+  OptionalBase(OptionalBase&& other) {
+    if (!other.storage_.is_null_)
+      Init(std::move(other.storage_.value_));
+  }
+
+  template <class... Args>
+  constexpr explicit OptionalBase(in_place_t, Args&&... args)
+      : storage_(in_place, std::forward<Args>(args)...) {}
+
+  ~OptionalBase() = default;
+
+  OptionalBase& operator=(const OptionalBase& other) {
+    if (other.storage_.is_null_) {
+      FreeIfNeeded();
+      return *this;
+    }
+
+    InitOrAssign(other.storage_.value_);
+    return *this;
+  }
+
+  OptionalBase& operator=(OptionalBase&& other) {
+    if (other.storage_.is_null_) {
+      FreeIfNeeded();
+      return *this;
+    }
+
+    InitOrAssign(std::move(other.storage_.value_));
+    return *this;
+  }
+
+  template <class... Args>
+  void Init(Args&&... args) {
+    DCHECK(storage_.is_null_);
+    new (&storage_.value_) T(std::forward<Args>(args)...);
+    storage_.is_null_ = false;
+  }
+
+  void InitOrAssign(const T& value) {
+    if (storage_.is_null_)
+      Init(value);
+    else
+      storage_.value_ = value;
+  }
+
+  void InitOrAssign(T&& value) {
+    if (storage_.is_null_)
+      Init(std::move(value));
+    else
+      storage_.value_ = std::move(value);
+  }
+
+  void FreeIfNeeded() {
+    if (storage_.is_null_)
+      return;
+    storage_.value_.~T();
+    storage_.is_null_ = true;
+  }
+
+  OptionalStorage<T> storage_;
 };
 
 }  // namespace internal
@@ -111,57 +178,37 @@ struct OptionalStorage<T, true> {
 // - No exceptions are thrown, because they are banned from Chromium.
 // - All the non-members are in the 'base' namespace instead of 'std'.
 template <typename T>
-class Optional {
+class Optional : public internal::OptionalBase<T> {
  public:
   using value_type = T;
 
+  // Defer default/copy/move constructor implementation to OptionalBase.
+  // TODO(hidehiko): Implement conditional enabling.
   constexpr Optional() = default;
+  Optional(const Optional& other) = default;
+  Optional(Optional&& other) = default;
 
-  constexpr Optional(base::nullopt_t) {}
+  constexpr Optional(nullopt_t) {}
 
-  // TODO(dcheng): Make these constexpr iff T is trivially constructible.
-  Optional(const Optional& other) {
-    if (!other.storage_.is_null_)
-      Init(other.value());
-  }
+  constexpr Optional(const T& value)
+      : internal::OptionalBase<T>(in_place, value) {}
 
-  Optional(Optional&& other) {
-    if (!other.storage_.is_null_)
-      Init(std::move(other.value()));
-  }
-
-  constexpr Optional(const T& value) : storage_(value) {}
-
-  constexpr Optional(T&& value) : storage_(std::move(value)) {}
+  constexpr Optional(T&& value)
+      : internal::OptionalBase<T>(in_place, std::move(value)) {}
 
   template <class... Args>
-  constexpr explicit Optional(base::in_place_t, Args&&... args)
-      : storage_(base::in_place, std::forward<Args>(args)...) {}
+  constexpr explicit Optional(in_place_t, Args&&... args)
+      : internal::OptionalBase<T>(in_place, std::forward<Args>(args)...) {}
 
   ~Optional() = default;
 
-  Optional& operator=(base::nullopt_t) {
+  // Defer copy-/move- assign operator implementation to OptionalBase.
+  // TOOD(hidehiko): Implement conditional enabling.
+  Optional& operator=(const Optional& other) = default;
+  Optional& operator=(Optional&& other) = default;
+
+  Optional& operator=(nullopt_t) {
     FreeIfNeeded();
-    return *this;
-  }
-
-  Optional& operator=(const Optional& other) {
-    if (other.storage_.is_null_) {
-      FreeIfNeeded();
-      return *this;
-    }
-
-    InitOrAssign(other.value());
-    return *this;
-  }
-
-  Optional& operator=(Optional&& other) {
-    if (other.storage_.is_null_) {
-      FreeIfNeeded();
-      return *this;
-    }
-
-    InitOrAssign(std::move(other.value()));
     return *this;
   }
 
@@ -268,47 +315,12 @@ class Optional {
   }
 
  private:
-  void Init(const T& value) {
-    DCHECK(storage_.is_null_);
-    new (&storage_.value_) T(value);
-    storage_.is_null_ = false;
-  }
-
-  void Init(T&& value) {
-    DCHECK(storage_.is_null_);
-    new (&storage_.value_) T(std::move(value));
-    storage_.is_null_ = false;
-  }
-
-  template <class... Args>
-  void Init(Args&&... args) {
-    DCHECK(storage_.is_null_);
-    new (&storage_.value_) T(std::forward<Args>(args)...);
-    storage_.is_null_ = false;
-  }
-
-  void InitOrAssign(const T& value) {
-    if (storage_.is_null_)
-      Init(value);
-    else
-      storage_.value_ = value;
-  }
-
-  void InitOrAssign(T&& value) {
-    if (storage_.is_null_)
-      Init(std::move(value));
-    else
-      storage_.value_ = std::move(value);
-  }
-
-  void FreeIfNeeded() {
-    if (storage_.is_null_)
-      return;
-    storage_.value_.~T();
-    storage_.is_null_ = true;
-  }
-
-  internal::OptionalStorage<T> storage_;
+  // Accessing template base class's protected member needs explicit
+  // declaration to do so.
+  using internal::OptionalBase<T>::FreeIfNeeded;
+  using internal::OptionalBase<T>::Init;
+  using internal::OptionalBase<T>::InitOrAssign;
+  using internal::OptionalBase<T>::storage_;
 };
 
 template <class T>
@@ -342,62 +354,62 @@ constexpr bool operator>=(const Optional<T>& lhs, const Optional<T>& rhs) {
 }
 
 template <class T>
-constexpr bool operator==(const Optional<T>& opt, base::nullopt_t) {
+constexpr bool operator==(const Optional<T>& opt, nullopt_t) {
   return !opt;
 }
 
 template <class T>
-constexpr bool operator==(base::nullopt_t, const Optional<T>& opt) {
+constexpr bool operator==(nullopt_t, const Optional<T>& opt) {
   return !opt;
 }
 
 template <class T>
-constexpr bool operator!=(const Optional<T>& opt, base::nullopt_t) {
+constexpr bool operator!=(const Optional<T>& opt, nullopt_t) {
   return !!opt;
 }
 
 template <class T>
-constexpr bool operator!=(base::nullopt_t, const Optional<T>& opt) {
+constexpr bool operator!=(nullopt_t, const Optional<T>& opt) {
   return !!opt;
 }
 
 template <class T>
-constexpr bool operator<(const Optional<T>& opt, base::nullopt_t) {
+constexpr bool operator<(const Optional<T>& opt, nullopt_t) {
   return false;
 }
 
 template <class T>
-constexpr bool operator<(base::nullopt_t, const Optional<T>& opt) {
+constexpr bool operator<(nullopt_t, const Optional<T>& opt) {
   return !!opt;
 }
 
 template <class T>
-constexpr bool operator<=(const Optional<T>& opt, base::nullopt_t) {
+constexpr bool operator<=(const Optional<T>& opt, nullopt_t) {
   return !opt;
 }
 
 template <class T>
-constexpr bool operator<=(base::nullopt_t, const Optional<T>& opt) {
+constexpr bool operator<=(nullopt_t, const Optional<T>& opt) {
   return true;
 }
 
 template <class T>
-constexpr bool operator>(const Optional<T>& opt, base::nullopt_t) {
+constexpr bool operator>(const Optional<T>& opt, nullopt_t) {
   return !!opt;
 }
 
 template <class T>
-constexpr bool operator>(base::nullopt_t, const Optional<T>& opt) {
+constexpr bool operator>(nullopt_t, const Optional<T>& opt) {
   return false;
 }
 
 template <class T>
-constexpr bool operator>=(const Optional<T>& opt, base::nullopt_t) {
+constexpr bool operator>=(const Optional<T>& opt, nullopt_t) {
   return true;
 }
 
 template <class T>
-constexpr bool operator>=(base::nullopt_t, const Optional<T>& opt) {
+constexpr bool operator>=(nullopt_t, const Optional<T>& opt) {
   return !opt;
 }
 
