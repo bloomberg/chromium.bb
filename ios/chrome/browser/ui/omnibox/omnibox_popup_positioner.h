@@ -13,11 +13,6 @@
 // adding the popup as a sibling either above or below this view.
 - (UIView*)popupAnchorView;
 
-// Returns the popup's frame, in the coordinate system of the view returned by
-// |popupView|'s superview.  If |height| is too large for the screen, the frame
-// may be shortened.
-- (CGRect)popupFrame:(CGFloat)height;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_POSITIONER_H_

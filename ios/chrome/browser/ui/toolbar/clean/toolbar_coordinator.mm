@@ -325,29 +325,6 @@
   return self.toolbarViewController.view;
 }
 
-- (CGRect)popupFrame:(CGFloat)height {
-  UIView* parent = [[self popupAnchorView] superview];
-  CGRect frame = [parent bounds];
-
-  if (IsIPadIdiom()) {
-    // For iPad, the omnibox is displayed between the location bar and the
-    // bottom of the toolbar.
-    CGRect fieldFrame = [parent convertRect:[_locationBarView bounds]
-                                   fromView:_locationBarView];
-    CGFloat maxY = CGRectGetMaxY(fieldFrame);
-    frame.origin.y = maxY + kiPadOmniboxPopupVerticalOffset;
-    frame.size.height = height;
-  } else {
-    // For iPhone place the popup just below the toolbar.
-    CGRect fieldFrame =
-        [parent convertRect:[self.toolbarViewController.view bounds]
-                   fromView:self.toolbarViewController.view];
-    frame.origin.y = CGRectGetMaxY(fieldFrame);
-    frame.size.height = CGRectGetMaxY([parent bounds]) - frame.origin.y;
-  }
-  return frame;
-}
-
 #pragma mark - LocationBarDelegate
 
 - (void)loadGURLFromLocationBar:(const GURL&)url

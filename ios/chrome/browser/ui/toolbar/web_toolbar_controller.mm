@@ -50,6 +50,7 @@
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_view.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
@@ -71,6 +72,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #import "ios/chrome/common/material_timing.h"
@@ -562,6 +564,14 @@ using ios::material::TimingFunction;
 - (void)start {
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  UILayoutGuide* omniboxPopupGuide = FindNamedGuide(kOmniboxGuide, self.view);
+  // The layout guide should be positioned with the same constraints as the
+  // location bar, but it doesn't work due to conflict between autolayout and
+  // autoresizing mask. Position it on the view instead.
+  AddSameConstraints(self.view, omniboxPopupGuide);
+}
+
 #pragma mark -
 #pragma mark Acessors
 
@@ -961,38 +971,6 @@ using ios::material::TimingFunction;
 
 - (UIView*)popupAnchorView {
   return self.view;
-}
-
-- (CGRect)popupFrame:(CGFloat)height {
-  UIView* parent = [[self popupAnchorView] superview];
-  CGRect frame = [parent bounds];
-
-  // Set tablet popup width to the same width and origin of omnibox.
-  if (IsIPadIdiom()) {
-    // For iPad, the omnibox visually extends to include the voice search button
-    // on the right. Start with the field's frame in |parent|'s coordinate
-    // system.
-    CGRect fieldFrame = [parent convertRect:[_locationBarView bounds]
-                                   fromView:_locationBarView];
-
-    // Now create a new frame that's below the field, stretching the full width
-    // of |parent|, minus an inset on each side.
-    CGFloat maxY = CGRectGetMaxY(fieldFrame);
-
-    // The popup extends to the full width of the screen.
-    frame.origin.x = 0;
-    frame.size.width = self.view.frame.size.width;
-
-    frame.origin.y = maxY + kiPadOmniboxPopupVerticalOffset;
-    frame.size.height = height;
-  } else {
-    // For iPhone place the popup just below the toolbar.
-    CGRect fieldFrame =
-        [parent convertRect:[_webToolbar bounds] fromView:_webToolbar];
-    frame.origin.y = CGRectGetMaxY(fieldFrame);
-    frame.size.height = CGRectGetMaxY([parent bounds]) - frame.origin.y;
-  }
-  return frame;
 }
 
 #pragma mark -
@@ -1907,16 +1885,6 @@ using ios::material::TimingFunction;
       // safe area insets change.
       [self layoutClippingView];
     }
-  }
-}
-
-- (void)viewDidLayoutSubviews {
-  [super viewDidLayoutSubviews];
-
-  // The popup positions itself as a static frame below the web toolbar.  This
-  // will no longer be necessary post omnibox popup boxing.
-  if (_popupView) {
-    _popupView->UpdatePopupAppearance();
   }
 }
 

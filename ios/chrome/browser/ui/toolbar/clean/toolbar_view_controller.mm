@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
@@ -821,6 +822,11 @@
   viewController.view.frame = subview.bounds;
   [subview addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
+}
+
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  UILayoutGuide* omniboxPopupGuide = FindNamedGuide(kOmniboxGuide, self.view);
+  AddSameConstraints(self.locationBarContainer, omniboxPopupGuide);
 }
 
 #pragma mark - Trait Collection Changes

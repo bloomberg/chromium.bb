@@ -205,6 +205,7 @@
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
@@ -2121,10 +2122,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (initialLayout)
     [self.view insertSubview:infoBarContainerView aboveSubview:_contentArea];
 
-  // Place the toolbar controller above the infobar container.
-  if (initialLayout)
+  // Place the toolbar controller above the infobar container and adds the
+  // omnibox layout guide.
+  if (initialLayout) {
     [[self view] insertSubview:_toolbarCoordinator.toolbarViewController.view
                   aboveSubview:infoBarContainerView];
+    AddNamedGuide(kOmniboxGuide, self.view);
+  }
   minY += CGRectGetHeight(toolbarFrame);
   if (initialLayout)
     [_toolbarCoordinator.toolbarViewController
