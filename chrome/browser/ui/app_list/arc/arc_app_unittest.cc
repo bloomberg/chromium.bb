@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
@@ -237,7 +238,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     size_t arc_count = 0;
     const size_t count = model_updater_->ItemCount();
     for (size_t i = 0; i < count; ++i) {
-      app_list::AppListItem* item = model_updater_->ItemAt(i);
+      ChromeAppListItem* item = model_updater_->ItemAtForTest(i);
       if (item->GetItemType() == ArcAppItem::kItemType)
         ++arc_count;
     }
@@ -249,7 +250,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     const size_t count = model_updater_->ItemCount();
     ArcAppItem* arc_item = nullptr;
     for (size_t i = 0; i < count; ++i) {
-      app_list::AppListItem* item = model_updater_->ItemAt(i);
+      ChromeAppListItem* item = model_updater_->ItemAtForTest(i);
       if (item->GetItemType() == ArcAppItem::kItemType) {
         if (arc_count++ == index) {
           arc_item = reinterpret_cast<ArcAppItem*>(item);
@@ -304,7 +305,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
       const ArcAppItem* app_item = FindArcItem(id);
       ASSERT_NE(nullptr, app_item);
-      EXPECT_EQ(app.name, app_item->GetDisplayName());
+      EXPECT_EQ(app.name, app_item->name());
     }
 
     for (auto& shortcut : shortcuts) {
@@ -318,7 +319,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
       const ArcAppItem* app_item = FindArcItem(id);
       ASSERT_NE(nullptr, app_item);
-      EXPECT_EQ(shortcut.name, app_item->GetDisplayName());
+      EXPECT_EQ(shortcut.name, app_item->name());
     }
   }
 

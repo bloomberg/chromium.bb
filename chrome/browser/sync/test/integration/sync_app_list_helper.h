@@ -16,9 +16,7 @@
 class Profile;
 class SyncTest;
 
-namespace app_list {
-class AppListItem;
-}
+class ChromeAppListItem;
 
 class SyncAppListHelper {
  public:
@@ -32,17 +30,14 @@ class SyncAppListHelper {
   // Returns true iff all existing profiles have the same app list entries.
   bool AllProfilesHaveSameAppList();
 
-  // Moves an app in |profile|.
-  void MoveApp(Profile* profile, size_t from, size_t to);
-
   // Moves an app in |profile| to |folder_id|.
   void MoveAppToFolder(Profile* profile,
-                       size_t index,
+                       const std::string& id,
                        const std::string& folder_id);
 
   // Moves an app in |profile| from |folder_id| to the top level list of apps.
   void MoveAppFromFolder(Profile* profile,
-                         size_t index_in_folder,
+                         const std::string& id,
                          const std::string& folder_id);
 
   // Helper function for debugging, used to log the app lists on test failures.
@@ -61,7 +56,7 @@ class SyncAppListHelper {
   // Helper function for debugging, logs info for an item, including the
   // contents of any folder items.
   void PrintItem(Profile* profile,
-                 app_list::AppListItem* item,
+                 ChromeAppListItem* item,
                  const std::string& label);
 
   SyncTest* test_;

@@ -25,6 +25,7 @@
 #include "components/sync/protocol/app_list_specifics.pb.h"
 
 class ArcAppModelBuilder;
+class ChromeAppListItem;
 class ExtensionAppModelBuilder;
 class Profile;
 
@@ -92,7 +93,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Adds |item| to |sync_items_| and |model_|. If a sync item already exists,
   // updates the existing sync item instead.
-  void AddItem(std::unique_ptr<AppListItem> app_item);
+  void AddItem(std::unique_ptr<ChromeAppListItem> app_item);
 
   // Removes sync item matching |id|.
   void RemoveItem(const std::string& id);

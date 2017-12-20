@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "ash/app_list/model/app_list_item.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -219,10 +219,10 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
               extensions ::Extension::WAS_INSTALLED_BY_DEFAULT);
   service_->AddExtension(some_app.get());
 
-  app_list::AppListItem* web_store_item =
+  ChromeAppListItem* web_store_item =
       model_updater()->FindItem(web_store_app_id);
   ASSERT_TRUE(web_store_item);
-  app_list::AppListItem* some_app_item = model_updater()->FindItem(some_app_id);
+  ChromeAppListItem* some_app_item = model_updater()->FindItem(some_app_id);
   ASSERT_TRUE(some_app_item);
 
   // Simulate position conflict.
@@ -238,20 +238,20 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
 
   size_t web_store_app_index;
   size_t some_app_index;
-  size_t oem_app_index;
-  size_t oem_folder_index;
+  EXPECT_TRUE(model_updater()->FindItemIndexForTest(web_store_app_id,
+                                                    &web_store_app_index));
   EXPECT_TRUE(
-      model_updater()->FindItemIndex(web_store_app_id, &web_store_app_index));
-  EXPECT_TRUE(model_updater()->FindItemIndex(some_app_id, &some_app_index));
+      model_updater()->FindItemIndexForTest(some_app_id, &some_app_index));
   // OEM item is not top level element.
-  EXPECT_FALSE(model_updater()->FindItemIndex(oem_app_id, &oem_app_index));
+  ChromeAppListItem* oem_app_item = model_updater()->FindItem(oem_app_id);
+  EXPECT_NE(nullptr, oem_app_item);
+  EXPECT_EQ(oem_app_item->folder_id(),
+            app_list::AppListSyncableService::kOemFolderId);
   // But OEM folder is.
-  EXPECT_TRUE(model_updater()->FindItemIndex(
-      app_list::AppListSyncableService::kOemFolderId, &oem_folder_index));
-
-  // Ensure right item sequence.
-  EXPECT_EQ(some_app_index, web_store_app_index + 1);
-  EXPECT_EQ(oem_folder_index, web_store_app_index + 2);
+  ChromeAppListItem* oem_folder =
+      model_updater()->FindItem(app_list::AppListSyncableService::kOemFolderId);
+  EXPECT_NE(nullptr, oem_folder);
+  EXPECT_EQ(oem_folder->folder_id(), "");
 }
 
 TEST_F(AppListSyncableServiceTest, InitialMerge) {

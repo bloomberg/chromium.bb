@@ -148,10 +148,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
     service->SetPinPosition(app_ids.back(), pin_position);
     pin_position = pin_position.CreateAfter();
   }
-  SyncAppListHelper::GetInstance()->MoveAppToFolder(
-      profile, 2, "folder1");
-  SyncAppListHelper::GetInstance()->MoveAppToFolder(
-      profile, 3, "folder2");
+  SyncAppListHelper::GetInstance()->MoveAppToFolder(profile, app_ids[2],
+                                                    "folder1");
+  SyncAppListHelper::GetInstance()->MoveAppToFolder(profile, app_ids[3],
+                                                    "folder2");
 
   app_list::AppListSyncableService compare_service(
       profile, extensions::ExtensionSystem::Get(profile));
@@ -170,11 +170,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
     service->SetPinPosition(app_id, pin_position);
     pin_position = pin_position.CreateAfter();
   }
-  SyncAppListHelper::GetInstance()->MoveAppFromFolder(
-      profile, 0, "folder1");
-  SyncAppListHelper::GetInstance()->MoveAppFromFolder(
-      profile, 0, "folder2");
-  SyncAppListHelper::GetInstance()->MoveApp(profile, 0, 1);
+  SyncAppListHelper::GetInstance()->MoveAppFromFolder(profile, app_ids[0],
+                                                      "folder1");
+  SyncAppListHelper::GetInstance()->MoveAppFromFolder(profile, app_ids[0],
+                                                      "folder2");
 
   EXPECT_FALSE(SyncItemsMatch(service, &compare_service));
 

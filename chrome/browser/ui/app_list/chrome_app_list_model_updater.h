@@ -23,14 +23,13 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   ~ChromeAppListModelUpdater() override;
 
   // AppListModelUpdater:
-  void AddItem(std::unique_ptr<AppListItem> app_item) override;
-  void AddItemToFolder(std::unique_ptr<AppListItem> app_item,
+  void AddItem(std::unique_ptr<ChromeAppListItem> app_item) override;
+  void AddItemToFolder(std::unique_ptr<ChromeAppListItem> app_item,
                        const std::string& folder_id) override;
   void RemoveItem(const std::string& id) override;
   void RemoveUninstalledItem(const std::string& id) override;
   void MoveItemToFolder(const std::string& id,
                         const std::string& folder_id) override;
-  void MoveItem(size_t from_index, size_t to_index) override;
   void SetItemPosition(const std::string& id,
                        const syncer::StringOrdinal& new_position) override;
   void SetStatus(AppListModel::Status status) override;
@@ -39,18 +38,18 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void HighlightItemInstalledFromUI(const std::string& id) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
 
-  AppListItem* FindItem(const std::string& id) override;
+  ChromeAppListItem* FindItem(const std::string& id) override;
   size_t ItemCount() override;
-  AppListItem* ItemAt(size_t index) override;
+  ChromeAppListItem* ItemAtForTest(size_t index) override;
   AppListFolderItem* FindFolderItem(const std::string& folder_id) override;
-  bool FindItemIndex(const std::string& id, size_t* index) override;
+  bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   bool TabletMode() override;
   app_list::AppListViewState StateFullscreen() override;
   bool SearchEngineIsGoogle() override;
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
 
   // For SynchableService:
-  void AddItemToOemFolder(std::unique_ptr<AppListItem> item,
+  void AddItemToOemFolder(std::unique_ptr<ChromeAppListItem> item,
                           AppListSyncableService::SyncItem* oem_sync_item,
                           const std::string& oem_folder_id,
                           const std::string& oem_folder_name,

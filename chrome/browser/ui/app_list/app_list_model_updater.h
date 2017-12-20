@@ -10,8 +10,8 @@
 #include <string>
 
 #include "ash/app_list/model/app_list_folder_item.h"
-#include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
 namespace app_list {
 
@@ -19,14 +19,13 @@ namespace app_list {
 class AppListModelUpdater {
  public:
   // For AppListModel:
-  virtual void AddItem(std::unique_ptr<AppListItem> item) {}
-  virtual void AddItemToFolder(std::unique_ptr<AppListItem> item,
+  virtual void AddItem(std::unique_ptr<ChromeAppListItem> item) {}
+  virtual void AddItemToFolder(std::unique_ptr<ChromeAppListItem> item,
                                const std::string& folder_id) {}
   virtual void RemoveItem(const std::string& id) {}
   virtual void RemoveUninstalledItem(const std::string& id) {}
   virtual void MoveItemToFolder(const std::string& id,
                                 const std::string& folder_id) {}
-  virtual void MoveItem(size_t from_index, size_t to_index) {}
   virtual void SetItemPosition(const std::string& id,
                                const syncer::StringOrdinal& new_position) {}
   virtual void SetStatus(AppListModel::Status status) {}
@@ -36,13 +35,13 @@ class AppListModelUpdater {
   // For SearchModel:
   virtual void SetSearchEngineIsGoogle(bool is_google) {}
 
-  // TODO(hejq): Remove these methods and access the model in a mojo way.
   // For AppListModel:
-  virtual AppListItem* FindItem(const std::string& id) = 0;
+  virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
   virtual size_t ItemCount() = 0;
-  virtual AppListItem* ItemAt(size_t index) = 0;
+  virtual ChromeAppListItem* ItemAtForTest(size_t index) = 0;
+  // TODO(hejq): |FindFolderItem| will return |ChromeAppListItem|.
   virtual AppListFolderItem* FindFolderItem(const std::string& folder_id) = 0;
-  virtual bool FindItemIndex(const std::string& id, size_t* index) = 0;
+  virtual bool FindItemIndexForTest(const std::string& id, size_t* index) = 0;
   virtual app_list::AppListViewState StateFullscreen() = 0;
   virtual std::map<std::string, size_t> GetIdToAppListIndexMap() = 0;
   // For SearchModel:

@@ -103,8 +103,8 @@ class AppContextMenuTest : public AppListTestBase {
 
     extensions::MenuManagerFactory::GetInstance()->SetTestingFactory(
         profile(), MenuManagerFactory);
-    controller_.reset(new FakeAppListControllerDelegate());
-    menu_delegate_.reset(new FakeAppContextMenuDelegate());
+    controller_ = std::make_unique<FakeAppListControllerDelegate>();
+    menu_delegate_ = std::make_unique<FakeAppContextMenuDelegate>();
     ChromeAppListItem::OverrideAppListControllerDelegateForTesting(
         controller());
   }

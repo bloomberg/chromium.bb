@@ -457,7 +457,8 @@ void AppListSyncableService::HandleUpdateFinished() {
   NotifyObserversSyncUpdated();
 }
 
-void AppListSyncableService::AddItem(std::unique_ptr<AppListItem> app_item) {
+void AppListSyncableService::AddItem(
+    std::unique_ptr<ChromeAppListItem> app_item) {
   SyncItem* sync_item = FindOrAddSyncItem(app_item.get());
   if (!sync_item)
     return;  // Item is not valid.

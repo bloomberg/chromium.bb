@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
-#include "ash/app_list/model/app_list_item.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -111,8 +111,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
   EXPECT_TRUE(model_updater);
 
   // Get the webstore hosted app, which is always present.
-  app_list::AppListItem* item =
-      model_updater->FindItem(extensions::kWebStoreAppId);
+  ChromeAppListItem* item = model_updater->FindItem(extensions::kWebStoreAppId);
   EXPECT_TRUE(item);
 
   ui::MenuModel* menu_model = item->GetContextMenuModel();
