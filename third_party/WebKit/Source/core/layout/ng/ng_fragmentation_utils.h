@@ -5,6 +5,7 @@
 #ifndef NGFragmentationUtils_h
 #define NGFragmentationUtils_h
 
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/LayoutUnit.h"
 
 namespace blink {
@@ -23,6 +24,23 @@ bool IsFirstFragment(const NGConstraintSpace&, const NGPhysicalFragment&);
 
 // Return true if the specified fragment is the final fragment of some node.
 bool IsLastFragment(const NGPhysicalFragment&);
+
+// Join two adjacent break values specified on break-before and/or break-
+// after. avoid* values win over auto values, and forced break values win over
+// avoid* values. |first_value| is specified on an element earlier in the flow
+// than |second_value|. This method is used at class A break points [1], to join
+// the values of the previous break-after and the next break-before, to figure
+// out whether we may, must, or should not break at that point. It is also used
+// when propagating break-before values from first children and break-after
+// values on last children to their container.
+//
+// [1] https://drafts.csswg.org/css-break/#possible-breaks
+EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
+                                           EBreakBetween second_value);
+
+// Return true if the specified break value has a forced break effect in the
+// current fragmentation context.
+bool IsForcedBreakValue(const NGConstraintSpace&, EBreakBetween);
 
 }  // namespace blink
 

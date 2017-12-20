@@ -14,6 +14,7 @@
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_positioned_float.h"
@@ -201,6 +202,11 @@ void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
   baselines_.push_back(NGBaseline{request, offset});
 }
 
+EBreakBetween NGFragmentBuilder::JoinedBreakBetweenValue(
+    EBreakBetween break_before) const {
+  return JoinFragmentainerBreakValues(previous_break_after_, break_before);
+}
+
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
@@ -240,17 +246,18 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, positioned_floats,
       unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
-      end_margin_strut_, intrinsic_block_size_, NGLayoutResult::kSuccess));
+      end_margin_strut_, intrinsic_block_size_, initial_break_before_,
+      previous_break_after_, NGLayoutResult::kSuccess));
 }
 
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants;
   Vector<NGPositionedFloat> positioned_floats;
-  return base::AdoptRef(
-      new NGLayoutResult(nullptr, oof_positioned_descendants, positioned_floats,
-                         unpositioned_floats_, nullptr, bfc_offset_,
-                         end_margin_strut_, LayoutUnit(), status));
+  return base::AdoptRef(new NGLayoutResult(
+      nullptr, oof_positioned_descendants, positioned_floats,
+      unpositioned_floats_, nullptr, bfc_offset_, end_margin_strut_,
+      LayoutUnit(), EBreakBetween::kAuto, EBreakBetween::kAuto, status));
 }
 
 // Finds FragmentPairs that define inline containing blocks.
