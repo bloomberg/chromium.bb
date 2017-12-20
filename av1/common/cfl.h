@@ -14,6 +14,9 @@
 
 #include "av1/common/blockd.h"
 
+typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height);
+
 static INLINE int is_cfl_allowed(const MB_MODE_INFO *mbmi) {
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(bsize < BLOCK_SIZES_ALL);
@@ -27,7 +30,7 @@ static INLINE int get_scaled_luma_q0(int alpha_q3, int16_t pred_buf_q3) {
 
 static INLINE CFL_PRED_TYPE get_cfl_pred_type(PLANE_TYPE plane) {
   assert(plane > 0);
-  return plane - 1;
+  return (CFL_PRED_TYPE)(plane - 1);
 }
 
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
@@ -43,4 +46,14 @@ void cfl_store_dc_pred(MACROBLOCKD *const xd, const uint8_t *input,
 
 void cfl_load_dc_pred(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                       TX_SIZE tx_size, CFL_PRED_TYPE pred_plane);
+
+// TODO(ltrudeau) Remove this when 422 SIMD is added
+void cfl_luma_subsampling_422_lbd(const uint8_t *input, int input_stride,
+                                  int16_t *output_q3, int width, int height);
+// TODO(ltrudeau) Remove this when 440 SIMD is added
+void cfl_luma_subsampling_440_lbd(const uint8_t *input, int input_stride,
+                                  int16_t *output_q3, int width, int height);
+// TODO(ltrudeau) Remove this when 444 SIMD is added
+void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
+                                  int16_t *output_q3, int width, int height);
 #endif  // AV1_COMMON_CFL_H_

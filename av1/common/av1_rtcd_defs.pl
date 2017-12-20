@@ -32,6 +32,10 @@ print <<EOF
 #include "av1/common/daala_inv_txfm.h"
 #endif
 
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
+
 struct macroblockd;
 
 /* Encoder forward decls */
@@ -582,6 +586,8 @@ if (aom_config("CONFIG_CFL") eq "yes") {
   add_proto qw/void av1_cfl_subtract/, "int16_t *pred_buf_q3, int width, int height, int16_t avg_q3";
   specialize qw/av1_cfl_subtract sse2 avx2/;
 
+  add_proto qw/cfl_subsample_lbd_fn get_subsample_lbd_fn/, "int sub_x, int sub_y";
+  specialize qw/get_subsample_lbd_fn ssse3 avx2/
 }
 
 1;

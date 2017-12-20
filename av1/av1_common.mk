@@ -111,6 +111,7 @@ ifeq ($(CONFIG_CFL),yes)
 AV1_COMMON_SRCS-yes += common/cfl.h
 AV1_COMMON_SRCS-yes += common/cfl.c
 AV1_COMMON_SRCS-$(HAVE_SSE2) += common/cfl_sse2.c
+AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/cfl_ssse3.c
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/cfl_avx2.c
 endif
 

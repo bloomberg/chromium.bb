@@ -254,7 +254,6 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 static void cfl_luma_subsampling_420_lbd(const uint8_t *input, int input_stride,
                                          int16_t *output_q3, int width,
                                          int height) {
-  assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       int top = i << 1;
@@ -267,9 +266,8 @@ static void cfl_luma_subsampling_420_lbd(const uint8_t *input, int input_stride,
   }
 }
 
-static void cfl_luma_subsampling_422_lbd(const uint8_t *input, int input_stride,
-                                         int16_t *output_q3, int width,
-                                         int height) {
+void cfl_luma_subsampling_422_lbd(const uint8_t *input, int input_stride,
+                                  int16_t *output_q3, int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -281,9 +279,8 @@ static void cfl_luma_subsampling_422_lbd(const uint8_t *input, int input_stride,
   }
 }
 
-static void cfl_luma_subsampling_440_lbd(const uint8_t *input, int input_stride,
-                                         int16_t *output_q3, int width,
-                                         int height) {
+void cfl_luma_subsampling_440_lbd(const uint8_t *input, int input_stride,
+                                  int16_t *output_q3, int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -294,9 +291,8 @@ static void cfl_luma_subsampling_440_lbd(const uint8_t *input, int input_stride,
   }
 }
 
-static void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
-                                         int16_t *output_q3, int width,
-                                         int height) {
+void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
+                                  int16_t *output_q3, int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -307,20 +303,21 @@ static void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
   }
 }
 
-typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
-                                     int16_t *output_q3, int width, int height);
-
-static const cfl_subsample_lbd_fn subsample_lbd[2][2] = {
-  //  (sub_y == 0, sub_x == 0)       (sub_y == 0, sub_x == 1)
-  //  (sub_y == 1, sub_x == 0)       (sub_y == 1, sub_x == 1)
-  { cfl_luma_subsampling_444_lbd, cfl_luma_subsampling_422_lbd },
-  { cfl_luma_subsampling_440_lbd, cfl_luma_subsampling_420_lbd },
-};
+cfl_subsample_lbd_fn get_subsample_lbd_fn_c(int sub_x, int sub_y) {
+  static const cfl_subsample_lbd_fn subsample_lbd[2][2] = {
+    //  (sub_y == 0, sub_x == 0)       (sub_y == 0, sub_x == 1)
+    //  (sub_y == 1, sub_x == 0)       (sub_y == 1, sub_x == 1)
+    { cfl_luma_subsampling_444_lbd, cfl_luma_subsampling_422_lbd },
+    { cfl_luma_subsampling_440_lbd, cfl_luma_subsampling_420_lbd },
+  };
+  // AND sub_x and sub_y with 1 to ensures that an attacker won't be able to
+  // index the function pointer array out of bounds.
+  return subsample_lbd[sub_y & 1][sub_x & 1];
+}
 
 static void cfl_luma_subsampling_420_hbd(const uint16_t *input,
                                          int input_stride, int16_t *output_q3,
                                          int width, int height) {
-  assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       int top = i << 1;
@@ -424,10 +421,8 @@ static void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride,
     return;
   }
   (void)use_hbd;
-  // AND sub_x and sub_y with 1 to ensures that an attacker won't be able to
-  // index the function pointer array out of bounds.
-  subsample_lbd[sub_y & 1][sub_x & 1](input, input_stride, pred_buf_q3,
-                                      store_width, store_height);
+  get_subsample_lbd_fn(sub_x, sub_y)(input, input_stride, pred_buf_q3,
+                                     store_width, store_height);
 }
 
 // Adjust the row and column of blocks smaller than 8X8, as chroma-referenced

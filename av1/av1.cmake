@@ -401,6 +401,10 @@ if (CONFIG_CFL)
     ${AOM_AV1_COMMON_INTRIN_SSE2}
     "${AOM_ROOT}/av1/common/cfl_sse2.c")
 
+  set(AOM_AV1_COMMON_INTRIN_SSSE3
+    ${AOM_AV1_COMMON_INTRIN_SSSE3}
+    "${AOM_ROOT}/av1/common/cfl_ssse3.c")
+
   set(AOM_AV1_COMMON_INTRIN_AVX2
     ${AOM_AV1_COMMON_INTRIN_AVX2}
     "${AOM_ROOT}/av1/common/cfl_avx2.c")

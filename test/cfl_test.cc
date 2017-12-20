@@ -19,21 +19,31 @@ using std::tr1::make_tuple;
 
 using libaom_test::ACMRandom;
 
-#define NUM_ITERATIONS (100)
+#define NUM_ITERATIONS (10)
 #define NUM_ITERATIONS_SPEED (INT16_MAX)
 
-#define ALL_SIZES_CFL(function)                                     \
+#define ALL_CFL_SIZES(function)                                     \
   make_tuple(4, 4, &function), make_tuple(8, 4, &function),         \
       make_tuple(4, 8, &function), make_tuple(8, 8, &function),     \
       make_tuple(16, 8, &function), make_tuple(8, 16, &function),   \
       make_tuple(16, 16, &function), make_tuple(32, 16, &function), \
       make_tuple(16, 32, &function), make_tuple(32, 32, &function)
 
+#define CHROMA_420_CFL_SIZES(function)                            \
+  make_tuple(4, 4, &function), make_tuple(8, 4, &function),       \
+      make_tuple(4, 8, &function), make_tuple(8, 8, &function),   \
+      make_tuple(16, 8, &function), make_tuple(8, 16, &function), \
+      make_tuple(16, 16, &function)
+
 namespace {
 typedef void (*subtract_fn)(int16_t *pred_buf_q3, int width, int height,
                             int16_t avg_q3);
 
+typedef cfl_subsample_lbd_fn (*get_subsample_fn)(int width, int height);
+
 typedef std::tr1::tuple<int, int, subtract_fn> subtract_param;
+
+typedef std::tr1::tuple<int, int, get_subsample_fn> subsample_param;
 
 static void assertFaster(int ref_elapsed_time, int elapsed_time) {
   EXPECT_GT(ref_elapsed_time, elapsed_time)
@@ -58,17 +68,42 @@ class CFLSubtractTest : public ::testing::TestWithParam<subtract_param> {
   virtual void SetUp() { subtract = GET_PARAM(2); }
 
  protected:
+  int Width() const { return GET_PARAM(0); }
+  int Height() const { return GET_PARAM(1); }
   int16_t pred_buf_data[CFL_BUF_SQUARE];
   int16_t pred_buf_data_ref[CFL_BUF_SQUARE];
   subtract_fn subtract;
-  int Width() const { return GET_PARAM(0); }
-  int Height() const { return GET_PARAM(1); }
   void init(int width, int height) {
     int k = 0;
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
         pred_buf_data[j * CFL_BUF_LINE + i] = k;
         pred_buf_data_ref[j * CFL_BUF_LINE + i] = k++;
+      }
+    }
+  }
+};
+
+class CFLSubsampleTest : public ::testing::TestWithParam<subsample_param> {
+ public:
+  virtual ~CFLSubsampleTest() {}
+  virtual void SetUp() { subsample = GET_PARAM(2); }
+
+ protected:
+  int Width() const { return GET_PARAM(0); }
+  int Height() const { return GET_PARAM(1); }
+  get_subsample_fn subsample;
+  uint8_t luma_pels[CFL_BUF_SQUARE];
+  uint8_t luma_pels_ref[CFL_BUF_SQUARE];
+  int16_t sub_luma_pels[CFL_BUF_SQUARE];
+  int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
+  void init(int width, int height) {
+    ACMRandom rnd(ACMRandom::DeterministicSeed());
+    for (int j = 0; j < height * 2; j++) {
+      for (int i = 0; i < width * 2; i++) {
+        const int val = rnd.Rand8();
+        luma_pels[j * CFL_BUF_LINE + i] = val;
+        luma_pels_ref[j * CFL_BUF_LINE + i] = val;
       }
     }
   }
@@ -118,25 +153,83 @@ TEST_P(CFLSubtractTest, DISABLED_SubtractSpeedTest) {
   aom_usec_timer_mark(&timer);
   const int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
 
-#if 1
   printSpeed(ref_elapsed_time, elapsed_time, width, height);
-#endif
+  assertFaster(ref_elapsed_time, elapsed_time);
+}
+
+TEST_P(CFLSubsampleTest, SubsampleTest) {
+  const int width = Width();
+  const int height = Height();
+
+  for (int it = 0; it < NUM_ITERATIONS; it++) {
+    init(width, height);
+    subsample(1, 1)(luma_pels, CFL_BUF_LINE, sub_luma_pels, width, height);
+    get_subsample_lbd_fn_c(1, 1)(luma_pels_ref, CFL_BUF_LINE, sub_luma_pels_ref,
+                                 width, height);
+    for (int j = 0; j < height; j++) {
+      for (int i = 0; i < width; i++) {
+        ASSERT_EQ(sub_luma_pels_ref[j * CFL_BUF_LINE + i],
+                  sub_luma_pels[j * CFL_BUF_LINE + i]);
+      }
+    }
+  }
+}
+
+TEST_P(CFLSubsampleTest, DISABLED_SubsampleSpeedTest) {
+  const int width = Width();
+  const int height = Height();
+
+  aom_usec_timer ref_timer;
+  aom_usec_timer timer;
+
+  init(width, height);
+  aom_usec_timer_start(&ref_timer);
+  for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
+    get_subsample_lbd_fn_c(1, 1)(luma_pels, CFL_BUF_LINE, sub_luma_pels, width,
+                                 height);
+  }
+  aom_usec_timer_mark(&ref_timer);
+  int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
+
+  aom_usec_timer_start(&timer);
+  for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
+    subsample(1, 1)(luma_pels_ref, CFL_BUF_LINE, sub_luma_pels_ref, width,
+                    height);
+  }
+  aom_usec_timer_mark(&timer);
+  int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
+
+  printSpeed(ref_elapsed_time, elapsed_time, width, height);
   assertFaster(ref_elapsed_time, elapsed_time);
 }
 
 #if HAVE_SSE2
-const subtract_param subtract_sizes_sse2[] = { ALL_SIZES_CFL(
+const subtract_param subtract_sizes_sse2[] = { ALL_CFL_SIZES(
     av1_cfl_subtract_sse2) };
 
 INSTANTIATE_TEST_CASE_P(SSE2, CFLSubtractTest,
                         ::testing::ValuesIn(subtract_sizes_sse2));
+
 #endif
 
+#if HAVE_SSSE3
+const subsample_param subsample_sizes_ssse3[] = { CHROMA_420_CFL_SIZES(
+    get_subsample_lbd_fn_ssse3) };
+
+INSTANTIATE_TEST_CASE_P(SSSE3, CFLSubsampleTest,
+                        ::testing::ValuesIn(subsample_sizes_ssse3));
+#endif
 #if HAVE_AVX2
-const subtract_param subtract_sizes_avx2[] = { ALL_SIZES_CFL(
+const subtract_param subtract_sizes_avx2[] = { ALL_CFL_SIZES(
     av1_cfl_subtract_avx2) };
+
+const subsample_param subsample_sizes_avx2[] = { CHROMA_420_CFL_SIZES(
+    get_subsample_lbd_fn_avx2) };
 
 INSTANTIATE_TEST_CASE_P(AVX2, CFLSubtractTest,
                         ::testing::ValuesIn(subtract_sizes_avx2));
+
+INSTANTIATE_TEST_CASE_P(AVX2, CFLSubsampleTest,
+                        ::testing::ValuesIn(subsample_sizes_avx2));
 #endif
 }  // namespace
