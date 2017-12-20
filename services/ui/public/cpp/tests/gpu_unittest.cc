@@ -37,8 +37,12 @@ class TestGpuImpl : public mojom::Gpu {
       const EstablishGpuChannelCallback& callback) override {
     constexpr int client_id = 1;
     mojo::ScopedMessagePipeHandle handle;
-    if (request_will_succeed_)
-      handle = std::move(mojo::MessagePipe().handle0);
+    if (request_will_succeed_) {
+      mojo::MessagePipe message_pipe;
+      handle = std::move(message_pipe.handle0);
+      gpu_channel_handle_ = std::move(message_pipe.handle1);
+    }
+
     callback.Run(client_id, std::move(handle), gpu::GPUInfo(),
                  gpu::GpuFeatureInfo());
   }
@@ -62,6 +66,9 @@ class TestGpuImpl : public mojom::Gpu {
  private:
   bool request_will_succeed_ = true;
   mojo::BindingSet<mojom::Gpu> bindings_;
+
+  // Closing this handle will result in GpuChannelHost being lost.
+  mojo::ScopedMessagePipeHandle gpu_channel_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGpuImpl);
 };
@@ -213,15 +220,7 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
 
 // Tests that if a request for a gpu channel succeeded, then subsequent requests
 // are met synchronously.
-// TODO(crbug.com/796436): Flaky on linux_chromium_rel_ng.
-#if defined(OS_LINUX)
-#define MAYBE_EstablishRequestResponseSynchronouslyOnSuccess \
-  DISABLED_EstablishRequestResponseSynchronouslyOnSuccess
-#else
-#define MAYBE_EstablishRequestResponseSynchronouslyOnSuccess \
-  EstablishRequestResponseSynchronouslyOnSuccess
-#endif
-TEST_F(GpuTest, MAYBE_EstablishRequestResponseSynchronouslyOnSuccess) {
+TEST_F(GpuTest, EstablishRequestResponseSynchronouslyOnSuccess) {
   base::RunLoop run_loop;
   gpu()->EstablishGpuChannel(base::BindOnce(
       [](const base::Closure& callback,
