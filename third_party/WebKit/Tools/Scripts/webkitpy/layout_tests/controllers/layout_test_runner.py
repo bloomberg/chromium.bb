@@ -371,13 +371,17 @@ class Sharder(object):
             run under the server lock, the second can be run whenever.
         """
 
+        # WARNING: fully_parallel and run_singly flags are deprecated.
+        if fully_parallel:
+            _log.warning('WARNING: fully_parallel flag is deprecated.')
+        if run_singly:
+            _log.warning('WARNING: run_singly flag is deprecated.')
+
         # FIXME: Move all of the sharding logic out of manager into its
         # own class or module. Consider grouping it with the chunking logic
         # in prepare_lists as well.
         if num_workers == 1:
             return self._shard_in_two(test_inputs)
-        elif fully_parallel:
-            return self._shard_every_file(test_inputs, run_singly)
         return self._shard_by_directory(test_inputs)
 
     def _shard_in_two(self, test_inputs):

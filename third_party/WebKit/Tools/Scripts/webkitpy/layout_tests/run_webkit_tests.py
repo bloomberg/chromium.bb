@@ -445,7 +445,6 @@ def parse_args(args):
                 help=('wrapper command to insert before invocations of the driver; option '
                       'is split on whitespace before running. (Example: --wrapper="valgrind '
                       '--smc-check=all")')),
-            # FIXME: Display the default number of child processes that will run.
             optparse.make_option(
                 '-f', '--fully-parallel',
                 action='store_true',
