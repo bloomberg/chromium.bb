@@ -145,6 +145,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // region of the screen, an empty rectangle will get returned.
   const gfx::Rect GetWorkspaceObscuringBounds() const;
 
+  // Returns the current bounds that affect the window layout of the various
+  // lock screens.
+  const gfx::Rect GetKeyboardLockScreenOffsetBounds() const;
+
   KeyboardControllerState GetStateForTest() const { return state_; }
 
   const gfx::Rect AdjustSetBoundsRequest(

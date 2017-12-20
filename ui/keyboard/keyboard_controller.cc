@@ -708,8 +708,17 @@ void KeyboardController::ReportLingeringState() {
 }
 
 const gfx::Rect KeyboardController::GetWorkspaceObscuringBounds() const {
-  if (keyboard_visible() &&
-      container_behavior_->BoundsAffectWorkspaceLayout()) {
+  if (keyboard_visible() && container_behavior_->BoundsObscureUsableRegion())
+    return current_keyboard_bounds_;
+  return gfx::Rect();
+}
+
+const gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
+  // Overscroll is generally dependent on lock state, however, its behavior
+  // temporarily overridden by a static field in certain lock screen contexts.
+  // Furthermore, floating keyboard should never affect layout.
+  if (keyboard_visible() && !keyboard::IsKeyboardOverscrollEnabled() &&
+      container_behavior_->GetType() != ContainerType::FLOATING) {
     return current_keyboard_bounds_;
   }
   return gfx::Rect();
