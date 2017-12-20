@@ -192,9 +192,7 @@ showAutofillPopup:(const std::vector<autofill::Suggestion>&)popup_suggestions
 
 - (void)sendAutofillTypePredictionsToRenderer:
     (const std::vector<autofill::FormStructure*>&)forms {
-  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
-  if ([standardDefaults boolForKey:@"ShowAutofillTypePredictions"])
-    [_autofillAgent renderAutofillTypePredictions:forms];
+  [_autofillAgent renderAutofillTypePredictions:forms];
 }
 
 @end

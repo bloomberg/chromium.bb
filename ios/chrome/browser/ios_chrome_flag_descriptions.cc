@@ -117,6 +117,11 @@ const char kNewFileDownloadDescription[] =
     "When enabled, uses new Download Manager UI and ios/web Download API as "
     "backend.";
 
+const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
+const char kShowAutofillTypePredictionsDescription[] =
+    "Annotates web forms with Autofill field type predictions as placeholder "
+    "text.";
+
 const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
 const char kTabSwitcherPresentsBVCDescription[] =
     "When enabled, the tab switcher will present the BVC, so that when the "
