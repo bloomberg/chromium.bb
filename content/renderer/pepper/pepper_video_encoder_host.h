@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/renderer/pepper/video_encoder_shim.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
-#include "media/video/video_encode_accelerator.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/host/host_message_context.h"
@@ -30,11 +30,10 @@ class CommandBufferProxyImpl;
 namespace content {
 
 class RendererPpapiHost;
-class VideoEncoderShim;
 
 class CONTENT_EXPORT PepperVideoEncoderHost
     : public ppapi::host::ResourceHost,
-      public media::VideoEncodeAccelerator::Client,
+      public VideoEncoderShim::Client,
       public ppapi::MediaStreamBufferManager::Delegate,
       public gpu::GpuControlClient {
  public:
@@ -60,7 +59,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
     bool in_use;
   };
 
-  // media::VideoEncodeAccelerator implementation.
+  // VideoEncoderShim implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) override;
@@ -135,7 +134,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
 
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
-  std::unique_ptr<media::VideoEncodeAccelerator> encoder_;
+  std::unique_ptr<VideoEncoderShim> encoder_;
 
   // Whether the encoder has been successfully initialized.
   bool initialized_;
