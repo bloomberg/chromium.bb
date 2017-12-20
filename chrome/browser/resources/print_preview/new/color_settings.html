@@ -11,7 +11,7 @@
     <print-preview-settings-section>
       <span id="color-label" slot="title">$i18n{optionColor}</span>
       <div slot="controls">
-        <select aria-labelledby="color-label">
+        <select aria-labelledby="color-label" on-change="onChange_">
           <option value="bw" selected>$i18n{optionBw}</option>
           <option value="color">$i18n{optionColor}</option>
         </select>
