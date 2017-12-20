@@ -69,10 +69,6 @@
 # "//testing/scripts/foo.py".
 
 {
-  "All": {
-    "label": "//:All",
-    "type": "additional_compile_target",
-  },
   "All_syzygy": {
     "label": "//:All_syzygy",
     "type": "additional_compile_target",
