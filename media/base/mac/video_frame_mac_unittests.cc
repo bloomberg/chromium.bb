@@ -69,7 +69,7 @@ TEST(VideoFrameMac, CheckFormats) {
       {PIXEL_FORMAT_YV12, 0},
       {PIXEL_FORMAT_I422, 0},
       {PIXEL_FORMAT_YV12A, 0},
-      {PIXEL_FORMAT_YV24, 0},
+      {PIXEL_FORMAT_I444, 0},
   };
 
   gfx::Size size(kWidth, kHeight);

@@ -437,7 +437,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     // Unsupported cases.
     case PIXEL_FORMAT_YV12A:
     case PIXEL_FORMAT_I422:
-    case PIXEL_FORMAT_YV24:
+    case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_UYVY:

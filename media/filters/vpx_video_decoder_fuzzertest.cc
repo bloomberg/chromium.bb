@@ -73,7 +73,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         pixel_format = PIXEL_FORMAT_YV12A;
         break;
       case 2:
-        pixel_format = PIXEL_FORMAT_YV24;
+        pixel_format = PIXEL_FORMAT_I444;
         break;
       default:
         return 0;

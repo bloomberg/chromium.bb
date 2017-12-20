@@ -121,7 +121,7 @@ bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I422:
-    case PIXEL_FORMAT_YV24:
+    case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:
@@ -376,7 +376,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   if (cv_format == kCVPixelFormatType_420YpCbCr8Planar) {
     format = PIXEL_FORMAT_I420;
   } else if (cv_format == kCVPixelFormatType_444YpCbCr8) {
-    format = PIXEL_FORMAT_YV24;
+    format = PIXEL_FORMAT_I444;
   } else if (cv_format == '420v') {
     // TODO(jfroy): Use kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange when the
     // minimum OS X and iOS SDKs permits it.
@@ -527,7 +527,7 @@ size_t VideoFrame::NumPlanes(VideoPixelFormat format) {
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I422:
-    case PIXEL_FORMAT_YV24:
+    case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:
@@ -837,7 +837,7 @@ size_t VideoFrame::BitDepth() const {
     case media::PIXEL_FORMAT_YV12:
     case media::PIXEL_FORMAT_I422:
     case media::PIXEL_FORMAT_YV12A:
-    case media::PIXEL_FORMAT_YV24:
+    case media::PIXEL_FORMAT_I444:
     case media::PIXEL_FORMAT_NV12:
     case media::PIXEL_FORMAT_NV21:
     case media::PIXEL_FORMAT_UYVY:
@@ -1093,7 +1093,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
     case kUPlane:  // and kUVPlane:
     case kVPlane:
       switch (format) {
-        case PIXEL_FORMAT_YV24:
+        case PIXEL_FORMAT_I444:
         case PIXEL_FORMAT_YUV444P9:
         case PIXEL_FORMAT_YUV444P10:
         case PIXEL_FORMAT_YUV444P12:
@@ -1167,7 +1167,7 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_YV12A:
-    case PIXEL_FORMAT_YV24:
+    case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_Y8:
       return 1;
     case PIXEL_FORMAT_MJPEG:

@@ -515,7 +515,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   }
 
   // Pad out |coded_size| for subsampled YUV formats.
-  if (format != PIXEL_FORMAT_YV24 && format != PIXEL_FORMAT_UNKNOWN) {
+  if (format != PIXEL_FORMAT_I444 && format != PIXEL_FORMAT_UNKNOWN) {
     coded_size.set_width((coded_size.width() + 1) / 2 * 2);
     if (format != PIXEL_FORMAT_I422)
       coded_size.set_height((coded_size.height() + 1) / 2 * 2);
@@ -690,7 +690,7 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
   switch (pixel_format) {
     case AV_PIX_FMT_YUV444P:
     case AV_PIX_FMT_YUVJ444P:
-      return PIXEL_FORMAT_YV24;
+      return PIXEL_FORMAT_I444;
 
     // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627. This
     // should actually be PIXEL_FORMAT_I420.
@@ -743,7 +743,7 @@ AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
       return AV_PIX_FMT_YUV422P;
     case PIXEL_FORMAT_YV12A:
       return AV_PIX_FMT_YUVA420P;
-    case PIXEL_FORMAT_YV24:
+    case PIXEL_FORMAT_I444:
       return AV_PIX_FMT_YUV444P;
     case PIXEL_FORMAT_YUV420P9:
       return AV_PIX_FMT_YUV420P9LE;

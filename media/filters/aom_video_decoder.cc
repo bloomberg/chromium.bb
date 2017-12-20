@@ -54,7 +54,7 @@ static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
     case AOM_IMG_FMT_I422:
       return PIXEL_FORMAT_I422;
     case AOM_IMG_FMT_I444:
-      return PIXEL_FORMAT_YV24;
+      return PIXEL_FORMAT_I444;
 
     case AOM_IMG_FMT_I42016:
       switch (img->bit_depth) {

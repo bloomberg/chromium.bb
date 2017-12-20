@@ -241,7 +241,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
       (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_YV12A) ||
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_YV12) ||
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_YV12A) ||
-      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_YV24));
+      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I444));
 
 #if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   // When FFmpegVideoDecoder is available it handles VP8 that doesn't have
@@ -510,7 +510,7 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
       break;
 
     case VPX_IMG_FMT_I444:
-      codec_format = PIXEL_FORMAT_YV24;
+      codec_format = PIXEL_FORMAT_I444;
       break;
 
     case VPX_IMG_FMT_I42016:
