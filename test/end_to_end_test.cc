@@ -150,6 +150,32 @@ class EndToEndTest
     return kPsnrThreshold[cpu_used_][encoding_mode_];
   }
 
+  void DoTest() {
+    cfg_.rc_target_bitrate = kBitrate;
+    cfg_.g_error_resilient = 0;
+    cfg_.g_profile = test_video_param_.profile;
+    cfg_.g_input_bit_depth = test_video_param_.input_bit_depth;
+    cfg_.g_bit_depth = test_video_param_.bit_depth;
+    init_flags_ = AOM_CODEC_USE_PSNR;
+    if (cfg_.g_bit_depth > 8) init_flags_ |= AOM_CODEC_USE_HIGHBITDEPTH;
+
+    testing::internal::scoped_ptr<libaom_test::VideoSource> video;
+    if (is_extension_y4m(test_video_param_.filename)) {
+      video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
+                                                  kFrames));
+    } else {
+      video.reset(new libaom_test::YUVVideoSource(
+          test_video_param_.filename, test_video_param_.fmt, kWidth, kHeight,
+          kFramerate, 1, 0, kFrames));
+    }
+    ASSERT_TRUE(video.get() != NULL);
+
+    ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
+    const double psnr = GetAveragePsnr();
+    EXPECT_GT(psnr, GetPsnrThreshold())
+        << "cpu used = " << cpu_used_ << ", encoding mode = " << encoding_mode_;
+  }
+
   TestVideoParam test_video_param_;
   int cpu_used_;
 
@@ -161,55 +187,9 @@ class EndToEndTest
 
 class EndToEndTestLarge : public EndToEndTest {};
 
-TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) {
-  cfg_.rc_target_bitrate = kBitrate;
-  cfg_.g_error_resilient = 0;
-  cfg_.g_profile = test_video_param_.profile;
-  cfg_.g_input_bit_depth = test_video_param_.input_bit_depth;
-  cfg_.g_bit_depth = test_video_param_.bit_depth;
-  init_flags_ = AOM_CODEC_USE_PSNR;
-  if (cfg_.g_bit_depth > 8) init_flags_ |= AOM_CODEC_USE_HIGHBITDEPTH;
+TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) { DoTest(); }
 
-  testing::internal::scoped_ptr<libaom_test::VideoSource> video;
-  if (is_extension_y4m(test_video_param_.filename)) {
-    video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
-                                                kFrames));
-  } else {
-    video.reset(new libaom_test::YUVVideoSource(
-        test_video_param_.filename, test_video_param_.fmt, kWidth, kHeight,
-        kFramerate, 1, 0, kFrames));
-  }
-  ASSERT_TRUE(video.get() != NULL);
-
-  ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
-  const double psnr = GetAveragePsnr();
-  EXPECT_GT(psnr, GetPsnrThreshold());
-}
-
-TEST_P(EndToEndTest, EndtoEndPSNRTest) {
-  cfg_.rc_target_bitrate = kBitrate;
-  cfg_.g_error_resilient = 0;
-  cfg_.g_profile = test_video_param_.profile;
-  cfg_.g_input_bit_depth = test_video_param_.input_bit_depth;
-  cfg_.g_bit_depth = test_video_param_.bit_depth;
-  init_flags_ = AOM_CODEC_USE_PSNR;
-  if (cfg_.g_bit_depth > 8) init_flags_ |= AOM_CODEC_USE_HIGHBITDEPTH;
-
-  testing::internal::scoped_ptr<libaom_test::VideoSource> video;
-  if (is_extension_y4m(test_video_param_.filename)) {
-    video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
-                                                kFrames));
-  } else {
-    video.reset(new libaom_test::YUVVideoSource(
-        test_video_param_.filename, test_video_param_.fmt, kWidth, kHeight,
-        kFramerate, 1, 0, kFrames));
-  }
-  ASSERT_TRUE(video.get() != NULL);
-
-  ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
-  const double psnr = GetAveragePsnr();
-  EXPECT_GT(psnr, GetPsnrThreshold());
-}
+TEST_P(EndToEndTest, EndtoEndPSNRTest) { DoTest(); }
 
 AV1_INSTANTIATE_TEST_CASE(EndToEndTestLarge,
                           ::testing::ValuesIn(kEncodingModeVectors),
