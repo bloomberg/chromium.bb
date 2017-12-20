@@ -517,8 +517,6 @@ void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
-void ImeMenuTray::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {}
-
 void ImeMenuTray::OnKeyboardClosed() {
   if (InputMethodManager::Get())
     InputMethodManager::Get()->OverrideKeyboardUrlRef(std::string());

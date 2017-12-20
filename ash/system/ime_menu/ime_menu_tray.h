@@ -70,7 +70,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
   void OnKeyboardClosed() override;
   void OnKeyboardHidden() override;
 
