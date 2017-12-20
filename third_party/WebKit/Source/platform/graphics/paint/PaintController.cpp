@@ -10,7 +10,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 
 #ifndef NDEBUG
 #include "platform/graphics/LoggingCanvas.h"
