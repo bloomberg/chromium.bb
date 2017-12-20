@@ -14,7 +14,6 @@
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
-#include "jingle/glue/proxy_resolving_client_socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/client_socket_factory.h"
@@ -23,7 +22,9 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/proxy_resolving_client_socket.h"
 #include "third_party/webrtc/media/base/rtputils.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -120,9 +121,10 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
 
   // The default SSLConfig is good enough for us for now.
   const net::SSLConfig ssl_config;
-  socket_.reset(new jingle_glue::ProxyResolvingClientSocket(
+  socket_ = std::make_unique<network::ProxyResolvingClientSocket>(
       nullptr,  // Default socket pool provided by the net::Proxy.
-      url_context_, ssl_config, dest_host_port_pair));
+      url_context_, ssl_config,
+      GURL("https://" + dest_host_port_pair.ToString()));
 
   int status = socket_->Connect(
       base::Bind(&P2PSocketHostTcpBase::OnConnected,

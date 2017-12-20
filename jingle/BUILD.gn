@@ -13,8 +13,6 @@ if (enable_webrtc || !is_android) {
       "glue/chrome_async_socket.h",
       "glue/fake_ssl_client_socket.cc",
       "glue/fake_ssl_client_socket.h",
-      "glue/proxy_resolving_client_socket.cc",
-      "glue/proxy_resolving_client_socket.h",
       "glue/resolving_client_socket_factory.h",
       "glue/task_pump.cc",
       "glue/task_pump.h",
@@ -32,6 +30,7 @@ if (enable_webrtc || !is_android) {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//net",
+      "//services/network/public/cpp",
     ]
 
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -39,9 +38,9 @@ if (enable_webrtc || !is_android) {
     if (is_nacl) {
       sources -= [
         "glue/chrome_async_socket.cc",
-        "glue/proxy_resolving_client_socket.cc",
         "glue/xmpp_client_socket_factory.cc",
       ]
+      deps -= [ "//services/network/public/cpp" ]
     }
   }
 
@@ -140,7 +139,6 @@ if (enable_webrtc || !is_android) {
       "glue/logging_unittest.cc",
       "glue/mock_task.cc",
       "glue/mock_task.h",
-      "glue/proxy_resolving_client_socket_unittest.cc",
       "glue/task_pump_unittest.cc",
       "glue/thread_wrapper_unittest.cc",
       "notifier/base/weak_xmpp_client_unittest.cc",
