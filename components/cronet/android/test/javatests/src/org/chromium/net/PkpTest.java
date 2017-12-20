@@ -40,7 +40,7 @@ import java.util.Set;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PkpTest {
-    private static final String CERT_USED = "quic_test.example.com.crt";
+    private static final String CERT_USED = "quic-chain.pem";
     private static final String[] CERTS_USED = {CERT_USED};
     private static final int DISTANT_FUTURE = Integer.MAX_VALUE;
     private static final boolean INCLUDE_SUBDOMAINS = true;

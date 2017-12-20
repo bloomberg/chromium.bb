@@ -18,8 +18,7 @@ import org.chromium.net.impl.CronetUrlRequestContext;
 @JNINamespace("cronet")
 public class CronetTestUtil {
     // QUIC test domain must match the certificate used
-    // (quic_test.example.com.crt and quic_test.example.com.key.pkcs8), and
-    // the file served (
+    // (quic-chain.pem and quic-leaf-cert.key), and the file served (
     // components/cronet/android/test/assets/test/quic_data/simple.txt).
     static final String QUIC_FAKE_HOST = "test.example.com";
     private static final String[] TEST_DOMAINS = {QUIC_FAKE_HOST};

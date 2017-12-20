@@ -21,12 +21,12 @@ class ChromiumNativeTestSupport extends ChromiumPlatformOnlyTestSupport {
     /**
      * Name of the file that contains the test server certificate in PEM format.
      */
-    private static final String SERVER_CERT_PEM = "quic_test.example.com.crt";
+    private static final String SERVER_CERT_PEM = "quic-chain.pem";
 
     /**
      * Name of the file that contains the test server private key in PKCS8 PEM format.
      */
-    private static final String SERVER_KEY_PKCS8_PEM = "quic_test.example.com.key.pkcs8.pem";
+    private static final String SERVER_KEY_PKCS8_PEM = "quic-leaf-cert.key.pkcs8.pem";
 
     @Override
     public TestServer createTestServer(Context context, Protocol protocol) {

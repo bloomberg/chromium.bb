@@ -21,8 +21,8 @@ public final class QuicTestServer {
     private static final ConditionVariable sBlock = new ConditionVariable();
     private static final String TAG = QuicTestServer.class.getSimpleName();
 
-    private static final String CERT_USED = "quic_test.example.com.crt";
-    private static final String KEY_USED = "quic_test.example.com.key";
+    private static final String CERT_USED = "quic-chain.pem";
+    private static final String KEY_USED = "quic-leaf-cert.key";
     private static final String[] CERTS_USED = {CERT_USED};
 
     private static boolean sServerRunning = false;
