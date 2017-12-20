@@ -409,7 +409,7 @@ TEST(VideoFrame, IsValidConfig_OddCodedSize) {
 
   // Next try a format with no sub-sampling for UV.
   EXPECT_TRUE(VideoFrame::IsValidConfig(
-      PIXEL_FORMAT_YV24, VideoFrame::STORAGE_OWNED_MEMORY, odd_size,
+      PIXEL_FORMAT_I444, VideoFrame::STORAGE_OWNED_MEMORY, odd_size,
       gfx::Rect(odd_size), odd_size));
 }
 
@@ -430,7 +430,7 @@ TEST(VideoFrame, CreateFrame_OddWidth) {
   EXPECT_EQ(678, frame->coded_size().width());
 
   // Next create a frame that does not sub-sample UV.
-  frame = VideoFrame::CreateFrame(PIXEL_FORMAT_YV24, odd_size,
+  frame = VideoFrame::CreateFrame(PIXEL_FORMAT_I444, odd_size,
                                   gfx::Rect(odd_size), odd_size, kTimestamp);
   ASSERT_TRUE(frame.get());
   // No sub-sampling for YV24 will mean odd width can remain odd since any pixel
@@ -455,7 +455,7 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_YUV422P12:
         EXPECT_EQ(96u, allocation_size) << VideoPixelFormatToString(format);
         break;
-      case PIXEL_FORMAT_YV24:
+      case PIXEL_FORMAT_I444:
       case PIXEL_FORMAT_YUV420P9:
       case PIXEL_FORMAT_YUV420P10:
       case PIXEL_FORMAT_YUV420P12:

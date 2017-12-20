@@ -139,7 +139,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       media::VideoPixelFormat pixel_format;
       if (buffer->type() == webrtc::VideoFrameBuffer::Type::kI444) {
         yuv_buffer = buffer->GetI444();
-        pixel_format = media::PIXEL_FORMAT_YV24;
+        pixel_format = media::PIXEL_FORMAT_I444;
       } else {
         yuv_buffer = buffer->ToI420();
         pixel_format = media::PIXEL_FORMAT_YV12;
