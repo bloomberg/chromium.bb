@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/content_suggestions/content_suggestions_favicon_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 
 #include "base/mac/bind_objc_block.h"
 #include "components/favicon/core/large_icon_service.h"

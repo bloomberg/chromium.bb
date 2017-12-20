@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/content_suggestions/ntp_home_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"

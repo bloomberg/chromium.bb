@@ -15,12 +15,12 @@
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/suggestions/suggestions_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

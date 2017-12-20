@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/content_suggestions/ntp_home_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
@@ -10,10 +10,6 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_metrics_recorder.h"
-#import "ios/chrome/browser/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -23,9 +19,13 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_alert_factory.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
