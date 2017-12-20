@@ -19,8 +19,9 @@ constexpr char kOriginKey[] = "origin";
 constexpr char kHashAlgorithm[] = "hashAlgorithm";
 constexpr char kTokenBindingKey[] = "tokenBinding";
 
-// U2FResponse byte positions
-constexpr uint32_t kU2fResponseLengthPos = 66;
+// U2FResponse offsets. The format of a U2F response is defined in
+// https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-response-message-success
+constexpr uint32_t kU2fResponseKeyHandleLengthPos = 66;
 constexpr uint32_t kU2fResponseKeyHandleStartPos = 67;
 
 constexpr char kEs256[] = "ES256";

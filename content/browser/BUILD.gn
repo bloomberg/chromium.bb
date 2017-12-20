@@ -158,6 +158,7 @@ jumbo_source_set("browser") {
     "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:scaled_resources",
     "//third_party/angle:angle_common",
+    "//third_party/boringssl",
     "//third_party/brotli:dec",
     "//third_party/icu",
     "//third_party/libyuv",
@@ -2310,10 +2311,6 @@ jumbo_source_set("browser") {
 
   if (is_linux && use_dbus) {
     deps += [ "//dbus" ]
-  }
-
-  if (is_linux) {
-    deps += [ "//third_party/boringssl" ]
   }
 
   if (use_ozone) {

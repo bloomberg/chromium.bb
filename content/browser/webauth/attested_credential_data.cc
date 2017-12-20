@@ -21,7 +21,7 @@ AttestedCredentialData::CreateFromU2fRegisterResponse(
   // handle). Length is big endian.
   std::vector<uint8_t> credential_id_length(2, 0);
   std::vector<uint8_t> extracted_length = authenticator_utils::Extract(
-      u2f_data, authenticator_utils::kU2fResponseLengthPos, 1);
+      u2f_data, authenticator_utils::kU2fResponseKeyHandleLengthPos, 1);
 
   // Note that U2F responses only use one byte for length.
   credential_id_length[1] = extracted_length[0];
