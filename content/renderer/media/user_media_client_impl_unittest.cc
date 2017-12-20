@@ -1396,7 +1396,7 @@ TEST_F(UserMediaClientImplTest,
       RequestLocalAudioTrackWithAssociatedSink(true);
   MediaStreamAudioSource* source =
       MediaStreamAudioSource::From(web_track.Source());
-  EXPECT_FALSE(source->device().matched_output_device_id.empty());
+  EXPECT_TRUE(source->device().matched_output_device_id);
 }
 
 TEST_F(UserMediaClientImplTest,
@@ -1406,7 +1406,7 @@ TEST_F(UserMediaClientImplTest,
       RequestLocalAudioTrackWithAssociatedSink(false);
   MediaStreamAudioSource* source =
       MediaStreamAudioSource::From(web_track.Source());
-  EXPECT_TRUE(source->device().matched_output_device_id.empty());
+  EXPECT_FALSE(source->device().matched_output_device_id);
 }
 
 }  // namespace content

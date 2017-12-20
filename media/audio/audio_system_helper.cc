@@ -80,8 +80,11 @@ void AudioSystemHelper::GetAssociatedOutputDeviceID(
     const std::string& input_device_id,
     AudioSystem::OnDeviceIdCallback on_device_id_cb) {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  const std::string associated_output_device_id =
+      audio_manager_->GetAssociatedOutputDeviceID(input_device_id);
   std::move(on_device_id_cb)
-      .Run(audio_manager_->GetAssociatedOutputDeviceID(input_device_id));
+      .Run(associated_output_device_id.empty() ? base::Optional<std::string>()
+                                               : associated_output_device_id);
 }
 
 void AudioSystemHelper::GetInputDeviceInfo(
@@ -90,10 +93,10 @@ void AudioSystemHelper::GetInputDeviceInfo(
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   const std::string associated_output_device_id =
       audio_manager_->GetAssociatedOutputDeviceID(input_device_id);
-
   std::move(on_input_device_info_cb)
       .Run(ComputeInputParameters(input_device_id),
-           associated_output_device_id);
+           associated_output_device_id.empty() ? base::Optional<std::string>()
+                                               : associated_output_device_id);
 }
 
 base::Optional<AudioParameters> AudioSystemHelper::ComputeInputParameters(

@@ -119,8 +119,7 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   // The device id of a matched output device if any (otherwise empty).
   // Only applicable to audio devices.
-  // TODO(c.padhi): Change this to base::Optional. http://crbug.com/793255.
-  std::string matched_output_device_id;
+  base::Optional<std::string> matched_output_device_id;
 
   // The device's "friendly" name. Not guaranteed to be unique.
   std::string name;
