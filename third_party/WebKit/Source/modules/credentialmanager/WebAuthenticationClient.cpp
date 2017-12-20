@@ -19,10 +19,9 @@
 namespace blink {
 
 namespace {
-using PublicKeyCallbacks = WebAuthenticationClient::PublicKeyCallbacks;
 
 void RespondToPublicKeyCallback(
-    std::unique_ptr<PublicKeyCallbacks> callbacks,
+    std::unique_ptr<WebAuthenticationClient::PublicKeyCallbacks> callbacks,
     webauth::mojom::blink::AuthenticatorStatus status,
     webauth::mojom::blink::PublicKeyCredentialInfoPtr credential) {
   if (status != webauth::mojom::AuthenticatorStatus::SUCCESS) {
@@ -54,7 +53,7 @@ WebAuthenticationClient::~WebAuthenticationClient() {}
 
 void WebAuthenticationClient::DispatchMakeCredential(
     const MakePublicKeyCredentialOptions& publicKey,
-    std::unique_ptr<PublicKeyCallbacks> callbacks) {
+    std::unique_ptr<WebAuthenticationClient::PublicKeyCallbacks> callbacks) {
   if (!authenticator_) {
     callbacks->OnError(
         WebCredentialManagerError::kWebCredentialManagerNotImplementedError);
@@ -76,7 +75,7 @@ void WebAuthenticationClient::DispatchMakeCredential(
 
 void WebAuthenticationClient::GetAssertion(
     const PublicKeyCredentialRequestOptions& publicKey,
-    PublicKeyCallbacks* callbacks) {
+    WebAuthenticationClient::PublicKeyCallbacks* callbacks) {
   // TODO (kpaulhamus): implement GetAssertion and removed NOTREACHED().
   NOTREACHED();
   return;
