@@ -27,10 +27,6 @@
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 #include "media/media_features.h"
 
-#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-const int64_t kNoTimestamp = INT64_MIN;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
-
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
@@ -357,14 +353,6 @@ ClearKeyCdm::ClearKeyCdm(Host* host, const std::string& key_system)
       is_running_platform_verification_test_(false),
       is_running_storage_id_test_(false) {
   DCHECK(g_is_cdm_module_initialized);
-
-#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  channel_count_ = 0;
-  bits_per_channel_ = 0;
-  samples_per_second_ = 0;
-  output_timestamp_base_in_microseconds_ = kNoTimestamp;
-  total_samples_generated_ = 0;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 }
 
 ClearKeyCdm::~ClearKeyCdm() = default;
@@ -598,11 +586,6 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     return cdm::kInitializationError;
 
   return cdm::kSuccess;
-#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  channel_count_ = audio_decoder_config.channel_count;
-  bits_per_channel_ = audio_decoder_config.bits_per_channel;
-  samples_per_second_ = audio_decoder_config.samples_per_second;
-  return cdm::kSuccess;
 #else
   NOTIMPLEMENTED();
   return cdm::kSessionError;
@@ -640,11 +623,6 @@ void ClearKeyCdm::ResetDecoder(cdm::StreamType decoder_type) {
     default:
       NOTREACHED() << "ResetDecoder(): invalid cdm::StreamType";
   }
-#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  if (decoder_type == cdm::kStreamTypeAudio) {
-    output_timestamp_base_in_microseconds_ = kNoTimestamp;
-    total_samples_generated_ = 0;
-  }
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
@@ -657,9 +635,6 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
     case cdm::kStreamTypeAudio:
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
       audio_decoder_->Deinitialize();
-#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-      output_timestamp_base_in_microseconds_ = kNoTimestamp;
-      total_samples_generated_ = 0;
 #endif
       break;
     default:
@@ -721,16 +696,9 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
   }
 
   return audio_decoder_->DecodeBuffer(data, size, timestamp, audio_frames);
-#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  int64_t timestamp_in_microseconds = kNoTimestamp;
-  if (!buffer->end_of_stream()) {
-    timestamp_in_microseconds = buffer->GetTimestamp().InMicroseconds();
-    DCHECK(timestamp_in_microseconds != kNoTimestamp);
-  }
-  return GenerateFakeAudioFrames(timestamp_in_microseconds, audio_frames);
 #else
   return cdm::kSuccess;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 void ClearKeyCdm::Destroy() {
@@ -926,67 +894,6 @@ void ClearKeyCdm::OnPromiseFailed(uint32_t promise_id,
                          error_message.data(),
                          error_message.length());
 }
-
-#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-int64_t ClearKeyCdm::CurrentTimeStampInMicroseconds() const {
-  return output_timestamp_base_in_microseconds_ +
-         base::Time::kMicrosecondsPerSecond * total_samples_generated_ /
-             samples_per_second_;
-}
-
-int ClearKeyCdm::GenerateFakeAudioFramesFromDuration(
-    int64_t duration_in_microseconds,
-    cdm::AudioFrames* audio_frames) const {
-  int64_t samples_to_generate = static_cast<double>(samples_per_second_) *
-                                    duration_in_microseconds /
-                                    base::Time::kMicrosecondsPerSecond +
-                                0.5;
-  if (samples_to_generate <= 0)
-    return 0;
-
-  int64_t bytes_per_sample = channel_count_ * bits_per_channel_ / 8;
-  // |frame_size| must be a multiple of |bytes_per_sample|.
-  int64_t frame_size = bytes_per_sample * samples_to_generate;
-
-  int64_t timestamp = CurrentTimeStampInMicroseconds();
-
-  const int kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
-  audio_frames->SetFrameBuffer(host_->Allocate(kHeaderSize + frame_size));
-  uint8_t* data = audio_frames->FrameBuffer()->Data();
-
-  memcpy(data, &timestamp, sizeof(timestamp));
-  data += sizeof(timestamp);
-  memcpy(data, &frame_size, sizeof(frame_size));
-  data += sizeof(frame_size);
-  // You won't hear anything because we have all zeros here. But the video
-  // should play just fine!
-  memset(data, 0, frame_size);
-
-  audio_frames->FrameBuffer()->SetSize(kHeaderSize + frame_size);
-
-  return samples_to_generate;
-}
-
-cdm::Status ClearKeyCdm::GenerateFakeAudioFrames(
-    int64_t timestamp_in_microseconds,
-    cdm::AudioFrames* audio_frames) {
-  if (timestamp_in_microseconds == kNoTimestamp)
-    return cdm::kNeedMoreData;
-
-  // Return kNeedMoreData for the first frame because duration is unknown.
-  if (output_timestamp_base_in_microseconds_ == kNoTimestamp) {
-    output_timestamp_base_in_microseconds_ = timestamp_in_microseconds;
-    return cdm::kNeedMoreData;
-  }
-
-  int samples_generated = GenerateFakeAudioFramesFromDuration(
-      timestamp_in_microseconds - CurrentTimeStampInMicroseconds(),
-      audio_frames);
-  total_samples_generated_ += samples_generated;
-
-  return samples_generated == 0 ? cdm::kNeedMoreData : cdm::kSuccess;
-}
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
 void ClearKeyCdm::OnUnitTestComplete(bool success) {
   std::string message = GetUnitTestResultMessage(success);
