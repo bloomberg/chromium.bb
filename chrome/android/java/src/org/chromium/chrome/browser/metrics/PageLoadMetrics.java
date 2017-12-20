@@ -24,8 +24,8 @@ public class PageLoadMetrics {
     public static final String CONNECT_START = "connectStart";
     public static final String CONNECT_END = "connectEnd";
     public static final String REQUEST_START = "requestStart";
-    public static final String RESPONSE_START = "responseStart";
-    public static final String RESPONSE_END = "responseEnd";
+    public static final String SEND_START = "sendStart";
+    public static final String SEND_END = "sendEnd";
     public static final String EFFECTIVE_CONNECTION_TYPE = "effectiveConnectionType";
     public static final String HTTP_RTT = "httpRtt";
     public static final String TRANSPORT_RTT = "transportRtt";

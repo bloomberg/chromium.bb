@@ -203,8 +203,8 @@ public class CustomTabActivity extends ChromeActivity {
             args.putLong(PageLoadMetrics.CONNECT_START, connectStartMs);
             args.putLong(PageLoadMetrics.CONNECT_END, connectEndMs);
             args.putLong(PageLoadMetrics.REQUEST_START, requestStartMs);
-            args.putLong(PageLoadMetrics.RESPONSE_START, sendStartMs);
-            args.putLong(PageLoadMetrics.RESPONSE_END, sendEndMs);
+            args.putLong(PageLoadMetrics.SEND_START, sendStartMs);
+            args.putLong(PageLoadMetrics.SEND_END, sendEndMs);
             mConnection.notifyPageLoadMetrics(mSession, args);
         }
     }
