@@ -228,25 +228,35 @@ CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForXML(
 
 CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForJSON(
     base::StringPiece data) {
-  // Currently this function just looks for '{', '"', and ':', in that order.
+  // Currently this function looks for an opening brace ('{'), followed by a
+  // double-quoted string literal, followed by a colon. Importantly, such a
+  // sequence is a Javascript syntax error: although the JSON object syntax is
+  // exactly Javascript's object-initializer syntax, a Javascript object-
+  // initializer expression is not valid as a standalone Javascript statement.
   //
   // TODO(nick): We have to come up with a better way to sniff JSON. The
   // following are known limitations of this function:
-  // https://crbug.com/795467/ Don't allow single quotes.
-  // https://crbug.com/795465/ Fully parse the string literals.
   // https://crbug.com/795470/ Support non-dictionary values (e.g. lists)
   // https://crbug.com/795476/ Support parser-breaker prefixes.
   enum {
     kStartState,
     kLeftBraceState,
     kLeftQuoteState,
+    kEscapeState,
+    kRightQuoteState,
   } state = kStartState;
 
   for (size_t i = 0; i < data.length(); ++i) {
     const char c = data[i];
-    // Whitespace is ignored (outside of string literals)
-    if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
-      continue;
+    if (state != kLeftQuoteState && state != kEscapeState) {
+      // Whitespace is ignored (outside of string literals)
+      if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+        continue;
+    } else {
+      // Inside string literals, control characters should result in rejection.
+      if ((c >= 0 && c < 32) || c == 127)
+        return kNo;
+    }
 
     switch (state) {
       case kStartState:
@@ -256,14 +266,26 @@ CrossSiteDocumentClassifier::Result CrossSiteDocumentClassifier::SniffForJSON(
           return kNo;
         break;
       case kLeftBraceState:
-        if (c == '"' || c == '\'')
+        if (c == '"')
           state = kLeftQuoteState;
         else
           return kNo;
         break;
       case kLeftQuoteState:
+        if (c == '"')
+          state = kRightQuoteState;
+        else if (c == '\\')
+          state = kEscapeState;
+        break;
+      case kEscapeState:
+        // Simplification: don't bother rejecting hex escapes.
+        state = kLeftQuoteState;
+        break;
+      case kRightQuoteState:
         if (c == ':')
           return kYes;
+        else
+          return kNo;
         break;
     }
   }
