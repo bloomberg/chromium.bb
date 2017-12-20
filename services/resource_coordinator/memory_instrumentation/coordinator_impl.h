@@ -52,10 +52,12 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   void RegisterClientProcess(mojom::ClientProcessPtr,
                              mojom::ProcessType) override;
   void UnregisterClientProcess(mojom::ClientProcess*);
-  void RequestGlobalMemoryDump(mojom::GlobalRequestArgsPtr,
+  void RequestGlobalMemoryDump(base::trace_event::MemoryDumpType,
+                               base::trace_event::MemoryDumpLevelOfDetail,
                                const RequestGlobalMemoryDumpCallback&) override;
   void RequestGlobalMemoryDumpAndAppendToTrace(
-      mojom::GlobalRequestArgsPtr,
+      base::trace_event::MemoryDumpType,
+      base::trace_event::MemoryDumpLevelOfDetail,
       const RequestGlobalMemoryDumpAndAppendToTraceCallback&) override;
   void GetVmRegionsForHeapProfiler(
       const GetVmRegionsForHeapProfilerCallback&) override;
@@ -89,8 +91,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   };
 
   void RequestGlobalMemoryDumpInternal(
-      const mojom::GlobalRequestArgs& args,
-      bool add_to_trace,
+      const QueuedRequest::Args& args,
       const RequestGlobalMemoryDumpInternalCallback& callback);
 
   // Callback of RequestChromeMemoryDump.
