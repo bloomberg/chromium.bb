@@ -25395,6 +25395,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Favicons.CandidatesCount">
+  <obsolete>
+    Deprecated as of 12/2017.
+  </obsolete>
   <owner>fhorschig@chromium.org</owner>
   <summary>
     Records the number of favicon link tags on a page once the page has finished
@@ -25403,6 +25406,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Favicons.CandidatesWithDefinedSizesCount">
+  <obsolete>
+    Deprecated as of 12/2017.
+  </obsolete>
   <owner>fhorschig@chromium.org</owner>
   <summary>
     Records the number of favicon link tags with a non empty sizes attribute
@@ -25411,6 +25417,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Favicons.CandidatesWithTouchIconsCount">
+  <obsolete>
+    Deprecated as of 12/2017.
+  </obsolete>
   <owner>fhorschig@chromium.org</owner>
   <summary>
     Records the number of apple-touch-icon and apple-touch-icon-precomposed link
@@ -25419,6 +25428,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram base="true" name="Favicons.DownloadAttempts" units="attempts">
+  <obsolete>
+    Deprecated as of 12/2017.
+  </obsolete>
   <owner>fhorschig@chromium.org</owner>
   <summary>
     Records the number of icons requested until the best-fitting candidate was
@@ -25429,6 +25441,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Favicons.DownloadOutcome" enum="FaviconDownloadStatus">
+  <obsolete>
+    Deprecated as of 12/2017.
+  </obsolete>
   <owner>fhorschig@chromium.org</owner>
   <summary>
     Records whether a download succeeded, failed or was skipped because it has
@@ -102593,6 +102608,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="FaviconIconType" separator=".">
+  <obsolete>
+    Deprecated as of 12/2017.
+  </obsolete>
   <suffix name="Favicons" label="Metrics for regular favicons."/>
   <suffix name="LargeIcons" label="Metrics for large non-touch icons."/>
   <suffix name="TouchIcons" label="Metrics for large touch icons."/>
