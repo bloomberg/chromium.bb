@@ -32,11 +32,6 @@ class GpuDataManager {
   // This is only called by extensions testing.
   virtual void BlacklistWebGLForTesting() = 0;
 
-  virtual bool IsFeatureBlacklisted(int feature) const = 0;
-  virtual bool IsFeatureEnabled(int feature) const = 0;
-  virtual bool IsWebGLEnabled() const = 0;
-  virtual bool IsWebGL2Enabled() const = 0;
-
   virtual gpu::GPUInfo GetGPUInfo() const = 0;
 
   // This indicator might change because we could collect more GPU info or

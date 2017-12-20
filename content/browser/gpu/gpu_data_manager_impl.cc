@@ -57,6 +57,15 @@ void GpuDataManagerImpl::BlacklistWebGLForTesting() {
 
   base::AutoLock auto_lock(lock_);
   private_->InitializeForTesting(kData, gpu_info);
+
+  gpu::GpuFeatureInfo gpu_feature_info;
+  for (int ii = 0; ii < gpu::NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
+    if (ii == static_cast<int>(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL))
+      gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusBlacklisted;
+    else
+      gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusEnabled;
+  }
+  private_->UpdateGpuFeatureInfo(gpu_feature_info);
 }
 
 void GpuDataManagerImpl::InitializeForTesting(
@@ -64,26 +73,6 @@ void GpuDataManagerImpl::InitializeForTesting(
     const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
   private_->InitializeForTesting(gpu_blacklist_data, gpu_info);
-}
-
-bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsFeatureBlacklisted(feature);
-}
-
-bool GpuDataManagerImpl::IsFeatureEnabled(int feature) const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsFeatureEnabled(feature);
-}
-
-bool GpuDataManagerImpl::IsWebGLEnabled() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsWebGLEnabled();
-}
-
-bool GpuDataManagerImpl::IsWebGL2Enabled() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsWebGL2Enabled();
 }
 
 gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
