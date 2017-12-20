@@ -43,7 +43,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   ScriptModule Record() const;
   bool HasEmptyRecord() const;
-  const KURL& BaseURL() const { return base_url_; }
 
   void SetParseErrorAndClearRecord(ScriptValue error);
   bool HasParseError() const { return !parse_error_.IsEmpty(); }
@@ -85,9 +84,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-module-record
   TraceWrapperV8Reference<v8::Module> record_;
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-base-url
-  const KURL base_url_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-parse-error
   //

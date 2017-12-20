@@ -33,7 +33,8 @@ class CORE_EXPORT ClassicScript final : public Script {
   ClassicScript(const ScriptSourceCode& script_source_code,
                 const ScriptFetchOptions& fetch_options,
                 AccessControlStatus access_control_status)
-      : Script(fetch_options),
+      // TODO(kouhei): This should be document.BaseURL() instead.
+      : Script(fetch_options, script_source_code.Url()),
         script_source_code_(script_source_code),
         access_control_status_(access_control_status) {}
 

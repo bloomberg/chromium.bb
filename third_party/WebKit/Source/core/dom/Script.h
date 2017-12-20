@@ -36,14 +36,18 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
   virtual String InlineSourceTextForCSP() const = 0;
 
   const ScriptFetchOptions& FetchOptions() const { return fetch_options_; }
+  const KURL& BaseURL() const { return base_url_; }
 
  protected:
-  explicit Script(const ScriptFetchOptions& fetch_options)
-      : fetch_options_(fetch_options) {}
+  explicit Script(const ScriptFetchOptions& fetch_options, const KURL& base_url)
+      : fetch_options_(fetch_options), base_url_(base_url) {}
 
  private:
   // https://html.spec.whatwg.org/#concept-script-script-fetch-options
   const ScriptFetchOptions fetch_options_;
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  const KURL base_url_;
 };
 
 }  // namespace blink
