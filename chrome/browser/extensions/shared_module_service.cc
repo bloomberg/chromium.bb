@@ -67,7 +67,7 @@ SharedModuleService::ImportStatus SharedModuleService::CheckImports(
     } else if (!SharedModuleInfo::IsSharedModule(imported_module)) {
       return IMPORT_STATUS_UNRECOVERABLE;
     } else if (version_required.IsValid() &&
-               imported_module->version()->CompareTo(version_required) < 0) {
+               imported_module->version().CompareTo(version_required) < 0) {
       if (imported_module->from_webstore()) {
         outdated_modules->push_back(*iter);
         status = IMPORT_STATUS_UNSATISFIED;

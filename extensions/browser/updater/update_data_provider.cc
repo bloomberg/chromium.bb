@@ -50,7 +50,7 @@ void UpdateDataProvider::GetData(
     info->pk_hash.resize(crypto::kSHA256Length, 0);
     crypto::SHA256HashString(pubkey_bytes, info->pk_hash.data(),
                              info->pk_hash.size());
-    info->version = *extension->version();
+    info->version = extension->version();
     info->allows_background_download = false;
     info->requires_network_encryption = true;
     info->installer = base::MakeRefCounted<ExtensionInstaller>(

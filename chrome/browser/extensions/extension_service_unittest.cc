@@ -2302,14 +2302,14 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
       InstallCRX(extensions_path.AppendASCII("v1.crx"), INSTALL_NEW);
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
   std::string id = extension->id();
-  ASSERT_EQ(std::string("1"), extension->version()->GetString());
+  ASSERT_EQ(std::string("1"), extension->version().GetString());
 
   // Now try updating to v2.
   UpdateExtension(id,
                   extensions_path.AppendASCII("v2.crx"),
                   ENABLED);
   ASSERT_EQ(std::string("2"),
-            service()->GetExtensionById(id, false)->version()->GetString());
+            service()->GetExtensionById(id, false)->version().GetString());
 }
 
 // Verifies that the NTP page and launch ordinals are kept when updating apps.
@@ -2323,7 +2323,7 @@ TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
       InstallCRX(extensions_path.AppendASCII("v1.crx"), INSTALL_NEW);
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
   std::string id = extension->id();
-  ASSERT_EQ(std::string("1"), extension->version()->GetString());
+  ASSERT_EQ(std::string("1"), extension->version().GetString());
 
   // Modify the ordinals so we can distinguish them from the defaults.
   syncer::StringOrdinal new_page_ordinal =
@@ -2337,7 +2337,7 @@ TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
   // Now try updating to v2.
   UpdateExtension(id, extensions_path.AppendASCII("v2.crx"), ENABLED);
   ASSERT_EQ(std::string("2"),
-            service()->GetExtensionById(id, false)->version()->GetString());
+            service()->GetExtensionById(id, false)->version().GetString());
 
   // Verify that the ordinals match.
   ASSERT_TRUE(new_page_ordinal.Equals(sorting->GetPageOrdinal(id)));
@@ -2512,7 +2512,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   std::string id = extension->id();
 
-  ASSERT_EQ("1.0.0.0", extension->version()->GetString());
+  ASSERT_EQ("1.0.0.0", extension->version().GetString());
   ASSERT_EQ(0u, GetErrors().size());
 
   // Upgrade to version 1.0.0.1.
@@ -2521,7 +2521,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   InstallCRX(path, INSTALL_UPDATED, Extension::NO_FLAGS, "My extension 1");
   extension = service()->GetExtensionById(id, false);
 
-  ASSERT_EQ("1.0.0.1", extension->version()->GetString());
+  ASSERT_EQ("1.0.0.1", extension->version().GetString());
   ASSERT_EQ("My updated extension 1", extension->name());
   ASSERT_EQ(0u, GetErrors().size());
 }
@@ -2553,7 +2553,7 @@ TEST_F(ExtensionServiceTest, UpdateExtension) {
   UpdateExtension(good_crx, path, ENABLED);
   ASSERT_EQ(
       "1.0.0.1",
-      service()->GetExtensionById(good_crx, false)->version()->GetString());
+      service()->GetExtensionById(good_crx, false)->version().GetString());
 }
 
 // Extensions should not be updated during browser shutdown.
@@ -2575,7 +2575,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
   ASSERT_FALSE(updated);
   ASSERT_EQ(
       "1.0.0.0",
-      service()->GetExtensionById(good_crx, false)->version()->GetString());
+      service()->GetExtensionById(good_crx, false)->version().GetString());
 }
 
 // Test updating a not-already-installed extension - this should fail
@@ -2606,7 +2606,7 @@ TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
   UpdateExtension(good_crx, path, FAILED);
   ASSERT_EQ(
       "1.0.0.1",
-      service()->GetExtensionById(good_crx, false)->version()->GetString());
+      service()->GetExtensionById(good_crx, false)->version().GetString());
 }
 
 // Make sure calling update with an identical version does nothing
@@ -2640,7 +2640,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   UpdateExtension(good_crx, path, INSTALLED);
   ASSERT_EQ(1u, registry()->disabled_extensions().size());
   const Extension* good2 = service()->GetExtensionById(good_crx, true);
-  ASSERT_EQ("1.0.0.1", good2->version()->GetString());
+  ASSERT_EQ("1.0.0.1", good2->version().GetString());
   EXPECT_TRUE(extensions::util::IsIncognitoEnabled(good2->id(), profile()));
   EXPECT_EQ(extensions::disable_reason::DISABLE_USER_ACTION,
             ExtensionPrefs::Get(profile())->GetDisableReasons(good2->id()));
@@ -2660,7 +2660,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
   path = data_dir().AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, ENABLED);
   const Extension* good2 = service()->GetExtensionById(good_crx, false);
-  ASSERT_EQ("1.0.0.1", good2->version()->GetString());
+  ASSERT_EQ("1.0.0.1", good2->version().GetString());
   EXPECT_EQ(good2->location(), Manifest::EXTERNAL_PREF);
 }
 
@@ -4247,7 +4247,7 @@ TEST_F(ExtensionServiceTest, ExternalExtensionDisabledOnInstallation) {
       registry()->disabled_extensions().GetByID(good_crx);
   ASSERT_TRUE(extension);
   // Double check that we did, in fact, update the extension.
-  EXPECT_EQ("1.0.0.1", extension->version()->GetString());
+  EXPECT_EQ("1.0.0.1", extension->version().GetString());
 }
 
 // Test that if an extension is installed before the "prompt for external
@@ -4291,7 +4291,7 @@ TEST_F(ExtensionServiceTest, ExternalExtensionIsNotDisabledOnUpdate) {
     const Extension* extension =
         registry()->enabled_extensions().GetByID(good_crx);
     ASSERT_TRUE(extension);
-    EXPECT_EQ("1.0.0.1", extension->version()->GetString());
+    EXPECT_EQ("1.0.0.1", extension->version().GetString());
   }
   EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(good_crx));
   EXPECT_EQ(extensions::disable_reason::DISABLE_NONE,
@@ -5057,7 +5057,7 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ(location, loaded_[0]->location());
-  ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
+  ASSERT_EQ("1.0.0.0", loaded_[0]->version().GetString());
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   EXPECT_TRUE(prefs->GetInstalledExtensionInfo(good_crx));
   // TODO(devlin): Testing the underlying values of the prefs for extensions
@@ -5085,7 +5085,7 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   WaitForExternalExtensionInstalled();
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
+  ASSERT_EQ("1.0.0.1", loaded_[0]->version().GetString());
   EXPECT_TRUE(prefs->GetInstalledExtensionInfo(good_crx));
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
@@ -5290,7 +5290,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ(Manifest::EXTERNAL_PREF, loaded_[0]->location());
-  ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
+  ASSERT_EQ("1.0.0.0", loaded_[0]->version().GetString());
   ValidatePrefKeyCount(1);
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", Manifest::EXTERNAL_PREF);
@@ -6002,8 +6002,8 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
 
   // Tests assume |older_version| is less than the installed version, and
   // |newer_version| is greater.  Verify this:
-  ASSERT_LT(older_version, *ext->version());
-  ASSERT_GT(newer_version, *ext->version());
+  ASSERT_LT(older_version, ext->version());
+  ASSERT_GT(newer_version, ext->version());
 
   // An external install for the same location should fail if the version is
   // older, or the same, and succeed if the version is newer.
@@ -6014,7 +6014,7 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Same version as the installed version...
-  info.version = *ext->version();
+  info.version = ext->version();
   EXPECT_FALSE(service()->OnExternalExtensionFileFound(info));
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 

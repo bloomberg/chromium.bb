@@ -180,9 +180,8 @@ void ContentVerifier::OnExtensionLoaded(
     }
 
     std::unique_ptr<ContentVerifierIOData::ExtensionData> data(
-        new ContentVerifierIOData::ExtensionData(
-            std::move(image_paths),
-            extension->version() ? *extension->version() : base::Version()));
+        new ContentVerifierIOData::ExtensionData(std::move(image_paths),
+                                                 extension->version()));
     content::BrowserThread::PostTask(content::BrowserThread::IO,
                                      FROM_HERE,
                                      base::Bind(&ContentVerifierIOData::AddData,

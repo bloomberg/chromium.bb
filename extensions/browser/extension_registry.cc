@@ -46,7 +46,7 @@ base::Version ExtensionRegistry::GetStoredVersion(const ExtensionId& id) const {
                      ExtensionRegistry::BLACKLISTED |
                      ExtensionRegistry::BLOCKED;
   const Extension* registry_extension = GetExtensionById(id, include_mask);
-  return registry_extension ? *registry_extension->version() : base::Version();
+  return registry_extension ? registry_extension->version() : base::Version();
 }
 
 void ExtensionRegistry::AddObserver(ExtensionRegistryObserver* observer) {

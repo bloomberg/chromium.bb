@@ -113,7 +113,7 @@ TEST(ExtensionBuilderTest, SetManifestAndMergeManifest) {
   EXPECT_EQ("some name", extension->name());
   EXPECT_EQ(2, extension->manifest_version());
   EXPECT_EQ("some description", extension->description());
-  EXPECT_EQ("0.1", extension->version()->GetString());
+  EXPECT_EQ("0.1", extension->version().GetString());
 }
 
 TEST(ExtensionBuilderTest, MergeManifestOverridesValues) {
@@ -124,7 +124,7 @@ TEST(ExtensionBuilderTest, MergeManifestOverridesValues) {
             .Build();
     // MergeManifest() should have overwritten the default 0.1 value for
     // version.
-    EXPECT_EQ("52.0.9", extension->version()->GetString());
+    EXPECT_EQ("52.0.9", extension->version().GetString());
   }
 
   {
@@ -138,7 +138,7 @@ TEST(ExtensionBuilderTest, MergeManifestOverridesValues) {
             .SetManifest(manifest.Build())
             .MergeManifest(DictionaryBuilder().Set("version", "42.1").Build())
             .Build();
-    EXPECT_EQ("42.1", extension->version()->GetString());
+    EXPECT_EQ("42.1", extension->version().GetString());
   }
 }
 

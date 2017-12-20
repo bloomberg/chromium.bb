@@ -958,7 +958,7 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
   // If the installed version is approved, then the extension is allowed,
   // otherwise, it requires approval.
   if (extension_it != approved_extensions_map_.end() &&
-      extension_it->second == *extension.version()) {
+      extension_it->second == extension.version()) {
     return ExtensionState::ALLOWED;
   }
   return ExtensionState::REQUIRE_APPROVAL;
@@ -1051,7 +1051,7 @@ bool SupervisedUserService::MustRemainDisabled(
         SupervisedUserService* supervised_user_service =
             SupervisedUserServiceFactory::GetForProfile(profile_);
         supervised_user_service->AddExtensionInstallRequest(
-            extension->id(), *extension->version());
+            extension->id(), extension->version());
       }
     }
   }
@@ -1069,7 +1069,7 @@ void SupervisedUserService::OnExtensionInstalled(
 
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
   const std::string& id = extension->id();
-  const base::Version& version = *extension->version();
+  const base::Version& version = extension->version();
 
   // If an already approved extension is updated without requiring
   // new permissions, we update the approved_version.

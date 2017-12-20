@@ -203,7 +203,7 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContents) {
   MockDelegate delegate;
   ContentHashFetcherWaiter waiter;
   GURL fetch_url =
-      delegate.GetSignatureFetchUrl(extension->id(), *extension->version());
+      delegate.GetSignatureFetchUrl(extension->id(), extension->version());
 
   RegisterInterception(fetch_url,
                        test_dir_base.AppendASCII("verified_contents.json"));
@@ -241,7 +241,7 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContentsAndCorrupt) {
   MockDelegate delegate;
   ContentHashFetcherWaiter waiter;
   GURL fetch_url =
-      delegate.GetSignatureFetchUrl(extension->id(), *extension->version());
+      delegate.GetSignatureFetchUrl(extension->id(), extension->version());
 
   RegisterInterception(fetch_url,
                        test_dir_base.AppendASCII("verified_contents.json"));

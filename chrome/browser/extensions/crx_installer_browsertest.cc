@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
      registry->enabled_extensions().GetByID(extension_id);
   ASSERT_TRUE(extension);
   ASSERT_EQ(extension_id, extension->id());
-  ASSERT_EQ("1.0", extension->version()->GetString());
+  ASSERT_EQ("1.0", extension->version().GetString());
 
   // Make test extension non-idle by opening the extension's options page.
   ExtensionTabUtil::OpenOptionsPage(extension, browser());
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   ASSERT_EQ(1u, service->delayed_installs()->size());
   extension = registry->enabled_extensions().GetByID(extension_id);
-  ASSERT_EQ("1.0", extension->version()->GetString());
+  ASSERT_EQ("1.0", extension->version().GetString());
 
   // Make the extension idle again by navigating away from the options page.
   // This should not trigger the delayed install.
@@ -660,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   WaitForExtensionIdle(extension_id);
   ASSERT_EQ(1u, service->delayed_installs()->size());
   extension = registry->enabled_extensions().GetByID(extension_id);
-  ASSERT_EQ("1.0", extension->version()->GetString());
+  ASSERT_EQ("1.0", extension->version().GetString());
 
   // Install version 3 of the extension. Because the extension is idle,
   // this install should succeed.
@@ -668,14 +668,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   ASSERT_FALSE(v3_path.empty());
   ASSERT_TRUE(UpdateExtensionWaitForIdle(extension_id, v3_path, 0));
   extension = registry->enabled_extensions().GetByID(extension_id);
-  ASSERT_EQ("3.0", extension->version()->GetString());
+  ASSERT_EQ("3.0", extension->version().GetString());
 
   // The version 2 delayed install should be cleaned up, and finishing
   // delayed extension installation shouldn't break anything.
   ASSERT_EQ(0u, service->delayed_installs()->size());
   service->MaybeFinishDelayedInstallations();
   extension = registry->enabled_extensions().GetByID(extension_id);
-  ASSERT_EQ("3.0", extension->version()->GetString());
+  ASSERT_EQ("3.0", extension->version().GetString());
 }
 
 #if defined(FULL_SAFE_BROWSING)

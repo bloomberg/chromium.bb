@@ -269,8 +269,8 @@ bool ExtensionManagement::CheckMinimumVersion(
   // If there are no minimum version required for |extension|, return true.
   if (iter == settings_by_id_.end() || !iter->second->minimum_version_required)
     return true;
-  bool meets_requirement = extension->version()->CompareTo(
-                             *iter->second->minimum_version_required) >= 0;
+  bool meets_requirement = extension->version().CompareTo(
+                               *iter->second->minimum_version_required) >= 0;
   // Output a human readable version string for prompting if necessary.
   if (!meets_requirement && required_version)
     *required_version = iter->second->minimum_version_required->GetString();

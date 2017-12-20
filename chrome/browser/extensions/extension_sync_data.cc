@@ -117,7 +117,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       all_urls_enabled_(all_urls_enabled),
       installed_by_custodian_(installed_by_custodian),
       version_(extension.from_bookmark() ? base::Version("0")
-                                         : *extension.version()),
+                                         : extension.version()),
       update_url_(ManifestURL::GetUpdateURL(&extension)),
       name_(extension.non_localized_name()),
       app_launch_ordinal_(app_launch_ordinal),

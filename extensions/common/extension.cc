@@ -397,7 +397,7 @@ const HashedExtensionId& Extension::hashed_id() const {
 }
 
 const std::string Extension::VersionString() const {
-  return version()->GetString();
+  return version_.GetString();
 }
 
 const std::string Extension::GetVersionForDisplay() const {
@@ -581,8 +581,8 @@ bool Extension::LoadVersion(base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidVersion);
     return false;
   }
-  version_.reset(new base::Version(version_str));
-  if (!version_->IsValid() || version_->components().size() > 4) {
+  version_ = base::Version(version_str);
+  if (!version_.IsValid() || version_.components().size() > 4) {
     *error = base::ASCIIToUTF16(errors::kInvalidVersion);
     return false;
   }

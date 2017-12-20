@@ -177,7 +177,7 @@ void UnpackedInstaller::StartInstallChecks() {
           ReportExtensionLoadError(kImportNotSharedModule);
           return;
         } else if (imported_module && (version_required.IsValid() &&
-                                       imported_module->version()->CompareTo(
+                                       imported_module->version().CompareTo(
                                            version_required) < 0)) {
           ReportExtensionLoadError(kImportMinVersionNewer);
           return;
