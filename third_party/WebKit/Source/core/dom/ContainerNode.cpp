@@ -1649,7 +1649,8 @@ void ContainerNode::InvalidateNodeListCachesInAncestors(
   if (!GetDocument().ShouldInvalidateNodeListCaches(attr_name))
     return;
 
-  GetDocument().InvalidateNodeListCaches(attr_name);
+  if (isConnected())
+    GetDocument().InvalidateNodeListCaches(attr_name);
 
   for (ContainerNode* node = this; node; node = node->parentNode()) {
     if (NodeListsNodeData* lists = node->NodeLists())
