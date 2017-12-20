@@ -5,6 +5,7 @@
 import BaseHTTPServer
 import os
 import threading
+import ssl
 import sys
 
 
@@ -97,9 +98,8 @@ class _BaseServer(BaseHTTPServer.HTTPServer):
 
     if server_cert_and_key_path is not None:
       self._is_https_enabled = True
-      self._server.socket = ssl.wrap_socket(
-          self._server.socket, certfile=server_cert_and_key_path,
-          server_side=True)
+      self.socket = ssl.wrap_socket(
+          self.socket, certfile=server_cert_and_key_path, server_side=True)
     else:
       self._is_https_enabled = False
 
