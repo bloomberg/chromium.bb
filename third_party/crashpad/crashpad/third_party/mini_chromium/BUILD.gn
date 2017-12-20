@@ -12,11 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This is a forwarding target to match the location that Chromium uses.
+import("../../build/crashpad_buildconfig.gni")
 
-group("gmock") {
-  public_configs = [ "//third_party/gtest:gmock_public_config" ]
-  public_deps = [
-    "//third_party/gtest:gmock",
-  ]
+group("base") {
+  if (crashpad_is_in_chromium) {
+    public_deps = [
+      "//base",
+    ]
+  } else if (crashpad_is_in_fuchsia) {
+    public_deps = [
+      "//third_party/mini_chromium/base",
+    ]
+  } else if (crashpad_is_standalone) {
+    public_deps = [
+      "//third_party/mini_chromium/mini_chromium/base",
+    ]
+  }
+}
+
+group("base_test_support") {
+  testonly = true
+
+  if (crashpad_is_in_chromium) {
+    public_deps = [
+      "//base/test:test_support",
+    ]
+  }
 }

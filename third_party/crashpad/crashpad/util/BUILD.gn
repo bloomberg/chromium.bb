@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//testing/test.gni")
+import("../build/crashpad_buildconfig.gni")
 
-if (is_mac) {
-  import("//build/config/sysroot.gni")
+if (crashpad_is_mac) {
+  if (crashpad_is_in_chromium) {
+    import("//build/config/sysroot.gni")
+  } else {
+    import("//third_party/mini_chromium/mini_chromium/build/sysroot.gni")
+  }
 
   action_foreach("mig") {
     script = "mach/mig.py"
@@ -36,15 +40,21 @@ if (is_mac) {
 
     args = [ "{{source}}" ]
     args += rebase_path(outputs, root_build_dir)
-    if (!use_system_xcode) {
+    if (crashpad_is_in_chromium) {
+      if (!use_system_xcode) {
+        args += [
+          "--developer-dir",
+          hermetic_xcode_path,
+        ]
+      }
+    }
+    if (sysroot != "") {
       args += [
-        "--developer-dir",
-        hermetic_xcode_path,
+        "--sdk",
+        sysroot,
       ]
     }
     args += [
-      "--sdk",
-      sysroot,
       "--include",
       rebase_path("../compat/mac", root_build_dir),
     ]
@@ -140,7 +150,7 @@ static_library("util") {
     "thread/worker_thread.h",
   ]
 
-  if (is_posix) {
+  if (crashpad_is_posix) {
     sources += [
       "file/directory_reader_posix.cc",
       "file/file_io_posix.cc",
@@ -158,7 +168,7 @@ static_library("util") {
       "thread/thread_posix.cc",
     ]
 
-    if (!is_fuchsia) {
+    if (!crashpad_is_fuchsia) {
       sources += [
         "posix/close_multiple.cc",
         "posix/close_multiple.h",
@@ -177,7 +187,7 @@ static_library("util") {
     }
   }
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     sources += [
       "mac/checked_mach_address_range.h",
       "mac/launchd.h",
@@ -230,7 +240,47 @@ static_library("util") {
     sources += get_target_outputs(":mig")
   }
 
-  if (is_win) {
+  if (crashpad_is_linux) {
+    sources += [
+      "linux/address_types.h",
+      "linux/auxiliary_vector.cc",
+      "linux/auxiliary_vector.h",
+      "linux/checked_linux_address_range.h",
+      "linux/direct_ptrace_connection.cc",
+      "linux/direct_ptrace_connection.h",
+      "linux/exception_handler_client.cc",
+      "linux/exception_handler_client.h",
+      "linux/exception_handler_protocol.h",
+      "linux/exception_information.h",
+      "linux/memory_map.cc",
+      "linux/memory_map.h",
+      "linux/proc_stat_reader.cc",
+      "linux/proc_stat_reader.h",
+      "linux/ptrace_broker.cc",
+      "linux/ptrace_broker.h",
+      "linux/ptrace_client.cc",
+      "linux/ptrace_client.h",
+      "linux/ptrace_connection.h",
+      "linux/ptracer.cc",
+      "linux/ptracer.h",
+      "linux/scoped_ptrace_attach.cc",
+      "linux/scoped_ptrace_attach.h",
+      "linux/thread_info.cc",
+      "linux/thread_info.h",
+      "linux/traits.h",
+      "misc/paths_linux.cc",
+      "net/http_transport_libcurl.cc",
+      "posix/process_info_linux.cc",
+      "process/process_memory_linux.cc",
+      "process/process_memory_linux.h",
+
+      # TODO: Port to all platforms.
+      "process/process_memory_range.cc",
+      "process/process_memory_range.h",
+    ]
+  }
+
+  if (crashpad_is_win) {
     sources += [
       "file/directory_reader_win.cc",
       "file/file_io_win.cc",
@@ -307,7 +357,7 @@ static_library("util") {
     }
   }
 
-  if (is_fuchsia) {
+  if (crashpad_is_fuchsia) {
     sources += [
       "misc/paths_fuchsia.cc",
       "net/http_transport_fuchsia.cc",
@@ -324,11 +374,11 @@ static_library("util") {
   ]
 
   deps = [
+    "../third_party/mini_chromium:base",
     "../third_party/zlib",
-    "//base",
   ]
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     libs = [
       "bsm",
       "CoreFoundation.framework",
@@ -339,7 +389,11 @@ static_library("util") {
     include_dirs += [ "$root_build_dir/gen" ]
   }
 
-  if (is_win) {
+  if (crashpad_is_linux) {
+    libs = [ "curl" ]
+  }
+
+  if (crashpad_is_win) {
     cflags = [
       "/wd4201",  # nonstandard extension used : nameless struct/union.
       "/wd4577",  # 'noexcept' used with no exception handling mode specified.
@@ -396,7 +450,7 @@ source_set("util_test") {
     "thread/worker_thread_test.cc",
   ]
 
-  if (!is_fuchsia) {
+  if (!crashpad_is_fuchsia) {
     # TODO(scottmg): This requires an implementation of MultiprocessExec for
     # testing, and a solution to http_transport_test_server.py -- either a port
     # to non-Python, or method of forwarding those requests back to the builder
@@ -404,8 +458,8 @@ source_set("util_test") {
     sources += [ "net/http_transport_test.cc" ]
   }
 
-  if (is_posix) {
-    if (!is_fuchsia) {
+  if (crashpad_is_posix) {
+    if (!crashpad_is_fuchsia) {
       sources += [
         "posix/process_info_test.cc",
         "posix/signals_test.cc",
@@ -415,7 +469,7 @@ source_set("util_test") {
     sources += [ "posix/scoped_mmap_test.cc" ]
   }
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     sources += [
       "mac/launchd_test.mm",
       "mac/mac_util_test.mm",
@@ -439,7 +493,22 @@ source_set("util_test") {
     ]
   }
 
-  if (is_win) {
+  if (crashpad_is_linux) {
+    sources += [
+      "linux/auxiliary_vector_test.cc",
+      "linux/memory_map_test.cc",
+      "linux/proc_stat_reader_test.cc",
+      "linux/ptrace_broker_test.cc",
+      "linux/ptracer_test.cc",
+      "linux/scoped_ptrace_attach_test.cc",
+
+      # TODO: Port to all platforms.
+      "process/process_memory_range_test.cc",
+      "process/process_memory_test.cc",
+    ]
+  }
+
+  if (crashpad_is_win) {
     sources += [
       "win/capture_context_test.cc",
       "win/command_line_test.cc",
@@ -466,17 +535,17 @@ source_set("util_test") {
     "../client",
     "../compat",
     "../test",
+    "../third_party/gtest:gmock",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
     "../third_party/zlib",
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
   ]
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     libs = [ "Foundation.framework" ]
   }
 
-  if (is_win) {
+  if (crashpad_is_win) {
     libs = [ "rpcrt4.lib" ]
     data_deps = [
       ":crashpad_util_test_process_info_test_child",
@@ -485,7 +554,7 @@ source_set("util_test") {
   }
 }
 
-if (is_win) {
+if (crashpad_is_win) {
   executable("crashpad_util_test_process_info_test_child") {
     testonly = true
     sources = [

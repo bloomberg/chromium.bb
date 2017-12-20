@@ -12,25 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("../../build/crashpad_in_chromium.gni")
+import("../../build/crashpad_buildconfig.gni")
+
+if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
+  zlib_source = "external"
+} else if (!crashpad_is_win && !crashpad_is_fuchsia) {
+  zlib_source = "system"
+} else {
+  zlib_source = "embedded"
+}
 
 config("zlib_config") {
-  if (crashpad_in_chromium) {
-    defines = [ "CRASHPAD_ZLIB_SOURCE_CHROMIUM" ]
-  } else {
+  if (zlib_source == "external") {
+    defines = [ "CRASHPAD_ZLIB_SOURCE_EXTERNAL" ]
+  } else if (zlib_source == "system") {
+    defines = [ "CRASHPAD_ZLIB_SOURCE_SYSTEM" ]
+  } else if (zlib_source == "embedded") {
     defines = [ "CRASHPAD_ZLIB_SOURCE_EMBEDDED" ]
     include_dirs = [ "zlib" ]
   }
 }
 
-if (crashpad_in_chromium) {
+if (zlib_source == "external") {
   group("zlib") {
     public_configs = [ ":zlib_config" ]
     public_deps = [
       "//third_party/zlib",
     ]
   }
-} else {
+} else if (zlib_source == "system") {
+  source_set("zlib") {
+    public_configs = [ ":zlib_config" ]
+    libs = [ "z" ]
+  }
+} else if (zlib_source == "embedded") {
   static_library("zlib") {
     sources = [
       "zlib/adler32.c",
@@ -67,7 +82,7 @@ if (crashpad_in_chromium) {
     defines = [ "HAVE_STDARG_H" ]
     public_configs = [ ":zlib_config" ]
 
-    if (is_win) {
+    if (crashpad_is_win) {
       cflags += [
         "/wd4131",  # uses old-style declarator
         "/wd4244",  # conversion from 't1' to 't2', possible loss of data
@@ -89,13 +104,13 @@ if (crashpad_in_chromium) {
         "zlib/x86.c",
         "zlib/x86.h",
       ]
-      if (!is_win || is_clang) {
+      if (!crashpad_is_win || crashpad_is_clang) {
         cflags += [
           "-msse4.2",
           "-mpclmul",
         ]
       }
-      if (is_clang) {
+      if (crashpad_is_clang) {
         cflags += [ "-Wno-incompatible-pointer-types" ]
       }
     } else {

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../build/crashpad_buildconfig.gni")
+
 source_set("tool_support") {
   sources = [
     "tool_support.cc",
@@ -21,7 +23,7 @@ source_set("tool_support") {
   public_configs = [ "..:crashpad_config" ]
 
   deps = [
-    "//base",
+    "../third_party/mini_chromium:base",
   ]
 }
 
@@ -32,11 +34,11 @@ executable("crashpad_database_util") {
 
   deps = [
     ":tool_support",
+    "../build:default_exe_manifest_win",
     "../client",
     "../compat",
+    "../third_party/mini_chromium:base",
     "../util",
-    "//base",
-    "//build/win:default_exe_manifest",
   ]
 }
 
@@ -47,10 +49,10 @@ executable("crashpad_http_upload") {
 
   deps = [
     ":tool_support",
+    "../build:default_exe_manifest_win",
     "../compat",
+    "../third_party/mini_chromium:base",
     "../util",
-    "//base",
-    "//build/win:default_exe_manifest",
   ]
 }
 
@@ -61,34 +63,35 @@ executable("generate_dump") {
 
   deps = [
     ":tool_support",
+    "../build:default_exe_manifest_win",
     "../compat",
     "../minidump",
     "../snapshot",
+    "../third_party/mini_chromium:base",
     "../util",
-    "//base",
-    "//build/win:default_exe_manifest",
   ]
 
-  if (is_mac) {
+  if (crashpad_is_mac) {
     # This would be better as a config so that it could be shared with
     # exception_port_tool, but configs can’t alter “inputs”.
+    # https://crbug.com/781858.
     inputs = [
-      rebase_path("mac/sectaskaccess_info.plist"),
+      "mac/sectaskaccess_info.plist",
     ]
     ldflags = [
       "-sectcreate",
       "__TEXT",
       "__info_plist",
-      inputs[0],
+      rebase_path(inputs[0], root_build_dir),
     ]
   }
 
-  if (is_win) {
+  if (crashpad_is_win) {
     cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
   }
 }
 
-if (is_mac) {
+if (crashpad_is_mac) {
   executable("catch_exception_tool") {
     sources = [
       "mac/catch_exception_tool.cc",
@@ -97,8 +100,8 @@ if (is_mac) {
     deps = [
       ":tool_support",
       "../compat",
+      "../third_party/mini_chromium:base",
       "../util",
-      "//base",
     ]
   }
 
@@ -108,22 +111,22 @@ if (is_mac) {
     ]
 
     # This would be better as a config so that it could be shared with
-    # generate_dump, but configs can’t alter “inputs”.
+    # generate_dump, but configs can’t alter “inputs”. https://crbug.com/781858.
     inputs = [
-      rebase_path("mac/sectaskaccess_info.plist"),
+      "mac/sectaskaccess_info.plist",
     ]
     ldflags = [
       "-sectcreate",
       "__TEXT",
       "__info_plist",
-      inputs[0],
+      rebase_path(inputs[0], root_build_dir),
     ]
 
     deps = [
       ":tool_support",
       "../compat",
+      "../third_party/mini_chromium:base",
       "../util",
-      "//base",
     ]
   }
 
@@ -140,8 +143,8 @@ if (is_mac) {
     deps = [
       ":tool_support",
       "../compat",
+      "../third_party/mini_chromium:base",
       "../util",
-      "//base",
     ]
   }
 
@@ -154,8 +157,8 @@ if (is_mac) {
       ":tool_support",
       "../client",
       "../compat",
+      "../third_party/mini_chromium:base",
       "../util",
-      "//base",
     ]
   }
 }
