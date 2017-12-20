@@ -10,8 +10,6 @@
 
 class SkBitmap;
 
-namespace chrome {
-
 // A delegate interface for users of BitmapFetcher.
 class BitmapFetcherDelegate {
  public:
@@ -28,7 +26,5 @@ class BitmapFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(BitmapFetcherDelegate);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_BITMAP_FETCHER_BITMAP_FETCHER_DELEGATE_H_

@@ -32,13 +32,13 @@ class BitmapFetcherRequest {
   BitmapFetcherService::RequestId request_id() const { return request_id_; }
 
   // Weak ptr |fetcher| is used to identify associated fetchers.
-  void set_fetcher(const chrome::BitmapFetcher* fetcher) { fetcher_ = fetcher; }
-  const chrome::BitmapFetcher* get_fetcher() const { return fetcher_; }
+  void set_fetcher(const BitmapFetcher* fetcher) { fetcher_ = fetcher; }
+  const BitmapFetcher* get_fetcher() const { return fetcher_; }
 
  private:
   const BitmapFetcherService::RequestId request_id_;
   std::unique_ptr<BitmapFetcherService::Observer> observer_;
-  const chrome::BitmapFetcher* fetcher_;
+  const BitmapFetcher* fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapFetcherRequest);
 };
@@ -110,8 +110,7 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
     return REQUEST_ID_INVALID;
 
   // Make sure there's a fetcher for this URL and attach to request.
-  const chrome::BitmapFetcher* fetcher =
-      EnsureFetcherForUrl(url, traffic_annotation);
+  const BitmapFetcher* fetcher = EnsureFetcherForUrl(url, traffic_annotation);
   request->set_fetcher(fetcher);
 
   requests_.push_back(std::move(request));
@@ -125,11 +124,11 @@ void BitmapFetcherService::Prefetch(
     EnsureFetcherForUrl(url, traffic_annotation);
 }
 
-std::unique_ptr<chrome::BitmapFetcher> BitmapFetcherService::CreateFetcher(
+std::unique_ptr<BitmapFetcher> BitmapFetcherService::CreateFetcher(
     const GURL& url,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  std::unique_ptr<chrome::BitmapFetcher> new_fetcher(
-      new chrome::BitmapFetcher(url, this, traffic_annotation));
+  std::unique_ptr<BitmapFetcher> new_fetcher(
+      new BitmapFetcher(url, this, traffic_annotation));
 
   new_fetcher->Init(
       std::string(),
@@ -141,21 +140,20 @@ std::unique_ptr<chrome::BitmapFetcher> BitmapFetcherService::CreateFetcher(
   return new_fetcher;
 }
 
-const chrome::BitmapFetcher* BitmapFetcherService::EnsureFetcherForUrl(
+const BitmapFetcher* BitmapFetcherService::EnsureFetcherForUrl(
     const GURL& url,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  const chrome::BitmapFetcher* fetcher = FindFetcherForUrl(url);
+  const BitmapFetcher* fetcher = FindFetcherForUrl(url);
   if (fetcher)
     return fetcher;
 
-  std::unique_ptr<chrome::BitmapFetcher> new_fetcher =
+  std::unique_ptr<BitmapFetcher> new_fetcher =
       CreateFetcher(url, traffic_annotation);
   active_fetchers_.push_back(std::move(new_fetcher));
   return active_fetchers_.back().get();
 }
 
-const chrome::BitmapFetcher* BitmapFetcherService::FindFetcherForUrl(
-    const GURL& url) {
+const BitmapFetcher* BitmapFetcherService::FindFetcherForUrl(const GURL& url) {
   for (auto it = active_fetchers_.begin(); it != active_fetchers_.end(); ++it) {
     if (url == (*it)->url())
       return it->get();
@@ -163,7 +161,7 @@ const chrome::BitmapFetcher* BitmapFetcherService::FindFetcherForUrl(
   return nullptr;
 }
 
-void BitmapFetcherService::RemoveFetcher(const chrome::BitmapFetcher* fetcher) {
+void BitmapFetcherService::RemoveFetcher(const BitmapFetcher* fetcher) {
   auto it = active_fetchers_.begin();
   for (; it != active_fetchers_.end(); ++it) {
     if (it->get() == fetcher)
@@ -176,7 +174,7 @@ void BitmapFetcherService::RemoveFetcher(const chrome::BitmapFetcher* fetcher) {
 
 void BitmapFetcherService::OnFetchComplete(const GURL& url,
                                            const SkBitmap* bitmap) {
-  const chrome::BitmapFetcher* fetcher = FindFetcherForUrl(url);
+  const BitmapFetcher* fetcher = FindFetcherForUrl(url);
   DCHECK(fetcher);
 
   // Notify all attached requests of completion.

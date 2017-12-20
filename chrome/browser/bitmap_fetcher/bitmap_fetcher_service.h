@@ -18,17 +18,13 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace chrome {
 class BitmapFetcher;
-}  // namespace chrome
-
 class BitmapFetcherRequest;
 class GURL;
 class SkBitmap;
 
 // Service to retrieve images for Answers in Suggest.
-class BitmapFetcherService : public KeyedService,
-                             public chrome::BitmapFetcherDelegate {
+class BitmapFetcherService : public KeyedService, public BitmapFetcherDelegate {
  public:
   typedef int RequestId;
   static const RequestId REQUEST_ID_INVALID = 0;
@@ -69,7 +65,7 @@ class BitmapFetcherService : public KeyedService,
  protected:
   // Create a bitmap fetcher for the given |url| and start it. Virtual method
   // so tests can override this for different behavior.
-  virtual std::unique_ptr<chrome::BitmapFetcher> CreateFetcher(
+  virtual std::unique_ptr<BitmapFetcher> CreateFetcher(
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
@@ -78,22 +74,22 @@ class BitmapFetcherService : public KeyedService,
 
   // Gets the existing fetcher for |url| or constructs a new one if it doesn't
   // exist.
-  const chrome::BitmapFetcher* EnsureFetcherForUrl(
+  const BitmapFetcher* EnsureFetcherForUrl(
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Find a fetcher with a given |url|. Return NULL if none is found.
-  const chrome::BitmapFetcher* FindFetcherForUrl(const GURL& url);
+  const BitmapFetcher* FindFetcherForUrl(const GURL& url);
 
   // Remove |fetcher| from list of active fetchers. |fetcher| MUST be part of
   // the list.
-  void RemoveFetcher(const chrome::BitmapFetcher* fetcher);
+  void RemoveFetcher(const BitmapFetcher* fetcher);
 
   // BitmapFetcherDelegate implementation.
   void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
 
   // Currently active image fetchers.
-  std::vector<std::unique_ptr<chrome::BitmapFetcher>> active_fetchers_;
+  std::vector<std::unique_ptr<BitmapFetcher>> active_fetchers_;
 
   // Currently active requests.
   std::vector<std::unique_ptr<BitmapFetcherRequest>> requests_;

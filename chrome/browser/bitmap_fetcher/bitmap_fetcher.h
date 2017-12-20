@@ -19,8 +19,6 @@
 
 class SkBitmap;
 
-namespace chrome {
-
 // Asynchrounously fetches an image from the given URL and returns the
 // decoded Bitmap to the provided BitmapFetcherDelegate.
 class BitmapFetcher : public ImageDecoder::ImageRequest {
@@ -72,7 +70,5 @@ class BitmapFetcher : public ImageDecoder::ImageRequest {
 
   DISALLOW_COPY_AND_ASSIGN(BitmapFetcher);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_BITMAP_FETCHER_BITMAP_FETCHER_H_

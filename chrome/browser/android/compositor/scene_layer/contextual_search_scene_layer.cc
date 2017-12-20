@@ -197,8 +197,8 @@ void ContextualSearchSceneLayer::FetchThumbnail(
   content::mojom::URLLoaderFactory* loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
-  fetcher_ = base::MakeUnique<chrome::BitmapFetcher>(gurl, this,
-                                                     NO_TRAFFIC_ANNOTATION_YET);
+  fetcher_ =
+      base::MakeUnique<BitmapFetcher>(gurl, this, NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->Init(
       std::string(),
       blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,

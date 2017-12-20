@@ -24,7 +24,7 @@ namespace android {
 class ContextualSearchLayer;
 
 class ContextualSearchSceneLayer : public SceneLayer,
-    public chrome::BitmapFetcherDelegate {
+                                   public BitmapFetcherDelegate {
  public:
   ContextualSearchSceneLayer(JNIEnv* env,
                              const base::android::JavaRef<jobject>& jobj);
@@ -124,7 +124,7 @@ class ContextualSearchSceneLayer : public SceneLayer,
   base::android::ScopedJavaGlobalRef<jobject> object_;
   float base_page_brightness_;
   std::string thumbnail_url_;
-  std::unique_ptr<chrome::BitmapFetcher> fetcher_;
+  std::unique_ptr<BitmapFetcher> fetcher_;
 
   scoped_refptr<ContextualSearchLayer> contextual_search_layer_;
   scoped_refptr<cc::Layer> content_container_;
