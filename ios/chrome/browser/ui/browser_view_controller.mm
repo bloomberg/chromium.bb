@@ -1954,7 +1954,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _toolbarCoordinator = [[LegacyToolbarCoordinator alloc]
           initWithBaseViewController:self
       toolsMenuConfigurationProvider:self
-                          dispatcher:self.dispatcher];
+                          dispatcher:self.dispatcher
+                        browserState:_browserState];
 
   _sideSwipeController.toolbarInteractionHandler = _toolbarCoordinator;
 
