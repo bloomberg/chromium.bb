@@ -31,6 +31,10 @@ void NOINLINE ForceSystemLeaks() {
 
 @implementation CocoaTestHelperWindow
 
+@synthesize pretendIsKeyWindow = pretendIsKeyWindow_;
+@synthesize pretendIsOccluded = pretendIsOccluded_;
+@synthesize useDefaultConstraints = useDefaultConstraints_;
+
 - (id)initWithContentRect:(NSRect)contentRect {
   self = [super initWithContentRect:contentRect
                           styleMask:NSBorderlessWindowMask
@@ -54,16 +58,12 @@ void NOINLINE ForceSystemLeaks() {
 
 - (void)makePretendKeyWindowAndSetFirstResponder:(NSResponder*)responder {
   EXPECT_TRUE([self makeFirstResponder:responder]);
-  [self setPretendIsKeyWindow:YES];
+  self.pretendIsKeyWindow = YES;
 }
 
 - (void)clearPretendKeyWindowAndFirstResponder {
-  [self setPretendIsKeyWindow:NO];
+  self.pretendIsKeyWindow = NO;
   EXPECT_TRUE([self makeFirstResponder:NSApp]);
-}
-
-- (void)setPretendIsKeyWindow:(BOOL)flag {
-  pretendIsKeyWindow_ = flag;
 }
 
 - (void)setPretendIsOccluded:(BOOL)flag {
