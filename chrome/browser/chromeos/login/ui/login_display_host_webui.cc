@@ -53,7 +53,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -419,7 +418,6 @@ class LoginDisplayHostWebUI::LoginWidgetDelegate
 LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
     : wallpaper_bounds_(wallpaper_bounds),
       startup_sound_played_(StartupUtils::IsOobeCompleted()),
-      pointer_factory_(this),
       animation_weak_ptr_factory_(this) {
   if (ash_util::IsRunningInMash()) {
     // Animation, and initializing hidden, are not currently supported for Mash.
@@ -670,10 +668,6 @@ WizardController* LoginDisplayHostWebUI::GetWizardController() {
   return wizard_controller_.get();
 }
 
-AppLaunchController* LoginDisplayHostWebUI::GetAppLaunchController() {
-  return app_launch_controller_.get();
-}
-
 void LoginDisplayHostWebUI::StartUserAdding(
     base::OnceClosure completion_callback) {
   DisableKeyboardOverscroll();
@@ -788,35 +782,7 @@ void LoginDisplayHostWebUI::OnPreferencesChanged() {
     login_display_->OnPreferencesChanged();
 }
 
-void LoginDisplayHostWebUI::StartAppLaunch(const std::string& app_id,
-                                           bool diagnostic_mode,
-                                           bool auto_launch) {
-  VLOG(1) << "Login WebUI >> start app launch.";
-  SetStatusAreaVisible(false);
-
-  // Wait for the |CrosSettings| to become either trusted or permanently
-  // untrusted.
-  const CrosSettingsProvider::TrustedStatus status =
-      CrosSettings::Get()->PrepareTrustedValues(base::Bind(
-          &LoginDisplayHostWebUI::StartAppLaunch, pointer_factory_.GetWeakPtr(),
-          app_id, diagnostic_mode, auto_launch));
-  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
-    return;
-
-  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-    // If the |CrosSettings| are permanently untrusted, refuse to launch a
-    // single-app kiosk mode session.
-    LOG(ERROR) << "Login WebUI >> Refusing to launch single-app kiosk mode.";
-    SetStatusAreaVisible(true);
-    return;
-  }
-
-  if (system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation()) {
-    // If the device is disabled, bail out. A device disabled screen will be
-    // shown by the DeviceDisablingManager.
-    return;
-  }
-
+void LoginDisplayHostWebUI::OnStartAppLaunch() {
   // Animation is not supported in Mash.
   if (!ash_util::IsRunningInMash())
     finalize_animation_type_ = ANIMATION_FADE_OUT;
@@ -824,11 +790,6 @@ void LoginDisplayHostWebUI::StartAppLaunch(const std::string& app_id,
     LoadURL(GURL(kAppLaunchSplashURL));
 
   login_view_->set_should_emit_login_prompt_visible(false);
-
-  app_launch_controller_.reset(
-      new AppLaunchController(app_id, diagnostic_mode, this, GetOobeUI()));
-
-  app_launch_controller_->StartAppLaunch(auto_launch);
 }
 
 void LoginDisplayHostWebUI::StartArcKiosk(const AccountId& account_id) {

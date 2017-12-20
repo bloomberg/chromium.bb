@@ -37,14 +37,11 @@ class LoginDisplayHostViews : public LoginDisplayHost,
   void SetStatusAreaVisible(bool visible) override;
   void StartWizard(OobeScreen first_screen) override;
   WizardController* GetWizardController() override;
-  AppLaunchController* GetAppLaunchController() override;
   void StartUserAdding(base::OnceClosure completion_callback) override;
   void CancelUserAdding() override;
   void OnStartSignInScreen(const LoginScreenContext& context) override;
   void OnPreferencesChanged() override;
-  void StartAppLaunch(const std::string& app_id,
-                      bool diagnostic_mode,
-                      bool is_auto_launch) override;
+  void OnStartAppLaunch() override;
   void StartArcKiosk(const AccountId& account_id) override;
   void StartVoiceInteractionOobe() override;
   bool IsVoiceInteractionOobe() override;

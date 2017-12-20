@@ -65,11 +65,6 @@ WizardController* LoginDisplayHostViews::GetWizardController() {
   return nullptr;
 }
 
-AppLaunchController* LoginDisplayHostViews::GetAppLaunchController() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void LoginDisplayHostViews::StartUserAdding(
     base::OnceClosure completion_callback) {
   NOTIMPLEMENTED();
@@ -107,9 +102,7 @@ void LoginDisplayHostViews::OnPreferencesChanged() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::StartAppLaunch(const std::string& app_id,
-                                           bool diagnostic_mode,
-                                           bool is_auto_launch) {
+void LoginDisplayHostViews::OnStartAppLaunch() {
   NOTIMPLEMENTED();
 }
 

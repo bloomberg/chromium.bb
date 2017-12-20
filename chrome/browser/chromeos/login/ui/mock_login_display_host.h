@@ -34,7 +34,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(ShowBackground, void(void));
   MOCK_METHOD1(StartWizard, void(OobeScreen));
   MOCK_METHOD0(GetWizardController, WizardController*(void));
-  MOCK_METHOD0(GetAppLaunchController, AppLaunchController*(void));
 
   // Workaround for move-only args in GMock.
   MOCK_METHOD1(MockStartUserAdding, void(base::OnceClosure*));
@@ -47,7 +46,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(ResumeSignInScreen, void(void));
   MOCK_METHOD0(OnPreferencesChanged, void(void));
   MOCK_METHOD0(PrewarmAuthentication, void(void));
-  MOCK_METHOD3(StartAppLaunch, void(const std::string&, bool, bool));
+  MOCK_METHOD0(OnStartAppLaunch, void());
   MOCK_METHOD0(StartDemoAppLaunch, void(void));
   MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
   MOCK_METHOD0(StartVoiceInteractionOobe, void(void));
