@@ -10,7 +10,6 @@
 #include "ipc/message_filter.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
-#include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 
 namespace media {
 
@@ -26,11 +25,6 @@ class MediaGpuChannelDispatchHelper {
                             IPC::Message* reply_message) {
     channel_->OnCreateVideoDecoder(routing_id_, config, decoder_route_id,
                                    reply_message);
-  }
-
-  void OnCreateVideoEncoder(const CreateVideoEncoderParams& params,
-                            IPC::Message* reply_message) {
-    channel_->OnCreateVideoEncoder(routing_id_, params, reply_message);
   }
 
  private:
@@ -101,9 +95,6 @@ bool MediaGpuChannel::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         GpuCommandBufferMsg_CreateVideoDecoder, &helper,
         MediaGpuChannelDispatchHelper::OnCreateVideoDecoder)
-    IPC_MESSAGE_FORWARD_DELAY_REPLY(
-        GpuCommandBufferMsg_CreateVideoEncoder, &helper,
-        MediaGpuChannelDispatchHelper::OnCreateVideoEncoder)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -131,31 +122,6 @@ void MediaGpuChannel::OnCreateVideoDecoder(
   Send(reply_message);
 
   // decoder is registered as a DestructionObserver of this stub and will
-  // self-delete during destruction of this stub.
-}
-
-void MediaGpuChannel::OnCreateVideoEncoder(
-    int32_t command_buffer_route_id,
-    const CreateVideoEncoderParams& params,
-    IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "MediaGpuChannel::OnCreateVideoEncoder");
-  gpu::CommandBufferStub* stub =
-      channel_->LookupCommandBuffer(command_buffer_route_id);
-  if (!stub) {
-    reply_message->set_reply_error();
-    Send(reply_message);
-    return;
-  }
-  GpuVideoEncodeAccelerator* encoder = new GpuVideoEncodeAccelerator(
-      params.encoder_route_id, stub, stub->channel()->io_task_runner());
-  bool succeeded =
-      encoder->Initialize(params.input_format, params.input_visible_size,
-                          params.output_profile, params.initial_bitrate);
-  GpuCommandBufferMsg_CreateVideoEncoder::WriteReplyParams(reply_message,
-                                                           succeeded);
-  Send(reply_message);
-
-  // encoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
 }
 

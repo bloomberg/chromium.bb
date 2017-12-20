@@ -18,8 +18,6 @@ target(link_target_type, "service") {
   sources = [
     "gpu_video_decode_accelerator.cc",
     "gpu_video_decode_accelerator.h",
-    "gpu_video_encode_accelerator.cc",
-    "gpu_video_encode_accelerator.h",
     "media_gpu_channel.cc",
     "media_gpu_channel.h",
     "media_gpu_channel_manager.cc",
