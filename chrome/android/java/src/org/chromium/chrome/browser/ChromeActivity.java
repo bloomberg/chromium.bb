@@ -780,16 +780,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         UpdateMenuItemHelper.getInstance().onStart();
         ChromeActivitySessionTracker.getInstance().onStartWithNative();
 
-        if (!SysUtils.isLowEndDevice()) {
-            if (GSAState.getInstance(this).isGsaAvailable()) {
-                // GSA connection is not needed on low-end devices because Icing is disabled.
-                GSAAccountChangeListener.getInstance().connect();
-                createContextReporterIfNeeded();
-            } else {
-                ContextReporter.reportStatus(ContextReporter.STATUS_GSA_NOT_AVAILABLE);
-            }
-        }
-
         // postDeferredStartupIfNeeded() is called in TabModelSelectorTabObsever#onLoadStopped(),
         // #onPageLoadFinished() and #onCrash(). If we are not actively loading a tab (e.g.
         // in Android N multi-instance, which is created by re-parenting an existing tab),
@@ -917,6 +907,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 mSyncStateChangedListener = null;
             }
         }
+        if (mContextReporter != null) mContextReporter.disable();
+
         super.onStopWithNative();
     }
 
@@ -1005,6 +997,20 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (isActivityDestroyed()) return;
             ForcedSigninProcessor.checkCanSignIn(ChromeActivity.this);
         });
+
+        // GSA connection is not needed on low-end devices because Icing is disabled.
+        if (!SysUtils.isLowEndDevice()) {
+            if (isActivityDestroyed()) return;
+            DeferredStartupHandler.getInstance().addDeferredTask(() -> {
+                if (!GSAState.getInstance(this).isGsaAvailable()) {
+                    ContextReporter.reportStatus(ContextReporter.STATUS_GSA_NOT_AVAILABLE);
+                    return;
+                }
+
+                GSAAccountChangeListener.getInstance().connect();
+                createContextReporterIfNeeded();
+            });
+        }
     }
 
     /**
@@ -1035,7 +1041,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mCompositorViewHolder.prepareForTabReparenting();
         }
         super.onStart();
-        if (mContextReporter != null) mContextReporter.enable();
 
         if (mPartnerBrowserRefreshNeeded) {
             mPartnerBrowserRefreshNeeded = false;
@@ -1068,7 +1073,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onStop() {
         super.onStop();
-        if (mContextReporter != null) mContextReporter.disable();
 
         // We want to refresh partner browser provider every onStart().
         mPartnerBrowserRefreshNeeded = true;
