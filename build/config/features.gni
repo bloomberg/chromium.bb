@@ -24,9 +24,16 @@ declare_args() {
   # Enables proprietary codecs and demuxers; e.g. H264, AAC, MP3, and MP4.
   # We always build Google Chrome and Chromecast with proprietary codecs.
   #
+  # This flag must not be set to true for any build that you plan to
+  # distribute unless you have the appropriate licensing in place.
+  #
   # Note: this flag is used by WebRTC which is DEPSed into Chrome. Moving it
   # out of //build will require using the build_overrides directory.
-  proprietary_codecs = is_chrome_branded || is_chromecast
+
+  # TODO(crbug.com/796218): make this work on fuchsia as well.
+  # TODO(crbug.com/796379): Make work on 32-bit x86 Linux?
+  proprietary_codecs =
+      !is_fuchsia && !(is_linux && !is_chromeos && target_cpu == "x86")
 
   # Variable safe_browsing is used to control the build time configuration for
   # safe browsing feature. Safe browsing can be compiled in 3 different levels:
