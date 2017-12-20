@@ -43,7 +43,7 @@ jumbo_component("views") {
   all_dependent_configs = [ ":flags" ]
 
   public = [
-    "accessibility/native_view_accessibility.h",
+    "accessibility/view_accessibility.h",
     "accessible_pane_view.h",
     "animation/bounds_animator.h",
     "animation/bounds_animator_observer.h",
@@ -249,6 +249,7 @@ jumbo_component("views") {
   ]
 
   sources = [
+    "accessibility/view_accessibility.cc",
     "accessible_pane_view.cc",
     "animation/bounds_animator.cc",
     "animation/flood_fill_ink_drop_ripple.cc",
@@ -703,8 +704,6 @@ jumbo_component("views") {
       "accessibility/native_view_accessibility_win.cc",
       "accessibility/native_view_accessibility_win.h",
     ]
-  } else {
-    sources += [ "accessibility/native_view_accessibility_stub.cc" ]
   }
 
   if (is_fuchsia) {
