@@ -303,7 +303,6 @@ void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   shelf_layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanging(
       state.displaced_bounds);
   shelf_layout_manager_->OnKeyboardAppearanceChanging(state);
-  shelf_layout_manager_->OnKeyboardBoundsChanging(bounds);
 }
 
 ShelfLockingManager* Shelf::GetShelfLockingManagerForTesting() {
