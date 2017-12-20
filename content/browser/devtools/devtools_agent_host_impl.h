@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/devtools.mojom.h"
 #include "content/common/devtools_messages.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/devtools_agent_host.h"
 
 namespace content {
@@ -26,6 +27,15 @@ class DevToolsSession;
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
+  // Asks any interested agents to handle the given certificate error. Returns
+  // |true| if the error was handled, |false| otherwise.
+  using CertErrorCallback =
+      base::RepeatingCallback<void(content::CertificateRequestResultType)>;
+  static bool HandleCertificateError(WebContents* web_contents,
+                                     int cert_error,
+                                     const GURL& request_url,
+                                     CertErrorCallback callback);
+
   // DevToolsAgentHost implementation.
   void AttachClient(DevToolsAgentHostClient* client) override;
   void ForceAttachClient(DevToolsAgentHostClient* client) override;

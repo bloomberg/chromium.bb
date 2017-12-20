@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -336,18 +335,11 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
       base::Bind(&OnAllowCertificate, base::Owned(handler.release()),
                  ssl_host_state_delegate_);
 
-  DevToolsAgentHostImpl* agent_host = static_cast<DevToolsAgentHostImpl*>(
-      DevToolsAgentHost::GetOrCreateFor(web_contents).get());
-  if (agent_host) {
-    for (auto* security_handler :
-         protocol::SecurityHandler::ForAgentHost(agent_host)) {
-      if (security_handler->NotifyCertificateError(
-              cert_error, request_url,
-              base::Bind(&OnAllowCertificateWithRecordDecision, false,
-                         callback))) {
-        return;
-      }
-    }
+  if (DevToolsAgentHostImpl::HandleCertificateError(
+          web_contents, cert_error, request_url,
+          base::BindRepeating(&OnAllowCertificateWithRecordDecision, false,
+                              callback))) {
+    return;
   }
 
   GetContentClient()->browser()->AllowCertificateError(
