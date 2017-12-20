@@ -328,8 +328,9 @@ bool IsTraceEventArgsWhitelisted(
 
 }  // namespace
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 // Flaky on android, chromeos: https://crbug.com/639706
+// Flaky on linux: https://crbug.com/795803
 #define MAYBE_NoWhitelistedArgsStripped DISABLED_NoWhitelistedArgsStripped
 #else
 #define MAYBE_NoWhitelistedArgsStripped NoWhitelistedArgsStripped
