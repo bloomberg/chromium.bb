@@ -79,8 +79,8 @@ class CONTENT_EXPORT GestureEventQueue {
 
   // Adds a gesture to the queue if it passes the relevant filters. If
   // there are no events currently queued, the event will be forwarded
-  // immediately.
-  void QueueEvent(const GestureEventWithLatencyInfo&);
+  // immediately. Returns false if the event wasn't queued and was filtered.
+  bool QueueEvent(const GestureEventWithLatencyInfo&);
 
   // Indicates that the caller has received an acknowledgement from the renderer
   // with state |ack_result| and event |type|. May send events if the queue is
