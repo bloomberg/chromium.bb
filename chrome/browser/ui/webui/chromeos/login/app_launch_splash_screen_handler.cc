@@ -232,10 +232,6 @@ void AppLaunchSplashScreenHandler::SetLaunchText(const std::string& text) {
 int AppLaunchSplashScreenHandler::GetProgressMessageFromState(
     AppLaunchState state) {
   switch (state) {
-    case APP_LAUNCH_STATE_LOADING_AUTH_FILE:
-    case APP_LAUNCH_STATE_LOADING_TOKEN_SERVICE:
-      // TODO(zelidrag): Add better string for this one than "Please wait..."
-      return IDS_SYNC_SETUP_SPINNER_TITLE;
     case APP_LAUNCH_STATE_PREPARING_NETWORK:
       return IDS_APP_START_NETWORK_WAIT_MESSAGE;
     case APP_LAUNCH_STATE_INSTALLING_APPLICATION:

@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -27,9 +26,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
@@ -41,33 +37,6 @@ namespace chromeos {
 namespace {
 
 const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
-
-// Used to listen for app termination notification.
-class TerminationObserver : public content::NotificationObserver {
- public:
-  TerminationObserver() {
-    registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                   content::NotificationService::AllSources());
-  }
-  ~TerminationObserver() override = default;
-
-  // Whether app has been terminated - i.e. whether app termination notification
-  // has been observed.
-  bool terminated() const { return notification_seen_; }
-
- private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    ASSERT_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
-    notification_seen_ = true;
-  }
-
-  bool notification_seen_ = false;
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(TerminationObserver);
-};
 
 }  // namespace
 
@@ -105,11 +74,6 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
     fake_cws_->SetUpdateCrx(test_app_id_, test_app_id_ + ".crx", "1.0.0");
   }
 
-  void PreRunTestOnMainThread() override {
-    termination_observer_.reset(new TerminationObserver());
-    InProcessBrowserTest::PreRunTestOnMainThread();
-  }
-
   void SetUpOnMainThread() override {
     extensions::browsertest_util::CreateAndInitializeLocalCache();
 
@@ -123,9 +87,6 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
   }
 
   const std::string& test_app_id() const { return test_app_id_; }
-
- protected:
-  std::unique_ptr<TerminationObserver> termination_observer_;
 
  private:
   void SetUpExistingKioskApp() {
@@ -191,7 +152,6 @@ IN_PROC_BROWSER_TEST_F(KioskCrashRestoreTest, AppNotInstalled) {
   // If app is not installed when restoring from crash, the kiosk launch is
   // expected to fail, as in that case the crash occured during the app
   // initialization - before the app was actually launched.
-  EXPECT_TRUE(termination_observer_->terminated());
   EXPECT_EQ(KioskAppLaunchError::UNABLE_TO_LAUNCH, KioskAppLaunchError::Get());
 }
 

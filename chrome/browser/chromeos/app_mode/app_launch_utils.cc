@@ -50,8 +50,6 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
     // with the same app version as the restored session.
     return true;
   }
-  void OnLoadingOAuthFile() override {}
-  void OnInitializingTokenService() override {}
   void OnInstallingApp() override {}
   void OnReadyToLaunch() override { startup_app_launcher_->LaunchApp(); }
   void OnLaunchSucceeded() override { Cleanup(); }

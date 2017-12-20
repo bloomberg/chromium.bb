@@ -60,7 +60,7 @@ class AppLaunchSplashScreenHandler
   AppLaunchSplashScreenHandler::Delegate* delegate_ = nullptr;
   bool show_on_init_ = false;
   std::string app_id_;
-  AppLaunchState state_ = APP_LAUNCH_STATE_LOADING_AUTH_FILE;
+  AppLaunchState state_ = APP_LAUNCH_STATE_PREPARING_NETWORK;
 
   scoped_refptr<NetworkStateInformer> network_state_informer_;
   ErrorScreen* error_screen_;

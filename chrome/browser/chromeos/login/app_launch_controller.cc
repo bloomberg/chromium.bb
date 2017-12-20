@@ -441,16 +441,6 @@ bool AppLaunchController::ShouldSkipAppInstallation() {
   return false;
 }
 
-void AppLaunchController::OnLoadingOAuthFile() {
-  app_launch_splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::APP_LAUNCH_STATE_LOADING_AUTH_FILE);
-}
-
-void AppLaunchController::OnInitializingTokenService() {
-  app_launch_splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::APP_LAUNCH_STATE_LOADING_TOKEN_SERVICE);
-}
-
 void AppLaunchController::OnInstallingApp() {
   app_launch_splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::APP_LAUNCH_STATE_INSTALLING_APPLICATION);
