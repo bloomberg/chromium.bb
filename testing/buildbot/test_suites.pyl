@@ -1065,26 +1065,6 @@
     },
   },
 
-  'mojo_linux_gtests': {
-    'network_service_browser_tests': {
-      'args': [
-        '--enable-features=NetworkService',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter',
-      ],
-      'swarming': {
-        'shards': 5,
-      },
-      'test': 'browser_tests',
-    },
-    'network_service_content_browsertests': {
-      'args': [
-        '--enable-features=NetworkService',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
-      ],
-      'test': 'content_browsertests',
-    },
-  },
-
   'mojo_linux_isolated_scripts': {
     'webkit_layout_tests': {
       'args': [
@@ -1183,6 +1163,26 @@
       'swarming': {
         'shards': 2,
       },
+      'test': 'content_browsertests',
+    },
+  },
+
+  'network_service_gtests': {
+    'network_service_browser_tests': {
+      'args': [
+        '--enable-features=NetworkService',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter',
+      ],
+      'swarming': {
+        'shards': 5,
+      },
+      'test': 'browser_tests',
+    },
+    'network_service_content_browsertests': {
+      'args': [
+        '--enable-features=NetworkService',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
+      ],
       'test': 'content_browsertests',
     },
   },
@@ -1901,6 +1901,7 @@
     'linux_flavor_specific_chromium_gtests',
     'linux_incl_clang_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
+    'network_service_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_chromium_gtests',
     'non_android_and_cast_and_chromeos_and_clang_android_mac_win_chromium_gtests',

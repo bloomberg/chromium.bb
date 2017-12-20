@@ -1129,7 +1129,7 @@
       },
       'Mojo Linux': {
         'test_suites': {
-          'gtest_tests': 'mojo_linux_gtests',
+          'gtest_tests': 'network_service_gtests',
           'isolated_scripts': 'mojo_linux_isolated_scripts',
         },
       },
