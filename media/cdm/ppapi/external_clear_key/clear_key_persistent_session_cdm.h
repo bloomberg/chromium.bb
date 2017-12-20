@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/content_decryption_module.h"
 #include "media/cdm/aes_decryptor.h"
-#include "media/cdm/cdm_file_adapter.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_file_adapter.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 
 namespace media {

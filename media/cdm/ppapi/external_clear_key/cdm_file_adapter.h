@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_CDM_FILE_ADAPTER_H_
-#define MEDIA_CDM_CDM_FILE_ADAPTER_H_
+#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_FILE_ADAPTER_H_
+#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_FILE_ADAPTER_H_
 
 #include <stdint.h>
 
@@ -13,13 +13,12 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "media/base/media_export.h"
 #include "media/cdm/api/content_decryption_module.h"
 
 namespace media {
 
 // This class provides the ability to read and write a file using cdm::FileIO.
-class MEDIA_EXPORT CdmFileAdapter : public cdm::FileIOClient {
+class CdmFileAdapter : public cdm::FileIOClient {
  public:
   enum class Status { kSuccess, kInUse, kError };
   using FileOpenedCB = base::OnceCallback<void(Status status)>;
@@ -64,4 +63,4 @@ class MEDIA_EXPORT CdmFileAdapter : public cdm::FileIOClient {
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_CDM_FILE_ADAPTER_H_
+#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CDM_FILE_ADAPTER_H_

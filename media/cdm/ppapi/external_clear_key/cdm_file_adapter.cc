@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/cdm_file_adapter.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_file_adapter.h"
 
 #include <memory>
 
