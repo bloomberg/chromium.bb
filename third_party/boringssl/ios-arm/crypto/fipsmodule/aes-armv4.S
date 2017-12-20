@@ -44,6 +44,11 @@
 # define __ARM_ARCH__ __LINUX_ARM_ARCH__
 #endif
 
+@ Silence ARMv8 deprecated IT instruction warnings. This file is used by both
+@ ARMv7 and ARMv8 processors and does not use ARMv8 instructions. (ARMv8 AES
+@ instructions are in aesv8-armx.pl.)
+
+
 .text
 #if defined(__thumb2__) && !defined(__APPLE__)
 .syntax	unified

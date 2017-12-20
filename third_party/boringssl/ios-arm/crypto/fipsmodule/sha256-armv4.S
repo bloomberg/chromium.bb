@@ -50,6 +50,11 @@
 # define __ARM_MAX_ARCH__ 7
 #endif
 
+@ Silence ARMv8 deprecated IT instruction warnings. This file is used by both
+@ ARMv7 and ARMv8 processors. It does have ARMv8-only code, but those
+@ instructions are manually-encoded. (See unsha256.)
+
+
 .text
 #if defined(__thumb2__)
 .syntax	unified

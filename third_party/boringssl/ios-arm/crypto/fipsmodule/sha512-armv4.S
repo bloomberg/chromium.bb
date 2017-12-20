@@ -63,6 +63,10 @@
 # define VFP_ABI_POP
 #endif
 
+@ Silence ARMv8 deprecated IT instruction warnings. This file is used by both
+@ ARMv7 and ARMv8 processors and does not use ARMv8 instructions.
+
+
 #ifdef __ARMEL__
 # define LO 0
 # define HI 4

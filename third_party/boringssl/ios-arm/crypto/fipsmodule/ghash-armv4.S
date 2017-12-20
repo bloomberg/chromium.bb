@@ -1,5 +1,10 @@
 #include <openssl/arm_arch.h>
 
+@ Silence ARMv8 deprecated IT instruction warnings. This file is used by both
+@ ARMv7 and ARMv8 processors and does not use ARMv8 instructions. (ARMv8 PMULL
+@ instructions are in aesv8-armx.pl.)
+
+
 .text
 #if defined(__thumb2__) || defined(__clang__)
 .syntax	unified

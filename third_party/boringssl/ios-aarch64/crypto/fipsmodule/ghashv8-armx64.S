@@ -1,9 +1,7 @@
 #include <openssl/arm_arch.h>
 
 .text
-#if !defined(__clang__) || defined(BORINGSSL_CLANG_SUPPORTS_DOT_ARCH)
 
-#endif
 .globl	_gcm_init_v8
 .private_extern	_gcm_init_v8
 
