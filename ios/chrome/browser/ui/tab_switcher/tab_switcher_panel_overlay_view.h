@@ -10,6 +10,8 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol SigninPresenter;
+@class SigninPromoViewConfigurator;
+@class SigninPromoViewMediator;
 @protocol SyncPresenter;
 
 namespace ios {
@@ -38,6 +40,7 @@ TabSwitcherPanelOverlayType PanelOverlayTypeFromSignInPanelsType(
     presenter;
 @property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
     dispatcher;
+@property(nonatomic) SigninPromoViewMediator* signinPromoViewMediator;
 
 - (instancetype)initWithFrame:(CGRect)frame
                  browserState:(ios::ChromeBrowserState*)browserState
@@ -49,6 +52,11 @@ TabSwitcherPanelOverlayType PanelOverlayTypeFromSignInPanelsType(
 - (void)wasShown;
 // Should be called when the tab switcher was hidden.
 - (void)wasHidden;
+
+// Called when the sign-in promo view should be reloaded.
+- (void)configureSigninPromoWithConfigurator:
+            (SigninPromoViewConfigurator*)configurator
+                             identityChanged:(BOOL)identityChanged;
 
 @end
 

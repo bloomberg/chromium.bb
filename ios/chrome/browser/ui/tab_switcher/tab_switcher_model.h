@@ -52,6 +52,8 @@ bool TabSwitcherSessionTypeIsLocalSession(TabSwitcherSessionType sessionType);
 // Called to retrieve the size of the item at the |index| in |session|.
 - (CGSize)sizeForItemAtIndex:(NSUInteger)index
                    inSession:(TabSwitcherSessionType)session;
+// Returns YES if sign-in from Other Devices is in progress.
+- (BOOL)isSigninInProgress;
 @end
 
 // This class serves as a bridge between Chrome-level data (CLD), and what is
