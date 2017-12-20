@@ -69,15 +69,6 @@ const size_t kLargeSize = kSmallSize * 16;
 // be used very sparingly.
 const size_t kHugeSize = kLargeSize * 2;
 
-// Crash Key Name Constants ////////////////////////////////////////////////////
-
-// The total number of experiments the instance has.
-extern const char kNumVariations[];
-
-// The experiments chunk. Hashed experiment names separated by |,|. This is
-// typically set by SetExperimentList.
-extern const char kVariations[];
-
 }  // namespace crash_keys
 
 #endif  // COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_

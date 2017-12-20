@@ -38,22 +38,7 @@ namespace {
 using namespace crash_keys;
 
 size_t RegisterCrashKeysHelper() {
-  // The following keys may be chunked by the underlying crash logging system,
-  // but ultimately constitute a single key-value pair.
-  //
-  // For now these need to be kept relatively up to date with those in
-  // chrome/common/crash_keys.cc::RegisterChromeCrashKeys().
-  static constexpr base::debug::CrashKey kFixedKeys[] = {
-      {kNumVariations, kSmallSize},
-      {kVariations, kHugeSize},
-  };
-
-  // This dynamic set of keys is used for sets of key value pairs when gathering
-  // a collection of data, like command line switches or extension IDs.
-  std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
-                                          std::end(kFixedKeys));
-
-  return base::debug::InitCrashKeys(&keys[0], keys.size(), kChunkMaxLength);
+  return 0;
 }
 
 }  // namespace
