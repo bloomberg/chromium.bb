@@ -232,10 +232,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_ADOBE_XYZ
 #endif
 
-#ifndef SK_LEGACY_HIGH_QUALITY_SCALING_CLAMP
-#define SK_LEGACY_HIGH_QUALITY_SCALING_CLAMP
-#endif
-
 // remove after rebaselining svg layout tests
 #ifndef SK_SUPPORT_LEGACY_SVG_ARC_TO
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
