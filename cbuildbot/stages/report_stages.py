@@ -37,6 +37,7 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 from chromite.lib import results_lib
 from chromite.lib import retry_stats
+from chromite.lib import risk_report
 from chromite.lib import toolchain
 from chromite.lib import tree_status
 from chromite.lib import triage_lib
@@ -1046,6 +1047,7 @@ class ReportStage(generic_stages.BuilderStage,
               fields=dict(mon_fields, builder_name=self._run.GetBuilderName()))
 
       if config_lib.IsMasterCQ(self._run.config):
+        logging.PrintBuildbotStepText(risk_report.CLRiskText(build_id))
         self_destructed = self._run.attrs.metadata.GetValueWithDefault(
             constants.SELF_DESTRUCTED_BUILD, False)
         mon_fields = {'status': status_for_db,
