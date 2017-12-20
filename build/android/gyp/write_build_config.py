@@ -697,7 +697,6 @@ def main(argv):
         p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
 
   if options.proguard_configs:
-    assert options.type == 'java_library'
     deps_info['proguard_configs'] = (
         build_utils.ParseGnList(options.proguard_configs))
 
@@ -707,14 +706,14 @@ def main(argv):
     config['proguard'] = {}
     proguard_config = config['proguard']
     extra_jars = []
-    lib_configs = []
+    all_configs = deps_info.get('proguard_configs', [])
     for c in all_library_deps:
       extra_jars.extend(
           p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
-      lib_configs.extend(
-          p for p in c.get('proguard_configs', []) if p not in lib_configs)
-    proguard_config['lib_paths'] = extra_jars
-    proguard_config['lib_configs'] = lib_configs
+      all_configs.extend(
+          p for p in c.get('proguard_configs', []) if p not in all_configs)
+    proguard_config['extra_jars'] = extra_jars
+    proguard_config['all_configs'] = all_configs
 
   # Dependencies for the final dex file of an apk.
   if options.type == 'android_apk':
