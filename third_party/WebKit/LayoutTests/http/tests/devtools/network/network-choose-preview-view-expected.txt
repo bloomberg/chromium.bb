@@ -105,10 +105,10 @@ Binary Image File
 Testing with MimeType: image/png, and StatusCode: 200
 Content: Bin**NULL**ary File**NULL****NULL**
 
-ResourceType(xhr): SearchableView > widget vbox
-ResourceType(fetch): SearchableView > widget vbox
-ResourceType(document): SearchableView > widget vbox
-ResourceType(other): SearchableView > widget vbox
+ResourceType(xhr): widget vbox image-view
+ResourceType(fetch): widget vbox image-view
+ResourceType(document): widget vbox image-view
+ResourceType(other): widget vbox image-view
 
 Binary Blank Image File
 Testing with MimeType: image/png, and StatusCode: 200
