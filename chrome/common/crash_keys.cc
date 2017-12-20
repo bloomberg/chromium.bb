@@ -26,25 +26,7 @@
 namespace crash_keys {
 
 size_t RegisterChromeCrashKeys() {
-  // The following keys may be chunked by the underlying crash logging system,
-  // but ultimately constitute a single key-value pair.
-  //
-  // If you're adding keys here, please also add them to the following lists:
-  // chrome/app/chrome_crash_reporter_client_win.cc::RegisterCrashKeysHelper(),
-  // android_webview/common/crash_reporter/crash_keys.cc::
-  //     RegisterWebViewCrashKeys(),
-  // chromecast/crash/cast_crash_keys.cc::RegisterCastCrashKeys().
-  base::debug::CrashKey fixed_keys[] = {
-    {kNumVariations, kSmallSize},
-    {kVariations, kHugeSize},
-  };
-
-  // This dynamic set of keys is used for sets of key value pairs when gathering
-  // a collection of data, like command line switches or extension IDs.
-  std::vector<base::debug::CrashKey> keys(
-      fixed_keys, fixed_keys + arraysize(fixed_keys));
-
-  return base::debug::InitCrashKeys(&keys.at(0), keys.size(), kChunkMaxLength);
+  return 0;
 }
 
 static bool IsBoringSwitch(const std::string& flag) {

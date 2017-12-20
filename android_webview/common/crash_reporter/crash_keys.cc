@@ -19,17 +19,7 @@ const char kAppPackageVersionCode[] = "app-package-version-code";
 const char kAndroidSdkInt[] = "android-sdk-int";
 
 size_t RegisterWebViewCrashKeys() {
-  base::debug::CrashKey fixed_keys[] = {
-      {kNumVariations, kSmallSize},
-      {kVariations, kHugeSize},
-  };
-
-  // This dynamic set of keys is used for sets of key value pairs when gathering
-  // a collection of data, like command line switches or extension IDs.
-  std::vector<base::debug::CrashKey> keys(fixed_keys,
-                                          fixed_keys + arraysize(fixed_keys));
-
-  return base::debug::InitCrashKeys(&keys.at(0), keys.size(), kChunkMaxLength);
+  return 0;
 }
 
 // clang-format off

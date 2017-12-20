@@ -4,9 +4,6 @@
 
 #include "components/crash/core/common/crash_keys.h"
 
-#include <stddef.h>
-
-#include <map>
 #include <string>
 
 #include "base/command_line.h"
@@ -27,64 +24,19 @@ class CrashKeysTest : public testing::Test {
  public:
   void SetUp() override {
     ResetData();
-
     crash_reporter::InitializeCrashKeys();
-    self_ = this;
-    base::debug::SetCrashKeyReportingFunctions(
-        &SetCrashKeyValue, &ClearCrashKey);
-  }
-
-  bool InitVariationsCrashKeys() {
-    std::vector<base::debug::CrashKey> keys = {
-        {crash_keys::kNumVariations, crash_keys::kSmallSize},
-        {crash_keys::kVariations, crash_keys::kHugeSize}};
-    return InitCrashKeys(keys);
   }
 
   void TearDown() override {
-    base::debug::ResetCrashLoggingForTesting();
     ResetData();
-    self_ = nullptr;
-  }
-
-  bool HasCrashKey(const std::string& key) {
-    return keys_.find(key) != keys_.end();
-  }
-
-  std::string GetKeyValue(const std::string& key) {
-    std::map<std::string, std::string>::const_iterator it = keys_.find(key);
-    if (it == keys_.end())
-      return std::string();
-    return it->second;
   }
 
  private:
-  bool InitCrashKeys(const std::vector<base::debug::CrashKey>& keys) {
-    base::debug::InitCrashKeys(keys.data(), keys.size(),
-                               crash_keys::kChunkMaxLength);
-    return !keys.empty();
-  }
-
-  static void SetCrashKeyValue(const base::StringPiece& key,
-                               const base::StringPiece& value) {
-    self_->keys_[key.as_string()] = value.as_string();
-  }
-
-  static void ClearCrashKey(const base::StringPiece& key) {
-    self_->keys_.erase(key.as_string());
-  }
-
   void ResetData() {
     crash_keys::ResetCommandLineForTesting();
     crash_reporter::ResetCrashKeysForTesting();
   }
-
-  static CrashKeysTest* self_;
-
-  std::map<std::string, std::string> keys_;
 };
-
-CrashKeysTest* CrashKeysTest::self_ = nullptr;
 
 TEST_F(CrashKeysTest, Switches) {
   // Set three switches.
@@ -157,37 +109,5 @@ TEST_F(CrashKeysTest, FilterFlags) {
     std::string switch_value = base::StringPrintf("--not-boring-%d", i);
     EXPECT_EQ(switch_value, GetCrashKeyValue(switch_name))
         << "switch_name is " << switch_name;
-  }
-}
-
-TEST_F(CrashKeysTest, VariationsCapacity) {
-  ASSERT_TRUE(InitVariationsCrashKeys());
-
-  // Variation encoding: two 32bit numbers encorded as hex with a '-' separator.
-  const char kSampleVariation[] = "12345678-12345678";
-  const size_t kVariationLen = std::strlen(kSampleVariation);
-  const size_t kSeparatedVariationLen = kVariationLen + 1U;
-  ASSERT_EQ(17U, kVariationLen);
-
-  // The expected capacity factors in a separator (',').
-  const size_t kExpectedCapacity = 112U;
-  ASSERT_EQ(kExpectedCapacity,
-            crash_keys::kHugeSize / (kSeparatedVariationLen));
-
-  // Create some variations and set the crash keys.
-  std::vector<std::string> variations;
-  for (size_t i = 0; i < kExpectedCapacity + 2; ++i)
-    variations.push_back(kSampleVariation);
-  crash_keys::SetVariationsList(variations);
-
-  // Validate crash keys.
-  ASSERT_TRUE(HasCrashKey(crash_keys::kNumVariations));
-  EXPECT_EQ("114", GetKeyValue(crash_keys::kNumVariations));
-
-  const size_t kExpectedChunks = (kSeparatedVariationLen * kExpectedCapacity) /
-                                 crash_keys::kChunkMaxLength;
-  for (size_t i = 0; i < kExpectedChunks; ++i) {
-    ASSERT_TRUE(HasCrashKey(
-        base::StringPrintf("%s-%" PRIuS, crash_keys::kVariations, i + 1)));
   }
 }

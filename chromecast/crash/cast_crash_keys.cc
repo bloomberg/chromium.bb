@@ -11,17 +11,7 @@ namespace chromecast {
 namespace crash_keys {
 
 size_t RegisterCastCrashKeys() {
-  const base::debug::CrashKey fixed_keys[] = {
-      // TODO(sanfin): The following crash keys are copied from
-      // chrome/common/crash_keys.cc. When http://crbug.com/598854 is fixed,
-      // remove these and refactor as necessary.
-
-      {::crash_keys::kNumVariations, ::crash_keys::kSmallSize},
-      {::crash_keys::kVariations, ::crash_keys::kHugeSize},
-  };
-
-  return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
-                                    ::crash_keys::kChunkMaxLength);
+  return 0;
 }
 
 crash_reporter::CrashKeyString<64> last_app("last_app");
