@@ -2978,6 +2978,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"lsd-permission-prompt", flag_descriptions::kLsdPermissionPromptName,
      flag_descriptions::kLsdPermissionPromptDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kLsdPermissionPrompt)},
+    {"language-settings", flag_descriptions::kLanguagesPreferenceName,
+     flag_descriptions::kLanguagesPreferenceDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kLanguagesPreference)},
 #endif
 
 #if defined(OS_CHROMEOS)
