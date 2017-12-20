@@ -137,6 +137,11 @@
       [self.tabSwitcher removeFromParentViewController];
     }
 
+    // Reset the background color of the container view.  The tab switcher does
+    // not draw anything below the status bar, so those pixels fall through to
+    // display the container's background.
+    self.view.backgroundColor = [UIColor clearColor];
+
     // Add the new tab switcher as a child VC.
     [self addChildViewController:tabSwitcher];
     tabSwitcher.view.translatesAutoresizingMaskIntoConstraints = NO;
