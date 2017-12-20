@@ -1154,11 +1154,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
-// If a cross-process navigation was started for the initial history load in
-// this subframe, this tries to cancel it to allow a client redirect to happen
-// instead.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_CancelInitialHistoryLoad)
-
 // Notifies the browser that a frame finished loading.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)
@@ -1217,11 +1212,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_WillInsertBody,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateTitle,
                     base::string16 /* title */,
                     blink::WebTextDirection /* title direction */)
-
-// Change the encoding name of the page in UI when the page has detected
-// proper encoding name. Sent for top-level frames.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateEncoding,
-                    std::string /* new encoding name */)
 
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.

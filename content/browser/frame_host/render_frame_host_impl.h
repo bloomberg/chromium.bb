@@ -780,7 +780,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnCancelInitialHistoryLoad();
   void OnDocumentOnLoadCompleted(
       FrameMsg_UILoadMetricsReportType::Value report_type,
       base::TimeTicks ui_timestamp);
@@ -828,7 +827,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                        const FrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
-  void OnUpdateEncoding(const std::string& encoding);
   void OnDidBlockFramebust(const GURL& url);
   void OnAbortNavigation();
   void OnDispatchLoad();
@@ -913,6 +911,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& parsed_header) override;
+  void CancelInitialHistoryLoad() override;
+  void UpdateEncoding(const std::string& encoding) override;
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();

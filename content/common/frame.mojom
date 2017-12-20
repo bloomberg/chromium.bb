@@ -257,4 +257,13 @@ interface FrameHost {
   DidSetFramePolicyHeaders(
       blink.mojom.WebSandboxFlags sandbox_flags,
       array<blink.mojom.ParsedFeaturePolicyDeclaration> parsed_header);
+
+  // If a cross-process navigation was started for the initial history load in
+  // this subframe, this tries to cancel it to allow a client redirect to happen
+  // instead.
+  CancelInitialHistoryLoad();
+
+  // Change the encoding name of the page in UI when the page has detected
+  // proper encoding name. Sent for top-level frames.
+  UpdateEncoding(string encoding_name);
 };

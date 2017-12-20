@@ -5701,7 +5701,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
         // document loader, causing the history load to be ignored in
         // NavigateInternal, and this IPC will try to cancel any cross-process
         // history load.
-        Send(new FrameHostMsg_CancelInitialHistoryLoad(routing_id_));
+        GetFrameHost()->CancelInitialHistoryLoad();
       }
     }
   }
@@ -6588,7 +6588,7 @@ void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
                                      const std::string& encoding_name) {
   // Only update main frame's encoding_name.
   if (!frame->Parent())
-    Send(new FrameHostMsg_UpdateEncoding(routing_id_, encoding_name));
+    GetFrameHost()->UpdateEncoding(encoding_name);
 }
 
 void RenderFrameImpl::SyncSelectionIfRequired() {
