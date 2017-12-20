@@ -53,7 +53,10 @@ class GLImageNativePixmapTest : public testing::Test {
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     context_ =
         gl::init::CreateGLContext(nullptr, surface_.get(), GLContextAttribs());
-    context_->MakeCurrent(surface_.get());
+    if (!context_->MakeCurrent(surface_.get())) {
+      LOG(WARNING) << "Skip test, failed to make the GL context current";
+      return;
+    }
 
     skip_test_ = false;
   }
@@ -76,12 +79,6 @@ void GLTexture2DToDmabuf(gfx::BufferFormat image_format,
                          GLenum tex_format) {
   const gfx::Size image_size(64, 64);
 
-  EXPECT_NE(nullptr, GLContext::GetCurrent());
-
-  EGLContext context =
-      reinterpret_cast<EGLContext>(GLContext::GetCurrent()->GetHandle());
-  EXPECT_NE(EGL_NO_CONTEXT, context);
-
   scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
       image_size,
       gl::GLImageNativePixmap::GetInternalFormatForTesting(image_format)));
@@ -97,10 +94,7 @@ void GLTexture2DToDmabuf(gfx::BufferFormat image_format,
   glTexImage2D(GL_TEXTURE_2D, 0, tex_internal_format, image_size.width(),
                image_size.height(), 0, tex_format, GL_UNSIGNED_BYTE, nullptr);
 
-  scoped_refptr<gl::GLImageEGL> base_image = image;
-  EXPECT_TRUE(base_image->Initialize(
-      context, EGL_GL_TEXTURE_2D_KHR,
-      reinterpret_cast<EGLClientBuffer>(texture_id), nullptr));
+  EXPECT_TRUE(image->InitializeFromTexture(texture_id));
 
   gfx::NativePixmapHandle native_pixmap_handle = image->ExportHandle();
 
