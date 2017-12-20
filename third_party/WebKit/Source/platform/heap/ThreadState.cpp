@@ -1247,14 +1247,15 @@ void ThreadState::IncrementalMarkingFinalize() {
 void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
                                  BlinkGC::GCType gc_type,
                                  BlinkGC::GCReason reason) {
-  double start_time = WTF::CurrentTimeTicksInMilliseconds();
-
   // Nested garbage collection invocations are not supported.
   CHECK(!IsGCForbidden());
   // Garbage collection during sweeping is not supported. This can happen when
   // finalizers trigger garbage collections.
   if (SweepForbidden())
     return;
+
+  double start_total_collect_garbage_time =
+      WTF::CurrentTimeTicksInMilliseconds();
 
   CompleteSweep();
 
@@ -1285,9 +1286,15 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
 
   PreSweep(gc_type);
 
+  double total_collect_garbage_time =
+      WTF::CurrentTimeTicksInMilliseconds() - start_total_collect_garbage_time;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, time_for_total_collect_garbage_histogram,
+      ("BlinkGC.TimeForTotalCollectGarbage", 1, 10 * 1000, 50));
+  time_for_total_collect_garbage_histogram.Count(total_collect_garbage_time);
   VLOG(1) << "[state:" << this << "]"
           << " CollectGarbage: time: " << std::setprecision(2)
-          << (WTF::CurrentTimeTicksInMilliseconds() - start_time) << "ms"
+          << total_collect_garbage_time << "ms"
           << " stack: " << StackStateString(stack_state)
           << " type: " << GcTypeString(gc_type)
           << " reason: " << GcReasonString(reason);
