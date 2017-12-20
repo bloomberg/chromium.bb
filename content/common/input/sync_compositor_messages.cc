@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/sync_compositor_messages.h"
+#include "content/common/input/sync_compositor_messages.h"
 
 namespace content {
 

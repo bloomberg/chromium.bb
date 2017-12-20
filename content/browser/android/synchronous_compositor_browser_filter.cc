@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/bad_message.h"
-#include "content/common/android/sync_compositor_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/android/window_android.h"

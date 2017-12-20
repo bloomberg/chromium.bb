@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "content/common/input/sync_compositor_messages.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/android/window_android_observer.h"
