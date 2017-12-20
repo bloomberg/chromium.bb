@@ -16,7 +16,7 @@
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkWriteBuffer.h"
+#include "third_party/skia/include/core/SkSerialProcs.h"
 
 namespace cc {
 #define TYPES(M)      \
@@ -1537,21 +1537,10 @@ bool DrawTextBlobOp::AreEqual(const PaintOp* base_left,
   DCHECK(*left->blob);
   DCHECK(*right->blob);
 
-  SkBinaryWriteBuffer left_flattened;
-  left->blob->ToSkTextBlob()->flatten(left_flattened);
-  std::vector<char> left_mem(left_flattened.bytesWritten());
-  left_flattened.writeToMemory(left_mem.data());
-
-  SkBinaryWriteBuffer right_flattened;
-  right->blob->ToSkTextBlob()->flatten(right_flattened);
-  std::vector<char> right_mem(right_flattened.bytesWritten());
-  right_flattened.writeToMemory(right_mem.data());
-
-  if (left_mem.size() != right_mem.size())
-    return false;
-  if (left_mem != right_mem)
-    return false;
-  return true;
+  SkSerialProcs default_procs;
+  return left->blob->ToSkTextBlob()
+      ->serialize(default_procs)
+      ->equals(right->blob->ToSkTextBlob()->serialize(default_procs).get());
 }
 
 bool NoopOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
