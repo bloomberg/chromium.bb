@@ -11,6 +11,15 @@
 namespace chromeos {
 namespace smb_client {
 
+namespace {
+
+storage::DirectoryEntry::DirectoryEntryType MapEntryType(bool is_directory) {
+  return is_directory ? storage::DirectoryEntry::DIRECTORY
+                      : storage::DirectoryEntry::FILE;
+}
+
+}  // namespace
+
 using file_system_provider::AbortCallback;
 
 SmbFileSystem::SmbFileSystem(
@@ -122,7 +131,10 @@ AbortCallback SmbFileSystem::ExecuteAction(
 AbortCallback SmbFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
-  NOTIMPLEMENTED();
+  GetSmbProviderClient()->ReadDirectory(
+      GetMountId(), directory_path,
+      base::BindOnce(&SmbFileSystem::HandleRequestReadDirectoryCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return AbortCallback();
 }
 
@@ -271,6 +283,18 @@ void SmbFileSystem::SmbFileSystem::Notify(
 void SmbFileSystem::Configure(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   NOTIMPLEMENTED();
+}
+
+void SmbFileSystem::HandleRequestReadDirectoryCallback(
+    const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
+    smbprovider::ErrorType error,
+    const smbprovider::DirectoryEntryList& entries) const {
+  storage::AsyncFileUtil::EntryList entry_list;
+  for (const smbprovider::DirectoryEntry& entry : entries.entries()) {
+    entry_list.emplace_back(entry.name(), MapEntryType(entry.is_directory()));
+  }
+  // TODO(allenvic): Implement has_more (https://crbug.com/796246).
+  callback.Run(TranslateError(error), entry_list, false /* has_more */);
 }
 
 base::WeakPtr<file_system_provider::ProvidedFileSystemInterface>

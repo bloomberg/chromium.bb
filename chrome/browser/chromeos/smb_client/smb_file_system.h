@@ -171,6 +171,11 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback,
       smbprovider::ErrorType smb_error) const;
 
+  void HandleRequestReadDirectoryCallback(
+      const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
+      smbprovider::ErrorType error,
+      const smbprovider::DirectoryEntryList& entries) const;
+
   int32_t GetMountId() const;
 
   SmbProviderClient* GetSmbProviderClient() const;
