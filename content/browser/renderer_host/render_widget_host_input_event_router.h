@@ -131,18 +131,24 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   using TargetMap = std::map<uint32_t, TargetData>;
 
   void ClearAllObserverRegistrations();
+  RenderWidgetHostViewBase* FindEventTarget(
+      RenderWidgetHostViewBase* root_view,
+      const blink::WebMouseEvent& event,
+      gfx::PointF* transformed_point) const;
 
-  RenderWidgetHostViewBase* FindEventTarget(RenderWidgetHostViewBase* root_view,
-                                            const gfx::Point& point,
-                                            const gfx::Point& point_in_screen,
-                                            viz::EventSource source,
-                                            gfx::Point* transformed_point);
+  RenderWidgetHostViewBase* FindViewAtLocation(
+      RenderWidgetHostViewBase* root_view,
+      const gfx::Point& point,
+      const gfx::Point& point_in_screen,
+      viz::EventSource source,
+      gfx::Point* transformed_point) const;
 
-  RenderWidgetHostViewBase* FindEventTarget(RenderWidgetHostViewBase* root_view,
-                                            const gfx::PointF& point,
-                                            const gfx::PointF& point_in_screen,
-                                            viz::EventSource source,
-                                            gfx::PointF* transformed_point);
+  RenderWidgetHostViewBase* FindViewAtLocation(
+      RenderWidgetHostViewBase* root_view,
+      const gfx::PointF& point,
+      const gfx::PointF& point_in_screen,
+      viz::EventSource source,
+      gfx::PointF* transformed_point) const;
 
   void RouteTouchscreenGestureEvent(RenderWidgetHostViewBase* root_view,
                                     blink::WebGestureEvent* event,
