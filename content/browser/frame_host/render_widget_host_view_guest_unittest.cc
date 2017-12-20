@@ -14,10 +14,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -46,7 +47,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   void SetUp() override {
 #if !defined(OS_ANDROID)
     ImageTransportFactory::SetFactory(
-        std::make_unique<NoTransportImageTransportFactory>());
+        std::make_unique<TestImageTransportFactory>());
 #endif
     browser_context_.reset(new TestBrowserContext);
     MockRenderProcessHost* process_host =
@@ -144,7 +145,7 @@ class RenderWidgetHostViewGuestSurfaceTest
   void SetUp() override {
 #if !defined(OS_ANDROID)
     ImageTransportFactory::SetFactory(
-        std::make_unique<NoTransportImageTransportFactory>());
+        std::make_unique<TestImageTransportFactory>());
 #endif
     browser_context_.reset(new TestBrowserContext);
     MockRenderProcessHost* process_host =

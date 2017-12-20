@@ -58,7 +58,7 @@
 #endif
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/compositor/test/test_image_transport_factory.h"
 #endif
 
 #if defined(USE_AURA)
@@ -604,7 +604,7 @@ class RenderWidgetHostTest : public testing::Test {
     sink_ = &process_->sink();
 #if defined(USE_AURA) || defined(OS_MACOSX)
     ImageTransportFactory::SetFactory(
-        std::make_unique<NoTransportImageTransportFactory>());
+        std::make_unique<TestImageTransportFactory>());
 #endif
 #if defined(OS_ANDROID)
     ui::SetScreenAndroid();  // calls display::Screen::SetScreenInstance().

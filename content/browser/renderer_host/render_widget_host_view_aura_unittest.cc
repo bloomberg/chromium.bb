@@ -41,7 +41,7 @@
 #include "components/viz/test/fake_surface_observer.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
@@ -618,7 +618,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void SetUpEnvironment() {
     mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     ImageTransportFactory::SetFactory(
-        std::make_unique<NoTransportImageTransportFactory>());
+        std::make_unique<TestImageTransportFactory>());
     aura_test_helper_.reset(new aura::test::AuraTestHelper());
     aura_test_helper_->SetUp(
         ImageTransportFactory::GetInstance()->GetContextFactory(),

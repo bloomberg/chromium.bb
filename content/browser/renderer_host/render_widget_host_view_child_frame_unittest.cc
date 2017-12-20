@@ -18,11 +18,12 @@
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
-#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -92,7 +93,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 // ImageTransportFactory doesn't exist on Android.
 #if !defined(OS_ANDROID)
     ImageTransportFactory::SetFactory(
-        std::make_unique<NoTransportImageTransportFactory>());
+        std::make_unique<TestImageTransportFactory>());
 #endif
 
     MockRenderProcessHost* process_host =
