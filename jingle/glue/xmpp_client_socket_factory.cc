@@ -8,12 +8,12 @@
 
 #include "base/logging.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
-#include "jingle/glue/proxy_resolving_client_socket.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/proxy_resolving_client_socket.h"
 
 namespace jingle_glue {
 
@@ -36,8 +36,9 @@ XmppClientSocketFactory::CreateTransportClientSocket(
     const net::HostPortPair& host_and_port) {
   // TODO(akalin): Use socket pools.
   std::unique_ptr<net::StreamSocket> transport_socket(
-      new ProxyResolvingClientSocket(NULL, request_context_getter_, ssl_config_,
-                                     host_and_port));
+      new network::ProxyResolvingClientSocket(
+          nullptr, request_context_getter_, ssl_config_,
+          GURL("https://" + host_and_port.ToString())));
   return (use_fake_ssl_client_socket_
               ? std::unique_ptr<net::StreamSocket>(
                     new FakeSSLClientSocket(std::move(transport_socket)))

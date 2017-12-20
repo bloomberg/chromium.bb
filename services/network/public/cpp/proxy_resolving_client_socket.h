@@ -1,18 +1,15 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// This StreamSocket implementation wraps a ClientSocketHandle that is created
-// from the client socket pool after resolving proxies.
-
-#ifndef JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_
-#define JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#ifndef SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#define SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_
 
 #include <stdint.h>
 
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -35,22 +32,32 @@ class HttpNetworkSession;
 class URLRequestContextGetter;
 }  // namespace net
 
-// TODO(sanjeevr): Move this to net/
-namespace jingle_glue {
+namespace network {
 
+// This class represents a net::StreamSocket implementation that does proxy
+// resolution for the provided url before establishing a connection. If there is
+// a proxy configured, a connection will be established to the proxy.
+//
+// TODO(xunjieli): https://crbug.com/721401. This class should be private (i.e.
+// moved out of services/network/public/cpp). The functionalities will be
+// exposed only through a mojo interface.
 class ProxyResolvingClientSocket : public net::StreamSocket {
  public:
-  // Constructs a new ProxyResolvingClientSocket. |socket_factory| is
-  // the ClientSocketFactory that will be used by the underlying
-  // HttpNetworkSession.  If |socket_factory| is NULL, the default
-  // socket factory (net::ClientSocketFactory::GetDefaultFactory())
-  // will be used.  |dest_host_port_pair| is the destination for this
-  // socket.  The hostname must be non-empty and the port must be > 0.
+  // Constructs a new ProxyResolvingClientSocket. |socket_factory| is the
+  // ClientSocketFactory that will be used by the underlying HttpNetworkSession.
+  // If |socket_factory| is nullptr, the default socket factory
+  // (net::ClientSocketFactory::GetDefaultFactory()) will be used. |url|'s host
+  // and port specify where a connection will be established to. The full URL
+  // will be only used for proxy resolution. Caller doesn't need to explicitly
+  // sanitize the url, any sensitive data (like embedded usernames and
+  // passwords), and local data (i.e. reference fragment) will be sanitized by
+  // net::ProxyService::ResolveProxyHelper() before the url is disclosed to the
+  // proxy.
   ProxyResolvingClientSocket(
       net::ClientSocketFactory* socket_factory,
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const net::SSLConfig& ssl_config,
-      const net::HostPortPair& dest_host_port_pair);
+      const GURL& url);
   ~ProxyResolvingClientSocket() override;
 
   // net::StreamSocket implementation.
@@ -85,18 +92,14 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   void ApplySocketTag(const net::SocketTag& tag) override;
 
  private:
-  // Proxy resolution and connection functions.
-  void ProcessProxyResolveDone(int status);
-  void ProcessConnectDone(int status);
+  FRIEND_TEST_ALL_PREFIXES(ProxyResolvingClientSocketTest, ConnectToProxy);
+  FRIEND_TEST_ALL_PREFIXES(ProxyResolvingClientSocketTest, ReadWriteErrors);
+
+  void ConnectToProxy(int net_error);
+  void ConnectToProxyDone(int net_error);
 
   void CloseTransportSocket();
-  void RunUserConnectCallback(int status);
   int ReconsiderProxyAfterError(int error);
-  void ReportSuccessfulProxyConnection();
-
-  // Callbacks passed to net APIs.
-  net::CompletionCallback proxy_resolve_callback_;
-  net::CompletionCallback connect_callback_;
 
   std::unique_ptr<net::HttpNetworkSession> network_session_;
 
@@ -106,8 +109,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   const net::SSLConfig ssl_config_;
   net::ProxyService::PacRequest* pac_request_;
   net::ProxyInfo proxy_info_;
-  const net::HostPortPair dest_host_port_pair_;
-  const GURL proxy_url_;
+  const GURL url_;
   bool tried_direct_connect_fallback_;
   net::NetLogWithSource net_log_;
 
@@ -119,6 +121,6 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolvingClientSocket);
 };
 
-}  // namespace jingle_glue
+}  // namespace network
 
-#endif  // JINGLE_GLUE_PROXY_RESOLVING_CLIENT_SOCKET_H_
+#endif  // SERVICES_NETWORK_PROXY_RESOLVING_CLIENT_SOCKET_H_

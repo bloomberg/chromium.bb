@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "jingle/glue/proxy_resolving_client_socket.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -34,6 +33,7 @@
 #include "remoting/signaling/signaling_address.h"
 #include "remoting/signaling/xmpp_login_handler.h"
 #include "remoting/signaling/xmpp_stream_parser.h"
+#include "services/network/public/cpp/proxy_resolving_client_socket.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 // Use 50 seconds keep-alive interval, in case routers terminate
@@ -178,9 +178,11 @@ void XmppSignalStrategy::Core::Connect() {
   for (auto& observer : listeners_)
     observer.OnSignalStrategyStateChange(CONNECTING);
 
-  socket_.reset(new jingle_glue::ProxyResolvingClientSocket(
+  socket_ = std::make_unique<network::ProxyResolvingClientSocket>(
       socket_factory_, request_context_getter_, net::SSLConfig(),
-      net::HostPortPair(xmpp_server_config_.host, xmpp_server_config_.port)));
+      GURL("https://" +
+           net::HostPortPair(xmpp_server_config_.host, xmpp_server_config_.port)
+               .ToString()));
 
   int result = socket_->Connect(base::Bind(
       &Core::OnSocketConnected, base::Unretained(this)));
