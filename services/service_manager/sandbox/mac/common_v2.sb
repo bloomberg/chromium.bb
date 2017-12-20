@@ -43,6 +43,25 @@
 (define (user-homedir-path subpath)
   (string-append (param homedir-as-literal) subpath))
 
+; A function that specific profiles (i.e. renderer) can call to allow
+; font rendering.
+(define (allow-font-access)
+  (begin
+    (allow file-read-data
+      (subpath "/Library/Fonts")
+      (subpath "/System/Library/Fonts")
+      (subpath (user-homedir-path "/Library/Fonts")))
+    (allow mach-lookup
+      (global-name "com.apple.fonts")
+      ; crbug.com/756145, crbug.com/786615
+      (global-name "com.apple.FontObjectsServer"))
+    (if (< os-version 1012)
+      (allow mach-lookup (global-name "com.apple.FontServer")))
+    ; To allow accessing downloaded and other hidden fonts in
+    ; /System/Library/Asssets/com_apple_MobileAsset_Font*.
+    ; (https://crbug.com/662686)
+    (allow file-read* (extension "com.apple.app-sandbox.read"))))
+
 ; Allow logging for all processes.
 (allow file-write*
   (require-all
@@ -99,7 +118,11 @@
 
 ; Reads from /Library.
 (allow file-read-data
-  (path "/Library/Preferences/.GlobalPreferences.plist")
+  (path "/Library/Preferences/.GlobalPreferences.plist"))
+
+; Reads from /System.
+(allow file-read-data
+  (path "/System/Library/CoreServices/checkfixlist")
   (path "/System/Library/CoreServices/SystemVersion.plist"))
 
 ; Reads from /usr.

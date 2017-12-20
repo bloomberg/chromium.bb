@@ -11,6 +11,7 @@ action_foreach("package_sb_files") {
     "gpu.sb",
     "nacl_loader.sb",
     "ppapi.sb",
+    "ppapi_v2.sb",
     "renderer.sb",
     "renderer_v2.sb",
     "utility.sb",
