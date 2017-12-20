@@ -121,22 +121,24 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
 SkSize GetScaleAdjustment(const ImageDecodeCacheKey& key) {
   // If the requested filter quality did not require scale, then the adjustment
   // is identity.
-  if (key.can_use_original_size_decode() || key.should_use_subrect()) {
+  if (key.type() != ImageDecodeCacheKey::kSubrectAndScale) {
     return SkSize::Make(1.f, 1.f);
-  } else if (key.filter_quality() == kMedium_SkFilterQuality) {
+  } else {
     return MipMapUtil::GetScaleAdjustmentForSize(key.src_rect().size(),
                                                  key.target_size());
-  } else {
-    float x_scale =
-        key.target_size().width() / static_cast<float>(key.src_rect().width());
-    float y_scale = key.target_size().height() /
-                    static_cast<float>(key.src_rect().height());
-    return SkSize::Make(x_scale, y_scale);
   }
 }
 
+// Returns the filter quality to be used with the decoded result of the image.
+// Note that in most cases this yields Low filter quality, meaning bilinear
+// interpolation. This is because the processing for the image would have
+// already been done, including scaling down to a mip level. So what remains is
+// to do a bilinear interpolation. The exception to this is if the developer
+// specified a pixelated effect, which results in a None filter quality (nearest
+// neighbor).
 SkFilterQuality GetDecodedFilterQuality(const ImageDecodeCacheKey& key) {
-  return std::min(key.filter_quality(), kLow_SkFilterQuality);
+  return key.is_nearest_neighbor() ? kNone_SkFilterQuality
+                                   : kLow_SkFilterQuality;
 }
 
 SkImageInfo CreateImageInfo(const SkISize& size, SkColorType color_type) {
@@ -399,7 +401,7 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
 
   std::unique_ptr<CacheEntry> local_cache_entry;
   // If we can use the original decode, we'll definitely need a decode.
-  if (key.can_use_original_size_decode()) {
+  if (key.type() == ImageDecodeCacheKey::kOriginal) {
     base::AutoUnlock release(lock_);
     local_cache_entry = DoDecodeImage(key, paint_image);
   } else {
@@ -446,18 +448,17 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
       // unclear how to adjust the src rect to account for the candidate scale
       // if the candidate came from above.
       //
-      // However, if we're in the key.should_use_subrect() case, then this would
-      // generate an exactly same key as we want in the first place, causing
-      // infinite recursion. (There is a CHECK guard for this below, since this
-      // is a pretty bad case.)
+      // However, if the key type is kSubrectOriginal, then this would generate
+      // an exactly same key as we want in the first place, causing infinite
+      // recursion. (There is a CHECK guard for this below, since this is a
+      // pretty bad case.)
       //
-      // In order to avoid this, if we have key.should_use_subrect(), then it
-      // means that we have no scale associated with this key. So, instead, we
-      // use the full image rect as the src for this temporary candidate so that
-      // the GenerateCacheEntryFromCandidate() function will simply extract the
-      // subset and be done with it.
+      // Since kSubrectOriginal means we have no scale, to remedy the situation
+      // we use the full image rect as the src for this temporary candidate.
+      // This way the GenerateCacheEntryFromCandidate() function will simply
+      // extract the subset and be done with it.
       auto src_rect =
-          key.should_use_subrect()
+          key.type() == ImageDecodeCacheKey::kSubrectOriginal
               ? SkIRect::MakeWH(paint_image.width(), paint_image.height())
               : gfx::RectToSkIRect(key.src_rect());
       DrawImage candidate_draw_image(
@@ -480,7 +481,7 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
       // already been done to generate the candidate.
       local_cache_entry = GenerateCacheEntryFromCandidate(
           key, decoded_draw_image,
-          candidate_key->can_use_original_size_decode());
+          candidate_key->type() == ImageDecodeCacheKey::kOriginal);
     }
 
     // Unref to balance the GetDecodedImageForDrawInternal() call.
@@ -524,7 +525,7 @@ SoftwareImageDecodeCache::DoDecodeImage(const ImageKey& key,
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DoDecodeImage - "
                "decode");
-  DCHECK(!key.should_use_subrect());
+  DCHECK_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
   bool result = paint_image.Decode(target_pixels->data(), &target_info,
                                    key.target_color_space().ToSkColorSpace(),
                                    key.frame_key().frame_index());
@@ -548,7 +549,8 @@ SoftwareImageDecodeCache::GenerateCacheEntryFromCandidate(
       AllocateDiscardable(target_info);
   DCHECK(target_pixels);
 
-  if (key.should_use_subrect()) {
+  if (key.type() == ImageDecodeCacheKey::kSubrectOriginal) {
+    DCHECK(needs_extract_subset);
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeCache::GenerateCacheEntryFromCandidate - "
                  "subrect");
@@ -564,6 +566,7 @@ SoftwareImageDecodeCache::GenerateCacheEntryFromCandidate(
         SkSize::Make(-key.src_rect().x(), -key.src_rect().y()));
   }
 
+  DCHECK_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::GenerateCacheEntryFromCandidate - "
                "scale");
@@ -578,9 +581,12 @@ SoftwareImageDecodeCache::GenerateCacheEntryFromCandidate(
     DCHECK(result) << key.ToString();
   }
 
+  // Nearest neighbor would only be set in the unscaled case.
+  DCHECK(!key.is_nearest_neighbor());
   SkPixmap target_pixmap(target_info, target_pixels->data(),
                          target_info.minRowBytes());
-  result = decoded_pixmap.scalePixels(target_pixmap, key.filter_quality());
+  // Always use medium quality for scaling.
+  result = decoded_pixmap.scalePixels(target_pixmap, kMedium_SkFilterQuality);
   DCHECK(result) << key.ToString();
   return std::make_unique<CacheEntry>(
       target_info.makeColorSpace(candidate_image.image()->refColorSpace()),
@@ -755,7 +761,42 @@ bool SoftwareImageDecodeCache::OnMemoryDump(
   return true;
 }
 
-// SoftwareImageDecodeCacheKey
+void SoftwareImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
+  {
+    base::AutoLock hold(lock_);
+    switch (state) {
+      case base::MemoryState::NORMAL:
+        max_items_in_cache_ = kNormalMaxItemsInCacheForSoftware;
+        break;
+      case base::MemoryState::THROTTLED:
+        max_items_in_cache_ = kThrottledMaxItemsInCacheForSoftware;
+        break;
+      case base::MemoryState::SUSPENDED:
+        max_items_in_cache_ = kSuspendedMaxItemsInCacheForSoftware;
+        break;
+      case base::MemoryState::UNKNOWN:
+        NOTREACHED();
+        return;
+    }
+  }
+}
+
+void SoftwareImageDecodeCache::OnPurgeMemory() {
+  base::AutoLock lock(lock_);
+  ReduceCacheUsageUntilWithinLimit(0);
+}
+
+SoftwareImageDecodeCache::CacheEntry* SoftwareImageDecodeCache::AddCacheEntry(
+    const ImageKey& key) {
+  lock_.AssertAcquired();
+  frame_key_to_image_keys_[key.frame_key()].push_back(key);
+  auto it = decoded_images_.Put(key, std::make_unique<CacheEntry>());
+  it->second.get()->mark_cached();
+  return it->second.get();
+}
+
+// SoftwareImageDecodeCacheKey -------------------------------------------------
+// static
 ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
                                                        SkColorType color_type) {
   const PaintImage::FrameKey frame_key = image.frame_key();
@@ -777,15 +818,12 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
   // If the target size is empty, then we'll be skipping the decode anyway, so
   // the filter quality doesn't matter. Early out instead.
   if (target_size.IsEmpty()) {
-    return ImageDecodeCacheKey(frame_key, src_rect, target_size,
-                               image.target_color_space(), kLow_SkFilterQuality,
-                               true /* can_use_original_decode */,
-                               false /* should_use_subrect */);
+    return ImageDecodeCacheKey(frame_key, kOriginal, false, src_rect,
+                               target_size, image.target_color_space());
   }
 
-  // Start with the given filter quality.
-  SkFilterQuality quality = image.filter_quality();
-
+  ProcessingType type = kOriginal;
+  bool is_nearest_neighbor = image.filter_quality() == kNone_SkFilterQuality;
   int mip_level = MipMapUtil::GetLevelForSize(src_rect.size(), target_size);
   // If any of the following conditions hold, then use at most low filter
   // quality and adjust the target size to match the original image:
@@ -796,15 +834,14 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
   //   filter quality.
   // - Matrix is not decomposable: There's perspective on this image and we
   //   can't determine the size, so use the original.
-  if (quality == kNone_SkFilterQuality ||
-      color_type == kARGB_4444_SkColorType || mip_level == 0 ||
-      !image.matrix_is_decomposable()) {
-    quality = std::min(quality, kLow_SkFilterQuality);
+  if (is_nearest_neighbor || color_type == kARGB_4444_SkColorType ||
+      mip_level == 0 || !image.matrix_is_decomposable()) {
+    type = kOriginal;
     // Update the size to be the original image size.
     target_size =
         gfx::Size(image.paint_image().width(), image.paint_image().height());
   } else {
-    quality = kMedium_SkFilterQuality;
+    type = kSubrectAndScale;
     // Update the target size to be a mip level size.
     // TODO(vmpstr): MipMapUtil and JPEG decoders disagree on what to do with
     // odd sizes. If width = 2k + 1, and the mip level is 1, then this will
@@ -816,14 +853,9 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
     target_size.set_height(src_rect.height() * mip_scale_adjustment.height());
   }
 
-  // Now the quality is fixed, determine the other parameters we need.
-  bool can_use_original_size_decode =
-      quality == kLow_SkFilterQuality || quality == kNone_SkFilterQuality;
-  bool should_use_subrect = false;
-
   // If the original image is large, we might want to do a subrect instead if
   // the subrect would be kMemoryRatioToSubrect times smaller.
-  if (can_use_original_size_decode &&
+  if (type == kOriginal &&
       (image.paint_image().width() >= kMinDimensionToSubrect ||
        image.paint_image().height() >= kMinDimensionToSubrect)) {
     base::CheckedNumeric<size_t> checked_original_size = 4u;
@@ -843,33 +875,29 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
     // the rect we want to use.
     if (original_size > kMemoryThresholdToSubrect &&
         src_rect_size <= original_size * kMemoryRatioToSubrect) {
-      should_use_subrect = true;
-      can_use_original_size_decode = false;
+      type = kSubrectOriginal;
       target_size = src_rect.size();
     }
   }
 
-  return ImageDecodeCacheKey(frame_key, src_rect, target_size,
-                             image.target_color_space(), quality,
-                             can_use_original_size_decode, should_use_subrect);
+  return ImageDecodeCacheKey(frame_key, type, is_nearest_neighbor, src_rect,
+                             target_size, image.target_color_space());
 }
 
 ImageDecodeCacheKey::ImageDecodeCacheKey(
     PaintImage::FrameKey frame_key,
+    ProcessingType type,
+    bool is_nearest_neighbor,
     const gfx::Rect& src_rect,
     const gfx::Size& target_size,
-    const gfx::ColorSpace& target_color_space,
-    SkFilterQuality filter_quality,
-    bool can_use_original_size_decode,
-    bool should_use_subrect)
+    const gfx::ColorSpace& target_color_space)
     : frame_key_(frame_key),
+      type_(type),
+      is_nearest_neighbor_(is_nearest_neighbor),
       src_rect_(src_rect),
       target_size_(target_size),
-      target_color_space_(target_color_space),
-      filter_quality_(filter_quality),
-      can_use_original_size_decode_(can_use_original_size_decode),
-      should_use_subrect_(should_use_subrect) {
-  if (can_use_original_size_decode_) {
+      target_color_space_(target_color_space) {
+  if (type == kOriginal) {
     hash_ = frame_key_.hash();
   } else {
     // TODO(vmpstr): This is a mess. Maybe it's faster to just search the vector
@@ -883,7 +911,7 @@ ImageDecodeCacheKey::ImageDecodeCacheKey(
         base::HashInts(target_size_.width(), target_size_.height());
 
     hash_ = base::HashInts(base::HashInts(src_rect_hash, target_size_hash),
-                           base::HashInts(frame_key_.hash(), filter_quality_));
+                           frame_key_.hash());
   }
   // Include the target color space in the hash regardless of scaling.
   hash_ = base::HashInts(hash_, target_color_space.GetHash());
@@ -894,18 +922,26 @@ ImageDecodeCacheKey::ImageDecodeCacheKey(const ImageDecodeCacheKey& other) =
 
 std::string ImageDecodeCacheKey::ToString() const {
   std::ostringstream str;
-  str << "frame_key[" << frame_key_.ToString() << "] src_rect[" << src_rect_.x()
-      << "," << src_rect_.y() << " " << src_rect_.width() << "x"
-      << src_rect_.height() << "] target_size[" << target_size_.width() << "x"
-      << target_size_.height() << "] target_color_space"
-      << target_color_space_.ToString() << " filter_quality[" << filter_quality_
-      << "] can_use_original_size_decode [" << can_use_original_size_decode_
-      << "] should_use_subrect [" << should_use_subrect_ << "] hash [" << hash_
-      << "]";
+  str << "frame_key[" << frame_key_.ToString() << "]\ntype[";
+  switch (type_) {
+    case kOriginal:
+      str << "Original";
+      break;
+    case kSubrectOriginal:
+      str << "SubrectOriginal";
+      break;
+    case kSubrectAndScale:
+      str << "SubrectAndScale";
+      break;
+  }
+  str << "]\nis_nearest_neightbor[" << is_nearest_neighbor_ << "]\nsrc_rect["
+      << src_rect_.ToString() << "]\ntarget_size[" << target_size_.ToString()
+      << "]\ntarget_color_space[" << target_color_space_.ToString()
+      << "]\nhash[" << hash_ << "]";
   return str.str();
 }
 
-// CacheEntry
+// CacheEntry ------------------------------------------------------------------
 SoftwareImageDecodeCache::CacheEntry::CacheEntry()
     : tracing_id_(g_next_tracing_id_.GetNext()) {}
 SoftwareImageDecodeCache::CacheEntry::CacheEntry(
@@ -1023,7 +1059,7 @@ void SoftwareImageDecodeCache::CacheEntry::Unlock() {
     usage_stats_.first_lock_wasted = !usage_stats_.used;
 }
 
-// MemoryBudget
+// MemoryBudget ----------------------------------------------------------------
 SoftwareImageDecodeCache::MemoryBudget::MemoryBudget(size_t limit_bytes)
     : limit_bytes_(limit_bytes), current_usage_bytes_(0u) {}
 
@@ -1047,40 +1083,6 @@ void SoftwareImageDecodeCache::MemoryBudget::ResetUsage() {
 
 size_t SoftwareImageDecodeCache::MemoryBudget::GetCurrentUsageSafe() const {
   return current_usage_bytes_.ValueOrDie();
-}
-
-void SoftwareImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
-  {
-    base::AutoLock hold(lock_);
-    switch (state) {
-      case base::MemoryState::NORMAL:
-        max_items_in_cache_ = kNormalMaxItemsInCacheForSoftware;
-        break;
-      case base::MemoryState::THROTTLED:
-        max_items_in_cache_ = kThrottledMaxItemsInCacheForSoftware;
-        break;
-      case base::MemoryState::SUSPENDED:
-        max_items_in_cache_ = kSuspendedMaxItemsInCacheForSoftware;
-        break;
-      case base::MemoryState::UNKNOWN:
-        NOTREACHED();
-        return;
-    }
-  }
-}
-
-void SoftwareImageDecodeCache::OnPurgeMemory() {
-  base::AutoLock lock(lock_);
-  ReduceCacheUsageUntilWithinLimit(0);
-}
-
-SoftwareImageDecodeCache::CacheEntry* SoftwareImageDecodeCache::AddCacheEntry(
-    const ImageKey& key) {
-  lock_.AssertAcquired();
-  frame_key_to_image_keys_[key.frame_key()].push_back(key);
-  auto it = decoded_images_.Put(key, std::make_unique<CacheEntry>());
-  it->second.get()->mark_cached();
-  return it->second.get();
 }
 
 }  // namespace cc

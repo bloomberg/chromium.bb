@@ -34,6 +34,14 @@ namespace cc {
 // in the cache multiple times at different scales and filter qualities.
 class CC_EXPORT ImageDecodeCacheKey {
  public:
+  // Enum indicating the type of processing to do for this key:
+  // kOriginal - use the original decode without any subrecting or scaling.
+  // kSubrectOriginal - extract a subrect from the original decode but do not
+  //                    scale it.
+  // kSubrectAndScale - extract a subrect (if needed) from the original decode
+  //                    and scale it.
+  enum ProcessingType { kOriginal, kSubrectOriginal, kSubrectAndScale };
+
   static ImageDecodeCacheKey FromDrawImage(const DrawImage& image,
                                            SkColorType color_type);
 
@@ -43,14 +51,15 @@ class CC_EXPORT ImageDecodeCacheKey {
     // The frame_key always has to be the same. However, after that all original
     // decodes are the same, so if we can use the original decode, return true.
     // If not, then we have to compare every field.
-    return frame_key_ == other.frame_key_ &&
-           can_use_original_size_decode_ ==
-               other.can_use_original_size_decode_ &&
+    // Note we don't compare |nearest_neighbor_| because we would only use
+    // kOriginal type in that case (dchecked below), which implies no scale. The
+    // returned scale to Skia would respect the nearest neighbor value of the
+    // requested image.
+    DCHECK(!is_nearest_neighbor_ || type_ == kOriginal);
+    return frame_key_ == other.frame_key_ && type_ == other.type_ &&
            target_color_space_ == other.target_color_space_ &&
-           (can_use_original_size_decode_ ||
-            (src_rect_ == other.src_rect_ &&
-             target_size_ == other.target_size_ &&
-             filter_quality_ == other.filter_quality_));
+           (type_ == kOriginal || (src_rect_ == other.src_rect_ &&
+                                   target_size_ == other.target_size_));
   }
 
   bool operator!=(const ImageDecodeCacheKey& other) const {
@@ -58,17 +67,14 @@ class CC_EXPORT ImageDecodeCacheKey {
   }
 
   const PaintImage::FrameKey& frame_key() const { return frame_key_; }
-  SkFilterQuality filter_quality() const { return filter_quality_; }
+  ProcessingType type() const { return type_; }
+  bool is_nearest_neighbor() const { return is_nearest_neighbor_; }
   gfx::Rect src_rect() const { return src_rect_; }
   gfx::Size target_size() const { return target_size_; }
   const gfx::ColorSpace& target_color_space() const {
     return target_color_space_;
   }
 
-  bool can_use_original_size_decode() const {
-    return can_use_original_size_decode_;
-  }
-  bool should_use_subrect() const { return should_use_subrect_; }
   size_t get_hash() const { return hash_; }
 
   // Helper to figure out how much memory the locked image represented by this
@@ -85,20 +91,18 @@ class CC_EXPORT ImageDecodeCacheKey {
 
  private:
   ImageDecodeCacheKey(PaintImage::FrameKey frame_key,
+                      ProcessingType type,
+                      bool is_nearest_neighbor,
                       const gfx::Rect& src_rect,
                       const gfx::Size& size,
-                      const gfx::ColorSpace& target_color_space,
-                      SkFilterQuality filter_quality,
-                      bool can_use_original_size_decode,
-                      bool should_use_subrect);
+                      const gfx::ColorSpace& target_color_space);
 
   PaintImage::FrameKey frame_key_;
+  ProcessingType type_;
+  bool is_nearest_neighbor_;
   gfx::Rect src_rect_;
   gfx::Size target_size_;
   gfx::ColorSpace target_color_space_;
-  SkFilterQuality filter_quality_;
-  bool can_use_original_size_decode_;
-  bool should_use_subrect_;
   size_t hash_;
 };
 
