@@ -252,6 +252,7 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
     'CorrectEventFiringTest.testShouldNotThrowIfEventHandlerThrows',
     'CorrectEventFiringTest.testShouldFireMouseOverEventWhenClicking',
+    'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
     'CorrectEventFiringTest.testShouldFireTwoClickEventsWhenClickingOnALabel',
     'CorrectEventFiringTest.testShouldIssueClickEvents',
     'CorrectEventFiringTest.testShouldFireMouseMoveEventWhenClicking',
@@ -263,13 +264,12 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'BasicMouseInterfaceTest.testMoveAndClick',
     'BasicMouseInterfaceTest.testShouldClickElementInIFrame',
     'CombinedInputActionsTest.testCanClickOnLinks',
+
+     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
+    'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
-        'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
-        'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2076
         'CorrectEventFiringTest.testShouldReportTheXAndYCoordinatesWhenClicking',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
@@ -282,35 +282,12 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
 
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-        'CorrectEventFiringTest.testShouldFireClickEventWhenClicking',
-        'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
-        'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1220
-        'BasicMouseInterfaceTest.testDragAndDrop',
-        'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
-        'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
-        'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=922
-        'ClickTest.testCanClickOnAnElementWithTopSetToANegativeNumber',
-        'CorrectEventFiringTest.testClickEventsShouldBubble',
-        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
-        'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
-        'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
-        'ImplicitWaitTest.testShouldImplicitlyWaitUntilAtLeastOneElementIsFoundWhenSearchingForMany',
-        'ImplicitWaitTest.testShouldImplicitlyWaitForAnElementToBeVisibleBeforeInteracting',
-        'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
-        'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
-        'TypingTest.testShiftSelectionDeletes',
-        'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
          # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
-        'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
+        'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
