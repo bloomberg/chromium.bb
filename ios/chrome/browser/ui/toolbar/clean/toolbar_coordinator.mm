@@ -251,9 +251,11 @@
 }
 
 - (void)updateToolbarState {
-  // TODO(crbug.com/784911): This function should probably triggers something in
-  // the mediator. Investigate how to handle it.
+  // Updates the omnibox.
   [self updateOmniboxState];
+  // Updates the toolbar buttons.
+  if ([self getWebState])
+    [self.mediator updateConsumerForWebState:[self getWebState]];
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
