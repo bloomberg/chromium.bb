@@ -13,6 +13,9 @@
 
 namespace zucchini {
 
+// The functions below are called to print diagnosis information, so outputs are
+// printed using std::ostream instead of LOG().
+
 // Prints stats on references found in |image|. If |do_dump| is true, then
 // prints all references (locations and targets).
 status::Code ReadReferences(ConstBufferView image,
@@ -24,6 +27,11 @@ status::Code ReadReferences(ConstBufferView image,
 status::Code DetectAll(ConstBufferView image,
                        std::ostream& out,
                        std::vector<ConstBufferView>* sub_image_list);
+
+// Prints all matched regions from |old_image| to |new_image|.
+status::Code MatchAll(ConstBufferView old_image,
+                      ConstBufferView new_image,
+                      std::ostream& out);
 
 }  // namespace zucchini
 
