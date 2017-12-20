@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "services/identity/public/cpp/identity_manager.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 namespace identity {
 
-IdentityManager::IdentityManager(SigninManagerBase* signin_manager)
-    : signin_manager_(signin_manager) {
+IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
+                                 ProfileOAuth2TokenService* token_service)
+    : signin_manager_(signin_manager), token_service_(token_service) {
 #if defined(OS_CHROMEOS)
   // On ChromeOS, the authenticated account is set very early in startup and
   // never changed. No client should be accessing the IdentityManager before the
@@ -25,6 +28,16 @@ IdentityManager::~IdentityManager() {
 
 AccountInfo IdentityManager::GetPrimaryAccountInfo() {
   return primary_account_info_;
+}
+
+std::unique_ptr<PrimaryAccountAccessTokenFetcher>
+IdentityManager::CreateAccessTokenFetcherForPrimaryAccount(
+    const std::string& oauth_consumer_name,
+    const OAuth2TokenService::ScopeSet& scopes,
+    PrimaryAccountAccessTokenFetcher::TokenCallback callback) {
+  return base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
+      oauth_consumer_name, signin_manager_, token_service_, scopes,
+      std::move(callback));
 }
 
 void IdentityManager::AddObserver(Observer* observer) {

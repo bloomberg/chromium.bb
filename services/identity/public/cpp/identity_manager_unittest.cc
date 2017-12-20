@@ -97,7 +97,8 @@ class IdentityManagerTest : public testing::Test {
 
     signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
 
-    identity_manager_.reset(new IdentityManager(&signin_manager_));
+    identity_manager_.reset(
+        new IdentityManager(&signin_manager_, &token_service_));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
   }
@@ -186,5 +187,16 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   EXPECT_EQ("", primary_account_info.email);
 }
 #endif  // !defined(OS_CHROMEOS)
+
+TEST_F(IdentityManagerTest, CreateAccessTokenFetcherForPrimaryAccount) {
+  std::set<std::string> scopes{"scope"};
+  PrimaryAccountAccessTokenFetcher::TokenCallback callback =
+      base::BindOnce([](const GoogleServiceAuthError& error,
+                        const std::string& access_token) {});
+  std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForPrimaryAccount(
+          "dummy_consumer", scopes, std::move(callback));
+  EXPECT_TRUE(token_fetcher);
+}
 
 }  // namespace identity
