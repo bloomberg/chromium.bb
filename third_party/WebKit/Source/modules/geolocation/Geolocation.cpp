@@ -114,6 +114,8 @@ Geolocation::~Geolocation() {
 void Geolocation::Trace(blink::Visitor* visitor) {
   visitor->Trace(one_shots_);
   visitor->Trace(watchers_);
+  visitor->Trace(one_shots_being_invoked_);
+  visitor->Trace(watchers_being_invoked_);
   visitor->Trace(last_position_);
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -124,6 +126,9 @@ void Geolocation::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (const auto& one_shot : one_shots_)
     visitor->TraceWrappers(one_shot);
   visitor->TraceWrappers(watchers_);
+  for (const auto& one_shot : one_shots_being_invoked_)
+    visitor->TraceWrappers(one_shot);
+  visitor->TraceWrappers(watchers_being_invoked_);
   ScriptWrappable::TraceWrappers(visitor);
 }
 
@@ -397,10 +402,10 @@ void Geolocation::HandleError(PositionError* error) {
   // added by calls to Geolocation methods from the callbacks, and to prevent
   // further callbacks to these notifiers.
   GeoNotifierVector one_shots_with_cached_position;
-  one_shots_.clear();
-  if (error->IsFatal())
-    watchers_.Clear();
-  else {
+  swap(one_shots_, one_shots_being_invoked_);
+  if (error->IsFatal()) {
+    swap(watchers_, watchers_being_invoked_);
+  } else {
     // Don't send non-fatal errors to notifiers due to receive a cached
     // position.
     ExtractNotifiersWithCachedPosition(one_shots_copy,
@@ -419,6 +424,9 @@ void Geolocation::HandleError(PositionError* error) {
 
   // Maintain a reference to the cached notifiers until their timer fires.
   CopyToSet(one_shots_with_cached_position, one_shots_);
+
+  one_shots_being_invoked_.clear();
+  watchers_being_invoked_.Clear();
 }
 
 void Geolocation::MakeSuccessCallbacks() {
@@ -433,13 +441,15 @@ void Geolocation::MakeSuccessCallbacks() {
   // Clear the lists before we make the callbacks, to avoid clearing notifiers
   // added by calls to Geolocation methods from the callbacks, and to prevent
   // further callbacks to these notifiers.
-  one_shots_.clear();
+  swap(one_shots_, one_shots_being_invoked_);
 
   SendPosition(one_shots_copy, last_position_);
   SendPosition(watchers_copy, last_position_);
 
   if (!HasListeners())
     StopUpdating();
+
+  one_shots_being_invoked_.clear();
 }
 
 void Geolocation::PositionChanged() {

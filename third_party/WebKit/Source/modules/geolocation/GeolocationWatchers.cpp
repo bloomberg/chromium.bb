@@ -69,6 +69,11 @@ bool GeolocationWatchers::IsEmpty() const {
   return id_to_notifier_map_.IsEmpty();
 }
 
+void GeolocationWatchers::Swap(GeolocationWatchers& other) {
+  swap(id_to_notifier_map_, other.id_to_notifier_map_);
+  swap(notifier_to_id_map_, other.notifier_to_id_map_);
+}
+
 void GeolocationWatchers::GetNotifiersVector(
     HeapVector<Member<GeoNotifier>>& copy) const {
   CopyValuesToVector(id_to_notifier_map_, copy);

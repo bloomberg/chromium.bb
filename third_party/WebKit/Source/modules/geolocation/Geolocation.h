@@ -168,6 +168,20 @@ class MODULES_EXPORT Geolocation final : public ScriptWrappable,
 
   GeoNotifierSet one_shots_;
   GeolocationWatchers watchers_;
+  // GeoNotifiers that may be scheduled to be invoked but need to be removed
+  // from |one_shots_| and |watchers_|.
+  //
+  // |HandleError(error)| and |MakeSuccessCallbacks| need to clear |one_shots_|
+  // (and optionally |watchers_|) before invoking the callbacks, in order to
+  // avoid clearing notifiers added by calls to Geolocation methods from the
+  // callbacks. Thus, something else needs to make the notifiers being invoked
+  // alive with wrapper-tracing because V8 GC may run during the callbacks.
+  // |one_shots_being_invoked_| and |watchers_being_invoked_| perform
+  // wrapper-tracing.
+  // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
+  // get supported by either of wrapper-tracing or unified GC.
+  GeoNotifierSet one_shots_being_invoked_;
+  GeolocationWatchers watchers_being_invoked_;
   Member<Geoposition> last_position_;
 
   device::mojom::blink::GeolocationPtr geolocation_;
