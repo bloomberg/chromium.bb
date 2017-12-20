@@ -395,7 +395,7 @@ void CopyRGBToVideoFrame(const uint8_t* source,
 scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK_EQ(VideoFrame::STORAGE_OWNED_MEMORY, frame->storage_type());
-  DCHECK_EQ(PIXEL_FORMAT_YV12A, frame->format());
+  DCHECK_EQ(PIXEL_FORMAT_I420A, frame->format());
 
   scoped_refptr<media::VideoFrame> wrapped_frame =
       media::VideoFrame::WrapVideoFrame(frame, PIXEL_FORMAT_I420,

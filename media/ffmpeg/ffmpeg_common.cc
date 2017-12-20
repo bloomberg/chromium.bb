@@ -524,7 +524,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   AVDictionaryEntry* webm_alpha =
       av_dict_get(stream->metadata, "alpha_mode", nullptr, 0);
   if (webm_alpha && !strcmp(webm_alpha->value, "1")) {
-    format = PIXEL_FORMAT_YV12A;
+    format = PIXEL_FORMAT_I420A;
   }
 
   VideoRotation video_rotation = VIDEO_ROTATION_0;
@@ -703,7 +703,7 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
       return PIXEL_FORMAT_I422;
 
     case AV_PIX_FMT_YUVA420P:
-      return PIXEL_FORMAT_YV12A;
+      return PIXEL_FORMAT_I420A;
 
     case AV_PIX_FMT_YUV420P9LE:
       return PIXEL_FORMAT_YUV420P9;
@@ -741,7 +741,7 @@ AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
 
     case PIXEL_FORMAT_I422:
       return AV_PIX_FMT_YUV422P;
-    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_I420A:
       return AV_PIX_FMT_YUVA420P;
     case PIXEL_FORMAT_I444:
       return AV_PIX_FMT_YUV444P;

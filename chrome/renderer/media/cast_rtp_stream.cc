@@ -224,13 +224,13 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 
       if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
             video_frame->format() == media::PIXEL_FORMAT_YV12 ||
-            video_frame->format() == media::PIXEL_FORMAT_YV12A)) {
+            video_frame->format() == media::PIXEL_FORMAT_I420A)) {
         error_callback_.Run("Incompatible video frame format.");
         return;
       }
       scoped_refptr<media::VideoFrame> frame = video_frame;
       // Drop alpha channel since we do not support it yet.
-      if (frame->format() == media::PIXEL_FORMAT_YV12A)
+      if (frame->format() == media::PIXEL_FORMAT_I420A)
         frame = media::WrapAsI420VideoFrame(video_frame);
 
       // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc

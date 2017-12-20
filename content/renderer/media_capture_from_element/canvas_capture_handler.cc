@@ -54,7 +54,7 @@ class VideoCapturerSource : public media::VideoCapturerSource {
     formats.push_back(media::VideoCaptureFormat(size_, frame_rate_,
                                                 media::PIXEL_FORMAT_I420));
     formats.push_back(media::VideoCaptureFormat(size_, frame_rate_,
-                                                media::PIXEL_FORMAT_YV12A));
+                                                media::PIXEL_FORMAT_I420A));
     return formats;
   }
   void StartCapture(const media::VideoCaptureParams& params,
@@ -385,7 +385,7 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
   TRACE_EVENT0("webrtc", "CanvasCaptureHandler::ConvertToYUVFrame");
 
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
-      is_opaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_YV12A,
+      is_opaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
       image_size, gfx::Rect(image_size), image_size, base::TimeDelta());
   if (!video_frame) {
     DLOG(ERROR) << "Couldn't allocate video frame";

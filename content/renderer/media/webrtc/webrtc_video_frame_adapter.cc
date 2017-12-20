@@ -73,7 +73,7 @@ void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
       frame->visible_rect(), frame->natural_size()));
   DCHECK(media::PIXEL_FORMAT_I420 == frame->format() ||
          media::PIXEL_FORMAT_YV12 == frame->format() ||
-         media::PIXEL_FORMAT_YV12A == frame->format());
+         media::PIXEL_FORMAT_I420A == frame->format());
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kYPlane)));
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kUPlane)));
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kVPlane)));
@@ -122,7 +122,7 @@ WebRtcVideoFrameAdapter::ToI420() {
   }
 
   IsValidFrame(frame_);
-  if (media::PIXEL_FORMAT_YV12A == frame_->format()) {
+  if (media::PIXEL_FORMAT_I420A == frame_->format()) {
     return new rtc::RefCountedObject<
         FrameAdapterWithA<webrtc::I420ABufferInterface>>(frame_);
   }

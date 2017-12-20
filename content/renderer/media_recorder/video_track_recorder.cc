@@ -203,7 +203,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
         video_frame->format() == media::PIXEL_FORMAT_YV12 ||
         video_frame->format() == media::PIXEL_FORMAT_ARGB ||
-        video_frame->format() == media::PIXEL_FORMAT_YV12A ||
+        video_frame->format() == media::PIXEL_FORMAT_I420A ||
         video_frame->format() == media::PIXEL_FORMAT_NV12)) {
     NOTREACHED() << media::VideoPixelFormatToString(video_frame->format());
     return;
@@ -224,7 +224,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   scoped_refptr<media::VideoFrame> wrapped_frame;
   // Drop alpha channel if the encoder does not support it yet.
   if (!CanEncodeAlphaChannel() &&
-      video_frame->format() == media::PIXEL_FORMAT_YV12A) {
+      video_frame->format() == media::PIXEL_FORMAT_I420A) {
     wrapped_frame = media::WrapAsI420VideoFrame(video_frame);
   } else {
     wrapped_frame = media::VideoFrame::WrapVideoFrame(
