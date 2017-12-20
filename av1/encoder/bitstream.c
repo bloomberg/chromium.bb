@@ -1012,7 +1012,8 @@ static void write_palette_colors_uv(const MACROBLOCKD *const xd,
 }
 
 static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                                    const MODE_INFO *const mi, aom_writer *w) {
+                                    const MODE_INFO *const mi, int mi_row,
+                                    int mi_col, aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
@@ -1047,7 +1048,9 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_MONO_VIDEO
       av1_num_planes(cm) > 1 &&
 #endif
-      mbmi->uv_mode == UV_DC_PRED;
+      mbmi->uv_mode == UV_DC_PRED &&
+      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y);
   if (uv_dc_pred) {
     const int n = pmi->palette_size[1];
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
@@ -1405,7 +1408,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
-      write_palette_mode_info(cm, xd, mi, w);
+      write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
 #if CONFIG_FILTER_INTRA
     write_filter_intra_mode_info(xd, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
@@ -1716,7 +1719,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
-    write_palette_mode_info(cm, xd, mi, w);
+    write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
 #if CONFIG_FILTER_INTRA
   write_filter_intra_mode_info(xd, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
@@ -1981,8 +1984,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if CONFIG_INTRABC
       assert(mbmi->use_intrabc == 0);
 #endif
+      assert(av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type));
       int rows, cols;
-      assert(mbmi->sb_type >= BLOCK_8X8);
       av1_get_block_dimensions(mbmi->sb_type, plane, xd, NULL, NULL, &rows,
                                &cols);
       assert(*tok < tok_end);

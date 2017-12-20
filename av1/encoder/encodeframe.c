@@ -4182,8 +4182,6 @@ static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
   const MODE_INFO *const left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-
-  assert(bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST);
   const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
 
   if (mbmi->mode == DC_PRED) {
@@ -4464,15 +4462,16 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         update_palette_cdf(xd, mi);
     }
 
-    if (bsize >= BLOCK_8X8) {
+    if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
       for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
-          if (!dry_run)
+          if (!dry_run) {
             av1_tokenize_color_map(x, plane, t, bsize, mbmi->tx_size,
                                    PALETTE_MAP);
-          else if (dry_run == DRY_RUN_COSTCOEFFS)
+          } else if (dry_run == DRY_RUN_COSTCOEFFS) {
             rate +=
                 av1_cost_color_map(x, plane, bsize, mbmi->tx_size, PALETTE_MAP);
+          }
         }
       }
     }

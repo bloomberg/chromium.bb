@@ -280,7 +280,6 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
                                aom_reader *r) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   assert(plane == 0 || plane == 1);
-  assert(mbmi->sb_type >= BLOCK_8X8);
   Av1ColorMapParam color_map_params;
   memset(&color_map_params, 0, sizeof(color_map_params));
   get_palette_params(xd, plane, mbmi->sb_type, &color_map_params);

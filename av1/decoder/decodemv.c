@@ -814,7 +814,7 @@ static void read_palette_colors_uv(MACROBLOCKD *const xd, int bit_depth,
 }
 
 static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
-                                   aom_reader *r) {
+                                   int mi_row, int mi_col, aom_reader *r) {
   MODE_INFO *const mi = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MODE_INFO *const above_mi = xd->above_mi;
@@ -845,7 +845,9 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       read_palette_colors_y(xd, cm->bit_depth, pmi, r);
     }
   }
-  if (mbmi->uv_mode == UV_DC_PRED) {
+  if (mbmi->uv_mode == UV_DC_PRED &&
+      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y)) {
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
     const int modev = aom_read_symbol(
         r, xd->tile_ctx->palette_uv_mode_cdf[palette_uv_mode_ctx], 2, ACCT_STR);
@@ -1204,7 +1206,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
-    read_palette_mode_info(cm, xd, r);
+    read_palette_mode_info(cm, xd, mi_row, mi_col, r);
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   read_filter_intra_mode_info(xd, r);
@@ -1568,7 +1570,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
-    read_palette_mode_info(cm, xd, r);
+    read_palette_mode_info(cm, xd, mi_row, mi_col, r);
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   read_filter_intra_mode_info(xd, r);

@@ -2943,7 +2943,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mic->mbmi;
   assert(!is_inter_block(mbmi));
-  assert(bsize >= BLOCK_8X8);
+  assert(av1_allow_palette(cpi->common.allow_screen_content_tools, bsize));
   int colors, n;
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *const src = x->plane[0].src.buf;
@@ -2951,8 +2951,6 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   int block_width, block_height, rows, cols;
   av1_get_block_dimensions(bsize, 0, xd, &block_width, &block_height, &rows,
                            &cols);
-
-  assert(cpi->common.allow_screen_content_tools);
 
   int count_buf[1 << 12];  // Maximum (1 << 12) color levels.
 #if CONFIG_HIGHBITDEPTH
@@ -3012,8 +3010,6 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_FILTER_INTRA
     mbmi->filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA
-
-    if (rows * cols > MAX_PALETTE_SQUARE) return 0;
 
     uint16_t color_cache[2 * PALETTE_MAX_SIZE];
     const int n_cache = av1_get_palette_cache(xd, 0, color_cache);
@@ -5158,9 +5154,10 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   assert(!is_inter_block(mbmi));
+  assert(
+      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  assert(bsize >= BLOCK_8X8);
   int this_rate;
   int64_t this_rd;
   int colors_u, colors_v, colors;
@@ -5172,7 +5169,6 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   int plane_block_width, plane_block_height, rows, cols;
   av1_get_block_dimensions(bsize, 1, xd, &plane_block_width,
                            &plane_block_height, &rows, &cols);
-  if (rows * cols > MAX_PALETTE_SQUARE) return;
 
   mbmi->uv_mode = UV_DC_PRED;
 
@@ -9041,7 +9037,6 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  assert(bsize >= BLOCK_8X8);
   int src_stride = x->plane[1].src.stride;
   const uint8_t *const src_u = x->plane[1].src.buf;
   const uint8_t *const src_v = x->plane[2].src.buf;

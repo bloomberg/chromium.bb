@@ -1141,6 +1141,8 @@ static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
 const aom_cdf_prob
     default_palette_y_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
       { AOM_CDF7(12288, 19408, 24627, 26662, 28499, 30667) },
+      { AOM_CDF7(12288, 19408, 24627, 26662, 28499, 30667) },
+      { AOM_CDF7(12288, 19408, 24627, 26662, 28499, 30667) },
       { AOM_CDF7(2815, 4570, 9416, 10875, 13782, 19863) },
       { AOM_CDF7(12032, 14948, 22187, 23138, 24756, 27635) },
       { AOM_CDF7(14847, 20167, 25433, 26751, 28278, 30119) },
@@ -1151,6 +1153,8 @@ const aom_cdf_prob
 
 const aom_cdf_prob
     default_palette_uv_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)] = {
+      { AOM_CDF7(20480, 29888, 32453, 32715, 32751, 32766) },
+      { AOM_CDF7(20480, 29888, 32453, 32715, 32751, 32766) },
       { AOM_CDF7(20480, 29888, 32453, 32715, 32751, 32766) },
       { AOM_CDF7(11135, 23641, 31056, 31998, 32496, 32668) },
       { AOM_CDF7(9984, 21999, 29192, 30645, 31640, 32402) },
@@ -1166,6 +1170,12 @@ const aom_cdf_prob
 const aom_cdf_prob default_palette_y_mode_cdf[PALATTE_BSIZE_CTXS]
                                              [PALETTE_Y_MODE_CONTEXTS]
                                              [CDF_SIZE(2)] = {
+                                               { { AOM_CDF2(128 * 240) },
+                                                 { AOM_CDF2(128 * 180) },
+                                                 { AOM_CDF2(128 * 100) } },
+                                               { { AOM_CDF2(128 * 240) },
+                                                 { AOM_CDF2(128 * 180) },
+                                                 { AOM_CDF2(128 * 100) } },
                                                { { AOM_CDF2(128 * 240) },
                                                  { AOM_CDF2(128 * 180) },
                                                  { AOM_CDF2(128 * 100) } },

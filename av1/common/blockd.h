@@ -1354,8 +1354,8 @@ static INLINE int is_neighbor_overlappable(const MB_MODE_INFO *mbmi) {
 
 static INLINE int av1_allow_palette(int allow_screen_content_tools,
                                     BLOCK_SIZE sb_type) {
-  return allow_screen_content_tools && sb_type >= BLOCK_8X8 &&
-         sb_type <= BLOCK_64X64;
+  return allow_screen_content_tools && block_size_wide[sb_type] <= 64 &&
+         block_size_high[sb_type] <= 64;
 }
 
 // Returns sub-sampled dimensions of the given block.
@@ -1381,10 +1381,21 @@ static INLINE void av1_get_block_dimensions(BLOCK_SIZE bsize, int plane,
   assert(IMPLIES(plane == PLANE_TYPE_Y, pd->subsampling_y == 0));
   assert(block_width >= block_cols);
   assert(block_height >= block_rows);
-  if (width) *width = block_width >> pd->subsampling_x;
-  if (height) *height = block_height >> pd->subsampling_y;
-  if (rows_within_bounds) *rows_within_bounds = block_rows >> pd->subsampling_y;
-  if (cols_within_bounds) *cols_within_bounds = block_cols >> pd->subsampling_x;
+  const int plane_block_width = block_width >> pd->subsampling_x;
+  const int plane_block_height = block_height >> pd->subsampling_y;
+  // Special handling for chroma sub8x8.
+  const int is_chroma_sub8_x = plane > 0 && plane_block_width < 4;
+  const int is_chroma_sub8_y = plane > 0 && plane_block_height < 4;
+  if (width) *width = plane_block_width + 2 * is_chroma_sub8_x;
+  if (height) *height = plane_block_height + 2 * is_chroma_sub8_y;
+  if (rows_within_bounds) {
+    *rows_within_bounds =
+        (block_rows >> pd->subsampling_y) + 2 * is_chroma_sub8_y;
+  }
+  if (cols_within_bounds) {
+    *cols_within_bounds =
+        (block_cols >> pd->subsampling_x) + 2 * is_chroma_sub8_x;
+  }
 }
 
 /* clang-format off */
