@@ -97,7 +97,15 @@ static_library("usb") {
   }
 
   if (is_win) {
-    libs = [ "setupapi.lib" ]
+    sources += [
+      "scoped_winusb_handle.cc",
+      "scoped_winusb_handle.h",
+    ]
+
+    libs = [
+      "setupapi.lib",
+      "winusb.lib",
+    ]
   }
 
   if (is_android || is_chromeos || is_linux) {

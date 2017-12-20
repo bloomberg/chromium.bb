@@ -46,7 +46,6 @@ class UsbDeviceWin : public UsbDevice {
   void ReadDescriptors(base::OnceCallback<void(bool)> callback);
 
  private:
-  void OpenOnBlockingThread(OpenCallback callback);
   void OnReadDescriptors(base::OnceCallback<void(bool)> callback,
                          scoped_refptr<UsbDeviceHandle> device_handle,
                          std::unique_ptr<UsbDeviceDescriptor> descriptor);
@@ -54,6 +53,12 @@ class UsbDeviceWin : public UsbDevice {
       base::OnceCallback<void(bool)> callback,
       scoped_refptr<UsbDeviceHandle> device_handle,
       std::unique_ptr<std::map<uint8_t, base::string16>> string_map);
+  void OnOpenedToReadWebUsbDescriptors(
+      base::OnceCallback<void(bool)> callback,
+      scoped_refptr<UsbDeviceHandle> device_handle);
+  void OnReadWebUsbDescriptors(base::OnceCallback<void(bool)> callback,
+                               scoped_refptr<UsbDeviceHandle> device_handle,
+                               const GURL& landing_page);
 
  private:
   base::ThreadChecker thread_checker_;
