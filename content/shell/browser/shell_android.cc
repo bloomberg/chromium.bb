@@ -68,6 +68,12 @@ void Shell::PlatformResizeSubViews() {
   // Not needed; subviews are bound.
 }
 
+void Shell::SizeTo(const gfx::Size& content_size) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_Shell_sizeTo(env, java_object_, content_size.width(),
+                    content_size.height());
+}
+
 void Shell::PlatformSetTitle(const base::string16& title) {
   NOTIMPLEMENTED() << ": " << title;
 }
