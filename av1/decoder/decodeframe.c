@@ -2146,25 +2146,20 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     if (n_tiles == 1) {
       // Find the end of the single tile buffer
       return aom_reader_find_end(&pbi->tile_data->bit_reader);
-    } else {
-      // Return the end of the last tile buffer
-      return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
     }
-  } else {
-#endif  // CONFIG_EXT_TILE
-#if !CONFIG_OBU
-    {
-      // Get last tile data.
-      TileData *const td = pbi->tile_data + tile_cols * tile_rows - 1;
-      return aom_reader_find_end(&td->bit_reader);
-    }
-#else
-  TileData *const td = pbi->tile_data + endTile;
-  return aom_reader_find_end(&td->bit_reader);
-#endif
-#if CONFIG_EXT_TILE
+    // Return the end of the last tile buffer
+    return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
   }
 #endif  // CONFIG_EXT_TILE
+
+#if !CONFIG_OBU
+  // Get last tile data.
+  TileData *const td = pbi->tile_data + tile_cols * tile_rows - 1;
+#else
+  TileData *const td = pbi->tile_data + endTile;
+#endif
+
+  return aom_reader_find_end(&td->bit_reader);
 }
 
 static void error_handler(void *data) {
