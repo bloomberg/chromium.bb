@@ -3853,11 +3853,13 @@ void Document::ProcessBaseElement() {
   }
 
   if (!base_element_url.IsEmpty()) {
-    if (base_element_url.ProtocolIsData()) {
+    if (base_element_url.ProtocolIsData() ||
+        base_element_url.ProtocolIsJavaScript()) {
       UseCounter::Count(*this, WebFeature::kBaseWithDataHref);
       AddConsoleMessage(ConsoleMessage::Create(
           kSecurityMessageSource, kErrorMessageLevel,
-          "'data:' URLs may not be used as base URLs for a document."));
+          "'" + base_element_url.Protocol() +
+              "' URLs may not be used as base URLs for a document."));
     }
     if (!GetSecurityOrigin()->CanRequest(base_element_url))
       UseCounter::Count(*this, WebFeature::kBaseWithCrossOriginHref);
@@ -3865,6 +3867,7 @@ void Document::ProcessBaseElement() {
 
   if (base_element_url != base_element_url_ &&
       !base_element_url.ProtocolIsData() &&
+      !base_element_url.ProtocolIsJavaScript() &&
       GetContentSecurityPolicy()->AllowBaseURI(base_element_url)) {
     base_element_url_ = base_element_url;
     UpdateBaseURL();
