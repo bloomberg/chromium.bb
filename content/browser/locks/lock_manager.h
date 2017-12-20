@@ -27,12 +27,12 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
  public:
   LockManager();
 
-  void CreateService(blink::mojom::LockManagerRequest request);
+  void CreateService(blink::mojom::LockManagerRequest request,
+                     const url::Origin& origin);
 
   // Request a lock. When the lock is acquired, |callback| will be invoked with
   // a LockHandle.
-  void RequestLock(const url::Origin& origin,
-                   const std::string& name,
+  void RequestLock(const std::string& name,
                    LockMode mode,
                    WaitMode wait,
                    blink::mojom::LockRequestPtr request) override;
@@ -73,7 +73,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // to process outstanding requests within the origin.
   void ProcessRequests(const url::Origin& origin);
 
-  mojo::BindingSet<blink::mojom::LockManager> bindings_;
+  mojo::BindingSet<blink::mojom::LockManager, url::Origin> bindings_;
 
   int64_t next_lock_id = 1;
   std::map<url::Origin, OriginState> origins_;
