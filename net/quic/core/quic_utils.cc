@@ -6,10 +6,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <vector>
 
-#include "base/containers/adapters.h"
-#include "base/logging.h"
 #include "net/quic/core/quic_constants.h"
 #include "net/quic/platform/api/quic_aligned.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
@@ -239,9 +236,9 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
   // generally, the iov_offset is not 0, input iov consists of 2K buffers and
   // the output buffer is ~1.4K.
   if (copy_len == iov_available && iovnum + 1 < iov_count) {
+    char* next_base = static_cast<char*>(iov[iovnum + 1].iov_base);
     // Prefetch 2 cachelines worth of data to get the prefetcher started; leave
     // it to the hardware prefetcher after that.
-    char* next_base = static_cast<char*>(iov[iovnum + 1].iov_base);
     QuicPrefetchT0(next_base);
     if (iov[iovnum + 1].iov_len >= 64) {
       QuicPrefetchT0(next_base + QUIC_CACHELINE_SIZE);

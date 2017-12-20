@@ -26,6 +26,16 @@ TEST_F(QuicServerIdTest, ToString) {
   EXPECT_EQ("https://google.com:10/private", private_server_id_str);
 }
 
+TEST_F(QuicServerIdTest, HostPortPair) {
+  HostPortPair google_host_port_pair("google.com", 10);
+
+  QuicServerId google_server_id(google_host_port_pair, PRIVACY_MODE_DISABLED);
+  EXPECT_TRUE(google_host_port_pair.Equals(google_server_id.host_port_pair()));
+
+  QuicServerId private_server_id(google_host_port_pair, PRIVACY_MODE_ENABLED);
+  EXPECT_TRUE(google_host_port_pair.Equals(private_server_id.host_port_pair()));
+}
+
 TEST_F(QuicServerIdTest, LessThan) {
   QuicServerId a_10_https(HostPortPair("a.com", 10), PRIVACY_MODE_DISABLED);
   QuicServerId a_11_https(HostPortPair("a.com", 11), PRIVACY_MODE_DISABLED);

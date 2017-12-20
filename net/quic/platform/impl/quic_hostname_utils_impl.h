@@ -6,7 +6,6 @@
 #define NET_QUIC_PLATFORM_IMPL_QUIC_HOSTNAME_UTILS_IMPL_H_
 
 #include "base/macros.h"
-#include "net/quic/core/quic_server_id.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
@@ -23,10 +22,6 @@ class QUIC_EXPORT_PRIVATE QuicHostnameUtilsImpl {
   // Convert hostname to lowercase and remove the trailing '.'.
   // WARNING: mutates |hostname| in place and returns |hostname|.
   static char* NormalizeHostname(char* hostname);
-
-  // Creates a QuicServerId from a string formatted in same manner as
-  // QuicServerId::ToString().
-  static void StringToQuicServerId(const std::string& str, QuicServerId* out);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicHostnameUtilsImpl);

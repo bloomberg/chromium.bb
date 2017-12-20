@@ -86,6 +86,16 @@ struct ServerPref {
   ServerNetworkStats server_network_stats;
 };
 
+QuicServerId QuicServerIdFromString(const std::string& str) {
+  GURL url(str);
+  if (!url.is_valid()) {
+    return QuicServerId();
+  }
+  return QuicServerId(HostPortPair::FromURL(url), url.path_piece() == "/private"
+                                                      ? PRIVACY_MODE_ENABLED
+                                                      : PRIVACY_MODE_DISABLED);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -928,9 +938,8 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
        it.Advance()) {
     // Get quic_server_id.
     const std::string& quic_server_id_str = it.key();
-    QuicServerId quic_server_id;
-    QuicHostnameUtils::StringToQuicServerId(quic_server_id_str,
-                                            &quic_server_id);
+
+    QuicServerId quic_server_id = QuicServerIdFromString(quic_server_id_str);
     if (quic_server_id.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for quic server: "
                << quic_server_id_str;
