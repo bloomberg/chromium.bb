@@ -277,6 +277,13 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
 
   keyboard::SetKeyboardOverscrollOverride(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
+
+  keyboard->SetContainerType(keyboard::ContainerType::FLOATING);
+  ShowKeyboard(true);
+  primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  screen_bounds = primary_display.bounds();
+  EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
+  ShowKeyboard(false);
 }
 
 TEST_F(LockLayoutManagerTest, MultipleMonitors) {
