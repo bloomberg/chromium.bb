@@ -150,7 +150,7 @@ void ExtensionWebContentsObserver::DidFinishNavigation(
   if (pm->IsRenderFrameHostRegistered(render_frame_host)) {
     if (!frame_extension)
       pm->UnregisterRenderFrameHost(render_frame_host);
-  } else if (frame_extension) {
+  } else if (frame_extension && render_frame_host->IsRenderFrameLive()) {
     pm->RegisterRenderFrameHost(web_contents(), render_frame_host,
                                 frame_extension);
   }
