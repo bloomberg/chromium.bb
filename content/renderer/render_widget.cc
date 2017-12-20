@@ -45,7 +45,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/drop_data_builder.h"
@@ -627,9 +627,9 @@ void RenderWidget::SetLocalSurfaceIdForAutoResize(
     for (auto& observer : render_frame_proxies_)
       observer.OnScreenInfoChanged(screen_info);
 
-    // Notify all BrowserPlugins of the updated ScreenInfo.
-    if (BrowserPluginManager::Get())
-      BrowserPluginManager::Get()->ScreenInfoChanged(screen_info);
+    // Notify all embedded BrowserPlugins of the updated ScreenInfo.
+    for (auto& observer : browser_plugins_)
+      observer.ScreenInfoChanged(screen_info);
   }
 
   AutoResizeCompositor(local_surface_id);
@@ -1383,9 +1383,9 @@ void RenderWidget::Resize(const ResizeParams& params) {
     for (auto& observer : render_frame_proxies_)
       observer.OnScreenInfoChanged(params.screen_info);
 
-    // Notify all BrowserPlugins of the updated ScreenInfo.
-    if (BrowserPluginManager::Get())
-      BrowserPluginManager::Get()->ScreenInfoChanged(params.screen_info);
+    // Notify all embedded BrowserPlugins of the updated ScreenInfo.
+    for (auto& observer : browser_plugins_)
+      observer.ScreenInfoChanged(params.screen_info);
   }
 
   // If a resize ack is requested and it isn't set-up, then no more resizes will
@@ -2462,6 +2462,14 @@ void RenderWidget::RegisterRenderFrame(RenderFrameImpl* frame) {
 
 void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
   render_frames_.RemoveObserver(frame);
+}
+
+void RenderWidget::RegisterBrowserPlugin(BrowserPlugin* browser_plugin) {
+  browser_plugins_.AddObserver(browser_plugin);
+}
+
+void RenderWidget::UnregisterBrowserPlugin(BrowserPlugin* browser_plugin) {
+  browser_plugins_.RemoveObserver(browser_plugin);
 }
 
 void RenderWidget::OnWaitNextFrameForTests(int routing_id) {

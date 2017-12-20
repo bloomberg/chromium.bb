@@ -9,7 +9,6 @@
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
-#include "content/public/common/screen_info.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_thread_impl.h"
@@ -53,14 +52,6 @@ void BrowserPluginManager::UpdateFocusState() {
   base::IDMap<BrowserPlugin*>::iterator iter(&instances_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->UpdateGuestFocusState(blink::kWebFocusTypeNone);
-    iter.Advance();
-  }
-}
-
-void BrowserPluginManager::ScreenInfoChanged(const ScreenInfo& screen_info) {
-  base::IDMap<BrowserPlugin*>::iterator iter(&instances_);
-  while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->ScreenInfoChanged(screen_info);
     iter.Advance();
   }
 }
