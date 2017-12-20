@@ -239,6 +239,26 @@ bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
   return true;
 }
 
+bool GLImageNativePixmap::InitializeFromTexture(uint32_t texture_id) {
+  GLContext* current_context = GLContext::GetCurrent();
+  if (!current_context || !current_context->IsCurrent(nullptr)) {
+    LOG(ERROR) << "No gl context bound to the current thread";
+    return false;
+  }
+
+  EGLContext context_handle =
+      reinterpret_cast<EGLContext>(current_context->GetHandle());
+  DCHECK_NE(context_handle, EGL_NO_CONTEXT);
+
+  if (!GLImageEGL::Initialize(context_handle, EGL_GL_TEXTURE_2D_KHR,
+                              reinterpret_cast<EGLClientBuffer>(texture_id),
+                              nullptr)) {
+    return false;
+  }
+
+  return true;
+}
+
 gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
   DCHECK(!pixmap_);
   DCHECK(thread_checker_.CalledOnValidThread());
