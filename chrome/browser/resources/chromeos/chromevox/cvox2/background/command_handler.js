@@ -245,7 +245,7 @@ CommandHandler.onCommand = function(command) {
   var current = ChromeVoxState.instance.currentRange_;
 
   // Allow edit commands first.
-  if (!CommandHandler.onEditCommand_(current, command))
+  if (!CommandHandler.onEditCommand_(command))
     return false;
 
   var dir = Dir.FORWARD;
@@ -916,16 +916,17 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
 /**
  * Provides a partial mapping from ChromeVox key combinations to
  * Search-as-a-function key as seen in Chrome OS documentation.
- * @param {cursors.Range} current
  * @param {string} command
  * @return {boolean} True if the command should propagate.
  * @private
  */
-CommandHandler.onEditCommand_ = function(current, command) {
+CommandHandler.onEditCommand_ = function(command) {
+  var current = ChromeVoxState.instance.currentRange;
   if (cvox.ChromeVox.isStickyModeOn() || !current || !current.start ||
       !current.start.node || !current.start.node.state[StateType.EDITABLE])
     return true;
 
+  var isMultiline = AutomationPredicate.multiline(current.start.node);
   switch (command) {
     case 'previousCharacter':
       BackgroundKeyboardHandler.sendKeyPress(36, 'Home', Mod.SHIFT);
@@ -942,15 +943,23 @@ CommandHandler.onEditCommand_ = function(current, command) {
           35, 'End', Mod.SHIFT | Mod.CONTROL);
       break;
     case 'previousObject':
+      if (!isMultiline)
+        return true;
       BackgroundKeyboardHandler.sendKeyPress(36, 'Home');
       break;
     case 'nextObject':
+      if (!isMultiline)
+        return true;
       BackgroundKeyboardHandler.sendKeyPress(35, 'End');
       break;
     case 'previousLine':
+      if (!isMultiline)
+        return true;
       BackgroundKeyboardHandler.sendKeyPress(33, 'PageUp');
       break;
     case 'nextLine':
+      if (!isMultiline)
+        return true;
       BackgroundKeyboardHandler.sendKeyPress(34, 'PageDown');
       break;
     case 'jumpToTop':

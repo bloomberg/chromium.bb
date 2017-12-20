@@ -319,7 +319,7 @@ AutomationPredicate.root = function(node) {
       return node.root.role == Role.DESKTOP;
     case Role.ROOT_WEB_AREA:
       if (node.parent && node.parent.role == Role.WEB_VIEW &&
-          !node.parent.state[chrome.automation.StateType.FOCUSED]) {
+          !node.parent.state[State.FOCUSED]) {
         // If parent web view is not focused, we should allow this root web area
         // to be crossed when performing traversals up the ancestry chain.
         return false;
@@ -491,6 +491,15 @@ AutomationPredicate.supportsImageData =
 AutomationPredicate.contextualBraille = function(node) {
   return node.parent != null && node.parent.role == Role.ROW &&
       AutomationPredicate.cellLike(node);
+};
+
+/**
+ * Matches against a node that handles multi line key commands.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.multiline = function(node) {
+  return node.state[State.MULTILINE] || node.state[State.RICHLY_EDITABLE];
 };
 
 });  // goog.scope
