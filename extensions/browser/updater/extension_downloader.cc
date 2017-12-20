@@ -238,7 +238,7 @@ bool ExtensionDownloader::AddExtension(
     extra.update_url_data = delegate_->GetUpdateUrlData(extension.id());
 
   return AddExtensionData(
-      extension.id(), *extension.version(), extension.GetType(),
+      extension.id(), extension.version(), extension.GetType(),
       ManifestURL::GetUpdateURL(&extension), extra, request_id, fetch_priority);
 }
 

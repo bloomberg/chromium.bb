@@ -24,9 +24,7 @@ void UninstallPingSender::OnExtensionUninstalled(
     UninstallReason reason) {
   if (filter_.Run(extension, reason) == SEND_PING) {
     UpdateService* updater = UpdateService::Get(browser_context);
-    base::Version version =
-        extension->version() ? *extension->version() : base::Version("0");
-    updater->SendUninstallPing(extension->id(), version, reason);
+    updater->SendUninstallPing(extension->id(), extension->version(), reason);
   }
 }
 

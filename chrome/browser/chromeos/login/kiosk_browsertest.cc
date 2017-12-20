@@ -239,7 +239,7 @@ bool IsAppInstalled(const std::string& app_id, const std::string& version) {
       extensions::ExtensionSystem::Get(app_profile)
           ->extension_service()
           ->GetInstalledExtension(app_id);
-  return app != nullptr && version == app->version()->GetString();
+  return app != nullptr && version == app->version().GetString();
 }
 
 extensions::Manifest::Type GetAppType(const std::string& app_id) {
@@ -617,7 +617,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   const base::Version& GetInstalledAppVersion() {
-    return *GetInstalledApp()->version();
+    return GetInstalledApp()->version();
   }
 
   extensions::Manifest::Location GetInstalledAppLocation() {

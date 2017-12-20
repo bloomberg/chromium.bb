@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
   // Upgrade the extension.
   new_tab_extension = UpdateExtension(
       new_tab_extension->id(), extension_dir.Pack(), 0 /*expected upgrade*/);
-  EXPECT_THAT(new_tab_extension->version()->components(),
+  EXPECT_THAT(new_tab_extension->version().components(),
               testing::ElementsAre(2));
 
   // The extension takes a couple round-trips to the renderer in order
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
 
   EXPECT_TRUE(new_tab_extension->permissions_data()->HasAPIPermission(
       APIPermission::kNewTabPageOverride));
-  EXPECT_THAT(new_tab_extension->version()->components(),
+  EXPECT_THAT(new_tab_extension->version().components(),
               testing::ElementsAre(2));
 }
 

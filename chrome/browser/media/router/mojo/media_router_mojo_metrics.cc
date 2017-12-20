@@ -53,11 +53,8 @@ void MediaRouterMojoMetrics::RecordMediaRouteProviderWakeReason(
 void MediaRouterMojoMetrics::RecordMediaRouteProviderVersion(
     const extensions::Extension& extension) {
   MediaRouteProviderVersion version = MediaRouteProviderVersion::UNKNOWN;
-  const base::Version* extension_version = extension.version();
-  if (extension_version) {
-    version = GetMediaRouteProviderVersion(
-        *extension_version, base::Version(version_info::GetVersionNumber()));
-  }
+  version = GetMediaRouteProviderVersion(
+      extension.version(), base::Version(version_info::GetVersionNumber()));
 
   DCHECK_LT(static_cast<int>(version),
             static_cast<int>(MediaRouteProviderVersion::TOTAL_COUNT));

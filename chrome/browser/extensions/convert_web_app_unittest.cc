@@ -271,7 +271,7 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_EQ("zVvdNZy3Mp7CFU8JVSyXNlDuHdVLbP7fDO3TGVzj/0w=",
             extension->public_key());
   EXPECT_EQ("oplhagaaipaimkjlbekcdjkffijdockj", extension->id());
-  EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
+  EXPECT_EQ("1978.12.11.0", extension->version().GetString());
   EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ(base::UTF16ToUTF8(web_app.description), extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
@@ -317,7 +317,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ("zVvdNZy3Mp7CFU8JVSyXNlDuHdVLbP7fDO3TGVzj/0w=",
             extension->public_key());
   EXPECT_EQ("oplhagaaipaimkjlbekcdjkffijdockj", extension->id());
-  EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
+  EXPECT_EQ("1978.12.11.0", extension->version().GetString());
   EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ("", extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));

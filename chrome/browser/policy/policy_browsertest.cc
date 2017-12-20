@@ -1804,7 +1804,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   ASSERT_TRUE(extension);
 
   const std::string old_version_number =
-      service->GetExtensionById(kGoodCrxId, true)->version()->GetString();
+      service->GetExtensionById(kGoodCrxId, true)->version().GetString();
 
   base::FilePath test_path;
   GetTestDataDirectory(&test_path);
@@ -1825,13 +1825,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   updater->CheckNow(params);
   update_observer.WaitForExtensionWillBeInstalled();
 
-  const base::Version* new_version =
+  const base::Version& new_version =
       service->GetExtensionById(kGoodCrxId, true)->version();
-  ASSERT_TRUE(new_version->IsValid());
+  ASSERT_TRUE(new_version.IsValid());
   base::Version old_version(old_version_number);
   ASSERT_TRUE(old_version.IsValid());
 
-  EXPECT_EQ(1, new_version->CompareTo(old_version));
+  EXPECT_EQ(1, new_version.CompareTo(old_version));
 
   EXPECT_EQ(0u, interceptor.GetPendingSize());
 
@@ -2071,7 +2071,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 
   // The extension should be auto-updated to newer version and re-enabled.
   EXPECT_EQ("1.0.0.1",
-            service->GetInstalledExtension(kGoodCrxId)->version()->GetString());
+            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
   EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
 }
 
@@ -2109,7 +2109,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
   EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
             extension_prefs->GetDisableReasons(kGoodCrxId));
   EXPECT_EQ("1.0.0.0",
-            service->GetInstalledExtension(kGoodCrxId)->version()->GetString());
+            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
 
   // An extension management policy update should trigger an update as well.
   EXPECT_EQ(1u, interceptor.GetPendingSize());
@@ -2129,7 +2129,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
 
   // It should be updated to 1.0.0.1 but remain disabled.
   EXPECT_EQ("1.0.0.1",
-            service->GetInstalledExtension(kGoodCrxId)->version()->GetString());
+            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
   EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
   EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
             extension_prefs->GetDisableReasons(kGoodCrxId));

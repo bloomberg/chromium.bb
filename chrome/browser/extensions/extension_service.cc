@@ -1296,8 +1296,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   const Extension* old = GetInstalledExtension(extension->id());
   if (old) {
     is_extension_loaded = true;
-    int version_compare_result =
-        extension->version()->CompareTo(*(old->version()));
+    int version_compare_result = extension->version().CompareTo(old->version());
     is_extension_upgrade = version_compare_result > 0;
     // Other than for unpacked extensions, CrxInstaller should have guaranteed
     // that we aren't downgrading.
@@ -1359,10 +1358,11 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
   const base::Version old_version(old_version_string);
 
   VLOG(1) << "AddComponentExtension " << extension->name();
-  if (!old_version.IsValid() || old_version != *extension->version()) {
+  if (!old_version.IsValid() || old_version != extension->version()) {
     VLOG(1) << "Component extension " << extension->name() << " ("
-        << extension->id() << ") installing/upgrading from '"
-        << old_version_string << "' to " << extension->version()->GetString();
+            << extension->id() << ") installing/upgrading from '"
+            << old_version_string << "' to "
+            << extension->version().GetString();
 
     // TODO(crbug.com/696822): If needed, add support for Declarative Net
     // Request to component extensions and pass the ruleset checksum here.
@@ -1503,11 +1503,11 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // to a permissions increase, send a request to the custodian.
     if (extensions::util::IsExtensionSupervised(extension, profile_) &&
         !ExtensionSyncService::Get(profile_)->HasPendingReenable(
-            extension->id(), *extension->version())) {
+            extension->id(), extension->version())) {
       SupervisedUserService* supervised_user_service =
           SupervisedUserServiceFactory::GetForProfile(profile_);
       supervised_user_service->AddExtensionUpdateRequest(extension->id(),
-                                                         *extension->version());
+                                                         extension->version());
     }
 #endif
   }
@@ -1847,7 +1847,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
          Manifest::IsExternalLocation(existing->location()));
 
     if (!is_default_apps_migration) {
-      switch (existing->version()->CompareTo(info.version)) {
+      switch (existing->version().CompareTo(info.version)) {
         case -1:  // existing version is older, we should upgrade
           break;
         case 0:  // existing version is same, do nothing

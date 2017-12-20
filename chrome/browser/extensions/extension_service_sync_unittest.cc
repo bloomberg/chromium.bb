@@ -703,7 +703,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncData) {
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
             data->incognito_enabled());
   EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
-  EXPECT_EQ(data->version(), *extension->version());
+  EXPECT_EQ(data->version(), extension->version());
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
             data->update_url());
   EXPECT_EQ(extension->name(), data->name());
@@ -811,7 +811,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataTerminated) {
   EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile()),
             data->incognito_enabled());
   EXPECT_EQ(ExtensionSyncData::BOOLEAN_UNSET, data->all_urls_enabled());
-  EXPECT_EQ(data->version(), *extension->version());
+  EXPECT_EQ(data->version(), extension->version());
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
             data->update_url());
   EXPECT_EQ(extension->name(), data->name());
@@ -1113,7 +1113,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
       app_specifics->mutable_extension();
   extension_specifics->set_id(good_crx);
   extension_specifics->set_version(
-      service()->GetInstalledExtension(good_crx)->version()->GetString());
+      service()->GetInstalledExtension(good_crx)->version().GetString());
 
   {
     extension_specifics->set_enabled(true);
@@ -1166,7 +1166,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataSettings) {
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
-      service()->GetInstalledExtension(good_crx)->version()->GetString());
+      service()->GetInstalledExtension(good_crx)->version().GetString());
   ext_specifics->set_enabled(false);
 
   {
@@ -1331,7 +1331,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataTerminatedExtension) {
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
-      service()->GetInstalledExtension(good_crx)->version()->GetString());
+      service()->GetInstalledExtension(good_crx)->version().GetString());
   ext_specifics->set_enabled(false);
   ext_specifics->set_incognito_enabled(true);
 
@@ -1362,7 +1362,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
   ext_specifics->set_enabled(true);
 
   const base::Version installed_version =
-      *service()->GetInstalledExtension(good_crx)->version();
+      service()->GetInstalledExtension(good_crx)->version();
 
   {
     ext_specifics->set_version(installed_version.GetString());
@@ -1888,7 +1888,7 @@ class ExtensionServiceTestSupervised
       CheckDisabledForCustodianApproval(id);
     }
 
-    EXPECT_EQ(*extension->version(), base::Version("1"));
+    EXPECT_EQ(base::Version("1"), extension->version());
 
     return id;
   }
@@ -1902,7 +1902,7 @@ class ExtensionServiceTestSupervised
     const Extension* extension = registry()->GetInstalledExtension(id);
     ASSERT_TRUE(extension);
     // The version should have been updated.
-    EXPECT_EQ(*extension->version(), base::Version(version));
+    EXPECT_EQ(base::Version(version), extension->version());
   }
 
   // Simulate a custodian approval for enabling the extension coming in
@@ -2208,7 +2208,7 @@ TEST_F(ExtensionServiceTestSupervised, UpdateWithoutPermissionIncrease) {
   const Extension* extension = registry()->enabled_extensions().GetByID(id);
   ASSERT_TRUE(extension);
   // The version should have changed.
-  EXPECT_EQ(*extension->version(), base::Version(version2));
+  EXPECT_EQ(base::Version(version2), extension->version());
   EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
@@ -2408,7 +2408,7 @@ TEST_F(ExtensionServiceTestSupervised,
   const Extension* extension = registry()->enabled_extensions().GetByID(id);
   ASSERT_TRUE(extension);
   // The version should have increased.
-  EXPECT_EQ(1, extension->version()->CompareTo(base::Version(version1)));
+  EXPECT_EQ(1, extension->version().CompareTo(base::Version(version1)));
 
   // Check that the approved version has been updated in the prefs as well.
   // Prefs are updated via Sync.  If the prefs are updated, then the new
@@ -2419,7 +2419,7 @@ TEST_F(ExtensionServiceTestSupervised,
       pref_service->GetDictionary(prefs::kSupervisedUserApprovedExtensions);
   approved_extensions->GetStringWithoutPathExpansion(id, &approved_version);
 
-  EXPECT_EQ(base::Version(approved_version), *extension->version());
+  EXPECT_EQ(base::Version(approved_version), extension->version());
   EXPECT_FALSE(IsPendingCustodianApproval(id));
 }
 
@@ -2633,7 +2633,7 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
       ExtensionSyncData::CreateFromSyncData(app_change.sync_data());
   EXPECT_TRUE(app_data->is_app());
   EXPECT_EQ(id, app_data->id());
-  EXPECT_EQ(*v1->version(), app_data->version());
+  EXPECT_EQ(v1->version(), app_data->version());
 
   // Update the app to v2, which is an extension.
   const Extension* v2 =
@@ -2651,7 +2651,7 @@ TEST_F(ExtensionServiceSyncTest, AppToExtension) {
       ExtensionSyncData::CreateFromSyncData(extension_change.sync_data());
   EXPECT_FALSE(extension_data->is_app());
   EXPECT_EQ(id, extension_data->id());
-  EXPECT_EQ(*v2->version(), extension_data->version());
+  EXPECT_EQ(v2->version(), extension_data->version());
 
   // Get the current data from the change processors to use as the input to
   // the following call to MergeDataAndStartSyncing. This simulates what should

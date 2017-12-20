@@ -237,7 +237,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   ASSERT_NE(nullptr, data);
   ASSERT_EQ(1u, data->size());
 
-  ASSERT_EQ(data->at(0).version, *extension1->version());
+  ASSERT_EQ(data->at(0).version, extension1->version());
   update_client::CrxInstaller* installer = data->at(0).installer.get();
   ASSERT_NE(installer, nullptr);
 
@@ -344,11 +344,11 @@ TEST_F(UpdateServiceTest, UninstallPings) {
     ASSERT_EQ(2u, pings.size()) << reason;
 
     EXPECT_EQ(extension2->id(), pings[0].id) << reason;
-    EXPECT_EQ(*extension2->version(), pings[0].version) << reason;
+    EXPECT_EQ(extension2->version(), pings[0].version) << reason;
     EXPECT_EQ(reason, pings[0].reason) << reason;
 
     EXPECT_EQ(extension3->id(), pings[1].id) << reason;
-    EXPECT_EQ(*extension3->version(), pings[1].version) << reason;
+    EXPECT_EQ(extension3->version(), pings[1].version) << reason;
     EXPECT_EQ(reason, pings[1].reason) << reason;
 
     pings.clear();

@@ -477,7 +477,7 @@ ContentHashFetcher::~ContentHashFetcher() {
 void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
   DCHECK(extension);
 
-  IdAndVersion key(extension->id(), extension->version()->GetString());
+  IdAndVersion key(extension->id(), extension->version().GetString());
   JobMap::iterator found = jobs_.find(key);
   if (found != jobs_.end()) {
     if (!force || found->second->force()) {
@@ -495,9 +495,8 @@ void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
   // hammering the server when we aren't successful in getting them.
   // crbug.com/373397
 
-  DCHECK(extension->version());
   GURL url =
-      delegate_->GetSignatureFetchUrl(extension->id(), *extension->version());
+      delegate_->GetSignatureFetchUrl(extension->id(), extension->version());
   ContentHashFetcherJob* job =
       new ContentHashFetcherJob(context_getter_, delegate_->GetPublicKey(),
                                 extension->id(), extension->path(), url, force,
@@ -514,7 +513,7 @@ void ContentHashFetcher::ExtensionLoaded(const Extension* extension) {
 
 void ContentHashFetcher::ExtensionUnloaded(const Extension* extension) {
   CHECK(extension);
-  IdAndVersion key(extension->id(), extension->version()->GetString());
+  IdAndVersion key(extension->id(), extension->version().GetString());
   JobMap::iterator found = jobs_.find(key);
   if (found != jobs_.end()) {
     found->second->Cancel();

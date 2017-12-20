@@ -417,7 +417,7 @@ void WebstoreInstaller::OnExtensionInstalled(
   } else {
     const base::Version version_required(info.minimum_version);
     if (version_required.IsValid() &&
-        extension->version()->CompareTo(version_required) < 0) {
+        extension->version().CompareTo(version_required) < 0) {
       // It should not happen, CrxInstaller will make sure the version is
       // equal or newer than version_required.
       ReportFailure(kDependencyNotFoundError,

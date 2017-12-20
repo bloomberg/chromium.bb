@@ -324,19 +324,19 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
   }
 
   if (minimum_version_.IsValid() &&
-      extension->version()->CompareTo(minimum_version_) < 0) {
+      extension->version().CompareTo(minimum_version_) < 0) {
     return CrxInstallError(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
         base::ASCIIToUTF16(minimum_version_.GetString() + "+"),
-        base::ASCIIToUTF16(extension->version()->GetString())));
+        base::ASCIIToUTF16(extension->version().GetString())));
   }
 
   if (expected_version_.IsValid() && fail_install_if_unexpected_version_ &&
-      expected_version_ != *extension->version()) {
+      expected_version_ != extension->version()) {
     return CrxInstallError(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
         base::ASCIIToUTF16(expected_version_.GetString()),
-        base::ASCIIToUTF16(extension->version()->GetString())));
+        base::ASCIIToUTF16(extension->version().GetString())));
   }
 
   // Make sure the manifests match if we want to bypass the prompt.
@@ -554,14 +554,14 @@ void CrxInstaller::CheckInstall() {
       }
       base::Version version_required(import.minimum_version);
       if (version_required.IsValid() &&
-          imported_module->version()->CompareTo(version_required) < 0) {
+          imported_module->version().CompareTo(version_required) < 0) {
         ReportFailureFromUIThread(CrxInstallError(
             CrxInstallError::ERROR_DECLINED,
             l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_INSTALL_DEPENDENCY_OLD_VERSION,
                 base::UTF8ToUTF16(imported_module->name()),
                 base::ASCIIToUTF16(import.minimum_version),
-                base::ASCIIToUTF16(imported_module->version()->GetString()))));
+                base::ASCIIToUTF16(imported_module->version().GetString()))));
         return;
       }
       if (!SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
@@ -787,7 +787,7 @@ void CrxInstaller::CompleteInstall() {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
 
   if (current_version_.IsValid() &&
-      current_version_.CompareTo(*(extension()->version())) > 0) {
+      current_version_.CompareTo(extension()->version()) > 0) {
     ReportFailureFromFileThread(CrxInstallError(
         CrxInstallError::ERROR_DECLINED,
         l10n_util::GetStringUTF16(
@@ -916,10 +916,9 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     // We update the extension's granted permissions if the user already
     // approved the install (client_ is non NULL), or we are allowed to install
     // this silently.
-    if ((client_ || allow_silent_install_) &&
-        grant_permissions_ &&
+    if ((client_ || allow_silent_install_) && grant_permissions_ &&
         (!expected_version_.IsValid() ||
-         expected_version_ == *extension()->version())) {
+         expected_version_ == extension()->version())) {
       PermissionsUpdater perms_updater(profile());
       perms_updater.InitializePermissions(extension());
       perms_updater.GrantActivePermissions(extension());
