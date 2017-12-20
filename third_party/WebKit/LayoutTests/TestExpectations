@@ -3488,19 +3488,8 @@ crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer
 crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 
-# Tests timing out on WebKit Linux Trusty MSAN
-crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Timeout ]
+crbug.com/760543 http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
+crbug.com/760543 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
 
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
