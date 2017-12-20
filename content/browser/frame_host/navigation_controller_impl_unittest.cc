@@ -339,11 +339,11 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
 
 // PlzNavigate
 // A NavigationControllerTest run with --enable-browser-side-navigation.
+// TODO(clamy): Make those regular NavigationControllerTests.
 class NavigationControllerTestWithBrowserSideNavigation
     : public NavigationControllerTest {
  public:
   void SetUp() override {
-    EnableBrowserSideNavigation();
     NavigationControllerTest::SetUp();
   }
 };

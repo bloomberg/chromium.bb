@@ -351,10 +351,6 @@ const char kEnableBackgroundFetchPersistence[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
-// PlzNavigate: Use or not the experimental browser-side navigation path.
-const char kDisableBrowserSideNavigation[] = "disable-browser-side-navigation";
-const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
-
 // Enable animating of images in the compositor instead of blink.
 const char kEnableCompositorImageAnimations[] =
     "enable-compositor-image-animations";

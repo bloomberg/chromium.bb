@@ -41,7 +41,6 @@ CONTENT_EXPORT extern const char
     kDisableBackgroundingOccludedWindowsForTesting[];
 CONTENT_EXPORT extern const char kDisableBackgroundTimerThrottling[];
 CONTENT_EXPORT extern const char kDisableBlinkFeatures[];
-CONTENT_EXPORT extern const char kDisableBrowserSideNavigation[];
 CONTENT_EXPORT extern const char kDisableCompositorUkmForTests[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
 CONTENT_EXPORT extern const char kDisableDistanceFieldText[];
@@ -113,7 +112,6 @@ CONTENT_EXPORT extern const char kEnableAutomation[];
 CONTENT_EXPORT extern const char kEnablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kEnableBlinkFeatures[];
 CONTENT_EXPORT extern const char kEnableBackgroundFetchPersistence[];
-CONTENT_EXPORT extern const char kEnableBrowserSideNavigation[];
 CONTENT_EXPORT extern const char kEnableCompositorImageAnimations[];
 CONTENT_EXPORT extern const char kEnableDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kEnableDistanceFieldText[];

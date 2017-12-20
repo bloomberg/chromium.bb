@@ -67,9 +67,4 @@ std::unique_ptr<StreamHandle> MakeEmptyStream() {
   return stream->CreateHandle();
 }
 
-void EnableBrowserSideNavigation() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableBrowserSideNavigation);
-}
-
 }  // namespace content

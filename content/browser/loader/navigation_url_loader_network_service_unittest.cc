@@ -78,9 +78,6 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
  public:
   NavigationURLLoaderNetworkServiceTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
-    // NavigationURLLoader is only used for browser-side navigations.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableBrowserSideNavigation);
     feature_list_.InitAndEnableFeature(features::kNetworkService);
 
     // Because the network service is enabled we need a ServiceManagerConnection

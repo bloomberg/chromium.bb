@@ -43,12 +43,9 @@ namespace content {
 // If you don't need a custom embedded test server, please use the next class
 // below (BrowserSideNavigationBrowserTest), it will automatically start the
 // default server.
+// TODO(clamy): Rename those NavigationBrowserTests.
 class BrowserSideNavigationBaseBrowserTest : public ContentBrowserTest {
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableBrowserSideNavigation);
-  }
-
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
