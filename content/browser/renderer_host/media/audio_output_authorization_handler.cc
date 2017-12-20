@@ -96,7 +96,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
     const MediaStreamDevice* device =
         media_stream_manager_->audio_input_device_manager()
             ->GetOpenedDeviceById(session_id);
-    if (device && !device->matched_output_device_id.empty()) {
+    if (device && device->matched_output_device_id) {
       // We don't need the origin for authorization in this case, but it's used
       // for hashing the device id before sending it back to the renderer.
       BrowserThread::PostTaskAndReplyWithResult(
@@ -105,7 +105,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
                          render_frame_id),
           base::BindOnce(&AudioOutputAuthorizationHandler::HashDeviceId,
                          weak_factory_.GetWeakPtr(), std::move(cb),
-                         device->matched_output_device_id));
+                         *device->matched_output_device_id));
       return;
     }
     // Otherwise, the default device is used.

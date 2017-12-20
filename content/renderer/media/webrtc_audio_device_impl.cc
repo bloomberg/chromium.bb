@@ -425,7 +425,7 @@ int WebRtcAudioDeviceImpl::GetAuthorizedDeviceSessionIdForAudioRenderer() {
     return 0;
 
   const MediaStreamDevice& device = capturers_.back()->device();
-  if (device.session_id <= 0 || device.matched_output_device_id.empty())
+  if (device.session_id <= 0 || !device.matched_output_device_id)
     return 0;
 
   return device.session_id;

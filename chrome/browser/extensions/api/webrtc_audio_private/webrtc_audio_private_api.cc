@@ -281,13 +281,15 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::
 }
 
 void WebrtcAudioPrivateGetAssociatedSinkFunction::CalculateHMACOnIOThread(
-    const std::string& raw_sink_id) {
+    const base::Optional<std::string>& raw_sink_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!raw_sink_id || !raw_sink_id->empty());
+  // If no |raw_sink_id| is provided, the default device is used.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
           &WebrtcAudioPrivateGetAssociatedSinkFunction::ReceiveHMACOnUIThread,
-          this, CalculateHMAC(raw_sink_id)));
+          this, CalculateHMAC(raw_sink_id.value_or(std::string()))));
 }
 
 void WebrtcAudioPrivateGetAssociatedSinkFunction::ReceiveHMACOnUIThread(

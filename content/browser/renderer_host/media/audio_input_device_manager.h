@@ -100,7 +100,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
       const MediaStreamDevice& device,
       base::TimeTicks start_time,
       const base::Optional<media::AudioParameters>& input_params,
-      const std::string& matched_output_device_id);
+      const base::Optional<std::string>& matched_output_device_id);
 
   // Callback called on IO thread with the session_id referencing the closed
   // device.

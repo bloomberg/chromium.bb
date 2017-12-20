@@ -834,7 +834,7 @@ void UserMediaProcessor::CreateAudioTracks(
     // kMediaStreamRenderToAssociatedSink, the output device id must
     // be removed.
     for (auto& device : overridden_audio_devices)
-      device.matched_output_device_id.clear();
+      device.matched_output_device_id.reset();
   }
 
   for (size_t i = 0; i < overridden_audio_devices.size(); ++i) {

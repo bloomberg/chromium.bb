@@ -135,7 +135,7 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
 
   // IO thread: Receives the raw sink ID, calculates HMAC and replies to IO
   // thread with ReceiveHMACOnUIThread().
-  void CalculateHMACOnIOThread(const std::string& raw_sink_id);
+  void CalculateHMACOnIOThread(const base::Optional<std::string>& raw_sink_id);
 
   // Receives the associated sink ID as HMAC and sends the response.
   void ReceiveHMACOnUIThread(const std::string& hmac);
