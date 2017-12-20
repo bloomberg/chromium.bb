@@ -14,12 +14,9 @@
 #include "url/gurl.h"
 
 class AppListControllerDelegate;
+class AppListModelUpdater;
 class Profile;
 class TemplateURLService;
-
-namespace app_list {
-class AppListModelUpdater;
-}
 
 namespace app_list {
 
@@ -28,7 +25,7 @@ class AnswerCardSearchProvider : public SearchProvider,
                                  public AnswerCardContents::Delegate {
  public:
   AnswerCardSearchProvider(Profile* profile,
-                           app_list::AppListModelUpdater* model_updater,
+                           AppListModelUpdater* model_updater,
                            AppListControllerDelegate* list_controller,
                            std::unique_ptr<AnswerCardContents> contents0,
                            std::unique_ptr<AnswerCardContents> contents1);
@@ -92,7 +89,7 @@ class AnswerCardSearchProvider : public SearchProvider,
   Profile* const profile_;
 
   // Unowned pointer to app list model updater.
-  app_list::AppListModelUpdater* const model_updater_;
+  AppListModelUpdater* const model_updater_;
 
   // Unowned pointer to app list controller.
   AppListControllerDelegate* const list_controller_;

@@ -134,7 +134,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    model_updater_ = std::make_unique<app_list::FakeAppListModelUpdater>();
+    model_updater_ = std::make_unique<FakeAppListModelUpdater>();
     model_updater_->SetSearchEngineIsGoogle(true);
 
     controller_ = base::MakeUnique<::test::TestAppListControllerDelegate>();
@@ -169,7 +169,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   }
 
  private:
-  std::unique_ptr<app_list::FakeAppListModelUpdater> model_updater_;
+  std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AnswerCardSearchProvider> provider_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   MockAnswerCardContents* contents0_ = nullptr;  // Unowned.

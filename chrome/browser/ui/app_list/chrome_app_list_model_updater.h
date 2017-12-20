@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 namespace app_list {
-
 class AppListModel;
 class SearchModel;
+}  // namespace app_list
 
 class ChromeAppListModelUpdater : public AppListModelUpdater {
  public:
@@ -32,8 +32,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
                         const std::string& folder_id) override;
   void SetItemPosition(const std::string& id,
                        const syncer::StringOrdinal& new_position) override;
-  void SetStatus(AppListModel::Status status) override;
-  void SetState(AppListModel::State state) override;
+  void SetStatus(app_list::AppListModel::Status status) override;
+  void SetState(app_list::AppListModel::State state) override;
   void SetItemName(const std::string& id, const std::string& name) override;
   void HighlightItemInstalledFromUI(const std::string& id) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
@@ -41,7 +41,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   ChromeAppListItem* FindItem(const std::string& id) override;
   size_t ItemCount() override;
   ChromeAppListItem* ItemAtForTest(size_t index) override;
-  AppListFolderItem* FindFolderItem(const std::string& folder_id) override;
+  app_list::AppListFolderItem* FindFolderItem(
+      const std::string& folder_id) override;
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   bool TabletMode() override;
   app_list::AppListViewState StateFullscreen() override;
@@ -49,37 +50,37 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
 
   // For SynchableService:
-  void AddItemToOemFolder(std::unique_ptr<ChromeAppListItem> item,
-                          AppListSyncableService::SyncItem* oem_sync_item,
-                          const std::string& oem_folder_id,
-                          const std::string& oem_folder_name,
-                          const syncer::StringOrdinal& preffered_oem_position);
-  AppListFolderItem* ResolveOemFolderPosition(
+  void AddItemToOemFolder(
+      std::unique_ptr<ChromeAppListItem> item,
+      app_list::AppListSyncableService::SyncItem* oem_sync_item,
+      const std::string& oem_folder_id,
+      const std::string& oem_folder_name,
+      const syncer::StringOrdinal& preffered_oem_position);
+  app_list::AppListFolderItem* ResolveOemFolderPosition(
       const std::string& oem_folder_id,
       const syncer::StringOrdinal& preffered_oem_position);
-  void UpdateAppItemFromSyncItem(AppListSyncableService::SyncItem* sync_item,
-                                 bool update_name,
-                                 bool update_folder);
+  void UpdateAppItemFromSyncItem(
+      app_list::AppListSyncableService::SyncItem* sync_item,
+      bool update_name,
+      bool update_folder);
 
  private:
   // TODO(hejq): Remove this friend. Currently |model_| and |search_model_| are
   // exposed to AppListViewDelegate via AppListSyncableService. We'll remove
   // this once we remove AppListViewDelegate.
-  friend class AppListSyncableService;
+  friend class app_list::AppListSyncableService;
 
   void FindOrCreateOemFolder(
-      AppListSyncableService::SyncItem* oem_sync_item,
+      app_list::AppListSyncableService::SyncItem* oem_sync_item,
       const std::string& oem_folder_id,
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preffered_oem_position);
   syncer::StringOrdinal GetOemFolderPos();
 
-  std::unique_ptr<AppListModel> model_;
-  std::unique_ptr<SearchModel> search_model_;
+  std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::SearchModel> search_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppListModelUpdater);
 };
-
-}  // namespace app_list
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_MODEL_UPDATER_H_

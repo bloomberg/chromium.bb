@@ -60,7 +60,7 @@ void AnswerCardSearchProvider::NavigationContext::Clear() {
 
 AnswerCardSearchProvider::AnswerCardSearchProvider(
     Profile* profile,
-    app_list::AppListModelUpdater* model_updater,
+    AppListModelUpdater* model_updater,
     AppListControllerDelegate* list_controller,
     std::unique_ptr<AnswerCardContents> contents0,
     std::unique_ptr<AnswerCardContents> contents1)

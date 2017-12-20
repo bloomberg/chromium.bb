@@ -226,7 +226,7 @@ void AppListViewDelegate::OnWallpaperColorsChanged(
     observer.OnWallpaperColorsChanged();
 }
 
-app_list::AppListModelUpdater* AppListViewDelegate::GetModelUpdater() {
+AppListModelUpdater* AppListViewDelegate::GetModelUpdater() {
   return model_updater_;
 }
 

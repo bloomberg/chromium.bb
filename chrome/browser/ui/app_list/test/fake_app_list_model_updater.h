@@ -12,8 +12,6 @@
 
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
-namespace app_list {
-
 class FakeAppListModelUpdater : public AppListModelUpdater {
  public:
   FakeAppListModelUpdater();
@@ -37,7 +35,8 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   ChromeAppListItem* FindItem(const std::string& id) override;
   size_t ItemCount() override;
   ChromeAppListItem* ItemAtForTest(size_t index) override;
-  AppListFolderItem* FindFolderItem(const std::string& folder_id) override;
+  app_list::AppListFolderItem* FindFolderItem(
+      const std::string& folder_id) override;
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   app_list::AppListViewState StateFullscreen() override;
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
@@ -51,7 +50,5 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppListModelUpdater);
 };
-
-}  // namespace app_list
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_APP_LIST_MODEL_UPDATER_H_

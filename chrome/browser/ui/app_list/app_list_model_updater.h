@@ -13,8 +13,6 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
-namespace app_list {
-
 // An interface to wrap AppListModel access in browser.
 class AppListModelUpdater {
  public:
@@ -28,8 +26,8 @@ class AppListModelUpdater {
                                 const std::string& folder_id) {}
   virtual void SetItemPosition(const std::string& id,
                                const syncer::StringOrdinal& new_position) {}
-  virtual void SetStatus(AppListModel::Status status) {}
-  virtual void SetState(AppListModel::State state) {}
+  virtual void SetStatus(app_list::AppListModel::Status status) {}
+  virtual void SetState(app_list::AppListModel::State state) {}
   virtual void SetItemName(const std::string& id, const std::string& name) {}
   virtual void HighlightItemInstalledFromUI(const std::string& id) {}
   // For SearchModel:
@@ -40,7 +38,8 @@ class AppListModelUpdater {
   virtual size_t ItemCount() = 0;
   virtual ChromeAppListItem* ItemAtForTest(size_t index) = 0;
   // TODO(hejq): |FindFolderItem| will return |ChromeAppListItem|.
-  virtual AppListFolderItem* FindFolderItem(const std::string& folder_id) = 0;
+  virtual app_list::AppListFolderItem* FindFolderItem(
+      const std::string& folder_id) = 0;
   virtual bool FindItemIndexForTest(const std::string& id, size_t* index) = 0;
   virtual app_list::AppListViewState StateFullscreen() = 0;
   virtual std::map<std::string, size_t> GetIdToAppListIndexMap() = 0;
@@ -52,6 +51,5 @@ class AppListModelUpdater {
   virtual ~AppListModelUpdater() {}
 };
 
-}  // namespace app_list
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_H_
