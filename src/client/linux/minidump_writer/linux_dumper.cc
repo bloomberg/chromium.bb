@@ -230,20 +230,21 @@ void CrOSPostProcessMappings(wasteful_vector<MappingInfo*>& mappings) {
       l = m + 1;
   }
 
-  // Try to merge segments into the first.
-  if (next < mappings.size()) {
-    TryRecoverMappings(mappings[0], mappings[next]);
-    if (next - 1 > 0)
-      TryRecoverMappings(mappings[next - 1], mappings[0], mappings[next]);
-  }
+  // Shows the range that contains the entry point is
+  // [first_start_addr, first_end_addr)
+  size_t first_start_addr = mappings[0]->start_addr;
+  size_t first_end_addr = mappings[0]->start_addr + mappings[0]->size;
+
+  // Put the out-of-order segment in order.
+  std::rotate(mappings.begin(), mappings.begin() + 1, mappings.begin() + next);
 
   // Iterate through normal, sorted cases.
   // Normal case 1.
-  for (size_t i = 1; i < mappings.size() - 1; i++)
+  for (size_t i = 0; i < mappings.size() - 1; i++)
     TryRecoverMappings(mappings[i], mappings[i + 1]);
 
   // Normal case 2.
-  for (size_t i = 1; i < mappings.size() - 2; i++)
+  for (size_t i = 0; i < mappings.size() - 2; i++)
     TryRecoverMappings(mappings[i], mappings[i + 1], mappings[i + 2]);
 
   // Collect merged (size == 0) segments.
@@ -252,6 +253,22 @@ void CrOSPostProcessMappings(wasteful_vector<MappingInfo*>& mappings) {
     if (mappings[e]->size > 0)
       mappings[f++] = mappings[e];
   mappings.resize(f);
+
+  // The entry point is in the first mapping. We want to find the location
+  // of the entry point after merging segment. To do this, we want to find
+  // the mapping that covers the first mapping from the original mapping list.
+  // If the mapping is not in the beginning, we move it to the begining via
+  // a right rotate by using reverse iterators.
+  for (l = 0; l < mappings.size(); l++) {
+    if (mappings[l]->start_addr <= first_start_addr
+        && (mappings[l]->start_addr + mappings[l]->size >= first_end_addr))
+      break;
+  }
+  if (l > 0) {
+    r = mappings.size();
+    std::rotate(mappings.rbegin() + r - l - 1, mappings.rbegin() + r - l,
+                mappings.rend());
+  }
 }
 
 #endif  // __CHROMEOS__
