@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -25,16 +25,12 @@ using ::testing::ByMove;
 using ::testing::InSequence;
 using ::testing::Return;
 
-class BytesConsumerForDataConsumerHandleTest : public ::testing::Test {
- public:
-  Document* GetDocument() { return &page_->GetDocument(); }
-
+class BytesConsumerForDataConsumerHandleTest : public PageTestBase {
  protected:
-  BytesConsumerForDataConsumerHandleTest() : page_(DummyPageHolder::Create()) {}
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
   ~BytesConsumerForDataConsumerHandleTest() override {
     ThreadState::Current()->CollectAllGarbage();
   }
-  std::unique_ptr<DummyPageHolder> page_;
 };
 
 class MockBytesConsumerClient
@@ -99,7 +95,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, Create) {
   handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
   handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
 }
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeReadable) {
@@ -115,7 +111,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeReadable) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(client);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
@@ -140,7 +136,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeClosed) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(client);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
@@ -164,7 +160,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeErrored) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(client);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
@@ -187,7 +183,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, ClearClient) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(client);
   consumer->ClearClient();
 
@@ -200,7 +196,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenReadable) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
 
   const char* buffer = nullptr;
@@ -219,7 +215,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenReadable) {
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenWaiting) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   const char* buffer = nullptr;
   size_t available = 0;
@@ -230,7 +226,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenClosed) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   const char* buffer = nullptr;
   size_t available = 0;
@@ -241,7 +237,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenErrored) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   const char* buffer = nullptr;
   size_t available = 0;
@@ -252,7 +248,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenErrored) {
 TEST_F(BytesConsumerForDataConsumerHandleTest, Cancel) {
   std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   consumer->Cancel();
   const char* buffer = nullptr;
@@ -267,7 +263,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, drainAsBlobDataHandle) {
       WTF::WrapUnique(new MockDataConsumerHandle);
   Persistent<MockDataConsumerHandle::MockReaderProxy> proxy = handle->Proxy();
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
 
   Checkpoint checkpoint;
@@ -286,7 +282,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, drainAsFormData) {
       WTF::WrapUnique(new MockDataConsumerHandle);
   Persistent<MockDataConsumerHandle::MockReaderProxy> proxy = handle->Proxy();
   Persistent<BytesConsumer> consumer =
-      new BytesConsumerForDataConsumerHandle(GetDocument(), std::move(handle));
+      new BytesConsumerForDataConsumerHandle(&GetDocument(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
 
   Checkpoint checkpoint;

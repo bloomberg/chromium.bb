@@ -12,7 +12,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/origin_trials/OriginTrialContext.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "modules/animationworklet/AnimationWorklet.h"
@@ -32,14 +32,14 @@
 
 namespace blink {
 
-class AnimationWorkletGlobalScopeTest : public ::testing::Test {
+class AnimationWorkletGlobalScopeTest : public PageTestBase {
  public:
   AnimationWorkletGlobalScopeTest() {}
 
   void SetUp() override {
     AnimationWorkletThread::CreateSharedBackingThreadForTest();
-    page_ = DummyPageHolder::Create();
-    Document* document = page_->GetFrame().GetDocument();
+    PageTestBase::SetUp(IntSize());
+    Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
@@ -55,7 +55,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
 
     WorkerClients* clients = WorkerClients::Create();
 
-    Document* document = page_->GetFrame().GetDocument();
+    Document* document = &GetDocument();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), document->UserAgent(),
@@ -275,7 +275,6 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     return value.IsEmpty();
   }
 
-  std::unique_ptr<DummyPageHolder> page_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
