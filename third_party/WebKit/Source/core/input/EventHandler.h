@@ -328,16 +328,11 @@ class CORE_EXPORT EventHandler final
 
   ScrollableArea* AssociatedScrollableArea(const PaintLayer*) const;
 
-  Node* UpdateMouseEventTargetNode(Node*);
+  Node* EffectiveMouseEventTargetNode(Node*);
 
   // Dispatches ME after corresponding PE provided the PE has not been canceled.
-  // The eventType arg must be a mouse event that can be gated though a
-  // preventDefaulted pointerdown (i.e., one of
-  // {mousedown, mousemove, mouseup}).
-  // TODO(mustaq): Can we avoid the clickCount param, instead use
-  // WebmMouseEvent's count?
-  //     Same applied to dispatchMouseEvent() above.
-  WebInputEventResult UpdatePointerTargetAndDispatchEvents(
+  // The |mouse_event_type| arg must be one of {mousedown, mousemove, mouseup}.
+  WebInputEventResult DispatchMousePointerEvent(
       const AtomicString& mouse_event_type,
       Node* target,
       const String& canvas_region_id,

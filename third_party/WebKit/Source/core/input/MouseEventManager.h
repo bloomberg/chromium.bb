@@ -134,7 +134,7 @@ class CORE_EXPORT MouseEventManager final
   FloatPoint LastKnownMousePositionGlobal();
 
   bool MousePressed();
-  void SetMousePressed(bool);
+  void ReleaseMousePress();
 
   bool CapturesDragging() const;
   void SetCapturesDragging(bool);
