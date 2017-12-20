@@ -8,7 +8,6 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[START_DIR]",
     "infra_step": true,
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",

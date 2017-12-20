@@ -28,7 +28,7 @@ def RunSteps(api):
             'Foo', api.properties['patch_text']))])
     return
 
-  if api.tryserver.can_apply_issue or api.tryserver.is_gerrit_issue:
+  if api.tryserver.is_gerrit_issue:
     api.tryserver.get_footers()
   api.tryserver.get_files_affected_by_patch(
       api.properties.get('test_patch_root'))
@@ -50,22 +50,29 @@ def RunSteps(api):
 def GenTests(api):
   description_step = api.override_step_data(
       'git_cl description', stdout=api.raw_io.output_text('foobar'))
+  # The 'test_patch_root' property used below is just so that these
+  # tests can avoid using the gclient module to calculate the
+  # patch root. Normal users would use gclient.calculate_patch_root().
   yield (api.test('with_git_patch') +
          api.properties(
-              path_config='buildbot',
-              patch_storage='git',
-              patch_project='v8',
-              patch_repo_url='http://patch.url/',
-              patch_ref='johndoe#123.diff'))
+             path_config='buildbot',
+             patch_storage='git',
+             patch_project='v8',
+             patch_repo_url='http://patch.url/',
+             patch_ref='johndoe#123.diff',
+             test_patch_root='v8'))
 
   yield (api.test('with_git_patch_luci') +
          api.properties(
              patch_storage='git',
              patch_project='v8',
              patch_repo_url='http://patch.url/',
-             patch_ref='johndoe#123.diff'))
+             patch_ref='johndoe#123.diff',
+             test_patch_root='v8'))
 
-  yield (api.test('with_wrong_patch') + api.platform('win', 32))
+  yield (api.test('with_wrong_patch') +
+         api.platform('win', 32) +
+         api.properties(test_patch_root=''))
 
   yield (api.test('with_gerrit_patch') +
          api.properties.tryserver(gerrit_project='infra/infra'))
