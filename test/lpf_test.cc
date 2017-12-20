@@ -117,6 +117,18 @@ void InitInput(Pixel *s, Pixel *ref_s, ACMRandom *rnd, const uint8_t limit,
   }
 }
 
+uint8_t GetOuterThresh(ACMRandom *rnd) {
+  return static_cast<uint8_t>(rnd->PseudoUniform(3 * MAX_LOOP_FILTER + 5));
+}
+
+uint8_t GetInnerThresh(ACMRandom *rnd) {
+  return static_cast<uint8_t>(rnd->PseudoUniform(MAX_LOOP_FILTER + 1));
+}
+
+uint8_t GetHevThresh(ACMRandom *rnd) {
+  return static_cast<uint8_t>(rnd->PseudoUniform(MAX_LOOP_FILTER + 1) >> 4);
+}
+
 class Loop8Test6Param : public ::testing::TestWithParam<loop8_param_t> {
  public:
   virtual ~Loop8Test6Param() {}
@@ -165,15 +177,15 @@ TEST_P(Loop8Test6Param, OperationCheck) {
   int first_failure = -1;
   for (int i = 0; i < count_test_block; ++i) {
     int err_count = 0;
-    uint8_t tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+    uint8_t tmp = GetOuterThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+    tmp = GetInnerThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = rnd.Rand8();
+    tmp = GetHevThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
@@ -224,15 +236,15 @@ TEST_P(Loop8Test6Param, ValueCheck) {
 
   for (int i = 0; i < count_test_block; ++i) {
     int err_count = 0;
-    uint8_t tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+    uint8_t tmp = GetOuterThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+    tmp = GetInnerThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = rnd.Rand8();
+    tmp = GetHevThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
@@ -275,15 +287,15 @@ TEST_P(Loop8Test6Param, DISABLED_Speed) {
   DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
 #endif  // CONFIG_HIGHBITDEPTH
 
-  uint8_t tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+  uint8_t tmp = GetOuterThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   blimit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+  tmp = GetInnerThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   limit[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                  tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = rnd.Rand8();
+  tmp = GetHevThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
@@ -311,27 +323,27 @@ TEST_P(Loop8Test9Param, OperationCheck) {
   int first_failure = -1;
   for (int i = 0; i < count_test_block; ++i) {
     int err_count = 0;
-    uint8_t tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+    uint8_t tmp = GetOuterThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+    tmp = GetInnerThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = rnd.Rand8();
+    tmp = GetHevThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+    tmp = GetOuterThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+    tmp = GetInnerThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = rnd.Rand8();
+    tmp = GetHevThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
@@ -374,27 +386,27 @@ TEST_P(Loop8Test9Param, ValueCheck) {
   int first_failure = -1;
   for (int i = 0; i < count_test_block; ++i) {
     int err_count = 0;
-    uint8_t tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+    uint8_t tmp = GetOuterThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+    tmp = GetInnerThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = rnd.Rand8();
+    tmp = GetHevThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+    tmp = GetOuterThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+    tmp = GetInnerThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-    tmp = rnd.Rand8();
+    tmp = GetHevThresh(&rnd);
     DECLARE_ALIGNED(16, const uint8_t,
                     thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                      tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
@@ -439,27 +451,27 @@ TEST_P(Loop8Test9Param, DISABLED_Speed) {
   DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
 #endif  // CONFIG_HIGHBITDEPTH
 
-  uint8_t tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+  uint8_t tmp = GetOuterThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   blimit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+  tmp = GetInnerThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   limit0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = rnd.Rand8();
+  tmp = GetHevThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   thresh0[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = static_cast<uint8_t>(rnd(3 * MAX_LOOP_FILTER + 4));
+  tmp = GetOuterThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   blimit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = static_cast<uint8_t>(rnd(MAX_LOOP_FILTER));
+  tmp = GetInnerThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   limit1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                   tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
-  tmp = rnd.Rand8();
+  tmp = GetHevThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
                   thresh1[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                    tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
