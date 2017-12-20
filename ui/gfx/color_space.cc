@@ -8,6 +8,7 @@
 #include <map>
 #include <sstream>
 
+#include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -17,6 +18,24 @@
 #include "ui/gfx/skia_color_space_util.h"
 
 namespace gfx {
+
+namespace {
+
+// See comments in ToSkColorSpace about this cache. This cache may only be
+// accessed while holding g_lock.
+static const size_t kMaxCachedSkColorSpaces = 16;
+using SkColorSpaceCacheBase =
+    base::MRUCache<gfx::ColorSpace, sk_sp<SkColorSpace>>;
+class SkColorSpaceCache : public SkColorSpaceCacheBase {
+ public:
+  SkColorSpaceCache() : SkColorSpaceCacheBase(kMaxCachedSkColorSpaces) {}
+};
+base::LazyInstance<SkColorSpaceCache>::DestructorAtExit g_sk_color_space_cache =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::DestructorAtExit g_lock =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 ColorSpace::ColorSpace() {}
 
@@ -429,6 +448,8 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   }
 
   // Use the named SRGB and linear-SRGB instead of the generic constructors.
+  // These do not need to be cached because skia will always return the same
+  // pointer.
   if (primaries_ == PrimaryID::BT709) {
     if (transfer_ == TransferID::IEC61966_2_1)
       return SkColorSpace::MakeSRGB();
@@ -440,6 +461,7 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   bool has_named_gamma = true;
   SkColorSpace::RenderTargetGamma named_gamma =
       SkColorSpace::kSRGB_RenderTargetGamma;
+  SkColorSpaceTransferFn custom_gamma;
   switch (transfer_) {
     case TransferID::IEC61966_2_1:
       break;
@@ -449,10 +471,15 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       break;
     default:
       has_named_gamma = false;
+      if (!GetTransferFunction(&custom_gamma)) {
+        DLOG(ERROR) << "Failed to transfer function for SkColorSpace";
+        return nullptr;
+      }
       break;
   }
   bool has_named_gamut = true;
   SkColorSpace::Gamut named_gamut = SkColorSpace::kSRGB_Gamut;
+  SkMatrix44 custom_gamut;
   switch (primaries_) {
     case PrimaryID::BT709:
       break;
@@ -467,27 +494,36 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       break;
     default:
       has_named_gamut = false;
+      GetPrimaryMatrix(&custom_gamut);
       break;
   }
-  if (has_named_gamut && has_named_gamma)
-    return SkColorSpace::MakeRGB(named_gamma, named_gamut);
 
-  // Use named gamma with custom primaries, if possible.
-  SkMatrix44 to_xyz_d50;
-  GetPrimaryMatrix(&to_xyz_d50);
-  if (has_named_gamma)
-    return SkColorSpace::MakeRGB(named_gamma, to_xyz_d50);
+  // Maintain a gfx::ColorSpace to SkColorSpace map, so that pointer-based
+  // comparisons of SkColorSpaces will be more likely to be accurate.
+  // https://crbug.com/793116
+  base::AutoLock lock(g_lock.Get());
 
-  // Use the parametric transfer function if there is no named transfer
-  // function.
-  SkColorSpaceTransferFn fn;
-  if (!GetTransferFunction(&fn)) {
-    DLOG(ERROR) << "Failed to parameterize transfer function for SkColorSpace";
-    return nullptr;
+  auto found = g_sk_color_space_cache.Get().Get(*this);
+  if (found != g_sk_color_space_cache.Get().end())
+    return found->second;
+
+  sk_sp<SkColorSpace> sk_color_space;
+  if (has_named_gamma) {
+    if (has_named_gamut)
+      sk_color_space = SkColorSpace::MakeRGB(named_gamma, named_gamut);
+    else
+      sk_color_space = SkColorSpace::MakeRGB(named_gamma, custom_gamut);
+  } else {
+    if (has_named_gamut)
+      sk_color_space = SkColorSpace::MakeRGB(custom_gamma, named_gamut);
+    else
+      sk_color_space = SkColorSpace::MakeRGB(custom_gamma, custom_gamut);
   }
-  if (has_named_gamut)
-    return SkColorSpace::MakeRGB(fn, named_gamut);
-  return SkColorSpace::MakeRGB(fn, to_xyz_d50);
+  if (!sk_color_space)
+    DLOG(ERROR) << "SkColorSpace::MakeRGB failed.";
+
+  g_sk_color_space_cache.Get().Put(*this, sk_color_space);
+  return sk_color_space;
 }
 
 void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
