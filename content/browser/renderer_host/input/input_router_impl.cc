@@ -133,8 +133,12 @@ void InputRouterImpl::SendGestureEvent(
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
-  if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
+  if (touch_action_filter_.FilterGestureEvent(&gesture_event.event)) {
+    disposition_handler_->OnGestureEventAck(gesture_event,
+                                            InputEventAckSource::BROWSER,
+                                            INPUT_EVENT_ACK_STATE_CONSUMED);
     return;
+  }
 
   wheel_event_queue_.OnGestureScrollEvent(gesture_event);
 
@@ -156,7 +160,11 @@ void InputRouterImpl::SendGestureEvent(
     touch_event_queue_->OnGestureScrollEvent(gesture_event);
   }
 
-  gesture_event_queue_.QueueEvent(gesture_event);
+  if (!gesture_event_queue_.QueueEvent(gesture_event)) {
+    disposition_handler_->OnGestureEventAck(gesture_event,
+                                            InputEventAckSource::BROWSER,
+                                            INPUT_EVENT_ACK_STATE_CONSUMED);
+  }
 }
 
 void InputRouterImpl::SendTouchEvent(
@@ -369,7 +377,6 @@ void InputRouterImpl::SendMouseWheelEventImmediately(
 void InputRouterImpl::OnMouseWheelEventAck(
     const MouseWheelEventWithLatencyInfo& event,
     InputEventAckSource ack_source,
-
     InputEventAckState ack_result) {
   disposition_handler_->OnWheelEventAck(event, ack_source, ack_result);
 }
