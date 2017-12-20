@@ -1401,13 +1401,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 #if defined(OS_MACOSX)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableTranslateNewUX)) {
-    // On MacViews kEnableTranslateNewUX will engage the MacViews bubble UI
-    // which isn't ready and isn't used yet. The Cocoa browser still uses an
-    // InfoBar. See http://crbug.com/781134. So only continue when testing the
-    // Cocoa UI.
-    if (base::FeatureList::IsEnabled(features::kShowAllDialogsWithViewsToolkit))
-      return;
-
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnableTranslateNewUX);
   }

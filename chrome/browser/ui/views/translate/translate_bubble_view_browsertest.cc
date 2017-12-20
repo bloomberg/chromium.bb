@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,6 +26,7 @@
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/notification_details.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/views/controls/button/menu_button.h"
 
@@ -34,7 +36,15 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
   ~TranslateBubbleViewBrowserTest() override {}
 
   void SetUp() override {
+#if defined(OS_MACOSX)
+    // Enable the bubble on Mac (otherwise infobars are used).
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableTranslateNewUX);
+    // Enable toolkit-views bubbles on Mac (otherwise Cocoa bubbles are used).
+    feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+#else
     feature_list_.InitAndDisableFeature(translate::kTranslateUI2016Q2);
+#endif
     set_open_about_blank_on_browser_launch(true);
     translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
     InProcessBrowserTest::SetUp();
