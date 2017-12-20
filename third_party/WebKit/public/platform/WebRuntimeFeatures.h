@@ -116,6 +116,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnablePaymentApp(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequest(bool);
   BLINK_PLATFORM_EXPORT static void EnablePermissionsAPI(bool);
+  BLINK_PLATFORM_EXPORT static void EnablePictureInPicture(bool);
   BLINK_PLATFORM_EXPORT static void EnablePreciseMemoryInfo(bool);
   BLINK_PLATFORM_EXPORT static void EnablePreloadDefaultIsMetadata(bool);
   BLINK_PLATFORM_EXPORT static void EnablePrintBrowser(bool);

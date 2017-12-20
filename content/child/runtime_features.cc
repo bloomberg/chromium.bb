@@ -412,6 +412,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableRequireCSSExtensionForFile(
       base::FeatureList::IsEnabled(features::kRequireCSSExtensionForFile));
+
+  WebRuntimeFeatures::EnablePictureInPicture(
+      base::FeatureList::IsEnabled(media::kPictureInPicture));
 };
 
 }  // namespace content

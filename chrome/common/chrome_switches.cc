@@ -343,9 +343,6 @@ const char kEnableOfflineAutoReloadVisibleOnly[] =
 const char kEnablePermissionActionReporting[] =
     "enable-permission-action-reporting";
 
-// Enables the picture in picture feature for videos.
-const char kEnablePictureInPicture[] = "enable-picture-in-picture";
-
 // Enables a number of potentially annoying security features (strict mixed
 // content mode, powerful feature restrictions, etc.)
 const char kEnablePotentiallyAnnoyingSecurityFeatures[] =

@@ -185,6 +185,10 @@ const base::Feature kNewAudioRenderingMixingStrategy{
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable Picture in Picture.
+const base::Feature kPictureInPicture{"PictureInPicture",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.
 const base::Feature kResumeBackgroundVideo {

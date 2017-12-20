@@ -806,6 +806,9 @@
       status: "experimental",
     },
     {
+      name: "PictureInPicture",
+    },
+    {
       name: "PreciseMemoryInfo",
     },
     {
