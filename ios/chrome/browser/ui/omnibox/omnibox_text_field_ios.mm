@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/animation_util.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -534,12 +533,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 // Enumerate url components (host, path) and draw each one in different rect.
 - (void)drawTextInRect:(CGRect)rect {
-  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
-    // With the new clipping logic, this override is unnecessary.
-    [super drawTextInRect:rect];
-    return;
-  }
-
   if (base::ios::IsRunningOnOrLater(11, 1, 0)) {
     // -[UITextField drawTextInRect:] ignores the argument, so we can't do
     // anything on 11.1 and up.
@@ -846,11 +839,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (CGRect)rectForDrawTextInRect:(CGRect)rect {
-  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
-    // With the new clipping logic, this override is unnecessary.
-    return rect;
-  }
-
   // The goal is to always show the most significant part of the hostname
   // (i.e. the end of the TLD).
   //
