@@ -613,10 +613,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
 
-  // Finalizes the shelf state. Called after the user session is active and
-  // the profile is available.
-  void InitializeShelf();
-
   // Callback for prefs::ConnectToPrefService.
   void OnLocalStatePrefServiceInitialized(
       std::unique_ptr<::PrefService> pref_service);

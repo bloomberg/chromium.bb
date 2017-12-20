@@ -276,7 +276,7 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   if (!delegate || !delegate->ShouldFocusOut(reverse))
     return;
   // Focus shelf widget when shift+tab is used and views-based shelf is shown.
-  if (reverse && ShelfWidget::IsUsingMdLoginShelf()) {
+  if (reverse && ShelfWidget::IsUsingViewsShelf()) {
     shelf->shelf_widget()->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
   } else {
