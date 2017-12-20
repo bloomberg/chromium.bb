@@ -99,23 +99,7 @@ public class CastWebContentsActivity extends Activity {
         mAudioManager = CastAudioManager.getAudioManager(this);
 
         setContentView(R.layout.cast_web_contents_activity);
-
-        mWindow = new WindowAndroid(this);
-        mContentViewRenderView = new ContentViewRenderView(this) {
-            @Override
-            protected void onReadyToRender() {
-                setOverlayVideoMode(true);
-            }
-        };
-        mContentViewRenderView.onNativeLibraryLoaded(mWindow);
-        // Setting the background color to black avoids rendering a white splash screen
-        // before the players are loaded. See crbug/307113 for details.
-        mContentViewRenderView.setSurfaceViewBackgroundColor(Color.BLACK);
-
         mCastWebContentsLayout = (FrameLayout) findViewById(R.id.web_contents_container);
-        mCastWebContentsLayout.addView(mContentViewRenderView,
-                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT));
 
         Intent intent = getIntent();
         handleIntent(intent);
@@ -181,7 +165,6 @@ public class CastWebContentsActivity extends Activity {
             return;
         }
 
-        detachWebContentsIfAny();
         showWebContents(webContents);
     }
 
@@ -377,8 +360,27 @@ public class CastWebContentsActivity extends Activity {
     private void showWebContents(WebContents webContents) {
         if (DEBUG) Log.d(TAG, "showWebContents");
 
+        detachWebContentsIfAny();
+
         // Set ContentVideoViewEmbedder to allow video playback.
         nativeSetContentVideoViewEmbedder(webContents, new ActivityContentVideoViewEmbedder(this));
+
+        // TODO(thoren): Find a way to reuse some of this for efficiency.
+        mWindow = new WindowAndroid(this);
+        mContentViewRenderView = new ContentViewRenderView(this) {
+            @Override
+            protected void onReadyToRender() {
+                setOverlayVideoMode(true);
+            }
+        };
+        mContentViewRenderView.onNativeLibraryLoaded(mWindow);
+        // Setting the background color to black avoids rendering a white splash screen
+        // before the players are loaded. See crbug/307113 for details.
+        mContentViewRenderView.setSurfaceViewBackgroundColor(Color.BLACK);
+
+        mCastWebContentsLayout.addView(mContentViewRenderView,
+                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT));
 
         // TODO(derekjchow): productVersion
         mContentViewCore = ContentViewCore.create(this, "");
@@ -399,8 +401,13 @@ public class CastWebContentsActivity extends Activity {
         if (DEBUG) Log.d(TAG, "detachWebContentsIfAny");
         if (mContentView != null) {
             mCastWebContentsLayout.removeView(mContentView);
+            mContentViewCore.destroy();
+            mContentViewRenderView.destroy();
+            mWindow.destroy();
             mContentView = null;
             mContentViewCore = null;
+            mContentViewRenderView = null;
+            mWindow = null;
 
             CastWebContentsComponent.onComponentClosed(this, mInstanceId);
         }
