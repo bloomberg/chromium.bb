@@ -913,13 +913,23 @@ class MetaBuildWrapper(object):
                                 output_path=None)
 
     if is_android and test_type != "script":
+      extra_files = [
+          '../../testing/test_env.py'
+      ]
       cmdline = [
+          '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,
           '--logdog-bin-cmd', '../../bin/logdog_butler',
           '--store-tombstones']
     elif is_fuchsia and test_type != 'script':
-      cmdline = [os.path.join('bin', 'run_%s' % target)]
+      extra_files = [
+          '../../testing/test_env.py'
+      ]
+      cmdline = [
+          '../../testing/test_env.py',
+          os.path.join('bin', 'run_%s' % target),
+      ]
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files = [
           '../../testing/test_env.py',
