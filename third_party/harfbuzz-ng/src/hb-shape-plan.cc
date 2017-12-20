@@ -24,12 +24,13 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-buffer-private.hh"
-#include "hb-debug.hh"
-#include "hb-font-private.hh"
 #include "hb-private.hh"
+#include "hb-debug.hh"
 #include "hb-shape-plan-private.hh"
 #include "hb-shaper-private.hh"
+#include "hb-font-private.hh"
+#include "hb-buffer-private.hh"
+
 
 static void
 hb_shape_plan_plan (hb_shape_plan_t    *shape_plan,

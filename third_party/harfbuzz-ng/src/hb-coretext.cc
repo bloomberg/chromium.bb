@@ -28,8 +28,8 @@
 
 #define HB_SHAPER coretext
 
-#include "hb-debug.hh"
 #include "hb-private.hh"
+#include "hb-debug.hh"
 #include "hb-shaper-impl-private.hh"
 
 #include "hb-coretext.h"
@@ -39,7 +39,7 @@
 #define HB_CORETEXT_DEFAULT_FONT_SIZE 12.f
 
 static CGFloat
-coretext_font_size (float ptem)
+coretext_font_size_from_ptem (float ptem)
 {
   /* CoreText points are CSS pixels (96 per inch),
    * NOT typographic points (72 per inch).
@@ -48,6 +48,12 @@ coretext_font_size (float ptem)
    */
   ptem *= 96.f / 72.f;
   return ptem <= 0.f ? HB_CORETEXT_DEFAULT_FONT_SIZE : ptem;
+}
+static float
+coretext_font_size_to_ptem (CGFloat size)
+{
+  size *= 72.f / 96.f;
+  return size <= 0.f ? 0 : size;
 }
 
 static void
@@ -84,7 +90,7 @@ _hb_cg_font_release (void *data)
 
 HB_SHAPER_DATA_ENSURE_DEFINE(coretext, face)
 HB_SHAPER_DATA_ENSURE_DEFINE_WITH_CONDITION(coretext, font,
-	fabs (CTFontGetSize((CTFontRef) data) - coretext_font_size (font->ptem)) <= .5
+	fabs (CTFontGetSize((CTFontRef) data) - coretext_font_size_from_ptem (font->ptem)) <= .5
 )
 
 static CTFontDescriptorRef
@@ -258,9 +264,10 @@ _hb_coretext_shaper_face_data_destroy (hb_coretext_shaper_face_data_t *data)
   CFRelease ((CGFontRef) data);
 }
 
-hb_face_t* hb_coretext_face_create(CGFontRef cg_font) {
-  return hb_face_create_for_tables(reference_table, CGFontRetain(cg_font),
-                                   _hb_cg_font_release);
+hb_face_t *
+hb_coretext_face_create (CGFontRef cg_font)
+{
+  return hb_face_create_for_tables (reference_table, CGFontRetain (cg_font), _hb_cg_font_release);
 }
 
 /*
@@ -281,7 +288,7 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
   if (unlikely (!hb_coretext_shaper_face_data_ensure (face))) return nullptr;
   CGFontRef cg_font = (CGFontRef) HB_SHAPER_DATA_GET (face);
 
-  CTFontRef ct_font = create_ct_font (cg_font, coretext_font_size (font->ptem));
+  CTFontRef ct_font = create_ct_font (cg_font, coretext_font_size_from_ptem (font->ptem));
 
   if (unlikely (!ct_font))
   {
@@ -301,27 +308,34 @@ _hb_coretext_shaper_font_data_destroy (hb_coretext_shaper_font_data_t *data)
 /*
  * Since: 1.7.2
  */
-hb_font_t* hb_coretext_font_create(CTFontRef ct_font) {
-  CGFontRef cg_font = CTFontCopyGraphicsFont(ct_font, 0);
-  hb_face_t* face = hb_coretext_face_create(cg_font);
-  CFRelease(cg_font);
-  hb_font_t* font = hb_font_create(face);
-  hb_face_destroy(face);
+hb_font_t *
+hb_coretext_font_create (CTFontRef ct_font)
+{
+  CGFontRef cg_font = CTFontCopyGraphicsFont (ct_font, 0);
+  hb_face_t *face = hb_coretext_face_create (cg_font);
+  CFRelease (cg_font);
+  hb_font_t *font = hb_font_create (face);
+  hb_face_destroy (face);
 
-  if (unlikely(hb_object_is_inert(font)))
+  if (unlikely (hb_object_is_inert (font)))
     return font;
 
+  hb_font_set_ptem (font, coretext_font_size_to_ptem (CTFontGetSize(ct_font)));
+
   /* Let there be dragons here... */
-  HB_SHAPER_DATA_GET(font) = (hb_coretext_shaper_font_data_t*)CFRetain(ct_font);
+  HB_SHAPER_DATA_GET (font) = (hb_coretext_shaper_font_data_t *) CFRetain (ct_font);
 
   return font;
 }
 
-CTFontRef hb_coretext_font_get_ct_font(hb_font_t* font) {
-  if (unlikely(!hb_coretext_shaper_font_data_ensure(font)))
-    return nullptr;
-  return (CTFontRef)HB_SHAPER_DATA_GET(font);
+CTFontRef
+hb_coretext_font_get_ct_font (hb_font_t *font)
+{
+  if (unlikely (!hb_coretext_shaper_font_data_ensure (font))) return nullptr;
+  return (CTFontRef) HB_SHAPER_DATA_GET (font);
 }
+
+
 
 /*
  * shaper shape_plan data
@@ -358,9 +372,9 @@ struct active_feature_t {
   feature_record_t rec;
   unsigned int order;
 
-  static int cmp(const void* pa, const void* pb) {
-    const active_feature_t* a = (const active_feature_t*)pa;
-    const active_feature_t* b = (const active_feature_t*)pb;
+  static int cmp (const void *pa, const void *pb) {
+    const active_feature_t *a = (const active_feature_t *) pa;
+    const active_feature_t *b = (const active_feature_t *) pb;
     return a->rec.feature < b->rec.feature ? -1 : a->rec.feature > b->rec.feature ? 1 :
 	   a->order < b->order ? -1 : a->order > b->order ? 1 :
 	   a->rec.setting < b->rec.setting ? -1 : a->rec.setting > b->rec.setting ? 1 :
@@ -376,9 +390,9 @@ struct feature_event_t {
   bool start;
   active_feature_t feature;
 
-  static int cmp(const void* pa, const void* pb) {
-    const feature_event_t* a = (const feature_event_t*)pa;
-    const feature_event_t* b = (const feature_event_t*)pb;
+  static int cmp (const void *pa, const void *pb) {
+    const feature_event_t *a = (const feature_event_t *) pa;
+    const feature_event_t *b = (const feature_event_t *) pb;
     return a->index < b->index ? -1 : a->index > b->index ? 1 :
 	   a->start < b->start ? -1 : a->start > b->start ? 1 :
 	   active_feature_t::cmp (&a->feature, &b->feature);
@@ -989,34 +1003,32 @@ resize_and_retry:
       CTFontRef run_ct_font = static_cast<CTFontRef>(CFDictionaryGetValue (attributes, kCTFontAttributeName));
       if (!CFEqual (run_ct_font, ct_font))
       {
-        /* The run doesn't use our main font instance.  We have to figure out
-         * whether font fallback happened, or this is just CoreText giving us
-         * another CTFont using the same underlying CGFont.  CoreText seems
-         * to do that in a variety of situations, one of which being vertical
-         * text, but also perhaps for caching reasons.
-         *
-         * First, see if it uses any of our subfonts created to set font
-         * features...
-         *
-         * Next, compare the CGFont to the one we used to create our fonts.
-         * Even this doesn't work all the time.
-         *
-         * Finally, we compare PS names, which I don't think are unique...
-         *
-         * Looks like if we really want to be sure here we have to modify the
-         * font to change the name table, similar to what we do in the uniscribe
-         * backend.
-         *
-         * However, even that wouldn't work if we were passed in the CGFont to
-         * construct a hb_face to begin with.
-         *
-         * See: http://github.com/harfbuzz/harfbuzz/pull/36
-         *
-         * Also see:
-         * https://bugs.chromium.org/p/chromium/issues/detail?id=597098
-         */
-        bool matched = false;
-        for (unsigned int i = 0; i < range_records.len; i++)
+	/* The run doesn't use our main font instance.  We have to figure out
+	 * whether font fallback happened, or this is just CoreText giving us
+	 * another CTFont using the same underlying CGFont.  CoreText seems
+	 * to do that in a variety of situations, one of which being vertical
+	 * text, but also perhaps for caching reasons.
+	 *
+	 * First, see if it uses any of our subfonts created to set font features...
+	 *
+	 * Next, compare the CGFont to the one we used to create our fonts.
+	 * Even this doesn't work all the time.
+	 *
+	 * Finally, we compare PS names, which I don't think are unique...
+	 *
+	 * Looks like if we really want to be sure here we have to modify the
+	 * font to change the name table, similar to what we do in the uniscribe
+	 * backend.
+	 *
+	 * However, even that wouldn't work if we were passed in the CGFont to
+	 * construct a hb_face to begin with.
+	 *
+	 * See: http://github.com/harfbuzz/harfbuzz/pull/36
+	 *
+	 * Also see: https://bugs.chromium.org/p/chromium/issues/detail?id=597098
+	 */
+	bool matched = false;
+	for (unsigned int i = 0; i < range_records.len; i++)
 	  if (range_records[i].font && CFEqual (run_ct_font, range_records[i].font))
 	  {
 	    matched = true;
@@ -1273,7 +1285,7 @@ resize_and_retry:
     }
   }
 
-  buffer->unsafe_to_break_all();
+  buffer->unsafe_to_break_all ();
 
 #undef FAIL
 

@@ -24,10 +24,11 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+#include "hb-private.hh"
 #include "hb-debug.hh"
 #include "hb-ot-shape-complex-arabic-private.hh"
 #include "hb-ot-shape-private.hh"
-#include "hb-private.hh"
+
 
 /* buffer var allocations */
 #define arabic_shaping_action() complex_var_u8_0() /* arabic shaping action */
@@ -35,8 +36,7 @@
 #define HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH HB_BUFFER_SCRATCH_FLAG_COMPLEX0
 
 /* See:
- * https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
- */
+ * https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516 */
 #define HB_ARABIC_GENERAL_CATEGORY_IS_WORD(gen_cat) \
 	(FLAG_UNSAFE (gen_cat) & \
 	 (FLAG (HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED) | \
@@ -560,9 +560,9 @@ apply_stch (const hb_ot_shape_plan_t *plan,
       }
       else
       {
-        buffer->unsafe_to_break(context, end);
-        hb_position_t x_offset = 0;
-        for (unsigned int k = end; k > start; k--)
+	buffer->unsafe_to_break (context, end);
+	hb_position_t x_offset = 0;
+	for (unsigned int k = end; k > start; k--)
 	{
 	  hb_position_t width = font->get_glyph_h_advance (info[k - 1].codepoint);
 

@@ -448,7 +448,7 @@ _hb_buffer_deserialize_glyphs_json (hb_buffer_t *buffer,
   const char *p = buf, *pe = buf + buf_len;
 
   /* Ensure we have positions. */
-  (void) hb_buffer_get_glyph_positions (buffer, nullptr);
+  (void) hb_buffer_get_glyph_positions (buffer, NULL);
 
   while (p < pe && ISSPACE (*p))
     p++;
@@ -457,7 +457,7 @@ _hb_buffer_deserialize_glyphs_json (hb_buffer_t *buffer,
     *end_ptr = ++p;
   }
 
-  const char *tok = nullptr;
+  const char *tok = NULL;
   int cs;
   hb_glyph_info_t info = {0};
   hb_glyph_position_t pos = {0};
