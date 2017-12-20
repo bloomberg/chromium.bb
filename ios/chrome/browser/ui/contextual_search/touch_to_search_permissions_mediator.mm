@@ -13,12 +13,12 @@
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prefs/pref_observer_bridge.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#include "ios/chrome/browser/ui/contextual_search/switches.h"
 #include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -66,19 +66,21 @@ const struct {
 @synthesize observing = _observing;
 
 + (BOOL)isTouchToSearchAvailableOnDevice {
-  // By default the feature is not available. If the enable flag
-  // (switches::kEnableContextualSearch) is flipped, then it is available.
-  // The disable switch (switches::kDisableContextualSearch) is also supported,
-  // although it is only useful when Finch experiments are also supported.
+  // By default the feature is not available.
+  // - If the enable flag (contextual_search::switches::kEnableContextualSearch)
+  //   is flipped, then it is available.
+  // - A disable switch (contextual_search::switches::kDisableContextualSearch)
+  //   is also supported, although it is only useful when Finch experiments are
+  //   also supported.
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableContextualSearch)) {
+          contextual_search::switches::kDisableContextualSearch)) {
     // If both enable and disable flags are present, disable wins.
     return NO;
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableContextualSearch)) {
+          contextual_search::switches::kEnableContextualSearch)) {
     // Even if the command line flag is flipped, don't enable the feature if
     // test hooks disable it.
     return !tests_hook::DisableContextualSearch();

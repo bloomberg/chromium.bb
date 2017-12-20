@@ -12,9 +12,6 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
-// Disables Contextual Search.
-const char kDisableContextualSearch[] = "disable-contextual-search";
-
 // Disable showing available password credentials in the keyboard accessory
 // view when focused on form fields.
 const char kDisableIOSPasswordSuggestions[] =
@@ -23,9 +20,6 @@ const char kDisableIOSPasswordSuggestions[] =
 // Disables the 3rd party keyboard omnibox workaround.
 const char kDisableThirdPartyKeyboardWorkaround[] =
     "disable-third-party-keyboard-workaround";
-
-// Enables Contextual Search.
-const char kEnableContextualSearch[] = "enable-contextual-search";
 
 // Enables support for Handoff from Chrome on iOS to the default browser of
 // other Apple devices.

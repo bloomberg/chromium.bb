@@ -110,10 +110,6 @@ const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
 //
 // When adding a new choice, add it to the end of the list.
 const flags_ui::FeatureEntry kFeatureEntries[] = {
-    {"contextual-search", flag_descriptions::kContextualSearch,
-     flag_descriptions::kContextualSearchDescription, flags_ui::kOsIos,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
-                               switches::kDisableContextualSearch)},
     {"browser-task-scheduler", flag_descriptions::kBrowserTaskScheduler,
      flag_descriptions::kBrowserTaskSchedulerDescription, flags_ui::kOsIos,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableBrowserTaskScheduler,
