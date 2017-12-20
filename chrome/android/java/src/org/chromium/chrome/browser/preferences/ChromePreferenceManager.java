@@ -59,6 +59,8 @@ public class ChromePreferenceManager {
     private static final String NTP_GENERIC_SIGNIN_PROMO_DISMISSED = "ntp.signin_promo_dismissed";
     private static final String NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
             "ntp.personalized_signin_promo_dismissed";
+    private static final String NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START =
+            "ntp.signin_promo_suppression_period_start";
     private static final String NTP_ANIMATION_RUN_COUNT = "ntp_recycler_view_animation_run_count";
 
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
@@ -368,6 +370,32 @@ public class ChromePreferenceManager {
         writeBoolean(NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
     }
 
+    /**
+     * Returns timestamp of the suppression period start if signin promos in the New Tab Page are
+     * temporarily suppressed; zero otherwise.
+     * @return the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
+     */
+    public long getNewTabPageSigninPromoSuppressionPeriodStart() {
+        return readLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, 0);
+    }
+
+    /**
+     * Sets timestamp of the suppression period start if signin promos in the New Tab Page are
+     * temporarily suppressed.
+     * @param timeMillis the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
+     */
+    public void setNewTabPageSigninPromoSuppressionPeriodStart(long timeMillis) {
+        writeLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
+    }
+
+    /**
+     * Removes the stored timestamp of the suppression period start when signin promos in the New
+     * Tab Page are no longer suppressed.
+     */
+    public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
+        removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+    }
+
     /** Gets the number of times the New Tab Page first card animation has been run. */
     public int getNewTabPageFirstCardAnimationRunCount() {
         return readInt(NTP_ANIMATION_RUN_COUNT);
@@ -431,7 +459,7 @@ public class ChromePreferenceManager {
      * Remove the Chrome Home user preference.
      */
     public void clearChromeHomeUserPreference() {
-        mSharedPreferences.edit().remove(CHROME_HOME_USER_ENABLED_KEY).apply();
+        removeKey(CHROME_HOME_USER_ENABLED_KEY);
     }
 
     /**
@@ -517,6 +545,29 @@ public class ChromePreferenceManager {
     }
 
     /**
+     * Writes the given long to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    private void writeLong(String key, long value) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putLong(key, value);
+        ed.apply();
+    }
+
+    /**
+     * Reads the given long value from the named shared preference.
+     *
+     * @param key The name of the preference to return.
+     * @param defaultValue The default value to return if there's no value stored.
+     * @return The value of the preference if stored; defaultValue otherwise.
+     */
+    private long readLong(String key, long defaultValue) {
+        return mSharedPreferences.getLong(key, defaultValue);
+    }
+
+    /**
      * Writes the given String to the named shared preference.
      *
      * @param key The name of the preference to modify.
@@ -537,6 +588,17 @@ public class ChromePreferenceManager {
     private void writeBoolean(String key, boolean value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putBoolean(key, value);
+        ed.apply();
+    }
+
+    /**
+     * Removes the shared preference entry.
+     *
+     * @param key The key of the preference to remove.
+     */
+    private void removeKey(String key) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.remove(key);
         ed.apply();
     }
 

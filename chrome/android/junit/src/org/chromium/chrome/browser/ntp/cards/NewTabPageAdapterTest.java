@@ -317,6 +317,7 @@ public class NewTabPageAdapterTest {
         CardsVariationParameters.setTestVariationParams(null);
         SigninManager.setInstanceForTesting(null);
         ChromePreferenceManager.getInstance().setNewTabPagePersonalizedSigninPromoDismissed(false);
+        ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
     }
 
     /**
@@ -982,6 +983,40 @@ public class NewTabPageAdapterTest {
         mSource.setRemoteSuggestionsEnabled(true);
         suggestionsObserver.onCategoryStatusChanged(remoteCategory, CategoryStatus.AVAILABLE);
         assertTrue(isSignInPromoVisible());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testSigninPromoSuppressionActive() {
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+
+        // Suppress promo.
+        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
+                System.currentTimeMillis());
+
+        resetUiDelegate();
+        reloadNtp();
+        assertFalse(isSignInPromoVisible());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testSigninPromoSuppressionExpired() {
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+
+        // Suppress promo.
+        ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
+        preferenceManager.setNewTabPageSigninPromoSuppressionPeriodStart(
+                System.currentTimeMillis() - SignInPromo.SUPPRESSION_PERIOD_MS);
+
+        resetUiDelegate();
+        reloadNtp();
+        assertTrue(isSignInPromoVisible());
+
+        // SignInPromo should clear shared preference when suppression period ends.
+        assertEquals(0, preferenceManager.getNewTabPageSigninPromoSuppressionPeriodStart());
     }
 
     @Test
