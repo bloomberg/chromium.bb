@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
@@ -938,6 +939,11 @@ void GetFormAndField(autofill::FormData* form,
 
 - (void)renderAutofillTypePredictions:
     (const std::vector<autofill::FormStructure*>&)structure {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillShowTypePredictions)) {
+    return;
+  }
+
   base::DictionaryValue predictionData;
   for (autofill::FormStructure* form : structure) {
     auto formJSONData = base::MakeUnique<base::DictionaryValue>();

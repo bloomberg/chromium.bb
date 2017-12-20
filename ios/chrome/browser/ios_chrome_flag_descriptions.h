@@ -109,6 +109,11 @@ extern const char kNewPassKitDownloadDescription[];
 extern const char kNewFileDownloadName[];
 extern const char kNewFileDownloadDescription[];
 
+// Title and description for the flag to enable annotating web forms with
+// Autofill field type predictions as placeholder.
+extern const char kShowAutofillTypePredictionsName[];
+extern const char kShowAutofillTypePredictionsDescription[];
+
 // Title and description for the flag to enable the TabSwitcher to present the
 // BVC.
 extern const char kTabSwitcherPresentsBVCName[];

@@ -21,6 +21,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/switches.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -202,7 +203,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"wk-http-system-cookie-store",
      flag_descriptions::kWKHTTPSystemCookieStoreName,
      flag_descriptions::kWKHTTPSystemCookieStoreName, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kWKHTTPSystemCookieStore)}};
+     FEATURE_VALUE_TYPE(web::features::kWKHTTPSystemCookieStore)},
+    {"show-autofill-type-predictions",
+     flag_descriptions::kShowAutofillTypePredictionsName,
+     flag_descriptions::kShowAutofillTypePredictionsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)}};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {

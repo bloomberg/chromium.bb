@@ -111,7 +111,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeMemoryDebugging,
   ItemTypeViewSource,
   ItemTypeLogJavascript,
-  ItemTypeShowAutofillTypePredictions,
   ItemTypeCellCatalog,
   ItemTypeArticlesForYou,
 };
@@ -119,7 +118,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #if CHROMIUM_BUILD && !defined(NDEBUG)
 NSString* kDevViewSourceKey = @"DevViewSource";
 NSString* kLogJavascriptKey = @"LogJavascript";
-NSString* kShowAutofillTypePredictionsKey = @"ShowAutofillTypePredictions";
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
 #pragma mark - SigninObserverBridge Class
@@ -425,8 +423,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self logJavascriptConsoleSwitchItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
-  [model addItem:[self showAutofillTypePredictionsSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self materialCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
@@ -594,12 +590,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                   withDefaultsKey:kLogJavascriptKey];
 }
 
-- (CollectionViewSwitchItem*)showAutofillTypePredictionsSwitchItem {
-  return [self switchItemWithType:ItemTypeShowAutofillTypePredictions
-                            title:@"Show Autofill type predictions"
-                  withDefaultsKey:kShowAutofillTypePredictionsKey];
-}
-
 - (CollectionViewDetailItem*)materialCatalogDetailItem {
   return [self detailItemWithType:ItemTypeCellCatalog
                              text:@"Cell Catalog"
@@ -728,18 +718,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
       break;
     }
-    case ItemTypeShowAutofillTypePredictions: {
-#if CHROMIUM_BUILD && !defined(NDEBUG)
-      CollectionViewSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
-      [switchCell.switchView addTarget:self
-                                action:@selector(showAutoFillSwitchToggled:)
-                      forControlEvents:UIControlEventValueChanged];
-#else
-      NOTREACHED();
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
-      break;
-    }
     default:
       break;
   }
@@ -813,7 +791,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     case ItemTypeMemoryDebugging:
     case ItemTypeViewSource:
     case ItemTypeLogJavascript:
-    case ItemTypeShowAutofillTypePredictions:
       // Taps on these don't do anything. They have a switch as accessory view
       // and only the switch is tappable.
       break;
@@ -860,7 +837,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   switch (type) {
     case ItemTypeLogJavascript:
     case ItemTypeMemoryDebugging:
-    case ItemTypeShowAutofillTypePredictions:
     case ItemTypeSigninPromo:
     case ItemTypeViewSource:
       return YES;
@@ -926,21 +902,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   BOOL newSwitchValue = sender.isOn;
   switchItem.on = newSwitchValue;
   [self setBooleanNSUserDefaultsValue:newSwitchValue forKey:kLogJavascriptKey];
-}
-
-- (void)showAutoFillSwitchToggled:(UISwitch*)sender {
-  NSIndexPath* switchPath = [self.collectionViewModel
-      indexPathForItemType:ItemTypeShowAutofillTypePredictions
-         sectionIdentifier:SectionIdentifierDebug];
-
-  CollectionViewSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:switchPath]);
-
-  BOOL newSwitchValue = sender.isOn;
-  switchItem.on = newSwitchValue;
-  [self setBooleanNSUserDefaultsValue:newSwitchValue
-                               forKey:kShowAutofillTypePredictionsKey];
 }
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
