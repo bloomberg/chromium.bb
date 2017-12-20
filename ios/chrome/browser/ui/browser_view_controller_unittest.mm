@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -24,7 +23,6 @@
 #include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -211,13 +209,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
  protected:
   void SetUp() override {
     BlockCleanupTest::SetUp();
-    // Disable Contextual Search on the command line.
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableContextualSearch)) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kDisableContextualSearch);
-    }
-
     // Set up a TestChromeBrowserState instance.
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(

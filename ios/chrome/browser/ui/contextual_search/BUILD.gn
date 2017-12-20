@@ -20,6 +20,14 @@ bundle_data("resources_unit_tests") {
   ]
 }
 
+source_set("switches") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "switches.cc",
+    "switches.h",
+  ]
+}
+
 source_set("contextual_search") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -43,6 +51,7 @@ source_set("contextual_search") {
   ]
   deps = [
     ":injected_js",
+    ":switches",
     "//base",
     "//components/google/core/browser",
     "//components/prefs",
@@ -99,6 +108,7 @@ source_set("unit_tests") {
   deps = [
     ":contextual_search",
     ":resources_unit_tests",
+    ":switches",
     ":test_support",
     "//base",
     "//base/test:test_support",

@@ -9,12 +9,10 @@
 
 namespace switches {
 
-extern const char kDisableContextualSearch[];
 extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableNTPFavicons[];
 extern const char kDisableThirdPartyKeyboardWorkaround[];
 
-extern const char kEnableContextualSearch[];
 extern const char kEnableIOSHandoffToOtherDevices[];
 extern const char kEnableNTPFavicons[];
 extern const char kEnableSpotlightActions[];
