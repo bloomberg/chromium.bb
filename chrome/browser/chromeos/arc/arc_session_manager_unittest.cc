@@ -120,17 +120,12 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   chromeos::WizardController* GetWizardController() override {
     return wizard_controller_.get();
   }
-  chromeos::AppLaunchController* GetAppLaunchController() override {
-    return nullptr;
-  }
   void StartUserAdding(base::OnceClosure completion_callback) override {}
   void CancelUserAdding() override {}
   void OnStartSignInScreen(
       const chromeos::LoginScreenContext& context) override {}
   void OnPreferencesChanged() override {}
-  void StartAppLaunch(const std::string& app_id,
-                      bool diagnostic_mode,
-                      bool is_auto_launch) override {}
+  void OnStartAppLaunch() override {}
   void StartArcKiosk(const AccountId& account_id) override {}
   void StartVoiceInteractionOobe() override {
     is_voice_interaction_oobe_ = true;

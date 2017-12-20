@@ -77,7 +77,7 @@ class LoginDisplayHost {
 
   // Returns current AppLaunchController, if it exists.
   // Result should not be stored.
-  virtual AppLaunchController* GetAppLaunchController() = 0;
+  AppLaunchController* GetAppLaunchController();
 
   // Starts screen for adding user into session.
   // |completion_callback| is invoked after login display host shutdown.
@@ -98,9 +98,9 @@ class LoginDisplayHost {
 
   // Starts app launch splash screen. If |is_auto_launch| is true, the app is
   // being auto-launched with no delay.
-  virtual void StartAppLaunch(const std::string& app_id,
-                              bool diagnostic_mode,
-                              bool is_auto_launch) = 0;
+  void StartAppLaunch(const std::string& app_id,
+                      bool diagnostic_mode,
+                      bool is_auto_launch);
 
   // Starts the demo app launch.
   void StartDemoAppLaunch();
@@ -119,12 +119,16 @@ class LoginDisplayHost {
   static LoginDisplayHost* default_host_;
 
   virtual void OnStartSignInScreen(const LoginScreenContext& context) = 0;
+  virtual void OnStartAppLaunch() = 0;
 
   // Deletes |auth_prewarmer_|.
   void OnAuthPrewarmDone();
 
   // Active instance of authentication prewarmer.
   std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
+
+  // App launch controller.
+  std::unique_ptr<AppLaunchController> app_launch_controller_;
 
   // Demo app launcher.
   std::unique_ptr<DemoAppLauncher> demo_app_launcher_;

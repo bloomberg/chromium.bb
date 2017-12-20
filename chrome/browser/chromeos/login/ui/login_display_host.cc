@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 
 namespace chromeos {
 namespace {
@@ -26,6 +28,10 @@ LoginDisplayHost* LoginDisplayHost::default_host_ = nullptr;
 LoginDisplayHost::LoginDisplayHost() : weak_factory_(this) {}
 
 LoginDisplayHost::~LoginDisplayHost() = default;
+
+AppLaunchController* LoginDisplayHost::GetAppLaunchController() {
+  return app_launch_controller_.get();
+}
 
 void LoginDisplayHost::StartSignInScreen(const LoginScreenContext& context) {
   PrewarmAuthentication();
@@ -63,6 +69,43 @@ void LoginDisplayHost::PrewarmAuthentication() {
   auth_prewarmer_ = std::make_unique<AuthPrewarmer>();
   auth_prewarmer_->PrewarmAuthentication(base::BindOnce(
       &LoginDisplayHost::OnAuthPrewarmDone, weak_factory_.GetWeakPtr()));
+}
+
+void LoginDisplayHost::StartAppLaunch(const std::string& app_id,
+                                      bool diagnostic_mode,
+                                      bool is_auto_launch) {
+  VLOG(1) << "Login >> start app launch.";
+  SetStatusAreaVisible(false);
+
+  // Wait for the |CrosSettings| to become either trusted or permanently
+  // untrusted.
+  const CrosSettingsProvider::TrustedStatus status =
+      CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+          &LoginDisplayHost::StartAppLaunch, weak_factory_.GetWeakPtr(), app_id,
+          diagnostic_mode, is_auto_launch));
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+    return;
+
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    // If the |CrosSettings| are permanently untrusted, refuse to launch a
+    // single-app kiosk mode session.
+    LOG(ERROR) << "Login >> Refusing to launch single-app kiosk mode.";
+    SetStatusAreaVisible(true);
+    return;
+  }
+
+  if (system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation()) {
+    // If the device is disabled, bail out. A device disabled screen will be
+    // shown by the DeviceDisablingManager.
+    return;
+  }
+
+  OnStartAppLaunch();
+
+  app_launch_controller_ = std::make_unique<AppLaunchController>(
+      app_id, diagnostic_mode, this, GetOobeUI());
+
+  app_launch_controller_->StartAppLaunch(is_auto_launch);
 }
 
 void LoginDisplayHost::StartDemoAppLaunch() {
