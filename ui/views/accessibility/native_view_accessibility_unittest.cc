@@ -44,9 +44,11 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
 
     button_ = new TestButton();
     button_->SetSize(gfx::Size(20, 20));
+    button_accessibility_ = NativeViewAccessibility::Create(button_);
 
     label_ = new Label();
     button_->AddChildView(label_);
+    label_accessibility_ = NativeViewAccessibility::Create(label_);
 
     widget_->GetContentsView()->AddChildView(button_);
     widget_->Show();
@@ -60,12 +62,12 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
 
   NativeViewAccessibilityBase* button_accessibility() {
     return static_cast<NativeViewAccessibilityBase*>(
-        &button_->GetViewAccessibility());
+        button_accessibility_.get());
   }
 
   NativeViewAccessibilityBase* label_accessibility() {
     return static_cast<NativeViewAccessibilityBase*>(
-        &label_->GetViewAccessibility());
+        label_accessibility_.get());
   }
 
   bool SetFocused(NativeViewAccessibilityBase* view_accessibility,
@@ -78,7 +80,9 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
  protected:
   Widget* widget_;
   TestButton* button_;
+  std::unique_ptr<NativeViewAccessibility> button_accessibility_;
   Label* label_;
+  std::unique_ptr<NativeViewAccessibility> label_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityTest);
 };

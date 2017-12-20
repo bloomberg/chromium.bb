@@ -157,7 +157,8 @@ class AuraLinuxApplication
 }  // namespace
 
 // static
-std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
+std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
+    View* view) {
   AuraLinuxApplication::GetInstance()->RegisterWidget(view->GetWidget());
   return std::make_unique<NativeViewAccessibilityAuraLinux>(view);
 }
