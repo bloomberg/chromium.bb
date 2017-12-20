@@ -159,6 +159,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnSurfaceCommit() override;
   bool IsTouchEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
+  void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
   void OnSetParent(Surface* parent, const gfx::Point& position) override;
 
   // Overridden from SurfaceObserver:
@@ -322,6 +323,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool activatable_ = true;
   bool can_minimize_ = true;
   bool frame_enabled_ = false;
+  bool has_frame_colors_ = false;
+  SkColor active_frame_color_ = SK_ColorBLACK;
+  SkColor inactive_frame_color_ = SK_ColorBLACK;
   bool pending_show_widget_ = false;
   std::string application_id_;
   gfx::Rect geometry_;

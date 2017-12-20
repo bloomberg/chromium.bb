@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_SURFACE_DELEGATE_H_
 #define COMPONENTS_EXO_SURFACE_DELEGATE_H_
 
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace exo {
@@ -30,6 +31,10 @@ class SurfaceDelegate {
 
   // Called when surface was requested to use a specific frame type.
   virtual void OnSetFrame(SurfaceFrameType type) = 0;
+
+  // Called when surface was requested to use a specific set of frame colors.
+  virtual void OnSetFrameColors(SkColor active_color,
+                                SkColor inactive_color) = 0;
 
   // Called when a new "parent" was requested for this surface. |position|
   // is the initial position of surface relative to origin of parent.

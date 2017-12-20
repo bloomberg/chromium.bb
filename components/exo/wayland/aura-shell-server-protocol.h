@@ -212,6 +212,18 @@ struct zaura_surface_interface {
 			   struct wl_resource *parent,
 			   int32_t x,
 			   int32_t y);
+	/**
+	 * set the frame colors of this surface
+	 *
+	 * Set the frame colors.
+	 * @param active_color 32 bit ARGB color value, not premultiplied
+	 * @param inactive_color 32 bit ARGB color value, not premultiplied
+	 * @since 3
+	 */
+	void (*set_frame_colors)(struct wl_client *client,
+				 struct wl_resource *resource,
+				 uint32_t active_color,
+				 uint32_t inactive_color);
 };
 
 
@@ -223,6 +235,10 @@ struct zaura_surface_interface {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_PARENT_SINCE_VERSION 2
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_FRAME_COLORS_SINCE_VERSION 3
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
 #define ZAURA_OUTPUT_SCALE_PROPERTY_ENUM

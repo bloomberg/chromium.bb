@@ -2471,6 +2471,12 @@ class AuraSurface : public SurfaceObserver {
       surface_->SetFrame(type);
   }
 
+  void SetFrameColors(SkColor active_frame_color,
+                      SkColor inactive_frame_color) {
+    if (surface_)
+      surface_->SetFrameColors(active_frame_color, inactive_frame_color);
+  }
+
   void SetParent(AuraSurface* parent, const gfx::Point& position) {
     if (surface_)
       surface_->SetParent(parent ? parent->surface_ : nullptr, position);
@@ -2517,8 +2523,17 @@ void aura_surface_set_parent(wl_client* client,
       gfx::Point(x, y));
 }
 
+void aura_surface_set_frame_colors(wl_client* client,
+                                   wl_resource* resource,
+                                   uint32_t active_color,
+                                   uint32_t inactive_color) {
+  GetUserDataAs<AuraSurface>(resource)->SetFrameColors(active_color,
+                                                       inactive_color);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
-    aura_surface_set_frame, aura_surface_set_parent};
+    aura_surface_set_frame, aura_surface_set_parent,
+    aura_surface_set_frame_colors};
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
@@ -2609,7 +2624,7 @@ void aura_shell_get_aura_output(wl_client* client,
 const struct zaura_shell_interface aura_shell_implementation = {
     aura_shell_get_aura_surface, aura_shell_get_aura_output};
 
-const uint32_t aura_shell_version = 2;
+const uint32_t aura_shell_version = 3;
 
 void bind_aura_shell(wl_client* client,
                      void* data,

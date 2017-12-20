@@ -217,6 +217,7 @@ enum zaura_surface_frame_type {
 
 #define ZAURA_SURFACE_SET_FRAME 0
 #define ZAURA_SURFACE_SET_PARENT 1
+#define ZAURA_SURFACE_SET_FRAME_COLORS 2
 
 
 /**
@@ -227,6 +228,10 @@ enum zaura_surface_frame_type {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_PARENT_SINCE_VERSION 2
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_FRAME_COLORS_SINCE_VERSION 3
 
 /** @ingroup iface_zaura_surface */
 static inline void
@@ -278,6 +283,18 @@ zaura_surface_set_parent(struct zaura_surface *zaura_surface, struct zaura_surfa
 {
 	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
 			 ZAURA_SURFACE_SET_PARENT, parent, x, y);
+}
+
+/**
+ * @ingroup iface_zaura_surface
+ *
+ * Set the frame colors.
+ */
+static inline void
+zaura_surface_set_frame_colors(struct zaura_surface *zaura_surface, uint32_t active_color, uint32_t inactive_color)
+{
+	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
+			 ZAURA_SURFACE_SET_FRAME_COLORS, active_color, inactive_color);
 }
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
