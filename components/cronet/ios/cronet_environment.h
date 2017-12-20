@@ -79,10 +79,6 @@ class CronetEnvironment {
   bool quic_enabled() const { return quic_enabled_; }
   bool brotli_enabled() const { return brotli_enabled_; }
 
-  void set_quic_user_agent_id(const std::string& quic_user_agent_id) {
-    quic_user_agent_id_ = quic_user_agent_id;
-  }
-
   void set_accept_language(const std::string& accept_language) {
     accept_language_ = accept_language;
   }
@@ -174,7 +170,6 @@ class CronetEnvironment {
   bool http2_enabled_;
   bool quic_enabled_;
   bool brotli_enabled_;
-  std::string quic_user_agent_id_;
   std::string accept_language_;
   std::string experimental_options_;
   // Effective experimental options. Kept for NetLog.
