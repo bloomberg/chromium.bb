@@ -61,6 +61,10 @@ void TestWallpaperController::SetCustomizedDefaultWallpaper(
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::ShowUserWallpaper(
     ash::mojom::WallpaperUserInfoPtr user_info) {
   NOTIMPLEMENTED();

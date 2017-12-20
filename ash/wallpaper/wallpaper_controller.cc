@@ -63,6 +63,11 @@ const char kNewWallpaperLayoutNodeName[] = "layout";
 const char kNewWallpaperLocationNodeName[] = "file";
 const char kNewWallpaperTypeNodeName[] = "type";
 
+// The directory and file name to save the downloaded device policy controlled
+// wallpaper.
+const char kDeviceWallpaperDir[] = "device_wallpaper";
+const char kDeviceWallpaperFile[] = "device_wallpaper_image.jpg";
+
 // How long to wait reloading the wallpaper after the display size has changed.
 constexpr int kWallpaperReloadDelayMs = 100;
 
@@ -353,6 +358,13 @@ bool WallpaperController::WriteJPEGFileForTesting(const base::FilePath& path,
     return false;
   }
   return true;
+}
+
+// static
+base::FilePath WallpaperController::GetDevicePolicyWallpaperFilePath() {
+  DCHECK(!dir_chrome_os_wallpapers_path_.empty());
+  return dir_chrome_os_wallpapers_path_.Append(kDeviceWallpaperDir)
+      .Append(kDeviceWallpaperFile);
 }
 
 void WallpaperController::BindRequest(
@@ -857,6 +869,22 @@ void WallpaperController::SetCustomizedDefaultWallpaper(
   NOTIMPLEMENTED();
 }
 
+void WallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
+  bool previous_enforced = is_device_wallpaper_policy_enforced_;
+  is_device_wallpaper_policy_enforced_ = enforced;
+
+  if (ShouldSetDevicePolicyWallpaper()) {
+    SetDevicePolicyWallpaper();
+  } else if ((previous_enforced != enforced) && !enforced) {
+    // If the device wallpaper policy is cleared, the wallpaper should revert to
+    // the wallpaper of the current user with the large pod in the users list in
+    // the login screen. If there is no such user, use the first user in the
+    // users list.
+    // TODO(xdai): Get the account id from the session controller and then call
+    // ShowUserWallpaper() to display it.
+  }
+}
+
 void WallpaperController::ShowUserWallpaper(
     mojom::WallpaperUserInfoPtr user_info) {
   NOTIMPLEMENTED();
@@ -1176,6 +1204,48 @@ bool WallpaperController::IsDevicePolicyWallpaper() const {
     return current_wallpaper_->wallpaper_info().type ==
            wallpaper::WallpaperType::DEVICE;
   return false;
+}
+
+bool WallpaperController::ShouldSetDevicePolicyWallpaper() const {
+  // Only allow the device wallpaper if the policy is in effect for enterprise
+  // managed devices.
+  if (!is_device_wallpaper_policy_enforced_)
+    return false;
+
+  // Only set the device wallpaper if we're at the login screen.
+  if (Shell::Get()->session_controller()->IsActiveUserSessionStarted())
+    return false;
+
+  return true;
+}
+
+void WallpaperController::SetDevicePolicyWallpaper() {
+  DCHECK(ShouldSetDevicePolicyWallpaper());
+  ReadAndDecodeWallpaper(
+      base::BindRepeating(&WallpaperController::OnDevicePolicyWallpaperDecoded,
+                          weak_factory_.GetWeakPtr()),
+      sequenced_task_runner_.get(), GetDevicePolicyWallpaperFilePath());
+}
+
+void WallpaperController::OnDevicePolicyWallpaperDecoded(
+    std::unique_ptr<user_manager::UserImage> device_wallpaper_image) {
+  // It might be possible that the device policy controlled wallpaper finishes
+  // decoding after the user logs in. In this case do nothing.
+  if (!ShouldSetDevicePolicyWallpaper())
+    return;
+
+  if (device_wallpaper_image->image().isNull()) {
+    // If device policy wallpaper failed decoding, fall back to the default
+    // wallpaper.
+    SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
+                            true /*show_wallpaper=*/,
+                            MovableOnDestroyCallbackHolder());
+  } else {
+    WallpaperInfo info(GetDevicePolicyWallpaperFilePath().value(),
+                       wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                       wallpaper::DEVICE, base::Time::Now().LocalMidnight());
+    SetWallpaperImage(device_wallpaper_image->image(), info);
+  }
 }
 
 void WallpaperController::GetInternalDisplayCompositorLock() {
