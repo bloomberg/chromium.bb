@@ -126,9 +126,8 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return input_router_client_.FilterInputEvent(input_event, latency_info);
   }
 
-  void IncrementInFlightEventCount(
-      blink::WebInputEvent::Type event_type) override {
-    input_router_client_.IncrementInFlightEventCount(event_type);
+  void IncrementInFlightEventCount() override {
+    input_router_client_.IncrementInFlightEventCount();
   }
 
   void DecrementInFlightEventCount(InputEventAckSource ack_source) override {
@@ -1080,7 +1079,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1, client_->in_flight_event_count());
-  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureTapDown,
             client_->last_in_flight_event_type());
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollUpdate,
@@ -1095,7 +1094,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(2, client_->in_flight_event_count());
-  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureShowPress,
             client_->last_in_flight_event_type());
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollUpdate,
@@ -1113,7 +1112,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(3, client_->in_flight_event_count());
-  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureTapCancel,
             client_->last_in_flight_event_type());
 
   // Now ack each ack-respecting event. Should see in-flight event count
@@ -1179,7 +1178,7 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1, client_->in_flight_event_count());
-  EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureShowPress,
             client_->last_in_flight_event_type());
 
   SimulateGestureEvent(WebInputEvent::kGestureShowPress,
@@ -1187,7 +1186,7 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1, client_->in_flight_event_count());
-  EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureShowPress,
             client_->last_in_flight_event_type());
 
   // Ack the GesturePinchUpdate to release two GestureShowPress ack.

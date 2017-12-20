@@ -78,20 +78,11 @@ void ClearCrashKeyValueEx_ExportThunk(const char* key, size_t key_len) {
   crash_reporter::ClearCrashKey(base::StringPiece(key, key_len));
 }
 
-HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process,
-                                          void* serialized_crash_keys) {
+HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process) {
   return CreateRemoteThread(
       process, nullptr, 0,
-      crash_reporter::internal::DumpProcessForHungInputThread,
-      serialized_crash_keys, 0, nullptr);
-}
-
-HANDLE InjectDumpForHungInputNoCrashKeys_ExportThunk(HANDLE process,
-                                                     int reason) {
-  return CreateRemoteThread(
-      process, nullptr, 0,
-      crash_reporter::internal::DumpProcessForHungInputNoCrashKeysThread,
-      reinterpret_cast<void*>(reason), 0, nullptr);
+      crash_reporter::internal::DumpProcessForHungInputThread, nullptr, 0,
+      nullptr);
 }
 
 #if defined(ARCH_CPU_X86_64)

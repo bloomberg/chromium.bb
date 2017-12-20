@@ -109,7 +109,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_unresponsive_state.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -5436,15 +5435,8 @@ void WebContentsImpl::RendererUnresponsive(
   if (!GetRenderViewHost() || !GetRenderViewHost()->IsRenderViewLive())
     return;
 
-  if (delegate_) {
-    WebContentsUnresponsiveState unresponsive_state;
-    unresponsive_state.outstanding_ack_count =
-        render_widget_host->in_flight_event_count();
-    unresponsive_state.outstanding_event_type =
-        render_widget_host->hang_monitor_event_type();
-    unresponsive_state.last_event_type = render_widget_host->last_event_type();
-    delegate_->RendererUnresponsive(this, unresponsive_state);
-  }
+  if (delegate_)
+    delegate_->RendererUnresponsive(this);
 }
 
 void WebContentsImpl::RendererResponsive(

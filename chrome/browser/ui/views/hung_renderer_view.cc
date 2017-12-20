@@ -57,7 +57,6 @@
 #endif
 
 using content::WebContents;
-using content::WebContentsUnresponsiveState;
 
 HungRendererDialogView* HungRendererDialogView::g_instance_ = NULL;
 
@@ -212,9 +211,7 @@ HungRendererDialogView* HungRendererDialogView::GetInstance() {
 }
 
 // static
-void HungRendererDialogView::Show(
-    WebContents* contents,
-    const WebContentsUnresponsiveState& unresponsive_state) {
+void HungRendererDialogView::Show(WebContents* contents) {
   if (logging::DialogsAreSuppressed())
     return;
 
@@ -228,7 +225,7 @@ void HungRendererDialogView::Show(
     return;
 #endif
   HungRendererDialogView* view = HungRendererDialogView::Create(window);
-  view->ShowForWebContents(contents, unresponsive_state);
+  view->ShowForWebContents(contents);
 }
 
 // static
@@ -255,9 +252,7 @@ HungRendererDialogView::~HungRendererDialogView() {
   hung_pages_table_->SetModel(NULL);
 }
 
-void HungRendererDialogView::ShowForWebContents(
-    WebContents* contents,
-    const content::WebContentsUnresponsiveState& unresponsive_state) {
+void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
   DCHECK(contents && GetWidget());
 
   // Don't show the warning unless the foreground window is the frame, or this
@@ -306,7 +301,6 @@ void HungRendererDialogView::ShowForWebContents(
                                          hung_pages_table_model_->RowCount()));
     Layout();
 
-    unresponsive_state_ = unresponsive_state;
     // Make Widget ask for the window title again.
     GetWidget()->UpdateWindowTitle();
 
@@ -370,20 +364,8 @@ bool HungRendererDialogView::Cancel() {
       hung_pages_table_model_->GetRenderProcessHost();
   if (rph) {
 #if defined(OS_WIN)
-    base::StringPairs crash_keys;
-
-    crash_keys.push_back(std::make_pair(
-        "hung-outstanding-acks",
-        base::IntToString(unresponsive_state_.outstanding_ack_count)));
-    crash_keys.push_back(std::make_pair(
-        "hung-outstanding-event-type",
-        base::IntToString(unresponsive_state_.outstanding_event_type)));
-    crash_keys.push_back(
-        std::make_pair("hung-last-event-type",
-                       base::IntToString(unresponsive_state_.last_event_type)));
-
     // Try to generate a crash report for the hung process.
-    CrashDumpAndTerminateHungChildProcess(rph->GetHandle(), crash_keys);
+    CrashDumpAndTerminateHungChildProcess(rph->GetHandle());
 #else
     rph->Shutdown(content::RESULT_CODE_HUNG, false);
 #endif

@@ -38,13 +38,7 @@ void SetCrashKeyValueEx_ExportThunk(const char* key,
 
 void ClearCrashKeyValueEx_ExportThunk(const char* key, size_t key_len) {}
 
-HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process,
-                                          void* serialized_crash_keys) {
-  return nullptr;
-}
-
-HANDLE InjectDumpForHungInputNoCrashKeys_ExportThunk(HANDLE process,
-                                                     int reason) {
+HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process) {
   return nullptr;
 }
 
