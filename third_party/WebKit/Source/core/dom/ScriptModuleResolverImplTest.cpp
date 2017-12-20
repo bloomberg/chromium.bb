@@ -76,18 +76,16 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
   return referrer_module_script;
 }
 
-ModuleScript* CreateTargetModuleScript(
-    Modulator* modulator,
-    V8TestingScope& scope,
-    ScriptModuleState state = ScriptModuleState::kInstantiated) {
+ModuleScript* CreateTargetModuleScript(Modulator* modulator,
+                                       V8TestingScope& scope,
+                                       bool has_parse_error = false) {
   ScriptModule record = ScriptModule::Compile(
       scope.GetIsolate(), "export const pi = 3.14;", "target.js",
       ScriptFetchOptions(), kSharableCrossOrigin,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL url("https://example.com/target.js");
   auto* module_script = ModuleScript::CreateForTest(modulator, record, url);
-  if (state != ScriptModuleState::kInstantiated) {
-    EXPECT_EQ(ScriptModuleState::kErrored, state);
+  if (has_parse_error) {
     v8::Local<v8::Value> error =
         V8ThrowException::CreateError(scope.GetIsolate(), "hoge");
     module_script->SetParseErrorAndClearRecord(
