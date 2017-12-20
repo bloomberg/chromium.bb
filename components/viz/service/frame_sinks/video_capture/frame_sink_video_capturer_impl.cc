@@ -22,6 +22,20 @@ using media::VideoFrameMetadata;
 
 namespace viz {
 
+namespace {
+// Returns |raw_size| truncated to positive even-numbered values.
+gfx::Size AdjustSizeForI420(const gfx::Size& raw_size) {
+  gfx::Size result(raw_size.width() & ~1, raw_size.height() & ~1);
+  if (result.width() <= 0) {
+    result.set_width(2);
+  }
+  if (result.height() <= 0) {
+    result.set_height(2);
+  }
+  return result;
+}
+}  // namespace
+
 // static
 constexpr media::VideoPixelFormat
     FrameSinkVideoCapturerImpl::kDefaultPixelFormat;
@@ -260,10 +274,11 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
 
   // Reserve a buffer from the pool for the next frame.
   const OracleFrameNumber oracle_frame_number = oracle_.next_frame_number();
+  const gfx::Size i420_capture_size = AdjustSizeForI420(oracle_.capture_size());
   scoped_refptr<VideoFrame> frame;
   if (event == VideoCaptureOracle::kPassiveRefreshRequest) {
-    frame = frame_pool_.ResurrectLastVideoFrame(oracle_.capture_size(),
-                                                pixel_format_);
+    frame =
+        frame_pool_.ResurrectLastVideoFrame(i420_capture_size, pixel_format_);
     // If the resurrection failed, promote the passive refresh request to an
     // active refresh request and retry.
     if (!frame) {
@@ -274,8 +289,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
       return;
     }
   } else {
-    frame =
-        frame_pool_.ReserveVideoFrame(oracle_.capture_size(), pixel_format_);
+    frame = frame_pool_.ReserveVideoFrame(i420_capture_size, pixel_format_);
   }
 
   // Compute the current in-flight utilization and attenuate it: The utilization
@@ -391,7 +405,15 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
   uint8_t* const v = frame->visible_data(VideoFrame::kVPlane) +
                      (content_rect.y() / 2) * v_stride + (content_rect.x() / 2);
   if (result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride)) {
-    media::LetterboxYUV(frame.get(), content_rect);
+    // The result may be smaller than what was requested, if unforeseen clamping
+    // to the source boundaries occurred by the executor of the
+    // CopyOutputRequest. However, the result should never contain more than
+    // what was requested.
+    DCHECK_LE(result->size().width(), content_rect.width());
+    DCHECK_LE(result->size().height(), content_rect.height());
+    media::LetterboxYUV(
+        frame.get(),
+        gfx::Rect(content_rect.origin(), AdjustSizeForI420(result->size())));
   } else {
     frame = nullptr;
   }
