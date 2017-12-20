@@ -48,17 +48,4 @@ char* QuicHostnameUtilsImpl::NormalizeHostname(char* hostname) {
   return hostname;
 }
 
-// static
-void QuicHostnameUtilsImpl::StringToQuicServerId(const string& str,
-                                                 QuicServerId* out) {
-  GURL url(str);
-  if (!url.is_valid()) {
-    *out = QuicServerId();
-    return;
-  }
-  *out = QuicServerId(HostPortPair::FromURL(url), url.path_piece() == "/private"
-                                                      ? PRIVACY_MODE_ENABLED
-                                                      : PRIVACY_MODE_DISABLED);
-}
-
 }  // namespace net
