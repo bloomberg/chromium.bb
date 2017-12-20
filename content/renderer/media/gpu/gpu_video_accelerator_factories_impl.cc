@@ -24,7 +24,6 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
-#include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
@@ -171,24 +170,20 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  if (base::FeatureList::IsEnabled(features::kMojoVideoEncodeAccelerator)) {
-    media::mojom::VideoEncodeAcceleratorPtr vea;
-    vea_provider_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
+  DCHECK(base::FeatureList::IsEnabled(features::kMojoVideoEncodeAccelerator));
 
-    if (vea) {
-      return std::unique_ptr<media::VideoEncodeAccelerator>(
-          new media::MojoVideoEncodeAccelerator(
-              std::move(vea),
-              context_provider_->GetCommandBufferProxy()
-                  ->channel()
-                  ->gpu_info()
-                  .video_encode_accelerator_supported_profiles));
-    }
-  }
+  media::mojom::VideoEncodeAcceleratorPtr vea;
+  vea_provider_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
+
+  if (!vea)
+    return nullptr;
 
   return std::unique_ptr<media::VideoEncodeAccelerator>(
-      new media::GpuVideoEncodeAcceleratorHost(
-          context_provider_->GetCommandBufferProxy()));
+      new media::MojoVideoEncodeAccelerator(
+          std::move(vea), context_provider_->GetCommandBufferProxy()
+                              ->channel()
+                              ->gpu_info()
+                              .video_encode_accelerator_supported_profiles));
 }
 
 bool GpuVideoAcceleratorFactoriesImpl::CreateTextures(

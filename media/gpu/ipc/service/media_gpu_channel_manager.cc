@@ -12,7 +12,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
-#include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel.h"
 
 namespace media {
