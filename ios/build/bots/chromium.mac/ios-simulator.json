@@ -1,9 +1,10 @@
 {
   "comments": [
     "Runs tests on 64-bit iOS 10 and 11 tests",
-    "on iPad, iPhone, @3x, and @2x on main and CQ ios-simulator."
+    "on iPad, iPhone, @3x, and @2x on main and CQ ios-simulator.",
+    "Note: Xcode 9.2 requires Mac OS 10.12.6 or higher, hence 'host os'."
   ],
-  "xcode version": "9.0",
+  "xcode build version": "9C40b",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
@@ -17,49 +18,42 @@
     "all"
   ],
   "configuration": "Debug",
-  "sdk": "iphonesimulator11.0",
+  "sdk": "iphonesimulator11.2",
   "tests": [
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "11.0",
-      "xcode version": "9.0"
+      "os": "11.2"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0"
+      "os": "11.2"
     },
     {
       "include": "common_tests.json",
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0"
+      "os": "11.2"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "11.0",
-      "xcode version": "9.0"
+      "os": "11.2"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "9.0"
+      "os": "10.0"
     },
     {
       "include": "common_tests.json",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "9.0"
+      "os": "10.0"
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0"
+      "os": "11.2"
     }
   ]
 }
