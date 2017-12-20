@@ -452,24 +452,31 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     archive_dir = os.path.join(self.archive_path, results_reldir)
     test_dirs = [x for x in os.listdir(archive_dir) if test_dir_re.match(x)]
     for test_dir in test_dirs:
-      var_dir = os.path.join(results_reldir, test_dir, 'moblab_RunSuite',
-                             'sysinfo', 'var')
-      self._PrintDetailedLogLinkIfExists(
-          os.path.join(var_dir, 'log', 'bootup'),
-          '%s [moblab boot logs]:  ' % test_dir,
-      )
-      self._PrintDetailedLogLinkIfExists(
-          os.path.join(var_dir, 'log', 'autotest'),
-          '%s [infra logs from moblab]:  ' % test_dir,
-      )
-      self._PrintDetailedLogLinkIfExists(
-          os.path.join(var_dir, 'log_diff', 'bootup'),
-          '%s [moblab boot logs, diffed against pre-test]:  ' % test_dir,
-      )
-      self._PrintDetailedLogLinkIfExists(
-          os.path.join(var_dir, 'log_diff', 'autotest'),
-          '%s [infra logs from moblab, diffed against pre-test]:  ' % test_dir,
-      )
+      # Autotest has some heuristics to decide where sysinfo is collected into.
+      # Instead of trying mimick that, just link to _any_ var/log directories we
+      # find.
+      for var_dir in [
+          os.path.join(results_reldir, test_dir, 'moblab_RunSuite', 'sysinfo',
+                       'var'),
+          os.path.join(results_reldir, test_dir, 'sysinfo', 'var'),
+      ]:
+        self._PrintDetailedLogLinkIfExists(
+            os.path.join(var_dir, 'log', 'bootup'),
+            '%s [moblab boot logs]:  ' % test_dir,
+        )
+        self._PrintDetailedLogLinkIfExists(
+            os.path.join(var_dir, 'log', 'autotest'),
+            '%s [infra logs from moblab]:  ' % test_dir,
+        )
+        self._PrintDetailedLogLinkIfExists(
+            os.path.join(var_dir, 'log_diff', 'bootup'),
+            '%s [moblab boot logs, diffed against pre-test]:  ' % test_dir,
+        )
+        self._PrintDetailedLogLinkIfExists(
+            os.path.join(var_dir, 'log_diff', 'autotest'),
+            '%s [infra logs from moblab, diffed against pre-test]: ' % test_dir,
+        )
+
       self._PrintDetailedLogLinkIfExists(
           os.path.join(results_reldir, test_dir, 'sysinfo', 'mnt', 'moblab',
                        'results'),
