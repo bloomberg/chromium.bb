@@ -267,6 +267,7 @@ void ProcessManager::RegisterRenderFrameHost(
     content::WebContents* web_contents,
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) {
+  DCHECK(render_frame_host->IsRenderFrameLive());
   ExtensionRenderFrameData* data = &all_extension_frames_[render_frame_host];
   data->view_type = GetViewType(web_contents);
 
