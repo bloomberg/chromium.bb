@@ -39,7 +39,7 @@ class BuildUnittest(unittest.TestCase):
     builder = build.RcBuilder()
     class DummyOpts(object):
       def __init__(self):
-        self.input = util.PathFromRoot('grit/testdata/substitute.grd')
+        self.input = util.PathFromRoot('grit/testdata/depfile.grd')
         self.verbose = False
         self.extra_verbose = False
     expected_dep_file = os.path.join(output_dir, 'substitute.grd.d')
@@ -53,10 +53,12 @@ class BuildUnittest(unittest.TestCase):
       (dep_output_file, deps_string) = line.split(': ')
       deps = deps_string.split(' ')
 
-      self.failUnlessEqual("resource.h", dep_output_file)
-      self.failUnlessEqual(1, len(deps))
-      self.failUnlessEqual(deps[0],
-          util.PathFromRoot('grit/testdata/substitute.xmb'))
+      self.failUnlessEqual("default_100_percent.pak", dep_output_file)
+      self.failUnlessEqual(deps, [
+          util.PathFromRoot('grit/testdata/default_100_percent/a.png'),
+          util.PathFromRoot('grit/testdata/grit_part.grdp'),
+          util.PathFromRoot('grit/testdata/special_100_percent/a.png'),
+      ])
 
   def testGenerateDepFileWithResourceIds(self):
     output_dir = tempfile.mkdtemp()
@@ -374,9 +376,9 @@ class BuildUnittest(unittest.TestCase):
       deps = deps_string.split(' ')
 
       self.failUnlessEqual(expected_stamp_file_name, dep_output_file)
-      self.failUnlessEqual(1, len(deps))
-      self.failUnlessEqual(deps[0],
-          util.PathFromRoot('grit/testdata/substitute.xmb'))
+      self.failUnlessEqual(deps, [
+          util.PathFromRoot('grit/testdata/substitute.xmb'),
+      ])
 
 
 if __name__ == '__main__':
