@@ -13,6 +13,7 @@
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
+#include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/system_info_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
@@ -56,6 +57,7 @@ void BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::IOHandler(
       GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::MemoryHandler()));
+  session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
   session->AddHandler(base::WrapUnique(new protocol::SystemInfoHandler()));
   session->AddHandler(base::WrapUnique(new protocol::TetheringHandler(
       socket_callback_, tethering_task_runner_)));
