@@ -71,7 +71,7 @@ DevToolsFrontendImpl::DevToolsFrontendImpl(
     mojom::blink::DevToolsFrontendAssociatedRequest request)
     : Supplement<LocalFrame>(frame), binding_(this, std::move(request)) {}
 
-DevToolsFrontendImpl::~DevToolsFrontendImpl() {}
+DevToolsFrontendImpl::~DevToolsFrontendImpl() = default;
 
 void DevToolsFrontendImpl::DidClearWindowObject() {
   if (host_) {
