@@ -28,7 +28,7 @@ component("system") {
     "core.h",
     "data_pipe.h",
     "file_data_pipe_producer.cc",
-    "file_data_pipe_producer.g",
+    "file_data_pipe_producer.h",
     "functions.h",
     "handle.h",
     "handle_signal_tracker.cc",
