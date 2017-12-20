@@ -21,7 +21,7 @@ class OfflineItemBridge {
   // Creates a Java OfflineItem from |item|.
   static base::android::ScopedJavaLocalRef<jobject> CreateOfflineItem(
       JNIEnv* env,
-      const OfflineItem* const item);
+      const OfflineItem& item);
 
   // Creates an Java ArrayList<OfflineItem> from |items|.
   static base::android::ScopedJavaLocalRef<jobject> CreateOfflineItemList(

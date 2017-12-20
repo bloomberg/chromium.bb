@@ -45,8 +45,8 @@ class ThrottledOfflineContentProvider
   // Because this class queues updates, a call to Observer::OnItemUpdated might
   // get triggered with the same contents as returned by these getter methods in
   // the future.
-  const OfflineItem* GetItemById(const ContentId& id) override;
-  OfflineItemList GetAllItems() override;
+  void GetItemById(const ContentId& id, SingleItemCallback callback) override;
+  void GetAllItems(MultipleItemCallback callback) override;
   void GetVisualsForItem(const ContentId& id,
                          const VisualsCallback& callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
@@ -62,6 +62,11 @@ class ThrottledOfflineContentProvider
   void OnItemsAdded(const OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;
   void OnItemUpdated(const OfflineItem& item) override;
+
+  void OnGetAllItemsDone(MultipleItemCallback callback,
+                         const OfflineItemList& items);
+  void OnGetItemByIdDone(SingleItemCallback callback,
+                         const base::Optional<OfflineItem>& item);
 
   // Used to notify |observer| that the underying OfflineContentProvider has
   // called OfflineContentProvider::Observer::OnItemsAvailable().

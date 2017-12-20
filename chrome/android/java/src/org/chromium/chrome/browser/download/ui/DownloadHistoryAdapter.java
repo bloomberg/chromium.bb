@@ -738,15 +738,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
     @Override
     public void onItemsAvailable() {
-        List<OfflineItem> offlineItems = getOfflineContentProvider().getAllItems();
-        for (OfflineItem item : offlineItems) {
-            if (item.isTransient) continue;
-            DownloadHistoryItemWrapper wrapper = createDownloadHistoryItemWrapper(item);
-            addDownloadHistoryItemWrapper(wrapper);
-        }
+        getOfflineContentProvider().getAllItems(offlineItems -> {
+            for (OfflineItem item : offlineItems) {
+                if (item.isTransient) continue;
+                DownloadHistoryItemWrapper wrapper = createDownloadHistoryItemWrapper(item);
+                addDownloadHistoryItemWrapper(wrapper);
+            }
 
-        recordOfflineItemCountHistograms();
-        onItemsRetrieved(LoadingStateDelegate.OFFLINE_ITEMS);
+            recordOfflineItemCountHistograms();
+            onItemsRetrieved(LoadingStateDelegate.OFFLINE_ITEMS);
+        });
     }
 
     private void recordOfflineItemCountHistograms() {

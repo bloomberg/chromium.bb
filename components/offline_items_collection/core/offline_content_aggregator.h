@@ -82,8 +82,8 @@ class OfflineContentAggregator : public OfflineContentProvider,
   void CancelDownload(const ContentId& id) override;
   void PauseDownload(const ContentId& id) override;
   void ResumeDownload(const ContentId& id, bool has_user_gesture) override;
-  const OfflineItem* GetItemById(const ContentId& id) override;
-  OfflineItemList GetAllItems() override;
+  void GetItemById(const ContentId& id, SingleItemCallback callback) override;
+  void GetAllItems(MultipleItemCallback callback) override;
   void GetVisualsForItem(const ContentId& id,
                          const VisualsCallback& callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
@@ -113,6 +113,12 @@ class OfflineContentAggregator : public OfflineContentProvider,
   void RunIfReady(OfflineContentProvider* provider,
                   const base::Closure& action);
 
+  void OnGetAllItemsDone(OfflineContentProvider* provider,
+                         const OfflineItemList& items);
+  void OnGetItemByIdDone(SingleItemCallback callback,
+                         const base::Optional<OfflineItem>& item);
+  void NotifyItemsAdded(const OfflineItemList& items);
+
   // Stores a map of name_space -> OfflineContentProvider.  These
   // OfflineContentProviders are all aggregated by this class and exposed to the
   // consumer as a single list.
@@ -125,6 +131,11 @@ class OfflineContentAggregator : public OfflineContentProvider,
   using CallbackList = std::vector<base::Closure>;
   using PendingActionMap = std::map<OfflineContentProvider*, CallbackList>;
   PendingActionMap pending_actions_;
+
+  // Used by GetAllItems and the corresponding callback.
+  std::vector<MultipleItemCallback> multiple_item_get_callbacks_;
+  OfflineItemList aggregated_items_;
+  std::set<OfflineContentProvider*> pending_providers_;
 
   // A list of all currently registered observers.
   base::ObserverList<OfflineContentProvider::Observer> observers_;

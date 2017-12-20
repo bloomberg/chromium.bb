@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "url/gurl.h"
 
 namespace offline_items_collection {
@@ -27,6 +28,9 @@ class OfflineContentProvider {
   using OfflineItemList = std::vector<OfflineItem>;
   using VisualsCallback =
       base::Callback<void(const ContentId&, const OfflineItemVisuals*)>;
+  using MultipleItemCallback = base::OnceCallback<void(const OfflineItemList&)>;
+  using SingleItemCallback =
+      base::OnceCallback<void(const base::Optional<OfflineItem>&)>;
 
   // An observer class that should be notified of relevant changes to the
   // underlying data source.
@@ -77,13 +81,16 @@ class OfflineContentProvider {
   // TODO(shaktisahu): Remove |has_user_gesture| if we end up not needing it.
   virtual void ResumeDownload(const ContentId& id, bool has_user_gesture) = 0;
 
-  // Returns an OfflineItem represented by |id| or |nullptr| if none exists.
-  // The caller should not hold ownership of the returned item beyond the scope
-  // of the function call.
-  virtual const OfflineItem* GetItemById(const ContentId& id) = 0;
+  // Requests for an OfflineItem represented by |id|. The implementer should
+  // post any replies even if the result is available immediately to prevent
+  // reentrancy and for consistent behavior.
+  virtual void GetItemById(const ContentId& id,
+                           SingleItemCallback callback) = 0;
 
-  // Returns all OfflineItems for this particular provider.
-  virtual OfflineItemList GetAllItems() = 0;
+  // Requests for all the OfflineItems from this particular provider. The
+  // implementer should post any replies even if the results are available
+  // immediately to prevent reentrancy and for consistent behavior.
+  virtual void GetAllItems(MultipleItemCallback callback) = 0;
 
   // Asks for an OfflineItemVisuals struct for an OfflineItem represented by
   // |id| or |nullptr| if one doesn't exist.  The implementer should post any
