@@ -16,6 +16,7 @@ group("all_tests") {
 test("ios_web_view_inttests") {
   testonly = true
   sources = [
+    "web_view_autofill_inttest.mm",
     "web_view_int_test.h",
     "web_view_int_test.mm",
     "web_view_kvo_inttest.mm",
@@ -31,6 +32,7 @@ test("ios_web_view_inttests") {
     "//net",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 
   bundle_deps = [ "//ios/web_view:web_view+bundle" ]
