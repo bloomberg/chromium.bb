@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/null_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -351,13 +352,14 @@ class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
   size_t processed_touch_event_count_;
 };
 
-class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura,
-                                         public ui::CompositorLockDelegate {
+class FakeDelegatedFrameHostClientAura
+    : public DelegatedFrameHostClientAura,
+      public ui::CompositorLockManagerClient {
  public:
   explicit FakeDelegatedFrameHostClientAura(
       RenderWidgetHostViewAura* render_widget_host_view)
       : DelegatedFrameHostClientAura(render_widget_host_view),
-        weak_ptr_factory_(this) {}
+        lock_manager_(new base::NullTaskRunner(), this) {}
   ~FakeDelegatedFrameHostClientAura() override = default;
 
   void DisableResizeLock() { can_create_resize_lock_ = false; }
@@ -376,8 +378,7 @@ class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura,
   std::unique_ptr<ui::CompositorLock> GetCompositorLock(
       ui::CompositorLockClient* client) override {
     resize_locked_ = compositor_locked_ = true;
-    return std::make_unique<ui::CompositorLock>(nullptr,
-                                                weak_ptr_factory_.GetWeakPtr());
+    return lock_manager_.GetCompositorLock(nullptr, base::TimeDelta());
   }
   // CompositorResizeLockClient implemention. Overrides from
   // // DelegatedFrameHostClientAura.
@@ -386,15 +387,17 @@ class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura,
     DelegatedFrameHostClientAura::CompositorResizeLockEnded();
   }
 
-  // ui::CompositorLockDelegate implemention.
-  void RemoveCompositorLock(ui::CompositorLock*) override {
-    compositor_locked_ = false;
+  // ui::CompositorLockManagerClient implementation.
+  void OnCompositorLockStateChanged(bool locked) override {
+    if (!locked) {
+      compositor_locked_ = false;
+    }
   }
 
   bool can_create_resize_lock_ = true;
   bool resize_locked_ = false;
   bool compositor_locked_ = false;
-  base::WeakPtrFactory<FakeDelegatedFrameHostClientAura> weak_ptr_factory_;
+  ui::CompositorLockManager lock_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDelegatedFrameHostClientAura);
 };

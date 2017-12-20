@@ -111,8 +111,6 @@ static_library("test_support") {
     "test/context_factories_for_test.h",
     "test/draw_waiter_for_test.cc",
     "test/draw_waiter_for_test.h",
-    "test/fake_compositor_lock.cc",
-    "test/fake_compositor_lock.h",
     "test/fake_context_factory.cc",
     "test/fake_context_factory.h",
     "test/in_process_context_factory.cc",
@@ -183,6 +181,7 @@ static_library("test_support") {
 test("compositor_unittests") {
   sources = [
     "callback_layer_animation_observer_unittest.cc",
+    "compositor_lock_unittest.cc",
     "compositor_unittest.cc",
     "layer_animation_element_unittest.cc",
     "layer_animation_sequence_unittest.cc",

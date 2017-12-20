@@ -5,8 +5,11 @@
 #ifndef UI_COMPOSITOR_COMPOSITOR_LOCK_H_
 #define UI_COMPOSITOR_COMPOSITOR_LOCK_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {
@@ -14,6 +17,8 @@ namespace ui {
 class Compositor;
 class CompositorLock;
 
+// Implemented by clients which take compositor lock. Used to notify the client
+// when their lock times out.
 class CompositorLockClient {
  public:
   virtual ~CompositorLockClient() {}
@@ -22,12 +27,61 @@ class CompositorLockClient {
   virtual void CompositorLockTimedOut() = 0;
 };
 
-class CompositorLockDelegate {
+// Implemented by clients which are locked by a compositor lock. Used by the
+// CompositorLockManager to notify their parent that lock state has changed.
+class CompositorLockManagerClient {
  public:
-  virtual ~CompositorLockDelegate() {}
+  virtual ~CompositorLockManagerClient() {}
+
+  // Called when the lock state changes.
+  virtual void OnCompositorLockStateChanged(bool locked) = 0;
+};
+
+// A helper class used to manage compositor locks. Should be created/used by
+// classes which want to provide out compositor locking.
+class COMPOSITOR_EXPORT CompositorLockManager {
+ public:
+  CompositorLockManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        CompositorLockManagerClient* client);
+  ~CompositorLockManager();
+
+  // Creates a compositor lock. Returns NULL if it is not possible to lock at
+  // this time (i.e. we're waiting to complete a previous unlock). If the
+  // timeout is null, then no timeout is used.
+  std::unique_ptr<CompositorLock> GetCompositorLock(
+      CompositorLockClient* client,
+      base::TimeDelta timeout);
+
+  void set_allow_locks_to_extend_timeout(bool allowed) {
+    allow_locks_to_extend_timeout_ = allowed;
+  }
+
+  bool IsLocked() const { return !active_locks_.empty(); }
+
+  void TimeoutLocksForTesting() { TimeoutLocks(); }
+
+ private:
+  friend class CompositorLock;
+
+  // Causes all active CompositorLocks to be timed out.
+  void TimeoutLocks();
 
   // Called to perform the unlock operation.
-  virtual void RemoveCompositorLock(CompositorLock*) = 0;
+  void RemoveCompositorLock(CompositorLock*);
+
+  // The TaskRunner on which timeouts are run.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // A client which is notified about lock state changes.
+  CompositorLockManagerClient* client_ = nullptr;
+  // The estimated time that the locks will timeout.
+  base::TimeTicks scheduled_timeout_;
+  // If true, the |scheduled_timeout_| might be recalculated and extended.
+  bool allow_locks_to_extend_timeout_ = false;
+  // The set of locks that are held externally.
+  std::vector<CompositorLock*> active_locks_;
+
+  base::WeakPtrFactory<CompositorLockManager> weak_ptr_factory_;
+  base::WeakPtrFactory<CompositorLockManager> lock_timeout_weak_ptr_factory_;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent
@@ -46,18 +100,17 @@ class COMPOSITOR_EXPORT CompositorLock {
   // |delegate| is used to perform actual unlocking. If |timeout| is zero then
   // no timeout is scheduled, else a timeout is scheduled on the |task_runner|.
   explicit CompositorLock(CompositorLockClient* client,
-                          base::WeakPtr<CompositorLockDelegate> delegate);
+                          base::WeakPtr<CompositorLockManager> manager);
   ~CompositorLock();
 
  private:
-  friend class Compositor;
-  friend class FakeCompositorLock;
+  friend class CompositorLockManager;
 
   // Causes the CompositorLock to end due to a timeout.
   void TimeoutLock();
 
   CompositorLockClient* const client_;
-  base::WeakPtr<CompositorLockDelegate> delegate_;
+  base::WeakPtr<CompositorLockManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);
 };
