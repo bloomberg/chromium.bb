@@ -122,7 +122,7 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     return;
   }
 
-  SetProperty(property_id, result);
+  SetProperty(property_id, *result);
 }
 
 void StylePropertyMap::append(const ExecutionContext* execution_context,
@@ -165,7 +165,7 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
     current_value->Append(*value);
   }
 
-  SetProperty(property_id, current_value);
+  SetProperty(property_id, *current_value);
 }
 
 void StylePropertyMap::remove(const String& property_name,
