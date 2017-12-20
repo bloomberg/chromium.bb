@@ -292,7 +292,17 @@ hb_font_t* CreateHarfBuzzFont(sk_sp<SkTypeface> skia_face,
   if (face_cache->first.get() == NULL)
     face_cache->first.Init(skia_face.get());
 
-  hb_font_t* harfbuzz_font = hb_font_create(face_cache->first.get());
+  hb_font_t* harfbuzz_font = nullptr;
+#if defined(OS_MACOSX)
+  // Since we have a CTFontRef available at the right size, associate it with
+  // the hb_font_t. This avoids Harfbuzz doing its own lookup by typeface name,
+  // which requires talking to the font server again.
+  if (CTFontRef ct_font = SkTypeface_GetCTFontRef(skia_face.get()))
+    harfbuzz_font = hb_coretext_font_create(ct_font);
+#endif
+  if (!harfbuzz_font)
+    harfbuzz_font = hb_font_create(face_cache->first.get());
+
   const int scale = SkiaScalarToHarfBuzzUnits(text_size);
   hb_font_set_scale(harfbuzz_font, scale, scale);
   FontData* hb_font_data = new FontData(&face_cache->second);
