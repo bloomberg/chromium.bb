@@ -138,6 +138,8 @@ ScriptedIdleTaskController::CallbackId
 ScriptedIdleTaskController::RegisterCallback(
     IdleTask* idle_task,
     const IdleRequestOptions& options) {
+  DCHECK(idle_task);
+
   CallbackId id = NextCallbackId();
   idle_tasks_.Set(id, idle_task);
   long long timeout_millis = options.timeout();
@@ -208,9 +210,15 @@ void ScriptedIdleTaskController::RunCallback(
     double deadline_seconds,
     IdleDeadline::CallbackType callback_type) {
   DCHECK(!paused_);
-  IdleTask* idle_task = idle_tasks_.Take(id);
-  if (!idle_task)
+
+  // Keep the idle task in |idle_tasks_| so that it's still wrapper-traced.
+  // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
+  // get supported by either of wrapper-tracing or unified GC.
+  auto idle_task_iter = idle_tasks_.find(id);
+  if (idle_task_iter == idle_tasks_.end())
     return;
+  IdleTask* idle_task = idle_task_iter->value;
+  DCHECK(idle_task);
 
   double allotted_time_millis =
       std::max((deadline_seconds - CurrentTimeTicksInSeconds()) * 1000, 0.0);
@@ -230,6 +238,11 @@ void ScriptedIdleTaskController::RunCallback(
           GetExecutionContext(), id, allotted_time_millis,
           callback_type == IdleDeadline::CallbackType::kCalledByTimeout));
   idle_task->invoke(IdleDeadline::Create(deadline_seconds, callback_type));
+
+  // Finally there is no need to keep the idle task alive.
+  //
+  // Do not use the iterator because the idle task might update |idle_tasks_|.
+  idle_tasks_.erase(id);
 }
 
 void ScriptedIdleTaskController::ContextDestroyed(ExecutionContext*) {
