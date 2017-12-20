@@ -149,7 +149,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
          const url::Origin& origin) {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetLockManager()
-            ->CreateService(std::move(request));
+            ->CreateService(std::move(request), origin);
       }));
   parameterized_binder_registry_.AddInterface(
       base::Bind(&CreateDedicatedWorkerHostFactory));
