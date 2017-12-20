@@ -264,7 +264,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                             int min_height,
                             int max_width,
                             int max_height);
-  std::string EvaluateInWebInspectorOverlay(const std::string& script);
   v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
       int world_id,
       const std::string& script);
@@ -427,8 +426,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::EnableUseZoomForDSF)
       .SetMethod("evaluateInWebInspector",
                  &TestRunnerBindings::EvaluateInWebInspector)
-      .SetMethod("evaluateInWebInspectorOverlay",
-                 &TestRunnerBindings::EvaluateInWebInspectorOverlay)
       .SetMethod("evaluateScriptInIsolatedWorld",
                  &TestRunnerBindings::EvaluateScriptInIsolatedWorld)
       .SetMethod(
@@ -1277,14 +1274,6 @@ void TestRunnerBindings::EvaluateInWebInspector(int call_id,
                                                 const std::string& script) {
   if (runner_)
     runner_->EvaluateInWebInspector(call_id, script);
-}
-
-std::string TestRunnerBindings::EvaluateInWebInspectorOverlay(
-    const std::string& script) {
-  if (runner_)
-    return runner_->EvaluateInWebInspectorOverlay(script);
-
-  return std::string();
 }
 
 void TestRunnerBindings::ClearAllDatabases() {
@@ -2657,11 +2646,6 @@ bool TestRunner::IsChooserShown() {
 void TestRunner::EvaluateInWebInspector(int call_id,
                                         const std::string& script) {
   delegate_->EvaluateInWebInspector(call_id, script);
-}
-
-std::string TestRunner::EvaluateInWebInspectorOverlay(
-    const std::string& script) {
-  return delegate_->EvaluateInWebInspectorOverlay(script);
 }
 
 void TestRunner::ClearAllDatabases() {

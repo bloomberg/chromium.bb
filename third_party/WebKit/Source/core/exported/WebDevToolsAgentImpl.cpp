@@ -577,9 +577,8 @@ bool WebDevToolsAgentImpl::IsInspectorLayer(GraphicsLayer* layer) {
   return false;
 }
 
-WebString WebDevToolsAgentImpl::EvaluateInWebInspectorOverlay(
-    const WebString& script) {
-  WebString result;
+String WebDevToolsAgentImpl::EvaluateInOverlayForTesting(const String& script) {
+  String result;
   for (auto& it : overlay_agents_)
     result = it.value->EvaluateInOverlayForTest(script);
   return result;

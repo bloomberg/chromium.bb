@@ -588,6 +588,9 @@ class Internals final : public ScriptWrappable {
   // Intentional crash.
   void crash();
 
+  // Exposed for testing of inspector overlay.
+  String evaluateInInspectorOverlay(const String& script);
+
   // Overrides if the device is low-end (low on memory).
   void setIsLowEndDevice(bool);
   // Returns if the device is low-end.

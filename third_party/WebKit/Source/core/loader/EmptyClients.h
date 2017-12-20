@@ -373,6 +373,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   void AnnotatedRegionsChanged() override {}
   String GetInstrumentationToken() override { return g_empty_string; };
+  String evaluateInInspectorOverlayForTesting(const String& script) override {
+    return g_empty_string;
+  }
 
  protected:
   EmptyLocalFrameClient() = default;

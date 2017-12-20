@@ -87,6 +87,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void RootLayerCleared();
   bool CacheDisabled();
   void DetachAllSessionsForTesting();
+  String EvaluateInOverlayForTesting(const String& script);
 
   // WebDevToolsAgent implementation.
   void Attach(int session_id) override;
@@ -98,7 +99,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
                                   const WebString& message) override;
   void InspectElementAt(int session_id, const WebPoint&) override;
   void FailedToRequestDevTools(int session_id) override;
-  WebString EvaluateInWebInspectorOverlay(const WebString& script) override;
 
  private:
   WebDevToolsAgentImpl(WebLocalFrameImpl*,

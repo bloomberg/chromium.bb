@@ -3547,6 +3547,13 @@ void Internals::crash() {
   CHECK(false) << "Intentional crash";
 }
 
+String Internals::evaluateInInspectorOverlay(const String& script) {
+  LocalFrame* frame = GetFrame();
+  if (frame && frame->Client())
+    return frame->Client()->evaluateInInspectorOverlayForTesting(script);
+  return g_empty_string;
+}
+
 void Internals::setIsLowEndDevice(bool is_low_end_device) {
   MemoryCoordinator::SetIsLowEndDeviceForTesting(is_low_end_device);
 }
