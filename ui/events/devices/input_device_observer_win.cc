@@ -10,10 +10,10 @@
 #include "base/strings/string16.h"
 
 // This macro provides the implementation for the observer notification methods.
-#define NOTIFY_OBSERVERS(method_decl, observer_call)       \
-  void InputDeviceObserverWin::method_decl {               \
-    for (InputDeviceEventObserver & observer : observers_) \
-      observer.observer_call;                              \
+#define NOTIFY_OBSERVERS_METHOD(method_decl, observer_call) \
+  void InputDeviceObserverWin::method_decl {                \
+    for (InputDeviceEventObserver & observer : observers_)  \
+      observer.observer_call;                               \
   }
 
 namespace ui {
@@ -90,10 +90,10 @@ void InputDeviceObserverWin::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                 OnKeyboardDeviceConfigurationChanged());
+NOTIFY_OBSERVERS_METHOD(NotifyObserversKeyboardDeviceConfigurationChanged(),
+                        OnKeyboardDeviceConfigurationChanged());
 
-NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                 OnTouchpadDeviceConfigurationChanged());
+NOTIFY_OBSERVERS_METHOD(NotifyObserversTouchpadDeviceConfigurationChanged(),
+                        OnTouchpadDeviceConfigurationChanged());
 
 }  // namespace ui
