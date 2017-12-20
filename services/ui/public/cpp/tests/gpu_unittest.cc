@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -212,7 +213,15 @@ TEST_F(GpuTest, EstablishRequestOnFailureOnPreviousRequest) {
 
 // Tests that if a request for a gpu channel succeeded, then subsequent requests
 // are met synchronously.
-TEST_F(GpuTest, EstablishRequestResponseSynchronouslyOnSuccess) {
+// TODO(crbug.com/796436): Flaky on linux_chromium_rel_ng.
+#if defined(OS_LINUX)
+#define MAYBE_EstablishRequestResponseSynchronouslyOnSuccess \
+  DISABLED_EstablishRequestResponseSynchronouslyOnSuccess
+#else
+#define MAYBE_EstablishRequestResponseSynchronouslyOnSuccess \
+  EstablishRequestResponseSynchronouslyOnSuccess
+#endif
+TEST_F(GpuTest, MAYBE_EstablishRequestResponseSynchronouslyOnSuccess) {
   base::RunLoop run_loop;
   gpu()->EstablishGpuChannel(base::BindOnce(
       [](const base::Closure& callback,
