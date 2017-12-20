@@ -333,28 +333,14 @@ void GpuDataManagerImplPrivate::InitializeForTesting(
   finalized_ = true;
 
   InitializeImpl(gpu_blacklist_data, gpu_info);
-}
 
-bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
-  // SwiftShader blacklists all features
-  return use_swiftshader_ || (blacklisted_features_.count(feature) == 1);
-}
-
-bool GpuDataManagerImplPrivate::IsFeatureEnabled(int feature) const {
-  DCHECK_EQ(feature, gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
-  return gpu_feature_info_
-             .status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-         gpu::kGpuFeatureStatusEnabled;
-}
-
-bool GpuDataManagerImplPrivate::IsWebGLEnabled() const {
-  return use_swiftshader_ ||
-         !blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
-}
-
-bool GpuDataManagerImplPrivate::IsWebGL2Enabled() const {
-  return /*use_swiftshader_ ||*/ // Uncomment to enable WebGL 2 with SwiftShader
-         !blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2);
+  // TODO(zmo): Find a better mechanism to blacklist features for testing.
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (gpu_feature_info_
+          .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL] ==
+      gpu::kGpuFeatureStatusBlacklisted) {
+    cmd_line->AppendSwitch(switches::kDisableWebGL);
+  }
 }
 
 size_t GpuDataManagerImplPrivate::GetBlacklistedFeatureCount() const {
@@ -455,6 +441,7 @@ bool GpuDataManagerImplPrivate::IsGpuFeatureInfoAvailable() const {
 gpu::GpuFeatureStatus GpuDataManagerImplPrivate::GetFeatureStatus(
     gpu::GpuFeatureType feature) const {
   DCHECK(feature >= 0 && feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES);
+  DCHECK(gpu_feature_info_.IsValid());
   return gpu_feature_info_.status_values[feature];
 }
 
@@ -677,8 +664,13 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     base::CommandLine* command_line) const {
   DCHECK(command_line);
 
-  if (ShouldDisableAcceleratedVideoDecode(command_line))
+#if defined(OS_ANDROID)
+  // TODO(zmo): Move this to renderer side checking with GPU channel.
+  if (blacklisted_features_.count(
+          gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) == 1) {
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+  }
+#endif
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
@@ -696,14 +688,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   if (use_swiftshader_) {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gl::kGLImplementationSwiftShaderForWebGLName);
-  } else if ((IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL) ||
-              IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING) ||
-              IsFeatureBlacklisted(
-                  gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
-             (use_gl == "any")) {
-    command_line->AppendSwitchASCII(
-        switches::kUseGL,
-        gl::GetGLImplementationName(gl::GetSoftwareGLImplementation()));
   } else if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
@@ -909,19 +893,6 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
   }
   UpdateGpuInfoHelper();
   return true;
-}
-
-bool GpuDataManagerImplPrivate::ShouldDisableAcceleratedVideoDecode(
-    const base::CommandLine* command_line) const {
-  if (command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
-    // It was already disabled on the command line.
-    return false;
-  }
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
-    return true;
-
-  // Accelerated decode is never available with --disable-gpu.
-  return ShouldDisableHardwareAcceleration();
 }
 
 void GpuDataManagerImplPrivate::GetDisabledExtensions(

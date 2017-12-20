@@ -42,10 +42,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void InitializeForTesting(const gpu::GpuControlListData& gpu_blacklist_data,
                             const gpu::GPUInfo& gpu_info);
-  bool IsFeatureBlacklisted(int feature) const;
-  bool IsFeatureEnabled(int feature) const;
-  bool IsWebGLEnabled() const;
-  bool IsWebGL2Enabled() const;
   gpu::GPUInfo GetGPUInfo() const;
   bool GpuAccessAllowed(std::string* reason) const;
   void RequestCompleteGpuInfoIfNeeded();
@@ -91,9 +87,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   std::unique_ptr<base::ListValue> GetLogMessages() const;
 
   void HandleGpuSwitch();
-
-  bool ShouldDisableAcceleratedVideoDecode(
-      const base::CommandLine* command_line) const;
 
   void GetDisabledExtensions(std::string* disabled_extensions) const;
 
