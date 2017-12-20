@@ -63,7 +63,7 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_YUV422P12 = 23,
   PIXEL_FORMAT_YUV444P12 = 24,
 
-  PIXEL_FORMAT_Y8 = 25,   // single 8bpp plane.
+  /* PIXEL_FORMAT_Y8 = 25, Deprecated */
   PIXEL_FORMAT_Y16 = 26,  // single 16bpp plane.
 
   // Please update UMA histogram enumeration when adding new formats here.

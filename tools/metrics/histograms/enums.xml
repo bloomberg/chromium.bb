@@ -43318,7 +43318,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="22" label="YUV420P12"/>
   <int value="23" label="YUV422P12"/>
   <int value="24" label="YUV444P12"/>
-  <int value="25" label="Y8"/>
+  <int value="25" label="Y8 (Deprecated in M65)"/>
   <int value="26" label="Y16"/>
 </enum>
 
