@@ -76,11 +76,14 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_network_transaction_factory.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/proxy_config_traits.h"
 #include "content/public/network/ignore_errors_cert_verifier.h"
+#include "content/public/network/network_service.h"
 #include "content/public/network/url_request_context_builder_mojo.h"
 #include "extensions/features/features.h"
 #include "net/cert/caching_cert_verifier.h"
@@ -1218,11 +1221,19 @@ void ProfileIOData::Init(
   builder->SetCreateHttpTransactionFactoryCallback(
       base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
 
-  main_network_context_ =
-      io_thread_globals->network_service->CreateNetworkContextWithBuilder(
-          std::move(profile_params_->main_network_context_request),
-          std::move(profile_params_->main_network_context_params),
-          std::move(builder), &main_request_context_);
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    main_request_context_owner_ = std::move(builder)->Create(
+        std::move(profile_params_->main_network_context_params).get(),
+        io_thread_globals->quic_disabled, io_thread->net_log());
+    main_request_context_ =
+        main_request_context_owner_.url_request_context.get();
+  } else {
+    main_network_context_ =
+        content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(
+            std::move(profile_params_->main_network_context_request),
+            std::move(profile_params_->main_network_context_params),
+            std::move(builder), &main_request_context_);
+  }
 
   if (chrome_network_delegate_unowned->domain_reliability_monitor()) {
     // Save a pointer to shut down Domain Reliability cleanly before the

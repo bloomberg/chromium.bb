@@ -178,7 +178,6 @@ jumbo_source_set("browser_sources") {
     "navigation_type.h",
     "navigation_ui_data.h",
     "network_quality_observer_factory.h",
-    "network_service_instance.cc",
     "network_service_instance.h",
     "notification_database_data.cc",
     "notification_database_data.h",

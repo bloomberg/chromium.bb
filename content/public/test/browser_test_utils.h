@@ -1072,7 +1072,10 @@ WebContents* GetEmbedderForGuest(content::WebContents* guest);
 void SimulateNetworkServiceCrash();
 
 // Load the given |url| with |network_context| and return the |net::Error| code.
-int LoadBasicRequest(mojom::NetworkContext* network_context, const GURL& url);
+int LoadBasicRequest(mojom::NetworkContext* network_context,
+                     const GURL& url,
+                     int process_id = 0,
+                     int render_frame_id = 0);
 
 }  // namespace content
 

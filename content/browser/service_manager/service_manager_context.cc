@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_service_registry.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -527,6 +528,10 @@ ServiceManagerContext::ServiceManagerContext() {
       out_of_process_services[mojom::kNetworkServiceName] =
           base::ASCIIToUTF16("Network Service");
     }
+  } else {
+    // Create the in-process NetworkService object so that its getter is
+    // available on the IO thread.
+    GetNetworkService();
   }
 
   if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {

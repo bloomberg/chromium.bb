@@ -40,7 +40,8 @@ class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
   // NetworkService.
   //
   // This method is intended to ease the transition to an out-of-process
-  // NetworkService, and will be removed once that ships.
+  // NetworkService, and will be removed once that ships. It should only be
+  // called if the network service is disabled.
   virtual std::unique_ptr<mojom::NetworkContext>
   CreateNetworkContextWithBuilder(
       mojom::NetworkContextRequest request,

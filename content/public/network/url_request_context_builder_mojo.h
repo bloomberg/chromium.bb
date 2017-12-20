@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/common/network_service.mojom.h"
+#include "content/public/network/url_request_context_owner.h"
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
@@ -44,6 +46,17 @@ class CONTENT_EXPORT URLRequestContextBuilderMojo
   void SetMojoProxyResolverFactory(
       proxy_resolver::mojom::ProxyResolverFactoryPtr
           mojo_proxy_resolver_factory);
+
+  // Can be used to create a URLRequestContext from this consumer-configured
+  // URLRequestContextBuilder, which |params| will then be applied to. The
+  // results URLRequestContext will be returned along with other state that it
+  // depends on. The URLRequestContext can be further modified before first use.
+  //
+  // This method is intended to ease the transition to an out-of-process
+  // NetworkService, and will be removed once that ships.
+  URLRequestContextOwner Create(mojom::NetworkContextParams* params,
+                                bool quic_disabled,
+                                net::NetLog* net_log);
 
  private:
   std::unique_ptr<net::ProxyService> CreateProxyService(
