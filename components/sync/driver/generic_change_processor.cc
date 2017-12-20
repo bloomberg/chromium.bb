@@ -445,10 +445,8 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
     if (change.change_type() == SyncChange::ACTION_DELETE) {
       SyncError error =
           AttemptDelete(change, type_, type_str, &sync_node, error_handler());
-      if (error.IsSet()) {
-        NOTREACHED();
+      if (error.IsSet())
         return error;
-      }
       if (merge_result_.get()) {
         merge_result_->set_num_items_deleted(
             merge_result_->num_items_deleted() + 1);
