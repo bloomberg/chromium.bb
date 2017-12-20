@@ -40,6 +40,8 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   // Check if the lock screen is currently shown.
   static bool IsShown();
 
+  LockWindow* window() { return window_; }
+
   // Destroys an existing lock screen instance.
   void Destroy();
 

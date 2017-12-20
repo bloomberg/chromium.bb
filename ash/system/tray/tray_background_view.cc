@@ -9,6 +9,8 @@
 
 #include "ash/ash_constants.h"
 #include "ash/focus_cycler.h"
+#include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/lock_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -31,6 +33,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -291,6 +294,17 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
   node_data->SetName(GetAccessibleNameForTray());
+
+  if (LockScreen::IsShown()) {
+    int next_id = views::AXAuraObjCache::GetInstance()->GetID(
+        static_cast<views::Widget*>(LockScreen::Get()->window()));
+    node_data->AddIntAttribute(ui::AX_ATTR_NEXT_FOCUS_ID, next_id);
+  }
+
+  Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
+  int previous_id = views::AXAuraObjCache::GetInstance()->GetID(shelf_widget);
+  node_data->AddIntAttribute(ui::AX_ATTR_PREVIOUS_FOCUS_ID, previous_id);
 }
 
 void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {

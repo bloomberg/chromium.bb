@@ -55,6 +55,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   const char* GetClassName() const override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

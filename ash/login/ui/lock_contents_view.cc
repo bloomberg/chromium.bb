@@ -26,6 +26,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -34,6 +35,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -329,6 +331,17 @@ void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   }
 
   FocusNextWidget(reverse);
+}
+
+void LockContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
+  int next_id = views::AXAuraObjCache::GetInstance()->GetID(shelf_widget);
+  node_data->AddIntAttribute(ui::AX_ATTR_NEXT_FOCUS_ID, next_id);
+
+  int previous_id =
+      views::AXAuraObjCache::GetInstance()->GetID(shelf->GetStatusAreaWidget());
+  node_data->AddIntAttribute(ui::AX_ATTR_PREVIOUS_FOCUS_ID, previous_id);
 }
 
 void LockContentsView::OnUsersChanged(

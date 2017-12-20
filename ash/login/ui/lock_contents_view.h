@@ -78,6 +78,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void AddedToWidget() override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // LockScreenAppsFocusObserver:
   void OnFocusLeavingLockScreenApps(bool reverse) override;

@@ -538,9 +538,30 @@ cursors.WrappingCursor.prototype = {
       if (!endpoint)
         return this;
 
+      // Finds any explicitly provided focus.
+      var getDirectedFocus = function(node) {
+        return dir == Dir.FORWARD ? node.nextFocus : node.previousFocus;
+      };
+
       // Case 1: forwards (find the root-like node).
-      while (!AutomationPredicate.root(endpoint) && endpoint.parent)
+      var directedFocus;
+      while (!AutomationPredicate.root(endpoint) && endpoint.parent) {
+        if (directedFocus = getDirectedFocus(endpoint)) {
+          window.last = directedFocus;
+          break;
+        }
         endpoint = endpoint.parent;
+      }
+
+      if (directedFocus) {
+        directedFocus =
+            (dir == Dir.FORWARD ?
+                 AutomationUtil.findNodePre(
+                     directedFocus, dir, AutomationPredicate.object) :
+                 AutomationUtil.findLastNode(directedFocus, pred)) ||
+            directedFocus;
+        return new cursors.WrappingCursor(directedFocus, cursors.NODE_INDEX);
+      }
 
       // Always play a wrap earcon when moving forward.
       var playEarcon = dir == Dir.FORWARD;

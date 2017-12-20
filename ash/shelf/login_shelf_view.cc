@@ -12,6 +12,8 @@
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/lock_screen_action_background_state.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/lock_window.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -28,8 +30,10 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/focus/focus_search.h"
@@ -178,6 +182,19 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
         Shelf::ForWindow(GetWidget()->GetNativeWindow())
             ->GetStatusAreaWidget());
   }
+}
+
+void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (LockScreen::IsShown()) {
+    int previous_id = views::AXAuraObjCache::GetInstance()->GetID(
+        static_cast<views::Widget*>(LockScreen::Get()->window()));
+    node_data->AddIntAttribute(ui::AX_ATTR_PREVIOUS_FOCUS_ID, previous_id);
+  }
+
+  Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  int next_id =
+      views::AXAuraObjCache::GetInstance()->GetID(shelf->GetStatusAreaWidget());
+  node_data->AddIntAttribute(ui::AX_ATTR_NEXT_FOCUS_ID, next_id);
 }
 
 void LoginShelfView::ButtonPressed(views::Button* sender,

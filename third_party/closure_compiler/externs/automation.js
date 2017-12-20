@@ -1058,15 +1058,27 @@ chrome.automation.AutomationNode.prototype.nextSibling;
 
 /**
  * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-previousOnLine
+ */
+chrome.automation.AutomationNode.prototype.previousOnLine;
+
+/**
+ * @type {(!chrome.automation.AutomationNode|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-nextOnLine
  */
 chrome.automation.AutomationNode.prototype.nextOnLine;
 
 /**
  * @type {(!chrome.automation.AutomationNode|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-previousOnLine
+ * @see https://developer.chrome.com/extensions/automation#type-previousFocus
  */
-chrome.automation.AutomationNode.prototype.previousOnLine;
+chrome.automation.AutomationNode.prototype.previousFocus;
+
+/**
+ * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-nextFocus
+ */
+chrome.automation.AutomationNode.prototype.nextFocus;
 
 /**
  * The index of this node in its parent node's list of children. If this is the root node, this will be undefined.

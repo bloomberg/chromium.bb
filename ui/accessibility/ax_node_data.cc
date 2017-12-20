@@ -98,6 +98,8 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
     case AX_ATTR_TABLE_HEADER_ID:
     case AX_ATTR_TABLE_COLUMN_HEADER_ID:
     case AX_ATTR_TABLE_ROW_HEADER_ID:
+    case AX_ATTR_NEXT_FOCUS_ID:
+    case AX_ATTR_PREVIOUS_FOCUS_ID:
       return true;
 
     // Note: all of the attributes are included here explicitly,
@@ -793,6 +795,12 @@ std::string AXNodeData::ToString() const {
             result += " restriction=disabled";
             break;
         }
+        break;
+      case AX_ATTR_NEXT_FOCUS_ID:
+        result += " next_focus_id=" + value;
+        break;
+      case AX_ATTR_PREVIOUS_FOCUS_ID:
+        result += " previous_focus_id=" + value;
         break;
       case AX_INT_ATTRIBUTE_NONE:
         break;
