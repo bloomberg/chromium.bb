@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/weak_ptr.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class BrowserContext;
@@ -73,12 +74,10 @@ class ContextualSearchRankerLoggerImpl {
   void LogFeature(const std::string& feature_name, int value);
 
   // Sets up the Ranker Predictor for the given |web_contents|.
-  void SetupRankerPredictor();
+  void SetupRankerPredictor(const content::WebContents& web_contents);
 
-  // The WebContents object used to produce the source_id for UKMs, and to get
-  // browser_context when fetching the predictor. The object is not owned by
-  // ContextualSearchRankerLoggerImpl.
-  content::WebContents* web_contents_ = nullptr;
+  // The source_id for UKMs for the current page.
+  ukm::SourceId source_id_ = ukm::kInvalidSourceId;
 
   // The Ranker Predictor for whether a tap gesture should be suppressed or not.
   base::WeakPtr<assist_ranker::BinaryClassifierPredictor> predictor_;

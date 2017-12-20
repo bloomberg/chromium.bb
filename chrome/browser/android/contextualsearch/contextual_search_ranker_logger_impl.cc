@@ -41,22 +41,25 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
     JNIEnv* env,
     jobject obj,
     const base::android::JavaParamRef<jobject>& java_web_contents) {
-  web_contents_ = content::WebContents::FromJavaWebContents(java_web_contents);
-  if (!web_contents_)
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  if (!web_contents)
     return;
 
-  SetupRankerPredictor();
+  source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents);
+  SetupRankerPredictor(*web_contents);
   // Start building example data based on features to be gathered and logged.
   ranker_example_ = std::make_unique<assist_ranker::RankerExample>();
 }
 
-void ContextualSearchRankerLoggerImpl::SetupRankerPredictor() {
+void ContextualSearchRankerLoggerImpl::SetupRankerPredictor(
+    const content::WebContents& web_contents) {
   // Create one predictor for the current BrowserContext.
   if (browser_context_) {
-    DCHECK(browser_context_ == web_contents_->GetBrowserContext());
+    DCHECK(browser_context_ == web_contents.GetBrowserContext());
     return;
   }
-  browser_context_ = web_contents_->GetBrowserContext();
+  browser_context_ = web_contents.GetBrowserContext();
 
   assist_ranker::AssistRankerService* assist_ranker_service =
       assist_ranker::AssistRankerServiceFactory::GetForBrowserContext(
@@ -119,10 +122,9 @@ AssistRankerPrediction ContextualSearchRankerLoggerImpl::RunInference(
 
 void ContextualSearchRankerLoggerImpl::WriteLogAndReset(JNIEnv* env,
                                                         jobject obj) {
-  if (predictor_ && ranker_example_) {
-    ukm::SourceId source_id =
-        ukm::GetSourceIdForWebContentsDocument(web_contents_);
-    predictor_->LogExampleToUkm(*ranker_example_.get(), source_id);
+  if (predictor_ && ranker_example_ && source_id_ != ukm::kInvalidSourceId) {
+    predictor_->LogExampleToUkm(*ranker_example_.get(), source_id_);
+    source_id_ = ukm::kInvalidSourceId;
   }
   has_predicted_decision_ = false;
   ranker_example_ = std::make_unique<assist_ranker::RankerExample>();
