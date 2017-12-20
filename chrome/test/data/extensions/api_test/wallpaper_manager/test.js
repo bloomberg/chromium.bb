@@ -57,14 +57,10 @@ chrome.test.getConfig(function(config) {
                                                  true,
                                                  '123',
                                                  pass(function(thumbnail) {
-        // The current wallpaper might have not changed when |thumbnail| data is
-        // passed back. Allow the async setWallpaper task to finish.
-        setTimeout(function() {
-          chrome.wallpaperPrivate.setCustomWallpaperLayout(
-              'CENTER', pass(function() {
-            chrome.wallpaperPrivate.setCustomWallpaperLayout('STRETCH', pass());
-          }));
-        }, 500);
+        chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
+                                                         pass(function() {
+          chrome.wallpaperPrivate.setCustomWallpaperLayout('STRETCH', pass());
+        }));
       }));
     },
     function setCustomPngWallpaper() {
@@ -79,15 +75,11 @@ chrome.test.getConfig(function(config) {
                                                      true,
                                                      '123',
                                                      pass(function(thumbnail) {
-            // The current wallpaper might have not changed when |thumbnail|
-            // data is passed back. Allow the async setWallpaper task to finish.
-            setTimeout(function() {
-              chrome.wallpaperPrivate.setCustomWallpaperLayout(
-                  'CENTER', pass(function() {
-                chrome.wallpaperPrivate.setCustomWallpaperLayout(
-                    'STRETCH', pass());
-              }));
-            }, 500);
+            chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
+                                                             pass(function() {
+              chrome.wallpaperPrivate.setCustomWallpaperLayout('STRETCH',
+                                                               pass());
+            }));
           }));
         } else {
           chrome.test.fail('Failed to load test.png from local server.');

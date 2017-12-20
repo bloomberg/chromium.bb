@@ -489,10 +489,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, DevicePolicyTest) {
   // Log in a test user and set the user wallpaper policy. The user policy
   // controlled wallpaper shows up in the user session.
   LoginUser(testUsers_[0]);
-  RunUntilWallpaperChangeCount(3);
-
   InjectPolicy(0, kGreenImageFileName);
-  RunUntilWallpaperChangeCount(4);
+  RunUntilWallpaperChangeCount(3);
   EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // Set the device wallpaper policy inside the user session. That that the
