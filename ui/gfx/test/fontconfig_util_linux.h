@@ -9,7 +9,9 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
+namespace base {
+class FilePath;
+}
 
 namespace gfx {
 
@@ -20,15 +22,6 @@ extern const size_t kNumSystemFontsForFontconfig;
 
 extern const char* const kCloudStorageSyncedFonts[];
 extern const size_t kNumCloudStorageSyncedFonts;
-
-// Strings appearing at the beginning and end of Fontconfig XML files.
-extern const char kFontconfigFileHeader[];
-extern const char kFontconfigFileFooter[];
-
-// Strings appearing at the beginning and end of Fontconfig <match> stanzas.
-extern const char kFontconfigMatchFontHeader[];
-extern const char kFontconfigMatchPatternHeader[];
-extern const char kFontconfigMatchFooter[];
 
 // Initializes Fontconfig and creates and swaps in a new, empty config.
 void SetUpFontconfig();

@@ -17,6 +17,18 @@ namespace gfx {
 
 namespace {
 
+// Strings appearing at the beginning and end of Fontconfig XML files.
+const char kFontconfigFileHeader[] =
+    "<?xml version=\"1.0\"?>\n"
+    "<!DOCTYPE fontconfig SYSTEM \"fonts.dtd\">\n"
+    "<fontconfig>\n";
+const char kFontconfigFileFooter[] = "</fontconfig>";
+
+// Strings appearing at the beginning and end of Fontconfig <match> stanzas.
+const char kFontconfigMatchFontHeader[] = "  <match target=\"font\">\n";
+const char kFontconfigMatchPatternHeader[] = "  <match target=\"pattern\">\n";
+const char kFontconfigMatchFooter[] = "  </match>\n";
+
 // Implementation of LinuxFontDelegate that returns a canned FontRenderParams
 // struct. This is used to isolate tests from the system's local configuration.
 class TestFontDelegate : public LinuxFontDelegate {
