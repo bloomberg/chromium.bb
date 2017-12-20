@@ -41,12 +41,19 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Shows a card prompting the user to sign in. This item is also an {@link OptionalLeaf}, and sign
  * in state changes control its visibility.
  */
 public class SignInPromo extends OptionalLeaf {
+    /**
+     * Period for which promos are suppressed if signin is refused in FRE.
+     */
+    @VisibleForTesting
+    static final long SUPPRESSION_PERIOD_MS = TimeUnit.DAYS.toMillis(1);
+
     /**
      * Whether the promo had been previously dismissed, before creating an instance of the
      * {@link SignInPromo}.
@@ -68,6 +75,11 @@ public class SignInPromo extends OptionalLeaf {
      * offer the user to sign in.
      */
     private boolean mCanShowPersonalizedSuggestions;
+
+    /**
+     * Whether signin promo was temporary suppressed.
+     */
+    private boolean mSuppressed;
 
     private final OneShotImpressionListener mOneShotImpressionTracker =
             new OneShotImpressionListener(this::onImpression);
@@ -96,22 +108,23 @@ public class SignInPromo extends OptionalLeaf {
             mWasDismissed = preferenceManager.getNewTabPageGenericSigninPromoDismissed();
         }
 
-        SuggestionsSource suggestionsSource = uiDelegate.getSuggestionsSource();
-        SigninManager signinManager = SigninManager.get(context);
-
-        mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
-        mCanShowPersonalizedSuggestions = suggestionsSource.areRemoteSuggestionsEnabled();
-        mDismissed = mWasDismissed;
-
-        updateVisibility();
-
         if (mWasDismissed) {
+            setVisibilityInternal(false);
             mSigninObserver = null;
             mProfileDataCache = null;
             mSigninPromoController = null;
             mGenericPromoData = null;
             return;
         }
+
+        SuggestionsSource suggestionsSource = uiDelegate.getSuggestionsSource();
+        SigninManager signinManager = SigninManager.get(context);
+
+        mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
+        mCanShowPersonalizedSuggestions = suggestionsSource.areRemoteSuggestionsEnabled();
+        mSuppressed = getSuppressionStatus();
+
+        updateVisibility();
 
         if (mArePersonalizedPromosEnabled) {
             int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
@@ -127,6 +140,28 @@ public class SignInPromo extends OptionalLeaf {
 
         mSigninObserver = new SigninObserver(signinManager, suggestionsSource);
         uiDelegate.addDestructionObserver(mSigninObserver);
+    }
+
+    /**
+     * Suppress signin promos in New Tab Page for {@link SUPPRESSION_PERIOD_MS}. This will not
+     * affect promos that were created before this call.
+     */
+    public static void temporarilySuppressPromos() {
+        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
+                System.currentTimeMillis());
+    }
+
+    private boolean getSuppressionStatus() {
+        long suppressedFrom = ChromePreferenceManager.getInstance()
+                                      .getNewTabPageSigninPromoSuppressionPeriodStart();
+        if (suppressedFrom == 0) return false;
+        long currentTime = System.currentTimeMillis();
+        long suppressedTo = suppressedFrom + SUPPRESSION_PERIOD_MS;
+        if (suppressedFrom <= currentTime && currentTime < suppressedTo) {
+            return true;
+        }
+        ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
+        return false;
     }
 
     @Override
@@ -180,7 +215,8 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     private void updateVisibility() {
-        setVisibilityInternal(!mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions);
+        setVisibilityInternal(
+                !mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions && !mSuppressed);
     }
 
     @Override
