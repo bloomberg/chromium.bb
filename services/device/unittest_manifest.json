@@ -14,6 +14,7 @@
           "device:generic_sensor",
           "device:hid",
           "device:power_monitor",
+          "device:serial",
           "device:vibration",
           "device:wake_lock"
         ]

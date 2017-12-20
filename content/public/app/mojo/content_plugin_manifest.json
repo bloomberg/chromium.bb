@@ -17,7 +17,11 @@
       },
       "requires": {
         "*": [ "app" ],
-        "content_browser": [ "plugin" ],
+        "content_browser": [
+          "field_trials",
+          "font_cache",
+          "plugin"
+        ],
         "device": [ "device:power_monitor" ],
         "ui": [ "discardable_memory" ]
       }

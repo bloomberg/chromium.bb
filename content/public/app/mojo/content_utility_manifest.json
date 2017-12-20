@@ -20,6 +20,9 @@
       },
       "requires": {
         "*": [ "app" ],
+        "content_browser": [
+          "field_trials"
+        ],
         "device": [
           "device:power_monitor",
           "device:time_zone_monitor"

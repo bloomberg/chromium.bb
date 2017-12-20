@@ -288,13 +288,13 @@ void Service::OnStart() {
 
     registry_.AddInterface<mojom::Gpu>(
         base::Bind(&Service::BindGpuRequest, base::Unretained(this)));
-    registry_.AddInterface<mojom::VideoDetector>(
-        base::Bind(&Service::BindVideoDetectorRequest, base::Unretained(this)));
 #if defined(OS_CHROMEOS)
     registry_.AddInterface<mojom::Arc>(
         base::Bind(&Service::BindArcRequest, base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
   }
+  registry_.AddInterface<mojom::VideoDetector>(
+      base::Bind(&Service::BindVideoDetectorRequest, base::Unretained(this)));
 
   ime_driver_.Init(context()->connector(), test_config_);
 
@@ -556,6 +556,8 @@ void Service::BindRemoteEventDispatcherRequest(
 }
 
 void Service::BindVideoDetectorRequest(mojom::VideoDetectorRequest request) {
+  if (!should_host_viz_)
+    return;
   window_server_->video_detector()->AddBinding(std::move(request));
 }
 

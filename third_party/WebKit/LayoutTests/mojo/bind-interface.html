@@ -19,15 +19,6 @@ promise_test(() => {
 }, "can bind interfaces");
 
 promise_test(() => {
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
-  Mojo.bindInterface("totally not a valid interface name",
-                     mojo.makeRequest(helper).handle);
-  return helper.reverse("doesn't matter").then(
-      reply => assert_unreached("request should not succeed"),
-      e => {});
-}, "bindInterface failure closes the request pipe");
-
-promise_test(() => {
   let helperImpl = new TestHelperImpl;
   let interceptor =
       new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
@@ -46,7 +37,7 @@ promise_test(() => {
   });
 }, "can intercept calls to bindInterface");
 
-promise_test(() => {
+promise_test(async () => {
   // Intercept this interface at "context" scope to check that it is being
   // requested at "process" scope.
   let helperImpl = new TestHelperImpl;
@@ -64,9 +55,11 @@ promise_test(() => {
 
   const kTestMessage = "hello world.";
   const kExpectedReply = ".dlrow olleh";
-  return helper.reverse(kTestMessage).then(reply => {
+  await helper.reverse(kTestMessage).then(reply => {
     assert_equals(reply.reversed, kExpectedReply);
   });
+
+  interceptor.stop();
 }, "can request interfaces at process scope");
 
 promise_test(() => {
@@ -90,9 +83,8 @@ promise_test(() => {
 }, "can intercept interfaces at process scope");
 
 test(() => {
-  const kTestInterfaceName = "foo::mojom::Ba1r";
-  let a = new MojoInterfaceInterceptor(kTestInterfaceName);
-  let b = new MojoInterfaceInterceptor(kTestInterfaceName);
+  let a = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+  let b = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
   a.oninterfacerequest = () => {};
   b.oninterfacerequest = () => {};
   a.start();
@@ -101,9 +93,10 @@ test(() => {
 }, "interface interceptors are mutually exclusive");
 
 test(() => {
-  const kTestInterfaceName = "foo::mojom::Ba1r";
-  let a = new MojoInterfaceInterceptor(kTestInterfaceName, "process");
-  let b = new MojoInterfaceInterceptor(kTestInterfaceName, "process");
+  let a = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name,
+                                       "process");
+  let b = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name,
+                                       "process");
   a.oninterfacerequest = () => {};
   b.oninterfacerequest = () => {};
   a.start();
@@ -111,11 +104,10 @@ test(() => {
   a.stop();
 }, "process scope interface interceptors are mutually exclusive");
 
-test(async t => {
-  const kTestInterfaceName = "foo::mojom::Bar";
-
+promise_test(async t => {
   // First check that the interceptor can be started and intercepts requests.
-  let interceptor = new MojoInterfaceInterceptor(kTestInterfaceName);
+  let interceptor =
+      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
   let promise = new Promise(resolve => {
     interceptor.oninterfacerequest = e => {
       resolve(e.handle);
@@ -124,7 +116,7 @@ test(async t => {
   interceptor.start();
 
   let pipe = Mojo.createMessagePipe();
-  Mojo.bindInterface(kTestInterfaceName, pipe.handle0);
+  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name, pipe.handle0);
   let interceptedHandle = await promise;
   assert_true(interceptedHandle instanceof MojoHandle);
   interceptedHandle.close();
@@ -133,21 +125,24 @@ test(async t => {
   // Stop the interceptor and make another request.
   interceptor.stop();
 
-  pipe = Mojo.createMessagePipe();
+  let helper = new content.mojom.MojoLayoutTestHelperPtr;
   interceptor.oninterfacerequest = t.step_func(() => {
     assert_unreached("unexpected 'interfacerequest' event after stop");
   });
-  promise = new Promise(resolve => {
-    let watcher = pipe.handle1.watch({peerClosed: true}, () => {
-      watcher.cancel();  // Necessary to avoid a DCHECK when handle1 is closed.
-      resolve();
-    });
+  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+                     mojo.makeRequest(helper).handle);
+
+  // Enusre that the interface is functioning, i.e. the request definitely was
+  // not intercepted.
+  await helper.reverse("abc").then(reply => {
+    assert_equals(reply.reversed, "cba");
   });
-  Mojo.bindInterface(kTestInterfaceName, pipe.handle0);
-  await promise;
   pipe.handle1.close();
 
-  interceptor = new MojoInterfaceInterceptor(kTestInterfaceName);
+  // And ensure that we can start a new interceptor for the same interface since
+  // the previous one was stopped.
+  interceptor =
+      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
   interceptor.oninterfacerequest = e => {};
   interceptor.start();
   interceptor.stop();
