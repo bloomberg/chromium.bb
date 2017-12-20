@@ -89,3 +89,76 @@ cfl_subsample_lbd_fn get_subsample_lbd_fn_ssse3(int sub_x, int sub_y) {
   // index the function pointer array out of bounds.
   return subsample_lbd[sub_y & 1][sub_x & 1];
 }
+
+static INLINE __m128i predict_lbd_unclipped(const __m128i *input,
+                                            __m128i alpha_q12,
+                                            __m128i alpha_sign, __m128i dc_q0) {
+  __m128i ac_q3 = _mm_loadu_si128(input);
+  __m128i ac_sign = _mm_sign_epi16(alpha_sign, ac_q3);
+  __m128i scaled_luma_q0 = _mm_mulhrs_epi16(_mm_abs_epi16(ac_q3), alpha_q12);
+  scaled_luma_q0 = _mm_sign_epi16(scaled_luma_q0, ac_sign);
+  return _mm_add_epi16(scaled_luma_q0, dc_q0);
+}
+
+static INLINE void cfl_predict_lbd_x(const int16_t *pred_buf_q3, uint8_t *dst,
+                                     int dst_stride, TX_SIZE tx_size,
+                                     int alpha_q3, int width) {
+  uint8_t *row_end = dst + tx_size_high[tx_size] * dst_stride;
+  const __m128i alpha_sign = _mm_set1_epi16(alpha_q3);
+  const __m128i alpha_q12 = _mm_slli_epi16(_mm_abs_epi16(alpha_sign), 9);
+  const __m128i dc_q0 = _mm_set1_epi16(*dst);
+  do {
+    __m128i res = predict_lbd_unclipped((__m128i *)(pred_buf_q3), alpha_q12,
+                                        alpha_sign, dc_q0);
+    if (width < 16) {
+      res = _mm_packus_epi16(res, res);
+      if (width == 4)
+        *(uint32_t *)dst = _mm_cvtsi128_si32(res);
+      else
+        _mm_storel_epi64((__m128i *)dst, res);
+    } else {
+      __m128i next = predict_lbd_unclipped((__m128i *)(pred_buf_q3 + 8),
+                                           alpha_q12, alpha_sign, dc_q0);
+      res = _mm_packus_epi16(res, next);
+      _mm_storeu_si128((__m128i *)dst, res);
+      if (width == 32) {
+        res = predict_lbd_unclipped((__m128i *)(pred_buf_q3 + 16), alpha_q12,
+                                    alpha_sign, dc_q0);
+        next = predict_lbd_unclipped((__m128i *)(pred_buf_q3 + 24), alpha_q12,
+                                     alpha_sign, dc_q0);
+        res = _mm_packus_epi16(res, next);
+        _mm_storeu_si128((__m128i *)(dst + 16), res);
+      }
+    }
+    dst += dst_stride;
+    pred_buf_q3 += CFL_BUF_LINE;
+  } while (dst < row_end);
+}
+
+static void cfl_predict_lbd_4(const int16_t *pred_buf_q3, uint8_t *dst,
+                              int dst_stride, TX_SIZE tx_size, int alpha_q3) {
+  cfl_predict_lbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, 4);
+}
+
+static void cfl_predict_lbd_8(const int16_t *pred_buf_q3, uint8_t *dst,
+                              int dst_stride, TX_SIZE tx_size, int alpha_q3) {
+  cfl_predict_lbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, 8);
+}
+
+static void cfl_predict_lbd_16(const int16_t *pred_buf_q3, uint8_t *dst,
+                               int dst_stride, TX_SIZE tx_size, int alpha_q3) {
+  cfl_predict_lbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, 16);
+}
+
+static void cfl_predict_lbd_32(const int16_t *pred_buf_q3, uint8_t *dst,
+                               int dst_stride, TX_SIZE tx_size, int alpha_q3) {
+  cfl_predict_lbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, 32);
+}
+
+cfl_predict_lbd_fn get_predict_lbd_fn_ssse3(TX_SIZE tx_size) {
+  static const cfl_predict_lbd_fn predict_lbd[4] = {
+    cfl_predict_lbd_4, cfl_predict_lbd_8, cfl_predict_lbd_16, cfl_predict_lbd_32
+  };
+  const int width_log2 = tx_size_wide_log2[tx_size];
+  return predict_lbd[(width_log2 - 2) & 3];
+}
