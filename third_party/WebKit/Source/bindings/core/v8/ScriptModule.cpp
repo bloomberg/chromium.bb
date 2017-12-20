@@ -13,25 +13,6 @@
 
 namespace blink {
 
-const char* ScriptModuleStateToString(ScriptModuleState state) {
-  switch (state) {
-    case ScriptModuleState::kUninstantiated:
-      return "uninstantiated";
-    case ScriptModuleState::kInstantiating:
-      return "instantinating";
-    case ScriptModuleState::kInstantiated:
-      return "instantiated";
-    case ScriptModuleState::kEvaluating:
-      return "evaluating";
-    case ScriptModuleState::kEvaluated:
-      return "evaluated";
-    case ScriptModuleState::kErrored:
-      return "errored";
-  }
-  NOTREACHED();
-  return "";
-}
-
 ScriptModule::ScriptModule() {}
 
 ScriptModule::ScriptModule(v8::Isolate* isolate, v8::Local<v8::Module> module)
@@ -146,25 +127,9 @@ Vector<TextPosition> ScriptModule::ModuleRequestPositions(
   return ret;
 }
 
-ScriptModuleState ScriptModule::Status(ScriptState* script_state) {
-  DCHECK(!IsNull());
-
-  v8::Local<v8::Module> module = module_->NewLocal(script_state->GetIsolate());
-  return module->GetStatus();
-}
-
-v8::Local<v8::Value> ScriptModule::ErrorCompletion(ScriptState* script_state) {
-  DCHECK(!IsNull());
-  DCHECK_EQ(ScriptModuleState::kErrored, Status(script_state));
-
-  v8::Local<v8::Module> module = module_->NewLocal(script_state->GetIsolate());
-  return module->GetException();
-}
-
 v8::Local<v8::Value> ScriptModule::V8Namespace(v8::Isolate* isolate) {
   DCHECK(!IsNull());
   v8::Local<v8::Module> module = module_->NewLocal(isolate);
-  DCHECK_EQ(ScriptModuleState::kEvaluated, module->GetStatus());
   return module->GetModuleNamespace();
 }
 

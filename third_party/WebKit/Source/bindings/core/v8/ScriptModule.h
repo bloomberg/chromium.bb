@@ -22,12 +22,6 @@ namespace blink {
 
 class ExceptionState;
 
-// Correspond to TC39 ModuleRecord.[[Status]]
-// TODO(kouhei): Add URL after https://github.com/tc39/ecma262/pull/916 is
-// merged.
-using ScriptModuleState = v8::Module::Status;
-const char* ScriptModuleStateToString(ScriptModuleState);
-
 // ScriptModule wraps a handle to a v8::Module for use in core.
 //
 // Using ScriptModules needs a ScriptState and its scope to operate in. You
@@ -62,11 +56,6 @@ class CORE_EXPORT ScriptModule final {
 
   Vector<String> ModuleRequests(ScriptState*);
   Vector<TextPosition> ModuleRequestPositions(ScriptState*);
-  ScriptModuleState Status(ScriptState*);
-
-  // Returns record's [[ErrorCompletion]] field's [[Value]].
-  // Should only be used via ModulatorImpl::GetError()
-  v8::Local<v8::Value> ErrorCompletion(ScriptState*);
 
   inline bool operator==(const blink::ScriptModule& other) const;
   bool operator!=(const blink::ScriptModule& other) const {
