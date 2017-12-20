@@ -125,15 +125,6 @@ test(() => {
   assert_equals(rotation.toString(), 'rotate(10deg)');
 }, "x, y, and z components are not included in toString when is2D is true");
 
-for (let params of testParams) {
-  let input = params.input;
-  test(() => {
-    var transformValue = new CSSTransformValue([input]);
-    var result = transformValue.toMatrix();
-    assert_matrix_approx_equals(result, params.asMatrix, EPSILON);
-  }, "toMatrix works for " + params.cssText + " in a CSSTransformValue");
-}
-
 test(() => {
   // Obtained by doing the following in a console:
   // $0.style.transform = 'rotate3d(1, 2, 3, 10rad)';

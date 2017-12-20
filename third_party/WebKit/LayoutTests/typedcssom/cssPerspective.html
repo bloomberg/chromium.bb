@@ -13,16 +13,6 @@ test(() => {
 }, "toString should return perspective(<CSSNumericValue.cssString()>)");
 
 test(() => {
-  // Obtained by doing $0.style.transform = perspective(10px);
-  // getComputedStyle($0).transform
-  let expectedMatrix = new DOMMatrixReadOnly(
-      [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -0.1, 0, 0, 0, 1]);
-  let transformValue = new CSSTransformValue([new CSSPerspective(CSS.px(10))]);
-  assert_matrix_approx_equals(
-      transformValue.toMatrix(), expectedMatrix, EPSILON);
-}, "toMatrix when used in a CSSTransformValue produces correct matrix");
-
-test(() => {
   let transformValue = new CSSTransformValue([new CSSPerspective(CSS.em(10))]);
   assert_throws(new TypeError(), () => {
     transformValue.toMatrix();

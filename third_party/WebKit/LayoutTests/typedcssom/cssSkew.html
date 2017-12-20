@@ -63,18 +63,4 @@ for (let params of testParams) {
   }, "toString is correct for " + params.cssText);
 }
 
-for (let params of testParams) {
-  test(() => {
-    var input = params.input;
-    var transformValue = new CSSTransformValue([input]);
-    var inputAsMatrix = transformValue.toMatrix();
-    assert_true(inputAsMatrix.is2D);
-
-    var tanAx = tanUnitValue(input.ax);
-    var tanAy = tanUnitValue(input.ay);
-    var expectedMatrix = new DOMMatrixReadOnly([1, tanAy, tanAx, 1, 0, 0]);
-    assert_matrix_approx_equals(inputAsMatrix, expectedMatrix, EPSILON);
-  }, "asMatrix is constructed correctly for " + params.cssText);
-}
-
 </script>
