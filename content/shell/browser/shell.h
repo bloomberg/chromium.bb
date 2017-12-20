@@ -82,7 +82,7 @@ class Shell : public WebContentsDelegate,
   void ShowDevTools();
   void CloseDevTools();
   bool hide_toolbar() { return hide_toolbar_; }
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   // Resizes the web content view to the given dimensions.
   void SizeTo(const gfx::Size& content_size);
 #endif

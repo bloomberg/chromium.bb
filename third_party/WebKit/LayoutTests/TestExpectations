@@ -913,6 +913,8 @@ crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failu
 crbug.com/520737 [ Mac ] external/wpt/css/css-writing-modes/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
+# gpuBenchmarking.pinchBy is busted on desktops
+crbug.com/787615 [ Mac Win Linux ] synthetic_gestures/synthetic-pinch-zoom-gesture.html [ Failure Pass ]
 
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
