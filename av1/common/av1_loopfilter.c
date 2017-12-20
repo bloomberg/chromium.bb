@@ -879,12 +879,10 @@ static void build_masks(AV1_COMMON *const cm,
   const TX_SIZE tx_size_y = txsize_sqr_map[mbmi->tx_size];
   const TX_SIZE tx_size_y_left = txsize_horz_map[mbmi->tx_size];
   const TX_SIZE tx_size_y_above = txsize_vert_map[mbmi->tx_size];
-  const TX_SIZE tx_size_uv =
-      txsize_sqr_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
-  const TX_SIZE tx_size_uv_left =
-      txsize_horz_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
-  const TX_SIZE tx_size_uv_above =
-      txsize_vert_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
+  const TX_SIZE tx_size_uv_actual = av1_get_uv_tx_size(mbmi, 1, 1);
+  const TX_SIZE tx_size_uv = txsize_sqr_map[tx_size_uv_actual];
+  const TX_SIZE tx_size_uv_left = txsize_horz_map[tx_size_uv_actual];
+  const TX_SIZE tx_size_uv_above = txsize_vert_map[tx_size_uv_actual];
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
   const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
@@ -1439,7 +1437,8 @@ static void get_filter_level_and_masks_non420(
       const BLOCK_SIZE bsize = get_plane_block_size(mbmi->sb_type, plane);
       const TX_SIZE mb_tx_size = mbmi->inter_tx_size[tx_row_idx][tx_col_idx];
       tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                    ? uv_txsize_lookup[bsize][mb_tx_size][0][0]
+                    ? av1_get_uv_tx_size_vartx(mbmi, plane, bsize, tx_row_idx,
+                                               tx_col_idx)
                     : mb_tx_size;
     }
 
@@ -2040,9 +2039,9 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
 
     assert(mb_tx_size < TX_SIZES_ALL);
 
-    tx_size = (plane == AOM_PLANE_Y)
-                  ? mb_tx_size
-                  : uv_txsize_lookup[bsize][mb_tx_size][0][0];
+    tx_size = (plane == AOM_PLANE_Y) ? mb_tx_size : av1_get_uv_tx_size_vartx(
+                                                        mbmi, plane_ptr, bsize,
+                                                        tx_row_idx, tx_col_idx);
     assert(tx_size < TX_SIZES_ALL);
   }
 

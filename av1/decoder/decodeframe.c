@@ -215,7 +215,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
   const int tx_row = blk_row >> (1 - pd->subsampling_y);
   const int tx_col = blk_col >> (1 - pd->subsampling_x);
   const TX_SIZE plane_tx_size =
-      plane ? uv_txsize_lookup[bsize][mbmi->inter_tx_size[tx_row][tx_col]][0][0]
+      plane ? av1_get_uv_tx_size_vartx(mbmi, pd, bsize, tx_row, tx_col)
             : mbmi->inter_tx_size[tx_row][tx_col];
   // Scale to match transform block unit.
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
@@ -225,7 +225,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
   if (tx_size == plane_tx_size
 #if DISABLE_VARTX_FOR_CHROMA
-      || pd->subsampling_x || pd->subsampling_y
+      || plane
 #endif  // DISABLE_VARTX_FOR_CHROMA
       ) {
     PLANE_TYPE plane_type = get_plane_type(plane);
