@@ -275,8 +275,7 @@ public class BookmarkTest {
     @Test
     @MediumTest
     public void testSearchBookmarks() throws Exception {
-        BookmarkPromoHeader.forcePromoStateForTests(
-                BookmarkPromoHeader.PromoState.PROMO_SIGNIN_GENERIC);
+        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
         openBookmarkManager();
