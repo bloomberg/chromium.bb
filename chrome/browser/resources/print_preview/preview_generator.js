@@ -210,8 +210,8 @@ cr.define('print_preview', function() {
         pageRange: printTicketStore.pageRange.getDocumentPageRanges(),
         mediaSize: printTicketStore.mediaSize.getValue(),
         landscape: printTicketStore.landscape.getValue(),
-        color: PreviewGenerator.getNativeColorModel(
-            destination, printTicketStore.color),
+        color:
+            destination.getNativeColorModel(printTicketStore.color.getValue()),
         headerFooterEnabled: printTicketStore.headerFooter.getValue(),
         marginsType: printTicketStore.marginsType.getValue(),
         isFirstRequest: this.inFlightRequestId_ == 0,
@@ -481,28 +481,6 @@ cr.define('print_preview', function() {
 
     // Dispatched when the current print preview request fails.
     FAIL: 'print_preview.PreviewGenerator.FAIL'
-  };
-
-  /**
-   * Enumeration of color modes used by Chromium.
-   * @enum {number}
-   */
-  PreviewGenerator.ColorMode = {GRAY: 1, COLOR: 2};
-
-  /**
-   * @param {!print_preview.Destination} destination Destination to print to.
-   * @param {!print_preview.ticket_items.Color} color Color ticket item.
-   * @return {number} Native color model.
-   */
-  PreviewGenerator.getNativeColorModel = function(destination, color) {
-    // For non-local printers native color model is ignored anyway.
-    const option = destination.isLocal ? color.getSelectedOption() : null;
-    const nativeColorModel = parseInt(option ? option.vendor_id : null, 10);
-    if (isNaN(nativeColorModel)) {
-      return color.getValue() ? PreviewGenerator.ColorMode.COLOR :
-                                PreviewGenerator.ColorMode.GRAY;
-    }
-    return nativeColorModel;
   };
 
   /**

@@ -426,7 +426,8 @@ cr.define('print_preview', function() {
         cjt.print.collate = {collate: this.collate.getValue()};
       }
       if (this.color.isCapabilityAvailable() && this.color.isUserEdited()) {
-        const selectedOption = this.color.getSelectedOption();
+        const selectedOption =
+            destination.getSelectedColorOption(this.color.getValue());
         if (!selectedOption) {
           console.error('Could not find correct color option');
         } else {
@@ -440,7 +441,7 @@ cr.define('print_preview', function() {
         // reasonable reader of the ticket will have to do more work, or process
         // the ticket sub-optimally, in order to safely handle the lack of a
         // color ticket item.
-        const defaultOption = this.color.defaultColorOption();
+        const defaultOption = destination.defaultColorOption;
         if (defaultOption) {
           cjt.print.color = {type: defaultOption.type};
           if (defaultOption.hasOwnProperty('vendor_id')) {

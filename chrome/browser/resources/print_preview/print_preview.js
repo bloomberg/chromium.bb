@@ -603,8 +603,8 @@ cr.define('print_preview', function() {
         mediaSize: printTicketStore.mediaSize.getValue(),
         pageCount: printTicketStore.pageRange.getPageNumberSet().size,
         landscape: printTicketStore.landscape.getValue(),
-        color: print_preview.PreviewGenerator.getNativeColorModel(
-            destination, printTicketStore.color),
+        color:
+            destination.getNativeColorModel(printTicketStore.color.getValue()),
         headerFooterEnabled: false,  // Only used in print preview
         marginsType: printTicketStore.marginsType.getValue(),
         duplex: printTicketStore.duplex.getValue() ?

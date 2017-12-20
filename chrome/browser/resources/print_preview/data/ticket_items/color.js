@@ -27,62 +27,14 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable() {
-      const capability = this.capability;
-      if (!capability) {
-        return false;
-      }
-      let hasColor = false;
-      let hasMonochrome = false;
-      capability.option.forEach(function(option) {
-        hasColor = hasColor || (Color.COLOR_TYPES_.indexOf(option.type) >= 0);
-        hasMonochrome = hasMonochrome ||
-            (Color.MONOCHROME_TYPES_.indexOf(option.type) >= 0);
-      });
-      return hasColor && hasMonochrome;
-    }
-
-    /** @return {Object} Color capability of the selected destination. */
-    get capability() {
       const dest = this.getSelectedDestInternal();
-      return (dest && dest.capabilities && dest.capabilities.printer &&
-              dest.capabilities.printer.color) ||
-          null;
-    }
-
-    /** @return {Object} Printer's default color option. */
-    defaultColorOption() {
-      const capability = this.capability;
-      if (!capability) {
-        return null;
-      }
-      const defaultOptions = capability.option.filter(function(option) {
-        return option.is_default;
-      });
-      return defaultOptions.length != 0 ? defaultOptions[0] : null;
-    }
-
-    /** @return {Object} Color option corresponding to the current value. */
-    getSelectedOption() {
-      const capability = this.capability;
-      const options = capability ? capability.option : null;
-      if (options) {
-        const typesToLookFor =
-            this.getValue() ? Color.COLOR_TYPES_ : Color.MONOCHROME_TYPES_;
-        for (let i = 0; i < typesToLookFor.length; i++) {
-          const matchingOptions = options.filter(function(option) {
-            return option.type == typesToLookFor[i];
-          });
-          if (matchingOptions.length > 0) {
-            return matchingOptions[0];
-          }
-        }
-      }
-      return null;
+      return dest ? dest.hasColorCapability : false;
     }
 
     /** @override */
     getDefaultValueInternal() {
-      const defaultOption = this.defaultColorOption();
+      const dest = this.getSelectedDestInternal();
+      const defaultOption = dest ? dest.defaultColorOption : null;
       return defaultOption &&
           (Color.COLOR_TYPES_.indexOf(defaultOption.type) >= 0);
     }
