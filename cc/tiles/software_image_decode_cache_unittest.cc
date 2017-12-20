@@ -56,10 +56,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyNoneQuality) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_TRUE(key.is_nearest_neighbor());
+  EXPECT_EQ(kNone_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   // Since the original decode will be used, the locked_bytes is that of the
   // original image.
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
@@ -77,9 +77,10 @@ TEST(SoftwareImageDecodeCacheTest,
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
   EXPECT_EQ(50, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(50u * 50u * 4u, key.locked_bytes());
 }
 
@@ -94,10 +95,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityDropsToLowIfMipLevel0) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -113,10 +114,10 @@ TEST(SoftwareImageDecodeCacheTest, LowUnscalableFormatStaysLow) {
   auto key =
       ImageDecodeCacheKey::FromDrawImage(draw_image, kARGB_4444_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -132,10 +133,10 @@ TEST(SoftwareImageDecodeCacheTest, HighUnscalableFormatBecomesLow) {
   auto key =
       ImageDecodeCacheKey::FromDrawImage(draw_image, kARGB_4444_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -150,10 +151,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyLowQualityKeptLowIfUpscale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -169,9 +170,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQuality) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
   EXPECT_EQ(50, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(50u * 50u * 4u, key.locked_bytes());
 }
 
@@ -187,10 +189,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityDropToLowIfEnlarging) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -206,10 +208,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityDropToLowIfIdentity) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -226,10 +228,10 @@ TEST(SoftwareImageDecodeCacheTest,
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -246,10 +248,10 @@ TEST(SoftwareImageDecodeCacheTest,
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -267,10 +269,10 @@ TEST(SoftwareImageDecodeCacheTest,
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
 
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -286,10 +288,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt1_5Scale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(500, key.target_size().width());
   EXPECT_EQ(200, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
 }
 
@@ -305,10 +307,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt1_0cale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(500, key.target_size().width());
   EXPECT_EQ(200, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
 }
 
@@ -324,10 +326,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyLowQualityAt0_75Scale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(500, key.target_size().width());
   EXPECT_EQ(200, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
 }
 
@@ -343,9 +345,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_5Scale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(250, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(250u * 100u * 4u, key.locked_bytes());
 }
 
@@ -361,9 +364,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_49Scale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(250, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(250u * 100u * 4u, key.locked_bytes());
 }
 
@@ -379,9 +383,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_1Scale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(62, key.target_size().width());
   EXPECT_EQ(25, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(62u * 25u * 4u, key.locked_bytes());
 }
 
@@ -397,9 +402,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_01Scale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(quality, key.filter_quality());
   EXPECT_EQ(7, key.target_size().width());
   EXPECT_EQ(3, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(7u * 3u * 4u, key.locked_bytes());
 }
 
@@ -416,9 +422,10 @@ TEST(SoftwareImageDecodeCacheTest,
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
   EXPECT_EQ(50, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(50u * 50u * 4u, key.locked_bytes());
 }
 
@@ -434,10 +441,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyUpscaleIsLowQuality) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -456,9 +463,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(2277, key.target_size().width());
   EXPECT_EQ(1024, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
   EXPECT_EQ(2277u * 1024u * 4u, key.locked_bytes());
 }
 
@@ -475,10 +483,10 @@ TEST(SoftwareImageDecodeCacheTest,
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -494,10 +502,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyHighQualityDropToLowIfIdentity) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -514,10 +522,10 @@ TEST(SoftwareImageDecodeCacheTest,
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -534,10 +542,10 @@ TEST(SoftwareImageDecodeCacheTest,
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -553,10 +561,10 @@ TEST(SoftwareImageDecodeCacheTest, OriginalDecodesAreEqual) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_TRUE(key.is_nearest_neighbor());
+  EXPECT_EQ(kNone_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 
   DrawImage another_draw_image(
@@ -567,10 +575,10 @@ TEST(SoftwareImageDecodeCacheTest, OriginalDecodesAreEqual) {
   auto another_key =
       ImageDecodeCacheKey::FromDrawImage(another_draw_image, kN32_SkColorType);
   EXPECT_EQ(another_draw_image.frame_key(), another_key.frame_key());
-  EXPECT_TRUE(another_key.is_nearest_neighbor());
+  EXPECT_EQ(kNone_SkFilterQuality, another_key.filter_quality());
   EXPECT_EQ(100, another_key.target_size().width());
   EXPECT_EQ(100, another_key.target_size().height());
-  EXPECT_EQ(another_key.type(), ImageDecodeCacheKey::kOriginal);
+  EXPECT_TRUE(another_key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, another_key.locked_bytes());
 
   EXPECT_TRUE(key == another_key);
@@ -589,7 +597,7 @@ TEST(SoftwareImageDecodeCacheTest, ImageRectDoesNotContainSrcRect) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_FALSE(key.is_nearest_neighbor());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
   EXPECT_EQ(gfx::Rect(25, 35, 75, 65), key.src_rect());
@@ -609,7 +617,7 @@ TEST(SoftwareImageDecodeCacheTest, ImageRectDoesNotContainSrcRectWithScale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
-  EXPECT_EQ(key.type(), ImageDecodeCacheKey::kSubrectAndScale);
+  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(40, key.target_size().width());
   EXPECT_EQ(35, key.target_size().height());
   EXPECT_EQ(gfx::Rect(20, 30, 80, 70), key.src_rect());
