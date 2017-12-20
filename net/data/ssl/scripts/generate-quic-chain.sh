@@ -91,6 +91,7 @@ CA_COMMON_NAME="Test Intermediate CA" \
     -extensions user_cert
 
 # Copy to the file names that are actually checked in.
-try openssl pkcs8 -topk8 -inform pem -outform der -in out/quic-test-cert.key -out ../certificates/quic-cert.key -nocrypt
+try openssl pkcs8 -topk8 -inform pem -outform der -in out/quic-test-cert.key -out ../certificates/quic-leaf-cert.key -nocrypt
 try cat out/quic-test-cert.pem out/quic-test-intermediate.pem > ../certificates/quic-chain.pem
 try cp out/quic-test-root.pem ../certificates/quic-root.pem
+try openssl pkcs8 -nocrypt -inform der -outform pem -in ../certificates/quic-leaf-cert.key -out ../certificates/quic-leaf-cert.key.pkcs8.pem

@@ -50,9 +50,9 @@ void StartOnServerThread(const base::FilePath& test_files_root,
   std::unique_ptr<net::ProofSourceChromium> proof_source(
       new net::ProofSourceChromium());
   CHECK(proof_source->Initialize(
-      directory.Append("quic_test.example.com.crt"),
-      directory.Append("quic_test.example.com.key.pkcs8"),
-      directory.Append("quic_test.example.com.key.sct")));
+      directory.Append("quic-chain.pem"),
+      directory.Append("quic-leaf-cert.key"),
+      base::FilePath()));
   g_quic_server = new net::QuicSimpleServer(
       std::move(proof_source), config,
       net::QuicCryptoServerConfig::ConfigOptions(), net::AllSupportedVersions(),

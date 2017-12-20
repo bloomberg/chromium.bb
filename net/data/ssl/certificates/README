@@ -114,16 +114,16 @@ unit tests.
   NSS certificate nickname for a user certificate. This certificate's Subject
   field doesn't have a common name.
 
-- quic_test_ecc.example.com.crt
-- quic_test.example.com.crt
-- quic_root.crt
-     These certificates are used by the ProofVerifier's unit tests of QUIC.
-
 ===== From net/data/ssl/scripts/generate-quic-chain.sh
-- quic-cert.key
 - quic-chain.pem
+- quic-leaf-cert.key
+- quic-leaf-cert.key.pkcs8.pem
 - quic-root.pem
      These certificates are used by integration tests that use QUIC.
+
+- quic-leaf-cert.key.sct
+     This isn't generated and just contains a simple text file (the contents
+     don't actually matter, just the presence of the file).
 
 ===== From net/data/ssl/scripts/generate-test-certs.sh
 - expired_cert.pem

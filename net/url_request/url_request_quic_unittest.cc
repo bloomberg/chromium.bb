@@ -35,8 +35,7 @@ namespace net {
 
 namespace {
 
-// This must match the certificate used (quic_test.example.com.crt and
-// quic_test.example.com.key.pkcs8).
+// This must match the certificate used (quic-chain.pem and quic-leaf-cert.key).
 const char kTestServerHost[] = "test.example.com";
 // Used as a simple response from the server.
 const char kHelloPath[] = "/hello.txt";
@@ -52,12 +51,7 @@ class URLRequestQuicTest : public ::testing::Test {
         new HttpNetworkSession::Params);
     CertVerifyResult verify_result;
     verify_result.verified_cert = ImportCertFromFile(
-        GetTestCertsDirectory(), "quic_test.example.com.crt");
-    cert_verifier_.AddResultForCertAndHost(verify_result.verified_cert.get(),
-                                           "test.example.com", verify_result,
-                                           OK);
-    verify_result.verified_cert = ImportCertFromFile(
-        GetTestCertsDirectory(), "quic_test_ecc.example.com.crt");
+        GetTestCertsDirectory(), "quic-chain.pem");
     cert_verifier_.AddResultForCertAndHost(verify_result.verified_cert.get(),
                                            "test.example.com", verify_result,
                                            OK);
@@ -152,9 +146,9 @@ class URLRequestQuicTest : public ::testing::Test {
         new net::ProofSourceChromium());
     base::FilePath directory = GetTestCertsDirectory();
     CHECK(proof_source->Initialize(
-        directory.Append(FILE_PATH_LITERAL("quic_test.example.com.crt")),
-        directory.Append(FILE_PATH_LITERAL("quic_test.example.com.key.pkcs8")),
-        directory.Append(FILE_PATH_LITERAL("quic_test.example.com.key.sct"))));
+        directory.Append(FILE_PATH_LITERAL("quic-chain.pem")),
+        directory.Append(FILE_PATH_LITERAL("quic-leaf-cert.key")),
+        base::FilePath()));
     server_.reset(new QuicSimpleServer(
         test::crypto_test_utils::ProofSourceForTesting(), config,
         net::QuicCryptoServerConfig::ConfigOptions(), AllSupportedVersions(),

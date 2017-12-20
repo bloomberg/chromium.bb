@@ -155,7 +155,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
 
     CertVerifyResult verify_result;
     verify_result.verified_cert = ImportCertFromFile(
-        GetTestCertsDirectory(), "quic_test.example.com.crt");
+        GetTestCertsDirectory(), "quic-chain.pem");
     cert_verifier_.AddResultForCert(verify_result.verified_cert.get(),
                                     verify_result, OK);
   }

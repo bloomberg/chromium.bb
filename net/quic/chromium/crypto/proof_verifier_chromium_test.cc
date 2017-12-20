@@ -127,7 +127,7 @@ class ProofVerifierChromiumTest : public ::testing::Test {
   }
 
   scoped_refptr<X509Certificate> GetTestServerCertificate() {
-    static const char kTestCert[] = "quic_test.example.com.crt";
+    static const char kTestCert[] = "quic-chain.pem";
     return ImportCertFromFile(GetTestCertsDirectory(), kTestCert);
   }
 
@@ -143,9 +143,9 @@ class ProofVerifierChromiumTest : public ::testing::Test {
   std::string GetTestSignature() {
     ProofSourceChromium source;
     source.Initialize(
-        GetTestCertsDirectory().AppendASCII("quic_test.example.com.crt"),
-        GetTestCertsDirectory().AppendASCII("quic_test.example.com.key.pkcs8"),
-        GetTestCertsDirectory().AppendASCII("quic_test.example.com.key.sct"));
+        GetTestCertsDirectory().AppendASCII("quic-chain.pem"),
+        GetTestCertsDirectory().AppendASCII("quic-leaf-cert.key"),
+        base::FilePath());
     std::string signature;
     source.GetProof(QuicSocketAddress(), kTestHostname, kTestConfig,
                     QUIC_VERSION_35, kTestChloHash,

@@ -82,9 +82,9 @@ std::unique_ptr<ProofSource> ProofSourceForTesting() {
   std::unique_ptr<ProofSourceChromium> source(new ProofSourceChromium());
   base::FilePath certs_dir = GetTestCertsDirectory();
   CHECK(source->Initialize(
-      certs_dir.AppendASCII("quic_chain.crt"),
-      certs_dir.AppendASCII("quic_test.example.com.key.pkcs8"),
-      certs_dir.AppendASCII("quic_test.example.com.key.sct")));
+      certs_dir.AppendASCII("quic-chain.pem"),
+      certs_dir.AppendASCII("quic-leaf-cert.key"),
+      certs_dir.AppendASCII("quic-leaf-cert.key.sct")));
   return std::move(source);
 }
 
@@ -93,17 +93,13 @@ std::unique_ptr<ProofVerifier> ProofVerifierForTesting() {
   std::unique_ptr<MockCertVerifier> cert_verifier(new MockCertVerifier());
   net::CertVerifyResult verify_result;
   verify_result.verified_cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "quic_test.example.com.crt");
-  cert_verifier->AddResultForCertAndHost(verify_result.verified_cert.get(),
-                                         "test.example.com", verify_result, OK);
-  verify_result.verified_cert = ImportCertFromFile(
-      GetTestCertsDirectory(), "quic_test_ecc.example.com.crt");
+      ImportCertFromFile(GetTestCertsDirectory(), "quic-chain.pem");
   cert_verifier->AddResultForCertAndHost(verify_result.verified_cert.get(),
                                          "test.example.com", verify_result, OK);
   return std::make_unique<TestProofVerifierChromium>(
       std::move(cert_verifier), std::make_unique<TransportSecurityState>(),
       std::make_unique<MultiLogCTVerifier>(),
-      std::make_unique<CTPolicyEnforcer>(), "quic_root.crt");
+      std::make_unique<CTPolicyEnforcer>(), "quic-root.pem");
 }
 
 ProofVerifyContext* ProofVerifyContextForTesting() {
