@@ -110,7 +110,9 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
                 onSurveyAvailable(siteId);
             }
         };
-        surveyController.downloadSurvey(context, siteId, onSuccessRunnable);
+        String siteContext =
+                String.format("ChromeHomeEnabled=%s", FeatureUtilities.isChromeHomeEnabled());
+        surveyController.downloadSurvey(context, siteId, onSuccessRunnable, siteContext);
     }
 
     /** @return Whether the user qualifies for the survey. */
