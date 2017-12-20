@@ -51,7 +51,6 @@
 #include "content/browser/loader/mime_sniffing_resource_handler.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
 #include "content/browser/loader/navigation_resource_handler.h"
-#include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
 #include "content/browser/loader/null_resource_controller.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
@@ -1505,15 +1504,6 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
       static_cast<InterceptingResourceHandler*>(handler.get());
 
   std::vector<std::unique_ptr<ResourceThrottle>> throttles;
-
-  // Add a NavigationResourceThrottle for navigations.
-  // PlzNavigate: the throttle is unnecessary as communication with the UI
-  // thread is handled by the NavigationResourceHandler below.
-  if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
-    throttles.push_back(std::make_unique<NavigationResourceThrottle>(
-        request, delegate_, fetch_request_context_type,
-        fetch_mixed_content_context_type));
-  }
 
   if (delegate_) {
     delegate_->RequestBeginning(request,

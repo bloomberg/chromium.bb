@@ -977,8 +977,6 @@ jumbo_source_set("browser") {
     "loader/mojo_async_resource_handler.h",
     "loader/navigation_resource_handler.cc",
     "loader/navigation_resource_handler.h",
-    "loader/navigation_resource_throttle.cc",
-    "loader/navigation_resource_throttle.h",
     "loader/navigation_url_loader.cc",
     "loader/navigation_url_loader.h",
     "loader/navigation_url_loader_delegate.h",
