@@ -33,6 +33,29 @@ function assert_style_value_equals(a, b) {
       assert_equals(a.variable, b.variable);
       assert_style_value_equals(a.fallback, b.fallback);
       break;
+    case 'CSSTransformValue':
+      assert_style_value_array_equals(a, b);
+      break;
+    case 'CSSRotation':
+      assert_style_value_equals(a.angle, b.angle);
+      // fallthrough
+    case 'CSSTranslation':
+    case 'CSSScale':
+      assert_style_value_equals(a.x, b.x);
+      assert_style_value_equals(a.y, b.y);
+      assert_style_value_equals(a.z, b.z);
+      assert_style_value_equals(a.is2D, b.is2D);
+      break;
+    case 'CSSSkew':
+      assert_style_value_equals(a.ax, b.ax);
+      assert_style_value_equals(a.ay, b.ay);
+      break;
+    case 'CSSPerspective':
+      assert_style_value_equals(a.length, b.length);
+      break;
+    case 'CSSMatrixComponent':
+      assert_matrix_approx_equals(a.matrix, b.matrix, 1e-6);
+      break;
     default:
       assert_equals(a, b);
       break;
