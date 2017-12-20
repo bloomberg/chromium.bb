@@ -378,13 +378,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   ScriptFetchOptions options(nonce, integrity_metadata, integrity_attr,
                              parser_state, credentials_mode);
 
-  // 21. "If the element has a src content attribute, run these substeps:"
+  // 21. "Let settings object be the element's node document's Window object's
+  //      environmental settings object." [spec text]
+  // Note: We use |element_document| as "settings object" in the steps below.
+
+  // 22. "If the element has a src content attribute, run these substeps:"
   if (element_->HasSourceAttribute()) {
-    // 21.1. Let src be the value of the element's src attribute.
+    // 22.1. Let src be the value of the element's src attribute.
     String src =
         StripLeadingAndTrailingHTMLSpaces(element_->SourceAttributeValue());
 
-    // 21.2. "If src is the empty string, queue a task to
+    // 22.2. "If src is the empty string, queue a task to
     //        fire an event named error at the element, and abort these steps."
     if (src.IsEmpty()) {
       // TODO(hiroshige): Make this asynchronous. Currently we fire the error
@@ -393,13 +397,13 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       return false;
     }
 
-    // 21.3. "Set the element's from an external file flag."
+    // 22.3. "Set the element's from an external file flag."
     is_external_script_ = true;
 
-    // 21.4. "Parse src relative to the element's node document."
+    // 22.4. "Parse src relative to the element's node document."
     KURL url = element_document.CompleteURL(src);
 
-    // 21.5. "If the previous step failed, queue a task to
+    // 22.5. "If the previous step failed, queue a task to
     //        fire an event named error at the element, and abort these steps."
     if (!url.IsValid()) {
       // TODO(hiroshige): Make this asynchronous. Currently we fire the error
@@ -408,7 +412,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       return false;
     }
 
-    // 21.6. "Switch on the script's type:"
+    // 22.6. "Switch on the script's type:"
     if (GetScriptType() == ScriptType::kClassic) {
       // - "classic":
 
@@ -451,30 +455,32 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // the script is ready is specified later, in
     // - ScriptLoader::PrepareScript(), or
     // - HTMLParserScriptRunner,
-    // depending on the conditions in Step 23 of "prepare a script".
+    // depending on the conditions in Step 24 of "prepare a script".
   }
 
-  // 22. "If the element does not have a src content attribute,
+  // 23. "If the element does not have a src content attribute,
   //      run these substeps:"
   if (!element_->HasSourceAttribute()) {
-    // 22.1. "Let source text be the value of the text IDL attribute."
+    // 23.1. "Let source text be the value of the text IDL attribute."
     // This step is done later as ScriptElementBase::TextFromChildren():
-    // - in ScriptLoader::PrepareScript() (Step 23, 6th Clause),
+    // - in ScriptLoader::PrepareScript() (Step 24, 6th Clause),
     // - in HTMLParserScriptRunner::ProcessScriptElementInternal()
-    //   (Duplicated code of Step 23, 6th Clause),
-    // - in XMLDocumentParser::EndElementNs() (Step 23, 5th Clause), or
+    //   (Duplicated code of Step 24, 6th Clause),
+    // - in XMLDocumentParser::EndElementNs() (Step 24, 5th Clause), or
     // - in PendingScript::GetSource() (Indirectly used via
     //   HTMLParserScriptRunner::ProcessScriptElementInternal(),
-    //   Step 23, 5th Clause).
+    //   Step 24, 5th Clause).
 
-    // 22.2. "Switch on the script's type:"
+    // 23.2 "Let base URL be the script element's node document's document
+    // base URL." [spec text]
+    KURL base_url = element_document.BaseURL();
+
+    // 23.3. "Switch on the script's type:"
     switch (GetScriptType()) {
       // - "classic":
       case ScriptType::kClassic: {
         // 1. Let script be the result of creating a classic script using source
         // text, settings object, base URL, and options.
-        //
-        // TODO(hiroshige): Implement base URL and options.
 
         ScriptSourceLocationType script_location_type =
             ScriptSourceLocationType::kInline;
@@ -498,11 +504,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
       // - "module":
       case ScriptType::kModule: {
-        // 1. "Let base URL be the script element's node document's document
-        //     base URL."
-        KURL base_url = element_document.BaseURL();
-
-        // 2. "Let script be the result of creating a module script using
+        // 1. "Let script be the result of creating a module script using
         //     source text, settings, base URL, cryptographic nonce,
         //     parser state, and module script credentials mode."
         // TODO(kouhei,hiroshige): Update spec refs to use ScriptFetchOptions.
@@ -512,12 +514,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
             element_->TextFromChildren(), modulator, base_url, options,
             kSharableCrossOrigin, position);
 
-        // 3. "If this returns null, set the script's script to null and abort
+        // 2. "If this returns null, set the script's script to null and abort
         //     these substeps; the script is ready."
         if (!module_script)
           return false;
 
-        // 4. "Fetch the descendants of script (using an empty ancestor list).
+        // 3. "Fetch the descendants of script (using an empty ancestor list).
         //     When this asynchronously completes, set the script's script to
         //     the result. At that time, the script is ready."
         auto* module_tree_client = ModulePendingScriptTreeClient::Create();
@@ -532,11 +534,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   DCHECK(prepared_pending_script_);
 
-  // 23. "Then, follow the first of the following options that describes the
+  // 24. "Then, follow the first of the following options that describes the
   //      situation:"
 
   // Three flags are used to instruct the caller of prepareScript() to execute
-  // a part of Step 23, when |m_willBeParserExecuted| is true:
+  // a part of Step 24, when |m_willBeParserExecuted| is true:
   // - |m_willBeParserExecuted|
   // - |m_willExecuteWhenDocumentFinishedParsing|
   // - |m_readyToBeParserExecuted|
