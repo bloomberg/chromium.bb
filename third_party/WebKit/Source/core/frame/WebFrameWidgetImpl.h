@@ -84,6 +84,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) override;
   void ThemeChanged() override;
+  WebHitTestResult HitTestResultAt(const WebPoint&) override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetCursorVisibilityState(bool is_visible) override;
 

@@ -7,5 +7,18 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 interface InputTargetClient {
 
   // Returns the FrameSinkId of the frame that the given point belongs to.
+  // When switches::IsMusHostingViz() is true this is the FrameSinkId for the
+  // target frame. Otherwise, FrameSinkId can be:
+  // a) the ProcessID/RoutingID of a RenderFrameImpl containing the point,
+  //    which is not necessarily a root frame; or
+  // b) the ProcessID/RoutingID of a RenderFrameProxy corresponding to an
+  //    OOPIF. This can be translated to the actual OOPIF's FrameSinkId
+  //    in the browser process by obtaining the current_frame_host() off
+  //    of the RenderFrameHostManager that owns the identified
+  //    RenderFrameProxyHost.
+  // TODO(kenrb, fsamuel): It isn't clear that this will work for the
+  // IsMusHostingViz() case because not all frames correspond to a window.
+  // Should the implementation be changed to guarantee that it returns the
+  // FrameSinkId for either the local frame root or an OOPIF?
   FrameSinkIdAt(gfx.mojom.Point point) => (FrameSinkId id);
 };

@@ -364,6 +364,10 @@ void WebFrameWidgetImpl::ThemeChanged() {
   view->InvalidateRect(damaged_rect);
 }
 
+WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const WebPoint& point) {
+  return CoreHitTestResultAt(point);
+}
+
 const WebInputEvent* WebFrameWidgetImpl::current_input_event_ = nullptr;
 
 WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(

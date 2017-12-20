@@ -58,6 +58,7 @@
 -SitePerProcessBrowserTest.SurfaceHitTestTest
 -SitePerProcessBrowserTest.TwoSubframesCreatePopupMenuWidgetsSimultaneously
 -SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest
+-SitePerProcessBrowserTest.HitTestNestedFrames
 
 # Copy Surface timing out http://crbug.com/785257
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.*
