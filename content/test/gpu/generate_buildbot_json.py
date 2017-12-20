@@ -1680,6 +1680,7 @@ COMMON_GTESTS = {
       {
         'names': [
           'Win10 Release (Intel HD 630)',
+          'Win10 Release Swarmed (Intel HD 630)',
         ],
       },
     ],
