@@ -2235,7 +2235,7 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
 }
 
 void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
-  if (!IsPointWithinDragBuffer(drag_point))
+  if (!IsPointWithinPageFlipBuffer(drag_point))
     StopPageFlipTimer();
   int new_page_flip_target = -1;
 
@@ -2540,17 +2540,18 @@ void AppsGridView::DeleteItemViewAtIndex(int index) {
 }
 
 bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
-  if (is_fullscreen_app_list_enabled_) {
-    gfx::Point point_in_screen = point;
-    ConvertPointToScreen(this, &point_in_screen);
-    const display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestView(
-            GetWidget()->GetNativeView());
-    return display.work_area().Contains(point_in_screen);
-  }
   gfx::Rect rect(GetLocalBounds());
   rect.Inset(-kDragBufferPx, -kDragBufferPx, -kDragBufferPx, -kDragBufferPx);
   return rect.Contains(point);
+}
+
+bool AppsGridView::IsPointWithinPageFlipBuffer(const gfx::Point& point) const {
+  gfx::Point point_in_screen = point;
+  ConvertPointToScreen(this, &point_in_screen);
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestView(
+          GetWidget()->GetNativeView());
+  return display.work_area().Contains(point_in_screen);
 }
 
 void AppsGridView::ButtonPressed(views::Button* sender,
