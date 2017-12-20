@@ -179,6 +179,15 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     return gestures_.back();
   }
 
+  const GestureEventData& GetNthMostRecentGestureEvent(size_t n) const {
+    EXPECT_FALSE(gestures_.empty());
+    return GetReceivedGesture(GetReceivedGestureCount() - 1 - n);
+  }
+
+  EventType GetNthMostRecentGestureEventType(size_t n) const {
+    return GetNthMostRecentGestureEvent(n).type();
+  }
+
   EventType GetMostRecentGestureEventType() const {
     EXPECT_FALSE(gestures_.empty());
     return gestures_.back().type();
@@ -782,7 +791,9 @@ TEST_F(GestureProviderTest, DoubleTapDragZoomBasic) {
                             kFakeCoordY + 100);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
-  ASSERT_EQ(ET_GESTURE_PINCH_BEGIN, GetMostRecentGestureEventType());
+  ASSERT_EQ(ET_GESTURE_PINCH_BEGIN, GetNthMostRecentGestureEventType(1));
+  ASSERT_EQ(ET_GESTURE_PINCH_UPDATE, GetMostRecentGestureEventType());
+  EXPECT_LT(1.f, GetMostRecentGestureEvent().details.scale());
   EXPECT_EQ(BoundsForSingleMockTouchAtLocation(kFakeCoordX, kFakeCoordY + 100),
             GetMostRecentGestureEvent().details.bounding_box_f());
 
@@ -1287,7 +1298,8 @@ TEST_F(GestureProviderTest, NoGestureLongPressDuringDoubleTap) {
   event.SetPrimaryPointerId(motion_event_id);
 
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetNthMostRecentGestureEventType(1));
+  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetMostRecentGestureEventType());
   EXPECT_EQ(motion_event_id, GetMostRecentGestureEvent().motion_event_id);
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_TRUE(gesture_provider_->IsDoubleTapInProgress());
@@ -1657,7 +1669,9 @@ TEST_F(GestureProviderTest, FixedPageScaleDuringDoubleTapDragZoom) {
                             kFakeCoordY + 100);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
-  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetNthMostRecentGestureEventType(1));
+  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetMostRecentGestureEventType());
+  EXPECT_LT(1.f, GetMostRecentGestureEvent().details.scale());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
 
   // Simulate setting a fixed page scale (or a mobile viewport);
@@ -1683,7 +1697,7 @@ TEST_F(GestureProviderTest, FixedPageScaleDuringDoubleTapDragZoom) {
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
 
   // The double-tap gesture has finished, but the page scale is fixed.
-  // The same event sequence should not generate any double tap getsures.
+  // The same event sequence should not generate any double tap gestures.
   gestures_.clear();
   down_time_1 += kOneMicrosecond * 40;
   down_time_2 += kOneMicrosecond * 40;
@@ -2134,7 +2148,8 @@ TEST_F(GestureProviderTest, DoubleTapDragZoomCancelledOnSecondaryPointerDown) {
                             kFakeCoordY - 30);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
-  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetMostRecentGestureEventType());
+  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetNthMostRecentGestureEventType(1));
+  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetMostRecentGestureEventType());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
 
   event = ObtainMotionEvent(down_time_2 + kOneMicrosecond * 2,
@@ -2501,6 +2516,210 @@ TEST_F(GestureProviderTest, TwoFingerTapCancelledByDistanceBetweenPointers) {
   EXPECT_EQ(1U, GetReceivedGestureCount());
 }
 
+// Verify that the event that starts the pinch-zoom by exceeding the touch-slop
+// also generates an update.
+TEST_F(GestureProviderTest, PinchExceedingSlopCausesUpdate) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float touch_slop = GetTouchSlop();
+  const float min_scaling_span = GetMinScalingSpan();
+  const float raw_offset_x = 3.2f;
+  const float raw_offset_y = 4.3f;
+  int motion_event_id = 6;
+
+  gesture_provider_->SetDoubleTapSupportForPageEnabled(false);
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
+  gesture_provider_->SetMultiTouchZoomSupportEnabled(true);
+
+  int secondary_coord_x = kFakeCoordX;
+  int secondary_coord_y = kFakeCoordY + min_scaling_span + 1;
+
+  // First Finger Down
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(kFakeCoordX, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(kFakeCoordY, GetMostRecentGestureEvent().y);
+
+  // Second Finger Down
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN,
+                            kFakeCoordX, kFakeCoordY, secondary_coord_x,
+                            secondary_coord_y);
+
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(1U, GetReceivedGestureCount());
+
+  // Move second finger by exactly the touch slop. This shouldn't yet generate
+  // a Pinch Begin.
+  secondary_coord_y += touch_slop * 2;
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_MOVE, kFakeCoordX,
+                            kFakeCoordY, secondary_coord_x, secondary_coord_y);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(3U, GetReceivedGestureCount());
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_UPDATE));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
+
+  // Move second finger that should *just* cross the slop threshold.
+  secondary_coord_y += 1;
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_MOVE, kFakeCoordX,
+                            kFakeCoordY, secondary_coord_x, secondary_coord_y);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(6U, GetReceivedGestureCount());
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetNthMostRecentGestureEventType(2));
+  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetNthMostRecentGestureEventType(1));
+  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetNthMostRecentGestureEventType(0));
+  EXPECT_LT(1.f, GetMostRecentGestureEvent().details.scale());
+}
+
+// Verify that the event that stops the pinch-zoom by exceeding the min scaling
+// span also generates an update.
+TEST_F(GestureProviderTest, PinchBelowMinSpanCausesUpdate) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float touch_slop = GetTouchSlop();
+  const float min_scaling_span = GetMinScalingSpan();
+  const float raw_offset_x = 3.2f;
+  const float raw_offset_y = 4.3f;
+  int motion_event_id = 6;
+
+  gesture_provider_->SetDoubleTapSupportForPageEnabled(false);
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
+  gesture_provider_->SetMultiTouchZoomSupportEnabled(true);
+
+  int secondary_coord_x = kFakeCoordX;
+  int secondary_coord_y = kFakeCoordY + min_scaling_span + touch_slop * 3;
+
+  // First Finger Down
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(kFakeCoordX, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(kFakeCoordY, GetMostRecentGestureEvent().y);
+
+  // Second Finger Down
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN,
+                            kFakeCoordX, kFakeCoordY, secondary_coord_x,
+                            secondary_coord_y);
+
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(1U, GetReceivedGestureCount());
+
+  // Move second finger enough to exceed the touch slop and start zooming.
+  secondary_coord_y -= (touch_slop * 2 + 1);
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_MOVE, kFakeCoordX,
+                            kFakeCoordY, secondary_coord_x, secondary_coord_y);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(5U, GetReceivedGestureCount());
+  EXPECT_EQ(ET_GESTURE_SCROLL_BEGIN, GetNthMostRecentGestureEventType(3));
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetNthMostRecentGestureEventType(2));
+  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetNthMostRecentGestureEventType(1));
+  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetNthMostRecentGestureEventType(0));
+
+  // Move second finger so that the span becomes smaller than the min scaling
+  // span. The pinch should end but we should receive an update before it does.
+  secondary_coord_y -= touch_slop * 2;
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_MOVE, kFakeCoordX,
+                            kFakeCoordY, secondary_coord_x, secondary_coord_y);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(8U, GetReceivedGestureCount());
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetNthMostRecentGestureEventType(2));
+  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetNthMostRecentGestureEventType(1));
+  EXPECT_GT(1.f, GetNthMostRecentGestureEvent(1).details.scale());
+  EXPECT_EQ(ET_GESTURE_PINCH_END, GetNthMostRecentGestureEventType(0));
+}
+
+// Verify that the pinch isn't started until it becomes larger than the min
+// scaling span.
+TEST_F(GestureProviderTest, PinchExceedingSlopWithinMinScale) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float touch_slop = GetTouchSlop();
+  const float min_scaling_span = GetMinScalingSpan();
+  const float raw_offset_x = 3.2f;
+  const float raw_offset_y = 4.3f;
+  int motion_event_id = 6;
+
+  gesture_provider_->SetDoubleTapSupportForPageEnabled(false);
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
+  gesture_provider_->SetMultiTouchZoomSupportEnabled(true);
+
+  int secondary_coord_x = kFakeCoordX;
+  int secondary_coord_y = kFakeCoordY + min_scaling_span / 4;
+
+  // This test only makes sense if the min_scaling_span is greater than the
+  // touch slop span.
+  ASSERT_GT(min_scaling_span, touch_slop * 2);
+
+  // First Finger Down
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(kFakeCoordX, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(kFakeCoordY, GetMostRecentGestureEvent().y);
+
+  // Second Finger Down
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_POINTER_DOWN,
+                            kFakeCoordX, kFakeCoordY, secondary_coord_x,
+                            secondary_coord_y);
+
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(1U, GetReceivedGestureCount());
+
+  // Move second finger to exceed the touch slop. This shouldn't yet generate
+  // a Pinch Begin since we're still within the minimum scaling span.
+  secondary_coord_y += touch_slop * 2 + 1;
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_MOVE, kFakeCoordX,
+                            kFakeCoordY, secondary_coord_x, secondary_coord_y);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(3U, GetReceivedGestureCount());
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_UPDATE));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
+
+  // Move second finger that should *just* cross the min scaling span threshold.
+  secondary_coord_y = kFakeCoordY + min_scaling_span + 1;
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_MOVE, kFakeCoordX,
+                            kFakeCoordY, secondary_coord_x, secondary_coord_y);
+  event.SetPrimaryPointerId(motion_event_id);
+  event.SetRawOffset(raw_offset_x, raw_offset_y);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(6U, GetReceivedGestureCount());
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetNthMostRecentGestureEventType(2));
+  EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetNthMostRecentGestureEventType(1));
+  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetNthMostRecentGestureEventType(0));
+
+  // The scale must start from the min scale span threshold, rather than from
+  // the touch_slop so it should be very small.
+  EXPECT_LT(1.f, GetMostRecentGestureEvent().details.scale());
+  EXPECT_GT(1.01f, GetMostRecentGestureEvent().details.scale());
+}
+
 // Verify that pinch zoom only sends updates which exceed the
 // min_pinch_update_span_delta.
 TEST_F(GestureProviderTest, PinchZoomWithThreshold) {
@@ -2549,11 +2768,12 @@ TEST_F(GestureProviderTest, PinchZoomWithThreshold) {
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_PINCH_UPDATE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_PINCH_UPDATE));
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_UPDATE));
 
   // Small move, shouldn't trigger pinch.
+  gestures_.clear();
   event = ObtainMotionEvent(event_time,
                             MotionEvent::ACTION_MOVE,
                             kFakeCoordX,

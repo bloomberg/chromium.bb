@@ -114,20 +114,20 @@
   await dispatchEvent({
     type: 'touchMove',
     touchPoints: [{
-      x: 120,
-      y: 130,
+      x: 25,
+      y: 36,
       id: 0
     }, {
-      x: 200,
-      y: 100,
+      x: 101,
+      y: 202,
       id: 1
     }]
   });
   await dispatchEvent({
     type: 'touchMove',
     touchPoints: [{
-      x: 200,
-      y: 300,
+      x: 103,
+      y: 203,
       id: 1
     }]
   });

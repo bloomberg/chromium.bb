@@ -192,13 +192,13 @@ Dispatching event:
     touchPoints : [
         [0] : {
             id : <number>
-            x : 120
-            y : 130
+            x : 25
+            y : 36
         }
         [1] : {
             id : <number>
-            x : 200
-            y : 100
+            x : 101
+            y : 202
         }
     ]
     type : touchMove
@@ -207,8 +207,8 @@ Dispatching event:
 type: touchmove
 ----Touches----
 id: 0
-pageX: 120
-pageY: 130
+pageX: 25
+pageY: 36
 radiusX: 1
 radiusY: 1
 rotationAngle: 0
@@ -224,15 +224,15 @@ force: 1
 type: touchmove
 ----Touches----
 id: 0
-pageX: 120
-pageY: 130
+pageX: 25
+pageY: 36
 radiusX: 1
 radiusY: 1
 rotationAngle: 0
 force: 1
 id: 1
-pageX: 200
-pageY: 100
+pageX: 101
+pageY: 202
 radiusX: 1
 radiusY: 1
 rotationAngle: 0
@@ -243,8 +243,8 @@ Dispatching event:
     touchPoints : [
         [0] : {
             id : <number>
-            x : 200
-            y : 300
+            x : 103
+            y : 203
         }
     ]
     type : touchMove
@@ -253,15 +253,15 @@ Dispatching event:
 type: touchmove
 ----Touches----
 id: 0
-pageX: 120
-pageY: 130
+pageX: 25
+pageY: 36
 radiusX: 1
 radiusY: 1
 rotationAngle: 0
 force: 1
 id: 1
-pageX: 200
-pageY: 300
+pageX: 103
+pageY: 203
 radiusX: 1
 radiusY: 1
 rotationAngle: 0
@@ -270,8 +270,8 @@ force: 1
 type: touchend
 ----Touches----
 id: 0
-pageX: 200
-pageY: 300
+pageX: 103
+pageY: 203
 radiusX: 1
 radiusY: 1
 rotationAngle: 0

@@ -21,6 +21,12 @@ namespace {
 
 const float kScaleFactor = .5f;
 
+// Using a small epsilon when comparing slop distances allows pixel
+// perfect slop determination when using fractional DPI coordinates
+// (assuming the slop region and DPI scale are reasonably
+// proportioned).
+const float kSlopEpsilon = .05f;
+
 }  // namespace
 
 // Note: These constants were taken directly from the default (unscaled)
@@ -56,14 +62,8 @@ ScaleGestureDetector::ScaleGestureDetector(const Config& config,
       event_before_or_above_starting_gesture_event_(false) {
   DCHECK(listener_);
 
-  // Using a small epsilon when comparing slop distances allows pixel
-  // perfect slop determination when using fractional DPI coordinates
-  // (assuming the slop region and DPI scale are reasonably
-  // proportioned).
-  const float kSlopEpsilon = .05f;
-
-  span_slop_ = config.span_slop + kSlopEpsilon;
-  min_span_ = config.min_scaling_span + kSlopEpsilon;
+  span_slop_ = config.span_slop;
+  min_span_ = config.min_scaling_span;
 }
 
 ScaleGestureDetector::~ScaleGestureDetector() {}
@@ -178,8 +178,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   const bool was_in_progress = in_progress_;
   focus_x_ = focus_x;
   focus_y_ = focus_y;
-  if (!InAnchoredScaleMode() && in_progress_ &&
-      (span < min_span_ || config_changed)) {
+  if (!InAnchoredScaleMode() && in_progress_ && config_changed) {
     listener_->OnScaleEnd(*this, event);
     ResetScaleWithSpan(span);
   }
@@ -190,11 +189,22 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   }
 
   const float min_span = InAnchoredScaleMode() ? span_slop_ : min_span_;
-  if (!in_progress_ && span >= min_span &&
-      (was_in_progress || std::abs(span - initial_span_) > span_slop_)) {
+  bool span_exceeds_min_span = span >= min_span + kSlopEpsilon ||
+                               initial_span_ >= min_span + kSlopEpsilon;
+  if (!in_progress_ && span_exceeds_min_span &&
+      (was_in_progress ||
+       std::abs(span - initial_span_) > span_slop_ + kSlopEpsilon)) {
+    float zoom_sign = span > initial_span_ ? 1 : -1;
+
     prev_span_x_ = curr_span_x_ = span_x;
     prev_span_y_ = curr_span_y_ = span_y;
-    prev_span_ = curr_span_ = span;
+    curr_span_ = span;
+
+    // To ensure we don't lose any delta when the first event crosses the min
+    // and slop thresholds, the prev_span on the first update will be the point
+    // at which zooming would have started.
+    prev_span_ = std::max(initial_span_ + zoom_sign * span_slop_, min_span);
+
     prev_time_ = curr_time_;
     in_progress_ = listener_->OnScaleBegin(*this, event);
   }
@@ -207,9 +217,8 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
 
     bool update_prev = true;
 
-    if (in_progress_) {
+    if (in_progress_)
       update_prev = listener_->OnScale(*this, event);
-    }
 
     if (update_prev) {
       prev_span_x_ = curr_span_x_;
@@ -217,6 +226,12 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
       prev_span_ = curr_span_;
       prev_time_ = curr_time_;
     }
+  }
+
+  if (!InAnchoredScaleMode() && in_progress_ &&
+      span < min_span_ + kSlopEpsilon) {
+    listener_->OnScaleEnd(*this, event);
+    ResetScaleWithSpan(span);
   }
 
   return true;
@@ -245,20 +260,28 @@ float ScaleGestureDetector::GetPreviousSpanX() const { return prev_span_x_; }
 float ScaleGestureDetector::GetPreviousSpanY() const { return prev_span_y_; }
 
 float ScaleGestureDetector::GetScaleFactor() const {
+  float curr_span = curr_span_;
   if (InAnchoredScaleMode()) {
     // Drag is moving up; the further away from the gesture start, the smaller
     // the span should be, the closer, the larger the span, and therefore the
     // larger the scale.
     const bool scale_up = (event_before_or_above_starting_gesture_event_ &&
-                           (curr_span_ < prev_span_)) ||
+                           (curr_span < prev_span_)) ||
                           (!event_before_or_above_starting_gesture_event_ &&
-                           (curr_span_ > prev_span_));
+                           (curr_span > prev_span_));
     const float span_diff =
-        (std::abs(1.f - (curr_span_ / prev_span_)) * kScaleFactor);
+        (std::abs(1.f - (curr_span / prev_span_)) * kScaleFactor);
     return prev_span_ <= 0 ? 1.f
                            : (scale_up ? (1.f + span_diff) : (1.f - span_diff));
   }
-  return prev_span_ > 0 ? curr_span_ / prev_span_ : 1;
+
+  // If this will be the last update because this event crossed the min
+  // threshold, calculate the update as if the event stopped right at the
+  // boundary.
+  if (curr_span < min_span_ + kSlopEpsilon)
+    curr_span = min_span_;
+
+  return prev_span_ > 0 ? curr_span / prev_span_ : 1;
 }
 
 base::TimeDelta ScaleGestureDetector::GetTimeDelta() const {

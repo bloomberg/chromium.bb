@@ -230,7 +230,9 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                const MotionEvent& e) override {
     if (ignore_multitouch_zoom_events_ && !detector.InAnchoredScaleMode())
       return false;
+    bool first_scale = false;
     if (!pinch_event_sent_) {
+      first_scale = true;
       Send(CreateGesture(ET_GESTURE_PINCH_BEGIN,
                          e.GetPointerId(),
                          e.GetToolType(),
@@ -259,8 +261,13 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       // For historical reasons, Chrome has instead adopted a scale factor
       // computation that is invariant to the focal distance, where
       // the scale delta remains constant if the touch velocity is constant.
-      float dy =
-          (detector.GetCurrentSpanY() - detector.GetPreviousSpanY()) * 0.5f;
+      // Note: Because we calculate the scale here manually based on the
+      // y-span, but the scale factor accounts for slop in the first previous
+      // span, we manaully reproduce the behavior here for previous span y.
+      float prev_y = first_scale
+                         ? config_.gesture_detector_config.touch_slop * 2
+                         : detector.GetPreviousSpanY();
+      float dy = (detector.GetCurrentSpanY() - prev_y) * 0.5f;
       scale = std::pow(scale > 1 ? 1.0f + kDoubleTapDragZoomSpeed
                                  : 1.0f - kDoubleTapDragZoomSpeed,
                        std::abs(dy));
