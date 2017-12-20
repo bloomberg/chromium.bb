@@ -22,7 +22,6 @@
 #include "base/run_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
-#include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -148,7 +147,6 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
 TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   constexpr int32_t kRoutingId = 81;
   constexpr int32_t kRequestId = 28;
-  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
@@ -227,7 +225,6 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
 }
 
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
-  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;
@@ -257,7 +254,6 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
 
 // In this case, the loading fails after receiving a response.
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
-  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;
@@ -470,7 +466,6 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
 TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   constexpr int32_t kRoutingId = 81;
   constexpr int32_t kRequestId = 28;
-  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
@@ -531,7 +526,6 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
 TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   constexpr int32_t kRoutingId = 81;
   constexpr int32_t kRequestId = 28;
-  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
