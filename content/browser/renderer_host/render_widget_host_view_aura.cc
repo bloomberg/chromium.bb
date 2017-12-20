@@ -1681,30 +1681,6 @@ viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
   return id.frame_sink_id();
 }
 
-void RenderWidgetHostViewAura::ProcessMouseEvent(
-    const blink::WebMouseEvent& event,
-    const ui::LatencyInfo& latency) {
-  host_->ForwardMouseEventWithLatencyInfo(event, latency);
-}
-
-void RenderWidgetHostViewAura::ProcessMouseWheelEvent(
-    const blink::WebMouseWheelEvent& event,
-    const ui::LatencyInfo& latency) {
-  host_->ForwardWheelEventWithLatencyInfo(event, latency);
-}
-
-void RenderWidgetHostViewAura::ProcessTouchEvent(
-    const blink::WebTouchEvent& event,
-    const ui::LatencyInfo& latency) {
-  host_->ForwardTouchEventWithLatencyInfo(event, latency);
-}
-
-void RenderWidgetHostViewAura::ProcessGestureEvent(
-    const blink::WebGestureEvent& event,
-    const ui::LatencyInfo& latency) {
-  host_->ForwardGestureEventWithLatencyInfo(event, latency);
-}
-
 bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,

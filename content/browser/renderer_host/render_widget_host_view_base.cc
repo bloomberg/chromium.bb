@@ -440,6 +440,36 @@ viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
   return viz::FrameSinkId();
 }
 
+void RenderWidgetHostViewBase::ProcessMouseEvent(
+    const blink::WebMouseEvent& event,
+    const ui::LatencyInfo& latency) {
+  PreProcessMouseEvent(event);
+  auto* host = GetRenderWidgetHostImpl();
+  host->ForwardMouseEventWithLatencyInfo(event, latency);
+}
+
+void RenderWidgetHostViewBase::ProcessMouseWheelEvent(
+    const blink::WebMouseWheelEvent& event,
+    const ui::LatencyInfo& latency) {
+  auto* host = GetRenderWidgetHostImpl();
+  host->ForwardWheelEventWithLatencyInfo(event, latency);
+}
+
+void RenderWidgetHostViewBase::ProcessTouchEvent(
+    const blink::WebTouchEvent& event,
+    const ui::LatencyInfo& latency) {
+  PreProcessTouchEvent(event);
+  auto* host = GetRenderWidgetHostImpl();
+  host->ForwardTouchEventWithLatencyInfo(event, latency);
+}
+
+void RenderWidgetHostViewBase::ProcessGestureEvent(
+    const blink::WebGestureEvent& event,
+    const ui::LatencyInfo& latency) {
+  auto* host = GetRenderWidgetHostImpl();
+  host->ForwardGestureEventWithLatencyInfo(event, latency);
+}
+
 gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
   return point;
@@ -550,10 +580,6 @@ void RenderWidgetHostViewBase::OnChildFrameDestroyed(int routing_id) {
     render_widget_window_tree_client_->DestroyFrame(routing_id);
 }
 #endif
-
-bool RenderWidgetHostViewBase::IsChildFrameForTesting() const {
-  return false;
-}
 
 viz::SurfaceId RenderWidgetHostViewBase::SurfaceIdForTesting() const {
   return viz::SurfaceId();

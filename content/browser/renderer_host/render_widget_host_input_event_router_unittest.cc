@@ -145,6 +145,7 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   std::map<MockRenderWidgetHostView*, viz::FrameSinkId> frame_sink_id_map_;
 
   RenderWidgetHostInputEventRouter rwhier_;
+  TestBrowserThreadBundle thread_bundle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouterTest);

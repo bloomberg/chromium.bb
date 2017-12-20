@@ -368,14 +368,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // consumer, such as PDF or maps, wants to intercept them and implement a
   // custom behavior.
   void SendGesturePinchEvent(blink::WebGestureEvent* event);
-  void ProcessMouseEvent(const blink::WebMouseEvent& event,
-                         const ui::LatencyInfo& latency) override;
-  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
-                              const ui::LatencyInfo& latency) override;
-  void ProcessTouchEvent(const blink::WebTouchEvent& event,
-                         const ui::LatencyInfo& latency) override;
-  void ProcessGestureEvent(const blink::WebGestureEvent& event,
-                           const ui::LatencyInfo& latency) override;
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
                                        const viz::SurfaceId& original_surface,
                                        gfx::PointF* transformed_point) override;

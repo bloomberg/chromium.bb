@@ -1578,29 +1578,6 @@ void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
   render_widget_host_->ForwardGestureEvent(*event);
 }
 
-void RenderWidgetHostViewMac::ProcessMouseEvent(
-    const blink::WebMouseEvent& event,
-    const ui::LatencyInfo& latency) {
-  render_widget_host_->ForwardMouseEventWithLatencyInfo(event, latency);
-}
-void RenderWidgetHostViewMac::ProcessMouseWheelEvent(
-    const blink::WebMouseWheelEvent& event,
-    const ui::LatencyInfo& latency) {
-  render_widget_host_->ForwardWheelEventWithLatencyInfo(event, latency);
-}
-
-void RenderWidgetHostViewMac::ProcessTouchEvent(
-    const blink::WebTouchEvent& event,
-    const ui::LatencyInfo& latency) {
-  render_widget_host_->ForwardTouchEventWithLatencyInfo(event, latency);
-}
-
-void RenderWidgetHostViewMac::ProcessGestureEvent(
-    const blink::WebGestureEvent& event,
-    const ui::LatencyInfo& latency) {
-  render_widget_host_->ForwardGestureEventWithLatencyInfo(event, latency);
-}
-
 bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,

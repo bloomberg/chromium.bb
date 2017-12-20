@@ -88,7 +88,6 @@ class TextInputManager;
 class TouchSelectionControllerClientManager;
 class WebContentsAccessibility;
 class WebCursor;
-struct NativeWebKeyboardEvent;
 struct TextInputState;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
@@ -301,16 +300,18 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       viz::SurfaceHittestDelegate* delegate,
       const gfx::PointF& point,
       gfx::PointF* transformed_point);
-  virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                    const ui::LatencyInfo& latency) {}
-  virtual void ProcessMouseEvent(const blink::WebMouseEvent& event,
-                                 const ui::LatencyInfo& latency) {}
-  virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
-                                      const ui::LatencyInfo& latency) {}
-  virtual void ProcessTouchEvent(const blink::WebTouchEvent& event,
-                                 const ui::LatencyInfo& latency) {}
+
+  virtual void PreProcessMouseEvent(const blink::WebMouseEvent& event) {}
+  virtual void PreProcessTouchEvent(const blink::WebTouchEvent& event) {}
+
+  void ProcessMouseEvent(const blink::WebMouseEvent& event,
+                         const ui::LatencyInfo& latency);
+  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
+                              const ui::LatencyInfo& latency);
+  void ProcessTouchEvent(const blink::WebTouchEvent& event,
+                         const ui::LatencyInfo& latency);
   virtual void ProcessGestureEvent(const blink::WebGestureEvent& event,
-                                   const ui::LatencyInfo& latency) {}
+                                   const ui::LatencyInfo& latency);
 
   // Transform a point that is in the coordinate space of a Surface that is
   // embedded within the RenderWidgetHostViewBase's Surface to the
@@ -498,7 +499,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 #endif
 
   // Exposed for testing.
-  virtual bool IsChildFrameForTesting() const;
   virtual viz::SurfaceId SurfaceIdForTesting() const;
 
  protected:
