@@ -460,9 +460,7 @@ class ASH_EXPORT WallpaperController
   // Caches the color profiles that need to do wallpaper color extracting.
   const std::vector<color_utils::ColorProfile> color_profiles_;
 
-  // Cached current user wallpaper info. Note its location is used as a key for
-  // storing |prominent_colors_| in the wallpaper::kWallpaperColors pref. An
-  // empty string disables color caching.
+  // Cached logged-in user wallpaper info.
   wallpaper::WallpaperInfo current_user_wallpaper_info_;
 
   // Cached wallpapers of users.
@@ -474,6 +472,11 @@ class ASH_EXPORT WallpaperController
   // The paths of the customized default wallpapers, if they exist.
   base::FilePath customized_default_wallpaper_small_;
   base::FilePath customized_default_wallpaper_large_;
+
+  // Location (see WallpaperInfo::location) used by the current wallpaper.
+  // Used as a key for storing |prominent_colors_| in the
+  // wallpaper::kWallpaperColors pref. An empty string disables color caching.
+  std::string current_location_;
 
   gfx::Size current_max_display_size_;
 
