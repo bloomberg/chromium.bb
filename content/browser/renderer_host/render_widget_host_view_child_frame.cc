@@ -903,6 +903,16 @@ void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
     support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
+TouchSelectionControllerClientManager*
+RenderWidgetHostViewChildFrame::GetTouchSelectionControllerClientManager() {
+  auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
+  if (!root_view)
+    return nullptr;
+
+  // There is only ever one manager, and it's owned by the root view.
+  return root_view->GetTouchSelectionControllerClientManager();
+}
+
 InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
