@@ -193,7 +193,7 @@ bool AXTableCell::RowIndexRange(
 
   LayoutTableCell* layout_cell = ToLayoutTableCell(layout_object_);
   row_range.first = layout_cell->RowIndex();
-  row_range.second = layout_cell->RowSpan();
+  row_range.second = layout_cell->ResolvedRowSpan();
 
   // Since our table might have multiple sections, we have to offset our row
   // appropriately.

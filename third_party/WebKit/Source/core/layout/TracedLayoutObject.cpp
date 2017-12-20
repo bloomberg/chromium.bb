@@ -75,8 +75,8 @@ void DumpToTracedValue(const LayoutObject& object,
       const LayoutTableCell& c = ToLayoutTableCell(object);
       traced_value->SetDouble("row", c.RowIndex());
       traced_value->SetDouble("col", c.AbsoluteColumnIndex());
-      if (c.RowSpan() != 1)
-        traced_value->SetDouble("rowSpan", c.RowSpan());
+      if (c.ResolvedRowSpan() != 1)
+        traced_value->SetDouble("rowSpan", c.ResolvedRowSpan());
       if (c.ColSpan() != 1)
         traced_value->SetDouble("colSpan", c.ColSpan());
     } else {

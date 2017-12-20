@@ -100,7 +100,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
       return 1;
     return ParseRowSpanFromDOM();
   }
-  unsigned RowSpan() const {
+  unsigned ResolvedRowSpan() const {
     unsigned row_span = ParsedRowSpan();
     if (!row_span) {
       DCHECK(!Section()->NeedsCellRecalc());
@@ -328,8 +328,8 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
     return other && RowIndex() == other->RowIndex();
   }
   bool EndsAtSameRow(const LayoutTableCell* other) const {
-    return other &&
-           RowIndex() + RowSpan() == other->RowIndex() + other->RowSpan();
+    return other && RowIndex() + ResolvedRowSpan() ==
+                        other->RowIndex() + other->ResolvedRowSpan();
   }
 
   void SetIsSpanningCollapsedRow(bool spanningCollapsedRow) {

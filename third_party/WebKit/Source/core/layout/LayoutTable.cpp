@@ -1379,7 +1379,7 @@ LayoutTableCell* LayoutTable::CellBelow(const LayoutTableCell& cell) const {
   RecalcSectionsIfNeeded();
 
   // Find the section and row to look in
-  unsigned r = cell.RowIndex() + cell.RowSpan() - 1;
+  unsigned r = cell.RowIndex() + cell.ResolvedRowSpan() - 1;
   LayoutTableSection* section = nullptr;
   unsigned r_below = 0;
   if (r < cell.Section()->NumRows() - 1) {

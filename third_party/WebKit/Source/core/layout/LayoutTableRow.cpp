@@ -109,7 +109,7 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
           continue;
         unsigned rowIndex = RowIndex();
         unsigned spanStart = cell->RowIndex();
-        unsigned spanEnd = spanStart + cell->RowSpan();
+        unsigned spanEnd = spanStart + cell->ResolvedRowSpan();
         if (spanStart <= rowIndex && rowIndex <= spanEnd)
           cell->SetCellChildrenNeedLayout();
       }
@@ -300,7 +300,7 @@ void LayoutTableRow::AddOverflowFromCell(const LayoutTableCell* cell) {
   // rows, the row's visual rect should be expanded to cover the cell.
   // Here don't check background existence to avoid requirement to invalidate
   // overflow on change of background existence.
-  if (cell->RowSpan() > 1) {
+  if (cell->ResolvedRowSpan() > 1) {
     LayoutRect cell_background_rect = cell->FrameRect();
     cell_background_rect.MoveBy(-Location());
     AddSelfVisualOverflow(cell_background_rect);
@@ -323,7 +323,7 @@ void LayoutTableRow::AddOverflowFromCell(const LayoutTableCell* cell) {
 
   // Should propagate cell's overflow to row if the cell has row span or has
   // overflow.
-  if (cell->RowSpan() == 1 && !cell->HasOverflowModel())
+  if (cell->ResolvedRowSpan() == 1 && !cell->HasOverflowModel())
     return;
 
   LayoutRect cell_visual_overflow_rect =

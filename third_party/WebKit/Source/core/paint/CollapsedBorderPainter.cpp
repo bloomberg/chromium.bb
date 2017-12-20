@@ -76,7 +76,7 @@ void CollapsedBorderPainter::SetupBorders() {
   if (start_.value) {
     const auto* cell_preceding = table_.CellPreceding(cell_);
     if (cell_.StartsAtSameRow(cell_preceding) &&
-        cell_preceding->RowSpan() >= cell_.RowSpan() &&
+        cell_preceding->ResolvedRowSpan() >= cell_.ResolvedRowSpan() &&
         // |cell_preceding| didn't paint the border if it is invisible.
         cell_preceding->StyleRef().Visibility() == EVisibility::kVisible) {
       start_.value = nullptr;
