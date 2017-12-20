@@ -179,7 +179,6 @@ static void maybe_flip_strides(uint8_t **dst, int *dstride, tran_low_t **src,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 #if CONFIG_TX64X64
 static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
                                   int stride, int bsx, int bsy, TX_TYPE tx_type,
@@ -198,7 +197,6 @@ static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
   }
 }
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                          const TxfmParam *txfm_param) {

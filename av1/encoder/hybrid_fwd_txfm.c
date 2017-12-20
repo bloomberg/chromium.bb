@@ -414,7 +414,7 @@ static void highbd_fwd_txfm_32x64(const int16_t *src_diff, tran_low_t *coeff,
       av1_fwd_txfm2d_32x64_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
       break;
     case IDTX:
-      av1_fwd_idtx_c(src_diff, dst_coeff, diff_stride, 32, 64, tx_type);
+      av1_fwd_idtx_c(src_diff, coeff, diff_stride, 32, 64, tx_type);
       break;
     default: assert(0); break;
   }
@@ -452,7 +452,7 @@ static void highbd_fwd_txfm_64x32(const int16_t *src_diff, tran_low_t *coeff,
       av1_fwd_txfm2d_64x32_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
       break;
     case IDTX:
-      av1_fwd_idtx_c(src_diff, dst_coeff, diff_stride, 64, 32, tx_type);
+      av1_fwd_idtx_c(src_diff, coeff, diff_stride, 64, 32, tx_type);
       break;
     default: assert(0); break;
   }
@@ -490,7 +490,7 @@ static void highbd_fwd_txfm_16x64(const int16_t *src_diff, tran_low_t *coeff,
       av1_fwd_txfm2d_16x64_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
       break;
     case IDTX:
-      av1_fwd_idtx_c(src_diff, dst_coeff, diff_stride, 16, 64, tx_type);
+      av1_fwd_idtx_c(src_diff, coeff, diff_stride, 16, 64, tx_type);
       break;
     default: assert(0); break;
   }
@@ -528,7 +528,7 @@ static void highbd_fwd_txfm_64x16(const int16_t *src_diff, tran_low_t *coeff,
       av1_fwd_txfm2d_64x16_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
       break;
     case IDTX:
-      av1_fwd_idtx_c(src_diff, dst_coeff, diff_stride, 64, 16, tx_type);
+      av1_fwd_idtx_c(src_diff, coeff, diff_stride, 64, 16, tx_type);
       break;
     default: assert(0); break;
   }
@@ -566,7 +566,7 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
       av1_fwd_txfm2d_64x64_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
       break;
     case IDTX:
-      av1_fwd_idtx_c(src_diff, dst_coeff, diff_stride, 64, 64, tx_type);
+      av1_fwd_idtx_c(src_diff, coeff, diff_stride, 64, 64, tx_type);
       break;
     default: assert(0); break;
   }
