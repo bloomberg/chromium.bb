@@ -59,10 +59,6 @@ class LoginDisplayHost {
   // instance is gone.
   virtual void Finalize(base::OnceClosure completion_callback) = 0;
 
-  // Open the internet details dialog. If |network_id| is not empty, shows the
-  // details dialog for that network.
-  virtual void OpenInternetDetailDialog(const std::string& network_id) = 0;
-
   // Toggles status area visibility.
   virtual void SetStatusAreaVisible(bool visible) = 0;
 

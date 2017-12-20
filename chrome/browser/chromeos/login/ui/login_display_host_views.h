@@ -33,7 +33,6 @@ class LoginDisplayHostViews : public LoginDisplayHost,
   WebUILoginView* GetWebUILoginView() const override;
   void BeforeSessionStart() override;
   void Finalize(base::OnceClosure completion_callback) override;
-  void OpenInternetDetailDialog(const std::string& network_id) override;
   void SetStatusAreaVisible(bool visible) override;
   void StartWizard(OobeScreen first_screen) override;
   WizardController* GetWizardController() override;

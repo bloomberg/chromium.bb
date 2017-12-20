@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_handler.h"
@@ -78,7 +78,7 @@ void NetworkDropdownHandler::RegisterMessages() {
 
 void NetworkDropdownHandler::HandleLaunchInternetDetailDialog() {
   // Empty string opens the internet detail dialog for the default network.
-  LoginDisplayHost::default_host()->OpenInternetDetailDialog("");
+  InternetDetailDialog::ShowDialog("");
 }
 
 void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
@@ -96,7 +96,7 @@ void NetworkDropdownHandler::HandleShowNetworkDetails(
     const base::ListValue* args) {
   std::string guid;
   args->GetString(0, &guid);
-  LoginDisplayHost::default_host()->OpenInternetDetailDialog(guid);
+  InternetDetailDialog::ShowDialog(guid);
 }
 
 void NetworkDropdownHandler::OnConnectToNetworkRequested() {

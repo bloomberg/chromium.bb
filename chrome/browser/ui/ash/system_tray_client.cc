@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -399,8 +399,7 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
   if (session_manager->IsInSecondaryLoginScreen())
     return;
   if (!session_manager->IsSessionStarted()) {
-    chromeos::LoginDisplayHost::default_host()->OpenInternetDetailDialog(
-        network_id);
+    chromeos::InternetDetailDialog::ShowDialog(network_id);
     return;
   }
 

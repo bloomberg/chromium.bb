@@ -47,11 +47,6 @@ void LoginDisplayHostViews::Finalize(base::OnceClosure completion_callback) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::OpenInternetDetailDialog(
-    const std::string& network_id) {
-  NOTREACHED();
-}
-
 void LoginDisplayHostViews::SetStatusAreaVisible(bool visible) {
   NOTIMPLEMENTED();
 }
