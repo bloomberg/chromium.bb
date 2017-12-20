@@ -19,7 +19,7 @@ namespace blink {
 
 // ReferrerScriptInfo carries a copy of "referencing script's" info referenced
 // in HTML Spec: "HostImportModuleDynamically" algorithm.
-// https://github.com/tc39/proposal-dynamic-import/blob/master/HTML%20Integration.md#hostimportmoduledynamicallyreferencingscriptormodule-specifier-promisecapability
+// https://html.spec.whatwg.org/multipage/webappapis.html#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
 class CORE_EXPORT ReferrerScriptInfo {
  public:
   ReferrerScriptInfo() = default;
@@ -29,6 +29,7 @@ class CORE_EXPORT ReferrerScriptInfo {
       : credentials_mode_(credentials_mode),
         nonce_(nonce),
         parser_state_(parser_state) {}
+
   static ReferrerScriptInfo FromScriptFetchOptions(
       const ScriptFetchOptions& options) {
     return ReferrerScriptInfo(options.CredentialsMode(), options.Nonce(),
@@ -53,14 +54,15 @@ class CORE_EXPORT ReferrerScriptInfo {
 
  private:
   // Spec: "referencing script's credentials mode"
-  // The default value is "omit", from Step 5 of [HIMD].
-  // [HIMD]
-  // https://github.com/tc39/proposal-dynamic-import/blob/master/HTML%20Integration.md#hostimportmoduledynamicallyreferencingscriptormodule-specifier-promisecapability
+  // The default value is "omit" per:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
   network::mojom::FetchCredentialsMode credentials_mode_ =
       network::mojom::FetchCredentialsMode::kOmit;
   // Spec: "referencing script's cryptographic nonce"
   String nonce_;
   // Spec: "referencing script's parser state"
+  // The default value is "not-parser-inserted" per:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
   ParserDisposition parser_state_ = kNotParserInserted;
 };
 
