@@ -2,9 +2,7 @@
 
 #if __ARM_MAX_ARCH__>=7
 .text
-#if !defined(__clang__) || defined(BORINGSSL_CLANG_SUPPORTS_DOT_ARCH)
 
-#endif
 .align	5
 Lrcon:
 .long	0x01,0x01,0x01,0x01
