@@ -46,6 +46,9 @@ ArcUserSessionService::ArcUserSessionService(content::BrowserContext* context,
 }
 
 ArcUserSessionService::~ArcUserSessionService() {
+  // OnConnectionClosed() is not guaranteed to be called before destruction.
+  session_manager::SessionManager::Get()->RemoveObserver(this);
+
   arc_bridge_service_->intent_helper()->RemoveObserver(this);
 }
 
