@@ -627,15 +627,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  SpellCheckProvider* spell_check_provider =
-      new SpellCheckProvider(render_frame, spellcheck_.get(), this);
-  // TODO(xiaochengh): Design better way to sync between Chrome-side and
-  // Blink-side spellcheck enabled states.  See crbug.com/710097.
-  //
-  // TODO(alexmos): Do this for all frames so that this works properly for
-  // OOPIFs.  See https://crbug.com/789273.
-  if (render_frame->IsMainFrame())
-    spell_check_provider->EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
+  new SpellCheckProvider(render_frame, spellcheck_.get(), this);
 
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
   new SpellCheckPanel(render_frame, registry, this);

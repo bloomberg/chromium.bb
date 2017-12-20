@@ -58,9 +58,6 @@ class UpdateSpellcheckEnabled : public content::RenderFrameVisitor {
 };
 
 bool UpdateSpellcheckEnabled::Visit(content::RenderFrame* render_frame) {
-  SpellCheckProvider* provider = SpellCheckProvider::Get(render_frame);
-  DCHECK(provider);
-  provider->EnableSpellcheck(enabled_);
   if (!enabled_) {
     if (render_frame && render_frame->GetWebFrame())
       render_frame->GetWebFrame()->RemoveSpellingMarkers();

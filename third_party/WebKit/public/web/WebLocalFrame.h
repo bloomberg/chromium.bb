@@ -571,8 +571,6 @@ class WebLocalFrame : public WebFrame {
   virtual void SetSpellCheckPanelHostClient(WebSpellCheckPanelHostClient*) = 0;
   virtual WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const = 0;
   virtual void ReplaceMisspelledRange(const WebString&) = 0;
-  virtual void EnableSpellChecking(bool) = 0;
-  virtual bool IsSpellCheckingEnabled() const = 0;
   virtual void RemoveSpellingMarkers() = 0;
   virtual void RemoveSpellingMarkersUnderWords(
       const WebVector<WebString>& words) = 0;
