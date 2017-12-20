@@ -49,4 +49,8 @@ static_library("core") {
     "//net",
     "//ui/base",
   ]
+
+  public_deps = [
+    "//components/security_interstitials/core/common/interfaces:interfaces",
+  ]
 }
