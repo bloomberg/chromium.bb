@@ -231,7 +231,7 @@ void BackgroundImageGeometry::SetRepeatX(const FillLayer& fill_layer,
                                      unsnapped_available_width) -
         offset_for_cell;
     float number_of_tiles_in_position;
-    if (fill_layer.BackgroundXOrigin() == kRightEdge) {
+    if (fill_layer.BackgroundXOrigin() == BackgroundEdgeOrigin::kRight) {
       number_of_tiles_in_position =
           (snapped_available_width - computed_x_position + extra_offset)
               .ToFloat() /
@@ -267,7 +267,7 @@ void BackgroundImageGeometry::SetRepeatY(const FillLayer& fill_layer,
                                      unsnapped_available_height) -
         offset_for_cell;
     float number_of_tiles_in_position;
-    if (fill_layer.BackgroundYOrigin() == kBottomEdge) {
+    if (fill_layer.BackgroundYOrigin() == BackgroundEdgeOrigin::kBottom) {
       number_of_tiles_in_position =
           (snapped_available_height - computed_y_position + extra_offset)
               .ToFloat() /
@@ -693,9 +693,10 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
       background_repeat_x = EFillRepeat::kNoRepeatFill;
   }
   if (background_repeat_x == EFillRepeat::kNoRepeatFill) {
-    LayoutUnit x_offset = fill_layer.BackgroundXOrigin() == kRightEdge
-                              ? available_width - computed_x_position
-                              : computed_x_position;
+    LayoutUnit x_offset =
+        fill_layer.BackgroundXOrigin() == BackgroundEdgeOrigin::kRight
+            ? available_width - computed_x_position
+            : computed_x_position;
     SetNoRepeatX(box_offset.X() + x_offset);
     if (offset_in_background_.X() > TileSize().Width())
       SetDestRect(LayoutRect());
@@ -715,9 +716,10 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
       background_repeat_y = EFillRepeat::kNoRepeatFill;
   }
   if (background_repeat_y == EFillRepeat::kNoRepeatFill) {
-    LayoutUnit y_offset = fill_layer.BackgroundYOrigin() == kBottomEdge
-                              ? available_height - computed_y_position
-                              : computed_y_position;
+    LayoutUnit y_offset =
+        fill_layer.BackgroundYOrigin() == BackgroundEdgeOrigin::kBottom
+            ? available_height - computed_y_position
+            : computed_y_position;
     SetNoRepeatY(box_offset.Y() + y_offset);
     if (offset_in_background_.Y() > TileSize().Height())
       SetDestRect(LayoutRect());

@@ -165,8 +165,8 @@ bool LengthListPropertyFunctions::GetLengthList(CSSPropertyID property,
       while (fill_layer && (fill_layer->*fill_layer_methods.is_set)()) {
         result.push_back((fill_layer->*fill_layer_methods.get_length)());
         switch ((fill_layer->*fill_layer_methods.get_edge)()) {
-          case kRightEdge:
-          case kBottomEdge:
+          case BackgroundEdgeOrigin::kRight:
+          case BackgroundEdgeOrigin::kBottom:
             result.back() = result.back().SubtractFromOneHundredPercent();
             break;
           default:

@@ -140,7 +140,7 @@ enum class EFillSizeType : unsigned {
 };
 
 // CSS3 Background Position
-enum BackgroundEdgeOrigin { kTopEdge, kRightEdge, kBottomEdge, kLeftEdge };
+enum class BackgroundEdgeOrigin : unsigned { kTop, kRight, kBottom, kLeft };
 
 // CSS Mask Source Types
 enum EMaskSourceType { kMaskAlpha, kMaskLuminance };

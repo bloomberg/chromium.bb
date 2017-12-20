@@ -125,20 +125,20 @@ class CORE_EXPORT FillLayer {
     x_position_ = position;
     x_pos_set_ = true;
     background_x_origin_set_ = false;
-    background_x_origin_ = kLeftEdge;
+    background_x_origin_ = static_cast<unsigned>(BackgroundEdgeOrigin::kLeft);
   }
   void SetYPosition(const Length& position) {
     y_position_ = position;
     y_pos_set_ = true;
     background_y_origin_set_ = false;
-    background_y_origin_ = kTopEdge;
+    background_y_origin_ = static_cast<unsigned>(BackgroundEdgeOrigin::kTop);
   }
   void SetBackgroundXOrigin(BackgroundEdgeOrigin origin) {
-    background_x_origin_ = origin;
+    background_x_origin_ = static_cast<unsigned>(origin);
     background_x_origin_set_ = true;
   }
   void SetBackgroundYOrigin(BackgroundEdgeOrigin origin) {
-    background_y_origin_ = origin;
+    background_y_origin_ = static_cast<unsigned>(origin);
     background_y_origin_set_ = true;
   }
   void SetAttachment(EFillAttachment attachment) {
