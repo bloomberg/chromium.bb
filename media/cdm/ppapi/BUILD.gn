@@ -13,6 +13,8 @@ shared_library("clearkeycdm") {
   sources = [
     "cdm_file_io_test.cc",
     "cdm_file_io_test.h",
+    "external_clear_key/cdm_file_adapter.cc",
+    "external_clear_key/cdm_file_adapter.h",
     "external_clear_key/cdm_video_decoder.cc",
     "external_clear_key/cdm_video_decoder.h",
     "external_clear_key/clear_key_cdm.cc",
