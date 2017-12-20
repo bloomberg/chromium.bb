@@ -9,6 +9,7 @@
 #include <dxgi1_6.h>
 
 #include "base/containers/circular_deque.h"
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -817,8 +818,11 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
       DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
 
   HANDLE handle;
-  create_surface_handle_function_(COMPOSITIONOBJECT_ALL_ACCESS, nullptr,
-                                  &handle);
+  HRESULT hr = create_surface_handle_function_(COMPOSITIONOBJECT_ALL_ACCESS,
+                                               nullptr, &handle);
+  // TODO(crbug/792806): Remove Alias and CHECK after issue is fixed.
+  base::debug::Alias(&hr);
+  CHECK(SUCCEEDED(hr));
   swap_chain_handle_.Set(handle);
 
   if (is_yuy2_swapchain_ != yuy2) {
@@ -832,7 +836,6 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   is_yuy2_swapchain_ = false;
   // The composition surface handle isn't actually used, but
   // CreateSwapChainForComposition can't create YUY2 swapchains.
-  HRESULT hr = E_FAIL;
   if (yuy2) {
     hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
