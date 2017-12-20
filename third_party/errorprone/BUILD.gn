@@ -6,7 +6,7 @@ import("//build/config/android/rules.gni")
 
 if (current_toolchain == default_toolchain) {
   java_library("errorprone_java") {
-    jar_path = "lib/error_prone_ant-2.1.2.jar"
+    jar_path = "lib/error_prone_ant-2.1.3.jar"
   }
 
   java_binary("errorprone") {
@@ -14,6 +14,6 @@ if (current_toolchain == default_toolchain) {
       ":errorprone_java",
     ]
     main_class = "com.google.errorprone.ErrorProneCompiler"
-    bootclasspath = "$root_build_dir/lib.java/third_party/errorprone/error_prone_ant-2.1.2.jar"
+    bootclasspath = "$root_build_dir/lib.java/third_party/errorprone/error_prone_ant-2.1.3.jar"
   }
 }
