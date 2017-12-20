@@ -35,8 +35,6 @@ static const int delta_lf_id_lut[MAX_MB_PLANE][2] = {
 #endif  // CONFIG_EXT_DELTA_Q
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
-#define PARALLEL_DEBLOCKING_15TAPLUMAONLY 1
-#define PARALLEL_DEBLOCKING_DISABLE_15TAP 0
 #if CONFIG_DEBLOCK_13TAP
 #define PARALLEL_DEBLOCKING_5_TAP_CHROMA 1
 #else
@@ -2172,7 +2170,6 @@ static void set_lpf_parameters(
                 params->filter_length = 8;
             } else {
               params->filter_length = 16;
-#if PARALLEL_DEBLOCKING_15TAPLUMAONLY
               // No wide filtering for chroma plane
               if (plane != 0) {
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
@@ -2181,12 +2178,7 @@ static void set_lpf_parameters(
                 params->filter_length = 8;
 #endif
               }
-#endif
             }
-
-#if PARALLEL_DEBLOCKING_DISABLE_15TAP
-            params->filter_length = (TX_4X4 >= AOMMIN(ts, pv_ts)) ? (4) : (8);
-#endif  // PARALLEL_DEBLOCKING_DISABLE_15TAP
 
             // update the level if the current block is skipped,
             // but the previous one is not
