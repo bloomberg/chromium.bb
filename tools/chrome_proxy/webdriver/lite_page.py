@@ -69,6 +69,7 @@ class LitePage(IntegrationTest):
   # directive is provided when always-on.
   # Note: this test is only on M-60+ which supports exp=force_lite_page
   @ChromeVersionEqualOrAfterM(60)
+  @ChromeVersionBeforeM(65)
   def testLitePageForcedExperiment(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
@@ -112,6 +113,7 @@ class LitePage(IntegrationTest):
   # Checks that a Lite Page is not served for the Cellular-Only option but
   # not on cellular connection.
   @ChromeVersionEqualOrAfterM(61)
+  @ChromeVersionBeforeM(65)
   def testLitePageNotAcceptedForCellularOnlyFlag(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -144,6 +146,7 @@ class LitePage(IntegrationTest):
   # of the page and is able to load all resources. This test is only run on
   # Android because it depends on window size of the browser.
   @AndroidOnly
+  @ChromeVersionBeforeM(65)
   def testLitePageBTF(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
@@ -193,7 +196,7 @@ class LitePage(IntegrationTest):
   # bottom of the page and is able to load all resources. This test is only run
   # on Android because it depends on window size of the browser.
   @AndroidOnly
-  @ChromeVersionEqualOrAfterM(65)
+  @ChromeVersionEqualOrAfterM(61)
   def testLitePageBTFNano(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'

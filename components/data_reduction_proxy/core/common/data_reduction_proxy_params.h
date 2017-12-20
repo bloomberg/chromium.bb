@@ -66,32 +66,6 @@ const char* GetLoFiFlagFieldTrialName();
 // server experiments for the data reduction proxy.
 bool IsIncludedInServerExperimentsFieldTrial();
 
-// Returns true if this client has any of the values to enable Lo-Fi mode for
-// the "data-reduction-proxy-lo-fi" command line switch. This includes the
-// "always-on", "cellular-only", and "slow-connections-only" values.
-bool IsLoFiOnViaFlags();
-
-// Returns true if this client has the command line switch to enable Lo-Fi
-// mode always on.
-bool IsLoFiAlwaysOnViaFlags();
-
-// Returns true if this client has the command line switch to enable Lo-Fi
-// mode only on cellular connections.
-bool IsLoFiCellularOnlyViaFlags();
-
-// Returns true if this client has the command line switch to enable Lo-Fi
-// mode only on slow connections.
-bool IsLoFiSlowConnectionsOnlyViaFlags();
-
-// Returns true if this client has the command line switch to disable Lo-Fi
-// mode.
-bool IsLoFiDisabledViaFlags();
-
-// Returns true if this client has the command line switch to enable lite pages.
-// This means a preview should be requested instead of placeholders whenever
-// Lo-Fi mode is on.
-bool AreLitePagesEnabledViaFlags();
-
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();

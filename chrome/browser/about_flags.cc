@@ -256,22 +256,6 @@ const FeatureEntry::Choice kMarkHttpAsChoices[] = {
      security_state::switches::kMarkHttpAs,
      security_state::switches::kMarkHttpAsDangerous}};
 
-const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kDataReductionProxyLoFiAlwaysOn,
-     data_reduction_proxy::switches::kDataReductionProxyLoFi,
-     data_reduction_proxy::switches::kDataReductionProxyLoFiValueAlwaysOn},
-    {flag_descriptions::kDataReductionProxyLoFiCellularOnly,
-     data_reduction_proxy::switches::kDataReductionProxyLoFi,
-     data_reduction_proxy::switches::kDataReductionProxyLoFiValueCellularOnly},
-    {flag_descriptions::kDataReductionProxyLoFiDisabled,
-     data_reduction_proxy::switches::kDataReductionProxyLoFi,
-     data_reduction_proxy::switches::kDataReductionProxyLoFiValueDisabled},
-    {flag_descriptions::kDataReductionProxyLoFiSlowConnectionsOnly,
-     data_reduction_proxy::switches::kDataReductionProxyLoFi,
-     data_reduction_proxy::switches::
-         kDataReductionProxyLoFiValueSlowConnectionsOnly}};
-
 const FeatureEntry::Choice kDataReductionProxyServerExperiment[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kDataReductionProxyServerAlternative1,
@@ -2080,15 +2064,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHarfbuzzRendertextDescription, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableHarfBuzzRenderText)},
 #endif  // OS_MACOSX
-    {"data-reduction-proxy-lo-fi",
-     flag_descriptions::kDataReductionProxyLoFiName,
-     flag_descriptions::kDataReductionProxyLoFiDescription, kOsAll,
-     MULTI_VALUE_TYPE(kDataReductionProxyLoFiChoices)},
-    {"enable-data-reduction-proxy-lite-page",
-     flag_descriptions::kEnableDataReductionProxyLitePageName,
-     flag_descriptions::kEnableDataReductionProxyLitePageDescription, kOsAll,
-     SINGLE_VALUE_TYPE(
-         data_reduction_proxy::switches::kEnableDataReductionProxyLitePage)},
+    {"data-saver-server-previews",
+     flag_descriptions::kDataSaverServerPreviewsName,
+     flag_descriptions::kDataSaverServerPreviewsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         data_reduction_proxy::features::kDataReductionProxyDecidesTransform)},
     {"enable-data-reduction-proxy-server-experiment",
      flag_descriptions::kEnableDataReductionProxyServerExperimentName,
      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,

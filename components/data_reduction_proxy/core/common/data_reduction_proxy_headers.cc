@@ -44,10 +44,6 @@ const char kCompressedVideoDirective[] = "compressed-video";
 const char kIdentityDirective[] = "identity";
 const char kChromeProxyPagePoliciesDirective[] = "page-policies";
 
-const char kChromeProxyExperimentForceLitePage[] = "force_lite_page";
-const char kChromeProxyExperimentForceEmptyImage[] =
-    "force_page_policies_empty_image";
-
 const char kChromeProxyActionBlockOnce[] = "block-once";
 const char kChromeProxyActionBlock[] = "block";
 const char kChromeProxyActionBypass[] = "bypass";
@@ -177,14 +173,6 @@ const char* compressed_video_directive() {
 
 const char* page_policies_directive() {
   return kChromeProxyPagePoliciesDirective;
-}
-
-const char* chrome_proxy_experiment_force_lite_page() {
-  return kChromeProxyExperimentForceLitePage;
-}
-
-const char* chrome_proxy_experiment_force_empty_image() {
-  return kChromeProxyExperimentForceEmptyImage;
 }
 
 TransformDirective ParseRequestTransform(

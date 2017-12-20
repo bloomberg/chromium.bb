@@ -13,6 +13,7 @@ class LoFi(IntegrationTest):
   #  Checks that the compressed image is below a certain threshold.
   #  The test page is uncacheable otherwise a cached page may be served that
   #  doesn't have the correct via headers.
+  @ChromeVersionBeforeM(65)
   def testLoFi(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -41,8 +42,41 @@ class LoFi(IntegrationTest):
       histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
       self.assertEqual(1, histogram['count'])
 
+  #  Checks that the compressed image is below a certain threshold.
+  #  The test page is uncacheable otherwise a cached page may be served that
+  #  doesn't have the correct via headers.
+  @ChromeVersionEqualOrAfterM(65)
+  def testLoFiWithServerPreviewsFlag(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features='
+                               'DataReductionProxyDecidesTransform')
+      # Disable server experiments such as tamper detection.
+      test_driver.AddChromeArg('--data-reduction-proxy-server-experiments-'
+                               'disabled')
+      test_driver.AddChromeArg('--force-fieldtrial-params='
+                               'NetworkQualityEstimator.Enabled:'
+                               'force_effective_connection_type/Slow2G')
+      test_driver.AddChromeArg('--force-fieldtrials=NetworkQualityEstimator/'
+                               'Enabled')
+
+      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+
+      lofi_responses = 0
+      for response in test_driver.GetHTTPResponses():
+        if not response.url.endswith('png'):
+          continue
+        if not response.request_headers:
+          continue
+        if (self.checkLoFiResponse(response, True)):
+          lofi_responses = lofi_responses + 1
+
+      # Verify that Lo-Fi responses were seen.
+      self.assertNotEqual(0, lofi_responses)
+
   # Checks that LoFi images are served when LoFi slow connections are used and
   # the network quality estimator returns Slow2G.
+  @ChromeVersionBeforeM(65)
   def testLoFiSlowConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -166,6 +200,7 @@ class LoFi(IntegrationTest):
   # enabled and Lo-Fi disabled and the same test page is loaded. This third page
   # load should not pick the Lo-Fi placeholder from cache and original image
   # should be loaded.
+  @ChromeVersionBeforeM(65)
   def testLoFiCacheBypass(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
@@ -236,9 +271,97 @@ class LoFi(IntegrationTest):
       # Verify that responses were seen.
       self.assertNotEqual(0, responses)
 
+  # Checks that Lo-Fi placeholder images are not loaded from cache on page
+  # reloads when Lo-Fi mode is disabled or data reduction proxy is disabled.
+  # First a test page is opened with Lo-Fi and chrome proxy enabled. This allows
+  # Chrome to cache the Lo-Fi placeholder image. The browser is restarted with
+  # chrome proxy disabled and the same test page is loaded. This second page
+  # load should not pick the Lo-Fi placeholder from cache and original image
+  # should be loaded. Finally, the browser is restarted with chrome proxy
+  # enabled and Lo-Fi disabled and the same test page is loaded. This third page
+  # load should not pick the Lo-Fi placeholder from cache and original image
+  # should be loaded.
+  @ChromeVersionEqualOrAfterM(65)
+  def testLoFiCacheBypassWithServerPreviewsFlag(self):
+    # If it was attempted to run with another experiment, skip this test.
+    if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
+        in common.ParseFlags().browser_args):
+      self.skipTest('This test cannot be run with other experiments.')
+    with TestDriver() as test_driver:
+      # First page load, enable Lo-Fi and chrome proxy. Disable server
+      # experiments such as tamper detection. This test should be run with
+      # --profile-type=default command line for the same user profile and cache
+      # to be used across the two page loads.
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features='
+                               'DataReductionProxyDecidesTransform')
+      test_driver.AddChromeArg('--profile-type=default')
+      test_driver.AddChromeArg('--data-reduction-proxy-server-experiments-'
+                               'disabled')
+      test_driver.AddChromeArg('--force-fieldtrial-params='
+                               'NetworkQualityEstimator.Enabled:'
+                               'force_effective_connection_type/Slow2G')
+      test_driver.AddChromeArg('--force-fieldtrials=NetworkQualityEstimator/'
+                               'Enabled')
+
+      test_driver.LoadURL('http://check.googlezip.net/cacheable/test.html')
+
+      lofi_responses = 0
+      for response in test_driver.GetHTTPResponses():
+        if not response.url.endswith('png'):
+          continue
+        if not response.request_headers:
+          continue
+        if (self.checkLoFiResponse(response, True)):
+          lofi_responses = lofi_responses + 1
+
+      # Verify that Lo-Fi responses were seen.
+      self.assertNotEqual(0, lofi_responses)
+
+      # Second page load with the chrome proxy off.
+      test_driver._StopDriver()
+      test_driver.RemoveChromeArg('--enable-spdy-proxy-auth')
+      test_driver.LoadURL('http://check.googlezip.net/cacheable/test.html')
+
+      responses = 0
+      for response in test_driver.GetHTTPResponses():
+        if not response.url.endswith('png'):
+          continue
+        if not response.request_headers:
+          continue
+        responses = responses + 1
+        self.assertNotHasChromeProxyViaHeader(response)
+        self.checkLoFiResponse(response, False)
+
+      # Verify that responses were seen.
+      self.assertNotEqual(0, responses)
+
+      # Third page load with the chrome proxy on and Lo-Fi off.
+      test_driver._StopDriver()
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.RemoveChromeArg('--enable-features='
+                                  'DataReductionProxyDecidesTransform')
+      test_driver.AddChromeArg('--disable-features='
+                               'DataReductionProxyDecidesTransform')
+      test_driver.LoadURL('http://check.googlezip.net/cacheable/test.html')
+
+      responses = 0
+      for response in test_driver.GetHTTPResponses():
+        if not response.url.endswith('png'):
+          continue
+        if not response.request_headers:
+          continue
+        responses = responses + 1
+        self.assertHasChromeProxyViaHeader(response)
+        self.checkLoFiResponse(response, False)
+
+      # Verify that responses were seen.
+      self.assertNotEqual(0, responses)
+
   # Checks that LoFi images are served and the force empty image experiment
   # directive is provided when LoFi is always-on without Lite Pages enabled.
   @ChromeVersionEqualOrAfterM(61)
+  @ChromeVersionBeforeM(65)
   def testLoFiForcedExperiment(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
