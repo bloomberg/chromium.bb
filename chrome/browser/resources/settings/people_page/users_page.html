@@ -39,11 +39,13 @@
         label="$i18n{guestBrowsingLabel}"
         disabled="[[isEditingDisabled_(isOwner_, isWhitelistManaged_)]]">
     </settings-toggle-button>
-    <settings-toggle-button class="continuation"
-        pref="{{prefs.cros.accounts.supervisedUsersEnabled}}"
-        label="$i18n{supervisedUsersLabel}"
-        disabled="[[isEditingDisabled_(isOwner_, isWhitelistManaged_)]]">
-    </settings-toggle-button>
+    <template is="dom-if" if="[[profileManagesSupervisedUsers]]">
+      <settings-toggle-button class="continuation"
+          pref="{{prefs.cros.accounts.supervisedUsersEnabled}}"
+          label="$i18n{supervisedUsersLabel}"
+          disabled="[[isEditingDisabled_(isOwner_, isWhitelistManaged_)]]">
+      </settings-toggle-button>
+    </template>
     <settings-toggle-button class="continuation"
         pref="{{prefs.cros.accounts.showUserNamesOnSignIn}}"
         label="$i18n{showOnSigninLabel}"
