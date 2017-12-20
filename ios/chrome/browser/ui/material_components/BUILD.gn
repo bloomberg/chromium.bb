@@ -12,6 +12,7 @@ source_set("material_components") {
     "utils.mm",
   ]
   deps = [
+    "//base",
     "//ios/chrome/browser/ui/colors",
     "//ios/third_party/material_components_ios",
   ]

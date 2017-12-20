@@ -1097,7 +1097,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)setupNavigationBar {
   self.navigationController.navigationBarHidden = YES;
   self.appBar = [[MDCAppBar alloc] init];
-  [self addChildViewController:_appBar.headerViewController];
+  [self addChildViewController:self.appBar.headerViewController];
   ConfigureAppBarWithCardStyle(self.appBar);
   // Set the header view's tracking scroll view.
   self.appBar.headerViewController.headerView.trackingScrollView =
