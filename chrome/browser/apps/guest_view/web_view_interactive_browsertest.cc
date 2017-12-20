@@ -55,6 +55,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
+#include "ui/touch_selection/touch_selection_menu_runner.h"
 
 using extensions::AppWindow;
 using extensions::ExtensionsAPIClient;
@@ -1583,6 +1584,60 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, DISABLED_Focus_InputMethod) {
     // Wait for the next step to complete.
     ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
   }
+}
+#endif
+
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, LongPressSelection) {
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  SetupTest("web_view/text_selection",
+            "/extensions/platform_apps/web_view/text_selection/guest.html");
+  ASSERT_TRUE(guest_web_contents());
+  ASSERT_TRUE(embedder_web_contents());
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
+
+  auto filter = std::make_unique<content::InputMsgWatcher>(
+      guest_web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureLongPress);
+
+  // Wait for guest to load (without this the events never reach the guest).
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, message_loop_runner->QuitClosure(),
+      base::TimeDelta::FromMilliseconds(200));
+  message_loop_runner->Run();
+
+  gfx::Rect guest_rect = guest_web_contents()->GetContainerBounds();
+  gfx::Point embedder_origin =
+      embedder_web_contents()->GetContainerBounds().origin();
+  guest_rect.Offset(-embedder_origin.x(), -embedder_origin.y());
+
+  // Mouse click is necessary for focus.
+  content::SimulateMouseClickAt(embedder_web_contents(), 0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                guest_rect.CenterPoint());
+
+  content::SimulateLongPressAt(embedder_web_contents(),
+                               guest_rect.CenterPoint());
+  EXPECT_EQ(content::INPUT_EVENT_ACK_STATE_CONSUMED,
+            filter->GetAckStateWaitIfNecessary());
+
+  // Give enough time for the quick menu to fire.
+  message_loop_runner = new content::MessageLoopRunner;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, message_loop_runner->QuitClosure(),
+      base::TimeDelta::FromMilliseconds(200));
+  message_loop_runner->Run();
+
+// TODO: Fix quick menu opening on Windows.
+#if !defined(OS_WIN)
+  EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+#endif
+
+  EXPECT_FALSE(guest_web_contents()->IsShowingContextMenu());
 }
 #endif
 

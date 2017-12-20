@@ -192,6 +192,8 @@ void SimulateTapAt(WebContents* web_contents, const gfx::Point& point);
 #if defined(USE_AURA)
 // Generates a TouchStart at |point|.
 void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point);
+
+void SimulateLongPressAt(WebContents* web_contents, const gfx::Point& point);
 #endif
 
 // Taps the screen with modifires at |point|.
