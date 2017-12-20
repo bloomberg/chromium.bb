@@ -1875,6 +1875,12 @@
         {
           "board_name": "reef",
           "name": "electro",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "reef",
+          "name": "reef",
           "test_suites": [
             "sanity",
             "bvt-inline",
@@ -1885,12 +1891,6 @@
             "bvt-perbuild"
           ],
           "cq_test_enabled": true,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "reef",
-          "name": "reef",
-          "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
       ]
