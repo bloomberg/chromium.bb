@@ -4,12 +4,21 @@
   <script>
     var popup, popup2, popup3, popup4;
 
+    function WindowOpen(file, name, attr) {
+      // Force windows to open in a new process. See https://crbug.com/153363.
+      var url = 'http://example.com:' + location.port + '/' + file;
+      var w = window.open('', name, attr);
+      w.opener = null;
+      w.location.href = url;
+      return w;
+    }
+
     // window.open, window.close should be synchronous
     function test1() {
-      popup = window.open('title1.html', 'name');
+      popup = WindowOpen('title1.html', 'name');
       popup.close();
 
-      popup = window.open('title2.html', 'name', 'width=200,height=200');
+      popup = WindowOpen('title2.html', 'name', 'width=200,height=200');
       popup.close();
       document.location = 'title2.html'
     }
@@ -33,10 +42,10 @@
     }
 
     function openPopups() {
-      popup = window.open('title1.html', 'name');
-      popup2 = window.open('title1.html', 'name2');
-      popup3 = window.open('title1.html', 'name3');
-      popup4 = window.open('title1.html', 'name4');
+      popup = WindowOpen('title1.html', 'name');
+      popup2 = WindowOpen('title1.html', 'name2');
+      popup3 = WindowOpen('title1.html', 'name3');
+      popup4 = WindowOpen('title1.html', 'name4');
     }
 
     function closePopups() {
