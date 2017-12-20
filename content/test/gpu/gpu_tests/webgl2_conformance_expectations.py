@@ -172,19 +172,32 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=709874)
     self.Flaky('conformance2/rendering/attrib-type-match.html',
         ['win', 'nvidia', 'opengl'], bug=782254)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-r11f_g11f_b10f-rgb-float.html',
+        ['win', 'nvidia', 'opengl'], bug=795030)
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg16f-rg-half_float.html',
-        ['win', 'nvidia', 'opengl'], bug=784849)
+        'tex-2d-r16f-red-float.html',
+        ['win', 'nvidia', 'opengl'], bug=786716)
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-r8-red-unsigned_byte.html',
         ['win', 'nvidia', 'opengl'], bug=784849)
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-r16f-red-float.html',
-        ['win', 'nvidia', 'opengl'], bug=786716)
+        'tex-2d-rg16f-rg-half_float.html',
+        ['win', 'nvidia', 'opengl'], bug=784849)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rg32f-rg-float.html',
+        ['win', 'nvidia', 'opengl'], bug=795030)
+    self.Flaky('conformance2/textures/webgl_canvas/' +
+        'tex-3d-rgba32f-rgba-float.html',
+        ['win', 'nvidia', 'opengl'], bug=795030)
     self.Fail('conformance2/rendering/instanced-rendering-bug.html',
         ['win', 'nvidia', 'opengl'], bug=791289)
     self.Fail('conformance2/rendering/canvas-resizing-with-pbo-bound.html',
         ['win', 'nvidia', 'opengl'], bug=794613)
+    self.Flaky('deqp/functional/gles3/shadercommonfunction.html',
+        ['win', 'nvidia', 'opengl'], bug=795030)
+    self.Flaky('deqp/functional/gles3/shaderpackingfunction.html',
+        ['win', 'nvidia', 'opengl'], bug=795030)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
@@ -322,11 +335,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
-
-    # Passthrough command decoder / Win / OpenGL / NVIDIA
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg32f-rg-float.html',
-        ['win', 'passthrough', 'opengl', 'nvidia'], bug=794340)
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
