@@ -155,7 +155,6 @@ to see a full list of options. A few of the most useful options are below:
 | `--no-pixel-tests`          | Disable the pixel-to-pixel PNG comparisons and image checksums for tests that don't call `testRunner.dumpAsText()` |
 | `--reset-results`           |	Overwrite the current baselines (`-expected.{png|txt|wav}` files) with actual results, or create new baselines if there are no existing baselines. |
 | `--renderer-startup-dialog` | Bring up a modal dialog before running the test, useful for attaching a debugger. |
-| `--fully-parallel`          | Run tests in parallel using as many child processes as the system has cores. |
 | `--driver-logging`          | Print C++ logs (LOG(WARNING), etc).  |
 
 ## Success and Failure
