@@ -94,6 +94,7 @@ enum Happening : int {
   MERGE_HISTOGRAM_DELTAS_FROM_SOURCE,
   RECORD_HISTOGRAM_SNAPSHOTS_FROM_SOURCE,
   PROVIDE_INDEPENDENT_METRICS,
+  SCHEDULE_SOURCES_FAILED,
   MAX_HAPPENINGS
 };
 
@@ -662,12 +663,14 @@ void FileMetricsProvider::ScheduleSourcesCheck() {
   // because that must complete before the reply runs.
   SourceInfoList* check_list = new SourceInfoList();
   std::swap(sources_to_check_, *check_list);
-  task_runner_->PostTaskAndReply(
+  bool success = task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner,
                  base::Unretained(check_list)),
       base::Bind(&FileMetricsProvider::RecordSourcesChecked,
                  weak_factory_.GetWeakPtr(), base::Owned(check_list)));
+  if (!success)
+    RecordHappening(SCHEDULE_SOURCES_FAILED);
 }
 
 void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
