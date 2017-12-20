@@ -4,7 +4,7 @@
 // a called by the test to provide the mock values for sensor. |verifyReading|
 // is called so that the value read in JavaScript are the values expected (the ones
 // sent by |updateReading|).
-function runGenericSensorTests(sensorType, updateReading, verifyReading) {
+function runGenericSensorTests(sensorType, updateReading, verifyReading, featurePolicies) {
   sensor_test(sensor => {
     sensor.mockSensorProvider.setGetSensorShouldFail(true);
     let sensorObject = new sensorType;
@@ -360,6 +360,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
   promise_test(() => {
     return new Promise((resolve,reject) => {
       let iframe = document.createElement('iframe');
+      iframe.allow = featurePolicies.join(' \'none\'; ') + ' \'none\';';
       iframe.srcdoc = '<script>' +
                       '  window.onmessage = message => {' +
                       '    if (message.data === "LOADED") {' +
@@ -382,7 +383,35 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         }
       }
     });
-  }, `${sensorType.name}: Test that sensor cannot be constructed within iframe.`);
+  }, `${sensorType.name}: Test that sensor cannot be constructed within iframe disallowed to use feature policy.`);
+
+  promise_test(() => {
+    return new Promise((resolve,reject) => {
+      let iframe = document.createElement('iframe');
+      iframe.allow = featurePolicies.join(';') + ';';
+      iframe.srcdoc = '<script>' +
+                      '  window.onmessage = message => {' +
+                      '    if (message.data === "LOADED") {' +
+                      '      try {' +
+                      '        new ' + sensorType.name + '();' +
+                      '        parent.postMessage("PASS", "*");' +
+                      '      } catch (e) {' +
+                      '        parent.postMessage("FAIL", "*");' +
+                      '      }' +
+                      '    }' +
+                      '   };' +
+                      '<\/script>';
+      iframe.onload = () => iframe.contentWindow.postMessage('LOADED', '*');
+      document.body.appendChild(iframe);
+      window.onmessage = message => {
+        if (message.data == 'PASS') {
+          resolve();
+        } else if (message.data == 'FAIL') {
+          reject();
+        }
+      }
+    });
+  }, `${sensorType.name}: Test that sensor can be constructed within an iframe allowed to use feature policy.`);
 
   sensor_test(async sensor => {
     let sensorObject = new sensorType();

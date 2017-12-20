@@ -57,6 +57,14 @@ STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kUsb,
                    ::blink::mojom::FeaturePolicyFeature::kUsb);
 STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kWebVr,
                    ::blink::mojom::FeaturePolicyFeature::kWebVr);
+STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kAccelerometer,
+                   ::blink::mojom::FeaturePolicyFeature::kAccelerometer);
+STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kAmbientLightSensor,
+                   ::blink::mojom::FeaturePolicyFeature::kAmbientLightSensor);
+STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kGyroscope,
+                   ::blink::mojom::FeaturePolicyFeature::kGyroscope);
+STATIC_ASSERT_ENUM(::blink::FeaturePolicyFeature::kMagnetometer,
+                   ::blink::mojom::FeaturePolicyFeature::kMagnetometer);
 
 // TODO(crbug.com/789818) - Merge these 2 WebSandboxFlags enums.
 STATIC_ASSERT_ENUM(::blink::WebSandboxFlags::kNone,

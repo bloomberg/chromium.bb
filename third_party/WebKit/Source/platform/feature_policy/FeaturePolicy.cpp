@@ -203,6 +203,10 @@ bool IsSupportedInFeaturePolicy(FeaturePolicyFeature feature) {
     case FeaturePolicyFeature::kPayment:
     case FeaturePolicyFeature::kUsb:
     case FeaturePolicyFeature::kWebVr:
+    case FeaturePolicyFeature::kAccelerometer:
+    case FeaturePolicyFeature::kAmbientLightSensor:
+    case FeaturePolicyFeature::kGyroscope:
+    case FeaturePolicyFeature::kMagnetometer:
       return true;
     case FeaturePolicyFeature::kSyncXHR:
     case FeaturePolicyFeature::kVibrate:
@@ -229,6 +233,13 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  FeaturePolicyFeature::kGeolocation);
     default_feature_name_map.Set("midi", FeaturePolicyFeature::kMidiFeature);
     default_feature_name_map.Set("vr", FeaturePolicyFeature::kWebVr);
+    default_feature_name_map.Set("accelerometer",
+                                 FeaturePolicyFeature::kAccelerometer);
+    default_feature_name_map.Set("ambient-light-sensor",
+                                 FeaturePolicyFeature::kAmbientLightSensor);
+    default_feature_name_map.Set("gyroscope", FeaturePolicyFeature::kGyroscope);
+    default_feature_name_map.Set("magnetometer",
+                                 FeaturePolicyFeature::kMagnetometer);
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set("vibrate", FeaturePolicyFeature::kVibrate);
       default_feature_name_map.Set("cookie",

@@ -269,6 +269,14 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                            {FeaturePolicyFeature::kUsb,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
                            {FeaturePolicyFeature::kWebVr,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {FeaturePolicyFeature::kAccelerometer,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {FeaturePolicyFeature::kAmbientLightSensor,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {FeaturePolicyFeature::kGyroscope,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {FeaturePolicyFeature::kMagnetometer,
                             FeaturePolicy::FeatureDefault::EnableForSelf}}));
   return default_feature_list;
 }

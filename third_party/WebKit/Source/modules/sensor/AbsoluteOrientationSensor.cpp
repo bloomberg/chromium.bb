@@ -30,7 +30,10 @@ AbsoluteOrientationSensor::AbsoluteOrientationSensor(
     : OrientationSensor(execution_context,
                         options,
                         exception_state,
-                        SensorType::ABSOLUTE_ORIENTATION_QUATERNION) {}
+                        SensorType::ABSOLUTE_ORIENTATION_QUATERNION,
+                        {FeaturePolicyFeature::kAccelerometer,
+                         FeaturePolicyFeature::kGyroscope,
+                         FeaturePolicyFeature::kMagnetometer}) {}
 
 void AbsoluteOrientationSensor::Trace(blink::Visitor* visitor) {
   OrientationSensor::Trace(visitor);

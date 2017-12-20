@@ -26,10 +26,12 @@ function verify_sensor_reading({x, y, z, timestamp}, is_null) {
 
 runGenericSensorTests(Accelerometer,
                       update_sensor_reading,
-                      verify_sensor_reading);
+                      verify_sensor_reading,
+                      ['accelerometer']);
 
 runGenericSensorTests(LinearAccelerationSensor,
                       update_sensor_reading,
-                      verify_sensor_reading);
+                      verify_sensor_reading,
+                      ['accelerometer']);
 
 </script>
