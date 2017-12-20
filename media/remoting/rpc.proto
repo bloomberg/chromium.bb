@@ -214,7 +214,7 @@ message VideoDecoderConfig {
     PIXEL_FORMAT_YUV420P12 = 22;
     PIXEL_FORMAT_YUV422P12 = 23;
     PIXEL_FORMAT_YUV444P12 = 24;
-    PIXEL_FORMAT_Y8 = 25;
+    PIXEL_FORMAT_Y8 = 25 [deprecated = true];
     PIXEL_FORMAT_Y16 = 26;
   };
 
