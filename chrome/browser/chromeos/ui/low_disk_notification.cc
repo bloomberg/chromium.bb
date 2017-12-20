@@ -13,6 +13,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,31 +37,12 @@ const uint64_t kNotificationSevereThreshold = 512 << 20;  // 512MB
 constexpr base::TimeDelta kNotificationInterval =
     base::TimeDelta::FromMinutes(2);
 
-class LowDiskNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  LowDiskNotificationDelegate() {}
-
-  // message_center::NotificationDelegate
-  void ButtonClick(int button_index) override {
-    chrome::ShowSettingsSubPageForProfile(
-        ProfileManager::GetActiveUserProfile(), kStoragePage);
-  }
-
- private:
-  ~LowDiskNotificationDelegate() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(LowDiskNotificationDelegate);
-};
-
 }  // namespace
 
 namespace chromeos {
 
 LowDiskNotification::LowDiskNotification()
-    : message_center_(g_browser_process->message_center()),
-      notification_interval_(kNotificationInterval),
-      weak_ptr_factory_(this) {
+    : notification_interval_(kNotificationInterval), weak_ptr_factory_(this) {
   DCHECK(DBusThreadManager::Get()->GetCryptohomeClient());
   DBusThreadManager::Get()->GetCryptohomeClient()->AddObserver(this);
 }
@@ -87,7 +69,8 @@ void LowDiskNotification::LowDiskSpace(uint64_t free_disk_bytes) {
   if (severity != last_notification_severity_ ||
       (severity == HIGH &&
        now - last_notification_time_ > notification_interval_)) {
-    message_center_->AddNotification(CreateNotification(severity));
+    NotificationDisplayService::GetForSystemNotifications()->Display(
+        NotificationHandler::Type::TRANSIENT, *CreateNotification(severity));
     last_notification_time_ = now;
     last_notification_severity_ = severity;
   }
@@ -120,12 +103,19 @@ LowDiskNotification::CreateNotification(Severity severity) {
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierDisk);
 
+  auto on_click = base::BindRepeating([](base::Optional<int> button_index) {
+    if (button_index) {
+      DCHECK_EQ(0, *button_index);
+      chrome::ShowSettingsSubPageForProfile(
+          ProfileManager::GetActiveUserProfile(), kStoragePage);
+    }
+  });
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskId, title, message,
           gfx::Image(), base::string16(), GURL(), notifier_id, optional_fields,
-          new LowDiskNotificationDelegate(), kNotificationStorageFullIcon,
-          warning_level);
+          new message_center::HandleNotificationClickDelegate(on_click),
+          kNotificationStorageFullIcon, warning_level);
 
   return notification;
 }
@@ -137,11 +127,6 @@ LowDiskNotification::Severity LowDiskNotification::GetSeverity(
   if (free_disk_bytes < kNotificationThreshold)
     return Severity::MEDIUM;
   return Severity::NONE;
-}
-
-void LowDiskNotification::SetMessageCenterForTest(
-    message_center::MessageCenter* message_center) {
-  message_center_ = message_center;
 }
 
 void LowDiskNotification::SetNotificationIntervalForTest(
