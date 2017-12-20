@@ -60,7 +60,7 @@ void SpellcheckLanguagePolicyHandler::ApplyPolicySettings(
     }
   }
 
-  prefs->SetValue(spellcheck::prefs::kSpellCheckEnable,
+  prefs->SetValue(spellcheck::prefs::kEnableSpellcheck,
                   base::MakeUnique<base::Value>(true));
   prefs->SetValue(spellcheck::prefs::kSpellCheckForcedDictionaries,
                   std::move(forced_language_list));
