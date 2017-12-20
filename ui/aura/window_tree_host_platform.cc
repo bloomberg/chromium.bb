@@ -28,14 +28,16 @@
 #include "ui/platform_window/win/win_window.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/platform_window/x11/x11_window.h"
+#endif
+
 namespace aura {
 
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(USE_OZONE)
 // static
 WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
   return new WindowTreeHostPlatform(bounds);
 }
-#endif
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
     : WindowTreeHostPlatform() {
@@ -48,6 +50,8 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
   platform_window_.reset(new ui::WinWindow(this, bounds));
 #elif defined(OS_ANDROID)
   platform_window_.reset(new ui::PlatformWindowAndroid(this));
+#elif defined(USE_X11)
+  platform_window_.reset(new ui::X11Window(this, bounds));
 #else
   NOTIMPLEMENTED();
 #endif

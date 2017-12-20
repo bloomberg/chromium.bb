@@ -27,9 +27,6 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   X11WindowBase(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
   ~X11WindowBase() override;
 
-  // Creates new underlying XWindow. Does not map XWindow.
-  void Create();
-
   // PlatformWindow:
   void Show() override;
   void Hide() override;
@@ -48,6 +45,9 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   PlatformImeController* GetPlatformImeController() override;
 
  protected:
+  // Creates new underlying XWindow. Does not map XWindow.
+  void Create();
+
   void Destroy();
 
   PlatformWindowDelegate* delegate() { return delegate_; }
