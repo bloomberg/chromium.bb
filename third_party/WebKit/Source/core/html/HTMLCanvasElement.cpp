@@ -120,16 +120,6 @@ const int kMaxGlobalGPUMemoryUsage =
 // misinterpreted as a user-input value
 const int kUndefinedQualityValue = -1.0;
 
-scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize& size) {
-  if (!IsValidImageSize(size))
-    return nullptr;
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeRasterN32Premul(size.Width(), size.Height());
-  if (!surface)
-    return nullptr;
-  return StaticBitmapImage::Create(surface->makeImageSnapshot());
-}
-
 }  // namespace
 
 inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
@@ -336,10 +326,6 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
 bool HTMLCanvasElement::ShouldBeDirectComposited() const {
   return (context_ && context_->IsComposited()) ||
          (!!surface_layer_bridge_);
-}
-
-bool HTMLCanvasElement::IsPaintable() const {
-  return (context_ && context_->IsPaintable()) || IsValidImageSize(Size());
 }
 
 bool HTMLCanvasElement::IsAccelerated() const {
@@ -887,13 +873,12 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
       mime_type, ImageEncoderUtils::kEncodeReasonToBlobCallback);
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
-    scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
-        kBackBuffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
-    if (image_bitmap) {
-      async_creator =
-          CanvasAsyncBlobCreator::Create(image_bitmap, encoding_mime_type,
-                                         callback, start_time, &GetDocument());
-    }
+  scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
+      kBackBuffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
+  if (image_bitmap) {
+    async_creator = CanvasAsyncBlobCreator::Create(
+        image_bitmap, encoding_mime_type, callback, start_time, &GetDocument());
+  }
 
   if (async_creator) {
     async_creator->ScheduleAsyncBlobCreation(quality);

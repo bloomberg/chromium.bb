@@ -4,7 +4,10 @@
 
 #include "core/html/canvas/CanvasRenderingContextHost.h"
 
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
 
@@ -20,6 +23,22 @@ ScriptPromise CanvasRenderingContextHost::Commit(
                                     "context that was not created from an "
                                     "OffscreenCanvas.");
   return exception_state.Reject(script_state);
+}
+
+scoped_refptr<StaticBitmapImage>
+CanvasRenderingContextHost::CreateTransparentImage(const IntSize& size) const {
+  if (!IsValidImageSize(size))
+    return nullptr;
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRasterN32Premul(size.Width(), size.Height());
+  if (!surface)
+    return nullptr;
+  return StaticBitmapImage::Create(surface->makeImageSnapshot());
+}
+
+bool CanvasRenderingContextHost::IsPaintable() const {
+  return (RenderingContext() && RenderingContext()->IsPaintable()) ||
+         IsValidImageSize(Size());
 }
 
 }  // namespace blink
