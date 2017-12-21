@@ -17,22 +17,22 @@
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
-#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 #include "media/cdm/ppapi/clear_key_cdm/clear_key_persistent_session_cdm.h"
 
 namespace media {
 
+class CdmHostProxy;
 class CdmVideoDecoder;
 class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
 class FileIOTestRunner;
 
-// Clear key implementation of the cdm::ContentDecryptionModule interface.
-class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
+// Clear key implementation of the cdm::ContentDecryptionModule interfaces.
+class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
+                    public cdm::ContentDecryptionModule_10 {
  public:
-  using Host = cdm::ContentDecryptionModule::Host;
-
-  ClearKeyCdm(Host* host, const std::string& key_system);
+  template <typename HostInterface>
+  ClearKeyCdm(HostInterface* host, const std::string& key_system);
   ~ClearKeyCdm() override;
 
   // cdm::ContentDecryptionModule implementation.
@@ -86,10 +86,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
                    const uint8_t* storage_id,
                    uint32_t storage_id_size) override;
 
-  // CdmHostProxy implementation.
-  cdm::Buffer* Allocate(uint32_t capacity) override;
-  cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) override;
-
  private:
   // ContentDecryptionModule callbacks.
   void OnSessionMessage(const std::string& session_id,
@@ -103,7 +99,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
                                  base::Time new_expiry_time);
 
   // Handle the success/failure of a promise. These methods are responsible for
-  // calling |host_| to resolve or reject the promise.
+  // calling |cdm_host_proxy_| to resolve or reject the promise.
   void OnSessionCreated(uint32_t promise_id, const std::string& session_id);
   void OnPromiseResolved(uint32_t promise_id);
   void OnPromiseFailed(uint32_t promise_id,
@@ -141,7 +137,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
   void VerifyCdmHostTest();
   void StartStorageIdTest();
 
-  Host* const host_;
+  std::unique_ptr<CdmHostProxy> cdm_host_proxy_;
   scoped_refptr<ContentDecryptionModule> cdm_;
 
   const std::string key_system_;
@@ -150,7 +146,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule, public CdmHostProxy {
   std::string last_session_id_;
   std::string next_renewal_message_;
 
-  // Timer delay in milliseconds for the next host_->SetTimer() call.
+  // Timer delay in milliseconds for the next cdm_host_proxy_->SetTimer() call.
   int64_t timer_delay_ms_;
 
   // Indicates whether a renewal timer has been set to prevent multiple timers

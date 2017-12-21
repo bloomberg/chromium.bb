@@ -24,6 +24,8 @@
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy_impl.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_video_decoder.h"
 #include "media/media_features.h"
 
@@ -264,16 +266,31 @@ void* CreateCdmInstance(int cdm_interface_version,
     return nullptr;
   }
 
-  using CdmInterface = cdm::ContentDecryptionModule;
-  if (cdm_interface_version != CdmInterface::kVersion)
-    return nullptr;
+  // We support both CDM_9 and CDM_10.
+  using CDM_9 = cdm::ContentDecryptionModule_9;
+  using CDM_10 = cdm::ContentDecryptionModule_10;
 
-  using Host = CdmInterface::Host;
-  Host* host = static_cast<Host*>(get_cdm_host_func(Host::kVersion, user_data));
-  if (!host)
-    return nullptr;
+  if (cdm_interface_version == CDM_9::kVersion) {
+    CDM_9::Host* host = static_cast<CDM_9::Host*>(
+        get_cdm_host_func(CDM_9::Host::kVersion, user_data));
+    if (!host)
+      return nullptr;
 
-  return new media::ClearKeyCdm(host, key_system_string);
+    DVLOG(1) << __func__ << ": Create ClearKeyCdm with CDM_9::Host.";
+    return new media::ClearKeyCdm(host, key_system_string);
+  }
+
+  if (cdm_interface_version == CDM_10::kVersion) {
+    CDM_10::Host* host = static_cast<CDM_10::Host*>(
+        get_cdm_host_func(CDM_10::Host::kVersion, user_data));
+    if (!host)
+      return nullptr;
+
+    DVLOG(1) << __func__ << ": Create ClearKeyCdm with CDM_10::Host.";
+    return new media::ClearKeyCdm(host, key_system_string);
+  }
+
+  return nullptr;
 }
 
 const char* GetCdmVersion() {
@@ -336,10 +353,11 @@ bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
 
 namespace media {
 
-ClearKeyCdm::ClearKeyCdm(Host* host, const std::string& key_system)
-    : host_(host),
+template <typename HostInterface>
+ClearKeyCdm::ClearKeyCdm(HostInterface* host, const std::string& key_system)
+    : cdm_host_proxy_(new CdmHostProxyImpl<HostInterface>(host)),
       cdm_(new ClearKeyPersistentSessionCdm(
-          this,
+          cdm_host_proxy_.get(),
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionKeysChange, base::Unretained(this)),
@@ -370,11 +388,12 @@ void ClearKeyCdm::GetStatusForPolicy(uint32_t promise_id,
   const cdm::HdcpVersion kDeviceHdcpVersion = cdm::kHdcpVersion2_0;
 
   if (policy.min_hdcp_version <= kDeviceHdcpVersion) {
-    host_->OnResolveKeyStatusPromise(promise_id, cdm::kUsable);
+    cdm_host_proxy_->OnResolveKeyStatusPromise(promise_id, cdm::kUsable);
     return;
   }
 
-  host_->OnResolveKeyStatusPromise(promise_id, cdm::kOutputRestricted);
+  cdm_host_proxy_->OnResolveKeyStatusPromise(promise_id,
+                                             cdm::kOutputRestricted);
 }
 
 void ClearKeyCdm::CreateSessionAndGenerateRequest(
@@ -470,7 +489,8 @@ void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
     }
   }
 
-  host_->OnExpirationChange(session_id.data(), session_id.length(), expiration);
+  cdm_host_proxy_->OnExpirationChange(session_id.data(), session_id.length(),
+                                      expiration);
 
   // Resolve the promise.
   OnPromiseResolved(promise_id);
@@ -534,9 +554,9 @@ void ClearKeyCdm::TimerExpired(void* context) {
     renewal_message = "ERROR: Invalid timer context found!";
   }
 
-  host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
-                          cdm::kLicenseRenewal, renewal_message.data(),
-                          renewal_message.length());
+  cdm_host_proxy_->OnSessionMessage(
+      last_session_id_.data(), last_session_id_.length(), cdm::kLicenseRenewal,
+      renewal_message.data(), renewal_message.length());
 
   ScheduleNextRenewal();
 }
@@ -563,7 +583,7 @@ cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer& encrypted_buffer,
 
   DCHECK(buffer->data());
   decrypted_block->SetDecryptedBuffer(
-      host_->Allocate(buffer->data_size()));
+      cdm_host_proxy_->Allocate(buffer->data_size()));
   memcpy(reinterpret_cast<void*>(decrypted_block->DecryptedBuffer()->Data()),
          buffer->data(),
          buffer->data_size());
@@ -580,7 +600,8 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
-    audio_decoder_.reset(new media::FFmpegCdmAudioDecoder(this));
+    audio_decoder_.reset(
+        new media::FFmpegCdmAudioDecoder(cdm_host_proxy_.get()));
 
   if (!audio_decoder_->Initialize(audio_decoder_config))
     return cdm::kInitializationError;
@@ -603,7 +624,8 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
   }
 
   // Any uninitialized decoder will be replaced.
-  video_decoder_ = CreateVideoDecoder(this, video_decoder_config);
+  video_decoder_ =
+      CreateVideoDecoder(cdm_host_proxy_.get(), video_decoder_config);
   if (!video_decoder_)
     return cdm::kInitializationError;
 
@@ -710,10 +732,11 @@ void ClearKeyCdm::ScheduleNextRenewal() {
   // Prepare the next renewal message and set timer.
   std::ostringstream msg_stream;
   msg_stream << "Renewal from ClearKey CDM set at time "
-             << base::Time::FromDoubleT(host_->GetCurrentWallTime()) << ".";
+             << base::Time::FromDoubleT(cdm_host_proxy_->GetCurrentWallTime())
+             << ".";
   next_renewal_message_ = msg_stream.str();
 
-  host_->SetTimer(timer_delay_ms_, &next_renewal_message_[0]);
+  cdm_host_proxy_->SetTimer(timer_delay_ms_, &next_renewal_message_[0]);
 
   // Use a smaller timer delay at start-up to facilitate testing. Increase the
   // timer delay up to a limit to avoid message spam.
@@ -822,20 +845,12 @@ void ClearKeyCdm::OnStorageId(uint32_t version,
 #endif
 }
 
-cdm::Buffer* ClearKeyCdm::Allocate(uint32_t capacity) {
-  return host_->Allocate(capacity);
-}
-
-cdm::FileIO* ClearKeyCdm::CreateFileIO(cdm::FileIOClient* client) {
-  return host_->CreateFileIO(client);
-}
-
 void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
                                    CdmMessageType message_type,
                                    const std::vector<uint8_t>& message) {
   DVLOG(1) << __func__ << ": size = " << message.size();
 
-  host_->OnSessionMessage(
+  cdm_host_proxy_->OnSessionMessage(
       session_id.data(), session_id.length(), ConvertMessageType(message_type),
       reinterpret_cast<const char*>(message.data()), message.size());
 }
@@ -854,20 +869,20 @@ void ClearKeyCdm::OnSessionKeysChange(const std::string& session_id,
 
   std::vector<cdm::KeyInformation> keys_vector;
   ConvertCdmKeysInfo(keys_info, &keys_vector);
-  host_->OnSessionKeysChange(session_id.data(), session_id.length(),
-                             has_additional_usable_key, keys_vector.data(),
-                             keys_vector.size());
+  cdm_host_proxy_->OnSessionKeysChange(session_id.data(), session_id.length(),
+                                       has_additional_usable_key,
+                                       keys_vector.data(), keys_vector.size());
 }
 
 void ClearKeyCdm::OnSessionClosed(const std::string& session_id) {
-  host_->OnSessionClosed(session_id.data(), session_id.length());
+  cdm_host_proxy_->OnSessionClosed(session_id.data(), session_id.length());
 }
 
 void ClearKeyCdm::OnSessionExpirationUpdate(const std::string& session_id,
                                             base::Time new_expiry_time) {
   DVLOG(1) << __func__ << ": expiry_time = " << new_expiry_time;
-  host_->OnExpirationChange(session_id.data(), session_id.length(),
-                            new_expiry_time.ToDoubleT());
+  cdm_host_proxy_->OnExpirationChange(session_id.data(), session_id.length(),
+                                      new_expiry_time.ToDoubleT());
 }
 
 void ClearKeyCdm::OnSessionCreated(uint32_t promise_id,
@@ -875,12 +890,12 @@ void ClearKeyCdm::OnSessionCreated(uint32_t promise_id,
   // Save the latest session ID for renewal and file IO test messages.
   last_session_id_ = session_id;
 
-  host_->OnResolveNewSessionPromise(promise_id, session_id.data(),
-                                    session_id.length());
+  cdm_host_proxy_->OnResolveNewSessionPromise(promise_id, session_id.data(),
+                                              session_id.length());
 }
 
 void ClearKeyCdm::OnPromiseResolved(uint32_t promise_id) {
-  host_->OnResolvePromise(promise_id);
+  cdm_host_proxy_->OnResolvePromise(promise_id);
 }
 
 void ClearKeyCdm::OnPromiseFailed(uint32_t promise_id,
@@ -888,23 +903,21 @@ void ClearKeyCdm::OnPromiseFailed(uint32_t promise_id,
                                   uint32_t system_code,
                                   const std::string& error_message) {
   DVLOG(1) << __func__ << ": error = " << error_message;
-  host_->OnRejectPromise(promise_id,
-                         ConvertException(exception_code),
-                         system_code,
-                         error_message.data(),
-                         error_message.length());
+  cdm_host_proxy_->OnRejectPromise(promise_id, ConvertException(exception_code),
+                                   system_code, error_message.data(),
+                                   error_message.length());
 }
 
 void ClearKeyCdm::OnUnitTestComplete(bool success) {
   std::string message = GetUnitTestResultMessage(success);
-  host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
-                          cdm::kLicenseRequest, message.data(),
-                          message.length());
+  cdm_host_proxy_->OnSessionMessage(
+      last_session_id_.data(), last_session_id_.length(), cdm::kLicenseRequest,
+      message.data(), message.length());
 }
 
 void ClearKeyCdm::StartFileIOTest() {
-  file_io_test_runner_.reset(new FileIOTestRunner(
-      base::Bind(&Host::CreateFileIO, base::Unretained(host_))));
+  file_io_test_runner_.reset(new FileIOTestRunner(base::Bind(
+      &CdmHostProxy::CreateFileIO, base::Unretained(cdm_host_proxy_.get()))));
   file_io_test_runner_->RunAllTests(
       base::Bind(&ClearKeyCdm::OnFileIOTestComplete, base::Unretained(this)));
 }
@@ -918,7 +931,7 @@ void ClearKeyCdm::OnFileIOTestComplete(bool success) {
 void ClearKeyCdm::StartOutputProtectionTest() {
   DVLOG(1) << __func__;
   is_running_output_protection_test_ = true;
-  host_->QueryOutputProtectionStatus();
+  cdm_host_proxy_->QueryOutputProtectionStatus();
 }
 
 void ClearKeyCdm::StartPlatformVerificationTest() {
@@ -928,8 +941,8 @@ void ClearKeyCdm::StartPlatformVerificationTest() {
   std::string service_id = "test_service_id";
   std::string challenge = "test_challenge";
 
-  host_->SendPlatformChallenge(service_id.data(), service_id.size(),
-                               challenge.data(), challenge.size());
+  cdm_host_proxy_->SendPlatformChallenge(service_id.data(), service_id.size(),
+                                         challenge.data(), challenge.size());
 }
 
 void ClearKeyCdm::VerifyCdmHostTest() {
@@ -943,7 +956,7 @@ void ClearKeyCdm::StartStorageIdTest() {
   is_running_storage_id_test_ = true;
 
   // Request the latest available version.
-  host_->RequestStorageId(0);
+  cdm_host_proxy_->RequestStorageId(0);
 }
 
 }  // namespace media
