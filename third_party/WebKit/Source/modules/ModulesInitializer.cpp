@@ -38,7 +38,6 @@
 #include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/canvas/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/canvas/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
-#include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationAbsoluteController.h"
@@ -250,13 +249,6 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
     HTMLMediaElement& html_media_element) const {
   return HTMLMediaElementRemotePlayback::remote(html_media_element);
-}
-
-void ModulesInitializer::ProvideCredentialManagerClient(
-    Page& page,
-    WebCredentialManagerClient* web_credential_manager_client) const {
-  ::blink::ProvideCredentialManagerClientTo(
-      page, new CredentialManagerClient(web_credential_manager_client));
 }
 
 void ModulesInitializer::ProvideModulesToPage(Page& page,

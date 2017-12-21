@@ -21,7 +21,6 @@
 #include "content/shell/test_runner/layout_and_paint_async_then.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
-#include "content/shell/test_runner/mock_credential_manager_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/mock_web_document_subresource_filter.h"
 #include "content/shell/test_runner/mock_web_speech_recognizer.h"
@@ -42,7 +41,6 @@
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
@@ -260,12 +258,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void WaitForPolicyDelegate();
   void WaitUntilDone();
   void WaitUntilExternalURLLoad();
-  void SetMockCredentialManagerError(const std::string& error);
-  void SetMockCredentialManagerResponse(const std::string& id,
-                                        const std::string& name,
-                                        const std::string& avatar,
-                                        const std::string& password);
-  void ClearMockCredentialManagerResponse();
   bool CallShouldCloseOnWebView();
   bool DisableAutoResizeMode(int new_width, int new_height);
   bool EnableAutoResizeMode(int min_width,
@@ -365,12 +357,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
   return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(isolate)
       .SetMethod("abortModal", &TestRunnerBindings::NotImplemented)
       .SetMethod("addDisallowedURL", &TestRunnerBindings::NotImplemented)
-      .SetMethod("setMockCredentialManagerError",
-                 &TestRunnerBindings::SetMockCredentialManagerError)
-      .SetMethod("setMockCredentialManagerResponse",
-                 &TestRunnerBindings::SetMockCredentialManagerResponse)
-      .SetMethod("clearMockCredentialManagerResponse",
-                 &TestRunnerBindings::ClearMockCredentialManagerResponse)
       .SetMethod("addMockSpeechRecognitionResult",
                  &TestRunnerBindings::AddMockSpeechRecognitionResult)
       .SetMethod("addOriginAccessWhitelistEntry",
@@ -1434,26 +1420,6 @@ void TestRunnerBindings::SetMockSpeechRecognitionError(
     runner_->SetMockSpeechRecognitionError(error, message);
 }
 
-void TestRunnerBindings::SetMockCredentialManagerResponse(
-    const std::string& id,
-    const std::string& name,
-    const std::string& avatar,
-    const std::string& password) {
-  if (runner_)
-    runner_->SetMockCredentialManagerResponse(id, name, avatar, password);
-}
-
-void TestRunnerBindings::ClearMockCredentialManagerResponse() {
-  if (runner_)
-    runner_->ClearMockCredentialManagerResponse();
-}
-
-void TestRunnerBindings::SetMockCredentialManagerError(
-    const std::string& error) {
-  if (runner_)
-    runner_->SetMockCredentialManagerError(error);
-}
-
 void TestRunnerBindings::AddWebPageOverlay() {
   if (view_runner_)
     view_runner_->AddWebPageOverlay();
@@ -1634,7 +1600,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       main_view_(nullptr),
       mock_content_settings_client_(
           new MockContentSettingsClient(&layout_test_runtime_flags_)),
-      credential_manager_client_(new MockCredentialManagerClient),
       mock_screen_orientation_client_(new MockScreenOrientationClient),
       spellcheck_(new SpellCheckClient(this)),
       chooser_count_(0),
@@ -1903,10 +1868,6 @@ WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
 
 WebTextCheckClient* TestRunner::GetWebTextCheckClient() const {
   return spellcheck_.get();
-}
-
-void TestRunner::InitializeWebViewWithMocks(blink::WebView* web_view) {
-  web_view->SetCredentialManagerClient(credential_manager_client_.get());
 }
 
 bool TestRunner::shouldDumpSpellCheckCallbacks() const {
@@ -2776,23 +2737,6 @@ void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
                                                const std::string& message) {
   getMockWebSpeechRecognizer()->SetError(WebString::FromUTF8(error),
                                          WebString::FromUTF8(message));
-}
-
-void TestRunner::SetMockCredentialManagerResponse(const std::string& id,
-                                                  const std::string& name,
-                                                  const std::string& avatar,
-                                                  const std::string& password) {
-  credential_manager_client_->SetResponse(new WebPasswordCredential(
-      WebString::FromUTF8(id), WebString::FromUTF8(password),
-      WebString::FromUTF8(name), WebURL(GURL(avatar))));
-}
-
-void TestRunner::ClearMockCredentialManagerResponse() {
-  credential_manager_client_->SetResponse(nullptr);
-}
-
-void TestRunner::SetMockCredentialManagerError(const std::string& error) {
-  credential_manager_client_->SetError(error);
 }
 
 void TestRunner::OnLayoutTestRuntimeFlagsChanged() {

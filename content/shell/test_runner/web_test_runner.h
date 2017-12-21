@@ -78,13 +78,6 @@ class WebTestRunner {
   // capturing text results.
   virtual bool ShouldGeneratePixelResults() = 0;
 
-  // Sets various interfaces consumed by WebView to implementations providing
-  // test behavior.  This method covers interfaces that are not exposed via
-  // WebViewClient (and are covered by WebViewTestClient) - for example this
-  // method covers blink::WebCredentialManagerClient and
-  // blink::WebSpellCheckClient.
-  virtual void InitializeWebViewWithMocks(blink::WebView* web_view) = 0;
-
   // Sets focus on the given view.  Internally tracks currently focused view,
   // to aid in defocusing previously focused views at the right time.
   virtual void SetFocus(blink::WebView* web_view, bool focus) = 0;

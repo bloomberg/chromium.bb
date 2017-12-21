@@ -6,64 +6,53 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "modules/credentialmanager/FederatedCredentialInit.h"
-#include "platform/credentialmanager/PlatformFederatedCredential.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebFederatedCredential.h"
 
 namespace blink {
 
-FederatedCredential* FederatedCredential::Create(
-    WebFederatedCredential* web_federated_credential) {
-  return new FederatedCredential(web_federated_credential);
+namespace {
+constexpr char kFederatedCredentialType[] = "federated";
 }
 
 FederatedCredential* FederatedCredential::Create(
     const FederatedCredentialInit& data,
     ExceptionState& exception_state) {
-  if (data.id().IsEmpty()) {
+  if (data.id().IsEmpty())
     exception_state.ThrowTypeError("'id' must not be empty.");
-    return nullptr;
-  }
-  if (data.provider().IsEmpty()) {
+  if (data.provider().IsEmpty())
     exception_state.ThrowTypeError("'provider' must not be empty.");
-    return nullptr;
-  }
 
-  KURL icon_url = ParseStringAsURL(data.iconURL(), exception_state);
-  KURL provider_url = ParseStringAsURL(data.provider(), exception_state);
+  KURL icon_url = ParseStringAsURLOrThrow(data.iconURL(), exception_state);
+  KURL provider_url = ParseStringAsURLOrThrow(data.provider(), exception_state);
+
   if (exception_state.HadException())
     return nullptr;
-  return new FederatedCredential(data.id(), provider_url, data.name(),
-                                 icon_url);
+
+  return new FederatedCredential(
+      data.id(), SecurityOrigin::Create(provider_url), data.name(), icon_url);
+}
+
+FederatedCredential* FederatedCredential::Create(
+    const String& id,
+    scoped_refptr<const SecurityOrigin> provider,
+    const String& name,
+    const KURL& icon_url) {
+  return new FederatedCredential(id, provider, name, icon_url);
 }
 
 FederatedCredential::FederatedCredential(
-    WebFederatedCredential* web_federated_credential)
-    : Credential(web_federated_credential->GetPlatformCredential()) {}
-
-FederatedCredential::FederatedCredential(const String& id,
-                                         const KURL& provider,
-                                         const String& name,
-                                         const KURL& icon)
-    : Credential(
-          PlatformFederatedCredential::Create(id,
-                                              SecurityOrigin::Create(provider),
-                                              name,
-                                              icon)) {}
-
-const String FederatedCredential::provider() const {
-  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
-      ->Provider()
-      ->ToString();
+    const String& id,
+    scoped_refptr<const SecurityOrigin> provider,
+    const String& name,
+    const KURL& icon_url)
+    : Credential(id, kFederatedCredentialType),
+      provider_(provider),
+      name_(name),
+      icon_url_(icon_url) {
+  DCHECK(provider);
 }
 
-const String& FederatedCredential::name() const {
-  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
-      ->Name();
+bool FederatedCredential::IsFederatedCredential() const {
+  return true;
 }
 
-const KURL& FederatedCredential::iconURL() const {
-  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
-      ->IconURL();
-}
 }  // namespace blink

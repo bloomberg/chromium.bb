@@ -755,7 +755,7 @@ const password_manager::LogManager* ChromePasswordManagerClient::GetLogManager()
 
 // static
 void ChromePasswordManagerClient::BindCredentialManager(
-    password_manager::mojom::CredentialManagerAssociatedRequest request,
+    password_manager::mojom::CredentialManagerRequest request,
     content::RenderFrameHost* render_frame_host) {
   // Only valid for the main frame.
   if (render_frame_host->GetParent())
