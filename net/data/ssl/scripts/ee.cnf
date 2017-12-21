@@ -17,6 +17,9 @@ L  = Mountain View
 O  = Test CA
 CN = 127.0.0.1
 
+[req_no_san]
+basicConstraints = critical, CA:false
+
 [req_duplicate_cn_1]
 O  = Foo
 CN = Duplicate

@@ -281,6 +281,10 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "localhost_cert.pem";
     case CERT_EXPIRED:
       return "expired_cert.pem";
+    case CERT_COMMON_NAME_ONLY:
+      return "common_name_only.pem";
+    case CERT_SHA1_LEAF:
+      return "sha1_leaf.pem";
   }
 
   return "ok_cert.pem";

@@ -510,6 +510,8 @@ class SSLUITestBase : public InProcessBrowserTest {
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_server_expired_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_server_mismatched_(net::EmbeddedTestServer::TYPE_HTTPS),
+        https_server_sha1_(net::EmbeddedTestServer::TYPE_HTTPS),
+        https_server_common_name_only_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_server_ocsp_ok_(
             net::SpawnedTestServer::TYPE_HTTPS,
             GetOCSPSSLOptions(net::SpawnedTestServer::SSLOptions::OCSP_OK),
@@ -532,6 +534,13 @@ class SSLUITestBase : public InProcessBrowserTest {
     https_server_mismatched_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
     https_server_mismatched_.AddDefaultHandlers(base::FilePath(kDocRoot));
+
+    https_server_sha1_.SetSSLConfig(net::EmbeddedTestServer::CERT_SHA1_LEAF);
+    https_server_sha1_.AddDefaultHandlers(base::FilePath(kDocRoot));
+
+    https_server_common_name_only_.SetSSLConfig(
+        net::EmbeddedTestServer::CERT_COMMON_NAME_ONLY);
+    https_server_common_name_only_.AddDefaultHandlers(base::FilePath(kDocRoot));
 
     // Sometimes favicons load before tests check the authentication
     // state, and sometimes they load after. This is problematic on
@@ -786,25 +795,32 @@ class SSLUITestBase : public InProcessBrowserTest {
     }
   }
 
-  void UpdateChromePolicy(const policy::PolicyMap& policies) {
-    policy_provider_.UpdateChromePolicy(policies);
-    DCHECK(base::MessageLoop::current());
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+  // Sets the policy identified by |policy_name| to be true, ensuring
+  // that the corresponding boolean pref |pref_name| is updated to match.
+  void EnablePolicy(const char* policy_name, const char* pref_name) {
+    policy::PolicyMap policy_map;
+    policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                   std::make_unique<base::Value>(true), nullptr);
+
+    EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
+
+    EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(pref_name));
+    EXPECT_TRUE(
+        g_browser_process->local_state()->IsManagedPreference(pref_name));
   }
 
-  void EnableRevocationChecking() {
-    policy::PolicyMap policy_map;
-    policy_map.Set(policy::key::kEnableOnlineRevocationChecks,
-                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-                   policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(true), nullptr);
-    UpdateChromePolicy(policy_map);
-
-    EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
-        ssl_config::prefs::kCertRevocationCheckingEnabled));
-    EXPECT_TRUE(g_browser_process->local_state()->IsManagedPreference(
-        ssl_config::prefs::kCertRevocationCheckingEnabled));
+  // Checks that the SSLConfig associated with the net::URLRequestContext
+  // of the |context_getter| has the SSLConfig member identified by |member|
+  // set to |expected|. This is sequenced such that any changes to prefs
+  // on the UI thread will have propogated before the config is examined.
+  void CheckSSLConfig(
+      scoped_refptr<net::URLRequestContextGetter> context_getter,
+      bool net::SSLConfig::*member,
+      bool expected) {
+    RunOnIOThreadBlocking(base::BindOnce(
+        &SSLUITestBase::CheckSSLConfigOnIOThread, base::Unretained(this),
+        context_getter, member, expected));
   }
 
   // Helper function for TestInterstitialLinksOpenInNewTab. Implemented as a
@@ -818,6 +834,9 @@ class SSLUITestBase : public InProcessBrowserTest {
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer https_server_expired_;
   net::EmbeddedTestServer https_server_mismatched_;
+  net::EmbeddedTestServer https_server_sha1_;
+  net::EmbeddedTestServer https_server_common_name_only_;
+
   net::SpawnedTestServer https_server_ocsp_ok_;
   net::SpawnedTestServer https_server_ocsp_revoked_;
   net::SpawnedTestServer wss_server_expired_;
@@ -855,6 +874,34 @@ class SSLUITestBase : public InProcessBrowserTest {
 
  private:
   typedef net::SpawnedTestServer::SSLOptions SSLOptions;
+
+  void UpdateChromePolicy(const policy::PolicyMap& policies) {
+    policy_provider_.UpdateChromePolicy(policies);
+    ASSERT_TRUE(base::MessageLoop::current());
+
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+  }
+
+  void RunOnIOThreadBlocking(base::OnceClosure task) {
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
+                                             FROM_HERE, std::move(task),
+                                             run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void CheckSSLConfigOnIOThread(
+      scoped_refptr<net::URLRequestContextGetter> context_getter,
+      bool net::SSLConfig::*member,
+      bool expected) {
+    net::URLRequestContext* context = context_getter->GetURLRequestContext();
+    ASSERT_TRUE(context);
+
+    net::SSLConfig config;
+    context->ssl_config_service()->GetSSLConfig(&config);
+    EXPECT_EQ(expected, config.*member);
+  }
 
   policy::MockConfigurationPolicyProvider policy_provider_;
 
@@ -1691,7 +1738,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestHTTPSExpiredCertAndGoForward) {
 
 // Visits a page with revocation checking enabled and a valid OCSP response.
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
-  EnableRevocationChecking();
+  bool net::SSLConfig::*member = &net::SSLConfig::rev_checking_enabled;
+  ASSERT_NO_FATAL_FAILURE(
+      EnablePolicy(policy::key::kEnableOnlineRevocationChecks,
+                   ssl_config::prefs::kCertRevocationCheckingEnabled));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 
   ASSERT_TRUE(https_server_ocsp_ok_.Start());
 
@@ -1713,7 +1765,12 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
 
 // Visits a page with revocation checking enabled and a revoked OCSP response.
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevoked) {
-  EnableRevocationChecking();
+  bool net::SSLConfig::*member = &net::SSLConfig::rev_checking_enabled;
+  ASSERT_NO_FATAL_FAILURE(
+      EnablePolicy(policy::key::kEnableOnlineRevocationChecks,
+                   ssl_config::prefs::kCertRevocationCheckingEnabled));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 
   ASSERT_TRUE(https_server_ocsp_revoked_.Start());
 
@@ -1723,6 +1780,77 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevoked) {
   CheckAuthenticationBrokenState(
       browser()->tab_strip_model()->GetActiveWebContents(),
       net::CERT_STATUS_REVOKED, AuthState::SHOWING_INTERSTITIAL);
+}
+
+// Visits a page that uses a SHA-1 leaf certificate, which should be rejected
+// by default.
+IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1IsDefaultDisabled) {
+  bool net::SSLConfig::*member = &net::SSLConfig::sha1_local_anchors_enabled;
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, false));
+
+  ASSERT_TRUE(https_server_sha1_.Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_sha1_.GetURL("/ssl/google.html"));
+
+  CheckAuthenticationBrokenState(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
+      AuthState::SHOWING_INTERSTITIAL);
+}
+
+// Enables support for SHA-1 certificates from locally installed CAs, then
+// attempts to navigate to such a site. No interstitial should be presented.
+IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
+  bool net::SSLConfig::*member = &net::SSLConfig::sha1_local_anchors_enabled;
+
+  ASSERT_NO_FATAL_FAILURE(
+      EnablePolicy(policy::key::kEnableSha1ForLocalAnchors,
+                   ssl_config::prefs::kCertEnableSha1LocalAnchors));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
+
+  ASSERT_TRUE(https_server_sha1_.Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_sha1_.GetURL("/ssl/google.html"));
+
+  CheckUnauthenticatedState(
+      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
+}
+
+IN_PROC_BROWSER_TEST_P(SSLUITest, CommonNameIsDefaultDisabled) {
+  bool net::SSLConfig::*member =
+      &net::SSLConfig::common_name_fallback_local_anchors_enabled;
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, false));
+
+  ASSERT_TRUE(https_server_common_name_only_.Start());
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_common_name_only_.GetURL("/ssl/google.html"));
+
+  CheckAuthenticationBrokenState(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      net::CERT_STATUS_COMMON_NAME_INVALID, AuthState::SHOWING_INTERSTITIAL);
+}
+
+IN_PROC_BROWSER_TEST_P(SSLUITest, CommonNamePrefsCanEnable) {
+  bool net::SSLConfig::*member =
+      &net::SSLConfig::common_name_fallback_local_anchors_enabled;
+
+  ASSERT_NO_FATAL_FAILURE(EnablePolicy(
+      policy::key::kEnableCommonNameFallbackForLocalAnchors,
+      ssl_config::prefs::kCertEnableCommonNameFallbackLocalAnchors));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
+
+  ASSERT_TRUE(https_server_common_name_only_.Start());
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_common_name_only_.GetURL("/ssl/google.html"));
+
+  CheckAuthenticatedState(browser()->tab_strip_model()->GetActiveWebContents(),
+                          AuthState::NONE);
 }
 
 // Visit a HTTP page which request WSS connection to a server providing invalid

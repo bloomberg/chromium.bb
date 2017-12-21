@@ -423,6 +423,45 @@ openssl req -x509 -newkey rsa:2048 \
   -extensions req_extensions_with_tls_feature \
   -nodes -config ee.cnf
 
+# SHA-1 certificate issued by locally trusted CA
+openssl req \
+  -config ../scripts/ee.cnf \
+  -newkey rsa:2048 \
+  -text \
+  -keyout out/sha1_leaf.key \
+  -out out/sha1_leaf.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 171220000000Z \
+    -enddate   201220000000Z \
+    -in out/sha1_leaf.req \
+    -out out/sha1_leaf.pem \
+    -config ca.cnf \
+    -md sha1
+/bin/sh -c "cat out/sha1_leaf.key out/sha1_leaf.pem \
+    > ../certificates/sha1_leaf.pem"
+
+# Certificate with only a common name (no SAN) issued by a locally trusted CA
+openssl req \
+  -config ../scripts/ee.cnf \
+  -reqexts req_no_san \
+  -newkey rsa:2048 \
+  -text \
+  -keyout out/common_name_only.key \
+  -out out/common_name_only.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 171220000000Z \
+    -enddate   201220000000Z \
+    -in out/common_name_only.req \
+    -out out/common_name_only.pem \
+    -config ca.cnf
+/bin/sh -c "cat out/common_name_only.key out/common_name_only.pem \
+    > ../certificates/common_name_only.pem"
 
 # Regenerate CRLSets
 ## Block a leaf cert directly by SPKI
