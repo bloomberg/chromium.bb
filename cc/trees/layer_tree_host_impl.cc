@@ -3841,6 +3841,11 @@ void LayerTreeHostImpl::MouseUp() {
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
+  // Early out if there are no animation controllers and avoid the hit test.
+  // This happens on platforms without animated scrollbars.
+  if (scrollbar_animation_controllers_.empty())
+    return;
+
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
