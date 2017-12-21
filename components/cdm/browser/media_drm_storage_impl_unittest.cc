@@ -10,7 +10,7 @@
 #include "base/unguessable_token.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/test/test_render_frame_host.h"
+#include "content/public/test/test_renderer_host.h"
 #include "media/mojo/services/mojo_media_drm_storage.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
