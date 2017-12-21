@@ -3663,11 +3663,12 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -3681,11 +3682,12 @@
           "--no-xvfb"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -3695,13 +3697,21 @@
       {
         "args": [
           "--enable-gpu",
-          "--no-xvfb",
+          "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
+          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
+          "--no-xvfb"
         ],
         "name": "tab_capture_end2end_tests",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "browser_tests",
         "use_xvfb": false
@@ -3712,11 +3722,12 @@
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -3729,11 +3740,12 @@
           "--no-xvfb"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -3745,11 +3757,12 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -3758,11 +3771,12 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -3786,11 +3800,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -3810,11 +3825,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -3834,11 +3850,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -3858,11 +3875,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -3886,11 +3904,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -3917,11 +3936,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -3956,11 +3976,12 @@
           "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -3981,11 +4002,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -4005,11 +4027,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -4031,11 +4054,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 20
@@ -4056,11 +4080,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
@@ -4081,11 +4106,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Ubuntu"
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
@@ -4594,470 +4620,6 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3-384.90",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 2
-        }
-      }
-    ]
-  },
-  "Linux Release Swarmed (Intel HD 630)": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--no-xvfb"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "angle_unittests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "browser_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gl_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gl_unittests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "context_lost",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "depth_capture",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_process",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "hardware_accelerated_feature",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "info_collection",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--expected-vendor-id",
-          "8086",
-          "--expected-device-id",
-          "5912"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "maps",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "linux",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "linux",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "screenshot_sync",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "trace_test",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 20
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Ubuntu",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -12194,11 +11756,12 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12211,11 +11774,12 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12227,11 +11791,12 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12241,13 +11806,20 @@
       {
         "args": [
           "--enable-gpu",
-          "--no-xvfb",
+          "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
         },
         "test": "browser_tests",
         "use_xvfb": false
@@ -12258,11 +11830,12 @@
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12276,11 +11849,12 @@
         ],
         "name": "gl_tests_passthrough",
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12292,11 +11866,12 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12310,11 +11885,12 @@
         ],
         "name": "gles2_conform_d3d9_test",
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12329,11 +11905,12 @@
         ],
         "name": "gles2_conform_gl_test",
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12345,11 +11922,12 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12358,11 +11936,12 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12371,11 +11950,12 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12390,11 +11970,12 @@
         ],
         "name": "video_decode_accelerator_d3d11_unittest",
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12409,11 +11990,12 @@
         ],
         "name": "video_decode_accelerator_d3d9_unittest",
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         },
@@ -12437,11 +12019,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12461,11 +12044,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12485,11 +12069,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12509,11 +12094,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12537,11 +12123,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12568,11 +12155,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12607,11 +12195,12 @@
           "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12632,11 +12221,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12656,11 +12246,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ]
         }
@@ -12682,11 +12273,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 20
@@ -12707,11 +12299,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
@@ -12732,11 +12325,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
@@ -12757,11 +12351,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
@@ -12782,11 +12377,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
@@ -12807,11 +12403,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:5912",
-              "os": "Windows-10"
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
@@ -13520,696 +13117,6 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3-23.21.13.8792",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 2
-        }
-      }
-    ]
-  },
-  "Win10 Release Swarmed (Intel HD 630)": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "angle_unittests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--test-launcher-retry-limit=0"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "angle_white_box_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
-        ],
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "browser_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=VrBrowserTest.*",
-          "--gtest_also_run_disabled_tests"
-        ],
-        "name": "vr_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "browser_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=validating"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gl_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--use-cmd-decoder=passthrough"
-        ],
-        "name": "gl_tests_passthrough",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gl_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gl_unittests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--use-angle=d3d9"
-        ],
-        "name": "gles2_conform_d3d9_test",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--use-angle=gl",
-          "--disable-gpu-sandbox"
-        ],
-        "name": "gles2_conform_gl_test",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "gpu_unittests",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-angle=d3d11",
-          "--use-test-data-path",
-          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
-        ],
-        "name": "video_decode_accelerator_d3d11_unittest",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-angle=d3d9",
-          "--use-test-data-path",
-          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
-        ],
-        "name": "video_decode_accelerator_d3d9_unittest",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "context_lost",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "context_lost_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "depth_capture",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "depth_capture_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_process",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "hardware_accelerated_feature",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "hardware_accelerated_feature_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "info_collection",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--expected-vendor-id",
-          "8086",
-          "--expected-device-id",
-          "5912"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "maps",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--os-type",
-          "win",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "maps_pixel_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "win",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "screenshot_sync",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "screenshot_sync_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "trace_test",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "trace_test",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl2_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 20
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=passthrough"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d11_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d9_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d9_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_gl_passthrough_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
