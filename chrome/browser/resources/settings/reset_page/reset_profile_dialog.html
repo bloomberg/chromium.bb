@@ -6,7 +6,7 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="reset_browser_proxy.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../route.html">
@@ -15,7 +15,7 @@
 <dom-module id="settings-reset-profile-dialog">
   <template>
     <style include="settings-shared action-link">
-      paper-spinner {
+      paper-spinner-lite {
         margin: 0 8px;
       }
     </style>
@@ -33,8 +33,8 @@
         </span>
       </div>
       <div slot="button-container">
-        <paper-spinner id="resetSpinner" active="[[clearingInProgress_]]">
-        </paper-spinner>
+        <paper-spinner-lite id="resetSpinner" active="[[clearingInProgress_]]">
+        </paper-spinner-lite>
         <paper-button class="cancel-button" on-tap="onCancelTap_"
             id="cancel" disabled="[[clearingInProgress_]]">
           $i18n{cancel}

@@ -6,7 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -89,9 +89,9 @@
     <div class$="settings-box first
                  [[getTopSettingsBoxClass_(showExplanation_)]]">
       <div class="status-icon-container">
-        <paper-spinner id="waiting-spinner" hidden="[[!isWaitingForResult_]]"
-            active="[[isWaitingForResult_]]">
-        </paper-spinner>
+        <paper-spinner-lite id="waiting-spinner"
+            hidden="[[!isWaitingForResult_]]" active="[[isWaitingForResult_]]">
+        </paper-spinner-lite>
         <iron-icon id="status-icon" hidden="[[isWaitingForResult_]]"
             icon="[[statusIcon_]]" class$="[[statusIconClassName_]]">
         </iron-icon>
