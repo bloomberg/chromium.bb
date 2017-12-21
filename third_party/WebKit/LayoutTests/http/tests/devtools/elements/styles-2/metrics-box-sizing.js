@@ -33,10 +33,6 @@
       <div id="output-border">zzz</div>
     `);
   await TestRunner.evaluateInPagePromise(`
-      var initialize_AdditionalPreload = function() {
-          InspectorTest.preloadModule("source_frame");
-      }
-
       function dumpDimensions()
       {
           var element;

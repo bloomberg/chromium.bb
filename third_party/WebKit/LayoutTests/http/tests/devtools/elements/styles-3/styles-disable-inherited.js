@@ -11,11 +11,6 @@
           <div id="nested"></div>
       </div>
     `);
-  await TestRunner.evaluateInPagePromise(`
-      var initialize_AdditionalPreload = function() {
-          InspectorTest.preloadModule("source_frame");
-      }
-  `);
 
   ElementsTestRunner.selectNodeAndWaitForStyles('nested', step1);
 

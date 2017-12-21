@@ -6,7 +6,6 @@
   TestRunner.addResult(`Verifies proactive javascript compilation.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.addScriptTag('../resources/editor-test.js');
   await TestRunner.addScriptTag('debugger/resources/edit-me.js');
 
   SourcesTestRunner.showScriptSource('edit-me.js', onSourceFrame);

@@ -17,11 +17,6 @@
 
       <div class=" class-1 class-2  class-3   "></div>
     `);
-  await TestRunner.evaluateInPagePromise(`
-      var initialize_AdditionalPreload = function() {
-          InspectorTest.preloadModule("source_frame");
-      }
-  `);
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
