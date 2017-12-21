@@ -92,10 +92,6 @@ UI_BASE_EXPORT std::string GetFontFamily();
 UI_BASE_EXPORT std::string GetFontSize();
 UI_BASE_EXPORT std::string GetTextDirection();
 
-// Returns whether the given shared resource is stored in the bundle compressed.
-// |path| is relative to chrome://resources, e.g. "images/google_logo.svg".
-UI_BASE_EXPORT bool IsSharedResourceGzipped(const std::string& path);
-
 }  // namespace webui
 
 #endif  // UI_BASE_WEBUI_WEB_UI_UTIL_H_
