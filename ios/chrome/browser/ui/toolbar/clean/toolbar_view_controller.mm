@@ -827,6 +827,11 @@
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   UILayoutGuide* omniboxPopupGuide = FindNamedGuide(kOmniboxGuide, self.view);
   AddSameConstraints(self.locationBarContainer, omniboxPopupGuide);
+  UILayoutGuide* backButtonGuide = FindNamedGuide(kBackButtonGuide, self.view);
+  AddSameConstraints(self.backButton.imageView, backButtonGuide);
+  UILayoutGuide* forwardButtonGuide =
+      FindNamedGuide(kForwardButtonGuide, self.view);
+  AddSameConstraints(self.forwardButton.imageView, forwardButtonGuide);
 }
 
 #pragma mark - Trait Collection Changes

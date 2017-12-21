@@ -7,6 +7,8 @@
 
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 
+// TODO(crbug.com/788705): Once the clean toolbar (kCleanToolbar) is enabled,
+// this protocol can be removed.
 @protocol TabHistoryPositioner
 // CGPoint which the Tab History Popup will be presented from.
 - (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton;

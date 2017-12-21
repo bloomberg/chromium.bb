@@ -15,6 +15,9 @@
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_popup_controller.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 
@@ -64,11 +67,16 @@ using base::UserMetricsAction;
   Tab* tab = [self.tabModel currentTab];
   web::NavigationItemList backwardItems =
       [tab navigationManager]->GetBackwardItems();
-  CGPoint origin = [
-      [self.presentationProvider viewForTabHistoryPresentation].window
-      convertPoint:[self.positionProvider
-                       originPointForToolbarButton:ToolbarButtonTypeBack]
-            toView:[self.presentationProvider viewForTabHistoryPresentation]];
+
+  CGPoint origin = CGPointZero;
+  if (base::FeatureList::IsEnabled(kCleanToolbar)) {
+    origin = [self popupOriginForNamedGuide:kBackButtonGuide];
+  } else {
+    origin = [[self.presentationProvider viewForTabHistoryPresentation].window
+        convertPoint:[self.positionProvider
+                         originPointForToolbarButton:ToolbarButtonTypeBack]
+              toView:[self.presentationProvider viewForTabHistoryPresentation]];
+  }
 
   [self.tabHistoryUIUpdater
       updateUIForTabHistoryPresentationFrom:ToolbarButtonTypeBack];
@@ -79,11 +87,16 @@ using base::UserMetricsAction;
   Tab* tab = [self.tabModel currentTab];
   web::NavigationItemList forwardItems =
       [tab navigationManager]->GetForwardItems();
-  CGPoint origin = [
-      [self.presentationProvider viewForTabHistoryPresentation].window
-      convertPoint:[self.positionProvider
-                       originPointForToolbarButton:ToolbarButtonTypeForward]
-            toView:[self.presentationProvider viewForTabHistoryPresentation]];
+
+  CGPoint origin = CGPointZero;
+  if (base::FeatureList::IsEnabled(kCleanToolbar)) {
+    origin = [self popupOriginForNamedGuide:kForwardButtonGuide];
+  } else {
+    origin = [[self.presentationProvider viewForTabHistoryPresentation].window
+        convertPoint:[self.positionProvider
+                         originPointForToolbarButton:ToolbarButtonTypeForward]
+              toView:[self.presentationProvider viewForTabHistoryPresentation]];
+  }
 
   [self.tabHistoryUIUpdater
       updateUIForTabHistoryPresentationFrom:ToolbarButtonTypeForward];
@@ -96,6 +109,19 @@ using base::UserMetricsAction;
 }
 
 #pragma mark - Helper Methods
+
+// Returns the origin point of the popup for the |guideName|.
+- (CGPoint)popupOriginForNamedGuide:(GuideName*)guideName {
+  UILayoutGuide* guide = FindNamedGuide(
+      guideName, [self.presentationProvider viewForTabHistoryPresentation]);
+  DCHECK(guide);
+  CGPoint leadingBottomCorner =
+      CGPointMake(CGRectGetLeadingEdge(guide.layoutFrame),
+                  CGRectGetMaxY(guide.layoutFrame));
+  return [guide.owningView
+      convertPoint:leadingBottomCorner
+            toView:[self.presentationProvider viewForTabHistoryPresentation]];
+}
 
 // Present a Tab History Popup that displays |items|, and its view is presented
 // from |origin|.

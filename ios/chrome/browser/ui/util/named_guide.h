@@ -15,6 +15,10 @@ typedef NSString GuideName;
 
 // A guide that is constrained to match the frame of the omnibox.
 extern GuideName* const kOmniboxGuide;
+// A guide that is constrained to match the frame of the back button's image.
+extern GuideName* const kBackButtonGuide;
+// A guide that is constrained to match the frame of the forward button's image.
+extern GuideName* const kForwardButtonGuide;
 
 //
 //////////////////////////////////////////
