@@ -28,6 +28,7 @@
 class PrefRegistrySimple;
 
 namespace base {
+class RefCountedBytes;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -85,8 +86,8 @@ class ASH_EXPORT WallpaperController
   static const SkColor kInvalidColor;
 
   // The paths of wallpaper directories.
-  // TODO(crbug.com/776464): Make these private and remove the static qualifier
-  // after |WallpaperManager::LoadWallpaper| and
+  // TODO(crbug.com/776464): Move these to anonymous namespace after
+  // |WallpaperManager::LoadWallpaper| and
   // |WallpaperManager::GetDeviceWallpaperDir| are migrated.
   static base::FilePath dir_user_data_path_;
   static base::FilePath dir_chrome_os_wallpapers_path_;
@@ -145,6 +146,37 @@ class ASH_EXPORT WallpaperController
 
   // Returns the appropriate wallpaper resolution for all root windows.
   static WallpaperResolution GetAppropriateResolution();
+
+  // Returns custom wallpaper path. Appends |sub_dir|, |wallpaper_files_id| and
+  // |file_name| to custom wallpaper directory.
+  static base::FilePath GetCustomWallpaperPath(
+      const std::string& sub_dir,
+      const std::string& wallpaper_files_id,
+      const std::string& file_name);
+
+  // Returns custom wallpaper directory by appending corresponding |sub_dir|.
+  static base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
+
+  // Resizes |image| to a resolution which is nearest to |preferred_width| and
+  // |preferred_height| while respecting the |layout| choice. |output_skia| is
+  // optional (may be null). Returns true on success.
+  static bool ResizeImage(const gfx::ImageSkia& image,
+                          wallpaper::WallpaperLayout layout,
+                          int preferred_width,
+                          int preferred_height,
+                          scoped_refptr<base::RefCountedBytes>* output,
+                          gfx::ImageSkia* output_skia);
+
+  // Resizes |image| to a resolution which is nearest to |preferred_width| and
+  // |preferred_height| while respecting the |layout| choice and saves the
+  // resized wallpaper to |path|. |output_skia| is optional (may be
+  // null). Returns true on success.
+  static bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
+                                     const base::FilePath& path,
+                                     wallpaper::WallpaperLayout layout,
+                                     int preferred_width,
+                                     int preferred_height,
+                                     gfx::ImageSkia* output_skia);
 
   // TODO(crbug.com/776464): Move |DecodeWallpaperIfApplicable| and
   // |ReadAndDecodeWallpaper| to a separate utility file.
@@ -235,8 +267,15 @@ class ASH_EXPORT WallpaperController
   // crashes. An example test is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
 
-  // Returns custom wallpaper directory by appending corresponding |sub_dir|.
-  base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
+  // Returns whether a wallpaper policy is enforced for |account_id| (not
+  // including device policy).
+  bool IsPolicyControlled(const AccountId& account_id,
+                          bool is_persistent) const;
+
+  // When kiosk app is running or policy is enforced, setting a user wallpaper
+  // is not allowed.
+  bool CanSetUserWallpaper(const AccountId& account_id,
+                           bool is_persistent) const;
 
   // Prepares wallpaper to lock screen transition. Will apply blur if
   // |locking| is true and remove it otherwise.
@@ -289,12 +328,26 @@ class ASH_EXPORT WallpaperController
   // |is_persistent| is false. Returns false if wallpaper info is not found.
   bool GetUserWallpaperInfo(const AccountId& account_id,
                             wallpaper::WallpaperInfo* info,
-                            bool is_persistent);
+                            bool is_persistent) const;
 
   // Initializes wallpaper info for the user to default and saves it to local
   // state if |is_persistent| is true.
   void InitializeUserWallpaperInfo(const AccountId& account_id,
                                    bool is_persistent);
+
+  // TODO(crbug.com/776464): This method is a temporary workaround during the
+  // refactoring. It should be combined with |SetCustomWallpaper|.
+  // The same with |SetCustomWallpaper|, except that |image| wasn't once
+  // converted to |SkBitmap|, so that the image id is preserved.
+  // ArcWallpaperService needs this to track the wallpaper change.
+  void SetArcWallpaper(const AccountId& account_id,
+                       const user_manager::UserType user_type,
+                       const std::string& wallpaper_files_id,
+                       const std::string& file_name,
+                       const gfx::ImageSkia& image,
+                       wallpaper::WallpaperLayout layout,
+                       bool is_ephemeral,
+                       bool show_wallpaper);
 
   // Gets encoded wallpaper from cache. Returns true if success.
   bool GetWallpaperFromCache(const AccountId& account_id,
@@ -356,6 +409,9 @@ class ASH_EXPORT WallpaperController
   // WallpaperColorCalculatorObserver:
   void OnColorCalculationComplete() override;
 
+  // Sets dummy values for wallpaper directories.
+  void InitializePathsForTesting();
+
   // Shows a solid color wallpaper as the substitute for default wallpapers and
   // updates |default_wallpaper_image_|.
   void ShowDefaultWallpaperForTesting();
@@ -405,6 +461,18 @@ class ASH_EXPORT WallpaperController
       bool show_wallpaper,
       MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage> user_image);
+
+  // Saves |image| to disk if |user_info->is_ephemeral| is false, or if it is a
+  // policy wallpaper for public accounts. Shows the wallpaper immediately if
+  // |show_wallpaper| is true, otherwise only sets the wallpaper info and
+  // updates the cache.
+  void SaveAndSetWallpaper(mojom::WallpaperUserInfoPtr user_info,
+                           const std::string& wallpaper_files_id,
+                           const std::string& file_name,
+                           const gfx::ImageSkia& image,
+                           wallpaper::WallpaperType type,
+                           wallpaper::WallpaperLayout layout,
+                           bool show_wallpaper);
 
   // Sets |prominent_colors_| and notifies the observers if there is a change.
   void SetProminentColors(const std::vector<SkColor>& prominent_colors);

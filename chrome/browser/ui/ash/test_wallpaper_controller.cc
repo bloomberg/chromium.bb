@@ -35,7 +35,7 @@ void TestWallpaperController::SetCustomWallpaper(
     wallpaper::WallpaperType type,
     const SkBitmap& image,
     bool show_wallpaper) {
-  NOTIMPLEMENTED();
+  set_custom_wallpaper_count_++;
 }
 
 void TestWallpaperController::SetOnlineWallpaper(
