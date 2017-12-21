@@ -441,6 +441,30 @@ Once a `mojo::Binding<T>` is destroyed, it is guaranteed that no more method
 calls are dispatched to the implementation and the connection error handler (if
 registered) won't be called.
 
+### Best practices for dealing with process crashes and callbacks
+A common situation when calling mojo interface methods that take a callback is
+that the caller wants to know if the other endpoint is torn down (e.g. because
+of a crash). In that case, the consumer usually wants to know if the response
+callback won't be run. There are different solutions for this problem, depending
+on how the `InterfacePtr<T>` is held:
+1. The consumer owns the `InterfacePtr<T>`: `set_connection_error_handler`
+   should be used.
+2. The consumer doesn't own the `InterfacePtr<T>`: there are two helpers
+   depending on the behavior that the caller wants. If the caller wants to
+   ensure that an error handler is run, then
+   [**`mojo::WrapCallbackWithDropHandler`**](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/callback_helpers.h?l=46)
+   should be used. If the caller wants the callback to always be run, then
+   [**`mojo::WrapCallbackWithDefaultInvokeIfNotRun`**](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/callback_helpers.h?l=40)
+   helper should be used. With both of these helpers, usual callback care should
+   be followed to ensure that the callbacks don't run after the consumer is
+   destructed (e.g. because the owner of the `InterfacePtr<T>` outlives the
+   consumer). This includes using
+   [**`base::WeakPtr`**](https://cs.chromium.org/chromium/src/base/memory/weak_ptr.h?l=5)
+   or
+   [**`base::RefCounted`**](https://cs.chromium.org/chromium/src/base/memory/ref_counted.h?l=246).
+   It should also be noted that with these helpers, the callbacks could be run
+   synchronously while the InterfacePtr<T> is reset or destroyed.
+
 ### A Note About Ordering
 
 As mentioned in the previous section, closing one end of a pipe will eventually
@@ -845,7 +869,7 @@ pipes.
 A **strong binding** exists as a standalone object which owns its interface
 implementation and automatically cleans itself up when its bound interface
 endpoint detects an error. The
-[**`MakeStrongBinding`**](https://cs.chromim.org/chromium/src//mojo/public/cpp/bindings/strong_binding.h)
+[**`MakeStrongBinding`**](https://cs.chromim.org/chromium/src/mojo/public/cpp/bindings/strong_binding.h)
 function is used to create such a binding.
 .
 
