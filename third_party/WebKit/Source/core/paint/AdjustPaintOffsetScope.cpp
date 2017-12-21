@@ -13,14 +13,16 @@ bool AdjustPaintOffsetScope::AdjustForPaintOffsetTranslation(
   if (box.HasSelfPaintingLayer())
     return false;
 
-  const auto* paint_properties = box.FirstFragment().PaintProperties();
+  const auto* fragment = old_paint_info_.FragmentToPaint(box);
+  if (!fragment)
+    return false;
+  const auto* paint_properties = fragment->PaintProperties();
   if (!paint_properties || !paint_properties->PaintOffsetTranslation())
     return false;
 
-  DCHECK(box.FirstFragment().LocalBorderBoxProperties());
+  DCHECK(fragment->LocalBorderBoxProperties());
   contents_properties_.emplace(old_paint_info_.context.GetPaintController(),
-                               *box.FirstFragment().LocalBorderBoxProperties(),
-                               box);
+                               *fragment->LocalBorderBoxProperties(), box);
 
   new_paint_info_.emplace(old_paint_info_);
   new_paint_info_->UpdateCullRect(

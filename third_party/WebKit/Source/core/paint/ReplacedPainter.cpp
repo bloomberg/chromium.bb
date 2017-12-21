@@ -91,13 +91,15 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
         completely_clipped_out = true;
       } else if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
         if (!layout_replaced_.IsSVGRoot()) {
-          const auto* properties =
-              layout_replaced_.FirstFragment().PaintProperties();
-          DCHECK(properties && properties->InnerBorderRadiusClip());
-          chunk_properties.emplace(
-              local_paint_info.context.GetPaintController(),
-              properties->InnerBorderRadiusClip(), layout_replaced_,
-              DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+          if (const auto* fragment =
+                  paint_info.FragmentToPaint(layout_replaced_)) {
+            const auto* properties = fragment->PaintProperties();
+            DCHECK(properties && properties->InnerBorderRadiusClip());
+            chunk_properties.emplace(
+                local_paint_info.context.GetPaintController(),
+                properties->InnerBorderRadiusClip(), layout_replaced_,
+                DisplayItem::PaintPhaseToDrawingType(local_paint_info.phase));
+          }
         }
       } else if (ShouldApplyViewportClip(layout_replaced_)) {
         // Push a clip if we have a border radius, since we want to round the

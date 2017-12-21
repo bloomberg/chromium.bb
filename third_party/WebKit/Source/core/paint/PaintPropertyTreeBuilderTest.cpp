@@ -3606,6 +3606,12 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
+  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
+  // layer clip rects from one fragment to another. May need to adjust fragment
+  // clip hierarchy to fix the crash.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <div id='multicol' style='columns:3; column-fill:auto; column-gap: 0;
