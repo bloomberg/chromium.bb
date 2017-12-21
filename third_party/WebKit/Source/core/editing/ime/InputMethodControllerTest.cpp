@@ -2383,16 +2383,10 @@ TEST_F(InputMethodControllerTest, MaxLength) {
 }
 
 TEST_F(InputMethodControllerTest, InputModeOfFocusedElement) {
-  InsertHTMLElement("<input id='a' inputmode='KataKana'>", "a")->focus();
-  EXPECT_EQ(kWebTextInputModeKataKana,
-            Controller().InputModeOfFocusedElement());
+  InsertHTMLElement("<input id='a' inputmode='decimal'>", "a")->focus();
+  EXPECT_EQ(kWebTextInputModeDecimal, Controller().InputModeOfFocusedElement());
 
-  // U+212A + "atakana"
-  InsertHTMLElement(
-      "<input id='b' inputmode='\xE2\x84\xAA"
-      "atakana'>",
-      "b")
-      ->focus();
+  InsertHTMLElement("<input id='b' inputmode='foo'>", "b")->focus();
   EXPECT_EQ(kWebTextInputModeDefault, Controller().InputModeOfFocusedElement());
 }
 

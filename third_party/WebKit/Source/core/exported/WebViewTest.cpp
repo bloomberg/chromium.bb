@@ -876,36 +876,22 @@ TEST_P(WebViewTest, InputMode) {
                 "input_mode_default.html");
   TestInputMode(WebTextInputMode::kWebTextInputModeDefault,
                 "input_mode_default_unknown.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeVerbatim,
-                "input_mode_default_verbatim.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeVerbatim,
-                "input_mode_type_text_verbatim.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeVerbatim,
-                "input_mode_type_search_verbatim.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeDefault,
-                "input_mode_type_url_verbatim.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeLatin,
-                "input_mode_type_latin.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeLatinName,
-                "input_mode_type_latin_name.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeLatinProse,
-                "input_mode_type_latin_prose.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeFullWidthLatin,
-                "input_mode_type_full_width_latin.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeKana,
-                "input_mode_type_kana.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeKanaName,
-                "input_mode_type_kana_name.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeKataKana,
-                "input_mode_type_kata_kana.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeNumeric,
-                "input_mode_type_numeric.html");
+  TestInputMode(WebTextInputMode::kWebTextInputModeNone,
+                "input_mode_type_none.html");
+  TestInputMode(WebTextInputMode::kWebTextInputModeText,
+                "input_mode_type_text.html");
   TestInputMode(WebTextInputMode::kWebTextInputModeTel,
                 "input_mode_type_tel.html");
-  TestInputMode(WebTextInputMode::kWebTextInputModeEmail,
-                "input_mode_type_email.html");
   TestInputMode(WebTextInputMode::kWebTextInputModeUrl,
                 "input_mode_type_url.html");
+  TestInputMode(WebTextInputMode::kWebTextInputModeEmail,
+                "input_mode_type_email.html");
+  TestInputMode(WebTextInputMode::kWebTextInputModeNumeric,
+                "input_mode_type_numeric.html");
+  TestInputMode(WebTextInputMode::kWebTextInputModeDecimal,
+                "input_mode_type_decimal.html");
+  TestInputMode(WebTextInputMode::kWebTextInputModeSearch,
+                "input_mode_type_search.html");
 }
 
 TEST_P(WebViewTest, TextInputInfoWithReplacedElements) {

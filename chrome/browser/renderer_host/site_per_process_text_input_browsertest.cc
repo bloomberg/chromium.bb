@@ -1111,7 +1111,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   EXPECT_FALSE(send_and_check_show_ime());
 
   // Setting an irrelevant field. Expect no IME.
-  sender.SetMode(ui::TEXT_INPUT_MODE_LATIN);
+  sender.SetMode(ui::TEXT_INPUT_MODE_TEXT);
   EXPECT_FALSE(send_and_check_show_ime());
 
   // Set |TextInputState.show_ime_if_needed|. Expect IME.

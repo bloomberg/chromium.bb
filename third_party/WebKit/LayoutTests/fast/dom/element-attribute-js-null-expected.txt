@@ -276,7 +276,6 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTableSectionElement
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.defaultValue]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.dirName]
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.inputMode]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.name]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.placeholder]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.value]

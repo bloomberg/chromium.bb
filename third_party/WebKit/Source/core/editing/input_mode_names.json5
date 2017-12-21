@@ -5,17 +5,13 @@
   },
 
   data: [
-    "verbatim",
-    "latin",
-    "latin-name",
-    "latin-prose",
-    "full-width-latin",
-    "kana",
-    "kana-name",
-    "katakana",
-    "numeric",
+    "none",
+    "text",
     "tel",
-    "email",
     "url",
+    "email",
+    "numeric",
+    "decimal",
+    "search",
   ],
 }

@@ -110,30 +110,22 @@ EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::ToMojom(
   switch (text_input_mode) {
     case ui::TEXT_INPUT_MODE_DEFAULT:
       return ui::mojom::TextInputMode::kDefault;
-    case ui::TEXT_INPUT_MODE_VERBATIM:
-      return ui::mojom::TextInputMode::kVerbatim;
-    case ui::TEXT_INPUT_MODE_LATIN:
-      return ui::mojom::TextInputMode::kLatin;
-    case ui::TEXT_INPUT_MODE_LATIN_NAME:
-      return ui::mojom::TextInputMode::kLatinName;
-    case ui::TEXT_INPUT_MODE_LATIN_PROSE:
-      return ui::mojom::TextInputMode::kLatinProse;
-    case ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN:
-      return ui::mojom::TextInputMode::kFullWidthLatin;
-    case ui::TEXT_INPUT_MODE_KANA:
-      return ui::mojom::TextInputMode::kKana;
-    case ui::TEXT_INPUT_MODE_KANA_NAME:
-      return ui::mojom::TextInputMode::kKanaName;
-    case ui::TEXT_INPUT_MODE_KATAKANA:
-      return ui::mojom::TextInputMode::kKatakana;
-    case ui::TEXT_INPUT_MODE_NUMERIC:
-      return ui::mojom::TextInputMode::kNumeric;
+    case ui::TEXT_INPUT_MODE_NONE:
+      return ui::mojom::TextInputMode::kNone;
+    case ui::TEXT_INPUT_MODE_TEXT:
+      return ui::mojom::TextInputMode::kText;
     case ui::TEXT_INPUT_MODE_TEL:
       return ui::mojom::TextInputMode::kTel;
-    case ui::TEXT_INPUT_MODE_EMAIL:
-      return ui::mojom::TextInputMode::kEmail;
     case ui::TEXT_INPUT_MODE_URL:
       return ui::mojom::TextInputMode::kUrl;
+    case ui::TEXT_INPUT_MODE_EMAIL:
+      return ui::mojom::TextInputMode::kEmail;
+    case ui::TEXT_INPUT_MODE_NUMERIC:
+      return ui::mojom::TextInputMode::kNumeric;
+    case ui::TEXT_INPUT_MODE_DECIMAL:
+      return ui::mojom::TextInputMode::kDecimal;
+    case ui::TEXT_INPUT_MODE_SEARCH:
+      return ui::mojom::TextInputMode::kSearch;
   }
   NOTREACHED();
   return ui::mojom::TextInputMode::kDefault;
@@ -147,41 +139,29 @@ bool EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
     case ui::mojom::TextInputMode::kDefault:
       *out = ui::TEXT_INPUT_MODE_DEFAULT;
       return true;
-    case ui::mojom::TextInputMode::kVerbatim:
-      *out = ui::TEXT_INPUT_MODE_VERBATIM;
+    case ui::mojom::TextInputMode::kNone:
+      *out = ui::TEXT_INPUT_MODE_NONE;
       return true;
-    case ui::mojom::TextInputMode::kLatin:
-      *out = ui::TEXT_INPUT_MODE_LATIN;
-      return true;
-    case ui::mojom::TextInputMode::kLatinName:
-      *out = ui::TEXT_INPUT_MODE_LATIN_NAME;
-      return true;
-    case ui::mojom::TextInputMode::kLatinProse:
-      *out = ui::TEXT_INPUT_MODE_LATIN_PROSE;
-      return true;
-    case ui::mojom::TextInputMode::kFullWidthLatin:
-      *out = ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN;
-      return true;
-    case ui::mojom::TextInputMode::kKana:
-      *out = ui::TEXT_INPUT_MODE_KANA;
-      return true;
-    case ui::mojom::TextInputMode::kKanaName:
-      *out = ui::TEXT_INPUT_MODE_KANA_NAME;
-      return true;
-    case ui::mojom::TextInputMode::kKatakana:
-      *out = ui::TEXT_INPUT_MODE_KATAKANA;
-      return true;
-    case ui::mojom::TextInputMode::kNumeric:
-      *out = ui::TEXT_INPUT_MODE_NUMERIC;
+    case ui::mojom::TextInputMode::kText:
+      *out = ui::TEXT_INPUT_MODE_TEXT;
       return true;
     case ui::mojom::TextInputMode::kTel:
       *out = ui::TEXT_INPUT_MODE_TEL;
       return true;
+    case ui::mojom::TextInputMode::kUrl:
+      *out = ui::TEXT_INPUT_MODE_URL;
+      return true;
     case ui::mojom::TextInputMode::kEmail:
       *out = ui::TEXT_INPUT_MODE_EMAIL;
       return true;
-    case ui::mojom::TextInputMode::kUrl:
-      *out = ui::TEXT_INPUT_MODE_URL;
+    case ui::mojom::TextInputMode::kNumeric:
+      *out = ui::TEXT_INPUT_MODE_NUMERIC;
+      return true;
+    case ui::mojom::TextInputMode::kDecimal:
+      *out = ui::TEXT_INPUT_MODE_DECIMAL;
+      return true;
+    case ui::mojom::TextInputMode::kSearch:
+      *out = ui::TEXT_INPUT_MODE_SEARCH;
       return true;
   }
   return false;

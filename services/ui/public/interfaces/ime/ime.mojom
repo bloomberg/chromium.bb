@@ -88,18 +88,14 @@ struct CompositionText {
 // See comments for ui::TextInputMode for more details.
 enum TextInputMode {
   kDefault,
-  kVerbatim,
-  kLatin,
-  kLatinName,
-  kLatinProse,
-  kFullWidthLatin,
-  kKana,
-  kKanaName,
-  kKatakana,
-  kNumeric,
+  kNone,
+  kText,
   kTel,
-  kEmail,
   kUrl,
+  kEmail,
+  kNumeric,
+  kDecimal,
+  kSearch,
 };
 
 // Parameters needed to start an IME session.

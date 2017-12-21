@@ -80,33 +80,31 @@ public class ImeUtils {
             switch (inputMode) {
                 default:
                 case WebTextInputMode.DEFAULT:
-                case WebTextInputMode.VERBATIM:
-                case WebTextInputMode.LATIN:
-                case WebTextInputMode.LATIN_NAME:
-                case WebTextInputMode.LATIN_PROSE:
-                case WebTextInputMode.FULL_WIDTH_LATIN:
-                case WebTextInputMode.KANA:
-                case WebTextInputMode.KANA_NAME:
-                case WebTextInputMode.KATA_KANA:
+                case WebTextInputMode.TEXT:
+                case WebTextInputMode.SEARCH:
                     outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE;
                     if ((inputFlags & WebTextInputFlags.AUTOCORRECT_OFF) == 0) {
                         outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
                     }
                     break;
-                case WebTextInputMode.NUMERIC:
-                    outAttrs.inputType =
-                            InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL;
-                    break;
                 case WebTextInputMode.TEL:
                     outAttrs.inputType = InputType.TYPE_CLASS_PHONE;
+                    break;
+                case WebTextInputMode.URL:
+                    outAttrs.inputType =
+                            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI;
                     break;
                 case WebTextInputMode.EMAIL:
                     outAttrs.inputType = InputType.TYPE_CLASS_TEXT
                             | InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS;
                     break;
-                case WebTextInputMode.URL:
+                case WebTextInputMode.NUMERIC:
                     outAttrs.inputType =
-                            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI;
+                            InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL;
+                    break;
+                case WebTextInputMode.DECIMAL:
+                    outAttrs.inputType =
+                            InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL;
                     break;
             }
         }
