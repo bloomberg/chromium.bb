@@ -6,7 +6,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="certificate_shared_css.html">
 <link rel="import" href="certificates_browser_proxy.html">
 
@@ -43,7 +43,7 @@
         </paper-checkbox>
       </div>
       <div slot="button-container">
-        <paper-spinner id="spinner"></paper-spinner>
+        <paper-spinner-lite id="spinner"></paper-spinner-lite>
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           [[i18n('cancel')]]
         </paper-button>
