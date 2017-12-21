@@ -80,10 +80,6 @@
       "reason": "geometry"
     },
     {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
       "object": "LayoutView #document",
       "reason": "style change"
     },

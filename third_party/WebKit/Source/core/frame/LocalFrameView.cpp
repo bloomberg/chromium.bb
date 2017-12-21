@@ -5486,6 +5486,15 @@ void LocalFrameView::BeginLifecycleUpdates() {
   lifecycle_updates_throttled_ = false;
   if (auto owner = GetFrame().OwnerLayoutItem())
     owner.SetMayNeedPaintInvalidation();
+
+  LayoutView* layout_view = GetLayoutView();
+  bool layout_view_is_empty = layout_view && !layout_view->FirstChild();
+  if (layout_view_is_empty && !DidFirstLayout() && !NeedsLayout()) {
+    // Make sure a display:none iframe gets an initial layout pass.
+    layout_view->SetNeedsLayout(LayoutInvalidationReason::kAddedToLayout,
+                                kMarkOnlyThis);
+  }
+
   SetupRenderThrottling();
   UpdateRenderThrottlingStatus(hidden_for_throttling_, subtree_throttled_);
   // The compositor will "defer commits" for the main frame until we
