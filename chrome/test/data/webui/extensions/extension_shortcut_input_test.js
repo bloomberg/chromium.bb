@@ -52,22 +52,22 @@ cr.define('extension_shortcut_input_tests', function() {
             // Press ctrl.
             MockInteractions.keyDownOn(field, 17, ['ctrl']);
             expectEquals('Ctrl', field.value);
-            expectEquals('Need a character', field.errorMessage);
+            expectEquals('Type a letter', field.errorMessage);
             // Add shift.
             MockInteractions.keyDownOn(field, 16, ['ctrl', 'shift']);
             expectEquals('Ctrl + Shift', field.value);
-            expectEquals('Need a character', field.errorMessage);
+            expectEquals('Type a letter', field.errorMessage);
             // Remove shift.
             MockInteractions.keyUpOn(field, 16, ['ctrl']);
             expectEquals('Ctrl', field.value);
-            expectEquals('Need a character', field.errorMessage);
+            expectEquals('Type a letter', field.errorMessage);
             // Add alt (ctrl + alt is invalid).
             MockInteractions.keyDownOn(field, 18, ['ctrl', 'alt']);
             expectEquals('Ctrl', field.value);
             // Remove alt.
             MockInteractions.keyUpOn(field, 18, ['ctrl']);
             expectEquals('Ctrl', field.value);
-            expectEquals('Need a character', field.errorMessage);
+            expectEquals('Type a letter', field.errorMessage);
 
             // Add 'A'. Once a valid shortcut is typed (like Ctrl + A), it is
             // committed.
