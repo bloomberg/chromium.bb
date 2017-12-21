@@ -515,6 +515,15 @@ SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor(
 gfx::Size BrowserCompositorMac::DelegatedFrameHostDesiredSizeInDIP() const {
   gfx::Size dip_size;
   GetViewProperties(&dip_size, nullptr, nullptr);
+  if (enable_viz_) {
+    if (recyclable_compositor_) {
+      const gfx::Size& pixel_size =
+          recyclable_compositor_->compositor()->size();
+      float scale_factor =
+          recyclable_compositor_->compositor()->device_scale_factor();
+      dip_size = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
+    }
+  }
   return dip_size;
 }
 

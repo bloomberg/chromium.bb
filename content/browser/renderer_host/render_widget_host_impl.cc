@@ -760,6 +760,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     resize_params->browser_controls_shrink_blink_size =
         view_->DoBrowserControlsShrinkBlinkSize();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
+    // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
+    // scale factor of the surface. Fix this.
     viz::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
     if (local_surface_id.is_valid())
       resize_params->local_surface_id = local_surface_id;
