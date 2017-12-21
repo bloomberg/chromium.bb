@@ -146,6 +146,10 @@ NSString* const kLogJavaScript = @"LogJavascript";
 // Key of UMA IOSFix.ViewportZoomBugCount histogram.
 const char kUMAViewportZoomBugCount[] = "Renderer.ViewportZoomBugCount";
 
+// Key of UMA Renderer.WKWebViewCallbackAfterDestroy histogram.
+const char kUMAWKWebViewCallbackAfterDestroy[] =
+    "Renderer.WKWebViewCallbackAfterDestroy";
+
 // Key of the UMA Navigation.IOSWKWebViewSlowFastBackForward histogram.
 const char kUMAWKWebViewSlowFastBackForwardNavigationKey[] =
     "Navigation.IOSWKWebViewSlowFastBackForward";
@@ -872,6 +876,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Used to decide whether a load that generates errors with the
 // NSURLErrorCancelled code should be cancelled.
 - (BOOL)shouldCancelLoadForCancelledError:(NSError*)error;
+
+// This method should be called on receiving WKNavigationDelegate callbacks. It
+// will log a metric if the callback occurs after the reciever has already been
+// closed.
+- (void)didReceiveWebViewNavigationDelegateCallback;
 
 // Sets up WebUI for URL.
 - (void)createWebUIForURL:(const GURL&)URL;
@@ -3037,6 +3046,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return source != NAVIGATION;
 }
 
+- (void)didReceiveWebViewNavigationDelegateCallback {
+  if (_isBeingDestroyed) {
+    UMA_HISTOGRAM_BOOLEAN(kUMAWKWebViewCallbackAfterDestroy, true);
+  }
+}
+
 #pragma mark -
 #pragma mark WebUI
 
@@ -4203,6 +4218,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     decidePolicyForNavigationAction:(WKNavigationAction*)action
                     decisionHandler:
                         (void (^)(WKNavigationActionPolicy))decisionHandler {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   _webProcessCrashed = NO;
   if (_isBeingDestroyed) {
     decisionHandler(WKNavigationActionPolicyCancel);
@@ -4260,6 +4277,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     decidePolicyForNavigationResponse:(WKNavigationResponse*)navigationResponse
                       decisionHandler:
                           (void (^)(WKNavigationResponsePolicy))handler {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   GURL responseURL = net::GURLWithNSURL(navigationResponse.response.URL);
 
   // If this is a placeholder navigation, pass through.
@@ -4341,6 +4360,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didStartProvisionalNavigation:(WKNavigation*)navigation {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
 
   // If this is a placeholder URL, there are only two possibilities:
@@ -4443,6 +4464,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didReceiveServerRedirectForProvisionalNavigation:(WKNavigation*)navigation {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
 
   // This callback should never be triggered for placeholder navigations.
@@ -4464,6 +4487,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)webView:(WKWebView*)webView
     didFailProvisionalNavigation:(WKNavigation*)navigation
                        withError:(NSError*)error {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   [_navigationStates setState:web::WKNavigationState::PROVISIONALY_FAILED
                 forNavigation:navigation];
 
@@ -4513,6 +4538,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   // TODO(crbug.com/787497): Always use webView.backForwardList.currentItem.URL
   // to obtain lastCommittedURL once loadHTML: is no longer user for WebUI.
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
@@ -4640,6 +4667,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didFinishNavigation:(WKNavigation*)navigation {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
 
   // If this is a placeholder navigation for an app-specific URL, finish
@@ -4690,6 +4719,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)webView:(WKWebView*)webView
     didFailNavigation:(WKNavigation*)navigation
             withError:(NSError*)error {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   // This callback should never be triggered for placeholder navigations.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     DCHECK(!IsPlaceholderUrl(net::GURLWithNSURL(webView.URL)));
@@ -4715,6 +4746,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                     completionHandler:
                         (void (^)(NSURLSessionAuthChallengeDisposition,
                                   NSURLCredential*))completionHandler {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   // This callback should never be triggered for placeholder navigations.
   DCHECK(!(web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
            IsPlaceholderUrl(net::GURLWithNSURL(webView.URL))));
@@ -4756,6 +4789,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
+  [self didReceiveWebViewNavigationDelegateCallback];
+
   _certVerificationErrors->Clear();
   [self webViewWebProcessDidCrash];
 }
