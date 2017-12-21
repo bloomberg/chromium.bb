@@ -46,6 +46,11 @@ void DeviceManagerManual::ScanDevices(DeviceEventObserver* observer) {
 
 void DeviceManagerManual::AddObserver(DeviceEventObserver* observer) {
   observers_.AddObserver(observer);
+  // Notify the new observer about existing devices.
+  for (const auto& path : devices_) {
+    DeviceEvent event(DeviceEvent::INPUT, DeviceEvent::ADD, path);
+    observer->OnDeviceEvent(event);
+  }
 }
 
 void DeviceManagerManual::RemoveObserver(DeviceEventObserver* observer) {
