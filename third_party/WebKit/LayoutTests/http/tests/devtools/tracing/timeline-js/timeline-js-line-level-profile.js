@@ -7,7 +7,7 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.showPanel('sources');
-  await TestRunner.addScriptTag('../resources/timeline-data.js');
+  await TestRunner.addScriptTag('../resources/empty.js');
 
   var cpuProfile = {
     startTime: 10e6,
@@ -38,7 +38,7 @@
   };
 
   TestRunner.addSniffer(SourceFrame.SourcesTextEditor.prototype, 'setGutterDecoration', decorationAdded, true);
-  SourcesTestRunner.showScriptSource('timeline-data.js', frameRevealed);
+  SourcesTestRunner.showScriptSource('empty.js', frameRevealed);
 
   function decorationAdded(line, type, element) {
     TestRunner.addResult(`${line} ${type} ${element.textContent} ${element.style.backgroundColor}`);

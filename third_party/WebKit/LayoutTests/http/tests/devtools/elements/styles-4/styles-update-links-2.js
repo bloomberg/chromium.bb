@@ -35,7 +35,6 @@
     `);
   await TestRunner.addStylesheetTag('../styles/resources/styles-update-links-2.css');
   await TestRunner.addStylesheetTag('../styles/resources/styles-update-links.css');
-  await TestRunner.addScriptTag('resources/styles-update-links.js');
 
   TestRunner.runTestSuite([
     function selectInitialNode(next) {

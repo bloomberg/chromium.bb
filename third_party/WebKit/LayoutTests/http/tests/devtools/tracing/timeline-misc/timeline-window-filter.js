@@ -7,7 +7,6 @@
   TestRunner.addResult(`It applies different ranges to the OverviewGrid and expects that current view reflects the change.\n`);
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
-  await TestRunner.addScriptTag('../resources/timeline-data.js');
 
   var timeline = UI.panels.timeline;
   var overviewPane = timeline._overviewPane;
