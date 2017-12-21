@@ -48,6 +48,7 @@ static_library("test_support") {
     "//base",
     "//components/cast_channel/proto:cast_channel_proto",
     "//net",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

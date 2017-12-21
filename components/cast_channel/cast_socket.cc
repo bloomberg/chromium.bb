@@ -455,7 +455,9 @@ int CastSocketImpl::DoAuthChallengeSend() {
                           << CastMessageToString(challenge_message);
 
   ResetConnectLoopCallback();
-  transport_->SendMessage(challenge_message, connect_loop_callback_.callback());
+  // TODO(https://crbug.com/656607): Add proper annotation.
+  transport_->SendMessage(challenge_message, connect_loop_callback_.callback(),
+                          NO_TRAFFIC_ANNOTATION_BUG_656607);
 
   // Always return IO_PENDING since the result is always asynchronous.
   return net::ERR_IO_PENDING;

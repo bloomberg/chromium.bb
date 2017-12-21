@@ -134,9 +134,12 @@ void KeepAliveDelegate::SendKeepAliveMessage(const CastMessage& message,
                                              const char* message_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(2) << "Sending " << message_type;
+  // TODO(https://crbug.com/656607): Add proper annotation.
   socket_->transport()->SendMessage(
-      message, base::Bind(&KeepAliveDelegate::SendKeepAliveMessageComplete,
-                          base::Unretained(this), message_type));
+      message,
+      base::Bind(&KeepAliveDelegate::SendKeepAliveMessageComplete,
+                 base::Unretained(this), message_type),
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void KeepAliveDelegate::SendKeepAliveMessageComplete(const char* message_type,
