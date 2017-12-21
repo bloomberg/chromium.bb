@@ -384,6 +384,14 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         newIntent.setData(uri);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
 
+        // If |uri| is a content:// URI, we want to propagate the URI permissions. This can't be
+        // achieved by simply adding the FLAG_GRANT_READ_URI_PERMISSION to the Intent, since the
+        // data URI on the Intent isn't |uri|, it just has |uri| as a query parameter.
+        if (uri != null && UrlConstants.CONTENT_SCHEME.equals(uri.getScheme())) {
+            context.grantUriPermission(
+                    context.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+
         // If a CCT intent triggers First Run, then NEW_TASK will be automatically applied.  As
         // part of that, it will inherit the EXCLUDE_FROM_RECENTS bit from ChromeLauncherActivity,
         // so explicitly remove it to ensure the CCT does not get lost in recents.
