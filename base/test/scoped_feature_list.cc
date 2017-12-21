@@ -21,7 +21,7 @@ namespace test {
 namespace {
 
 std::vector<StringPiece> GetFeatureVector(
-    const std::initializer_list<Feature>& features) {
+    const std::vector<Feature>& features) {
   std::vector<StringPiece> output;
   for (const Feature& feature : features) {
     output.push_back(feature.name);
@@ -117,8 +117,8 @@ void ScopedFeatureList::InitFromCommandLine(
 }
 
 void ScopedFeatureList::InitWithFeatures(
-    const std::initializer_list<Feature>& enabled_features,
-    const std::initializer_list<Feature>& disabled_features) {
+    const std::vector<Feature>& enabled_features,
+    const std::vector<Feature>& disabled_features) {
   InitWithFeaturesAndFieldTrials(enabled_features, {}, disabled_features);
 }
 
@@ -137,9 +137,9 @@ void ScopedFeatureList::InitAndDisableFeature(const Feature& feature) {
 }
 
 void ScopedFeatureList::InitWithFeaturesAndFieldTrials(
-    const std::initializer_list<Feature>& enabled_features,
-    const std::initializer_list<FieldTrial*>& trials_for_enabled_features,
-    const std::initializer_list<Feature>& disabled_features) {
+    const std::vector<Feature>& enabled_features,
+    const std::vector<FieldTrial*>& trials_for_enabled_features,
+    const std::vector<Feature>& disabled_features) {
   DCHECK_LE(trials_for_enabled_features.size(), enabled_features.size());
 
   Features merged_features;
@@ -167,7 +167,8 @@ void ScopedFeatureList::InitWithFeaturesAndFieldTrials(
 
   // Add the field trial overrides. This assumes that |enabled_features| are at
   // the begining of |merged_features.enabled_feature_list|, in the same order.
-  FieldTrial* const* trial_it = trials_for_enabled_features.begin();
+  std::vector<FieldTrial*>::const_iterator trial_it =
+      trials_for_enabled_features.begin();
   auto feature_it = merged_features.enabled_feature_list.begin();
   std::vector<std::unique_ptr<std::string>> features_with_trial;
   features_with_trial.reserve(trials_for_enabled_features.size());

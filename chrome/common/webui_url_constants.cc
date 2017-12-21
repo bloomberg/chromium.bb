@@ -285,7 +285,10 @@ const char kStylusSubPage[] = "stylus";
 #else
 const char kCreateProfileSubPage[] = "createProfile";
 const char kManageProfileSubPage[] = "manageProfile";
-#endif
+#endif  // defined(OS_CHROMEOS)
+#if defined(OS_WIN)
+const char kCleanupSubPage[] = "cleanup";
+#endif  // defined(OS_WIN)
 
 // Extension sub pages.
 const char kExtensionConfigureCommandsSubPage[] = "configureCommands";

@@ -276,6 +276,9 @@ extern const char kNetworkDetailSubPage[];
 extern const char kPowerSubPage[];
 extern const char kStylusSubPage[];
 #endif
+#if defined(OS_WIN)
+extern const char kCleanupSubPage[];
+#endif
 
 // Extensions sub pages.
 extern const char kExtensionConfigureCommandsSubPage[];
