@@ -171,6 +171,7 @@
           "media::mojom::RemoterFactory",
           "media::mojom::Renderer",
           "network::mojom::RestrictedCookieManager",
+          "password_manager::mojom::CredentialManager",
           "payments::mojom::PaymentManager",
           "payments::mojom::PaymentRequest",
           "password_manager::mojom::CredentialManager",
