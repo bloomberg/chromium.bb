@@ -61,7 +61,8 @@ class PLATFORM_EXPORT ResourceLoader final
  public:
   static ResourceLoader* Create(ResourceFetcher*,
                                 ResourceLoadScheduler*,
-                                Resource*);
+                                Resource*,
+                                uint32_t inflight_keepalive_bytes = 0);
   ~ResourceLoader() override;
   void Trace(blink::Visitor*) override;
 
@@ -135,7 +136,10 @@ class PLATFORM_EXPORT ResourceLoader final
   friend class SubresourceIntegrityTest;
 
   // Assumes ResourceFetcher and Resource are non-null.
-  ResourceLoader(ResourceFetcher*, ResourceLoadScheduler*, Resource*);
+  ResourceLoader(ResourceFetcher*,
+                 ResourceLoadScheduler*,
+                 Resource*,
+                 uint32_t inflight_keepalive_bytes);
 
   void StartWith(const ResourceRequest&);
 
@@ -164,6 +168,7 @@ class PLATFORM_EXPORT ResourceLoader final
   Member<ResourceLoadScheduler> scheduler_;
   Member<Resource> resource_;
 
+  uint32_t inflight_keepalive_bytes_;
   bool is_cache_aware_loading_activated_;
 
   TaskRunnerTimer<ResourceLoader> cancel_timer_;

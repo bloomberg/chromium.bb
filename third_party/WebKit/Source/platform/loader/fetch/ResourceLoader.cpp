@@ -66,17 +66,21 @@ static scoped_refptr<WebTaskRunner> GetTaskRunnerFor(
 
 ResourceLoader* ResourceLoader::Create(ResourceFetcher* fetcher,
                                        ResourceLoadScheduler* scheduler,
-                                       Resource* resource) {
-  return new ResourceLoader(fetcher, scheduler, resource);
+                                       Resource* resource,
+                                       uint32_t inflight_keepalive_bytes) {
+  return new ResourceLoader(fetcher, scheduler, resource,
+                            inflight_keepalive_bytes);
 }
 
 ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
                                ResourceLoadScheduler* scheduler,
-                               Resource* resource)
+                               Resource* resource,
+                               uint32_t inflight_keepalive_bytes)
     : scheduler_client_id_(ResourceLoadScheduler::kInvalidClientId),
       fetcher_(fetcher),
       scheduler_(scheduler),
       resource_(resource),
+      inflight_keepalive_bytes_(inflight_keepalive_bytes),
       is_cache_aware_loading_activated_(false),
       cancel_timer_(
           GetTaskRunnerFor(resource_->GetResourceRequest(), Context()),
@@ -625,8 +629,8 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
       resource_->Identifier(),
       network_instrumentation::RequestOutcome::kSuccess);
 
-  fetcher_->HandleLoaderFinish(resource_.Get(), 0,
-                               ResourceFetcher::kDidFinishFirstPartInMultipart);
+  fetcher_->HandleLoaderFinish(
+      resource_.Get(), 0, ResourceFetcher::kDidFinishFirstPartInMultipart, 0);
 }
 
 void ResourceLoader::DidFinishLoading(double finish_time,
@@ -647,7 +651,8 @@ void ResourceLoader::DidFinishLoading(double finish_time,
       network_instrumentation::RequestOutcome::kSuccess);
 
   fetcher_->HandleLoaderFinish(resource_.Get(), finish_time,
-                               ResourceFetcher::kDidFinishLoading);
+                               ResourceFetcher::kDidFinishLoading,
+                               inflight_keepalive_bytes_);
 }
 
 void ResourceLoader::DidFail(const WebURLError& error,
@@ -676,7 +681,8 @@ void ResourceLoader::HandleError(const ResourceError& error) {
   network_instrumentation::EndResourceLoad(
       resource_->Identifier(), network_instrumentation::RequestOutcome::kFail);
 
-  fetcher_->HandleLoaderError(resource_.Get(), error);
+  fetcher_->HandleLoaderError(resource_.Get(), error,
+                              inflight_keepalive_bytes_);
 }
 
 void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
