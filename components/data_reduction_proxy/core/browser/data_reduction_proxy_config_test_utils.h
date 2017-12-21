@@ -106,6 +106,18 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   void SetCurrentNetworkID(const std::string& network_id);
 
+  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+  GetInFlightWarmupProxyDetails() const override;
+
+  void SetInFlightWarmupProxyDetails(
+      base::Optional<
+          std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+          in_flight_warmup_proxy_details);
+
+  bool IsFetchInFlight() const override;
+
+  void SetIsFetchInFlight(bool fetch_in_flight);
+
   using DataReductionProxyConfig::UpdateConfigForTesting;
   using DataReductionProxyConfig::HandleWarmupFetcherResponse;
 
@@ -119,6 +131,9 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   base::Optional<std::string> current_network_id_;
 
+  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+      in_flight_warmup_proxy_details_;
+
   // Set to true if the captive portal probe for the current network has been
   // blocked.
   bool is_captive_portal_;
@@ -126,6 +141,8 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // True if the default bypass rules should be added. Should be set to false
   // when fetching resources from an embedded test server running on localhost.
   bool add_default_proxy_bypass_rules_;
+
+  base::Optional<bool> fetch_in_flight_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyConfig);
 };

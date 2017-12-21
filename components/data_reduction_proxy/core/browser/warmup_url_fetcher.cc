@@ -28,6 +28,7 @@ WarmupURLFetcher::WarmupURLFetcher(
         url_request_context_getter,
     WarmupURLFetcherCallback callback)
     : url_request_context_getter_(url_request_context_getter),
+      is_fetch_in_flight_(false),
       callback_(callback) {
   DCHECK(url_request_context_getter_);
 }
@@ -63,6 +64,7 @@ void WarmupURLFetcher::FetchWarmupURL() {
   GetWarmupURLWithQueryParam(&warmup_url_with_query_params);
 
   fetcher_.reset();
+  is_fetch_in_flight_ = true;
 
   fetcher_ =
       net::URLFetcher::Create(warmup_url_with_query_params,
@@ -100,6 +102,7 @@ void WarmupURLFetcher::GetWarmupURLWithQueryParam(
 
 void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(source, fetcher_.get());
+  is_fetch_in_flight_ = false;
   UMA_HISTOGRAM_BOOLEAN(
       "DataReductionProxy.WarmupURL.FetchSuccessful",
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS);
@@ -144,6 +147,10 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
       HasDataReductionProxyViaHeader(*(source->GetResponseHeaders()),
                                      nullptr /* has_intermediary */);
   callback_.Run(source->ProxyServerUsed(), success_response);
+}
+
+bool WarmupURLFetcher::IsFetchInFlight() const {
+  return is_fetch_in_flight_;
 }
 
 }  // namespace data_reduction_proxy

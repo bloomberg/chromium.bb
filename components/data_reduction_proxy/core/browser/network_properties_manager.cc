@@ -20,6 +20,10 @@ namespace {
 
 constexpr size_t kMaxCacheSize = 10u;
 
+// Maximum number of times a data saver proxy with unique tuple
+// (is_secure_proxy, is_core_proxy) is probed.
+constexpr size_t kMaxWarmupURLFetchAttempts = 3;
+
 // Parses a base::Value to NetworkProperties struct. If the parsing is
 // unsuccessful, a nullptr is returned.
 base::Optional<NetworkProperties> GetParsedNetworkProperty(
@@ -145,6 +149,16 @@ NetworkPropertiesManager::NetworkPropertiesManager(
   pref_manager_.reset(new PrefManager(pref_service));
   pref_manager_weak_ptr_ = pref_manager_->GetWeakPtr();
 
+  has_warmup_url_succeded_secure_core_ = false;
+  has_warmup_url_succeded_secure_non_core_ = false;
+  has_warmup_url_succeded_insecure_core_ = false;
+  has_warmup_url_succeded_insecure_non_core_ = false;
+
+  warmup_url_fetch_attempt_counts_secure_core_ = 0;
+  warmup_url_fetch_attempt_counts_secure_non_core_ = 0;
+  warmup_url_fetch_attempt_counts_insecure_core_ = 0;
+  warmup_url_fetch_attempt_counts_insecure_non_core_ = 0;
+
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -172,6 +186,16 @@ void NetworkPropertiesManager::ShutdownOnUIThread() {
 void NetworkPropertiesManager::OnChangeInNetworkID(
     const std::string& network_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  has_warmup_url_succeded_secure_core_ = false;
+  has_warmup_url_succeded_secure_non_core_ = false;
+  has_warmup_url_succeded_insecure_core_ = false;
+  has_warmup_url_succeded_insecure_non_core_ = false;
+
+  warmup_url_fetch_attempt_counts_secure_core_ = 0;
+  warmup_url_fetch_attempt_counts_secure_non_core_ = 0;
+  warmup_url_fetch_attempt_counts_insecure_core_ = 0;
+  warmup_url_fetch_attempt_counts_insecure_non_core_ = 0;
 
   network_id_ = network_id;
 
@@ -290,20 +314,72 @@ void NetworkPropertiesManager::SetHasWarmupURLProbeFailed(
     bool is_core_proxy,
     bool warmup_url_probe_failed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (secure_proxy && is_core_proxy) {
+    has_warmup_url_succeded_secure_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_secure_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   } else if (secure_proxy && !is_core_proxy) {
+    has_warmup_url_succeded_secure_non_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_secure_non_core_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   } else if (!secure_proxy && is_core_proxy) {
+    has_warmup_url_succeded_insecure_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_insecure_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   } else {
+    has_warmup_url_succeded_insecure_non_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_insecure_non_core_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   }
   OnChangeInNetworkPropertyOnIOThread();
+}
+
+bool NetworkPropertiesManager::ShouldFetchWarmupProbeURL(
+    bool secure_proxy,
+    bool is_core_proxy) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (secure_proxy && is_core_proxy) {
+    return !has_warmup_url_succeded_secure_core_ &&
+           warmup_url_fetch_attempt_counts_secure_core_ <
+               kMaxWarmupURLFetchAttempts;
+  } else if (secure_proxy && !is_core_proxy) {
+    return !has_warmup_url_succeded_secure_non_core_ &&
+           warmup_url_fetch_attempt_counts_secure_non_core_ <
+               kMaxWarmupURLFetchAttempts;
+  } else if (!secure_proxy && is_core_proxy) {
+    return !has_warmup_url_succeded_insecure_core_ &&
+           warmup_url_fetch_attempt_counts_insecure_core_ <
+               kMaxWarmupURLFetchAttempts;
+  } else {
+    return !has_warmup_url_succeded_insecure_non_core_ &&
+           warmup_url_fetch_attempt_counts_insecure_non_core_ <
+               kMaxWarmupURLFetchAttempts;
+  }
+}
+
+void NetworkPropertiesManager::OnWarmupFetchInitiated(bool secure_proxy,
+                                                      bool is_core_proxy) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (secure_proxy && is_core_proxy) {
+    ++warmup_url_fetch_attempt_counts_secure_core_;
+    DCHECK_GE(kMaxWarmupURLFetchAttempts,
+              warmup_url_fetch_attempt_counts_secure_core_);
+  } else if (secure_proxy && !is_core_proxy) {
+    ++warmup_url_fetch_attempt_counts_secure_non_core_;
+    DCHECK_GE(kMaxWarmupURLFetchAttempts,
+              warmup_url_fetch_attempt_counts_secure_non_core_);
+  } else if (!secure_proxy && is_core_proxy) {
+    ++warmup_url_fetch_attempt_counts_insecure_core_;
+    DCHECK_GE(kMaxWarmupURLFetchAttempts,
+              warmup_url_fetch_attempt_counts_insecure_core_);
+  } else {
+    ++warmup_url_fetch_attempt_counts_insecure_non_core_;
+    DCHECK_GE(kMaxWarmupURLFetchAttempts,
+              warmup_url_fetch_attempt_counts_insecure_non_core_);
+  }
 }
 
 }  // namespace data_reduction_proxy
