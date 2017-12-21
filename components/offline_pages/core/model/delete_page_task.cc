@@ -317,7 +317,7 @@ GetDeletedPageInfoWrappersForPageLimitDeletion(sql::Connection* db,
   }
 
   // Since the page information was selected by ascending order of last access
-  // time, only the first |size - limit + 1| pages needs to be deleted.
+  // time, only the first |size - limit| pages needs to be deleted.
   int page_to_delete = info_wrappers.size() - limit;
   if (page_to_delete < 0)
     page_to_delete = 0;

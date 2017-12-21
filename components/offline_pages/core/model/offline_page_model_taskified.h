@@ -131,6 +131,12 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Methods for testing only:
   OfflinePageMetadataStoreSQL* GetStoreForTesting() { return store_.get(); }
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+    clock_ = std::move(clock);
+  }
+  void SetSkipClearingOriginalUrlForTesting() {
+    skip_clearing_original_url_for_testing_ = true;
+  }
 
  private:
   // TODO(romax): https://crbug.com/791115, remove the friend class usage.
@@ -208,18 +214,23 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // destructed after the |task_queue_|.
   std::vector<std::unique_ptr<OfflinePageArchiver>> pending_archivers_;
 
-  // The task queue used for executing various tasks.
-  TaskQueue task_queue_;
+  // Clock for testing only.
+  std::unique_ptr<base::Clock> clock_;
 
   // Logger to facilitate recording of events.
   OfflinePageModelEventLogger offline_event_logger_;
+
+  // The task queue used for executing various tasks.
+  TaskQueue task_queue_;
 
   // Time of when the most recent cached pages clearing happened. The value will
   // not persist across Chrome restarts.
   base::Time last_clear_cached_pages_time_;
 
-  // Clock for testing only.
-  std::unique_ptr<base::Clock> clock_;
+  // For testing only.
+  // This value will be affecting the CreateArchiveTasks that are created by the
+  // model to skip saving original_urls.
+  bool skip_clearing_original_url_for_testing_;
 
   base::WeakPtrFactory<OfflinePageModelTaskified> weak_ptr_factory_;
 
@@ -228,4 +239,4 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_MODEL_OFFLINE_PAGE_MODEL_IMPL_TASKIFIED_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_MODEL_OFFLINE_PAGE_MODEL_TASKIFIED_H_
