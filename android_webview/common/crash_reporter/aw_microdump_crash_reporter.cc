@@ -56,7 +56,6 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   void set_crash_signal_fd(int fd) { crash_signal_fd_ = fd; }
 
   // crash_reporter::CrashReporterClient implementation.
-  size_t RegisterCrashKeys() override;
   bool UseCrashKeysWhiteList() override { return true; }
   const char* const* GetCrashKeyWhiteList() override;
 
@@ -92,10 +91,6 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   bool in_crash_reporting_sample_;
   DISALLOW_COPY_AND_ASSIGN(AwCrashReporterClient);
 };
-
-size_t AwCrashReporterClient::RegisterCrashKeys() {
-  return crash_keys::RegisterWebViewCrashKeys();
-}
 
 const char* const* AwCrashReporterClient::GetCrashKeyWhiteList() {
   return crash_keys::kWebViewCrashKeyWhiteList;

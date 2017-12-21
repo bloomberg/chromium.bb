@@ -7,8 +7,6 @@
 
 #if !defined(OS_WIN)
 
-#include <stddef.h>
-
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -38,8 +36,6 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 #if defined(OS_MACOSX)
   bool GetCrashMetricsLocation(base::FilePath* metrics_dir) override;
 #endif
-
-  size_t RegisterCrashKeys() override;
 
   bool IsRunningUnattended() override;
 

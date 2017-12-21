@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "content/public/common/content_switches.h"
 
@@ -24,10 +25,6 @@
 #endif
 
 namespace crash_keys {
-
-size_t RegisterChromeCrashKeys() {
-  return 0;
-}
 
 static bool IsBoringSwitch(const std::string& flag) {
   static const char* const kIgnoreSwitches[] = {

@@ -4,7 +4,6 @@
 
 #include "chrome/installer/setup/installer_crash_reporter_client.h"
 
-#include "base/debug/crash_logging.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
@@ -98,10 +97,6 @@ bool InstallerCrashReporterClient::GetCrashDumpLocation(
   if (ret)
     *crash_dir = crash_directory_path.value();
   return ret;
-}
-
-size_t InstallerCrashReporterClient::RegisterCrashKeys() {
-  return 0;
 }
 
 bool InstallerCrashReporterClient::IsRunningUnattended() {

@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_CRASH_CONTENT_APP_CRASH_REPORTER_CLIENT_H_
 #define COMPONENTS_CRASH_CONTENT_APP_CRASH_REPORTER_CLIENT_H_
 
-#include <stddef.h>
-
 #include <string>
 
 #include "base/strings/string16.h"
@@ -128,10 +126,6 @@ class CrashReporterClient {
 #else
   virtual bool GetCrashMetricsLocation(base::FilePath* metrics_dir);
 #endif
-
-  // Register all of the potential crash keys that can be sent to the crash
-  // reporting server. Returns the size of the union of all keys.
-  virtual size_t RegisterCrashKeys();
 
   virtual bool UseCrashKeysWhiteList();
 

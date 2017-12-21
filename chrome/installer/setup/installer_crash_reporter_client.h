@@ -33,7 +33,6 @@ class InstallerCrashReporterClient
   bool GetShouldDumpLargerDumps() override;
   int GetResultCodeRespawnFailed() override;
   bool GetCrashDumpLocation(base::string16* crash_dir) override;
-  size_t RegisterCrashKeys() override;
   bool IsRunningUnattended() override;
   bool GetCollectStatsConsent() override;
   bool GetCollectStatsInSample() override;

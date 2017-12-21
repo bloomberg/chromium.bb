@@ -45,7 +45,6 @@ class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
                                                 std::string* version));
   MOCK_METHOD0(GetReporterLogFilename, base::FilePath());
   MOCK_METHOD1(GetCrashDumpLocation, bool(base::string16* crash_dir));
-  MOCK_METHOD0(RegisterCrashKeys, size_t());
   MOCK_METHOD0(IsRunningUnattended, bool());
   MOCK_METHOD0(GetCollectStatsConsent, bool());
   MOCK_METHOD1(ReportingIsEnforcedByPolicy, bool(bool* breakpad_enabled));

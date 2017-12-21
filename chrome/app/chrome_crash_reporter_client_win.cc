@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/format_macros.h"
 #include "base/rand_util.h"
@@ -25,23 +24,7 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/user_data_dir.h"
 #include "components/crash/content/app/crashpad.h"
-#include "components/crash/core/common/crash_keys.h"
 #include "components/version_info/channel.h"
-
-namespace {
-
-// TODO(ananta)
-// When the new crash key map implementation lands, we should remove the
-// constants defined below, the RegisterCrashKeysHelper function, the
-// RegisterCrashKeys function in the crash_keys::CrashReporterClient interface
-// and the snprintf function defined here.
-using namespace crash_keys;
-
-size_t RegisterCrashKeysHelper() {
-  return 0;
-}
-
-}  // namespace
 
 ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
@@ -186,13 +169,6 @@ bool ChromeCrashReporterClient::GetCrashMetricsLocation(
     base::string16* metrics_dir) {
   install_static::GetUserDataDirectory(metrics_dir, nullptr);
   return !metrics_dir->empty();
-}
-
-// TODO(ananta)
-// This function should be removed when the new crash key map implementation
-// lands.
-size_t ChromeCrashReporterClient::RegisterCrashKeys() {
-  return RegisterCrashKeysHelper();
 }
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {

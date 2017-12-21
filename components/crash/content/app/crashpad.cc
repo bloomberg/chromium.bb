@@ -146,11 +146,6 @@ void InitializeCrashpadImpl(bool initial_client,
   g_simple_string_dictionary = new crashpad::SimpleStringDictionary();
   crashpad_info->set_simple_annotations(g_simple_string_dictionary);
 
-  // On Windows chrome_elf registers crash keys. This should work identically
-  // for component and non component builds.
-  base::debug::SetCrashKeyReportingFunctions(SetCrashKeyValue, ClearCrashKey);
-  crash_reporter_client->RegisterCrashKeys();
-
   crashpad::AnnotationList::Register();
 
   // TODO(rsesek): Remove this test annotation.
