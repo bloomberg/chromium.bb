@@ -69,9 +69,7 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
         effective_default_setting, permission_.source);
   }
 
-  // The subresource filter permission does not display the default menu item.
-  if (permission_.type != CONTENT_SETTINGS_TYPE_ADS)
-    AddCheckItem(CONTENT_SETTING_DEFAULT, label);
+  AddCheckItem(CONTENT_SETTING_DEFAULT, label);
 
   // Retrieve the string to show for allowing the permission.
   // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
