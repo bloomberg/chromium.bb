@@ -85,29 +85,27 @@ void ArrayBufferAllocator::Free(void* data,
 void ArrayBufferAllocator::SetProtection(void* data,
                                          size_t length,
                                          Protection protection) {
-  CHECK(SetProtection(protection, data, length));
-}
-
-bool ArrayBufferAllocator::SetProtection(Protection protection,
-                                         void* data,
-                                         size_t length) {
   switch (protection) {
-    case Protection::kNoAccess:
+    case Protection::kNoAccess: {
 #if defined(OS_POSIX)
-      return mprotect(data, length, PROT_NONE) == 0;
+      int ret = mprotect(data, length, PROT_NONE);
+      CHECK(!ret);
 #else
-      return VirtualFree(data, length, MEM_DECOMMIT);
+      BOOL ret = VirtualFree(data, length, MEM_DECOMMIT);
+      CHECK(ret);
 #endif
+      break;
+    }
     case Protection::kReadWrite:
 #if defined(OS_POSIX)
-      return mprotect(data, length, PROT_READ | PROT_WRITE) == 0;
+      mprotect(data, length, PROT_READ | PROT_WRITE);
 #else
-      return VirtualAlloc(data, length, MEM_COMMIT, PAGE_READWRITE);
+      VirtualAlloc(data, length, MEM_COMMIT, PAGE_READWRITE);
 #endif
+      break;
     default:
       NOTREACHED();
   }
-  return false;
 }
 
 ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
