@@ -1920,18 +1920,6 @@ static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
 
   TX_SIZE max_tx_size = get_vartx_max_txsize(
       xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
-#if DISABLE_VARTX_FOR_CHROMA == 2
-  // If the luma transform size is split at least one level, split the chroma
-  // by one level. Otherwise use the  largest possible trasnform size for
-  // chroma.
-  if (plane && (pd->subsampling_x || pd->subsampling_y)) {
-    const TX_SIZE l_max_tx_size = get_vartx_max_txsize(xd, bsizec, 0);
-    const int is_split =
-        (l_max_tx_size != mbmi->inter_tx_size[0][0] && bsize == bsizec &&
-         txsize_to_bsize[l_max_tx_size] == bsizec);
-    if (is_split) max_tx_size = sub_tx_size_map[1][max_tx_size];
-  }
-#endif  // DISABLE_VARTX_FOR_CHROMA == 2
   const int step =
       tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
   const int bkw = tx_size_wide_unit[max_tx_size];
