@@ -16,6 +16,9 @@ from pylib.local.device import local_device_instrumentation_test_run
 
 class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
 
+  # TODO(crbug.com/797002): Decide whether the _ShouldRetry hook is worth
+  # retaining and remove these tests if not.
+
   def testShouldRetry_failure(self):
     env = mock_environment.MockEnvironment()
     ti = mock_test_instance.MockTestInstance()
@@ -29,7 +32,7 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
     }
     result = base_test_result.BaseTestResult(
         'SadTest.testFailure', base_test_result.ResultType.FAIL)
-    self.assertFalse(obj._ShouldRetry(test, result))
+    self.assertTrue(obj._ShouldRetry(test, result))
 
   def testShouldRetry_retryOnFailure(self):
     env = mock_environment.MockEnvironment()
