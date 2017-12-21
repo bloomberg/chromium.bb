@@ -2,14 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ios/ios_sdk.gni")
-import("//build/config/ios/rules.gni")
-import("//ios/build/chrome_build.gni")
-
 config("config") {
+  include_dirs = [ "forwarding_headers" ]
+}
+
+config("private_config") {
   include_dirs = [ "src/src" ]
   visibility = [ ":motion_animator_objc" ]
-  defines = [ "IS_BAZEL_BUILD" ]
+}
+
+# TODO(crbug.com/796159): Remove when the issue is fixed in a Motion Animator
+# release. The bug is fixed already on their trunk:
+# https://github.com/material-motion/motion-animator-objc/pull/103
+config("workaround_config") {
+  include_dirs = [ "../motion_interchange_objc/src/src" ]
+  visibility = [ ":motion_animator_objc" ]
 }
 
 source_set("motion_animator_objc") {
@@ -26,10 +33,14 @@ source_set("motion_animator_objc") {
     "src/src/private/CABasicAnimation+MotionAnimator.m",
     "src/src/private/CAMediaTimingFunction+MotionAnimator.h",
     "src/src/private/CAMediaTimingFunction+MotionAnimator.m",
+    "src/src/private/MDMAnimationRegistrar.h",
+    "src/src/private/MDMAnimationRegistrar.m",
     "src/src/private/MDMBlockAnimations.h",
     "src/src/private/MDMBlockAnimations.m",
     "src/src/private/MDMDragCoefficient.h",
     "src/src/private/MDMDragCoefficient.m",
+    "src/src/private/MDMRegisteredAnimation.h",
+    "src/src/private/MDMRegisteredAnimation.m",
     "src/src/private/MDMUIKitValueCoercion.h",
     "src/src/private/MDMUIKitValueCoercion.m",
   ]
@@ -49,7 +60,8 @@ source_set("motion_animator_objc") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
-    ":config",
+    ":private_config",
+    ":workaround_config",
     "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
   ]

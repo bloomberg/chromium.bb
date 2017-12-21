@@ -167,6 +167,7 @@ id<GREYAction> ScrollDown() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 + (void)confirmSigninConfirmationDialog {
