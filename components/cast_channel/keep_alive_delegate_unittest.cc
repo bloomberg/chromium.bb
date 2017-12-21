@@ -102,7 +102,7 @@ TEST_F(KeepAliveDelegateTest, TestPing) {
   EXPECT_CALL(*socket_.mock_transport(),
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
                               KeepAliveDelegate::kHeartbeatPingType)),
-                          _))
+                          _, _))
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(2);
@@ -123,7 +123,7 @@ TEST_F(KeepAliveDelegateTest, TestPingFailed) {
   EXPECT_CALL(*socket_.mock_transport(),
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
                               KeepAliveDelegate::kHeartbeatPingType)),
-                          _))
+                          _, _))
       .WillOnce(PostCompletionCallbackTask<1>(net::ERR_CONNECTION_RESET));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*inner_delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
@@ -145,7 +145,7 @@ TEST_F(KeepAliveDelegateTest, TestPingAndLivenessTimeout) {
   EXPECT_CALL(*socket_.mock_transport(),
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
                               KeepAliveDelegate::kHeartbeatPingType)),
-                          _))
+                          _, _))
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   EXPECT_CALL(*inner_delegate_, OnError(ChannelError::PING_TIMEOUT));
   EXPECT_CALL(*inner_delegate_, Start());
@@ -244,7 +244,7 @@ TEST_F(KeepAliveDelegateTest, TestLivenessTimerResetAfterSendingMessage) {
   EXPECT_CALL(*socket_.mock_transport(),
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
                               KeepAliveDelegate::kHeartbeatPingType)),
-                          _))
+                          _, _))
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   // Forward 1s, at time 1, fire ping timer.
   mock_time_task_runner->FastForwardBy(

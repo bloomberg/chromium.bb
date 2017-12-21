@@ -15,6 +15,7 @@
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/ip_endpoint.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cast_channel {
@@ -27,9 +28,11 @@ class MockCastTransport : public CastTransport {
   void SetReadDelegate(
       std::unique_ptr<CastTransport::Delegate> delegate) override;
 
-  MOCK_METHOD2(SendMessage,
-               void(const CastMessage& message,
-                    const net::CompletionCallback& callback));
+  MOCK_METHOD3(
+      SendMessage,
+      void(const CastMessage& message,
+           const net::CompletionCallback& callback,
+           const net::NetworkTrafficAnnotationTag& traffic_annotation));
 
   MOCK_METHOD0(Start, void(void));
 
