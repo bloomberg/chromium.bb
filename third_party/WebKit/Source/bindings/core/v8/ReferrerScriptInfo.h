@@ -58,6 +58,10 @@ class CORE_EXPORT ReferrerScriptInfo {
  private:
   // Spec: "referencing script's base URL"
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  //
+  // If base_url_.IsNull(), refer to ScriptOrigin::ResourceName() instead.
+  // Note: This improves the chance of getting into the fast path in
+  //       ToV8HostDefinedOptions().
   const KURL base_url_;
 
   // Spec: "referencing script's credentials mode"
