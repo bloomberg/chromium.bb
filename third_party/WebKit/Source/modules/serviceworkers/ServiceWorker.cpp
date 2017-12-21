@@ -75,7 +75,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
   }
 
   WebString message_string = message->ToWireString();
-  handle_->ServiceWorker()->PostMessage(
+  handle_->ServiceWorker()->PostMessageToWorker(
       client->Provider(), message_string,
       WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()),
       std::move(channels));

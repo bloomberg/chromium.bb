@@ -84,7 +84,7 @@ blink::mojom::ServiceWorkerState WebServiceWorkerImpl::GetState() const {
   return state_;
 }
 
-void WebServiceWorkerImpl::PostMessage(
+void WebServiceWorkerImpl::PostMessageToWorker(
     blink::WebServiceWorkerProvider* provider,
     const WebString& message,
     const WebSecurityOrigin& source_origin,

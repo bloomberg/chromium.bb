@@ -62,8 +62,9 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
         post_message_function_template_.Reset(
             isolate,
             gin::CreateFunctionTemplate(
-                isolate, base::Bind(&MimeHandlerViewContainer::PostMessage,
-                                    container_, isolate)));
+                isolate,
+                base::Bind(&MimeHandlerViewContainer::PostJavaScriptMessage,
+                           container_, isolate)));
       }
       v8::Local<v8::FunctionTemplate> function_template =
           v8::Local<v8::FunctionTemplate>::New(isolate,
@@ -226,8 +227,9 @@ void MimeHandlerViewContainer::DidFinishLoading(double /* unused */) {
   CreateMimeHandlerViewGuestIfNecessary();
 }
 
-void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
-                                           v8::Local<v8::Value> message) {
+void MimeHandlerViewContainer::PostJavaScriptMessage(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> message) {
   if (!guest_loaded_) {
     pending_messages_.push_back(v8::Global<v8::Value>(isolate, message));
     return;
@@ -270,8 +272,9 @@ void MimeHandlerViewContainer::PostMessageFromValue(
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(frame->MainWorldScriptContext());
-  PostMessage(isolate, content::V8ValueConverter::Create()->ToV8Value(
-                           &message, frame->MainWorldScriptContext()));
+  PostJavaScriptMessage(isolate,
+                        content::V8ValueConverter::Create()->ToV8Value(
+                            &message, frame->MainWorldScriptContext()));
 }
 
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
@@ -310,7 +313,8 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(frame->MainWorldScriptContext());
   for (const auto& pending_message : pending_messages_)
-    PostMessage(isolate, v8::Local<v8::Value>::New(isolate, pending_message));
+    PostJavaScriptMessage(isolate,
+                          v8::Local<v8::Value>::New(isolate, pending_message));
 
   pending_messages_.clear();
 }

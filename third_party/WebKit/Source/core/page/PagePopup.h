@@ -33,9 +33,6 @@
 
 #include "platform/wtf/Forward.h"
 
-// To avoid conflicts with the CreateWindow macro from the Windows SDK...
-#undef PostMessage
-
 namespace blink {
 
 class AXObject;
@@ -47,7 +44,7 @@ class PagePopup {
  public:
   virtual AXObject* RootAXObject() = 0;
   virtual void SetWindowRect(const IntRect&) = 0;
-  virtual void PostMessage(const String& message) = 0;
+  virtual void PostMessageToPopup(const String& message) = 0;
 
  protected:
   virtual ~PagePopup() {}
