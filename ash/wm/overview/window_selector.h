@@ -103,6 +103,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // nullptr if the window grid is not found.
   WindowGrid* GetGridWithRootWindow(aura::Window* root_window);
 
+  // Add |window| to the grid in |grid_list_| with the same root window. Does
+  // nothing if the grid already contains |window|.
+  void AddItem(aura::Window* window);
+
   // Removes the window selector item from the overview window grid.
   void RemoveWindowSelectorItem(WindowSelectorItem* item);
 
