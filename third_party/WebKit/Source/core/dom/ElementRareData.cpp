@@ -41,7 +41,7 @@ struct SameSizeAsElementRareData : NodeRareData {
   IntSize scroll_offset;
   AtomicString nonce;
   void* pointers[1];
-  Member<void*> members[14];
+  Member<void*> members[15];
 };
 
 ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
@@ -120,6 +120,7 @@ void ElementRareData::TraceWrappersAfterDispatch(
   visitor->TraceWrappers(shadow_);
   visitor->TraceWrappers(class_list_);
   visitor->TraceWrappers(attribute_map_);
+  visitor->TraceWrappers(computed_accessible_node_);
   visitor->TraceWrappers(accessible_node_);
   visitor->TraceWrappers(intersection_observer_data_);
   if (resize_observer_data_) {

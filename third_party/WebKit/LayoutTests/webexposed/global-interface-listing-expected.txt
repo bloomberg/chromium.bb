@@ -1051,6 +1051,11 @@ interface CompositionEvent : UIEvent
     getter data
     method constructor
     method initCompositionEvent
+interface ComputedAccessibleNode
+    attribute @@toStringTag
+    getter name
+    getter role
+    method constructor
 interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter offset
@@ -9345,6 +9350,7 @@ interface webkitURL
     method find
     method focus
     method gc
+    method getComputedAccessibleNode
     method getComputedStyle
     method getSelection
     method matchMedia
