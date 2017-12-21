@@ -36,22 +36,27 @@ bool ShouldSkipInvisibleTextAt(const Text& text,
   return layout_object->Style()->Visibility() != EVisibility::kVisible;
 }
 
-// TODO(xiaochengh): Use a return type with better clarity
-std::pair<String, std::pair<unsigned, unsigned>>
-ComputeTextAndOffsetsForEmission(const NGOffsetMapping& mapping,
-                                 const NGOffsetMappingUnit& unit,
-                                 unsigned run_start,
-                                 unsigned run_end,
-                                 const TextIteratorBehavior& behavior) {
+struct StringAndOffsetRange {
+  String string;
+  unsigned start;
+  unsigned end;
+};
+
+StringAndOffsetRange ComputeTextAndOffsetsForEmission(
+    const NGOffsetMapping& mapping,
+    const NGOffsetMappingUnit& unit,
+    unsigned run_start,
+    unsigned run_end,
+    const TextIteratorBehavior& behavior) {
   // TODO(xiaochengh): Handle EmitsOriginalText.
   unsigned text_content_start = unit.ConvertDOMOffsetToTextContent(run_start);
   unsigned text_content_end = unit.ConvertDOMOffsetToTextContent(run_end);
   unsigned length = text_content_end - text_content_start;
   if (behavior.EmitsSpaceForNbsp()) {
     String string = mapping.GetText().Substring(text_content_start, length);
-    return {string, {0u, 0u}};
+    return {string, 0, 0};
   }
-  return {mapping.GetText(), {text_content_start, text_content_end}};
+  return {mapping.GetText(), text_content_start, text_content_end};
 }
 
 }  // namespace
@@ -117,9 +122,9 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
 
       auto string_and_offsets = ComputeTextAndOffsetsForEmission(
           *mapping, unit, run_start, run_end, behavior_);
-      const String& string = string_and_offsets.first;
-      const unsigned text_content_start = string_and_offsets.second.first;
-      const unsigned text_content_end = string_and_offsets.second.second;
+      const String& string = string_and_offsets.string;
+      const unsigned text_content_start = string_and_offsets.start;
+      const unsigned text_content_end = string_and_offsets.end;
       text_state_.EmitText(text_node_, run_start, run_end, string,
                            text_content_start, text_content_end);
       offset_ = run_end;
