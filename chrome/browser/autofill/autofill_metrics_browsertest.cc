@@ -51,18 +51,15 @@ class AutofillMetricsMetricsBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(https_server_->InitializeAndListen());
-    content::SetupCrossSiteRedirector(https_server_.get());
-    https_server_->ServeFilesFromSourceDirectory(
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    content::SetupCrossSiteRedirector(embedded_test_server());
+    embedded_test_server()->ServeFilesFromSourceDirectory(
         "components/test/data/autofill");
-    https_server_->StartAcceptingConnections();
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillMetricsMetricsBrowserTest);
@@ -71,13 +68,13 @@ class AutofillMetricsMetricsBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
                        CorrectSourceForCrossSiteEmbeddedAddressForm) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL iframe_url =
-      https_server_->GetURL("b.com", "/autofill_address_form.html");
+      embedded_test_server()->GetURL("b.com", "/autofill_address_form.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
@@ -94,13 +91,13 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
 IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
                        CorrectSourceForCrossSiteEmbeddedCreditCardForm) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL iframe_url =
-      https_server_->GetURL("b.com", "/autofill_credit_card_form.html");
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/autofill_credit_card_form.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
@@ -117,8 +114,8 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
 // Flaky test, see crbug.com/793672
 IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
                        DISABLED_CorrectSourceForUnownedAddressCheckout) {
-  GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_unowned_address_checkout.html");
+  GURL main_frame_url = embedded_test_server()->GetURL(
+      "a.com", "/autofill_unowned_address_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   // Make sure the UKM were logged for the main frame url.
@@ -130,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
 // Flaky test, see crbug.com/793638
 IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
                        DISABLED_CorrectSourceForUnownedCreditCardCheckout) {
-  GURL main_frame_url = https_server_->GetURL(
+  GURL main_frame_url = embedded_test_server()->GetURL(
       "a.com", "/autofill_unowned_credit_card_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
@@ -144,13 +141,13 @@ IN_PROC_BROWSER_TEST_F(
     AutofillMetricsMetricsBrowserTest,
     CorrectSourceForCrossSiteEmbeddedUnownedAddressCheckout) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL iframe_url =
-      https_server_->GetURL("b.com", "/autofill_unowned_address_checkout.html");
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/autofill_unowned_address_checkout.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
@@ -168,12 +165,12 @@ IN_PROC_BROWSER_TEST_F(
     AutofillMetricsMetricsBrowserTest,
     CorrectSourceForCrossSiteEmbeddedUnownedCreditCardCheckout) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL iframe_url = https_server_->GetURL(
+  GURL iframe_url = embedded_test_server()->GetURL(
       "b.com", "/autofill_unowned_credit_card_checkout.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
@@ -210,13 +207,13 @@ class SitePerProcessAutofillMetricsMetricsBrowserTest
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
                        CorrectSourceForCrossSiteEmbeddedAddressForm) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL iframe_url =
-      https_server_->GetURL("b.com", "/autofill_address_form.html");
+      embedded_test_server()->GetURL("b.com", "/autofill_address_form.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
@@ -234,13 +231,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
                        CorrectSourceForCrossSiteEmbeddedCreditCardForm) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL iframe_url =
-      https_server_->GetURL("b.com", "/autofill_credit_card_form.html");
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/autofill_credit_card_form.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
@@ -258,8 +255,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
 // Flaky test, see crbug.com/793578
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
                        DISABLED_CorrectSourceForUnownedAddressCheckout) {
-  GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_unowned_address_checkout.html");
+  GURL main_frame_url = embedded_test_server()->GetURL(
+      "a.com", "/autofill_unowned_address_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   // Make sure the UKM were logged for the main frame url.
@@ -271,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
 // Flaky test, see crbug.com/793634
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
                        DISABLED_CorrectSourceForUnownedCreditCardCheckout) {
-  GURL main_frame_url = https_server_->GetURL(
+  GURL main_frame_url = embedded_test_server()->GetURL(
       "a.com", "/autofill_unowned_credit_card_checkout.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
@@ -285,13 +282,13 @@ IN_PROC_BROWSER_TEST_F(
     SitePerProcessAutofillMetricsMetricsBrowserTest,
     CorrectSourceForCrossSiteEmbeddedUnownedAddressCheckout) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL iframe_url =
-      https_server_->GetURL("b.com", "/autofill_unowned_address_checkout.html");
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/autofill_unowned_address_checkout.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
@@ -310,12 +307,12 @@ IN_PROC_BROWSER_TEST_F(
     SitePerProcessAutofillMetricsMetricsBrowserTest,
     CorrectSourceForCrossSiteEmbeddedUnownedCreditCardCheckout) {
   GURL main_frame_url =
-      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+      embedded_test_server()->GetURL("a.com", "/autofill_iframe_embedder.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL iframe_url = https_server_->GetURL(
+  GURL iframe_url = embedded_test_server()->GetURL(
       "b.com", "/autofill_unowned_credit_card_checkout.html");
   EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
 
