@@ -35,6 +35,7 @@
           '<(DEPTH)/ui/webui/resources/js/event_tracker.js',
           '<(DEPTH)/ui/webui/resources/js/i18n_template_no_process.js',
           '<(DEPTH)/ui/webui/resources/js/load_time_data.js',
+          '<(DEPTH)/ui/webui/resources/js/parse_html_subset.js',
           '<(DEPTH)/ui/webui/resources/js/promise_resolver.js',
           '<(DEPTH)/ui/webui/resources/js/util.js',
           '<(DEPTH)/ui/webui/resources/js/icon.js',

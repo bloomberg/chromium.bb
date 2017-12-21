@@ -57,7 +57,6 @@
       'target_name': 'i18n_behavior',
       'dependencies': [
         'load_time_data',
-        'parse_html_subset',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -65,7 +64,8 @@
       'target_name': 'load_time_data',
       'dependencies': [
         '<(DEPTH)/third_party/jstemplate/compiled_resources2.gyp:jstemplate',
-        'assert'
+        'assert',
+        'parse_html_subset',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

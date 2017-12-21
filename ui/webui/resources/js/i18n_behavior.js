@@ -56,15 +56,14 @@ var I18nBehavior = {
    * as well as optional additional allowed tags and attributes. Use with
    * Polymer bindings that are inner-h-t-m-l, for example.
    * @param {string} id The ID of the string to translate.
-   * @param {I18nAdvancedOpts=} opts
+   * @param {SanitizeInnerHtmlOpts=} opts
    * @return {string}
    */
   i18nAdvanced: function(id, opts) {
     opts = opts || {};
     var args = [id].concat(opts.substitutions || []);
     var rawString = this.i18nRaw_.apply(this, args);
-    return parseHtmlSubset('<b>' + rawString + '</b>', opts.tags, opts.attrs)
-        .firstChild.innerHTML;
+    return loadTimeData.sanitizeInnerHtml(rawString, opts);
   },
 
   /**
@@ -99,19 +98,10 @@ var I18nBehavior = {
 };
 
 /**
- * @typedef {{
- *   substitutions: (Array<string>|undefined),
- *   attrs: (Object<function(Node, string):boolean>|undefined),
- *   tags: (Array<string>|undefined),
- * }}
- */
-var I18nAdvancedOpts;
-
-/**
  * TODO(stevenjb): Replace with an interface. b/24294625
  * @typedef {{
  *   i18n: function(string, ...string): string,
- *   i18nAdvanced: function(string, I18nAdvancedOpts=): string,
+ *   i18nAdvanced: function(string, SanitizeInnerHtmlOpts=): string,
  *   i18nDynamic: function(string, string, ...string): string,
  *   i18nExists: function(string),
  *   i18nUpdateLocale: function()
