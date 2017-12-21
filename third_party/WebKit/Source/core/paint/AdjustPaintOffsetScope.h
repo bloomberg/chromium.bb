@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class ScopedPaintChunkProperties;
-
 class AdjustPaintOffsetScope {
   STACK_ALLOCATED();
 

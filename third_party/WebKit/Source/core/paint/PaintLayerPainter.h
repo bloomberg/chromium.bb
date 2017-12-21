@@ -28,28 +28,27 @@ class CORE_EXPORT PaintLayerPainter {
   STACK_ALLOCATED();
 
  public:
-  enum FragmentPolicy { kAllowMultipleFragments, kForceSingleFragment };
-
   PaintLayerPainter(PaintLayer& paint_layer) : paint_layer_(paint_layer) {}
 
-  // The paint() method paints the layers that intersect the damage rect from
+  // The Paint() method paints the layers that intersect the damage rect from
   // back to front.  paint() assumes that the caller will clip to the bounds of
   // damageRect if necessary.
   void Paint(GraphicsContext&,
              const LayoutRect& damage_rect,
              const GlobalPaintFlags = kGlobalPaintNormalPhase,
              PaintLayerFlags = 0);
-  // paint() assumes that the caller will clip to the bounds of the painting
+  // Paint() assumes that the caller will clip to the bounds of the painting
   // dirty if necessary.
   PaintResult Paint(GraphicsContext&,
                     const PaintLayerPaintingInfo&,
                     PaintLayerFlags);
-  // paintLayerContents() assumes that the caller will clip to the bounds of the
-  // painting dirty rect if necessary.
+  // PaintLayerContents() assumes that the caller will clip to the bounds of the
+  // painting dirty rect if necessary. If PaintLayerFragment is not nullptr,
+  // only the specified fragment will be painted.
   PaintResult PaintLayerContents(GraphicsContext&,
                                  const PaintLayerPaintingInfo&,
                                  PaintLayerFlags,
-                                 FragmentPolicy = kAllowMultipleFragments);
+                                 const PaintLayerFragment* = nullptr);
 
   void PaintOverlayScrollbars(GraphicsContext&,
                               const LayoutRect& damage_rect,
@@ -74,15 +73,14 @@ class CORE_EXPORT PaintLayerPainter {
       GraphicsContext&,
       const PaintLayerPaintingInfo&,
       PaintLayerFlags,
-      FragmentPolicy = kAllowMultipleFragments);
+      const PaintLayerFragment* = nullptr);
   PaintResult PaintLayerWithTransform(GraphicsContext&,
                                       const PaintLayerPaintingInfo&,
                                       PaintLayerFlags);
-  PaintResult PaintFragmentByApplyingTransform(
-      GraphicsContext&,
-      const PaintLayerPaintingInfo&,
-      PaintLayerFlags,
-      const LayoutPoint& fragment_translation);
+  PaintResult PaintFragmentByApplyingTransform(GraphicsContext&,
+                                               const PaintLayerPaintingInfo&,
+                                               PaintLayerFlags,
+                                               const PaintLayerFragment&);
 
   PaintResult PaintChildren(unsigned children_to_visit,
                             GraphicsContext&,

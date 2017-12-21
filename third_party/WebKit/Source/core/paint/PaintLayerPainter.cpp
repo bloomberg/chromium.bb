@@ -157,7 +157,7 @@ PaintResult PaintLayerPainter::PaintLayerContentsCompositingAllPhases(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags,
-    FragmentPolicy fragment_policy) {
+    const PaintLayerFragment* fragment) {
   DCHECK(paint_layer_.IsSelfPaintingLayer() ||
          paint_layer_.HasSelfPaintingLayerDescendant());
 
@@ -165,7 +165,7 @@ PaintResult PaintLayerPainter::PaintLayerContentsCompositingAllPhases(
       paint_flags & ~(kPaintLayerAppliedTransform);
   local_paint_flags |= kPaintLayerPaintingCompositingAllPhases;
   return PaintLayerContents(context, painting_info, local_paint_flags,
-                            fragment_policy);
+                            fragment);
 }
 
 static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
@@ -262,6 +262,8 @@ void PaintLayerPainter::AdjustForPaintProperties(
     return;
   // Paint properties for transforms, composited layers or LayoutView is already
   // taken care of.
+  // TODO(wangxianzhu): Also use this for PaintsWithTransform() and remove
+  // PaintLayerWithTransform() for SPv175.
   if (&paint_layer_ == painting_info.root_layer ||
       paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) ||
       paint_layer_.PaintsIntoOwnOrGroupedBacking(
@@ -314,7 +316,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info_arg,
     PaintLayerFlags paint_flags_arg,
-    FragmentPolicy fragment_policy) {
+    const PaintLayerFragment* fragment) {
   PaintLayerFlags paint_flags = paint_flags_arg;
   PaintResult result = kFullyPainted;
 
@@ -473,17 +475,20 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       respect_overflow_clip = kIgnoreOverflowClip;
     }
 
-    // TODO(trchen): We haven't decided how to handle visual fragmentation with
-    // SPv2.  Related thread
-    // https://groups.google.com/a/chromium.org/forum/#!topic/graphics-dev/81XuWFf-mxM
-    if (fragment_policy == kForceSingleFragment ||
-        RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (fragment) {
+      // We are painting a single specified fragment.
+      // TODO(wangxianzhu): we could use |fragment| directly, but because
+      // the value of |fragment| is for SPv175 only for descendants to find the
+      // correct fragment state, we don't bother to modify SPv1 code with
+      // the risk of regressions. Eventually we will remove the whole
+      // PaintLayerWithTransform() path.
       paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
           layer_fragments, local_painting_info.root_layer,
           local_painting_info.paint_dirty_rect, kUncachedClipRects,
           PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
           respect_overflow_clip, &offset_from_root,
           local_painting_info.sub_pixel_accumulation);
+      layer_fragments[0].fragment_data = fragment->fragment_data;
     } else if (paint_layer_.GetLayoutObject()
                    .IsFixedPositionObjectInPagedMedia()) {
       PaintLayerFragments single_fragment;
@@ -774,6 +779,7 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
     // path, when the transform has been applied.
     PaintLayerFragment fragment;
     fragment.background_rect = painting_info.paint_dirty_rect;
+    fragment.fragment_data = &paint_layer_.GetLayoutObject().FirstFragment();
     if (is_fixed_position_object_in_paged_media) {
       RepeatFixedPositionObjectInPages(fragment, painting_info,
                                        layer_fragments);
@@ -812,7 +818,7 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
       }
     }
     if (PaintFragmentByApplyingTransform(context, painting_info, paint_flags,
-                                         fragment.pagination_offset) ==
+                                         fragment) ==
         kMayBeClippedByPaintDirtyRect)
       result = kMayBeClippedByPaintDirtyRect;
   }
@@ -823,13 +829,13 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags,
-    const LayoutPoint& fragment_translation) {
+    const PaintLayerFragment& fragment) {
   // This involves subtracting out the position of the layer in our current
   // coordinate space, but preserving the accumulated error for sub-pixel
   // layout.
   LayoutPoint delta;
   paint_layer_.ConvertToLayerCoords(painting_info.root_layer, delta);
-  delta.MoveBy(fragment_translation);
+  delta.MoveBy(fragment.pagination_offset);
   delta += painting_info.sub_pixel_accumulation;
   IntPoint rounded_delta = RoundedIntPoint(delta);
 
@@ -866,7 +872,7 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
   }
 
   return PaintLayerContentsCompositingAllPhases(
-      context, transformed_painting_info, paint_flags, kForceSingleFragment);
+      context, transformed_painting_info, paint_flags, &fragment);
 }
 
 PaintResult PaintLayerPainter::PaintChildren(
@@ -1089,7 +1095,10 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   }
   PaintInfo paint_info(context, PixelSnappedIntRect(new_cull_rect), phase,
                        painting_info.GetGlobalPaintFlags(), paint_flags,
-                       &painting_info.root_layer->GetLayoutObject());
+                       &painting_info.root_layer->GetLayoutObject(),
+                       fragment.fragment_data
+                           ? fragment.fragment_data->PaginationOffset()
+                           : LayoutPoint());
 
   paint_layer_.GetLayoutObject().Paint(paint_info, paint_offset);
 }

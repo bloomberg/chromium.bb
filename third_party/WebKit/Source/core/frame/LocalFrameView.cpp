@@ -120,7 +120,6 @@
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/json/JSONValues.h"
