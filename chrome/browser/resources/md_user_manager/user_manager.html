@@ -326,9 +326,20 @@
     }
 
     #user-manager-prompt-message {
+      background-image: url(../../../../ui/webui/resources/images/business.svg);
+      background-position: 0 center;
+      background-repeat: no-repeat;
+      background-size: 19px;
       font-size: 19px;
       margin-bottom: 45px;
+      padding-left: 30px;
       text-align: center;
+    }
+
+    html[dir=rtl] #user-manager-prompt-message {
+      background-position: right center;
+      padding-left: 0;
+      padding-right: 30px;
     }
 
     #user-manager-prompt-message:empty {
