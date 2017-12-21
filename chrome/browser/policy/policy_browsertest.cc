@@ -2574,6 +2574,66 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistSubresources) {
   EXPECT_EQ("error", blacklisted_iframe_load_result);
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistClientRedirect) {
+  // Checks that a client side redirect to a blacklisted URL is blocked.
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL redirected_url =
+      embedded_test_server()->GetURL("/policy/blacklist-redirect.html");
+  GURL first_url = embedded_test_server()->GetURL("/client-redirect?" +
+                                                  redirected_url.spec());
+
+  ui_test_utils::NavigateToURL(browser(), first_url);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_EQ(base::ASCIIToUTF16("Redirected!"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+
+  base::ListValue blacklist;
+  blacklist.AppendString(redirected_url.spec().c_str());
+  PolicyMap policies;
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  ui_test_utils::NavigateToURL(browser(), first_url);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_NE(base::ASCIIToUTF16("Redirected!"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistServerRedirect) {
+  // Checks that a server side redirect to a blacklisted URL is blocked.
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL redirected_url =
+      embedded_test_server()->GetURL("/policy/blacklist-redirect.html");
+  GURL first_url = embedded_test_server()->GetURL("/server-redirect?" +
+                                                  redirected_url.spec());
+
+  ui_test_utils::NavigateToURL(browser(), first_url);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_EQ(base::ASCIIToUTF16("Redirected!"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+
+  base::ListValue blacklist;
+  blacklist.AppendString(redirected_url.spec().c_str());
+  PolicyMap policies;
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  ui_test_utils::NavigateToURL(browser(), first_url);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_NE(base::ASCIIToUTF16("Redirected!"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+}
+
 #if defined(OS_MACOSX)
 // http://crbug.com/339240
 #define MAYBE_FileURLBlacklist DISABLED_FileURLBlacklist
