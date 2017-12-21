@@ -189,6 +189,7 @@ dist_yaml_TESTS =				\
 	yaml/ko-2006-g2_harness.yaml		\
 	yaml/ko-g2_harness.yaml			\
 	yaml/letterDefTest_harness.yaml		\
+	yaml/litdigit6Dots_backward.yaml		\
 	yaml/lt_harness.yaml			\
 	yaml/mn-MN_harness.yaml			\
 	yaml/multipass-backward.yaml		\
