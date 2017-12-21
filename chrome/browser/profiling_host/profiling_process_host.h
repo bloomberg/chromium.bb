@@ -143,9 +143,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // finished signal, in case there's a problem with the profiling process and
   // the heap-dump is never added to the trace.
   // Public for testing.
-  void RequestTraceWithHeapDump(
-      TraceFinishedCallback callback,
-      bool stop_immediately_after_heap_dump_for_tests);
+  void RequestTraceWithHeapDump(TraceFinishedCallback callback,
+                                bool stop_immediately_after_heap_dump_for_tests,
+                                bool anonymize);
 
   // Returns the pids of all profiled processes. The callback is posted on the
   // UI thread.

@@ -162,7 +162,7 @@ void WriteHeapsV2Footer(std::ostream& out) {
 void WriteMemoryMaps(const ExportParams& params, std::ostream& out) {
   base::trace_event::TracedValue traced_value;
   memory_instrumentation::TracingObserver::MemoryMapsAsValueInto(
-      params.maps, &traced_value, params.is_argument_filtering_enabled);
+      params.maps, &traced_value, params.strip_path_from_mapped_files);
   out << "\"process_mmaps\":" << traced_value.ToString();
 }
 

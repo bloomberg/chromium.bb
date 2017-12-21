@@ -201,6 +201,7 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
 
 void MemlogConnectionManager::DumpProcessesForTracing(
     bool keep_small_allocations,
+    bool strip_path_from_mapped_files,
     mojom::ProfilingService::DumpProcessesForTracingCallback callback,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   base::AutoLock lock(connections_lock_);
@@ -235,7 +236,8 @@ void MemlogConnectionManager::DumpProcessesForTracing(
         barrier_id, task_runner,
         base::BindOnce(&MemlogConnectionManager::DoDumpOneProcessForTracing,
                        weak_factory_.GetWeakPtr(), tracking, pid,
-                       connection->process_type, keep_small_allocations));
+                       connection->process_type, keep_small_allocations,
+                       strip_path_from_mapped_files));
     connection->client->FlushMemlogPipe(barrier_id);
   }
 }
@@ -245,6 +247,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
     base::ProcessId pid,
     mojom::ProcessType process_type,
     bool keep_small_allocations,
+    bool strip_path_from_mapped_files,
     bool success,
     AllocationCountMap counts,
     AllocationTracker::ContextMap context) {
@@ -282,7 +285,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   params.process_type = process_type;
   params.min_size_threshold = keep_small_allocations ? 0 : kMinSizeThreshold;
   params.min_count_threshold = keep_small_allocations ? 0 : kMinCountThreshold;
-  params.is_argument_filtering_enabled = true;
+  params.strip_path_from_mapped_files = strip_path_from_mapped_files;
 
   std::ostringstream oss;
   ExportMemoryMapsAndV2StackTraceToJSON(params, oss);
