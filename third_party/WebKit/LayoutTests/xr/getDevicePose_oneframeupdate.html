@@ -19,8 +19,8 @@ xr_session_test( (t, session, mockService) => {
     let expected_pose = VALID_POSE;
     let counter = 0;
 
-    function onFrame(vrFrame) {
-      session.requestFrame(onFrame);
+    function onFrame(time, vrFrame) {
+      session.requestAnimationFrame(onFrame);
       if (counter == 0) {
         t.step( () => {
           assert_equals(vrFrame.getDevicePose(frameOfRef), null);
@@ -45,7 +45,7 @@ xr_session_test( (t, session, mockService) => {
       counter++;
     }
 
-    session.requestFrame(onFrame);
+    session.requestAnimationFrame(onFrame);
   });
 }, fakeDisplays["Pixel"], { exclusive: true },
 "XRPresentationFrame getDevicePose updates on the next frame");

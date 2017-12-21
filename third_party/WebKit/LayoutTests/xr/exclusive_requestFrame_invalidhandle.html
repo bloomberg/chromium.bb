@@ -16,26 +16,26 @@ xr_session_test( (t, session) => {
 
   let counter = 0;
 
-  function onFrame(vrFrame) {
-    // Intentionally session.requestFrame at the beginning, ensuring that
+  function onFrame(time, vrFrame) {
+    // Intentionally session.requestAnimationFrame at the beginning, ensuring that
     // there's an outstanding callback when t.done() is called. This is to make
     // sure it doesn't cause any unexpected behavior like it did with
     // crbug.com/679401
-    session.requestFrame(onFrame);
+    session.requestAnimationFrame(onFrame);
     if (counter > 10) {
       t.done();
     }
     counter++;
   }
 
-  let handle = session.requestFrame(onFrame);
-  session.cancelFrame(0);
-  session.cancelFrame(-1);
-  session.cancelFrame(handle + 1);
-  session.cancelFrame(handle - 1);
-  session.cancelFrame(0.5);
-  session.cancelFrame(null);
+  let handle = session.requestAnimationFrame(onFrame);
+  session.cancelAnimationFrame(0);
+  session.cancelAnimationFrame(-1);
+  session.cancelAnimationFrame(handle + 1);
+  session.cancelAnimationFrame(handle - 1);
+  session.cancelAnimationFrame(0.5);
+  session.cancelAnimationFrame(null);
 }, fakeDisplays["Pixel"], { exclusive: true },
-"XRSession cancelFrame does not have unexpected behavior when given invalid handles");
+"XRSession cancelAnimationFrame does not have unexpected behavior when given invalid handles");
 
 </script>

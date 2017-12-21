@@ -14,15 +14,15 @@ xr_session_test( (t, session) => {
   // Session must have a baseLayer or frame requests will be ignored.
   session.baseLayer = new XRWebGLLayer(session, gl);
 
-  function onFrame(xrFrame) {
+  function onFrame(time, xrFrame) {
     t.step( () => {
       assert_true(xrFrame instanceof XRPresentationFrame);
     });
     t.done();
   }
 
-  session.requestFrame(onFrame);
+  session.requestAnimationFrame(onFrame);
 }, fakeDisplays["Pixel"], { exclusive: true },
-"XRSession requestFrame properly calls the provided callback");
+"XRSession requestAnimationFrame properly calls the provided callback");
 
 </script>

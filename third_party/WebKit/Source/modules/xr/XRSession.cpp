@@ -122,7 +122,7 @@ ScriptPromise XRSession::requestFrameOfReference(
   return promise;
 }
 
-int XRSession::requestFrame(V8XRFrameRequestCallback* callback) {
+int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
   // Don't allow any new frame requests once the session is ended.
   if (detached_)
     return 0;
@@ -141,7 +141,7 @@ int XRSession::requestFrame(V8XRFrameRequestCallback* callback) {
   return id;
 }
 
-void XRSession::cancelFrame(int id) {
+void XRSession::cancelAnimationFrame(int id) {
   callback_collection_.CancelCallback(id);
 }
 
@@ -223,9 +223,9 @@ void XRSession::OnFrame(
     XRLayer* frame_base_layer = base_layer_;
     frame_base_layer->OnFrameStart();
 
-    // Resolve the queued requestFrame callbacks. All XR rendering will happen
-    // within these calls. resolving_frame_ will be true for the duration of the
-    // callbacks.
+    // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
+    // happen within these calls. resolving_frame_ will be true for the duration
+    // of the callbacks.
     AutoReset<bool> resolving(&resolving_frame_, true);
     callback_collection_.ExecuteCallbacks(this, presentation_frame);
 

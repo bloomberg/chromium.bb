@@ -17,7 +17,7 @@ xr_session_test( (t, session, mockService) => {
   session.baseLayer = webglLayer;
 
   session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
-    function onFrame(xrFrame) {
+    function onFrame(time, xrFrame) {
       t.step( () => {
         // Ensure that two views are provided.
         assert_not_equals(xrFrame.views, null);
@@ -52,7 +52,7 @@ xr_session_test( (t, session, mockService) => {
       t.done();
     }
 
-    session.requestFrame(onFrame);
+    session.requestAnimationFrame(onFrame);
   });
 }, fakeDisplays["Pixel"], { exclusive: true },
 "XRPresentationFrame contains the expected views");

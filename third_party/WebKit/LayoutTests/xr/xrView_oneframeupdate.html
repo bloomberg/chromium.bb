@@ -21,12 +21,12 @@ xr_session_test( (t, session, mockService) => {
   session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
     let counter = 0;
 
-    function onFrame(xrFrame) {
+    function onFrame(time, xrFrame) {
       let leftView = xrFrame.views[0];
       let rightView = xrFrame.views[1];
 
       if (counter == 0) {
-        session.requestFrame(onFrame);
+        session.requestAnimationFrame(onFrame);
 
         t.step( () => {
           let expectedLeftProjection = perspectiveFromFieldOfView(
@@ -66,7 +66,7 @@ xr_session_test( (t, session, mockService) => {
       counter++;
     }
 
-    session.requestFrame(onFrame);
+    session.requestAnimationFrame(onFrame);
   });
 }, fakeDisplays["Pixel"], { exclusive: true },
 "XRView projection matrices update near and far depths on the next frame");

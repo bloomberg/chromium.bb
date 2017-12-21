@@ -17,7 +17,7 @@ xr_session_test( (t, session, mockService) => {
   session.baseLayer = webglLayer;
 
   session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
-    function onFrame(xrFrame) {
+    function onFrame(time, xrFrame) {
       let leftView = xrFrame.views[0];
       let rightView = xrFrame.views[1];
 
@@ -62,7 +62,7 @@ xr_session_test( (t, session, mockService) => {
       t.done();
     }
 
-    session.requestFrame(onFrame);
+    session.requestAnimationFrame(onFrame);
   });
 }, fakeDisplays["Pixel"], { exclusive: true },
 "XRViewport attributes are valid");
