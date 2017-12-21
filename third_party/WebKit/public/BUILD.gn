@@ -354,7 +354,6 @@ source_set("blink_headers") {
     "platform/WebTouchAction.h",
     "platform/WebTouchEvent.h",
     "platform/WebTouchPoint.h",
-    "platform/WebTraceLocation.h",
     "platform/WebTrialTokenValidator.h",
     "platform/WebURL.h",
     "platform/WebURLError.h",
