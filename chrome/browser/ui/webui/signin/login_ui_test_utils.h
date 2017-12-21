@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_LOGIN_UI_TEST_UTILS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/time/time.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -17,9 +18,11 @@ namespace login_ui_test_utils {
 // Blocks until the login UI is available and ready for authorization.
 void WaitUntilUIReady(Browser* browser);
 
-// Blocks until an element with id |element_id| exists in the signin page.
-void WaitUntilElementExistsInSigninFrame(Browser* browser,
-                                         const std::string& element_id);
+// Blocks until an element with an id from |element_ids| exists in the signin
+// page.
+void WaitUntilElementExistsInSigninFrame(
+    Browser* browser,
+    const std::vector<std::string>& element_ids);
 
 // Returns whether an element with id |element_id| exists in the signin page.
 bool ElementExistsInSigninFrame(Browser* browser,
