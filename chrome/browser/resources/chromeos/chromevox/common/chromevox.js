@@ -9,6 +9,7 @@
  */
 
 goog.provide('cvox.ChromeVox');
+goog.require('constants');
 
 // Forward declarations.
 // TODO (stoarca): Put these in a separate file and pass that
@@ -132,11 +133,7 @@ cvox.ChromeVox.typingEcho = 0;
  */
 cvox.ChromeVox.keyEcho = {};
 /**
- * @typedef {{x: number, y: number}}
- */
-cvox.Point;
-/**
- * @type {Object<string, cvox.Point>}
+ * @type {Object<string, constants.Point>}
  */
 cvox.ChromeVox.position = {};
 /**

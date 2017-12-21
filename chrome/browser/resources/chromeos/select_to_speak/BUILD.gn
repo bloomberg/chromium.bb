@@ -26,6 +26,10 @@ run_jsbundler("select_to_speak_copied_files") {
   mode = "copy"
   dest_dir = select_to_speak_out_dir
   sources = [
+    "../chromevox/cvox2/background/automation_predicate.js",
+    "../chromevox/cvox2/background/automation_util.js",
+    "../chromevox/cvox2/background/constants.js",
+    "../chromevox/cvox2/background/tree_walker.js",
     "checked.png",
     "options.css",
     "options.html",
