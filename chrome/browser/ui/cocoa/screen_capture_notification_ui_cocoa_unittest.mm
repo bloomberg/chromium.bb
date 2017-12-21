@@ -77,17 +77,18 @@ TEST_F(ScreenCaptureNotificationUICocoaTest, LongTitle) {
                  base::Unretained(this)));
   // The elided label sometimes is a few pixels longer than the max width. So
   // allow a 5px off from the 1000px maximium.
-  EXPECT_LE(NSWidth([[controller() window] frame]), 1005);
+  EXPECT_NEAR(NSWidth([[controller() window] frame]), 1000.0, 5.0);
 }
 
-// Flaky, see crbug.com/796969.
-TEST_F(ScreenCaptureNotificationUICocoaTest, DISABLED_ShortTitle) {
+TEST_F(ScreenCaptureNotificationUICocoaTest, ShortTitle) {
   target_.reset(
       new ScreenCaptureNotificationUICocoa(base::UTF8ToUTF16("Title")));
   target_->OnStarted(
       base::Bind(&ScreenCaptureNotificationUICocoaTest::StopCallback,
                  base::Unretained(this)));
-  EXPECT_EQ(460, NSWidth([[controller() window] frame]));
+  // Window size may not match the target value exactly (460), as we don't set
+  // it directly.
+  EXPECT_NEAR(NSWidth([[controller() window] frame]), 460.0, 5.0);
 }
 
 TEST_F(ScreenCaptureNotificationUICocoaTest, ClickStop) {
