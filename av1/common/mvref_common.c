@@ -730,12 +730,20 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // Find valid maximum row/col offset.
   if (xd->up_available) {
     max_row_offset = -(MVREF_ROWS << 1) + row_adj;
+#if CONFIG_OPT_REF_MV
+    if (xd->n8_h < mi_size_high[BLOCK_8X8])
+      max_row_offset = -(2 << 1) + row_adj;
+#endif
     max_row_offset =
         find_valid_row_offset(tile, mi_row, cm->mi_rows, cm, max_row_offset);
   }
 
   if (xd->left_available) {
     max_col_offset = -(MVREF_COLS << 1) + col_adj;
+#if CONFIG_OPT_REF_MV
+    if (xd->n8_w < mi_size_wide[BLOCK_8X8])
+      max_col_offset = -(2 << 1) + col_adj;
+#endif
     max_col_offset = find_valid_col_offset(tile, mi_col, max_col_offset);
   }
 
@@ -860,6 +868,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                 gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                 refmv_count);
+
   for (int idx = 2; idx <= MVREF_ROWS; ++idx) {
     const int row_offset = -(idx << 1) + 1 + row_adj;
     const int col_offset = -(idx << 1) + 1 + col_adj;
