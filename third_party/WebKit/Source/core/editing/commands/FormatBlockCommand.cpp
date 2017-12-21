@@ -123,9 +123,15 @@ void FormatBlockCommand::FormatRange(const Position& start,
   bool was_end_of_paragraph =
       IsEndOfParagraph(CreateVisiblePosition(last_paragraph_in_block_node));
 
-  MoveParagraphWithClones(CreateVisiblePosition(start),
-                          CreateVisiblePosition(end), block_element,
-                          outer_block, editing_state);
+  const VisiblePosition& start_of_paragraph_to_move =
+      CreateVisiblePosition(start);
+  const VisiblePosition& end_of_paragraph_to_move = CreateVisiblePosition(end);
+  // execCommand/format_block/format_block_with_nth_child_crash.html reaches
+  // here.
+  ABORT_EDITING_COMMAND_IF(start_of_paragraph_to_move.IsNull());
+  ABORT_EDITING_COMMAND_IF(end_of_paragraph_to_move.IsNull());
+  MoveParagraphWithClones(start_of_paragraph_to_move, end_of_paragraph_to_move,
+                          block_element, outer_block, editing_state);
   if (editing_state->IsAborted())
     return;
 
