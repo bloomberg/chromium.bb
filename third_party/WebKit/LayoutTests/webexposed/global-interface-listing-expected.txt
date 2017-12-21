@@ -8899,7 +8899,7 @@ interface XRCoordinateSystem
 interface XRDevice : EventTarget
     attribute @@toStringTag
     getter deviceName
-    getter isExternal
+    getter external
     method constructor
     method requestSession
     method supportsSession

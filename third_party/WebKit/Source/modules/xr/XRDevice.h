@@ -32,7 +32,7 @@ class XRDevice final : public EventTargetWithInlineData,
   XR* xr() const { return xr_; }
 
   const String& deviceName() const { return device_name_; }
-  bool isExternal() const { return is_external_; }
+  bool external() const { return is_external_; }
 
   ScriptPromise supportsSession(ScriptState*,
                                 const XRSessionCreationOptions&) const;
