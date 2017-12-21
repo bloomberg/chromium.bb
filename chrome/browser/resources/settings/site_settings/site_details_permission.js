@@ -129,9 +129,15 @@ Polymer({
    * @private
    */
   hasPermissionInfoString_: function(source, category, setting) {
-    return (
-        source != settings.SiteSettingSource.DEFAULT &&
-        source != settings.SiteSettingSource.PREFERENCE);
+    // This method assumes that an empty string will be returned for categories
+    // that have no permission info string.
+    return this.permissionInfoString_(
+               source, category, setting,
+               // Set all permission info string arguments as null. This is OK
+               // because there is no need to know what the information string
+               // will be, just whether there is one or not.
+               null, null, null, null, null, null, null, null, null, null,
+               null) != '';
   },
 
   /**
@@ -153,17 +159,16 @@ Polymer({
   /**
    * Returns true if this permission can be controlled by the user.
    * @param {!settings.SiteSettingSource} source The source of the permission.
-   * @param {!settings.ContentSettingsTypes} category The permission type.
-   * @param {!settings.ContentSetting} setting The permission setting.
    * @return {boolean}
    * @private
    */
-  isPermissionUserControlled_: function(source, category, setting) {
-    // Users are able override embargo and ads blacklisting.
-    return !this.hasPermissionInfoString_(source, category, setting) ||
-        source == settings.SiteSettingSource.EMBARGO ||
-        source == settings.SiteSettingSource.ADS_FILTER_BLACKLIST ||
-        source == settings.SiteSettingSource.ADS_BLOCKED;
+  isPermissionUserControlled_: function(source) {
+    return !(
+        source == settings.SiteSettingSource.DRM_DISABLED ||
+        source == settings.SiteSettingSource.POLICY ||
+        source == settings.SiteSettingSource.EXTENSION ||
+        source == settings.SiteSettingSource.KILL_SWITCH ||
+        source == settings.SiteSettingSource.INSECURE_ORIGIN);
   },
 
   /**
@@ -187,34 +192,25 @@ Polymer({
   },
 
   /**
-   * Returns true if this permission is the Ads permission.
-   * @param {!settings.ContentSettingsTypes} category The permission type.
-   * @return {boolean}
-   * @private
-   */
-  isAdsCategory_: function(category) {
-    return category == settings.ContentSettingsTypes.ADS;
-  },
-
-  /**
    * Updates the information string for the current permission.
    * Currently, this only gets called when |this.site| is updated.
    * @param {!settings.SiteSettingSource} source The source of the permission.
    * @param {!settings.ContentSettingsTypes} category The permission type.
    * @param {!settings.ContentSetting} setting The permission setting.
-   * @param {!string} adsBlacklistString The string to show if the site is
+   * @param {?string} adsBlacklistString The string to show if the site is
    *     blacklisted for showing bad ads.
-   * @param {!string} adsBlockString The string to show if ads are blocked, but
+   * @param {?string} adsBlockString The string to show if ads are blocked, but
    *     the site is not blacklisted.
-   * @param {!string} embargoString
-   * @param {!string} insecureOriginString
-   * @param {!string} killSwitchString
-   * @param {!string} extensionAllowString
-   * @param {!string} extensionBlockString
-   * @param {!string} extensionAskString
-   * @param {!string} policyAllowString
-   * @param {!string} policyBlockString
-   * @param {!string} policyAskString
+   * @param {?string} embargoString
+   * @param {?string} insecureOriginString
+   * @param {?string} killSwitchString
+   * @param {?string} extensionAllowString
+   * @param {?string} extensionBlockString
+   * @param {?string} extensionAskString
+   * @param {?string} policyAllowString
+   * @param {?string} policyBlockString
+   * @param {?string} policyAskString
+   * @return {?string} The permission information string to display in the HTML.
    * @private
    */
   permissionInfoString_: function(
@@ -223,13 +219,13 @@ Polymer({
       extensionAllowString, extensionBlockString, extensionAskString,
       policyAllowString, policyBlockString, policyAskString) {
 
-    /** @type {Object<!settings.ContentSetting, string>} */
+    /** @type {Object<!settings.ContentSetting, ?string>} */
     var extensionStrings = {};
     extensionStrings[settings.ContentSetting.ALLOW] = extensionAllowString;
     extensionStrings[settings.ContentSetting.BLOCK] = extensionBlockString;
     extensionStrings[settings.ContentSetting.ASK] = extensionAskString;
 
-    /** @type {Object<!settings.ContentSetting, string>} */
+    /** @type {Object<!settings.ContentSetting, ?string>} */
     var policyStrings = {};
     policyStrings[settings.ContentSetting.ALLOW] = policyAllowString;
     policyStrings[settings.ContentSetting.BLOCK] = policyBlockString;
@@ -240,13 +236,9 @@ Polymer({
           settings.ContentSettingsTypes.ADS == category,
           'The ads filter blacklist only applies to Ads.');
       return adsBlacklistString;
-    } else if (source == settings.SiteSettingSource.ADS_BLOCKED) {
-      assert(
-          settings.ContentSettingsTypes.ADS == category,
-          'The Ads user-blocked source only applies to Ads.');
-      assert(
-          settings.ContentSetting.ALLOW != setting,
-          'The Ads setting must be blocked for this source.');
+    } else if (
+        category == settings.ContentSettingsTypes.ADS &&
+        setting == settings.ContentSetting.BLOCK) {
       return adsBlockString;
     } else if (source == settings.SiteSettingSource.DRM_DISABLED) {
       assert(
