@@ -260,8 +260,12 @@ void InternetHandler::SendArcVpnProviders() {
 }
 
 void InternetHandler::SetGmsCoreNotificationsDisabledDeviceNames() {
-  if (!gms_core_notifications_state_tracker_)
+  if (!gms_core_notifications_state_tracker_) {
+    // No device names should be present in the list if
+    // |gms_core_notifications_state_tracker_| is null.
+    DCHECK(device_names_without_notifications_.empty());
     return;
+  }
 
   device_names_without_notifications_.clear();
 
