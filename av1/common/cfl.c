@@ -63,6 +63,7 @@ static void cfl_load_dc_pred_lbd(const int16_t *dc_pred_cache, uint8_t *dst,
   }
 }
 
+#if CONFIG_HIGHBITDEPTH
 static void cfl_load_dc_pred_hbd(const int16_t *dc_pred_cache, uint16_t *dst,
                                  int dst_stride, int width, int height) {
   const size_t num_bytes = width << 1;
@@ -71,6 +72,7 @@ static void cfl_load_dc_pred_hbd(const int16_t *dc_pred_cache, uint16_t *dst,
     dst += dst_stride;
   }
 }
+#endif
 
 void cfl_load_dc_pred(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                       TX_SIZE tx_size, CFL_PRED_TYPE pred_plane) {
