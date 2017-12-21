@@ -92,6 +92,11 @@ class CONTENT_EXPORT ContentMainDelegate {
   // Returns whether or not profiler recording should be enabled.
   virtual bool ShouldEnableProfilerRecording();
 
+  // Fatal errors during initialization are reported by this function, so that
+  // the embedder can implement graceful exit by displaying some message and
+  // returning initialization error code. Default behavior is CHECK(false).
+  virtual int TerminateForFatalInitializationError();
+
   // Overrides the Service Manager process type to use for the currently running
   // process.
   virtual service_manager::ProcessType OverrideProcessType();

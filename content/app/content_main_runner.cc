@@ -462,6 +462,14 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       Shutdown();
   }
 
+  int TerminateForFatalInitializationError() {
+    if (delegate_)
+      return delegate_->TerminateForFatalInitializationError();
+
+    CHECK(false);
+    return 0;
+  }
+
   int Initialize(const ContentMainParams& params) override {
     ui_task_ = params.ui_task;
 
@@ -620,13 +628,16 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
     if (icudata_fd != -1) {
       auto icudata_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
-      CHECK(base::i18n::InitializeICUWithFileDescriptor(icudata_fd,
-                                                        icudata_region));
+      if (!base::i18n::InitializeICUWithFileDescriptor(icudata_fd,
+                                                       icudata_region))
+        return TerminateForFatalInitializationError();
     } else {
-      CHECK(base::i18n::InitializeICU());
+      if (!base::i18n::InitializeICU())
+        return TerminateForFatalInitializationError();
     }
 #else
-    CHECK(base::i18n::InitializeICU());
+    if (!base::i18n::InitializeICU())
+      return TerminateForFatalInitializationError();
 #endif  // OS_ANDROID && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
     base::StatisticsRecorder::Initialize();
@@ -655,9 +666,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       delegate_->PreSandboxStartup();
 
 #if defined(OS_WIN)
-    CHECK(InitializeSandbox(
-        service_manager::SandboxTypeFromCommandLine(command_line),
-        params.sandbox_info));
+    if (!InitializeSandbox(
+            service_manager::SandboxTypeFromCommandLine(command_line),
+            params.sandbox_info))
+      return TerminateForFatalInitializationError();
 #elif defined(OS_MACOSX)
     // Do not initialize the sandbox at this point if the V2
     // sandbox is enabled for the process type.
@@ -670,7 +682,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       // On OS X the renderer sandbox needs to be initialized later in the
       // startup sequence in RendererMainPlatformDelegate::EnableSandbox().
     } else {
-      CHECK(InitializeSandbox());
+      if (!InitializeSandbox())
+        return TerminateForFatalInitializationError();
     }
 #endif
 
