@@ -67,11 +67,18 @@ extern "C" {
 typedef int (*CommandFunction)(int argc, wchar_t **argv);
 }
 
+class AppContainerProfile;
+
 // Class to facilitate the launch of a test inside the sandbox.
 class TestRunner {
  public:
   TestRunner(JobLevel job_level, TokenLevel startup_token,
              TokenLevel main_token);
+
+  TestRunner(JobLevel job_level,
+             TokenLevel startup_token,
+             TokenLevel main_token,
+             AppContainerProfile* profile);
 
   TestRunner();
 
@@ -133,11 +140,6 @@ class TestRunner {
   DWORD process_id() { return target_process_id_; }
 
  private:
-  // Initializes the data in the object. Sets is_init_ to tree if the
-  // function succeeds. This is meant to be called from the constructor.
-  void Init(JobLevel job_level,
-            TokenLevel startup_token,
-            TokenLevel main_token);
 
   // The actual runner.
   int InternalRunTest(const wchar_t* command);
