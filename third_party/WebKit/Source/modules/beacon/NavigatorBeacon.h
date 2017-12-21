@@ -46,6 +46,8 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
   void AddTransmittedBytes(size_t sent_bytes);
 
   size_t transmitted_bytes_;
+
+  static constexpr size_t kMaxAllowance = 65536;
 };
 
 }  // namespace blink
