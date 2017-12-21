@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninPromoController;
@@ -148,7 +147,6 @@ public class ArticleSnippetsTest {
         }
 
         mActivityTestRule.startMainActivityOnBlankPage();
-        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(true);
         mThumbnailProvider = new MockThumbnailProvider();
         mSnippetsSource = new FakeSuggestionsSource();
         mSuggestionsDeps.getFactory().thumbnailProvider = mThumbnailProvider;
@@ -186,8 +184,6 @@ public class ArticleSnippetsTest {
 
             mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
                     mUiDelegate, mUiConfig, /* offlinePageBridge = */ null);
-            mSigninPromo = new SignInPromo.GenericPromoViewHolder(
-                    mRecyclerView, mContextMenuManager, mUiConfig);
         });
     }
 
@@ -363,21 +359,6 @@ public class ArticleSnippetsTest {
         setThumbnail(suggestionWithDarkThumbnail, "chrome/test/data/android/capybara.jpg");
         renderSuggestion(
                 suggestionWithDarkThumbnail, categoryInfo, "video_suggestion_with_dark_thumbnail");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"ArticleSnippets", "RenderTest"})
-    public void testGenericSigninPromo() throws IOException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mRecyclerView.init(mUiConfig, null);
-            mRecyclerView.setAdapter(null);
-            mSigninPromo = new SignInPromo.GenericPromoViewHolder(mRecyclerView, null, mUiConfig);
-            ((SignInPromo.GenericPromoViewHolder) mSigninPromo)
-                    .onBindViewHolder(new SignInPromo.GenericSigninPromoData(), null);
-            mContentView.addView(mSigninPromo.itemView);
-        });
-        mRenderTestRule.render(mSigninPromo.itemView, "signin_promo");
     }
 
     @Test
