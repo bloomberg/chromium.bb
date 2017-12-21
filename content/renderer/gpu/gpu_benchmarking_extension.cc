@@ -121,7 +121,7 @@ class SkPictureSerializer {
         }
         return data;
       };
-      auto data = picture->serialize(procs);
+      auto data = picture->serialize(&procs);
       file.write(data->data(), data->size());
       file.fsync();
     }
