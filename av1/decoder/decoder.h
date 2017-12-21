@@ -77,9 +77,6 @@ typedef struct AV1Decoder {
 
   AV1LfSync lf_row_sync;
 
-  aom_decrypt_cb decrypt_cb;
-  void *decrypt_state;
-
   int allow_lowbitdepth;
   int max_threads;
   int inv_tile_order;
@@ -119,23 +116,13 @@ aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi, int idx,
 aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
                                       YV12_BUFFER_CONFIG *sd);
 
-static INLINE uint8_t read_marker(aom_decrypt_cb decrypt_cb,
-                                  void *decrypt_state, const uint8_t *data) {
-  if (decrypt_cb) {
-    uint8_t marker;
-    decrypt_cb(decrypt_state, data, &marker, 1);
-    return marker;
-  }
-  return *data;
-}
+static INLINE uint8_t read_marker(const uint8_t *data) { return *data; }
 
 // This function is exposed for use in tests, as well as the inlined function
 // "read_marker".
 aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
                                            uint32_t sizes[8], int *count,
-                                           int *index_size,
-                                           aom_decrypt_cb decrypt_cb,
-                                           void *decrypt_state);
+                                           int *index_size);
 
 struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 

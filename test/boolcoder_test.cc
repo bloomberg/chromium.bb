@@ -69,7 +69,7 @@ TEST(AV1, TestBitIO) {
         aom_stop_encode(&bw);
 
         aom_reader br;
-        aom_reader_init(&br, bw_buffer, bw.pos, NULL, NULL);
+        aom_reader_init(&br, bw_buffer, bw.pos);
         bit_rnd.Reset(random_seed);
         for (int i = 0; i < kBitsToTest; ++i) {
           if (bit_method == 2) {
@@ -106,7 +106,7 @@ TEST(AV1, TestTell) {
     }
     aom_stop_encode(&bw);
     aom_reader br;
-    aom_reader_init(&br, bw_buffer, bw.pos, NULL, NULL);
+    aom_reader_init(&br, bw_buffer, bw.pos);
     uint32_t last_tell = aom_reader_tell(&br);
     uint32_t last_tell_frac = aom_reader_tell_frac(&br);
     double frac_diff_total = 0;

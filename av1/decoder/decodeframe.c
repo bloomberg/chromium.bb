@@ -86,7 +86,7 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 
 static struct aom_read_bit_buffer *init_read_bit_buffer(
     AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
-    const uint8_t *data_end, uint8_t clear_data[MAX_AV1_HEADER_SIZE]);
+    const uint8_t *data_end);
 static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                                   size_t partition_size);
 static size_t read_uncompressed_header(AV1Decoder *pbi,
@@ -744,8 +744,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
                                const size_t read_size,
                                struct aom_internal_error_info *error_info,
-                               aom_reader *r, uint8_t allow_update_cdf,
-                               aom_decrypt_cb decrypt_cb, void *decrypt_state) {
+                               aom_reader *r, uint8_t allow_update_cdf) {
   // Validate the calculated partition length. If the buffer
   // described by the partition can't be fully read, then restrict
   // it to the portion that can be (for EC mode) or throw an error.
@@ -753,7 +752,7 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
     aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt tile length");
 
-  if (aom_reader_init(r, data, read_size, decrypt_cb, decrypt_state))
+  if (aom_reader_init(r, data, read_size))
     aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder %d", 1);
 
@@ -1659,9 +1658,8 @@ static int mem_get_varsize(const uint8_t *src, int sz) {
 // based on 'is_last'.
 static void get_ls_tile_buffer(
     const uint8_t *const data_end, struct aom_internal_error_info *error_info,
-    const uint8_t **data, aom_decrypt_cb decrypt_cb, void *decrypt_state,
-    TileBufferDec (*const tile_buffers)[MAX_TILE_COLS], int tile_size_bytes,
-    int col, int row, int tile_copy_mode) {
+    const uint8_t **data, TileBufferDec (*const tile_buffers)[MAX_TILE_COLS],
+    int tile_size_bytes, int col, int row, int tile_copy_mode) {
   size_t size;
 
   size_t copy_size = 0;
@@ -1670,15 +1668,7 @@ static void get_ls_tile_buffer(
   if (!read_is_valid(*data, tile_size_bytes, data_end))
     aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt tile length");
-  if (decrypt_cb) {
-    uint8_t be_data[4];
-    decrypt_cb(decrypt_state, *data, be_data, tile_size_bytes);
-
-    // Only read number of bytes in cm->tile_size_bytes.
-    size = mem_get_varsize(be_data, tile_size_bytes);
-  } else {
-    size = mem_get_varsize(*data, tile_size_bytes);
-  }
+  size = mem_get_varsize(*data, tile_size_bytes);
 
   // If tile_copy_mode = 1, then the top bit of the tile header indicates copy
   // mode.
@@ -1778,8 +1768,7 @@ static void get_ls_tile_buffers(
         tile_buffers[r][c].col = c;
 
         get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
-                           pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
-                           tile_size_bytes, c, r, tile_copy_mode);
+                           tile_buffers, tile_size_bytes, c, r, tile_copy_mode);
       }
     }
 
@@ -1793,8 +1782,7 @@ static void get_ls_tile_buffers(
         tile_buffers[r][c].col = c;
 
         get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
-                           pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
-                           tile_size_bytes, c, r, tile_copy_mode);
+                           tile_buffers, tile_size_bytes, c, r, tile_copy_mode);
       }
     }
   }
@@ -1806,8 +1794,7 @@ static void get_ls_tile_buffers(
 static void get_tile_buffer(const uint8_t *const data_end,
                             const int tile_size_bytes, int is_last,
                             struct aom_internal_error_info *error_info,
-                            const uint8_t **data, aom_decrypt_cb decrypt_cb,
-                            void *decrypt_state, TileBufferDec *const buf) {
+                            const uint8_t **data, TileBufferDec *const buf) {
   size_t size;
 
   if (!is_last) {
@@ -1815,13 +1802,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
       aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Truncated packet or corrupt tile length");
 
-    if (decrypt_cb) {
-      uint8_t be_data[4];
-      decrypt_cb(decrypt_state, *data, be_data, tile_size_bytes);
-      size = mem_get_varsize(be_data, tile_size_bytes);
-    } else {
-      size = mem_get_varsize(*data, tile_size_bytes);
-    }
+    size = mem_get_varsize(*data, tile_size_bytes);
     *data += tile_size_bytes;
 
     if (size > (size_t)(data_end - *data))
@@ -1853,7 +1834,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   int first_tile_in_tg = 0;
 #if !CONFIG_OBU
   struct aom_read_bit_buffer rb_tg_hdr;
-  uint8_t clear_data[MAX_AV1_HEADER_SIZE];
   const size_t hdr_size = pbi->uncomp_hdr_size + pbi->first_partition_size;
   const int tg_size_bit_offset = pbi->tg_size_bit_offset;
 #endif
@@ -1893,7 +1873,7 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_DEPENDENT_HORZTILES
 #else   // CONFIG_OBU
       if (hdr_offset) {
-        init_read_bit_buffer(pbi, &rb_tg_hdr, data, data_end, clear_data);
+        init_read_bit_buffer(pbi, &rb_tg_hdr, data, data_end);
         rb_tg_hdr.bit_offset = tg_size_bit_offset;
         read_tile_group_range(pbi, &rb_tg_hdr);
 #if CONFIG_DEPENDENT_HORZTILES
@@ -1905,8 +1885,7 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
       first_tile_in_tg += tc == first_tile_in_tg ? pbi->tg_size : 0;
       data += hdr_offset;
       get_tile_buffer(data_end, pbi->tile_size_bytes, is_last,
-                      &pbi->common.error, &data, pbi->decrypt_cb,
-                      pbi->decrypt_state, buf);
+                      &pbi->common.error, &data, buf);
 #if CONFIG_DEPENDENT_HORZTILES
       cm->tile_group_start_row[r][c] = tile_group_start_row;
       cm->tile_group_start_col[r][c] = tile_group_start_col;
@@ -2048,8 +2027,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero(td->dqcoeff);
       av1_tile_init(&td->xd.tile, td->cm, tile_row, tile_col);
       setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
-                         &td->bit_reader, allow_update_cdf, pbi->decrypt_cb,
-                         pbi->decrypt_state);
+                         &td->bit_reader, allow_update_cdf);
 #if CONFIG_ACCOUNTING
       if (pbi->acct_enabled) {
         td->bit_reader.accounting = &pbi->accounting;
@@ -3158,19 +3136,12 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
 
 static struct aom_read_bit_buffer *init_read_bit_buffer(
     AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
-    const uint8_t *data_end, uint8_t clear_data[MAX_AV1_HEADER_SIZE]) {
+    const uint8_t *data_end) {
   rb->bit_offset = 0;
   rb->error_handler = error_handler;
   rb->error_handler_data = &pbi->common;
-  if (pbi->decrypt_cb) {
-    const int n = (int)AOMMIN(MAX_AV1_HEADER_SIZE, data_end - data);
-    pbi->decrypt_cb(pbi->decrypt_state, data, clear_data, n);
-    rb->bit_buffer = clear_data;
-    rb->bit_buffer_end = clear_data + n;
-  } else {
-    rb->bit_buffer = data;
-    rb->bit_buffer_end = data_end;
-  }
+  rb->bit_buffer = data;
+  rb->bit_buffer_end = data_end;
   return rb;
 }
 
@@ -3259,10 +3230,9 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   }
   xd->global_motion = cm->global_motion;
 
-  uint8_t clear_data[MAX_AV1_HEADER_SIZE];
   struct aom_read_bit_buffer rb;
   const size_t first_partition_size = read_uncompressed_header(
-      pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
+      pbi, init_read_bit_buffer(pbi, &rb, data, data_end));
 
 #if CONFIG_EXT_TILE
   // If cm->single_tile_decoding = 0, the independent decoding of a single tile
@@ -3721,11 +3691,9 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   // decode frame as a series of OBUs
   while (!frame_decoding_finished && !cm->error.error_code) {
     struct aom_read_bit_buffer rb;
-    uint8_t clear_data[80];
     size_t obu_header_size, obu_payload_size = 0;
 
-    init_read_bit_buffer(pbi, &rb, data + PRE_OBU_SIZE_BYTES, data_end,
-                         clear_data);
+    init_read_bit_buffer(pbi, &rb, data + PRE_OBU_SIZE_BYTES, data_end);
 
 // every obu is preceded by PRE_OBU_SIZE_BYTES-byte size of obu (obu header +
 // payload size)

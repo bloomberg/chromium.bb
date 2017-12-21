@@ -46,8 +46,6 @@ struct aom_codec_alg_priv {
   aom_codec_stream_info_t si;
   int postproc_cfg_set;
   aom_postproc_cfg_t postproc_cfg;
-  aom_decrypt_cb decrypt_cb;
-  void *decrypt_state;
   aom_image_t img;
   int img_avail;
   int flushed;
@@ -212,30 +210,24 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
 }
 #endif
 
-static aom_codec_err_t decoder_peek_si_internal(
-    const uint8_t *data, unsigned int data_sz, aom_codec_stream_info_t *si,
-    int *is_intra_only, aom_decrypt_cb decrypt_cb, void *decrypt_state) {
+static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
+                                                unsigned int data_sz,
+                                                aom_codec_stream_info_t *si,
+                                                int *is_intra_only) {
   int intra_only_flag = 0;
-  uint8_t clear_buffer[9];
 
   if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
 
   si->is_kf = 0;
   si->w = si->h = 0;
 
-  if (decrypt_cb) {
-    data_sz = AOMMIN(sizeof(clear_buffer), data_sz);
-    decrypt_cb(decrypt_state, data, clear_buffer, data_sz);
-    data = clear_buffer;
-  }
-
   // skip a potential superframe index
   {
     uint32_t frame_sizes[8];
     int frame_count;
     int index_size = 0;
-    aom_codec_err_t res = av1_parse_superframe_index(
-        data, data_sz, frame_sizes, &frame_count, &index_size, NULL, NULL);
+    aom_codec_err_t res = av1_parse_superframe_index(data, data_sz, frame_sizes,
+                                                     &frame_count, &index_size);
     if (res != AOM_CODEC_OK) return res;
 
     data += index_size;
@@ -356,7 +348,7 @@ static aom_codec_err_t decoder_peek_si_internal(
 static aom_codec_err_t decoder_peek_si(const uint8_t *data,
                                        unsigned int data_sz,
                                        aom_codec_stream_info_t *si) {
-  return decoder_peek_si_internal(data, data_sz, si, NULL, NULL, NULL);
+  return decoder_peek_si_internal(data, data_sz, si, NULL);
 }
 
 static aom_codec_err_t decoder_get_si(aom_codec_alg_priv_t *ctx,
@@ -565,8 +557,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   if (!ctx->si.h) {
     int is_intra_only = 0;
     const aom_codec_err_t res =
-        decoder_peek_si_internal(*data, data_sz, &ctx->si, &is_intra_only,
-                                 ctx->decrypt_cb, ctx->decrypt_state);
+        decoder_peek_si_internal(*data, data_sz, &ctx->si, &is_intra_only);
     if (res != AOM_CODEC_OK) return res;
 
     if (!ctx->si.is_kf && !is_intra_only) return AOM_CODEC_ERROR;
@@ -580,10 +571,6 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     frame_worker_data->user_priv = user_priv;
     frame_worker_data->received_frame = 1;
 
-    // Set these even if already initialized.  The caller may have changed the
-    // decrypt config between frames.
-    frame_worker_data->pbi->decrypt_cb = ctx->decrypt_cb;
-    frame_worker_data->pbi->decrypt_state = ctx->decrypt_state;
 #if CONFIG_INSPECTION
     frame_worker_data->pbi->inspect_cb = ctx->inspect_cb;
     frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
@@ -702,8 +689,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
 #if !CONFIG_OBU
   int index_size = 0;
   res = av1_parse_superframe_index(data, data_sz, frame_sizes, &frame_count,
-                                   &index_size, ctx->decrypt_cb,
-                                   ctx->decrypt_state);
+                                   &index_size);
   if (res != AOM_CODEC_OK) return res;
 
   data_start += index_size;
@@ -786,8 +772,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
 
         // Account for suboptimal termination by the encoder.
         while (data_start < data_end) {
-          const uint8_t marker =
-              read_marker(ctx->decrypt_cb, ctx->decrypt_state, data_start);
+          const uint8_t marker = read_marker(data_start);
           if (marker) break;
           ++data_start;
         }
@@ -1169,14 +1154,6 @@ static aom_codec_err_t ctrl_set_invert_tile_order(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
-static aom_codec_err_t ctrl_set_decryptor(aom_codec_alg_priv_t *ctx,
-                                          va_list args) {
-  aom_decrypt_init *init = va_arg(args, aom_decrypt_init *);
-  ctx->decrypt_cb = init ? init->decrypt_cb : NULL;
-  ctx->decrypt_state = init ? init->decrypt_state : NULL;
-  return AOM_CODEC_OK;
-}
-
 static aom_codec_err_t ctrl_set_byte_alignment(aom_codec_alg_priv_t *ctx,
                                                va_list args) {
   const int legacy_byte_alignment = 0;
@@ -1267,7 +1244,6 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AOM_SET_DBG_COLOR_B_MODES, ctrl_set_dbg_options },
   { AOM_SET_DBG_DISPLAY_MV, ctrl_set_dbg_options },
   { AV1_INVERT_TILE_DECODE_ORDER, ctrl_set_invert_tile_order },
-  { AOMD_SET_DECRYPTOR, ctrl_set_decryptor },
   { AV1_SET_BYTE_ALIGNMENT, ctrl_set_byte_alignment },
   { AV1_SET_SKIP_LOOP_FILTER, ctrl_set_skip_loop_filter },
   { AV1_SET_DECODE_TILE_ROW, ctrl_set_decode_tile_row },

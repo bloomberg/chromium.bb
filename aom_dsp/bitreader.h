@@ -62,10 +62,7 @@ extern "C" {
 typedef struct daala_reader aom_reader;
 
 static INLINE int aom_reader_init(aom_reader *r, const uint8_t *buffer,
-                                  size_t size, aom_decrypt_cb decrypt_cb,
-                                  void *decrypt_state) {
-  (void)decrypt_cb;
-  (void)decrypt_state;
+                                  size_t size) {
   return aom_daala_reader_init(r, buffer, (int)size);
 }
 

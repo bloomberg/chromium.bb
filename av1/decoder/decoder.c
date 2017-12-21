@@ -459,9 +459,7 @@ int av1_get_frame_to_show(AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame) {
 
 aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
                                            uint32_t sizes[8], int *count,
-                                           int *index_size,
-                                           aom_decrypt_cb decrypt_cb,
-                                           void *decrypt_state) {
+                                           int *index_size) {
   // A chunk ending with a byte matching 0xc0 is an invalid chunk unless
   // it is a super frame index. If the last byte of real video compression
   // data is 0xc0 the encoder must add a 0 byte. If we have the marker but
@@ -472,7 +470,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
   size_t frame_sz_sum = 0;
 
   assert(data_sz);
-  marker = read_marker(decrypt_cb, decrypt_state, data);
+  marker = read_marker(data);
   *count = 0;
 
   if ((marker & 0xe0) == 0xc0) {
@@ -486,8 +484,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
     if (data_sz < index_sz) return AOM_CODEC_CORRUPT_FRAME;
 
     {
-      const uint8_t marker2 =
-          read_marker(decrypt_cb, decrypt_state, data + index_sz - 1);
+      const uint8_t marker2 = read_marker(data + index_sz - 1);
 
       // This chunk is marked as having a superframe index but doesn't have
       // the matching marker byte at the front of the index therefore it's an
@@ -499,14 +496,6 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
       // Found a valid superframe index.
       uint32_t i, j;
       const uint8_t *x = &data[1];
-
-      // Frames has a maximum of 8 and mag has a maximum of 4.
-      uint8_t clear_buffer[28];
-      assert(sizeof(clear_buffer) >= (frames - 1) * mag);
-      if (decrypt_cb) {
-        decrypt_cb(decrypt_state, x, clear_buffer, (frames - 1) * mag);
-        x = clear_buffer;
-      }
 
       for (i = 0; i < frames - 1; ++i) {
         uint32_t this_sz = 0;
