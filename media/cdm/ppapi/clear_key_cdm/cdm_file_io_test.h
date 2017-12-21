@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_CDM_FILE_IO_TEST_H_
-#define MEDIA_CDM_PPAPI_CDM_FILE_IO_TEST_H_
+#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CDM_FILE_IO_TEST_H_
+#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CDM_FILE_IO_TEST_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -155,12 +155,12 @@ class FileIOTestRunner {
   CompletionCB completion_cb_;
   std::list<FileIOTest> remaining_tests_;
   std::vector<uint8_t> large_data_;
-  size_t total_num_tests_;  // Total number of tests.
-  size_t num_passed_tests_;  // Number of passed tests.
+  size_t total_num_tests_ = 0;  // Total number of tests.
+  size_t num_passed_tests_ = 0;  // Number of passed tests.
 
   DISALLOW_COPY_AND_ASSIGN (FileIOTestRunner);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_CDM_FILE_IO_TEST_H_
+#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_CDM_FILE_IO_TEST_H_

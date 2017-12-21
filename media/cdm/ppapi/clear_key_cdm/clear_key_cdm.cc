@@ -23,7 +23,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/json_web_key.h"
-#include "media/cdm/ppapi/cdm_file_io_test.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_file_io_test.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy_impl.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_proxy_test.h"
@@ -78,7 +78,6 @@ const char kExternalClearKeyCdmProxyTestKeySystem[] =
 
 const int64_t kSecondsPerMinute = 60;
 const int64_t kMsPerSecond = 1000;
-const int64_t kInitialTimerDelayMs = 200;
 const int64_t kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
 
 // CDM unit test result header. Must be in sync with UNIT_TEST_RESULT_HEADER in
@@ -367,13 +366,7 @@ ClearKeyCdm::ClearKeyCdm(HostInterface* host, const std::string& key_system)
           base::Bind(&ClearKeyCdm::OnSessionKeysChange, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionExpirationUpdate,
                      base::Unretained(this)))),
-      key_system_(key_system),
-      allow_persistent_state_(false),
-      timer_delay_ms_(kInitialTimerDelayMs),
-      renewal_timer_set_(false),
-      is_running_output_protection_test_(false),
-      is_running_platform_verification_test_(false),
-      is_running_storage_id_test_(false) {
+      key_system_(key_system) {
   DCHECK(g_is_cdm_module_initialized);
 }
 

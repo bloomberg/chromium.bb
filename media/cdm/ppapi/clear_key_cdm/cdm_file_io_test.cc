@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/cdm_file_io_test.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_file_io_test.h"
 
 #include <limits>
 
@@ -72,9 +72,7 @@ const uint32_t kLargeDataSize = 20 * 1024 + 7;
 // FileIOTestRunner implementation.
 
 FileIOTestRunner::FileIOTestRunner(const CreateFileIOCB& create_file_io_cb)
-    : create_file_io_cb_(create_file_io_cb),
-      total_num_tests_(0),
-      num_passed_tests_(0) {
+    : create_file_io_cb_(create_file_io_cb) {
   // Generate |large_data_|.
   large_data_.resize(kLargeDataSize);
   for (size_t i = 0; i < kLargeDataSize; ++i)

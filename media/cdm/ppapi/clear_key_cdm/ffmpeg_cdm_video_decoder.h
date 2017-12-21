@@ -56,9 +56,9 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
   std::unique_ptr<FFmpegDecodingLoop> decoding_loop_;
 
-  bool is_initialized_;
+  bool is_initialized_ = false;
 
-  CdmHostProxy* const cdm_host_proxy_;
+  CdmHostProxy* const cdm_host_proxy_ = nullptr;
 
   base::circular_deque<std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame>>
       pending_frames_;

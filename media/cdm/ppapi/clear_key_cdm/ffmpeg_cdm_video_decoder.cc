@@ -130,7 +130,7 @@ static void CopyPlane(const uint8_t* source,
 }
 
 FFmpegCdmVideoDecoder::FFmpegCdmVideoDecoder(CdmHostProxy* cdm_host_proxy)
-    : is_initialized_(false), cdm_host_proxy_(cdm_host_proxy) {}
+    : cdm_host_proxy_(cdm_host_proxy) {}
 
 FFmpegCdmVideoDecoder::~FFmpegCdmVideoDecoder() {
   ReleaseFFmpegResources();

@@ -28,6 +28,8 @@ class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
 class FileIOTestRunner;
 
+const int64_t kInitialTimerDelayMs = 200;
+
 // Clear key implementation of the cdm::ContentDecryptionModule interfaces.
 class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
                     public cdm::ContentDecryptionModule_10 {
@@ -143,17 +145,17 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   scoped_refptr<ContentDecryptionModule> cdm_;
 
   const std::string key_system_;
-  bool allow_persistent_state_;
+  bool allow_persistent_state_ = false;
 
   std::string last_session_id_;
   std::string next_renewal_message_;
 
   // Timer delay in milliseconds for the next cdm_host_proxy_->SetTimer() call.
-  int64_t timer_delay_ms_;
+  int64_t timer_delay_ms_ = kInitialTimerDelayMs;
 
   // Indicates whether a renewal timer has been set to prevent multiple timers
   // from running.
-  bool renewal_timer_set_;
+  bool renewal_timer_set_ = false;
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   std::unique_ptr<FFmpegCdmAudioDecoder> audio_decoder_;
@@ -164,9 +166,9 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   std::unique_ptr<FileIOTestRunner> file_io_test_runner_;
   std::unique_ptr<CdmProxyTest> cdm_proxy_test_;
 
-  bool is_running_output_protection_test_;
-  bool is_running_platform_verification_test_;
-  bool is_running_storage_id_test_;
+  bool is_running_output_protection_test_ = false;
+  bool is_running_platform_verification_test_ = false;
+  bool is_running_storage_id_test_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClearKeyCdm);
 };
