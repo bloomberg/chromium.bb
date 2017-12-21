@@ -69382,6 +69382,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer.WKWebViewCallbackAfterDestroy" enum="BooleanHit">
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    [iOS] Counts the number of times a WKNavigationDelegate callback was called
+    after the CRWWebController was closed. This is unexpected and could be the
+    cause of many crashes. If this histogram is ever logged, it means that
+    Chrome needs to gracefully handle the case when WKNavigationDelegate
+    callbacks are called for a destroyed web controller. Only logged on iOS.
+  </summary>
+</histogram>
+
 <histogram name="Renderer2.FinishDocToFinish">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
