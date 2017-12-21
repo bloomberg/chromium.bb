@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -17,7 +18,10 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/ukm_service.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
+#include "content/public/test/test_utils.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 #if defined(OS_CHROMEOS)
@@ -26,6 +30,24 @@
 #endif
 
 namespace metrics {
+
+namespace {
+
+// Clears the specified data using BrowsingDataRemover.
+void ClearBrowsingData(Profile* profile) {
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(profile);
+  content::BrowsingDataRemoverCompletionObserver observer(remover);
+  remover->RemoveAndReply(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
+  observer.BlockUntilCompletion();
+  // Make sure HistoryServiceObservers have a chance to be notified.
+  content::RunAllPendingInMessageLoop();
+}
+
+}  // namespace
 
 // An observer that returns back to test code after a new profile is
 // initialized.
@@ -64,9 +86,18 @@ class UkmBrowserTest : public SyncTest {
     auto* service = ukm_service();
     return service ? service->recording_enabled_ : false;
   }
-  uint64_t client_id() {
+  uint64_t client_id() const {
     auto* service = ukm_service();
     return service ? service->client_id_ : 0;
+  }
+  bool has_source_data() const {
+    auto* service = ukm_service();
+    return service ? !service->sources().empty() : false;
+  }
+  void RecordDummySource() {
+    auto* service = ukm_service();
+    if (service)
+      service->UpdateSourceURL(1, GURL("http://example.com"));
   }
 
  protected:
@@ -404,5 +435,35 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
 // TODO(crbug/745939): Add a tests for disable w/ multiprofiles.
 
 // TODO(crbug/745939): Add a tests for guest profile.
+
+// Make sure that pending data is deleted when user deletes history.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+
+  RecordDummySource();
+  EXPECT_TRUE(has_source_data());
+
+  ClearBrowsingData(profile);
+  EXPECT_FALSE(has_source_data());
+  // Client ID should NOT be reset.
+  EXPECT_EQ(original_client_id, client_id());
+  EXPECT_TRUE(ukm_enabled());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
 
 }  // namespace metrics
