@@ -2530,7 +2530,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       layer_tree_frame_sink_->context_provider();
   if (!compositor_context_provider) {
     *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
+        ResourcePool::Create(resource_provider_.get(), false, GetTaskRunner(),
                              viz::ResourceTextureHint::kDefault,
                              ResourcePool::kDefaultExpirationDelay,
                              settings_.disallow_non_exact_resource_reuse);
@@ -2546,7 +2546,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     DCHECK(worker_context_provider);
 
     *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
+        ResourcePool::Create(resource_provider_.get(), true, GetTaskRunner(),
                              viz::ResourceTextureHint::kFramebuffer,
                              ResourcePool::kDefaultExpirationDelay,
                              settings_.disallow_non_exact_resource_reuse);
@@ -2591,7 +2591,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   }
 
   *resource_pool = ResourcePool::Create(
-      resource_provider_.get(), GetTaskRunner(),
+      resource_provider_.get(), true, GetTaskRunner(),
       viz::ResourceTextureHint::kDefault, ResourcePool::kDefaultExpirationDelay,
       settings_.disallow_non_exact_resource_reuse);
 
@@ -4326,9 +4326,15 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     upload_size = gfx::ScaleToCeiledSize(source_size, scale, scale);
   }
 
-  id = resource_provider_->CreateResource(
-      upload_size, viz::ResourceTextureHint::kDefault, format,
-      gfx::ColorSpace::CreateSRGB());
+  if (layer_tree_frame_sink_->context_provider()) {
+    id = resource_provider_->CreateGpuTextureResource(
+        upload_size, viz::ResourceTextureHint::kDefault, format,
+        gfx::ColorSpace::CreateSRGB());
+  } else {
+    DCHECK_EQ(format, viz::RGBA_8888);
+    id = resource_provider_->CreateBitmapResource(
+        upload_size, gfx::ColorSpace::CreateSRGB());
+  }
 
   if (!scaled) {
     resource_provider_->CopyToResource(id, bitmap.GetPixels(), source_size);

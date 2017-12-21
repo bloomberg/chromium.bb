@@ -13,7 +13,6 @@
 #include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -23,12 +22,11 @@ class ResourcePoolTest : public testing::Test {
   void SetUp() override {
     context_provider_ = TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager);
-    resource_provider_ = FakeResourceProvider::Create(
-        context_provider_.get(), shared_bitmap_manager_.get());
+    resource_provider_ =
+        FakeResourceProvider::Create(context_provider_.get(), nullptr);
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+        ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
                              viz::ResourceTextureHint::kDefault,
                              ResourcePool::kDefaultExpirationDelay, false);
   }
@@ -41,7 +39,6 @@ class ResourcePoolTest : public testing::Test {
   }
 
   scoped_refptr<TestContextProvider> context_provider_;
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
@@ -161,7 +158,7 @@ TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
   // Set a quick resource expiration delay so that this test doesn't take long
   // to run.
   resource_pool_ =
-      ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+      ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
                            viz::ResourceTextureHint::kDefault,
                            base::TimeDelta::FromMilliseconds(10), false);
 
@@ -202,7 +199,7 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
   // Set a quick resource expiration delay so that this test doesn't take long
   // to run.
   resource_pool_ =
-      ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+      ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
                            viz::ResourceTextureHint::kDefault,
                            base::TimeDelta::FromMilliseconds(100), false);
 
@@ -412,7 +409,7 @@ TEST_F(ResourcePoolTest, ExactRequestsRespected) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
   resource_pool_ =
-      ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+      ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
                            viz::ResourceTextureHint::kDefault,
                            base::TimeDelta::FromMilliseconds(100), true);
 

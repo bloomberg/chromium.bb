@@ -23,7 +23,7 @@ void FakeUIResourceLayerTreeHostImpl::CreateUIResource(
     DeleteUIResource(uid);
 
   UIResourceData data;
-  data.resource_id = resource_provider()->CreateResource(
+  data.resource_id = resource_provider()->CreateGpuTextureResource(
       bitmap.GetSize(), viz::ResourceTextureHint::kDefault, viz::RGBA_8888,
       gfx::ColorSpace());
 

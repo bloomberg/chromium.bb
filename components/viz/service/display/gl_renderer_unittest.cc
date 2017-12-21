@@ -1559,7 +1559,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   int root_pass_id = 1;
   RenderPass* root_pass;
 
-  ResourceId mask = resource_provider_->CreateResource(
+  ResourceId mask = resource_provider_->CreateGpuTextureResource(
       gfx::Size(20, 12), ResourceTextureHint::kDefault,
       resource_provider_->best_texture_format(), gfx::ColorSpace());
   resource_provider_->AllocateForTesting(mask);

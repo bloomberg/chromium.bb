@@ -7940,12 +7940,27 @@ TEST_F(LayerTreeHostImplTest, OverscrollOnImplThread) {
 
 class BlendStateCheckLayer : public LayerImpl {
  public:
-  static std::unique_ptr<LayerImpl> Create(
-      LayerTreeImpl* tree_impl,
-      int id,
-      ResourceProvider* resource_provider) {
-    return base::WrapUnique(
-        new BlendStateCheckLayer(tree_impl, id, resource_provider));
+  BlendStateCheckLayer(LayerTreeImpl* tree_impl,
+                       int id,
+                       ResourceProvider* resource_provider)
+      : LayerImpl(tree_impl, id),
+        blend_(false),
+        has_render_surface_(false),
+        comparison_layer_(nullptr),
+        quads_appended_(false),
+        quad_rect_(5, 5, 5, 5),
+        quad_visible_rect_(5, 5, 5, 5) {
+    if (tree_impl->context_provider()) {
+      resource_id_ = resource_provider->CreateGpuTextureResource(
+          gfx::Size(1, 1), viz::ResourceTextureHint::kDefault, viz::RGBA_8888,
+          gfx::ColorSpace());
+    } else {
+      resource_id_ = resource_provider->CreateBitmapResource(gfx::Size(1, 1),
+                                                             gfx::ColorSpace());
+    }
+    resource_provider->AllocateForTesting(resource_id_);
+    SetBounds(gfx::Size(10, 10));
+    SetDrawsContent(true);
   }
 
   void AppendQuads(viz::RenderPass* render_pass,
@@ -7994,26 +8009,6 @@ class BlendStateCheckLayer : public LayerImpl {
   }
 
  private:
-  BlendStateCheckLayer(LayerTreeImpl* tree_impl,
-                       int id,
-                       ResourceProvider* resource_provider)
-      : LayerImpl(tree_impl, id),
-        blend_(false),
-        has_render_surface_(false),
-        comparison_layer_(nullptr),
-        quads_appended_(false),
-        quad_rect_(5, 5, 5, 5),
-        quad_visible_rect_(5, 5, 5, 5),
-        resource_id_(resource_provider->CreateResource(
-            gfx::Size(1, 1),
-            viz::ResourceTextureHint::kDefault,
-            viz::RGBA_8888,
-            gfx::ColorSpace())) {
-    resource_provider->AllocateForTesting(resource_id_);
-    SetBounds(gfx::Size(10, 10));
-    SetDrawsContent(true);
-  }
-
   bool blend_;
   bool has_render_surface_;
   LayerImpl* comparison_layer_;
@@ -8035,7 +8030,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   }
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
-  root->test_properties()->AddChild(BlendStateCheckLayer::Create(
+  root->test_properties()->AddChild(std::make_unique<BlendStateCheckLayer>(
       host_impl_->active_tree(), 2, host_impl_->resource_provider()));
   auto* layer1 =
       static_cast<BlendStateCheckLayer*>(root->test_properties()->children[0]);
@@ -8088,7 +8083,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   EXPECT_TRUE(layer1->quads_appended());
   host_impl_->DidDrawAllLayers(frame);
 
-  layer1->test_properties()->AddChild(BlendStateCheckLayer::Create(
+  layer1->test_properties()->AddChild(std::make_unique<BlendStateCheckLayer>(
       host_impl_->active_tree(), 3, host_impl_->resource_provider()));
   auto* layer2 = static_cast<BlendStateCheckLayer*>(
       layer1->test_properties()->children[0]);
@@ -8352,7 +8347,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     host_impl_->active_tree()
         ->root_layer_for_testing()
         ->test_properties()
-        ->AddChild(BlendStateCheckLayer::Create(
+        ->AddChild(std::make_unique<BlendStateCheckLayer>(
             host_impl_->active_tree(), 2, host_impl_->resource_provider()));
     child_ = static_cast<BlendStateCheckLayer*>(host_impl_->active_tree()
                                                     ->root_layer_for_testing()

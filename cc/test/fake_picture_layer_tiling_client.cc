@@ -25,6 +25,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
     : resource_pool_(
           ResourcePool::Create(resource_provider,
+                               true,
                                base::ThreadTaskRunnerHandle::Get().get(),
                                viz::ResourceTextureHint::kDefault,
                                ResourcePool::kDefaultExpirationDelay,

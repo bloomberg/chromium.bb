@@ -43,13 +43,14 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   static std::unique_ptr<ResourcePool> Create(
       ResourceProvider* resource_provider,
+      bool gpu_resources,
       base::SingleThreadTaskRunner* task_runner,
       viz::ResourceTextureHint hint,
       const base::TimeDelta& expiration_delay,
       bool disallow_non_exact_reuse) {
-    return base::WrapUnique(new ResourcePool(resource_provider, task_runner,
-                                             hint, expiration_delay,
-                                             disallow_non_exact_reuse));
+    return base::WrapUnique(
+        new ResourcePool(resource_provider, gpu_resources, task_runner, hint,
+                         expiration_delay, disallow_non_exact_reuse));
   }
 
   ~ResourcePool() override;
@@ -115,6 +116,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   // Constructor for creating standard resources.
   ResourcePool(ResourceProvider* resource_provider,
+               bool gpu_resources,
                base::SingleThreadTaskRunner* task_runner,
                viz::ResourceTextureHint hint,
                const base::TimeDelta& expiration_delay,
@@ -177,6 +179,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   base::TimeTicks GetUsageTimeForLRUResource() const;
 
   ResourceProvider* resource_provider_ = nullptr;
+  bool use_gpu_resources_ = false;
   bool use_gpu_memory_buffers_ = false;
   gfx::BufferUsage usage_ = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
   viz::ResourceTextureHint hint_ = viz::ResourceTextureHint::kDefault;

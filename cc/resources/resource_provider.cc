@@ -338,53 +338,13 @@ viz::ResourceFormat ResourceProvider::YuvResourceFormat(int bits) const {
   }
 }
 
-viz::ResourceId ResourceProvider::CreateResource(
-    const gfx::Size& size,
-    viz::ResourceTextureHint hint,
-    viz::ResourceFormat format,
-    const gfx::ColorSpace& color_space) {
-  DCHECK(!size.IsEmpty());
-
-  if (compositor_context_provider_)
-    return CreateGpuTextureResource(size, hint, format, color_space);
-
-  DCHECK_EQ(viz::RGBA_8888, format);
-  return CreateBitmapResource(size, color_space);
-}
-
-viz::ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
-    const gfx::Size& size,
-    viz::ResourceTextureHint hint,
-    viz::ResourceFormat format,
-    gfx::BufferUsage usage,
-    const gfx::ColorSpace& color_space) {
-  DCHECK(!size.IsEmpty());
-  DCHECK(compositor_context_provider_);
-  DCHECK_LE(size.width(), settings_.max_texture_size);
-  DCHECK_LE(size.height(), settings_.max_texture_size);
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  viz::ResourceId id = next_id_++;
-  viz::internal::Resource* resource = InsertResource(
-      id, viz::internal::Resource(size, viz::internal::Resource::INTERNAL, hint,
-                                  viz::ResourceType::kGpuMemoryBuffer, format,
-                                  color_space));
-  resource->target = GetImageTextureTarget(usage, format);
-  resource->buffer_format = BufferFormat(format);
-  resource->usage = usage;
-  resource->is_overlay_candidate = true;
-  // GpuMemoryBuffer provides direct access to the memory used by the GPU. Read
-  // lock fences are required to ensure that we're not trying to map a buffer
-  // that is currently in-use by the GPU.
-  resource->read_lock_fences_enabled = true;
-  return id;
-}
-
 viz::ResourceId ResourceProvider::CreateGpuTextureResource(
     const gfx::Size& size,
     viz::ResourceTextureHint hint,
     viz::ResourceFormat format,
     const gfx::ColorSpace& color_space) {
+  DCHECK(compositor_context_provider_);
+  DCHECK(!size.IsEmpty());
   DCHECK_LE(size.width(), settings_.max_texture_size);
   DCHECK_LE(size.height(), settings_.max_texture_size);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -409,11 +369,43 @@ viz::ResourceId ResourceProvider::CreateGpuTextureResource(
   return id;
 }
 
+viz::ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
+    const gfx::Size& size,
+    viz::ResourceTextureHint hint,
+    viz::ResourceFormat format,
+    gfx::BufferUsage usage,
+    const gfx::ColorSpace& color_space) {
+  DCHECK(compositor_context_provider_);
+  DCHECK(!size.IsEmpty());
+  DCHECK(compositor_context_provider_);
+  DCHECK_LE(size.width(), settings_.max_texture_size);
+  DCHECK_LE(size.height(), settings_.max_texture_size);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  viz::ResourceId id = next_id_++;
+  viz::internal::Resource* resource = InsertResource(
+      id, viz::internal::Resource(size, viz::internal::Resource::INTERNAL, hint,
+                                  viz::ResourceType::kGpuMemoryBuffer, format,
+                                  color_space));
+  resource->target = GetImageTextureTarget(usage, format);
+  resource->buffer_format = BufferFormat(format);
+  resource->usage = usage;
+  resource->is_overlay_candidate = true;
+  // GpuMemoryBuffer provides direct access to the memory used by the GPU. Read
+  // lock fences are required to ensure that we're not trying to map a buffer
+  // that is currently in-use by the GPU.
+  resource->read_lock_fences_enabled = true;
+  return id;
+}
+
 viz::ResourceId ResourceProvider::CreateBitmapResource(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space) {
+  DCHECK(!compositor_context_provider_);
+  DCHECK(!size.IsEmpty());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // TODO(danakj): Allocate this outside ResourceProvider.
   std::unique_ptr<viz::SharedBitmap> bitmap =
       shared_bitmap_manager_->AllocateSharedBitmap(size);
   DCHECK(bitmap);

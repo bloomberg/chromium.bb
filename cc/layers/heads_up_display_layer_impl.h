@@ -133,7 +133,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                      const std::string& label_text) const;
   void DrawDebugRects(SkCanvas* canvas, DebugRectHistory* debug_rect_history);
 
-  void AcquireResource(ResourceProvider* resource_provider);
+  void AcquireResource(DrawMode draw_mode, ResourceProvider* resource_provider);
   void ReleaseUnmatchedSizeResources(ResourceProvider* resource_provider);
 
   std::vector<std::unique_ptr<ScopedResource>> resources_;

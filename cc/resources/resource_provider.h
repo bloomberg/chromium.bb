@@ -100,9 +100,12 @@ class CC_EXPORT ResourceProvider
   void DidLoseContextProvider() { lost_context_provider_ = true; }
 
   int max_texture_size() const { return settings_.max_texture_size; }
+  // Use this format for making resources that will be rastered and uploaded to
+  // from software bitmaps.
   viz::ResourceFormat best_texture_format() const {
     return settings_.best_texture_format;
   }
+  // Use this format for making resources that will be rastered to on the Gpu.
   viz::ResourceFormat best_render_buffer_format() const {
     return settings_.best_render_buffer_format;
   }
@@ -135,20 +138,18 @@ class CC_EXPORT ResourceProvider
   GLenum GetResourceTextureTarget(viz::ResourceId id);
   viz::ResourceTextureHint GetTextureHint(viz::ResourceId id);
 
-  // Creates a resource of the default resource type.
-  viz::ResourceId CreateResource(const gfx::Size& size,
-                                 viz::ResourceTextureHint hint,
-                                 viz::ResourceFormat format,
-                                 const gfx::ColorSpace& color_space);
-
-  // Creates a resource for a particular texture target (the distinction between
-  // texture targets has no effect in software mode).
+  viz::ResourceId CreateGpuTextureResource(const gfx::Size& size,
+                                           viz::ResourceTextureHint hint,
+                                           viz::ResourceFormat format,
+                                           const gfx::ColorSpace& color_space);
   viz::ResourceId CreateGpuMemoryBufferResource(
       const gfx::Size& size,
       viz::ResourceTextureHint hint,
       viz::ResourceFormat format,
       gfx::BufferUsage usage,
       const gfx::ColorSpace& color_space);
+  viz::ResourceId CreateBitmapResource(const gfx::Size& size,
+                                       const gfx::ColorSpace& color_space);
 
   void DeleteResource(viz::ResourceId id);
   // In the case of GPU resources, we may need to flush the GL context to ensure
@@ -452,14 +453,6 @@ class CC_EXPORT ResourceProvider
 #endif
 
  private:
-  viz::ResourceId CreateGpuTextureResource(const gfx::Size& size,
-                                           viz::ResourceTextureHint hint,
-                                           viz::ResourceFormat format,
-                                           const gfx::ColorSpace& color_space);
-
-  viz::ResourceId CreateBitmapResource(const gfx::Size& size,
-                                       const gfx::ColorSpace& color_space);
-
   void CreateTexture(viz::internal::Resource* resource);
 
   bool IsGLContextLost() const;
