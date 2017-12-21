@@ -111,8 +111,10 @@ public class ChildProcessLauncherHelper {
                             ContentChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
                     connectionBundle.putLong(
                             ContentChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-                    connectionBundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
-                            Linker.getInstance().getSharedRelros());
+                    if (Linker.isUsed()) {
+                        connectionBundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
+                                Linker.getInstance().getSharedRelros());
+                    }
                 }
 
                 @Override
@@ -583,8 +585,7 @@ public class ChildProcessLauncherHelper {
         if (Linker.areTestsEnabled()) {
             Linker linker = Linker.getInstance();
             return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros,
-                    linker.getTestRunnerClassNameForTesting(),
-                    linker.getImplementationForTesting());
+                    linker.getTestRunnerClassNameForTesting());
         } else {
             return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros);
         }

@@ -23,37 +23,24 @@ public class LinkerTests implements Linker.TestRunner {
                              boolean isBrowserProcess) {
         boolean checkSharedRelro;
         if (isBrowserProcess) {
-            Linker linker = Linker.getInstance();
-            int linkerImplementation = linker.getImplementationForTesting();
-
-            if (linkerImplementation == Linker.LINKER_IMPLEMENTATION_LEGACY) {
-                // LegacyLinker may share RELROs in the browser.
-                switch (Linker.BROWSER_SHARED_RELRO_CONFIG) {
-                    case Linker.BROWSER_SHARED_RELRO_CONFIG_NEVER:
-                        checkSharedRelro = false;
-                        break;
-                    case Linker.BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY:
-                        // A shared RELRO should only be used on low-end devices.
-                        checkSharedRelro =
-                                (memoryDeviceConfig == Linker.MEMORY_DEVICE_CONFIG_LOW);
-                        break;
-                    case Linker.BROWSER_SHARED_RELRO_CONFIG_ALWAYS:
-                        // Always check for a shared RELRO.
-                        checkSharedRelro = true;
-                        break;
-                    default:
-                        Log.e(TAG, "Invalid shared RELRO linker configuration: "
-                                + Linker.BROWSER_SHARED_RELRO_CONFIG);
-                        return false;
-                }
-
-            } else if (linkerImplementation == Linker.LINKER_IMPLEMENTATION_MODERN) {
-                // ModernLinker never shares RELROs in the browser.
-                checkSharedRelro = false;
-
-            } else {
-                Log.e(TAG, "Unknown linker: " + linker.getClass().getName());
-                return false;
+            // LegacyLinker may share RELROs in the browser.
+            switch (Linker.BROWSER_SHARED_RELRO_CONFIG) {
+                case Linker.BROWSER_SHARED_RELRO_CONFIG_NEVER:
+                    checkSharedRelro = false;
+                    break;
+                case Linker.BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY:
+                    // A shared RELRO should only be used on low-end devices.
+                    checkSharedRelro = (memoryDeviceConfig == Linker.MEMORY_DEVICE_CONFIG_LOW);
+                    break;
+                case Linker.BROWSER_SHARED_RELRO_CONFIG_ALWAYS:
+                    // Always check for a shared RELRO.
+                    checkSharedRelro = true;
+                    break;
+                default:
+                    Log.e(TAG,
+                            "Invalid shared RELRO linker configuration: "
+                                    + Linker.BROWSER_SHARED_RELRO_CONFIG);
+                    return false;
             }
         } else {
             // Service processes should always use a shared RELRO section.

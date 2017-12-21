@@ -20,7 +20,6 @@
 #include <string.h>
 
 #include "legacy_linker_jni.h"
-#include "modern_linker_jni.h"
 
 namespace chromium_android_linker {
 
@@ -224,8 +223,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   }
 
   // Initialize linker base and implementations.
-  if (!LinkerJNIInit(vm, env)
-      || !LegacyLinkerJNIInit(vm, env) || !ModernLinkerJNIInit(vm, env)) {
+  if (!LinkerJNIInit(vm, env) || !LegacyLinkerJNIInit(vm, env)) {
     return -1;
   }
 
