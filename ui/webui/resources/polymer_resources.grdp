@@ -772,10 +772,6 @@
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-behavior.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_EXTRACTED_JS"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-extracted.js"
-             type="chrome_html"
-             compress="gzip" />
   <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_LITE_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-lite-extracted.js"
              type="chrome_html"
@@ -786,10 +782,6 @@
              compress="gzip" />
   <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_STYLES_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-styles.html"
-             type="chrome_html"
-             compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_HTML"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner.html"
              type="chrome_html"
              compress="gzip" />
   <structure name="IDR_POLYMER_1_0_PAPER_STYLES_CLASSES_SHADOW_LAYOUT_HTML"
