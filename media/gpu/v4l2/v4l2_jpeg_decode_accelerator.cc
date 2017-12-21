@@ -18,13 +18,17 @@
 #include "media/filters/jpeg_parser.h"
 #include "third_party/libyuv/include/libyuv.h"
 
-#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)      \
-  do {                                                                \
-    if (device_->Ioctl(type, arg) != 0) {                             \
-      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << type_name; \
-      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);   \
-      return value;                                                   \
-    }                                                                 \
+#define VLOGF(level) VLOG(level) << __func__ << "(): "
+#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
+
+#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)    \
+  do {                                                              \
+    if (device_->Ioctl(type, arg) != 0) {                           \
+      VPLOGF(1) << "ioctl() failed: " << type_name;                 \
+      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE); \
+      return value;                                                 \
+    }                                                               \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN(type, arg) \
@@ -36,7 +40,7 @@
 #define IOCTL_OR_LOG_ERROR(type, arg)                               \
   do {                                                              \
     if (device_->Ioctl(type, arg) != 0) {                           \
-      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;   \
+      VPLOGF(1) << "ioctl() failed: " << #type;                     \
       PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE); \
     }                                                               \
   } while (0)
@@ -45,7 +49,7 @@
   do {                                                                     \
     uint8_t _out;                                                          \
     if (!reader.ReadU8(&_out)) {                                           \
-      DVLOG(1)                                                             \
+      DVLOGF(1)                                                            \
           << "Error in stream: unexpected EOS while trying to read " #out; \
       return false;                                                        \
     }                                                                      \
@@ -56,7 +60,7 @@
   do {                                                                     \
     uint16_t _out;                                                         \
     if (!reader.ReadU16(&_out)) {                                          \
-      DVLOG(1)                                                             \
+      DVLOGF(1)                                                            \
           << "Error in stream: unexpected EOS while trying to read " #out; \
       return false;                                                        \
     }                                                                      \
@@ -186,8 +190,8 @@ void V4L2JpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
 void V4L2JpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
                                             Error error) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  LOG(ERROR) << "Notifying of error " << error << " for buffer id "
-             << bitstream_buffer_id;
+  VLOGF(1) << "Notifying of error " << error << " for buffer id "
+           << bitstream_buffer_id;
   client_->NotifyError(bitstream_buffer_id, error);
 }
 
@@ -202,7 +206,7 @@ bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (!device_->Open(V4L2Device::Type::kJpegDecoder, V4L2_PIX_FMT_JPEG)) {
-    LOG(ERROR) << "Failed to open device";
+    VLOGF(1) << "Failed to open device";
     return false;
   }
 
@@ -211,12 +215,12 @@ bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
   const __u32 kCapsRequired = V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_M2M_MPLANE;
   memset(&caps, 0, sizeof(caps));
   if (device_->Ioctl(VIDIOC_QUERYCAP, &caps) != 0) {
-    PLOG(ERROR) << __func__ << ": ioctl() failed: VIDIOC_QUERYCAP";
+    VPLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP";
     return false;
   }
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    LOG(ERROR) << __func__ << ": VIDIOC_QUERYCAP, caps check failed: 0x"
-               << std::hex << caps.capabilities;
+    VLOGF(1) << "VIDIOC_QUERYCAP, caps check failed: 0x" << std::hex
+             << caps.capabilities;
     return false;
   }
 
@@ -225,12 +229,12 @@ bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
   memset(&sub, 0, sizeof(sub));
   sub.type = V4L2_EVENT_SOURCE_CHANGE;
   if (device_->Ioctl(VIDIOC_SUBSCRIBE_EVENT, &sub) != 0) {
-    PLOG(ERROR) << __func__ << ": ioctl() failed: VIDIOC_SUBSCRIBE_EVENT";
+    VPLOGF(1) << "ioctl() failed: VIDIOC_SUBSCRIBE_EVENT";
     return false;
   }
 
   if (!decoder_thread_.Start()) {
-    LOG(ERROR) << __func__ << ": decoder thread failed to start";
+    VLOGF(1) << "decoder thread failed to start";
     return false;
   }
   client_ = client;
@@ -240,19 +244,19 @@ bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
       FROM_HERE, base::Bind(&V4L2JpegDecodeAccelerator::StartDevicePoll,
                             base::Unretained(this)));
 
-  DVLOG(1) << "V4L2JpegDecodeAccelerator initialized.";
+  VLOGF(2) << "V4L2JpegDecodeAccelerator initialized.";
   return true;
 }
 
 void V4L2JpegDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
-  DVLOG(1) << "Decode(): input_id=" << bitstream_buffer.id()
-           << ", size=" << bitstream_buffer.size();
+  DVLOGF(4) << "input_id=" << bitstream_buffer.id()
+            << ", size=" << bitstream_buffer.size();
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (bitstream_buffer.id() < 0) {
-    LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
+    VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
     if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
       base::SharedMemory::CloseHandle(bitstream_buffer.handle());
     PostNotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
@@ -285,7 +289,7 @@ void V4L2JpegDecodeAccelerator::DecodeTask(
     std::unique_ptr<JobRecord> job_record) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   if (!job_record->shm.Map()) {
-    PLOG(ERROR) << __func__ << ": could not map bitstream_buffer";
+    VPLOGF(1) << "could not map bitstream_buffer";
     PostNotifyError(job_record->bitstream_buffer_id, UNREADABLE_INPUT);
     return;
   }
@@ -315,7 +319,7 @@ bool V4L2JpegDecodeAccelerator::ShouldRecreateInputBuffers() {
 }
 
 bool V4L2JpegDecodeAccelerator::RecreateInputBuffers() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   // If running queue is not empty, we should wait until pending frames finish.
@@ -325,7 +329,7 @@ bool V4L2JpegDecodeAccelerator::RecreateInputBuffers() {
   DestroyInputBuffers();
 
   if (!CreateInputBuffers()) {
-    LOG(ERROR) << "Create input buffers failed.";
+    VLOGF(1) << "Create input buffers failed.";
     return false;
   }
 
@@ -333,13 +337,13 @@ bool V4L2JpegDecodeAccelerator::RecreateInputBuffers() {
 }
 
 bool V4L2JpegDecodeAccelerator::RecreateOutputBuffers() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   DestroyOutputBuffers();
 
   if (!CreateOutputBuffers()) {
-    LOG(ERROR) << "Create output buffers failed.";
+    VLOGF(1) << "Create output buffers failed.";
     return false;
   }
 
@@ -347,7 +351,7 @@ bool V4L2JpegDecodeAccelerator::RecreateOutputBuffers() {
 }
 
 bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
   DCHECK(!input_jobs_.empty());
@@ -396,7 +400,7 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
           device_->Mmap(NULL, planes[j].length, PROT_READ | PROT_WRITE,
                         MAP_SHARED, planes[j].m.mem_offset);
       if (address == MAP_FAILED) {
-        PLOG(ERROR) << __func__ << ": mmap() failed";
+        VPLOGF(1) << "mmap() failed";
         PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
         return false;
       }
@@ -409,7 +413,7 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
 }
 
 bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
   DCHECK(!running_jobs_.empty());
@@ -435,8 +439,7 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
   VideoPixelFormat output_format =
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
   if (output_format == PIXEL_FORMAT_UNKNOWN) {
-    PLOG(ERROR) << __func__ << ": unknown V4L2 pixel format: "
-                << output_buffer_pixelformat_;
+    VLOGF(1) << "unknown V4L2 pixel format: " << output_buffer_pixelformat_;
     PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
     return false;
   }
@@ -480,7 +483,7 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
           device_->Mmap(NULL, planes[j].length, PROT_READ | PROT_WRITE,
                         MAP_SHARED, planes[j].m.mem_offset);
       if (address == MAP_FAILED) {
-        PLOG(ERROR) << __func__ << ": mmap() failed";
+        VPLOGF(1) << "mmap() failed";
         PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
         return false;
       }
@@ -558,7 +561,7 @@ void V4L2JpegDecodeAccelerator::DevicePollTask() {
 
   bool event_pending;
   if (!device_->Poll(true, &event_pending)) {
-    PLOG(ERROR) << __func__ << ": Poll device error.";
+    VPLOGF(1) << "Poll device error.";
     PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
     return;
   }
@@ -578,19 +581,17 @@ bool V4L2JpegDecodeAccelerator::DequeueSourceChangeEvent() {
 
   if (device_->Ioctl(VIDIOC_DQEVENT, &ev) == 0) {
     if (ev.type == V4L2_EVENT_SOURCE_CHANGE) {
-      DVLOG(3) << __func__
-               << ": got source change event: " << ev.u.src_change.changes;
+      VLOGF(2) << ": got source change event: " << ev.u.src_change.changes;
       if (ev.u.src_change.changes &
           (V4L2_EVENT_SRC_CH_RESOLUTION | V4L2_EVENT_SRC_CH_PIXELFORMAT)) {
         return true;
       }
-      LOG(ERROR) << __func__ << ": unexpected source change event.";
+      VLOGF(1) << "unexpected source change event.";
     } else {
-      LOG(ERROR) << __func__ << ": got an event (" << ev.type
-                 << ") we haven't subscribed to.";
+      VLOGF(1) << "got an event (" << ev.type << ") we haven't subscribed to.";
     }
   } else {
-    LOG(ERROR) << __func__ << ": dequeue event failed.";
+    VLOGF(1) << "dequeue event failed.";
   }
   PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
   return false;
@@ -624,12 +625,12 @@ void V4L2JpegDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
                               base::Unretained(this)));
   }
 
-  DVLOG(2) << __func__ << ": buffer counts: INPUT["
-           << input_jobs_.size() << "] => DEVICE["
-           << free_input_buffers_.size() << "/"
-           << input_buffer_map_.size() << "->"
-           << free_output_buffers_.size() << "/"
-           << output_buffer_map_.size() << "]";
+  DVLOGF(3) << "buffer counts: INPUT["
+            << input_jobs_.size() << "] => DEVICE["
+            << free_input_buffers_.size() << "/"
+            << input_buffer_map_.size() << "->"
+            << free_output_buffers_.size() << "/"
+            << output_buffer_map_.size() << "]";
 }
 
 void V4L2JpegDecodeAccelerator::EnqueueInput() {
@@ -693,8 +694,8 @@ bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
             output_buffer_coded_size_.height(), dst_frame->coded_size().width(),
             dst_frame->coded_size().height(), libyuv::kRotate0,
             output_buffer_pixelformat_)) {
-      LOG(ERROR) << "ConvertToI420 failed. Source format: "
-                 << output_buffer_pixelformat_;
+      VLOGF(1) << "ConvertToI420 failed. Source format: "
+               << output_buffer_pixelformat_;
       return false;
     }
   } else if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M ||
@@ -711,7 +712,7 @@ bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
                            dst_u_stride, dst_v, dst_v_stride,
                            output_buffer_coded_size_.width(),
                            output_buffer_coded_size_.height())) {
-        LOG(ERROR) << "I420Copy failed";
+        VLOGF(1) << "I420Copy failed";
         return false;
       }
     } else {  // output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M
@@ -720,13 +721,13 @@ bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
                              dst_u_stride, dst_v, dst_v_stride,
                              output_buffer_coded_size_.width(),
                              output_buffer_coded_size_.height())) {
-        LOG(ERROR) << "I422ToI420 failed";
+        VLOGF(1) << "I422ToI420 failed";
         return false;
       }
     }
   } else {
-    LOG(ERROR) << "Unsupported source buffer format: "
-               << output_buffer_pixelformat_;
+    VLOGF(1) << "Unsupported source buffer format: "
+             << output_buffer_pixelformat_;
     return false;
   }
   return true;
@@ -752,7 +753,7 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      PLOG(ERROR) << "ioctl() failed: input buffer VIDIOC_DQBUF failed.";
+      VPLOGF(1) << "ioctl() failed: input buffer VIDIOC_DQBUF failed.";
       PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
       return;
     }
@@ -762,7 +763,7 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
     free_input_buffers_.push_back(dqbuf.index);
 
     if (dqbuf.flags & V4L2_BUF_FLAG_ERROR) {
-      DVLOG(1) << "Dequeue input buffer error.";
+      VLOGF(1) << "Error in dequeued input buffer.";
       PostNotifyError(kInvalidBitstreamBufferId, UNSUPPORTED_JPEG);
       running_jobs_.pop();
     }
@@ -789,7 +790,7 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      PLOG(ERROR) << "ioctl() failed: output buffer VIDIOC_DQBUF failed.";
+      VPLOGF(1) << "ioctl() failed: output buffer VIDIOC_DQBUF failed.";
       PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
       return;
     }
@@ -803,7 +804,7 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
     running_jobs_.pop();
 
     if (dqbuf.flags & V4L2_BUF_FLAG_ERROR) {
-      DVLOG(1) << "Dequeue output buffer error.";
+      VLOGF(1) << "Error in dequeued output buffer.";
       PostNotifyError(kInvalidBitstreamBufferId, UNSUPPORTED_JPEG);
     } else {
       // Copy the decoded data from output buffer to the buffer provided by the
@@ -813,8 +814,8 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
         PostNotifyError(job_record->bitstream_buffer_id, PLATFORM_FAILURE);
         return;
       }
-      DVLOG(3) << "Decoding finished, returning bitstream buffer, id="
-               << job_record->bitstream_buffer_id;
+      DVLOGF(4) << "Decoding finished, returning bitstream buffer, id="
+                << job_record->bitstream_buffer_id;
 
       child_task_runner_->PostTask(
           FROM_HERE, base::Bind(&V4L2JpegDecodeAccelerator::VideoFrameReady,
@@ -838,7 +839,7 @@ static bool AddHuffmanTable(const void* input_ptr,
   READ_U8_OR_RETURN_FALSE(reader, &marker1);
   READ_U8_OR_RETURN_FALSE(reader, &marker2);
   if (marker1 != JPEG_MARKER_PREFIX || marker2 != JPEG_SOI) {
-    DLOG(ERROR) << __func__ << ": The input is not a Jpeg";
+    DVLOGF(1) << "The input is not a Jpeg";
     return false;
   }
 
@@ -850,7 +851,7 @@ static bool AddHuffmanTable(const void* input_ptr,
     const char* start_addr = reader.ptr();
     READ_U8_OR_RETURN_FALSE(reader, &marker1);
     if (marker1 != JPEG_MARKER_PREFIX) {
-      DLOG(ERROR) << __func__ << ": marker1 != 0xFF";
+      DVLOGF(1) << "marker1 != 0xFF";
       return false;
     }
     do {
@@ -861,8 +862,8 @@ static bool AddHuffmanTable(const void* input_ptr,
     READ_U16_OR_RETURN_FALSE(reader, &size);
     // The size includes the size field itself.
     if (size < sizeof(size)) {
-      DLOG(ERROR) << __func__ << ": Ill-formed JPEG. Segment size (" << size
-                  << ") is smaller than size field (" << sizeof(size) << ")";
+      DVLOGF(1) << ": Ill-formed JPEG. Segment size (" << size
+                << ") is smaller than size field (" << sizeof(size) << ")";
       return false;
     }
     size -= sizeof(size);
@@ -886,9 +887,8 @@ static bool AddHuffmanTable(const void* input_ptr,
     }
 
     if (!reader.Skip(size)) {
-      DLOG(ERROR) << __func__ << ": Ill-formed JPEG. Remaining size ("
-                  << reader.remaining()
-                  << ") is smaller than header specified (" << size << ")";
+      DVLOGF(1) << "Ill-formed JPEG. Remaining size (" << reader.remaining()
+                << ") is smaller than header specified (" << size << ")";
       return false;
     }
 
@@ -938,9 +938,8 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
   running_jobs_.push(job_record);
   free_input_buffers_.pop_back();
 
-  DVLOG(3) << __func__
-           << ": enqueued frame id=" << job_record->bitstream_buffer_id
-           << " to device.";
+  DVLOGF(3) << "enqueued frame id=" << job_record->bitstream_buffer_id
+            << " to device.";
   return true;
 }
 
@@ -968,12 +967,12 @@ bool V4L2JpegDecodeAccelerator::EnqueueOutputRecord() {
 }
 
 void V4L2JpegDecodeAccelerator::StartDevicePoll() {
-  DVLOG(3) << __func__ << ": starting device poll";
+  DVLOGF(3) << ": starting device poll";
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(!device_poll_thread_.IsRunning());
 
   if (!device_poll_thread_.Start()) {
-    LOG(ERROR) << __func__ << ": Device thread failed to start";
+    VLOGF(1) << "Device thread failed to start";
     PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
     return;
   }
@@ -981,10 +980,10 @@ void V4L2JpegDecodeAccelerator::StartDevicePoll() {
 }
 
 bool V4L2JpegDecodeAccelerator::StopDevicePoll() {
-  DVLOG(3) << __func__ << ": stopping device poll";
+  DVLOGF(3) << "stopping device poll";
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!device_->SetDevicePollInterrupt()) {
-    LOG(ERROR) << __func__ << ": SetDevicePollInterrupt failed.";
+    VLOGF(1) << "SetDevicePollInterrupt failed.";
     PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
     return false;
   }
