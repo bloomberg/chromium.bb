@@ -16,7 +16,6 @@ namespace display {
 TEST(JsonConverterTest, JsonFromToDisplayLayout) {
   DisplayLayout layout;
   layout.primary_id = 1;
-  layout.mirrored = true;
   layout.default_unified = false;
   layout.placement_list.push_back(DisplayPlacement());
   layout.placement_list.push_back(DisplayPlacement());
@@ -35,7 +34,6 @@ TEST(JsonConverterTest, JsonFromToDisplayLayout) {
   const char data[] =
       "{\n"
       "  \"primary-id\": \"1\",\n"
-      "  \"mirrored\": true,\n"
       "  \"default_unified\": false,\n"
       "  \"display_placement\": [{\n"
       "    \"display_id\": \"2\",\n"
@@ -59,7 +57,6 @@ TEST(JsonConverterTest, JsonFromToDisplayLayout) {
 
   DisplayLayout read_layout;
   EXPECT_TRUE(JsonToDisplayLayout(*read_value, &read_layout));
-  EXPECT_EQ(read_layout.mirrored, layout.mirrored);
   EXPECT_EQ(read_layout.primary_id, layout.primary_id);
   EXPECT_EQ(read_layout.default_unified, layout.default_unified);
   EXPECT_TRUE(read_layout.HasSamePlacementList(layout));
@@ -69,7 +66,6 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
   const char data[] =
       "{\n"
       "  \"primary-id\": \"1\",\n"
-      "  \"mirrored\": true,\n"
       "  \"default_unified\": false,\n"
       "  \"position\": \"bottom\",\n"
       "  \"offset\": 20\n"
@@ -83,7 +79,6 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
 
   DisplayLayout read_layout;
   EXPECT_TRUE(JsonToDisplayLayout(*read_value, &read_layout));
-  EXPECT_EQ(true, read_layout.mirrored);
   EXPECT_EQ(1, read_layout.primary_id);
   EXPECT_FALSE(read_layout.default_unified);
   ASSERT_EQ(1u, read_layout.placement_list.size());

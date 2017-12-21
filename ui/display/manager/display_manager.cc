@@ -1413,8 +1413,7 @@ void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(
     MultiDisplayMode mode) {
   DCHECK_NE(MIRRORING, mode);
   DisplayIdList list = GetCurrentDisplayIdList();
-  layout_store_->UpdateMultiDisplayState(list, IsInMirrorMode(),
-                                         mode == UNIFIED);
+  layout_store_->UpdateDefaultUnified(list, mode == UNIFIED);
   ReconfigureDisplays();
 }
 

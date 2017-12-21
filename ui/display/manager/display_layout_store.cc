@@ -86,12 +86,6 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
   layouts_[list] = std::move(layout);
 }
 
-bool DisplayLayoutStore::GetMirrorMode(const DisplayIdList& list) {
-  if (forced_mirror_mode_)
-    return true;
-  return GetRegisteredDisplayLayout(list).mirrored;
-}
-
 const DisplayLayout& DisplayLayoutStore::GetRegisteredDisplayLayout(
     const DisplayIdList& list) {
   DCHECK_GT(list.size(), 1u);
@@ -104,19 +98,12 @@ const DisplayLayout& DisplayLayoutStore::GetRegisteredDisplayLayout(
   return *layout;
 }
 
-void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdList& list,
-                                                 bool mirrored,
-                                                 bool default_unified) {
+void DisplayLayoutStore::UpdateDefaultUnified(const DisplayIdList& list,
+                                              bool default_unified) {
   DCHECK(layouts_.find(list) != layouts_.end());
   if (layouts_.find(list) == layouts_.end())
     CreateDefaultDisplayLayout(list);
 
-  if (!forced_mirror_mode_) {
-    // Don't remember the mirrored status if it's forced by the
-    // force_mirror_mode_ flag because it'll always be mirrored
-    // regardless of the user setting.
-    layouts_[list]->mirrored = mirrored;
-  }
   layouts_[list]->default_unified = default_unified;
 }
 

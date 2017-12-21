@@ -29,7 +29,6 @@ struct DisplayPlacement {
 
 // Corresponds to display::DisplayLayout.
 struct DisplayLayout {
-  bool mirrored;
   bool default_unified;
   int64 primary_display_id;
   array<DisplayPlacement> placement_list;
