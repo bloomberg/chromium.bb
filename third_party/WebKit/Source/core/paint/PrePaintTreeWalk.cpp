@@ -55,31 +55,36 @@ struct PrePaintTreeWalkContext {
   PaintLayer* ancestor_overflow_paint_layer;
 };
 
-void PrePaintTreeWalk::Walk(LocalFrameView& root_frame) {
-  DCHECK(root_frame.GetFrame().GetDocument()->Lifecycle().GetState() ==
+void PrePaintTreeWalk::Walk(LocalFrameView& root_frame_view) {
+  if (root_frame_view.ShouldThrottleRendering()) {
+    // Skip the throttled frame. Will update it when it becomes unthrottled.
+    return;
+  }
+
+  DCHECK(root_frame_view.GetFrame().GetDocument()->Lifecycle().GetState() ==
          DocumentLifecycle::kInPrePaint);
 
   PrePaintTreeWalkContext initial_context;
 
   // GeometryMapper depends on paint properties.
   bool needs_tree_builder_context_update =
-      NeedsTreeBuilderContextUpdate(root_frame, initial_context);
+      NeedsTreeBuilderContextUpdate(root_frame_view, initial_context);
   if (needs_tree_builder_context_update)
     GeometryMapper::ClearCache();
 
-  Walk(root_frame, initial_context);
+  Walk(root_frame_view, initial_context);
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();
 
 #if DCHECK_IS_ON()
   if (!needs_tree_builder_context_update)
     return;
-  if (VLOG_IS_ON(2) && root_frame.GetLayoutView()) {
-    LOG(ERROR) << "PrePaintTreeWalk::Walk(root_frame_view=" << &root_frame
+  if (VLOG_IS_ON(2) && root_frame_view.GetLayoutView()) {
+    LOG(ERROR) << "PrePaintTreeWalk::Walk(root_frame_view=" << &root_frame_view
                << ")\nPaintLayer tree:";
-    showLayerTree(root_frame.GetLayoutView()->Layer());
+    showLayerTree(root_frame_view.GetLayoutView()->Layer());
   }
   if (VLOG_IS_ON(1))
-    showAllPropertyTrees(root_frame);
+    showAllPropertyTrees(root_frame_view);
 #endif
 }
 
