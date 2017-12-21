@@ -10,9 +10,9 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol SigninPresenter;
-@class SigninPromoViewConfigurator;
-@class SigninPromoViewMediator;
+@class SigninPromoView;
 @protocol SyncPresenter;
+@class TabSwitcherPanelOverlayView;
 
 namespace ios {
 class ChromeBrowserState;
@@ -33,6 +33,18 @@ enum class TabSwitcherSignInPanelsType;
 TabSwitcherPanelOverlayType PanelOverlayTypeFromSignInPanelsType(
     TabSwitcherSignInPanelsType signInPanelType);
 
+// Delegate protocol for TabSwitcherPanelOverlayView.
+@protocol TabSwitcherPanelOverlayViewDelegate<NSObject>
+
+// Called when TabSwitcherPanelOverlayView is shown.
+- (void)tabSwitcherPanelOverlViewWasShown:
+    (TabSwitcherPanelOverlayView*)tabSwitcherPanelOverlayView;
+// Called when TabSwitcherPanelOverlayView is hidden.
+- (void)tabSwitcherPanelOverlViewWasHidden:
+    (TabSwitcherPanelOverlayView*)tabSwitcherPanelOverlayView;
+
+@end
+
 @interface TabSwitcherPanelOverlayView : UIView
 
 @property(nonatomic, assign) TabSwitcherPanelOverlayType overlayType;
@@ -40,23 +52,17 @@ TabSwitcherPanelOverlayType PanelOverlayTypeFromSignInPanelsType(
     presenter;
 @property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
     dispatcher;
-@property(nonatomic) SigninPromoViewMediator* signinPromoViewMediator;
+// Sign-in promo view. Nil if the |overlayType| is not
+// |OVERLAY_PANEL_USER_SIGNED_OUT|.
+@property(nonatomic, readonly) SigninPromoView* signinPromoView;
+// Delegate, can be nil.
+@property(nonatomic, weak) id<TabSwitcherPanelOverlayViewDelegate> delegate;
 
 - (instancetype)initWithFrame:(CGRect)frame
                  browserState:(ios::ChromeBrowserState*)browserState
                     presenter:(id<SigninPresenter, SyncPresenter>)presenter
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher;
-
-// Should be called when the tab switcher was shown.
-- (void)wasShown;
-// Should be called when the tab switcher was hidden.
-- (void)wasHidden;
-
-// Called when the sign-in promo view should be reloaded.
-- (void)configureSigninPromoWithConfigurator:
-            (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged;
 
 @end
 

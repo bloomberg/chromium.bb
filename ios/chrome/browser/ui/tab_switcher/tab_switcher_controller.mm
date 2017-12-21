@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
@@ -103,7 +104,8 @@ enum class SnapshotViewOption {
                                     TabSwitcherViewDelegate,
                                     TabSwitcherHeaderViewDelegate,
                                     TabSwitcherHeaderViewDataSource,
-                                    TabSwitcherPanelControllerDelegate> {
+                                    TabSwitcherPanelControllerDelegate,
+                                    TabSwitcherPanelOverlayViewDelegate> {
   // weak.
   ios::ChromeBrowserState* _browserState;
   // weak.
@@ -1048,24 +1050,29 @@ enum class SnapshotViewOption {
   _signInPanelType = panelType;
   DCHECK_EQ(nil, _signInPanelOverlayView);
   if (panelType != TabSwitcherSignInPanelsType::NO_PANEL) {
-    TabSwitcherPanelOverlayView* panelView =
-        [[TabSwitcherPanelOverlayView alloc]
-            initWithFrame:CGRectZero
-             browserState:_browserState
-                presenter:self /* id<SigninPresenter, SyncPresenter> */
-               dispatcher:self.dispatcher];
-    _signInPanelOverlayView = panelView;
+    _signInPanelOverlayView = [[TabSwitcherPanelOverlayView alloc]
+        initWithFrame:CGRectZero
+         browserState:_browserState
+            presenter:self /* id<SigninPresenter, SyncPresenter> */
+           dispatcher:self.dispatcher];
+    [_signInPanelOverlayView
+        setOverlayType:PanelOverlayTypeFromSignInPanelsType(panelType)];
+    _signInPanelOverlayView.delegate = self;
     if (panelType == TabSwitcherSignInPanelsType::PANEL_USER_SIGNED_OUT) {
+      DCHECK_NE(nil, _signInPanelOverlayView.signinPromoView);
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
           initWithBrowserState:_browserState
                    accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_TAB_SWITCHER
                      presenter:self];
       _signinPromoViewMediator.consumer = self;
-      panelView.signinPromoViewMediator = _signinPromoViewMediator;
+      _signInPanelOverlayView.signinPromoView.delegate =
+          _signinPromoViewMediator;
+      [[_signinPromoViewMediator createConfigurator]
+          configureSigninPromoView:_signInPanelOverlayView.signinPromoView];
     }
-    [panelView setOverlayType:PanelOverlayTypeFromSignInPanelsType(panelType)];
-    [_tabSwitcherView addPanelView:panelView atIndex:kSignInPromoPanelIndex];
+    [_tabSwitcherView addPanelView:_signInPanelOverlayView
+                           atIndex:kSignInPromoPanelIndex];
   }
 }
 
@@ -1307,14 +1314,26 @@ enum class SnapshotViewOption {
 - (void)configureSigninPromoWithConfigurator:
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
-  DCHECK(nil != _signInPanelOverlayView);
-  [_signInPanelOverlayView
-      configureSigninPromoWithConfigurator:configurator
-                           identityChanged:identityChanged];
+  DCHECK_NE(nil, _signInPanelOverlayView);
+  DCHECK_NE(nil, _signInPanelOverlayView.signinPromoView);
+  [configurator
+      configureSigninPromoView:_signInPanelOverlayView.signinPromoView];
 }
 
 - (void)signinDidFinish {
   [_tabSwitcherModel syncedSessionsChanged];
+}
+
+#pragma mark - TabSwitcherPanelOverlayViewDelegate
+
+- (void)tabSwitcherPanelOverlViewWasShown:
+    (TabSwitcherPanelOverlayView*)tabSwitcherPanelOverlayView {
+  [_signinPromoViewMediator signinPromoViewVisible];
+}
+
+- (void)tabSwitcherPanelOverlViewWasHidden:
+    (TabSwitcherPanelOverlayView*)tabSwitcherPanelOverlayView {
+  [_signinPromoViewMediator signinPromoViewHidden];
 }
 
 @end
