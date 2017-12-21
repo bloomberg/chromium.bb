@@ -5,10 +5,6 @@
 (async function() {
   TestRunner.addResult(`Tests history saving logic in TabbedEditorContainer.\n`);
   await TestRunner.loadModule('sources_test_runner');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=76912">Bug 76912</a>
-    `);
-
 
   function dumpHistory(history) {
     TestRunner.addResult('  history = ' + JSON.stringify(history._serializeToObject()) + '');

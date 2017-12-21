@@ -8,9 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that source data are extracted correctly from external stylesheets in UTF-8 with BOM. <a href="https://bugs.webkit.org/show_bug.cgi?id=59322">Bug 59322</a>.
-      </p>
       <h1 id="inspected">
       I'm red.
       </h1>

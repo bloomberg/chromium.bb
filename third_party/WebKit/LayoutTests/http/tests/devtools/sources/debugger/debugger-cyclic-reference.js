@@ -7,12 +7,6 @@
       `Tests that debugging a page where Object prototype has a cyclic reference won't crash the browser.Bug 43558\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that debugging a page where Object prototype has a cyclic reference won't
-      crash the browser.<a href="https://bugs.webkit.org/show_bug.cgi?id=43558">Bug 43558</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       Object.prototype.cyclicRef = Object.prototype;
 

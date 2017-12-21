@@ -7,10 +7,6 @@
       `Tests how revision requests content if original content was not loaded yet. https://bugs.webkit.org/show_bug.cgi?id=63631\n`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <p>Tests how revision requests content if original content was not loaded yet.</p>
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=63631">Bug 63631</a>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function loadStylesheet()
       {

@@ -7,13 +7,7 @@
       `Tests that when uncaught exception in eval'ed script ending with //# sourceURL=url is logged into console, its stack trace will have the url as the script source. Bug 47252.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that when uncaught exception in eval'ed script ending
-      with //# sourceURL=url is logged into console, its stack trace
-      will have the url as the script source. <a href="https://bugs.webkit.org/show_bug.cgi?id=47252">Bug 47252.</a>
-      </p>
-  `);
+
   await TestRunner.evaluateInPagePromise(`
       function evalSource(name)
       {

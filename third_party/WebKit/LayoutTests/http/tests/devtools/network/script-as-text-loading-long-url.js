@@ -6,9 +6,6 @@
   TestRunner.addResult(`Tests that long URLs are correctly trimmed in anchor links.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=100095">Bug 100095</a>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function loadScript()
       {

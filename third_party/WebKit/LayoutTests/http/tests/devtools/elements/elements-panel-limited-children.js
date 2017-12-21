@@ -19,9 +19,6 @@
       <div id="id9">9</div>
       <div id="id10">10</div>
       </div>
-      <p>
-      Tests that src and href element targets are rewritten properly.
-      </p>
     `);
   await TestRunner.evaluateInPagePromise(`
       function insertNode()

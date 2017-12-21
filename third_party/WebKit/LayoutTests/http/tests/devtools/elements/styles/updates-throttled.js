@@ -7,10 +7,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that Styles sidebar DOM rebuilds are throttled during consecutive updates. <a href="https://bugs.webkit.org/show_bug.cgi?id=78086">Bug 78086</a>.
-      </p>
-
       <div id="inspected"></div>
     `);
 

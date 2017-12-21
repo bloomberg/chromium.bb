@@ -7,12 +7,7 @@
       `Tests that evaluate in console works even if window.console is substituted or deleted. Bug 53072\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that evaluate in console works even if window.console is substituted or deleted.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=53072">Bug 53072</a>
-      </p>
-  `);
+
   await TestRunner.evaluateInPagePromise(`
       function deleteConsole()
       {

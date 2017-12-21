@@ -5,9 +5,6 @@
 (async function() {
   TestRunner.addResult(`Tests name() and path() methods of NetworkRequest.\n`);
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=101064">Bug 101064</a>
-    `);
 
   /**
      * @param {string} url

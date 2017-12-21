@@ -16,7 +16,6 @@
       <!-- comment 2 -->
       <body>
       <p>
-      Verifies show/hide HTML comments setting.
       <span id="inspect"></span>
       <!-- comment 3 -->
       </p>

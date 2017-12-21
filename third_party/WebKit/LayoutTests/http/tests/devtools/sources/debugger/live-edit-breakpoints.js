@@ -7,9 +7,6 @@
       `Tests breakpoints are correctly dimmed and restored in JavaScriptSourceFrame during live edit.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=99598">Bug 99598</a>
-    `);
   await TestRunner.addScriptTag('resources/edit-me-breakpoints.js');
 
   function pathToFileName(path) {

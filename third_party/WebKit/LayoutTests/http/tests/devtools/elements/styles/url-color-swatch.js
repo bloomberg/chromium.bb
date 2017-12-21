@@ -16,10 +16,6 @@
           border-color: var(--blue);
       }
       </style>
-      <p>
-      Tests that url(...) with space-delimited color names as filename segments do not contain color swatches. Bug <a href="http://bugs.webkit.org/show_bug.cgi?id=106770">106770</a>.
-      Also tests that CSS variables such as var(--blue) do not contain color swatches. Bug <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=595231">595231</a>.
-      </p>
       <div id="inspected"></div>
     `);
 

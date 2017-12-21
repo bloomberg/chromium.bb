@@ -8,14 +8,7 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that editing a CSS property value in the Styles pane restores the original, non-trimmed value text. <a href="https://bugs.webkit.org/show_bug.cgi?id=107936">Bug 107936</a>.
-      </p>
-
       <div id="inspected" style="background: transparent url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC) repeat-y 50% top">
-
-
-
       </div>
     `);
 

@@ -7,11 +7,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that style updates are throttled during DOM traversal. <a href="https://bugs.webkit.org/show_bug.cgi?id=77643">Bug 77643</a>.
-      </p>
-
-
       <div></div>
       <div></div>
       <div></div>

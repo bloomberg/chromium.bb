@@ -9,13 +9,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
 
-  await TestRunner.loadHTML(`
-    <p>
-    Tests that evaluating an expression with a syntax error in the console won't crash the browser.
-    <a href="https://bugs.webkit.org/show_bug.cgi?id=61194">Bug 61194.</a>
-    </p>
-  `);
-
   ConsoleTestRunner.evaluateInConsole('foo().', step1);
 
   function step1() {

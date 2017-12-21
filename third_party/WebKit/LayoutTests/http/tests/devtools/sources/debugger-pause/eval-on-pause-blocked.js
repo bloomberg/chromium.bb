@@ -8,12 +8,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Test that evaluation in the context of top frame will not be blocked by Content-Security-Policy.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=77203">Bug 77203.</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

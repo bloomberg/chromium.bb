@@ -8,10 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that modifying stylesheet text with @import and :last-child selector does not crash (<a href="https://bugs.webkit.org/show_bug.cgi?id=95324">Bug 95324</a>).
-      </p>
-
       <div>
           <p id="lastchild">:last-child</p>
       </div>

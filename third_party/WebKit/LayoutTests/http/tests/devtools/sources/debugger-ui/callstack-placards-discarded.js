@@ -6,11 +6,6 @@
   TestRunner.addResult(`Tests that RawSourceCode listeners count won't grow on each script pause. Bug 70996\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that RawSourceCode listeners count won't grow on each script pause. <a href="https://bugs.webkit.org/show_bug.cgi?id=70996">Bug 70996</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

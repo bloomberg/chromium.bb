@@ -9,10 +9,6 @@
   await TestRunner.showPanel('sources');
   await TestRunner.loadHTML(`
       <input type="button" onclick="testFunction()" value="Test">
-      <p>
-      Test that sections representing scopes of the current call frame are expandable
-      and contain correct data.
-      </p>
     `);
   await TestRunner.evaluateInPagePromise(`
       function makeClosure(n)

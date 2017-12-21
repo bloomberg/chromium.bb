@@ -6,10 +6,6 @@
   TestRunner.addResult(`Tests XHR replaying. Bug 95187\n`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      Tests XHR replaying.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=95187">Bug 95187</a>
-    `);
 
   function lastRequest() {
     return NetworkTestRunner.networkRequests().pop();

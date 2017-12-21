@@ -7,9 +7,7 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=68648">Bug 68648</a>
-    `);
+
   await TestRunner.evaluateInPagePromise(`
       function loadIframe()
       {

@@ -10,10 +10,6 @@
   await ApplicationTestRunner.resetState();
 
   await TestRunner.showPanel('resources');
-  await TestRunner.loadHTML(`
-      <p>Tests that application cache model keeps track of manifest urls and statuses correctly.</p>
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=64581">Bug 64581</a>
-    `);
 
   var frameId1;
   var frameId2;

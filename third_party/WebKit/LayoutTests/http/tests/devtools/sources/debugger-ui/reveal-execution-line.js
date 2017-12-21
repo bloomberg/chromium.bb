@@ -6,9 +6,6 @@
   TestRunner.addResult(`Tests that execution line is revealed and highlighted when debugger is paused.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=80306">Bug 80306</a>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

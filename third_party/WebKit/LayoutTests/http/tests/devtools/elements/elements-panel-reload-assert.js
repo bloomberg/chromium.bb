@@ -9,10 +9,6 @@
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
       <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-      <p>
-      Tests that the inspected page does not crash in a debug build when reloading a page containing shadow DOM with open inspector. <a href="https://bugs.webkit.org/show_bug.cgi?id=84154">Bug 84154</a>.
-      </p>
-
       <input type="radio">
     `);
 

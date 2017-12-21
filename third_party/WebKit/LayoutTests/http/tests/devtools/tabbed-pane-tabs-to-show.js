@@ -4,9 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Tests tabbed pane tabs to show calculation.\n`);
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=75085">Bug 75085</a>
-    `);
 
   function createFakeTab(title, width) {
     function toString() {

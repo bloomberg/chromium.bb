@@ -8,11 +8,6 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
   await TestRunner.loadHTML(`
-      <p>
-      Test that debugger will pause in all event listeners when corresponding breakpoint is set.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=77331">Bug 77331.</a>
-      </p>
-
       <input type="button" id="test">
     `);
   await TestRunner.evaluateInPagePromise(`

@@ -9,14 +9,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
 
-  await TestRunner.loadHTML(`
-    <p>
-    Tests that evaluating 'throw undefined|1|string|object|Error' in the console won't crash the browser and correctly reported.
-    <a href="https://bugs.webkit.org/show_bug.cgi?id=59611">Bug 59611.</a>
-    </p>
-  `);
-
-
   function dumpMessages(next, message) {
     ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
     ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, afterCleared);

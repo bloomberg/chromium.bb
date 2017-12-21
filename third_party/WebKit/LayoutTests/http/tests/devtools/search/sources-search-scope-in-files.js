@@ -7,9 +7,6 @@
   await TestRunner.loadModule('bindings_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      See <a href="https://bugs.webkit.org/show_bug.cgi?id=41350">bug 41350</a>.
-    `);
 
   function fileSystemUISourceCodes() {
     var uiSourceCodes = [];

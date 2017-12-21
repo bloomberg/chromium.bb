@@ -7,10 +7,6 @@
       `Tests empty xhr content is correctly loaded in inspector. https://bugs.webkit.org/show_bug.cgi?id=79026`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <p> Tests empty xhr content is correctly loaded in inspector.</p>
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=79026">Bug 79026</a>
-    `);
 
   function dumpRequest(request, callback) {
     if (!request)

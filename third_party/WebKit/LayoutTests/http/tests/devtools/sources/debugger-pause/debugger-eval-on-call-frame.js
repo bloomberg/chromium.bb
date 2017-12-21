@@ -8,14 +8,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Test that evaluation in the context of top frame will see values
-      of its local variables, even if there are global variables with
-      same names. On success the test will print a = 2(value of the
-      local variable a). <a href="https://bugs.webkit.org/show_bug.cgi?id=47358">Bug 47358.</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       var a = 1;
       function testFunction()

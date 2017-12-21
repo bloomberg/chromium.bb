@@ -8,11 +8,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that debugger will skip breakpoint hit when script execution is already paused. <a href="https://bugs.webkit.org/show_bug.cgi?id=41768">See bug</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

@@ -8,9 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that URLs are linked to and completed correctly. Bugs <a href="http://bugs.webkit.org/show_bug.cgi?id=51663">51663</a>, <a href="http://bugs.webkit.org/show_bug.cgi?id=53171">53171</a>, <a href="http://bugs.webkit.org/show_bug.cgi?id=62643">62643</a>, <a href="http://bugs.webkit.org/show_bug.cgi?id=72373">72373</a>, <a href="http://bugs.webkit.org/show_bug.cgi?id=79905">79905</a>
-      </p>
       <div id="local"></div>
       <iframe src="../styles/resources/styles-url-linkify-iframe.html"></iframe>
     `);

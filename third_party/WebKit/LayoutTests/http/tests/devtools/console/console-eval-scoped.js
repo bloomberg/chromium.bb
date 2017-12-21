@@ -9,12 +9,7 @@
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-    <p>
-    Tests that evaluating 'console.log()' in the console will have access to its outer scope variables.
-    <a href="https://bugs.webkit.org/show_bug.cgi?id=60547">Bug 60547.</a>
-    </p>
-  `);
+
   await TestRunner.evaluateInPagePromise(`
     // Used to interfere into InjectedScript._propertyDescriptors()
     Object.prototype.get = function() { return "FAIL"; };

@@ -44,10 +44,6 @@
           }
       }
       </style>
-      <p>
-      Tests the matching performed in AnimationModel of groups composed of animations,
-      which are applied through a variety of selectors.
-      </p>
 
       <div id="node1" style="background-color: red; height: 100px"></div>
       <div id="node2" style="background-color: red; height: 100px"></div>

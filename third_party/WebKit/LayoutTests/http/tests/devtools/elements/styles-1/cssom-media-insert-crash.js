@@ -15,7 +15,6 @@
           padding: 20px;
       }
       </style>
-      Tests that the inspected page does not crash after inspecting element with CSSOM added rules. <a href="http://crbug.com/373508">Bug 373508</a>
       <div id="box">Inspecting this element crashes DevTools</div>
     `);
   await TestRunner.evaluateInPagePromise(`
