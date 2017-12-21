@@ -17,10 +17,10 @@ namespace display {
 namespace win {
 namespace {
 
-BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
-                                  HDC input_hdc,
-                                  LPRECT rect,
-                                  LPARAM data) {
+BOOL CALLBACK EnumMonitorForProfilePathCallback(HMONITOR monitor,
+                                                HDC input_hdc,
+                                                LPRECT rect,
+                                                LPARAM data) {
   base::string16 device_name;
   MONITORINFOEX monitor_info;
   ::ZeroMemory(&monitor_info, sizeof(monitor_info));
@@ -75,7 +75,7 @@ void ColorProfileReader::UpdateIfNeeded() {
 // static
 ColorProfileReader::DeviceToPathMap ColorProfileReader::BuildDeviceToPathMap() {
   DeviceToPathMap device_to_path_map;
-  EnumDisplayMonitors(nullptr, nullptr, EnumMonitorCallback,
+  EnumDisplayMonitors(nullptr, nullptr, EnumMonitorForProfilePathCallback,
                       reinterpret_cast<LPARAM>(&device_to_path_map));
   return device_to_path_map;
 }
