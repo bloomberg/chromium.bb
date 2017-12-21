@@ -37,6 +37,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
@@ -177,47 +178,6 @@ class TestAutofillManager : public AutofillManager {
 };
 
 }  // anonymous namespace
-
-class TestCreditCardSaveManager : public CreditCardSaveManager {
- public:
-  TestCreditCardSaveManager(AutofillDriver* driver,
-                            AutofillClient* client,
-                            payments::TestPaymentsClient* payments_client,
-                            PersonalDataManager* personal_data_manager)
-      : CreditCardSaveManager(client,
-                              payments_client,
-                              "en-US",
-                              personal_data_manager),
-        test_payments_client_(payments_client) {
-    if (test_payments_client_) {
-      test_payments_client_->SetSaveDelegate(this);
-    }
-  }
-  ~TestCreditCardSaveManager() override {}
-
-  bool IsCreditCardUploadEnabled() override {
-    return credit_card_upload_enabled_;
-  }
-
-  void set_credit_card_upload_enabled(bool credit_card_upload_enabled) {
-    credit_card_upload_enabled_ = credit_card_upload_enabled;
-  }
-
-  bool credit_card_was_uploaded() { return credit_card_was_uploaded_; }
-
- private:
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
-                       const std::string& server_id) override {
-    credit_card_was_uploaded_ = true;
-    CreditCardSaveManager::OnDidUploadCard(result, server_id);
-  };
-
-  payments::TestPaymentsClient* test_payments_client_;  // Weak reference.
-  bool credit_card_upload_enabled_ = false;
-  bool credit_card_was_uploaded_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCreditCardSaveManager);
-};
 
 class CreditCardSaveManagerTest : public testing::Test {
  public:
@@ -553,7 +513,7 @@ TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   // The credit card should neither be saved locally or uploaded.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that no histogram entry was logged.
   histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
@@ -562,7 +522,7 @@ TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
   personal_data_.ClearCreditCards();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -591,7 +551,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
 
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 
   // Server did not send a server_id, expect copy of card is not stored.
@@ -616,7 +576,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   personal_data_.ClearCreditCards();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -641,7 +601,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   // Submitted form included CVC, so user did not need to enter CVC.
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 }
@@ -649,7 +609,7 @@ TEST_F(CreditCardSaveManagerTest,
 TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
   personal_data_.ClearCreditCards();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   const char* const server_id = "InstrumentData:1234";
   payments_client_->SetServerIdForCardUpload(server_id);
@@ -678,7 +638,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
 
   FormSubmitted(credit_card_form);
 
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(personal_data_.GetLocalCreditCards().empty());
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // See |OfferStoreUnmaskedCards|
@@ -699,7 +659,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(false);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -726,7 +686,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
   // The save prompt should be shown instead of doing an upload.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that no histogram entry was logged.
   histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
@@ -734,7 +694,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -764,7 +724,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -775,7 +735,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -802,7 +762,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -812,7 +772,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
   // constructor because they would result in conflicting names that would
@@ -864,7 +824,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
   // A CVC value appeared in one of the two CVC fields, upload should happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -874,7 +834,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
   // constructor because they would result in conflicting names that would
@@ -920,7 +880,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
   // Upload should not happen because user did not provide CVC.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -931,7 +891,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_InvalidCvcInNonCvcField) {
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
   // constructor because they would result in conflicting names that would
@@ -980,7 +940,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Upload should not happen because user did not provide CVC.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -991,7 +951,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInNonCvcField) {
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
   // constructor because they would result in conflicting names that would
@@ -1040,7 +1000,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Upload should not happen because user did not provide CVC.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(
@@ -1053,7 +1013,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInAddressField) {
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
   // constructor because they would result in conflicting names that would
@@ -1102,7 +1062,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Upload should not happen because user did not provide CVC.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -1122,7 +1082,7 @@ TEST_F(CreditCardSaveManagerTest,
 TEST_F(CreditCardSaveManagerTest,
        MAYBE_UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc) {
   EnableAutofillUpstreamRequestCvcIfMissingExperiment();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
   // constructor because they would result in conflicting names that would
@@ -1168,7 +1128,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Upload should still happen as long as the user provides CVC in the bubble.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_THAT(payments_client_->GetActiveExperimentsSetInRequest(),
               UnorderedElementsAre(kAutofillUpstreamRequestCvcIfMissing.name));
 
@@ -1186,7 +1146,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnFormExperimentOff) {
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
   // constructor because they would result in conflicting names that would
@@ -1232,7 +1192,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -1243,7 +1203,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Don't fill or submit an address form.
 
@@ -1264,7 +1224,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries are logged.
   ExpectUniqueCardUploadDecision(
@@ -1280,7 +1240,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
   test_clock.SetNow(kArbitraryTime);
 
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a profile.
   FormData address_form;
@@ -1310,7 +1270,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(
@@ -1327,7 +1287,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_CvcUnavailableAndNoProfileAvailable) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Don't fill or submit an address form.
 
@@ -1350,7 +1310,7 @@ TEST_F(CreditCardSaveManagerTest,
   // profile, but the no CVC case should have priority over being reported.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester,
@@ -1367,7 +1327,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -1394,7 +1354,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -1406,7 +1366,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoNameAvailableAndNoProfileAvailable) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Don't fill or submit an address form.
 
@@ -1426,7 +1386,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(
@@ -1443,7 +1403,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit two address forms with different zip codes.
   FormData address_form1, address_form2;
@@ -1480,7 +1440,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(
@@ -1493,7 +1453,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_ZipCodesDoNotDiscardWhitespace) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create two separate profiles with different zip codes. Must directly add
   // instead of submitting a form, because they're deduped on form submit.
@@ -1528,7 +1488,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 
   // Verify that the correct histogram entry (and only that) was logged.
@@ -1538,7 +1498,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit two address forms with different zip codes.
   FormData address_form1, address_form2;
@@ -1573,7 +1533,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
   // One zip is a prefix of the other, upload should happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -1584,7 +1544,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -1618,7 +1578,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
   // Neither a local save nor an upload should happen in this case.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(
@@ -1629,7 +1589,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit two address forms with different names.
   FormData address_form1, address_form2;
@@ -1663,7 +1623,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
   // Names match loosely, upload should happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 
   // Verify that the correct histogram entry (and only that) was logged.
@@ -1675,7 +1635,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit two address forms with different names.
   FormData address_form1, address_form2;
@@ -1706,7 +1666,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
   // Names match loosely, upload should happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -1718,7 +1678,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_CCFormHasCardholderMiddleName) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit address form without middle name.
   FormData address_form;
@@ -1744,7 +1704,7 @@ TEST_F(CreditCardSaveManagerTest,
   // Names match loosely but middle name mismatches. Upload should not happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 
   // Verify that the correct histogram entry (and only that) was logged.
@@ -1754,7 +1714,7 @@ TEST_F(CreditCardSaveManagerTest,
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasAddressMiddleName) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit address form with middle name.
   FormData address_form;
@@ -1780,7 +1740,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasAddressMiddleName) {
   // Names match loosely but middle name mismatches. Upload should not happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 
   // Verify that the correct histogram entry (and only that) was logged.
@@ -1793,7 +1753,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasAddressMiddleName) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit two address forms with different names.
   FormData address_form1, address_form2;
@@ -1828,7 +1788,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
   // Names are required to match, upload should not happen.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 
   // Verify that the correct histogram entry (and only that) was logged.
@@ -1845,7 +1805,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
   test_clock.SetNow(kArbitraryTime);
 
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit two address forms with different names.
   FormData address_form1, address_form2;
@@ -1880,7 +1840,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
   // Name matches recently used profile, should offer upload.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
@@ -1893,7 +1853,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
   test_clock.SetNow(kArbitraryTime);
 
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -1926,7 +1886,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
 
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that UMA for "DaysSincePreviousUse" is logged.
   histogram_tester.ExpectUniqueSample(
@@ -1937,7 +1897,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Anything other than "en-US" will cause GetUploadDetails to return a failure
   // response.
@@ -1968,7 +1928,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
   // The save prompt should be shown instead of doing an upload.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(
@@ -1983,7 +1943,7 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   EnableAutofillOfferLocalSaveIfServerCardManuallyEnteredExperiment();
 
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
   credit_card_save_manager_->SetAppLocale("en-US");
 
   // Create, fill and submit an address form in order to establish a recent
@@ -2017,12 +1977,12 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   // The local save prompt should be shown.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
 TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
   credit_card_save_manager_->SetAppLocale("en-US");
 
   // Create, fill and submit an address form in order to establish a recent
@@ -2056,13 +2016,13 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
   // The local save prompt should not be shown because the experiment is off.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_NothingIfNothingFound) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -2084,7 +2044,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_NothingIfNothingFound) {
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCvc) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -2110,7 +2070,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DetectCvcIfCvcFixFlowEnabledAndNameAndAddressFound) {
   EnableAutofillUpstreamRequestCvcIfMissingAndSendDetectedValuesExps();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2140,7 +2100,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DoNotDetectCvcIfCvcFixFlowEnabledAndNameMissing) {
   EnableAutofillUpstreamRequestCvcIfMissingAndSendDetectedValuesExps();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2170,7 +2130,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DoNotDetectCvcIfCvcFixFlowEnabledAndAddressMissing) {
   EnableAutofillUpstreamRequestCvcIfMissingAndSendDetectedValuesExps();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -2194,7 +2154,7 @@ TEST_F(CreditCardSaveManagerTest,
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCardholderName) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -2217,7 +2177,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCardholderName) {
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressName) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2247,7 +2207,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DetectCardholderAndAddressNameIfMatching) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2278,7 +2238,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DetectNoUniqueNameIfNamesConflict) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2306,7 +2266,7 @@ TEST_F(CreditCardSaveManagerTest,
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectPostalCode) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2336,7 +2296,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DetectNoUniquePostalCodeIfZipsConflict) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up two new address profiles with conflicting postal codes.
   AutofillProfile profile1;
@@ -2368,7 +2328,7 @@ TEST_F(CreditCardSaveManagerTest,
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressLine) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2397,7 +2357,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressLine) {
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectLocality) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2426,7 +2386,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectLocality) {
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAdministrativeArea) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2455,7 +2415,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAdministrativeArea) {
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCountryCode) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2484,7 +2444,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCountryCode) {
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectEverythingAtOnce) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile.
   AutofillProfile profile;
@@ -2526,7 +2486,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DetectSubsetOfPossibleFields) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile, taking out address line and state.
   AutofillProfile profile;
@@ -2565,7 +2525,7 @@ TEST_F(CreditCardSaveManagerTest,
        GetDetectedValues_DetectAddressComponentsAcrossProfiles) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up four new address profiles, each with a different address component.
   AutofillProfile profile1;
@@ -2611,7 +2571,7 @@ TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_AddSendDetectedValuesFlagStateToRequestIfExperimentOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -2629,7 +2589,7 @@ TEST_F(CreditCardSaveManagerTest,
   // request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_THAT(payments_client_->GetActiveExperimentsSetInRequest(),
               UnorderedElementsAre(kAutofillUpstreamSendDetectedValues.name));
 }
@@ -2638,7 +2598,7 @@ TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_LogAdditionalErrorsWithUploadDetailsFailureIfExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Anything other than "en-US" will cause GetUploadDetails to return a failure
   // response.
@@ -2693,7 +2653,7 @@ TEST_F(
     UploadCreditCard_ShouldOfferLocalSaveIfEverythingDetectedAndPaymentsDeclinesIfExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Anything other than "en-US" will cause GetUploadDetails to return a failure
   // response.
@@ -2729,7 +2689,7 @@ TEST_F(
   // prompt.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
 TEST_F(
@@ -2737,7 +2697,7 @@ TEST_F(
     UploadCreditCard_ShouldNotOfferLocalSaveIfSomethingNotDetectedAndPaymentsDeclinesIfExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Anything other than "en-US" will cause GetUploadDetails to return a failure
   // response.
@@ -2770,14 +2730,14 @@ TEST_F(
   // + address were detected, the local save prompt should not be shown either.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_PaymentsDecidesOfferToSaveIfNoCvcAndExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -2806,7 +2766,7 @@ TEST_F(CreditCardSaveManagerTest,
   // save is successful.)
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
@@ -2824,7 +2784,7 @@ TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_PaymentsDecidesOfferToSaveIfNoNameAndExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -2854,7 +2814,7 @@ TEST_F(CreditCardSaveManagerTest,
   // save is successful.)
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
@@ -2872,7 +2832,7 @@ TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_PaymentsDecidesOfferToSaveIfConflictingNamesAndExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -2901,7 +2861,7 @@ TEST_F(CreditCardSaveManagerTest,
   // save is successful.)
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
@@ -2919,7 +2879,7 @@ TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_PaymentsDecidesOfferToSaveIfNoZipAndExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile without a postal code.
   AutofillProfile profile;
@@ -2950,7 +2910,7 @@ TEST_F(CreditCardSaveManagerTest,
   // save is successful.)
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
@@ -2968,7 +2928,7 @@ TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_PaymentsDecidesOfferToSaveIfConflictingZipsAndExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up two new address profiles with conflicting postal codes.
   AutofillProfile profile1;
@@ -3011,7 +2971,7 @@ TEST_F(CreditCardSaveManagerTest,
   // save is successful.)
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
@@ -3029,7 +2989,7 @@ TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_PaymentsDecidesOfferToSaveIfNothingFoundAndExpOn) {
   EnableAutofillUpstreamSendDetectedValuesExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Set up a new address profile without a name or postal code.
   AutofillProfile profile;
@@ -3059,7 +3019,7 @@ TEST_F(CreditCardSaveManagerTest,
   // save is successful.)
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(histogram_tester, AutofillMetrics::UPLOAD_OFFERED);
@@ -3082,7 +3042,7 @@ TEST_F(CreditCardSaveManagerTest,
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddAnyFlagStatesToRequestIfExperimentsOff) {
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -3108,14 +3068,14 @@ TEST_F(CreditCardSaveManagerTest,
   // request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_AddPanFirstSixToRequest) {
   EnableAutofillUpstreamSendPanFirstSixExperiment();
   personal_data_.ClearProfiles();
-  credit_card_save_manager_->set_credit_card_upload_enabled(true);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -3141,7 +3101,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_AddPanFirstSixToRequest) {
   // in the request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(credit_card_save_manager_->credit_card_was_uploaded());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_EQ(payments_client_->GetPanFirstSixSetInRequest(), "444433");
   // Confirm that the "send pan first six" experiment flag was sent in the
   // request.
