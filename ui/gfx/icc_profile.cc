@@ -65,7 +65,8 @@ uint64_t g_next_unused_id = 1;
 
 // Lock that must be held to access |g_space_to_profile_cache_mac| and
 // |g_next_unused_id|.
-base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_icc_profile_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -184,7 +185,7 @@ ICCProfile ICCProfile::FromDataWithId(const void* data_as_void,
   const char* data_as_byte = reinterpret_cast<const char*>(data_as_void);
   std::vector<char> data(data_as_byte, data_as_byte + size);
 
-  base::AutoLock lock(g_lock.Get());
+  base::AutoLock lock(g_icc_profile_lock.Get());
 
   // See if there is already an entry with the same data. If so, return that
   // entry. If not, parse the data.
@@ -278,7 +279,7 @@ ICCProfile ICCProfile::FromParametricColorSpace(const ColorSpace& color_space) {
 
 // static
 ICCProfile ICCProfile::FromCacheMac(const ColorSpace& color_space) {
-  base::AutoLock lock(g_lock.Get());
+  base::AutoLock lock(g_icc_profile_lock.Get());
   auto found_by_space = g_space_to_profile_cache_mac.Get().Get(color_space);
   if (found_by_space != g_space_to_profile_cache_mac.Get().end())
     return found_by_space->second;
@@ -291,7 +292,7 @@ ICCProfile ICCProfile::FromCacheMac(const ColorSpace& color_space) {
 
 // static
 sk_sp<SkColorSpace> ICCProfile::GetSkColorSpaceFromId(uint64_t id) {
-  base::AutoLock lock(g_lock.Get());
+  base::AutoLock lock(g_icc_profile_lock.Get());
   auto found = g_id_to_profile_cache.Get().Get(id);
   if (found == g_id_to_profile_cache.Get().end()) {
     DLOG(ERROR) << "Failed to find ICC profile with SkColorSpace from id.";
