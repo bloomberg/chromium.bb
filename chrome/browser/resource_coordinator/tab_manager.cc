@@ -675,7 +675,6 @@ void TabManager::AddTabStats(const BrowserInfo& browser_info,
           contents->GetPageImportanceSignals().had_form_interaction;
       stats.discard_count = GetWebContentsData(contents)->DiscardCount();
       stats.last_active = contents->GetLastActiveTime();
-      stats.last_hidden = contents->GetLastHiddenTime();
       stats.render_process_host = contents->GetMainFrame()->GetProcess();
       stats.renderer_handle =
           contents->GetMainFrame()->GetProcess()->GetHandle();

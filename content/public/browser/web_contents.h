@@ -424,9 +424,6 @@ class WebContents : public PageNavigator,
   virtual base::TimeTicks GetLastActiveTime() const = 0;
   virtual void SetLastActiveTime(base::TimeTicks last_active_time) = 0;
 
-  // Get the last time that the WebContents was made hidden.
-  virtual base::TimeTicks GetLastHiddenTime() const = 0;
-
   // Invoked when the WebContents becomes shown/hidden. A hidden WebContents
   // isn't painted on the screen.
   virtual void WasShown() = 0;

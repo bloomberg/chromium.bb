@@ -43,7 +43,6 @@ struct TabStats {
   int discard_count = 0;
   bool has_beforeunload_handler = false;
   base::TimeTicks last_active;
-  base::TimeTicks last_hidden;
   content::RenderProcessHost* render_process_host = nullptr;
   base::ProcessHandle renderer_handle = 0;
   int child_process_host_id = 0;
