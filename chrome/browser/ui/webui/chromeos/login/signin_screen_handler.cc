@@ -685,7 +685,8 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   // Skip "update" notification about OFFLINE state from
   // NetworkStateInformer if previous notification already was
   // delayed.
-  if ((state == NetworkStateInformer::OFFLINE || has_pending_auth_ui_) &&
+  if ((state == NetworkStateInformer::OFFLINE ||
+       network_state_ignored_until_proxy_auth_) &&
       !force_update && !update_state_closure_.IsCancelled()) {
     return;
   }
@@ -693,7 +694,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   update_state_closure_.Cancel();
 
   if ((state == NetworkStateInformer::OFFLINE && !force_update) ||
-      has_pending_auth_ui_) {
+      network_state_ignored_until_proxy_auth_) {
     update_state_closure_.Reset(
         base::Bind(&SigninScreenHandler::UpdateStateInternal,
                    weak_factory_.GetWeakPtr(),
@@ -789,7 +790,6 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
 
   if (is_gaia_loading_timeout) {
     LOG(WARNING) << "Retry frame load due to loading timeout.";
-    LOG(ERROR) << "UpdateStateInternal reload 4";
     reload_gaia.ScheduleCall();
   }
 
@@ -1082,25 +1082,42 @@ void SigninScreenHandler::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_AUTH_NEEDED: {
-      has_pending_auth_ui_ = true;
+      network_state_ignored_until_proxy_auth_ = true;
       break;
     }
-    case chrome::NOTIFICATION_AUTH_SUPPLIED:
-      has_pending_auth_ui_ = false;
-      // Reload auth extension as proxy credentials are supplied.
-      if (!IsSigninScreenHiddenByError() && ui_state_ == UI_STATE_GAIA_SIGNIN)
-        ReloadGaia(true);
-      update_state_closure_.Cancel();
+    case chrome::NOTIFICATION_AUTH_SUPPLIED: {
+      if (IsGaiaHiddenByError()) {
+        // Start listening to network state notifications immediately, hoping
+        // that the network will switch to ONLINE soon.
+        update_state_closure_.Cancel();
+        ReenableNetworkStateUpdatesAfterProxyAuth();
+      } else {
+        // Gaia is not hidden behind an error yet. Discard last cached network
+        // state notification and wait for |kOfflineTimeoutSec| before
+        // considering network update notifications again (hoping the network
+        // will become ONLINE by then).
+        update_state_closure_.Cancel();
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(
+                &SigninScreenHandler::ReenableNetworkStateUpdatesAfterProxyAuth,
+                weak_factory_.GetWeakPtr()),
+            base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
+      }
       break;
+    }
     case chrome::NOTIFICATION_AUTH_CANCELLED: {
-      // Don't reload auth extension if proxy auth dialog was cancelled.
-      has_pending_auth_ui_ = false;
       update_state_closure_.Cancel();
+      ReenableNetworkStateUpdatesAfterProxyAuth();
       break;
     }
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
+}
+
+void SigninScreenHandler::ReenableNetworkStateUpdatesAfterProxyAuth() {
+  network_state_ignored_until_proxy_auth_ = false;
 }
 
 void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
