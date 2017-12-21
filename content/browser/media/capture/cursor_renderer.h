@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_CURSOR_RENDERER_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_CURSOR_RENDERER_H_
 
+#include <atomic>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,9 +29,9 @@ namespace content {
 // mouse events and this base class will process them.
 //
 // All parts of this class are meant to run on the UI BrowserThread, except for
-// RenderOnVideoFrame(), which may be called from any thread. It is up to the
-// client code to ensure the CursorRenderer's lifetime while in use across
-// multiple threads.
+// RenderOnVideoFrame() and IsUserInteractingWithView(), which may be called
+// from any thread. It is up to the client code to ensure the CursorRenderer's
+// lifetime while in use across multiple threads.
 class CONTENT_EXPORT CursorRenderer {
  public:
   // Setting to control cursor display based on either mouse movement or always
@@ -109,6 +111,14 @@ class CONTENT_EXPORT CursorRenderer {
     RECENTLY_MOVED_OR_CLICKED,  // Sufficient mouse activity present.
   };
 
+  // Accessors for |mouse_move_behavior_atomic_|. See comments below.
+  MouseMoveBehavior mouse_move_behavior() const {
+    return mouse_move_behavior_atomic_.load(std::memory_order_relaxed);
+  }
+  void set_mouse_move_behavior(MouseMoveBehavior behavior) {
+    mouse_move_behavior_atomic_.store(behavior, std::memory_order_relaxed);
+  }
+
   // Takes a snapshot of the current mouse cursor state, for use by
   // RenderOnVideoFrame().
   void SnapshotCursorState();
@@ -137,9 +147,15 @@ class CONTENT_EXPORT CursorRenderer {
   // interacting with the view and whether to run the |needs_redraw_callback_|.
   // These do not need to be protected by |lock_| since they are only accessed
   // on the UI BrowserThread.
-  MouseMoveBehavior mouse_move_behavior_;
   gfx::Point mouse_move_start_location_;
   base::OneShotTimer mouse_activity_ended_timer_;
+
+  // Updated in the mouse event handlers (on the UI BrowserThread) and read from
+  // by IsUserInteractingWithView() (on any thread). This is not protected by
+  // |lock_| since strict memory ordering semantics are not necessary, just
+  // atomicity between threads. All code should use the accessors to read or set
+  // this value.
+  std::atomic<MouseMoveBehavior> mouse_move_behavior_atomic_;
 
   // Run whenever the mouse cursor would be rendered differently than when it
   // was rendered in the last video frame.

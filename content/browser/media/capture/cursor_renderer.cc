@@ -33,7 +33,7 @@ CursorRenderer::CursorRenderer(CursorDisplaySetting cursor_display_setting)
     : cursor_display_setting_(cursor_display_setting),
       cursor_(gfx::NativeCursor()),
       update_scaled_cursor_bitmap_(false),
-      mouse_move_behavior_(NOT_MOVING),
+      mouse_move_behavior_atomic_(NOT_MOVING),
       weak_factory_(this) {
   // CursorRenderer can be constructed on any thread, but thereafter must be
   // used according to class-level comments.
@@ -58,7 +58,7 @@ void CursorRenderer::SnapshotCursorState() {
   // In CURSOR_DISPLAYED_ON_MOUSE_MOVEMENT mode, if the user hasn't recently
   // moved nor clicked the mouse, do not render the mouse cursor.
   if (cursor_display_setting_ == CURSOR_DISPLAYED_ON_MOUSE_MOVEMENT &&
-      mouse_move_behavior_ != RECENTLY_MOVED_OR_CLICKED) {
+      mouse_move_behavior() != RECENTLY_MOVED_OR_CLICKED) {
     view_size_ = gfx::Size();
     return;
   }
@@ -196,17 +196,15 @@ void CursorRenderer::SetNeedsRedrawCallback(base::RepeatingClosure callback) {
 }
 
 bool CursorRenderer::IsUserInteractingWithView() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
-
-  return mouse_move_behavior_ == RECENTLY_MOVED_OR_CLICKED;
+  return mouse_move_behavior() == RECENTLY_MOVED_OR_CLICKED;
 }
 
 void CursorRenderer::OnMouseMoved(const gfx::Point& location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
 
-  switch (mouse_move_behavior_) {
+  switch (mouse_move_behavior()) {
     case NOT_MOVING:
-      mouse_move_behavior_ = STARTING_TO_MOVE;
+      set_mouse_move_behavior(STARTING_TO_MOVE);
       mouse_move_start_location_ = location;
       mouse_activity_ended_timer_.Start(
           FROM_HERE, base::TimeDelta::FromSeconds(IDLE_TIMEOUT_SECONDS),
@@ -218,7 +216,7 @@ void CursorRenderer::OnMouseMoved(const gfx::Point& location) {
               MIN_MOVEMENT_PIXELS ||
           std::abs(location.y() - mouse_move_start_location_.y()) >
               MIN_MOVEMENT_PIXELS) {
-        mouse_move_behavior_ = RECENTLY_MOVED_OR_CLICKED;
+        set_mouse_move_behavior(RECENTLY_MOVED_OR_CLICKED);
         mouse_activity_ended_timer_.Reset();
       }
       break;
@@ -230,7 +228,7 @@ void CursorRenderer::OnMouseMoved(const gfx::Point& location) {
   // If there is sufficient mouse activity, or the cursor should always be
   // displayed, snapshot the cursor state and run the redraw callback to show it
   // at its new location in the video.
-  if (mouse_move_behavior_ == RECENTLY_MOVED_OR_CLICKED ||
+  if (mouse_move_behavior() == RECENTLY_MOVED_OR_CLICKED ||
       cursor_display_setting_ == CURSOR_DISPLAYED_ALWAYS) {
     SnapshotCursorState();
     if (!needs_redraw_callback_.is_null()) {
@@ -250,7 +248,7 @@ void CursorRenderer::OnMouseClicked(const gfx::Point& location) {
         base::BindRepeating(&CursorRenderer::OnMouseHasGoneIdle,
                             base::Unretained(this)));
   }
-  mouse_move_behavior_ = RECENTLY_MOVED_OR_CLICKED;
+  set_mouse_move_behavior(RECENTLY_MOVED_OR_CLICKED);
 
   // Regardless of the |cursor_display_setting_|, snapshot the cursor and run
   // the redraw callback to show it at its current location in the video.
@@ -263,7 +261,7 @@ void CursorRenderer::OnMouseClicked(const gfx::Point& location) {
 void CursorRenderer::OnMouseHasGoneIdle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
 
-  mouse_move_behavior_ = NOT_MOVING;
+  set_mouse_move_behavior(NOT_MOVING);
 
   // The timer has fired to indicate no further mouse activity. It's a good idea
   // to snapshot the cursor and run the redraw callback to ensure it is being

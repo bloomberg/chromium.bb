@@ -74,6 +74,10 @@ class CursorRendererMacTest : public ui::CocoaTest {
     return cursor_renderer_->RenderOnVideoFrame(frame, frame->visible_rect());
   }
 
+  bool IsUserInteractingWithView() {
+    return cursor_renderer_->IsUserInteractingWithView();
+  }
+
   // Here the |point| is in Aura coordinates (the origin (0, 0) is at top-left
   // of the view). To move the cursor to that point by Quartz Display service,
   // it needs to be converted into Cocoa coordinates (the origin is at
@@ -155,18 +159,22 @@ class CursorRendererMacTest : public ui::CocoaTest {
 TEST_F(CursorRendererMacTest, CursorDuringMouseMovement) {
   // Cursor not displayed at start.
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor displayed after mouse movement.
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor not displayed after idle period.
   SimulateMouseWentIdle();
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor displayed with mouse movement following idle period.
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor not displayed if mouse outside the window
   MoveMouseCursorOutsideWindow();
@@ -176,20 +184,24 @@ TEST_F(CursorRendererMacTest, CursorDuringMouseMovement) {
 TEST_F(CursorRendererMacTest, CursorOnActiveWindow) {
   // Cursor not displayed at start.
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor displayed after mouse movement.
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor not displayed if window is not activated.
   [test_window() setPretendIsKeyWindow:NO];
   MoveMouseCursorWithinWindow();
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor is displayed again if window is activated again.
   [test_window() setPretendIsKeyWindow:YES];
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 }
 
 TEST_F(CursorRendererMacTest, CursorRenderedOnFrame) {
