@@ -58,7 +58,7 @@ cr.define('media_router_container_search', function() {
     var targets = 0;
     searchResults.forEach(function(sink) {
       var item = container.$$('#searchResults').itemForElement(sink).sinkItem;
-      var spinner = sink.querySelector('paper-spinner');
+      var spinner = sink.querySelector('paper-spinner-lite');
       var isTargetSink = item.id == targetSink.id;
       checkElementVisible(spinner, isTargetSink);
       if (isTargetSink) {
@@ -81,7 +81,7 @@ cr.define('media_router_container_search', function() {
     var targets = 0;
     sinkList.forEach(function(sink) {
       var item = container.$$('#sinkList').itemForElement(sink);
-      var spinner = sink.querySelector('paper-spinner');
+      var spinner = sink.querySelector('paper-spinner-lite');
       var isTargetSink = item.id == targetSink.id;
       checkElementVisible(spinner, isTargetSink);
       if (isTargetSink) {
@@ -343,7 +343,7 @@ cr.define('media_router_container_search', function() {
               sinkList =
                   container.$$('#sink-list').querySelectorAll('paper-item');
               sinkList.forEach(function(sink) {
-                var spinner = sink.querySelector('paper-spinner');
+                var spinner = sink.querySelector('paper-spinner-lite');
                 checkElementVisible(spinner, false);
               });
               done();
@@ -419,7 +419,7 @@ cr.define('media_router_container_search', function() {
             searchResults =
                 container.$$('#search-results').querySelectorAll('paper-item');
             searchResults.forEach(function(sink) {
-              var spinner = sink.querySelector('paper-spinner');
+              var spinner = sink.querySelector('paper-spinner-lite');
               checkElementVisible(spinner, false);
             });
             done();

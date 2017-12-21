@@ -298,7 +298,7 @@ cr.define('user_manager.create_profile_tests', function() {
           browserProxy.whenCalled('createProfile').then(function(args) {
             // The paper-spinner is active when create is in progress.
             assertTrue(createProfileElement.createInProgress_);
-            assertTrue(createProfileElement.$$('paper-spinner').active);
+            assertTrue(createProfileElement.$$('paper-spinner-lite').active);
 
             cr.webUIListenerCallback('create-profile-success',
                                      {name: 'profile name',
@@ -306,7 +306,7 @@ cr.define('user_manager.create_profile_tests', function() {
 
             // The paper-spinner is not active when create is not in progress.
             assertFalse(createProfileElement.createInProgress_);
-            assertFalse(createProfileElement.$$('paper-spinner').active);
+            assertFalse(createProfileElement.$$('paper-spinner-lite').active);
           });
         });
       });
@@ -335,13 +335,13 @@ cr.define('user_manager.create_profile_tests', function() {
           browserProxy.whenCalled('createProfile').then(function(args) {
             // The paper-spinner is active when create is in progress.
             assertTrue(createProfileElement.createInProgress_);
-            assertTrue(createProfileElement.$$('paper-spinner').active);
+            assertTrue(createProfileElement.$$('paper-spinner-lite').active);
 
             cr.webUIListenerCallback('create-profile-success', profileInfo);
 
             // The paper-spinner is not active when create is not in progress.
             assertFalse(createProfileElement.createInProgress_);
-            assertFalse(createProfileElement.$$('paper-spinner').active);
+            assertFalse(createProfileElement.$$('paper-spinner-lite').active);
           });
         });
       });
