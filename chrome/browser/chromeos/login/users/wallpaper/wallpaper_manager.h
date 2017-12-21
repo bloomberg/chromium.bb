@@ -30,8 +30,6 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/wallpaper/wallpaper_export.h"
 #include "components/wallpaper/wallpaper_info.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -50,10 +48,6 @@ namespace user_manager {
 class UserImage;
 }  // namespace user_manager
 
-namespace wallpaper {
-class WallpaperFilesId;
-}  // namespace wallpaper
-
 namespace chromeos {
 
 // Asserts that the current task is sequenced with any other task that calls
@@ -69,8 +63,7 @@ extern const char kWallpaperSequenceTokenName[];
 extern const char kSmallWallpaperSuffix[];
 extern const char kLargeWallpaperSuffix[];
 
-class WallpaperManager : public content::NotificationObserver,
-                         public wm::ActivationChangeObserver,
+class WallpaperManager : public wm::ActivationChangeObserver,
                          public aura::WindowObserver {
  public:
   class PendingWallpaper;
@@ -126,8 +119,6 @@ class WallpaperManager : public content::NotificationObserver,
     void SetWallpaperCache(const AccountId& account_id,
                            const base::FilePath& path,
                            const gfx::ImageSkia& image);
-
-    void ClearDisposableWallpaperCache();
 
    private:
     WallpaperManager* wallpaper_manager_;  // not owned
@@ -233,11 +224,6 @@ class WallpaperManager : public content::NotificationObserver,
   // Opens the wallpaper picker window.
   void OpenWallpaperPicker();
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
@@ -252,14 +238,6 @@ class WallpaperManager : public content::NotificationObserver,
   friend class WallpaperManagerPolicyTest;
 
   WallpaperManager();
-
-  // Moves custom wallpapers from user email directory to
-  // |wallpaper_files_id| directory.
-  static void MoveCustomWallpapersOnWorker(
-      const AccountId& account_id,
-      const wallpaper::WallpaperFilesId& wallpaper_files_id,
-      const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
-      base::WeakPtr<WallpaperManager> weak_ptr);
 
   // Gets |account_id|'s custom wallpaper at |wallpaper_path|. Falls back on
   // original custom wallpaper. When |update_wallpaper| is true, sets wallpaper
@@ -298,25 +276,6 @@ class WallpaperManager : public content::NotificationObserver,
   // The number of wallpapers have loaded. For test only.
   int loaded_wallpapers_for_test() const;
 
-  // Cache some (or all) logged in users' wallpapers to memory at login
-  // screen. It should not compete with first wallpaper loading when boot
-  // up/initialize login WebUI page.
-  // There are two ways the first wallpaper might be loaded:
-  // 1. Loaded on boot. Login WebUI waits for it.
-  // 2. When flag --disable-boot-animation is passed. Login WebUI is loaded
-  // right away and in 500ms after. Wallpaper started to load.
-  // For case 2, should_cache_wallpaper_ is used to indicate if we need to
-  // cache wallpapers on wallpaper animation finished. The cache operation
-  // should be only executed once.
-  void CacheUsersWallpapers();
-
-  // Caches |account_id|'s wallpaper to memory.
-  void CacheUserWallpaper(const AccountId& account_id);
-
-  // Clears disposable ONLINE and CUSTOM wallpaper cache. At multi profile
-  // world, logged in users' wallpaper cache is not disposable.
-  void ClearDisposableWallpaperCache();
-
   // Gets the CommandLine representing the current process's command line.
   base::CommandLine* GetCommandLine();
 
@@ -330,18 +289,6 @@ class WallpaperManager : public content::NotificationObserver,
                      const wallpaper::WallpaperInfo& info,
                      bool update_wallpaper,
                      MovableOnDestroyCallbackHolder on_finish);
-
-  // Called when the original custom wallpaper is moved to the new place.
-  // Updates the corresponding user wallpaper info.
-  void MoveCustomWallpapersSuccess(
-      const AccountId& account_id,
-      const wallpaper::WallpaperFilesId& wallpaper_files_id);
-
-  // Moves custom wallpaper to a new place. Email address was used as directory
-  // name in the old system, this is not safe. New directory system uses
-  // wallpaper_files_id instead of e-mail. This must be called after
-  // wallpaper_files_id is ready.
-  void MoveLoggedInUserCustomWallpaper();
 
   // A wrapper of |WallpaperController::GetUserWallpaperInfo|.
   bool GetUserWallpaperInfo(const AccountId& account_id,
@@ -527,8 +474,6 @@ class WallpaperManager : public content::NotificationObserver,
   // All pending will be finally deleted on destroy.
   typedef std::vector<PendingWallpaper*> PendingList;
   PendingList loading_;
-
-  content::NotificationRegistrar registrar_;
 
   ScopedObserver<wm::ActivationClient, wm::ActivationChangeObserver>
       activation_client_observer_;

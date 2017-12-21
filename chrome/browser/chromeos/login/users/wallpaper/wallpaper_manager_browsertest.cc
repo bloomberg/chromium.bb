@@ -186,14 +186,6 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
                ->num_decode_request_for_testing();
   }
 
-  void CacheUserWallpaper(const AccountId& account_id) {
-    WallpaperManager::Get()->CacheUserWallpaper(account_id);
-  }
-
-  void ClearDisposableWallpaperCache() {
-    WallpaperManager::Get()->ClearDisposableWallpaperCache();
-  }
-
   ash::WallpaperController* controller_;
   PrefService* local_state_;
   std::unique_ptr<base::CommandLine> wallpaper_manager_command_line_;
@@ -309,7 +301,6 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_EQ(1, LoadedWallpapers());
-  ClearDisposableWallpaperCache();
 
   // Change wallpaper to a custom wallpaper.
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
@@ -672,14 +663,6 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, CustomWallpaperLostTest) {
                         wallpaper::CUSTOMIZED,
                         base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
-
-  // Now simulate lock/login screen. On lock/login screen all users' wallpapers
-  // will be cached. Test that caching |test_account_id1_| wallpaper won't
-  // change the current wallpaper (|teset_account_id2_|'s wallpaper).
-  CacheUserWallpaper(test_account_id1_);
-  EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
-      controller_->GetWallpaper(),
-      wallpaper_manager_test_utils::kSmallCustomWallpaperColor));
 }
 
 // TODO(crbug.com/776464): Move this test to |WallpaperControllerTest| after
