@@ -370,6 +370,11 @@ class BaseTestServer {
     no_anonymous_ftp_user_ = no_anonymous_ftp_user;
   }
 
+  // Redirect proxied CONNECT requests to localhost.
+  void set_redirect_connect_to_localhost(bool redirect_connect_to_localhost) {
+    redirect_connect_to_localhost_ = redirect_connect_to_localhost;
+  }
+
   // Marks the root certificate of an HTTPS test server as trusted for
   // the duration of tests.
   bool LoadTestRootCert() const WARN_UNUSED_RESULT;
@@ -453,6 +458,9 @@ class BaseTestServer {
 
   // Disable creation of anonymous FTP user?
   bool no_anonymous_ftp_user_ = false;
+
+  // Redirect proxied CONNECT requests to localhost?
+  bool redirect_connect_to_localhost_ = false;
 
   std::unique_ptr<ScopedPortException> allowed_port_;
 

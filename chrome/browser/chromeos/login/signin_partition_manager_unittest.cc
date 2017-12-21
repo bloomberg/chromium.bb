@@ -12,13 +12,16 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -27,6 +30,39 @@ namespace login {
 
 namespace {
 constexpr char kEmbedderUrl[] = "http://www.whatever.com/";
+
+void StorePartitionNameAndQuitLoop(base::RunLoop* loop,
+                                   std::string* out_partition_name,
+                                   const std::string& partition_name) {
+  *out_partition_name = partition_name;
+  loop->Quit();
+}
+
+void AddEntryToHttpAuthCache(
+    net::URLRequestContextGetter* url_request_context_getter) {
+  net::HttpAuthCache* http_auth_cache =
+      url_request_context_getter->GetURLRequestContext()
+          ->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  http_auth_cache->Add(GURL("http://whatever.com/"), "",
+                       net::HttpAuth::AUTH_SCHEME_BASIC, "",
+                       net::AuthCredentials(), "");
+}
+
+void IsEntryInHttpAuthCache(
+    net::URLRequestContextGetter* url_request_context_getter,
+    bool* out_entry_found) {
+  net::HttpAuthCache* http_auth_cache =
+      url_request_context_getter->GetURLRequestContext()
+          ->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  *out_entry_found =
+      http_auth_cache->Lookup(GURL("http://whatever.com/"), "",
+                              net::HttpAuth::AUTH_SCHEME_BASIC) != nullptr;
+}
+
 }  // namespace
 
 class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
@@ -36,6 +72,10 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
+    system_request_context_getter_ = new net::TestURLRequestContextGetter(
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::IO));
 
     signin_browser_context_ = base::MakeUnique<TestingProfile>();
 
@@ -51,6 +91,10 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     GetSigninPartitionManager()->SetClearStoragePartitionTaskForTesting(
         base::Bind(&SigninPartitionManagerTest::ClearStoragePartitionTask,
                    base::Unretained(this)));
+    GetSigninPartitionManager()
+        ->SetGetSystemURLRequestContextGetterTaskForTesting(base::BindRepeating(
+            &SigninPartitionManagerTest::GetSystemURLRequestContextGetter,
+            base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -89,11 +133,28 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     pending_clear_tasks_.clear();
   }
 
+  std::string RunStartSigninSesssion(content::WebContents* webcontents) {
+    std::string partition_name;
+    base::RunLoop loop;
+    GetSigninPartitionManager()->StartSigninSession(
+        webcontents,
+        base::BindOnce(&StorePartitionNameAndQuitLoop, &loop, &partition_name));
+    loop.Run();
+    return partition_name;
+  }
+
+  net::URLRequestContextGetter* GetSystemURLRequestContextGetter() {
+    return system_request_context_getter_.get();
+  }
+
  private:
   void ClearStoragePartitionTask(content::StoragePartition* partition,
                                  base::OnceClosure clear_done_closure) {
     pending_clear_tasks_.push_back({partition, std::move(clear_done_closure)});
   }
+
+  scoped_refptr<net::TestURLRequestContextGetter>
+      system_request_context_getter_;
 
   std::unique_ptr<TestingProfile> signin_browser_context_;
 
@@ -108,20 +169,22 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(SigninPartitionManagerTest, TestSubsequentAttempts) {
   // First sign-in attempt
-  GetSigninPartitionManager()->StartSigninSession(signin_ui_web_contents());
   std::string signin_partition_name_1 =
-      GetSigninPartitionManager()->GetCurrentStoragePartitionName();
+      RunStartSigninSesssion(signin_ui_web_contents());
   auto* signin_partition_1 =
       GetSigninPartitionManager()->GetCurrentStoragePartition();
   EXPECT_FALSE(signin_partition_name_1.empty());
+  EXPECT_EQ(signin_partition_name_1,
+            GetSigninPartitionManager()->GetCurrentStoragePartitionName());
 
   // Second sign-in attempt
-  GetSigninPartitionManager()->StartSigninSession(signin_ui_web_contents());
   std::string signin_partition_name_2 =
-      GetSigninPartitionManager()->GetCurrentStoragePartitionName();
+      RunStartSigninSesssion(signin_ui_web_contents());
   auto* signin_partition_2 =
       GetSigninPartitionManager()->GetCurrentStoragePartition();
   EXPECT_FALSE(signin_partition_name_2.empty());
+  EXPECT_EQ(signin_partition_name_2,
+            GetSigninPartitionManager()->GetCurrentStoragePartitionName());
 
   // Make sure that the StoragePartition has not been re-used.
   EXPECT_NE(signin_partition_name_1, signin_partition_name_2);
@@ -146,6 +209,33 @@ TEST_F(SigninPartitionManagerTest, TestSubsequentAttempts) {
   FinishAllClearPartitionTasks();
 
   EXPECT_TRUE(closure_called);
+}
+
+TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
+  base::RunLoop loop_prepare;
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(AddEntryToHttpAuthCache,
+                     base::RetainedRef(GetSystemURLRequestContextGetter())),
+      loop_prepare.QuitClosure());
+  loop_prepare.Run();
+
+  RunStartSigninSesssion(signin_ui_web_contents());
+  net::URLRequestContextGetter* signin_url_request_context_getter =
+      GetSigninPartitionManager()
+          ->GetCurrentStoragePartition()
+          ->GetURLRequestContext();
+
+  bool entry_found = false;
+  base::RunLoop loop_check;
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(IsEntryInHttpAuthCache,
+                     base::RetainedRef(signin_url_request_context_getter),
+                     &entry_found),
+      loop_check.QuitClosure());
+  loop_check.Run();
+  EXPECT_TRUE(entry_found);
 }
 
 }  // namespace login

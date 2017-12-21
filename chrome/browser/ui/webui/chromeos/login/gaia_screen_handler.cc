@@ -300,31 +300,39 @@ void GaiaScreenHandler::DisableRestrictiveProxyCheckForTest() {
 }
 
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
+  // Start a new session with SigninPartitionManager, generating a unique
+  // StoragePartition.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  signin_partition_manager->StartSigninSession(
+      web_ui()->GetWebContents(),
+      base::BindOnce(&GaiaScreenHandler::LoadGaiaWithPartition,
+                     weak_factory_.GetWeakPtr(), context));
+}
+
+void GaiaScreenHandler::LoadGaiaWithPartition(
+    const GaiaContext& context,
+    const std::string& partition_name) {
   std::unique_ptr<std::string> version = std::make_unique<std::string>();
   std::unique_ptr<bool> consent = std::make_unique<bool>();
   base::OnceClosure get_version_and_consent =
       base::BindOnce(&GetVersionAndConsent, base::Unretained(version.get()),
                      base::Unretained(consent.get()));
   base::OnceClosure load_gaia = base::BindOnce(
-      &GaiaScreenHandler::LoadGaiaWithVersionAndConsent,
-      weak_factory_.GetWeakPtr(), context, base::Owned(version.release()),
-      base::Owned(consent.release()));
+      &GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent,
+      weak_factory_.GetWeakPtr(), context, partition_name,
+      base::Owned(version.release()), base::Owned(consent.release()));
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       std::move(get_version_and_consent), std::move(load_gaia));
 }
 
-void GaiaScreenHandler::LoadGaiaWithVersionAndConsent(
+void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
     const GaiaContext& context,
+    const std::string& partition_name,
     const std::string* platform_version,
     const bool* collect_stats_consent) {
-  // Start a new session with SigninPartitionManager, generating a a unique
-  // StoragePartition.
-  login::SigninPartitionManager* signin_partition_manager =
-      login::SigninPartitionManager::Factory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-  signin_partition_manager->StartSigninSession(web_ui()->GetWebContents());
-
   base::DictionaryValue params;
 
   params.SetBoolean("forceReload", context.force_reload);
@@ -400,8 +408,8 @@ void GaiaScreenHandler::LoadGaiaWithVersionAndConsent(
   // sending device statistics.
   if (*collect_stats_consent)
     params.SetString("lsbReleaseBoard", base::SysInfo::GetLsbReleaseBoard());
-  params.SetString("webviewPartitionName",
-                   signin_partition_manager->GetCurrentStoragePartitionName());
+
+  params.SetString("webviewPartitionName", partition_name);
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("loadAuthExtension", params);
