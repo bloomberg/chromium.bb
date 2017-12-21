@@ -26,7 +26,9 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
   DOMArrayBuffer* rawId() const { return raw_id_.Get(); }
   AuthenticatorResponse* response() const { return response_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  // Credential:
+  void Trace(blink::Visitor*) override;
+  bool IsPublicKeyCredential() const override;
 
  private:
   explicit PublicKeyCredential(const String& id,

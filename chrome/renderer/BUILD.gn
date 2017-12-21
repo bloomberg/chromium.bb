@@ -116,7 +116,6 @@ static_library("renderer") {
     "//components/dom_distiller/content/renderer",
     "//components/network_hints/renderer",
     "//components/omnibox/common",
-    "//components/password_manager/content/renderer",
     "//components/plugins/renderer",
     "//components/rappor/public/interfaces",
     "//components/resources:components_resources",

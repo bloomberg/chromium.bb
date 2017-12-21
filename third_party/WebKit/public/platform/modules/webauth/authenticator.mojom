@@ -18,7 +18,6 @@ enum AuthenticatorStatus {
   NOT_ALLOWED_ERROR,
   NOT_SUPPORTED_ERROR,
   UNKNOWN_ERROR,
-  NOT_IMPLEMENTED,
 };
 
 // The public key and attestation that is returned by an authenticator's

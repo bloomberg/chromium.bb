@@ -321,13 +321,6 @@ void WebView::ResetVisitedLinkState(bool invalidate_visited_link_hashes) {
   Page::AllVisitedStateChanged(invalidate_visited_link_hashes);
 }
 
-void WebViewImpl::SetCredentialManagerClient(
-    WebCredentialManagerClient* web_credential_manager_client) {
-  DCHECK(page_);
-  CoreInitializer::GetInstance().ProvideCredentialManagerClient(
-      *page_, web_credential_manager_client);
-}
-
 void WebViewImpl::SetPrerendererClient(
     WebPrerendererClient* prerenderer_client) {
   DCHECK(page_);

@@ -11,31 +11,24 @@
 #include "core/html/forms/ListedElement.h"
 #include "core/html_names.h"
 #include "modules/credentialmanager/PasswordCredentialData.h"
-#include "platform/credentialmanager/PlatformPasswordCredential.h"
-#include "public/platform/WebCredential.h"
-#include "public/platform/WebPasswordCredential.h"
 
 namespace blink {
 
-PasswordCredential* PasswordCredential::Create(
-    WebPasswordCredential* web_password_credential) {
-  return new PasswordCredential(web_password_credential);
+namespace {
+constexpr char kPasswordCredentialType[] = "password";
 }
 
 // https://w3c.github.io/webappsec-credential-management/#construct-passwordcredential-data
 PasswordCredential* PasswordCredential::Create(
     const PasswordCredentialData& data,
     ExceptionState& exception_state) {
-  if (data.id().IsEmpty()) {
+  if (data.id().IsEmpty())
     exception_state.ThrowTypeError("'id' must not be empty.");
-    return nullptr;
-  }
-  if (data.password().IsEmpty()) {
+  if (data.password().IsEmpty())
     exception_state.ThrowTypeError("'password' must not be empty.");
-    return nullptr;
-  }
 
-  KURL icon_url = ParseStringAsURL(data.iconURL(), exception_state);
+  KURL icon_url = ParseStringAsURLOrThrow(data.iconURL(), exception_state);
+
   if (exception_state.HadException())
     return nullptr;
 
@@ -85,30 +78,26 @@ PasswordCredential* PasswordCredential::Create(
   return PasswordCredential::Create(data, exception_state);
 }
 
-PasswordCredential::PasswordCredential(
-    WebPasswordCredential* web_password_credential)
-    : Credential(web_password_credential->GetPlatformCredential()) {}
+PasswordCredential* PasswordCredential::Create(const String& id,
+                                               const String& password,
+                                               const String& name,
+                                               const KURL& icon_url) {
+  return new PasswordCredential(id, password, name, icon_url);
+}
 
 PasswordCredential::PasswordCredential(const String& id,
                                        const String& password,
                                        const String& name,
-                                       const KURL& icon)
-    : Credential(PlatformPasswordCredential::Create(id, password, name, icon)) {
+                                       const KURL& icon_url)
+    : Credential(id, kPasswordCredentialType),
+      password_(password),
+      name_(name),
+      icon_url_(icon_url) {
+  DCHECK(!password.IsEmpty());
 }
 
-const String& PasswordCredential::password() const {
-  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
-      ->Password();
-}
-
-const String& PasswordCredential::name() const {
-  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
-      ->Name();
-}
-
-const KURL& PasswordCredential::iconURL() const {
-  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
-      ->IconURL();
+bool PasswordCredential::IsPasswordCredential() const {
+  return true;
 }
 
 }  // namespace blink

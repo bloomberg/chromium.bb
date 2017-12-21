@@ -14,8 +14,8 @@ blink_modules_sources("credentialmanager") {
     "AuthenticatorResponse.h",
     "Credential.cpp",
     "Credential.h",
-    "CredentialManagerClient.cpp",
-    "CredentialManagerClient.h",
+    "CredentialManagerProxy.cpp",
+    "CredentialManagerProxy.h",
     "CredentialManagerTypeConverters.cpp",
     "CredentialManagerTypeConverters.h",
     "CredentialsContainer.cpp",
@@ -28,7 +28,5 @@ blink_modules_sources("credentialmanager") {
     "PasswordCredential.h",
     "PublicKeyCredential.cpp",
     "PublicKeyCredential.h",
-    "WebAuthenticationClient.cpp",
-    "WebAuthenticationClient.h",
   ]
 }

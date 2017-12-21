@@ -1215,7 +1215,7 @@ TEST_F(CredentialManagerImplTest,
 
   // Check that the second request triggered a rejection.
   EXPECT_TRUE(called_2);
-  EXPECT_EQ(CredentialManagerError::PENDINGREQUEST, error_2);
+  EXPECT_EQ(CredentialManagerError::PENDING_REQUEST, error_2);
   EXPECT_FALSE(credential_2);
 
   // Check that the first request resolves.

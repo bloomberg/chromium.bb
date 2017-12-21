@@ -35,7 +35,7 @@ enum class CredentialType {
 
 enum class CredentialManagerError {
   SUCCESS,
-  PENDINGREQUEST,
+  PENDING_REQUEST,
   PASSWORDSTOREUNAVAILABLE,
   UNKNOWN,
 };

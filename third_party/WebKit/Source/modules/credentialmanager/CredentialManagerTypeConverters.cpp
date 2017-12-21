@@ -5,7 +5,10 @@
 #include "modules/credentialmanager/CredentialManagerTypeConverters.h"
 
 #include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "modules/credentialmanager/Credential.h"
+#include "modules/credentialmanager/FederatedCredential.h"
 #include "modules/credentialmanager/MakePublicKeyCredentialOptions.h"
+#include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/credentialmanager/PublicKeyCredential.h"
 #include "modules/credentialmanager/PublicKeyCredentialParameters.h"
 #include "modules/credentialmanager/PublicKeyCredentialRpEntity.h"
@@ -20,6 +23,10 @@ constexpr TimeDelta kAdjustedTimeoutUpper = TimeDelta::FromMinutes(2);
 
 namespace mojo {
 
+using password_manager::mojom::blink::CredentialInfo;
+using password_manager::mojom::blink::CredentialInfoPtr;
+using password_manager::mojom::blink::CredentialType;
+using password_manager::mojom::blink::CredentialManagerError;
 using webauth::mojom::blink::AuthenticatorStatus;
 using webauth::mojom::blink::MakePublicKeyCredentialOptionsPtr;
 using webauth::mojom::blink::PublicKeyCredentialRpEntity;
@@ -32,31 +39,69 @@ using webauth::mojom::blink::PublicKeyCredentialType;
 using webauth::mojom::blink::AuthenticatorTransport;
 
 // static
-blink::WebCredentialManagerError
-TypeConverter<blink::WebCredentialManagerError, AuthenticatorStatus>::Convert(
+CredentialInfoPtr TypeConverter<CredentialInfoPtr, blink::Credential*>::Convert(
+    blink::Credential* credential) {
+  auto info = CredentialInfo::New();
+  info->id = credential->id();
+  if (credential->IsPasswordCredential()) {
+    ::blink::PasswordCredential* password_credential =
+        static_cast<::blink::PasswordCredential*>(credential);
+    info->type = CredentialType::PASSWORD;
+    info->password = password_credential->password();
+    info->name = password_credential->name();
+    info->icon = password_credential->iconURL();
+    info->federation = blink::SecurityOrigin::CreateUnique();
+  } else {
+    DCHECK(credential->IsFederatedCredential());
+    ::blink::FederatedCredential* federated_credential =
+        static_cast<::blink::FederatedCredential*>(credential);
+    info->type = CredentialType::FEDERATED;
+    info->password = g_empty_string;
+    info->federation = federated_credential->GetProviderAsOrigin();
+    info->name = federated_credential->name();
+    info->icon = federated_credential->iconURL();
+  }
+  return info;
+}
+
+// static
+blink::Credential*
+TypeConverter<blink::Credential*, CredentialInfoPtr>::Convert(
+    const CredentialInfoPtr& info) {
+  switch (info->type) {
+    case CredentialType::FEDERATED:
+      return blink::FederatedCredential::Create(info->id, info->federation,
+                                                info->name, info->icon);
+    case CredentialType::PASSWORD:
+      return blink::PasswordCredential::Create(info->id, info->password,
+                                               info->name, info->icon);
+    case CredentialType::EMPTY:
+      return nullptr;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+// static
+CredentialManagerError
+TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     const AuthenticatorStatus& status) {
   switch (status) {
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
-      return blink::WebCredentialManagerError::
-          kWebCredentialManagerNotAllowedError;
-    case webauth::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:
-      return blink::WebCredentialManagerError::
-          kWebCredentialManagerPendingRequestError;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_SUPPORTED_ERROR:
-      return blink::WebCredentialManagerError::
-          kWebCredentialManagerNotSupportedError;
+      return CredentialManagerError::NOT_SUPPORTED;
+    case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
+      return CredentialManagerError::NOT_ALLOWED;
     case webauth::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
-      return blink::WebCredentialManagerError::
-          kWebCredentialManagerUnknownError;
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
-      return blink::kWebCredentialManagerNotImplementedError;
+      return CredentialManagerError::UNKNOWN;
+    case webauth::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:
+      return CredentialManagerError::PENDING_REQUEST;
     case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;
   };
 
   NOTREACHED();
-  return blink::WebCredentialManagerError::kWebCredentialManagerUnknownError;
+  return CredentialManagerError::UNKNOWN;
 }
 
 // static

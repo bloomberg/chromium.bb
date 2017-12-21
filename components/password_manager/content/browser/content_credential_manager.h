@@ -7,7 +7,7 @@
 
 #include "components/password_manager/core/browser/credential_manager_impl.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/credentialmanager/credential_manager.mojom.h"
 
 class GURL;
@@ -24,7 +24,7 @@ class ContentCredentialManager : public mojom::CredentialManager {
   explicit ContentCredentialManager(PasswordManagerClient* client);
   ~ContentCredentialManager() override;
 
-  void BindRequest(mojom::CredentialManagerAssociatedRequest request);
+  void BindRequest(mojom::CredentialManagerRequest request);
   bool HasBinding() const;
   void DisconnectBinding();
 
@@ -39,7 +39,7 @@ class ContentCredentialManager : public mojom::CredentialManager {
  private:
   CredentialManagerImpl impl_;
 
-  mojo::AssociatedBinding<mojom::CredentialManager> binding_;
+  mojo::Binding<mojom::CredentialManager> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCredentialManager);
 };

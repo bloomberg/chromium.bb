@@ -1,6 +1,9 @@
+engedy@chromium.org
 mkwst@chromium.org
+vasilii@chromium.org
 
 per-file *TypeConverter*.*=set noparent
 per-file *TypeConverter*.*=file://ipc/SECURITY_OWNERS
 
-# COMPONENT: UI>Browser>Passwords
+# COMPONENT: Blink>SecurityFeature>CredentialManagement
+# TEAM: identity-dev@chromium.org

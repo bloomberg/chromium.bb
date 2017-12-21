@@ -662,7 +662,6 @@ group("gn_all") {
       "//components/filesystem:filesystem_service_unittests",
       "//components/leveldb:leveldb_service_unittests",
       "//components/metrics:serialization",
-      "//components/password_manager/content/renderer:browser_tests",
       "//components/rappor:unit_tests",
       "//components/sessions:unit_tests",
       "//media/blink:media_blink_unittests",

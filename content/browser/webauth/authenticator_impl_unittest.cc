@@ -538,7 +538,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOpaqueOrigin) {
             response.first);
 }
 
-// Test that service returns NOT_SUPPORTED_ERROR if no parameters contain
+// Test that service returns NOT_IMPLEMENTED_ERROR if no parameters contain
 // a supported algorithm.
 TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   SimulateNavigation(GURL(kTestOrigin1));

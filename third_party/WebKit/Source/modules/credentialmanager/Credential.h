@@ -7,9 +7,9 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/credentialmanager/PlatformCredential.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -20,26 +20,26 @@ class MODULES_EXPORT Credential : public ScriptWrappable {
 
  public:
   virtual ~Credential();
-
-  // Credential.idl
-  const String& id() const { return platform_credential_->Id(); }
-  const String& type() const { return platform_credential_->GetType(); }
-
   virtual void Trace(blink::Visitor*);
 
-  PlatformCredential* GetPlatformCredential() const {
-    return platform_credential_;
-  }
+  virtual bool IsPasswordCredential() const { return false; }
+  virtual bool IsFederatedCredential() const { return false; }
+  virtual bool IsPublicKeyCredential() const { return false; }
+
+  // Credential.idl
+  const String& id() const { return id_; }
+  const String& type() const { return type_; }
 
  protected:
-  Credential(PlatformCredential*);
-  Credential(const String& id);
+  Credential(const String& id, const String& type);
 
-  // Parses a string as a KURL. Throws an exception via |exceptionState| if an
-  // invalid URL is produced.
-  static KURL ParseStringAsURL(const String&, ExceptionState&);
+  // Parses a String into a KURL that is potentially empty or null. Throws an
+  // exception via |exceptionState| if an invalid URL is produced.
+  static KURL ParseStringAsURLOrThrow(const String&, ExceptionState&);
 
-  Member<PlatformCredential> platform_credential_;
+ private:
+  String id_;
+  String type_;
 };
 
 }  // namespace blink

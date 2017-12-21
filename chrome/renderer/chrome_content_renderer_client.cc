@@ -77,7 +77,6 @@
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
-#include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
@@ -643,8 +642,6 @@ void ChromeContentRendererClient::RenderViewCreated(
   new prerender::PrerendererClient(render_view);
 
   new ChromeRenderViewObserver(render_view, web_cache_impl_.get());
-
-  new password_manager::CredentialManagerClient(render_view);
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {

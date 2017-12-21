@@ -24,7 +24,6 @@
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
-#include "content/shell/test_runner/mock_credential_manager_client.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
@@ -166,11 +165,6 @@ void LayoutTestContentRendererClient::RenderViewCreated(
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);
-
-  LayoutTestRenderThreadObserver::GetInstance()
-      ->test_interfaces()
-      ->TestRunner()
-      ->InitializeWebViewWithMocks(render_view->GetWebView());
 }
 
 std::unique_ptr<WebMIDIAccessor>

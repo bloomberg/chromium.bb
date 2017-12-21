@@ -11,25 +11,25 @@ namespace blink {
 
 Credential::~Credential() {}
 
-Credential::Credential(PlatformCredential* credential)
-    : platform_credential_(credential) {}
+Credential::Credential(const String& id, const String& type)
+    : id_(id), type_(type) {
+  DCHECK(!id_.IsEmpty());
+  DCHECK(!type_.IsEmpty());
+}
 
-Credential::Credential(const String& id)
-    : platform_credential_(PlatformCredential::Create(id)) {}
-
-KURL Credential::ParseStringAsURL(const String& url,
-                                  ExceptionState& exception_state) {
+KURL Credential::ParseStringAsURLOrThrow(const String& url,
+                                         ExceptionState& exception_state) {
   if (url.IsEmpty())
     return KURL();
   KURL parsed_url = KURL(NullURL(), url);
-  if (!parsed_url.IsValid())
+  if (!parsed_url.IsValid()) {
     exception_state.ThrowDOMException(kSyntaxError,
                                       "'" + url + "' is not a valid URL.");
+  }
   return parsed_url;
 }
 
 void Credential::Trace(blink::Visitor* visitor) {
-  visitor->Trace(platform_credential_);
   ScriptWrappable::Trace(visitor);
 }
 
