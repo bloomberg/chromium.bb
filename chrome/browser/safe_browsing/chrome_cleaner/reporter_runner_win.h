@@ -136,6 +136,9 @@ enum class SwReporterInvocationResult {
   kNotScheduled,
   // The reporter process timed-out while running.
   kTimedOut,
+  // The on-demand reporter run failed to download a new version of the reporter
+  // component.
+  kComponentNotAvailable,
   // The reporter failed to start.
   kProcessFailedToLaunch,
   // The reporter ended with a failure.
@@ -163,6 +166,8 @@ class SwReporterInvocationSequence {
   explicit SwReporterInvocationSequence(
       const base::Version& version = base::Version());
   SwReporterInvocationSequence(SwReporterInvocationSequence&& queue);
+  SwReporterInvocationSequence(
+      const SwReporterInvocationSequence& invocations_sequence);
   virtual ~SwReporterInvocationSequence();
 
   void PushInvocation(const SwReporterInvocation& invocation);
@@ -184,12 +189,6 @@ class SwReporterInvocationSequence {
   OnReporterSequenceDone on_sequence_done_;
 };
 
-// This is used only by tests and exists solely to make the browser tests happy
-// while we implement user-initiated runs.
-// TODO(proberge): Remove this by Q1 2018.
-void RunSwReportersForTesting(SwReporterInvocationType invocation_type,
-                              SwReporterInvocationSequence&& invocations);
-
 // Tries to run the given invocations. If this runs successfully, than any
 // calls made in the next |kDaysBetweenSuccessfulSwReporterRuns| days will be
 // ignored.
@@ -198,7 +197,8 @@ void RunSwReportersForTesting(SwReporterInvocationType invocation_type,
 // executions of the tool with different command lines. |invocations| is the
 // queue of SwReporters to execute as a single "run". When a new try is
 // scheduled the entire queue is executed.
-void OnSwReporterReady(SwReporterInvocationSequence&& invocations);
+void MaybeStartSwReporter(SwReporterInvocationType invocation_type,
+                          SwReporterInvocationSequence&& invocations);
 
 // A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
 // mocks).

@@ -35,6 +35,7 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
@@ -428,6 +429,30 @@ std::vector<std::string> SwReporterInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
+SwReporterOnDemandFetcher::SwReporterOnDemandFetcher(
+    ComponentUpdateService* cus,
+    base::OnceClosure on_error_callback)
+    : cus_(cus), on_error_callback_(std::move(on_error_callback)) {
+  cus_->AddObserver(this);
+  cus_->GetOnDemandUpdater().OnDemandUpdate(kSwReporterComponentId, Callback());
+}
+
+SwReporterOnDemandFetcher::~SwReporterOnDemandFetcher() {
+  cus_->RemoveObserver(this);
+}
+
+void SwReporterOnDemandFetcher::OnEvent(Events event, const std::string& id) {
+  if (id != kSwReporterComponentId)
+    return;
+
+  if (event == Events::COMPONENT_NOT_UPDATED) {
+    std::move(on_error_callback_).Run();
+    cus_->RemoveObserver(this);
+  } else if (event == Events::COMPONENT_UPDATED) {
+    cus_->RemoveObserver(this);
+  }
+}
+
 void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   ReportUMAForLastCleanerRun();
 
@@ -438,8 +463,11 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
         FROM_HERE,
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
-        base::Bind(&safe_browsing::OnSwReporterReady,
-                   base::Passed(&invocations)));
+        base::BindOnce(
+            &safe_browsing::ChromeCleanerController::OnSwReporterReady,
+            base::Unretained(
+                safe_browsing::ChromeCleanerController::GetInstance()),
+            base::Passed(&invocations)));
   };
 
   // Install the component.

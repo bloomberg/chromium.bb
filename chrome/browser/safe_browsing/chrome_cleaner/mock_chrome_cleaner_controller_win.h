@@ -16,6 +16,10 @@ class MockChromeCleanerController
   MockChromeCleanerController();
   ~MockChromeCleanerController() override;
 
+  // gmock does not support rvalue references in MOCK_METHOD. This method just
+  // relays the argument to OnSwReporterReady_.
+  void OnSwReporterReady(SwReporterInvocationSequence&& sequence) override;
+
   MOCK_METHOD0(ShouldShowCleanupInSettingsUI, bool());
   MOCK_METHOD0(IsPoweredByPartner, bool());
   MOCK_CONST_METHOD0(state, State());
@@ -27,6 +31,8 @@ class MockChromeCleanerController
   MOCK_METHOD1(RemoveObserver, void(Observer*));
   MOCK_METHOD0(OnReporterSequenceStarted, void());
   MOCK_METHOD1(OnReporterSequenceDone, void(SwReporterInvocationResult));
+  MOCK_METHOD0(RequestUserInitiatedScan, void());
+  MOCK_METHOD1(MockedOnSwReporterReady, void(SwReporterInvocationSequence&));
   MOCK_METHOD1(Scan, void(const safe_browsing::SwReporterInvocation&));
   MOCK_METHOD2(ReplyWithUserResponse, void(Profile*, UserResponse));
   MOCK_METHOD0(Reboot, void());

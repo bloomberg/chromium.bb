@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
@@ -245,9 +244,7 @@ void ChromeCleanupHandler::HandleStartScanning(const base::ListValue* args) {
   // The state is propagated to all open tabs and should be consistent.
   DCHECK_EQ(controller_->logs_enabled(), allow_logs_upload);
 
-  // TODO(crbug.com/776538): Force a proper on-demand update of the component.
-  component_updater::RegisterSwReporterComponent(
-      g_browser_process->component_updater());
+  controller_->RequestUserInitiatedScan();
 
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.CleanupWebui_StartScanning"));

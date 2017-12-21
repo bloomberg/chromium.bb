@@ -211,7 +211,7 @@ class ReporterRunnerTest
                 OnReporterSequenceDone(Eq(expected_result)))
         .WillOnce(InvokeWithoutArgs(&on_sequence_done, &Waiter::Signal));
     auto invocations = CreateInvocationSequence(container);
-    RunSwReportersForTesting(invocation_type_, std::move(invocations));
+    MaybeStartSwReporter(invocation_type_, std::move(invocations));
     on_sequence_done.Wait();
   }
 
@@ -415,8 +415,8 @@ class ReporterRunnerTest
                   InvokeWithoutArgs(&first_sequence_done, &Waiter::Signal)));
 
     SwReporterInvocationSequence::Queue invocations1({CreateInvocation(path1)});
-    RunSwReportersForTesting(invocation_type1,
-                             CreateInvocationSequence(invocations1));
+    MaybeStartSwReporter(invocation_type1,
+                         CreateInvocationSequence(invocations1));
 
     EXPECT_CALL(
         mock_chrome_cleaner_controller_,
@@ -424,8 +424,8 @@ class ReporterRunnerTest
         .WillOnce(InvokeWithoutArgs(&second_sequence_done, &Waiter::Signal));
 
     SwReporterInvocationSequence::Queue invocations2({CreateInvocation(path2)});
-    RunSwReportersForTesting(invocation_type2,
-                             CreateInvocationSequence(invocations2));
+    MaybeStartSwReporter(invocation_type2,
+                         CreateInvocationSequence(invocations2));
 
     first_sequence_done.Wait();
 
