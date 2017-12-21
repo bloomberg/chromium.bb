@@ -4,6 +4,10 @@
     <output filename="grit/mojo_bindings_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <output filename="grit/mojo_bindings_resources_map.h"
+        type="gzipped_resource_map_header" />
+    <output filename="grit/mojo_bindings_resources_map.cc"
+        type="gzipped_resource_file_map_source" />
     <output filename="mojo_bindings_resources.pak" type="data_package" />
   </outputs>
   <translations />

@@ -58,6 +58,8 @@ grit("resources") {
 
   outputs = [
     "grit/mojo_bindings_resources.h",
+    "grit/mojo_bindings_resources_map.cc",
+    "grit/mojo_bindings_resources_map.h",
     "mojo_bindings_resources.pak",
   ]
   grit_flags = [

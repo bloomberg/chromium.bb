@@ -89,6 +89,55 @@ const GritResourceMap kTheRcHeader[] = {
 };
 const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
 
+  def testGzippedMapHeaderAndFileSource(self):
+    grd = util.ParseGrdForUnittest('''\
+        <outputs>
+          <output type="rc_header" filename="the_rc_header.h" />
+          <output type="gzipped_resource_map_header"
+                  filename="gzipped_resource_map_header.h" />
+        </outputs>
+        <release seq="3">
+          <structures first_id="300">
+            <structure type="menu" name="IDC_KLONKMENU" compress="gzip"
+                       file="grit\\testdata\\klonk.rc" encoding="utf-16" />
+          </structures>
+          <includes first_id="10000">
+            <include type="foo" file="abc" name="IDS_FIRSTPRESENT"
+                     compress="" />
+            <if expr="False">
+              <include type="foo" file="def" name="IDS_MISSING"
+                       compress="garbage" />
+            </if>
+         </includes>
+        </release>''', run_gatherers=True)
+    formatter = resource_map.GetFormatter('gzipped_resource_map_header')
+    output = util.StripBlankLinesAndComments(''.join(formatter(grd, 'en', '.')))
+    self.assertEqual('''\
+#include <stddef.h>
+#ifndef GZIPPED_GRIT_RESOURCE_MAP_STRUCT_
+#define GZIPPED_GRIT_RESOURCE_MAP_STRUCT_
+struct GzippedGritResourceMap {
+  const char* name;
+  int value;
+  bool gzipped;
+};
+#endif // GZIPPED_GRIT_RESOURCE_MAP_STRUCT_
+extern const GzippedGritResourceMap kTheRcHeader[];
+extern const size_t kTheRcHeaderSize;''', output)
+    formatter = resource_map.GetFormatter('gzipped_resource_file_map_source')
+    output = util.StripBlankLinesAndComments(''.join(formatter(grd, 'en', '.')))
+    self.assertEqual('''\
+#include "gzipped_resource_map_header.h"
+#include <stddef.h>
+#include "base/macros.h"
+#include "the_rc_header.h"
+const GzippedGritResourceMap kTheRcHeader[] = {
+  {"grit/testdata/klonk.rc", IDC_KLONKMENU, true},
+  {"abc", IDS_FIRSTPRESENT, false},
+  {"def", IDS_MISSING, false},
+};
+const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
+
   def testFormatResourceMapWithOutputAllEqualsFalseForStructures(self):
     grd = util.ParseGrdForUnittest('''
         <outputs>

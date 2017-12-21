@@ -28,19 +28,21 @@ from grit.tool import interface
 # require importing all of them on every run of GRIT.
 '''Map from <output> node types to modules under grit.format.'''
 _format_modules = {
-  'android':                  'android_xml',
-  'c_format':                 'c_format',
-  'chrome_messages_json':     'chrome_messages_json',
-  'policy_templates':         'policy_templates_json',
-  'data_package':             'data_pack',
-  'js_map_format':            'js_map_format',
-  'rc_all':                   'rc',
-  'rc_translateable':         'rc',
-  'rc_nontranslateable':      'rc',
-  'rc_header':                'rc_header',
-  'resource_map_header':      'resource_map',
-  'resource_map_source':      'resource_map',
+  'android': 'android_xml',
+  'c_format': 'c_format',
+  'chrome_messages_json': 'chrome_messages_json',
+  'data_package': 'data_pack',
+  'gzipped_resource_file_map_source': 'resource_map',
+  'gzipped_resource_map_header': 'resource_map',
+  'js_map_format': 'js_map_format',
+  'policy_templates': 'policy_templates_json',
+  'rc_all': 'rc',
+  'rc_header': 'rc_header',
+  'rc_nontranslateable': 'rc',
+  'rc_translateable': 'rc',
   'resource_file_map_source': 'resource_map',
+  'resource_map_header': 'resource_map',
+  'resource_map_source': 'resource_map',
 }
 
 def GetFormatter(type):
@@ -369,7 +371,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
       # files (no UTF-8), so we make all RC files UTF-16 to support all
       # character sets.
       if output.GetType() in ('rc_header', 'resource_map_header',
-          'resource_map_source', 'resource_file_map_source'):
+          'resource_map_source', 'resource_file_map_source',
+          'gzipped_resource_map_header', 'gzipped_resource_file_map_source'):
         encoding = 'cp1252'
       elif output.GetType() in ('android', 'c_format', 'js_map_format', 'plist',
                                 'plist_strings', 'doc', 'json', 'android_policy'):

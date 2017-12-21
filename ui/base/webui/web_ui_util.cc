@@ -233,23 +233,4 @@ std::string GetTextDirection() {
   return base::i18n::IsRTL() ? "rtl" : "ltr";
 }
 
-bool IsSharedResourceGzipped(const std::string& path) {
-  // A few specific resources are not compressed because they are accessed
-  // explicitly by code their resource ID and not only through the loading
-  // stack by their chrome://resources URL.
-  if (base::EndsWith(path, ".css", base::CompareCase::SENSITIVE)) {
-    return path != "css/text_defaults.css" &&
-           path != "css/text_defaults_md.css";
-  }
-
-  if (base::EndsWith(path, ".js", base::CompareCase::SENSITIVE)) {
-    return path != "js/i18n_template.js" &&
-           path != "js/jstemplate_compiled.js" &&
-           path != "js/load_time_data.js";
-  }
-
-  return base::EndsWith(path, ".html", base::CompareCase::SENSITIVE) ||
-         base::EndsWith(path, ".svg", base::CompareCase::SENSITIVE);
-}
-
 }  // namespace webui
