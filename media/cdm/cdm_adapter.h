@@ -58,6 +58,10 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
       const CdmCreatedCB& cdm_created_cb);
 
+  // Returns the version of the CDM interface that the created CDM uses. Must
+  // only be called after the CDM is successfully initialized.
+  int GetInterfaceVersion();
+
   // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<SimpleCdmPromise> promise) final;

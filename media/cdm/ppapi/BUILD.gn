@@ -16,6 +16,7 @@ shared_library("clearkeycdm") {
     "clear_key_cdm/cdm_file_adapter.cc",
     "clear_key_cdm/cdm_file_adapter.h",
     "clear_key_cdm/cdm_host_proxy.h",
+    "clear_key_cdm/cdm_host_proxy_impl.h",
     "clear_key_cdm/cdm_video_decoder.cc",
     "clear_key_cdm/cdm_video_decoder.h",
     "clear_key_cdm/clear_key_cdm.cc",
@@ -57,8 +58,8 @@ shared_library("clearkeycdm") {
 process_version_rc_template("clearkeycdmadapter_resources") {
   visibility = [ ":*" ]
   sources = [
-    "clearkeycdmadapter.ver",
     "clear_key_cdm/BRANDING",
+    "clearkeycdmadapter.ver",
   ]
   output = "$target_gen_dir/clearkeycdmadapter_version.rc"
 }
