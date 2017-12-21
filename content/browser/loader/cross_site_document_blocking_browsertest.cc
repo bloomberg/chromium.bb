@@ -87,8 +87,7 @@ class CrossSiteDocumentBlockingBaseTest : public ContentBrowserTest {
     } else if (base::MatchPattern(resource_name, "*.txt")) {
       bucket = "Plain";
     } else {
-      EXPECT_FALSE(should_be_blocked);
-      bucket = "Other";
+      bucket = "Others";
     }
 
     // Determine the appropriate histograms, including a start and end action
@@ -97,6 +96,11 @@ class CrossSiteDocumentBlockingBaseTest : public ContentBrowserTest {
     base::HistogramTester::CountsMap expected_counts;
     std::string base = "SiteIsolation.XSD.Browser";
     expected_counts[base + ".Action"] = 2;
+    if ((base::MatchPattern(resource_name, "*prefixed*") ||
+         bucket == "Others") &&
+        should_be_blocked) {
+      expected_counts[base + ".BlockedForParserBreaker"] = 1;
+    }
     if (should_be_sniffed)
       expected_counts[base + ".BytesReadForSniffing"] = 1;
     if (should_be_blocked) {
@@ -154,13 +158,28 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
 
   // The following are files under content/test/data/site_isolation. All
   // should be disallowed for cross site XHR under the document blocking policy.
-  //   valid.*     - Correctly labeled HTML/XML/JSON files.
-  //   *.txt       - Plain text that sniffs as HTML, XML, or JSON.
-  //   htmlN_dtd.* - Various HTML templates to test.
-  const char* blocked_resources[] = {
-      "valid.html",    "valid.xml",      "valid.json",         "html.txt",
-      "xml.txt",       "json.txt",       "comment_valid.html", "html4_dtd.html",
-      "html4_dtd.txt", "html5_dtd.html", "html5_dtd.txt"};
+  //   valid.*        - Correctly labeled HTML/XML/JSON files.
+  //   *.txt          - Plain text that sniffs as HTML, XML, or JSON.
+  //   htmlN_dtd.*    - Various HTML templates to test.
+  //   json-prefixed* - parser-breaking prefixes
+  const char* blocked_resources[] = {"valid.html",
+                                     "valid.xml",
+                                     "valid.json",
+                                     "html.txt",
+                                     "xml.txt",
+                                     "json.txt",
+                                     "comment_valid.html",
+                                     "html4_dtd.html",
+                                     "html4_dtd.txt",
+                                     "html5_dtd.html",
+                                     "html5_dtd.txt",
+                                     "json.js",
+                                     "json-prefixed-1.js",
+                                     "json-prefixed-2.js",
+                                     "json-prefixed-3.js",
+                                     "json-prefixed-4.js",
+                                     "nosniff.json.js",
+                                     "nosniff.json-prefixed.js"};
   for (const char* resource : blocked_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
     base::HistogramTester histograms;
@@ -196,10 +215,12 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
   //   *js.*   - JavaScript mislabeled as a document.
   //   jsonp.* - JSONP (i.e., script) mislabeled as a document.
   //   img.*   - Contents that won't match the document label.
+  //   valid.* - Correctly labeled responses of non-document types.
   const char* sniff_allowed_resources[] = {
-      "js.html",    "comment_js.html", "js.xml",     "js.json",   "js.txt",
-      "jsonp.html", "jsonp.xml",       "jsonp.json", "jsonp.txt", "img.html",
-      "img.xml",    "img.json",        "img.txt"};
+      "js.html",   "comment_js.html", "js.xml",       "js.json",
+      "js.txt",    "jsonp.html",      "jsonp.xml",    "jsonp.json",
+      "jsonp.txt", "img.html",        "img.xml",      "img.json",
+      "img.txt",   "valid.js",        "json-list.js", "nosniff.json-list.js"};
   for (const char* resource : sniff_allowed_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
     base::HistogramTester histograms;
@@ -215,9 +236,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
 
   // These files should be allowed for XHR under the document blocking policy.
   //   cors.*  - Correctly labeled documents with valid CORS headers.
-  //   valid.* - Correctly labeled responses of non-document types.
   const char* allowed_resources[] = {"cors.html", "cors.xml", "cors.json",
-                                     "cors.txt", "valid.js"};
+                                     "cors.txt"};
   for (const char* resource : allowed_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
     base::HistogramTester histograms;

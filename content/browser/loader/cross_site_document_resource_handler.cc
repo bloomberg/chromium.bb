@@ -4,8 +4,8 @@
 
 #include "content/browser/loader/cross_site_document_resource_handler.h"
 
+#include <algorithm>
 #include <string.h>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -207,9 +207,8 @@ void CrossSiteDocumentResourceHandler::ResumeOnWillRead(
   // This is only done when we suspect the response should be blocked.
   //
   // Make it as big as the downstream handler's buffer to make it easy to copy
-  // over in one operation.  This will be large, since the MIME sniffing
-  // handler is downstream.  Technically we could use a smaller buffer if
-  // |needs_sniffing_| is false, but there's no need for the extra complexity.
+  // over in one operation.  This will be large, since the MIME sniffing handler
+  // is downstream.
   DCHECK_GE(*buf_size, net::kMaxBytesToSniff);
   local_buffer_ =
       base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(*buf_size));
@@ -235,11 +234,13 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
   // response is empty and complete), or copy the sniffed data to the next
   // handler's buffer and resume the response without blocking.
   if (should_block_based_on_headers_ && !allow_based_on_sniffing_) {
+    bool found_parser_breaker = false;
     auto confirmed_blockable = CrossSiteDocumentClassifier::kNo;
     if (!needs_sniffing_) {
-      // TODO(creis): Also consider the MIME type confirmed if |bytes_read| is
-      // too small to do sniffing, or restructure to allow buffering enough.
-      // For now, responses with small initial reads may be allowed through.
+      // If sniffing is impossible (e.g., because this is a range request), or
+      // if sniffing is disabled due to a nosniff header AND the server returned
+      // a protected mime type, then we have enough information to block
+      // immediately.
       confirmed_blockable = CrossSiteDocumentClassifier::kYes;
     } else if (bytes_read == 0) {
       // We haven't blocked the response yet (because previous reads yielded a
@@ -261,7 +262,8 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
           std::min(local_buffer_bytes_read_, net::kMaxBytesToSniff);
       base::StringPiece data(local_buffer_->data(), bytes_to_sniff);
 
-      // Confirm whether the data is HTML, XML, or JSON.
+      // If the server returned a protected mime type, sniff the response to
+      // confirm it.
       if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_HTML) {
         confirmed_blockable = CrossSiteDocumentClassifier::SniffForHTML(data);
       } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_XML) {
@@ -272,6 +274,18 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
         // For responses labeled as plain text, only block them if the data
         // sniffs as one of the formats we would block in the first place.
         confirmed_blockable = SniffForHtmlXmlOrJson(data);
+      }
+
+      // Additionally, on all mime types (including _OTHERS), look for
+      // Javascript parser breakers. These are affirmative patterns that
+      // indicate this resource should only be consumed by XHR/fetch (and we've
+      // already verified that this response isn't a permissable cross-origin
+      // XHR/fetch).
+      if (confirmed_blockable != CrossSiteDocumentClassifier::kYes) {
+        auto result =
+            CrossSiteDocumentClassifier::SniffForFetchOnlyResource(data);
+        found_parser_breaker = (result == CrossSiteDocumentClassifier::kYes);
+        confirmed_blockable = std::max(confirmed_blockable, result);
       }
 
       // If sniffing didn't yield a conclusive response, and we haven't read too
@@ -313,6 +327,11 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked",
                                 resource_type,
                                 content::RESOURCE_TYPE_LAST_TYPE);
+      if (found_parser_breaker) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "SiteIsolation.XSD.Browser.BlockedForParserBreaker", resource_type,
+            content::RESOURCE_TYPE_LAST_TYPE);
+      }
       switch (canonical_mime_type_) {
         case CROSS_SITE_DOCUMENT_MIME_TYPE_HTML:
           UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.HTML",
@@ -331,6 +350,11 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
           break;
         case CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN:
           UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.Plain",
+                                    resource_type,
+                                    content::RESOURCE_TYPE_LAST_TYPE);
+          break;
+        case CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS:
+          UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.Others",
                                     resource_type,
                                     content::RESOURCE_TYPE_LAST_TYPE);
           break;
@@ -432,14 +456,14 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
       return false;
   }
 
-  // Look up MIME type.  If it doesn't claim to be a blockable type (i.e., HTML,
-  // XML, JSON, or plain text), don't block it.
+  // Look up MIME type.  Even if it doesn't claim to be a blockable type (i.e.,
+  // HTML, XML, JSON, or plain text), it may still fail the checks during the
+  // SniffForFetchOnlyResource() phase.
+  //
   // TODO(nick): What if the mime type is omitted? Should that be treated the
   // same as text/plain? https://crbug.com/795971
   canonical_mime_type_ = CrossSiteDocumentClassifier::GetCanonicalMimeType(
       response->head.mime_type);
-  if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS)
-    return false;
 
   // Treat a missing initiator as an empty origin to be safe, though we don't
   // expect this to happen.  Unfortunately, this requires a copy.
@@ -495,16 +519,32 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   // sniff the contents to confirm the MIME type, to avoid blocking incorrectly
   // labeled JavaScript, JSONP, etc files.
   //
-  // Note: only sniff if there isn't a nosniff header, and if it is not a range
-  // request.  Range requests would let an attacker bypass blocking by
-  // requesting a range that fails to sniff as a protected type.
+  // Note: if there is a nosniff header, it means we should honor the response
+  // mime type without trying to confirm it.
   std::string nosniff_header;
   response->head.headers->GetNormalizedHeader("x-content-type-options",
                                               &nosniff_header);
+  bool has_nosniff_header =
+      base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
+
+  // If this is an HTTP range request, sniffing isn't possible.
   std::string range_header;
   response->head.headers->GetNormalizedHeader("content-range", &range_header);
-  needs_sniffing_ = !base::LowerCaseEqualsASCII(nosniff_header, "nosniff") &&
-                    range_header.empty();
+  bool has_range_header = !range_header.empty();
+
+  // If this is a partial response, sniffing is not possible, so allow the
+  // response if it's not a protected mime type.
+  if (has_range_header &&
+      canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS) {
+    return false;
+  }
+
+  // We need to sniff unprotected mime types (e.g. for parser breakers), and
+  // unless the nosniff header is set, we also need to sniff protected mime
+  // types to verify that they're not mislabeled.
+  needs_sniffing_ =
+      (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS) ||
+      !(has_range_header || has_nosniff_header);
 
   return true;
 }
