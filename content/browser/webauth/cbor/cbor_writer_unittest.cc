@@ -4,6 +4,7 @@
 
 #include "content/browser/webauth/cbor/cbor_writer.h"
 
+#include <limits>
 #include <string>
 
 #include "base/strings/string_piece.h"
@@ -16,7 +17,7 @@ namespace content {
 
 TEST(CBORWriterTest, TestWriteUint) {
   typedef struct {
-    const uint64_t value;
+    const int64_t value;
     const base::StringPiece cbor;
   } UintTestCase;
 
@@ -33,10 +34,42 @@ TEST(CBORWriterTest, TestWriteUint) {
       {1000, base::StringPiece("\x19\x03\xe8")},
       {1000000, base::StringPiece("\x1a\x00\x0f\x42\x40", 5)},
       {0xFFFFFFFF, base::StringPiece("\x1a\xff\xff\xff\xff")},
-  };
+      {0x100000000,
+       base::StringPiece("\x1b\x00\x00\x00\x01\x00\x00\x00\x00", 9)},
+      {std::numeric_limits<int64_t>::max(),
+       base::StringPiece("\x1b\x7f\xff\xff\xff\xff\xff\xff\xff")}};
 
   for (const UintTestCase& test_case : kUintTestCases) {
     auto cbor = CBORWriter::Write(CBORValue(test_case.value));
+    ASSERT_TRUE(cbor.has_value());
+    EXPECT_THAT(cbor.value(), testing::ElementsAreArray(test_case.cbor));
+  }
+}
+
+TEST(CBORWriterTest, TestWriteNegativeInteger) {
+  static const struct {
+    const int64_t negative_int;
+    const base::StringPiece cbor;
+  } kNegativeIntTestCases[] = {
+      {-1LL, base::StringPiece("\x20")},
+      {-10LL, base::StringPiece("\x29")},
+      {-23LL, base::StringPiece("\x36")},
+      {-24LL, base::StringPiece("\x37")},
+      {-25LL, base::StringPiece("\x38\x18")},
+      {-100LL, base::StringPiece("\x38\x63")},
+      {-1000LL, base::StringPiece("\x39\x03\xe7")},
+      {-4294967296LL, base::StringPiece("\x3a\xff\xff\xff\xff")},
+      {-4294967297LL,
+       base::StringPiece("\x3b\x00\x00\x00\x01\x00\x00\x00\x00", 9)},
+      {std::numeric_limits<int64_t>::min(),
+       base::StringPiece("\x3b\x7f\xff\xff\xff\xff\xff\xff\xff")},
+  };
+
+  for (const auto& test_case : kNegativeIntTestCases) {
+    SCOPED_TRACE(testing::Message() << "testing  negative int at index: "
+                                    << test_case.negative_int);
+
+    auto cbor = CBORWriter::Write(CBORValue(test_case.negative_int));
     ASSERT_TRUE(cbor.has_value());
     EXPECT_THAT(cbor.value(), testing::ElementsAreArray(test_case.cbor));
   }
@@ -76,6 +109,9 @@ TEST(CBORWriterTest, TestWriteString) {
       {"\xf0\x90\x85\x91", base::StringPiece("\x64\xf0\x90\x85\x91")}};
 
   for (const StringTestCase& test_case : kStringTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "testing encoding string : " << test_case.string);
+
     auto cbor = CBORWriter::Write(CBORValue(test_case.string));
     ASSERT_TRUE(cbor.has_value());
     EXPECT_THAT(cbor.value(), testing::ElementsAreArray(test_case.cbor));
@@ -92,7 +128,7 @@ TEST(CBORWriterTest, TestWriteArray) {
       // clang-format on
   };
   std::vector<CBORValue> array;
-  for (int i = 1; i <= 25; i++) {
+  for (int64_t i = 1; i <= 25; i++) {
     array.push_back(CBORValue(i));
   }
   auto cbor = CBORWriter::Write(CBORValue(array));
@@ -105,7 +141,7 @@ TEST(CBORWriterTest, TestWriteArray) {
 TEST(CBORWriterTest, TestWriteMapWithMapValue) {
   static const uint8_t kMapTestCaseCbor[] = {
       // clang-format off
-      0xAF,  // map of 7 pairs:
+      0xb6,  // map of 8 pairs:
         0x00,          // key 0
         0x61, 0x61,    // value "a"
 
@@ -113,7 +149,7 @@ TEST(CBORWriterTest, TestWriteMapWithMapValue) {
         0x61,  0x62,   // value "b"
 
         0x18, 0x18,    // key 24
-        0x61,   0x63,  // value "c"
+        0x61, 0x63,  // value "c"
 
         0x18, 0xFF,        // key 255
         0x61,  0x64,       // value "d"
@@ -134,17 +170,41 @@ TEST(CBORWriterTest, TestWriteMapWithMapValue) {
         0x1B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
         0x61, 0x69,  //  value "i"
 
+        // key INT64_MAX
+        0x1b, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0x61, 0x6a,  //  value "j"
+
+        0x20,          // key -1
+        0x61, 0x6b,    // value "k"
+
+        0x37,          // key -24
+        0x61,  0x6c,   // value "l"
+
+        0x38, 0x18,    // key -25
+        0x61, 0x6d,  // value "m"
+
+        0x38, 0xFF,        // key -256
+        0x61, 0x6e,       // value "n"
+
+        0x39, 0x01, 0x00,  // key -257
+        0x61, 0x6f,        // value "o"
+
+        0x3A, 0x00, 0x01, 0x00, 0x00,   // key -65537
+        0x61, 0x70,                     // value "p"
+
+        0x3A, 0xFF, 0xFF, 0xFF, 0xFF,   // key -4294967296
+        0x61, 0x71,                     // value "q"
+
+        // key -4294967297
+        0x3B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+        0x61, 0x72,  //  value "r"
+
+        // key INT64_MIN
+        0x3b, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0x61, 0x73,  //  value "s"
+
         0x60,        // key ""
         0x61, 0x2e,  // value "."
-
-        0x61, 0x62,  // key "b"
-        0x61, 0x42,  // value "B"
-
-        0x61, 0x63,  // key "c"
-        0x61, 0x43,  // value "C"
-
-        0x61, 0x64,  // key "d"
-        0x61, 0x44,  // value "D"
 
         0x61, 0x65,  // key "e"
         0x61, 0x45,  // value "E"
@@ -157,26 +217,34 @@ TEST(CBORWriterTest, TestWriteMapWithMapValue) {
   // Shorter strings sort first in CTAP, thus the “aa” value should be
   // serialised last in the map.
   map[CBORValue("aa")] = CBORValue("AA");
-  map[CBORValue("d")] = CBORValue("D");
-  map[CBORValue("b")] = CBORValue("B");
   map[CBORValue("e")] = CBORValue("E");
-  map[CBORValue("c")] = CBORValue("C");
   // The empty string is shorter than all others, so should appear first among
   // the strings.
   map[CBORValue("")] = CBORValue(".");
   // Map keys are sorted by major type, by byte length, and then by
   // byte-wise lexical order. So all integer type keys should appear before
-  // key "".
-  map[CBORValue(uint64_t(0))] = CBORValue("a");
+  // key "" and all positive integer keys should appear before negative integer
+  // keys.
+  map[CBORValue(-1)] = CBORValue("k");
+  map[CBORValue(-24)] = CBORValue("l");
+  map[CBORValue(-25)] = CBORValue("m");
+  map[CBORValue(-256)] = CBORValue("n");
+  map[CBORValue(-257)] = CBORValue("o");
+  map[CBORValue(-65537)] = CBORValue("p");
+  map[CBORValue(int64_t(-4294967296))] = CBORValue("q");
+  map[CBORValue(int64_t(-4294967297))] = CBORValue("r");
+  map[CBORValue(std::numeric_limits<int64_t>::min())] = CBORValue("s");
+  map[CBORValue(0)] = CBORValue("a");
   map[CBORValue(23)] = CBORValue("b");
   map[CBORValue(24)] = CBORValue("c");
-  map[CBORValue(255)] = CBORValue("d");
+  map[CBORValue(std::numeric_limits<uint8_t>::max())] = CBORValue("d");
   map[CBORValue(256)] = CBORValue("e");
-  map[CBORValue(65535)] = CBORValue("f");
+  map[CBORValue(std::numeric_limits<uint16_t>::max())] = CBORValue("f");
   map[CBORValue(65536)] = CBORValue("g");
-  map[CBORValue(4294967295)] = CBORValue("h");
-  map[CBORValue(4294967296)] = CBORValue("i");
-
+  map[CBORValue(int64_t(std::numeric_limits<uint32_t>::max()))] =
+      CBORValue("h");
+  map[CBORValue(int64_t(4294967296))] = CBORValue("i");
+  map[CBORValue(std::numeric_limits<int64_t>::max())] = CBORValue("j");
   auto cbor = CBORWriter::Write(CBORValue(map));
   ASSERT_TRUE(cbor.has_value());
   EXPECT_THAT(cbor.value(), testing::ElementsAreArray(

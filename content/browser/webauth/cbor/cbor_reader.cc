@@ -7,6 +7,7 @@
 #include <math.h>
 #include <utility>
 
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -47,6 +48,8 @@ const char kUnsupportedSimpleValue[] =
     "Unsupported or unassigned simple value.";
 const char kUnsupportedFloatingPointValue[] =
     "Floating point numbers are not supported.";
+const char kOutOfRangeIntegerValue[] =
+    "Integer values must be between INT64_MIN and INT64_MAX.";
 
 }  // namespace
 
@@ -61,7 +64,7 @@ base::Optional<CBORValue> CBORReader::Read(const Bytes& data,
   CBORReader reader(data.begin(), data.end());
   base::Optional<CBORValue> decoded_cbor = reader.DecodeCBOR(max_nesting_level);
 
-  if (decoded_cbor.has_value())
+  if (decoded_cbor)
     reader.CheckExtraneousData();
   if (error_code_out)
     *error_code_out = reader.GetErrorCode();
@@ -86,23 +89,25 @@ base::Optional<CBORValue> CBORReader::DecodeCBOR(int max_nesting_level) {
   const auto major_type = GetMajorType(initial_byte);
   const uint8_t additional_info = GetAdditionalInfo(initial_byte);
 
-  uint64_t length;
-  if (!ReadUnsignedInt(additional_info, &length))
+  uint64_t value;
+  if (!ReadVariadicLengthInteger(additional_info, &value))
     return base::nullopt;
 
   switch (major_type) {
     case CBORValue::Type::UNSIGNED:
-      return CBORValue(length);
+      return DecodeValueToUnsigned(value);
+    case CBORValue::Type::NEGATIVE:
+      return DecodeValueToNegative(value);
     case CBORValue::Type::BYTE_STRING:
-      return ReadBytes(length);
+      return ReadBytes(value);
     case CBORValue::Type::STRING:
-      return ReadString(length);
+      return ReadString(value);
     case CBORValue::Type::ARRAY:
-      return ReadCBORArray(length, max_nesting_level);
+      return ReadCBORArray(value, max_nesting_level);
     case CBORValue::Type::MAP:
-      return ReadCBORMap(length, max_nesting_level);
+      return ReadCBORMap(value, max_nesting_level);
     case CBORValue::Type::SIMPLE_VALUE:
-      return ReadSimpleValue(additional_info, length);
+      return ReadSimpleValue(additional_info, value);
     case CBORValue::Type::NONE:
       break;
   }
@@ -111,7 +116,8 @@ base::Optional<CBORValue> CBORReader::DecodeCBOR(int max_nesting_level) {
   return base::nullopt;
 }
 
-bool CBORReader::ReadUnsignedInt(uint8_t additional_info, uint64_t* value) {
+bool CBORReader::ReadVariadicLengthInteger(uint8_t additional_info,
+                                           uint64_t* value) {
   uint8_t additional_bytes = 0;
   if (additional_info < 24) {
     *value = additional_info;
@@ -141,7 +147,25 @@ bool CBORReader::ReadUnsignedInt(uint8_t additional_info, uint64_t* value) {
   }
 
   *value = int_data;
-  return CheckUintEncodedByteLength(additional_bytes, int_data);
+  return CheckMinimalEncoding(additional_bytes, int_data);
+}
+
+base::Optional<CBORValue> CBORReader::DecodeValueToNegative(uint64_t value) {
+  auto negative_value = -base::CheckedNumeric<int64_t>(value) - 1;
+  if (!negative_value.IsValid()) {
+    error_code_ = DecoderError::OUT_OF_RANGE_INTEGER_VALUE;
+    return base::nullopt;
+  }
+  return CBORValue(negative_value.ValueOrDie());
+}
+
+base::Optional<CBORValue> CBORReader::DecodeValueToUnsigned(uint64_t value) {
+  auto unsigned_value = base::CheckedNumeric<int64_t>(value);
+  if (!unsigned_value.IsValid()) {
+    error_code_ = DecoderError::OUT_OF_RANGE_INTEGER_VALUE;
+    return base::nullopt;
+  }
+  return CBORValue(unsigned_value.ValueOrDie());
 }
 
 base::Optional<CBORValue> CBORReader::ReadSimpleValue(uint8_t additional_info,
@@ -238,8 +262,8 @@ bool CBORReader::CanConsume(uint64_t bytes) {
   return false;
 }
 
-bool CBORReader::CheckUintEncodedByteLength(uint8_t additional_bytes,
-                                            uint64_t uint_data) {
+bool CBORReader::CheckMinimalEncoding(uint8_t additional_bytes,
+                                      uint64_t uint_data) {
   if ((additional_bytes == 1 && uint_data < 24) ||
       uint_data <= (1ULL << 8 * (additional_bytes >> 1)) - 1) {
     error_code_ = DecoderError::NON_MINIMAL_CBOR_ENCODING;
@@ -313,6 +337,8 @@ const char* CBORReader::ErrorCodeToString(DecoderError error) {
       return kUnsupportedSimpleValue;
     case DecoderError::UNSUPPORTED_FLOATING_POINT_VALUE:
       return kUnsupportedFloatingPointValue;
+    case DecoderError::OUT_OF_RANGE_INTEGER_VALUE:
+      return kOutOfRangeIntegerValue;
     default:
       NOTREACHED();
       return "Unknown error code.";

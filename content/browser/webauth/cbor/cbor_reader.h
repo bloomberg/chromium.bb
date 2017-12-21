@@ -66,6 +66,7 @@ class CONTENT_EXPORT CBORReader {
     NON_MINIMAL_CBOR_ENCODING,
     UNSUPPORTED_SIMPLE_VALUE,
     UNSUPPORTED_FLOATING_POINT_VALUE,
+    OUT_OF_RANGE_INTEGER_VALUE,
   };
 
   // CBOR nested depth sufficient for most use cases.
@@ -88,9 +89,11 @@ class CONTENT_EXPORT CBORReader {
  private:
   CBORReader(Bytes::const_iterator it, const Bytes::const_iterator end);
   base::Optional<CBORValue> DecodeCBOR(int max_nesting_level);
-  bool ReadUnsignedInt(uint8_t additional_info, uint64_t* length);
+  base::Optional<CBORValue> DecodeValueToNegative(uint64_t value);
+  base::Optional<CBORValue> DecodeValueToUnsigned(uint64_t value);
   base::Optional<CBORValue> ReadSimpleValue(uint8_t additional_info,
                                             uint64_t value);
+  bool ReadVariadicLengthInteger(uint8_t additional_info, uint64_t* value);
   base::Optional<CBORValue> ReadBytes(uint64_t num_bytes);
   base::Optional<CBORValue> ReadString(uint64_t num_bytes);
   base::Optional<CBORValue> ReadCBORArray(uint64_t length,
@@ -101,7 +104,7 @@ class CONTENT_EXPORT CBORReader {
   bool CheckDuplicateKey(const CBORValue& new_key, CBORValue::MapValue* map);
   bool HasValidUTF8Format(const std::string& string_data);
   bool CheckOutOfOrderKey(const CBORValue& new_key, CBORValue::MapValue* map);
-  bool CheckUintEncodedByteLength(uint8_t additional_bytes, uint64_t uint_data);
+  bool CheckMinimalEncoding(uint8_t additional_bytes, uint64_t uint_data);
 
   DecoderError GetErrorCode();
 
