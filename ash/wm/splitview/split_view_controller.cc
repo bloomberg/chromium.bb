@@ -80,8 +80,8 @@ SplitViewController::~SplitViewController() {
 
 // static
 bool SplitViewController::ShouldAllowSplitView() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTabletSplitView)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableTabletSplitView)) {
     return false;
   }
   if (!Shell::Get()

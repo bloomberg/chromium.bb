@@ -13,7 +13,6 @@
 #include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -39,7 +38,6 @@
 #include "ash/wm/workspace/backdrop_delegate.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "ui/app_list/app_list_features.h"
@@ -1737,8 +1735,6 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
 // Test that backdrop works in split view mode.
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableTabletSplitView);
   ShowTopWindowBackdropForContainer(default_container(), true);
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
