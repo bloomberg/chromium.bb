@@ -342,9 +342,9 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
       InterpFilterParams filter_params_y =
           av1_get_interp_filter_params((InterpFilter)vfilter);
       ConvolveParams conv_params1 =
-          get_conv_params_no_round(0, 0, 0, output, MAX_SB_SIZE);
+          get_conv_params_no_round(0, 0, 0, output, MAX_SB_SIZE, 1);
       ConvolveParams conv_params2 =
-          get_conv_params_no_round(0, 0, 0, output2, MAX_SB_SIZE);
+          get_conv_params_no_round(0, 0, 0, output2, MAX_SB_SIZE, 1);
 
       // Test special case where jnt_comp_avg is not used
       conv_params1.use_jnt_comp_avg = 0;
