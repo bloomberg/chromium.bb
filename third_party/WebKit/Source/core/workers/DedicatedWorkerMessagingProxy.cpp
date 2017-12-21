@@ -62,10 +62,15 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
       std::move(creation_params),
       CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())));
 
-  // TODO(nhiroki): Support module scripts (https://crbug.com/680046).
-  DCHECK_EQ("classic", options.type());
-  GetWorkerThread()->EvaluateClassicScript(
-      script_url, source_code, nullptr /* cached_meta_data */, stack_id);
+  if (options.type() == "classic") {
+    GetWorkerThread()->EvaluateClassicScript(
+        script_url, source_code, nullptr /* cached_meta_data */, stack_id);
+  } else if (options.type() == "module") {
+    GetWorkerThread()->ImportModuleScript(
+        script_url, ParseCredentialsOption(options.credentials()));
+  } else {
+    NOTREACHED();
+  }
 
   // Post all queued tasks to the worker.
   for (auto& queued_task : queued_early_tasks_) {
@@ -171,6 +176,19 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
 void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
+}
+
+network::mojom::FetchCredentialsMode
+DedicatedWorkerMessagingProxy::ParseCredentialsOption(
+    const String& credentials_option) {
+  if (credentials_option == "omit")
+    return network::mojom::FetchCredentialsMode::kOmit;
+  if (credentials_option == "same-origin")
+    return network::mojom::FetchCredentialsMode::kSameOrigin;
+  if (credentials_option == "include")
+    return network::mojom::FetchCredentialsMode::kInclude;
+  NOTREACHED();
+  return network::mojom::FetchCredentialsMode::kOmit;
 }
 
 WTF::Optional<WorkerBackingThreadStartupData>

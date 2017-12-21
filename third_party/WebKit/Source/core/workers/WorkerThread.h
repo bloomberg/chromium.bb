@@ -45,6 +45,7 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Optional.h"
 #include "public/platform/WebThread.h"
+#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -105,8 +106,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
                              std::unique_ptr<Vector<char>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
 
-  // TODO(nhiroki): Implement ImportModuleScript() for module workers.
-  // (https://crbug.com/680046)
+  // Posts a task to import a top-level module script on the worker thread.
+  // Called on the main thread after start().
+  void ImportModuleScript(const KURL& script_url,
+                          network::mojom::FetchCredentialsMode);
 
   // Closes the global scope and terminates the underlying thread. Called on the
   // main thread.
@@ -253,6 +256,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
+  void ImportModuleScriptOnWorkerThread(const KURL& script_url,
+                                        network::mojom::FetchCredentialsMode);
 
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread();
