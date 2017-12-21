@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -350,6 +351,28 @@ TEST_F(ToolbarMediatorTest, TestDidLoadPageWithSucess) {
 
   web_state_->SetCurrentURL(GURL(kTestUrl));
   web_state_->OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+
+  [[consumer_ verify] setCanGoForward:YES];
+  [[consumer_ verify] setCanGoBack:YES];
+  [[consumer_ verify] setPageBookmarked:YES];
+  [[consumer_ verify] setShareMenuEnabled:YES];
+}
+
+// Test the Toolbar is updated when the Webstate observer method
+// didFinishNavigation is called.
+TEST_F(ToolbarMediatorTest, TestDidFinishNavigation) {
+  SetUpBookmarks();
+  mediator_.webStateList = web_state_list_.get();
+  SetUpActiveWebState();
+  mediator_.consumer = consumer_;
+  mediator_.bookmarkModel = bookmark_model_;
+
+  navigation_manager_->set_can_go_forward(true);
+  navigation_manager_->set_can_go_back(true);
+
+  web_state_->SetCurrentURL(GURL(kTestUrl));
+  web::FakeNavigationContext context;
+  web_state_->OnNavigationFinished(&context);
 
   [[consumer_ verify] setCanGoForward:YES];
   [[consumer_ verify] setCanGoBack:YES];
