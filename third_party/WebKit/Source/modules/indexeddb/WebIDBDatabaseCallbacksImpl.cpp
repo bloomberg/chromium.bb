@@ -74,10 +74,9 @@ void WebIDBDatabaseCallbacksImpl::OnComplete(long long transaction_id) {
 }
 
 void WebIDBDatabaseCallbacksImpl::OnChanges(
-    const std::unordered_map<int32_t, std::vector<int32_t>>&
-        observation_index_map,
+    const ObservationIndexMap& observation_index_map,
     const WebVector<WebIDBObservation>& observations,
-    const IDBDatabaseCallbacks::TransactionMap& transactions) {
+    const TransactionMap& transactions) {
   if (callbacks_)
     callbacks_->OnChanges(observation_index_map, observations, transactions);
 }
