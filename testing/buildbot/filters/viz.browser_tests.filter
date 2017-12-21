@@ -2,6 +2,7 @@
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
 
 # HostFrameSinkManager::CreateRootCompositorFrameSink Crash crbug.com/796575
+-AppWindowApiTest.OnBoundsChangedEvent
 -ForceMaximizeOnFirstRunTest.*TwoRuns
 -ForceMaximizePolicyFalseTest.GeneralFirstRun
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus0
@@ -107,6 +108,7 @@
 -GeolocationBrowserTest.NoPromptBeforeStart
 -HostedAppProcessModelTest.IframeNavigationsInsideHostedApp/0
 -IncognitoApiTest.IncognitoYesScript
+-InterstitialAccessibilityBrowserTest.TestSSLInterstitialAccessibility
 -IsolatedAppTest.CookieIsolation
 -IsolatedAppTest.CrossProcessClientRedirect
 -IsolatedAppTest.SubresourceCookieIsolation
@@ -126,7 +128,8 @@
 -OmniboxApiTest.OnInputEntered
 -PageLoadMetricsBrowserTest.*
 -PasswordManagerBrowserTestBase.SlowPageFill
--PaymentRequestModifiersTest.ModifierAppliedIfApplicableSelectedInstrumentWithCreditSupportedType
+-PaymentRequestModifiersTest.*
+-Pepper/ECKEncryptedMediaTest.OutputProtectionTest/0
 -PlatformAppBrowserTest.Isolation
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls
 -PolicyTest.SSLErrorOverridingAllowed
@@ -174,8 +177,7 @@
 -WebBluetoothTest.BlocklistShouldBlock
 -WebBluetoothTest.KillSwitchShouldBlock
 -WebBluetoothTest.WebBluetoothAfterCrash
--WebSocketBrowserTest.SecureWebSocketSplitRecords
--WebSocketBrowserTest.WebSocketAppliesHSTS
+-WebSocketBrowserTest.*
 -WebUsbTest.AddRemoveDevice
 -WebUsbTest.AddRemoveDeviceEphemeral
 -WebUsbTest.RequestAndGetDevices
