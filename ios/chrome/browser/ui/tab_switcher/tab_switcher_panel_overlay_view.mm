@@ -10,8 +10,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -88,7 +86,8 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 @synthesize overlayType = _overlayType;
 @synthesize presenter = _presenter;
 @synthesize dispatcher = _dispatcher;
-@synthesize signinPromoViewMediator = _signinPromoViewMediator;
+@synthesize signinPromoView = _signinPromoView;
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithFrame:(CGRect)frame
                  browserState:(ios::ChromeBrowserState*)browserState
@@ -218,26 +217,17 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
 - (void)wasShown {
-  [_signinPromoViewMediator signinPromoViewVisible];
+  [self.delegate tabSwitcherPanelOverlViewWasShown:self];
 }
 
 - (void)wasHidden {
-  [_signinPromoViewMediator signinPromoViewHidden];
-}
-
-- (void)configureSigninPromoWithConfigurator:
-            (SigninPromoViewConfigurator*)configurator
-                             identityChanged:(BOOL)identityChanged {
-  DCHECK(_signinPromoView);
-  DCHECK(_signinPromoViewMediator);
-  [configurator configureSigninPromoView:_signinPromoView];
+  [self.delegate tabSwitcherPanelOverlViewWasHidden:self];
 }
 
 #pragma mark - Private
 
 // Creates the sign-in view and its mediator if it doesn't exist.
 - (void)createSigninPromoViewIfNeeded {
-  DCHECK(_signinPromoViewMediator);
   if (_signinPromoView)
     return;
   _signinPromoView = [[SigninPromoView alloc] initWithFrame:CGRectZero];
@@ -258,13 +248,10 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       constraintEqualToAnchor:self.centerYAnchor
                      constant:kContainerOriginYOffset]
       .active = YES;
-  _signinPromoView.delegate = _signinPromoViewMediator;
-  [[_signinPromoViewMediator createConfigurator]
-      configureSigninPromoView:_signinPromoView];
 }
 
 - (void)updateText {
-  DCHECK(_signinPromoView == nil && _signinPromoViewMediator == nil);
+  DCHECK(_signinPromoView == nil);
   NSMutableAttributedString* titleString = nil;
   NSMutableAttributedString* subtitleString = nil;
 
@@ -393,7 +380,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
 - (void)updateButtonTarget {
-  DCHECK(_signinPromoView == nil && _signinPromoViewMediator == nil);
+  DCHECK(_signinPromoView == nil);
   NSInteger tag = 0;
   SEL selector = nil;
   _recordedMetricString = "";
