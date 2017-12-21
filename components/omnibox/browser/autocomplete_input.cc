@@ -306,10 +306,16 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   // many other characters (perhaps for weird intranet machines), it's extremely
   // unlikely that a user would be trying to type those in for anything other
   // than a search query.
+  //
+  // Per https://tools.ietf.org/html/rfc6761, the .invalid TLD is considered
+  // non-navigable and thus is treated like a non-compliant hostname. (Though
+  // just the word "invalid" is not a hostname).
   const base::string16 original_host(
       text.substr(parts->host.begin, parts->host.len));
-  if ((host_info.family == url::CanonHostInfo::NEUTRAL) &&
-      !net::IsCanonicalizedHostCompliant(canonicalized_url->host())) {
+  if (text != base::ASCIIToUTF16("invalid") &&
+      (host_info.family == url::CanonHostInfo::NEUTRAL) &&
+      (!net::IsCanonicalizedHostCompliant(canonicalized_url->host()) ||
+       canonicalized_url->DomainIs("invalid"))) {
     // Invalid hostname.  There are several possible cases:
     // * The user is typing a multi-word query.  If we see a space anywhere in
     //   the input host we assume this is a search and return QUERY.  (We check
@@ -435,10 +441,16 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   if (canonicalized_url->has_username() && desired_tld.empty())
     return metrics::OmniboxInputType::UNKNOWN;
 
-  // If the host has a known TLD or a port, it's probably a URL.  Note that we
-  // special-case "localhost" as a known hostname.
-  if (has_known_tld || (canonicalized_url->host() == "localhost") ||
-      canonicalized_url->has_port())
+  // If the host has a known TLD or a port, it's probably a URL.  The .example,
+  // .test and .localhost TLDs are special-cased as known TLDs due to
+  // https://tools.ietf.org/html/rfc6761. Note that DomainIs also covers the
+  // host, e.g. just the word localhost, that is not desired for "example" or
+  // "test".
+  if (text != base::ASCIIToUTF16("example") &&
+      text != base::ASCIIToUTF16("test") &&
+      (has_known_tld || canonicalized_url->DomainIs("example") ||
+       canonicalized_url->DomainIs("localhost") ||
+       canonicalized_url->DomainIs("test") || canonicalized_url->has_port()))
     return metrics::OmniboxInputType::URL;
 
   // No scheme, username, port, and no known TLD on the host.
