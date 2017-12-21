@@ -1210,7 +1210,7 @@ const Display DisplayManager::GetMirroringDisplayById(
   return iter == software_mirroring_display_list_.end() ? Display() : *iter;
 }
 
-std::string DisplayManager::GetDisplayNameForId(int64_t id) {
+std::string DisplayManager::GetDisplayNameForId(int64_t id) const {
   if (id == kInvalidDisplayId)
     return l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_UNKNOWN);
 
