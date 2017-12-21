@@ -80,3 +80,4 @@ virtual/layout_ng/fast/block/float
 virtual/layout_ng/external/wpt/css/CSS2/linebox
 virtual/mojo-loading/fast/table
 virtual/spv175/fast/borders
+virtual/spv175/fast/multicol

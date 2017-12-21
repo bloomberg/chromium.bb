@@ -83,9 +83,11 @@ crbug.com/771643 virtual/spv175/fast/borders/border-image-fill-inline-no-border.
 crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image.html [ Failure ]
+crbug.com/771643 virtual/spv175/fast/multicol/border-radius-clipped-layer.html [ Failure ]
+crbug.com/771643 virtual/spv175/fast/multicol/layers-split-across-columns.html [ Failure ]
+crbug.com/771643 virtual/spv175/fast/multicol/mixed-opacity-test.html [ Failure ]
+crbug.com/771643 virtual/spv175/fast/multicol/overflow-across-columns.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/forms/select-option-background-color.html [ Failure ]
-crbug.com/771643 virtual/spv175/paint/invalidation/multicol/multicol-with-overflowing-block-rl.html [ Failure ]
-crbug.com/771643 virtual/spv175/paint/invalidation/overflow/paged-with-overflowing-block-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/position/position-change-keeping-geometry.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/svg/absolute-sized-content-with-resources.xhtml [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/svg/deep-dynamic-updates.svg [ Failure ]
@@ -1403,6 +1405,7 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
+crbug.com/467477 virtual/spv175/fast/multicol/vertical-rl/nested-columns.html [ Skip ]
 
 crbug.com/674225 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 

@@ -1,0 +1,67 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 8, 792, 167],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 8, 792, 167],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [0, 341, 508, 167],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [0, 341, 508, 167],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 174, 500, 168],
+          "reason": "chunk uncacheable"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 174, 500, 168],
+          "reason": "chunk uncacheable"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='elm'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='elm'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='elm'",
+      "reason": "style change"
+    }
+  ]
+}
+

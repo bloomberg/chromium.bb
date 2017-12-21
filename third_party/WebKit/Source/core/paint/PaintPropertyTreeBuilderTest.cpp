@@ -3404,7 +3404,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnWithOutline) {
   LayoutObject* target2 = GetLayoutObjectByElementId("target2");
   EXPECT_EQ(LayoutPoint(LayoutUnit(400.5f), LayoutUnit(8.0f)),
             target2->FirstFragment().PaintOffset());
-  // |target1| is only in the second column.
+  // |target2| is only in the second column.
   EXPECT_FALSE(target2->FirstFragment().NextFragment());
 }
 
@@ -3574,6 +3574,107 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
   EXPECT_EQ(LayoutPoint(180, 90), GetLayoutObjectByElementId("bottom-right")
                                       ->FirstFragment()
                                       .PaintOffset());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       PaintOffsetsUnderMultiColumnVerticalRLWithOverflow) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='multicol' style='columns:2; column-fill:auto; column-gap: 0;
+        width: 200px; height: 200px; writing-mode: vertical-rl'>
+      <div style='width: 100px'>
+        <div id='content' style='width: 400px'></div>
+      </div>
+    </div>
+  )HTML");
+
+  LayoutObject* thread =
+      GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  EXPECT_TRUE(thread->IsLayoutFlowThread());
+  EXPECT_EQ(2u, NumFragments(thread));
+  EXPECT_EQ(LayoutPoint(100, 0), FragmentAt(thread, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(thread, 0).PaginationOffset());
+  EXPECT_EQ(LayoutPoint(300, 100), FragmentAt(thread, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(200, 100), FragmentAt(thread, 1).PaginationOffset());
+
+  LayoutObject* content = GetLayoutObjectByElementId("content");
+  EXPECT_EQ(2u, NumFragments(content));
+  EXPECT_EQ(LayoutPoint(-200, 0), FragmentAt(content, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(content, 0).PaginationOffset());
+  EXPECT_EQ(LayoutPoint(0, 100), FragmentAt(content, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(200, 100), FragmentAt(content, 1).PaginationOffset());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='multicol' style='columns:3; column-fill:auto; column-gap: 0;
+        width: 300px; height: 200px'>
+      <div style='height: 300px'></div>
+      <div id='composited' style='will-change: transform; height: 300px'>
+        <div id='non-composited-child' style='height: 150px'></div>
+        <div id='composited-child'
+             style='will-change: transform; height: 150px'></div>
+      </div>
+    </div>
+  )HTML");
+
+  LayoutObject* thread =
+      GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  EXPECT_TRUE(thread->IsLayoutFlowThread());
+  EXPECT_EQ(3u, NumFragments(thread));
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(thread, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(thread, 0).PaginationOffset());
+  EXPECT_EQ(LayoutPoint(100, -200), FragmentAt(thread, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, -200), FragmentAt(thread, 1).PaginationOffset());
+  EXPECT_EQ(LayoutPoint(200, -400), FragmentAt(thread, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(200, -400), FragmentAt(thread, 2).PaginationOffset());
+
+  LayoutObject* composited = GetLayoutObjectByElementId("composited");
+  LayoutObject* non_composited_child =
+      GetLayoutObjectByElementId("non-composited-child");
+  LayoutObject* composited_child =
+      GetLayoutObjectByElementId("composited-child");
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // Compositing doesn't affect SPv2 fragmentation.
+    EXPECT_EQ(2u, NumFragments(composited));
+    EXPECT_EQ(LayoutPoint(100, 100), FragmentAt(composited, 0).PaintOffset());
+    EXPECT_EQ(LayoutPoint(100, -200),
+              FragmentAt(composited, 0).PaginationOffset());
+    EXPECT_EQ(LayoutPoint(200, -100), FragmentAt(composited, 1).PaintOffset());
+    EXPECT_EQ(LayoutPoint(200, -400),
+              FragmentAt(composited, 1).PaginationOffset());
+    EXPECT_EQ(2u, NumFragments(non_composited_child));
+    EXPECT_EQ(LayoutPoint(100, 100),
+              FragmentAt(non_composited_child, 0).PaintOffset());
+    EXPECT_EQ(LayoutPoint(100, -200),
+              FragmentAt(non_composited_child, 0).PaginationOffset());
+    EXPECT_EQ(LayoutPoint(200, -100),
+              FragmentAt(non_composited_child, 1).PaintOffset());
+    EXPECT_EQ(LayoutPoint(200, -400),
+              FragmentAt(non_composited_child, 1).PaginationOffset());
+    EXPECT_EQ(1u, NumFragments(composited_child));
+    EXPECT_EQ(LayoutPoint(200, 50),
+              FragmentAt(composited_child, 0).PaintOffset());
+    EXPECT_EQ(LayoutPoint(200, -400),
+              FragmentAt(composited_child, 0).PaginationOffset());
+  } else {
+    // SPv1* forces single fragment for composited layers.
+    EXPECT_EQ(1u, NumFragments(composited));
+    EXPECT_EQ(LayoutPoint(100, 100), FragmentAt(composited, 0).PaintOffset());
+    EXPECT_EQ(LayoutPoint(100, -200),
+              FragmentAt(composited, 0).PaginationOffset());
+    EXPECT_EQ(1u, NumFragments(non_composited_child));
+    EXPECT_EQ(LayoutPoint(100, 100),
+              FragmentAt(non_composited_child, 0).PaintOffset());
+    EXPECT_EQ(LayoutPoint(100, -200),
+              FragmentAt(non_composited_child, 0).PaginationOffset());
+    EXPECT_EQ(1u, NumFragments(composited_child));
+    EXPECT_EQ(LayoutPoint(100, 250),
+              FragmentAt(composited_child, 0).PaintOffset());
+    EXPECT_EQ(LayoutPoint(100, -200),
+              FragmentAt(composited_child, 0).PaginationOffset());
+  }
 }
 
 // Ensures no crash with multi-column containing relative-position inline with
