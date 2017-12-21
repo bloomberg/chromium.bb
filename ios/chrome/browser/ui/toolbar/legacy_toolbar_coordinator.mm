@@ -47,7 +47,8 @@
                                   browserState:browserState]) {
     DCHECK(browserState);
     _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc]
-        initWithBaseViewController:viewController];
+        initWithBaseViewController:viewController
+                      browserState:self.browserState];
     _toolsMenuCoordinator.dispatcher = dispatcher;
     _toolsMenuCoordinator.configurationProvider = configurationProvider;
 
