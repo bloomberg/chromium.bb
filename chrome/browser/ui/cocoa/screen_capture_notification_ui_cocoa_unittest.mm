@@ -77,7 +77,7 @@ TEST_F(ScreenCaptureNotificationUICocoaTest, LongTitle) {
                  base::Unretained(this)));
   // The elided label sometimes is a few pixels longer than the max width. So
   // allow a 5px off from the 1000px maximium.
-  EXPECT_NEAR(NSWidth([[controller() window] frame]), 1000.0, 5.0);
+  EXPECT_LE(NSWidth([[controller() window] frame]), 1005);
 }
 
 TEST_F(ScreenCaptureNotificationUICocoaTest, ShortTitle) {
