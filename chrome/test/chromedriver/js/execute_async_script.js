@@ -60,6 +60,10 @@ function executeAsyncScript(script, args, isUserSupplied, opt_timeoutMillis) {
     if (id != info.id)
       return;
     info.id++;
+    // Undefined value is skipped when the object is converted to JSON.
+    // Replace it with null so we don't lose the value.
+    if (value === undefined)
+      value = null;
     info.result = {status: status, value: value};
   }
   function reportValue(value) {
