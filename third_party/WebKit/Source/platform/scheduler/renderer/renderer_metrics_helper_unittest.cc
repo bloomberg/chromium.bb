@@ -16,6 +16,7 @@
 #include "platform/scheduler/test/fake_web_view_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/launching_process_state.h"
 
 namespace blink {
 namespace scheduler {
@@ -206,6 +207,11 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
   // QueueType::kDefault is checking sub-millisecond task aggregation,
   // FRAME_* tasks are checking normal task aggregation and other
   // queue types have a single task.
+
+  // Make sure that it starts in a foregrounded state.
+  if (kLaunchingProcessIsBackgrounded)
+    scheduler_->SetRendererBackgrounded(false);
+
   RunTask(QueueType::kDefault, Milliseconds(1),
           base::TimeDelta::FromMicroseconds(700));
   RunTask(QueueType::kDefault, Milliseconds(2),
@@ -319,27 +325,46 @@ TEST_F(RendererMetricsHelperTest, GetFrameStatusTest) {
 
 TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
   scheduler_->SetStoppingWhenBackgroundedEnabled(true);
-  scheduler_->SetRendererBackgrounded(true);
   typedef BackgroundedRendererTransition Transition;
 
-  EXPECT_THAT(histogram_tester_->GetAllSamples(
-                  "RendererScheduler.BackgroundedRendererTransition"),
-              UnorderedElementsAre(
-                  Bucket(static_cast<int>(Transition::kBackgrounded), 1)));
-
-  scheduler_->SetRendererBackgrounded(false);
-  EXPECT_THAT(histogram_tester_->GetAllSamples(
-                  "RendererScheduler.BackgroundedRendererTransition"),
-              UnorderedElementsAre(
-                  Bucket(static_cast<int>(Transition::kBackgrounded), 1),
-                  Bucket(static_cast<int>(Transition::kForegrounded), 1)));
+  int backgrounding_transitions = 0;
+  int foregrounding_transitions = 0;
+  if (!kLaunchingProcessIsBackgrounded) {
+    scheduler_->SetRendererBackgrounded(true);
+    backgrounding_transitions++;
+    EXPECT_THAT(
+        histogram_tester_->GetAllSamples(
+            "RendererScheduler.BackgroundedRendererTransition"),
+        UnorderedElementsAre(Bucket(static_cast<int>(Transition::kBackgrounded),
+                                    backgrounding_transitions)));
+    scheduler_->SetRendererBackgrounded(false);
+    foregrounding_transitions++;
+    EXPECT_THAT(
+        histogram_tester_->GetAllSamples(
+            "RendererScheduler.BackgroundedRendererTransition"),
+        UnorderedElementsAre(Bucket(static_cast<int>(Transition::kBackgrounded),
+                                    backgrounding_transitions),
+                             Bucket(static_cast<int>(Transition::kForegrounded),
+                                    foregrounding_transitions)));
+  } else {
+    scheduler_->SetRendererBackgrounded(false);
+    foregrounding_transitions++;
+    EXPECT_THAT(
+        histogram_tester_->GetAllSamples(
+            "RendererScheduler.BackgroundedRendererTransition"),
+        UnorderedElementsAre(Bucket(static_cast<int>(Transition::kForegrounded),
+                                    foregrounding_transitions)));
+  }
 
   scheduler_->SetRendererBackgrounded(true);
-  EXPECT_THAT(histogram_tester_->GetAllSamples(
-                  "RendererScheduler.BackgroundedRendererTransition"),
-              UnorderedElementsAre(
-                  Bucket(static_cast<int>(Transition::kBackgrounded), 2),
-                  Bucket(static_cast<int>(Transition::kForegrounded), 1)));
+  backgrounding_transitions++;
+  EXPECT_THAT(
+      histogram_tester_->GetAllSamples(
+          "RendererScheduler.BackgroundedRendererTransition"),
+      UnorderedElementsAre(Bucket(static_cast<int>(Transition::kBackgrounded),
+                                  backgrounding_transitions),
+                           Bucket(static_cast<int>(Transition::kForegrounded),
+                                  foregrounding_transitions)));
 
   // Waste 5+ minutes so that the delayed stop is triggered
   RunTask(QueueType::kDefault, Milliseconds(1),
@@ -352,18 +377,23 @@ TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
   EXPECT_THAT(histogram_tester_->GetAllSamples(
                   "RendererScheduler.BackgroundedRendererTransition"),
               UnorderedElementsAre(
-                  Bucket(static_cast<int>(Transition::kBackgrounded), 2),
-                  Bucket(static_cast<int>(Transition::kForegrounded), 1),
+                  Bucket(static_cast<int>(Transition::kBackgrounded),
+                         backgrounding_transitions),
+                  Bucket(static_cast<int>(Transition::kForegrounded),
+                         foregrounding_transitions),
                   Bucket(static_cast<int>(Transition::kStoppedAfterDelay), 1)));
 
   scheduler_->SetRendererBackgrounded(false);
+  foregrounding_transitions++;
   ForceUpdatePolicy();
   ForceUpdatePolicy();
   EXPECT_THAT(histogram_tester_->GetAllSamples(
                   "RendererScheduler.BackgroundedRendererTransition"),
               UnorderedElementsAre(
-                  Bucket(static_cast<int>(Transition::kBackgrounded), 2),
-                  Bucket(static_cast<int>(Transition::kForegrounded), 2),
+                  Bucket(static_cast<int>(Transition::kBackgrounded),
+                         backgrounding_transitions),
+                  Bucket(static_cast<int>(Transition::kForegrounded),
+                         foregrounding_transitions),
                   Bucket(static_cast<int>(Transition::kStoppedAfterDelay), 1),
                   Bucket(static_cast<int>(Transition::kResumed), 1)));
 }
