@@ -64,6 +64,10 @@ String MIMETypeRegistry::GetMIMETypeForExtension(const String& ext) {
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   DEFINE_STATIC_LOCAL(MimeRegistryPtrHolder, registry_holder, ());
+
+  // TODO(https://crbug.com/791168): Remove this temporary CHECK.
+  CHECK(!ext.IsNull());
+
   String mime_type;
   if (!registry_holder.mime_registry->GetMimeTypeFromExtension(ext, &mime_type))
     return String();
