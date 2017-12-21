@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/controller_mesh.h"
+#include "chrome/browser/vr/elements/background.h"
 #include "chrome/browser/vr/elements/controller.h"
 #include "chrome/browser/vr/elements/grid.h"
 #include "chrome/browser/vr/elements/laser.h"
@@ -105,6 +106,10 @@ class UiElementRenderer {
       float opacity,
       float corner_radius);
 
+  VIRTUAL_FOR_MOCKS void DrawBackground(
+      const gfx::Transform& model_view_proj_matrix,
+      int texture_data_handle);
+
   void Flush();
   void SetUpController(std::unique_ptr<ControllerMesh> mesh);
 
@@ -127,6 +132,7 @@ class UiElementRenderer {
   std::unique_ptr<Controller::Renderer> controller_renderer_;
   std::unique_ptr<Grid::Renderer> gradient_grid_renderer_;
   std::unique_ptr<Shadow::Renderer> shadow_renderer_;
+  std::unique_ptr<Background::Renderer> background_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(UiElementRenderer);
 };

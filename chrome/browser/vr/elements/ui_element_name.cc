@@ -16,6 +16,8 @@ static const char* g_ui_element_name_strings[] = {
     "kRoot",
     "k2dBrowsingRoot",
     "k2dBrowsingBackground",
+    "k2dBrowsingDefaultBackground",
+    "k2dBrowsingTexturedBackground",
     "k2dBrowsingForeground",
     "k2dBrowsingContentGroup",
     "k2dBrowsingViewportAwareRoot",

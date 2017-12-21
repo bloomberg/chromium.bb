@@ -114,6 +114,8 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
 
   void Dump();
 
+  void SetBackgroundImage(std::unique_ptr<SkBitmap> bitmap);
+
   // Keyboard input related.
   void RequestFocus(int element_id);
   void RequestUnfocus(int element_id);

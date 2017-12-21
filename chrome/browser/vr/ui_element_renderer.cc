@@ -45,6 +45,7 @@ void UiElementRenderer::Init() {
   controller_renderer_ = base::MakeUnique<Controller::Renderer>();
   gradient_grid_renderer_ = base::MakeUnique<Grid::Renderer>();
   shadow_renderer_ = base::MakeUnique<Shadow::Renderer>();
+  background_renderer_ = base::MakeUnique<Background::Renderer>();
 }
 
 void UiElementRenderer::DrawTexturedQuad(
@@ -134,6 +135,13 @@ void UiElementRenderer::DrawShadow(const gfx::Transform& model_view_proj_matrix,
   FlushIfNecessary(shadow_renderer_.get());
   shadow_renderer_->Draw(model_view_proj_matrix, element_size, x_padding,
                          y_padding, y_offset, color, opacity, corner_radius);
+}
+
+void UiElementRenderer::DrawBackground(
+    const gfx::Transform& model_view_proj_matrix,
+    int texture_data_handle) {
+  FlushIfNecessary(background_renderer_.get());
+  background_renderer_->Draw(model_view_proj_matrix, texture_data_handle);
 }
 
 void UiElementRenderer::Flush() {

@@ -65,12 +65,6 @@ class UiScene {
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }
 
-  int first_foreground_draw_phase() const {
-    return first_foreground_draw_phase_;
-  }
-  void set_first_foreground_draw_phase(int phase) {
-    first_foreground_draw_phase_ = phase;
-  }
   void set_dirty() { is_dirty_ = true; }
 
   void OnGlInitialized(SkiaSurfaceProvider* provider);
@@ -84,7 +78,6 @@ class UiScene {
 
   float background_distance_ = 10.0f;
   bool gl_initialized_ = false;
-  int first_foreground_draw_phase_ = 0;
   bool initialized_scene_ = false;
 
   // TODO(mthiesse): Convert everything that manipulates UI elements to

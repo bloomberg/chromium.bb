@@ -11,6 +11,7 @@
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
 #include "chrome/browser/vr/elements/audio_permission_prompt.h"
+#include "chrome/browser/vr/elements/background.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/controller.h"
@@ -277,8 +278,17 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   auto element = base::MakeUnique<UiElement>();
   element->SetName(k2dBrowsingRoot);
   element->set_hit_testable(false);
-  element->AddBinding(VR_BIND_FUNC(bool, Model, model_, browsing_mode(),
-                                   UiElement, element.get(), SetVisible));
+  element->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::BindRepeating(
+          [](Model* m) {
+            bool ready = !m->background_available ||
+                         (m->background_available && m->background_loaded);
+            return m->browsing_mode() && ready;
+          },
+          base::Unretained(model_)),
+      base::BindRepeating([](UiElement* e, const bool& v) { e->SetVisible(v); },
+                          base::Unretained(element.get()))));
+
   scene_->AddUiElement(kRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
@@ -679,6 +689,29 @@ void UiSceneCreator::CreateUnderDevelopmentNotice() {
 }
 
 void UiSceneCreator::CreateBackground() {
+  // Textured background.
+  auto background =
+      Create<Background>(k2dBrowsingTexturedBackground, kPhaseBackground);
+  background->SetVisible(false);
+  background->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::BindRepeating(
+          [](Model* m) {
+            return m->background_available && m->background_loaded;
+          },
+          base::Unretained(model_)),
+      base::BindRepeating([](UiElement* e, const bool& v) { e->SetVisible(v); },
+                          base::Unretained(background.get()))));
+  scene_->AddUiElement(k2dBrowsingBackground, std::move(background));
+
+  auto element = Create<UiElement>(k2dBrowsingDefaultBackground, kPhaseNone);
+  element->set_hit_testable(false);
+  element->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::BindRepeating([](Model* m) { return !m->background_available; },
+                          base::Unretained(model_)),
+      base::BindRepeating([](UiElement* e, const bool& v) { e->SetVisible(v); },
+                          base::Unretained(element.get()))));
+  scene_->AddUiElement(k2dBrowsingBackground, std::move(element));
+
   // Background solid-color panels.
   struct Panel {
     UiElementName name;
@@ -698,9 +731,7 @@ void UiSceneCreator::CreateBackground() {
       {kBackgroundBottom, 0, -1, 0, 1, 0, -1},
   };
   for (auto& panel : panels) {
-    auto panel_element = base::MakeUnique<Rect>();
-    panel_element->SetName(panel.name);
-    panel_element->SetDrawPhase(kPhaseBackground);
+    auto panel_element = Create<Rect>(panel.name, kPhaseBackground);
     panel_element->SetSize(kSceneSize, kSceneSize);
     panel_element->SetTranslate(panel.x_offset * kSceneSize / 2,
                                 panel.y_offset * kSceneSize / 2,
@@ -713,13 +744,12 @@ void UiSceneCreator::CreateBackground() {
     panel_element->AddBinding(
         VR_BIND_FUNC(bool, Model, model_, should_render_web_vr() == false,
                      UiElement, panel_element.get(), SetVisible));
-    scene_->AddUiElement(k2dBrowsingBackground, std::move(panel_element));
+    scene_->AddUiElement(k2dBrowsingDefaultBackground,
+                         std::move(panel_element));
   }
 
   // Floor.
-  auto floor = base::MakeUnique<Grid>();
-  floor->SetName(kFloor);
-  floor->SetDrawPhase(kPhaseFloorCeiling);
+  auto floor = Create<Grid>(kFloor, kPhaseFloorCeiling);
   floor->SetSize(kSceneSize, kSceneSize);
   floor->SetTranslate(0.0, -kSceneHeight / 2, 0.0);
   floor->SetRotate(1, 0, 0, -base::kPiFloat / 2);
@@ -729,13 +759,11 @@ void UiSceneCreator::CreateBackground() {
   BindColor(model_, floor.get(), &ColorScheme::world_background,
             &Grid::SetEdgeColor);
   BindColor(model_, floor.get(), &ColorScheme::floor_grid, &Grid::SetGridColor);
-  scene_->AddUiElement(k2dBrowsingBackground, std::move(floor));
+  scene_->AddUiElement(k2dBrowsingDefaultBackground, std::move(floor));
 
   // Ceiling.
-  auto ceiling = base::MakeUnique<Rect>();
+  auto ceiling = Create<Rect>(kCeiling, kPhaseFloorCeiling);
   ceiling->set_focusable(false);
-  ceiling->SetName(kCeiling);
-  ceiling->SetDrawPhase(kPhaseFloorCeiling);
   ceiling->SetSize(kSceneSize, kSceneSize);
   ceiling->SetTranslate(0.0, kSceneHeight / 2, 0.0);
   ceiling->SetRotate(1, 0, 0, base::kPiFloat / 2);
@@ -743,9 +771,7 @@ void UiSceneCreator::CreateBackground() {
             &Rect::SetCenterColor);
   BindColor(model_, ceiling.get(), &ColorScheme::world_background,
             &Rect::SetEdgeColor);
-  scene_->AddUiElement(k2dBrowsingBackground, std::move(ceiling));
-
-  scene_->set_first_foreground_draw_phase(kPhaseForeground);
+  scene_->AddUiElement(k2dBrowsingDefaultBackground, std::move(ceiling));
 }
 
 void UiSceneCreator::CreateViewportAwareRoot() {

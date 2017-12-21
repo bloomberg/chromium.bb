@@ -83,8 +83,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
             gvr_context* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
-            bool start_in_web_vr_mode,
-            bool assets_available);
+            bool start_in_web_vr_mode);
   ~VrShellGl() override;
 
   void Initialize();
@@ -120,6 +119,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
 
   void OnSwapContents(int new_content_id);
+
+  void OnAssetsLoaded(std::unique_ptr<SkBitmap> background_image,
+                      const base::Version& component_version);
 
  private:
   void GvrInit(gvr_context* gvr_api);
@@ -178,10 +180,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void SendVSync(base::TimeTicks time, GetVSyncCallback callback);
 
   void ClosePresentationBindings();
-
-  void OnAssetsLoaded(vr::AssetsLoadStatus status,
-                      std::unique_ptr<SkBitmap> background_image,
-                      const base::Version& component_version);
 
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
@@ -292,8 +290,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   gfx::Transform last_used_head_pose_;
 
   vr::ControllerModel controller_model_;
-
-  bool assets_available_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 
