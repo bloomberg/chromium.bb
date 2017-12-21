@@ -30,9 +30,10 @@
 // https://w3c.github.io/webvtt/#the-vttcue-interface
 
 enum AutoKeyword { "auto" };
+typedef (double or AutoKeyword) LineAndPositionSetting;
 enum DirectionSetting { "" /* horizontal */, "rl", "lr" };
-// enum LineAlignSetting { "start", "middle", "end" };
-// enum PositionAlignSetting { "start", "middle", "end", "auto" };
+enum LineAlignSetting { "start", "center", "end" };
+enum PositionAlignSetting { "line-left", "center", "line-right", "auto" };
 enum AlignSetting { "start", "center", "end", "left", "right" };
 
 [
@@ -42,10 +43,10 @@ enum AlignSetting { "start", "center", "end", "left", "right" };
     [RuntimeEnabled=WebVTTRegions] attribute VTTRegion? region;
     attribute DirectionSetting vertical;
     attribute boolean snapToLines;
-    attribute (double or AutoKeyword) line;
-    // attribute LineAlignSetting lineAlign;
-    [RaisesException=Setter] attribute (double or AutoKeyword) position;
-    // attribute PositionAlignSetting positionAlign;
+    attribute LineAndPositionSetting line;
+    attribute LineAlignSetting lineAlign;
+    [RaisesException=Setter] attribute LineAndPositionSetting position;
+    attribute PositionAlignSetting positionAlign;
     [RaisesException=Setter] attribute double size;
     attribute AlignSetting align;
     attribute DOMString text;

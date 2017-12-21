@@ -55,6 +55,7 @@ struct VTTDisplayParameters {
   CSSValueID text_align;
   CSSValueID writing_mode;
   float snap_to_lines_position;
+  int line_align;
 };
 
 class VTTCueBox final : public HTMLDivElement {
@@ -74,6 +75,7 @@ class VTTCueBox final : public HTMLDivElement {
   // non-snap-to-lines layout where no adjustment should take place.
   // This is set in applyCSSProperties and propagated to LayoutVTTCue.
   float snap_to_lines_position_;
+  int line_align_;
 };
 
 class VTTCue final : public TextTrackCue {
@@ -101,8 +103,14 @@ class VTTCue final : public TextTrackCue {
   void line(DoubleOrAutoKeyword&) const;
   void setLine(const DoubleOrAutoKeyword&);
 
+  const String& lineAlign() const;
+  void setLineAlign(const String&);
+
   void position(DoubleOrAutoKeyword&) const;
   void setPosition(const DoubleOrAutoKeyword&, ExceptionState&);
+
+  const String& positionAlign() const;
+  void setPositionAlign(const String&);
 
   double size() const { return cue_size_; }
   void setSize(double, ExceptionState&);
@@ -126,7 +134,7 @@ class VTTCue final : public TextTrackCue {
 
   void RemoveDisplayTree(RemovalNotification) override;
 
-  float CalculateComputedLinePosition() const;
+  float CalculateComputedLine() const;
 
   enum WritingDirection {
     kHorizontal = 0,
@@ -136,7 +144,7 @@ class VTTCue final : public TextTrackCue {
   };
   WritingDirection GetWritingDirection() const { return writing_direction_; }
 
-  enum CueAlignment {
+  enum class TextAlignment {
     kStart = 0,
     kCenter,
     kEnd,
@@ -144,7 +152,13 @@ class VTTCue final : public TextTrackCue {
     kRight,
     kNumberOfAlignments
   };
-  CueAlignment GetCueAlignment() const { return cue_alignment_; }
+  TextAlignment GetTextAlignment() const { return text_alignment_; }
+
+  enum class PositionAlignment { kLineLeft, kCenter, kLineRight, kAuto };
+  PositionAlignment GetPositionAlignment() const { return position_alignment_; }
+
+  enum class LineAlignment { kStart, kCenter, kEnd };
+  LineAlignment GetLineAlignment() const { return line_alignment_; }
 
   ExecutionContext* GetExecutionContext() const override;
 
@@ -171,8 +185,9 @@ class VTTCue final : public TextTrackCue {
   bool TextPositionIsAuto() const;
 
   VTTDisplayParameters CalculateDisplayParameters() const;
-  float CalculateComputedTextPosition() const;
-  CueAlignment CalculateComputedCueAlignment() const;
+  float CalculateComputedPosition() const;
+  LineAlignment CalculateComputedLineAlignment() const;
+  PositionAlignment CalculateComputedPositionAlignment() const;
 
   enum CueSetting {
     kNone,
@@ -190,7 +205,9 @@ class VTTCue final : public TextTrackCue {
   float text_position_;
   float cue_size_;
   WritingDirection writing_direction_;
-  CueAlignment cue_alignment_;
+  TextAlignment text_alignment_;
+  PositionAlignment position_alignment_;
+  LineAlignment line_alignment_;
 
   Member<VTTRegion> region_;
   Member<DocumentFragment> vtt_node_tree_;

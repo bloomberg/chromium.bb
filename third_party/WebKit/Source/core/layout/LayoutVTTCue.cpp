@@ -89,7 +89,7 @@ LayoutUnit SnapToLinesLayouter::ComputeInitialPositionAdjustment(
   if (IsFlippedBlocksWritingMode(writing_mode))
     line_position = -(line_position + 1);
 
-  // 9. Let position be the result of multiplying step and line offset.
+  // 9. Let position be the result of multiplying step and line.
   LayoutUnit position = step * line_position;
 
   // 10. Vertical Growing Left: Decrease position by the width of the
@@ -148,7 +148,7 @@ bool SnapToLinesLayouter::IsOverlapping() const {
 bool SnapToLinesLayouter::ShouldSwitchDirection(InlineFlowBox* first_line_box,
                                                 LayoutUnit step,
                                                 LayoutUnit margin) const {
-  // 17. Horizontal: If step is negative and the top of the first line box in
+  // 16. Horizontal: If step is negative and the top of the first line box in
   // boxes is now above the top of the title area, or if step is positive and
   // the bottom of the first line box in boxes is now below the bottom of the
   // title area, jump to the step labeled switch direction.
@@ -167,7 +167,7 @@ bool SnapToLinesLayouter::ShouldSwitchDirection(InlineFlowBox* first_line_box,
 }
 
 void SnapToLinesLayouter::UpdateLayout() {
-  // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
+  // https://w3c.github.io/webvtt/#apply-webvtt-cue-settings
   // Step 13, "If cue's text track cue snap-to-lines flag is set".
 
   InlineFlowBox* first_line_box = FindFirstLineBox();
@@ -236,11 +236,8 @@ void SnapToLinesLayouter::UpdateLayout() {
   // boxes in output, and all of the boxes in output are entirely within the
   // title area box, then jump to the step labeled done positioning below.
   while (IsOutside(title_area) || IsOverlapping()) {
-    // 16. Let current position score be the percentage of the area of the
-    // bounding box of the boxes in boxes that is outside the title area
-    // box.
     if (!ShouldSwitchDirection(first_line_box, step, margin)) {
-      // 18. Horizontal: Move all the boxes in boxes down by the distance
+      // 17. Horizontal: Move all the boxes in boxes down by the distance
       // given by step. (If step is negative, then this will actually
       // result in an upwards movement of the boxes in absolute terms.)
       // Vertical: Move all the boxes in boxes right by the distance
@@ -248,11 +245,11 @@ void SnapToLinesLayouter::UpdateLayout() {
       // result in a leftwards movement of the boxes in absolute terms.)
       MoveBoxesBy(step);
 
-      // 19. Jump back to the step labeled step loop.
+      // 18. Jump back to the step labeled step loop.
       continue;
     }
 
-    // 20. Switch direction: If switched is true, then remove all the boxes
+    // 19. Switch direction: If switched is true, then remove all the boxes
     // in boxes, and jump to the step labeled done positioning below.
     if (switched) {
       // This does not "remove" the boxes, but rather just pushes them
@@ -262,53 +259,67 @@ void SnapToLinesLayouter::UpdateLayout() {
       break;
     }
 
-    // 21. Otherwise, move all the boxes in boxes back to their specified
+    // 20. Otherwise, move all the boxes in boxes back to their specified
     // position as determined in the earlier step.
     cue_box_.SetLocation(specified_position_);
 
-    // 22. Negate step.
+    // 21. Negate step.
     step = -step;
 
-    // 23. Set switched to true.
+    // 22. Set switched to true.
     switched = true;
 
-    // 24. Jump back to the step labeled step loop.
+    // 23. Jump back to the step labeled step loop.
   }
 }
 
 }  // unnamed namespace
 
-LayoutVTTCue::LayoutVTTCue(ContainerNode* node, float snap_to_lines_position)
-    : LayoutBlockFlow(node), snap_to_lines_position_(snap_to_lines_position) {}
+LayoutVTTCue::LayoutVTTCue(ContainerNode* node,
+                           float snap_to_lines_position,
+                           int line_align)
+    : LayoutBlockFlow(node),
+      snap_to_lines_position_(snap_to_lines_position),
+      line_align_(line_align) {}
 
 void LayoutVTTCue::RepositionCueSnapToLinesNotSet() {
-  // FIXME: Implement overlapping detection when snap-to-lines is not set.
-  // http://wkb.ug/84296
-
-  // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
+  // https://w3c.github.io/webvtt/#apply-webvtt-cue-settings
   // Step 13, "If cue's text track cue snap-to-lines flag is not set".
 
-  // 1. Let bounding box be the bounding box of the boxes in boxes.
+  if (line_align_) {
+    // 1. Let bounding box be the bounding box of the boxes in boxes.
+    LayoutRect bounding_box = ContentBoxRect();
 
-  // 2. Run the appropriate steps from the following list:
-  //    If the text track cue writing direction is horizontal
-  //       If the text track cue line alignment is middle alignment
-  //          Move all the boxes in boxes up by half of the height of
-  //          bounding box.
-  //       If the text track cue line alignment is end alignment
-  //          Move all the boxes in boxes up by the height of bounding box.
-  //
-  //    If the text track cue writing direction is vertical growing left or
-  //    vertical growing right
-  //       If the text track cue line alignment is middle alignment
-  //          Move all the boxes in boxes left by half of the width of
-  //          bounding box.
-  //       If the text track cue line alignment is end alignment
-  //          Move all the boxes in boxes left by the width of bounding box.
+    WritingMode writing_mode = StyleRef().GetWritingMode();
+    LayoutUnit extent = blink::IsHorizontalWritingMode(writing_mode)
+                            ? bounding_box.Height()
+                            : bounding_box.Width();
+    // 2. Run the appropriate steps from the following list:
+    //    If the text track cue writing direction is horizontal
+    //       If the text track cue line alignment is center alignment
+    //          Move all the boxes in boxes up by half of the height of
+    //          bounding box.
+    //       If the text track cue line alignment is end alignment
+    //          Move all the boxes in boxes up by the height of bounding box.
+    //
+    //    If the text track cue writing direction is vertical growing left or
+    //    vertical growing right
+    //       If the text track cue line alignment is center alignment
+    //          Move all the boxes in boxes left by half of the width of
+    //          bounding box.
+    //       If the text track cue line alignment is end alignment
+    //          Move all the boxes in boxes left by the width of bounding box.
+    LayoutUnit fraction(line_align_);
+    fraction /= 100;
+    SetLogicalTop(LogicalTop() - extent * fraction);
+  }
 
   // 3. If none of the boxes in boxes would overlap any of the boxes in
   // output, and all the boxes in output are within the video's rendering
   // area, then jump to the step labeled done positioning below.
+
+  // FIXME: Implement overlapping detection when snap-to-lines is not set.
+  // http://wkb.ug/84296
 
   // 4. If there is a position to which the boxes in boxes can be moved while
   // maintaining the relative positions of the boxes in boxes to each other
@@ -365,7 +376,7 @@ void LayoutVTTCue::UpdateLayout() {
 
   LayoutState state(*this);
 
-  // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
+  // https://w3c.github.io/webvtt/#apply-webvtt-cue-settings - step 13.
   if (!std::isnan(snap_to_lines_position_))
     SnapToLinesLayouter(*this, ComputeControlsRect()).UpdateLayout();
   else
