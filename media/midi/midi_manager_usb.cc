@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "media/midi/midi_scheduler.h"
 #include "media/midi/midi_service.h"
 #include "media/midi/task_service.h"
 #include "media/midi/usb_midi_descriptor_parser.h"
