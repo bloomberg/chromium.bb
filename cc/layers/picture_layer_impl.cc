@@ -902,14 +902,16 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     default_tile_height =
         MathUtil::UncheckedRoundUp(viewport_height, divisor) / divisor;
 
+    // Use half-width GPU tiles when the content width is
+    // larger than the viewport width.
+    if (content_bounds.width() > viewport_width) {
+      // Divide by 2 and round up.
+      default_tile_width = (default_tile_width + 1) / 2;
+    }
+
     // Grow default sizes to account for overlapping border texels.
     default_tile_width += 2 * PictureLayerTiling::kBorderTexels;
     default_tile_height += 2 * PictureLayerTiling::kBorderTexels;
-
-    // Use half-width GPU tiles when the content width is
-    // larger than the viewport width.
-    if (content_bounds.width() > viewport_width)
-      default_tile_width /= 2;
 
     // Round GPU default tile sizes to a multiple of kGpuDefaultTileAlignment.
     // This helps prevent rounding errors in our CA path. crbug.com/632274
