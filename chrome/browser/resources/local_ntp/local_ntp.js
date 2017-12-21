@@ -582,6 +582,12 @@ function handlePostMessage(event) {
  * section, and Google-specific elements for a Google-provided page.
  */
 function init() {
+  // If an accessibility tool is in use, increase the time for which the
+  // "tile was blacklisted" notification is shown.
+  if (configData.isAccessibleBrowser) {
+    document.body.style.setProperty('--mv-notice-time', '30s');
+  }
+
   // Hide notifications after fade out, so we can't focus on links via keyboard.
   $(IDS.NOTIFICATION).addEventListener('transitionend', hideNotification);
 

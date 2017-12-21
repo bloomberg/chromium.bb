@@ -27,6 +27,8 @@ html {
   /* Base height 16px, plus 8px each of padding on top and bottom. */
   --mv-notice-height: calc(8px + 16px + 8px);
 
+  --mv-notice-time: 10s;
+
   /* These can be overridden by themes. */
   --text-color: #000;
   --text-color-light: #fff;
@@ -478,9 +480,9 @@ html[dir=rtl] #mv-notice-x {
   color: #fff;
 }
 
-#mv-notice.mv-notice-delayed-hide {
+#mv-notice.mv-notice-delayed-hide:not(:focus-within) {
   opacity: 0;
-  transition-delay: 10s;
+  transition-delay: var(--mv-notice-time);
   transition-property: opacity;
 }
 
