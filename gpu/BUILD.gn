@@ -62,7 +62,6 @@ if (!use_static_angle) {
       "//build/config:exe_and_shlib_deps",
       "//gpu/command_buffer/client:gles2_c_lib",
       "//gpu/command_buffer/client:gles2_implementation",
-      "//gpu/command_buffer/common:gles2_utils",
       "//ui/gl:gl",
     ]
 
@@ -135,7 +134,7 @@ static_library("test_support") {
     "//gpu/command_buffer/client:gles2_interface",
   ]
   deps = [
-    "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/command_buffer/common",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gl:gl_unittest_utils",
@@ -469,7 +468,6 @@ test("command_buffer_perftests") {
     "//base",
     "//base/test:test_support",
     "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/common:gles2_utils",
     "//testing/gtest",
     "//testing/perf",
     "//ui/gfx/geometry",
@@ -498,7 +496,6 @@ fuzzer_test("gpu_fuzzer") {
     ":gpu",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//gpu/command_buffer/common:gles2_utils",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:test_support",
@@ -519,7 +516,6 @@ if (is_linux) {
       ":gpu",
       "//base",
       "//base/third_party/dynamic_annotations",
-      "//gpu/command_buffer/common:gles2_utils",
       "//ui/gfx/geometry",
       "//ui/gl",
       "//ui/gl:test_support",
@@ -542,7 +538,6 @@ if (is_linux) {
       ":gpu",
       "//base",
       "//base/third_party/dynamic_annotations",
-      "//gpu/command_buffer/common:gles2_utils",
       "//ui/gfx/geometry",
       "//ui/gl",
       "//ui/gl:test_support",
@@ -562,7 +557,6 @@ if (is_linux) {
       ":gpu",
       "//base",
       "//base/third_party/dynamic_annotations",
-      "//gpu/command_buffer/common:gles2_utils",
       "//ui/gfx/geometry",
       "//ui/gl",
       "//ui/gl:test_support",

@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"

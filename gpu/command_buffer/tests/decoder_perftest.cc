@@ -11,7 +11,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -190,7 +190,7 @@ class RecordReplayContext : public GpuControl {
 
     decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
-    gles2::ContextCreationAttribHelper attrib_helper;
+    ContextCreationAttribs attrib_helper;
     attrib_helper.offscreen_framebuffer_size = gfx::Size(16, 16);
     attrib_helper.red_size = 8;
     attrib_helper.green_size = 8;
@@ -198,7 +198,7 @@ class RecordReplayContext : public GpuControl {
     attrib_helper.alpha_size = 8;
     attrib_helper.depth_size = 0;
     attrib_helper.stencil_size = 0;
-    attrib_helper.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
+    attrib_helper.context_type = CONTEXT_TYPE_OPENGLES3;
 
     ContextResult result =
         decoder_->Initialize(surface_.get(), context_.get(), true,

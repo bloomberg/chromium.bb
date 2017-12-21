@@ -71,13 +71,13 @@
   do {                                                                     \
     uint64_t mb_used = tracking_group_->GetSize() / (1024 * 1024);         \
     switch (context_type_) {                                               \
-      case gles2::CONTEXT_TYPE_WEBGL1:                                     \
-      case gles2::CONTEXT_TYPE_WEBGL2:                                     \
+      case CONTEXT_TYPE_WEBGL1:                                            \
+      case CONTEXT_TYPE_WEBGL2:                                            \
         UMA_HISTOGRAM_MEMORY_LARGE_MB("GPU.ContextMemory.WebGL." category, \
                                       mb_used);                            \
         break;                                                             \
-      case gles2::CONTEXT_TYPE_OPENGLES2:                                  \
-      case gles2::CONTEXT_TYPE_OPENGLES3:                                  \
+      case CONTEXT_TYPE_OPENGLES2:                                         \
+      case CONTEXT_TYPE_OPENGLES3:                                         \
         UMA_HISTOGRAM_MEMORY_LARGE_MB("GPU.ContextMemory.GLES." category,  \
                                       mb_used);                            \
         break;                                                             \
@@ -103,7 +103,7 @@ class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
   explicit GpuCommandBufferMemoryTracker(
       GpuChannel* channel,
       uint64_t share_group_tracing_guid,
-      gles2::ContextType context_type,
+      ContextType context_type,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : tracking_group_(
             channel->gpu_channel_manager()
@@ -158,7 +158,7 @@ class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
   const uint64_t share_group_tracing_guid_;
 
   // Variables used in memory stat histogram logging.
-  const gles2::ContextType context_type_;
+  const ContextType context_type_;
   base::RepeatingTimer memory_stats_timer_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 

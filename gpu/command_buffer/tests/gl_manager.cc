@@ -24,7 +24,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -299,7 +299,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
 
   share_group_ = share_group ? share_group : new gl::GLShareGroup;
 
-  gles2::ContextCreationAttribHelper attribs;
+  ContextCreationAttribs attribs;
   attribs.red_size = 8;
   attribs.green_size = 8;
   attribs.blue_size = 8;

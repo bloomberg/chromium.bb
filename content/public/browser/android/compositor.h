@@ -19,10 +19,7 @@ class Layer;
 }
 
 namespace gpu {
-namespace gles2 {
-struct ContextCreationAttribHelper;
-}  // namespace gles2
-
+struct ContextCreationAttribs;
 struct SharedMemoryLimits;
 }
 
@@ -53,7 +50,7 @@ class CONTENT_EXPORT Compositor {
       base::Callback<void(scoped_refptr<viz::ContextProvider>)>;
   static void CreateContextProvider(
       gpu::SurfaceHandle handle,
-      gpu::gles2::ContextCreationAttribHelper attributes,
+      gpu::ContextCreationAttribs attributes,
       gpu::SharedMemoryLimits shared_memory_limits,
       ContextProviderCallback callback);
 

@@ -168,7 +168,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
     share_gles2 = share_graphics->gles2_impl();
   }
 
-  gpu::gles2::ContextCreationAttribHelper attrib_helper;
+  gpu::ContextCreationAttribs attrib_helper;
   if (attrib_list) {
     for (const int32_t* attr = attrib_list; attr[0] != PP_GRAPHICS3DATTRIB_NONE;
          attr += 2) {
@@ -283,7 +283,7 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Graphics3D_Proxy::OnMsgCreate(
     PP_Instance instance,
     HostResource share_context,
-    const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
+    const gpu::ContextCreationAttribs& attrib_helper,
     HostResource* result,
     gpu::Capabilities* capabilities,
     SerializedHandle* shared_state,

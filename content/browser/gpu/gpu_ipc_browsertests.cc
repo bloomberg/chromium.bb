@@ -33,7 +33,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContext(
       content::BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
   // This is for an offscreen context, so the default framebuffer doesn't need
   // any alpha, depth, stencil, antialiasing.
-  gpu::gles2::ContextCreationAttribHelper attributes;
+  gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = -1;
   attributes.depth_size = 0;
   attributes.stencil_size = 0;
@@ -355,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
 
   // This is for an offscreen context, so the default framebuffer doesn't need
   // any alpha, depth, stencil, antialiasing.
-  gpu::gles2::ContextCreationAttribHelper attributes;
+  gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = -1;
   attributes.depth_size = 0;
   attributes.stencil_size = 0;

@@ -37,6 +37,7 @@ class Size;
 
 namespace gpu {
 
+struct ContextCreationAttribs;
 struct Mailbox;
 struct SyncToken;
 
@@ -57,7 +58,6 @@ class Texture;
 class TextureBase;
 class TransformFeedbackManager;
 class VertexArrayManager;
-struct ContextCreationAttribHelper;
 struct ContextState;
 
 struct DisallowedFeatures {
@@ -182,7 +182,7 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
       const scoped_refptr<gl::GLContext>& context,
       bool offscreen,
       const DisallowedFeatures& disallowed_features,
-      const ContextCreationAttribHelper& attrib_helper) = 0;
+      const ContextCreationAttribs& attrib_helper) = 0;
 
   // Destroys the graphics context.
   virtual void Destroy(bool have_context) = 0;

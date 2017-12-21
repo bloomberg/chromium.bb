@@ -142,7 +142,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     bool automatic_flushes,
     bool support_locking,
     const gpu::SharedMemoryLimits& memory_limits,
-    const gpu::gles2::ContextCreationAttribHelper& attributes,
+    const gpu::ContextCreationAttribs& attributes,
     ContextProviderCommandBuffer* shared_context_provider,
     command_buffer_metrics::ContextType type)
     : stream_id_(stream_id),

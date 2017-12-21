@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -33,7 +33,7 @@ class TransferCacheTest : public testing::Test {
       : testing::Test(), test_client_entry_(std::vector<uint8_t>(100)) {}
   void SetUp() override {
     bool is_offscreen = true;
-    gpu::gles2::ContextCreationAttribHelper attribs;
+    gpu::ContextCreationAttribs attribs;
     attribs.alpha_size = -1;
     attribs.depth_size = 24;
     attribs.stencil_size = 8;

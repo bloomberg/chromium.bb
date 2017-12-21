@@ -23,7 +23,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -66,7 +66,7 @@ PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
 PP_Resource PPB_Graphics3D_Impl::CreateRaw(
     PP_Instance instance,
     PP_Resource share_context,
-    const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
+    const gpu::ContextCreationAttribs& attrib_helper,
     gpu::Capabilities* capabilities,
     base::SharedMemoryHandle* shared_state_handle,
     gpu::CommandBufferId* command_buffer_id) {
@@ -212,7 +212,7 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token,
 
 bool PPB_Graphics3D_Impl::InitRaw(
     PPB_Graphics3D_API* share_context,
-    const gpu::gles2::ContextCreationAttribHelper& requested_attribs,
+    const gpu::ContextCreationAttribs& requested_attribs,
     gpu::Capabilities* capabilities,
     base::SharedMemoryHandle* shared_state_handle,
     gpu::CommandBufferId* command_buffer_id) {
@@ -255,9 +255,9 @@ bool PPB_Graphics3D_Impl::InitRaw(
 
   has_alpha_ = requested_attribs.alpha_size > 0;
 
-  gpu::gles2::ContextCreationAttribHelper attrib_helper = requested_attribs;
+  gpu::ContextCreationAttribs attrib_helper = requested_attribs;
   attrib_helper.should_use_native_gmb_for_backbuffer = use_image_chromium_;
-  attrib_helper.context_type = gpu::gles2::CONTEXT_TYPE_OPENGLES2;
+  attrib_helper.context_type = gpu::CONTEXT_TYPE_OPENGLES2;
 
   gpu::CommandBufferProxyImpl* share_buffer = nullptr;
   if (!plugin_instance->is_flash_plugin())

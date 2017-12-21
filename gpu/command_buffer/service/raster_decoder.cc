@@ -75,7 +75,7 @@ gpu::ContextResult RasterDecoder::Initialize(
     const scoped_refptr<gl::GLContext>& context,
     bool offscreen,
     const DisallowedFeatures& disallowed_features,
-    const ContextCreationAttribHelper& attrib_helper) {
+    const ContextCreationAttribs& attrib_helper) {
   TRACE_EVENT0("gpu", "RasterDecoder::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());

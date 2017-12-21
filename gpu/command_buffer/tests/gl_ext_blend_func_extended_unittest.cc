@@ -248,7 +248,7 @@ class EXTBlendFuncExtendedES3DrawTest : public EXTBlendFuncExtendedDrawTest {
   void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kWidth, kHeight);
-    options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
+    options.context_type = CONTEXT_TYPE_OPENGLES3;
     options.force_shader_name_hashing = GetParam();
     gl_.Initialize(options);
   }

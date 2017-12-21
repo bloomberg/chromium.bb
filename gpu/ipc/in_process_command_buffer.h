@@ -58,6 +58,7 @@ class Size;
 
 namespace gpu {
 
+struct ContextCreationAttribs;
 class ServiceDiscardableManager;
 class SyncPointClientState;
 class SyncPointOrderData;
@@ -65,7 +66,6 @@ class SyncPointManager;
 struct SwapBuffersCompleteParams;
 
 namespace gles2 {
-struct ContextCreationAttribHelper;
 class FramebufferCompletenessCache;
 class MailboxManager;
 class Outputter;
@@ -102,7 +102,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       SurfaceHandle window,
-      const gles2::ContextCreationAttribHelper& attribs,
+      const ContextCreationAttribs& attribs,
       InProcessCommandBuffer* share_group,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
@@ -277,18 +277,17 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   struct InitializeOnGpuThreadParams {
     bool is_offscreen;
     SurfaceHandle window;
-    const gles2::ContextCreationAttribHelper& attribs;
+    const ContextCreationAttribs& attribs;
     Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
     ImageFactory* image_factory;
 
-    InitializeOnGpuThreadParams(
-        bool is_offscreen,
-        SurfaceHandle window,
-        const gles2::ContextCreationAttribHelper& attribs,
-        Capabilities* capabilities,
-        InProcessCommandBuffer* share_group,
-        ImageFactory* image_factory)
+    InitializeOnGpuThreadParams(bool is_offscreen,
+                                SurfaceHandle window,
+                                const ContextCreationAttribs& attribs,
+                                Capabilities* capabilities,
+                                InProcessCommandBuffer* share_group,
+                                ImageFactory* image_factory)
         : is_offscreen(is_offscreen),
           window(window),
           attribs(attribs),

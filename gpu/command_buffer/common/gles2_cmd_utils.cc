@@ -1829,56 +1829,6 @@ uint32_t GLES2Util::ConvertToSizedFormat(uint32_t format, uint32_t type) {
   return format;
 }
 
-bool IsWebGLContextType(ContextType context_type) {
-  // Switch statement to cause a compile-time error if we miss a case.
-  switch (context_type) {
-    case CONTEXT_TYPE_WEBGL1:
-    case CONTEXT_TYPE_WEBGL2:
-      return true;
-    case CONTEXT_TYPE_OPENGLES2:
-    case CONTEXT_TYPE_OPENGLES3:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool IsWebGL1OrES2ContextType(ContextType context_type) {
-  // Switch statement to cause a compile-time error if we miss a case.
-  switch (context_type) {
-    case CONTEXT_TYPE_WEBGL1:
-    case CONTEXT_TYPE_OPENGLES2:
-      return true;
-    case CONTEXT_TYPE_WEBGL2:
-    case CONTEXT_TYPE_OPENGLES3:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool IsWebGL2OrES3ContextType(ContextType context_type) {
-  // Switch statement to cause a compile-time error if we miss a case.
-  switch (context_type) {
-    case CONTEXT_TYPE_OPENGLES3:
-    case CONTEXT_TYPE_WEBGL2:
-      return true;
-    case CONTEXT_TYPE_WEBGL1:
-    case CONTEXT_TYPE_OPENGLES2:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-ContextCreationAttribHelper::ContextCreationAttribHelper() = default;
-
-ContextCreationAttribHelper::ContextCreationAttribHelper(
-    const ContextCreationAttribHelper& other) = default;
-
 #include "gpu/command_buffer/common/gles2_cmd_utils_implementation_autogen.h"
 
 }  // namespace gles2

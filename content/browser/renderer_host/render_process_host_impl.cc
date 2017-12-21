@@ -177,7 +177,7 @@
 #include "device/gamepad/gamepad_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "ipc/ipc.mojom.h"

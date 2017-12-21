@@ -567,7 +567,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     const scoped_refptr<gl::GLContext>& context,
     bool offscreen,
     const DisallowedFeatures& disallowed_features,
-    const ContextCreationAttribHelper& attrib_helper) {
+    const ContextCreationAttribs& attrib_helper) {
   TRACE_EVENT0("gpu", "GLES2DecoderPassthroughImpl::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
   api_ = gl::g_current_gl_context;

@@ -1114,7 +1114,7 @@ GpuProcessTransportFactory::CreateContextCommon(
   // not use these things either (except for alpha when using mus for
   // non-opaque ui that overlaps the system's window borders or stencil bits
   // for overdraw feedback), so we can request only that when needed.
-  gpu::gles2::ContextCreationAttribHelper attributes;
+  gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = need_alpha_channel ? 8 : -1;
   attributes.depth_size = 0;
   attributes.stencil_size = need_stencil_bits ? 8 : 0;

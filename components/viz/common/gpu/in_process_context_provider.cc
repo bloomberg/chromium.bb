@@ -15,7 +15,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -36,8 +36,8 @@ namespace viz {
 
 namespace {
 
-gpu::gles2::ContextCreationAttribHelper CreateAttributes() {
-  gpu::gles2::ContextCreationAttribHelper attributes;
+gpu::ContextCreationAttribs CreateAttributes() {
+  gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = -1;
   attributes.depth_size = 0;
   attributes.stencil_size = 8;

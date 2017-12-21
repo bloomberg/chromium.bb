@@ -486,7 +486,7 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   shared_memory_base_ = buffer->memory();
   ClearSharedMemory();
 
-  gles2::ContextCreationAttribHelper attribs;
+  ContextCreationAttribs attribs;
   attribs.alpha_size = normalized_init.request_alpha ? 8 : 0;
   attribs.depth_size = normalized_init.request_depth ? 24 : 0;
   attribs.stencil_size = normalized_init.request_stencil ? 8 : 0;

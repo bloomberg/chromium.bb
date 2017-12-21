@@ -211,14 +211,14 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     }
   } else {
     switch (init_params.attribs.color_space) {
-      case gles2::COLOR_SPACE_UNSPECIFIED:
+      case COLOR_SPACE_UNSPECIFIED:
         surface_format.SetColorSpace(
             gl::GLSurfaceFormat::COLOR_SPACE_UNSPECIFIED);
         break;
-      case gles2::COLOR_SPACE_SRGB:
+      case COLOR_SPACE_SRGB:
         surface_format.SetColorSpace(gl::GLSurfaceFormat::COLOR_SPACE_SRGB);
         break;
-      case gles2::COLOR_SPACE_DISPLAY_P3:
+      case COLOR_SPACE_DISPLAY_P3:
         surface_format.SetColorSpace(
             gl::GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3);
         break;

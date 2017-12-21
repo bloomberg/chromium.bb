@@ -14,7 +14,7 @@
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/viz_common_export.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -84,7 +84,7 @@ class VIZ_COMMON_EXPORT InProcessContextProvider
   ~InProcessContextProvider() override;
 
  private:
-  const gpu::gles2::ContextCreationAttribHelper attributes_;
+  const gpu::ContextCreationAttribs attributes_;
 
   base::Lock context_lock_;
   std::unique_ptr<gpu::GLInProcessContext> context_;

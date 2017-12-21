@@ -266,7 +266,7 @@ PP_Resource ResourceCreationProxy::CreateGraphics3D(
 PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
     PP_Instance instance,
     PP_Resource share_context,
-    const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
+    const gpu::ContextCreationAttribs& attrib_helper,
     gpu::Capabilities* capabilities,
     base::SharedMemoryHandle* shared_state,
     gpu::CommandBufferId* command_buffer_id) {

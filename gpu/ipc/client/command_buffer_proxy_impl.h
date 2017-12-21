@@ -49,13 +49,10 @@ struct PresentationFeedback;
 }
 
 namespace gpu {
+struct ContextCreationAttribs;
 struct Mailbox;
 struct SwapBuffersCompleteParams;
 struct SyncToken;
-
-namespace gles2 {
-struct ContextCreationAttribHelper;
-}
 }
 
 namespace gpu {
@@ -88,12 +85,11 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   ~CommandBufferProxyImpl() override;
 
   // Connect to a command buffer in the GPU process.
-  ContextResult Initialize(
-      gpu::SurfaceHandle surface_handle,
-      CommandBufferProxyImpl* share_group,
-      gpu::SchedulingPriority stream_priority,
-      const gpu::gles2::ContextCreationAttribHelper& attribs,
-      const GURL& active_url);
+  ContextResult Initialize(gpu::SurfaceHandle surface_handle,
+                           CommandBufferProxyImpl* share_group,
+                           gpu::SchedulingPriority stream_priority,
+                           const gpu::ContextCreationAttribs& attribs,
+                           const GURL& active_url);
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;

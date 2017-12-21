@@ -201,7 +201,7 @@ void GLHelperHolder::Initialize() {
 
   // This is for an offscreen context, so we don't need the default framebuffer
   // to have alpha, stencil, depth, antialiasing.
-  gpu::gles2::ContextCreationAttribHelper attributes;
+  gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = -1;
   attributes.stencil_size = 0;
   attributes.depth_size = 0;

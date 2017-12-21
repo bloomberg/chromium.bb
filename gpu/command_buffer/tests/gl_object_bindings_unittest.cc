@@ -19,7 +19,7 @@ class ObjectBindingsTest : public testing::Test {
  protected:
   void SetUp() override {
     GLManager::Options options;
-    options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
+    options.context_type = CONTEXT_TYPE_OPENGLES3;
     gl_.Initialize(options);
   }
 

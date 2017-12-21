@@ -47,6 +47,8 @@ source_set("common_sources") {
     "command_buffer.h",
     "command_buffer_id.h",
     "constants.h",
+    "context_creation_attribs.cc",
+    "context_creation_attribs.h",
     "context_result.h",
     "discardable_handle.cc",
     "discardable_handle.h",
@@ -123,7 +125,6 @@ component("gles2_utils") {
 
   deps = [
     "//base",
-    "//ui/gfx/geometry",
   ]
 
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]

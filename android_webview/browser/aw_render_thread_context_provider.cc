@@ -40,7 +40,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   // the Android OS. The widget we pass here will be ignored since we're
   // providing the GLSurface to the context already.
   DCHECK(!surface->IsOffscreen());
-  gpu::gles2::ContextCreationAttribHelper attributes;
+  gpu::ContextCreationAttribs attributes;
   // The context is wrapping an already allocated surface, so we can't control
   // what buffers it has from these attributes. We do expect an alpha and
   // stencil buffer to exist for webview, as the display compositor requires

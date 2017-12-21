@@ -240,7 +240,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
     SurfaceHandle window,
-    const gles2::ContextCreationAttribHelper& attribs,
+    const ContextCreationAttribs& attribs,
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,

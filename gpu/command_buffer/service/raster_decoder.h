@@ -52,7 +52,7 @@ class GPU_EXPORT RasterDecoder : public gles2::GLES2Decoder,
       const scoped_refptr<gl::GLContext>& context,
       bool offscreen,
       const gles2::DisallowedFeatures& disallowed_features,
-      const gles2::ContextCreationAttribHelper& attrib_helper) override;
+      const ContextCreationAttribs& attrib_helper) override;
   void Destroy(bool have_context) override;
   void SetSurface(const scoped_refptr<gl::GLSurface>& surface) override;
   void ReleaseSurface() override;

@@ -14,7 +14,7 @@ source_set("gpu") {
   public_deps = [
     ":internal",
     "//cc",
-    "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/command_buffer/common",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//services/ui/public/interfaces",
