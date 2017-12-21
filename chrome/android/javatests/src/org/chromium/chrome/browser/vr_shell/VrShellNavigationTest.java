@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.NATIVE_URLS_OF_INTEREST;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
@@ -357,10 +358,7 @@ public class VrShellNavigationTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNativeNavigationAndInteraction()
             throws IllegalArgumentException, InterruptedException {
-        String[] nativeUrls = {UrlConstants.NTP_URL, UrlConstants.BOOKMARKS_URL,
-                UrlConstants.DOWNLOADS_URL, UrlConstants.RECENT_TABS_URL,
-                UrlConstants.NATIVE_HISTORY_URL};
-        for (String url : nativeUrls) {
+        for (String url : NATIVE_URLS_OF_INTEREST) {
             mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
             mVrTestRule.loadUrl(url, PAGE_LOAD_TIMEOUT_S);
             ClickUtils.mouseSingleClickView(InstrumentationRegistry.getInstrumentation(),

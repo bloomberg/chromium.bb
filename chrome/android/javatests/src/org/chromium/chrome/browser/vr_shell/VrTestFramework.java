@@ -10,6 +10,7 @@ import org.junit.Assert;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -49,6 +50,11 @@ public class VrTestFramework {
     public static final int POLL_CHECK_INTERVAL_LONG_MS = 100;
     public static final int POLL_TIMEOUT_SHORT_MS = 1000;
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
+
+    public static final String[] NATIVE_URLS_OF_INTEREST = {UrlConstants.BOOKMARKS_FOLDER_URL,
+            UrlConstants.BOOKMARKS_UNCATEGORIZED_URL, UrlConstants.BOOKMARKS_URL,
+            UrlConstants.DOWNLOADS_URL, UrlConstants.NATIVE_HISTORY_URL, UrlConstants.NTP_URL,
+            UrlConstants.RECENT_TABS_URL};
 
     private static final String TAG = "VrTestFramework";
     static final String TEST_DIR = "chrome/test/data/vr/e2e_test_files";
