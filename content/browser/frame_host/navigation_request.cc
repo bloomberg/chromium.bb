@@ -972,12 +972,17 @@ void NavigationRequest::OnStartChecksComplete(
       result.action() == NavigationThrottle::CANCEL ||
       result.action() == NavigationThrottle::BLOCK_REQUEST ||
       result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
+#if DCHECK_IS_ON()
+    if (result.action() == NavigationThrottle::BLOCK_REQUEST) {
+      DCHECK(result.net_error_code() == net::ERR_BLOCKED_BY_CLIENT ||
+             result.net_error_code() == net::ERR_BLOCKED_BY_ADMINISTRATOR);
+    }
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
-    DCHECK_EQ((result.action() == NavigationThrottle::CANCEL ||
-               result.action() == NavigationThrottle::CANCEL_AND_IGNORE)
-                  ? net::ERR_ABORTED
-                  : net::ERR_BLOCKED_BY_CLIENT,
-              result.net_error_code());
+    else if ((result.action() == NavigationThrottle::CANCEL ||
+              result.action() == NavigationThrottle::CANCEL_AND_IGNORE)) {
+      DCHECK_EQ(result.net_error_code(), net::ERR_ABORTED);
+    }
+#endif
 
     // If the start checks completed synchronously, which could happen if there
     // is no onbeforeunload handler or if a NavigationThrottle cancelled it,
@@ -1104,7 +1109,8 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   if (result.action() == NavigationThrottle::BLOCK_REQUEST ||
       result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
-    DCHECK_EQ(net::ERR_BLOCKED_BY_CLIENT, result.net_error_code());
+    DCHECK(result.net_error_code() == net::ERR_BLOCKED_BY_CLIENT ||
+           result.net_error_code() == net::ERR_BLOCKED_BY_ADMINISTRATOR);
     OnRequestFailedInternal(false, result.net_error_code(), base::nullopt,
                             true);
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has

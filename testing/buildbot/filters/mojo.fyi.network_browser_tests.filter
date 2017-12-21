@@ -365,11 +365,6 @@
 # Added in r519342.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
 
-# crbug.com/756642 Need to add support for URL blacklist.
--PolicyTest.FileURLBlacklist
--PolicyTest.URLBlacklist
--PolicyTest.URLBlacklistSubresources
-
 # crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
 

@@ -37,7 +37,6 @@ class NetLog;
 }
 
 namespace policy {
-class URLBlacklistManager;
 class BrowserPolicyConnectorBase;
 }
 
@@ -89,7 +88,6 @@ class AwBrowserContext : public content::BrowserContext,
   AwFormDatabaseService* GetFormDatabaseService();
   AwURLRequestContextGetter* GetAwURLRequestContext();
 
-  policy::URLBlacklistManager* GetURLBlacklistManager();
   web_restrictions::WebRestrictionsClient* GetWebRestrictionProvider();
 
   // content::BrowserContext implementation.
@@ -143,8 +141,6 @@ class AwBrowserContext : public content::BrowserContext,
 
   std::unique_ptr<PrefService> user_pref_service_;
   std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
-  std::unique_ptr<policy::URLBlacklistManager> blacklist_manager_;
-
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
   std::unique_ptr<content::PermissionManager> permission_manager_;
   std::unique_ptr<web_restrictions::WebRestrictionsClient>
