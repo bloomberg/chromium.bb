@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<title>Tests TextTrack's addCue and removeCue.</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>TextTrack's addCue and removeCue</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
     var video = document.createElement("video");
@@ -84,7 +84,7 @@ async_test(function(t) {
         assert_equals(cues[2].startTime, 31);
     });
 
-    trackElement.src = "captions-webvtt/tc013-settings.vtt";
+    trackElement.src = "resources/settings.vtt";
     trackElement.kind = "captions";
     trackElement.default = true;
     video.appendChild(trackElement);
