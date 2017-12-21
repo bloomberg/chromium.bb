@@ -90,15 +90,24 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
 ]
 
 _VERSION_SPECIFIC_FILTER['64'] = [
+    # These tests are implemented to run on the latest versions of Chrome > 64
+    'HeadlessInvalidCertificateTest.*',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
     'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
 ]
 
 _VERSION_SPECIFIC_FILTER['63'] = [
+    # These tests are implemented to run on the latest versions of Chrome > 64
+    'HeadlessInvalidCertificateTest.*',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
     'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
     'ChromeDriverPageLoadTimeoutTest.testHistoryNavigationWithPageLoadTimeout',
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+]
+
+_VERSION_SPECIFIC_FILTER['62'] = [
+    # These tests are implemented to run on the latest versions of Chrome > 64
+    'HeadlessInvalidCertificateTest.*',
 ]
 
 _OS_SPECIFIC_FILTER = {}
@@ -206,6 +215,9 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
+        # Tests in HeadlessInvalidCertificateTest class can't be run
+        # on chromedriver_webview_shell
+        'HeadlessInvalidCertificateTest.*',
         'ChromeLoggingCapabilityTest.testPerformanceLogger',
         'ChromeDriverTest.testShadowDom*',
         # WebView doesn't support emulating network conditions.
