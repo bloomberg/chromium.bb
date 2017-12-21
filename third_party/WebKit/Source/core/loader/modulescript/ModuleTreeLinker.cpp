@@ -290,13 +290,12 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
   for (const auto& module_request : module_requests) {
     // [FD] Step 5.1. Let url be the result of resolving a module specifier
     // given module script and requested.
-    KURL url = Modulator::ResolveModuleSpecifier(module_request.specifier,
-                                                 module_script->BaseURL());
+    KURL url = module_script->ResolveModuleSpecifier(module_request.specifier);
 
     // [FD] Step 5.2. Assert: url is never failure, because resolving a module
     // specifier must have been previously successful with these same two
     // arguments.
-    CHECK(url.IsValid()) << "Modulator::resolveModuleSpecifier() impl must "
+    CHECK(url.IsValid()) << "ModuleScript::ResolveModuleSpecifier() impl must "
                             "return either a valid url or null.";
 
     // [FD] Step 5.3. If visited set does not contain url, then:
@@ -457,13 +456,13 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
     // [FFPE] Step 6. Let childURLs be the list obtained by calling resolve a
     // module specifier once for each item of childSpecifiers, given
     // moduleScript and that item.
-    KURL child_url = Modulator::ResolveModuleSpecifier(
-        module_request.specifier, module_script->BaseURL());
+    KURL child_url =
+        module_script->ResolveModuleSpecifier(module_request.specifier);
 
     // [FFPE] Step 6. ...  (None of these will ever fail, as otherwise
     // moduleScript would have been marked as itself having a parse error.)
     CHECK(child_url.IsValid())
-        << "Modulator::ResolveModuleSpecifier() impl must "
+        << "ModuleScript::ResolveModuleSpecifier() impl must "
            "return either a valid url or null.";
 
     // [FFPE] Step 7. Let childModules be the list obtained by getting each

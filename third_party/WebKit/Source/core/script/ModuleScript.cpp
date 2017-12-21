@@ -73,11 +73,8 @@ ModuleScript* ModuleScript::Create(const String& source_text,
     // Step 7.1. "Let url be the result of resolving a module specifier given
     // module script and requested." [spec text]
     // Step 7.2. "If url is failure, then:" [spec text]
-    // TODO(kouhei): Cache the url here instead of issuing
-    // ResolveModuleSpecifier later again in ModuleTreeLinker.
     String failure_reason;
-    if (Modulator::ResolveModuleSpecifier(requested.specifier, base_url,
-                                          &failure_reason)
+    if (script->ResolveModuleSpecifier(requested.specifier, &failure_reason)
             .IsValid())
       continue;
 
@@ -196,6 +193,21 @@ ScriptValue ModuleScript::CreateErrorToRethrow() const {
   ScriptValue error(script_state, error_to_rethrow_.NewLocal(isolate));
   DCHECK(!error.IsEmpty());
   return error;
+}
+
+KURL ModuleScript::ResolveModuleSpecifier(const String& module_request,
+                                          String* failure_reason) {
+  auto found = specifier_to_url_cache_.find(module_request);
+  if (found != specifier_to_url_cache_.end())
+    return found->value;
+
+  KURL url = Modulator::ResolveModuleSpecifier(module_request, BaseURL(),
+                                               failure_reason);
+  // Cache the result only on success, so that failure_reason is set for
+  // subsequent calls too.
+  if (url.IsValid())
+    specifier_to_url_cache_.insert(module_request, url);
+  return url;
 }
 
 void ModuleScript::Trace(blink::Visitor* visitor) {

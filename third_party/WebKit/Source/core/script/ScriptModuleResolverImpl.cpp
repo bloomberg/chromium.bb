@@ -67,8 +67,7 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
 
   // Step 3. Let url be the result of resolving a module specifier given
   // referencing module script and specifier.
-  KURL url =
-      Modulator::ResolveModuleSpecifier(specifier, referrer_module->BaseURL());
+  KURL url = referrer_module->ResolveModuleSpecifier(specifier);
 
   // Step 4. Assert: url is never failure, because resolving a module specifier
   // must have been previously successful with these same two arguments.
