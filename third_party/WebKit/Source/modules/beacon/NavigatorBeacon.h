@@ -42,12 +42,6 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
                       const ArrayBufferViewOrBlobOrStringOrFormData&,
                       ExceptionState&);
   bool CanSendBeacon(ExecutionContext*, const KURL&, ExceptionState&);
-  int MaxAllowance() const;
-  void AddTransmittedBytes(size_t sent_bytes);
-
-  size_t transmitted_bytes_;
-
-  static constexpr size_t kMaxAllowance = 65536;
 };
 
 }  // namespace blink
