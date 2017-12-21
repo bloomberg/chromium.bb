@@ -1178,7 +1178,7 @@
     "type": "console_test_launcher",
   },
   "vr_testapp": {
-    "label": "//chrome/browser/vr:vr_testapp",
+    "label": "//chrome/browser/vr/testapp:vr_testapp",
     "type": "additional_compile_target",
   },
   "wayland_client_perftests": {
