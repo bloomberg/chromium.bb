@@ -80,7 +80,8 @@ TEST_F(ScreenCaptureNotificationUICocoaTest, LongTitle) {
   EXPECT_LE(NSWidth([[controller() window] frame]), 1005);
 }
 
-TEST_F(ScreenCaptureNotificationUICocoaTest, ShortTitle) {
+// Flaky, see crbug.com/796969.
+TEST_F(ScreenCaptureNotificationUICocoaTest, DISABLED_ShortTitle) {
   target_.reset(
       new ScreenCaptureNotificationUICocoa(base::UTF8ToUTF16("Title")));
   target_->OnStarted(
