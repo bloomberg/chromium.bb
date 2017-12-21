@@ -30,10 +30,9 @@ class SkColorSpaceCache : public SkColorSpaceCacheBase {
  public:
   SkColorSpaceCache() : SkColorSpaceCacheBase(kMaxCachedSkColorSpaces) {}
 };
-base::LazyInstance<SkColorSpaceCache>::DestructorAtExit g_sk_color_space_cache =
+base::LazyInstance<SkColorSpaceCache>::Leaky g_sk_color_space_cache =
     LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock>::DestructorAtExit g_lock =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
