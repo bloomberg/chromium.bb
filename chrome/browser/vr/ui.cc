@@ -287,6 +287,14 @@ void Ui::Dump() {
   LOG(ERROR) << os.str();
 }
 
+void Ui::SetBackgroundImage(std::unique_ptr<SkBitmap> bitmap) {
+  Background* background = reinterpret_cast<Background*>(
+      scene_->GetUiElementByName(k2dBrowsingTexturedBackground));
+  DCHECK(background);
+  background->SetImage(std::move(bitmap));
+  model_->background_loaded = true;
+}
+
 void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
   InitializeModel(ui_initial_state);
 }
@@ -305,6 +313,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
   model_->skips_redraw_when_not_dirty =
       ui_initial_state.skips_redraw_when_not_dirty;
+  model_->background_available = ui_initial_state.assets_available;
 }
 
 }  // namespace vr

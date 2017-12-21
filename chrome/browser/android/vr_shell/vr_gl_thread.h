@@ -20,6 +20,10 @@
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
+namespace base {
+class Version;
+}  // namespace base
+
 namespace vr_shell {
 
 class VrShell;
@@ -50,8 +54,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ForceExitVr() override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
-  void OnAssetsLoaded(vr::AssetsLoadStatus status,
-                      const base::Version& component_version) override;
 
   // vr::ContentInputForwarder
   void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
@@ -100,6 +102,10 @@ class VrGLThread : public base::android::JavaHandlerThread,
  private:
   bool OnMainThread() const;
   bool OnGlThread() const;
+
+  void OnAssetsLoaded(vr::AssetsLoadStatus status,
+                      std::unique_ptr<SkBitmap> background_image,
+                      const base::Version& component_version);
 
   // Created on GL thread.
   std::unique_ptr<VrShellGl> vr_shell_gl_;

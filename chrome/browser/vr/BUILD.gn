@@ -35,6 +35,8 @@ static_library("vr_common") {
     "elements/audio_permission_prompt.h",
     "elements/audio_permission_prompt_texture.cc",
     "elements/audio_permission_prompt_texture.h",
+    "elements/background.cc",
+    "elements/background.h",
     "elements/button.cc",
     "elements/button.h",
     "elements/content_element.cc",

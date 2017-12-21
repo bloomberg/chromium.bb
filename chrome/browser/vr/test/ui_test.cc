@@ -71,12 +71,31 @@ void UiTest::SetUp() {
   browser_ = base::MakeUnique<testing::NiceMock<MockUiBrowserInterface>>();
 }
 
+void UiTest::CreateScene(const UiInitialState& state) {
+  auto content_input_delegate =
+      base::MakeUnique<testing::NiceMock<MockContentInputDelegate>>();
+  content_input_delegate_ = content_input_delegate.get();
+
+  ui_ = base::MakeUnique<Ui>(std::move(browser_.get()),
+                             std::move(content_input_delegate), nullptr,
+                             nullptr, state);
+  scene_ = ui_->scene();
+  model_ = ui_->model_for_test();
+
+  OnBeginFrame();
+}
+
 void UiTest::CreateScene(InCct in_cct, InWebVr in_web_vr) {
-  CreateSceneInternal(in_cct, in_web_vr, kNotAutopresented);
+  UiInitialState state;
+  state.in_cct = in_cct;
+  state.in_web_vr = in_web_vr;
+  CreateScene(state);
 }
 
 void UiTest::CreateSceneForAutoPresentation() {
-  CreateSceneInternal(kNotInCct, kNotInWebVr, kAutopresented);
+  UiInitialState state;
+  state.web_vr_autopresentation_expected = true;
+  CreateScene(state);
 }
 
 void UiTest::SetIncognito(bool incognito) {
@@ -235,26 +254,6 @@ void UiTest::GetBackgroundColor(SkColor* background_color) const {
   }
 
   *background_color = color;
-}
-
-void UiTest::CreateSceneInternal(InCct in_cct,
-                                 InWebVr in_web_vr,
-                                 WebVrAutopresented web_vr_autopresented) {
-  auto content_input_delegate =
-      base::MakeUnique<testing::NiceMock<MockContentInputDelegate>>();
-  content_input_delegate_ = content_input_delegate.get();
-
-  UiInitialState ui_initial_state;
-  ui_initial_state.in_cct = in_cct;
-  ui_initial_state.in_web_vr = in_web_vr;
-  ui_initial_state.web_vr_autopresentation_expected = web_vr_autopresented;
-  ui_ = base::MakeUnique<Ui>(std::move(browser_.get()),
-                             std::move(content_input_delegate), nullptr,
-                             nullptr, ui_initial_state);
-  scene_ = ui_->scene();
-  model_ = ui_->model_for_test();
-
-  OnBeginFrame();
 }
 
 }  // namespace vr

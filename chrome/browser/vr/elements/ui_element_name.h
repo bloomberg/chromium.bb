@@ -15,6 +15,8 @@ enum UiElementName {
   kRoot,
   k2dBrowsingRoot,
   k2dBrowsingBackground,
+  k2dBrowsingDefaultBackground,
+  k2dBrowsingTexturedBackground,
   k2dBrowsingForeground,
   k2dBrowsingContentGroup,
   k2dBrowsingViewportAwareRoot,

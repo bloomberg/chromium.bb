@@ -46,6 +46,7 @@ class UiTest : public testing::Test {
     kAutopresented = true,
   };
 
+  void CreateScene(const UiInitialState& state);
   void CreateScene(InCct in_cct, InWebVr in_web_vr);
   void CreateSceneForAutoPresentation();
 
@@ -104,10 +105,6 @@ class UiTest : public testing::Test {
   UiScene* scene_ = nullptr;
 
  private:
-  void CreateSceneInternal(InCct in_cct,
-                           InWebVr in_web_vr,
-                           WebVrAutopresented web_vr_autopresented);
-
   base::TimeTicks current_time_;
 };
 

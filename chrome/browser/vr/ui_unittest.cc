@@ -81,84 +81,6 @@ const std::set<UiElementType> kHitTestableElementTypes = {
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarningBackground, kExitWarningText};
-const std::vector<std::string> kElementsInDrawOrder = {
-    "kBackgroundFront",
-    "kBackgroundLeft",
-    "kBackgroundBack",
-    "kBackgroundRight",
-    "kBackgroundTop",
-    "kBackgroundBottom",
-    "kScreenDimmer",
-    "kSplashScreenBackground",
-    "kWebVrTimeoutSpinnerBackground",
-    "kFloor",
-    "kCeiling",
-    "kBackplane",
-    "kContentQuad",
-    "kAudioCaptureIndicator",
-    "kVideoCaptureIndicator",
-    "kScreenCaptureIndicator",
-    "kBluetoothConnectedIndicator",
-    "kLocationAccessIndicator",
-    "kUrlBar",
-    "kLoadingIndicator",
-    "kLoadingIndicatorForeground",
-    "kUnderDevelopmentNotice",
-    "kVoiceSearchButton",
-    "kVoiceSearchButton:kTypeButtonBackground",
-    "kVoiceSearchButton:kTypeButtonForeground",
-    "kVoiceSearchButton:kTypeButtonHitTarget",
-    "kCloseButton",
-    "kCloseButton:kTypeButtonBackground",
-    "kCloseButton:kTypeButtonForeground",
-    "kCloseButton:kTypeButtonHitTarget",
-    "kExclusiveScreenToast",
-    "kExitPromptBackplane",
-    "kExitPrompt",
-    "kAudioPermissionPromptBackplane",
-    "kAudioPermissionPromptShadow",
-    "kAudioPermissionPrompt",
-    "kOmniboxShadow",
-    "kOmniboxContainer",
-    "kOmniboxTextField:kTypeTextInputHint",
-    "kOmniboxTextField:kTypeTextInputText",
-    "kOmniboxTextField:kTypeTextInputCursor",
-    "kNone:kTypeOmniboxSuggestionSpacer",
-    "kNone:kTypeOmniboxSuggestionSpacer",
-    "kOmniboxCloseButton",
-    "kOmniboxCloseButton:kTypeButtonBackground",
-    "kOmniboxCloseButton:kTypeButtonForeground",
-    "kOmniboxCloseButton:kTypeButtonHitTarget",
-    "kSpeechRecognitionResultText",
-    "kSpeechRecognitionResultCircle",
-    "kSpeechRecognitionResultMicrophoneIcon",
-    "kSpeechRecognitionResultBackplane",
-    "kSpeechRecognitionListeningGrowingCircle",
-    "kSpeechRecognitionListeningInnerCircle",
-    "kSpeechRecognitionListeningMicrophoneIcon",
-    "kSpeechRecognitionListeningCloseButton",
-    "kSpeechRecognitionListeningCloseButton:kTypeButtonBackground",
-    "kSpeechRecognitionListeningCloseButton:kTypeButtonForeground",
-    "kSpeechRecognitionListeningCloseButton:kTypeButtonHitTarget",
-    "kController",
-    "kLaser",
-    "kReticle",
-    "kKeyboard",
-    "kExitWarningBackground",
-    "kExitWarningText",
-    "kWebVrUrlToast",
-    "kExclusiveScreenToastViewportAware",
-    "kSplashScreenText",
-    "kWebVrTimeoutSpinner",
-    "kWebVrTimeoutMessage",
-    "kWebVrTimeoutMessageIcon",
-    "kWebVrTimeoutMessageText",
-    "kWebVrTimeoutMessageButton",
-    "kWebVrTimeoutMessageButton:kTypeButtonBackground",
-    "kWebVrTimeoutMessageButton:kTypeButtonForeground",
-    "kWebVrTimeoutMessageButton:kTypeButtonHitTarget",
-    "kWebVrTimeoutMessageButtonText",
-};
 
 static constexpr float kTolerance = 1e-5f;
 static constexpr float kSmallDelaySeconds = 0.1f;
@@ -1002,19 +924,6 @@ TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
   ui_->OnAppButtonClicked();
 }
 
-// This test ensures that the render order matches the expected tree state. All
-// phases are merged, as the order is the same. Unnamed and unrenderable
-// elements are skipped.
-TEST_F(UiTest, UiRendererSortingTest) {
-  CreateScene(kNotInCct, kNotInWebVr);
-  auto unsorted = scene_->GetPotentiallyVisibleElements();
-  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
-  EXPECT_EQ(kElementsInDrawOrder.size(), sorted.size());
-  for (size_t i = 0; i < sorted.size(); ++i) {
-    ASSERT_EQ(kElementsInDrawOrder[i], sorted[i]->DebugName());
-  }
-}
-
 // Tests that transient elements will show, even if there is a long delay
 // between when they are asked to appear and when we issue the first frame with
 // them visible.
@@ -1039,6 +948,33 @@ TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
   // naive, we would start to hide the transient element.
   OnBeginFrame(MsToDelta(40000));
   VerifyOnlyElementsVisible("Autopresented", {kWebVrUrlToast});
+}
+
+TEST_F(UiTest, DefaultBackgroundWhenNoAssetAvailable) {
+  UiInitialState state;
+  state.assets_available = false;
+  CreateScene(state);
+
+  EXPECT_FALSE(IsVisible(k2dBrowsingTexturedBackground));
+  EXPECT_TRUE(IsVisible(k2dBrowsingDefaultBackground));
+  EXPECT_TRUE(IsVisible(kContentQuad));
+}
+
+TEST_F(UiTest, TextureBackgroundAfterAssetLoaded) {
+  UiInitialState state;
+  state.assets_available = true;
+  CreateScene(state);
+
+  EXPECT_FALSE(IsVisible(k2dBrowsingTexturedBackground));
+  EXPECT_FALSE(IsVisible(k2dBrowsingDefaultBackground));
+  EXPECT_FALSE(IsVisible(kContentQuad));
+
+  auto bitmap = base::MakeUnique<SkBitmap>();
+  ui_->SetBackgroundImage(std::move(bitmap));
+
+  EXPECT_TRUE(IsVisible(k2dBrowsingTexturedBackground));
+  EXPECT_TRUE(IsVisible(kContentQuad));
+  EXPECT_FALSE(IsVisible(k2dBrowsingDefaultBackground));
 }
 
 }  // namespace vr

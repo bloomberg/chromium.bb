@@ -10,6 +10,7 @@
 #include "base/version.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
+#include "chrome/browser/vr/assets.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
@@ -67,9 +68,14 @@ void VrGLThread::Init() {
     }
   }
 
+  if (ui_initial_state_.assets_available) {
+    vr::Assets::GetInstance()->Load(
+        base::BindOnce(&VrGLThread::OnAssetsLoaded, base::Unretained(this)));
+  }
+
   vr_shell_gl_ = base::MakeUnique<VrShellGl>(
       this, std::move(ui), gvr_api_, reprojected_rendering_, daydream_support_,
-      ui_initial_state_.in_web_vr, ui_initial_state_.assets_available);
+      ui_initial_state_.in_web_vr);
 
   browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
 
@@ -159,14 +165,6 @@ void VrGLThread::ToggleCardboardGamepad(bool enabled) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VrShell::ToggleCardboardGamepad, weak_vr_shell_, enabled));
-}
-
-void VrGLThread::OnAssetsLoaded(vr::AssetsLoadStatus status,
-                                const base::Version& component_version) {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::OnAssetsLoaded, weak_vr_shell_, status,
-                            component_version));
 }
 
 void VrGLThread::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
@@ -347,6 +345,21 @@ bool VrGLThread::OnMainThread() const {
 
 bool VrGLThread::OnGlThread() const {
   return task_runner()->BelongsToCurrentThread();
+}
+
+void VrGLThread::OnAssetsLoaded(vr::AssetsLoadStatus status,
+                                std::unique_ptr<SkBitmap> background_image,
+                                const base::Version& component_version) {
+  if (status == vr::AssetsLoadStatus::kSuccess) {
+    VLOG(1) << "Successfully loaded VR assets component";
+    vr_shell_gl_->OnAssetsLoaded(std::move(background_image),
+                                 component_version);
+  } else {
+    VLOG(1) << "Failed to load VR assets component";
+  }
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OnAssetsLoaded, weak_vr_shell_,
+                                status, component_version));
 }
 
 }  // namespace vr_shell
