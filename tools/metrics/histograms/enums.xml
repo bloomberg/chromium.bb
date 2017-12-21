@@ -24545,6 +24545,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="App window in background"/>
 </enum>
 
+<enum name="LockScreenAppUnloadStatus">
+  <int value="0" label="Unload reason other than termination"/>
+  <int value="1" label="Terminated, app reload can be attempted"/>
+  <int value="2" label="Terminated, number of reload attempts exceeded"/>
+</enum>
+
 <enum name="LockScreenDataItemOperationResult">
   <int value="0" label="Success"/>
   <int value="1" label="Operation failed"/>
@@ -24553,6 +24559,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Item already registered"/>
   <int value="5" label="Invalid encryption key"/>
   <int value="6" label="Wrong encryption key"/>
+</enum>
+
+<enum name="LockScreenNoteAppStatusOnLaunch">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Terminated - reloaded"/>
+  <int value="2" label="Terminated - reload attempt failed"/>
+  <int value="3" label="Terminated - number of reload attempts exceeded"/>
+  <int value="4" label="Not loaded, not terminated"/>
 </enum>
 
 <enum name="LockScreenNoteTakingExitReason">

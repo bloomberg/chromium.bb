@@ -54,6 +54,9 @@ class AppManagerImpl : public AppManager,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // chromeos::NoteTakingHelper::Observer:
   void OnAvailableNoteTakingAppsUpdated() override;
@@ -75,6 +78,20 @@ class AppManagerImpl : public AppManager,
     // The manager is started, and there is no available lock screen enabled
     // app.
     kAppUnavailable,
+  };
+
+  // The lock screen note taking app state when a note action launch is
+  // requested.
+  // Used to report UMA histograms - the values should map to
+  // LockScreenNoteAppStatusOnLaunch UMA enum values, and the values assigned to
+  // enum states should NOT be changed.
+  enum class AppStatus {
+    kEnabled = 0,
+    kAppReloaded = 1,
+    kAppReloadFailed = 2,
+    kTerminatedReloadLimitExceeded = 3,
+    kNotLoadedNotTerminated = 4,
+    kCount = 5
   };
 
   // Called when lock screen apps profile is ready to be used. Calling this will
@@ -112,6 +129,25 @@ class AppManagerImpl : public AppManager,
   // Uninstalls lock screen note taking app from the lock screen profile.
   void RemoveAppFromLockScreenProfile(const std::string& app_id);
 
+  // Returns the lock screen app to which lock screen app launch event should be
+  // sent. If the app is disabled because it got terminated (e.g. due to an app
+  // crash), this will attempt to reload the app.
+  // Returns null if the extension is not enabled, and cannot be enabled.
+  const extensions::Extension* GetAppForLockScreenAppLaunch();
+
+  // Reports UMA for the app status when lock screen note action launch is
+  // attempted.
+  void ReportAppStatusOnAppLaunch(AppStatus status);
+
+  // Updates internal state, and reports relevant metrics when the note taking
+  // app gets unloaded from the lock screen profile.
+  void HandleLockScreenAppUnload(extensions::UnloadedExtensionReason reason);
+
+  // Removes the lock screen app from the lock screen apps profile if the app
+  // manager encountered an error - e.g. if the app unexpectedly got disabled in
+  // the lock screen apps profile.
+  void RemoveLockScreenAppDueToError();
+
   Profile* primary_profile_ = nullptr;
   Profile* lock_screen_profile_ = nullptr;
   LockScreenProfileCreator* lock_screen_profile_creator_ = nullptr;
@@ -124,6 +160,9 @@ class AppManagerImpl : public AppManager,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extensions_observer_;
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      lock_screen_profile_extensions_observer_;
 
   ScopedObserver<chromeos::NoteTakingHelper,
                  chromeos::NoteTakingHelper::Observer>
@@ -134,6 +173,11 @@ class AppManagerImpl : public AppManager,
   // Counts app installs. Passed to app install callback as install request
   // identifier to determine whether the completed install is stale.
   int install_count_ = 0;
+
+  // The number of times the lock screen app can be reloaded in the
+  // lock screen apps profile in case it get terminated.
+  // This counter is reset when the AppManager is restarted.
+  int available_lock_screen_app_reloads_ = 0;
 
   base::WeakPtrFactory<AppManagerImpl> weak_ptr_factory_;
 
