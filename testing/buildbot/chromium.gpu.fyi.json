@@ -2622,8 +2622,6 @@
     ],
     "isolated_scripts": []
   },
-  "GPU Android arm Builder": {},
-  "GPU Android arm64 Builder": {},
   "GPU Linux Builder": {},
   "GPU Linux Builder (dbg)": {},
   "GPU Linux Ozone Builder": {},

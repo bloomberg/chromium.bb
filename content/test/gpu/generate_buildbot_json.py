@@ -260,8 +260,6 @@ FYI_WATERFALL = {
     'GPU Linux Builder (dbg)' : {},
     'GPU Linux Ozone Builder' : {},
     'GPU Linux dEQP Builder' : {},
-    'GPU Android arm Builder' : {},
-    'GPU Android arm64 Builder' : {},
   },
 
   'testers': {

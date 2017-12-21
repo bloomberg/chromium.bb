@@ -290,8 +290,6 @@
       'Android Release (Nexus 6P)': 'android_release_trybot_arm64',
       'Android Release (Nexus 9)': 'android_release_trybot_arm64',
       'Android Release (NVIDIA Shield TV)': 'android_release_trybot_arm64',
-      'GPU Android arm Builder': 'gpu_tests_android_release_trybot',
-      'GPU Android arm64 Builder': 'gpu_tests_android_release_trybot_arm64',
       'GPU Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU Linux Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
@@ -1357,10 +1355,6 @@
 
     'gpu_fyi_tests_win_clang_debug_bot': [
       'gpu_tests', 'internal_gles2_conform_tests', 'clang', 'debug_bot', 'minimal_symbols',
-    ],
-
-    'gpu_tests_android_release_trybot': [
-      'gpu_tests', 'android', 'release_trybot',
     ],
 
     'gpu_tests_android_release_trybot_arm64': [
