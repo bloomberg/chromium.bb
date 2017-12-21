@@ -173,3 +173,14 @@ function getUserMediaFailedCallback_(error) {
 
   returnToTest('request-callback-denied');
 }
+
+function openDesktopMediaStream() {
+  window.addEventListener('message', function(event) {
+    // Only trigger if streamId is present (callback from, not to, extension).
+    if (typeof event.data.streamId !== 'undefined') {
+      returnToTest(event.data.streamId);
+    }
+  });
+
+  window.postMessage({desktopSourceTypes: ['window', 'screen']}, '*');
+}

@@ -12,19 +12,24 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_WIN)
@@ -320,6 +325,20 @@ content::WebContents* WebRtcTestBase::OpenTestPageAndGetUserMediaInNewTab(
     const std::string& test_page) const {
   return OpenPageAndGetUserMediaInNewTab(
       embedded_test_server()->GetURL(test_page));
+}
+
+content::WebContents* WebRtcTestBase::OpenTestPageInNewTab(
+    const std::string& test_page) const {
+  chrome::AddTabAt(browser(), GURL(), -1, true);
+  GURL url = embedded_test_server()->GetURL(test_page);
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* new_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // Accept if necessary, but don't expect a prompt (because auto-accept is also
+  // okay).
+  PermissionRequestManager::FromWebContents(new_tab)
+      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
+  return new_tab;
 }
 
 void WebRtcTestBase::CloseLastLocalStream(
@@ -720,4 +739,33 @@ std::vector<WebRtcTestBase::TrackEvent> WebRtcTestBase::GetTrackEvents(
 
 void WebRtcTestBase::CollectGarbage(content::WebContents* tab) const {
   EXPECT_EQ("ok-gc", ExecuteJavascript("collectGarbage()", tab));
+}
+
+std::string WebRtcTestBase::GetDesktopMediaStream(content::WebContents* tab) {
+  DCHECK(static_cast<bool>(LoadDesktopCaptureExtension()));
+
+  // Post a task to the extension, opening a desktop media stream.
+  return ExecuteJavascript("openDesktopMediaStream()", tab);
+}
+
+base::Optional<std::string> WebRtcTestBase::LoadDesktopCaptureExtension() {
+  base::Optional<std::string> extension_id;
+  if (!desktop_capture_extension_.get()) {
+    extensions::ChromeTestExtensionLoader loader(browser()->profile());
+    base::FilePath extension_path;
+    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
+    extension_path = extension_path.AppendASCII("extensions/desktop_capture");
+    desktop_capture_extension_ = loader.LoadExtension(extension_path);
+    LOG(INFO) << "Loaded desktop capture extension, id = "
+              << desktop_capture_extension_->id();
+
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(browser()->profile());
+
+    EXPECT_TRUE(registry->enabled_extensions().GetByID(
+        desktop_capture_extension_->id()));
+  }
+  if (desktop_capture_extension_)
+    extension_id.emplace(desktop_capture_extension_->id());
+  return extension_id;
 }
