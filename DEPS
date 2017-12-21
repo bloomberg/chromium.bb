@@ -1074,14 +1074,6 @@ hooks = [
                 "-s", "src/v8/test/fuzzer/wasm_corpus.tar.gz.sha1",
     ],
   },
-  {
-    'name': 'devtools_install_node',
-    'action': [ 'vpython',
-                'src/third_party/WebKit/Source/devtools/scripts/local_node/node.py',
-                '--running-as-hook',
-                '--version',
-    ],
-  },
 
   # Pull down Node binaries for WebUI toolchain.
   {

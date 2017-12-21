@@ -465,7 +465,7 @@
     "type": "script",
     "script": "//testing/scripts/run_devtools_check.py",
     "args": [
-        "../../third_party/WebKit/Source/devtools/scripts/buildbot/run_eslint.py",
+        "../../third_party/WebKit/Source/devtools/scripts/lint_javascript.py",
     ],
   },
   "display_unittests": {
