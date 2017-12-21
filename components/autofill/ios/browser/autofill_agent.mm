@@ -876,7 +876,7 @@ void GetFormAndField(autofill::FormData* form,
   JSONForm->SetString("formName", base::UTF16ToUTF8(form.name));
   // Note: Destruction of all child base::Value types is handled by the root
   // formData object on its own destruction.
-  auto JSONFields = base::MakeUnique<base::DictionaryValue>();
+  auto JSONFields = std::make_unique<base::DictionaryValue>();
 
   const std::vector<autofill::FormFieldData>& autofillFields = form.fields;
   for (const auto& autofillField : autofillFields) {
@@ -946,7 +946,7 @@ void GetFormAndField(autofill::FormData* form,
 
   base::DictionaryValue predictionData;
   for (autofill::FormStructure* form : structure) {
-    auto formJSONData = base::MakeUnique<base::DictionaryValue>();
+    auto formJSONData = std::make_unique<base::DictionaryValue>();
     autofill::FormData formData = form->ToFormData();
     for (const auto& field : *form) {
       autofill::AutofillType type(field->Type());

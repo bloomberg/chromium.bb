@@ -4,6 +4,8 @@
 
 #include "components/autofill/android/autofill_provider_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
@@ -72,7 +74,7 @@ void AutofillProviderAndroid::OnQueryFormFieldAutofill(
   if (obj.is_null())
     return;
 
-  form_ = base::MakeUnique<FormDataAndroid>(form);
+  form_ = std::make_unique<FormDataAndroid>(form);
 
   size_t index;
   if (!form_->GetFieldIndex(field, &index))

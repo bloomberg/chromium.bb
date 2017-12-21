@@ -92,7 +92,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
     web_data_service_ =
         new FakeWebDataService(base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());
-    autofill_wallet_dtc_ = base::MakeUnique<AutofillWalletDataTypeController>(
+    autofill_wallet_dtc_ = std::make_unique<AutofillWalletDataTypeController>(
         syncer::AUTOFILL_WALLET_DATA, base::ThreadTaskRunnerHandle::Get(),
         base::Bind(&base::DoNothing), this, web_data_service_);
 
@@ -120,7 +120,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
     autofill_wallet_dtc_->SetGenericChangeProcessorFactoryForTest(
         base::WrapUnique<syncer::GenericChangeProcessorFactory>(
             new syncer::FakeGenericChangeProcessorFactory(
-                base::MakeUnique<syncer::FakeGenericChangeProcessor>(
+                std::make_unique<syncer::FakeGenericChangeProcessor>(
                     syncer::AUTOFILL_WALLET_DATA, this))));
   }
 

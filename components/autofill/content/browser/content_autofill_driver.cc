@@ -42,17 +42,17 @@ ContentAutofillDriver::ContentAutofillDriver(
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
-    autofill_handler_ = base::MakeUnique<AutofillHandlerProxy>(this, provider);
+    autofill_handler_ = std::make_unique<AutofillHandlerProxy>(this, provider);
     GetAutofillAgent()->SetUserGestureRequired(false);
     GetAutofillAgent()->SetSecureContextRequired(true);
     GetAutofillAgent()->SetFocusRequiresScroll(false);
     GetAutofillAgent()->SetQueryPasswordSuggestion(true);
   } else {
-    autofill_handler_ = base::MakeUnique<AutofillManager>(
+    autofill_handler_ = std::make_unique<AutofillManager>(
         this, client, app_locale, enable_download_manager);
     autofill_manager_ = static_cast<AutofillManager*>(autofill_handler_.get());
     autofill_external_delegate_ =
-        base::MakeUnique<AutofillExternalDelegate>(autofill_manager_, this);
+        std::make_unique<AutofillExternalDelegate>(autofill_manager_, this);
     autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
   }
 }
