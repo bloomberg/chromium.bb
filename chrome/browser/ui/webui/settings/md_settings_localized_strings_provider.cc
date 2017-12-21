@@ -763,7 +763,7 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_SCAN_ERROR},
       {"chromeCleanupFindButtonLable",
        IDS_SETTINGS_RESET_CLEANUP_FIND_BUTTON_LABEL},
-      {"chromeCleanupLinkShowItems",
+      {"chromeCleanupLinkShowFiles",
        IDS_SETTINGS_RESET_CLEANUP_LINK_SHOW_FILES},
       {"chromeCleanupLogsUploadPermission", IDS_CHROME_CLEANUP_LOGS_PERMISSION},
       {"chromeCleanupRemoveButtonLabel",

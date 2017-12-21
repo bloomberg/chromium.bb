@@ -14,7 +14,6 @@
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="chrome_cleanup_proxy.html">
-<link rel="import" href="items_to_remove_list.html">
 
 <dom-module id="settings-chrome-cleanup-page">
   <template>
@@ -23,6 +22,20 @@
         height: 20px;
         width: 20px;
       }
+
+      #files-to-remove-container {
+        padding: 0 var(--settings-box-row-padding);
+        /* Use the full available width for file paths to avoid inconsistent
+         *  line breaks when zooming in or out */
+        width: calc(var(--settings-card-max-width) -
+            2 * var(--settings-box-row-padding));
+      }
+
+      #files-to-remove-list {
+        margin: 0;
+        word-break: break-all;
+      }
+
       #learn-more {
         -webkit-margin-start: 0;
       }
@@ -88,8 +101,7 @@
         <div hidden="[[!showExplanation_]]">
           <span class="secondary">[[explanation_]]</span>
           <a id="learn-more" href="$i18n{chromeCleanupLearnMoreUrl}"
-              on-tap="learnMore_" target="_blank"
-              hidden="[[!showLearnMore_]]">
+              on-tap="learnMore_" target="_blank" hidden="[[!showLearnMore_]]">
             $i18n{learnMore}
           </a>
         </div>
@@ -111,33 +123,22 @@
              userInitiatedCleanupsEnabled_)]]"
         on-settings-boolean-control-change="changeLogsPermission_">
     </settings-toggle-button>
-    <div id="show-items-button" class="settings-box" actionable
+    <div id="show-files-button" class="settings-box" actionable
         on-tap="toggleExpandButton_" hidden="[[!showItemsToRemove_]]">
-      <div class="start">[[showItemsLinkLabel_]]</div>
-      <cr-expand-button expanded="{{itemsToRemoveSectionExpanded_}}"
-          alt="[[showItemsLinkLabel_]]">
+      <div class="start">
+        $i18n{chromeCleanupLinkShowFiles}
+      </div>
+      <cr-expand-button expanded="{{filesToRemoveListExpanded_}}"
+          alt="$i18n{chromeCleanupLinkShowFiles}">
       </cr-expand-button>
     </div>
-    <iron-collapse id="iron-collapse-items"
-        opened="[[itemsToRemoveSectionExpanded_]]">
-      <items-to-remove-list
-          id="files-to-remove-list"
-          hidden="[[!hasFilesToShow_]]"
-          title-visible="[[userInitiatedCleanupsEnabled_]]"
-          title="$i18n{chromeCleanupDetailsFilesAndPrograms}"
-          initially-expanded="[[!userInitiatedCleanupsEnabled_]]"
-          items-to-show="[[scannerResults_.files]]">
-      </items-to-remove-list>
-      <items-to-remove-list
-          id="registry-keys-list"
-          hidden="[[!hasRegistryKeysToShow_]]"
-          title="$i18n{chromeCleanupDetailsRegistryEntries}"
-          items-to-show="[[scannerResults_.registryKeys]]">
-      </items-to-remove-list>
-      <div class="settings-box continuation">
-        <div class="secondary">
-          $i18nRaw{chromeCleanupDetailsExplanation}
-        </div>
+    <iron-collapse opened="[[filesToRemoveListExpanded_]]">
+      <div id="files-to-remove-container">
+        <ul id="files-to-remove-list" class="secondary">
+          <template is="dom-repeat" items="[[filesToRemove_]]" as="fileName">
+            <li>[[fileName]]</li>
+          </template>
+        </ul>
       </div>
       <div id="powered-by-settings-box" class="settings-box continuation">
         <div id="powered-by-container" class="secondary"
