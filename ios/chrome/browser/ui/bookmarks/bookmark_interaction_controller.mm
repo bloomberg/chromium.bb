@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -181,11 +182,18 @@ using bookmarks::BookmarkNode;
 
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
+    int64_t unusedFolderId;
+    double unusedScrollPosition;
     // If cache is present then reconstruct the last visited bookmark from
     // cache.  If bookmarkModel is not loaded yet, the following checking will
     // be done again at bookmarkModelLoaded in BookmarkHomeViewController to
     // prevent crbug.com/765503.
-    if (bookmark_utils_ios::GetBookmarkUIPositionCache(self.bookmarkModel)) {
+    if ([BookmarkPathCache
+            getBookmarkUIPositionCacheWithPrefService:_currentBrowserState
+                                                          ->GetPrefs()
+                                                model:self.bookmarkModel
+                                             folderId:&unusedFolderId
+                                       scrollPosition:&unusedScrollPosition]) {
       self.bookmarkBrowser.isReconstructingFromCache = YES;
     }
     FormSheetNavigationController* navController =

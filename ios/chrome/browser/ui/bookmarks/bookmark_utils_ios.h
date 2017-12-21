@@ -193,29 +193,28 @@ std::vector<NodeVector::size_type> MissingNodesIndices(
 #pragma mark - Cache position in collection view.
 
 // Caches the active menu item, and the position in the collection view.
+// TODO(crbug.com/753599): This function is used in old bookmarks only.  Remove
+// it when cleanup old bookmarks.
 void CachePosition(CGFloat position, BookmarkMenuItem* item);
+
 // Returns YES if a valid cache exists.
 // |model| must be loaded.
 // |item| and |position| are out variables, only populated if the return is YES.
+// TODO(crbug.com/753599): This function is used in old bookmarks only.  Remove
+// it when cleanup old bookmarks.
 BOOL GetPositionCache(bookmarks::BookmarkModel* model,
                       BookmarkMenuItem* __autoreleasing* item,
                       CGFloat* position);
+
 // Method exists for testing.
+// TODO(crbug.com/753599): This function is used in old bookmarks only.  Remove
+// it when cleanup old bookmarks.
 void ClearPositionCache();
-
-// Caches the bookmark UI position that the user was last viewing.
-void CacheBookmarkUIPosition(BookmarkPathCache* cache);
-
-// Returns the bookmark UI position that the user was last viewing.
-BookmarkPathCache* GetBookmarkUIPositionCache(bookmarks::BookmarkModel* model);
 
 // Creates bookmark path for |folderId| passed in. For eg: for folderId = 76,
 // Root node(0) --> MobileBookmarks (3) --> Test1(76) will be returned as [0, 3,
 // 76].
 NSArray* CreateBookmarkPath(bookmarks::BookmarkModel* model, int64_t folderId);
-
-// Clears the bookmark UI position cache.
-void ClearBookmarkUIPositionCache();
 
 }  // namespace bookmark_utils_ios
 
