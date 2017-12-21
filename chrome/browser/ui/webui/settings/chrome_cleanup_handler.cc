@@ -13,17 +13,13 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using safe_browsing::ChromeCleanerController;
 
@@ -41,33 +37,11 @@ enum ChromeCleanerDismissSource {
 };
 
 // Returns a ListValue containing a copy of the file paths stored in |files|.
-std::unique_ptr<base::ListValue> GetFilesAsListStorage(
-    const std::set<base::FilePath>& files) {
-  auto value = base::MakeUnique<base::ListValue>();
+base::ListValue GetFilesAsListStorage(const std::set<base::FilePath>& files) {
+  base::ListValue value;
   for (const base::FilePath& path : files)
-    value->AppendString(path.value());
+    value.AppendString(path.value());
 
-  return value;
-}
-
-// Returns a ListValue containing a copy of the registry keys stored in
-// |registry_keys|.
-std::unique_ptr<base::ListValue> GetRegistryKeysAsListStorage(
-    const std::set<base::string16>& registry_keys) {
-  auto value = base::MakeUnique<base::ListValue>();
-  for (const base::string16& key : registry_keys)
-    value->AppendString(key);
-
-  return value;
-}
-
-base::DictionaryValue GetScannerResultsAsDictionary(
-    const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
-  base::DictionaryValue value;
-  value.SetList("files",
-                GetFilesAsListStorage(scanner_results.files_to_delete()));
-  value.SetList("registryKeys",
-                GetRegistryKeysAsListStorage(scanner_results.registry_keys()));
   return value;
 }
 
@@ -141,15 +115,6 @@ void ChromeCleanupHandler::RegisterMessages() {
       base::BindRepeating(
           &ChromeCleanupHandler::HandleNotifyChromeCleanupLearnMoreClicked,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getMoreItemsPluralString",
-      base::BindRepeating(&ChromeCleanupHandler::HandleGetMoreItemsPluralString,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getItemsToRemovePluralString",
-      base::BindRepeating(
-          &ChromeCleanupHandler::HandleGetItemsToRemovePluralString,
-          base::Unretained(this)));
 }
 
 void ChromeCleanupHandler::OnJavascriptAllowed() {
@@ -177,13 +142,13 @@ void ChromeCleanupHandler::OnReporterRunning() {
 void ChromeCleanupHandler::OnInfected(
     const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
   FireWebUIListener("chrome-cleanup-on-infected",
-                    GetScannerResultsAsDictionary(scanner_results));
+                    GetFilesAsListStorage(scanner_results.files_to_delete()));
 }
 
 void ChromeCleanupHandler::OnCleaning(
     const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
   FireWebUIListener("chrome-cleanup-on-cleaning",
-                    GetScannerResultsAsDictionary(scanner_results));
+                    GetFilesAsListStorage(scanner_results.files_to_delete()));
 }
 
 void ChromeCleanupHandler::OnRebootRequired() {
@@ -322,36 +287,6 @@ void ChromeCleanupHandler::HandleNotifyChromeCleanupLearnMoreClicked(
 
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.CleanupWebui_LearnMore"));
-}
-
-void ChromeCleanupHandler::HandleGetMoreItemsPluralString(
-    const base::ListValue* args) {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  GetPluralString(IDS_SETTINGS_RESET_CLEANUP_DETAILS_MORE, args);
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-}
-
-void ChromeCleanupHandler::HandleGetItemsToRemovePluralString(
-    const base::ListValue* args) {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  GetPluralString(IDS_SETTINGS_RESET_CLEANUP_DETAILS_ITEMS_TO_BE_REMOVED, args);
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-}
-
-void ChromeCleanupHandler::GetPluralString(int id,
-                                           const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
-
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-
-  int num_items = 0;
-  args->GetInteger(1, &num_items);
-  DCHECK_GT(0, num_items);
-
-  ResolveJavascriptCallback(
-      base::Value(callback_id),
-      base::Value(l10n_util::GetPluralStringFUTF16(id, num_items)));
 }
 
 }  // namespace settings

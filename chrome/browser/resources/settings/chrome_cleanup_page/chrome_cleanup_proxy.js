@@ -50,22 +50,6 @@ cr.define('settings', function() {
      * Notifies Chrome that the "learn more" link was clicked.
      */
     notifyLearnMoreClicked() {}
-
-    /**
-     * Requests the plural string for the "show more" link in the detailed
-     * view for either files to delete or registry keys.
-     * @param {number} numHiddenItems
-     * @return {!Promise<string>}
-     */
-    getMoreItemsPluralString(numHiddenItems) {}
-
-    /**
-     * Requests the plural string for the "items to remove" link in the detailed
-     * view.
-     * @param {number} numItems
-     * @return {!Promise<string>}
-     */
-    getItemsToRemovePluralString(numItems) {}
   }
 
   /**
@@ -110,16 +94,6 @@ cr.define('settings', function() {
     /** @override */
     notifyLearnMoreClicked() {
       chrome.send('notifyChromeCleanupLearnMoreClicked');
-    }
-
-    /** @override */
-    getMoreItemsPluralString(numHiddenItems) {
-      return cr.sendWithPromise('getMoreItemsPluralString', numHiddenItems);
-    }
-
-    /** @override */
-    getItemsToRemovePluralString(numItems) {
-      return cr.sendWithPromise('getItemsToRemovePluralString', numItems);
     }
   }
 
