@@ -116,8 +116,13 @@ void SensorProxy::UpdateSensorReading() {
     return;
   }
 
-  if (reading_.timestamp() != reading_data.timestamp()) {
-    DCHECK_GT(reading_data.timestamp(), reading_.timestamp())
+  double latest_timestamp = reading_data.timestamp();
+  if (reading_.timestamp() != latest_timestamp &&
+      latest_timestamp != 0.0)  // The shared buffer is zeroed when
+                                // sensor is stopped, we skip this
+                                // reading.
+  {
+    DCHECK_GT(latest_timestamp, reading_.timestamp())
         << "Timestamps must increase monotonically";
     reading_ = reading_data;
     for (Observer* observer : observers_)
