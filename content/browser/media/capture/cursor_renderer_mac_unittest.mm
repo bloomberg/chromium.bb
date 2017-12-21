@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/test/cocoa_helper.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
-#include "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace content {
 

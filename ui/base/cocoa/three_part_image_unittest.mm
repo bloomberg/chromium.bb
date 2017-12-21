@@ -11,9 +11,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/resource/resource_bundle.h"
+#import "ui/base/test/cocoa_helper.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
 namespace test {

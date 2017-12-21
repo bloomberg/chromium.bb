@@ -5,8 +5,8 @@
 #import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 
 #import "base/mac/scoped_nsobject.h"
+#import "ui/base/test/cocoa_helper.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 @interface AvatarButton (ExposedForTesting)
 - (void)performRightClick;

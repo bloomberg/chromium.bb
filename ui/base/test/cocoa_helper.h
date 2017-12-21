@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_TEST_UI_COCOA_TEST_HELPER_H_
-#define UI_GFX_TEST_UI_COCOA_TEST_HELPER_H_
+#ifndef UI_BASE_TEST_COCOA_HELPER_H_
+#define UI_BASE_TEST_COCOA_HELPER_H_
 
 #include <set>
 
@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/strings/sys_string_conversions.h"
 #include "testing/platform_test.h"
 
 // CocoaTestHelperWindow behaves differently from a regular NSWindow in the
@@ -145,24 +146,23 @@ class CocoaTest : public PlatformTest {
 
 // A macro which which determines if two CGFloats are equal taking a
 // proper epsilon into consideration.
-#define CGFLOAT_EQ(expected, actual) \
-    (actual >= (expected - CGFLOAT_EPSILON) && \
-     actual <= (expected + CGFLOAT_EPSILON))
+#define CGFLOAT_EQ(expected, actual)         \
+  (actual >= (expected - CGFLOAT_EPSILON) && \
+   actual <= (expected + CGFLOAT_EPSILON))
 
 // A test support macro which ascertains if two CGFloats are equal.
 #define EXPECT_CGFLOAT_EQ(expected, actual) \
-    EXPECT_TRUE(CGFLOAT_EQ(expected, actual)) << \
-                expected << " != " << actual
+  EXPECT_TRUE(CGFLOAT_EQ(expected, actual)) << expected << " != " << actual
 
 // A test support macro which compares two NSRects for equality taking
 // the float epsilon into consideration.
-#define EXPECT_NSRECT_EQ(expected, actual) \
-    EXPECT_TRUE(CGFLOAT_EQ(expected.origin.x, actual.origin.x) && \
-                CGFLOAT_EQ(expected.origin.y, actual.origin.y) && \
-                CGFLOAT_EQ(expected.size.width, actual.size.width) && \
-                CGFLOAT_EQ(expected.size.height, actual.size.height)) << \
-                "Rects do not match: " << \
-                [NSStringFromRect(expected) UTF8String] << \
-                " != " << [NSStringFromRect(actual) UTF8String]
+#define EXPECT_NSRECT_EQ(expected, actual)                          \
+  EXPECT_TRUE(CGFLOAT_EQ(expected.origin.x, actual.origin.x) &&     \
+              CGFLOAT_EQ(expected.origin.y, actual.origin.y) &&     \
+              CGFLOAT_EQ(expected.size.width, actual.size.width) && \
+              CGFLOAT_EQ(expected.size.height, actual.size.height)) \
+      << "Rects do not match: "                                     \
+      << base::SysNSStringToUTF8(NSStringFromRect(expected))        \
+      << " != " << base::SysNSStringToUTF8(NSStringFromRect(actual))
 
-#endif  // UI_GFX_TEST_UI_COCOA_TEST_HELPER_H_
+#endif  // UI_BASE_TEST_COCOA_HELPER_H_

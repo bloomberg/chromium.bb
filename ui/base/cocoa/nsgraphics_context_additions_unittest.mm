@@ -5,7 +5,7 @@
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 
 #include "base/mac/scoped_nsobject.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
+#import "ui/base/test/cocoa_helper.h"
 
 typedef ui::CocoaTest NSGraphicsContextCrAdditionsTest;
 

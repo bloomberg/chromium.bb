@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
+#import "ui/base/test/cocoa_helper.h"
 
 #include "base/debug/debugger.h"
 #include "base/logging.h"
@@ -203,7 +203,7 @@ void CocoaTest::TearDown() {
       {
         base::mac::ScopedNSAutoreleasePool pool;
         ++spins;
-        NSEvent *next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
+        NSEvent* next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
                                                  untilDate:nil
                                                     inMode:NSDefaultRunLoopMode
                                                    dequeue:YES];
@@ -224,8 +224,8 @@ void CocoaTest::TearDown() {
       EXPECT_EQ(0U, windows_left.size());
       for (std::set<NSWindow*>::iterator iter = windows_left.begin();
            iter != windows_left.end(); ++iter) {
-        const char* desc = [[*iter description] UTF8String];
-        LOG(WARNING) << "Didn't close window " << desc;
+        LOG(WARNING) << "Didn't close window "
+                     << base::SysNSStringToUTF8([*iter description]);
       }
       break;
     }
@@ -242,8 +242,8 @@ std::set<NSWindow*> CocoaTest::ApplicationWindows() {
   // Must create a pool here because [NSApp windows] has created an array
   // with retains on all the windows in it.
   base::mac::ScopedNSAutoreleasePool pool;
-  NSArray *appWindows = [NSApp windows];
-  for (NSWindow *window in appWindows) {
+  NSArray* appWindows = [NSApp windows];
+  for (NSWindow* window in appWindows) {
     windows.insert(window);
   }
   return windows;
@@ -252,7 +252,7 @@ std::set<NSWindow*> CocoaTest::ApplicationWindows() {
 std::set<NSWindow*> CocoaTest::WindowsLeft() {
   const std::set<NSWindow*> windows(ApplicationWindows());
   std::set<NSWindow*> windows_left =
-      base::STLSetDifference<std::set<NSWindow*> >(windows, initial_windows_);
+      base::STLSetDifference<std::set<NSWindow*>>(windows, initial_windows_);
   return windows_left;
 }
 

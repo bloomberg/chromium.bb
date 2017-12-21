@@ -4,7 +4,7 @@
 
 #include "ui/base/test/view_tree_validator.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/test/ui_cocoa_test_helper.h"
+#include "ui/base/test/cocoa_helper.h"
 
 using ViewTreeValidatorTest = ui::CocoaTest;
 

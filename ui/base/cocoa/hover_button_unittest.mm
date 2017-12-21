@@ -6,8 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "ui/base/test/cocoa_helper.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 @interface TestHoverButton : HoverButton
 @property(readwrite, nonatomic) NSRect hitbox;

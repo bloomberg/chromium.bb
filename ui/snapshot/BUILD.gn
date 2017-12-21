@@ -105,9 +105,9 @@ test("snapshot_unittests") {
     "//skia",
     "//testing/gtest",
     "//ui/base",
+    "//ui/base:test_support",
     "//ui/compositor:test_support",
     "//ui/gfx",
-    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]

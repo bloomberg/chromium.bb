@@ -5,9 +5,9 @@
 #include "ui/base/cocoa/bubble_closer.h"
 
 #include "base/bind.h"
+#import "ui/base/test/cocoa_helper.h"
 #import "ui/base/test/menu_test_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
 

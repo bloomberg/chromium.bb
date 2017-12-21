@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
+#import "ui/base/test/cocoa_helper.h"
 
 // This class runs an animation for exactly two frames then end it.
 @interface ConstrainedWindowAnimationTestDelegate
