@@ -400,9 +400,14 @@ CancelCallback DriveAPIService::Search(
           ? google_apis::FilesListCorpora::ALL_TEAM_DRIVES
           : google_apis::FilesListCorpora::DEFAULT;
 
+  std::string query = util::TranslateQuery(search_query);
+  if (!query.empty())
+    query += " and ";
+  query += "trashed = false";
+
   return files_list_request_runner_->CreateAndStartWithSizeBackoff(
-      kMaxNumFilesResourcePerRequestForSearch, corpora, std::string(),
-      util::TranslateQuery(search_query), kFileListFields, callback);
+      kMaxNumFilesResourcePerRequestForSearch, corpora, std::string(), query,
+      kFileListFields, callback);
 }
 
 CancelCallback DriveAPIService::SearchByTitle(
