@@ -12,6 +12,7 @@ namespace blink {
 namespace {
 
 enum HostDefinedOptionsIndex : size_t {
+  kBaseURL,
   kCredentialsMode,
   kNonce,
   kParserState,
@@ -27,11 +28,16 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
     return ReferrerScriptInfo();
   }
 
+  v8::Local<v8::Primitive> base_url_value = host_defined_options->Get(kBaseURL);
+  String base_url_string =
+      ToCoreStringWithNullCheck(v8::Local<v8::String>::Cast(base_url_value));
+  KURL base_url(base_url_string);
+  DCHECK(base_url_string.IsEmpty() || base_url.IsValid());
+
   v8::Local<v8::Primitive> credentials_mode_value =
       host_defined_options->Get(kCredentialsMode);
-  network::mojom::FetchCredentialsMode credentials_mode =
-      static_cast<network::mojom::FetchCredentialsMode>(
-          credentials_mode_value->IntegerValue(context).ToChecked());
+  auto credentials_mode = static_cast<network::mojom::FetchCredentialsMode>(
+      credentials_mode_value->IntegerValue(context).ToChecked());
 
   v8::Local<v8::Primitive> nonce_value = host_defined_options->Get(kNonce);
   String nonce =
@@ -42,7 +48,7 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
   ParserDisposition parser_state = static_cast<ParserDisposition>(
       parser_state_value->IntegerValue(context).ToChecked());
 
-  return ReferrerScriptInfo(credentials_mode, nonce, parser_state);
+  return ReferrerScriptInfo(base_url, credentials_mode, nonce, parser_state);
 }
 
 v8::Local<v8::PrimitiveArray> ReferrerScriptInfo::ToV8HostDefinedOptions(
@@ -52,6 +58,10 @@ v8::Local<v8::PrimitiveArray> ReferrerScriptInfo::ToV8HostDefinedOptions(
 
   v8::Local<v8::PrimitiveArray> host_defined_options =
       v8::PrimitiveArray::New(isolate, HostDefinedOptionsIndex::kLength);
+
+  v8::Local<v8::Primitive> base_url_value =
+      V8String(isolate, base_url_.GetString());
+  host_defined_options->Set(HostDefinedOptionsIndex::kBaseURL, base_url_value);
 
   v8::Local<v8::Primitive> credentials_mode_value =
       v8::Integer::NewFromUnsigned(isolate,

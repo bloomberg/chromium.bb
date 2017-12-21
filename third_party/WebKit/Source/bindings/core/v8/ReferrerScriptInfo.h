@@ -23,24 +23,26 @@ namespace blink {
 class CORE_EXPORT ReferrerScriptInfo {
  public:
   ReferrerScriptInfo() = default;
-  ReferrerScriptInfo(network::mojom::FetchCredentialsMode credentials_mode,
+  ReferrerScriptInfo(const KURL& base_url,
+                     network::mojom::FetchCredentialsMode credentials_mode,
                      const String& nonce,
                      ParserDisposition parser_state)
-      : credentials_mode_(credentials_mode),
+      : base_url_(base_url),
+        credentials_mode_(credentials_mode),
         nonce_(nonce),
         parser_state_(parser_state) {}
-
-  static ReferrerScriptInfo FromScriptFetchOptions(
-      const ScriptFetchOptions& options) {
-    return ReferrerScriptInfo(options.CredentialsMode(), options.Nonce(),
-                              options.ParserState());
-  }
+  ReferrerScriptInfo(const KURL& base_url, const ScriptFetchOptions& options)
+      : ReferrerScriptInfo(base_url,
+                           options.CredentialsMode(),
+                           options.Nonce(),
+                           options.ParserState()) {}
 
   static ReferrerScriptInfo FromV8HostDefinedOptions(
       v8::Local<v8::Context>,
       v8::Local<v8::PrimitiveArray>);
   v8::Local<v8::PrimitiveArray> ToV8HostDefinedOptions(v8::Isolate*) const;
 
+  const KURL& BaseURL() const { return base_url_; }
   network::mojom::FetchCredentialsMode CredentialsMode() const {
     return credentials_mode_;
   }
@@ -48,22 +50,29 @@ class CORE_EXPORT ReferrerScriptInfo {
   ParserDisposition ParserState() const { return parser_state_; }
 
   bool IsDefaultValue() const {
-    return credentials_mode_ == network::mojom::FetchCredentialsMode::kOmit &&
+    return base_url_.IsNull() &&
+           credentials_mode_ == network::mojom::FetchCredentialsMode::kOmit &&
            nonce_.IsEmpty() && parser_state_ == kNotParserInserted;
   }
 
  private:
+  // Spec: "referencing script's base URL"
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  const KURL base_url_;
+
   // Spec: "referencing script's credentials mode"
   // The default value is "omit" per:
   // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
-  network::mojom::FetchCredentialsMode credentials_mode_ =
+  const network::mojom::FetchCredentialsMode credentials_mode_ =
       network::mojom::FetchCredentialsMode::kOmit;
+
   // Spec: "referencing script's cryptographic nonce"
-  String nonce_;
+  const String nonce_;
+
   // Spec: "referencing script's parser state"
   // The default value is "not-parser-inserted" per:
   // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
-  ParserDisposition parser_state_ = kNotParserInserted;
+  const ParserDisposition parser_state_ = kNotParserInserted;
 };
 
 }  // namespace blink

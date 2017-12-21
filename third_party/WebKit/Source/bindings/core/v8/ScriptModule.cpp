@@ -33,9 +33,11 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Module> module;
 
+  // TODO(kouhei): plumb base url to here.
+  KURL wrong_base_url(file_name);
   if (!V8ScriptRunner::CompileModule(
            isolate, source, file_name, access_control_status, text_position,
-           ReferrerScriptInfo::FromScriptFetchOptions(options))
+           ReferrerScriptInfo(wrong_base_url, options))
            .ToLocal(&module)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());

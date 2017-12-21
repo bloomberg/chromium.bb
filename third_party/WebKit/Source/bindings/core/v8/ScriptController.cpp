@@ -125,9 +125,9 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetVerbose(true);
 
-    const ReferrerScriptInfo referrer_info(fetch_options.CredentialsMode(),
-                                           fetch_options.Nonce(),
-                                           fetch_options.ParserState());
+    // TODO(kouhei): plumb the correct base url to here.
+    const KURL& wrong_base_url = source.Url();
+    const ReferrerScriptInfo referrer_info(wrong_base_url, fetch_options);
 
     v8::Local<v8::Script> script;
 
