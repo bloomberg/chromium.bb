@@ -312,7 +312,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     const auto* detected = FindDetectedPrinter(printer.id());
 
     // For compatibility with the previous implementation, record USB printers
-    // seperately from other IPP printers.  Eventually we may want to shift
+    // separately from other IPP printers.  Eventually we may want to shift
     // this to be split by autodetected/not autodetected instead of USB/other
     // IPP.
     if (IsUsbPrinter(printer)) {
