@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
@@ -352,6 +354,7 @@ void ChromeCleanerControllerImpl::OnReporterSequenceDone(
       return;
 
     case SwReporterInvocationResult::kTimedOut:
+    case SwReporterInvocationResult::kComponentNotAvailable:
     case SwReporterInvocationResult::kProcessFailedToLaunch:
     case SwReporterInvocationResult::kGeneralFailure:
       idle_reason_ = IdleReason::kReporterFailed;
@@ -375,6 +378,62 @@ void ChromeCleanerControllerImpl::OnReporterSequenceDone(
   }
 
   SetStateAndNotifyObservers(State::kIdle);
+}
+
+void ChromeCleanerControllerImpl::OnSwReporterReady(
+    SwReporterInvocationSequence&& invocations) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!invocations.container().empty());
+
+  SwReporterInvocationType invocation_type =
+      SwReporterInvocationType::kPeriodicRun;
+  {
+    base::AutoLock autolock(lock_);
+    // Cache a copy of the invocations.
+    cached_reporter_invocations_ =
+        std::make_unique<SwReporterInvocationSequence>(invocations);
+    std::swap(pending_invocation_type_, invocation_type);
+  }
+  safe_browsing::MaybeStartSwReporter(invocation_type, std::move(invocations));
+}
+
+void ChromeCleanerControllerImpl::RequestUserInitiatedScan() {
+  base::AutoLock autolock(lock_);
+  DCHECK(pending_invocation_type_ !=
+             SwReporterInvocationType::kUserInitiatedWithLogsAllowed &&
+         pending_invocation_type_ !=
+             SwReporterInvocationType::kUserInitiatedWithLogsDisallowed);
+
+  SwReporterInvocationType invocation_type =
+      logs_enabled_
+          ? SwReporterInvocationType::kUserInitiatedWithLogsAllowed
+          : SwReporterInvocationType::kUserInitiatedWithLogsDisallowed;
+
+  if (cached_reporter_invocations_) {
+    SwReporterInvocationSequence copied_sequence(*cached_reporter_invocations_);
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &safe_browsing::MaybeStartSwReporter, invocation_type,
+            // The invocations will be modified by the |ReporterRunner|.
+            // Give it a copy to keep the cached invocations pristine.
+            base::Passed(&copied_sequence)));
+  } else {
+    pending_invocation_type_ = invocation_type;
+    OnReporterSequenceStarted();
+
+    // Creation of the |SwReporterOnDemandFetcher| automatically starts fetching
+    // the SwReporter component. |OnSwReporterReady| will be called if the
+    // component is successfully installed. Otherwise, |OnReporterSequenceDone|
+    // will be called.
+    on_demand_sw_reporter_fetcher_ =
+        std::make_unique<component_updater::SwReporterOnDemandFetcher>(
+            g_browser_process->component_updater(),
+            base::BindOnce(&ChromeCleanerController::OnReporterSequenceDone,
+                           base::Unretained(this),
+                           SwReporterInvocationResult::kComponentNotAvailable));
+  }
 }
 
 void ChromeCleanerControllerImpl::Scan(

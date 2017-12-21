@@ -25,6 +25,7 @@
 #include "base/version.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
+#include "components/component_updater/mock_component_updater_service.h"
 #include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,6 +40,11 @@ constexpr char kMissingTag[] = "missing_tag";
 
 using safe_browsing::SwReporterInvocation;
 using safe_browsing::SwReporterInvocationSequence;
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::ReturnRef;
+
+using Events = update_client::UpdateClient::Observer::Events;
 
 }  // namespace
 
@@ -668,6 +674,91 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsDict) {
   EXPECT_TRUE(extracted_invocations_.container().empty());
   histograms_.ExpectUniqueSample(kErrorHistogramName,
                                  SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
+}
+
+class SwReporterOnDemandFetcherTest : public ::testing::Test,
+                                      public OnDemandUpdater {
+ public:
+  SwReporterOnDemandFetcherTest() = default;
+
+  void SetUp() override {
+    EXPECT_CALL(mock_cus_, AddObserver(_)).Times(1);
+    EXPECT_CALL(mock_cus_, GetOnDemandUpdater()).WillOnce(ReturnRef(*this));
+    EXPECT_CALL(mock_cus_, RemoveObserver(_)).Times(AtLeast(1));
+  }
+
+  void CreateOnDemandFetcherAndVerifyExpecations(bool can_be_updated) {
+    component_can_be_updated_ = can_be_updated;
+
+    fetcher_ = base::MakeUnique<SwReporterOnDemandFetcher>(
+        &mock_cus_,
+        base::BindOnce(&SwReporterOnDemandFetcherTest::SetErrorCallbackCalled,
+                       base::Unretained(this)));
+  }
+
+  // OnDemandUpdater implementation:
+  void OnDemandUpdate(const std::string& crx_id, Callback callback) override {
+    ASSERT_EQ(kSwReporterComponentId, crx_id);
+    on_demand_update_called_ = true;
+
+    // |OnDemandUpdate| is called immediately on |SwReporterOnDemandFetcher|
+    // creation, before |fetcher_| has been assigned the newly created object.
+    // Post a task to guarantee that |fetcher_| is initialized.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            component_can_be_updated_
+                ? &SwReporterOnDemandFetcherTest::FireComponentUpdateEvents
+                : &SwReporterOnDemandFetcherTest::FireComponentNotUpdatedEvents,
+            base::Unretained(this)));
+  }
+
+ protected:
+  ::testing::StrictMock<MockComponentUpdateService> mock_cus_;
+  std::unique_ptr<SwReporterOnDemandFetcher> fetcher_;
+
+  bool on_demand_update_called_ = false;
+
+ private:
+  void FireComponentUpdateEvents() {
+    fetcher_->OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                      kSwReporterComponentId);
+    fetcher_->OnEvent(Events::COMPONENT_UPDATE_FOUND, kSwReporterComponentId);
+    fetcher_->OnEvent(Events::COMPONENT_UPDATE_DOWNLOADING,
+                      kSwReporterComponentId);
+    fetcher_->OnEvent(Events::COMPONENT_UPDATE_READY, kSwReporterComponentId);
+    fetcher_->OnEvent(Events::COMPONENT_UPDATED, kSwReporterComponentId);
+
+    EXPECT_FALSE(error_callback_called_);
+  }
+
+  void FireComponentNotUpdatedEvents() {
+    fetcher_->OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                      kSwReporterComponentId);
+    fetcher_->OnEvent(Events::COMPONENT_NOT_UPDATED, kSwReporterComponentId);
+
+    EXPECT_TRUE(error_callback_called_);
+  }
+
+  void SetErrorCallbackCalled() { error_callback_called_ = true; }
+
+  bool component_can_be_updated_ = false;
+  bool error_callback_called_ = false;
+  content::TestBrowserThreadBundle threads_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwReporterOnDemandFetcherTest);
+};
+
+TEST_F(SwReporterOnDemandFetcherTest, TestUpdateSuccess) {
+  CreateOnDemandFetcherAndVerifyExpecations(true);
+
+  EXPECT_TRUE(on_demand_update_called_);
+}
+
+TEST_F(SwReporterOnDemandFetcherTest, TestUpdateFailure) {
+  CreateOnDemandFetcherAndVerifyExpecations(false);
+
+  EXPECT_TRUE(on_demand_update_called_);
 }
 
 }  // namespace component_updater
