@@ -572,22 +572,18 @@
   // LocationBarContainer View.
   UILayoutGuide* locationBarContainerSafeAreaGuide =
       SafeAreaLayoutGuideForView(self.locationBarContainer);
-  NSLayoutConstraint* locationBarContainerStackViewTopConstraint =
-      [self.locationBarContainerStackView.topAnchor
-          constraintEqualToAnchor:self.locationBarContainer.topAnchor];
   [NSLayoutConstraint activateConstraints:@[
     [self.locationBarContainerStackView.bottomAnchor
-        constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
+        constraintEqualToAnchor:self.view.bottomAnchor
+                       constant:-(klocationBarStackViewBottomMargin +
+                                  kLocationBarVerticalMargin)],
     [self.locationBarContainerStackView.trailingAnchor
         constraintEqualToAnchor:locationBarContainerSafeAreaGuide
                                     .trailingAnchor],
     [self.locationBarContainerStackView.leadingAnchor
         constraintEqualToAnchor:locationBarContainerSafeAreaGuide
                                     .leadingAnchor],
-    locationBarContainerStackViewTopConstraint,
   ]];
-  [self.regularToolbarConstraints
-      addObject:locationBarContainerStackViewTopConstraint];
 }
 
 #pragma mark - Components Setup
@@ -1064,9 +1060,6 @@
           constraintEqualToAnchor:self.view.leadingAnchor],
       [self.locationBarContainer.trailingAnchor
           constraintEqualToAnchor:self.view.trailingAnchor],
-      [self.locationBarContainerStackView.topAnchor
-          constraintEqualToAnchor:self.topSafeAnchor
-                         constant:kExpandedLocationBarVerticalMargin],
     ];
   }
   return _expandedToolbarConstraints;
