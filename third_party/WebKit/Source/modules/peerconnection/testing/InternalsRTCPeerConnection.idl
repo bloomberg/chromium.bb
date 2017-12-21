@@ -6,4 +6,5 @@
     ImplementedAs=InternalsRTCPeerConnection
 ] partial interface Internals {
     long peerConnectionCount();
+    readonly attribute long peerConnectionCountLimit;
 };

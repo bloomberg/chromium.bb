@@ -13,13 +13,22 @@
 // - 850 on Windows
 // - 1700 on Linux
 
-const limit = 500;
+const limit = internals.peerConnectionCountLimit;
 
 test(function() {
   for (let count = 0; count < limit; count++) {
     pc = new RTCPeerConnection();
   }
 }, 'We can create ' + limit + ' peerconnections without crashing');
+
+test(function() {
+  while (internals.peerConnectionCount() < internals.peerConnectionCountLimit) {
+    pc = new RTCPeerConnection();
+  }
+  assert_throws("UnknownError",
+                function() {pc = new RTCPeerConnection()},
+                'Creating too many PeerConnections gives UnknownError');
+}, 'Creating too many peerconnections returns the right error');
 
 </script>
 </body>
