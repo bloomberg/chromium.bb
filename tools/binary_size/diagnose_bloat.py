@@ -664,25 +664,33 @@ def _DownloadBuildArtifacts(archive, build, supersize_path, depot_tools_path):
 
 
 def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
-  proc = subprocess.Popen([gsutil_path, 'version'], stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT)
-  output, _ = proc.communicate()
-  if proc.returncode:
-    _Die('gsutil error. Please file a bug in Tools>BinarySize. Output:\n%s',
-         output)
+  # Wraps gsutil calls and returns stdout + stderr.
+  def gsutil_cmd(args, fail_msg=None):
+    fail_msg = fail_msg or ''
+    proc = subprocess.Popen([gsutil_path] + args, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
+    output = proc.communicate()[0].rstrip()
+    if proc.returncode or not output:
+      _Die(fail_msg + ' Process output:\n%s' % output)
+    return output
 
+  # Fails if gsutil isn't configured.
+  gsutil_cmd(['version'],
+             'gsutil error. Please file a bug in Tools>BinarySize.')
   dl_dst = os.path.join(dl_dir, archive.rev)
   logging.info('Downloading build artifacts for %s', archive.rev)
-  # gsutil writes stdout and stderr to stderr, so pipe stdout and stderr to
-  # sys.stdout.
-  retcode = subprocess.call(
-      [gsutil_path, 'cp', build.DownloadUrl(archive.rev), dl_dst],
-      stdout=sys.stdout, stderr=subprocess.STDOUT)
-  if retcode:
-      _Die('unexpected error while downloading %s. It may no longer exist on '
-           'the server or it may not have been uploaded yet (check %s). '
-           'Otherwise, you may not have the correct access permissions.',
-           build.DownloadUrl(archive.rev), build.builder_url)
+
+  # Fails if archive isn't found.
+  output = gsutil_cmd(['stat', build.DownloadUrl(archive.rev)],
+      'Unexpected error while downloading %s. It may no longer exist on the '
+      'server or it may not have been uploaded yet (check %s). Otherwise, you '
+      'may not have the correct access permissions.' % (
+      build.DownloadUrl(archive.rev), build.builder_url))
+  size = re.search(r'Content-Length:\s+([0-9]+)', output).group(1)
+  logging.info('File size: %s', _ReadableBytes(int(size)))
+
+  # Download archive. Any failures here are unexpected.
+  gsutil_cmd(['cp', build.DownloadUrl(archive.rev), dl_dst])
 
   # Files needed for supersize and resource_sizes. Paths relative to out dir.
   to_extract = [build.main_lib_path, build.map_file_path, 'args.gn']
@@ -696,6 +704,17 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
     build.output_directory, output_directory = dl_out, build.output_directory
     archive.ArchiveBuildResults(supersize_path)
     build.output_directory = output_directory
+
+
+def _ReadableBytes(b):
+  val = b
+  units = ['Bytes','KB', 'MB', 'GB']
+  for unit in units:
+    if val < 1024:
+      return '%.2f %s' % (val, unit)
+    val /= 1024.0
+  else:
+    return '%d %s' % (b, 'Bytes')
 
 
 def _ExtractFiles(to_extract, dst, z):
