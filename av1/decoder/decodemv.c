@@ -227,7 +227,6 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     return NEWMV;
   }
   if (counts) ++counts->newmv_mode[mode_ctx][1];
-  if (ctx & (1 << ALL_ZERO_FLAG_OFFSET)) return GLOBALMV;
   mode_ctx = (ctx >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
   is_zeromv =
       aom_read_symbol(r, ec_ctx->zeromv_cdf[mode_ctx], 2, ACCT_STR) == 0;

@@ -123,11 +123,6 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
   aom_write_symbol(w, mode != NEWMV, ec_ctx->newmv_cdf[newmv_ctx], 2);
 
   if (mode != NEWMV) {
-    if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
-      assert(mode == GLOBALMV);
-      return;
-    }
-
     const int16_t zeromv_ctx =
         (mode_ctx >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
     aom_write_symbol(w, mode != GLOBALMV, ec_ctx->zeromv_cdf[zeromv_ctx], 2);
