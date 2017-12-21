@@ -21,61 +21,8 @@ UiRenderer::~UiRenderer() = default;
 // rendering and be platform agnostic, each element should know how to render
 // itself correctly.
 void UiRenderer::Draw(const RenderInfo& render_info) {
-  Draw2dBrowsing(render_info);
-  DrawSplashScreen(render_info);
-  DrawInputModalElements(render_info);
-}
-
-void UiRenderer::Draw2dBrowsing(const RenderInfo& render_info) {
-  const auto& elements = scene_->GetVisible2dBrowsingElements();
-  const auto& elements_overlay = scene_->GetVisible2dBrowsingOverlayElements();
-  if (elements.empty() && elements_overlay.empty())
-    return;
-
-  if (!elements.empty()) {
-    // Note that we do not clear the color buffer. The scene's background
-    // elements are responsible for drawing a complete background.
-    glEnable(GL_CULL_FACE);
-    DrawUiView(render_info, elements);
-  }
-
-  if (elements_overlay.empty())
-    return;
-
-  // The overlays do not make use of depth testing or backface culling.
-  glDisable(GL_CULL_FACE);
-  DrawUiView(render_info, elements_overlay);
-}
-
-void UiRenderer::DrawSplashScreen(const RenderInfo& render_info) {
-  const auto& elements = scene_->GetVisibleSplashScreenElements();
-  if (elements.empty())
-    return;
-
-  // WebVR is incompatible with 3D world compositing since the
-  // depth buffer was already populated with unknown scaling - the
-  // WebVR app has full control over zNear/zFar. Just leave the
-  // existing content in place in the primary buffer without
-  // clearing. Currently, there aren't any world elements in WebVR
-  // mode, this will need further testing if those get added
-  // later.
-  glDisable(GL_CULL_FACE);
-  DrawUiView(render_info, elements);
-
-  // NB: we do not draw the viewport aware objects here. They get put into
-  // another buffer that is size optimized.
-}
-
-void UiRenderer::DrawInputModalElements(const RenderInfo& render_info) {
-  const auto& keyboard_elements = scene_->GetVisibleKeyboardElements();
-  const auto& controller_elements = scene_->GetVisibleControllerElements();
-  if (!keyboard_elements.empty()) {
-    DrawUiView(render_info, keyboard_elements);
-  }
-  if (!controller_elements.empty()) {
-    glEnable(GL_CULL_FACE);
-    DrawUiView(render_info, controller_elements);
-  }
+  glEnable(GL_CULL_FACE);
+  DrawUiView(render_info, scene_->GetVisibleElementsToDraw());
 }
 
 void UiRenderer::DrawWebVrOverlayForeground(const RenderInfo& render_info) {
@@ -85,11 +32,14 @@ void UiRenderer::DrawWebVrOverlayForeground(const RenderInfo& render_info) {
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  DrawUiView(render_info, scene_->GetVisibleWebVrOverlayForegroundElements());
+  DrawUiView(render_info, scene_->GetVisibleWebVrOverlayElementsToDraw());
 }
 
 void UiRenderer::DrawUiView(const RenderInfo& render_info,
                             const std::vector<const UiElement*>& elements) {
+  if (elements.empty())
+    return;
+
   TRACE_EVENT0("gpu", "UiRenderer::DrawUiView");
 
   auto sorted_elements = GetElementsInDrawOrder(elements);

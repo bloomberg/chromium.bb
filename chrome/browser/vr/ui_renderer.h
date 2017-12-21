@@ -42,10 +42,6 @@ class UiRenderer {
       const std::vector<const UiElement*>& elements);
 
  private:
-  void Draw2dBrowsing(const RenderInfo& render_info);
-  void DrawSplashScreen(const RenderInfo& render_info);
-  void DrawInputModalElements(const RenderInfo& render_info);
-
   void DrawUiView(const RenderInfo& render_info,
                   const std::vector<const UiElement*>& elements);
   void DrawElements(const CameraModel& camera_model,

@@ -39,22 +39,23 @@ class UiSceneCreator {
  private:
   void Create2dBrowsingSubtreeRoots();
   void CreateWebVrRoot();
-  void CreateWebVRExitWarning();
   void CreateSystemIndicators();
   void CreateContentQuad();
-  void CreateSplashScreenForDirectWebVrLaunch();
-  void CreateWebVrTimeoutScreen();
   void CreateUnderDevelopmentNotice();
   void CreateBackground();
   void CreateViewportAwareRoot();
   void CreateUrlBar();
   void CreateOmnibox();
-  void CreateWebVrUrlToast();
   void CreateCloseButton();
   void CreateExitPrompt();
   void CreateAudioPermissionPrompt();
-  void CreateToasts();
+  void CreateFullscreenToast();
   void CreateVoiceSearchUiGroup();
+  void CreateExitWarning();
+  void CreateWebVrSubtree();
+  void CreateWebVrOverlayElements();
+  void CreateSplashScreenForDirectWebVrLaunch();
+  void CreateWebVrTimeoutScreen();
   void CreateController();
   void CreateKeyboard();
 

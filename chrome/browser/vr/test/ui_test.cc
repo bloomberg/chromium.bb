@@ -94,6 +94,7 @@ void UiTest::CreateScene(InCct in_cct, InWebVr in_web_vr) {
 
 void UiTest::CreateSceneForAutoPresentation() {
   UiInitialState state;
+  state.in_web_vr = true;
   state.web_vr_autopresentation_expected = true;
   CreateScene(state);
 }

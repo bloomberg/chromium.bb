@@ -63,13 +63,13 @@ base::WeakPtr<BrowserUiInterface> Ui::GetBrowserUiWeakPtr() {
 }
 
 void Ui::SetWebVrMode(bool enabled, bool show_toast) {
-  model_->web_vr_timeout_state =
-      enabled ? kWebVrAwaitingFirstFrame : kWebVrNoTimeoutPending;
-  model_->web_vr_mode = enabled;
-  model_->web_vr_show_toast = show_toast;
-  if (!enabled) {
-    model_->web_vr_show_splash_screen = false;
-    model_->web_vr_started_for_autopresentation = false;
+  model_->web_vr.show_exit_toast = show_toast;
+  if (enabled) {
+    model_->web_vr.state = kWebVrAwaitingFirstFrame;
+  } else {
+    model_->web_vr.state = kWebVrNoTimeoutPending;
+    // This gets set to true when the UI is initialized.
+    model_->web_vr.started_for_autopresentation = false;
   }
 }
 
@@ -174,7 +174,7 @@ void Ui::SetOmniboxSuggestions(
 }
 
 bool Ui::ShouldRenderWebVr() {
-  return model_->should_render_web_vr();
+  return model_->web_vr.has_produced_frames();
 }
 
 void Ui::OnGlInitialized(unsigned int content_texture_id,
@@ -215,7 +215,7 @@ void Ui::OnKeyboardHidden() {
 
 void Ui::OnAppButtonClicked() {
   // App button clicks should be a no-op when auto-presenting WebVR.
-  if (model_->web_vr_started_for_autopresentation) {
+  if (model_->web_vr.started_for_autopresentation) {
     return;
   }
 
@@ -245,17 +245,18 @@ void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
 }
 
 void Ui::OnWebVrFrameAvailable() {
-  model_->web_vr_timeout_state = kWebVrNoTimeoutPending;
+  if (model_->web_vr.is_enabled())
+    model_->web_vr.state = kWebVrPresenting;
 }
 
 void Ui::OnWebVrTimeoutImminent() {
-  model_->web_vr_timeout_state = kWebVrTimeoutImminent;
-  // We do not want to simultaneously show the splash screen and the timeout UI.
-  model_->web_vr_show_splash_screen = false;
+  if (model_->web_vr.is_enabled())
+    model_->web_vr.state = kWebVrTimeoutImminent;
 }
 
 void Ui::OnWebVrTimedOut() {
-  model_->web_vr_timeout_state = kWebVrTimedOut;
+  if (model_->web_vr.is_enabled())
+    model_->web_vr.state = kWebVrTimedOut;
 }
 
 void Ui::OnSwapContents(int new_content_id) {
@@ -300,15 +301,14 @@ void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
 }
 
 void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
-  model_->web_vr_started_for_autopresentation =
-      ui_initial_state.web_vr_autopresentation_expected;
-  model_->web_vr_show_splash_screen =
+  model_->web_vr.started_for_autopresentation =
       ui_initial_state.web_vr_autopresentation_expected;
   model_->experimental_features_enabled =
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalFeatures);
   model_->speech.has_or_can_request_audio_permission =
       ui_initial_state.has_or_can_request_audio_permission;
-  model_->web_vr_mode = ui_initial_state.in_web_vr;
+  model_->web_vr.state = ui_initial_state.in_web_vr ? kWebVrAwaitingFirstFrame
+                                                    : kWebVrNoTimeoutPending;
   model_->in_cct = ui_initial_state.in_cct;
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
   model_->skips_redraw_when_not_dirty =
