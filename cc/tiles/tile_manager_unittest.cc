@@ -2952,5 +2952,81 @@ TEST_F(CheckerImagingTileManagerMemoryTest, AddsAllNowTilesToImageDecodeQueue) {
   host_impl()->client()->reset_did_request_impl_side_invalidation();
 }
 
+class VerifyImageProviderRasterBuffer : public RasterBuffer {
+ public:
+  VerifyImageProviderRasterBuffer() = default;
+  ~VerifyImageProviderRasterBuffer() override { EXPECT_TRUE(did_raster_); }
+
+  void Playback(
+      const RasterSource* raster_source,
+      const gfx::Rect& raster_full_rect,
+      const gfx::Rect& raster_dirty_rect,
+      uint64_t new_content_id,
+      const gfx::AxisTransform2d& transform,
+      const RasterSource::PlaybackSettings& playback_settings) override {
+    did_raster_ = true;
+    EXPECT_TRUE(playback_settings.image_provider);
+  }
+
+ private:
+  bool did_raster_ = false;
+};
+
+class VerifyImageProviderRasterBufferProvider
+    : public FakeRasterBufferProviderImpl {
+ public:
+  VerifyImageProviderRasterBufferProvider() = default;
+  ~VerifyImageProviderRasterBufferProvider() override {
+    EXPECT_GT(buffer_count_, 0);
+  }
+
+  std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource,
+      uint64_t resource_content_id,
+      uint64_t previous_content_id) override {
+    buffer_count_++;
+    return std::make_unique<VerifyImageProviderRasterBuffer>();
+  }
+
+ private:
+  int buffer_count_ = 0;
+};
+
+class SynchronousRasterTileManagerTest : public TileManagerTest {
+ public:
+  std::unique_ptr<TaskGraphRunner> CreateTaskGraphRunner() override {
+    return std::make_unique<SynchronousTaskGraphRunner>();
+  }
+};
+
+TEST_F(SynchronousRasterTileManagerTest, AlwaysUseImageCache) {
+  // Tests that we always use the ImageDecodeCache during raster.
+  VerifyImageProviderRasterBufferProvider raster_buffer_provider;
+  host_impl()->tile_manager()->SetRasterBufferProviderForTesting(
+      &raster_buffer_provider);
+
+  gfx::Size layer_bounds(500, 500);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+  Region invalidation((gfx::Rect(layer_bounds)));
+  SetupPendingTree(raster_source, layer_bounds, invalidation);
+  PictureLayerTilingSet* tiling_set =
+      pending_layer()->picture_layer_tiling_set();
+  PictureLayerTiling* pending_tiling = tiling_set->tiling_at(0);
+  pending_tiling->set_resolution(HIGH_RESOLUTION);
+  pending_tiling->CreateAllTilesForTesting();
+  pending_tiling->SetTilePriorityRectsForTesting(
+      gfx::Rect(layer_bounds),   // Visible rect.
+      gfx::Rect(layer_bounds),   // Skewport rect.
+      gfx::Rect(layer_bounds),   // Soon rect.
+      gfx::Rect(layer_bounds));  // Eventually rect.
+
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())->RunUntilIdle();
+
+  // Destroy the LTHI since it accesses the RasterBufferProvider during cleanup.
+  TakeHostImpl();
+}
+
 }  // namespace
 }  // namespace cc
