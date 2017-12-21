@@ -585,7 +585,7 @@ void BleConnectionManager::RecordAdvertisementToConnectionDuration(
     return;
   }
 
-  UMA_HISTOGRAM_TIMES(
+  UMA_HISTOGRAM_MEDIUM_TIMES(
       "InstantTethering.Performance.AdvertisementToConnectionDuration",
       device_id_to_status_connected_time_map_[device_id] -
           device_id_to_advertising_start_time_map_[device_id]);
