@@ -22,6 +22,7 @@
 namespace media {
 
 class CdmHostProxy;
+class CdmProxyTest;
 class CdmVideoDecoder;
 class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
@@ -128,14 +129,15 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   void OnUnitTestComplete(bool success);
 
   void StartFileIOTest();
-
-  // Callback for CDM File IO test.
   void OnFileIOTestComplete(bool success);
 
   void StartOutputProtectionTest();
   void StartPlatformVerificationTest();
   void VerifyCdmHostTest();
   void StartStorageIdTest();
+
+  void StartCdmProxyTest();
+  void OnCdmProxyTestComplete(bool success);
 
   std::unique_ptr<CdmHostProxy> cdm_host_proxy_;
   scoped_refptr<ContentDecryptionModule> cdm_;
@@ -160,6 +162,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   std::unique_ptr<CdmVideoDecoder> video_decoder_;
 
   std::unique_ptr<FileIOTestRunner> file_io_test_runner_;
+  std::unique_ptr<CdmProxyTest> cdm_proxy_test_;
 
   bool is_running_output_protection_test_;
   bool is_running_platform_verification_test_;

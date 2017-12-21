@@ -17,6 +17,8 @@ shared_library("clearkeycdm") {
     "clear_key_cdm/cdm_file_adapter.h",
     "clear_key_cdm/cdm_host_proxy.h",
     "clear_key_cdm/cdm_host_proxy_impl.h",
+    "clear_key_cdm/cdm_proxy_test.cc",
+    "clear_key_cdm/cdm_proxy_test.h",
     "clear_key_cdm/cdm_video_decoder.cc",
     "clear_key_cdm/cdm_video_decoder.h",
     "clear_key_cdm/clear_key_cdm.cc",
