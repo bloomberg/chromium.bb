@@ -34,7 +34,7 @@ class IntRect;
 
 class LayoutVTTCue final : public LayoutBlockFlow {
  public:
-  LayoutVTTCue(ContainerNode*, float snap_to_lines_position);
+  LayoutVTTCue(ContainerNode*, float snap_to_lines_position, int line_align);
 
   // The computed line position for snap-to-lines layout, and NaN for
   // non-snap-to-lines layout where no adjustment should take place.
@@ -47,6 +47,7 @@ class LayoutVTTCue final : public LayoutBlockFlow {
   void RepositionCueSnapToLinesNotSet();
 
   float snap_to_lines_position_;
+  int line_align_;
 };
 
 }  // namespace blink
