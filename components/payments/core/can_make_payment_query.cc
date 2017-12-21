@@ -28,7 +28,7 @@ bool CanMakePaymentQuery::CanQuery(
   const auto& it = queries_.find(id);
   if (it == queries_.end()) {
     std::unique_ptr<base::OneShotTimer> timer =
-        base::MakeUnique<base::OneShotTimer>();
+        std::make_unique<base::OneShotTimer>();
     timer->Start(FROM_HERE, base::TimeDelta::FromMinutes(30),
                  base::Bind(&CanMakePaymentQuery::ExpireQuotaForFrameOrigin,
                             base::Unretained(this), id));

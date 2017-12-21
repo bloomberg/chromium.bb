@@ -36,7 +36,7 @@ class PaymentResponseHelperTest : public testing::Test,
     autofill::CreditCard visa_card = autofill::test::GetCreditCard();
     visa_card.set_billing_address_id(address_.guid());
     visa_card.set_use_count(5u);
-    autofill_instrument_ = base::MakeUnique<AutofillPaymentInstrument>(
+    autofill_instrument_ = std::make_unique<AutofillPaymentInstrument>(
         "visa", visa_card, /*matches_merchant_card_type_exactly=*/true,
         billing_addresses_, "en-US", &test_payment_request_delegate_);
   }
@@ -54,7 +54,7 @@ class PaymentResponseHelperTest : public testing::Test,
       mojom::PaymentDetailsPtr details,
       std::vector<mojom::PaymentMethodDataPtr> method_data) {
     // The spec will be based on the |options| and |details| passed in.
-    spec_ = base::MakeUnique<PaymentRequestSpec>(
+    spec_ = std::make_unique<PaymentRequestSpec>(
         std::move(options), std::move(details), std::move(method_data), nullptr,
         "en-US");
   }

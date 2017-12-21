@@ -93,11 +93,11 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   if (!allowed_origin || invalid_ssl) {
     // Don't show UI. Resolve .canMakepayment() with "false". Reject .show()
     // with "NotSupportedError".
-    spec_ = base::MakeUnique<PaymentRequestSpec>(
+    spec_ = std::make_unique<PaymentRequestSpec>(
         mojom::PaymentOptions::New(), mojom::PaymentDetails::New(),
         std::vector<mojom::PaymentMethodDataPtr>(), this,
         delegate_->GetApplicationLocale());
-    state_ = base::MakeUnique<PaymentRequestState>(
+    state_ = std::make_unique<PaymentRequestState>(
         web_contents_, top_level_origin_, frame_origin_, spec_.get(), this,
         delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
         delegate_.get(), &journey_logger_);
@@ -117,10 +117,10 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
     return;
   }
 
-  spec_ = base::MakeUnique<PaymentRequestSpec>(
+  spec_ = std::make_unique<PaymentRequestSpec>(
       std::move(options), std::move(details), std::move(method_data), this,
       delegate_->GetApplicationLocale());
-  state_ = base::MakeUnique<PaymentRequestState>(
+  state_ = std::make_unique<PaymentRequestState>(
       web_contents_, top_level_origin_, frame_origin_, spec_.get(), this,
       delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
       delegate_.get(), &journey_logger_);

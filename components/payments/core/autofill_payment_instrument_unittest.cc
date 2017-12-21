@@ -4,6 +4,8 @@
 
 #include "components/payments/core/autofill_payment_instrument.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -319,7 +321,7 @@ TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_NoNumber) {
 TEST_F(AutofillPaymentInstrumentTest,
        InvokePaymentApp_NormalizationBeforeUnmask) {
   auto personal_data_manager =
-      base::MakeUnique<autofill::TestPersonalDataManager>();
+      std::make_unique<autofill::TestPersonalDataManager>();
   TestPaymentRequestDelegate delegate(personal_data_manager.get());
   delegate.DelayFullCardRequestCompletion();
   delegate.test_address_normalizer()->DelayNormalization();
@@ -350,7 +352,7 @@ TEST_F(AutofillPaymentInstrumentTest,
 TEST_F(AutofillPaymentInstrumentTest,
        InvokePaymentApp_UnmaskBeforeNormalization) {
   auto personal_data_manager =
-      base::MakeUnique<autofill::TestPersonalDataManager>();
+      std::make_unique<autofill::TestPersonalDataManager>();
   TestPaymentRequestDelegate delegate(personal_data_manager.get());
   delegate.DelayFullCardRequestCompletion();
   delegate.test_address_normalizer()->DelayNormalization();

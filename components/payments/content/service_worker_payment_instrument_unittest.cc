@@ -4,6 +4,8 @@
 
 #include "components/payments/content/service_worker_payment_instrument.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/test/test_browser_context.h"
@@ -75,7 +77,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     entry_2->supported_methods.push_back("https://bobpay.com");
     method_data.push_back(std::move(entry_2));
 
-    spec_ = base::MakeUnique<PaymentRequestSpec>(
+    spec_ = std::make_unique<PaymentRequestSpec>(
         mojom::PaymentOptions::New(), std::move(details),
         std::move(method_data), this, "en-US");
   }

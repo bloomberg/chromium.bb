@@ -4,6 +4,7 @@
 
 #include "components/payments/content/payment_request_spec.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
@@ -24,14 +25,14 @@ class PaymentRequestSpecTest : public testing::Test,
 
   void RecreateSpecWithMethodData(
       std::vector<mojom::PaymentMethodDataPtr> method_data) {
-    spec_ = base::MakeUnique<PaymentRequestSpec>(
+    spec_ = std::make_unique<PaymentRequestSpec>(
         mojom::PaymentOptions::New(), mojom::PaymentDetails::New(),
         std::move(method_data), this, "en-US");
   }
 
   void RecreateSpecWithOptionsAndDetails(mojom::PaymentOptionsPtr options,
                                          mojom::PaymentDetailsPtr details) {
-    spec_ = base::MakeUnique<PaymentRequestSpec>(
+    spec_ = std::make_unique<PaymentRequestSpec>(
         std::move(options), std::move(details),
         std::vector<mojom::PaymentMethodDataPtr>(), this, "en-US");
   }

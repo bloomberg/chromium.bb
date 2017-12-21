@@ -41,7 +41,7 @@ PaymentRequestDisplayManager::TryShow() {
   std::unique_ptr<PaymentRequestDisplayManager::DisplayHandle> handle = nullptr;
   if (!handle_alive_) {
     handle =
-        base::MakeUnique<PaymentRequestDisplayManager::DisplayHandle>(this);
+        std::make_unique<PaymentRequestDisplayManager::DisplayHandle>(this);
   }
 
   return handle;
