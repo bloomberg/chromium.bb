@@ -16,6 +16,9 @@ cr.define('settings_sections_tests', function() {
     SetCopies: 'set copies',
     SetLayout: 'set layout',
     SetColor: 'set color',
+    SetMediaSize: 'set media size',
+    SetDpi: 'set dpi',
+    SetMargins: 'set margins',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -36,6 +39,8 @@ cr.define('settings_sections_tests', function() {
           print_preview_test_utils.getCddTemplate(fooDestination.id)
               .capabilities;
       page.set('destination_', fooDestination);
+      setPdfDocument(false);
+      Polymer.dom.flush();
     });
 
     /** @param {boolean} isPdf Whether the document should be a PDF. */
@@ -352,6 +357,78 @@ cr.define('settings_sections_tests', function() {
       colorInput.value = 'bw';
       colorInput.dispatchEvent(new CustomEvent('change'));
       expectEquals(false, page.settings.color.value);
+    });
+
+    test(assert(TestNames.SetMediaSize), function() {
+      const mediaSizeElement = page.$$('print-preview-media-size-settings');
+      expectEquals(false, mediaSizeElement.hidden);
+
+      const mediaSizeCapabilities =
+          page.destination_.capabilities.printer.media_size;
+      const letterOption = JSON.stringify(mediaSizeCapabilities.option[0]);
+      const squareOption = JSON.stringify(mediaSizeCapabilities.option[1]);
+
+      // Default is letter
+      const mediaSizeInput =
+          mediaSizeElement.$$('print-preview-settings-select').$$('select');
+      expectEquals(letterOption, mediaSizeInput.value);
+      expectEquals(letterOption, JSON.stringify(page.settings.mediaSize.value));
+
+      // Change to square
+      mediaSizeInput.value = squareOption;
+      mediaSizeInput.dispatchEvent(new CustomEvent('change'));
+
+      expectEquals(squareOption, JSON.stringify(page.settings.mediaSize.value));
+    });
+
+    test(assert(TestNames.SetDpi), function() {
+      const dpiElement = page.$$('print-preview-dpi-settings');
+      expectEquals(false, dpiElement.hidden);
+
+      const dpiCapabilities = page.destination_.capabilities.printer.dpi;
+      const highQualityOption = dpiCapabilities.option[0];
+      const lowQualityOption = dpiCapabilities.option[1];
+
+      // Default is 200
+      const dpiInput =
+          dpiElement.$$('print-preview-settings-select').$$('select');
+      const isDpiEqual = function(value1, value2) {
+        return value1.horizontal_dpi == value2.horizontal_dpi &&
+            value1.vertical_dpi == value2.vertical_dpi &&
+            value1.vendor_id == value2.vendor_id;
+      };
+      expectTrue(isDpiEqual(highQualityOption, JSON.parse(dpiInput.value)));
+      expectTrue(isDpiEqual(highQualityOption, page.settings.dpi.value));
+
+      // Change to 100
+      dpiInput.value =
+          JSON.stringify(dpiElement.capabilityWithLabels_.option[1]);
+      dpiInput.dispatchEvent(new CustomEvent('change'));
+
+      expectTrue(isDpiEqual(lowQualityOption, JSON.parse(dpiInput.value)));
+      expectTrue(isDpiEqual(lowQualityOption, page.settings.dpi.value));
+    });
+
+    test(assert(TestNames.SetMargins), function() {
+      const marginsElement = page.$$('print-preview-margins-settings');
+      expectEquals(false, marginsElement.hidden);
+
+      // Default is DEFAULT_MARGINS
+      const marginsInput = marginsElement.$$('select');
+      expectEquals(
+          print_preview_new.MarginsTypeValue.DEFAULT.toString(),
+          marginsInput.value);
+      expectEquals(
+          print_preview_new.MarginsTypeValue.DEFAULT,
+          page.settings.margins.value);
+
+      // Change to black and white.
+      marginsInput.value =
+          print_preview_new.MarginsTypeValue.MINIMUM.toString();
+      marginsInput.dispatchEvent(new CustomEvent('change'));
+      expectEquals(
+          print_preview_new.MarginsTypeValue.MINIMUM,
+          page.settings.margins.value);
     });
   });
 

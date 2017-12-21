@@ -85,6 +85,7 @@
     {
       'target_name': 'media_size_settings',
       'dependencies': [
+        'settings_behavior',
         'settings_select',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -92,13 +93,16 @@
     {
       'target_name': 'margins_settings',
       'dependencies': [
+        'settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'dpi_settings',
       'dependencies': [
+        'settings_behavior',
         'settings_select',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -134,6 +138,7 @@
     {
       'target_name': 'settings_select',
       'dependencies': [
+        'settings_behavior',
         '../compiled_resources2.gyp:print_preview_utils',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
