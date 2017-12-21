@@ -1765,8 +1765,6 @@ static_library("base_static") {
   sources = [
     "base_switches.cc",
     "base_switches.h",
-    "task_scheduler/switches.cc",
-    "task_scheduler/switches.h",
   ]
 
   if (is_win) {
