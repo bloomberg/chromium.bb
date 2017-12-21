@@ -4,7 +4,10 @@
 
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -43,10 +46,15 @@ constexpr media::VideoPixelFormat
 // static
 constexpr media::ColorSpace FrameSinkVideoCapturerImpl::kDefaultColorSpace;
 
+// static
+constexpr base::TimeDelta
+    FrameSinkVideoCapturerImpl::kRefreshFrameRetryInterval;
+
 FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
     FrameSinkVideoCapturerManager* frame_sink_manager)
     : frame_sink_manager_(frame_sink_manager),
       copy_request_source_(base::UnguessableToken::Create()),
+      clock_(base::DefaultTickClock::GetInstance()),
       oracle_(true /* enable_auto_throttling */),
       frame_pool_(kDesignLimitMaxFrames),
       feedback_weak_factory_(&oracle_),
@@ -195,6 +203,8 @@ void FrameSinkVideoCapturerImpl::Start(
 void FrameSinkVideoCapturerImpl::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  refresh_frame_retry_timer_.Stop();
+
   // Cancel any captures in-flight and any captured frames pending delivery.
   capture_weak_factory_.InvalidateWeakPtrs();
   oracle_.CancelAllCaptures();
@@ -255,10 +265,31 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Consult the oracle to determine whether this frame should be captured.
-  if (!oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time)) {
+  if (oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time)) {
+    // Regardless of the type of |event|, there is no longer a need for the
+    // refresh frame retry timer to fire. The following is a no-op, if the timer
+    // was not running.
+    refresh_frame_retry_timer_.Stop();
+  } else {
     TRACE_EVENT_INSTANT1("gpu.capture", "FpsRateLimited",
                          TRACE_EVENT_SCOPE_THREAD, "trigger",
                          VideoCaptureOracle::EventAsString(event));
+
+    // If the oracle rejected a "refresh frame" request, schedule a later retry.
+    if (event == VideoCaptureOracle::kPassiveRefreshRequest ||
+        event == VideoCaptureOracle::kActiveRefreshRequest) {
+      refresh_frame_retry_timer_.Start(
+          FROM_HERE,
+          std::max(kRefreshFrameRetryInterval, oracle_.min_capture_period()),
+          base::BindRepeating(
+              [](FrameSinkVideoCapturerImpl* self,
+                 VideoCaptureOracle::Event event) {
+                self->MaybeCaptureFrame(event,
+                                        gfx::Rect(self->oracle_.source_size()),
+                                        self->clock_->NowTicks());
+              },
+              this, event));
+    }
     return;
   }
 

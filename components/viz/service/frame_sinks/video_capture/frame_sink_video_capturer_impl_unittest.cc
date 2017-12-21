@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -227,13 +228,19 @@ MATCHER_P(IsLetterboxedFrame, color, "") {
 
 class FrameSinkVideoCapturerTest : public testing::Test {
  public:
-  FrameSinkVideoCapturerTest() : capturer_(&frame_sink_manager_) {}
+  FrameSinkVideoCapturerTest()
+      : retry_timer_task_runner_(new base::TestSimpleTaskRunner()),
+        capturer_(&frame_sink_manager_) {}
 
   void SetUp() override {
     // Override the capturer's TickClock with the one controlled by the tests.
     start_time_ = base::TimeTicks() + base::TimeDelta::FromSeconds(1);
     clock_.SetNowTicks(start_time_);
     capturer_.clock_ = &clock_;
+
+    // Point the retry timer at this test's manually-controlled task runner.
+    capturer_.refresh_frame_retry_timer_.SetTaskRunner(
+        retry_timer_task_runner_);
 
     // Before setting the format, ensure the defaults are in-place. Then, for
     // these tests, set a specific format and color space.
@@ -254,6 +261,8 @@ class FrameSinkVideoCapturerTest : public testing::Test {
 
     capturer_.SetResolutionConstraints(kCaptureSize, kCaptureSize, false);
   }
+
+  void TearDown() override { retry_timer_task_runner_->ClearPendingTasks(); }
 
   void AdvanceClockToNextVsync() {
     const auto num_vsyncs_elapsed =
@@ -279,9 +288,20 @@ class FrameSinkVideoCapturerTest : public testing::Test {
     capturer_.OnFrameDamaged(ack, kSourceSize, gfx::Rect(kSourceSize));
   }
 
+  bool IsRefreshRetryTimerRunning() {
+    return capturer_.refresh_frame_retry_timer_.IsRunning();
+  }
+
+  void FireRefreshRetryTimer() {
+    ASSERT_TRUE(IsRefreshRetryTimerRunning());
+    ASSERT_TRUE(retry_timer_task_runner_->HasPendingTask());
+    retry_timer_task_runner_->RunPendingTasks();
+  }
+
  protected:
   base::TimeTicks start_time_;
   base::SimpleTestTickClock clock_;
+  scoped_refptr<base::TestSimpleTaskRunner> retry_timer_task_runner_;
   MockFrameSinkManager frame_sink_manager_;
   FakeCapturableFrameSink frame_sink_;
   FrameSinkVideoCapturerImpl capturer_;
@@ -362,6 +382,10 @@ TEST_F(FrameSinkVideoCapturerTest, SendsBlackFrameOnStartWithoutATarget) {
   capturer_.Start(std::move(consumer));
   // A copy request was not necessary.
   EXPECT_EQ(0, frame_sink_.num_copy_results());
+  // The initial black frame is the initial refresh frame. Since that was
+  // supposed to have been sent, the timer should not be running to retry
+  // later.
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
   capturer_.Stop();
 }
 
@@ -393,6 +417,7 @@ TEST_F(FrameSinkVideoCapturerTest, CapturesCompositedFrames) {
   // frame. Simulate a copy result and expect to see the refresh frame delivered
   // to the consumer.
   ASSERT_EQ(num_refresh_frames, frame_sink_.num_copy_results());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
   frame_sink_.SendCopyOutputResult(0);
   ASSERT_EQ(num_refresh_frames, consumer->num_frames_received());
   EXPECT_THAT(consumer->TakeFrame(0),
@@ -701,13 +726,11 @@ TEST_F(FrameSinkVideoCapturerTest, CancelsInFlightCapturesOnStop) {
 
   // Note: Because the clock hasn't advanced while switching consumers, the
   // capturer won't send a refresh frame. This is because the VideoCaptureOracle
-  // thinks the frame rate would be too fast.
-  //
-  // TODO(crbug.com/785072): Revisit this because the capturer should always
-  // guarantee an initial video frame is sent to the consumer within a
-  // reasonable time period. In practice, it does; but if things happen too
-  // quickly, it might not.
+  // thinks the frame rate would be too fast. However, the refresh frame retry
+  // timer should be running. It will be canceled when the next composite-
+  // triggered capture occurs (in the loop below).
   num_refresh_frames = 0;
+  EXPECT_TRUE(IsRefreshRetryTimerRunning());
 
   // From here, any new copy requests should be executed with video frames
   // delivered to the consumer containing |color2|.
@@ -717,12 +740,76 @@ TEST_F(FrameSinkVideoCapturerTest, CancelsInFlightCapturesOnStop) {
     NotifyFrameDamaged(num_copy_requests);
     ++num_copy_requests;
     ASSERT_EQ(num_copy_requests, frame_sink_.num_copy_results());
+    ASSERT_FALSE(IsRefreshRetryTimerRunning());
     frame_sink_.SendCopyOutputResult(frame_sink_.num_copy_results() - 1);
     ++num_completed_captures;
     ASSERT_EQ(num_completed_captures, consumer2->num_frames_received());
     EXPECT_THAT(consumer2->TakeFrame(consumer2->num_frames_received() - 1),
                 IsLetterboxedFrame(color2));
   }
+
+  capturer_.Stop();
+}
+
+// Tests that refresh requests ultimately result in a frame being delivered to
+// the consumer.
+TEST_F(FrameSinkVideoCapturerTest, EventuallySendsARefreshFrame) {
+  frame_sink_.SetCopyOutputColor(YUVColor{0x80, 0x80, 0x80});
+  EXPECT_CALL(frame_sink_manager_, FindCapturableFrameSink(kFrameSinkId))
+      .WillRepeatedly(Return(&frame_sink_));
+
+  capturer_.ChangeTarget(kFrameSinkId);
+
+  MockConsumer* consumer;
+  {
+    auto mock_consumer = std::make_unique<MockConsumer>();
+    consumer = mock_consumer.get();
+    capturer_.Start(std::move(mock_consumer));
+  }
+  const int num_refresh_frames = 2;  // Initial, plus later refresh.
+  const int num_update_frames = 3;
+  EXPECT_CALL(*consumer, OnFrameCapturedMock(_, _, _))
+      .Times(num_refresh_frames + num_update_frames);
+  EXPECT_CALL(*consumer, OnTargetLost(_)).Times(0);
+  EXPECT_CALL(*consumer, OnStopped()).Times(1);
+
+  // To start, the capturer will make a copy request for the initial refresh
+  // frame. Simulate a copy result and expect to see the refresh frame delivered
+  // to the consumer. The capturer should not have started the retry timer for
+  // this initial refresh frame.
+  ASSERT_EQ(1, frame_sink_.num_copy_results());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
+  frame_sink_.SendCopyOutputResult(0);
+  ASSERT_EQ(1, consumer->num_frames_received());
+  consumer->SendDoneNotification(0);
+
+  // Drive the capturer pipeline for a series of frame composites.
+  int num_frames = 1 + num_update_frames;
+  for (int i = 1; i < num_frames; ++i) {
+    AdvanceClockToNextVsync();
+    NotifyBeginFrame(i);
+    NotifyFrameDamaged(i);
+    ASSERT_EQ(i + 1, frame_sink_.num_copy_results());
+    frame_sink_.SendCopyOutputResult(i);
+    ASSERT_EQ(i + 1, consumer->num_frames_received());
+    consumer->SendDoneNotification(i);
+  }
+
+  // Without advancing the clock, request a refresh frame. The oracle will
+  // reject the request, and the retry timer will be started.
+  capturer_.RequestRefreshFrame();
+  ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
+  EXPECT_TRUE(IsRefreshRetryTimerRunning());
+
+  // Simulate the elapse of time and the firing of the refresh retry timer. The
+  // oracle should allow this later retry request and deliver a refresh frame.
+  clock_.Advance(FrameSinkVideoCapturerImpl::kRefreshFrameRetryInterval);
+  FireRefreshRetryTimer();
+  ++num_frames;
+  ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
+  frame_sink_.SendCopyOutputResult(num_frames - 1);
+  ASSERT_EQ(num_frames, consumer->num_frames_received());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
 
   capturer_.Stop();
 }
