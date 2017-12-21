@@ -20,7 +20,7 @@ REPLACEMENTS = {
   'ffmpeg': 'third_party/ffmpeg/BUILD.gn',
   'flac': 'third_party/flac/BUILD.gn',
   'freetype': 'build/config/freetype/freetype.gni',
-  'harfbuzz-ng': 'third_party/harfbuzz-ng/BUILD.gn',
+  'harfbuzz-ng': 'third_party/harfbuzz-ng/harfbuzz.gni',
   'icu': 'third_party/icu/BUILD.gn',
   'libdrm': 'third_party/libdrm/BUILD.gn',
   'libevent': 'base/third_party/libevent/BUILD.gn',
