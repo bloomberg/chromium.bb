@@ -1012,6 +1012,11 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int loff);
 
 #define MAX_INTERINTRA_SB_SQUARE 32 * 32
+static INLINE int is_interintra_mode(const MB_MODE_INFO *mbmi) {
+  return (mbmi->ref_frame[0] > INTRA_FRAME &&
+          mbmi->ref_frame[1] == INTRA_FRAME);
+}
+
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
   return (bsize >= BLOCK_8X8) && (bsize <= BLOCK_32X32);
 }

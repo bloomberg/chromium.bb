@@ -279,6 +279,9 @@ struct macroblock {
 #else
   int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES];
 #endif  // CONFIG_JNT_COMP
+#if WEDGE_IDX_ENTROPY_CODING
+  int wedge_idx_cost[BLOCK_SIZES_ALL][16];
+#endif
   int interintra_cost[BLOCK_SIZE_GROUPS][2];
   int wedge_interintra_cost[BLOCK_SIZES_ALL][2];
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];

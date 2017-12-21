@@ -1191,8 +1191,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           aom_write_symbol(w, mbmi->use_wedge_interintra,
                            ec_ctx->wedge_interintra_cdf[bsize], 2);
           if (mbmi->use_wedge_interintra) {
+#if II_WEDGE_IDX_ENTROPY_CODING
+            aom_write_symbol(w, mbmi->interintra_wedge_index,
+                             ec_ctx->wedge_idx_cdf[bsize], 16);
+#else
             aom_write_literal(w, mbmi->interintra_wedge_index,
                               get_wedge_bits_lookup(bsize));
+#endif
             assert(mbmi->interintra_wedge_sign == 0);
           }
         }
@@ -1244,7 +1249,12 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
         if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
           assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
+#if WEDGE_IDX_ENTROPY_CODING
+          aom_write_symbol(w, mbmi->wedge_index, ec_ctx->wedge_idx_cdf[bsize],
+                           16);
+#else
           aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
+#endif
           aom_write_bit(w, mbmi->wedge_sign);
         } else {
           assert(mbmi->interinter_compound_type == COMPOUND_SEG);
@@ -1252,7 +1262,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         }
       }
     }
-#else   // CONFIG_JNT_COMP
+#else  // CONFIG_JNT_COMP
     if (cpi->common.reference_mode != SINGLE_REFERENCE &&
         is_inter_compound_mode(mbmi->mode) &&
         mbmi->motion_mode == SIMPLE_TRANSLATION &&
@@ -1265,7 +1275,12 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                            ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
         if (is_interinter_compound_used(COMPOUND_WEDGE, bsize) &&
             mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+#if WEDGE_IDX_ENTROPY_CODING
+          aom_write_symbol(w, mbmi->wedge_index, ec_ctx->wedge_idx_cdf[bsize],
+                           16);
+#else
           aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
+#endif
           aom_write_bit(w, mbmi->wedge_sign);
         }
         if (mbmi->interinter_compound_type == COMPOUND_SEG) {

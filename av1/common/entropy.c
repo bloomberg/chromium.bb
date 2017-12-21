@@ -746,6 +746,10 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 
   AVERAGE_TILE_CDFS(compound_type_cdf)
 
+#if WEDGE_IDX_ENTROPY_CODING
+  AVERAGE_TILE_CDFS(wedge_idx_cdf)
+#endif
+
   AVERAGE_TILE_CDFS(interintra_cdf)
   AVERAGE_TILE_CDFS(wedge_interintra_cdf)
   AVERAGE_TILE_CDFS(interintra_mode_cdf)
