@@ -145,8 +145,36 @@ void DataReductionProxyDelegate::OnResolveProxy(
                      }),
       proxies_for_http.end());
 
+  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+      warmup_proxy = config_->GetInFlightWarmupProxyDetails();
+
+  bool is_warmup_url = warmup_proxy &&
+                       url.host() == params::GetWarmupURL().host() &&
+                       url.path() == params::GetWarmupURL().path();
+
+  if (is_warmup_url) {
+    // This is a request to fetch the warmup (aka probe) URL.
+    // |is_secure_proxy| and |is_core_proxy| indicate the properties of the
+    // proxy that is being currently probed.
+    bool is_secure_proxy = warmup_proxy->first;
+    bool is_core_proxy = warmup_proxy->second;
+    // Remove the proxies with properties that do not match the properties of
+    // the proxy that is being probed.
+    proxies_for_http.erase(
+        std::remove_if(proxies_for_http.begin(), proxies_for_http.end(),
+                       [is_secure_proxy,
+                        is_core_proxy](const DataReductionProxyServer& proxy) {
+                         return proxy.IsSecureProxy() != is_secure_proxy ||
+                                proxy.IsCoreProxy() != is_core_proxy;
+                       }),
+        proxies_for_http.end());
+  }
+
+  // If the proxy is disabled due to warmup URL fetch failing in the past,
+  // then enable it temporarily. This ensures that |configurator_| includes
+  // this proxy type when generating the |proxy_config|.
   net::ProxyConfig proxy_config = configurator_->CreateProxyConfig(
-      config_->GetNetworkPropertiesManager(), proxies_for_http);
+      is_warmup_url, config_->GetNetworkPropertiesManager(), proxies_for_http);
 
   OnResolveProxyHandler(url, method, proxy_config, proxy_retry_info, *config_,
                         io_data_, result);

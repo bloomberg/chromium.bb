@@ -147,7 +147,7 @@ bool IsIncludedInServerExperimentsFieldTrial() {
                  .find(kDisabled) != 0;
 }
 
-bool FetchWarmupURLEnabled() {
+bool FetchWarmupProbeURLEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableDataReductionProxyWarmupURLFetch);
 }

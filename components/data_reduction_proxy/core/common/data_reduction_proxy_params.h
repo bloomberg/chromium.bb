@@ -135,7 +135,7 @@ const char* GetServerExperimentsFieldTrialName();
 GURL GetSecureProxyCheckURL();
 
 // Returns true if fetching of the warmup URL is enabled.
-bool FetchWarmupURLEnabled();
+bool FetchWarmupProbeURLEnabled();
 
 // Returns the warmup URL.
 GURL GetWarmupURL();

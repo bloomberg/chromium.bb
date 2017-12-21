@@ -134,6 +134,30 @@ void TestDataReductionProxyConfig::SetCurrentNetworkID(
   current_network_id_ = network_id;
 }
 
+base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+TestDataReductionProxyConfig::GetInFlightWarmupProxyDetails() const {
+  if (in_flight_warmup_proxy_details_)
+    return in_flight_warmup_proxy_details_;
+  return DataReductionProxyConfig::GetInFlightWarmupProxyDetails();
+}
+
+void TestDataReductionProxyConfig::SetInFlightWarmupProxyDetails(
+    base::Optional<
+        std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+        in_flight_warmup_proxy_details) {
+  in_flight_warmup_proxy_details_ = in_flight_warmup_proxy_details;
+}
+
+bool TestDataReductionProxyConfig::IsFetchInFlight() const {
+  if (fetch_in_flight_)
+    return fetch_in_flight_.value();
+  return DataReductionProxyConfig::IsFetchInFlight();
+}
+
+void TestDataReductionProxyConfig::SetIsFetchInFlight(bool fetch_in_flight) {
+  fetch_in_flight_ = fetch_in_flight;
+}
+
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,

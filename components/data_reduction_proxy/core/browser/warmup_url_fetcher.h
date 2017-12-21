@@ -41,6 +41,9 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
   // Creates and starts a URLFetcher that fetches the warmup URL.
   void FetchWarmupURL();
 
+  // Returns true if a warmup URL fetch is currently in-flight.
+  bool IsFetchInFlight() const;
+
  protected:
   // Sets |warmup_url_with_query_params| to the warmup URL. Attaches random
   // query params to the warmup URL.
@@ -53,6 +56,8 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
 
   // The URLFetcher being used for fetching the warmup URL.
   std::unique_ptr<net::URLFetcher> fetcher_;
+
+  bool is_fetch_in_flight_;
 
   // Callback that should be executed when the fetching of the warmup URL is
   // completed.

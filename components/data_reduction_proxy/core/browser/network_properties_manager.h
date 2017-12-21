@@ -77,6 +77,14 @@ class NetworkPropertiesManager {
                                   bool is_core_proxy,
                                   bool warmup_url_probe_failed);
 
+  // Returns true if the warmup URL probe can be fetched from the proxy with the
+  // specified properties.
+  bool ShouldFetchWarmupProbeURL(bool secure_proxy, bool is_core_proxy) const;
+
+  // Called when the warmup URL probe to a proxy with the specified properties
+  // has been initiated.
+  void OnWarmupFetchInitiated(bool secure_proxy, bool is_core_proxy);
+
  private:
   // Map from network IDs to network properties.
   typedef std::map<std::string, NetworkProperties> NetworkPropertiesContainer;
@@ -107,6 +115,22 @@ class NetworkPropertiesManager {
   NetworkProperties network_properties_;
 
   std::unique_ptr<PrefManager> pref_manager_;
+
+  // Set to true if the fetch of the warmup URL was successful since the last
+  // connection change. The status is recorded separately for each combination
+  // of (is_secure_proxy) and (is_core_proxy).
+  bool has_warmup_url_succeded_secure_core_;
+  bool has_warmup_url_succeded_secure_non_core_;
+  bool has_warmup_url_succeded_insecure_core_;
+  bool has_warmup_url_succeded_insecure_non_core_;
+
+  // Count of warmup URL fetch attempts since the last connection change. The
+  // count is recorded separately for each combination of (is_secure_proxy) and
+  // (is_core_proxy).
+  size_t warmup_url_fetch_attempt_counts_secure_core_;
+  size_t warmup_url_fetch_attempt_counts_secure_non_core_;
+  size_t warmup_url_fetch_attempt_counts_insecure_core_;
+  size_t warmup_url_fetch_attempt_counts_insecure_non_core_;
 
   // Should be dereferenced only on the UI thread.
   base::WeakPtr<PrefManager> pref_manager_weak_ptr_;
