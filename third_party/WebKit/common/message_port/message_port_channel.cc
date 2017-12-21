@@ -14,12 +14,12 @@
 
 namespace blink {
 
-MessagePortChannel::~MessagePortChannel() {}
+MessagePortChannel::~MessagePortChannel() = default;
 
 MessagePortChannel::MessagePortChannel() : state_(new State()) {}
 
-MessagePortChannel::MessagePortChannel(const MessagePortChannel& other)
-    : state_(other.state_) {}
+MessagePortChannel::MessagePortChannel(const MessagePortChannel& other) =
+    default;
 
 MessagePortChannel& MessagePortChannel::operator=(
     const MessagePortChannel& other) {
@@ -117,7 +117,7 @@ void MessagePortChannel::ClearCallback() {
   state_->StopWatching();
 }
 
-MessagePortChannel::State::State() {}
+MessagePortChannel::State::State() = default;
 
 MessagePortChannel::State::State(mojo::ScopedMessagePipeHandle handle)
     : handle_(std::move(handle)) {}
