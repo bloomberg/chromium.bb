@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../media_router_header/media_router_header.html">
 <link rel="import" href="../route_details/route_details.html">
 <link rel="import" href="../../icons/media_router_icons.html">
@@ -111,9 +111,9 @@
           hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
         <div id="device-missing"
              hidden$="[[computeDeviceMissingHidden_(sinksToShow_)]]">
-          <paper-spinner id="searching-devices-spinner" active
+          <paper-spinner-lite id="searching-devices-spinner" active
               hidden$="[[computeSpinnerHidden_(justOpened_)]]">
-          </paper-spinner>
+          </paper-spinner-lite>
           <a href="[[deviceMissingUrl]]" target="_blank"
               hidden$="[[!computeSpinnerHidden_(justOpened_)]]">
             [[i18n('destinationMissingText')]]
@@ -132,8 +132,8 @@
                       </iron-icon>
                       <template is="dom-if"
                           if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.id)]]">
-                        <paper-spinner class="sink-icon" active>
-                        </paper-spinner>
+                        <paper-spinner-lite class="sink-icon" active>
+                        </paper-spinner-lite>
                       </template>
                     </div>
                     <div>
@@ -197,8 +197,8 @@
                         </iron-icon>
                         <template is="dom-if"
                             if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.sinkItem.id)]]">
-                          <paper-spinner class="sink-icon" active>
-                          </paper-spinner>
+                          <paper-spinner-lite class="sink-icon" active>
+                          </paper-spinner-lite>
                         </template>
                       </div>
                       <div>
