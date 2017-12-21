@@ -8,7 +8,7 @@
     RuntimeEnabled=WebXR
 ] interface XRDevice : EventTarget {
   readonly attribute DOMString deviceName;
-  readonly attribute boolean isExternal;
+  readonly attribute boolean external;
 
   [CallWith=ScriptState] Promise supportsSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);
   [CallWith=ScriptState] Promise requestSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);
