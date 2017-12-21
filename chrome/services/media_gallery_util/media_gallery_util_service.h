@@ -11,8 +11,6 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace chrome {
-
 class MediaGalleryUtilService : public service_manager::Service {
  public:
   MediaGalleryUtilService();
@@ -34,7 +32,5 @@ class MediaGalleryUtilService : public service_manager::Service {
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleryUtilService);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_MEDIA_GALLERY_UTIL_MEDIA_GALLERY_UTIL_SERVICE_H_

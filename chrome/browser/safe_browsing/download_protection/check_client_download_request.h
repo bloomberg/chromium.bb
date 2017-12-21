@@ -138,10 +138,10 @@ class CheckClientDownloadRequest
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   const bool pingback_enabled_;
   std::unique_ptr<net::URLFetcher> fetcher_;
-  scoped_refptr<chrome::SandboxedZipAnalyzer> analyzer_;
+  scoped_refptr<SandboxedZipAnalyzer> analyzer_;
   base::TimeTicks zip_analysis_start_time_;
 #if defined(OS_MACOSX)
-  scoped_refptr<chrome::SandboxedDMGAnalyzer> dmg_analyzer_;
+  scoped_refptr<SandboxedDMGAnalyzer> dmg_analyzer_;
   base::TimeTicks dmg_analysis_start_time_;
 #endif
   bool finished_;

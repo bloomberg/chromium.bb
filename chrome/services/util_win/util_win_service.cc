@@ -11,8 +11,6 @@
 #include "chrome/services/util_win/shell_util_win_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace chrome {
-
 namespace {
 
 void OnShellUtilWinRequest(
@@ -47,5 +45,3 @@ void UtilWinService::OnBindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
-
-}  //  namespace chrome

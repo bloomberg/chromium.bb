@@ -13,8 +13,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-namespace chrome {
-
 SandboxedDMGAnalyzer::SandboxedDMGAnalyzer(
     const base::FilePath& dmg_file,
     const ResultCallback& callback,
@@ -82,5 +80,3 @@ void SandboxedDMGAnalyzer::AnalyzeFileDone(
   analyzer_ptr_.reset();
   callback_.Run(results);
 }
-
-}  // namespace chrome

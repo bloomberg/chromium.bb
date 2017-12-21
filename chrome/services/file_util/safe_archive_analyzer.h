@@ -12,9 +12,7 @@ namespace base {
 class File;
 }
 
-namespace chrome {
-
-class SafeArchiveAnalyzer : public mojom::SafeArchiveAnalyzer {
+class SafeArchiveAnalyzer : public chrome::mojom::SafeArchiveAnalyzer {
  public:
   explicit SafeArchiveAnalyzer(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
@@ -32,7 +30,5 @@ class SafeArchiveAnalyzer : public mojom::SafeArchiveAnalyzer {
 
   DISALLOW_COPY_AND_ASSIGN(SafeArchiveAnalyzer);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_FILE_UTIL_SAFE_ARCHIVE_ANALYZER_H_

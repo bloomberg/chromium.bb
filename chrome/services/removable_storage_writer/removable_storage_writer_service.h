@@ -9,8 +9,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace chrome {
-
 class RemovableStorageWriterService : public service_manager::Service {
  public:
   RemovableStorageWriterService();
@@ -32,7 +30,5 @@ class RemovableStorageWriterService : public service_manager::Service {
 
   DISALLOW_COPY_AND_ASSIGN(RemovableStorageWriterService);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_REMOVABLE_STORAGE_WRITER_REMOVABLE_STORAGE_WRITER_SERVICE_H_

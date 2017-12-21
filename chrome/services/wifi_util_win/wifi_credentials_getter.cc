@@ -6,8 +6,6 @@
 
 #include "components/wifi/wifi_service.h"
 
-namespace chrome {
-
 WiFiCredentialsGetter::WiFiCredentialsGetter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
@@ -36,5 +34,3 @@ void WiFiCredentialsGetter::GetWiFiCredentials(
 
   std::move(callback).Run(success, key_data);
 }
-
-}  // namespace chrome

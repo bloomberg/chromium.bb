@@ -674,7 +674,7 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
       metadata_type == MediaGalleries::GET_METADATA_TYPE_ALL ||
       metadata_type == MediaGalleries::GET_METADATA_TYPE_NONE;
 
-  auto parser = base::MakeRefCounted<chrome::SafeMediaMetadataParser>(
+  auto parser = base::MakeRefCounted<SafeMediaMetadataParser>(
       GetProfile(), blob_uuid, total_blob_length, mime_type,
       get_attached_images);
   parser->Start(

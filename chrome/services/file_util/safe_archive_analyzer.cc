@@ -14,8 +14,6 @@
 #include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
 #endif
 
-namespace chrome {
-
 SafeArchiveAnalyzer::SafeArchiveAnalyzer(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
@@ -45,5 +43,3 @@ void SafeArchiveAnalyzer::AnalyzeDmgFile(base::File dmg_file,
   NOTREACHED();
 #endif
 }
-
-}  // namespace chrome

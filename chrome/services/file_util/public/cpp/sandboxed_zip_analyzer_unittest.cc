@@ -32,8 +32,6 @@ const char kAppInZipHistogramName[] =
 }
 #endif  // OS_MACOSX
 
-namespace chrome {
-
 class SandboxedZipAnalyzerTest : public ::testing::Test {
  protected:
   // Constants for validating the data reported by the analyzer.
@@ -76,7 +74,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 
   SandboxedZipAnalyzerTest()
       : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        test_connector_factory_(std::make_unique<chrome::FileUtilService>()),
+        test_connector_factory_(std::make_unique<FileUtilService>()),
         connector_(test_connector_factory_.CreateConnector()) {}
 
   void SetUp() override {
@@ -91,9 +89,8 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     DCHECK(results);
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
-    scoped_refptr<SandboxedZipAnalyzer> analyzer(
-        new chrome::SandboxedZipAnalyzer(
-            file_path, results_getter.GetCallback(), connector_.get()));
+    scoped_refptr<SandboxedZipAnalyzer> analyzer(new SandboxedZipAnalyzer(
+        file_path, results_getter.GetCallback(), connector_.get()));
     analyzer->Start();
     run_loop.Run();
   }
@@ -392,5 +389,3 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
   ExpectBinary(kSignedMachO, results.archived_binary.Get(1));
 }
 #endif  // OS_MACOSX
-
-}  // namespace chrome

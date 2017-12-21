@@ -18,8 +18,6 @@ namespace base {
 class TaskRunner;
 }
 
-namespace chrome {
-
 // Provides the metadata parser with blob data from the browser process. Class
 // must be created and destroyed on the utility thread. Class may be used as a
 // DataSource on a different thread. The utility thread must not be blocked
@@ -27,7 +25,7 @@ namespace chrome {
 class IPCDataSource : public media::DataSource {
  public:
   // May only be called on the utility thread.
-  IPCDataSource(mojom::MediaDataSourcePtr media_data_source,
+  IPCDataSource(chrome::mojom::MediaDataSourcePtr media_data_source,
                 int64_t total_size);
   ~IPCDataSource() override;
 
@@ -53,7 +51,7 @@ class IPCDataSource : public media::DataSource {
                 const ReadCB& callback,
                 const std::vector<uint8_t>& data);
 
-  mojom::MediaDataSourcePtr media_data_source_;
+  chrome::mojom::MediaDataSourcePtr media_data_source_;
   const int64_t total_size_;
 
   scoped_refptr<base::TaskRunner> utility_task_runner_;
@@ -63,7 +61,5 @@ class IPCDataSource : public media::DataSource {
   // Enforces that the DataSource methods are called on one other thread only.
   THREAD_CHECKER(data_source_thread_checker_);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_MEDIA_GALLERY_UTIL_IPC_DATA_SOURCE_H_
