@@ -255,7 +255,8 @@ void FrameSubscriber::DidCaptureFrame(
     if (frame_subscriber_ && frame_subscriber_->cursor_renderer_) {
       CursorRenderer* cursor_renderer =
           frame_subscriber_->cursor_renderer_.get();
-      cursor_renderer->RenderOnVideoFrame(frame.get(), region_in_frame);
+      cursor_renderer->RenderOnVideoFrame(frame.get(), region_in_frame,
+                                          nullptr);
       // Signal downstream consumers of this frame that encoding/transmission
       // should be optimized for image quality over smoothness if: a) The user
       // appears to be interacting with the source; and b) A significant amount

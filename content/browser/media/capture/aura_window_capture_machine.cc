@@ -391,7 +391,7 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
   if (machine) {
     if (machine->cursor_renderer_ && result)
       machine->cursor_renderer_->RenderOnVideoFrame(target.get(),
-                                                    region_in_frame);
+                                                    region_in_frame, nullptr);
   } else {
     VLOG(1) << "Aborting capture: AuraWindowCaptureMachine has gone away.";
     result = false;
