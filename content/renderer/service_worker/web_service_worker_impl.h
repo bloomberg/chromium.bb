@@ -46,7 +46,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   blink::WebServiceWorkerProxy* Proxy() override;
   blink::WebURL Url() const override;
   blink::mojom::ServiceWorkerState GetState() const override;
-  void PostMessage(
+  void PostMessageToWorker(
       blink::WebServiceWorkerProvider* provider,
       const blink::WebString& message,
       const blink::WebSecurityOrigin& source_origin,

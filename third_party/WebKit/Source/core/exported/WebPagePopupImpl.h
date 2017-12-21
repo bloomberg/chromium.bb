@@ -38,9 +38,6 @@
 #include "platform/wtf/RefCounted.h"
 #include "public/web/WebPagePopup.h"
 
-// To avoid conflicts with the CreateWindow macro from the Windows SDK...
-#undef PostMessage
-
 namespace blink {
 
 class CompositorAnimationHost;
@@ -72,7 +69,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) override;
   WebPoint PositionRelativeToOwner() override;
-  void PostMessage(const String& message) override;
+  void PostMessageToPopup(const String& message) override;
   void Cancel();
 
   // PageWidgetEventHandler functions.
