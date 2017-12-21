@@ -36,6 +36,7 @@
 #include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/cookies/cookie_store.h"
+#include "services/network/public/interfaces/cookie_manager.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 #if !defined(OS_ANDROID)
@@ -78,6 +79,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   net::URLRequestContextGetter* GetMediaURLRequestContext() override;
   mojom::NetworkContext* GetNetworkContext() override;
   mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() override;
+  network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
   storage::FileSystemContext* GetFileSystemContext() override;
@@ -298,10 +300,12 @@ class CONTENT_EXPORT StoragePartitionImpl
   // by |network_context_owner_|.
   mojom::NetworkContextPtr network_context_;
 
-  // URLLoaderFactory for use in the browser process only. See the method
-  // comment for StoragePartition::GetURLLoaderFactoryForBrowserProcess() for
+  // URLLoaderFactory/CookieManager for use in the browser process only.
+  // See the method comment for
+  // StoragePartition::GetURLLoaderFactoryForBrowserProcess() for
   // more details
   mojom::URLLoaderFactoryPtr url_loader_factory_for_browser_process_;
+  ::network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
 
   // When the network service is disabled, a NetworkContext is created on the IO
   // thread that wraps access to the URLRequestContext.

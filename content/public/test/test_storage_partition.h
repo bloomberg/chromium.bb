@@ -64,6 +64,12 @@ class TestStoragePartition : public StoragePartition {
   }
   mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() override;
 
+  void set_cookie_manager_for_browser_process(
+      network::mojom::CookieManager* cookie_manager_for_browser_process) {
+    cookie_manager_for_browser_process_ = cookie_manager_for_browser_process;
+  }
+  network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
+
   void set_quota_manager(storage::QuotaManager* manager) {
     quota_manager_ = manager;
   }
@@ -161,6 +167,7 @@ class TestStoragePartition : public StoragePartition {
   net::URLRequestContextGetter* media_url_request_context_getter_ = nullptr;
   mojom::NetworkContext* network_context_ = nullptr;
   mojom::URLLoaderFactory* url_loader_factory_for_browser_process_ = nullptr;
+  network::mojom::CookieManager* cookie_manager_for_browser_process_ = nullptr;
   storage::QuotaManager* quota_manager_ = nullptr;
   AppCacheService* app_cache_service_ = nullptr;
   storage::FileSystemContext* file_system_context_ = nullptr;

@@ -649,6 +649,17 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   return url_loader_factory_for_browser_process_.get();
 }
 
+network::mojom::CookieManager*
+StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
+  // Create the CookieManager as needed.
+  if (!cookie_manager_for_browser_process_ ||
+      cookie_manager_for_browser_process_.encountered_error()) {
+    GetNetworkContext()->GetCookieManager(
+        mojo::MakeRequest(&cookie_manager_for_browser_process_));
+  }
+  return cookie_manager_for_browser_process_.get();
+}
+
 storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
   return quota_manager_.get();
 }

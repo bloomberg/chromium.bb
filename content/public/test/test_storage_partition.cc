@@ -31,6 +31,11 @@ TestStoragePartition::GetURLLoaderFactoryForBrowserProcess() {
   return url_loader_factory_for_browser_process_;
 }
 
+network::mojom::CookieManager*
+TestStoragePartition::GetCookieManagerForBrowserProcess() {
+  return cookie_manager_for_browser_process_;
+}
+
 storage::QuotaManager* TestStoragePartition::GetQuotaManager() {
   return quota_manager_;
 }
