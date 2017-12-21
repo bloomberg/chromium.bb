@@ -139,10 +139,12 @@ TEST_F(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*this, DoOnDeliverFrame(_, _)).Times(1);
+  scoped_refptr<media::VideoFrame> first_frame;
+  scoped_refptr<media::VideoFrame> second_frame;
+  EXPECT_CALL(*this, DoOnDeliverFrame(_, _)).WillOnce(SaveArg<0>(&first_frame));
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
       .Times(1)
-      .WillOnce(RunClosure(quit_closure));
+      .WillOnce(DoAll(SaveArg<0>(&second_frame), RunClosure(quit_closure)));
 
   html_video_capturer_->StartCapture(
       params, base::Bind(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
@@ -152,6 +154,8 @@ TEST_F(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
 
   run_loop.Run();
 
+  EXPECT_EQ(0u, first_frame->timestamp().InMilliseconds());
+  EXPECT_GT(second_frame->timestamp().InMilliseconds(), 30u);
   html_video_capturer_->StopCapture();
   Mock::VerifyAndClearExpectations(this);
 }
@@ -173,7 +177,7 @@ TEST_F(HTMLVideoElementCapturerSourceTest,
   media::VideoCaptureParams params;
   params.requested_format = formats[0];
 
-  EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
+  EXPECT_CALL(*this, DoOnRunning(true));
   EXPECT_CALL(*this, DoOnDeliverFrame(_, _)).Times(0);
 
   html_video_capturer_->StartCapture(
