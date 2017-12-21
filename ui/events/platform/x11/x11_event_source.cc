@@ -143,10 +143,6 @@ void X11EventSource::DispatchXEventNow(XEvent* event) {
   ExtractCookieDataDispatchEvent(event);
 }
 
-void X11EventSource::BlockUntilWindowMapped(XID window) {
-  BlockOnWindowStructureEvent(window, MapNotify);
-}
-
 Time X11EventSource::GetCurrentServerTime() {
   DCHECK(display_);
 
@@ -274,16 +270,6 @@ void X11EventSource::PostDispatchEvent(XEvent* xevent) {
     ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses(
         DeviceDataManagerX11::kAllDevices);
   }
-}
-
-void X11EventSource::BlockOnWindowStructureEvent(XID window, int type) {
-  XEvent event;
-  do {
-    // Block until there's a StructureNotify event of |type| on |window|. Then
-    // remove it from the queue and stuff it in |event|.
-    XWindowEvent(display_, window, StructureNotifyMask, &event);
-    ExtractCookieDataDispatchEvent(&event);
-  } while (event.type != type);
 }
 
 void X11EventSource::StopCurrentEventStream() {
