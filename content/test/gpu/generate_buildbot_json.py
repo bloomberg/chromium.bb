@@ -1366,6 +1366,8 @@ COMMON_GTESTS = {
           'Android Release (Nexus 5)',
           'Android Release (Nexus 6)',
           'Android Release (Nexus 9)',
+          # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
+          'Linux Release (AMD R7 240)',
         ],
       },
     ],
