@@ -31,9 +31,9 @@
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/client/share_group.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 #if DCHECK_IS_ON() && !defined(__native_client__) && \
     !defined(GLES2_CONFORMANCE_TESTS)

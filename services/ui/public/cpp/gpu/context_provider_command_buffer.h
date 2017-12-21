@@ -19,7 +19,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
@@ -66,7 +66,7 @@ class ContextProviderCommandBuffer
       bool automatic_flushes,
       bool support_locking,
       const gpu::SharedMemoryLimits& memory_limits,
-      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      const gpu::ContextCreationAttribs& attributes,
       ContextProviderCommandBuffer* shared_context_provider,
       command_buffer_metrics::ContextType type);
 
@@ -141,7 +141,7 @@ class ContextProviderCommandBuffer
   const bool automatic_flushes_;
   const bool support_locking_;
   const gpu::SharedMemoryLimits memory_limits_;
-  const gpu::gles2::ContextCreationAttribHelper attributes_;
+  const gpu::ContextCreationAttribs attributes_;
   const command_buffer_metrics::ContextType context_type_;
 
   scoped_refptr<SharedProviders> shared_providers_;

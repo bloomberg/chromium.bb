@@ -10,13 +10,13 @@
 #include "ui/gl/gl_context.h"
 
 namespace gpu {
+struct ContextCreationAttribs;
 
 namespace gles2 {
-struct ContextCreationAttribHelper;
 class ContextGroup;
 
 GPU_EXPORT gl::GLContextAttribs GenerateGLContextAttribs(
-    const ContextCreationAttribHelper& attribs_helper,
+    const ContextCreationAttribs& attribs_helper,
     const ContextGroup* context_group);
 
 // Returns true if the passthrough command decoder has been requested

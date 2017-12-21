@@ -982,7 +982,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   uint32_t immediate_buffer_[64];
 
  private:
-  ContextCreationAttribHelper context_creation_attribs_;
+  ContextCreationAttribs context_creation_attribs_;
   GpuPreferences gpu_preferences_;
   MailboxManagerImpl mailbox_manager_;
   ShaderTranslatorCache shader_translator_cache_;

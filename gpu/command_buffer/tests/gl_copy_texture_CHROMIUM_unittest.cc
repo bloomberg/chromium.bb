@@ -520,7 +520,7 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
  protected:
   void SetUp() override {
     GLManager::Options options;
-    options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
+    options.context_type = CONTEXT_TYPE_OPENGLES3;
     options.size = gfx::Size(64, 64);
     GpuDriverBugWorkarounds workarounds;
 #if defined(OS_MACOSX)

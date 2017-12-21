@@ -172,7 +172,7 @@ gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
   return limits;
 }
 
-gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
+gpu::ContextCreationAttribs GetCompositorContextAttributes(
     const gfx::ColorSpace& display_color_space,
     bool requires_alpha_channel) {
   // This is used for the browser compositor (offscreen) and for the display
@@ -181,7 +181,7 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
   // not need alpha, stencil, depth, antialiasing. The display compositor does
   // not use these things either, except for alpha when it has a transparent
   // background.
-  gpu::gles2::ContextCreationAttribHelper attributes;
+  gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = -1;
   attributes.stencil_size = 0;
   attributes.depth_size = 0;
@@ -189,11 +189,11 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   if (display_color_space == gfx::ColorSpace::CreateSRGB()) {
-    attributes.color_space = gpu::gles2::COLOR_SPACE_SRGB;
+    attributes.color_space = gpu::COLOR_SPACE_SRGB;
   } else if (display_color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
-    attributes.color_space = gpu::gles2::COLOR_SPACE_DISPLAY_P3;
+    attributes.color_space = gpu::COLOR_SPACE_DISPLAY_P3;
   } else {
-    attributes.color_space = gpu::gles2::COLOR_SPACE_UNSPECIFIED;
+    attributes.color_space = gpu::COLOR_SPACE_UNSPECIFIED;
     DLOG(ERROR) << "Android color space is neither sRGB nor P3, output color "
                    "will be incorrect.";
   }
@@ -227,7 +227,7 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
 
 void CreateContextProviderAfterGpuChannelEstablished(
     gpu::SurfaceHandle handle,
-    gpu::gles2::ContextCreationAttribHelper attributes,
+    gpu::ContextCreationAttribs attributes,
     gpu::SharedMemoryLimits shared_memory_limits,
     Compositor::ContextProviderCallback callback,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
@@ -441,7 +441,7 @@ void Compositor::Initialize() {
 // static
 void Compositor::CreateContextProvider(
     gpu::SurfaceHandle handle,
-    gpu::gles2::ContextCreationAttribHelper attributes,
+    gpu::ContextCreationAttribs attributes,
     gpu::SharedMemoryLimits shared_memory_limits,
     ContextProviderCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

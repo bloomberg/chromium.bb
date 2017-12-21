@@ -65,7 +65,6 @@ source_set("command_buffer_traits_sources") {
 
   deps = [
     "//base",
-    "//gpu/command_buffer/common:gles2_utils",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
   ]

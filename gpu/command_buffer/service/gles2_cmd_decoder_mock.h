@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/shader_translator.h"
@@ -43,13 +43,12 @@ class MockGLES2Decoder : public GLES2Decoder {
 
   base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
 
-  MOCK_METHOD5(
-      Initialize,
-      gpu::ContextResult(const scoped_refptr<gl::GLSurface>& surface,
-                         const scoped_refptr<gl::GLContext>& context,
-                         bool offscreen,
-                         const DisallowedFeatures& disallowed_features,
-                         const ContextCreationAttribHelper& attrib_helper));
+  MOCK_METHOD5(Initialize,
+               gpu::ContextResult(const scoped_refptr<gl::GLSurface>& surface,
+                                  const scoped_refptr<gl::GLContext>& context,
+                                  bool offscreen,
+                                  const DisallowedFeatures& disallowed_features,
+                                  const ContextCreationAttribs& attrib_helper));
   MOCK_METHOD1(Destroy, void(bool have_context));
   MOCK_METHOD1(SetSurface, void(const scoped_refptr<gl::GLSurface>& surface));
   MOCK_METHOD0(ReleaseSurface, void());

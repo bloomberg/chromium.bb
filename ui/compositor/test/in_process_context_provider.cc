@@ -25,7 +25,7 @@ namespace ui {
 
 // static
 scoped_refptr<InProcessContextProvider> InProcessContextProvider::Create(
-    const gpu::gles2::ContextCreationAttribHelper& attribs,
+    const gpu::ContextCreationAttribs& attribs,
     InProcessContextProvider* shared_context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -44,7 +44,7 @@ InProcessContextProvider::CreateOffscreen(
     gpu::ImageFactory* image_factory,
     InProcessContextProvider* shared_context,
     bool support_locking) {
-  gpu::gles2::ContextCreationAttribHelper attribs;
+  gpu::ContextCreationAttribs attribs;
   attribs.alpha_size = 8;
   attribs.blue_size = 8;
   attribs.green_size = 8;
@@ -61,7 +61,7 @@ InProcessContextProvider::CreateOffscreen(
 }
 
 InProcessContextProvider::InProcessContextProvider(
-    const gpu::gles2::ContextCreationAttribHelper& attribs,
+    const gpu::ContextCreationAttribs& attribs,
     InProcessContextProvider* shared_context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,

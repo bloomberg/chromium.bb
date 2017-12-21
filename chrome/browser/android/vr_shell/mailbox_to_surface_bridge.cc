@@ -211,7 +211,7 @@ void MailboxToSurfaceBridge::CreateSurface(
             // See GetCompositorContextAttributes in
             // content/browser/renderer_host/compositor_impl_android.cc
             // and crbug.com/699330.
-            gpu::gles2::ContextCreationAttribHelper attributes;
+            gpu::ContextCreationAttribs attributes;
             attributes.alpha_size = -1;
             attributes.red_size = 8;
             attributes.green_size = 8;

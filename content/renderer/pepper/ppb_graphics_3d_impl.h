@@ -20,11 +20,9 @@
 #include "ppapi/shared_impl/resource.h"
 
 namespace gpu {
-namespace gles2 {
-struct ContextCreationAttribHelper;
-}
 struct Capabilities;
 class CommandBufferProxyImpl;
+struct ContextCreationAttribs;
 }
 
 namespace content {
@@ -32,13 +30,12 @@ namespace content {
 class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
                             public gpu::GpuControlClient {
  public:
-  static PP_Resource CreateRaw(
-      PP_Instance instance,
-      PP_Resource share_context,
-      const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
-      gpu::Capabilities* capabilities,
-      base::SharedMemoryHandle* shared_state_handle,
-      gpu::CommandBufferId* command_buffer_id);
+  static PP_Resource CreateRaw(PP_Instance instance,
+                               PP_Resource share_context,
+                               const gpu::ContextCreationAttribs& attrib_helper,
+                               gpu::Capabilities* capabilities,
+                               base::SharedMemoryHandle* shared_state_handle,
+                               gpu::CommandBufferId* command_buffer_id);
 
   // PPB_Graphics3D_API trusted implementation.
   PP_Bool SetGetBuffer(int32_t transfer_buffer_id) override;
@@ -83,7 +80,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   explicit PPB_Graphics3D_Impl(PP_Instance instance);
 
   bool InitRaw(PPB_Graphics3D_API* share_context,
-               const gpu::gles2::ContextCreationAttribHelper& requested_attribs,
+               const gpu::ContextCreationAttribs& requested_attribs,
                gpu::Capabilities* capabilities,
                base::SharedMemoryHandle* shared_state_handle,
                gpu::CommandBufferId* command_buffer_id);

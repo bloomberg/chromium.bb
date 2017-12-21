@@ -36,10 +36,8 @@ struct PP_NetAddress_Private;
 struct PP_Size;
 
 namespace gpu {
-namespace gles2 {
-struct ContextCreationAttribHelper;
-}
 struct Capabilities;
+struct ContextCreationAttribs;
 }
 
 namespace ppapi {
@@ -143,7 +141,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateGraphics3DRaw(
       PP_Instance instance,
       PP_Resource share_context,
-      const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
+      const gpu::ContextCreationAttribs& attrib_helper,
       gpu::Capabilities* capabilities,
       base::SharedMemoryHandle* shared_state,
       gpu::CommandBufferId* command_buffer_id) = 0;

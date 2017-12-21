@@ -19,7 +19,7 @@ namespace gpu {
 namespace gles2 {
 
 gl::GLContextAttribs GenerateGLContextAttribs(
-    const ContextCreationAttribHelper& attribs_helper,
+    const ContextCreationAttribs& attribs_helper,
     const ContextGroup* context_group) {
   DCHECK(context_group != nullptr);
   gl::GLContextAttribs attribs;

@@ -12,7 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/client/gpu_control.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -66,7 +66,7 @@ class GLManager : private GpuControl {
     bool lose_context_when_out_of_memory = false;
     // Whether or not it's ok to lose the context.
     bool context_lost_allowed = false;
-    gles2::ContextType context_type = gles2::CONTEXT_TYPE_OPENGLES2;
+    ContextType context_type = CONTEXT_TYPE_OPENGLES2;
     // Force shader name hashing for all context types.
     bool force_shader_name_hashing = false;
     // Whether the buffer is multisampled.

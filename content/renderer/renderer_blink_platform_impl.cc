@@ -1124,7 +1124,7 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   // antialiasing. But we do need those attributes for the "own
   // offscreen surface" optimization which supports directly drawing
   // to a custom surface backed frame buffer.
-  gpu::gles2::ContextCreationAttribHelper attributes;
+  gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = web_attributes.support_alpha ? 8 : -1;
   attributes.depth_size = web_attributes.support_depth ? 24 : 0;
   attributes.stencil_size = web_attributes.support_stencil ? 8 : 0;
@@ -1142,9 +1142,9 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   DCHECK_GT(web_attributes.web_gl_version, 0u);
   DCHECK_LE(web_attributes.web_gl_version, 2u);
   if (web_attributes.web_gl_version == 2)
-    attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL2;
+    attributes.context_type = gpu::CONTEXT_TYPE_WEBGL2;
   else
-    attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL1;
+    attributes.context_type = gpu::CONTEXT_TYPE_WEBGL1;
 
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;

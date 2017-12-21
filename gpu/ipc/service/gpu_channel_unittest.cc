@@ -33,7 +33,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = SchedulingPriority::kNormal;
-  init_params.attribs = gles2::ContextCreationAttribHelper();
+  init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
@@ -61,7 +61,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = SchedulingPriority::kNormal;
-  init_params.attribs = gles2::ContextCreationAttribHelper();
+  init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
@@ -85,7 +85,7 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = SchedulingPriority::kNormal;
-  init_params.attribs = gles2::ContextCreationAttribHelper();
+  init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
@@ -111,7 +111,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
   init_params.stream_priority = SchedulingPriority::kNormal;
-  init_params.attribs = gles2::ContextCreationAttribHelper();
+  init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
@@ -130,7 +130,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.share_group_id = kRouteId1;
   init_params.stream_id = kStreamId2;
   init_params.stream_priority = SchedulingPriority::kNormal;
-  init_params.attribs = gles2::ContextCreationAttribHelper();
+  init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId2, GetSharedHandle(), &result,
@@ -155,7 +155,7 @@ TEST_F(GpuChannelTest, HighPriorityStreamsDisallowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;
   init_params.stream_priority = SchedulingPriority::kHigh;
-  init_params.attribs = gles2::ContextCreationAttribHelper();
+  init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
@@ -187,7 +187,7 @@ TEST_F(GpuChannelTest, HighPriorityStreamsAllowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 1;
   init_params.stream_priority = SchedulingPriority::kHigh;
-  init_params.attribs = gles2::ContextCreationAttribHelper();
+  init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
@@ -223,7 +223,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.share_group_id = MSG_ROUTING_NONE;
     init_params.stream_id = 0;
     init_params.stream_priority = SchedulingPriority::kNormal;
-    init_params.attribs = gles2::ContextCreationAttribHelper();
+    init_params.attribs = ContextCreationAttribs();
     init_params.active_url = GURL();
     gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
@@ -243,7 +243,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.share_group_id = kSharedRouteId;
     init_params.stream_id = 0;
     init_params.stream_priority = SchedulingPriority::kNormal;
-    init_params.attribs = gles2::ContextCreationAttribHelper();
+    init_params.attribs = ContextCreationAttribs();
     init_params.active_url = GURL();
     gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
@@ -267,7 +267,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.share_group_id = kSharedRouteId;
     init_params.stream_id = 0;
     init_params.stream_priority = SchedulingPriority::kNormal;
-    init_params.attribs = gles2::ContextCreationAttribHelper();
+    init_params.attribs = ContextCreationAttribs();
     init_params.active_url = GURL();
     gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;

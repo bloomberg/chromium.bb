@@ -18,7 +18,7 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
   ~GpuChannelManagerTest() override = default;
 
 #if defined(OS_ANDROID)
-  void TestOnApplicationStateChange(gles2::ContextType type,
+  void TestOnApplicationStateChange(ContextType type,
                                     bool should_destroy_channel) {
     ASSERT_TRUE(channel_manager());
 
@@ -34,7 +34,7 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     init_params.share_group_id = MSG_ROUTING_NONE;
     init_params.stream_id = 0;
     init_params.stream_priority = SchedulingPriority::kNormal;
-    init_params.attribs = gles2::ContextCreationAttribHelper();
+    init_params.attribs = ContextCreationAttribs();
     init_params.attribs.context_type = type;
     init_params.active_url = GURL();
     gpu::ContextResult result = gpu::ContextResult::kFatalFailure;
@@ -73,17 +73,17 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 #if defined(OS_ANDROID)
 TEST_F(GpuChannelManagerTest, OnLowEndBackgroundedWithoutWebGL) {
   channel_manager()->set_low_end_mode_for_testing(true);
-  TestOnApplicationStateChange(gles2::CONTEXT_TYPE_OPENGLES2, true);
+  TestOnApplicationStateChange(CONTEXT_TYPE_OPENGLES2, true);
 }
 
 TEST_F(GpuChannelManagerTest, OnLowEndBackgroundedWithWebGL) {
   channel_manager()->set_low_end_mode_for_testing(true);
-  TestOnApplicationStateChange(gles2::CONTEXT_TYPE_WEBGL2, false);
+  TestOnApplicationStateChange(CONTEXT_TYPE_WEBGL2, false);
 }
 
 TEST_F(GpuChannelManagerTest, OnHighEndBackgrounded) {
   channel_manager()->set_low_end_mode_for_testing(false);
-  TestOnApplicationStateChange(gles2::CONTEXT_TYPE_OPENGLES2, false);
+  TestOnApplicationStateChange(CONTEXT_TYPE_OPENGLES2, false);
 }
 #endif
 

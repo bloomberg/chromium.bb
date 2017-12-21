@@ -18,7 +18,7 @@ class GLVirtualContextsEXTWindowRectanglesTest : public testing::Test {
  protected:
   void SetUp() override {
     GLManager::Options options;
-    options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
+    options.context_type = CONTEXT_TYPE_OPENGLES3;
     gl_real_shared_.Initialize(options);
     options.virtual_manager = &gl_real_shared_;
     gl1_.Initialize(options);
