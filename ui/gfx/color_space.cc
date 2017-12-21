@@ -22,7 +22,7 @@ namespace gfx {
 namespace {
 
 // See comments in ToSkColorSpace about this cache. This cache may only be
-// accessed while holding g_lock.
+// accessed while holding g_sk_color_space_cache_lock.
 static const size_t kMaxCachedSkColorSpaces = 16;
 using SkColorSpaceCacheBase =
     base::MRUCache<gfx::ColorSpace, sk_sp<SkColorSpace>>;
@@ -32,7 +32,8 @@ class SkColorSpaceCache : public SkColorSpaceCacheBase {
 };
 base::LazyInstance<SkColorSpaceCache>::Leaky g_sk_color_space_cache =
     LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_sk_color_space_cache_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -500,7 +501,7 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   // Maintain a gfx::ColorSpace to SkColorSpace map, so that pointer-based
   // comparisons of SkColorSpaces will be more likely to be accurate.
   // https://crbug.com/793116
-  base::AutoLock lock(g_lock.Get());
+  base::AutoLock lock(g_sk_color_space_cache_lock.Get());
 
   auto found = g_sk_color_space_cache.Get().Get(*this);
   if (found != g_sk_color_space_cache.Get().end())
