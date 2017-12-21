@@ -35,13 +35,13 @@ enum BinaryType { "blob", "arraybuffer" };
 
 [
     ActiveScriptWrappable,
-    Constructor(DOMString url, optional (DOMString or sequence<DOMString>) protocols),
+    Constructor(USVString url, optional (DOMString or sequence<DOMString>) protocols),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     ImplementedAs=DOMWebSocket,
     RaisesException=Constructor
 ] interface WebSocket : EventTarget {
-    readonly attribute DOMString url;
+    readonly attribute USVString url;
 
     // ready state
     const unsigned short CONNECTING = 0;
