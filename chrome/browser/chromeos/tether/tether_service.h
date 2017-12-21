@@ -26,6 +26,7 @@ class Profile;
 namespace chromeos {
 class NetworkStateHandler;
 namespace tether {
+class GmsCoreNotificationsStateTrackerImpl;
 class NotificationPresenter;
 }  // namespace tether
 }  // namespace chromeos
@@ -236,6 +237,8 @@ class TetherService : public KeyedService,
   chromeos::NetworkStateHandler* network_state_handler_;
   std::unique_ptr<chromeos::tether::NotificationPresenter>
       notification_presenter_;
+  std::unique_ptr<chromeos::tether::GmsCoreNotificationsStateTrackerImpl>
+      gms_core_notifications_state_tracker_;
   std::unique_ptr<cryptauth::RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<chromeos::tether::TetherHostFetcher> tether_host_fetcher_;
   std::unique_ptr<chromeos::tether::TetherComponent> tether_component_;

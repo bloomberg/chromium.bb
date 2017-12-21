@@ -172,6 +172,8 @@ class TestTetherComponentFactory final
       cryptauth::CryptAuthService* cryptauth_service,
       chromeos::tether::TetherHostFetcher* tether_host_fetcher,
       chromeos::tether::NotificationPresenter* notification_presenter,
+      chromeos::tether::GmsCoreNotificationsStateTrackerImpl*
+          gms_core_notifications_state_tracker,
       PrefService* pref_service,
       chromeos::NetworkStateHandler* network_state_handler,
       chromeos::ManagedNetworkConfigurationHandler*

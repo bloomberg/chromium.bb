@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/device_status_util.h"
+#include "chromeos/components/tether/gms_core_notifications_state_tracker_impl.h"
 #include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
@@ -27,6 +28,7 @@ HostScanner::HostScanner(
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
     TetherHostResponseRecorder* tether_host_response_recorder,
+    GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
     NotificationPresenter* notification_presenter,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
     HostScanCache* host_scan_cache,
@@ -36,6 +38,8 @@ HostScanner::HostScanner(
       connection_manager_(connection_manager),
       host_scan_device_prioritizer_(host_scan_device_prioritizer),
       tether_host_response_recorder_(tether_host_response_recorder),
+      gms_core_notifications_state_tracker_(
+          gms_core_notifications_state_tracker),
       notification_presenter_(notification_presenter),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       host_scan_cache_(host_scan_cache),
@@ -75,13 +79,20 @@ void HostScanner::OnTetherHostsFetched(
   host_scanner_operation_ = HostScannerOperation::Factory::NewInstance(
       tether_hosts, connection_manager_, host_scan_device_prioritizer_,
       tether_host_response_recorder_);
+  // Add |gms_core_notifications_state_tracker_| as the first observer. When the
+  // final change event is emitted, this class will destroy
+  // |host_scanner_operation_|, so |gms_core_notifications_state_tracker_| must
+  // be notified of the final change event before that occurs.
+  host_scanner_operation_->AddObserver(gms_core_notifications_state_tracker_);
   host_scanner_operation_->AddObserver(this);
   host_scanner_operation_->Initialize();
 }
 
 void HostScanner::OnTetherAvailabilityResponse(
-    std::vector<HostScannerOperation::ScannedDeviceInfo>&
+    const std::vector<HostScannerOperation::ScannedDeviceInfo>&
         scanned_device_list_so_far,
+    const std::vector<cryptauth::RemoteDevice>&
+        gms_core_notifications_disabled_devices,
     bool is_final_scan_result) {
   if (scanned_device_list_so_far.empty() && !is_final_scan_result) {
     was_notification_showing_when_current_scan_started_ =
@@ -161,7 +172,8 @@ void HostScanner::SetCacheEntry(
 }
 
 void HostScanner::OnFinalScanResultReceived(
-    std::vector<HostScannerOperation::ScannedDeviceInfo>& final_scan_results) {
+    const std::vector<HostScannerOperation::ScannedDeviceInfo>&
+        final_scan_results) {
   // Search through all GUIDs that were in the cache before the scan began. If
   // any of those GUIDs are not present in the final scan results, remove them
   // from the cache.
@@ -203,6 +215,8 @@ void HostScanner::OnFinalScanResultReceived(
 
   // If the final scan result has been received, the operation is finished.
   // Delete it.
+  host_scanner_operation_->RemoveObserver(
+      gms_core_notifications_state_tracker_);
   host_scanner_operation_->RemoveObserver(this);
   host_scanner_operation_.reset();
 

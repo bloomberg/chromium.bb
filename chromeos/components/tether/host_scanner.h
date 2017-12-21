@@ -25,6 +25,7 @@ namespace tether {
 
 class BleConnectionManager;
 class DeviceIdTetherNetworkGuidMap;
+class GmsCoreNotificationsStateTrackerImpl;
 class HostScanCache;
 class HostScanDevicePrioritizer;
 class TetherHostFetcher;
@@ -47,6 +48,8 @@ class HostScanner : public HostScannerOperation::Observer {
               BleConnectionManager* connection_manager,
               HostScanDevicePrioritizer* host_scan_device_prioritizer,
               TetherHostResponseRecorder* tether_host_response_recorder,
+              GmsCoreNotificationsStateTrackerImpl*
+                  gms_core_notifications_state_tracker,
               NotificationPresenter* notification_presenter,
               DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
               HostScanCache* host_scan_cache,
@@ -64,8 +67,10 @@ class HostScanner : public HostScannerOperation::Observer {
 
   // HostScannerOperation::Observer:
   void OnTetherAvailabilityResponse(
-      std::vector<HostScannerOperation::ScannedDeviceInfo>&
+      const std::vector<HostScannerOperation::ScannedDeviceInfo>&
           scanned_device_list_so_far,
+      const std::vector<cryptauth::RemoteDevice>&
+          gms_core_notifications_disabled_devices,
       bool is_final_scan_result) override;
 
   void AddObserver(Observer* observer);
@@ -88,7 +93,8 @@ class HostScanner : public HostScannerOperation::Observer {
   void SetCacheEntry(
       const HostScannerOperation::ScannedDeviceInfo& scanned_device_info);
   void OnFinalScanResultReceived(
-      std::vector<HostScannerOperation::ScannedDeviceInfo>& final_scan_results);
+      const std::vector<HostScannerOperation::ScannedDeviceInfo>&
+          final_scan_results);
   void RecordHostScanResult(HostScanResultEventType event_type);
   bool IsPotentialHotspotNotificationShowing();
   bool CanAvailableHostNotificationBeShown();
@@ -98,6 +104,7 @@ class HostScanner : public HostScannerOperation::Observer {
   BleConnectionManager* connection_manager_;
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
+  GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker_;
   NotificationPresenter* notification_presenter_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
   HostScanCache* host_scan_cache_;

@@ -28,8 +28,6 @@ class TetherHostResponseRecorder;
 // once an authenticated channel has been established; once a response has been
 // received, HostScannerOperation alerts observers of devices which can provide
 // a tethering connection.
-// TODO(khorimoto): Add a timeout which gives up if no response is received in
-// a reasonable amount of time.
 class HostScannerOperation : public MessageTransferOperation {
  public:
   class Factory {
@@ -74,7 +72,9 @@ class HostScannerOperation : public MessageTransferOperation {
     // processed, the callback is invoked one final time with
     // |is_final_scan_result| = true.
     virtual void OnTetherAvailabilityResponse(
-        std::vector<ScannedDeviceInfo>& scanned_device_list_so_far,
+        const std::vector<ScannedDeviceInfo>& scanned_device_list_so_far,
+        const std::vector<cryptauth::RemoteDevice>&
+            gms_core_notifications_disabled_devices,
         bool is_final_scan_result) = 0;
   };
 
@@ -111,6 +111,8 @@ class HostScannerOperation : public MessageTransferOperation {
   TetherHostResponseRecorder* tether_host_response_recorder_;
   std::unique_ptr<base::Clock> clock_;
   base::ObserverList<Observer> observer_list_;
+
+  std::vector<cryptauth::RemoteDevice> gms_core_notifications_disabled_devices_;
 
   std::map<std::string, base::Time>
       device_id_to_tether_availability_request_start_time_map_;
