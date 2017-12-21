@@ -71,6 +71,7 @@
 #include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
+#include "content/test/test_overscroll_delegate.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "ipc/ipc_message.h"
@@ -173,79 +174,6 @@ const gfx::Rect& DamageRectForView(RenderWidgetHostViewAura* view) {
       .render_pass_list.back()
       ->damage_rect;
 }
-
-class TestOverscrollDelegate : public OverscrollControllerDelegate {
- public:
-  explicit TestOverscrollDelegate(RenderWidgetHostView* view)
-      : view_(view),
-        current_mode_(OVERSCROLL_NONE),
-        completed_mode_(OVERSCROLL_NONE),
-        delta_x_(0.f),
-        delta_y_(0.f) {}
-
-  ~TestOverscrollDelegate() override {}
-
-  void set_delta_cap(float delta_cap) { delta_cap_ = delta_cap; }
-
-  OverscrollMode current_mode() const { return current_mode_; }
-  OverscrollMode completed_mode() const { return completed_mode_; }
-  const std::vector<OverscrollMode>& historical_modes() const {
-    return historical_modes_;
-  }
-  float delta_x() const { return delta_x_; }
-  float delta_y() const { return delta_y_; }
-
-  void Reset() {
-    current_mode_ = OVERSCROLL_NONE;
-    completed_mode_ = OVERSCROLL_NONE;
-    historical_modes_.clear();
-    delta_x_ = delta_y_ = 0.f;
-  }
-
- private:
-  // Overridden from OverscrollControllerDelegate:
-  gfx::Size GetDisplaySize() const override {
-    return display::Screen::GetScreen()
-        ->GetDisplayNearestView(view_->GetNativeView())
-        .size();
-  }
-
-  bool OnOverscrollUpdate(float delta_x, float delta_y) override {
-    delta_x_ = delta_x;
-    delta_y_ = delta_y;
-    return true;
-  }
-
-  void OnOverscrollComplete(OverscrollMode overscroll_mode) override {
-    EXPECT_EQ(current_mode_, overscroll_mode);
-    completed_mode_ = overscroll_mode;
-    current_mode_ = OVERSCROLL_NONE;
-  }
-
-  void OnOverscrollModeChange(OverscrollMode old_mode,
-                              OverscrollMode new_mode,
-                              OverscrollSource source) override {
-    EXPECT_EQ(current_mode_, old_mode);
-    current_mode_ = new_mode;
-    historical_modes_.push_back(new_mode);
-    delta_x_ = delta_y_ = 0.f;
-  }
-
-  base::Optional<float> GetMaxOverscrollDelta() const override {
-    return delta_cap_;
-  }
-
-  RenderWidgetHostView* view_;
-  base::Optional<float> delta_cap_;
-  OverscrollMode current_mode_;
-  OverscrollMode completed_mode_;
-  std::vector<OverscrollMode> historical_modes_;
-
-  float delta_x_;
-  float delta_y_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOverscrollDelegate);
-};
 
 // Simple observer that keeps track of changes to a window for tests.
 class TestWindowObserver : public aura::WindowObserver {
@@ -881,6 +809,8 @@ class RenderWidgetHostViewGuestAuraTest : public RenderWidgetHostViewAuraTest {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestAuraTest);
 };
 
+// TODO(mohsen): Consider moving these tests to OverscrollControllerTest if
+// appropriate.
 class RenderWidgetHostViewAuraOverscrollTest
     : public RenderWidgetHostViewAuraTest {
  public:
@@ -947,7 +877,10 @@ class RenderWidgetHostViewAuraOverscrollTest
     RenderWidgetHostViewAuraTest::SetUp();
 
     view_->SetOverscrollControllerEnabled(true);
-    overscroll_delegate_.reset(new TestOverscrollDelegate(view_));
+    gfx::Size display_size = display::Screen::GetScreen()
+                                 ->GetDisplayNearestView(view_->GetNativeView())
+                                 .size();
+    overscroll_delegate_.reset(new TestOverscrollDelegate(display_size));
     view_->overscroll_controller()->set_delegate(overscroll_delegate_.get());
 
     view_->InitAsChild(nullptr);
@@ -1084,16 +1017,17 @@ class RenderWidgetHostViewAuraOverscrollTest
         velocityX, velocityY, sourceDevice));
   }
 
-  bool ScrollStateIsContentScrolling() const {
-    return scroll_state() == OverscrollController::STATE_CONTENT_SCROLLING;
+  bool ScrollStateIsContentConsuming() const {
+    return scroll_state() ==
+           OverscrollController::ScrollState::CONTENT_CONSUMING;
   }
 
   bool ScrollStateIsOverscrolling() const {
-    return scroll_state() == OverscrollController::STATE_OVERSCROLLING;
+    return scroll_state() == OverscrollController::ScrollState::OVERSCROLLING;
   }
 
   bool ScrollStateIsUnknown() const {
-    return scroll_state() == OverscrollController::STATE_UNKNOWN;
+    return scroll_state() == OverscrollController::ScrollState::NONE;
   }
 
   OverscrollController::ScrollState scroll_state() const {
@@ -1260,7 +1194,7 @@ class RenderWidgetHostViewAuraOverscrollTest
   void WheelScrollOverscrollToggle();
   void OverscrollMouseMoveCompletion();
   void WheelScrollEventOverscrolls();
-  void WheelScrollConsumedDoNotHorizOverscroll();
+  void WheelScrollConsumedDoNotOverscroll();
   void ScrollEventsOverscrollWithFling();
   void OverscrollDirectionChangeMouseWheel();
   void OverscrollStateResetsAfterScroll();
@@ -3991,6 +3925,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventPositionsArentRounded) {
   EXPECT_EQ(kY, pointer_state().GetY(0));
 }
 
+// Tests that non-precise mouse-wheel events do not initiate overscroll.
 void RenderWidgetHostViewAuraOverscrollTest::WheelNotPreciseScrollEvent() {
   SetUpOverscrollEnvironment();
 
@@ -4052,6 +3987,8 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
   WheelNotPreciseScrollEvent();
 }
 
+// Tests that precise mouse-wheel events initiate overscroll and a mouse move
+// will cancel it.
 void RenderWidgetHostViewAuraOverscrollTest::WheelScrollEventOverscrolls() {
   SetUpOverscrollEnvironment();
 
@@ -4134,9 +4071,9 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
 }
 
 // Tests that if some scroll events are consumed towards the start, then
-// subsequent scrolls do not horizontal overscroll.
+// subsequent scrolls do not overscroll.
 void RenderWidgetHostViewAuraOverscrollTest::
-    WheelScrollConsumedDoNotHorizOverscroll() {
+    WheelScrollConsumedDoNotOverscroll() {
   SetUpOverscrollEnvironment();
 
   // Simulate wheel events. Do not cross start threshold.
@@ -4215,16 +4152,16 @@ void RenderWidgetHostViewAuraOverscrollTest::
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
 }
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       WheelScrollConsumedDoNotHorizOverscroll) {
-  WheelScrollConsumedDoNotHorizOverscroll();
+       WheelScrollConsumedDoNotOverscroll) {
+  WheelScrollConsumedDoNotOverscroll();
 }
 TEST_F(RenderWidgetHostViewAuraOverscrollWithoutWheelScrollLatchingTest,
-       WheelScrollConsumedDoNotHorizOverscroll) {
-  WheelScrollConsumedDoNotHorizOverscroll();
+       WheelScrollConsumedDoNotOverscroll) {
+  WheelScrollConsumedDoNotOverscroll();
 }
 TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
-       WheelScrollConsumedDoNotHorizOverscroll) {
-  WheelScrollConsumedDoNotHorizOverscroll();
+       WheelScrollConsumedDoNotOverscroll) {
+  WheelScrollConsumedDoNotOverscroll();
 }
 
 // Tests that wheel-scrolling correctly turns overscroll on and off.
@@ -4363,6 +4300,7 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
   WheelScrollOverscrollToggle();
 }
 
+// Tests that a small fling after overscroll is initiated aborts the overscroll.
 void RenderWidgetHostViewAuraOverscrollTest::ScrollEventsOverscrollWithFling() {
   SetUpOverscrollEnvironment();
 
@@ -4558,14 +4496,14 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
 }
 
 // Tests that a fling in the opposite direction of the overscroll cancels the
-// overscroll nav instead of completing it.
+// overscroll instead of completing it.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, ReverseFlingCancelsOverscroll) {
   SetUpOverscrollEnvironment();
 
   {
     // Start and end a gesture in the same direction without processing the
     // gesture events in the renderer. This should initiate and complete an
-    // overscroll navigation.
+    // overscroll.
     SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                          blink::kWebGestureDeviceTouchscreen);
     SimulateGestureScrollUpdateEvent(300, -5, 0);
@@ -4590,8 +4528,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, ReverseFlingCancelsOverscroll) {
   {
     // Start over, except instead of ending the gesture with ScrollEnd, end it
     // with a FlingStart, with velocity in the reverse direction. This should
-    // initiate an overscroll navigation, but it should be cancelled because of
-    // the fling in the opposite direction.
+    // initiate an overscroll, but it should be cancelled because of the fling
+    // in the opposite direction.
     overscroll_delegate()->Reset();
     SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                          blink::kWebGestureDeviceTouchscreen);
@@ -4631,7 +4569,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
   // Send another gesture event and ACK as not being processed. This should
-  // initiate the navigation gesture.
+  // initiate the overscroll.
   SimulateGestureScrollUpdateEvent(55, -5, 0);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("TouchScrollStarted GestureScrollUpdate", GetMessageNames(events));
@@ -4736,10 +4674,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
 }
 
 // Tests that if the page is scrolled because of a scroll-gesture, then that
-// particular scroll sequence never generates overscroll if the scroll direction
-// is horizontal.
-TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       GestureScrollConsumedHorizontal) {
+// particular scroll sequence never generates overscroll.
+TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollConsumed) {
   SetUpOverscrollEnvironment();
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
@@ -5118,6 +5054,10 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
 }
 
+// Tests that after touchscreen overscroll is initiated, scrolling in the
+// opposite direction ends the overscroll in the original direction without
+// initiating overscroll in the opposite direction. The scroll-update events
+// should still be consumed to prevent content scroll.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDirectionChange) {
   SetUpOverscrollEnvironmentWithDebounce(100);
 
@@ -5141,7 +5081,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDirectionChange) {
   EXPECT_EQ(0U, events.size());
 
   // Send another update event, but in the reverse direction. Although the
-  // overscroll controller is not triggering gesture-nav, it will consume the
+  // overscroll controller is not triggering overscroll, it will consume the
   // ScrollUpdate event to prevent content scroll.
   SimulateGestureScrollUpdateEvent(-260, 0, 0);
   events = GetAndResetDispatchedMessages();
@@ -5226,6 +5166,10 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->historical_modes().at(1));
 }
 
+// Tests that after touchpad overscroll is initiated, scrolling in the opposite
+// direction ends the overscroll in the original direction without initiating
+// overscroll in the opposite direction. The scroll-update events should still
+// be consumed to prevent content scroll.
 void RenderWidgetHostViewAuraOverscrollTest::
     OverscrollDirectionChangeMouseWheel() {
   SetUpOverscrollEnvironment();
@@ -5250,7 +5194,7 @@ void RenderWidgetHostViewAuraOverscrollTest::
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
 
   // Send another wheel event, but in the reverse direction. Although the
-  // overscroll controller is not triggering gesture-nav, it will consume the
+  // overscroll controller is not triggering overscroll, it will consume the
   // ScrollUpdate event to prevent content scroll.
   SimulateWheelEventPossiblyIncludingPhase(-260, 0, 0, true,
                                            WebMouseWheelEvent::kPhaseChanged);
@@ -5297,6 +5241,8 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
   OverscrollDirectionChangeMouseWheel();
 }
 
+// Tests that mouse-move completes overscoll if it has passed activation
+// threshold and aborts it otherwise.
 void RenderWidgetHostViewAuraOverscrollTest::OverscrollMouseMoveCompletion() {
   SetUpOverscrollEnvironment();
 
@@ -5344,9 +5290,9 @@ void RenderWidgetHostViewAuraOverscrollTest::OverscrollMouseMoveCompletion() {
   EXPECT_EQ(OverscrollSource::TOUCHPAD, overscroll_source());
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
 
-  // Send a mouse-move event. This should cancel the overscroll navigation
-  // (since the amount overscrolled is not above the threshold), and so the
-  // mouse-move should reach the renderer.
+  // Send a mouse-move event. This should cancel the overscroll gesture (since
+  // the amount overscrolled is not above the threshold), and so the mouse-move
+  // should reach the renderer.
   SimulateMouseMove(5, 10, 0);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseMove", GetMessageNames(events));
@@ -5437,7 +5383,7 @@ void RenderWidgetHostViewAuraOverscrollTest::
   events = ExpectGestureScrollEventsAfterMouseWheelACK(true, 1);
   SendScrollBeginAckIfNeeded(events, INPUT_EVENT_ACK_STATE_CONSUMED);
   SendScrollUpdateAck(events, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_TRUE(ScrollStateIsContentScrolling());
+  EXPECT_TRUE(ScrollStateIsContentConsuming());
 
   if (wheel_scrolling_mode_ != kAsyncWheelEvents) {
     ExpectGestureScrollEndForWheelScrolling(false);
@@ -5447,7 +5393,7 @@ void RenderWidgetHostViewAuraOverscrollTest::
     events = ExpectGestureScrollEventsAfterMouseWheelACK(false, 0);
   }
   SendScrollUpdateAck(events, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_TRUE(ScrollStateIsContentScrolling());
+  EXPECT_TRUE(ScrollStateIsContentConsuming());
 
   // Touchpad scroll can end with a zero-velocity fling which is not dispatched.
   SimulateGestureFlingStartEvent(0.f, 0.f, blink::kWebGestureDeviceTouchpad);
@@ -5537,6 +5483,8 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
   OverscrollStateResetsAfterScroll();
 }
 
+// Tests that overscroll is reset when window loses focus. It should not affect
+// subsequent overscrolls.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   SetUpOverscrollEnvironment();
 
