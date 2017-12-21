@@ -416,7 +416,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
       return;
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
     // maintain the aspect ratio after resize.
-    chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
+    ash::WallpaperController::ResizeAndSaveWallpaper(
         wallpaper_, file_path, wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
         ash::WallpaperController::kSmallWallpaperMaxWidth,
         ash::WallpaperController::kSmallWallpaperMaxHeight, NULL);
@@ -499,11 +499,10 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunAsync() {
 
 void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& image) {
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      ash::WallpaperController::kThumbnailWallpaperSubDir, wallpaper_files_id_,
-      params->file_name);
+  base::FilePath thumbnail_path =
+      ash::WallpaperController::GetCustomWallpaperPath(
+          ash::WallpaperController::kThumbnailWallpaperSubDir,
+          wallpaper_files_id_.id(), params->file_name);
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
@@ -512,7 +511,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   bool update_wallpaper =
       account_id_ ==
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  wallpaper_manager->SetCustomWallpaper(
+  WallpaperControllerClient::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params->file_name, layout,
       wallpaper::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
@@ -546,7 +545,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
     base::CreateDirectory(thumbnail_path.DirName());
 
   scoped_refptr<base::RefCountedBytes> data;
-  chromeos::WallpaperManager::Get()->ResizeImage(
+  ash::WallpaperController::ResizeImage(
       *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
       ash::WallpaperController::kWallpaperThumbnailWidth,
       ash::WallpaperController::kWallpaperThumbnailHeight, &data, NULL);

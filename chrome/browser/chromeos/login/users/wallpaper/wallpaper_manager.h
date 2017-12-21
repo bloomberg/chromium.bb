@@ -158,55 +158,6 @@ class WallpaperManager : public content::NotificationObserver,
   // WallpaperManager to remove any observers it has registered.
   static void Shutdown();
 
-  // A wrapper of |WallpaperController::GetCustomWallpaperDir|.
-  static base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
-
-  // Resizes |image| to a resolution which is nearest to |preferred_width| and
-  // |preferred_height| while respecting the |layout| choice. |output_skia| is
-  // optional (may be NULL). Returns true on success.
-  static bool ResizeImage(const gfx::ImageSkia& image,
-                          wallpaper::WallpaperLayout layout,
-                          int preferred_width,
-                          int preferred_height,
-                          scoped_refptr<base::RefCountedBytes>* output,
-                          gfx::ImageSkia* output_skia);
-
-  // Resizes |image| to a resolution which is nearest to |preferred_width| and
-  // |preferred_height| while respecting the |layout| choice and saves the
-  // resized wallpaper to |path|. |output_skia| is optional (may be
-  // NULL). Returns true on success.
-  static bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
-                                     const base::FilePath& path,
-                                     wallpaper::WallpaperLayout layout,
-                                     int preferred_width,
-                                     int preferred_height,
-                                     gfx::ImageSkia* output_skia);
-
-  // Returns custom wallpaper path. Append |sub_dir|, |wallpaper_files_id| and
-  // |file_name| to custom wallpaper directory.
-  static base::FilePath GetCustomWallpaperPath(
-      const std::string& sub_dir,
-      const wallpaper::WallpaperFilesId& wallpaper_files_id,
-      const std::string& file_name);
-
-  // Sets wallpaper from policy or from a local file. Saves the custom wallpaper
-  // to file, posts task to generate thumbnail and updates local state.
-  // |account_id|: The user's account id.
-  // |wallpaper_files_id|: The unique id of each wallpaper file.
-  // |file_name|: The name of the wallpaper file.
-  // |layout|: The layout of the wallpaper, used for wallpaper resizing.
-  // |type|: The type of the wallpaper, e.g., default, policy etc.
-  // |image|: The wallpaper image.
-  // |show_wallpaper|: If false, don't show the new wallpaper now but only
-  //                   update cache.
-  void SetCustomWallpaper(const AccountId& account_id,
-                          const wallpaper::WallpaperFilesId& wallpaper_files_id,
-                          const std::string& file_name,
-                          wallpaper::WallpaperLayout layout,
-                          wallpaper::WallpaperType type,
-                          const gfx::ImageSkia& image,
-                          bool show_wallpaper);
-
   // Sets a customized default wallpaper to be used wherever a default wallpaper
   // is needed. Note: it doesn't change the default wallpaper for guest and
   // child accounts.
@@ -244,10 +195,6 @@ class WallpaperManager : public content::NotificationObserver,
   // current display's resolution.
   void UpdateWallpaper(bool clear_cache);
 
-  // Returns if the image is in the pending list. |image_id| can be obtained
-  // from gfx::ImageSkia by using WallpaperResizer::GetImageId().
-  bool IsPendingWallpaper(uint32_t image_id);
-
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(wallpaper::WallpaperInfo* info);
 
@@ -267,7 +214,7 @@ class WallpaperManager : public content::NotificationObserver,
   // Returns queue size.
   size_t GetPendingListSizeForTesting() const;
 
-  // Returns whether a wallpaper policy is enforced for |account_id|.
+  // A wrapper of |WallpaperController::IsPolicyControlled|.
   bool IsPolicyControlled(const AccountId& account_id) const;
 
   // Called when a wallpaper policy has been set for |account_id|.  Blocks user
@@ -305,14 +252,6 @@ class WallpaperManager : public content::NotificationObserver,
   friend class WallpaperManagerPolicyTest;
 
   WallpaperManager();
-
-  // Saves original custom wallpaper to |path| (absolute path) on filesystem
-  // and starts resizing operation of the custom wallpaper if necessary.
-  static void SaveCustomWallpaper(
-      const wallpaper::WallpaperFilesId& wallpaper_files_id,
-      const base::FilePath& path,
-      wallpaper::WallpaperLayout layout,
-      std::unique_ptr<gfx::ImageSkia> image);
 
   // Moves custom wallpapers from user email directory to
   // |wallpaper_files_id| directory.

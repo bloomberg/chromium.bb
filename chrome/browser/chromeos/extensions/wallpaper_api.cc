@@ -149,11 +149,10 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
 
 void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& image) {
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      ash::WallpaperController::kThumbnailWallpaperSubDir, wallpaper_files_id_,
-      params_->details.filename);
+  base::FilePath thumbnail_path =
+      ash::WallpaperController::GetCustomWallpaperPath(
+          ash::WallpaperController::kThumbnailWallpaperSubDir,
+          wallpaper_files_id_.id(), params_->details.filename);
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       extensions::api::wallpaper::ToString(params_->details.layout));
@@ -162,7 +161,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   bool update_wallpaper =
       account_id_ ==
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  wallpaper_manager->SetCustomWallpaper(
+  WallpaperControllerClient::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params_->details.filename, layout,
       wallpaper::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
@@ -205,10 +204,10 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
 
   scoped_refptr<base::RefCountedBytes> original_data;
   scoped_refptr<base::RefCountedBytes> thumbnail_data;
-  chromeos::WallpaperManager::Get()->ResizeImage(
+  ash::WallpaperController::ResizeImage(
       *image, wallpaper::WALLPAPER_LAYOUT_STRETCH, image->width(),
       image->height(), &original_data, NULL);
-  chromeos::WallpaperManager::Get()->ResizeImage(
+  ash::WallpaperController::ResizeImage(
       *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
       ash::WallpaperController::kWallpaperThumbnailWidth,
       ash::WallpaperController::kWallpaperThumbnailHeight, &thumbnail_data,
