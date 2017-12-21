@@ -201,6 +201,7 @@ enable_feature spatial_resampling
 enable_feature multithread
 enable_feature os_support
 enable_feature highbitdepth
+enable_feature pic
 
 CODECS="
     av1_encoder
