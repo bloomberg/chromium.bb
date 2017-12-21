@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -113,29 +114,34 @@ const CGFloat kMaxFloatDelta = 0.01;
   // Cache miss.
   currentRequest = [self recordPendingRequestForTab:tab];
   NSString* key = [self keyForTab:tab];
-  [tab retrieveSnapshot:^(UIImage* snapshot) {
-    PendingSnapshotRequest requestForSession = [self pendingRequestForTab:tab];
-    // Cancel this request if another one has replaced it for this sessionId.
-    if (currentRequest.requestId != requestForSession.requestId)
-      return;
-    dispatch_async(_cacheQueue, ^{
-      DCHECK(![NSThread isMainThread]);
-      UIImage* resizedSnapshot =
-          [TabSwitcherCache resizedImage:snapshot toSize:size];
-      if ([self storeImage:resizedSnapshot forKey:key request:currentRequest]) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-          // Cancel this request if another one has replaced it for this
-          // sessionId.
-          PendingSnapshotRequest requestForSession =
-              [self pendingRequestForTab:tab];
-          if (currentRequest.requestId != requestForSession.requestId)
-            return;
-          completionBlock(resizedSnapshot);
-          [self removePendingSnapshotRequest:currentRequest];
+  SnapshotTabHelper::FromWebState(tab.webState)
+      ->RetrieveColorSnapshot(^(UIImage* snapshot) {
+        PendingSnapshotRequest requestForSession =
+            [self pendingRequestForTab:tab];
+        // Cancel this request if another one has replaced it for this
+        // sessionId.
+        if (currentRequest.requestId != requestForSession.requestId)
+          return;
+        dispatch_async(_cacheQueue, ^{
+          DCHECK(![NSThread isMainThread]);
+          UIImage* resizedSnapshot =
+              [TabSwitcherCache resizedImage:snapshot toSize:size];
+          if ([self storeImage:resizedSnapshot
+                        forKey:key
+                       request:currentRequest]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+              // Cancel this request if another one has replaced it for this
+              // sessionId.
+              PendingSnapshotRequest requestForSession =
+                  [self pendingRequestForTab:tab];
+              if (currentRequest.requestId != requestForSession.requestId)
+                return;
+              completionBlock(resizedSnapshot);
+              [self removePendingSnapshotRequest:currentRequest];
+            });
+          }
         });
-      }
-    });
-  }];
+      });
   return currentRequest;
 }
 

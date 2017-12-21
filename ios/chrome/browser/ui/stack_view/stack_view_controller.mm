@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_util.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
@@ -2247,7 +2248,9 @@ NSString* const kTransitionToolbarAnimationKey =
   // generating a snapshot, but then restore the original frame.
   CGRect originalTabFrame = [tab view].frame;
   [tab view].frame = viewBounds;
-  newCard.image = [tab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+  newCard.image =
+      SnapshotTabHelper::FromWebState(tab.webState)
+          ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   [tab view].frame = originalTabFrame;
   newCard.center =
       CGPointMake(CGRectGetMidX(viewBounds), CGRectGetMidY(viewBounds));

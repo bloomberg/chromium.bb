@@ -114,6 +114,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/activity_services",

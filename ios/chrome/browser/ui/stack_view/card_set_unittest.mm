@@ -5,6 +5,9 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/strings/stringprintf.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
@@ -13,9 +16,11 @@
 #import "ios/chrome/browser/ui/stack_view/card_set.h"
 #import "ios/chrome/browser/ui/stack_view/card_stack_layout_manager.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -33,7 +38,9 @@
 }
 
 // Adds a new mock tab with the given properties.
-- (void)addTabWithTitle:(NSString*)title location:(const GURL&)url;
+- (void)addTabWithTitle:(NSString*)title
+               location:(const GURL&)url
+           browserState:(ios::ChromeBrowserState*)browserState;
 
 // TabModel mocking.
 - (NSUInteger)count;
@@ -55,15 +62,25 @@
 
 using CardSetTestTabMock_url = const GURL& (^)();
 
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+  self =
+      [super initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  if (self) {
+    _webState.SetBrowserState(browserState);
+    _webState.SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
+
+    SnapshotTabHelper::CreateForWebState(&_webState,
+                                         [[NSUUID UUID] UUIDString]);
+  }
+  return self;
+}
+
 - (const GURL&)url {
   return static_cast<CardSetTestTabMock_url>([self blockForSelector:_cmd])();
 }
 
 - (web::WebState*)webState {
-  if (!_webState.GetNavigationManager()) {
-    _webState.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
-  }
   return &_webState;
 }
 
@@ -78,9 +95,10 @@ using CardSetTestTabMock_url = const GURL& (^)();
   return self;
 }
 
-- (void)addTabWithTitle:(NSString*)title location:(const GURL&)url {
-  id tab = [[CardSetTestTabMock alloc]
-      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+- (void)addTabWithTitle:(NSString*)title
+               location:(const GURL&)url
+           browserState:(ios::ChromeBrowserState*)browserState {
+  id tab = [[CardSetTestTabMock alloc] initWithBrowserState:browserState];
   UIView* dummyView = [[UIView alloc] initWithFrame:CGRectZero];
   static int sCounter = 0;
   NSString* sessionID = [NSString stringWithFormat:@"%d", sCounter++];
@@ -91,7 +109,6 @@ using CardSetTestTabMock_url = const GURL& (^)();
   } copy];
   [tab onSelector:@selector(url) callBlockExpectation:block];
 
-  [[tab expect] retrieveSnapshot:[OCMArg any]];
   [[[tab stub] andReturn:nil] webController];
   [[[tab stub] andReturnValue:OCMOCK_VALUE(no)] canGoBack];
   [[[tab stub] andReturnValue:OCMOCK_VALUE(no)] canGoForward];
@@ -177,12 +194,16 @@ CardStackLayoutManager* CreateMockCardStackLayoutManager() {
 
 class CardSetTest : public PlatformTest {
  protected:
+  CardSetTest() { browser_state_ = TestChromeBrowserState::Builder().Build(); }
+
   virtual void SetUpWithTabs(int nb_tabs) {
     tab_model_ = [[MockTabModel alloc] init];
 
     for (int i = 0; i < nb_tabs; ++i) {
       std::string url = base::StringPrintf("http://%d.example.com", i);
-      [tab_model_ addTabWithTitle:@"NewTab" location:GURL(url)];
+      [tab_model_ addTabWithTitle:@"NewTab"
+                         location:GURL(url)
+                     browserState:browser_state_.get()];
     }
 
     card_set_ = [[CardSet alloc] initWithModel:(TabModel*)tab_model_];
@@ -196,8 +217,13 @@ class CardSetTest : public PlatformTest {
     [card_set_ configureLayoutParametersWithMargin:10];
   }
 
-  void SetUp() override { SetUpWithTabs(2); }
+  void SetUp() override {
+    PlatformTest::SetUp();
+    SetUpWithTabs(2);
+  }
 
+  web::TestWebThreadBundle thread_bundle_;
+  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   MockTabModel* tab_model_;
   UIView* display_view_;
   CardSet* card_set_;
@@ -264,7 +290,8 @@ TEST_F(CardSetTest, NoticeTabAddition) {
   [card_set_ setObserver:(id<CardSetObserver>)observer];
 
   [tab_model_ addTabWithTitle:@"NewTab"
-                     location:GURL("http://www.example.com")];
+                     location:GURL("http://www.example.com")
+                 browserState:browser_state_.get()];
   cards = [card_set_ cards];
   EXPECT_EQ(initial_card_count + 1, [cards count]);
 
@@ -301,7 +328,8 @@ TEST_F(CardSetTest, Preloading) {
   // Add a bunch of cards to ensure stacking.
   for (int i = 0; i < 20; ++i) {
     [tab_model_ addTabWithTitle:@"NewTab"
-                       location:GURL("http://www.example.com")];
+                       location:GURL("http://www.example.com")
+                   browserState:browser_state_.get()];
   }
   [card_set_ fanOutCards];
 
@@ -347,7 +375,8 @@ TEST_F(CardSetTest, isCardInStartStaggerRegion) {
   // is a start stack.
   for (int i = 0; i < 20; ++i) {
     [tab_model_ addTabWithTitle:@"NewTab"
-                       location:GURL("http://www.example.com")];
+                       location:GURL("http://www.example.com")
+                   browserState:browser_state_.get()];
   }
   [card_set_ fanOutCardsWithStartIndex:10];
   // First card should now be collapsed into start stagger region.
@@ -361,7 +390,8 @@ TEST_F(CardSetTest, isCardInEndStaggerRegion) {
   // is an end stack.
   for (int i = 0; i < 20; ++i) {
     [tab_model_ addTabWithTitle:@"NewTab"
-                       location:GURL("http://www.example.com")];
+                       location:GURL("http://www.example.com")
+                   browserState:browser_state_.get()];
   }
   StackCard* last_card = [cards objectAtIndex:[cards count] - 1];
   [card_set_ fanOutCards];

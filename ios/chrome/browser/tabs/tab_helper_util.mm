@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_metrics_tab_helper.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #import "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
@@ -34,7 +35,6 @@
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -47,9 +47,9 @@
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
-void AttachTabHelpers(web::WebState* web_state) {
-  // Tab's WebStateObserver callbacks expect VoieSearchNavigationTabHelper's
-  // calbacks to be executed first so that state stays in sync.
+void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
+  // Tab's WebStateObserver callbacks expect VoiceSearchNavigationTabHelper's
+  // callbacks to be executed first so that state stays in sync.
   // TODO(crbug.com/778416): Remove this ordering requirement by relying solely
   // on the tab helper without going through Tab.
   VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
@@ -68,7 +68,8 @@ void AttachTabHelpers(web::WebState* web_state) {
   // so it needs to be created before them.
   IOSChromeSessionTabHelper::CreateForWebState(web_state);
 
-  NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab.tabId);
+  NSString* tab_id = TabIdTabHelper::FromWebState(web_state)->tab_id();
+  NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab_id);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
   IOSSecurityStateTabHelper::CreateForWebState(web_state);
@@ -113,10 +114,15 @@ void AttachTabHelpers(web::WebState* web_state) {
   InsecureInputTabHelper::CreateForWebState(web_state);
   ExternalAppLauncherTabHelper::CreateForWebState(web_state);
 
+  // TODO(crbug.com/794115): pre-rendered WebState have lots of unnecessary
+  // tab helpers for historical reasons. For the moment, AttachTabHelpers
+  // allows to inhibit the creation of some of them. Once PreloadController
+  // has been refactored to only create the necessary tab helpers, this
+  // condition can be removed.
+  if (!for_prerender) {
+    SnapshotTabHelper::CreateForWebState(web_state, tab_id);
+  }
+
   // Allow the embedder to attach tab helpers.
   ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state, tab);
-
-  // Allow the Tab to attach tab helper like objects (all those objects should
-  // really be tab helpers and created above).
-  [tab attachTabHelpers];
 }

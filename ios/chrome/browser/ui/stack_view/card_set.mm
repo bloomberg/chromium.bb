@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "components/favicon/ios/web_favicon_driver.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -505,9 +506,10 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
       [view setFavicon:favicon.ToUIImage()];
   }
 
-  [tab retrieveSnapshot:^(UIImage* image) {
-    [view setImage:image];
-  }];
+  SnapshotTabHelper::FromWebState(tab.webState)
+      ->RetrieveColorSnapshot(^(UIImage* image) {
+        [view setImage:image];
+      });
   if (!view.image)
     [view setImage:[CRWWebController defaultSnapshotImage]];
   view.closeButtonSide = self.closeButtonSide;

@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/background_generator.h"
@@ -266,21 +267,22 @@ const CGFloat kResizeFactor = 4;
   // grey image for multi core devices.
   dispatch_queue_t priorityQueue =
       dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0ul);
-  [tab retrieveSnapshot:^(UIImage* image) {
-    if (PagePlaceholderTabHelper::FromWebState(tab.webState)
-            ->will_add_placeholder_for_next_navigation() &&
-        !ios::device_util::IsSingleCoreDevice()) {
-      [card setImage:[CRWWebController defaultSnapshotImage]];
-      dispatch_async(priorityQueue, ^{
-        UIImage* greyImage = [self smallGreyImage:image];
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [card setImage:greyImage];
-        });
+  SnapshotTabHelper::FromWebState(tab.webState)
+      ->RetrieveColorSnapshot(^(UIImage* image) {
+        if (PagePlaceholderTabHelper::FromWebState(tab.webState)
+                ->will_add_placeholder_for_next_navigation() &&
+            !ios::device_util::IsSingleCoreDevice()) {
+          [card setImage:[CRWWebController defaultSnapshotImage]];
+          dispatch_async(priorityQueue, ^{
+            UIImage* greyImage = [self smallGreyImage:image];
+            dispatch_async(dispatch_get_main_queue(), ^{
+              [card setImage:greyImage];
+            });
+          });
+        } else {
+          [card setImage:image];
+        }
       });
-    } else {
-      [card setImage:image];
-    }
-  }];
 }
 
 // Place cards around |currentPoint_.x|, and lean towards each card near the

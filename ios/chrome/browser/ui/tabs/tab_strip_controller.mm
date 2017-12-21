@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
@@ -1573,7 +1574,8 @@ UIColor* BackgroundColor() {
   Tab* tappedTab = [_tabModel tabAtIndex:index];
   Tab* currentTab = [_tabModel currentTab];
   if (IsIPadIdiom() && (currentTab != tappedTab)) {
-    [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+    SnapshotTabHelper::FromWebState(currentTab.webState)
+        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   }
   [_tabModel setCurrentTab:tappedTab];
   [self updateContentOffsetForTabIndex:index isNewTab:NO];
