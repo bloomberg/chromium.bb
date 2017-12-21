@@ -95,6 +95,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   // TODO(mtrofin): replace with spec-ed error types, once spec clarifies
   // what they are.
   void AbortCompilation() {
+    ScriptState::Scope scope(script_state_.get());
     builder_.Abort(V8ThrowException::CreateTypeError(
         script_state_->GetIsolate(), "Could not download wasm module"));
   }
