@@ -155,15 +155,15 @@ class CaptureErrorFunction final : public ScriptFunction {
   String message_;
 };
 
-class NotReached final : public ScriptFunction {
+class DynamicModuleResolverTestNotReached final : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    auto not_reached = new NotReached(script_state);
+    auto not_reached = new DynamicModuleResolverTestNotReached(script_state);
     return not_reached->BindToV8Function();
   }
 
  private:
-  explicit NotReached(ScriptState* script_state)
+  explicit DynamicModuleResolverTestNotReached(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
   ScriptValue Call(ScriptValue) override {
@@ -185,7 +185,8 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
   auto capture =
       new CaptureExportedStringFunction(scope.GetScriptState(), "foo");
   promise.Then(capture->Bind(),
-               NotReached::CreateFunction(scope.GetScriptState()));
+               DynamicModuleResolverTestNotReached::CreateFunction(
+                   scope.GetScriptState()));
 
   auto resolver = DynamicModuleResolver::Create(modulator);
   resolver->ResolveDynamically("./dependency.js", TestReferrerURL(),
@@ -217,7 +218,8 @@ TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
   ScriptPromise promise = promise_resolver->Promise();
 
   auto capture = new CaptureErrorFunction(scope.GetScriptState());
-  promise.Then(NotReached::CreateFunction(scope.GetScriptState()),
+  promise.Then(DynamicModuleResolverTestNotReached::CreateFunction(
+                   scope.GetScriptState()),
                capture->Bind());
 
   auto resolver = DynamicModuleResolver::Create(modulator);
@@ -239,7 +241,8 @@ TEST(DynamicModuleResolverTest, FetchFailure) {
   ScriptPromise promise = promise_resolver->Promise();
 
   auto capture = new CaptureErrorFunction(scope.GetScriptState());
-  promise.Then(NotReached::CreateFunction(scope.GetScriptState()),
+  promise.Then(DynamicModuleResolverTestNotReached::CreateFunction(
+                   scope.GetScriptState()),
                capture->Bind());
 
   auto resolver = DynamicModuleResolver::Create(modulator);
@@ -265,7 +268,8 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
   ScriptPromise promise = promise_resolver->Promise();
 
   auto capture = new CaptureErrorFunction(scope.GetScriptState());
-  promise.Then(NotReached::CreateFunction(scope.GetScriptState()),
+  promise.Then(DynamicModuleResolverTestNotReached::CreateFunction(
+                   scope.GetScriptState()),
                capture->Bind());
 
   auto resolver = DynamicModuleResolver::Create(modulator);
@@ -302,7 +306,8 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   auto capture =
       new CaptureExportedStringFunction(scope.GetScriptState(), "foo");
   promise.Then(capture->Bind(),
-               NotReached::CreateFunction(scope.GetScriptState()));
+               DynamicModuleResolverTestNotReached::CreateFunction(
+                   scope.GetScriptState()));
 
   auto resolver = DynamicModuleResolver::Create(modulator);
   resolver->ResolveDynamically("./dependency.js", /* null referrer */ KURL(),
