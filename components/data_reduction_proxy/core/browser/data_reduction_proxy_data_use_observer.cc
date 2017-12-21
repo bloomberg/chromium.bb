@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data_use_observer.h"
 
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -13,6 +15,7 @@
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_use_measurement/core/data_use.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
+#include "components/previews/core/previews_user_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -47,6 +50,8 @@ const char kOtherHostName[] = "Other";
 // static
 const void* const DataUseUserDataBytes::kUserDataKey =
     &DataUseUserDataBytes::kUserDataKey;
+
+const void* const kDataUsePreviewsUserDataKey = &kDataUsePreviewsUserDataKey;
 
 }  // namespace
 
@@ -93,6 +98,13 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
     return;
   }
 
+  previews::PreviewsUserData* previews_user_data =
+      previews::PreviewsUserData::GetData(request);
+  if (previews_user_data) {
+    data_use->SetUserData(kDataUsePreviewsUserDataKey,
+                          previews_user_data->DeepCopy());
+  }
+
   if (request.GetTotalReceivedBytes() <= 0)
     return;
 
@@ -134,8 +146,38 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
 
 void DataReductionProxyDataUseObserver::OnPageDidFinishLoad(
     data_use_measurement::DataUse* data_use) {
+  // This is good place to update data savings based on the overall page
+  // load. If we waited until the |OnPageLoadConcluded| callback, we would miss
+  // cases where the page loaded but the user doesn't navigate away before
+  // Android kills chrome.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(dougarnett): 781885 - estimate data saving for NoScript.
+  previews::PreviewsUserData* previews_user_data =
+      reinterpret_cast<previews::PreviewsUserData*>(
+          data_use->GetUserData(kDataUsePreviewsUserDataKey));
+  if (previews_user_data) {
+    // Report estimated data savings for NOSCRIPT if applicable.
+    if (previews_user_data->GetCommittedPreviewsType() ==
+        previews::PreviewsType::NOSCRIPT) {
+      int inflated_bytes =
+          (data_use->total_bytes_received() *
+           previews::params::NoScriptPreviewsInflationPercent()) /
+              100 +
+          previews::params::NoScriptPreviewsInflationBytes();
+      // Report for overall usage.
+      DCHECK(data_use->url().SchemeIs(url::kHttpsScheme));
+      data_reduction_proxy_io_data_->UpdateContentLengths(
+          0, inflated_bytes, data_reduction_proxy_io_data_->IsEnabled(), HTTPS,
+          std::string());
+      // Report for host usage.
+      data_reduction_proxy_io_data_->UpdateDataUseForHost(
+          0, inflated_bytes, data_use->url().HostNoBrackets());
+    }
+  }
+}
+
+const void*
+DataReductionProxyDataUseObserver::GetDataUsePreviewsUserDataKeyForTesting() {
+  return kDataUsePreviewsUserDataKey;
 }
 
 }  // namespace data_reduction_proxy
