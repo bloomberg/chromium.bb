@@ -35,8 +35,8 @@ class SpaceToProfileCache : public SpaceToProfileCacheBase {
  public:
   SpaceToProfileCache() : SpaceToProfileCacheBase(kMaxCachedICCProfiles) {}
 };
-base::LazyInstance<SpaceToProfileCache>::DestructorAtExit
-    g_space_to_profile_cache_mac = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<SpaceToProfileCache>::Leaky g_space_to_profile_cache_mac =
+    LAZY_INSTANCE_INITIALIZER;
 
 // An MRU cache mapping data to ICCProfile objects, to avoid re-parsing
 // profiles every time they are read.
@@ -45,8 +45,8 @@ class DataToProfileCache : public DataToProfileCacheBase {
  public:
   DataToProfileCache() : DataToProfileCacheBase(kMaxCachedICCProfiles) {}
 };
-base::LazyInstance<DataToProfileCache>::DestructorAtExit
-    g_data_to_profile_cache = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<DataToProfileCache>::Leaky g_data_to_profile_cache =
+    LAZY_INSTANCE_INITIALIZER;
 
 // An MRU cache mapping IDs to ICCProfile objects. This is necessary for
 // constructing LUT-based color transforms. In particular, it is used to look
@@ -57,7 +57,7 @@ class IdToProfileCache : public IdToProfileCacheBase {
  public:
   IdToProfileCache() : IdToProfileCacheBase(kMaxCachedICCProfiles) {}
 };
-base::LazyInstance<IdToProfileCache>::DestructorAtExit g_id_to_profile_cache =
+base::LazyInstance<IdToProfileCache>::Leaky g_id_to_profile_cache =
     LAZY_INSTANCE_INITIALIZER;
 
 // The next id to assign to a color profile.
@@ -65,8 +65,7 @@ uint64_t g_next_unused_id = 1;
 
 // Lock that must be held to access |g_space_to_profile_cache_mac| and
 // |g_next_unused_id|.
-base::LazyInstance<base::Lock>::DestructorAtExit g_lock =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
