@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<title>Tests that the 'addtrack' event is fired when a TextTrack is created.</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>'addtrack' event is fired when a TextTrack is created</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
     var video = document.createElement('video');
@@ -26,7 +26,7 @@ async_test(function(t) {
         }
     });
 
-    trackElement.src = 'captions-webvtt/tc004-webvtt-file.vtt';
+    trackElement.src = 'resources/webvtt-file.vtt';
     trackElement.track.mode = 'hidden';
     assert_equals(video.textTracks.length, 1);
     assert_equals(trackElement.readyState, HTMLTrackElement.NONE);
