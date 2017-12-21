@@ -57,7 +57,7 @@ public class HomeSheetCardsUiCaptureTest {
 
     @Before
     public void setup() throws InterruptedException {
-        ChromePreferenceManager.getInstance().setNewTabPagePersonalizedSigninPromoDismissed(true);
+        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(true);
         mActivityRule.startMainActivityOnBottomSheet(BottomSheet.SHEET_STATE_PEEK);
     }
 

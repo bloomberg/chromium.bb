@@ -54,10 +54,7 @@ public class ChromePreferenceManager {
     private static final String SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
             "settings_personalized_signin_promo_dismissed";
 
-    // TODO(crbug.com/757892): Remove this preference key once the personalized signin promos
-    // launch completely.
-    private static final String NTP_GENERIC_SIGNIN_PROMO_DISMISSED = "ntp.signin_promo_dismissed";
-    private static final String NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
+    private static final String NTP_SIGNIN_PROMO_DISMISSED =
             "ntp.personalized_signin_promo_dismissed";
     private static final String NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START =
             "ntp.signin_promo_suppression_period_start";
@@ -350,24 +347,14 @@ public class ChromePreferenceManager {
         return mSharedPreferences.getBoolean(SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
     }
 
-    /** Checks if the user dismissed the generic sign in promo from the new tab page. */
-    public boolean getNewTabPageGenericSigninPromoDismissed() {
-        return mSharedPreferences.getBoolean(NTP_GENERIC_SIGNIN_PROMO_DISMISSED, false);
-    }
-
-    /** Set whether the user dismissed the generic sign in promo from the new tab page. */
-    public void setNewTabPageGenericSigninPromoDismissed(boolean isPromoDismissed) {
-        writeBoolean(NTP_GENERIC_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
-    }
-
     /** Checks if the user dismissed the personalized sign in promo from the new tab page. */
-    public boolean getNewTabPagePersonalizedSigninPromoDismissed() {
-        return mSharedPreferences.getBoolean(NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
+    public boolean getNewTabPageSigninPromoDismissed() {
+        return mSharedPreferences.getBoolean(NTP_SIGNIN_PROMO_DISMISSED, false);
     }
 
     /** Set whether the user dismissed the personalized sign in promo from the new tab page. */
-    public void setNewTabPagePersonalizedSigninPromoDismissed(boolean isPromoDismissed) {
-        writeBoolean(NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
+    public void setNewTabPageSigninPromoDismissed(boolean isPromoDismissed) {
+        writeBoolean(NTP_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
     }
 
     /**

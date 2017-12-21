@@ -45,7 +45,7 @@ public class HomeSheetNoTilesUiCaptureTest {
 
     @Before
     public void setup() throws InterruptedException {
-        ChromePreferenceManager.getInstance().setNewTabPagePersonalizedSigninPromoDismissed(true);
+        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(true);
         mActivityRule.startMainActivityOnBlankPage();
     }
 
