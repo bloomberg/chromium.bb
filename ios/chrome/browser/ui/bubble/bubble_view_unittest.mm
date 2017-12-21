@@ -46,7 +46,7 @@ TEST_F(BubbleViewTest, BubbleSizeShortText) {
   CGSize bubbleSize = [bubble sizeThatFits:maxSize_];
   // Since the label is shorter than the minimum line width, expect the bubble
   // to be the minimum width and accommodate one line of text.
-  EXPECT_NEAR(50.0f, bubbleSize.width, 1.0f);
+  EXPECT_NEAR(52.0f, bubbleSize.width, 1.0f);
   EXPECT_NEAR(53.5f, bubbleSize.height, 1.0f);
 }
 
@@ -57,7 +57,7 @@ TEST_F(BubbleViewTest, BubbleSizeMultipleLineText) {
                                               alignment:alignment_];
   CGSize bubbleSize = [bubble sizeThatFits:maxSize_];
   // The bubble should fit the label, which contains two lines of text.
-  EXPECT_NEAR(341.0f, bubbleSize.width, 1.0f);
+  EXPECT_NEAR(339.0f, bubbleSize.width, 1.0f);
   EXPECT_NEAR(72.5f, bubbleSize.height, 1.0f);
 }
 

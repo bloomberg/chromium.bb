@@ -14,7 +14,7 @@
 #endif
 
 namespace {
-const CGFloat kTestBubbleAlignmentOffset = 25.0f;
+const CGFloat kTestBubbleAlignmentOffset = 26.0f;
 }  // namespace
 
 namespace bubble_util {

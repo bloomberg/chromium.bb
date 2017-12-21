@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-const CGFloat kBubbleAlignmentOffset = 25.0f;
+const CGFloat kBubbleAlignmentOffset = 26.0f;
 
 namespace {
 // The color of the bubble (both circular background and arrow).
@@ -21,7 +21,7 @@ UIColor* BubbleColor() {
 }
 // The corner radius of the bubble's background, which causes the ends of the
 // badge to be circular.
-const CGFloat kBubbleCornerRadius = 18.0f;
+const CGFloat kBubbleCornerRadius = 17.0f;
 // The minimum bubble width is two times the bubble alignment offset, which
 // causes the bubble to appear center-aligned for short display text.
 const CGFloat kMinBubbleWidth = kBubbleAlignmentOffset * 2;
@@ -44,9 +44,6 @@ const CGFloat kLabelHorizontalPadding = kBubbleCornerRadius;
 
 // The size that the arrow will appear to have.
 const CGSize kArrowSize = {14.0f, 10.0f};
-// The factor by which the arrow's size is scaled. Drawing the arrow larger than
-// its desired size prevents gaps between the arrow and the background view.
-const CGFloat kArrowScaleFactor = 1.5f;
 
 // The offset of the bubble's drop shadow, which will be slightly below the
 // bubble.
@@ -112,10 +109,8 @@ const CGFloat kShadowOpacity = 0.1f;
   // If the instance variable for the arrow has not been set up, load the arrow
   // and set the instance variable equal to the arrow.
   if (!_arrow) {
-    // Draw the arrow slightly larger than the desired size in order to prevent
-    // gaps between the background view and the arrow.
-    CGFloat width = kArrowSize.width * kArrowScaleFactor;
-    CGFloat height = kArrowSize.height * kArrowScaleFactor;
+    CGFloat width = kArrowSize.width;
+    CGFloat height = kArrowSize.height;
     UIView* arrow =
         [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, width, height)];
     UIBezierPath* path = UIBezierPath.bezierPath;
@@ -211,10 +206,8 @@ const CGFloat kShadowOpacity = 0.1f;
         constraintEqualToAnchor:self.background.centerYAnchor],
     // Enforce the arrow's size, scaling by |kArrowScaleFactor| to prevent gaps
     // between the arrow and the background view.
-    [self.arrow.widthAnchor
-        constraintEqualToConstant:kArrowSize.width * kArrowScaleFactor],
-    [self.arrow.heightAnchor
-        constraintEqualToConstant:kArrowSize.height * kArrowScaleFactor]
+    [self.arrow.widthAnchor constraintEqualToConstant:kArrowSize.width],
+    [self.arrow.heightAnchor constraintEqualToConstant:kArrowSize.height]
 
   ];
   return constraints;
