@@ -30,7 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
-#include "core/origin_trials/OriginTrialContext.h"
+#include "core/origin_trials/origin_trials.h"
 #include "core/testing/InternalSettings.h"
 #include "core/testing/Internals.h"
 #include "core/testing/WorkerInternals.h"
@@ -92,11 +92,9 @@ void InstallOriginTrialFeaturesForTesting(
 
   blink::ExecutionContext* execution_context =
       blink::ExecutionContext::From(script_state);
-  const blink::OriginTrialContext* originTrialContext =
-      blink::OriginTrialContext::From(execution_context);
 
   if (type == &blink::V8OriginTrialsTest::wrapperTypeInfo) {
-    if (originTrialContext && originTrialContext->IsTrialEnabled("Frobulate")) {
+    if (blink::OriginTrials::originTrialsSampleAPIEnabled(execution_context)) {
       blink::V8OriginTrialsTest::installOriginTrialsSampleAPI(
           script_state->GetIsolate(), script_state->World(),
           v8::Local<v8::Object>(), prototype_object, interface_object);
