@@ -334,7 +334,6 @@ jumbo_source_set("browser_sources") {
     "//media",
     "//net",
     "//ppapi/c",
-    "//services/device/public/interfaces",
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",
