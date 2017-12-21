@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "ui/display/util/display_util.h"
 
 using base::StringPiece;
 
@@ -21,11 +22,9 @@ namespace display {
 
 namespace {
 
-static const float kInchInMm = 25.4f;
-
 // Get pixel pitch in millimeters from DPI.
-float PixelPitchMmFromDPI(float dpi) {
-  return (1.0f / dpi) * kInchInMm;
+constexpr float PixelPitchMmFromDPI(float dpi) {
+  return kInchInMm / dpi;
 }
 
 // Extracts text after specified delimiter. If the delimiter doesn't appear
