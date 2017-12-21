@@ -134,8 +134,8 @@ class SmbProviderClientImpl : public SmbProviderClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(protobuf);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(handler, weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(callback)));
+                       base::BindOnce(handler, weak_ptr_factory_.GetWeakPtr(),
+                                      base::Passed(callback)));
   }
 
   // Handles D-Bus callback for mount.
