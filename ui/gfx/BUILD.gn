@@ -608,8 +608,6 @@ static_library("test_support") {
     "test/gfx_util.h",
     "test/icc_profiles.cc",
     "test/icc_profiles.h",
-    "test/ui_cocoa_test_helper.h",
-    "test/ui_cocoa_test_helper.mm",
   ]
 
   public_deps = [
@@ -625,13 +623,6 @@ static_library("test_support") {
     "//ui/gfx/geometry",
   ]
 
-  if (is_ios) {
-    # The cocoa files don't apply to iOS.
-    sources -= [
-      "test/ui_cocoa_test_helper.h",
-      "test/ui_cocoa_test_helper.mm",
-    ]
-  }
   if (is_linux) {
     deps += [ "//third_party/fontconfig" ]
   }

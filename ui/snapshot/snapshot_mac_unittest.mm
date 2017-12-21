@@ -12,9 +12,9 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "testing/platform_test.h"
+#import "ui/base/test/cocoa_helper.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
 namespace {

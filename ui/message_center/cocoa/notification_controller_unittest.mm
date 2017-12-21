@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/hover_image_button.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
+#import "ui/base/test/cocoa_helper.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"

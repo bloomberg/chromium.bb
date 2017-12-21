@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/scoped_nsobject.h"
 #import "ui/base/cocoa/tracking_area.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
+#include "base/mac/scoped_nsobject.h"
+#import "ui/base/test/cocoa_helper.h"
 
 // A test object that counts the number of times a message is sent to it.
 @interface TestTrackingAreaOwner : NSObject {

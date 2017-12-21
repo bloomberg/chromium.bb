@@ -9,9 +9,9 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/test/cocoa_helper.h"
 #include "ui/events/event_constants.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 // We provide a donor class with a specially modified |modifierFlags|
 // implementation that we swap with NSEvent's. This is because we can't create a

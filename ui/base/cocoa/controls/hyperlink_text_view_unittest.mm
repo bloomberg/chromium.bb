@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ui/base/cocoa/controls/hyperlink_text_view.h"
+
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest_mac.h"
-#import "ui/base/cocoa/controls/hyperlink_text_view.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
+#import "ui/base/test/cocoa_helper.h"
 
 namespace {
 

@@ -13,12 +13,12 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "ui/base/test/cocoa_helper.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/geometry/point.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 namespace ui {
 

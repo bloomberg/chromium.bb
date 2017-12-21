@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/cocoa/spinner_view.h"
 
 #include "base/mac/mac_util.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
+#import "ui/base/test/cocoa_helper.h"
 
 namespace {
 
