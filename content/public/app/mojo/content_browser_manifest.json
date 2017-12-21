@@ -173,6 +173,7 @@
           "network::mojom::RestrictedCookieManager",
           "payments::mojom::PaymentManager",
           "payments::mojom::PaymentRequest",
+          "password_manager::mojom::CredentialManager",
           "resource_coordinator::mojom::FrameCoordinationUnit",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
