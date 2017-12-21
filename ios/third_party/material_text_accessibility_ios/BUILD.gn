@@ -2,7 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("material_text_accessibility_ios_config") {
+config("config") {
+  include_dirs = [ "forwarding_headers" ]
+}
+
+config("private_config") {
   include_dirs = [ "src/src" ]
   visibility = [ ":material_text_accessibility_ios" ]
 }
@@ -19,10 +23,10 @@ source_set("material_text_accessibility_ios") {
     "src/src/private/NSArray+MDFUtils.h",
     "src/src/private/NSArray+MDFUtils.m",
   ]
-  public_configs = [ ":material_text_accessibility_ios_config" ]
+  public_configs = [ ":config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
-    ":material_text_accessibility_ios_config",
+    ":private_config",
     "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
   ]
