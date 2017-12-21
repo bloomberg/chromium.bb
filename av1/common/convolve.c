@@ -737,48 +737,15 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                                  &filter_params_y);
 #endif
 
-#if CONFIG_JNT_COMP
-  (void)sf;
-  if (scaled) {
+  if (scaled)
     av1_convolve_2d_scale(src, src_stride, conv_params->dst,
                           conv_params->dst_stride, w, h, &filter_params_x,
                           &filter_params_y, subpel_x_q4, x_step_q4, subpel_y_q4,
                           y_step_q4, conv_params);
-  } else {
-    if (subpel_x_q4 == 0 && subpel_y_q4 == 0) {
-      av1_jnt_convolve_2d_copy(src, src_stride, dst, dst_stride, w, h,
-                               &filter_params_x, &filter_params_y, subpel_x_q4,
-                               subpel_y_q4, conv_params);
-    } else if (subpel_x_q4 == 0) {
-      // place holder
-      av1_jnt_convolve_2d(src, src_stride, dst, dst_stride, w, h,
-                          &filter_params_x, &filter_params_y, subpel_x_q4,
-                          subpel_y_q4, conv_params);
-    } else if (subpel_y_q4 == 0) {
-      // place holder
-      av1_jnt_convolve_2d(src, src_stride, dst, dst_stride, w, h,
-                          &filter_params_x, &filter_params_y, subpel_x_q4,
-                          subpel_y_q4, conv_params);
-    } else {
-      av1_jnt_convolve_2d(src, src_stride, dst, dst_stride, w, h,
-                          &filter_params_x, &filter_params_y, subpel_x_q4,
-                          subpel_y_q4, conv_params);
-    }
-  }
-#else
-  if (scaled) {
-    av1_convolve_2d_scale(src, src_stride, conv_params->dst,
-                          conv_params->dst_stride, w, h, &filter_params_x,
-                          &filter_params_y, subpel_x_q4, x_step_q4, subpel_y_q4,
-                          y_step_q4, conv_params);
-  } else {
-    // Special case convolve functions should produce the same result as
-    // av1_convolve_2d.
+  else
     sf->convolve[subpel_x_q4 != 0][subpel_y_q4 != 0][1](
         src, src_stride, dst, dst_stride, w, h, &filter_params_x,
         &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
-  }
-#endif  // CONFIG_JNT_COMP
 }
 
 #if CONFIG_HIGHBITDEPTH
