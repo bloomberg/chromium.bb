@@ -895,6 +895,7 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
 };
 
 // ----- Note: This interface is still in development and not stable! -----
+//
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
@@ -907,14 +908,20 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   typedef Host_10 Host;
 
   // Initializes the CDM instance, providing information about permitted
-  // functionalities.
+  // functionalities. The CDM must respond by calling Host::OnInitialized()
+  // with whether the initialization succeeded. No other calls will be made by
+  // the host before Host::OnInitialized() returns.
   // If |allow_distinctive_identifier| is false, messages from the CDM,
   // such as message events, must not contain a Distinctive Identifier,
   // even in an encrypted form.
   // If |allow_persistent_state| is false, the CDM must not attempt to
   // persist state. Calls to CreateFileIO() will fail.
+  // If |use_hw_secure_codecs| is true, the CDM must ensure the decryption key
+  // and video buffers (compressed and uncompressed) are securely protected by
+  // hardware.
   virtual void Initialize(bool allow_distinctive_identifier,
-                          bool allow_persistent_state) = 0;
+                          bool allow_persistent_state,
+                          bool use_hw_secure_codecs) = 0;
 
   // Gets the key status if the CDM has a hypothetical key with the |policy|.
   // The CDM must respond by calling either Host::OnResolveKeyStatusPromise()
@@ -1419,6 +1426,9 @@ class CDM_CLASS_API Host_10 {
 
   // Returns the current wall time.
   virtual Time GetCurrentWallTime() = 0;
+
+  // Called by the CDM with the result after the CDM instance was initialized.
+  virtual void OnInitialized(bool success) = 0;
 
   // Called by the CDM when a key status is available in response to
   // GetStatusForPolicy().
