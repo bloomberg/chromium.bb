@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(xiaochengh): Rename this file into ng_inline_fragment_traversal.cc
-
-#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
+#include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
@@ -113,12 +111,6 @@ class InclusiveAncestorFilter {
 };
 
 }  // namespace
-
-NGInlineFragmentIterator::NGInlineFragmentIterator(
-    const NGPhysicalBoxFragment& box,
-    const LayoutObject* layout_object) {
-  results_ = NGInlineFragmentTraversal::SelfFragmentsOf(box, layout_object);
-}
 
 // static
 Vector<Result, 1> NGInlineFragmentTraversal::SelfFragmentsOf(

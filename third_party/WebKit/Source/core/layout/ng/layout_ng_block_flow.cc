@@ -5,7 +5,7 @@
 #include "core/layout/ng/layout_ng_block_flow.h"
 
 #include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
+#include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "core/layout/ng/inline/ng_inline_node_data.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_length_utils.h"
@@ -218,7 +218,8 @@ bool LayoutNGBlockFlow::LocalVisualRectFor(const LayoutObject* layout_object,
   // Investigate why.
   if (!box_fragment)
     return false;
-  NGInlineFragmentIterator children(*box_fragment, layout_object);
+  auto children =
+      NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, layout_object);
   for (const auto& child : children) {
     NGPhysicalOffsetRect child_visual_rect = child.fragment->SelfVisualRect();
     visual_rect->Unite(child_visual_rect + child.offset_to_container_box);

@@ -34,7 +34,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
+#include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlinePainter.h"
@@ -984,7 +984,8 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
           EnclosingBlockFlowFragmentOf(*this)) {
     LayoutRect result;
-    NGInlineFragmentIterator children(*box_fragment, this);
+    auto children =
+        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children) {
       NGPhysicalOffset left_top =
           child.fragment->Offset() + child.offset_to_container_box;
@@ -1130,7 +1131,8 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
           EnclosingBlockFlowFragmentOf(*this)) {
     NGPhysicalOffsetRect result;
-    NGInlineFragmentIterator children(*box_fragment, this);
+    auto children =
+        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children) {
       NGPhysicalOffsetRect child_rect =
           child.fragment->VisualRectWithContents();
