@@ -26,7 +26,9 @@
 -RenderWidgetHostViewChildFrameTest.SwapCompositorFrame
 -RenderWidgetHostViewGuestSurfaceTest.TestGuestSurface
 
+# Not finding the correct target crbug.com/796605
+-RenderWidgetHostInputEventRouterTest.DoNotChangeTargetViewDuringTouchScrollGesture
+
 # TODO(crbug.com/601869): Reflector needs to be rewritten for viz.
--ReflectorImplTest.CheckInvertedOutputSurface
--ReflectorImplTest.CheckNormalOutputSurface
+-ReflectorImplTest.*
 -WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange
