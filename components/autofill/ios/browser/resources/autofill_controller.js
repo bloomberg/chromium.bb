@@ -596,11 +596,13 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     __gCrWeb.autofill.styleInjected = true;
   }
 
-  // Remove Autofill styling when control element is edited.
+  // Remove Autofill styling when control element is edited by the user.
   var controlElementInputListener = function(evt) {
-    evt.target.removeAttribute('chrome-autofilled');
-    evt.target.isAutofilled = false;
-    evt.target.removeEventListener('input', controlElementInputListener);
+    if (evt.isTrusted) {
+      evt.target.removeAttribute('chrome-autofilled');
+      evt.target.isAutofilled = false;
+      evt.target.removeEventListener('input', controlElementInputListener);
+    }
   };
 
   var form = __gCrWeb.common.getFormElementFromIdentifier(data.formName);
