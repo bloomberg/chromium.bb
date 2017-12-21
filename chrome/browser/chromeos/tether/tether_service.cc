@@ -188,6 +188,11 @@ void TetherService::StartTetherIfPossible() {
           adapter_);
 }
 
+chromeos::tether::GmsCoreNotificationsStateTracker*
+TetherService::GetGmsCoreNotificationsStateTracker() {
+  return gms_core_notifications_state_tracker_.get();
+}
+
 void TetherService::StopTetherIfNecessary() {
   if (!tether_component_ ||
       tether_component_->status() !=

@@ -1536,6 +1536,7 @@ split_static_library("ui") {
       "//ash/resources/vector_icons",
       "//ash/strings",
       "//chrome/browser/chromeos",
+      "//chromeos/components/tether",
       "//components/arc",
       "//components/drive:drive_chromeos",
       "//components/exo",
