@@ -44,6 +44,7 @@
 #include "components/search_provider_logos/logo_service.h"
 #include "components/search_provider_logos/logo_tracker.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
@@ -165,6 +166,9 @@ std::string GetConfigData(bool is_google, const GURL& google_base_url) {
   config_data.Set("translatedStrings", GetTranslatedStrings(is_google));
   config_data.SetBoolean("isGooglePage", is_google);
   config_data.SetString("googleBaseUrl", google_base_url.spec());
+  config_data.SetBoolean(
+      "isAccessibleBrowser",
+      content::BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser());
 
   bool is_voice_search_enabled =
       base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
