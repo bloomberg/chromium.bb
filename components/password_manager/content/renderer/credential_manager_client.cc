@@ -90,9 +90,6 @@ CredentialMediationRequirement GetCredentialMediationRequirementFromBlink(
 blink::WebCredentialManagerError GetWebCredentialManagerErrorFromMojo(
     CredentialManagerError error) {
   switch (error) {
-    case CredentialManagerError::DISABLED:
-      return blink::WebCredentialManagerError::
-          kWebCredentialManagerDisabledError;
     case CredentialManagerError::PENDINGREQUEST:
       return blink::WebCredentialManagerError::
           kWebCredentialManagerPendingRequestError;
