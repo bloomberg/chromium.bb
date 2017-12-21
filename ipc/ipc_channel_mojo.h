@@ -89,6 +89,7 @@ class IPC_EXPORT ChannelMojo : public Channel,
   // MessagePipeReader::Delegate
   void OnPeerPidReceived(int32_t peer_pid) override;
   void OnMessageReceived(const Message& message) override;
+  void OnBrokenDataReceived() override;
   void OnPipeError() override;
   void OnAssociatedInterfaceRequest(
       const std::string& name,
