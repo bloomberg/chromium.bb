@@ -84,7 +84,6 @@
 #include "components/suggestions/features.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
 #include "components/version_info/version_info.h"
@@ -1833,9 +1832,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPullToRefreshEffectName,
      flag_descriptions::kPullToRefreshEffectDescription, kOsAndroid,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisablePullToRefreshEffect)},
-    {"translate-compact-infobar", flag_descriptions::kTranslateCompactUIName,
-     flag_descriptions::kTranslateCompactUIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(translate::kTranslateCompactUI)},
 #endif  // OS_ANDROID
 #if defined(OS_MACOSX)
     {"enable-translate-new-ux", flag_descriptions::kTranslateNewUxName,
