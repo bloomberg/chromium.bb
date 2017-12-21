@@ -96,6 +96,3 @@ class PixelExpectations(GpuTestExpectations):
     # Failing on NVIDIA Shield TV; not sure why yet.
     self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
               ['android', 'nvidia'], bug=791733)
-
-    # Flaky on Win7
-    self.Flaky('Pixel_2DCanvasWebGL', ['win'], bug=796289)
