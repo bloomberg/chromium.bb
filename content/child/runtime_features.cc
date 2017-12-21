@@ -80,6 +80,10 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #if !defined(OS_MACOSX)
   WebRuntimeFeatures::EnableNotificationContentImage(true);
 #endif
+
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::EnableDoubleTapToJumpOnVideo(true);
+#endif
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(

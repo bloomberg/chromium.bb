@@ -184,6 +184,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWorkStealingInScriptRunner(bool);
   BLINK_PLATFORM_EXPORT static void EnableStopLoadingInBackgroundAndroid(bool);
   BLINK_PLATFORM_EXPORT static void EnablePWAFullCodeCache(bool);
+  BLINK_PLATFORM_EXPORT static void EnableDoubleTapToJumpOnVideo(bool);
 
  private:
   WebRuntimeFeatures();
