@@ -39,8 +39,10 @@ struct ExportParams {
   size_t min_size_threshold = 0;
   size_t min_count_threshold = 0;
 
-  // Whether or not the outputted JSON should filter strings (anonymized trace).
-  bool is_argument_filtering_enabled = false;
+  // Whether or not the paths should be stripped from mapped files. Doing so
+  // anonymizes the trace, since the paths could potentially contain a username.
+  // However, it prevents symbolization of locally built instances of Chrome.
+  bool strip_path_from_mapped_files = false;
 };
 
 // Creates a JSON string representing a JSON dictionary that contains memory

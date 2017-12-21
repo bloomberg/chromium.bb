@@ -22,6 +22,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -69,14 +70,15 @@ class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
   std::string json_;
 };
 
-base::trace_event::TraceConfig GetBackgroundTracingConfig() {
+base::trace_event::TraceConfig GetBackgroundTracingConfig(bool anonymize) {
   // Disable all categories other than memory-infra.
   base::trace_event::TraceConfig trace_config(
       "-*,disabled-by-default-memory-infra",
       base::trace_event::RECORD_UNTIL_FULL);
 
   // This flag is set by background tracing to filter out undesired events.
-  trace_config.EnableArgumentFilter();
+  if (anonymize)
+    trace_config.EnableArgumentFilter();
 
   // Trigger a background memory dump exactly once by setting a time-delta
   // between dumps of 2**29.
@@ -269,8 +271,11 @@ void ProfilingProcessHost::OnMemoryDumpOnIOThread(uint64_t dump_guid) {
   bool keep_small_allocations =
       !force_prune && cmdline->HasSwitch(switches::kMemlogKeepSmallAllocations);
 
+  bool strip_path_from_mapped_files = base::trace_event::TraceLog::GetInstance()
+                                          ->GetCurrentTraceConfig()
+                                          .IsArgumentFilterEnabled();
   profiling_service_->DumpProcessesForTracing(
-      keep_small_allocations,
+      keep_small_allocations, strip_path_from_mapped_files,
       base::BindOnce(&ProfilingProcessHost::OnDumpProcessesForTracingCallback,
                      base::Unretained(this), dump_guid));
 }
@@ -474,7 +479,8 @@ void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
       },
       std::move(dest), std::move(done));
   RequestTraceWithHeapDump(std::move(finish_trace_callback),
-                           stop_immediately_after_heap_dump_for_tests);
+                           stop_immediately_after_heap_dump_for_tests,
+                           false /* anonymize */);
 }
 
 void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
@@ -504,12 +510,15 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
         }
       },
       base::Unretained(this), std::move(trigger_name));
-  RequestTraceWithHeapDump(std::move(finish_report_callback), false);
+  RequestTraceWithHeapDump(std::move(finish_report_callback),
+                           false /* keep_small_allocations */,
+                           true /* anonymize */);
 }
 
 void ProfilingProcessHost::RequestTraceWithHeapDump(
     TraceFinishedCallback callback,
-    bool stop_immediately_after_heap_dump_for_tests) {
+    bool stop_immediately_after_heap_dump_for_tests,
+    bool anonymize) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!connector_) {
@@ -521,7 +530,7 @@ void ProfilingProcessHost::RequestTraceWithHeapDump(
   }
 
   bool result = content::TracingController::GetInstance()->StartTracing(
-      GetBackgroundTracingConfig(), base::Closure());
+      GetBackgroundTracingConfig(anonymize), base::Closure());
   if (!result) {
     DLOG(ERROR) << "Requesting heap dump when tracing has already started.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
