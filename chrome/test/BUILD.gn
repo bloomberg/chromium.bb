@@ -1627,6 +1627,7 @@ test("browser_tests") {
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/webui/chromeos/keyboard_overlay_ui_browsertest.cc",
+        "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
       ]
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
