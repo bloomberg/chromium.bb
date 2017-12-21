@@ -1950,16 +1950,18 @@ void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
   shelf_->NotifyShelfIconPositionsChanged();
   PreferredSizeChanged();
 
-  float opacity = 0.f;
-  const gfx::SlideAnimation* animation =
-      bounds_animator_->GetAnimationForView(GetBackButton());
-  if (animation)
-    opacity = static_cast<float>(animation->GetCurrentValue());
-  if (!IsTabletModeEnabled())
-    opacity = 1.f - opacity;
+  if (shelf_->is_tablet_mode_animation_running()) {
+    float opacity = 0.f;
+    const gfx::SlideAnimation* animation =
+        bounds_animator_->GetAnimationForView(GetBackButton());
+    if (animation)
+      opacity = static_cast<float>(animation->GetCurrentValue());
+    if (!IsTabletModeEnabled())
+      opacity = 1.f - opacity;
 
-  GetBackButton()->layer()->SetOpacity(opacity);
-  GetBackButton()->SetFocusBehavior(FocusBehavior::ALWAYS);
+    GetBackButton()->layer()->SetOpacity(opacity);
+    GetBackButton()->SetFocusBehavior(FocusBehavior::ALWAYS);
+  }
 }
 
 void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
