@@ -48,6 +48,8 @@ class TargetHandler::Throttle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
 
  private:
+  void CleanupPointers();
+
   base::WeakPtr<protocol::TargetHandler> target_handler_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
 
@@ -143,8 +145,19 @@ TargetHandler::Throttle::Throttle(
 }
 
 TargetHandler::Throttle::~Throttle() {
-  if (target_handler_)
+  CleanupPointers();
+}
+
+void TargetHandler::Throttle::CleanupPointers() {
+  if (target_handler_ && agent_host_) {
+    auto it = target_handler_->auto_attached_sessions_.find(agent_host_.get());
+    if (it != target_handler_->auto_attached_sessions_.end())
+      it->second->SetThrottle(nullptr);
+  }
+  if (target_handler_) {
     target_handler_->throttles_.erase(this);
+    target_handler_ = nullptr;
+  }
 }
 
 NavigationThrottle::ThrottleCheckResult
@@ -165,18 +178,11 @@ const char* TargetHandler::Throttle::GetNameForLogging() {
 }
 
 void TargetHandler::Throttle::Clear() {
-  bool deferred = agent_host_.get();
-  if (target_handler_ && deferred) {
-    auto it = target_handler_->auto_attached_sessions_.find(agent_host_.get());
-    if (it != target_handler_->auto_attached_sessions_.end())
-      it->second->SetThrottle(nullptr);
-  }
-  agent_host_ = nullptr;
-  if (target_handler_)
-    target_handler_->throttles_.erase(this);
-  target_handler_.reset();
-  if (deferred)
+  CleanupPointers();
+  if (agent_host_) {
+    agent_host_ = nullptr;
     Resume();
+  }
 }
 
 TargetHandler::TargetHandler()
