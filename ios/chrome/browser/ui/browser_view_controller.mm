@@ -2134,11 +2134,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.view insertSubview:infoBarContainerView aboveSubview:_contentArea];
 
   // Place the toolbar controller above the infobar container and adds the
-  // omnibox layout guide.
+  // layout guides.
   if (initialLayout) {
     [[self view] insertSubview:_toolbarCoordinator.toolbarViewController.view
                   aboveSubview:infoBarContainerView];
     AddNamedGuide(kOmniboxGuide, self.view);
+    AddNamedGuide(kBackButtonGuide, self.view);
+    AddNamedGuide(kForwardButtonGuide, self.view);
   }
   minY += CGRectGetHeight(toolbarFrame);
   if (initialLayout)
