@@ -29,6 +29,11 @@ void InlineStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {
   owner_element_->RemoveInlineStyleProperty(property_id);
 }
 
+void InlineStylePropertyMap::RemoveCustomProperty(
+    const AtomicString& property_name) {
+  owner_element_->RemoveInlineStyleProperty(property_name);
+}
+
 void InlineStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
   CSSPropertyValueSet& inline_style_set =

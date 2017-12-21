@@ -171,13 +171,16 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 void StylePropertyMap::remove(const String& property_name,
                               ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-
-  if (property_id == CSSPropertyInvalid || property_id == CSSPropertyVariable) {
-    // TODO(meade): Handle custom properties here.
-    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+  if (property_id == CSSPropertyInvalid) {
+    exception_state.ThrowTypeError("Invalid property name: " + property_name);
+    return;
   }
 
-  RemoveProperty(property_id);
+  if (property_id == CSSPropertyVariable) {
+    RemoveCustomProperty(AtomicString(property_name));
+  } else {
+    RemoveProperty(property_id);
+  }
 }
 
 void StylePropertyMap::update(const ExecutionContext* execution_context,

@@ -36,6 +36,7 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadonly {
  protected:
   virtual void SetProperty(CSSPropertyID, const CSSValue*) = 0;
   virtual void RemoveProperty(CSSPropertyID) = 0;
+  virtual void RemoveCustomProperty(const AtomicString&) = 0;
 
   StylePropertyMap() = default;
 
