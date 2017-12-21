@@ -206,6 +206,7 @@
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
+#include "third_party/WebKit/common/page/launching_process_state.h"
 #include "third_party/WebKit/public/public_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
@@ -274,15 +275,6 @@ namespace {
 
 const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
-
-#if defined(OS_ANDROID)
-// This matches Android's ChildProcessConnection state before OnProcessLaunched.
-constexpr bool kLaunchingProcessIsBackgrounded = true;
-constexpr bool kLaunchingProcessIsBoostedForPendingView = true;
-#else
-constexpr bool kLaunchingProcessIsBackgrounded = false;
-constexpr bool kLaunchingProcessIsBoostedForPendingView = false;
-#endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 const base::FilePath::CharType kAecDumpFileNameAddition[] =
@@ -1305,8 +1297,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       route_provider_binding_(this),
       visible_widgets_(0),
       priority_({
-            kLaunchingProcessIsBackgrounded,
-            kLaunchingProcessIsBoostedForPendingView,
+        blink::kLaunchingProcessIsBackgrounded,
+            blink::kLaunchingProcessIsBoostedForPendingView,
 #if defined(OS_ANDROID)
             ChildProcessImportance::NORMAL,
 #endif
@@ -3804,9 +3796,9 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
 
 void RenderProcessHostImpl::UpdateProcessPriority() {
   if (!child_process_launcher_.get() || child_process_launcher_->IsStarting()) {
-    priority_.background = kLaunchingProcessIsBackgrounded;
+    priority_.background = blink::kLaunchingProcessIsBackgrounded;
     priority_.boost_for_pending_views =
-        kLaunchingProcessIsBoostedForPendingView;
+        blink::kLaunchingProcessIsBoostedForPendingView;
     return;
   }
 
@@ -3870,7 +3862,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
   if (child_process_launcher_) {
     DCHECK(child_process_launcher_->GetProcess().IsValid());
-    DCHECK_EQ(kLaunchingProcessIsBackgrounded, priority_.background);
+    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded, priority_.background);
 
     // Unpause the channel now that the process is launched. We don't flush it
     // yet to ensure that any initialization messages sent here (e.g., things
@@ -3893,7 +3885,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #elif defined(OS_ANDROID)
     // Android child process priority works differently and cannot be queried
     // directly from base::Process.
-    DCHECK_EQ(kLaunchingProcessIsBackgrounded, priority_.background);
+    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded, priority_.background);
 #else
     priority_.background =
         child_process_launcher_->GetProcess().IsProcessBackgrounded();
