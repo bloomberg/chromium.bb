@@ -85,6 +85,10 @@ class CursorRendererAuraTest : public AuraTestBase {
     return cursor_renderer_->RenderOnVideoFrame(frame, frame->visible_rect());
   }
 
+  bool IsUserInteractingWithView() {
+    return cursor_renderer_->IsUserInteractingWithView();
+  }
+
   void MoveMouseCursorWithinWindow() {
     gfx::Point point1(20, 20);
     ui::MouseEvent event1(ui::ET_MOUSE_MOVED, point1, point1, Now(), 0, 0);
@@ -149,14 +153,17 @@ TEST_F(CursorRendererAuraTest, CursorAlwaysDisplayed) {
 
   // Cursor displayed at start.
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor displayed after mouse movement.
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor displayed after idle period.
   SimulateMouseWentIdle();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor not displayed with mouse outside the window.
   MoveMouseCursorOutsideWindow();
@@ -166,18 +173,22 @@ TEST_F(CursorRendererAuraTest, CursorAlwaysDisplayed) {
 TEST_F(CursorRendererAuraTest, CursorDuringMouseMovement) {
   // Cursor not displayed at start.
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor displayed after mouse movement.
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor not displayed after idle period.
   SimulateMouseWentIdle();
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor displayed with mouse movement following idle period.
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor not displayed if mouse outside the window
   MoveMouseCursorOutsideWindow();
@@ -187,10 +198,12 @@ TEST_F(CursorRendererAuraTest, CursorDuringMouseMovement) {
 TEST_F(CursorRendererAuraTest, CursorOnActiveWindow) {
   // Cursor not displayed at start.
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_FALSE(IsUserInteractingWithView());
 
   // Cursor displayed after mouse movement.
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor not be displayed if a second window is activated.
   std::unique_ptr<aura::Window> window2(aura::test::CreateTestWindowWithBounds(
@@ -198,11 +211,13 @@ TEST_F(CursorRendererAuraTest, CursorOnActiveWindow) {
   wm::ActivateWindow(window2.get());
   MoveMouseCursorWithinWindow();
   EXPECT_FALSE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 
   // Cursor displayed if window activated again.
   wm::ActivateWindow(window_.get());
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
+  EXPECT_TRUE(IsUserInteractingWithView());
 }
 
 TEST_F(CursorRendererAuraTest, CursorRenderedOnFrame) {
