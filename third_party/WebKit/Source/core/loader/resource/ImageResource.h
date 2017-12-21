@@ -102,6 +102,9 @@ class CORE_EXPORT ImageResource final
   // flag it so that it can persist beyond navigation.
   void FlagAsUserAgentResource();
 
+  void OnMemoryDump(WebMemoryDumpLevelOfDetail,
+                    WebProcessMemoryDump*) const override;
+
   void Trace(blink::Visitor*) override;
 
  private:
