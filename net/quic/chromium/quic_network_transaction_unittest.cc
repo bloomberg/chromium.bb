@@ -5796,8 +5796,6 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
 
   mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
 
-  AddHangingSocketData();
-
   QuicTestPacketMaker client_maker2(version_, 0, &clock_, origin2_,
                                     Perspective::IS_CLIENT);
   QuicTestPacketMaker server_maker2(version_, 0, &clock_, origin2_,
@@ -5820,8 +5818,6 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
   mock_quic_data2.AddRead(ASYNC, 0);               // EOF
 
   mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
-
-  AddHangingSocketData();
 
   SendRequestAndExpectQuicResponse(origin1_);
   SendRequestAndExpectQuicResponse(origin2_);

@@ -195,6 +195,7 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       using_spdy_(false),
       should_reconsider_proxy_(false),
       quic_request_(session_->quic_stream_factory()),
+      expect_on_quic_host_resolution_(false),
       using_existing_quic_session_(false),
       establishing_tunnel_(false),
       was_alpn_negotiated_(false),
@@ -841,9 +842,10 @@ void HttpStreamFactoryImpl::Job::ResumeInitConnection() {
 int HttpStreamFactoryImpl::Job::DoInitConnection() {
   net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_INIT_CONNECTION);
   int result = DoInitConnectionImpl();
-  if (result != ERR_SPDY_SESSION_ALREADY_EXISTS)
+  if (result != ERR_SPDY_SESSION_ALREADY_EXISTS &&
+      !expect_on_quic_host_resolution_) {
     delegate_->OnConnectionInitialized(this, result);
-
+  }
   return result;
 }
 
@@ -913,13 +915,14 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
                                    net_log_, &net_error_details_, io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;
-    } else {
+    } else if (rv == ERR_IO_PENDING) {
       // There's no available QUIC session. Inform the delegate how long to
       // delay the main job.
-      if (rv == ERR_IO_PENDING) {
-        delegate_->MaybeSetWaitTimeForMainJob(
-            quic_request_.GetTimeDelayForWaitingJob());
-      }
+      delegate_->MaybeSetWaitTimeForMainJob(
+          quic_request_.GetTimeDelayForWaitingJob());
+      expect_on_quic_host_resolution_ =
+          quic_request_.WaitForHostResolution(base::BindRepeating(
+              &Job::OnQuicHostResolution, base::Unretained(this)));
     }
     return rv;
   }
@@ -995,6 +998,12 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
       quic_version_, server_ssl_config_, proxy_ssl_config_,
       request_info_.privacy_mode, net_log_, connection_.get(),
       resolution_callback, io_callback_);
+}
+
+void HttpStreamFactoryImpl::Job::OnQuicHostResolution(int result) {
+  DCHECK(expect_on_quic_host_resolution_);
+  expect_on_quic_host_resolution_ = false;
+  delegate_->OnConnectionInitialized(this, result);
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
