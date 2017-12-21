@@ -158,32 +158,19 @@ void WaitUntilUIReady(Browser* browser) {
   ASSERT_EQ("ready", message);
 }
 
-void WaitUntilElementExistsInSigninFrame(Browser* browser,
-                                         const std::string& element_id) {
-  std::string message;
-  std::string js =
-      "function WaitForElementById(elementId) {"
-      "  var retries = 10; /* 10 seconds. */"
-      "  function CheckelementExists() {"
-      "    if (document.getElementById(elementId) != null) {"
-      "      window.domAutomationController.send('found');"
-      "    } else if (retries > 0) { "
-      "      retries--;"
-      "      window.setTimeout(CheckelementExists, 1000);"
-      "    } else {"
-      "      window.domAutomationController.send('failed');"
-      "    }"
-      "  }"
-      "  CheckelementExists();"
-      "}"
-      "WaitForElementById('" + element_id + "');";
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      signin::GetAuthFrame(web_contents, "signin-frame"), js, &message));
+void WaitUntilElementExistsInSigninFrame(
+    Browser* browser,
+    const std::vector<std::string>& element_ids) {
+  for (int attempt = 0; attempt < 10; ++attempt) {
+    for (const std::string& element_id : element_ids) {
+      if (ElementExistsInSigninFrame(browser, element_id)) {
+        return;
+      }
+    }
+    RunLoopFor(base::TimeDelta::FromMilliseconds(1000));
+  }
 
-  ASSERT_EQ("found", message) <<
-      "Failed to find element with id " << element_id;
+  FAIL();
 }
 
 bool ElementExistsInSigninFrame(Browser* browser,
@@ -203,18 +190,18 @@ bool ElementExistsInSigninFrame(Browser* browser,
 void SigninInNewGaiaFlow(Browser* browser,
                          const std::string& email,
                          const std::string& password) {
-  std::string js = "document.getElementById('Email').value = '" + email + "';"
-                   "document.getElementById('next').click();";
-
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
+
+  WaitUntilElementExistsInSigninFrame(browser, {"identifierId"});
+  std::string js = "document.getElementById('identifierId').value = '" + email +
+                   "'; document.getElementById('identifierNext').click();";
   ASSERT_TRUE(content::ExecuteScript(
       signin::GetAuthFrame(web_contents, "signin-frame"), js));
 
-  WaitUntilElementExistsInSigninFrame(browser, "Passwd");
-  js = "document.getElementById('Passwd').value = '" + password + "';"
-       "document.getElementById('signIn').click();";
-
+  WaitUntilElementExistsInSigninFrame(browser, {"password"});
+  js = "document.getElementById('password').value = '" + password + "';" +
+       "document.getElementById('passwordNext').click();";
   ASSERT_TRUE(content::ExecuteScript(
       signin::GetAuthFrame(web_contents, "signin-frame"), js));
 }
@@ -222,13 +209,18 @@ void SigninInNewGaiaFlow(Browser* browser,
 void SigninInOldGaiaFlow(Browser* browser,
                          const std::string& email,
                          const std::string& password) {
-  std::string js =
-      "document.getElementById('Email').value = '" + email + "';"
-      "document.getElementById('Passwd').value = '" + password + "';"
-      "document.getElementById('signIn').click();";
-
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
+
+  WaitUntilElementExistsInSigninFrame(browser, {"Email"});
+  std::string js = "document.getElementById('Email').value = '" + email + ";" +
+                   "document.getElementById('next').click();";
+  ASSERT_TRUE(content::ExecuteScript(
+      signin::GetAuthFrame(web_contents, "signin-frame"), js));
+
+  WaitUntilElementExistsInSigninFrame(browser, {"Passwd"});
+  js = "document.getElementById('Passwd').value = '" + password + "';" +
+       "document.getElementById('signIn').click();";
   ASSERT_TRUE(content::ExecuteScript(
       signin::GetAuthFrame(web_contents, "signin-frame"), js));
 }
@@ -236,8 +228,8 @@ void SigninInOldGaiaFlow(Browser* browser,
 void ExecuteJsToSigninInSigninFrame(Browser* browser,
                                     const std::string& email,
                                     const std::string& password) {
-  WaitUntilElementExistsInSigninFrame(browser, "Email");
-  if (ElementExistsInSigninFrame(browser, "next"))
+  WaitUntilElementExistsInSigninFrame(browser, {"identifierNext", "next"});
+  if (ElementExistsInSigninFrame(browser, "identifierNext"))
     SigninInNewGaiaFlow(browser, email, password);
   else
     SigninInOldGaiaFlow(browser, email, password);
