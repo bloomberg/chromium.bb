@@ -558,6 +558,8 @@ source_set("memory_buffer_sources") {
       "linux/client_native_pixmap_dmabuf.h",
       "linux/client_native_pixmap_factory_dmabuf.cc",
       "linux/client_native_pixmap_factory_dmabuf.h",
+      "linux/native_pixmap_dmabuf.cc",
+      "linux/native_pixmap_dmabuf.h",
     ]
 
     deps += [ "//third_party/libdrm" ]
@@ -802,6 +804,10 @@ test("gfx_unittests") {
       "//ui/gfx/mojo:test_interfaces",
       "//ui/gfx/range/mojo:unit_test",
     ]
+  }
+
+  if (is_linux) {
+    sources += [ "linux/native_pixmap_dmabuf_unittest.cc" ]
   }
 }
 
