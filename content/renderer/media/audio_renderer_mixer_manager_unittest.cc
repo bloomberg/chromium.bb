@@ -816,13 +816,8 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyInteractive) {
     EXPECT_EQ(44100, mixer->GetOutputParamsForTesting().sample_rate());
   }
 
-#if defined(OS_ANDROID)
-  // If hardware buffer size (128) is less than 1024, use 2048.
-  EXPECT_EQ(2048, mixer->GetOutputParamsForTesting().frames_per_buffer());
-#else
   // Expect hardware buffer size.
   EXPECT_EQ(128, mixer->GetOutputParamsForTesting().frames_per_buffer());
-#endif
 
   ReturnMixer(mixer);
 }

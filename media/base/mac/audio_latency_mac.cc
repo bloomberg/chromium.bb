@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/base/mac/audio_latency_mac.h"
+#include "base/logging.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -17,6 +18,7 @@ int GetMinAudioBufferSizeMacOS(int min_buffer_size, int sample_rate) {
     else if (sample_rate <= 192000)
       buffer_size = 4 * limits::kMinAudioBufferSize;
   }
+  DCHECK_EQ(limits::kMaxWebAudioBufferSize % buffer_size, 0);
   return buffer_size;
 }
 
