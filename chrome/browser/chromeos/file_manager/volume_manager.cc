@@ -866,7 +866,7 @@ void VolumeManager::OnRemovableStorageAttached(
   base::RemoveChars(info.location(), kRootPath, &storage_name);
   DCHECK(!storage_name.empty());
 
-  const MtpStorageInfo* mtp_storage_info;
+  const device::mojom::MtpStorageInfo* mtp_storage_info;
   if (get_mtp_storage_info_callback_.is_null()) {
     mtp_storage_info = storage_monitor::StorageMonitor::GetInstance()
                            ->media_transfer_protocol_manager()
@@ -889,8 +889,8 @@ void VolumeManager::OnRemovableStorageAttached(
   const bool read_only =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMtpWriteSupport) ||
-      mtp_storage_info->access_capability() != kAccessCapabilityReadWrite ||
-      mtp_storage_info->filesystem_type() !=
+      mtp_storage_info->access_capability != kAccessCapabilityReadWrite ||
+      mtp_storage_info->filesystem_type !=
           kFilesystemTypeGenericHierarchical ||
       GetExternalStorageAccessMode(profile_) ==
           chromeos::MOUNT_ACCESS_MODE_READ_ONLY;

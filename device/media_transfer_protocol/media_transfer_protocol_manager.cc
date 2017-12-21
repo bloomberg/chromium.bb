@@ -100,7 +100,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  const MtpStorageInfo* GetStorageInfo(
+  const mojom::MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     const auto it = storage_info_map_.find(storage_name);
@@ -113,7 +113,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const GetStorageInfoFromDeviceCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!base::ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
-      MtpStorageInfo info;
+      mojom::MtpStorageInfo info;
       callback.Run(info, true /* error */);
       return;
     }
@@ -360,9 +360,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     }
   }
 
-  void OnGetStorageInfo(const MtpStorageInfo& storage_info) {
+  void OnGetStorageInfo(const mojom::MtpStorageInfo& storage_info) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    const std::string& storage_name = storage_info.storage_name();
+    const std::string& storage_name = storage_info.storage_name;
     if (base::ContainsKey(storage_info_map_, storage_name)) {
       // This should not happen, since MediaTransferProtocolManagerImpl should
       // only call EnumerateStorages() once, which populates |storage_info_map_|
@@ -381,14 +381,14 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       observer.StorageChanged(true /* is attach */, storage_name);
   }
 
-  void OnGetStorageInfoFromDevice(const MtpStorageInfo& storage_info) {
+  void OnGetStorageInfoFromDevice(const mojom::MtpStorageInfo& storage_info) {
     get_storage_info_from_device_callbacks_.front().Run(storage_info,
                                                         false /* no error */);
     get_storage_info_from_device_callbacks_.pop();
   }
 
   void OnGetStorageInfoFromDeviceError() {
-    MtpStorageInfo info;
+    mojom::MtpStorageInfo info;
     get_storage_info_from_device_callbacks_.front().Run(info, true /* error */);
     get_storage_info_from_device_callbacks_.pop();
   }
@@ -646,7 +646,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   base::ObserverList<Observer> observers_;
 
   // Map to keep track of attached storages by name.
-  base::flat_map<std::string, MtpStorageInfo> storage_info_map_;
+  base::flat_map<std::string, mojom::MtpStorageInfo> storage_info_map_;
 
   // Set of open storage handles.
   base::flat_set<std::string> handles_;

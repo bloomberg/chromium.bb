@@ -16,12 +16,11 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "device/media_transfer_protocol/public/interfaces/mtp_file_entry.mojom.h"
+#include "device/media_transfer_protocol/public/interfaces/mtp_storage_info.mojom.h"
 
 #if !defined(OS_CHROMEOS)
 #error "Only used on ChromeOS"
 #endif
-
-class MtpStorageInfo;
 
 namespace device {
 
@@ -33,7 +32,7 @@ class MediaTransferProtocolManager {
   // The first argument is the returned storage info.
   // The second argument is true if there was an error.
   using GetStorageInfoFromDeviceCallback =
-      base::Callback<void(const MtpStorageInfo& storage_info,
+      base::Callback<void(const mojom::MtpStorageInfo& storage_info,
                           const bool error)>;
 
   // A callback to handle the result of OpenStorage.
@@ -107,7 +106,7 @@ class MediaTransferProtocolManager {
 
   // On success, returns the metadata for |storage_name|.
   // Otherwise returns NULL.
-  virtual const MtpStorageInfo* GetStorageInfo(
+  virtual const mojom::MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const = 0;
 
   // Read the metadata of |storage_name| from device and runs |callback|.

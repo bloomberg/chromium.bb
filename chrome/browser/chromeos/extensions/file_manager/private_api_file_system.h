@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "components/drive/file_errors.h"
-#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
+#include "device/media_transfer_protocol/public/interfaces/mtp_storage_info.mojom.h"
 #include "extensions/browser/extension_function.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -185,8 +185,9 @@ class FileManagerPrivateGetSizeStatsFunction
                                 int64_t bytes_total,
                                 int64_t bytes_used);
 
-  void OnGetMtpAvailableSpace(const MtpStorageInfo& mtp_storage_info,
-                              const bool error);
+  void OnGetMtpAvailableSpace(
+      const device::mojom::MtpStorageInfo& mtp_storage_info,
+      const bool error);
 
   void OnGetSizeStats(const uint64_t* total_size,
                       const uint64_t* remaining_size);

@@ -523,7 +523,7 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace(
 }
 
 void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
-    const MtpStorageInfo& mtp_storage_info,
+    const device::mojom::MtpStorageInfo& mtp_storage_info,
     const bool error) {
   if (error) {
     // If stats couldn't be gotten from MTP volume, result should be left
@@ -532,8 +532,8 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
     return;
   }
 
-  const uint64_t max_capacity = mtp_storage_info.max_capacity();
-  const uint64_t free_space_in_bytes = mtp_storage_info.free_space_in_bytes();
+  const uint64_t max_capacity = mtp_storage_info.max_capacity;
+  const uint64_t free_space_in_bytes = mtp_storage_info.free_space_in_bytes;
   OnGetSizeStats(&max_capacity, &free_space_in_bytes);
 }
 
