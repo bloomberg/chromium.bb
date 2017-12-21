@@ -86,7 +86,7 @@ xr_session_test( (t, session, mockService) => {
   runDrawTests(t, "INVALID_FRAMEBUFFER_OPERATION");
 
   // Drawing operations within a XR frame should succeed.
-  session.requestFrame((xrFrame) => {
+  session.requestAnimationFrame((time, xrFrame) => {
     runDrawTests(t, "NO_ERROR");
     t.done();
   });

@@ -8933,10 +8933,10 @@ interface XRSession : EventTarget
     getter onend
     getter onfocus
     getter onresetpose
-    method cancelFrame
+    method cancelAnimationFrame
     method constructor
     method end
-    method requestFrame
+    method requestAnimationFrame
     method requestFrameOfReference
     setter baseLayer
     setter depthFar

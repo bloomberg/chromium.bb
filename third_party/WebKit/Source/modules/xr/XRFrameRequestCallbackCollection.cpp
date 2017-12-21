@@ -50,7 +50,7 @@ void XRFrameRequestCallbackCollection::ExecuteCallbacks(
 
     probe::AsyncTask async_task(context_, callback);
     probe::UserCallback probe(context_, "XRRequestFrame", AtomicString(), true);
-    callback->InvokeAndReportException(session, frame);
+    callback->InvokeAndReportException(session, 0, frame);
   }
 
   callbacks_to_invoke_.clear();

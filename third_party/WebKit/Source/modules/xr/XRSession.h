@@ -51,8 +51,8 @@ class XRSession final : public EventTargetWithInlineData {
                                         const String& type,
                                         const XRFrameOfReferenceOptions&);
 
-  int requestFrame(V8XRFrameRequestCallback*);
-  void cancelFrame(int id);
+  int requestAnimationFrame(V8XRFrameRequestCallback*);
+  void cancelAnimationFrame(int id);
 
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState*);

@@ -22,8 +22,8 @@
 
   [CallWith=ScriptState] Promise<XRFrameOfReference> requestFrameOfReference(XRFrameOfReferenceType type, [PermissiveDictionaryConversion] optional XRFrameOfReferenceOptions options);
 
-  long requestFrame(XRFrameRequestCallback callback);
-  void cancelFrame(long handle);
+  long requestAnimationFrame(XRFrameRequestCallback callback);
+  void cancelAnimationFrame(long handle);
 
   [CallWith=ScriptState] Promise<void> end();
 };

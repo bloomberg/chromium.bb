@@ -95,7 +95,7 @@ xr_session_test( (t, session, mockService) => {
     assert_equals(gl.checkFramebufferStatus(gl.FRAMEBUFFER), gl.FRAMEBUFFER_UNSUPPORTED);
   }, "Framebuffer status must be unsupported outside of a XR frame callback");
 
-  session.requestFrame((xrFrame) => {
+  session.requestAnimationFrame((time, xrFrame) => {
     t.step( () => {
       assert_equals(gl.checkFramebufferStatus(gl.FRAMEBUFFER), gl.FRAMEBUFFER_COMPLETE);
     }, "Framebuffer status must be complete inside of a XR frame callback");

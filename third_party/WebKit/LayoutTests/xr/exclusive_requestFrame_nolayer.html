@@ -14,20 +14,20 @@ xr_session_test( (t, session) => {
   // Session must have a baseLayer or frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
 
-  function onBadFrame(vrFrame) {
+  function onBadFrame(time, vrFrame) {
     t.step( () => {
       assert_unreached("Callback registered without layer was called");
     });
     t.done();
   }
 
-  function onGoodFrame(vrFrame) {
+  function onGoodFrame(time, vrFrame) {
     t.done();
   }
 
   // This callback shouldn't be allowed to register, since the session doesn't
   // have a baseLayer when this call is made.
-  let badHandle = session.requestFrame(onBadFrame);
+  let badHandle = session.requestAnimationFrame(onBadFrame);
 
   t.step( () => {
     assert_equals(badHandle, 0);
@@ -36,12 +36,12 @@ xr_session_test( (t, session) => {
   // Once the base layer is set the callback should be allowed.
   session.baseLayer = webglLayer;
 
-  let goodHandle = session.requestFrame(onGoodFrame);
+  let goodHandle = session.requestAnimationFrame(onGoodFrame);
 
   t.step( () => {
     assert_not_equals(goodHandle, 0);
   });
 }, fakeDisplays["Pixel"], { exclusive: true },
-"XRSession requestFrame must fail if the session has no baseLayer");
+"XRSession requestAnimationFrame must fail if the session has no baseLayer");
 
 </script>
