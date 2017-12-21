@@ -31,8 +31,8 @@ struct SameSizeAsFillLayer {
 
   Persistent<StyleImage> image_;
 
-  Length x_position_;
-  Length y_position_;
+  Length position_x_;
+  Length position_y_;
 
   LengthSize size_length_;
 
@@ -46,8 +46,8 @@ static_assert(sizeof(FillLayer) == sizeof(SameSizeAsFillLayer),
 FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
     : next_(nullptr),
       image_(FillLayer::InitialFillImage(type)),
-      x_position_(FillLayer::InitialFillXPosition(type)),
-      y_position_(FillLayer::InitialFillYPosition(type)),
+      position_x_(FillLayer::InitialFillPositionX(type)),
+      position_y_(FillLayer::InitialFillPositionY(type)),
       size_length_(FillLayer::InitialFillSizeLength(type)),
       attachment_(
           static_cast<unsigned>(FillLayer::InitialFillAttachment(type))),
@@ -70,8 +70,8 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       origin_set_(use_initial_values),
       repeat_x_set_(use_initial_values),
       repeat_y_set_(use_initial_values),
-      x_pos_set_(use_initial_values),
-      y_pos_set_(use_initial_values),
+      pos_x_set_(use_initial_values),
+      pos_y_set_(use_initial_values),
       background_x_origin_set_(false),
       background_y_origin_set_(false),
       composite_set_(use_initial_values || type == EFillLayerType::kMask),
@@ -86,8 +86,8 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
 FillLayer::FillLayer(const FillLayer& o)
     : next_(o.next_ ? new FillLayer(*o.next_) : nullptr),
       image_(o.image_),
-      x_position_(o.x_position_),
-      y_position_(o.y_position_),
+      position_x_(o.position_x_),
+      position_y_(o.position_y_),
       size_length_(o.size_length_),
       attachment_(o.attachment_),
       clip_(o.clip_),
@@ -106,8 +106,8 @@ FillLayer::FillLayer(const FillLayer& o)
       origin_set_(o.origin_set_),
       repeat_x_set_(o.repeat_x_set_),
       repeat_y_set_(o.repeat_y_set_),
-      x_pos_set_(o.x_pos_set_),
-      y_pos_set_(o.y_pos_set_),
+      pos_x_set_(o.pos_x_set_),
+      pos_y_set_(o.pos_y_set_),
       background_x_origin_set_(o.background_x_origin_set_),
       background_y_origin_set_(o.background_y_origin_set_),
       composite_set_(o.composite_set_),
@@ -130,8 +130,8 @@ FillLayer& FillLayer::operator=(const FillLayer& o) {
   }
 
   image_ = o.image_;
-  x_position_ = o.x_position_;
-  y_position_ = o.y_position_;
+  position_x_ = o.position_x_;
+  position_y_ = o.position_y_;
   background_x_origin_ = o.background_x_origin_;
   background_y_origin_ = o.background_y_origin_;
   background_x_origin_set_ = o.background_x_origin_set_;
@@ -155,8 +155,8 @@ FillLayer& FillLayer::operator=(const FillLayer& o) {
   origin_set_ = o.origin_set_;
   repeat_x_set_ = o.repeat_x_set_;
   repeat_y_set_ = o.repeat_y_set_;
-  x_pos_set_ = o.x_pos_set_;
-  y_pos_set_ = o.y_pos_set_;
+  pos_x_set_ = o.pos_x_set_;
+  pos_y_set_ = o.pos_y_set_;
   mask_source_type_set_ = o.mask_source_type_set_;
 
   type_ = o.type_;
@@ -167,8 +167,8 @@ FillLayer& FillLayer::operator=(const FillLayer& o) {
 }
 
 bool FillLayer::LayerPropertiesEqual(const FillLayer& o) const {
-  return DataEquivalent(image_, o.image_) && x_position_ == o.x_position_ &&
-         y_position_ == o.y_position_ &&
+  return DataEquivalent(image_, o.image_) && position_x_ == o.position_x_ &&
+         position_y_ == o.position_y_ &&
          background_x_origin_ == o.background_x_origin_ &&
          background_y_origin_ == o.background_y_origin_ &&
          attachment_ == o.attachment_ && clip_ == o.clip_ &&
@@ -196,12 +196,12 @@ bool FillLayer::VisuallyEqual(const FillLayer& o) const {
 
 void FillLayer::FillUnsetProperties() {
   FillLayer* curr;
-  for (curr = this; curr && curr->IsXPositionSet(); curr = curr->Next()) {
+  for (curr = this; curr && curr->IsPositionXSet(); curr = curr->Next()) {
   }
   if (curr && curr != this) {
     // We need to fill in the remaining values with the pattern specified.
     for (FillLayer* pattern = this; curr; curr = curr->Next()) {
-      curr->x_position_ = pattern->x_position_;
+      curr->position_x_ = pattern->position_x_;
       if (pattern->IsBackgroundXOriginSet())
         curr->background_x_origin_ = pattern->background_x_origin_;
       if (pattern->IsBackgroundYOriginSet())
@@ -212,12 +212,12 @@ void FillLayer::FillUnsetProperties() {
     }
   }
 
-  for (curr = this; curr && curr->IsYPositionSet(); curr = curr->Next()) {
+  for (curr = this; curr && curr->IsPositionYSet(); curr = curr->Next()) {
   }
   if (curr && curr != this) {
     // We need to fill in the remaining values with the pattern specified.
     for (FillLayer* pattern = this; curr; curr = curr->Next()) {
-      curr->y_position_ = pattern->y_position_;
+      curr->position_y_ = pattern->position_y_;
       if (pattern->IsBackgroundXOriginSet())
         curr->background_x_origin_ = pattern->background_x_origin_;
       if (pattern->IsBackgroundYOriginSet())

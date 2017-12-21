@@ -124,7 +124,7 @@ static bool ComputedStyleMayBeCSSSpriteBackgroundImage(
   // background X or Y position will probably be specified.
   const FillLayer& background = style.BackgroundLayers();
   return style.HasBackgroundImage() &&
-         (background.XPosition().IsFixed() || background.YPosition().IsFixed());
+         (background.PositionX().IsFixed() || background.PositionY().IsFixed());
 }
 
 StyleImage* ElementStyleResources::LoadPendingImage(

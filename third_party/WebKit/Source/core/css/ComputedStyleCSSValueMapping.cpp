@@ -117,7 +117,7 @@ static CSSValueList* CreatePositionListForLayer(const CSSProperty& property,
         *CSSIdentifierValue::Create(layer.BackgroundXOrigin()));
   }
   position_list->Append(
-      *ZoomAdjustedPixelValueForLength(layer.XPosition(), style));
+      *ZoomAdjustedPixelValueForLength(layer.PositionX(), style));
   if (layer.IsBackgroundYOriginSet()) {
     DCHECK(property.IDEquals(CSSPropertyBackgroundPosition) ||
            property.IDEquals(CSSPropertyWebkitMaskPosition));
@@ -125,7 +125,7 @@ static CSSValueList* CreatePositionListForLayer(const CSSProperty& property,
         *CSSIdentifierValue::Create(layer.BackgroundYOrigin()));
   }
   position_list->Append(
-      *ZoomAdjustedPixelValueForLength(layer.YPosition(), style));
+      *ZoomAdjustedPixelValueForLength(layer.PositionY(), style));
   return position_list;
 }
 
@@ -2339,9 +2339,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           resolved_property.IDEquals(CSSPropertyWebkitMaskPositionX)
               ? &style.MaskLayers()
               : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next())
+      for (; curr_layer; curr_layer = curr_layer->Next()) {
         list->Append(
-            *ZoomAdjustedPixelValueForLength(curr_layer->XPosition(), style));
+            *ZoomAdjustedPixelValueForLength(curr_layer->PositionX(), style));
+      }
       return list;
     }
     case CSSPropertyBackgroundPositionY:
@@ -2351,9 +2352,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           resolved_property.IDEquals(CSSPropertyWebkitMaskPositionY)
               ? &style.MaskLayers()
               : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next())
+      for (; curr_layer; curr_layer = curr_layer->Next()) {
         list->Append(
-            *ZoomAdjustedPixelValueForLength(curr_layer->YPosition(), style));
+            *ZoomAdjustedPixelValueForLength(curr_layer->PositionY(), style));
+      }
       return list;
     }
     case CSSPropertyBorderCollapse:

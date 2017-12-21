@@ -45,19 +45,19 @@ struct FillLayerMethods {
     switch (property) {
       case CSSPropertyBackgroundPositionX:
       case CSSPropertyWebkitMaskPositionX:
-        is_set = &FillLayer::IsXPositionSet;
-        get_length = &FillLayer::XPosition;
+        is_set = &FillLayer::IsPositionXSet;
+        get_length = &FillLayer::PositionX;
         get_edge = &FillLayer::BackgroundXOrigin;
-        set_length = &FillLayer::SetXPosition;
-        clear = &FillLayer::ClearXPosition;
+        set_length = &FillLayer::SetPositionX;
+        clear = &FillLayer::ClearPositionX;
         break;
       case CSSPropertyBackgroundPositionY:
       case CSSPropertyWebkitMaskPositionY:
-        is_set = &FillLayer::IsYPositionSet;
-        get_length = &FillLayer::YPosition;
+        is_set = &FillLayer::IsPositionYSet;
+        get_length = &FillLayer::PositionY;
         get_edge = &FillLayer::BackgroundYOrigin;
-        set_length = &FillLayer::SetYPosition;
-        clear = &FillLayer::ClearYPosition;
+        set_length = &FillLayer::SetPositionY;
+        clear = &FillLayer::ClearPositionY;
         break;
       default:
         NOTREACHED();
