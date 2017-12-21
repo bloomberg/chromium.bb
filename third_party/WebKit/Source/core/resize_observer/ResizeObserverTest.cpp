@@ -116,12 +116,12 @@ TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
   // Test whether ResizeObserver is kept alive by direct JS reference
   //
   script_controller.ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode("var ro = new ResizeObserver( entries => {});"),
+      ScriptSourceCode("var ro = new ResizeObserver( entries => {});"), KURL(),
       ScriptFetchOptions(),
       ScriptController::kExecuteScriptWhenScriptsDisabled);
   ASSERT_EQ(observers.size(), 1U);
   script_controller.ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode("ro = undefined;"), ScriptFetchOptions(),
+      ScriptSourceCode("ro = undefined;"), KURL(), ScriptFetchOptions(),
       ScriptController::kExecuteScriptWhenScriptsDisabled);
   V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
   WebHeap::CollectAllGarbageForTesting();
@@ -135,14 +135,14 @@ TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
                        "var el = document.createElement('div');"
                        "ro.observe(el);"
                        "ro = undefined;"),
-      ScriptFetchOptions(),
+      KURL(), ScriptFetchOptions(),
       ScriptController::kExecuteScriptWhenScriptsDisabled);
   ASSERT_EQ(observers.size(), 1U);
   V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
   WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.size(), 1U);
   script_controller.ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode("el = undefined;"), ScriptFetchOptions(),
+      ScriptSourceCode("el = undefined;"), KURL(), ScriptFetchOptions(),
       ScriptController::kExecuteScriptWhenScriptsDisabled);
   V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
   WebHeap::CollectAllGarbageForTesting();
