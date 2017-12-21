@@ -290,6 +290,8 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
         'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
          # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2076
         'CorrectEventFiringTest.testShouldReportTheXAndYCoordinatesWhenClicking',
+	 # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
+        'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
