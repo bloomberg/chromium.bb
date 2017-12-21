@@ -2015,6 +2015,12 @@ const char kOfflinePagesLoadSignalCollectingDescription[] =
     "page.  This data is collected in the snapshotted offline page to allow "
     "data analysis to improve deciding when to make the offline snapshot.";
 
+const char kOfflinePagesDescriptivePendingStatusName[] =
+    "Enables descriptive pending download status text.";
+const char kOfflinePagesDescriptivePendingStatusDescription[] =
+    "Enables pending download status text in notifications and Downloads Home "
+    "to state the reason the request is pending.";
+
 const char kOfflinePagesPrefetchingName[] =
     "Enables suggested offline pages to be prefetched.";
 const char kOfflinePagesPrefetchingDescription[] =

@@ -2320,6 +2320,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBackgroundLoaderForDownloadsName,
      flag_descriptions::kBackgroundLoaderForDownloadsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kBackgroundLoaderForDownloadsFeature)},
+    {"offline-pages-pending-download",
+     flag_descriptions::kOfflinePagesDescriptivePendingStatusName,
+     flag_descriptions::kOfflinePagesDescriptivePendingStatusDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kOfflinePagesDescriptivePendingStatusFeature)},
     {"offline-pages-resource-based-snapshot",
      flag_descriptions::kOfflinePagesResourceBasedSnapshotName,
      flag_descriptions::kOfflinePagesResourceBasedSnapshotDescription,
