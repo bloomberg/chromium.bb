@@ -858,3 +858,6 @@
 # https://crbug.com/795417
 -ContinueWhereILeftOffTest.SessionCookies
 -RestartTest.SessionCookies
+
+# Fails on debug waterfall bot but not locally or on release or trybots.
+-PopupsOnlyUiDelegateTest.ManyPopupNotifications
