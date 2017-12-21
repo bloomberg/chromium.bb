@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/compiler.gni")
+
 # This template defines a CDM adapter target. Just use this as you would a
 # normal target and everything should work correctly.
 template("ppapi_cdm_adapter") {
@@ -61,6 +63,11 @@ template("ppapi_cdm_adapter") {
     if (is_linux) {
       # CDM adapter depends on a CDM in component and non-component builds.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+
+      if (use_lld) {
+        # TODO(crbug.com/795158) LLD warns about libwidevinecdm.so
+        configs -= [ "//build/config/compiler:default_fatal_linker_warnings" ]
+      }
     }
 
     # TODO(jschuh) crbug.com/167187
