@@ -27,10 +27,6 @@ import subcommand
 # Analogous to gc.autopacklimit git config.
 GC_AUTOPACKLIMIT = 50
 
-# TODO(tikuta): remove or revert this (crbug.com/749709)
-if sys.platform.startswith('win'):
-  GC_AUTOPACKLIMIT = 30
-
 GIT_CACHE_CORRUPT_MESSAGE = 'WARNING: The Git cache is corrupt.'
 
 try:
