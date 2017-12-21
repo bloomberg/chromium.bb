@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -19,15 +18,21 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
+#if defined(OS_MACOSX)
+#include "media/mojo/interfaces/cdm_service_mac.mojom.h"
+#else
+#include "media/mojo/interfaces/cdm_service.mojom.h"
+#endif  // defined(OS_MACOSX)
+
 namespace media {
 
 class MojoMediaClient;
 
-class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
-                                       public mojom::MediaService {
+class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
+                                     public mojom::CdmService {
  public:
-  explicit MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client);
-  ~MediaService() final;
+  explicit CdmService(std::unique_ptr<MojoMediaClient> mojo_media_client);
+  ~CdmService() final;
 
  private:
   // service_manager::Service implementation.
@@ -37,7 +42,15 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnServiceManagerConnectionLost() final;
 
-  void Create(mojom::MediaServiceRequest request);
+  void Create(mojom::CdmServiceRequest request);
+
+// mojom::CdmService implementation.
+#if defined(OS_MACOSX)
+  void LoadCdm(const base::FilePath& cdm_path,
+               mojom::SeatbeltExtensionTokenProviderPtr token_provider) final;
+#else
+  void LoadCdm(const base::FilePath& cdm_path) final;
+#endif  // defined(OS_MACOSX)
 
   void CreateInterfaceFactory(
       mojom::InterfaceFactoryRequest request,
@@ -59,7 +72,7 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
   mojo::StrongBindingSet<mojom::InterfaceFactory> interface_factory_bindings_;
 
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<mojom::MediaService> bindings_;
+  mojo::BindingSet<mojom::CdmService> bindings_;
 };
 
 }  // namespace media

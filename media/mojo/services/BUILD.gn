@@ -12,6 +12,8 @@ import("//testing/test.gni")
 component("services") {
   output_name = "media_mojo_services"
   sources = [
+    "cdm_service.cc",
+    "cdm_service.h",
     "gpu_mojo_media_client.cc",
     "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",

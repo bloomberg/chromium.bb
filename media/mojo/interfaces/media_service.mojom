@@ -5,23 +5,13 @@
 module media.mojom;
 
 import "media/mojo/interfaces/interface_factory.mojom";
-import "mojo/common/file_path.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 
 // A service to provide media InterfaceFactory, typically to the media pipeline
 // running in the renderer process. The service itself runs in the process
-// specified by the |mojo_media_host| gn build flag, or in the utility process
-// when this service runs as an standalone CDM service (see gn build flag
-// |enable_standalone_cdm_service| for details). The service is always connected
-// from the browser process.
-// TODO(crbug.com/771791): Separate CdmService from MediaService.
+// specified by the |mojo_media_host| gn build flag. The service is always
+// connected from the browser process.
 interface MediaService {
-  // Loads the CDM at |cdm_path| into the process.
-  // Since the client will not know whether LoadCdm() has been called by a
-  // previous MediaService instance, the client should always call it after
-  // interface connection. If the CDM is already loaded, this will be a no-op.
-  LoadCdm(mojo.common.mojom.FilePath cdm_path);
-
   // Requests an InterfaceFactory. |host_interfaces| can optionally be used to
   // provide interfaces hosted by the caller to the remote InterfaceFactory
   // implementation.
