@@ -124,7 +124,7 @@ void VrTestContext::DrawFrame() {
   ui_->ui_renderer()->Draw(render_info);
 
   // This is required in order to show the WebVR toasts.
-  if (model_->web_vr_has_produced_frames()) {
+  if (model_->web_vr.has_produced_frames()) {
     ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info);
   }
 }
@@ -367,7 +367,7 @@ void VrTestContext::CreateFakeVoiceSearchResult() {
 }
 
 void VrTestContext::CycleWebVrModes() {
-  switch (model_->web_vr_timeout_state) {
+  switch (model_->web_vr.state) {
     case kWebVrNoTimeoutPending:
       ui_->SetWebVrMode(true, false);
       break;
@@ -379,6 +379,8 @@ void VrTestContext::CycleWebVrModes() {
       break;
     case kWebVrTimedOut:
       ui_->SetWebVrMode(false, false);
+      break;
+    default:
       break;
   }
 }

@@ -30,6 +30,7 @@ void InitializeColorSchemes() {
   normal_scheme.floor = 0xFF8C8C8C;
   normal_scheme.ceiling = normal_scheme.floor;
   normal_scheme.floor_grid = 0x26FFFFFF;
+  normal_scheme.web_vr_background = SK_ColorBLACK;
   normal_scheme.element_foreground = 0xFF333333;
   normal_scheme.element_background = 0xCCB3B3B3;
   normal_scheme.element_background_hover = 0xCCE3E3E3;
@@ -106,10 +107,10 @@ void InitializeColorSchemes() {
   normal_scheme.dimmer_outer = 0xE6000000;
   normal_scheme.splash_screen_background = SK_ColorBLACK;
   normal_scheme.splash_screen_text_color = 0xA6FFFFFF;
-  normal_scheme.spinner_background = SK_ColorBLACK;
-  normal_scheme.spinner_color = 0xFFF3F3F3;
-  normal_scheme.timeout_message_background = 0xFF444444;
-  normal_scheme.timeout_message_foreground = normal_scheme.spinner_color;
+  normal_scheme.web_vr_timeout_spinner = 0xFFF3F3F3;
+  normal_scheme.web_vr_timeout_message_background = 0xFF444444;
+  normal_scheme.web_vr_timeout_message_foreground =
+      normal_scheme.web_vr_timeout_spinner;
   normal_scheme.speech_recognition_circle_background = 0xFF4285F4;
   normal_scheme.omnibox_background = 0xFFEEEEEE;
   normal_scheme.omnibox_icon = 0xA6000000;

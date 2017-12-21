@@ -904,7 +904,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
 
   std::vector<const vr::UiElement*> overlay_elements;
   if (ShouldDrawWebVr()) {
-    overlay_elements = ui_->scene()->GetVisibleWebVrOverlayForegroundElements();
+    overlay_elements = ui_->scene()->GetVisibleWebVrOverlayElementsToDraw();
   }
 
   if (!overlay_elements.empty() && ShouldDrawWebVr()) {

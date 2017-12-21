@@ -55,6 +55,7 @@ struct ColorScheme {
   SkColor floor;
   SkColor ceiling;
   SkColor floor_grid;
+  SkColor web_vr_background;
 
   // The foreground color is used for text and sometimes for icons.
   SkColor element_foreground;
@@ -94,12 +95,9 @@ struct ColorScheme {
   SkColor splash_screen_background;
   SkColor splash_screen_text_color;
 
-  // WebVr timeout spinner colors.
-  SkColor spinner_background;
-  SkColor spinner_color;
-
-  SkColor timeout_message_background;
-  SkColor timeout_message_foreground;
+  SkColor web_vr_timeout_spinner;
+  SkColor web_vr_timeout_message_background;
+  SkColor web_vr_timeout_message_foreground;
 
   SkColor speech_recognition_circle_background;
 

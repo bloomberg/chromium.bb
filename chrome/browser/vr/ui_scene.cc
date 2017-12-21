@@ -171,50 +171,18 @@ UiElement* UiScene::GetUiElementByName(UiElementName name) const {
   return nullptr;
 }
 
-UiScene::Elements UiScene::GetVisible2dBrowsingElements() const {
-  return GetVisibleElements(
-      GetUiElementByName(k2dBrowsingRoot), [](UiElement* element) {
-        return element->draw_phase() == kPhaseForeground ||
-               element->draw_phase() == kPhaseFloorCeiling ||
-               element->draw_phase() == kPhaseBackground;
-      });
+UiScene::Elements UiScene::GetVisibleElementsToDraw() const {
+  return GetVisibleElements(GetUiElementByName(kRoot), [](UiElement* element) {
+    return element->draw_phase() == kPhaseForeground ||
+           element->draw_phase() == kPhaseBackground;
+  });
 }
 
-UiScene::Elements UiScene::GetVisible2dBrowsingOverlayElements() const {
-  return GetVisibleElements(
-      GetUiElementByName(k2dBrowsingRoot), [](UiElement* element) {
-        return element->draw_phase() == kPhaseOverlayBackground ||
-               element->draw_phase() == kPhaseOverlayForeground;
-      });
-}
-
-UiScene::Elements UiScene::GetVisibleSplashScreenElements() const {
-  return GetVisibleElements(
-      GetUiElementByName(kSplashScreenRoot), [](UiElement* element) {
-        return element->draw_phase() == kPhaseOverlayBackground ||
-               element->draw_phase() == kPhaseOverlayForeground;
-      });
-}
-
-UiScene::Elements UiScene::GetVisibleWebVrOverlayForegroundElements() const {
+UiScene::Elements UiScene::GetVisibleWebVrOverlayElementsToDraw() const {
   return GetVisibleElements(
       GetUiElementByName(kWebVrRoot), [](UiElement* element) {
         return element->draw_phase() == kPhaseOverlayForeground;
       });
-}
-
-UiScene::Elements UiScene::GetVisibleControllerElements() const {
-  return GetVisibleElements(GetUiElementByName(kControllerGroup),
-                            [](UiElement* element) {
-                              return element->draw_phase() == kPhaseForeground;
-                            });
-}
-
-UiScene::Elements UiScene::GetVisibleKeyboardElements() const {
-  return GetVisibleElements(GetUiElementByName(kKeyboard),
-                            [](UiElement* element) {
-                              return element->draw_phase() == kPhaseForeground;
-                            });
 }
 
 UiScene::Elements UiScene::GetPotentiallyVisibleElements() const {

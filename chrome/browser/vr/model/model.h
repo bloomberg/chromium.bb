@@ -14,7 +14,7 @@
 #include "chrome/browser/vr/model/speech_recognition_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
-#include "chrome/browser/vr/model/web_vr_timeout_state.h"
+#include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "ui/gfx/transform.h"
 
@@ -45,23 +45,11 @@ struct Model {
   bool background_loaded = false;
 
   // WebVR state.
-  bool web_vr_mode = false;
-  bool web_vr_show_toast = false;
-  bool web_vr_show_splash_screen = false;
-  // Indicates that we're waiting for the first WebVR frame to show up before we
-  // hide the splash screen. This is used in the case of WebVR auto-
-  // presentation.
-  bool web_vr_started_for_autopresentation = false;
-  bool should_render_web_vr() const {
-    return web_vr_mode && !web_vr_show_splash_screen;
-  }
-  bool browsing_mode() const {
-    return !web_vr_mode && !web_vr_show_splash_screen;
-  }
-  bool web_vr_has_produced_frames() const {
-    return web_vr_mode && web_vr_timeout_state == kWebVrNoTimeoutPending;
-  }
-  WebVrTimeoutState web_vr_timeout_state = kWebVrNoTimeoutPending;
+  WebVrModel web_vr;
+
+  // TODO(ymalik): This should be replaced by the concept of being in a "ui
+  // mode"
+  bool browsing_mode() const { return !web_vr.is_enabled(); }
 
   // Focused text state.
   bool editing_input = false;

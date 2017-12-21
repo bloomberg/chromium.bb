@@ -164,10 +164,10 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
   element->SetDrawPhase(kPhaseOverlayForeground);
   child->AddChild(std::move(element));
 
-  EXPECT_FALSE(scene.GetVisibleWebVrOverlayForegroundElements().empty());
+  EXPECT_FALSE(scene.GetVisibleWebVrOverlayElementsToDraw().empty());
   child->SetVisible(false);
   scene.OnBeginFrame(MsToTicks(0), kForwardVector);
-  EXPECT_TRUE(scene.GetVisibleWebVrOverlayForegroundElements().empty());
+  EXPECT_TRUE(scene.GetVisibleWebVrOverlayElementsToDraw().empty());
 }
 
 TEST(UiScene, InvisibleElementsDoNotCauseAnimationDirtiness) {
