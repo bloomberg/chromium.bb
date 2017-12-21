@@ -16,7 +16,6 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
-#include "media/base/timestamp_constants.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_decoding_loop.h"
@@ -130,13 +129,7 @@ static void CopySamples(cdm::AudioFormat cdm_format,
 }
 
 FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(CdmHostProxy* cdm_host_proxy)
-    : is_initialized_(false),
-      cdm_host_proxy_(cdm_host_proxy),
-      samples_per_second_(0),
-      channels_(0),
-      av_sample_format_(0),
-      bytes_per_frame_(0),
-      last_input_timestamp_(kNoTimestamp) {}
+    : cdm_host_proxy_(cdm_host_proxy) {}
 
 FFmpegCdmAudioDecoder::~FFmpegCdmAudioDecoder() {
   ReleaseFFmpegResources();

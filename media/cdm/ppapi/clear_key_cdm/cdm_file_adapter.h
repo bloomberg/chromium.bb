@@ -58,7 +58,7 @@ class CdmFileAdapter : public cdm::FileIOClient {
   FileOpenedCB open_cb_;
   ReadCB read_cb_;
   WriteCB write_cb_;
-  cdm::FileIO* file_io_;
+  cdm::FileIO* file_io_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CdmFileAdapter);
 };

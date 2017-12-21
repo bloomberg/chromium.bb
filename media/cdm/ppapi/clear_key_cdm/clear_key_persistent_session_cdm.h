@@ -100,7 +100,7 @@ class ClearKeyPersistentSessionCdm : public ContentDecryptionModule {
   void OnSessionClosed(const std::string& session_id);
 
   scoped_refptr<AesDecryptor> cdm_;
-  CdmHostProxy* const cdm_host_proxy_;
+  CdmHostProxy* const cdm_host_proxy_ = nullptr;
 
   // Callbacks for firing session events. Other events aren't intercepted.
   SessionClosedCB session_closed_cb_;

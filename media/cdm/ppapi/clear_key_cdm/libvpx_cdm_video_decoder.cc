@@ -27,10 +27,7 @@ namespace media {
 static const int kDecodeThreads = 2;
 
 LibvpxCdmVideoDecoder::LibvpxCdmVideoDecoder(CdmHostProxy* cdm_host_proxy)
-    : is_initialized_(false),
-      cdm_host_proxy_(cdm_host_proxy),
-      vpx_codec_(NULL),
-      vpx_image_(NULL) {}
+    : cdm_host_proxy_(cdm_host_proxy) {}
 
 LibvpxCdmVideoDecoder::~LibvpxCdmVideoDecoder() {
   Deinitialize();

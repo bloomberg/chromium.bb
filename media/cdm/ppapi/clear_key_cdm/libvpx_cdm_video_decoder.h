@@ -44,12 +44,12 @@ class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
   // |cdm_video_frame|. Returns true when allocation and copy succeed.
   bool CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame);
 
-  bool is_initialized_;
+  bool is_initialized_ = false;
 
-  CdmHostProxy* const cdm_host_proxy_;
+  CdmHostProxy* const cdm_host_proxy_ = nullptr;
 
-  vpx_codec_ctx* vpx_codec_;
-  vpx_image* vpx_image_;
+  vpx_codec_ctx* vpx_codec_ = nullptr;
+  vpx_image* vpx_image_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LibvpxCdmVideoDecoder);
 };

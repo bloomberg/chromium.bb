@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "media/base/timestamp_constants.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 
@@ -61,25 +62,25 @@ class FFmpegCdmAudioDecoder {
   void ReleaseFFmpegResources();
   void SerializeInt64(int64_t value, uint8_t* dest);
 
-  bool is_initialized_;
+  bool is_initialized_ = false;
 
-  CdmHostProxy* const cdm_host_proxy_;
+  CdmHostProxy* const cdm_host_proxy_ = nullptr;
 
   // FFmpeg structures owned by this object.
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
   std::unique_ptr<FFmpegDecodingLoop> decoding_loop_;
 
   // Audio format.
-  int samples_per_second_;
-  int channels_;
+  int samples_per_second_ = 0;
+  int channels_ = 0;
 
   // AVSampleFormat initially requested; not Chrome's SampleFormat.
-  int av_sample_format_;
+  int av_sample_format_ = 0;
 
   // Used for computing output timestamps.
   std::unique_ptr<AudioTimestampHelper> output_timestamp_helper_;
-  int bytes_per_frame_;
-  base::TimeDelta last_input_timestamp_;
+  int bytes_per_frame_ = 0;
+  base::TimeDelta last_input_timestamp_ = kNoTimestamp;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegCdmAudioDecoder);
 };
