@@ -139,8 +139,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
-  void AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
-  bool ShouldBypassServiceWorker() const;
+  void WillSendNavigationRequest(net::HttpRequestHeaders* headers,
+                                 bool* skip_service_worker);
 
  private:
   void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);

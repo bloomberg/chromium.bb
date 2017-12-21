@@ -174,10 +174,6 @@ void AddAdditionalRequestHeaders(
                                   ? GetContentClient()->GetUserAgent()
                                   : user_agent_override);
 
-  // Check whether DevTools wants to override user agent for this request
-  // after setting the default user agent, or append throttling control header.
-  RenderFrameDevToolsAgentHost::AppendDevToolsHeaders(frame_tree_node, headers);
-
   // Next, set the HTTP Origin if needed.
   if (!NeedsHTTPOrigin(headers, method))
     return;
@@ -424,10 +420,6 @@ NavigationRequest::NavigationRequest(
     }
   }
   begin_params_->headers = headers.ToString();
-
-  // Check whether DevTools wants to skip the service worker.
-  if (RenderFrameDevToolsAgentHost::ShouldBypassServiceWorker(frame_tree_node))
-    begin_params_->skip_service_worker = true;
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -1073,8 +1065,11 @@ void NavigationRequest::OnStartChecksComplete(
       navigation_handle_->GetStartingSiteInstance()->GetSiteURL().
           SchemeIs(kGuestScheme);
 
-  bool report_raw_headers =
-      RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(frame_tree_node_);
+  // Give DevTools a chance to override begin params (headers, skip SW)
+  // before actually loading resource.
+  bool report_raw_headers = false;
+  RenderFrameDevToolsAgentHost::OnWillSendNavigationRequest(
+      frame_tree_node_, begin_params_.get(), &report_raw_headers);
 
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
