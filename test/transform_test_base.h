@@ -255,7 +255,7 @@ class TransformTestBase {
       int row_length = FindRowLength();
       // The minimum quant value is 4.
       for (int j = 0; j < num_coeffs_; ++j) {
-        EXPECT_EQ(output_block[j], output_ref_block[j])
+        ASSERT_EQ(output_block[j], output_ref_block[j])
             << "Not bit-exact at test index: " << i << ", "
             << "j = " << j << std::endl;
         EXPECT_GE(row_length * kDctMaxValue << (bit_depth_ - 8),
@@ -323,7 +323,7 @@ class TransformTestBase {
         const int diff = dst[j] - src[j];
 #endif
         const uint32_t error = diff * diff;
-        EXPECT_GE(static_cast<uint32_t>(limit), error)
+        ASSERT_GE(static_cast<uint32_t>(limit), error)
             << "Error: 4x4 IDCT has error " << error << " at index " << j;
       }
     }
