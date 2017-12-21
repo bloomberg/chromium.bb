@@ -961,6 +961,16 @@
       "-v",
     ],
   },
+  "telemetry_perf_unittests_viz": {
+    "label": "//chrome/test:telemetry_perf_unittests",
+    "type": "script",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "args": [
+      "../../tools/perf/run_tests",
+      "-v",
+      '--extra-browser-args=--enable-viz',
+    ],
+  },
   "telemetry_perf_tests": {
     "label": "//chrome/test:telemetry_perf_tests",
     "type": "script",
