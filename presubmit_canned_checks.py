@@ -1297,7 +1297,6 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     if cs['location'].startswith(loc_pref) or
     ('%s/' % cs['location']) == loc_pref
   }
-  logging.debug('dir_to_config_set: %s', dir_to_config_set)
   cs_to_files = collections.defaultdict(list)
   for f in input_api.AffectedFiles():
     # windows
@@ -1310,7 +1309,6 @@ def CheckChangedLUCIConfigs(input_api, output_api):
           'content': base64.b64encode(
               '\n'.join(f.NewContents()).encode('utf-8'))
         })
-  logging.debug('cs_to_files: %s', cs_to_files)
   outputs = []
   for cs, f in cs_to_files.iteritems():
     try:
