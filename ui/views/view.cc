@@ -46,7 +46,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/accessibility/native_view_accessibility.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
@@ -1408,6 +1408,12 @@ bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
 
 // Accessibility----------------------------------------------------------------
 
+ViewAccessibility& View::GetViewAccessibility() {
+  if (!view_accessibility_)
+    view_accessibility_ = ViewAccessibility::Create(this);
+  return *view_accessibility_;
+}
+
 bool View::HandleAccessibleAction(const ui::AXActionData& action_data) {
   switch (action_data.action) {
     case ui::AX_ACTION_BLUR:
@@ -1448,11 +1454,7 @@ bool View::HandleAccessibleAction(const ui::AXActionData& action_data) {
 }
 
 gfx::NativeViewAccessible View::GetNativeViewAccessible() {
-  if (!native_view_accessibility_)
-    native_view_accessibility_ = NativeViewAccessibility::Create(this);
-  if (native_view_accessibility_)
-    return native_view_accessibility_->GetNativeObject();
-  return nullptr;
+  return GetViewAccessibility().GetNativeObject();
 }
 
 void View::NotifyAccessibilityEvent(
@@ -1461,12 +1463,8 @@ void View::NotifyAccessibilityEvent(
   if (ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->NotifyAccessibilityEvent(this, event_type);
 
-  if (send_native_event && GetWidget()) {
-    if (!native_view_accessibility_)
-      native_view_accessibility_ = NativeViewAccessibility::Create(this);
-    if (native_view_accessibility_)
-      native_view_accessibility_->NotifyAccessibilityEvent(event_type);
-  }
+  if (send_native_event && GetWidget())
+    GetViewAccessibility().NotifyAccessibilityEvent(event_type);
 
   OnAccessibilityEvent(event_type);
 }
