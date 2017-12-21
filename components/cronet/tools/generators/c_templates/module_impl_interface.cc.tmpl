@@ -58,7 +58,10 @@ void
 // Implementation of {{interface_name}} that forwards calls to C functions implemented by the app.
 class {{interface_name}}Stub : public {{interface_name}} {
  public:
-  {{interface_name}}Stub(
+{%-  if interface.methods|count == 1 -%}
+  explicit
+{%-   endif %}
+   {{interface_name}}Stub(
 {%- for method in interface.methods -%}
   {{interface_name}}_{{method.name}}Func {{method.name}}Func
 {%- if not loop.last %}, {% endif %}
@@ -92,7 +95,7 @@ class {{interface_name}}Stub : public {{interface_name}} {
  private:
   {{interface_name}}Context context_ = nullptr;
 {%- for method in interface.methods -%}
-  {{interface_name}}_{{method.name}}Func {{method.name}}Func_;
+  const {{interface_name}}_{{method.name}}Func {{method.name}}Func_;
 {%-   endfor %}
 
   DISALLOW_COPY_AND_ASSIGN({{interface_name}}Stub);

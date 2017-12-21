@@ -170,6 +170,7 @@ source_set("cronet_static") {
     ":cronet_version_header",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//components/cronet/native:cronet_native_impl",
     "//components/metrics",
     "//components/prefs",
     "//net",
@@ -226,6 +227,11 @@ source_set("cronet_static") {
   }
 }
 
+config("hide_all_but_jni_onload_and_cronet") {
+  ldflags = [ "-Wl,--version-script=" + rebase_path(
+                  "//components/cronet/android/android_only_jni_onload_and_cronet_exports.lst") ]
+}
+
 _cronet_shared_lib_name = "cronet.$chrome_version_full"
 _cronet_shared_lib_file_name = "lib" + _cronet_shared_lib_name + ".so"
 
@@ -239,6 +245,8 @@ shared_library("cronet") {
     "//base",
     "//net:net",
   ]
+  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  configs += [ ":hide_all_but_jni_onload_and_cronet" ]
 }
 
 cronet_api_srcjar_deps = [ ":cronet_api_version_srcjar" ]
@@ -500,11 +508,13 @@ shared_library("cronet_tests") {
   ]
 
   deps = [
+    ":cronet",
     ":cronet_tests_jni_headers",
     ":cronet_version_header",
     "//base",
     "//base:i18n",
     "//base/test:test_support",
+    "//components/cronet/native:cronet_native_tests",
     "//components/prefs",
     "//net",
     "//net:simple_quic_tools",
@@ -887,7 +897,7 @@ test("cronet_unittests") {
     ":cronet_static",
     "//base",
     "//base/test:test_support",
-    "//components/cronet/native:cronet_native_impl_tests",
+    "//components/cronet/native:cronet_native_unittests",
     "//components/metrics",
     "//components/prefs:test_support",
     "//net",

@@ -1,9 +1,15 @@
-import("//mojo/public/tools/bindings/mojom.gni")
+import("//components/cronet/native/include/headers.gni")
 import("//testing/test.gni")
 
-# Cronet native API implementation. Currently just generated from cronet.idl.
+# Cronet native API implementation.
 source_set("cronet_native_impl") {
   sources = [
+    "buffer.cc",
+    "include/cronet_c.h",
+    "runnables.cc",
+    "runnables.h",
+
+    # Generated from cronet.idl.
     "generated/cronet.idl_c.h",
     "generated/cronet.idl_impl_interface.cc",
     "generated/cronet.idl_impl_interface.h",
@@ -14,10 +20,15 @@ source_set("cronet_native_impl") {
     "//base",
     "//net",
   ]
+  include_dirs = [
+    "//components/cronet/native/generated",
+    "//components/cronet/native/include",
+  ]
 }
 
-# Tests for Cronet native API. Currently just generated from cronet.idl.
-source_set("cronet_native_impl_tests") {
+# Unit tests for Cronet native API. Depends on cronet_native_impl to test
+# implementation details.
+source_set("cronet_native_unittests") {
   testonly = true
 
   deps = [
@@ -25,8 +36,41 @@ source_set("cronet_native_impl_tests") {
     "//net:test_support",
   ]
 
+  include_dirs = [
+    "//components/cronet/native/generated",
+    "//components/cronet/native/include",
+  ]
+
   sources = [
+    "runnables_unittest.cc",
+    "test_util.cc",
+    "test_util.h",
+
+    # Generated from cronet.idl.
     "generated/cronet.idl_impl_interface_unittest.cc",
     "generated/cronet.idl_impl_struct_unittest.cc",
+  ]
+}
+
+# Tests for publicly exported Cronet Native API. This target does NOT depend on
+# cronet_native_impl to prevent static linking of implementation into test app.
+source_set("cronet_native_tests") {
+  testonly = true
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+
+  include_dirs = [
+    "//components/cronet/native/generated",
+    "//components/cronet/native/include",
+  ]
+  sources = [
+    "buffer_test.cc",
+    "executors_test.cc",
+    "test_util.cc",
+    "test_util.h",
   ]
 }

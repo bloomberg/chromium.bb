@@ -8,6 +8,98 @@
 
 #include "base/logging.h"
 
+// C functions of Cronet_Buffer that forward calls to C++ implementation.
+void Cronet_Buffer_Destroy(Cronet_BufferPtr self) {
+  DCHECK(self);
+  return delete self;
+}
+
+void Cronet_Buffer_SetContext(Cronet_BufferPtr self,
+                              Cronet_BufferContext context) {
+  DCHECK(self);
+  return self->SetContext(context);
+}
+
+Cronet_BufferContext Cronet_Buffer_GetContext(Cronet_BufferPtr self) {
+  DCHECK(self);
+  return self->GetContext();
+}
+
+void Cronet_Buffer_InitWithDataAndCallback(Cronet_BufferPtr self,
+                                           RawDataPtr data,
+                                           uint64_t size,
+                                           Cronet_BufferCallbackPtr callback) {
+  DCHECK(self);
+  self->InitWithDataAndCallback(data, size, callback);
+}
+
+void Cronet_Buffer_InitWithAlloc(Cronet_BufferPtr self, uint64_t size) {
+  DCHECK(self);
+  self->InitWithAlloc(size);
+}
+
+uint64_t Cronet_Buffer_GetSize(Cronet_BufferPtr self) {
+  DCHECK(self);
+  return self->GetSize();
+}
+
+RawDataPtr Cronet_Buffer_GetData(Cronet_BufferPtr self) {
+  DCHECK(self);
+  return self->GetData();
+}
+
+// Implementation of Cronet_Buffer that forwards calls to C functions
+// implemented by the app.
+class Cronet_BufferStub : public Cronet_Buffer {
+ public:
+  Cronet_BufferStub(
+      Cronet_Buffer_InitWithDataAndCallbackFunc InitWithDataAndCallbackFunc,
+      Cronet_Buffer_InitWithAllocFunc InitWithAllocFunc,
+      Cronet_Buffer_GetSizeFunc GetSizeFunc,
+      Cronet_Buffer_GetDataFunc GetDataFunc)
+      : InitWithDataAndCallbackFunc_(InitWithDataAndCallbackFunc),
+        InitWithAllocFunc_(InitWithAllocFunc),
+        GetSizeFunc_(GetSizeFunc),
+        GetDataFunc_(GetDataFunc) {}
+
+  ~Cronet_BufferStub() override {}
+
+  void SetContext(Cronet_BufferContext context) override { context_ = context; }
+
+  Cronet_BufferContext GetContext() override { return context_; }
+
+ protected:
+  void InitWithDataAndCallback(RawDataPtr data,
+                               uint64_t size,
+                               Cronet_BufferCallbackPtr callback) override {
+    InitWithDataAndCallbackFunc_(this, data, size, callback);
+  }
+
+  void InitWithAlloc(uint64_t size) override { InitWithAllocFunc_(this, size); }
+
+  uint64_t GetSize() override { return GetSizeFunc_(this); }
+
+  RawDataPtr GetData() override { return GetDataFunc_(this); }
+
+ private:
+  Cronet_BufferContext context_ = nullptr;
+  const Cronet_Buffer_InitWithDataAndCallbackFunc InitWithDataAndCallbackFunc_;
+  const Cronet_Buffer_InitWithAllocFunc InitWithAllocFunc_;
+  const Cronet_Buffer_GetSizeFunc GetSizeFunc_;
+  const Cronet_Buffer_GetDataFunc GetDataFunc_;
+
+  DISALLOW_COPY_AND_ASSIGN(Cronet_BufferStub);
+};
+
+Cronet_BufferPtr Cronet_Buffer_CreateStub(
+    Cronet_Buffer_InitWithDataAndCallbackFunc InitWithDataAndCallbackFunc,
+    Cronet_Buffer_InitWithAllocFunc InitWithAllocFunc,
+    Cronet_Buffer_GetSizeFunc GetSizeFunc,
+    Cronet_Buffer_GetDataFunc GetDataFunc) {
+  return new Cronet_BufferStub(InitWithDataAndCallbackFunc, InitWithAllocFunc,
+                               GetSizeFunc, GetDataFunc);
+}
+
 // C functions of Cronet_BufferCallback that forward calls to C++
 // implementation.
 void Cronet_BufferCallback_Destroy(Cronet_BufferCallbackPtr self) {
@@ -37,7 +129,8 @@ void Cronet_BufferCallback_OnDestroy(Cronet_BufferCallbackPtr self,
 // implemented by the app.
 class Cronet_BufferCallbackStub : public Cronet_BufferCallback {
  public:
-  Cronet_BufferCallbackStub(Cronet_BufferCallback_OnDestroyFunc OnDestroyFunc)
+  explicit Cronet_BufferCallbackStub(
+      Cronet_BufferCallback_OnDestroyFunc OnDestroyFunc)
       : OnDestroyFunc_(OnDestroyFunc) {}
 
   ~Cronet_BufferCallbackStub() override {}
@@ -55,7 +148,7 @@ class Cronet_BufferCallbackStub : public Cronet_BufferCallback {
 
  private:
   Cronet_BufferCallbackContext context_ = nullptr;
-  Cronet_BufferCallback_OnDestroyFunc OnDestroyFunc_;
+  const Cronet_BufferCallback_OnDestroyFunc OnDestroyFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_BufferCallbackStub);
 };
@@ -91,7 +184,8 @@ void Cronet_Runnable_Run(Cronet_RunnablePtr self) {
 // implemented by the app.
 class Cronet_RunnableStub : public Cronet_Runnable {
  public:
-  Cronet_RunnableStub(Cronet_Runnable_RunFunc RunFunc) : RunFunc_(RunFunc) {}
+  explicit Cronet_RunnableStub(Cronet_Runnable_RunFunc RunFunc)
+      : RunFunc_(RunFunc) {}
 
   ~Cronet_RunnableStub() override {}
 
@@ -106,7 +200,7 @@ class Cronet_RunnableStub : public Cronet_Runnable {
 
  private:
   Cronet_RunnableContext context_ = nullptr;
-  Cronet_Runnable_RunFunc RunFunc_;
+  const Cronet_Runnable_RunFunc RunFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_RunnableStub);
 };
@@ -142,7 +236,7 @@ void Cronet_Executor_Execute(Cronet_ExecutorPtr self,
 // implemented by the app.
 class Cronet_ExecutorStub : public Cronet_Executor {
  public:
-  Cronet_ExecutorStub(Cronet_Executor_ExecuteFunc ExecuteFunc)
+  explicit Cronet_ExecutorStub(Cronet_Executor_ExecuteFunc ExecuteFunc)
       : ExecuteFunc_(ExecuteFunc) {}
 
   ~Cronet_ExecutorStub() override {}
@@ -160,7 +254,7 @@ class Cronet_ExecutorStub : public Cronet_Executor {
 
  private:
   Cronet_ExecutorContext context_ = nullptr;
-  Cronet_Executor_ExecuteFunc ExecuteFunc_;
+  const Cronet_Executor_ExecuteFunc ExecuteFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_ExecutorStub);
 };
@@ -256,11 +350,11 @@ class Cronet_EngineStub : public Cronet_Engine {
 
  private:
   Cronet_EngineContext context_ = nullptr;
-  Cronet_Engine_StartWithParamsFunc StartWithParamsFunc_;
-  Cronet_Engine_StartNetLogToFileFunc StartNetLogToFileFunc_;
-  Cronet_Engine_StopNetLogFunc StopNetLogFunc_;
-  Cronet_Engine_GetVersionStringFunc GetVersionStringFunc_;
-  Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc_;
+  const Cronet_Engine_StartWithParamsFunc StartWithParamsFunc_;
+  const Cronet_Engine_StartNetLogToFileFunc StartNetLogToFileFunc_;
+  const Cronet_Engine_StopNetLogFunc StopNetLogFunc_;
+  const Cronet_Engine_GetVersionStringFunc GetVersionStringFunc_;
+  const Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineStub);
 };
@@ -310,7 +404,7 @@ void Cronet_UrlRequestStatusListener_OnStatus(
 class Cronet_UrlRequestStatusListenerStub
     : public Cronet_UrlRequestStatusListener {
  public:
-  Cronet_UrlRequestStatusListenerStub(
+  explicit Cronet_UrlRequestStatusListenerStub(
       Cronet_UrlRequestStatusListener_OnStatusFunc OnStatusFunc)
       : OnStatusFunc_(OnStatusFunc) {}
 
@@ -331,7 +425,7 @@ class Cronet_UrlRequestStatusListenerStub
 
  private:
   Cronet_UrlRequestStatusListenerContext context_ = nullptr;
-  Cronet_UrlRequestStatusListener_OnStatusFunc OnStatusFunc_;
+  const Cronet_UrlRequestStatusListener_OnStatusFunc OnStatusFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestStatusListenerStub);
 };
@@ -471,12 +565,13 @@ class Cronet_UrlRequestCallbackStub : public Cronet_UrlRequestCallback {
 
  private:
   Cronet_UrlRequestCallbackContext context_ = nullptr;
-  Cronet_UrlRequestCallback_OnRedirectReceivedFunc OnRedirectReceivedFunc_;
-  Cronet_UrlRequestCallback_OnResponseStartedFunc OnResponseStartedFunc_;
-  Cronet_UrlRequestCallback_OnReadCompletedFunc OnReadCompletedFunc_;
-  Cronet_UrlRequestCallback_OnSucceededFunc OnSucceededFunc_;
-  Cronet_UrlRequestCallback_OnFailedFunc OnFailedFunc_;
-  Cronet_UrlRequestCallback_OnCanceledFunc OnCanceledFunc_;
+  const Cronet_UrlRequestCallback_OnRedirectReceivedFunc
+      OnRedirectReceivedFunc_;
+  const Cronet_UrlRequestCallback_OnResponseStartedFunc OnResponseStartedFunc_;
+  const Cronet_UrlRequestCallback_OnReadCompletedFunc OnReadCompletedFunc_;
+  const Cronet_UrlRequestCallback_OnSucceededFunc OnSucceededFunc_;
+  const Cronet_UrlRequestCallback_OnFailedFunc OnFailedFunc_;
+  const Cronet_UrlRequestCallback_OnCanceledFunc OnCanceledFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestCallbackStub);
 };
@@ -574,10 +669,10 @@ class Cronet_UploadDataSinkStub : public Cronet_UploadDataSink {
 
  private:
   Cronet_UploadDataSinkContext context_ = nullptr;
-  Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc_;
-  Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc_;
-  Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc_;
-  Cronet_UploadDataSink_OnRewindErrorFunc OnRewindErrorFunc_;
+  const Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc_;
+  const Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc_;
+  const Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc_;
+  const Cronet_UploadDataSink_OnRewindErrorFunc OnRewindErrorFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UploadDataSinkStub);
 };
@@ -672,10 +767,10 @@ class Cronet_UploadDataProviderStub : public Cronet_UploadDataProvider {
 
  private:
   Cronet_UploadDataProviderContext context_ = nullptr;
-  Cronet_UploadDataProvider_GetLengthFunc GetLengthFunc_;
-  Cronet_UploadDataProvider_ReadFunc ReadFunc_;
-  Cronet_UploadDataProvider_RewindFunc RewindFunc_;
-  Cronet_UploadDataProvider_CloseFunc CloseFunc_;
+  const Cronet_UploadDataProvider_GetLengthFunc GetLengthFunc_;
+  const Cronet_UploadDataProvider_ReadFunc ReadFunc_;
+  const Cronet_UploadDataProvider_RewindFunc RewindFunc_;
+  const Cronet_UploadDataProvider_CloseFunc CloseFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UploadDataProviderStub);
 };
@@ -801,13 +896,13 @@ class Cronet_UrlRequestStub : public Cronet_UrlRequest {
 
  private:
   Cronet_UrlRequestContext context_ = nullptr;
-  Cronet_UrlRequest_InitWithParamsFunc InitWithParamsFunc_;
-  Cronet_UrlRequest_StartFunc StartFunc_;
-  Cronet_UrlRequest_FollowRedirectFunc FollowRedirectFunc_;
-  Cronet_UrlRequest_ReadFunc ReadFunc_;
-  Cronet_UrlRequest_CancelFunc CancelFunc_;
-  Cronet_UrlRequest_IsDoneFunc IsDoneFunc_;
-  Cronet_UrlRequest_GetStatusFunc GetStatusFunc_;
+  const Cronet_UrlRequest_InitWithParamsFunc InitWithParamsFunc_;
+  const Cronet_UrlRequest_StartFunc StartFunc_;
+  const Cronet_UrlRequest_FollowRedirectFunc FollowRedirectFunc_;
+  const Cronet_UrlRequest_ReadFunc ReadFunc_;
+  const Cronet_UrlRequest_CancelFunc CancelFunc_;
+  const Cronet_UrlRequest_IsDoneFunc IsDoneFunc_;
+  const Cronet_UrlRequest_GetStatusFunc GetStatusFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestStub);
 };

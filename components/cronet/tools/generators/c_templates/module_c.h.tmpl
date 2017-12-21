@@ -19,6 +19,10 @@
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
+{#-- TODO(mef): Derive EXPORT_MACRO from module name --#}
+{%- set export_macro = "CRONET_EXPORT" %}
+#include "cronet_export.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -72,13 +76,13 @@ typedef enum {{enum_name}} {
 // Concrete interface {{interface_name}}.
 
 // Create an instance of {{interface_name}}.
-{{interface_name}}Ptr {{interface_name}}_Create();
+{{export_macro}} {{interface_name}}Ptr {{interface_name}}_Create();
 {%-   endif %}
 // Destroy an instance of {{interface_name}}.
-void {{interface_name}}_Destroy({{interface_name}}Ptr self);
+{{export_macro}} void {{interface_name}}_Destroy({{interface_name}}Ptr self);
 // Set and get app-specific {{interface_name}}Context.
-void {{interface_name}}_SetContext({{interface_name}}Ptr self, {{interface_name}}Context);
-{{interface_name}}Context {{interface_name}}_GetContext({{interface_name}}Ptr self);
+{{export_macro}} void {{interface_name}}_SetContext({{interface_name}}Ptr self, {{interface_name}}Context);
+{{export_macro}} {{interface_name}}Context {{interface_name}}_GetContext({{interface_name}}Ptr self);
 {%-  if interface|is_abstract %}
 // Abstract interface {{interface_name}} is implemented by the app.
 // The following concrete methods forward call to app implementation.
@@ -88,6 +92,7 @@ void {{interface_name}}_SetContext({{interface_name}}Ptr self, {{interface_name}
 // The app calls them to manipulate {{interface_name}}.
 {%-   endif %}
 {%- for method in interface.methods %}
+{{export_macro}}
 {%-  if method.response_parameters and method.sync %}
 {%-   for param in method.response_parameters %}
 {{param.kind|c_wrapper_type}}
@@ -127,7 +132,7 @@ typedef void
 // Concrete interface {{interface_name}} is implemented by Cronet.
 // The app can use this for testing / mocking.
 {%-   endif %}
-{{interface_name}}Ptr {{interface_name}}_CreateStub(
+{{export_macro}} {{interface_name}}Ptr {{interface_name}}_CreateStub(
 {%- for method in interface.methods -%}
   {{interface_name}}_{{method.name}}Func {{method.name}}Func
 {%- if not loop.last %}, {% endif %}
@@ -139,10 +144,11 @@ typedef void
 {% set struct_name = struct|get_name_for_kind %}
 ///////////////////////
 // Struct {{struct_name}}.
-{{struct_name}}Ptr {{struct_name}}_Create();
-void {{struct_name}}_Destroy({{struct_name}}Ptr self);
+{{export_macro}} {{struct_name}}Ptr {{struct_name}}_Create();
+{{export_macro}} void {{struct_name}}_Destroy({{struct_name}}Ptr self);
 // {{struct_name}} setters.
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
+{{export_macro}}
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
 void {{struct_name}}_add_{{packed_field.field.name}}({{struct_name}}Ptr self, {{kind.kind|c_wrapper_type}} {{packed_field.field.name}});
@@ -152,6 +158,7 @@ void {{struct_name}}_set_{{packed_field.field.name}}({{struct_name}}Ptr self, {{
 {%- endfor %}
 // {{struct_name}} getters.
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
+{{export_macro}}
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
 uint32_t {{struct_name}}_get_{{packed_field.field.name}}Size({{struct_name}}Ptr self);
