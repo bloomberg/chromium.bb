@@ -286,7 +286,8 @@ AccessibilityManager::AccessibilityManager()
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
-
+  notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                              content::NotificationService::AllSources());
   input_method::InputMethodManager::Get()->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
 
@@ -1398,6 +1399,10 @@ void AccessibilityManager::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_ == profile)
         SetProfile(NULL);
+      break;
+    }
+    case chrome::NOTIFICATION_APP_TERMINATING: {
+      chromevox_panel_ = nullptr;
       break;
     }
   }
