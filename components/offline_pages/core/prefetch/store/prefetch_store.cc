@@ -111,6 +111,8 @@ PrefetchStore::PrefetchStore(
 PrefetchStore::~PrefetchStore() {}
 
 void PrefetchStore::Initialize(base::OnceClosure pending_command) {
+  TRACE_EVENT_ASYNC_BEGIN1("offline_pages", "Prefetch Store", this, "is reopen",
+                           !last_closing_time_.is_null());
   DCHECK_EQ(initialization_status_, InitializationStatus::NOT_INITIALIZED);
   initialization_status_ = InitializationStatus::INITIALIZING;
 
@@ -141,11 +143,16 @@ void PrefetchStore::Initialize(base::OnceClosure pending_command) {
 void PrefetchStore::OnInitializeDone(base::OnceClosure pending_command,
                                      bool success) {
   // TODO(carlosk): Add initializing error reporting here.
+  TRACE_EVENT_ASYNC_STEP_PAST1("offline_pages", "Prefetch Store", this,
+                               "Initializing", "succeeded", success);
   DCHECK_EQ(initialization_status_, InitializationStatus::INITIALIZING);
-  initialization_status_ =
-      success ? InitializationStatus::SUCCESS : InitializationStatus::FAILURE;
-  if (initialization_status_ != InitializationStatus::SUCCESS)
+  if (success) {
+    initialization_status_ = InitializationStatus::SUCCESS;
+  } else {
+    initialization_status_ = InitializationStatus::FAILURE;
     db_.reset();
+    TRACE_EVENT_ASYNC_END0("offline_pages", "Prefetch Store", this);
+  }
 
   CHECK(!pending_command.is_null());
   std::move(pending_command).Run();
@@ -162,6 +169,7 @@ void PrefetchStore::CloseInternal() {
     ReportStoreEvent(OfflinePagesStoreEvent::STORE_CLOSE_SKIPPED);
     return;
   }
+  TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Prefetch Store", this, "Open");
 
   last_closing_time_ = base::Time::Now();
   ReportStoreEvent(OfflinePagesStoreEvent::STORE_CLOSED);
@@ -178,6 +186,9 @@ void PrefetchStore::CloseInternal() {
 void PrefetchStore::CloseInternalDone(
     std::unique_ptr<sql::Connection, base::OnTaskRunnerDeleter> db) {
   db.reset();
+  TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Prefetch Store", this,
+                               "Closing");
+  TRACE_EVENT_ASYNC_END0("offline_pages", "Prefetch Store", this);
 }
 
 }  // namespace offline_pages

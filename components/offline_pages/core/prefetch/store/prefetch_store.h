@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 
 namespace sql {
 class Connection;
@@ -84,6 +85,10 @@ class PrefetchStore {
       return;
     }
 
+    TRACE_EVENT_ASYNC_BEGIN1(
+        "offline_pages", "Prefetch Store: Command execution", this,
+        "is store loaded",
+        initialization_status_ == InitializationStatus::SUCCESS);
     // Ensure that any scheduled close operations are canceled.
     closing_weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -123,6 +128,8 @@ class PrefetchStore {
         base::BindOnce(&PrefetchStore::CloseInternal,
                        closing_weak_ptr_factory_.GetWeakPtr()),
         kClosingDelay);
+    TRACE_EVENT_ASYNC_END0("offline_pages", "Prefetch Store: Command execution",
+                           this);
 
     std::move(result_callback).Run(std::move(result));
   }
