@@ -14,6 +14,8 @@
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/KURLHash.h"
+#include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
@@ -53,6 +55,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   ScriptValue CreateErrorToRethrow() const;
 
   const TextPosition& StartPosition() const { return start_position_; }
+
+  // Resolves a module specifier with the module script's base URL.
+  KURL ResolveModuleSpecifier(const String& module_request,
+                              String* failure_reason = nullptr);
 
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const;
@@ -129,6 +135,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   const String source_text_;
 
   const TextPosition start_position_;
+  HashMap<String, KURL> specifier_to_url_cache_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const ModuleScript&);
