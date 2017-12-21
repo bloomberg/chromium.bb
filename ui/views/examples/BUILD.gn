@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
-component("views_examples_lib") {
+jumbo_component("views_examples_lib") {
   testonly = true
 
   sources = [
@@ -134,7 +135,7 @@ executable("views_examples_exe") {
   }
 }
 
-component("views_examples_with_content_lib") {
+jumbo_component("views_examples_with_content_lib") {
   testonly = true
   sources = [
     "examples_window_with_content.cc",

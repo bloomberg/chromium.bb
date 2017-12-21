@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
@@ -212,7 +213,9 @@ repack("repack_ui_test_pak_100_percent") {
 
   if (use_aura && toolkit_views) {
     deps += [ "//ui/app_list/resources" ]
-    sources += [ "$root_gen_dir/ui/app_list/resources/app_list_resources_100_percent.pak" ]
+    sources += [
+      "$root_gen_dir/ui/app_list/resources/app_list_resources_100_percent.pak",
+    ]
   }
 }
 
