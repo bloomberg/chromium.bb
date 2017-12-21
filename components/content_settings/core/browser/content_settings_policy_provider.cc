@@ -73,6 +73,7 @@ struct PolicyProvider::PrefsForManagedDefaultMapEntry {
 // static
 const PolicyProvider::PrefsForManagedDefaultMapEntry
     PolicyProvider::kPrefsForManagedDefault[] = {
+        {CONTENT_SETTINGS_TYPE_ADS, prefs::kManagedDefaultAdsSetting},
         {CONTENT_SETTINGS_TYPE_COOKIES, prefs::kManagedDefaultCookiesSetting},
         {CONTENT_SETTINGS_TYPE_IMAGES, prefs::kManagedDefaultImagesSetting},
         {CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -110,6 +111,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kManagedPopupsBlockedForUrls);
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
+  registry->RegisterIntegerPref(prefs::kManagedDefaultAdsSetting,
+                                CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
@@ -162,6 +165,7 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   // the preference default content settings. If a default content settings type
   // is managed any user defined exceptions (patterns) for this type are
   // ignored.
+  pref_change_registrar_.Add(prefs::kManagedDefaultAdsSetting, callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, callback);
   pref_change_registrar_.Add(
       prefs::kManagedDefaultGeolocationSetting, callback);

@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 408
+#   For your editing convenience: highest ID currently used: 409
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10868,7 +10868,42 @@
 
       If this policy is disabled, the user is not allowed to use spellcheck. The SpellcheckLanguage policy will also be ignored when this policy is disabled.
       '''
-    }
+    },
+    {
+      'name': 'AdsSettingForIntrusiveAdsSites',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'AllowAds',
+          'value': 1,
+          'caption': '''Allow ads on all sites''',
+        },
+        {
+          'name': 'BlockAds',
+          'value': 2,
+          'caption': '''Do not allow ads on sites with intrusive ads''',
+        },
+      ],
+      'supported_on': ['chrome.*:65-', 'chrome_os:65-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 409,
+      'caption': '''Ads setting for sites with intrusive ads''',
+      'tags': [],
+      'desc': '''Allows you to set whether ads should be blocked on sites with intrusive ads.
+
+      If this policy is set to 2, ads will be blocked on sites with intrusive ads.
+      However this behavior will not trigger if SafeBrowsingEnabled policy is set to False.
+      If this policy is set to 1, ads will not be blocked on sites with intrusive ads.
+      If this policy is left not set, 2 will be used.''',
+    },
   ],
 
   'messages': {

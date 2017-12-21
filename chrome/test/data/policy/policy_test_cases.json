@@ -3441,6 +3441,24 @@
     ]
   },
 
+  "AdsSettingForIntrusiveAdsSites": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "AdsSettingForIntrusiveAdsSites": 1
+    },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.ads",
+        "indicator_selector": "[content-setting=ads]",
+        "indicator_tests": [
+          { "policy": { "DefaultAdsSetting": 1 },
+            "value": "allow"},
+          { "policy": { "DefaultAdsSetting": 2 },
+            "value": "block"}
+        ]
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

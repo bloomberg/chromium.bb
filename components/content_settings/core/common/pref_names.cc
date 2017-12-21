@@ -20,6 +20,8 @@ const char kContentSettingsWindowLastTabIndex[] =
 
 // Preferences that are exclusively used to store managed values for default
 // content settings.
+const char kManagedDefaultAdsSetting[] =
+    "profile.managed_default_content_settings.ads";
 const char kManagedDefaultCookiesSetting[] =
     "profile.managed_default_content_settings.cookies";
 const char kManagedDefaultGeolocationSetting[] =
