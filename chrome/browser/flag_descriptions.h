@@ -1300,9 +1300,6 @@ extern const char kSetMarketUrlForTestingDescription[];
 extern const char kSpannableInlineAutocompleteName[];
 extern const char kSpannableInlineAutocompleteDescription[];
 
-extern const char kTranslateCompactUIName[];
-extern const char kTranslateCompactUIDescription[];
-
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
