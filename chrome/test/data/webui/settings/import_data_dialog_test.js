@@ -133,16 +133,16 @@ suite('ImportDataDialog', function() {
     assertFalse(dialog.$.cancel.hidden);
     assertTrue(dialog.$.cancel.disabled);
     assertTrue(dialog.$.done.hidden);
-    assertTrue(dialog.$$('paper-spinner').active);
-    assertFalse(dialog.$$('paper-spinner').hidden);
+    assertTrue(dialog.$$('paper-spinner-lite').active);
+    assertFalse(dialog.$$('paper-spinner-lite').hidden);
   }
 
   function assertSucceededButtons() {
     assertTrue(dialog.$.import.hidden);
     assertTrue(dialog.$.cancel.hidden);
     assertFalse(dialog.$.done.hidden);
-    assertFalse(dialog.$$('paper-spinner').active);
-    assertTrue(dialog.$$('paper-spinner').hidden);
+    assertFalse(dialog.$$('paper-spinner-lite').active);
+    assertTrue(dialog.$$('paper-spinner-lite').hidden);
   }
 
   /** @param {!settings.ImportDataStatus} status */
