@@ -171,19 +171,29 @@ Polymer({
   },
 
   observers:
-      ['updateSettingsAvailable_(' +
+      ['updateSettings_(' +
        'destination.id, destination.capabilities, ' +
        'documentInfo.isModifiable, documentInfo.hasCssMediaStyles,' +
        'documentInfo.hasSelection)'],
 
   /**
-   * Updates the availability of the settings sections.
+   * Updates the availability of the settings sections and values of dpi and
+   *     media size settings.
    * @private
    */
-  updateSettingsAvailable_: function() {
+  updateSettings_: function() {
     const caps = (!!this.destination && !!this.destination.capabilities) ?
         this.destination.capabilities.printer :
         null;
+    this.updateSettingsAvailability_(caps);
+    this.updateSettingsValues_(caps);
+  },
+
+  /**
+   * @param {?print_preview.CddCapabilities} caps The printer capabilities.
+   * @private
+   */
+  updateSettingsAvailability_: function(caps) {
     const isSaveToPdf = this.destination.id ==
         print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
     const knownSizeToSaveAsPdf = isSaveToPdf &&
@@ -225,7 +235,10 @@ Polymer({
             this.settings.rasterize.available);
   },
 
-  /** @param {?print_preview.CddCapabilities} caps The printer capabilities. */
+  /**
+   * @param {?print_preview.CddCapabilities} caps The printer capabilities.
+   * @private
+   */
   isLayoutAvailable_: function(caps) {
     if (!caps || !caps.page_orientation || !caps.page_orientation.option ||
         !this.documentInfo.isModifiable ||
@@ -241,4 +254,31 @@ Polymer({
     });
     return hasLandscapeOption && hasAutoOrPortraitOption;
   },
+
+  /**
+   * @param {?print_preview.CddCapabilities} caps The printer capabilities.
+   * @private
+   */
+  updateSettingsValues_: function(caps) {
+    if (this.settings.mediaSize.available) {
+      for (const option of caps.media_size.option) {
+        if (option.is_default) {
+          this.set('settings.mediaSize.value', option);
+          break;
+        }
+      }
+    }
+
+    if (this.settings.dpi.available) {
+      for (const option of caps.dpi.option) {
+        if (option.is_default) {
+          this.set('settings.dpi.value', option);
+          break;
+        }
+      }
+    } else if (
+        caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
+      this.set('settings.dpi.value', caps.dpi.option[0]);
+    }
+  }
 });

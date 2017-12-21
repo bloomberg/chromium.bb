@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
 <link rel="import" href="settings_select.html">
 
@@ -12,7 +14,8 @@
       <span id="dpi-label" slot="title">$i18n{dpiLabel}</span>
       <div slot="controls">
         <print-preview-settings-select aria-labelled-by="dpi-label"
-            capability="[[capabilityWithLabels_]]">
+            capability="[[capabilityWithLabels_]]" setting-name="dpi"
+            settings="{{settings}}">
         </print-preview-settings-select>
       </div>
     </print-preview-settings-section>

@@ -105,6 +105,18 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetColor', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetColor);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetMediaSize', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetMediaSize);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetDpi', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetDpi);
+});
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetMargins', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetMargins);
+});
+
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
