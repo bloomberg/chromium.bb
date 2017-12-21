@@ -1434,11 +1434,9 @@ static void get_filter_level_and_masks_non420(
           (blk_row * mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2) >> 1;
       const int tx_col_idx =
           (blk_col * mi_size_wide[BLOCK_8X8] << TX_UNIT_WIDE_LOG2) >> 1;
-      const BLOCK_SIZE bsize = get_plane_block_size(mbmi->sb_type, plane);
       const TX_SIZE mb_tx_size = mbmi->inter_tx_size[tx_row_idx][tx_col_idx];
       tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                    ? av1_get_uv_tx_size_vartx(mbmi, plane, bsize, tx_row_idx,
-                                               tx_col_idx)
+                    ? av1_get_uv_tx_size(mbmi, ss_x, ss_y)
                     : mb_tx_size;
     }
 
@@ -2003,12 +2001,10 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
   }
 };
 
-static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
-                                      const EDGE_DIR edge_dir, const int mi_row,
-                                      const int mi_col, const int plane,
-                                      const struct macroblockd_plane *plane_ptr,
-                                      const uint32_t scale_horz,
-                                      const uint32_t scale_vert) {
+static TX_SIZE av1_get_transform_size(
+    const MODE_INFO *const mi, const EDGE_DIR edge_dir, const int mi_row,
+    const int mi_col, const int plane,
+    const struct macroblockd_plane *plane_ptr) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
   TX_SIZE tx_size = (plane == AOM_PLANE_Y)
                         ? mbmi->tx_size
@@ -2034,14 +2030,14 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
         (blk_row * mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2) >> 1;
     const int tx_col_idx =
         (blk_col * mi_size_wide[BLOCK_8X8] << TX_UNIT_WIDE_LOG2) >> 1;
-    const BLOCK_SIZE bsize = ss_size_lookup[sb_type][scale_horz][scale_vert];
     const TX_SIZE mb_tx_size = mbmi->inter_tx_size[tx_row_idx][tx_col_idx];
 
     assert(mb_tx_size < TX_SIZES_ALL);
 
-    tx_size = (plane == AOM_PLANE_Y) ? mb_tx_size : av1_get_uv_tx_size_vartx(
-                                                        mbmi, plane_ptr, bsize,
-                                                        tx_row_idx, tx_col_idx);
+    tx_size = (plane == AOM_PLANE_Y)
+                  ? mb_tx_size
+                  : av1_get_uv_tx_size(mbmi, plane_ptr->subsampling_x,
+                                       plane_ptr->subsampling_y);
     assert(tx_size < TX_SIZES_ALL);
   }
 
@@ -2089,9 +2085,8 @@ static void set_lpf_parameters(
   const MB_MODE_INFO *mbmi = &mi[0]->mbmi;
 
   {
-    const TX_SIZE ts =
-        av1_get_transform_size(mi[0], edge_dir, mi_row, mi_col, plane,
-                               plane_ptr, scale_horz, scale_vert);
+    const TX_SIZE ts = av1_get_transform_size(mi[0], edge_dir, mi_row, mi_col,
+                                              plane, plane_ptr);
 
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
@@ -2128,9 +2123,8 @@ static void set_lpf_parameters(
               (VERT_EDGE == edge_dir) ? (mi_row) : (mi_row - (1 << scale_vert));
           const int pv_col =
               (VERT_EDGE == edge_dir) ? (mi_col - (1 << scale_horz)) : (mi_col);
-          const TX_SIZE pv_ts =
-              av1_get_transform_size(mi_prev, edge_dir, pv_row, pv_col, plane,
-                                     plane_ptr, scale_horz, scale_vert);
+          const TX_SIZE pv_ts = av1_get_transform_size(
+              mi_prev, edge_dir, pv_row, pv_col, plane, plane_ptr);
 
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL

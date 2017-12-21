@@ -39,12 +39,6 @@ extern "C" {
 #define COMPOUND_SEGMENT_TYPE 1
 #define MAX_SEG_MASK_BITS 1
 
-// Disables vartx transform split for chroma
-#define DISABLE_VARTX_FOR_CHROMA 1
-
-// Disables small transform split for intra modes.
-#define DISABLE_SMLTX_FOR_CHROMA_INTRA 1
-
 // SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
 typedef enum {
 #if COMPOUND_SEGMENT_TYPE == 0
@@ -1151,23 +1145,7 @@ static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int is_inter,
 
 static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi, int ss_x,
                                          int ss_y) {
-  if (is_inter_block(mbmi)) {
-#if DISABLE_VARTX_FOR_CHROMA
-    return av1_get_max_uv_txsize(mbmi->sb_type, 1, ss_x, ss_y);
-#endif  // DISABLE_VARTX_FOR_CHROMA
-  } else {
-#if DISABLE_SMLTX_FOR_CHROMA_INTRA
-    return av1_get_max_uv_txsize(mbmi->sb_type, 0, ss_x, ss_y);
-#endif  // DISABLE_SMLTX_FOR_CHROMA_INTRA
-#if CONFIG_CFL
-    if (mbmi->uv_mode == UV_CFL_PRED)
-      return av1_get_max_uv_txsize(mbmi->sb_type, 0, ss_x, ss_y);
-#endif
-  }
-  const TX_SIZE uv_txsize =
-      uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][ss_x][ss_y];
-  assert(uv_txsize != TX_INVALID);
-  return uv_txsize;
+  return av1_get_max_uv_txsize(mbmi->sb_type, is_inter_block(mbmi), ss_x, ss_y);
 }
 
 static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
@@ -1176,24 +1154,6 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
   if (plane == 0) return mbmi->tx_size;
   const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
   return av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y);
-}
-
-// Temporary function to facilitate removal of uv_txsize_lookup if we
-// decide to go with DISABLE_SMLTX_FOR_CHROMA_INTRA = 1
-// TODO(debargha): Clean this up
-static INLINE TX_SIZE av1_get_uv_tx_size_vartx(
-    const MB_MODE_INFO *mbmi, const struct macroblockd_plane *pd,
-    BLOCK_SIZE bsize, int tx_row, int tx_col) {
-#if DISABLE_VARTX_FOR_CHROMA
-  (void)bsize;
-  (void)tx_row;
-  (void)tx_col;
-  return av1_get_max_uv_txsize(mbmi->sb_type, 1, pd->subsampling_x,
-                               pd->subsampling_y);
-#else
-  (void)pd;
-  return uv_txsize_lookup[bsize][mbmi->inter_tx_size[tx_row][tx_col]][0][0];
-#endif  // DISABLE_VARTX_FOR_CHROMA
 }
 
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
