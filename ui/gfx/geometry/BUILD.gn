@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("geometry") {
+import("//build/config/jumbo.gni")
+
+jumbo_component("geometry") {
   sources = [
     "../gfx_export.h",
     "angle_conversions.h",

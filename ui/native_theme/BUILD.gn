@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-component("native_theme") {
+jumbo_component("native_theme") {
   sources = [
     "common_theme.cc",
     "common_theme.h",
@@ -57,7 +58,7 @@ component("native_theme") {
 }
 
 if (is_win) {
-  component("native_theme_browser") {
+  jumbo_component("native_theme_browser") {
     defines = [ "NATIVE_THEME_IMPLEMENTATION" ]
 
     # These files cannot work in the renderer on Windows.
@@ -76,7 +77,7 @@ if (is_win) {
     ]
   }
 } else {
-  source_set("native_theme_browser") {
+  jumbo_source_set("native_theme_browser") {
   }
 }
 
