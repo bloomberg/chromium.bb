@@ -109,6 +109,14 @@ void ResizeObserver::DeliverObservations() {
   HeapVector<Member<ResizeObserverEntry>> entries;
 
   for (auto& observation : active_observations_) {
+    // In case that the observer and the target belong to different execution
+    // contexts and the target's execution context is already gone, then skip
+    // such a target.
+    ExecutionContext* execution_context =
+        observation->Target()->GetExecutionContext();
+    if (!execution_context || execution_context->IsContextDestroyed())
+      continue;
+
     LayoutPoint location = observation->ComputeTargetLocation();
     LayoutSize size = observation->ComputeTargetSize();
     observation->SetObservationSize(size);
@@ -130,6 +138,16 @@ void ResizeObserver::DeliverObservations() {
     auto entry = new ResizeObserverEntry(observation->Target(), content_rect);
     entries.push_back(entry);
   }
+
+  if (entries.size() == 0) {
+    // No entry to report.
+    // Note that, if |active_observations_| is not empty but |entries| is empty,
+    // it means that it's possible that no target element is making |callback_|
+    // alive. In this case, we must not touch |callback_|.
+    ClearObservations();
+    return;
+  }
+
   DCHECK(callback_ || delegate_);
   if (callback_)
     callback_->InvokeAndReportException(this, entries, this);
