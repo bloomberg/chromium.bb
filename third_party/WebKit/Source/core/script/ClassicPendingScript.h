@@ -114,6 +114,12 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
   const ScriptFetchOptions options_;
 
+  // "base url" snapshot taken at #prepare-a-script timing.
+  // https://html.spec.whatwg.org/#prepare-a-script
+  // which will eventually be used as #concept-script-base-url.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  const KURL base_url_;
+
   const ScriptSourceLocationType source_location_type_;
   const bool is_external_;
   ReadyState ready_state_;

@@ -17,9 +17,10 @@ namespace blink {
 class CORE_EXPORT ClassicScript final : public Script {
  public:
   static ClassicScript* Create(const ScriptSourceCode& script_source_code,
+                               const KURL& base_url,
                                const ScriptFetchOptions& fetch_options,
                                AccessControlStatus access_control_status) {
-    return new ClassicScript(script_source_code, fetch_options,
+    return new ClassicScript(script_source_code, base_url, fetch_options,
                              access_control_status);
   }
 
@@ -31,10 +32,10 @@ class CORE_EXPORT ClassicScript final : public Script {
 
  private:
   ClassicScript(const ScriptSourceCode& script_source_code,
+                const KURL& base_url,
                 const ScriptFetchOptions& fetch_options,
                 AccessControlStatus access_control_status)
-      // TODO(kouhei): This should be document.BaseURL() instead.
-      : Script(fetch_options, script_source_code.Url()),
+      : Script(fetch_options, base_url),
         script_source_code_(script_source_code),
         access_control_status_(access_control_status) {}
 

@@ -74,6 +74,7 @@ ClassicPendingScript::ClassicPendingScript(
     bool is_external)
     : PendingScript(element, starting_position),
       options_(options),
+      base_url_(element->GetDocument().BaseURL()),
       source_location_type_(source_location_type),
       is_external_(is_external),
       ready_state_(is_external ? kWaitingForResource : kReady),
@@ -235,7 +236,8 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
     ScriptSourceCode source_code(
         GetElement()->TextFromChildren(), source_location_type_,
         nullptr /* cache_handler */, document_url, StartingPosition());
-    return ClassicScript::Create(source_code, options_, kSharableCrossOrigin);
+    return ClassicScript::Create(source_code, base_url_, options_,
+                                 kSharableCrossOrigin);
   }
 
   DCHECK(GetResource()->IsLoaded());
@@ -243,7 +245,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   bool streamer_ready = (ready_state_ == kReady) && streamer_ &&
                         !streamer_->StreamingSuppressed();
   ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr, resource);
-  return ClassicScript::Create(source_code, options_,
+  return ClassicScript::Create(source_code, base_url_, options_,
                                resource->CalculateAccessControlStatus());
 }
 
