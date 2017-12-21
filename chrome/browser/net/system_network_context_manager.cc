@@ -23,6 +23,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/network/network_service.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_features.h"
 
@@ -36,6 +37,8 @@ void DisableQuicOnIOThread(
     safe_browsing::SafeBrowsingService* safe_browsing_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    content::GetNetworkServiceImpl()->DisableQuic();
   io_thread->DisableQuic();
 
   // Safebrowsing isn't yet using the IOThread's NetworkService, so must be
@@ -111,7 +114,8 @@ void SystemNetworkContextManager::DisableQuic() {
   // Profiles will also have QUIC disabled (because both IOThread's
   // NetworkService and the network service, if enabled will disable QUIC).
 
-  content::GetNetworkService()->DisableQuic();
+  if (base::FeatureList::IsEnabled(features::kNetworkService))
+    content::GetNetworkService()->DisableQuic();
 
   IOThread* io_thread = g_browser_process->io_thread();
   // Nothing more to do if IOThread has already been shut down.
