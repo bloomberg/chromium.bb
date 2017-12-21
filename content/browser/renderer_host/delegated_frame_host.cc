@@ -301,11 +301,13 @@ void DelegatedFrameHost::OnAggregatedSurfaceDamage(
 void DelegatedFrameHost::WasResized() {
   const viz::SurfaceId* primary_surface_id =
       client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
+  gfx::Size new_size_in_dip = client_->DelegatedFrameHostDesiredSizeInDIP();
+
   if (enable_surface_synchronization_ &&
       client_->DelegatedFrameHostIsVisible() &&
       (!primary_surface_id || primary_surface_id->local_surface_id() !=
                                   client_->GetLocalSurfaceId())) {
-    current_frame_size_in_dip_ = client_->DelegatedFrameHostDesiredSizeInDIP();
+    current_frame_size_in_dip_ = new_size_in_dip;
 
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
@@ -317,8 +319,7 @@ void DelegatedFrameHost::WasResized() {
     return;
   }
 
-  if (client_->DelegatedFrameHostDesiredSizeInDIP() !=
-          current_frame_size_in_dip_ &&
+  if (new_size_in_dip != current_frame_size_in_dip_ &&
       !client_->DelegatedFrameHostIsVisible()) {
     EvictDelegatedFrame();
   }
@@ -345,14 +346,13 @@ void DelegatedFrameHost::UpdateGutters() {
     return;
   }
 
-  if (current_frame_size_in_dip_.width() <
-      client_->DelegatedFrameHostDesiredSizeInDIP().width()) {
+  gfx::Size size_in_dip = client_->DelegatedFrameHostDesiredSizeInDIP();
+  if (current_frame_size_in_dip_.width() < size_in_dip.width()) {
     right_gutter_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     right_gutter_->SetColor(GetGutterColor());
-    int width = client_->DelegatedFrameHostDesiredSizeInDIP().width() -
-                current_frame_size_in_dip_.width();
+    int width = size_in_dip.width() - current_frame_size_in_dip_.width();
     // The right gutter also includes the bottom-right corner, if necessary.
-    int height = client_->DelegatedFrameHostDesiredSizeInDIP().height();
+    int height = size_in_dip.height();
     right_gutter_->SetBounds(
         gfx::Rect(current_frame_size_in_dip_.width(), 0, width, height));
 
@@ -361,13 +361,11 @@ void DelegatedFrameHost::UpdateGutters() {
     right_gutter_.reset();
   }
 
-  if (current_frame_size_in_dip_.height() <
-      client_->DelegatedFrameHostDesiredSizeInDIP().height()) {
+  if (current_frame_size_in_dip_.height() < size_in_dip.height()) {
     bottom_gutter_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     bottom_gutter_->SetColor(GetGutterColor());
     int width = current_frame_size_in_dip_.width();
-    int height = client_->DelegatedFrameHostDesiredSizeInDIP().height() -
-                 current_frame_size_in_dip_.height();
+    int height = size_in_dip.height() - current_frame_size_in_dip_.height();
     bottom_gutter_->SetBounds(
         gfx::Rect(0, current_frame_size_in_dip_.height(), width, height));
     client_->DelegatedFrameHostGetLayer()->Add(bottom_gutter_.get());
