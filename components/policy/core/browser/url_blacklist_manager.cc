@@ -19,8 +19,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -428,17 +428,17 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
 
 URLBlacklistManager::URLBlacklistManager(
     PrefService* pref_service,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     OverrideBlacklistCallback override_blacklist)
     : pref_service_(pref_service),
-      background_task_runner_(background_task_runner),
-      io_task_runner_(io_task_runner),
       override_blacklist_(override_blacklist),
-      ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blacklist_(new URLBlacklist),
-      ui_weak_ptr_factory_(this),
-      io_weak_ptr_factory_(this) {
+      ui_weak_ptr_factory_(this) {
+  // This class assumes that it is created on the same thread that
+  // |pref_service_| lives on.
+  ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
+  background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND});
+
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,
                                       base::Unretained(this));
@@ -452,14 +452,9 @@ URLBlacklistManager::URLBlacklistManager(
     Update();
 }
 
-void URLBlacklistManager::ShutdownOnUIThread() {
-  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  // Cancel any pending updates, and stop listening for pref change updates.
-  ui_weak_ptr_factory_.InvalidateWeakPtrs();
-  pref_change_registrar_.RemoveAll();
-}
-
 URLBlacklistManager::~URLBlacklistManager() {
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+  pref_change_registrar_.RemoveAll();
 }
 
 void URLBlacklistManager::ScheduleUpdate() {
@@ -483,39 +478,24 @@ void URLBlacklistManager::Update() {
   std::unique_ptr<base::ListValue> allow(
       pref_service_->GetList(policy_prefs::kUrlWhitelist)->DeepCopy());
 
-  // Go through the IO thread to grab a WeakPtr to |this|. This is safe from
-  // here, since this task will always execute before a potential deletion of
-  // ProfileIOData on IO.
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&URLBlacklistManager::UpdateOnIO,
-                                       base::Unretained(this),
-                                       base::Passed(&block),
-                                       base::Passed(&allow)));
-}
-
-void URLBlacklistManager::UpdateOnIO(std::unique_ptr<base::ListValue> block,
-                                     std::unique_ptr<base::ListValue> allow) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  // The URLBlacklist is built on a worker thread. Once it's ready, it is passed
-  // to the URLBlacklistManager on IO.
+  // The URLBlacklist is built on a background task. Once it's ready, it is
+  // passed to the URLBlacklistManager on the same thread as the
+  // background_task_runner_.
   base::PostTaskAndReplyWithResult(
-      background_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&BuildBlacklist,
-                 base::Passed(&block),
-                 base::Passed(&allow)),
-      base::Bind(&URLBlacklistManager::SetBlacklist,
-                 io_weak_ptr_factory_.GetWeakPtr()));
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&BuildBlacklist, std::move(block), std::move(allow)),
+      base::BindOnce(&URLBlacklistManager::SetBlacklist,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void URLBlacklistManager::SetBlacklist(
     std::unique_ptr<URLBlacklist> blacklist) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   blacklist_ = std::move(blacklist);
 }
 
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Ignore blob scheme for two reasons:
   // 1) PlzNavigate uses it to deliver the response to the renderer.
   // 2) A whitelisted page can use blob URLs internally.
@@ -524,13 +504,13 @@ bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
 
 URLBlacklist::URLBlacklistState URLBlacklistManager::GetURLBlacklistState(
     const GURL& url) const {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   return blacklist_->GetURLBlacklistState(url);
 }
 
 bool URLBlacklistManager::ShouldBlockRequestForFrame(const GURL& url,
                                                      int* reason) const {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
   bool block = false;
   if (override_blacklist_.Run(url, &block, reason))
