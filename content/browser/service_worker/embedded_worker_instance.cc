@@ -20,8 +20,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
-#include "content/common/service_worker/embedded_worker_settings.h"
-#include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,7 +74,7 @@ void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
 
 using SetupProcessCallback = base::OnceCallback<void(
     ServiceWorkerStatusCode,
-    std::unique_ptr<EmbeddedWorkerStartParams>,
+    mojom::EmbeddedWorkerStartParamsPtr,
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy)>;
 
@@ -87,7 +85,7 @@ using SetupProcessCallback = base::OnceCallback<void(
 void SetupOnUIThread(
     base::WeakPtr<ServiceWorkerProcessManager> process_manager,
     bool can_use_existing_process,
-    std::unique_ptr<EmbeddedWorkerStartParams> params,
+    mojom::EmbeddedWorkerStartParamsPtr params,
     mojom::EmbeddedWorkerInstanceClientAssociatedRequest request,
     ServiceWorkerContextCore* context,
     base::WeakPtr<ServiceWorkerContextCore> weak_context,
@@ -149,7 +147,7 @@ void SetupOnUIThread(
   // thread.
   // TODO(bengr): Support changes to the data saver setting while the worker is
   // running.
-  params->settings.data_saver_enabled =
+  params->data_saver_enabled =
       GetContentClient()->browser()->IsDataSaverEnabled(
           process_manager->browser_context());
 
@@ -338,7 +336,7 @@ class EmbeddedWorkerInstance::StartTask {
     return start_worker_sent_time_;
   }
 
-  void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
+  void Start(mojom::EmbeddedWorkerStartParamsPtr params,
              StatusCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(instance_->context_);
@@ -385,7 +383,7 @@ class EmbeddedWorkerInstance::StartTask {
  private:
   void OnSetupCompleted(
       ServiceWorkerStatusCode status,
-      std::unique_ptr<EmbeddedWorkerStartParams> params,
+      mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy) {
@@ -475,7 +473,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 }
 
 void EmbeddedWorkerInstance::Start(
-    std::unique_ptr<EmbeddedWorkerStartParams> params,
+    mojom::EmbeddedWorkerStartParamsPtr params,
     ProviderInfoGetter provider_info_getter,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ControllerServiceWorkerRequest controller_request,
@@ -508,7 +506,7 @@ void EmbeddedWorkerInstance::Start(
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->wait_for_debugger = false;
   params->devtools_worker_token = devtools_worker_token_;
-  params->settings.v8_cache_options = GetV8CacheOptions();
+  params->v8_cache_options = GetV8CacheOptions();
 
   mojom::EmbeddedWorkerInstanceClientAssociatedRequest request =
       mojo::MakeRequest(&client_);
@@ -634,7 +632,7 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
-    std::unique_ptr<EmbeddedWorkerStartParams> params) {
+    mojom::EmbeddedWorkerStartParamsPtr params) {
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
   if (!context_->GetDispatcherHost(process_id())) {
@@ -666,7 +664,8 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
       std::move(provider_info_getter_).Run(process_id());
-  client_->StartWorker(*params, std::move(pending_dispatcher_request_),
+  client_->StartWorker(std::move(params),
+                       std::move(pending_dispatcher_request_),
                        std::move(pending_controller_request_),
                        std::move(pending_installed_scripts_info_),
                        std::move(pending_service_worker_host_ptr_info_),

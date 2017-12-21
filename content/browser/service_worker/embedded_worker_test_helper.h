@@ -43,7 +43,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerDispatcherHost;
 class TestBrowserContext;
-struct EmbeddedWorkerStartParams;
 struct PlatformNotificationData;
 struct PushEventPayload;
 struct ServiceWorkerFetchRequest;
@@ -81,7 +80,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
    protected:
     // mojom::EmbeddedWorkerInstanceClient implementation.
     void StartWorker(
-        const EmbeddedWorkerStartParams& params,
+        mojom::EmbeddedWorkerStartParamsPtr params,
         mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
         mojom::ControllerServiceWorkerRequest controller_request,
         blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
@@ -303,7 +302,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                                      bool pause_after_download);
 
   void OnStartWorkerStub(
-      const EmbeddedWorkerStartParams& params,
+      mojom::EmbeddedWorkerStartParamsPtr params,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
