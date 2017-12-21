@@ -14,6 +14,8 @@
 
 namespace sandbox {
 
+class AppContainerProfile;
+
 class TargetPolicy {
  public:
   // Windows subsystems that can have specific rules.
@@ -250,6 +252,9 @@ class TargetPolicy {
   virtual void SetEnableOPMRedirection() = 0;
   // Enable OPM API emulation when in Win32k lockdown.
   virtual bool GetEnableOPMRedirection() = 0;
+
+  // Configure policy to use an AppContainer profile.
+  virtual ResultCode SetAppContainerProfile(AppContainerProfile* profile) = 0;
 
  protected:
   ~TargetPolicy() {}

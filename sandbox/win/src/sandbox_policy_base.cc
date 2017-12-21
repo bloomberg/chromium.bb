@@ -267,6 +267,8 @@ void PolicyBase::DestroyAlternateDesktop() {
 }
 
 ResultCode PolicyBase::SetIntegrityLevel(IntegrityLevel integrity_level) {
+  if (_app_container_profile)
+    return SBOX_ERROR_BAD_PARAMS;
   integrity_level_ = integrity_level;
   return SBOX_ALL_OK;
 }
@@ -282,11 +284,11 @@ ResultCode PolicyBase::SetDelayedIntegrityLevel(
 }
 
 ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
-  if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(sid);
-  if (lowbox_sid_)
+  if (lowbox_sid_ || _app_container_profile)
     return SBOX_ERROR_BAD_PARAMS;
 
   if (!ConvertStringSidToSid(sid, &lowbox_sid_))
@@ -592,6 +594,23 @@ void PolicyBase::SetEnableOPMRedirection() {
 
 bool PolicyBase::GetEnableOPMRedirection() {
   return enable_opm_redirection_;
+}
+
+ResultCode PolicyBase::SetAppContainerProfile(AppContainerProfile* profile) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return SBOX_ERROR_UNSUPPORTED;
+
+  DCHECK(profile);
+  if (lowbox_sid_ || _app_container_profile ||
+      integrity_level_ != INTEGRITY_LEVEL_LAST)
+    return SBOX_ERROR_BAD_PARAMS;
+
+  _app_container_profile = profile;
+  return SBOX_ALL_OK;
+}
+
+scoped_refptr<AppContainerProfile> PolicyBase::GetAppContainerProfile() {
+  return _app_container_profile;
 }
 
 ResultCode PolicyBase::SetupAllInterceptions(TargetProcess* target) {

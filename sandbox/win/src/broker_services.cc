@@ -18,6 +18,7 @@
 #include "base/win/scoped_process_information.h"
 #include "base/win/startup_information.h"
 #include "base/win/windows_version.h"
+#include "sandbox/win/src/app_container_profile.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -367,6 +368,20 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (inherited_handle_list.size())
     ++attribute_count;
 
+  scoped_refptr<AppContainerProfile> profile =
+      policy_base->GetAppContainerProfile();
+  if (profile) {
+    if (base::win::GetVersion() < base::win::VERSION_WIN8)
+      return SBOX_ERROR_BAD_PARAMS;
+    ++attribute_count;
+    if (profile->GetEnableLowPrivilegeAppContainer()) {
+      // LPAC first supported in RS1.
+      if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+        return SBOX_ERROR_BAD_PARAMS;
+      ++attribute_count;
+    }
+  }
+
   if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
     return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
 
@@ -401,6 +416,28 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     inherit_handles = true;
   }
 
+  // Declared here to ensure they stay in scope until after process creation.
+  std::unique_ptr<SecurityCapabilities> security_capabilities;
+  DWORD all_applications_package_policy =
+      PROCESS_CREATION_ALL_APPLICATION_PACKAGES_OPT_OUT;
+
+  if (profile) {
+    security_capabilities = profile->GetSecurityCapabilities();
+    if (!startup_info.UpdateProcThreadAttribute(
+            PROC_THREAD_ATTRIBUTE_SECURITY_CAPABILITIES,
+            security_capabilities.get(), sizeof(SECURITY_CAPABILITIES))) {
+      return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
+    }
+    if (profile->GetEnableLowPrivilegeAppContainer()) {
+      if (!startup_info.UpdateProcThreadAttribute(
+              PROC_THREAD_ATTRIBUTE_ALL_APPLICATION_PACKAGES_POLICY,
+              &all_applications_package_policy,
+              sizeof(all_applications_package_policy))) {
+        return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
+      }
+    }
+  }
+
   // Construct the thread pool here in case it is expensive.
   // The thread pool is shared by all the targets
   if (!thread_pool_)
@@ -409,9 +446,10 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Create the TargetProcess object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
-  TargetProcess* target =
-      new TargetProcess(std::move(initial_token), std::move(lockdown_token),
-                        job.Get(), thread_pool_.get());
+  TargetProcess* target = new TargetProcess(
+      std::move(initial_token), std::move(lockdown_token), job.Get(),
+      thread_pool_.get(),
+      profile ? profile->GetImpersonationCapabilities() : std::vector<Sid>());
 
   result = target->Create(exe_path, command_line, inherit_handles, startup_info,
                           &process_info, last_error);
