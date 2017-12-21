@@ -168,7 +168,7 @@ class TrialTokenValidatorTest : public testing::Test {
     SetPublicKey(kTestPublicKey);
   }
 
-  ~TrialTokenValidatorTest() override {}
+  ~TrialTokenValidatorTest() override = default;
 
   void SetPublicKey(const uint8_t* key) { policy_->SetPublicKey(key); }
 

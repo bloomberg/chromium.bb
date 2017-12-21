@@ -32,7 +32,7 @@ class FeaturePolicyTest : public ::testing::Test {
              {kDefaultOffFeature,
               FeaturePolicy::FeatureDefault::DisableForAll}}) {}
 
-  ~FeaturePolicyTest() override {}
+  ~FeaturePolicyTest() override = default;
 
   std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent,
