@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_CRYPTOHOME_CRYPTOHOME_UTIL_H_
-#define CHROMEOS_CRYPTOHOME_CRYPTOHOME_UTIL_H_
+#ifndef CHROMEOS_CRYPTOHOME_TPM_UTIL_H_
+#define CHROMEOS_CRYPTOHOME_TPM_UTIL_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@ namespace chromeos {
 
 // Wrappers of the D-Bus method calls for working with Tpm.  Note that all of
 // these are blocking and thus must not be called on the UI thread!
-namespace cryptohome_util {
+namespace tpm_util {
 
 // Returns whether Tpm is presented and enabled.
 CHROMEOS_EXPORT bool TpmIsEnabled();
@@ -32,7 +32,7 @@ CHROMEOS_EXPORT bool InstallAttributesFinalize();
 CHROMEOS_EXPORT bool InstallAttributesIsInvalid();
 CHROMEOS_EXPORT bool InstallAttributesIsFirstInstall();
 
-}  // namespace cryptohome_util
+}  // namespace tpm_util
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_UTIL_H_
+#endif  // CHROMEOS_CRYPTOHOME_TPM_UTIL_H_

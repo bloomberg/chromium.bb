@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/cryptohome/tpm_util.h"
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
-namespace cryptohome_util {
+namespace tpm_util {
 
 bool TpmIsEnabled() {
   bool result = false;
@@ -29,17 +29,16 @@ bool TpmIsOwned() {
 
 bool TpmIsBeingOwned() {
   bool result = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->
-      CallTpmIsBeingOwnedAndBlock(&result);
+  DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsBeingOwnedAndBlock(
+      &result);
   return result;
 }
 
-bool InstallAttributesGet(
-    const std::string& name, std::string* value) {
+bool InstallAttributesGet(const std::string& name, std::string* value) {
   std::vector<uint8_t> buf;
   bool success = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->
-      InstallAttributesGet(name, &buf, &success);
+  DBusThreadManager::Get()->GetCryptohomeClient()->InstallAttributesGet(
+      name, &buf, &success);
   if (success) {
     // Cryptohome returns 'buf' with a terminating '\0' character.
     DCHECK(!buf.empty());
@@ -49,35 +48,35 @@ bool InstallAttributesGet(
   return success;
 }
 
-bool InstallAttributesSet(
-    const std::string& name, const std::string& value) {
+bool InstallAttributesSet(const std::string& name, const std::string& value) {
   std::vector<uint8_t> buf(value.c_str(), value.c_str() + value.size() + 1);
   bool success = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->
-      InstallAttributesSet(name, buf, &success);
+  DBusThreadManager::Get()->GetCryptohomeClient()->InstallAttributesSet(
+      name, buf, &success);
   return success;
 }
 
 bool InstallAttributesFinalize() {
   bool success = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->
-      InstallAttributesFinalize(&success);
+  DBusThreadManager::Get()->GetCryptohomeClient()->InstallAttributesFinalize(
+      &success);
   return success;
 }
 
 bool InstallAttributesIsInvalid() {
   bool result = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->
-      InstallAttributesIsInvalid(&result);
+  DBusThreadManager::Get()->GetCryptohomeClient()->InstallAttributesIsInvalid(
+      &result);
   return result;
 }
 
 bool InstallAttributesIsFirstInstall() {
   bool result = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->
-      InstallAttributesIsFirstInstall(&result);
+  DBusThreadManager::Get()
+      ->GetCryptohomeClient()
+      ->InstallAttributesIsFirstInstall(&result);
   return result;
 }
 
-}  // namespace cryptohome_util
+}  // namespace tpm_util
 }  // namespace chromeos

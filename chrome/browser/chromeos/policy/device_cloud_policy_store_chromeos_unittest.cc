@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -111,8 +111,7 @@ class DeviceCloudPolicyStoreChromeOSTest
 
   void ResetToNonEnterprise() {
     store_.reset();
-    chromeos::cryptohome_util::InstallAttributesSet("enterprise.owned",
-                                                    std::string());
+    chromeos::tpm_util::InstallAttributesSet("enterprise.owned", std::string());
     install_attributes_.reset(
         new chromeos::InstallAttributes(fake_cryptohome_client_));
     store_.reset(new DeviceCloudPolicyStoreChromeOS(

@@ -8,14 +8,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
 
 namespace chromeos {
 
-namespace cu = cryptohome_util;
 
 namespace {
 
@@ -96,17 +95,17 @@ void AuthPolicyLoginHelper::Restart() {
 
 bool AuthPolicyLoginHelper::IsAdLocked() {
   std::string mode;
-  return chromeos::cryptohome_util::InstallAttributesGet(kAttrMode, &mode) &&
+  return chromeos::tpm_util::InstallAttributesGet(kAttrMode, &mode) &&
          mode == kDeviceModeEnterpriseAD;
 }
 
 // static
 bool AuthPolicyLoginHelper::LockDeviceActiveDirectoryForTesting(
     const std::string& realm) {
-  return cu::InstallAttributesSet("enterprise.owned", "true") &&
-         cu::InstallAttributesSet(kAttrMode, kDeviceModeEnterpriseAD) &&
-         cu::InstallAttributesSet("enterprise.realm", realm) &&
-         cu::InstallAttributesFinalize();
+  return tpm_util::InstallAttributesSet("enterprise.owned", "true") &&
+         tpm_util::InstallAttributesSet(kAttrMode, kDeviceModeEnterpriseAD) &&
+         tpm_util::InstallAttributesSet("enterprise.realm", realm) &&
+         tpm_util::InstallAttributesFinalize();
 }
 
 void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
