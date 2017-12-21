@@ -91,6 +91,12 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_ON" desc="The label to indicate that a specific extension is currently enabled.">
     On
   </message>
+  <message name="IDS_MD_EXTENSIONS_ITEM_EXTENSION_WEBSITE" desc="Label for button to go to the website the extension developer specified.">
+    Open extension website
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ITEM_CHROME_WEB_STORE" desc="Label for button to visit the Chrome web store.">
+    View in Chrome Web Store
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_OPTIONS" desc="The label on the button to open an extension options page.">
     Extension options
   </message>
@@ -143,7 +149,7 @@
     Retry
   </message>
   <message name="IDS_MD_EXTENSIONS_NO_INSTALLED_ITEMS" desc="The message shown to the user on the Extensions settings page when there are no extensions or apps installed.">
-    Find extensions and apps in the <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://chrome.google.com/webstore/category/extensions"&gt;</ph>Chrome Web Store<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Find extensions and themes in the <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://chrome.google.com/webstore/category/extensions"&gt;</ph>Chrome Web Store<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_MD_EXTENSIONS_NO_DESCRIPTION" desc="The message shown to the user when an extension does not have any description.">
     No description provided
@@ -219,7 +225,7 @@
   </message>
 <if expr="is_macosx">
   <message name="IDS_MD_EXTENSIONS_INCLUDE_START_MODIFIER" desc="Error message explaining that shortcuts must start with either the Control, Alt, or Command key.">
-    Include Ctrl, Alt, or Command
+    Include Ctrl, Alt, or ⌘
   </message>
 </if>
 <if expr="chromeos">
@@ -237,11 +243,11 @@
     Include either Ctrl or Alt
   </message>
   <message name="IDS_MD_EXTENSIONS_TOO_MANY_MODIFIERS" desc="Error message explaining not to use both Ctrl and Alt in a shortcut.">
-    Either, not both Ctrl and Alt
+    Use either Ctrl or Alt
   </message>
 </if>
 <message name="IDS_MD_EXTENSIONS_NEED_CHARACTER" desc="Error message explaining that a shortcut needs a character. This is only shown if a valid modifier is already entered.">
-  Need a character
+  Type a letter
 </message>
 <if expr="chromeos">
   <!-- Extensions Kiosk apps -->

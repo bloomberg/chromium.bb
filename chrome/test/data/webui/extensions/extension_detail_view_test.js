@@ -108,10 +108,10 @@ cr.define('extension_detail_view_tests', function() {
 
       item.set('data.manifestHomePageUrl', 'http://example.com');
       Polymer.dom.flush();
-      expectTrue(testIsVisible('#developerWebsite'));
+      expectTrue(testIsVisible('#extensionWebsite'));
       item.set('data.manifestHomePageUrl', '');
       Polymer.dom.flush();
-      expectFalse(testIsVisible('#developerWebsite'));
+      expectFalse(testIsVisible('#extensionWebsite'));
 
       item.set('data.webStoreUrl', 'http://example.com');
       Polymer.dom.flush();

@@ -207,7 +207,7 @@ cr.define('extensions', function() {
     },
 
     /** @private */
-    onDeveloperWebSiteTap_: function() {
+    onExtensionWebSiteTap_: function() {
       this.delegate.openUrl(this.data.manifestHomePageUrl);
     },
 

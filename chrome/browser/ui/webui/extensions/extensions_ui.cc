@@ -144,13 +144,10 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   source->AddLocalizedString("noExtensionsOrApps",
                              IDS_MD_EXTENSIONS_NO_INSTALLED_ITEMS);
   source->AddLocalizedString("noDescription", IDS_MD_EXTENSIONS_NO_DESCRIPTION);
-  // TODO(dschuyler): define "viewInStore" as IDS_MD_EXTENSIONS_VIEW_IN_STORE.
   source->AddLocalizedString("viewInStore",
-                             IDS_APPLICATION_INFO_WEB_STORE_LINK);
-  // TODO(dschuyler): define "developerWebsite" as
-  // IDS_MD_EXTENSIONS_DEVELOPER_WEBSITE.
-  source->AddLocalizedString("developerWebsite",
-                             IDS_APPLICATION_INFO_HOMEPAGE_LINK);
+                             IDS_MD_EXTENSIONS_ITEM_CHROME_WEB_STORE);
+  source->AddLocalizedString("extensionWebsite",
+                             IDS_MD_EXTENSIONS_ITEM_EXTENSION_WEBSITE);
   source->AddLocalizedString("noSearchResults", IDS_SEARCH_NO_RESULTS);
   source->AddLocalizedString("searchResults", IDS_SEARCH_RESULTS);
   source->AddLocalizedString("dropToInstall",
