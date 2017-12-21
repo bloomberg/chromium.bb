@@ -17,6 +17,7 @@ import signal
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 import uuid
 
@@ -532,12 +533,13 @@ def _SymbolizeBacktrace(backtrace, symbols_mapping):
   return map(lambda entry: symbolized[entry['frame_id']], backtrace)
 
 
-def _GetResultsFromImg(dry_run, test_launcher_summary_output):
+def _GetResultsFromImg(dry_run, disk_image_filename,
+                       test_launcher_summary_output):
   """Extract the results .json out of the .minfs image."""
   if os.path.exists(test_launcher_summary_output):
     os.unlink(test_launcher_summary_output)
-  img_filename = test_launcher_summary_output + '.minfs'
-  _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'), img_filename,
+  _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'),
+                         disk_image_filename,
                          'cp', '::/output.json', test_launcher_summary_output])
 
 
@@ -686,13 +688,15 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
     if test_launcher_summary_output:
       # Make and mount a 100M minfs formatted image that is used to copy the
       # results json to, for extraction from the target.
-      img_filename = test_launcher_summary_output + '.minfs'
-      _RunAndCheck(dry_run, ['truncate', '-s100M', img_filename,])
+      summary_disk_image = tempfile.NamedTemporaryFile(
+          prefix="output.json.minfs")
+      _RunAndCheck(dry_run, ['truncate', '-s100M',
+                             summary_disk_image.name,])
       _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'),
-                             img_filename, 'mkfs'])
+                             summary_disk_image.name, 'mkfs'])
       # Specifically set an AHCI drive, otherwise the drive won't be mountable
       # on ARM64.
-      qemu_command.extend(['-drive', 'file=' + img_filename +
+      qemu_command.extend(['-drive', 'file=' + summary_disk_image.name +
                                ',if=none,format=raw,id=resultsdisk',
                            '-device', 'ahci,id=ahci',
                            '-device', 'ide-drive,drive=resultsdisk,bus=ahci.0'])
@@ -718,6 +722,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
   sys.stdout.flush()
 
   if test_launcher_summary_output:
-    _GetResultsFromImg(dry_run, test_launcher_summary_output)
+    _GetResultsFromImg(dry_run, summary_disk_image.name,
+                       test_launcher_summary_output)
 
   return 0 if success else 1
