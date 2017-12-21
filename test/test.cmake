@@ -225,6 +225,7 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/masked_sad_test.cc"
         "${AOM_ROOT}/test/masked_variance_test.cc"
         "${AOM_ROOT}/test/minmax_test.cc"
+	"${AOM_ROOT}/test/noise_model_test.cc"
         "${AOM_ROOT}/test/subtract_test.cc"
         "${AOM_ROOT}/test/sum_squares_test.cc"
         "${AOM_ROOT}/test/variance_test.cc")
