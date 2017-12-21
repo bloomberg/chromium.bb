@@ -1316,16 +1316,14 @@ bool NetworkHandler::ShouldCancelNavigation(
   return interceptor && interceptor->ShouldCancelNavigation(global_request_id);
 }
 
-void NetworkHandler::AppendDevToolsHeaders(net::HttpRequestHeaders* headers) {
+void NetworkHandler::WillSendNavigationRequest(net::HttpRequestHeaders* headers,
+                                               bool* skip_service_worker) {
   headers->SetHeader(kDevToolsEmulateNetworkConditionsClientId, host_id_);
   if (!user_agent_.empty())
     headers->SetHeader(net::HttpRequestHeaders::kUserAgent, user_agent_);
   for (auto& entry : extra_headers_)
     headers->SetHeader(entry.first, entry.second);
-}
-
-bool NetworkHandler::ShouldBypassServiceWorker() const {
-  return bypass_service_worker_;
+  *skip_service_worker |= bypass_service_worker_;
 }
 
 namespace {

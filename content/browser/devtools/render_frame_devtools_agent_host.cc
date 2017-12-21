@@ -49,6 +49,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 
 #if defined(OS_ANDROID)
@@ -487,6 +488,27 @@ RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
 }
 
 // static
+void RenderFrameDevToolsAgentHost::OnWillSendNavigationRequest(
+    FrameTreeNode* frame_tree_node,
+    mojom::BeginNavigationParams* begin_params,
+    bool* report_raw_headers) {
+  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  if (!agent_host)
+    return;
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(begin_params->headers);
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
+    if (!network->enabled())
+      continue;
+    *report_raw_headers = true;
+    network->WillSendNavigationRequest(&headers,
+                                       &begin_params->skip_service_worker);
+  }
+  begin_params->headers = headers.ToString();
+}
+
+// static
 bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
     FrameTreeNode* frame_tree_node) {
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
@@ -495,32 +517,6 @@ bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
     return false;
   for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
     if (network->enabled())
-      return true;
-  }
-  return false;
-}
-
-// static
-void RenderFrameDevToolsAgentHost::AppendDevToolsHeaders(
-    FrameTreeNode* frame_tree_node,
-    net::HttpRequestHeaders* headers) {
-  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (!agent_host)
-    return;
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host))
-    network->AppendDevToolsHeaders(headers);
-}
-
-// static
-bool RenderFrameDevToolsAgentHost::ShouldBypassServiceWorker(
-    FrameTreeNode* frame_tree_node) {
-  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (!agent_host)
-    return false;
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    if (network->ShouldBypassServiceWorker())
       return true;
   }
   return false;
