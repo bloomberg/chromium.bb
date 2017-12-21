@@ -159,6 +159,7 @@ class ObjectPaintPropertyTreeBuilder {
   ALWAYS_INLINE void InitFragmentPaintProperties(FragmentData&,
                                                  bool needs_paint_properties);
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);
+  ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
   ALWAYS_INLINE void UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
 

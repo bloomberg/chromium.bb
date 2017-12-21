@@ -1310,23 +1310,36 @@ static LayoutRect BoundingBoxInPaginationContainer(
   return object_bounding_box_in_flow_thread;
 }
 
+static LayoutPoint PaintOffsetInPaginationContainer(
+    const LayoutObject& object,
+    const PaintLayer& enclosing_pagination_layer) {
+  // Non-boxes use their containing blocks' paint offset.
+  if (!object.IsBox() && !object.HasLayer()) {
+    return PaintOffsetInPaginationContainer(*object.ContainingBlock(),
+                                            enclosing_pagination_layer);
+  }
+
+  TransformState transform_state(TransformState::kApplyTransformDirection,
+                                 FloatPoint());
+  object.MapLocalToAncestor(&enclosing_pagination_layer.GetLayoutObject(),
+                            transform_state, kApplyContainerFlip);
+  transform_state.Flatten();
+  return LayoutPoint(transform_state.LastPlanarPoint());
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
   // Paint offsets for fragmented content are computed from scratch.
-  if (context_.fragment_clip &&
+  const auto* enclosing_pagination_layer =
+      full_context_.painting_layer->EnclosingPaginationLayer();
+  if (enclosing_pagination_layer &&
       // Except if the paint_offset_root is below the pagination container,
       // in which case fragmentation offsets are already baked into the paint
       // offset transform for paint_offset_root.
       !context_.current.paint_offset_root->PaintingLayer()
            ->EnclosingPaginationLayer()) {
-    PaintLayer* paint_layer = object_.PaintingLayer();
-    PaintLayer* enclosing_pagination_layer =
-        paint_layer->EnclosingPaginationLayer();
-    DCHECK(enclosing_pagination_layer);
-
     // Set fragment visual paint offset.
     LayoutPoint paint_offset =
-        BoundingBoxInPaginationContainer(object_, *enclosing_pagination_layer)
-            .Location();
+        PaintOffsetInPaginationContainer(object_, *enclosing_pagination_layer);
 
     paint_offset.MoveBy(fragment_data_.PaginationOffset());
     paint_offset.MoveBy(
@@ -1598,6 +1611,47 @@ void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   }
 }
 
+void ObjectPaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  const auto* enclosing_pagination_layer =
+      context_.painting_layer->EnclosingPaginationLayer();
+  if (!enclosing_pagination_layer)
+    return;
+
+  // We reach here because context_.painting_layer is in a composited layer
+  // under the pagination layer. SPv1* doesn't fragment composited layers,
+  // but we still need to set correct pagination offset for correct paint
+  // offset calculation.
+  FragmentData& first_fragment =
+      object_.GetMutableForPainting().FirstFragment();
+  bool is_paint_invalidation_container = object_.IsPaintInvalidationContainer();
+  const auto* parent_composited_layer =
+      context_.painting_layer->EnclosingLayerWithCompositedLayerMapping(
+          is_paint_invalidation_container ? kExcludeSelf : kIncludeSelf);
+  if (is_paint_invalidation_container &&
+      (!parent_composited_layer ||
+       !parent_composited_layer->EnclosingPaginationLayer())) {
+    // |object_| establishes the top level composited layer under the
+    // pagination layer.
+    FragmentainerIterator iterator(
+        ToLayoutFlowThread(enclosing_pagination_layer->GetLayoutObject()),
+        BoundingBoxInPaginationContainer(object_, *enclosing_pagination_layer));
+    if (!iterator.AtEnd()) {
+      first_fragment.SetPaginationOffset(
+          ToLayoutPoint(iterator.PaginationOffset()));
+    }
+  } else {
+    DCHECK(parent_composited_layer);
+    // All objects under the composited layer use the same pagination offset.
+    first_fragment.SetPaginationOffset(
+        parent_composited_layer->GetLayoutObject()
+            .FirstFragment()
+            .PaginationOffset());
+  }
+}
+
 // Limit the maximum number of fragments, to avoid pathological situations.
 static const int kMaxNumFragments = 2000;
 
@@ -1613,11 +1667,12 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
 
   if (!NeedsFragmentation(object_, *context_.painting_layer)) {
     InitSingleFragmentFromParent(needs_paint_properties);
+    UpdateCompositedLayerPaginationOffset();
   } else {
     // We need at least the fragments for all fragmented objects, which store
     // their local border box properties and paint invalidation data (such
     // as paint offset and visual rect) on each fragment.
-    PaintLayer* paint_layer = object_.PaintingLayer();
+    PaintLayer* paint_layer = context_.painting_layer;
     PaintLayer* enclosing_pagination_layer =
         paint_layer->EnclosingPaginationLayer();
 
