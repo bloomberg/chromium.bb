@@ -2271,17 +2271,6 @@ if (enable_java_templates) {
              "main_class cannot be used for target of type ${invoker.type}")
     }
 
-    if (_has_sources) {
-      _emma_instrument = emma_coverage && !_chromium_code && _has_sources
-      if (defined(invoker.emma_never_instrument)) {
-        _emma_instrument = !invoker.emma_never_instrument && _emma_instrument
-      }
-      if (_emma_instrument) {
-        _instrumented_jar_path =
-            "$target_gen_dir/$_main_target_name.instrumented.jar"
-      }
-    }
-
     if (_is_prebuilt || _has_sources) {
       if (defined(invoker.output_name)) {
         _output_name = invoker.output_name
@@ -2363,6 +2352,15 @@ if (enable_java_templates) {
       }
       set_sources_assignment_filter([])
       sources = []
+    }
+
+    _emma_instrument = emma_coverage && !_chromium_code && _java_files != []
+    if (defined(invoker.emma_never_instrument)) {
+      _emma_instrument = !invoker.emma_never_instrument && _emma_instrument
+    }
+    if (_emma_instrument) {
+      _instrumented_jar_path =
+          "$target_gen_dir/$_main_target_name.instrumented.jar"
     }
 
     if (_java_files != []) {
