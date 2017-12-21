@@ -236,12 +236,8 @@ inline bool operator!=(const FloatRect& a, const FloatRect& b) {
   return a.Location() != b.Location() || a.Size() != b.Size();
 }
 
-inline IntRect EnclosingIntRect(const FloatRect& rect) {
-  IntPoint location = FlooredIntPoint(rect.MinXMinYCorner());
-  IntPoint max_point = CeiledIntPoint(rect.MaxXMaxYCorner());
-
-  return IntRect(location, max_point - location);
-}
+// Returns a IntRect containing the given FloatRect.
+PLATFORM_EXPORT IntRect EnclosingIntRect(const FloatRect&);
 
 // Returns a valid IntRect contained within the given FloatRect.
 PLATFORM_EXPORT IntRect EnclosedIntRect(const FloatRect&);
