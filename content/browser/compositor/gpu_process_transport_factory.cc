@@ -138,6 +138,14 @@ bool IsCALayersDisabledFromCommandLine() {
 }
 #endif
 
+bool CheckWorkerContextLost(viz::RasterContextProvider* context_provider) {
+  if (!context_provider)
+    return false;
+
+  viz::RasterContextProvider::ScopedRasterContextLock lock(context_provider);
+  return lock.RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+}
+
 }  // namespace
 
 namespace content {
@@ -400,30 +408,19 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     use_gpu_compositing = false;
     shared_worker_context_provider_ = nullptr;
   } else {
-    // Try to reuse existing worker context provider.
-    if (shared_worker_context_provider_) {
-      bool lost;
-      {
-        // Note: If context is lost, we delete reference after releasing the
-        // lock.
-        viz::RasterContextProvider::ScopedRasterContextLock lock(
-            shared_worker_context_provider_.get());
-        lost =
-            lock.RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
-      }
-      if (lost)
-        shared_worker_context_provider_ = nullptr;
-    }
+    // Drop the old shared worker context if it was lost.
+    if (CheckWorkerContextLost(shared_worker_context_provider_.get()))
+      shared_worker_context_provider_ = nullptr;
 
     if (!shared_worker_context_provider_) {
       bool need_alpha_channel = false;
       bool support_locking = true;
-      bool support_gles2_interface = true;
+      bool support_gles2_interface = false;
       bool support_raster_interface = true;
       shared_worker_context_provider_ = CreateContextCommon(
           gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
           false /* support_stencil */, support_locking, support_gles2_interface,
-          support_raster_interface, nullptr,
+          support_raster_interface,
           ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
       auto result = shared_worker_context_provider_->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
@@ -434,8 +431,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
 
     // The |context_provider| is used for both the browser compositor and the
-    // display compositor. It shares resources with the worker context, so if
-    // we failed to make a worker context, just start over and try again.
+    // display compositor. If we failed to make a worker context, just start
+    // over and try again.
     if (shared_worker_context_provider_) {
       // For mus, we create an offscreen context for a mus window, and we will
       // use CommandBufferProxyImpl::TakeFrontBuffer() to take the context's
@@ -449,7 +446,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       context_provider = CreateContextCommon(
           std::move(gpu_channel_host), surface_handle, need_alpha_channel,
           support_stencil, support_locking, support_gles2_interface,
-          support_raster_interface, shared_worker_context_provider_.get(),
+          support_raster_interface,
           ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
       // On Mac, GpuCommandBufferMsg_SwapBuffersCompleted must be handled in
       // a nested run loop during resize.
@@ -649,9 +646,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the
   // same ContextProvider as the Display's output surface.
-  scoped_refptr<viz::RasterContextProvider> worker_context_provider;
-  if (shared_worker_context_provider_)
-    worker_context_provider = shared_worker_context_provider_;
   auto layer_tree_frame_sink =
       vulkan_context_provider
           ? std::make_unique<viz::DirectLayerTreeFrameSink>(
@@ -664,7 +658,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
                 GetFrameSinkManager(), data->display.get(),
                 data->display_client.get(), context_provider,
-                worker_context_provider, compositor->task_runner(),
+                shared_worker_context_provider_, compositor->task_runner(),
                 GetGpuMemoryBufferManager(),
                 viz::ServerSharedBitmapManager::current());
   data->display->Resize(compositor->size());
@@ -1010,7 +1004,6 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       false, support_locking, support_gles2_interface, support_raster_interface,
-      nullptr,
       ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->AddObserver(this);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
@@ -1099,13 +1092,11 @@ GpuProcessTransportFactory::CreateContextCommon(
     bool support_locking,
     bool support_gles2_interface,
     bool support_raster_interface,
-    ui::ContextProviderCommandBuffer* shared_context_provider,
     ui::command_buffer_metrics::ContextType type) {
   DCHECK(gpu_channel_host);
   DCHECK(!is_gpu_compositing_disabled_);
 
-  // All browser contexts get the same stream id because we don't use sync
-  // tokens for browser surfaces.
+  // All browser contexts get the same stream id and priority.
   int32_t stream_id = content::kGpuStreamIdDefault;
   gpu::SchedulingPriority stream_priority = content::kGpuStreamPriorityUI;
 
@@ -1141,7 +1132,7 @@ GpuProcessTransportFactory::CreateContextCommon(
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(), stream_id,
       stream_priority, surface_handle, url, automatic_flushes, support_locking,
-      gpu::SharedMemoryLimits(), attributes, shared_context_provider, type);
+      gpu::SharedMemoryLimits(), attributes, nullptr /* share_context */, type);
 }
 
 }  // namespace content

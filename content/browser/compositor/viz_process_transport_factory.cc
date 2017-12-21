@@ -14,6 +14,7 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/host/forwarding_compositing_mode_reporter_impl.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
@@ -25,6 +26,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -47,7 +49,6 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
     bool support_locking,
     bool support_gles2_interface,
     bool support_raster_interface,
-    ui::ContextProviderCommandBuffer* shared_context_provider,
     ui::command_buffer_metrics::ContextType type) {
   constexpr bool kAutomaticFlushes = false;
 
@@ -68,15 +69,23 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
       std::move(gpu_channel_host), gpu_memory_buffer_manager,
       kGpuStreamIdDefault, kGpuStreamPriorityUI, gpu::kNullSurfaceHandle,
       std::move(url), kAutomaticFlushes, support_locking,
-      gpu::SharedMemoryLimits(), attributes, shared_context_provider, type);
+      gpu::SharedMemoryLimits(), attributes, nullptr /* share_context */, type);
 }
 
 bool CheckContextLost(viz::ContextProvider* context_provider) {
   if (!context_provider)
     return false;
 
-  auto status = context_provider->ContextGL()->GetGraphicsResetStatusKHR();
-  return status != GL_NO_ERROR;
+  return context_provider->ContextGL()->GetGraphicsResetStatusKHR() !=
+         GL_NO_ERROR;
+}
+
+bool CheckWorkerContextLost(viz::RasterContextProvider* context_provider) {
+  if (!context_provider)
+    return false;
+
+  viz::RasterContextProvider::ScopedRasterContextLock lock(context_provider);
+  return lock.RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
 }  // namespace
@@ -484,23 +493,23 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
 bool VizProcessTransportFactory::CreateContextProviders(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   constexpr bool kSharedWorkerContextSupportsLocking = true;
-  constexpr bool kSharedWorkerContextSupportsGLES2 = true;
+  constexpr bool kSharedWorkerContextSupportsGLES2 = false;
   constexpr bool kSharedWorkerContextSupportsRaster = true;
   constexpr bool kCompositorContextSupportsLocking = false;
   constexpr bool kCompositorContextSupportsGLES2 = true;
   constexpr bool kCompositorContextSupportsRaster = false;
 
-  if (CheckContextLost(compositor_context_provider_.get())) {
-    // Both will be lost because they are in the same share group.
-    shared_worker_context_provider_ = nullptr;
+  if (CheckContextLost(compositor_context_provider_.get()))
     compositor_context_provider_ = nullptr;
-  }
+
+  if (CheckWorkerContextLost(shared_worker_context_provider_.get()))
+    shared_worker_context_provider_ = nullptr;
 
   if (!shared_worker_context_provider_) {
     shared_worker_context_provider_ = CreateContextProviderImpl(
         gpu_channel_host, GetGpuMemoryBufferManager(),
         kSharedWorkerContextSupportsLocking, kSharedWorkerContextSupportsGLES2,
-        kSharedWorkerContextSupportsRaster, nullptr,
+        kSharedWorkerContextSupportsRaster,
         ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
 
     auto result = shared_worker_context_provider_->BindToCurrentThread();
@@ -514,7 +523,7 @@ bool VizProcessTransportFactory::CreateContextProviders(
     compositor_context_provider_ = CreateContextProviderImpl(
         std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
         kCompositorContextSupportsLocking, kCompositorContextSupportsGLES2,
-        kCompositorContextSupportsRaster, shared_worker_context_provider_.get(),
+        kCompositorContextSupportsRaster,
         ui::command_buffer_metrics::UI_COMPOSITOR_CONTEXT);
     compositor_context_provider_->SetDefaultTaskRunner(resize_task_runner_);
 

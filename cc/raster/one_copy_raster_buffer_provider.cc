@@ -77,8 +77,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,
-    viz::ResourceFormat preferred_tile_format,
-    bool async_worker_context_enabled)
+    viz::ResourceFormat preferred_tile_format)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       resource_provider_(resource_provider),
@@ -94,8 +93,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
                     worker_context_provider,
                     resource_provider,
                     use_partial_raster,
-                    max_staging_buffer_usage_in_bytes),
-      async_worker_context_enabled_(async_worker_context_enabled) {
+                    max_staging_buffer_usage_in_bytes) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
 }
@@ -119,19 +117,14 @@ void OneCopyRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "OneCopyRasterBufferProvider::OrderingBarrier");
 
   gpu::gles2::GLES2Interface* gl = compositor_context_provider_->ContextGL();
-  if (async_worker_context_enabled_) {
-    gpu::SyncToken sync_token = ResourceProvider::GenerateSyncTokenHelper(gl);
-    for (RasterBufferImpl* buffer : pending_raster_buffers_)
-      buffer->set_sync_token(sync_token);
-  } else {
-    gl->OrderingBarrierCHROMIUM();
-  }
+  gpu::SyncToken sync_token = ResourceProvider::GenerateSyncTokenHelper(gl);
+  for (RasterBufferImpl* buffer : pending_raster_buffers_)
+    buffer->set_sync_token(sync_token);
   pending_raster_buffers_.clear();
 }
 
 void OneCopyRasterBufferProvider::Flush() {
-  if (async_worker_context_enabled_)
-    compositor_context_provider_->ContextSupport()->FlushPendingWork();
+  compositor_context_provider_->ContextSupport()->FlushPendingWork();
 }
 
 viz::ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
@@ -159,9 +152,6 @@ bool OneCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
 
 bool OneCopyRasterBufferProvider::IsResourceReadyToDraw(
     viz::ResourceId resource_id) const {
-  if (!async_worker_context_enabled_)
-    return true;
-
   gpu::SyncToken sync_token =
       resource_provider_->GetSyncTokenForResources({resource_id});
   if (!sync_token.HasData())
@@ -176,9 +166,6 @@ uint64_t OneCopyRasterBufferProvider::SetReadyToDrawCallback(
     const ResourceProvider::ResourceIdArray& resource_ids,
     const base::Closure& callback,
     uint64_t pending_callback_id) const {
-  if (!async_worker_context_enabled_)
-    return 0;
-
   gpu::SyncToken sync_token =
       resource_provider_->GetSyncTokenForResources(resource_ids);
   uint64_t callback_id = sync_token.release_count();
@@ -404,11 +391,6 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
 
   // Generate sync token for cross context synchronization.
   resource_lock->set_sync_token(ResourceProvider::GenerateSyncTokenHelper(ri));
-
-  // Mark resource as synchronized when worker and compositor are in same stream
-  // to prevent extra wait sync token calls.
-  if (!async_worker_context_enabled_)
-    resource_lock->set_synchronized();
 }
 
 gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {

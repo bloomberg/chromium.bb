@@ -119,6 +119,7 @@ class Extension;
 namespace viz {
 class BeginFrameSource;
 class ClientSharedBitmapManager;
+class RasterContextProvider;
 class SyntheticBeginFrameSource;
 }
 
@@ -249,7 +250,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // CompositorDependencies implementation.
   bool IsGpuRasterizationForced() override;
-  bool IsAsyncWorkerContextEnabled() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
   bool IsDistanceFieldTextEnabled() override;
@@ -428,7 +428,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Returns a worker context provider that will be bound on the compositor
   // thread.
-  scoped_refptr<ui::ContextProviderCommandBuffer>
+  scoped_refptr<viz::RasterContextProvider>
   SharedCompositorWorkerContextProvider();
 
   // Causes the idle handler to skip sending idle notifications
@@ -756,8 +756,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   base::ObserverList<RenderThreadObserver> observers_;
 
-  scoped_refptr<ui::ContextProviderCommandBuffer>
-      shared_worker_context_provider_;
+  scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
 
   std::unique_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
 
@@ -774,7 +773,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Compositor settings.
   bool is_gpu_rasterization_forced_;
-  bool is_async_worker_context_enabled_;
   int gpu_rasterization_msaa_sample_count_;
   bool is_lcd_text_enabled_;
   bool is_distance_field_text_enabled_;

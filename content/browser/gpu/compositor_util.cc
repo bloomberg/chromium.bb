@@ -259,14 +259,6 @@ bool IsCheckerImagingEnabled() {
   return false;
 }
 
-bool IsGpuAsyncWorkerContextEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuAsyncWorkerContext))
-    return false;
-
-  return true;
-}
-
 bool IsCompositorImageAnimationEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCompositorImageAnimations))

@@ -414,8 +414,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->GetGpuRasterizationMSAASampleCount();
   settings.gpu_rasterization_forced =
       compositor_deps->IsGpuRasterizationForced();
-  settings.async_worker_context_enabled =
-      compositor_deps->IsAsyncWorkerContextEnabled();
 
   settings.can_use_lcd_text = compositor_deps->IsLcdTextEnabled();
   settings.use_distance_field_text =

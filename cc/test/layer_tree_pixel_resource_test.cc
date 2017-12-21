@@ -72,7 +72,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
       *raster_buffer_provider = std::make_unique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider,
           resource_provider, false, 0, viz::PlatformColor::BestTextureFormat(),
-          false, false);
+          false);
       *resource_pool =
           ResourcePool::Create(resource_provider, task_runner,
                                viz::ResourceTextureHint::kFramebuffer,
@@ -98,7 +98,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
           task_runner, compositor_context_provider, worker_context_provider,
           resource_provider, max_bytes_per_copy_operation, false,
           max_staging_buffer_usage_in_bytes,
-          viz::PlatformColor::BestTextureFormat(), false);
+          viz::PlatformColor::BestTextureFormat());
       *resource_pool = ResourcePool::Create(
           resource_provider, task_runner, viz::ResourceTextureHint::kDefault,
           ResourcePool::kDefaultExpirationDelay, false);

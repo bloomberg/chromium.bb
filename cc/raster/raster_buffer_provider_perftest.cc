@@ -354,14 +354,14 @@ class RasterBufferProviderPerfTest
             worker_context_provider_.get(), resource_provider_.get(),
             std::numeric_limits<int>::max(), false,
             std::numeric_limits<int>::max(),
-            viz::PlatformColor::BestTextureFormat(), false);
+            viz::PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0,
-            viz::PlatformColor::BestTextureFormat(), false, false);
+            viz::PlatformColor::BestTextureFormat(), false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();

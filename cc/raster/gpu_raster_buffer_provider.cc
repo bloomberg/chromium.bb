@@ -172,7 +172,6 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count,
     viz::ResourceFormat preferred_tile_format,
-    bool async_worker_context_enabled,
     bool enable_oop_rasterization)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
@@ -180,7 +179,6 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       use_distance_field_text_(use_distance_field_text),
       msaa_sample_count_(gpu_rasterization_msaa_sample_count),
       preferred_tile_format_(preferred_tile_format),
-      async_worker_context_enabled_(async_worker_context_enabled),
       enable_oop_rasterization_(enable_oop_rasterization) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
@@ -204,19 +202,14 @@ void GpuRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "GpuRasterBufferProvider::OrderingBarrier");
 
   gpu::gles2::GLES2Interface* gl = compositor_context_provider_->ContextGL();
-  if (async_worker_context_enabled_) {
-    gpu::SyncToken sync_token = ResourceProvider::GenerateSyncTokenHelper(gl);
-    for (RasterBufferImpl* buffer : pending_raster_buffers_)
-      buffer->set_sync_token(sync_token);
-  } else {
-    gl->OrderingBarrierCHROMIUM();
-  }
+  gpu::SyncToken sync_token = ResourceProvider::GenerateSyncTokenHelper(gl);
+  for (RasterBufferImpl* buffer : pending_raster_buffers_)
+    buffer->set_sync_token(sync_token);
   pending_raster_buffers_.clear();
 }
 
 void GpuRasterBufferProvider::Flush() {
-  if (async_worker_context_enabled_)
-    compositor_context_provider_->ContextSupport()->FlushPendingWork();
+  compositor_context_provider_->ContextSupport()->FlushPendingWork();
 }
 
 viz::ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
@@ -246,9 +239,6 @@ bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
 
 bool GpuRasterBufferProvider::IsResourceReadyToDraw(
     viz::ResourceId resource_id) const {
-  if (!async_worker_context_enabled_)
-    return true;
-
   gpu::SyncToken sync_token =
       resource_provider_->GetSyncTokenForResources({resource_id});
   if (!sync_token.HasData())
@@ -263,9 +253,6 @@ uint64_t GpuRasterBufferProvider::SetReadyToDrawCallback(
     const ResourceProvider::ResourceIdArray& resource_ids,
     const base::Closure& callback,
     uint64_t pending_callback_id) const {
-  if (!async_worker_context_enabled_)
-    return 0;
-
   gpu::SyncToken sync_token =
       resource_provider_->GetSyncTokenForResources(resource_ids);
   uint64_t callback_id = sync_token.release_count();
@@ -343,11 +330,6 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
 
   // Generate sync token for cross context synchronization.
   resource_lock->set_sync_token(ResourceProvider::GenerateSyncTokenHelper(ri));
-
-  // Mark resource as synchronized when worker and compositor are in same stream
-  // to prevent extra wait sync token calls.
-  if (!async_worker_context_enabled_)
-    resource_lock->set_synchronized();
 }
 
 }  // namespace cc

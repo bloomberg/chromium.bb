@@ -2452,9 +2452,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsCompositorImageAnimationEnabled())
     command_line->AppendSwitch(switches::kEnableCompositorImageAnimations);
 
-  if (IsGpuAsyncWorkerContextEnabled())
-    command_line->AppendSwitch(switches::kEnableGpuAsyncWorkerContext);
-
   command_line->AppendSwitchASCII(
       switches::kContentImageTextureTarget,
       viz::BufferUsageAndFormatListToString(

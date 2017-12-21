@@ -39,6 +39,7 @@ class ContextProviderCommandBuffer;
 namespace viz {
 class ClientSharedBitmapManager;
 class ForwardingCompositingModeReporterImpl;
+class RasterContextProvider;
 }
 
 namespace content {
@@ -160,8 +161,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
 
   std::unique_ptr<viz::ClientSharedBitmapManager> shared_bitmap_manager_;
-  scoped_refptr<ui::ContextProviderCommandBuffer>
-      shared_worker_context_provider_;
+  scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
   scoped_refptr<ui::ContextProviderCommandBuffer> compositor_context_provider_;
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
