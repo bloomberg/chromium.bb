@@ -31,6 +31,9 @@
               context = new AudioContext()
             }, 'context = new AudioContext()').notThrow();
 
+            should(context.sampleRate,
+              `context.sampleRate (${context.sampleRate} Hz)`).beGreaterThan(0);
+
             defaultLatency = context.baseLatency;
             should(defaultLatency, 'default baseLatency').beGreaterThan(0);
 
@@ -96,7 +99,7 @@
                     'interactiveLatency/2})')
                 .notThrow();
             should(context.baseLatency, 'double-constructor baseLatency small')
-                .beEqualTo(interactiveLatency);
+                .beLessThanOrEqualTo(interactiveLatency);
             closingPromises.push(context.close());
 
             // Verify that exact latency in range works as expected
@@ -126,6 +129,8 @@
             }, 'creating two high latency contexts').notThrow();
             should(context1.baseLatency, 'high latency context baseLatency')
                 .beEqualTo(context2.baseLatency);
+            should(context1.baseLatency, 'high latency context baseLatency')
+                .beGreaterThan(interactiveLatency);
             closingPromises.push(context1.close());
             closingPromises.push(context2.close());
 
