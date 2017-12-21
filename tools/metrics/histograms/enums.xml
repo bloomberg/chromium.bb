@@ -28300,6 +28300,15 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="SUCCESS">All operations succeeded.</int>
 </enum>
 
+<enum name="MultiDisplayModes">
+  <summary>
+    Defines the modes in which displays connected to the device are in.
+  </summary>
+  <int value="0" label="Extended mode"/>
+  <int value="1" label="Mirroring mode"/>
+  <int value="2" label="Unified mode"/>
+</enum>
+
 <enum name="MultiProfileSessionMode">
   <int value="0" label="Single user mode"/>
   <int value="1" label="Side by side mode"/>
@@ -42293,6 +42302,18 @@ Full version information for the fingerprint enum values:
   <int value="5" label="kHasMustRevalidate"/>
   <int value="6" label="kNoCache"/>
   <int value="7" label="kNoStore"/>
+</enum>
+
+<enum name="UnifiedDesktopDisplayCountRanges">
+  <summary>
+    Defines the ranges in which the number of displays connected in Unified Mode
+    may reside
+  </summary>
+  <int value="0" label="2 displays"/>
+  <int value="1" label="(2 to 4] displays"/>
+  <int value="2" label="(4 to 6] displays"/>
+  <int value="3" label="(6 to 8] displays"/>
+  <int value="4" label="More than 8 displays"/>
 </enum>
 
 <enum name="UniformityTrialGroupNotActive">
