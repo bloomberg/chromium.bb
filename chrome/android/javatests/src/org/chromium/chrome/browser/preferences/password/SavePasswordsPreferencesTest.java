@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordManagerHandler;
@@ -355,6 +356,7 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures("password-export")
+    @DisabledTest(message = "crbug.com/796939")
     public void testExportMenuItem() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -385,6 +387,7 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures("password-export")
+    @DisabledTest(message = "crbug.com/796939")
     public void testExportMenuItemNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
