@@ -49,6 +49,7 @@ class IPC_EXPORT MessagePipeReader : public mojom::Channel {
    public:
     virtual void OnPeerPidReceived(int32_t peer_pid) = 0;
     virtual void OnMessageReceived(const Message& message) = 0;
+    virtual void OnBrokenDataReceived() = 0;
     virtual void OnPipeError() = 0;
     virtual void OnAssociatedInterfaceRequest(
         const std::string& name,

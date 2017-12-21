@@ -50,9 +50,9 @@ void MessagePipeReader::Close() {
 }
 
 bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
+  CHECK(message->IsValid());
   TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
-                         "MessagePipeReader::Send",
-                         message->flags(),
+                         "MessagePipeReader::Send", message->flags(),
                          TRACE_EVENT_FLAG_FLOW_OUT);
   base::Optional<std::vector<mojo::native::SerializedHandlePtr>> handles;
   MojoResult result = MOJO_RESULT_OK;
@@ -87,9 +87,16 @@ void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
 void MessagePipeReader::Receive(
     base::span<const uint8_t> data,
     base::Optional<std::vector<mojo::native::SerializedHandlePtr>> handles) {
-  Message message(
-      data.empty() ? "" : reinterpret_cast<const char*>(data.data()),
-      static_cast<uint32_t>(data.size()));
+  if (data.empty()) {
+    delegate_->OnBrokenDataReceived();
+    return;
+  }
+  Message message(reinterpret_cast<const char*>(data.data()),
+                  static_cast<uint32_t>(data.size()));
+  if (!message.IsValid()) {
+    delegate_->OnBrokenDataReceived();
+    return;
+  }
 
   DVLOG(4) << "Receive " << message.type() << ": " << message.size();
   MojoResult write_result =

@@ -72,6 +72,8 @@ class IPC_MESSAGE_SUPPORT_EXPORT Message : public base::Pickle {
   Message(const Message& other);
   Message& operator=(const Message& other);
 
+  bool IsValid() const { return header_size() == sizeof(Header) && header(); }
+
   PriorityValue priority() const {
     return static_cast<PriorityValue>(header()->flags & PRIORITY_MASK);
   }
