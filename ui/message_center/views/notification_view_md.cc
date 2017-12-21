@@ -704,6 +704,12 @@ void NotificationViewMD::RequestFocusOnCloseButton() {
 
 void NotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
+  header_row_->SetAccentColor(
+      notification.accent_color() == SK_ColorTRANSPARENT
+          ? message_center::kNotificationDefaultAccentColor
+          : notification.accent_color());
+  header_row_->SetTimestamp(notification.timestamp());
+
 #if defined(OS_CHROMEOS)
   // If |origin_url| and |display_source| are both empty, assume it is
   // system notification, and use default |display_source| and
@@ -716,8 +722,6 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
     header_row_->SetAppName(l10n_util::GetStringFUTF16(
         IDS_MESSAGE_CENTER_NOTIFICATION_CHROMEOS_SYSTEM,
         MessageCenter::Get()->GetProductOSName()));
-    header_row_->SetAccentColor(message_center::kSystemNotificationColorNormal);
-    header_row_->SetTimestamp(notification.timestamp());
     return;
   }
 #endif
@@ -730,11 +734,6 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
   } else {
     header_row_->SetAppName(notification.display_source());
   }
-  header_row_->SetAccentColor(
-      notification.accent_color() == SK_ColorTRANSPARENT
-          ? message_center::kNotificationDefaultAccentColor
-          : notification.accent_color());
-  header_row_->SetTimestamp(notification.timestamp());
 }
 
 void NotificationViewMD::CreateOrUpdateTitleView(
