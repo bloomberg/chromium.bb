@@ -271,7 +271,10 @@ bool ClickElement(const WebDocument& document,
 
 class FormAutofillTest : public ChromeRenderViewTest {
  public:
-  FormAutofillTest() : ChromeRenderViewTest() {}
+  FormAutofillTest() : ChromeRenderViewTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+  }
   ~FormAutofillTest() override {}
 
   void ExpectLabels(const char* html,
@@ -1860,6 +1863,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(FormAutofillTest);
 };
 
@@ -4907,6 +4911,44 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
   EXPECT_FALSE(UnownedCheckoutFormElementsAndFieldSetsToFormData(
       fieldsets, control_elements, nullptr, frame->GetDocument(), extract_mask,
       &form, nullptr));
+}
+
+TEST_F(FormAutofillTest, FormlessForms) {
+  std::vector<WebElement> fieldsets;
+  std::vector<WebFormControlElement> control_elements;
+
+  const ExtractMask extract_mask =
+      static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
+
+  LoadHTML(kUnownedUntitledFormHtml);
+
+  WebLocalFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  control_elements = GetUnownedAutofillableFormFieldElements(
+      frame->GetDocument().All(), &fieldsets);
+  ASSERT_FALSE(control_elements.empty());
+  ASSERT_TRUE(fieldsets.empty());
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+    FormData form;
+    EXPECT_FALSE(UnownedCheckoutFormElementsAndFieldSetsToFormData(
+        fieldsets, control_elements, nullptr, frame->GetDocument(),
+        extract_mask, &form, nullptr));
+  }
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+    FormData form;
+    EXPECT_TRUE(UnownedCheckoutFormElementsAndFieldSetsToFormData(
+        fieldsets, control_elements, nullptr, frame->GetDocument(),
+        extract_mask, &form, nullptr));
+  }
 }
 
 TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {

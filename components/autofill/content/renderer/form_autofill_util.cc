@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -1538,6 +1539,13 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillRestrictUnownedFieldsToFormlessCheckout)) {
+    return UnownedFormElementsAndFieldSetsToFormData(
+        fieldsets, control_elements, element, document, nullptr, extract_mask,
+        form, field);
+  }
+
   // Only attempt formless Autofill on checkout flows. This avoids the many
   // false positives found on the non-checkout web. See
   // http://crbug.com/462375.
@@ -1595,11 +1603,14 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
   // Since it's not a checkout flow, only add fields that have a non-"off"
   // autocomplete attribute to the formless autofill.
   CR_DEFINE_STATIC_LOCAL(WebString, kOffAttribute, ("off"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kFalseAttribute, ("false"));
   std::vector<WebFormControlElement> elements_with_autocomplete;
   for (const WebFormControlElement& element : control_elements) {
     blink::WebString autocomplete = element.GetAttribute("autocomplete");
-    if (autocomplete.length() && autocomplete != kOffAttribute)
+    if (autocomplete.length() && autocomplete != kOffAttribute &&
+        autocomplete != kFalseAttribute) {
       elements_with_autocomplete.push_back(element);
+    }
   }
 
   if (elements_with_autocomplete.empty())

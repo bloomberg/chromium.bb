@@ -32,6 +32,7 @@
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -662,7 +663,9 @@ bool FormStructure::ShouldBeParsed() const {
 
 bool FormStructure::ShouldRunHeuristics() const {
   return active_field_count() >= MinRequiredFieldsForHeuristics() &&
-         (is_form_tag_ || is_formless_checkout_);
+         (is_form_tag_ || is_formless_checkout_ ||
+          !base::FeatureList::IsEnabled(
+              features::kAutofillRestrictUnownedFieldsToFormlessCheckout));
 }
 
 bool FormStructure::ShouldBeQueried() const {
