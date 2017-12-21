@@ -950,11 +950,11 @@
 #pragma mark - BubbleViewAnchorPointProvider
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  CGPoint anchorPoint =
-      bubble_util::AnchorPoint(self.tabSwitchStripButton.frame, direction);
-  return [self.tabSwitchStripButton.superview
+  CGPoint anchorPoint = bubble_util::AnchorPoint(
+      self.tabSwitchStripButton.imageView.frame, direction);
+  return [self.tabSwitchStripButton.imageView.superview
       convertPoint:anchorPoint
-            toView:self.tabSwitchStripButton.window];
+            toView:self.tabSwitchStripButton.imageView.window];
 }
 
 - (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
