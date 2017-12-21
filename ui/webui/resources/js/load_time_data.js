@@ -14,6 +14,15 @@
  * change if the page is re-opened later.
  */
 
+/**
+ * @typedef {{
+ *   substitutions: (Array<string>|undefined),
+ *   attrs: (Object<function(Node, string):boolean>|undefined),
+ *   tags: (Array<string>|undefined),
+ * }}
+ */
+var SanitizeInnerHtmlOpts;
+
 /** @type {!LoadTimeData} */ var loadTimeData;
 
 // Expose this type globally as a temporary work around until
@@ -94,6 +103,19 @@ function LoadTimeData(){}
       var args = Array.prototype.slice.call(arguments);
       args[0] = value;
       return this.substituteString.apply(this, args);
+    },
+
+    /**
+     * Make a string safe for use with with Polymer bindings that are
+     * inner-h-t-m-l (or other innerHTML use).
+     * @param {string} rawString The unsanitized string.
+     * @param {SanitizeInnerHtmlOpts=} opts Optional additional allowed tags and
+     *     attributes.
+     * @return {string}
+     */
+    sanitizeInnerHtml: function(rawString, opts) {
+      return parseHtmlSubset('<b>' + rawString + '</b>', opts.tags, opts.attrs)
+          .firstChild.innerHTML;
     },
 
     /**

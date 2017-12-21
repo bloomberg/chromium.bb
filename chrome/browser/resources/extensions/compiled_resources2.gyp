@@ -13,6 +13,7 @@
         'source_files': [
           '<(DEPTH)/ui/webui/resources/js/promise_resolver.js',
           '<(DEPTH)/ui/webui/resources/js/load_time_data.js',
+          '<(DEPTH)/ui/webui/resources/js/parse_html_subset.js',
           '<(DEPTH)/ui/webui/resources/js/cr.js',
           '<(DEPTH)/ui/webui/resources/js/cr/ui/array_data_model.js',
           '<(DEPTH)/ui/webui/resources/js/cr/ui/list.js',
