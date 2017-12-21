@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
@@ -31,19 +30,18 @@ class StartupInformation;
 namespace sandbox {
 
 class SharedMemIPCServer;
-class Sid;
 class ThreadProvider;
 
 // TargetProcess models a target instance (child process). Objects of this
 // class are owned by the Policy used to create them.
 class TargetProcess {
  public:
-  // The constructor takes ownership of |initial_token| and |lockdown_token|
+  // The constructor takes ownership of |initial_token|, |lockdown_token|
+  // and |lowbox_token|.
   TargetProcess(base::win::ScopedHandle initial_token,
                 base::win::ScopedHandle lockdown_token,
                 HANDLE job,
-                ThreadProvider* thread_pool,
-                const std::vector<Sid>& impersonation_capabilities);
+                ThreadProvider* thread_pool);
   ~TargetProcess();
 
   // TODO(cpu): Currently there does not seem to be a reason to implement
@@ -122,8 +120,6 @@ class TargetProcess {
   void* base_address_;
   // Full name of the target executable.
   std::unique_ptr<wchar_t, base::FreeDeleter> exe_name_;
-  /// List of capability sids for use when impersonating in an AC process.
-  std::vector<Sid> impersonation_capabilities_;
 
   // Function used for testing.
   friend TargetProcess* MakeTestTargetProcess(HANDLE process,
