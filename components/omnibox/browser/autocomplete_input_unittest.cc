@@ -174,6 +174,20 @@ TEST(AutocompleteInputTest, InputType) {
     {ASCIIToUTF16("://w"), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16(":w"), metrics::OmniboxInputType::UNKNOWN},
     {base::WideToUTF16(L".\u062A"), metrics::OmniboxInputType::UNKNOWN},
+    // These tests are for https://tools.ietf.org/html/rfc6761.
+    {ASCIIToUTF16("foo.example"), metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("foo example"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("example"), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("http://foo.invalid"), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("foo.invalid/"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("foo.invalid"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("foo invalid"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("invalid"), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("foo.localhost"), metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("foo localhost"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("foo.test"), metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("foo test"), metrics::OmniboxInputType::QUERY},
+    {ASCIIToUTF16("test"), metrics::OmniboxInputType::UNKNOWN},
   };
 
   for (size_t i = 0; i < arraysize(input_cases); ++i) {
