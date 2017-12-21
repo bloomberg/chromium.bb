@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
+
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -30,7 +33,7 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kAutofillCreditCardEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
              nullptr);
   PrefValueMap prefs;
   AutofillCreditCardPolicyHandler handler;
@@ -45,7 +48,7 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kAutofillCreditCardEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   PrefValueMap prefs;
   AutofillCreditCardPolicyHandler handler;

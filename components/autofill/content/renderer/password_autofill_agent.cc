@@ -370,7 +370,7 @@ void UpdateFieldValueAndPropertiesMaskMap(
     it->second.second |= added_flags;
   } else {
     (*field_value_and_properties_map)[element] = std::make_pair(
-        value ? base::MakeUnique<base::string16>(*value) : nullptr,
+        value ? std::make_unique<base::string16>(*value) : nullptr,
         added_flags);
   }
   // Reset USER_TYPED and AUTOFILLED flags if the value is empty.

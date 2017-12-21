@@ -314,7 +314,7 @@ PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env, jobject obj)
     : weak_java_obj_(env, obj),
       personal_data_manager_(PersonalDataManagerFactory::GetForProfile(
           ProfileManager::GetActiveUserProfile())),
-      subkey_requester_(base::MakeUnique<ChromeMetadataSource>(
+      subkey_requester_(std::make_unique<ChromeMetadataSource>(
                             I18N_ADDRESS_VALIDATION_DATA_URL,
                             g_browser_process->system_request_context()),
                         ValidationRulesStorageFactory::CreateStorage()) {
@@ -551,7 +551,7 @@ void PersonalDataManagerAndroid::AddServerCreditCardForTest(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj,
     const base::android::JavaParamRef<jobject>& jcard) {
-  std::unique_ptr<CreditCard> card = base::MakeUnique<CreditCard>();
+  std::unique_ptr<CreditCard> card = std::make_unique<CreditCard>();
   PopulateNativeCreditCardFromJava(jcard, env, card.get());
   card->set_record_type(CreditCard::MASKED_SERVER_CARD);
   personal_data_manager_->AddServerCreditCardForTest(std::move(card));
@@ -579,7 +579,7 @@ void PersonalDataManagerAndroid::GetFullCardForPaymentRequest(
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobject>& jcard,
     const JavaParamRef<jobject>& jdelegate) {
-  std::unique_ptr<CreditCard> card = base::MakeUnique<CreditCard>();
+  std::unique_ptr<CreditCard> card = std::make_unique<CreditCard>();
   PopulateNativeCreditCardFromJava(jcard, env, card.get());
   // Self-deleting object.
   (new FullCardRequester())
@@ -791,7 +791,7 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
   std::unique_ptr<std::vector<ServerFieldType>> suggested_fields;
   size_t minimal_fields_shown = 2;
   if (address_only) {
-    suggested_fields = base::MakeUnique<std::vector<ServerFieldType>>();
+    suggested_fields = std::make_unique<std::vector<ServerFieldType>>();
     if (include_name_in_label)
       suggested_fields->push_back(NAME_FULL);
     if (include_organization_in_label)

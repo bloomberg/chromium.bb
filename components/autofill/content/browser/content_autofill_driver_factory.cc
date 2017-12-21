@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -25,7 +26,7 @@ std::unique_ptr<AutofillDriver> CreateDriver(
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager,
     AutofillProvider* provider) {
-  return base::MakeUnique<ContentAutofillDriver>(
+  return std::make_unique<ContentAutofillDriver>(
       render_frame_host, client, app_locale, enable_download_manager, provider);
 }
 

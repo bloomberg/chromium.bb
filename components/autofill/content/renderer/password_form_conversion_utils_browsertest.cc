@@ -215,7 +215,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
       if (with_user_input) {
         const base::string16 element_value = input_element->Value().Utf16();
         user_input[control_elements[i]] =
-            std::make_pair(base::MakeUnique<base::string16>(element_value),
+            std::make_pair(std::make_unique<base::string16>(element_value),
                            FieldPropertiesFlags::USER_TYPED);
       }
     }
@@ -1526,12 +1526,12 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, UserInput) {
   form.GetFormControlElements(control_elements);
   ASSERT_EQ("nonvisible_text", control_elements[0].NameForAutofill().Utf8());
   user_input[control_elements[0]] = std::make_pair(
-      base::MakeUnique<base::string16>(control_elements[0].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[0].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
   ASSERT_EQ("nonvisible_password",
             control_elements[2].NameForAutofill().Utf8());
   user_input[control_elements[2]] = std::make_pair(
-      base::MakeUnique<base::string16>(control_elements[2].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[2].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form =
@@ -1584,12 +1584,12 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   ASSERT_EQ("password_with_user_input1",
             control_elements[9].NameForAutofill().Utf8());
   user_input[control_elements[9]] = std::make_pair(
-      base::MakeUnique<base::string16>(control_elements[9].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[9].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
   ASSERT_EQ("password_with_user_input2",
             control_elements[10].NameForAutofill().Utf8());
   user_input[control_elements[10]] = std::make_pair(
-      base::MakeUnique<base::string16>(control_elements[10].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[10].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form =
@@ -1642,12 +1642,12 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   ASSERT_EQ("password_with_user_input1",
             control_elements[7].NameForAutofill().Utf8());
   user_input[control_elements[7]] = std::make_pair(
-      base::MakeUnique<base::string16>(control_elements[7].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[7].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
   ASSERT_EQ("password_with_user_input2",
             control_elements[9].NameForAutofill().Utf8());
   user_input[control_elements[9]] = std::make_pair(
-      base::MakeUnique<base::string16>(control_elements[9].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[9].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form =
@@ -1807,11 +1807,11 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     if (autofilled_value_was_modified_by_user)
       mask |= FieldPropertiesFlags::USER_TYPED;
     user_input[control_elements[1]] =
-        std::make_pair(base::MakeUnique<base::string16>(
+        std::make_pair(std::make_unique<base::string16>(
                            base::ASCIIToUTF16("autofilled_value")),
                        mask);
     user_input[control_elements[2]] = std::make_pair(
-        base::MakeUnique<base::string16>(base::ASCIIToUTF16("user_value")),
+        std::make_unique<base::string16>(base::ASCIIToUTF16("user_value")),
         FieldPropertiesFlags::USER_TYPED);
 
     std::unique_ptr<PasswordForm> password_form(
