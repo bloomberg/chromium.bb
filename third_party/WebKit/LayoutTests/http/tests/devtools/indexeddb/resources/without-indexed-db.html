@@ -1,15 +1,3 @@
 <html>
-<script>
-window.onload = function()
-{
-    function notifyFrontend()
-    {
-        TestRunner.pageLoaded();
-    }
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-    testRunner.evaluateInWebInspector(0, "(" + notifyFrontend + ")()");
-}
-</script>
 <p>Page without Indexed DB.</p>
 </html>

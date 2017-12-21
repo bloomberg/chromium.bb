@@ -33,8 +33,8 @@
         Workspace.Workspace.Events.UISourceCodeAdded, Workspace.workspace,
         uiSourceCode => uiSourceCode.url().startsWith('http'));
     if (!networkUISourceCode) {
-      testRunner.addResult('ERROR: No uiSourceCode');
-      testRunner.completeTest();
+      TestRunner.addResult('ERROR: No uiSourceCode');
+      TestRunner.completeTest();
       return;
     }
     TestRunner.addResult('Found network UISourceCode: ' + networkUISourceCode.url());

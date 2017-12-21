@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(async function(testRunner) {
+(async function() {
   TestRunner.addResult(`Verify that fs.createFile is creating UISourceCode atomically with content`);
   await TestRunner.loadModule('bindings_test_runner');
 
@@ -19,4 +19,4 @@
 
   var fsWorkspaceBinding = Workspace.workspace.project(folderLocation);
   fsWorkspaceBinding.createFile('', 'test.txt', 'file content');
-})(window.testRunner)
+})()

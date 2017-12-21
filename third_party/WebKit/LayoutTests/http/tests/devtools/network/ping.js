@@ -8,8 +8,7 @@
   await TestRunner.showPanel('network');
   await TestRunner.loadHTML(`<a id="pingLink" href="#" ping="ping.js">ping</a>`);
   await TestRunner.evaluateInPagePromise(`
-      if (window.testRunner)
-          testRunner.overridePreference("WebKitHyperlinkAuditingEnabled", 1);
+      testRunner.overridePreference("WebKitHyperlinkAuditingEnabled", 1);
       function navigateLink()
       {
           var evt = document.createEvent("MouseEvents");

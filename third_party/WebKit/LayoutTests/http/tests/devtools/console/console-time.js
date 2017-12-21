@@ -8,8 +8,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
   await TestRunner.evaluateInPagePromise(`
-    testRunner.setDumpConsoleMessages(false);
-
     function testFunction()
     {
       console.time();

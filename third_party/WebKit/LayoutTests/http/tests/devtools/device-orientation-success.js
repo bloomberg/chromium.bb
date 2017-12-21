@@ -13,8 +13,7 @@
 
       function setup()
       {
-          if (window.testRunner)
-              testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, absolute);
+          testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, absolute);
           window.addEventListener("deviceorientation", handler, false);
       }
 

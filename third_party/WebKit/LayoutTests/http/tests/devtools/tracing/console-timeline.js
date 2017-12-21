@@ -8,8 +8,6 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.evaluateInPagePromise(`
-      testRunner.setDumpConsoleMessages(false);
-
       function startStopTimeline()
       {
           console.timeStamp("timestamp 0");
