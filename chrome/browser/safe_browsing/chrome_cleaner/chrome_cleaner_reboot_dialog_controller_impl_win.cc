@@ -51,7 +51,7 @@ void PromptDelegateImpl::ShowChromeCleanerRebootPrompt(
 void PromptDelegateImpl::OpenSettingsPage(Browser* browser) {
   DCHECK(browser);
 
-  chrome_cleaner_util::OpenSettingsPage(
+  chrome_cleaner_util::OpenCleanupPage(
       browser, WindowOpenDisposition::NEW_BACKGROUND_TAB);
 }
 
@@ -166,7 +166,7 @@ void ChromeCleanerRebootDialogControllerImpl::MaybeStartRebootPrompt() {
 void ChromeCleanerRebootDialogControllerImpl::StartRebootPromptForBrowser(
     Browser* browser) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (chrome_cleaner_util::SettingsPageIsActiveTab(browser)) {
+  if (chrome_cleaner_util::CleanupPageIsActiveTab(browser)) {
     RecordSettingsPageActiveOnRebootRequired(
         SETTINGS_PAGE_ON_REBOOT_REQUIRED_ACTIVE_TAB);
 

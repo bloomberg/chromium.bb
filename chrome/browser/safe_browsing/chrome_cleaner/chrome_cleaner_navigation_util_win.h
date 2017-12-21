@@ -13,11 +13,11 @@ namespace chrome_cleaner_util {
 // exists.
 Browser* FindBrowser();
 
-// Returns true if the settings page is the currently active tab.
-bool SettingsPageIsActiveTab(Browser* browser);
+// Returns true if the page with Cleaner UI is the currently active tab.
+bool CleanupPageIsActiveTab(Browser* browser);
 
-// Opens a new settings tab in |browser| with the given |disposition|.
-void OpenSettingsPage(Browser* browser, WindowOpenDisposition disposition);
+// Opens a new settings tab containing Cleaner UI card.
+void OpenCleanupPage(Browser* browser, WindowOpenDisposition disposition);
 
 }  // namespace chrome_cleaner_util
 

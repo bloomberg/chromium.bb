@@ -92,7 +92,7 @@ void ChromeCleanerDialogControllerImpl::Accept(bool logs_enabled) {
       logs_enabled
           ? ChromeCleanerController::UserResponse::kAcceptedWithLogs
           : ChromeCleanerController::UserResponse::kAcceptedWithoutLogs);
-  chrome_cleaner_util::OpenSettingsPage(
+  chrome_cleaner_util::OpenCleanupPage(
       browser_, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   OnInteractionDone();
 }
@@ -148,7 +148,7 @@ void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
       "SoftwareReporter.PromptDialog_DetailsButtonClicked"));
 
   cleaner_controller_->SetLogsEnabled(logs_enabled);
-  chrome_cleaner_util::OpenSettingsPage(
+  chrome_cleaner_util::OpenCleanupPage(
       browser_, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   OnInteractionDone();
 }
