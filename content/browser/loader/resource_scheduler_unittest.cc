@@ -467,8 +467,9 @@ class ResourceSchedulerTest : public testing::Test {
     // Check that the configuration was parsed and stored correctly.
     ASSERT_EQ(params_network_quality_container.size(), num_ranges);
     for (size_t index = 1; index <= num_ranges; index++) {
-      EXPECT_EQ(1 + index, params_network_quality_container[index - 1]
-                               .effective_connection_type);
+      EXPECT_EQ(1 + index,
+                static_cast<size_t>(params_network_quality_container[index - 1]
+                                        .effective_connection_type));
       EXPECT_EQ(
           index * 10u,
           params_network_quality_container[index - 1].max_delayable_requests);
