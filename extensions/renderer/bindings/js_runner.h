@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -25,13 +26,28 @@ class JSRunner {
 
   virtual ~JSRunner() {}
 
+  // Called with the result of executing the function, as well as the context
+  // it was executed in. Note: This callback is *not* guaranteed to be invoked
+  // (and won't be if, for instance, the context is destroyed before this is
+  // ran).
+  // NOTE(devlin): We could easily change that if desired.
+  using ResultCallback = base::OnceCallback<void(v8::Local<v8::Context>,
+                                                 v8::MaybeLocal<v8::Value>)>;
+
   // Calls the given |function| in the specified |context| and with the provided
   // arguments. JS may be executed asynchronously if it has been suspended in
   // the context.
+  void RunJSFunction(v8::Local<v8::Function> function,
+                     v8::Local<v8::Context> context,
+                     int argc,
+                     v8::Local<v8::Value> argv[]);
+  // Same as above, but if a |callback| is provided, it will be called with the
+  // results of the function running.
   virtual void RunJSFunction(v8::Local<v8::Function> function,
                              v8::Local<v8::Context> context,
                              int argc,
-                             v8::Local<v8::Value> argv[]) = 0;
+                             v8::Local<v8::Value> argv[],
+                             ResultCallback callback) = 0;
 
   // Executes the given |function| synchronously and returns the result. This
   // should *only* be called in direct response to script running, since it

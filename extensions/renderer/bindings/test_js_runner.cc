@@ -67,7 +67,8 @@ TestJSRunner::~TestJSRunner() {}
 void TestJSRunner::RunJSFunction(v8::Local<v8::Function> function,
                                  v8::Local<v8::Context> context,
                                  int argc,
-                                 v8::Local<v8::Value> argv[]) {
+                                 v8::Local<v8::Value> argv[],
+                                 ResultCallback callback) {
   if (g_suspended) {
     // Script is suspended. Queue up the call and return.
     v8::Isolate* isolate = context->GetIsolate();
@@ -76,6 +77,7 @@ void TestJSRunner::RunJSFunction(v8::Local<v8::Function> function,
     call.function.Reset(isolate, function);
     call.context.Reset(isolate, context);
     call.arguments.reserve(argc);
+    call.callback = std::move(callback);
     for (int i = 0; i < argc; ++i)
       call.arguments.push_back(v8::Global<v8::Value>(isolate, argv[i]));
     pending_calls_.push_back(std::move(call));
@@ -85,10 +87,15 @@ void TestJSRunner::RunJSFunction(v8::Local<v8::Function> function,
   if (will_call_js_)
     will_call_js_.Run();
 
-  if (g_allow_errors)
-    ignore_result(function->Call(context, context->Global(), argc, argv));
-  else
-    RunFunctionOnGlobal(function, context, argc, argv);
+  v8::MaybeLocal<v8::Value> result;
+  if (g_allow_errors) {
+    result = function->Call(context, context->Global(), argc, argv);
+  } else {
+    result = RunFunctionOnGlobal(function, context, argc, argv);
+  }
+
+  if (callback)
+    std::move(callback).Run(context, result);
 }
 
 v8::MaybeLocal<v8::Value> TestJSRunner::RunJSFunctionSync(
@@ -121,8 +128,11 @@ void TestJSRunner::Flush() {
     local_arguments.reserve(call.arguments.size());
     for (auto& arg : call.arguments)
       local_arguments.push_back(arg.Get(isolate));
-    RunJSFunctionSync(call.function.Get(isolate), context,
-                      local_arguments.size(), local_arguments.data());
+    v8::MaybeLocal<v8::Value> result =
+        RunJSFunctionSync(call.function.Get(isolate), context,
+                          local_arguments.size(), local_arguments.data());
+    if (call.callback)
+      std::move(call.callback).Run(context, result);
   }
 }
 

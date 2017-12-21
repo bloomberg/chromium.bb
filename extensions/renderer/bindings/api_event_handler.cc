@@ -102,7 +102,7 @@ void DispatchEvent(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Converter<EventEmitter*>::FromV8(isolate, v8_emitter.Get(isolate),
                                         &emitter);
   CHECK(emitter);
-  emitter->Fire(context, &args, nullptr);
+  emitter->Fire(context, &args, nullptr, JSRunner::ResultCallback());
 }
 
 }  // namespace
@@ -221,14 +221,16 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
   for (const auto& arg : args)
     v8_args.push_back(converter->ToV8Value(&arg, context));
 
-  FireEventInContext(event_name, context, &v8_args, filter);
+  FireEventInContext(event_name, context, &v8_args, filter,
+                     JSRunner::ResultCallback());
 }
 
 void APIEventHandler::FireEventInContext(
     const std::string& event_name,
     v8::Local<v8::Context> context,
     std::vector<v8::Local<v8::Value>>* arguments,
-    const EventFilteringInfo* filter) {
+    const EventFilteringInfo* filter,
+    JSRunner::ResultCallback callback) {
   APIEventPerContextData* data = GetContextData(context, false);
   if (!data)
     return;
@@ -243,8 +245,10 @@ void APIEventHandler::FireEventInContext(
 
   auto massager_iter = data->massagers.find(event_name);
   if (massager_iter == data->massagers.end()) {
-    emitter->Fire(context, arguments, filter);
+    emitter->Fire(context, arguments, filter, std::move(callback));
   } else {
+    DCHECK(!callback) << "Can't use an event callback with argument massagers.";
+
     v8::Isolate* isolate = context->GetIsolate();
     v8::HandleScope handle_scope(isolate);
     v8::Local<v8::Function> massager = massager_iter->second.Get(isolate);

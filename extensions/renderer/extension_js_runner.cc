@@ -6,22 +6,30 @@
 
 #include "content/public/renderer/worker_thread.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_injection_callback.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
 ExtensionJSRunner::ExtensionJSRunner(ScriptContext* script_context)
-    : script_context_(script_context) {}
+    : script_context_(script_context), weak_factory_(this) {}
 ExtensionJSRunner::~ExtensionJSRunner() {}
 
 void ExtensionJSRunner::RunJSFunction(v8::Local<v8::Function> function,
                                       v8::Local<v8::Context> context,
                                       int argc,
-                                      v8::Local<v8::Value> argv[]) {
-  DCHECK(script_context_->v8_context() == context);
+                                      v8::Local<v8::Value> argv[],
+                                      ResultCallback callback) {
+  ScriptInjectionCallback::CompleteCallback wrapper_callback;
+  if (callback) {
+    // TODO(devlin): Update ScriptContext to take a OnceCallback.
+    wrapper_callback = base::BindRepeating(
+        &ExtensionJSRunner::OnFunctionComplete, weak_factory_.GetWeakPtr(),
+        base::Passed(std::move(callback)));
+  }
 
   // TODO(devlin): Move ScriptContext::SafeCallFunction() into here?
-  script_context_->SafeCallFunction(function, argc, argv);
+  script_context_->SafeCallFunction(function, argc, argv, wrapper_callback);
 }
 
 v8::MaybeLocal<v8::Value> ExtensionJSRunner::RunJSFunctionSync(
@@ -59,6 +67,17 @@ v8::MaybeLocal<v8::Value> ExtensionJSRunner::RunJSFunctionSync(
   }
 
   return result;
+}
+
+void ExtensionJSRunner::OnFunctionComplete(
+    ResultCallback callback,
+    const std::vector<v8::Local<v8::Value>>& results) {
+  DCHECK(script_context_->is_valid());
+
+  v8::MaybeLocal<v8::Value> result;
+  if (!results.empty() && !results[0].IsEmpty())
+    result = results[0];
+  std::move(callback).Run(script_context_->v8_context(), result);
 }
 
 }  // namespace extensions

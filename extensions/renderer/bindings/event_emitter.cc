@@ -50,8 +50,9 @@ gin::ObjectTemplateBuilder EventEmitter::GetObjectTemplateBuilder(
 
 void EventEmitter::Fire(v8::Local<v8::Context> context,
                         std::vector<v8::Local<v8::Value>>* args,
-                        const EventFilteringInfo* filter) {
-  DispatchAsync(context, args, filter);
+                        const EventFilteringInfo* filter,
+                        JSRunner::ResultCallback callback) {
+  DispatchAsync(context, args, filter, std::move(callback));
 }
 
 void EventEmitter::Invalidate(v8::Local<v8::Context> context) {
@@ -206,7 +207,8 @@ v8::Local<v8::Value> EventEmitter::DispatchSync(
 
 void EventEmitter::DispatchAsync(v8::Local<v8::Context> context,
                                  std::vector<v8::Local<v8::Value>>* args,
-                                 const EventFilteringInfo* filter) {
+                                 const EventFilteringInfo* filter,
+                                 JSRunner::ResultCallback callback) {
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope handle_scope(isolate);
 
@@ -248,7 +250,8 @@ void EventEmitter::DispatchAsync(v8::Local<v8::Context> context,
   CHECK(v8::Function::New(context, &DispatchAsyncHelper, data)
             .ToLocal(&function));
 
-  JSRunner::Get(context)->RunJSFunction(function, context, 0, nullptr);
+  JSRunner::Get(context)->RunJSFunction(function, context, 0, nullptr,
+                                        std::move(callback));
 }
 
 // static
@@ -293,8 +296,8 @@ void EventEmitter::DispatchAsyncHelper(
 
   // We know that dispatching synchronously should be safe because this function
   // was triggered by JS execution.
-  emitter->DispatchSync(context, &arguments,
-                        filter ? &filter.value() : nullptr);
+  info.GetReturnValue().Set(emitter->DispatchSync(
+      context, &arguments, filter ? &filter.value() : nullptr));
 }
 
 }  // namespace extensions

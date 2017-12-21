@@ -447,9 +447,11 @@ TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
       R"((function() {
            chrome.runtime.onMessage.addListener((message) => {
              this.onMessageReceived = message;
+             return true;  // Keep the channel open.
            });
            chrome.runtime.onMessageExternal.addListener((message) => {
              this.onMessageExternalReceived = message;
+             return true;  // Keep the channel open.
            });
          }))";
 

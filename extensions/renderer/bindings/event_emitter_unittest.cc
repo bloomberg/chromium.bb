@@ -178,7 +178,7 @@ TEST_F(EventEmitterUnittest, ListenersDestroyingContext) {
   EXPECT_EQ(kNumListeners, event->GetNumListeners());
 
   std::vector<v8::Local<v8::Value>> args;
-  event->Fire(context, &args, nullptr);
+  event->Fire(context, &args, nullptr, JSRunner::ResultCallback());
 
   EXPECT_TRUE(closure_data.did_invalidate_context);
 }
