@@ -371,100 +371,25 @@ bool NavigatorImpl::NavigateToEntry(
   if (delegate_)
     delegate_->AdjustPreviewsStateForNavigation(&previews_state);
 
-  // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
-  if (IsBrowserSideNavigationEnabled()) {
-    navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
-                                                     entry.restore_type()));
-    RequestNavigation(
-        frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
-        reload_type, previews_state, is_same_document_history_load,
-        is_history_navigation_in_new_child, post_body, navigation_start);
-    if (frame_tree_node->IsMainFrame() &&
-        frame_tree_node->navigation_request()) {
-      // TODO(carlosk): extend these traces to support subframes and
-      // non-PlzNavigate navigations.
-      // For the trace below we're using the navigation handle as the async
-      // trace id, |navigation_start| as the timestamp and reporting the
-      // FrameTreeNode id as a parameter. For navigations where no network
-      // request is made (data URLs, JavaScript URLs, etc) there is no handle
-      // and so no tracing is done.
-      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-          "navigation", "Navigation timeToNetworkStack",
-          frame_tree_node->navigation_request()->navigation_handle(),
-          navigation_start, "FrameTreeNode id",
-          frame_tree_node->frame_tree_node_id());
-    }
-
-  } else {
-    RenderFrameHostImpl* dest_render_frame_host =
-        frame_tree_node->render_manager()->Navigate(
-            dest_url, frame_entry, entry, reload_type != ReloadType::NONE);
-    if (!dest_render_frame_host)
-      return false;  // Unable to create the desired RenderFrameHost.
-
-    // Make sure no code called via RFHM::Navigate clears the pending entry.
-    if (is_pending_entry)
-      CHECK_EQ(controller_->GetPendingEntry(), &entry);
-
-    // For security, we should never send non-Web-UI URLs to a Web UI renderer.
-    // Double check that here.
-    CheckWebUIRendererDoesNotDisplayNormalURL(dest_render_frame_host, dest_url);
-
-    // In the case of a transfer navigation, set the destination
-    // RenderFrameHost as loading.  This ensures that the RenderFrameHost gets
-    // in a loading state without emitting a spurious DidStartLoading
-    // notification at the FrameTreeNode level (since the FrameTreeNode was
-    // already loading). Note that this works both for a transfer to a
-    // different RenderFrameHost and in the rare case where the navigation is
-    // transferred back to the same RenderFrameHost.
-    bool is_transfer = entry.transferred_global_request_id().child_id != -1;
-    if (is_transfer)
-      dest_render_frame_host->set_is_loading(true);
-
-    // A session history navigation should have been accompanied by state.
-    // TODO(creis): This is known to be failing in UseSubframeNavigationEntries
-    // in https://crbug.com/568703, when the PageState on a FrameNavigationEntry
-    // is unexpectedly empty.  Until the cause is found, keep this as a DCHECK
-    // and load the URL without PageState.
-    if (is_pending_entry && controller_->GetPendingEntryIndex() != -1)
-      DCHECK(frame_entry.page_state().IsValid());
-
-    // Navigate in the desired RenderFrameHost.
-    // We can skip this step in the rare case that this is a transfer navigation
-    // which began in the chosen RenderFrameHost, since the request has already
-    // been issued.  In that case, simply resume the response.
-    bool is_transfer_to_same =
-        is_transfer && entry.transferred_global_request_id().child_id ==
-                           dest_render_frame_host->GetProcess()->GetID();
-    if (!is_transfer_to_same) {
-      navigation_data_.reset(new NavigationMetricsData(
-          navigation_start, dest_url, entry.restore_type()));
-      // Create the navigation parameters.
-      FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
-          frame_tree_node->current_url(),  // old_url
-          dest_url,                        // new_url
-          reload_type,                     // reload_type
-          entry,                           // entry
-          frame_entry,                     // frame_entry
-          is_same_document_history_load);  // is_same_document_history_load
-
-      dest_render_frame_host->Navigate(
-          entry.ConstructCommonNavigationParams(
-              frame_entry, post_body, dest_url, dest_referrer, navigation_type,
-              previews_state, navigation_start),
-          entry.ConstructStartNavigationParams(),
-          entry.ConstructRequestNavigationParams(
-              frame_entry, GURL(), std::string(),
-              is_history_navigation_in_new_child,
-              entry.GetSubframeUniqueNames(frame_tree_node),
-              frame_tree_node->has_committed_real_load(),
-              controller_->GetPendingEntryIndex() == -1,
-              controller_->GetIndexOfEntry(&entry),
-              controller_->GetLastCommittedEntryIndex(),
-              controller_->GetEntryCount()));
-    } else {
-      dest_render_frame_host->navigation_handle()->set_is_transferring(false);
-    }
+  navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
+                                                   entry.restore_type()));
+  RequestNavigation(
+      frame_tree_node, dest_url, dest_referrer, frame_entry, entry, reload_type,
+      previews_state, is_same_document_history_load,
+      is_history_navigation_in_new_child, post_body, navigation_start);
+  if (frame_tree_node->IsMainFrame() && frame_tree_node->navigation_request()) {
+    // TODO(carlosk): extend these traces to support subframes and
+    // non-PlzNavigate navigations.
+    // For the trace below we're using the navigation handle as the async
+    // trace id, |navigation_start| as the timestamp and reporting the
+    // FrameTreeNode id as a parameter. For navigations where no network
+    // request is made (data URLs, JavaScript URLs, etc) there is no handle
+    // and so no tracing is done.
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "navigation", "Navigation timeToNetworkStack",
+        frame_tree_node->navigation_request()->navigation_handle(),
+        navigation_start, "FrameTreeNode id",
+        frame_tree_node->frame_tree_node_id());
   }
 
   // Make sure no code called via RFH::Navigate clears the pending entry.
@@ -477,10 +402,11 @@ bool NavigatorImpl::NavigateToEntry(
     // than a history one), and the user typed in a javascript: URL, don't add
     // it to the session history.
     //
-    // This is a hack. What we really want is to avoid adding to the history any
-    // URL that doesn't generate content, and what would be great would be if we
-    // had a message from the renderer telling us that a new page was not
-    // created. The same message could be used for mailto: URLs and the like.
+    // This is a hack. What we really want is to avoid adding to the history
+    // any URL that doesn't generate content, and what would be great would be
+    // if we had a message from the renderer telling us that a new page was
+    // not created. The same message could be used for mailto: URLs and the
+    // like.
     return false;
   }
 

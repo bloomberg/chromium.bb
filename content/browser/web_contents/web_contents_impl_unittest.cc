@@ -556,13 +556,6 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   pending_rfh->GetRenderViewHost()->set_delete_counter(
       &pending_rvh_delete_count);
 
-  // Navigations should be suspended in pending_rfh until BeforeUnloadACK.
-  if (!IsBrowserSideNavigationEnabled()) {
-    EXPECT_TRUE(pending_rfh->are_navigations_suspended());
-    orig_rfh->SendBeforeUnloadACK(true);
-    EXPECT_FALSE(pending_rfh->are_navigations_suspended());
-  }
-
   // DidNavigate from the pending page.
   contents()->TestDidNavigateWithSequenceNumber(
       pending_rfh, entry_id, true, url2, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -594,13 +587,6 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
     main_test_rfh()->PrepareForCommit();
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-
-  // Navigations should be suspended in goback_rfh until BeforeUnloadACK.
-  if (!IsBrowserSideNavigationEnabled()) {
-    EXPECT_TRUE(goback_rfh->are_navigations_suspended());
-    pending_rfh->SendBeforeUnloadACK(true);
-    EXPECT_FALSE(goback_rfh->are_navigations_suspended());
-  }
 
   // DidNavigate from the back action.
   contents()->TestDidNavigateWithSequenceNumber(
@@ -808,13 +794,6 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   int pending_rvh_delete_count = 0;
   pending_rfh->GetRenderViewHost()->set_delete_counter(
       &pending_rvh_delete_count);
-
-  // Navigations should be suspended in pending_rvh until BeforeUnloadACK.
-  if (!IsBrowserSideNavigationEnabled()) {
-    EXPECT_TRUE(pending_rfh->are_navigations_suspended());
-    orig_rfh->SendBeforeUnloadACK(true);
-    EXPECT_FALSE(pending_rfh->are_navigations_suspended());
-  }
 
   // DidNavigate from the pending page.
   contents()->TestDidNavigate(pending_rfh, entry_id, true, url2,
