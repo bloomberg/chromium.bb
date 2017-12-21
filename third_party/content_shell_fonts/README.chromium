@@ -36,8 +36,10 @@ https://chromium.googlesource.com/infra/infra/+/master/doc/users/contacting_troo
 
 Font Origins:
 
-Lohit-Tamil.ttf            https://pagure.io/lohit
-Lohit-Devanagari.ttf       https://pagure.io/lohit
-MuktiNarrow.ttf            http://www.nongnu.org/freebangfont/downloads.html#mukti
 DejaVuSans.ttf             https://dejavu-fonts.github.io/Download.html
+Garuda.ttf                 https://linux.thai.net/projects/fonts-tlwg
+Lohit-Devanagari.ttf       https://pagure.io/lohit
+Lohit-Gurmukhi.ttf         https://pagure.io/lohit
+Lohit-Tamil.ttf            https://pagure.io/lohit
+MuktiNarrow.ttf            http://www.nongnu.org/freebangfont/downloads.html#mukti
 NotoSansKhmer-Regular.ttf  https://www.google.com/get/noto/#sans-khmr

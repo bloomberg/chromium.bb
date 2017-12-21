@@ -1,6 +1,7 @@
 The SIL OPEN FONT LICENSE applies to the following files:
-Lohit-Tamil.ttf
 Lohit-Devanagari.ttf
+Lohit-Gurmukhi.ttf
+Lohit-Tamil.ttf
 
 
 Copyright 2011-13 Lohit Fonts Project contributors
@@ -101,6 +102,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 --------------------------------------------------------------------------------
 The GPL v2 license applies to the following files
+Garuda.ttf
 MuktiNarrow.ttf
 
 		    GNU GENERAL PUBLIC LICENSE
