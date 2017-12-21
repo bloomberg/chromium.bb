@@ -82219,17 +82219,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The total count of responses that were blocked by the cross-site document
     blocking logic in the browser process. Sampled with a resource type (0-17)
-    when the response is blocked, just after the first read from the network.
-    This is also recorded with a suffix indicating the MIME type category.
+    when the response is blocked; up to 1024 bytes of the response are
+    considered. This is also recorded with a suffix indicating the MIME type
+    category.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Browser.BlockedForParserBreaker"
+    enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The total count of responses that were blocked by the cross-site document
+    blocking logic in the browser process, due to the presence of a Javascript
+    parser-breaker pattern (like &quot;for(;;);&quot;, or &quot;)]}'&quot;, or a
+    non-empty JSON dictionary like &quot;{\&quot;a\&quot;:&quot;. Sampled with a
+    resource type (0-17) when the response is blocked; up to 1024 bytes of the
+    response are considered.
   </summary>
 </histogram>
 
 <histogram name="SiteIsolation.XSD.Browser.BytesReadForSniffing" units="bytes">
   <owner>creis@chromium.org</owner>
   <summary>
-    The number of bytes in the first read of the network response, when
-    attempting to sniff the response to determine if it should be blocked as a
-    cross-site document. Recorded when sniffing is attempted.
+    The number of bytes of the network response buffered for sniffing purposes,
+    when attempting to sniff the response to determine if it should be blocked
+    as a cross-site document. Recorded after sniffing is attempted.
   </summary>
 </histogram>
 
@@ -109755,6 +109769,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="XML" label="Classified as XML MIME type."/>
   <suffix name="JSON" label="Classified as JSON MIME type."/>
   <suffix name="Plain" label="Classified as plain text MIME type."/>
+  <suffix name="Others" label="Classified as other MIME types."/>
   <affected-histogram name="SiteIsolation.XSD.Browser.Blocked"/>
 </histogram_suffixes>
 

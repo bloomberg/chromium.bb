@@ -73,6 +73,12 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   static Result SniffForXML(base::StringPiece data);
   static Result SniffForJSON(base::StringPiece data);
 
+  // Sniff for patterns that indicate |data| only ought to be consumed by XHR()
+  // or fetch(). This detects Javascript parser-breaker and particular JS
+  // infinite-loop patterns, which are used conventionally as a defense against
+  // JSON data exfiltration by means of a <script> tag.
+  static Result SniffForFetchOnlyResource(base::StringPiece data);
+
  private:
   CrossSiteDocumentClassifier();  // Not instantiable.
 
