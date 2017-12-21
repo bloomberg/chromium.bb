@@ -9,8 +9,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,8 +19,6 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -41,8 +37,6 @@ class HistoryCounterTest : public InProcessBrowserTest {
     history_service_ = HistoryServiceFactory::GetForProfileWithoutCreating(
         browser()->profile());
     fake_web_history_service_.reset(new history::FakeWebHistoryService(
-        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
-        SigninManagerFactory::GetForProfile(browser()->profile()),
         browser()->profile()->GetRequestContext()));
 
     SetHistoryDeletionPref(true);

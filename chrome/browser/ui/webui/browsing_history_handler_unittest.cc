@@ -151,8 +151,6 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
 
     std::unique_ptr<history::FakeWebHistoryService> service =
         base::MakeUnique<history::FakeWebHistoryService>(
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-            SigninManagerFactory::GetForProfile(profile),
             profile->GetRequestContext());
     service->SetupFakeResponse(true /* success */, net::HTTP_OK);
     return std::move(service);
