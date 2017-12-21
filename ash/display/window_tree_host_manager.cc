@@ -718,8 +718,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
     display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
     const display::DisplayLayout& layout =
         layout_store->GetRegisteredDisplayLayout(list);
-    layout_store->UpdateMultiDisplayState(
-        list, display_manager->IsInMirrorMode(), layout.default_unified);
+    layout_store->UpdateDefaultUnified(list, layout.default_unified);
     if (display::Screen::GetScreen()->GetNumDisplays() > 1) {
       SetPrimaryDisplayId(layout.primary_id == display::kInvalidDisplayId
                               ? list[0]

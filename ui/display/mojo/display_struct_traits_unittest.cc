@@ -50,7 +50,6 @@ void CheckDisplayLayoutsEqual(const DisplayLayout& input,
                               const DisplayLayout& output) {
   EXPECT_NE(&input, &output);  // Make sure they aren't the same object.
   EXPECT_EQ(input.placement_list, output.placement_list);
-  EXPECT_EQ(input.mirrored, output.mirrored);
   EXPECT_EQ(input.default_unified, output.default_unified);
   EXPECT_EQ(input.primary_id, output.primary_id);
 }
@@ -193,7 +192,6 @@ TEST(DisplayStructTraitsTest, DisplayLayoutTwoExtended) {
   auto input = std::make_unique<DisplayLayout>();
   input->placement_list.push_back(placement);
   input->primary_id = kDisplayId2;
-  input->mirrored = false;
   input->default_unified = true;
 
   std::unique_ptr<DisplayLayout> output;
@@ -221,28 +219,7 @@ TEST(DisplayStructTraitsTest, DisplayLayoutThreeExtended) {
   input->placement_list.push_back(placement1);
   input->placement_list.push_back(placement2);
   input->primary_id = kDisplayId1;
-  input->mirrored = false;
   input->default_unified = false;
-
-  std::unique_ptr<DisplayLayout> output;
-  SerializeAndDeserialize<mojom::DisplayLayout>(input->Copy(), &output);
-
-  CheckDisplayLayoutsEqual(*input, *output);
-}
-
-TEST(DisplayStructTraitsTest, DisplayLayoutTwoMirrored) {
-  DisplayPlacement placement;
-  placement.display_id = kDisplayId1;
-  placement.parent_display_id = kDisplayId2;
-  placement.position = DisplayPlacement::RIGHT;
-  placement.offset = 0;
-  placement.offset_reference = DisplayPlacement::TOP_LEFT;
-
-  auto input = std::make_unique<DisplayLayout>();
-  input->placement_list.push_back(placement);
-  input->primary_id = kDisplayId2;
-  input->mirrored = true;
-  input->default_unified = true;
 
   std::unique_ptr<DisplayLayout> output;
   SerializeAndDeserialize<mojom::DisplayLayout>(input->Copy(), &output);

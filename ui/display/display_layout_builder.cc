@@ -26,11 +26,6 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::SetDefaultUnified(
   return *this;
 }
 
-DisplayLayoutBuilder& DisplayLayoutBuilder::SetMirrored(bool mirrored) {
-  layout_->mirrored = mirrored;
-  return *this;
-}
-
 DisplayLayoutBuilder& DisplayLayoutBuilder::ClearPlacements() {
   layout_->placement_list.clear();
   return *this;
