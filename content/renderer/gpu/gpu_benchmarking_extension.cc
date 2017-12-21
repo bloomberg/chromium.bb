@@ -590,9 +590,14 @@ void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
   context.compositor()->SetRasterizeOnlyVisibleContent();
 }
 
+namespace {
+sk_sp<SkDocument> make_multipicturedocument(SkWStream* stream) {
+  return SkMakeMultiPictureDocument(stream);
+}
+}  // namespace
 void GpuBenchmarking::PrintPagesToSkPictures(v8::Isolate* isolate,
                                              const std::string& filename) {
-  PrintDocumentTofile(isolate, filename, &SkMakeMultiPictureDocument);
+  PrintDocumentTofile(isolate, filename, &make_multipicturedocument);
 }
 
 void GpuBenchmarking::PrintPagesToXPS(v8::Isolate* isolate,
