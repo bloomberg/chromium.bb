@@ -88,11 +88,7 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
         thread_data->td->pc_tree = NULL;
         av1_setup_pc_tree(cm, thread_data->td);
 
-#if CONFIG_HIGHBITDEPTH
         int buf_scaler = 2;
-#else
-        int buf_scaler = 1;
-#endif
         CHECK_MEM_ERROR(cm, thread_data->td->above_pred_buf,
                         (uint8_t *)aom_memalign(
                             16,

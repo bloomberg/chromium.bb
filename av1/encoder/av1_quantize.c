@@ -1508,7 +1508,6 @@ static void invert_quant(int16_t *quant, int16_t *shift, int d) {
 
 static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
   const int quant = av1_dc_quant_Q3(q, 0, bit_depth);
-#if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_8: return q == 0 ? 64 : (quant < 148 ? 84 : 80);
     case AOM_BITS_10: return q == 0 ? 64 : (quant < 592 ? 84 : 80);
@@ -1517,10 +1516,6 @@ static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
-#else
-  (void)bit_depth;
-  return q == 0 ? 64 : (quant < 148 ? 84 : 80);
-#endif
 }
 
 void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,

@@ -238,7 +238,6 @@ if (NOT CONFIG_PARALLEL_DEBLOCKING)
       "${AOM_ROOT}/aom_dsp/mips/loopfilter_msa.h")
 endif ()
 
-if (CONFIG_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_ASM_SSE2
       ${AOM_DSP_COMMON_ASM_SSE2}
       "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
@@ -259,15 +258,6 @@ if (CONFIG_HIGHBITDEPTH)
       "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c")
-else ()
-  set(AOM_DSP_COMMON_INTRIN_DSPR2
-      ${AOM_DSP_COMMON_INTRIN_DSPR2}
-      "${AOM_ROOT}/aom_dsp/mips/itrans16_dspr2.c"
-      "${AOM_ROOT}/aom_dsp/mips/itrans32_cols_dspr2.c"
-      "${AOM_ROOT}/aom_dsp/mips/itrans32_dspr2.c"
-      "${AOM_ROOT}/aom_dsp/mips/itrans4_dspr2.c"
-      "${AOM_ROOT}/aom_dsp/mips/itrans8_dspr2.c")
-endif ()
 
 set(AOM_DSP_COMMON_SOURCES
     ${AOM_DSP_COMMON_SOURCES}
@@ -395,14 +385,11 @@ if (CONFIG_AV1_ENCODER)
           "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.c"
           "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.c")
 
-    if (CONFIG_HIGHBITDEPTH)
       set(AOM_DSP_ENCODER_INTRIN_SSE2
           ${AOM_DSP_ENCODER_INTRIN_SSE2}
           "${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c")
-    endif ()
   endif ()
 
-  if (CONFIG_HIGHBITDEPTH)
     set(AOM_DSP_ENCODER_ASM_SSE2
         ${AOM_DSP_ENCODER_ASM_SSE2}
         "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
@@ -421,7 +408,6 @@ if (CONFIG_AV1_ENCODER)
     set(AOM_DSP_ENCODER_INTRIN_AVX2
         ${AOM_DSP_ENCODER_INTRIN_AVX2}
         "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
-  endif ()
 
   set(AOM_DSP_ENCODER_SOURCES
       ${AOM_DSP_ENCODER_SOURCES}
@@ -445,11 +431,9 @@ if (CONFIG_LOOP_RESTORATION)
       ${AOM_DSP_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/aom_dsp/x86/aom_convolve_hip_sse2.c")
 
-  if (CONFIG_HIGHBITDEPTH)
     set(AOM_DSP_COMMON_INTRIN_SSSE3
       ${AOM_DSP_COMMON_INTRIN_SSSE3}
         "${AOM_ROOT}/aom_dsp/x86/aom_highbd_convolve_hip_ssse3.c")
-  endif ()
 endif ()
 
 set(AOM_DSP_ENCODER_INTRIN_SSE4_1

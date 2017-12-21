@@ -236,7 +236,6 @@ double sse_to_psnr(double samples, double peak, double sse) {
 }
 
 // TODO(debargha): Consolidate the functions below into a separate file.
-#if CONFIG_HIGHBITDEPTH
 static void highbd_img_upshift(aom_image_t *dst, aom_image_t *src,
                                int input_shift) {
   // Note the offset is 1 less than half.
@@ -427,4 +426,3 @@ void aom_img_downshift(aom_image_t *dst, aom_image_t *src, int down_shift) {
     lowbd_img_downshift(dst, src, down_shift);
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH

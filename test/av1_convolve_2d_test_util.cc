@@ -235,7 +235,6 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
 #endif  // CONFIG_JNT_COMP
 }  // namespace AV1Convolve2D
 
-#if CONFIG_HIGHBITDEPTH
 namespace AV1HighbdConvolve2D {
 
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
@@ -446,5 +445,4 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
 }
 #endif  // CONFIG_JNT_COMP
 }  // namespace AV1HighbdConvolve2D
-#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace libaom_test

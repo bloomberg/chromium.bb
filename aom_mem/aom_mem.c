@@ -80,11 +80,9 @@ void aom_free(void *memblk) {
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 void *aom_memset16(void *dest, int val, size_t length) {
   size_t i;
   uint16_t *dest16 = (uint16_t *)dest;
   for (i = 0; i < length; i++) *dest16++ = val;
   return dest;
 }
-#endif  // CONFIG_HIGHBITDEPTH

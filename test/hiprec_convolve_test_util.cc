@@ -110,7 +110,6 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
 }
 }  // namespace AV1HiprecConvolve
 
-#if CONFIG_HIGHBITDEPTH
 namespace AV1HighbdHiprecConvolve {
 
 ::testing::internal::ParamGenerator<HighbdHiprecConvolveParam> BuildParams(
@@ -184,5 +183,4 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
   delete[] output2;
 }
 }  // namespace AV1HighbdHiprecConvolve
-#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace libaom_test

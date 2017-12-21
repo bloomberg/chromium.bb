@@ -42,10 +42,6 @@ static INLINE int read_coeff(FRAME_COUNTS *counts,
 
 static int token_to_value(FRAME_COUNTS *counts, aom_reader *const r, int token,
                           TX_SIZE tx_size, int bit_depth) {
-#if !CONFIG_HIGHBITDEPTH
-  assert(bit_depth == 8);
-#endif  // !CONFIG_HIGHBITDEPTH
-
   switch (token) {
     case ZERO_TOKEN:
     case ONE_TOKEN:

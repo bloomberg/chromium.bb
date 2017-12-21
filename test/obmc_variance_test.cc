@@ -122,7 +122,6 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceTest,
 // High bit-depth
 ////////////////////////////////////////////////////////////////////////////////
 
-#if CONFIG_HIGHBITDEPTH
 class ObmcVarianceHBDTest : public FunctionEquivalenceTest<ObmcVarF> {};
 
 TEST_P(ObmcVarianceHBDTest, RandomValues) {
@@ -289,5 +288,4 @@ ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
 INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceHBDTest,
                         ::testing::ValuesIn(sse4_functions_hbd));
 #endif  // HAVE_SSE4_1
-#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

@@ -237,20 +237,10 @@ set(AOM_AV1_ENCODER_INTRIN_MSA
     "${AOM_ROOT}/av1/encoder/mips/msa/fdct_msa.h"
     "${AOM_ROOT}/av1/encoder/mips/msa/temporal_filter_msa.c")
 
-if (CONFIG_HIGHBITDEPTH)
+
   set(AOM_AV1_COMMON_INTRIN_SSE4_1
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c")
-else ()
-  set(AOM_AV1_COMMON_INTRIN_NEON
-      ${AOM_AV1_COMMON_INTRIN_NEON}
-      "${AOM_ROOT}/av1/common/arm/neon/iht4x4_add_neon.c"
-      "${AOM_ROOT}/av1/common/arm/neon/iht8x8_add_neon.c")
-
-  set(AOM_AV1_ENCODER_INTRIN_NEON
-      ${AOM_AV1_ENCODER_INTRIN_NEON}
-      "${AOM_ROOT}/av1/encoder/arm/neon/error_neon.c")
-endif ()
 
 set(AOM_AV1_COMMON_SOURCES
     ${AOM_AV1_COMMON_SOURCES}
@@ -291,7 +281,7 @@ set(AOM_AV1_COMMON_INTRIN_AVX2
     ${AOM_AV1_COMMON_INTRIN_AVX2}
     "${AOM_ROOT}/av1/common/x86/convolve_2d_avx2.c")
 
-if (CONFIG_HIGHBITDEPTH)
+
   set(AOM_AV1_COMMON_INTRIN_AVX2
       ${AOM_AV1_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_avx2.c")
@@ -305,7 +295,6 @@ if (CONFIG_HIGHBITDEPTH)
         ${AOM_AV1_COMMON_INTRIN_SSE4_1}
         "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse4.c")
   endif ()
-endif ()
 
 if (CONFIG_JNT_COMP)
   set(AOM_AV1_COMMON_INTRIN_SSE4_1
@@ -460,7 +449,6 @@ if (CONFIG_JNT_COMP)
       "${AOM_ROOT}/av1/common/x86/warp_plane_sse4.c")
 endif ()
 
-if (CONFIG_HIGHBITDEPTH)
   set(AOM_AV1_COMMON_INTRIN_SSSE3
       ${AOM_AV1_COMMON_INTRIN_SSSE3}
       "${AOM_ROOT}/av1/common/x86/highbd_warp_plane_ssse3.c")
@@ -470,7 +458,6 @@ if (CONFIG_HIGHBITDEPTH)
         ${AOM_AV1_COMMON_INTRIN_SSE4_1}
         "${AOM_ROOT}/av1/common/x86/highbd_warp_plane_sse4.c")
   endif ()
-endif ()
 
 if (CONFIG_HASH_ME)
   set(AOM_AV1_ENCODER_SOURCES

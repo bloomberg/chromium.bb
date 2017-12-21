@@ -65,11 +65,9 @@ typedef enum OUTPUT_STATUS {
 // Returns the number of colors in 'src'.
 int av1_count_colors(const uint8_t *src, int stride, int rows, int cols,
                      int *val_count);
-#if CONFIG_HIGHBITDEPTH
 // Same as av1_count_colors(), but for high-bitdepth mode.
 int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
                             int bit_depth, int *val_count);
-#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_dist_block(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
@@ -95,11 +93,9 @@ void av1_rd_pick_intra_mode_sb(const struct AV1_COMP *cpi, struct macroblock *x,
 unsigned int av1_get_sby_perpixel_variance(const struct AV1_COMP *cpi,
                                            const struct buf_2d *ref,
                                            BLOCK_SIZE bs);
-#if CONFIG_HIGHBITDEPTH
 unsigned int av1_high_get_sby_perpixel_variance(const struct AV1_COMP *cpi,
                                                 const struct buf_2d *ref,
                                                 BLOCK_SIZE bs, int bd);
-#endif
 
 void av1_rd_pick_inter_mode_sb(const struct AV1_COMP *cpi,
                                struct TileDataEnc *tile_data,

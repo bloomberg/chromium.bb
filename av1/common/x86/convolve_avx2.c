@@ -194,7 +194,6 @@ void av1_convolve_rounding_avx2(const int32_t *src, int src_stride,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE void cal_highbd_rounding_32xn_avx2(const int32_t *src,
                                                  uint16_t *dst,
                                                  const __m256i *rnd, int shift,
@@ -337,4 +336,3 @@ void av1_highbd_convolve_rounding_avx2(const int32_t *src, int src_stride,
     } while (h > 0);
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH

@@ -85,7 +85,6 @@ static const uint8_t AV1_VAR_OFFS[MAX_SB_SIZE] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_HIGHBITDEPTH
 static const uint16_t AV1_HIGH_VAR_OFFS_8[MAX_SB_SIZE] = {
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
@@ -146,7 +145,6 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
   128 * 16
 #endif  // CONFIG_EXT_PARTITION
 };
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_FP_MB_STATS
 static const uint8_t num_16x16_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
@@ -184,7 +182,6 @@ unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
-#if CONFIG_HIGHBITDEPTH
 unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                                 const struct buf_2d *ref,
                                                 BLOCK_SIZE bs, int bd) {
@@ -209,7 +206,6 @@ unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
   }
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 static unsigned int get_sby_perpixel_diff_variance(const AV1_COMP *const cpi,
                                                    const struct buf_2d *ref,
@@ -666,7 +662,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       !is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y);
 
-#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     x->source_variance = av1_high_get_sby_perpixel_variance(
         cpi, &x->plane[0].src, bsize, xd->bd);
@@ -674,10 +669,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     x->source_variance =
         av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
   }
-#else
-  x->source_variance =
-      av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
-#endif  // CONFIG_HIGHBITDEPTH
 
   // Save rdmult before it might be changed, so it can be restored later.
   orig_rdmult = x->rdmult;
@@ -3338,10 +3329,7 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
 
 // Estimate if the source frame is screen content, based on the portion of
 // blocks that have no more than 4 (experimentally selected) luma colors.
-static int is_screen_content(const uint8_t *src,
-#if CONFIG_HIGHBITDEPTH
-                             int use_hbd, int bd,
-#endif  // CONFIG_HIGHBITDEPTH
+static int is_screen_content(const uint8_t *src, int use_hbd, int bd,
                              int stride, int width, int height) {
   assert(src != NULL);
   int counts = 0;
@@ -3352,13 +3340,10 @@ static int is_screen_content(const uint8_t *src,
     for (int c = 0; c + blk_w <= width; c += blk_w) {
       int count_buf[1 << 12];  // Maximum (1 << 12) color levels.
       const int n_colors =
-#if CONFIG_HIGHBITDEPTH
           use_hbd ? av1_count_colors_highbd(src + r * stride + c, stride, blk_w,
                                             blk_h, bd, count_buf)
-                  :
-#endif  // CONFIG_HIGHBITDEPTH
-                  av1_count_colors(src + r * stride + c, stride, blk_w, blk_h,
-                                   count_buf);
+                  : av1_count_colors(src + r * stride + c, stride, blk_w, blk_h,
+                                     count_buf);
       if (n_colors > 1 && n_colors <= limit) counts++;
     }
   }
@@ -3541,9 +3526,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->allow_screen_content_tools =
         cpi->oxcf.content == AOM_CONTENT_SCREEN ||
         is_screen_content(cpi->source->y_buffer,
-#if CONFIG_HIGHBITDEPTH
                           cpi->source->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_HIGHBITDEPTH
                           cpi->source->y_stride, cpi->source->y_width,
                           cpi->source->y_height);
   }
@@ -3663,13 +3646,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                  ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
                  do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame)) {
         TransformationType model;
-        const int64_t ref_frame_error = av1_frame_error(
-#if CONFIG_HIGHBITDEPTH
-            xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_HIGHBITDEPTH
-            ref_buf[frame]->y_buffer, ref_buf[frame]->y_stride,
-            cpi->source->y_buffer, cpi->source->y_width, cpi->source->y_height,
-            cpi->source->y_stride);
+        const int64_t ref_frame_error =
+            av1_frame_error(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+                            ref_buf[frame]->y_buffer, ref_buf[frame]->y_stride,
+                            cpi->source->y_buffer, cpi->source->y_width,
+                            cpi->source->y_height, cpi->source->y_stride);
 
         if (ref_frame_error == 0) continue;
 
@@ -3683,10 +3664,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           }
 
           compute_global_motion_feature_based(
-              model, cpi->source, ref_buf[frame],
-#if CONFIG_HIGHBITDEPTH
-              cpi->common.bit_depth,
-#endif  // CONFIG_HIGHBITDEPTH
+              model, cpi->source, ref_buf[frame], cpi->common.bit_depth,
               inliers_by_motion, params_by_motion, RANSAC_NUM_MOTIONS);
 
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
@@ -3698,9 +3676,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
             if (tmp_wm_params.wmtype != IDENTITY) {
               const int64_t warp_error = refine_integerized_param(
                   &tmp_wm_params, tmp_wm_params.wmtype,
-#if CONFIG_HIGHBITDEPTH
                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_HIGHBITDEPTH
                   ref_buf[frame]->y_buffer, ref_buf[frame]->y_width,
                   ref_buf[frame]->y_height, ref_buf[frame]->y_stride,
                   cpi->source->y_buffer, cpi->source->y_width,

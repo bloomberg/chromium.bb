@@ -60,7 +60,6 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->stride[AOM_PLANE_U] = yv12->uv_stride;
   img->stride[AOM_PLANE_V] = yv12->uv_stride;
   img->stride[AOM_PLANE_ALPHA] = yv12->y_stride;
-#if CONFIG_HIGHBITDEPTH
   if (yv12->flags & YV12_FLAG_HIGHBITDEPTH) {
     // aom_image_t uses byte strides and a pointer to the first byte
     // of the image.
@@ -75,7 +74,6 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
     img->stride[AOM_PLANE_V] = 2 * yv12->uv_stride;
     img->stride[AOM_PLANE_ALPHA] = 2 * yv12->y_stride;
   }
-#endif  // CONFIG_HIGHBITDEPTH
   img->bps = bps;
   img->user_priv = user_priv;
   img->img_data = yv12->buffer_alloc;
@@ -112,7 +110,6 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
 #endif
   yv12->color_range = img->range;
 
-#if CONFIG_HIGHBITDEPTH
   if (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
     // In aom_image_t
     //     planes point to uint8 address of start of data
@@ -134,9 +131,6 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
     yv12->flags = 0;
   }
   yv12->border = (yv12->y_stride - img->w) / 2;
-#else
-  yv12->border = (img->stride[AOM_PLANE_Y] - img->w) / 2;
-#endif  // CONFIG_HIGHBITDEPTH
   yv12->subsampling_x = img->x_chroma_shift;
   yv12->subsampling_y = img->y_chroma_shift;
   return AOM_CODEC_OK;

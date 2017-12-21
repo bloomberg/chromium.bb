@@ -1245,11 +1245,8 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   lock_buffer_pool(pool);
   if (aom_realloc_frame_buffer(
           get_frame_new_buffer(cm), cm->width, cm->height, cm->subsampling_x,
-          cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-          cm->use_highbitdepth,
-#endif
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment,
+          cm->subsampling_y, cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+          cm->byte_alignment,
           &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer, pool->get_fb_cb,
           pool->cb_priv)) {
     unlock_buffer_pool(pool);
@@ -1355,11 +1352,8 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   lock_buffer_pool(pool);
   if (aom_realloc_frame_buffer(
           get_frame_new_buffer(cm), cm->width, cm->height, cm->subsampling_x,
-          cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-          cm->use_highbitdepth,
-#endif
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment,
+          cm->subsampling_y, cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+          cm->byte_alignment,
           &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer, pool->get_fb_cb,
           pool->cb_priv)) {
     unlock_buffer_pool(pool);
@@ -2163,11 +2157,7 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     cm->bit_depth = AOM_BITS_8;
   }
 
-#if CONFIG_HIGHBITDEPTH
   cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !allow_lowbitdepth;
-#else
-  (void)allow_lowbitdepth;
-#endif
 #if CONFIG_COLORSPACE_HEADERS
   cm->color_space = aom_rb_read_literal(rb, 5);
   cm->transfer_function = aom_rb_read_literal(rb, 5);
@@ -2485,9 +2475,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   cm->profile = av1_read_profile(rb);
 
-  const BITSTREAM_PROFILE MAX_SUPPORTED_PROFILE =
-      CONFIG_HIGHBITDEPTH ? MAX_PROFILES : PROFILE_2;
-
+  const BITSTREAM_PROFILE MAX_SUPPORTED_PROFILE = MAX_PROFILES;
   if (cm->profile >= MAX_SUPPORTED_PROFILE)
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported bitstream profile");
@@ -2840,16 +2828,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
-#if CONFIG_HIGHBITDEPTH
         av1_setup_scale_factors_for_frame(
             &ref_buf->sf, ref_buf->buf->y_crop_width,
             ref_buf->buf->y_crop_height, cm->width, cm->height,
             cm->use_highbitdepth);
-#else
-        av1_setup_scale_factors_for_frame(
-            &ref_buf->sf, ref_buf->buf->y_crop_width,
-            ref_buf->buf->y_crop_height, cm->width, cm->height);
-#endif
       }
     }
   }
@@ -3305,16 +3287,10 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
 #if CONFIG_INTRABC
-#if CONFIG_HIGHBITDEPTH
   av1_setup_scale_factors_for_frame(
       &xd->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
       xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
       cm->use_highbitdepth);
-#else
-  av1_setup_scale_factors_for_frame(
-      &xd->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
-      xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height);
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_INTRABC
 
   if (cm->show_existing_frame) {
@@ -3492,11 +3468,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_MONO_VIDEO
   // If the bit stream is monochrome, set the U and V buffers to a constant.
   if (av1_num_planes(cm) < 3) {
-#if CONFIG_HIGHBITDEPTH
     const int bytes_per_sample = cm->use_highbitdepth ? 2 : 1;
-#else
-    const int bytes_per_sample = 1;
-#endif
 
     YV12_BUFFER_CONFIG *cur_buf = (YV12_BUFFER_CONFIG *)xd->cur_buf;
 

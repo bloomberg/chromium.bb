@@ -22,11 +22,7 @@ extern "C" {
 
 #define EOSB_TOKEN 127  // Not signalled, encoder only
 
-#if CONFIG_HIGHBITDEPTH
 typedef int32_t EXTRABIT;
-#else
-typedef int16_t EXTRABIT;
-#endif
 
 typedef struct {
   int16_t token;
@@ -93,11 +89,7 @@ extern const TOKENVALUE *av1_dct_value_tokens_ptr;
 extern const TOKENVALUE *av1_dct_cat_lt_10_value_tokens;
 extern const int *av1_dct_cat_lt_10_value_cost;
 extern const int16_t av1_cat6_low_cost[256];
-#if CONFIG_HIGHBITDEPTH
 #define CAT6_HIGH_COST_ENTRIES 1024
-#else
-#define CAT6_HIGH_COST_ENTRIES 64
-#endif
 extern const int av1_cat6_high_cost[CAT6_HIGH_COST_ENTRIES];
 extern const uint8_t av1_cat6_skipped_bits_discount[8];
 

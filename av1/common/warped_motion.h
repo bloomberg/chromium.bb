@@ -51,10 +51,7 @@ void project_points_affine(const int32_t *mat, int *points, int *proj,
 
 // Returns the error between the result of applying motion 'wm' to the frame
 // described by 'ref' and the frame described by 'dst'.
-int64_t av1_warp_error(WarpedMotionParams *wm,
-#if CONFIG_HIGHBITDEPTH
-                       int use_hbd, int bd,
-#endif  // CONFIG_HIGHBITDEPTH
+int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
                        const uint8_t *ref, int width, int height, int stride,
                        uint8_t *dst, int p_col, int p_row, int p_width,
                        int p_height, int p_stride, int subsampling_x,
@@ -62,17 +59,10 @@ int64_t av1_warp_error(WarpedMotionParams *wm,
 
 // Returns the error between the frame described by 'ref' and the frame
 // described by 'dst'.
-int64_t av1_frame_error(
-#if CONFIG_HIGHBITDEPTH
-    int use_hbd, int bd,
-#endif  // CONFIG_HIGHBITDEPTH
-    const uint8_t *ref, int stride, uint8_t *dst, int p_width, int p_height,
-    int p_stride);
+int64_t av1_frame_error(int use_hbd, int bd, const uint8_t *ref, int stride,
+                        uint8_t *dst, int p_width, int p_height, int p_stride);
 
-void av1_warp_plane(WarpedMotionParams *wm,
-#if CONFIG_HIGHBITDEPTH
-                    int use_hbd, int bd,
-#endif  // CONFIG_HIGHBITDEPTH
+void av1_warp_plane(WarpedMotionParams *wm, int use_hbd, int bd,
                     const uint8_t *ref, int width, int height, int stride,
                     uint8_t *pred, int p_col, int p_row, int p_width,
                     int p_height, int p_stride, int subsampling_x,

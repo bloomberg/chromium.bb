@@ -180,7 +180,6 @@ TEST_P(LowbdIntraPredTest, Bitexact) {
       highbd_entry(type, 32, 16, opt, bd), highbd_entry(type, 32, 32, opt, bd)
 */
 
-#if CONFIG_HIGHBITDEPTH
 #if HAVE_SSE2
 const IntraPredFunc<HighbdIntraPred> IntraPredTestVector8[] = {
   // highbd_intrapred(dc, sse2, 8),     highbd_intrapred(dc_left, sse2, 8),
@@ -318,7 +317,6 @@ const IntraPredFunc<HighbdIntraPred> IntraPredTestVectorAvx2_12[] = {
 INSTANTIATE_TEST_CASE_P(AVX2_TO_C_12, HighbdIntraPredTest,
                         ::testing::ValuesIn(IntraPredTestVectorAvx2_12));
 #endif  // HAVE_AVX2
-#endif  // CONFIG_HIGHBITDEPTH
 
 // -----------------------------------------------------------------------------
 // Low Bit Depth Tests

@@ -89,7 +89,6 @@ void fht8x8_ref(const int16_t *in, tran_low_t *out, int stride,
   av1_fht8x8_c(in, out, stride, txfm_param);
 }
 
-#if CONFIG_HIGHBITDEPTH
 void fht8x8_10(const int16_t *in, tran_low_t *out, int stride,
                TxfmParam *txfm_param) {
   av1_fwd_txfm2d_8x8_c(in, out, stride, txfm_param->tx_type, 10);
@@ -111,8 +110,6 @@ void iht8x8_12(const tran_low_t *in, uint8_t *out, int stride,
   av1_inv_txfm2d_add_8x8_c(in, CONVERT_TO_SHORTPTR(out), stride,
                            txfm_param->tx_type, 12);
 }
-
-#endif  // CONFIG_HIGHBITDEPTH
 
 class FwdTrans8x8TestBase {
  public:
@@ -197,10 +194,8 @@ class FwdTrans8x8TestBase {
     DECLARE_ALIGNED(16, tran_low_t, test_temp_block[64]);
     DECLARE_ALIGNED(16, uint8_t, dst[64]);
     DECLARE_ALIGNED(16, uint8_t, src[64]);
-#if CONFIG_HIGHBITDEPTH
     DECLARE_ALIGNED(16, uint16_t, dst16[64]);
     DECLARE_ALIGNED(16, uint16_t, src16[64]);
-#endif
 
     for (int i = 0; i < count_test_block; ++i) {
       // Initialize a test block with input range [-mask_, mask_].
@@ -209,12 +204,10 @@ class FwdTrans8x8TestBase {
           src[j] = rnd.Rand8();
           dst[j] = rnd.Rand8();
           test_input_block[j] = src[j] - dst[j];
-#if CONFIG_HIGHBITDEPTH
         } else {
           src16[j] = rnd.Rand16() & mask_;
           dst16[j] = rnd.Rand16() & mask_;
           test_input_block[j] = src16[j] - dst16[j];
-#endif
         }
       }
 
@@ -233,20 +226,14 @@ class FwdTrans8x8TestBase {
       }
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
-#if CONFIG_HIGHBITDEPTH
       } else {
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(test_temp_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
-#endif
       }
 
       for (int j = 0; j < 64; ++j) {
-#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
-#else
-        const int diff = dst[j] - src[j];
-#endif
         const int error = diff * diff;
         if (max_error < error) max_error = error;
         total_error += error;
@@ -273,10 +260,8 @@ class FwdTrans8x8TestBase {
     DECLARE_ALIGNED(16, tran_low_t, ref_temp_block[64]);
     DECLARE_ALIGNED(16, uint8_t, dst[64]);
     DECLARE_ALIGNED(16, uint8_t, src[64]);
-#if CONFIG_HIGHBITDEPTH
     DECLARE_ALIGNED(16, uint16_t, dst16[64]);
     DECLARE_ALIGNED(16, uint16_t, src16[64]);
-#endif
 
     for (int i = 0; i < count_test_block; ++i) {
       // Initialize a test block with input range [-mask_, mask_].
@@ -293,7 +278,6 @@ class FwdTrans8x8TestBase {
             dst[j] = rnd.Rand8() % 2 ? 255 : 0;
           }
           test_input_block[j] = src[j] - dst[j];
-#if CONFIG_HIGHBITDEPTH
         } else {
           if (i == 0) {
             src16[j] = mask_;
@@ -306,7 +290,6 @@ class FwdTrans8x8TestBase {
             dst16[j] = rnd.Rand8() % 2 ? mask_ : 0;
           }
           test_input_block[j] = src16[j] - dst16[j];
-#endif
         }
       }
 
@@ -316,20 +299,14 @@ class FwdTrans8x8TestBase {
           fwd_txfm_ref(test_input_block, ref_temp_block, pitch_, &txfm_param_));
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
-#if CONFIG_HIGHBITDEPTH
       } else {
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(test_temp_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
-#endif
       }
 
       for (int j = 0; j < 64; ++j) {
-#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
-#else
-        const int diff = dst[j] - src[j];
-#endif
         const int error = diff * diff;
         if (max_error < error) max_error = error;
         total_error += error;
@@ -359,10 +336,8 @@ class FwdTrans8x8TestBase {
     DECLARE_ALIGNED(16, tran_low_t, coeff[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, src[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
     DECLARE_ALIGNED(16, uint16_t, src16[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
-#endif
 
     for (int i = 0; i < count_test_block; ++i) {
       double out_r[kNumCoeffs];
@@ -373,12 +348,10 @@ class FwdTrans8x8TestBase {
           src[j] = rnd.Rand8() % 2 ? 255 : 0;
           dst[j] = src[j] > 0 ? 0 : 255;
           in[j] = src[j] - dst[j];
-#if CONFIG_HIGHBITDEPTH
         } else {
           src16[j] = rnd.Rand8() % 2 ? mask_ : 0;
           dst16[j] = src16[j] > 0 ? 0 : mask_;
           in[j] = src16[j] - dst16[j];
-#endif
         }
       }
 
@@ -388,20 +361,14 @@ class FwdTrans8x8TestBase {
 
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
-#if CONFIG_HIGHBITDEPTH
       } else {
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16), pitch_));
-#endif
       }
 
       for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
-#else
-        const int diff = dst[j] - src[j];
-#endif
         const uint32_t error = diff * diff;
         EXPECT_GE(1u << 2 * (bit_depth_ - 8), error)
             << "Error: 8x8 IDCT has error " << error << " at index " << j;
@@ -444,10 +411,8 @@ class FwdTrans8x8TestBase {
     DECLARE_ALIGNED(16, tran_low_t, coeff[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, ref[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
     DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint16_t, ref16[kNumCoeffs]);
-#endif
     const int16_t *scan = av1_default_scan_orders[TX_8X8].scan;
 
     for (int i = 0; i < count_test_block; ++i) {
@@ -461,31 +426,23 @@ class FwdTrans8x8TestBase {
         if (bit_depth_ == AOM_BITS_8) {
           dst[j] = 0;
           ref[j] = 0;
-#if CONFIG_HIGHBITDEPTH
         } else {
           dst16[j] = 0;
           ref16[j] = 0;
-#endif
         }
       }
       if (bit_depth_ == AOM_BITS_8) {
         ref_txfm(coeff, ref, pitch_);
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
-#if CONFIG_HIGHBITDEPTH
       } else {
         ref_txfm(coeff, CONVERT_TO_BYTEPTR(ref16), pitch_);
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16), pitch_));
-#endif
       }
 
       for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - ref[j] : dst16[j] - ref16[j];
-#else
-        const int diff = dst[j] - ref[j];
-#endif
         const uint32_t error = diff * diff;
         EXPECT_EQ(0u, error)
             << "Error: 8x8 IDCT has error " << error << " at index " << j;
@@ -551,13 +508,11 @@ class FwdTrans8x8HT : public FwdTrans8x8TestBase,
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
     txfm_param_.tx_type = GET_PARAM(2);
-#if CONFIG_HIGHBITDEPTH
     switch (bit_depth_) {
       case AOM_BITS_10: fwd_txfm_ref = fht8x8_10; break;
       case AOM_BITS_12: fwd_txfm_ref = fht8x8_12; break;
       default: fwd_txfm_ref = fht8x8_ref; break;
     }
-#endif
   }
 
   virtual void TearDown() { libaom_test::ClearSystemState(); }
@@ -613,19 +568,11 @@ TEST_P(InvTrans8x8DCT, CompareReference) {
 
 using std::tr1::make_tuple;
 
-#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(C, FwdTrans8x8DCT,
                         ::testing::Values(make_tuple(&aom_fdct8x8_c,
                                                      &aom_idct8x8_64_add_c,
                                                      DCT_DCT, AOM_BITS_8)));
-#else
-INSTANTIATE_TEST_CASE_P(C, FwdTrans8x8DCT,
-                        ::testing::Values(make_tuple(&aom_fdct8x8_c,
-                                                     &aom_idct8x8_64_add_c,
-                                                     DCT_DCT, AOM_BITS_8)));
-#endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     C, FwdTrans8x8HT,
     ::testing::Values(
@@ -642,57 +589,8 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, DCT_ADST, AOM_BITS_8),
         make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, ADST_ADST,
                    AOM_BITS_8)));
-#else
-INSTANTIATE_TEST_CASE_P(
-    C, FwdTrans8x8HT,
-    ::testing::Values(
-        make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, DCT_DCT, AOM_BITS_8),
-        make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, ADST_DCT, AOM_BITS_8),
-        make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, DCT_ADST, AOM_BITS_8),
-        make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_c, ADST_ADST,
-                   AOM_BITS_8)));
-#endif  // CONFIG_HIGHBITDEPTH
 
-#if HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(NEON, FwdTrans8x8DCT,
-                        ::testing::Values(make_tuple(&aom_fdct8x8_neon,
-                                                     &aom_idct8x8_64_add_neon,
-                                                     DCT_DCT, AOM_BITS_8)));
-#endif  // HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_NEON && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    NEON, FwdTrans8x8HT,
-    ::testing::Values(make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_neon,
-                                 DCT_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_neon,
-                                 ADST_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_neon,
-                                 DCT_ADST, AOM_BITS_8),
-                      make_tuple(&av1_fht8x8_c, &av1_iht8x8_64_add_neon,
-                                 ADST_ADST, AOM_BITS_8)));
-#endif  // HAVE_NEON && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(SSE2, FwdTrans8x8DCT,
-                        ::testing::Values(make_tuple(&aom_fdct8x8_sse2,
-                                                     &aom_idct8x8_64_add_sse2,
-                                                     DCT_DCT, AOM_BITS_8)));
-#if !CONFIG_DAALA_TX8
-INSTANTIATE_TEST_CASE_P(
-    SSE2, FwdTrans8x8HT,
-    ::testing::Values(make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2,
-                                 DCT_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2,
-                                 ADST_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2,
-                                 DCT_ADST, AOM_BITS_8),
-                      make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2,
-                                 ADST_ADST, AOM_BITS_8)));
-#endif  // !CONFIG_DAALA_TX8
-#endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, FwdTrans8x8DCT,
                         ::testing::Values(make_tuple(&aom_fdct8x8_sse2,
                                                      &aom_idct8x8_64_add_c,
@@ -709,7 +607,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_c,
                                  ADST_ADST, AOM_BITS_8)));
 #endif  // !CONFIG_DAALA_TX8
-#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE2
 
 #if HAVE_SSSE3 && ARCH_X86_64
 INSTANTIATE_TEST_CASE_P(SSSE3, FwdTrans8x8DCT,
@@ -718,11 +616,5 @@ INSTANTIATE_TEST_CASE_P(SSSE3, FwdTrans8x8DCT,
                                                      DCT_DCT, AOM_BITS_8)));
 #endif
 
-#if HAVE_MSA && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(MSA, FwdTrans8x8DCT,
-                        ::testing::Values(make_tuple(&aom_fdct8x8_msa,
-                                                     &aom_idct8x8_64_add_msa,
-                                                     DCT_DCT, AOM_BITS_8)));
-#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 }  // namespace
 #endif  // !CONFIG_DAALA_TX

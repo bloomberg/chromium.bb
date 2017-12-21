@@ -44,7 +44,6 @@
 #define MAX_BPB_FACTOR 50
 
 #define FRAME_OVERHEAD_BITS 200
-#if CONFIG_HIGHBITDEPTH
 #define ASSIGN_MINQ_TABLE(bit_depth, name)                   \
   do {                                                       \
     switch (bit_depth) {                                     \
@@ -58,13 +57,6 @@
         name = NULL;                                         \
     }                                                        \
   } while (0)
-#else
-#define ASSIGN_MINQ_TABLE(bit_depth, name) \
-  do {                                     \
-    (void)bit_depth;                       \
-    name = name##_8;                       \
-  } while (0)
-#endif
 
 // Tables relating active max Q to active min Q
 static int kf_low_motion_minq_8[QINDEX_RANGE];
@@ -74,7 +66,6 @@ static int arfgf_high_motion_minq_8[QINDEX_RANGE];
 static int inter_minq_8[QINDEX_RANGE];
 static int rtc_minq_8[QINDEX_RANGE];
 
-#if CONFIG_HIGHBITDEPTH
 static int kf_low_motion_minq_10[QINDEX_RANGE];
 static int kf_high_motion_minq_10[QINDEX_RANGE];
 static int arfgf_low_motion_minq_10[QINDEX_RANGE];
@@ -87,7 +78,6 @@ static int arfgf_low_motion_minq_12[QINDEX_RANGE];
 static int arfgf_high_motion_minq_12[QINDEX_RANGE];
 static int inter_minq_12[QINDEX_RANGE];
 static int rtc_minq_12[QINDEX_RANGE];
-#endif
 
 static int gf_high = 2000;
 static int gf_low = 400;
@@ -140,22 +130,19 @@ void av1_rc_init_minq_luts(void) {
   init_minq_luts(kf_low_motion_minq_8, kf_high_motion_minq_8,
                  arfgf_low_motion_minq_8, arfgf_high_motion_minq_8,
                  inter_minq_8, rtc_minq_8, AOM_BITS_8);
-#if CONFIG_HIGHBITDEPTH
   init_minq_luts(kf_low_motion_minq_10, kf_high_motion_minq_10,
                  arfgf_low_motion_minq_10, arfgf_high_motion_minq_10,
                  inter_minq_10, rtc_minq_10, AOM_BITS_10);
   init_minq_luts(kf_low_motion_minq_12, kf_high_motion_minq_12,
                  arfgf_low_motion_minq_12, arfgf_high_motion_minq_12,
                  inter_minq_12, rtc_minq_12, AOM_BITS_12);
-#endif
 }
 
 // These functions use formulaic calculations to make playing with the
 // quantizer tables easier. If necessary they can be replaced by lookup
 // tables if and when things settle down in the experimental bitstream
 double av1_convert_qindex_to_q(int qindex, aom_bit_depth_t bit_depth) {
-// Convert the index to a real Q value (scaled down to match old Q values)
-#if CONFIG_HIGHBITDEPTH
+  // Convert the index to a real Q value (scaled down to match old Q values)
   switch (bit_depth) {
     case AOM_BITS_8: return av1_ac_quant_Q3(qindex, 0, bit_depth) / 4.0;
     case AOM_BITS_10: return av1_ac_quant_Q3(qindex, 0, bit_depth) / 16.0;
@@ -164,9 +151,6 @@ double av1_convert_qindex_to_q(int qindex, aom_bit_depth_t bit_depth) {
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1.0;
   }
-#else
-  return av1_ac_quant_Q3(qindex, 0, bit_depth) / 4.0;
-#endif
 }
 
 int av1_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,

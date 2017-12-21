@@ -89,7 +89,6 @@ TEST_P(MaskedSADTest, OperationCheck) {
       << "First failed at test case " << first_failure;
 }
 
-#if CONFIG_HIGHBITDEPTH
 typedef unsigned int (*HighbdMaskedSADFunc)(const uint8_t *src, int src_stride,
                                             const uint8_t *ref, int ref_stride,
                                             const uint8_t *second_pred,
@@ -155,7 +154,6 @@ TEST_P(HighbdMaskedSADTest, OperationCheck) {
       << "Error: High BD Masked SAD Test, C output doesn't match SSSE3 output. "
       << "First failed at test case " << first_failure;
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 using std::tr1::make_tuple;
 
@@ -183,7 +181,6 @@ const MaskedSADParam msad_test[] = {
 
 INSTANTIATE_TEST_CASE_P(SSSE3_C_COMPARE, MaskedSADTest,
                         ::testing::ValuesIn(msad_test));
-#if CONFIG_HIGHBITDEPTH
 const HighbdMaskedSADParam hbd_msad_test[] = {
 #if CONFIG_EXT_PARTITION
   make_tuple(&aom_highbd_masked_sad128x128_ssse3,
@@ -210,6 +207,5 @@ const HighbdMaskedSADParam hbd_msad_test[] = {
 
 INSTANTIATE_TEST_CASE_P(SSSE3_C_COMPARE, HighbdMaskedSADTest,
                         ::testing::ValuesIn(hbd_msad_test));
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // HAVE_SSSE3
 }  // namespace

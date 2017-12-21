@@ -53,7 +53,6 @@ void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
                                     uint16_t *dst, int dst_stride, int w, int h,
                                     const int16_t *x_filters, int interp_taps,
@@ -76,7 +75,6 @@ void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
     dst += dst_stride;
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
@@ -869,7 +867,6 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
         &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
 }
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_convolve_rounding_c(const int32_t *src, int src_stride,
                                     uint8_t *dst8, int dst_stride, int w, int h,
                                     int bits, int bd) {
@@ -1168,7 +1165,6 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
 #endif  // CONFIG_JNT_COMP
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 typedef void (*ConvolveFunc)(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
@@ -1419,19 +1415,12 @@ void av1_highbd_convolve_init_c(void) {
 }
 
 void av1_convolve_init(AV1_COMMON *cm) {
-#if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth)
     av1_highbd_convolve_init();
   else
     av1_lowbd_convolve_init();
-#else
-  (void)cm;
-  av1_lowbd_convolve_init();
-#endif
-  return;
 }
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_convolve_horiz_c(const uint16_t *src, int src_stride,
                                  uint16_t *dst, int dst_stride, int w, int h,
                                  const InterpFilterParams filter_params,
@@ -1848,4 +1837,3 @@ void av1_highbd_convolve_scale(const uint8_t *src8, int src_stride,
 #endif  // CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH

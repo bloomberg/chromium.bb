@@ -570,7 +570,6 @@ static void filter_selectively_vert_row2(int subsampling_factor, uint8_t *s,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static void highbd_filter_selectively_vert_row2(
     int subsampling_factor, uint16_t *s, int pitch, unsigned int mask_16x16_l,
     unsigned int mask_8x8_l, unsigned int mask_4x4_l,
@@ -665,7 +664,6 @@ static void highbd_filter_selectively_vert_row2(
     mask_4x4_int_1 >>= 1;
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 static void filter_selectively_horiz(
     uint8_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
@@ -760,7 +758,6 @@ static void filter_selectively_horiz(
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static void highbd_filter_selectively_horiz(
     uint16_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
     unsigned int mask_4x4, unsigned int mask_4x4_int,
@@ -859,7 +856,6 @@ static void highbd_filter_selectively_horiz(
     mask_4x4_int >>= count;
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 // This function ors into the current lfm structure, where to do loop
 // filters for the specific mi we are looking at. It uses information
@@ -1332,7 +1328,6 @@ static void filter_selectively_vert(
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static void highbd_filter_selectively_vert(
     uint16_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
     unsigned int mask_4x4, unsigned int mask_4x4_int,
@@ -1366,7 +1361,6 @@ static void highbd_filter_selectively_vert(
     mask_4x4_int >>= 1;
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 typedef struct {
   unsigned int m16x16;
@@ -1598,7 +1592,6 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
     }
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
-#if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth)
       highbd_filter_selectively_vert(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride,
@@ -1606,7 +1599,6 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
           col_masks.m4x4 & border_mask, mask_4x4_int, &cm->lf_info, &lfl[r][0],
           (int)cm->bit_depth);
     else
-#endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_vert(
           dst->buf, dst->stride, col_masks.m16x16 & border_mask,
           col_masks.m8x8 & border_mask, col_masks.m4x4 & border_mask,
@@ -1649,14 +1641,12 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
     if (mi_row + idx_r == 0) memset(&row_masks, 0, sizeof(row_masks));
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
-#if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth)
       highbd_filter_selectively_horiz(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride, row_masks.m16x16,
           row_masks.m8x8, row_masks.m4x4, mask_4x4_int, &cm->lf_info,
           &lfl[r][0], (int)cm->bit_depth);
     else
-#endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_horiz(dst->buf, dst->stride, row_masks.m16x16,
                                row_masks.m8x8, row_masks.m4x4, mask_4x4_int,
                                &cm->lf_info, &lfl[r][0]);
@@ -1685,15 +1675,13 @@ void av1_filter_block_plane_ss00_ver(AV1_COMMON *const cm,
     unsigned int mask_4x4_l = mask_4x4 & 0xffff;
     unsigned int mask_4x4_int_l = mask_4x4_int & 0xffff;
 
-// Disable filtering on the leftmost column.
-#if CONFIG_HIGHBITDEPTH
+    // Disable filtering on the leftmost column.
     if (cm->use_highbitdepth)
       highbd_filter_selectively_vert_row2(
           plane->subsampling_x, CONVERT_TO_SHORTPTR(dst->buf), dst->stride,
           mask_16x16_l, mask_8x8_l, mask_4x4_l, mask_4x4_int_l, &cm->lf_info,
           &lfm->lfl_y[r][0], (int)cm->bit_depth);
     else
-#endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_vert_row2(
           plane->subsampling_x, dst->buf, dst->stride, mask_16x16_l, mask_8x8_l,
           mask_4x4_l, mask_4x4_int_l, &cm->lf_info, &lfm->lfl_y[r][0]);
@@ -1737,14 +1725,12 @@ void av1_filter_block_plane_ss00_hor(AV1_COMMON *const cm,
       mask_4x4_r = mask_4x4 & 0xff;
     }
 
-#if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth)
       highbd_filter_selectively_horiz(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride, mask_16x16_r, mask_8x8_r,
           mask_4x4_r, mask_4x4_int & 0xff, &cm->lf_info, &lfm->lfl_y[r][0],
           (int)cm->bit_depth);
     else
-#endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
                                mask_4x4_r, mask_4x4_int & 0xff, &cm->lf_info,
                                &lfm->lfl_y[r][0]);
@@ -1788,15 +1774,13 @@ void av1_filter_block_plane_ss11_ver(AV1_COMMON *const cm,
       unsigned int mask_4x4_l = mask_4x4 & 0xff;
       unsigned int mask_4x4_int_l = mask_4x4_int & 0xff;
 
-// Disable filtering on the leftmost column.
-#if CONFIG_HIGHBITDEPTH
+      // Disable filtering on the leftmost column.
       if (cm->use_highbitdepth)
         highbd_filter_selectively_vert_row2(
             plane->subsampling_x, CONVERT_TO_SHORTPTR(dst->buf), dst->stride,
             mask_16x16_l, mask_8x8_l, mask_4x4_l, mask_4x4_int_l, &cm->lf_info,
             &lfm->lfl_uv[r >> 1][0], (int)cm->bit_depth);
       else
-#endif  // CONFIG_HIGHBITDEPTH
         filter_selectively_vert_row2(plane->subsampling_x, dst->buf,
                                      dst->stride, mask_16x16_l, mask_8x8_l,
                                      mask_4x4_l, mask_4x4_int_l, &cm->lf_info,
@@ -1855,14 +1839,12 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
       mask_4x4_r = mask_4x4 & 0xf;
     }
 
-#if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth)
       highbd_filter_selectively_horiz(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride, mask_16x16_r, mask_8x8_r,
           mask_4x4_r, mask_4x4_int_r, &cm->lf_info, &lfm->lfl_uv[r >> 1][0],
           (int)cm->bit_depth);
     else
-#endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
                                mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
                                &lfm->lfl_uv[r >> 1][0]);
@@ -2222,45 +2204,38 @@ static void av1_filter_block_plane_vert(
       switch (params.filter_length) {
         // apply 4-tap filtering
         case 4:
-#if CONFIG_HIGHBITDEPTH
           if (cm->use_highbitdepth)
             aom_highbd_lpf_vertical_4(CONVERT_TO_SHORTPTR(p), dst_stride,
                                       params.mblim, params.lim, params.hev_thr,
                                       cm->bit_depth);
           else
-#endif  // CONFIG_HIGHBITDEPTH
             aom_lpf_vertical_4(p, dst_stride, params.mblim, params.lim,
                                params.hev_thr);
           break;
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
         case 6:  // apply 6-tap filter for chroma plane only
           assert(plane != 0);
-#if CONFIG_HIGHBITDEPTH
           if (cm->use_highbitdepth)
             aom_highbd_lpf_vertical_6_c(CONVERT_TO_SHORTPTR(p), dst_stride,
                                         params.mblim, params.lim,
                                         params.hev_thr, cm->bit_depth);
           else
-#endif  // CONFIG_HIGHBITDEPTH
             aom_lpf_vertical_6_c(p, dst_stride, params.mblim, params.lim,
                                  params.hev_thr);
           break;
 #endif
         // apply 8-tap filtering
         case 8:
-#if CONFIG_HIGHBITDEPTH
           if (cm->use_highbitdepth)
             aom_highbd_lpf_vertical_8(CONVERT_TO_SHORTPTR(p), dst_stride,
                                       params.mblim, params.lim, params.hev_thr,
                                       cm->bit_depth);
           else
-#endif  // CONFIG_HIGHBITDEPTH
             aom_lpf_vertical_8(p, dst_stride, params.mblim, params.lim,
                                params.hev_thr);
           break;
         // apply 16-tap filtering
         case 16:
-#if CONFIG_HIGHBITDEPTH
           if (cm->use_highbitdepth)
 #if CONFIG_DEBLOCK_13TAP
             // TODO(olah): Remove _c once SIMD for 13-tap is available
@@ -2273,13 +2248,12 @@ static void av1_filter_block_plane_vert(
                                        cm->bit_depth);
 #endif
           else
-#endif  // CONFIG_HIGHBITDEPTH
 #if CONFIG_DEBLOCK_13TAP
             aom_lpf_vertical_16_c(p, dst_stride, params.mblim, params.lim,
                                   params.hev_thr);
 #else
-          aom_lpf_vertical_16(p, dst_stride, params.mblim, params.lim,
-                              params.hev_thr);
+            aom_lpf_vertical_16(p, dst_stride, params.mblim, params.lim,
+                                params.hev_thr);
 #endif
           break;
         // no filtering
@@ -2287,13 +2261,11 @@ static void av1_filter_block_plane_vert(
       }
       // process the internal edge
       if (params.filter_length_internal) {
-#if CONFIG_HIGHBITDEPTH
         if (cm->use_highbitdepth)
           aom_highbd_lpf_vertical_4(CONVERT_TO_SHORTPTR(p + 4), dst_stride,
                                     params.mblim, params.lim, params.hev_thr,
                                     cm->bit_depth);
         else
-#endif  // CONFIG_HIGHBITDEPTH
           aom_lpf_vertical_4(p + 4, dst_stride, params.mblim, params.lim,
                              params.hev_thr);
       }
@@ -2333,45 +2305,39 @@ static void av1_filter_block_plane_horz(
       switch (params.filter_length) {
         // apply 4-tap filtering
         case 4:
-#if CONFIG_HIGHBITDEPTH
           if (cm->use_highbitdepth)
             aom_highbd_lpf_horizontal_4(CONVERT_TO_SHORTPTR(p), dst_stride,
                                         params.mblim, params.lim,
                                         params.hev_thr, cm->bit_depth);
           else
-#endif  // CONFIG_HIGHBITDEPTH
             aom_lpf_horizontal_4(p, dst_stride, params.mblim, params.lim,
                                  params.hev_thr);
           break;
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
         // apply 6-tap filtering
-        case 6: assert(plane != 0);
-#if CONFIG_HIGHBITDEPTH
+        case 6:
+          assert(plane != 0);
           if (cm->use_highbitdepth)
             aom_highbd_lpf_horizontal_6_c(CONVERT_TO_SHORTPTR(p), dst_stride,
                                           params.mblim, params.lim,
                                           params.hev_thr, cm->bit_depth);
           else
-#endif  // CONFIG_HIGHBITDEPTH
             aom_lpf_horizontal_6_c(p, dst_stride, params.mblim, params.lim,
                                    params.hev_thr);
           break;
 #endif
         // apply 8-tap filtering
         case 8:
-#if CONFIG_HIGHBITDEPTH
           if (cm->use_highbitdepth)
             aom_highbd_lpf_horizontal_8(CONVERT_TO_SHORTPTR(p), dst_stride,
                                         params.mblim, params.lim,
                                         params.hev_thr, cm->bit_depth);
           else
-#endif  // CONFIG_HIGHBITDEPTH
             aom_lpf_horizontal_8(p, dst_stride, params.mblim, params.lim,
                                  params.hev_thr);
           break;
         // apply 16-tap filtering
         case 16:
-#if CONFIG_HIGHBITDEPTH
           if (cm->use_highbitdepth)
 #if CONFIG_DEBLOCK_13TAP
             // TODO(olah): Remove _c once SIMD for 13-tap is available
@@ -2384,13 +2350,12 @@ static void av1_filter_block_plane_horz(
                 params.hev_thr, cm->bit_depth);
 #endif
           else
-#endif  // CONFIG_HIGHBITDEPTH
 #if CONFIG_DEBLOCK_13TAP
             aom_lpf_horizontal_16_dual_c(p, dst_stride, params.mblim,
                                          params.lim, params.hev_thr);
 #else
-          aom_lpf_horizontal_16_dual(p, dst_stride, params.mblim, params.lim,
-                                     params.hev_thr);
+            aom_lpf_horizontal_16_dual(p, dst_stride, params.mblim, params.lim,
+                                       params.hev_thr);
 #endif
           break;
         // no filtering
@@ -2398,13 +2363,11 @@ static void av1_filter_block_plane_horz(
       }
       // process the internal edge
       if (params.filter_length_internal) {
-#if CONFIG_HIGHBITDEPTH
         if (cm->use_highbitdepth)
           aom_highbd_lpf_horizontal_4(CONVERT_TO_SHORTPTR(p + 4 * dst_stride),
                                       dst_stride, params.mblim, params.lim,
                                       params.hev_thr, cm->bit_depth);
         else
-#endif  // CONFIG_HIGHBITDEPTH
           aom_lpf_horizontal_4(p + 4 * dst_stride, dst_stride, params.mblim,
                                params.lim, params.hev_thr);
       }

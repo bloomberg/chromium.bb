@@ -26,12 +26,9 @@ typedef void (*ConvInit)();
 typedef void (*conv_filter_t)(const uint8_t *, int, uint8_t *, int, int, int,
                               const InterpFilterParams, int, int,
                               ConvolveParams *);
-#if CONFIG_HIGHBITDEPTH
 typedef void (*hbd_conv_filter_t)(const uint16_t *, int, uint16_t *, int, int,
                                   int, const InterpFilterParams, int, int, int,
                                   int);
-#endif
-
 // Test parameter list:
 //  <convolve_horiz_func, convolve_vert_func,
 //  <width, height>, filter_params, subpel_x_q4, avg>
@@ -39,14 +36,12 @@ typedef tuple<int, int> BlockDimension;
 typedef tuple<ConvInit, conv_filter_t, conv_filter_t, BlockDimension,
               InterpFilter, int, int>
     ConvParams;
-#if CONFIG_HIGHBITDEPTH
 // Test parameter list:
 //  <convolve_horiz_func, convolve_vert_func,
 //  <width, height>, filter_params, subpel_x_q4, avg, bit_dpeth>
 typedef tuple<ConvInit, hbd_conv_filter_t, hbd_conv_filter_t, BlockDimension,
               InterpFilter, int, int, int>
     HbdConvParams;
-#endif
 
 // Note:
 //  src_ and src_ref_ have special boundary requirement
@@ -237,7 +232,6 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kAvg)));
 #endif  // HAVE_SSSE3 && CONFIG_DUAL_FILTER
 
-#if CONFIG_HIGHBITDEPTH
 typedef ::testing::TestWithParam<HbdConvParams> TestWithHbdConvParams;
 class AV1HbdConvolveOptimzTest : public TestWithHbdConvParams {
  public:
@@ -401,5 +395,4 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kAvg),
                        ::testing::ValuesIn(kBitdepth)));
 #endif  // HAVE_SSE4_1 && CONFIG_DUAL_FILTER
-#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

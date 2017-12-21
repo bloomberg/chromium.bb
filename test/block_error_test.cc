@@ -25,11 +25,9 @@ using libaom_test::ACMRandom;
 typedef int64_t (*BlockErrorFunc)(const tran_low_t *coeff,
                                   const tran_low_t *dqcoeff, intptr_t size,
                                   int64_t *ssz);
-#if CONFIG_HIGHBITDEPTH
 typedef int64_t (*HbdBlockErrorFunc)(const tran_low_t *coeff,
                                      const tran_low_t *dqcoeff, intptr_t size,
                                      int64_t *ssz, int bd);
-#endif
 
 typedef std::tr1::tuple<BlockErrorFunc, BlockErrorFunc, TX_SIZE,
                         aom_bit_depth_t>
@@ -119,13 +117,6 @@ class BlockErrorTest : public ::testing::TestWithParam<BlockErrorParam> {
 TEST_P(BlockErrorTest, BitExact) { BlockErrorRun(kTestNum); }
 
 using std::tr1::make_tuple;
-
-#if !CONFIG_HIGHBITDEPTH && HAVE_SSE2
-const BlockErrorParam kBlkErrParamArraySse2[] = { make_tuple(
-    &av1_block_error_c, &av1_block_error_sse2, TX_32X32, AOM_BITS_8) };
-INSTANTIATE_TEST_CASE_P(SSE2, BlockErrorTest,
-                        ::testing::ValuesIn(kBlkErrParamArraySse2));
-#endif
 
 #if HAVE_AVX2
 const BlockErrorParam kBlkErrParamArrayAvx2[] = { make_tuple(

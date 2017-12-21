@@ -402,7 +402,6 @@ int get_shear_params(WarpedMotionParams *wm) {
   return 1;
 }
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE int highbd_error_measure(int err, int bd) {
   const int b = bd - 8;
   const int bmask = (1 << b) - 1;
@@ -636,7 +635,6 @@ static int64_t highbd_warp_error(
   }
   return gm_sumerr;
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 static INLINE int error_measure(int err) {
   return error_measure_lut[255 + err];
@@ -945,58 +943,42 @@ static int64_t warp_error(WarpedMotionParams *wm, const uint8_t *const ref,
   return gm_sumerr;
 }
 
-int64_t av1_frame_error(
-#if CONFIG_HIGHBITDEPTH
-    int use_hbd, int bd,
-#endif  // CONFIG_HIGHBITDEPTH
-    const uint8_t *ref, int stride, uint8_t *dst, int p_width, int p_height,
-    int p_stride) {
-#if CONFIG_HIGHBITDEPTH
+int64_t av1_frame_error(int use_hbd, int bd, const uint8_t *ref, int stride,
+                        uint8_t *dst, int p_width, int p_height, int p_stride) {
   if (use_hbd) {
     return highbd_frame_error(CONVERT_TO_SHORTPTR(ref), stride,
                               CONVERT_TO_SHORTPTR(dst), p_width, p_height,
                               p_stride, bd);
   }
-#endif  // CONFIG_HIGHBITDEPTH
   return frame_error(ref, stride, dst, p_width, p_height, p_stride);
 }
 
-int64_t av1_warp_error(WarpedMotionParams *wm,
-#if CONFIG_HIGHBITDEPTH
-                       int use_hbd, int bd,
-#endif  // CONFIG_HIGHBITDEPTH
+int64_t av1_warp_error(WarpedMotionParams *wm, int use_hbd, int bd,
                        const uint8_t *ref, int width, int height, int stride,
                        uint8_t *dst, int p_col, int p_row, int p_width,
                        int p_height, int p_stride, int subsampling_x,
                        int subsampling_y, int64_t best_error) {
   if (wm->wmtype <= AFFINE)
     if (!get_shear_params(wm)) return 1;
-#if CONFIG_HIGHBITDEPTH
   if (use_hbd)
     return highbd_warp_error(wm, ref, width, height, stride, dst, p_col, p_row,
                              p_width, p_height, p_stride, subsampling_x,
                              subsampling_y, bd, best_error);
-#endif  // CONFIG_HIGHBITDEPTH
   return warp_error(wm, ref, width, height, stride, dst, p_col, p_row, p_width,
                     p_height, p_stride, subsampling_x, subsampling_y,
                     best_error);
 }
 
-void av1_warp_plane(WarpedMotionParams *wm,
-#if CONFIG_HIGHBITDEPTH
-                    int use_hbd, int bd,
-#endif  // CONFIG_HIGHBITDEPTH
+void av1_warp_plane(WarpedMotionParams *wm, int use_hbd, int bd,
                     const uint8_t *ref, int width, int height, int stride,
                     uint8_t *pred, int p_col, int p_row, int p_width,
                     int p_height, int p_stride, int subsampling_x,
                     int subsampling_y, ConvolveParams *conv_params) {
-#if CONFIG_HIGHBITDEPTH
   if (use_hbd)
     highbd_warp_plane(wm, ref, width, height, stride, pred, p_col, p_row,
                       p_width, p_height, p_stride, subsampling_x, subsampling_y,
                       bd, conv_params);
   else
-#endif  // CONFIG_HIGHBITDEPTH
     warp_plane(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
                p_height, p_stride, subsampling_x, subsampling_y, conv_params);
 }

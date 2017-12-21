@@ -31,7 +31,6 @@ using std::vector;
 
 namespace {
 
-#if CONFIG_HIGHBITDEPTH
 // AV1InvTxfm2dParam argument list:
 // tx_type_, tx_size_, max_error_, max_avg_error_
 typedef std::tr1::tuple<TX_TYPE, TX_SIZE, int, double> AV1InvTxfm2dParam;
@@ -213,6 +212,4 @@ TEST(AV1InvTxfm2d, CfgTest) {
     }
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
-
 }  // namespace

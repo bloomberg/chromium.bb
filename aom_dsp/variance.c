@@ -434,7 +434,6 @@ void aom_jnt_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
 }
 #endif  // CONFIG_JNT_COMP
 
-#if CONFIG_HIGHBITDEPTH
 static void highbd_variance64(const uint8_t *a8, int a_stride,
                               const uint8_t *b8, int b_stride, int w, int h,
                               uint64_t *sse, int64_t *sum) {
@@ -1023,7 +1022,6 @@ void aom_highbd_jnt_comp_avg_upsampled_pred_c(
   }
 }
 #endif  // CONFIG_JNT_COMP
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_AV1
 void aom_comp_mask_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
@@ -1120,7 +1118,6 @@ MASK_SUBPIX_VAR(128, 32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_HIGHBITDEPTH
 void aom_highbd_comp_mask_pred_c(uint16_t *comp_pred, const uint8_t *pred8,
                                  int width, int height, const uint8_t *ref8,
                                  int ref_stride, const uint8_t *mask,
@@ -1262,7 +1259,6 @@ HIGHBD_MASK_SUBPIX_VAR(32, 128)
 HIGHBD_MASK_SUBPIX_VAR(128, 32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_AV1
 
 #if CONFIG_AV1
@@ -1382,7 +1378,6 @@ OBMC_SUBPIX_VAR(128, 32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE void highbd_obmc_variance64(const uint8_t *pre8, int pre_stride,
                                           const int32_t *wsrc,
                                           const int32_t *mask, int w, int h,
@@ -1584,5 +1579,4 @@ HIGHBD_OBMC_VAR(128, 32)
 HIGHBD_OBMC_SUBPIX_VAR(128, 32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_AV1

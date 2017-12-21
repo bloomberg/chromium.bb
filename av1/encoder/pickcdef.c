@@ -364,20 +364,16 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
 
     for (r = 0; r < frame_height; ++r) {
       for (c = 0; c < frame_width; ++c) {
-#if CONFIG_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           src[pli][r * stride[pli] + c] = CONVERT_TO_SHORTPTR(
               xd->plane[pli].dst.buf)[r * xd->plane[pli].dst.stride + c];
           ref_coeff[pli][r * stride[pli] + c] =
               CONVERT_TO_SHORTPTR(ref_buffer)[r * ref_stride + c];
         } else {
-#endif
           src[pli][r * stride[pli] + c] =
               xd->plane[pli].dst.buf[r * xd->plane[pli].dst.stride + c];
           ref_coeff[pli][r * stride[pli] + c] = ref_buffer[r * ref_stride + c];
-#if CONFIG_HIGHBITDEPTH
         }
-#endif
       }
     }
   }

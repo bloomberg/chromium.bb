@@ -117,7 +117,6 @@ using ::std::tr1::tuple;
 // <width, height, bit_dpeth, subtract>
 typedef tuple<int, int, int, HBDSubtractFunc> Params;
 
-#if CONFIG_HIGHBITDEPTH
 class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
  public:
   virtual void SetUp() {
@@ -262,5 +261,4 @@ const Params kAV1HBDSubtractBlock_sse2[] = {
 INSTANTIATE_TEST_CASE_P(SSE2, AV1HBDSubtractBlockTest,
                         ::testing::ValuesIn(kAV1HBDSubtractBlock_sse2));
 #endif  // HAVE_SSE2
-#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

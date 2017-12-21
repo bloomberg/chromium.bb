@@ -28,7 +28,6 @@ static INLINE int8_t signed_char_clamp(int t) {
 #define PARALLEL_DEBLOCKING_5_TAP_CHROMA 0
 #endif
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE int16_t signed_char_clamp_high(int t, int bd) {
   switch (bd) {
     case 10: return (int16_t)clamp(t, -128 * 4, 128 * 4 - 1);
@@ -37,7 +36,6 @@ static INLINE int16_t signed_char_clamp_high(int t, int bd) {
     default: return (int16_t)clamp(t, -128, 128 - 1);
   }
 }
-#endif
 #if CONFIG_PARALLEL_DEBLOCKING
 // should we apply any filter at all: 11111111 yes, 00000000 no
 static INLINE int8_t filter_mask2(uint8_t limit, uint8_t blimit, uint8_t p1,
@@ -591,7 +589,6 @@ void aom_lpf_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
 #endif
 }
 
-#if CONFIG_HIGHBITDEPTH
 #if CONFIG_PARALLEL_DEBLOCKING
 // Should we apply any filter at all: 11111111 yes, 00000000 no ?
 static INLINE int8_t highbd_filter_mask2(uint8_t limit, uint8_t blimit,
@@ -1228,4 +1225,3 @@ void aom_highbd_lpf_vertical_16_dual_c(uint16_t *s, int p,
   highbd_mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 16, bd);
 #endif
 }
-#endif  // CONFIG_HIGHBITDEPTH

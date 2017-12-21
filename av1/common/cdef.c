@@ -120,18 +120,14 @@ void copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
 static void copy_sb8_16(AOM_UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
                         const uint8_t *src, int src_voffset, int src_hoffset,
                         int sstride, int vsize, int hsize) {
-#if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
     const uint16_t *base =
         &CONVERT_TO_SHORTPTR(src)[src_voffset * sstride + src_hoffset];
     copy_rect8_16bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
   } else {
-#endif
     const uint8_t *base = &src[src_voffset * sstride + src_hoffset];
     copy_rect8_8bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
-#if CONFIG_HIGHBITDEPTH
   }
-#endif
 }
 
 static INLINE void fill_rect(uint16_t *dst, int dstride, int v, int h,
@@ -393,7 +389,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           fill_rect(&src[hsize + CDEF_HBORDER], CDEF_BSTRIDE,
                     vsize + 2 * CDEF_VBORDER, CDEF_HBORDER, CDEF_VERY_LARGE);
         }
-#if CONFIG_HIGHBITDEPTH
+
         if (cm->use_highbitdepth) {
           cdef_filter_fb(
               NULL,
@@ -407,7 +403,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
               ydec[pli], dir, NULL, var, pli, dlist, cdef_count, level,
               sec_strength, pri_damping, sec_damping, coeff_shift);
         } else {
-#endif
           cdef_filter_fb(
               &xd->plane[pli]
                    .dst.buf[xd->plane[pli].dst.stride *
@@ -417,10 +412,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
               &src[CDEF_VBORDER * CDEF_BSTRIDE + CDEF_HBORDER], xdec[pli],
               ydec[pli], dir, NULL, var, pli, dlist, cdef_count, level,
               sec_strength, pri_damping, sec_damping, coeff_shift);
-
-#if CONFIG_HIGHBITDEPTH
         }
-#endif
       }
       cdef_left = 1;
     }

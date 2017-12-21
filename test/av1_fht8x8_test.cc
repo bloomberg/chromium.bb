@@ -42,7 +42,6 @@ void iht8x8_ref(const tran_low_t *in, uint8_t *out, int stride,
   av1_iht8x8_64_add_c(in, out, stride, txfm_param);
 }
 
-#if CONFIG_HIGHBITDEPTH
 typedef void (*IHbdHtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                            TX_TYPE tx_type, int bd);
 typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
@@ -54,7 +53,6 @@ void highbd_fht8x8_ref(const int16_t *in, int32_t *out, int stride,
                        TX_TYPE tx_type, int bd) {
   av1_fwd_txfm2d_8x8_c(in, out, stride, tx_type, bd);
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 class AV1Trans8x8HT : public libaom_test::TransformTestBase,
                       public ::testing::TestWithParam<Ht8x8Param> {
@@ -97,7 +95,6 @@ TEST_P(AV1Trans8x8HT, CoeffCheck) { RunCoeffCheck(); }
 // TEST_P(AV1Trans8x8HT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 // TEST_P(AV1Trans8x8HT, InvCoeffCheck) { RunInvCoeffCheck(); }
 
-#if CONFIG_HIGHBITDEPTH
 class AV1HighbdTrans8x8HT : public ::testing::TestWithParam<HighbdHt8x8Param> {
  public:
   virtual ~AV1HighbdTrans8x8HT() {}
@@ -164,7 +161,6 @@ void AV1HighbdTrans8x8HT::RunBitexactCheck() {
 }
 
 TEST_P(AV1HighbdTrans8x8HT, HighbdCoeffCheck) { RunBitexactCheck(); }
-#endif  // CONFIG_HIGHBITDEPTH
 
 using std::tr1::make_tuple;
 
@@ -202,7 +198,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans8x8HT,
                         ::testing::ValuesIn(kArrayHt8x8Param_sse2));
 #endif  // HAVE_SSE2
 
-#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_TX8
+#if HAVE_SSE4_1 && !CONFIG_DAALA_TX8
 const HighbdHt8x8Param kArrayHBDHt8x8Param_sse4_1[] = {
   make_tuple(&av1_fwd_txfm2d_8x8_sse4_1, DCT_DCT, 10),
   make_tuple(&av1_fwd_txfm2d_8x8_sse4_1, DCT_DCT, 12),
@@ -225,7 +221,7 @@ const HighbdHt8x8Param kArrayHBDHt8x8Param_sse4_1[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdTrans8x8HT,
                         ::testing::ValuesIn(kArrayHBDHt8x8Param_sse4_1));
-#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_TX8
+#endif  // HAVE_SSE4_1 && !CONFIG_DAALA_TX8
 
 }  // namespace
 #endif  // !CONFIG_DAALA_TX

@@ -213,10 +213,9 @@ sadMxNx4D(32, 128)
 sadMxN(128, 32)
 sadMxNx4D(128, 32)
 #endif
-/* clang-format on */
+    /* clang-format on */
 
-#if CONFIG_HIGHBITDEPTH
-                static INLINE
+    static INLINE
     unsigned int highbd_sad(const uint8_t *a8, int a_stride, const uint8_t *b8,
                             int b_stride, int width, int height) {
   int y, x;
@@ -410,5 +409,4 @@ highbd_sadMxNx4D(32, 128)
 highbd_sadMxN(128, 32)
 highbd_sadMxNx4D(128, 32)
 #endif
-/* clang-format on */
-#endif  // CONFIG_HIGHBITDEPTH
+    /* clang-format on */

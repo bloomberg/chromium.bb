@@ -284,9 +284,7 @@ typedef struct AV1EncoderConfig {
 
   aom_tune_metric tuning;
   aom_tune_content content;
-#if CONFIG_HIGHBITDEPTH
   int use_highbitdepth;
-#endif
   aom_color_space_t color_space;
   aom_transfer_function_t transfer_function;
   aom_chroma_sample_position_t chroma_sample_position;

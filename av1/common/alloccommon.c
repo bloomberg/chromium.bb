@@ -146,11 +146,8 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
 #else
   const int frame_w = cm->width;
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-#if CONFIG_HIGHBITDEPTH
   const int use_highbd = cm->use_highbitdepth ? 1 : 0;
-#else
-  const int use_highbd = 0;
-#endif
+
   for (int p = 0; p < MAX_MB_PLANE; ++p) {
     const int is_uv = p > 0;
     const int ss_x = is_uv && cm->subsampling_x;

@@ -163,7 +163,6 @@ OBMCVARWXH(128, 32)
 // High bit-depth
 ////////////////////////////////////////////////////////////////////////////////
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE void hbd_obmc_variance_w4(
     const uint8_t *pre8, const int pre_stride, const int32_t *wsrc,
     const int32_t *mask, uint64_t *const sse, int64_t *const sum, const int h) {
@@ -377,4 +376,3 @@ HBD_OBMCVARWXH(32, 128)
 HBD_OBMCVARWXH(128, 32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_HIGHBITDEPTH

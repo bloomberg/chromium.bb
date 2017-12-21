@@ -197,8 +197,6 @@ static const arg_def_t disable_warnings =
 static const arg_def_t disable_warning_prompt =
     ARG_DEF("y", "disable-warning-prompt", 0,
             "Display warnings, but do not prompt user to continue.");
-
-#if CONFIG_HIGHBITDEPTH
 static const struct arg_enum_list bitdepth_enum[] = {
   { "8", AOM_BITS_8 }, { "10", AOM_BITS_10 }, { "12", AOM_BITS_12 }, { NULL, 0 }
 };
@@ -209,8 +207,6 @@ static const arg_def_t bitdeptharg = ARG_DEF_ENUM(
     bitdepth_enum);
 static const arg_def_t inbitdeptharg =
     ARG_DEF(NULL, "input-bit-depth", 1, "Bit depth of input");
-#endif
-
 static const arg_def_t *main_args[] = { &help,
                                         &debugmode,
                                         &outputfile,
@@ -286,9 +282,7 @@ static const arg_def_t *global_args[] = { &use_yv12,
                                           &timebase,
                                           &framerate,
                                           &error_resilient,
-#if CONFIG_HIGHBITDEPTH
                                           &bitdeptharg,
-#endif
                                           &lag_in_frames,
 #if CONFIG_EXT_TILE
                                           &large_scale_tile,
@@ -633,10 +627,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #if CONFIG_TEMPMV_SIGNALING
                                        &disable_tempmv,
 #endif
-#if CONFIG_HIGHBITDEPTH
                                        &bitdeptharg,
                                        &inbitdeptharg,
-#endif  // CONFIG_HIGHBITDEPTH
                                        NULL };
 static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_DEVSF,
@@ -1125,12 +1117,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_w = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &height, argi)) {
       config->cfg.g_h = arg_parse_uint(&arg);
-#if CONFIG_HIGHBITDEPTH
     } else if (arg_match(&arg, &bitdeptharg, argi)) {
       config->cfg.g_bit_depth = arg_parse_enum_or_int(&arg);
     } else if (arg_match(&arg, &inbitdeptharg, argi)) {
       config->cfg.g_input_bit_depth = arg_parse_uint(&arg);
-#endif
 #if CONFIG_WEBM_IO
     } else if (arg_match(&arg, &stereo_mode, argi)) {
       config->stereo_fmt = arg_parse_enum_or_int(&arg);
@@ -1225,10 +1215,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       if (!match) argj++;
     }
   }
-#if CONFIG_HIGHBITDEPTH
   config->use_16bit_internal =
       config->cfg.g_bit_depth > AOM_BITS_8 || !CONFIG_LOWBITDEPTH;
-#endif
   return eos_mark_found;
 }
 
@@ -1494,9 +1482,7 @@ static void initialize_encoder(struct stream_state *stream,
 
   flags |= global->show_psnr ? AOM_CODEC_USE_PSNR : 0;
   flags |= global->out_part ? AOM_CODEC_USE_OUTPUT_PARTITION : 0;
-#if CONFIG_HIGHBITDEPTH
   flags |= stream->config.use_16bit_internal ? AOM_CODEC_USE_HIGHBITDEPTH : 0;
-#endif
 
   /* Construct Encoder Context */
   aom_codec_enc_init(&stream->encoder, global->codec->codec_interface(),
@@ -1549,8 +1535,7 @@ static void encode_frame(struct stream_state *stream,
       (cfg->g_timebase.den * (int64_t)(frames_in)*global->framerate.den) /
       cfg->g_timebase.num / global->framerate.num;
 
-/* Scale if necessary */
-#if CONFIG_HIGHBITDEPTH
+  /* Scale if necessary */
   if (img) {
     if ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) &&
         (img->d_w != cfg->g_w || img->d_h != cfg->g_h)) {
@@ -1585,7 +1570,6 @@ static void encode_frame(struct stream_state *stream,
 #endif
     }
   }
-#endif
   if (img && (img->d_w != cfg->g_w || img->d_h != cfg->g_h)) {
     if (img->fmt != AOM_IMG_FMT_I420 && img->fmt != AOM_IMG_FMT_YV12) {
       fprintf(stderr, "%s can only scale 4:2:0 8bpp inputs\n", exec_name);
@@ -1767,7 +1751,6 @@ static void test_decode(struct stream_state *stream,
   aom_codec_control(&stream->encoder, AV1_GET_NEW_FRAME_IMAGE, &enc_img);
   aom_codec_control(&stream->decoder, AV1_GET_NEW_FRAME_IMAGE, &dec_img);
 
-#if CONFIG_HIGHBITDEPTH
   if ((enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) !=
       (dec_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH)) {
     if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
@@ -1785,22 +1768,17 @@ static void test_decode(struct stream_state *stream,
       dec_img = dec_hbd_img;
     }
   }
-#endif
 
   ctx_exit_on_error(&stream->encoder, "Failed to get encoder reference frame");
   ctx_exit_on_error(&stream->decoder, "Failed to get decoder reference frame");
 
   if (!aom_compare_img(&enc_img, &dec_img)) {
     int y[4], u[4], v[4];
-#if CONFIG_HIGHBITDEPTH
     if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
       aom_find_mismatch_high(&enc_img, &dec_img, y, u, v);
     } else {
       aom_find_mismatch(&enc_img, &dec_img, y, u, v);
     }
-#else
-    aom_find_mismatch(&enc_img, &dec_img, y, u, v);
-#endif
     stream->decoder.err = 1;
     warn_or_exit_on_error(&stream->decoder, fatal == TEST_DECODE_FATAL,
                           "Stream %d: Encode/decode mismatch on frame %d at"
@@ -1838,12 +1816,10 @@ static void print_time(const char *label, int64_t etl) {
 int main(int argc, const char **argv_) {
   int pass;
   aom_image_t raw;
-#if CONFIG_HIGHBITDEPTH
   aom_image_t raw_shift;
   int allocated_raw_shift = 0;
   int use_16bit_internal = 0;
   int input_shift = 0;
-#endif
   int frame_avail, got_data;
 
   struct AvxInputContext input;
@@ -1999,7 +1975,6 @@ int main(int argc, const char **argv_) {
         }
       }
       if (stream->config.cfg.g_profile > 1) {
-        if (!CONFIG_HIGHBITDEPTH) fatal("Unsupported profile.");
         stream->config.use_16bit_internal = 1;
       }
       if (profile_updated && !global.quiet) {
@@ -2084,8 +2059,6 @@ int main(int argc, const char **argv_) {
       open_output_file(stream, &global, &input.pixel_aspect_ratio);
     }
     FOREACH_STREAM(stream, streams) { initialize_encoder(stream, &global); }
-
-#if CONFIG_HIGHBITDEPTH
     if (strcmp(global.codec->name, "av1") == 0 ||
         strcmp(global.codec->name, "av1") == 0) {
       // Check to see if at least one stream uses 16 bit internal.
@@ -2103,7 +2076,6 @@ int main(int argc, const char **argv_) {
         }
       };
     }
-#endif
 
     frame_avail = 1;
     got_data = 0;
@@ -2140,7 +2112,6 @@ int main(int argc, const char **argv_) {
       }
 
       if (frames_in > global.skip_frames) {
-#if CONFIG_HIGHBITDEPTH
         aom_image_t *frame_to_encode;
         if (input_shift || (use_16bit_internal && input.bit_depth == 8)) {
           assert(use_16bit_internal);
@@ -2173,12 +2144,6 @@ int main(int argc, const char **argv_) {
                          frames_in);
           }
         }
-#else
-        aom_usec_timer_start(&timer);
-        FOREACH_STREAM(stream, streams) {
-          encode_frame(stream, &global, frame_avail ? &raw : NULL, frames_in);
-        }
-#endif
         aom_usec_timer_mark(&timer);
         cx_time += aom_usec_timer_elapsed(&timer);
 
@@ -2320,9 +2285,7 @@ int main(int argc, const char **argv_) {
   }
 #endif
 
-#if CONFIG_HIGHBITDEPTH
   if (allocated_raw_shift) aom_img_free(&raw_shift);
-#endif
   aom_img_free(&raw);
   free(argv);
   free(streams);

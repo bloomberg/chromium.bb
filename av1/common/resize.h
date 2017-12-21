@@ -39,7 +39,6 @@ void av1_resize_frame444(const uint8_t *const y, int y_stride,
                          int oy_stride, uint8_t *ou, uint8_t *ov,
                          int ouv_stride, int oheight, int owidth);
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_resize_plane(const uint8_t *const input, int height, int width,
                              int in_stride, uint8_t *output, int height2,
                              int width2, int out_stride, int bd);
@@ -61,26 +60,13 @@ void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
                                 uint8_t *oy, int oy_stride, uint8_t *ou,
                                 uint8_t *ov, int ouv_stride, int oheight,
                                 int owidth, int bd);
-#endif  // CONFIG_HIGHBITDEPTH
-
-#if CONFIG_HIGHBITDEPTH
 void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                  YV12_BUFFER_CONFIG *dst, int bd);
-#else
-void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                 YV12_BUFFER_CONFIG *dst);
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_HORZONLY_FRAME_SUPERRES
-#if CONFIG_HIGHBITDEPTH
 void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                             YV12_BUFFER_CONFIG *dst,
                                             int superres_denom, int bd);
-#else
-void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                            YV12_BUFFER_CONFIG *dst,
-                                            int superres_denom);
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,

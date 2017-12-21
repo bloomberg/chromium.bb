@@ -14,14 +14,11 @@
 #include "./av1_rtcd.h"
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
-#include "aom_ports/system_state.h"
-
-#if CONFIG_HIGHBITDEPTH
 #include "aom_dsp/aom_dsp_common.h"
-#endif  // CONFIG_HIGHBITDEPTH
 #include "aom_mem/aom_mem.h"
-#include "aom_ports/mem.h"
 #include "aom_ports/aom_once.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/system_state.h"
 #include "av1/common/reconintra.h"
 #include "av1/common/onyxc_int.h"
 #if CONFIG_CFL
@@ -641,13 +638,11 @@ typedef void (*intra_pred_fn)(uint8_t *dst, ptrdiff_t stride,
 static intra_pred_fn pred[INTRA_MODES][TX_SIZES_ALL];
 static intra_pred_fn dc_pred[2][2][TX_SIZES_ALL];
 
-#if CONFIG_HIGHBITDEPTH
 typedef void (*intra_high_pred_fn)(uint16_t *dst, ptrdiff_t stride,
                                    const uint16_t *above, const uint16_t *left,
                                    int bd);
 static intra_high_pred_fn pred_high[INTRA_MODES][TX_SIZES_ALL];
 static intra_high_pred_fn dc_pred_high[2][2][TX_SIZES_ALL];
-#endif  // CONFIG_HIGHBITDEPTH
 
 static void av1_init_intra_predictors_internal(void) {
 #if CONFIG_EXT_INTRA
@@ -722,7 +717,6 @@ static void av1_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(dc_pred[1][0], dc_left);
   INIT_ALL_SIZES(dc_pred[1][1], dc);
 
-#if CONFIG_HIGHBITDEPTH
   INIT_ALL_SIZES(pred_high[V_PRED], highbd_v);
   INIT_ALL_SIZES(pred_high[H_PRED], highbd_h);
   INIT_ALL_SIZES(pred_high[D207_PRED], highbd_d207e);
@@ -741,8 +735,6 @@ static void av1_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(dc_pred_high[0][1], highbd_dc_top);
   INIT_ALL_SIZES(dc_pred_high[1][0], highbd_dc_left);
   INIT_ALL_SIZES(dc_pred_high[1][1], highbd_dc);
-#endif  // CONFIG_HIGHBITDEPTH
-
 #undef intra_pred_allsizes
 }
 
@@ -986,7 +978,6 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 // Directional prediction, zone 1: 0 < angle < 90
 static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bw,
                                     int bh, const uint16_t *above,
@@ -1203,7 +1194,6 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
     pred_high[H_PRED][tx_size](dst, stride, above, left, bd);
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_FILTER_INTRA
@@ -1361,7 +1351,6 @@ static void filter_intra_predictors(FILTER_INTRA_MODE mode, uint8_t *dst,
     default: assert(0);
   }
 }
-#if CONFIG_HIGHBITDEPTH
 static void highbd_filter_intra_predictor(uint16_t *dst, ptrdiff_t stride,
                                           TX_SIZE tx_size,
                                           const uint16_t *above,
@@ -1476,7 +1465,6 @@ static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,
     default: assert(0);
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_INTRA_EDGE
@@ -1609,7 +1597,6 @@ static void av1_filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
 }
 #endif  // CONFIG_EXT_INTRA_MOD
 
-#if CONFIG_HIGHBITDEPTH
 void av1_filter_intra_edge_high_c(uint16_t *p, int sz, int strength) {
   if (!strength) return;
 
@@ -1645,8 +1632,6 @@ static void av1_filter_intra_edge_corner_high(uint16_t *p_above,
   p_left[-1] = s;
 }
 #endif  // CONFIG_EXT_INTRA_MOD
-
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_INTRA_EDGE_UPSAMPLE
 static int use_intra_edge_upsample(int bs0, int bs1, int delta, int type) {
@@ -1686,7 +1671,6 @@ void av1_upsample_intra_edge_c(uint8_t *p, int sz) {
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 void av1_upsample_intra_edge_high_c(uint16_t *p, int sz, int bd) {
   // interpolate half-sample positions
   assert(sz <= MAX_UPSAMPLE_SZ);
@@ -1710,12 +1694,9 @@ void av1_upsample_intra_edge_high_c(uint16_t *p, int sz, int bd) {
     p[2 * i] = in[i + 2];
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
-
 #endif  // CONFIG_INTRA_EDGE
 
-#if CONFIG_HIGHBITDEPTH
 static void build_intra_predictors_high(
     const MACROBLOCKD *xd, const uint8_t *ref8, int ref_stride, uint8_t *dst8,
     int dst_stride, PREDICTION_MODE mode, TX_SIZE tx_size, int n_top_px,
@@ -1954,7 +1935,6 @@ static void build_intra_predictors_high(
     pred_high[mode][tx_size](dst, dst_stride, above_row, left_col, xd->bd);
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
                                    int ref_stride, uint8_t *dst, int dst_stride,
@@ -2257,7 +2237,6 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
     const uint16_t *const palette =
         mbmi->palette_mode_info.palette_colors + plane * PALETTE_MAX_SIZE;
 
-#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
       for (r = 0; r < txhpx; ++r) {
@@ -2266,20 +2245,16 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
         }
       }
     } else {
-#endif  // CONFIG_HIGHBITDEPTH
       for (r = 0; r < txhpx; ++r) {
         for (c = 0; c < txwpx; ++c) {
           dst[r * dst_stride + c] =
               (uint8_t)palette[map[(r + y) * stride + c + x]];
         }
       }
-#if CONFIG_HIGHBITDEPTH
     }
-#endif  // CONFIG_HIGHBITDEPTH
     return;
   }
 
-#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(
         xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
@@ -2289,7 +2264,6 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
         have_bottom_left ? AOMMIN(txhpx, yd) : 0, plane);
     return;
   }
-#endif
 
   build_intra_predictors(xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
                          have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
@@ -2364,15 +2338,11 @@ static int overwrite_ref_row(int matching_strides, int buf_flags,
 
   int row_bytes = block_width;
 
-#if CONFIG_HIGHBITDEPTH
   if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
     row_bytes *= 2;
     ref_row = (uint8_t *)CONVERT_TO_SHORTPTR(ref_row);
     dst_row = (const uint8_t *)CONVERT_TO_SHORTPTR(dst_row);
   }
-#else
-  (void)buf_flags;
-#endif  // CONFIG_HIGHBITDEPTH
 
   memcpy(tmp_row, ref_row, row_bytes);
   memcpy(ref_row, dst_row, row_bytes);
@@ -2382,15 +2352,10 @@ static int overwrite_ref_row(int matching_strides, int buf_flags,
 static void restore_ref_row(int buf_flags, int block_width,
                             const uint8_t *tmp_row, uint8_t *ref_row) {
   int row_bytes = block_width;
-#if CONFIG_HIGHBITDEPTH
   if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
     row_bytes *= 2;
     ref_row = (uint8_t *)CONVERT_TO_SHORTPTR(ref_row);
   }
-#else
-  (void)buf_flags;
-#endif  // CONFIG_HIGHBITDEPTH
-
   memcpy(ref_row, tmp_row, row_bytes);
 }
 
@@ -2402,7 +2367,6 @@ static int overwrite_ref_col(int buf_flags, int block_height,
                              uint8_t *tmp_row) {
   if (ref_row == dst_row && ref_stride == dst_stride) return 0;
 
-#if CONFIG_HIGHBITDEPTH
   if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
     uint16_t *tmp_16 = (uint16_t *)tmp_row;
     uint16_t *ref_16 = CONVERT_TO_SHORTPTR(ref_row);
@@ -2413,23 +2377,17 @@ static int overwrite_ref_col(int buf_flags, int block_height,
       ref_16[i * ref_stride] = dst_16[i * dst_stride];
     }
   } else {
-#endif  // CONFIG_HIGHBITDEPTH
     for (int i = 0; i < block_height; ++i) {
       tmp_row[i] = ref_row[i * ref_stride];
       ref_row[i * ref_stride] = dst_row[i * dst_stride];
     }
-#if CONFIG_HIGHBITDEPTH
   }
-#else
-  (void)buf_flags;
-#endif  // CONFIG_HIGHBITDEPTH
   return 1;
 }
 
 static void restore_ref_col(int buf_flags, int block_height,
                             const uint8_t *tmp_row, uint8_t *ref_row,
                             int ref_stride) {
-#if CONFIG_HIGHBITDEPTH
   if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
     const uint16_t *tmp_16 = (const uint16_t *)tmp_row;
     uint16_t *ref_16 = CONVERT_TO_SHORTPTR(ref_row);
@@ -2438,15 +2396,10 @@ static void restore_ref_col(int buf_flags, int block_height,
       ref_16[i * ref_stride] = tmp_16[i];
     }
   } else {
-#endif  // CONFIG_HIGHBITDEPTH
     for (int i = 0; i < block_height; ++i) {
       ref_row[i * ref_stride] = tmp_row[i];
     }
-#if CONFIG_HIGHBITDEPTH
   }
-#else
-  (void)buf_flags;
-#endif  // CONFIG_HIGHBITDEPTH
 }
 
 void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
@@ -2479,14 +2432,10 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
          (block_width == (wpx >> 1) && block_height == hpx) ||
          (block_width == wpx && block_height == (hpx >> 1)));
 
-// The tmp buffer needs to be big enough to hold MAX_SB_SIZE samples
-// from the image. If CONFIG_HIGHBITDEPTH is enabled, it also needs
-// to be big enough and correctly aligned to hold 16-bit entries.
-#if CONFIG_HIGHBITDEPTH
+  // The tmp buffer needs to be big enough to hold MAX_SB_SIZE samples
+  // from the image. If CONFIG_HIGHBITDEPTH is enabled, it also needs
+  // to be big enough and correctly aligned to hold 16-bit entries.
   uint16_t tmp_buf[MAX_SB_SIZE];
-#else
-  uint8_t tmp_buf[MAX_SB_SIZE];
-#endif  // CONFIG_HIGHBITDEPTH
   uint8_t *tmp = (uint8_t *)tmp_buf;
 
   if (block_width < block_height) {

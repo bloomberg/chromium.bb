@@ -167,7 +167,6 @@ static void extend_frame_lowbd(uint8_t *data, int width, int height, int stride,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static void extend_frame_highbd(uint16_t *data, int width, int height,
                                 int stride, int border_horz, int border_vert) {
   uint16_t *data_p;
@@ -187,20 +186,14 @@ static void extend_frame_highbd(uint16_t *data, int width, int height,
            (width + 2 * border_horz) * sizeof(uint16_t));
   }
 }
-#endif
 
 void extend_frame(uint8_t *data, int width, int height, int stride,
                   int border_horz, int border_vert, int highbd) {
-#if !CONFIG_HIGHBITDEPTH
-  assert(highbd == 0);
-  (void)highbd;
-#else
   if (highbd)
     extend_frame_highbd(CONVERT_TO_SHORTPTR(data), width, height, stride,
                         border_horz, border_vert);
   else
-#endif
-  extend_frame_lowbd(data, width, height, stride, border_horz, border_vert);
+    extend_frame_lowbd(data, width, height, stride, border_horz, border_vert);
 }
 
 static void copy_tile_lowbd(int width, int height, const uint8_t *src,
@@ -209,26 +202,19 @@ static void copy_tile_lowbd(int width, int height, const uint8_t *src,
     memcpy(dst + i * dst_stride, src + i * src_stride, width);
 }
 
-#if CONFIG_HIGHBITDEPTH
 static void copy_tile_highbd(int width, int height, const uint16_t *src,
                              int src_stride, uint16_t *dst, int dst_stride) {
   for (int i = 0; i < height; ++i)
     memcpy(dst + i * dst_stride, src + i * src_stride, width * sizeof(*dst));
 }
-#endif
 
 static void copy_tile(int width, int height, const uint8_t *src, int src_stride,
                       uint8_t *dst, int dst_stride, int highbd) {
-#if !CONFIG_HIGHBITDEPTH
-  assert(highbd == 0);
-  (void)highbd;
-#else
   if (highbd)
     copy_tile_highbd(width, height, CONVERT_TO_SHORTPTR(src), src_stride,
                      CONVERT_TO_SHORTPTR(dst), dst_stride);
   else
-#endif
-  copy_tile_lowbd(width, height, src, src_stride, dst, dst_stride);
+    copy_tile_lowbd(width, height, src, src_stride, dst, dst_stride);
 }
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
@@ -368,8 +354,6 @@ static void setup_processing_stripe_boundary(
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
     uint8_t *data8, int data_stride, RestorationLineBuffers *rlbs,
     int copy_above, int copy_below) {
-  assert(CONFIG_HIGHBITDEPTH || !use_highbd);
-
   // Offsets within the line buffers. The buffer logically starts at column
   // -RESTORATION_EXTRA_HORZ so the 1st column (at x0 - RESTORATION_EXTRA_HORZ)
   // has column x0 in the buffer.
@@ -504,8 +488,6 @@ static void restore_processing_stripe_boundary(
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
     uint8_t *data8, int data_stride, int copy_above, int copy_below) {
-  assert(CONFIG_HIGHBITDEPTH || !use_highbd);
-
   const int line_width =
       (limits->h_end - limits->h_start) + 2 * RESTORATION_EXTRA_HORZ;
   const int line_size = line_width << use_highbd;
@@ -1262,7 +1244,6 @@ static void sgrproj_filter_stripe(const RestorationUnitInfo *rui,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
 #define wiener_highbd_convolve8_add_src aom_highbd_convolve8_add_src_hip
 #else
@@ -1300,7 +1281,6 @@ static void sgrproj_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                  dst8 + j, dst_stride, tmpbuf, bit_depth, 1);
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 typedef void (*stripe_filter_fun)(const RestorationUnitInfo *rui,
                                   int stripe_width, int stripe_height,
@@ -1308,19 +1288,11 @@ typedef void (*stripe_filter_fun)(const RestorationUnitInfo *rui,
                                   int src_stride, uint8_t *dst, int dst_stride,
                                   int32_t *tmpbuf, int bit_depth);
 
-#if CONFIG_HIGHBITDEPTH
 #define NUM_STRIPE_FILTERS 4
-#else
-#define NUM_STRIPE_FILTERS 2
-#endif
 
 static const stripe_filter_fun stripe_filters[NUM_STRIPE_FILTERS] = {
-  wiener_filter_stripe,
-  sgrproj_filter_stripe,
-#if CONFIG_HIGHBITDEPTH
-  wiener_filter_stripe_highbd,
+  wiener_filter_stripe, sgrproj_filter_stripe, wiener_filter_stripe_highbd,
   sgrproj_filter_stripe_highbd
-#endif  // CONFIG_HIGHBITDEPTH
 };
 
 // Filter one restoration unit
@@ -1497,25 +1469,18 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
   memset(&dst, 0, sizeof(dst));
   const int frame_width = frame->crop_widths[0];
   const int frame_height = ALIGN_POWER_OF_TWO(frame->crop_heights[0], 3);
-  if (aom_realloc_frame_buffer(
-          &dst, frame_width, frame_height, cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-          cm->use_highbitdepth,
-#endif
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL) < 0)
+  if (aom_realloc_frame_buffer(&dst, frame_width, frame_height,
+                               cm->subsampling_x, cm->subsampling_y,
+                               cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                               cm->byte_alignment, NULL, NULL, NULL) < 0)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate restoration dst buffer");
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationLineBuffers rlbs;
 #endif  // CONFIG_STRIPED_LOOP_RESTORATION
-#if CONFIG_HIGHBITDEPTH
   const int bit_depth = cm->bit_depth;
   const int highbd = cm->use_highbitdepth;
-#else
-  const int bit_depth = 8;
-  const int highbd = 0;
-#endif
 
   for (int plane = 0; plane < 3; ++plane) {
     const RestorationInfo *rsi = &cm->rst_info[plane];
@@ -1767,13 +1732,9 @@ static void extend_lines(uint8_t *buf, int width, int height, int stride,
                          int extend, int use_highbitdepth) {
   for (int i = 0; i < height; ++i) {
     if (use_highbitdepth) {
-#if CONFIG_HIGHBITDEPTH
       uint16_t *buf16 = (uint16_t *)buf;
       aom_memset16(buf16 - extend, buf16[0], extend);
       aom_memset16(buf16 + width, buf16[width - 1], extend);
-#else
-      assert(0 && "use_highbitdepth set but CONFIG_HIGHBITDEPTH not enabled");
-#endif  // CONFIG_HIGHBITDEPTH
     } else {
       memset(buf - extend, buf[0], extend);
       memset(buf + width, buf[width - 1], extend);
@@ -1814,7 +1775,6 @@ static void save_deblock_boundary_lines(
     const int ss_x = is_uv && cm->subsampling_x;
     upscaled_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
     const int step = av1_get_upscale_convolve_step(src_width, upscaled_width);
-#if CONFIG_HIGHBITDEPTH
     if (use_highbd)
       av1_highbd_convolve_horiz_rs(
           (uint16_t *)src_rows, src_stride >> 1, (uint16_t *)bdry_rows,
@@ -1822,7 +1782,6 @@ static void save_deblock_boundary_lines(
           &av1_resize_filter_normative[0][0], UPSCALE_NORMATIVE_TAPS, 0, step,
           cm->bit_depth);
     else
-#endif  // CONFIG_HIGHBITDEPTH
       av1_convolve_horiz_rs(src_rows, src_stride, bdry_rows, bdry_stride,
                             upscaled_width, RESTORATION_CTX_VERT,
                             &av1_resize_filter_normative[0][0],
@@ -1988,12 +1947,7 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 // lines are saved in rst_internal.stripe_boundary_lines
 void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
                                               AV1_COMMON *cm, int after_cdef) {
-#if CONFIG_HIGHBITDEPTH
   const int use_highbd = cm->use_highbitdepth;
-#else
-  const int use_highbd = 0;
-#endif
-
   for (int p = 0; p < MAX_MB_PLANE; ++p) {
     TileInfo tile_info;
     for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {

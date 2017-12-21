@@ -16,9 +16,7 @@ using std::tr1::tuple;
 using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
 using libaom_test::AV1HiprecConvolve::AV1HiprecConvolveTest;
-#if CONFIG_HIGHBITDEPTH
 using libaom_test::AV1HighbdHiprecConvolve::AV1HighbdHiprecConvolveTest;
-#endif
 
 namespace {
 
@@ -30,7 +28,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, AV1HiprecConvolveTest,
                             aom_convolve8_add_src_hip_sse2));
 #endif
 
-#if CONFIG_HIGHBITDEPTH && HAVE_SSSE3
+#if HAVE_SSSE3
 TEST_P(AV1HighbdHiprecConvolveTest, CheckOutput) {
   RunCheckOutput(GET_PARAM(4));
 }

@@ -41,7 +41,6 @@ void iht4x4_ref(const tran_low_t *in, uint8_t *out, int stride,
   av1_iht4x4_16_add_c(in, out, stride, txfm_param);
 }
 
-#if CONFIG_HIGHBITDEPTH
 typedef void (*IhighbdHtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                               TX_TYPE tx_type, int bd);
 typedef void (*HBDFhtFunc)(const int16_t *input, int32_t *output, int stride,
@@ -55,7 +54,6 @@ void highbe_fht4x4_ref(const int16_t *in, int32_t *out, int stride,
                        TX_TYPE tx_type, int bd) {
   av1_fwd_txfm2d_4x4_c(in, out, stride, tx_type, bd);
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 class AV1Trans4x4HT : public libaom_test::TransformTestBase,
                       public ::testing::TestWithParam<Ht4x4Param> {
@@ -98,7 +96,6 @@ TEST_P(AV1Trans4x4HT, CoeffCheck) { RunCoeffCheck(); }
 // TEST_P(AV1Trans4x4HT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 // TEST_P(AV1Trans4x4HT, InvCoeffCheck) { RunInvCoeffCheck(); }
 
-#if CONFIG_HIGHBITDEPTH
 class AV1HighbdTrans4x4HT : public ::testing::TestWithParam<HighbdHt4x4Param> {
  public:
   virtual ~AV1HighbdTrans4x4HT() {}
@@ -164,7 +161,6 @@ void AV1HighbdTrans4x4HT::RunBitexactCheck() {
 }
 
 TEST_P(AV1HighbdTrans4x4HT, HighbdCoeffCheck) { RunBitexactCheck(); }
-#endif  // CONFIG_HIGHBITDEPTH
 
 using std::tr1::make_tuple;
 
@@ -202,7 +198,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans4x4HT,
                         ::testing::ValuesIn(kArrayHt4x4Param_sse2));
 #endif  // HAVE_SSE2
 
-#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_TX4
+#if HAVE_SSE4_1 && !CONFIG_DAALA_TX4
 const HighbdHt4x4Param kArrayHighbdHt4x4Param[] = {
   make_tuple(&av1_fwd_txfm2d_4x4_sse4_1, DCT_DCT, 10),
   make_tuple(&av1_fwd_txfm2d_4x4_sse4_1, DCT_DCT, 12),
@@ -227,7 +223,7 @@ const HighbdHt4x4Param kArrayHighbdHt4x4Param[] = {
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdTrans4x4HT,
                         ::testing::ValuesIn(kArrayHighbdHt4x4Param));
 
-#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_TX4
+#endif  // HAVE_SSE4_1 && !CONFIG_DAALA_TX4
 
 }  // namespace
 #endif  // !CONFIG_DAALA_TX

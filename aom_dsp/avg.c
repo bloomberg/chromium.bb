@@ -171,7 +171,6 @@ void aom_minmax_8x8_c(const uint8_t *src, int src_stride, const uint8_t *ref,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
                              int dp, int *min, int *max) {
   int i, j;
@@ -187,4 +186,3 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
     }
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH

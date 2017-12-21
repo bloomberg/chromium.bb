@@ -512,7 +512,6 @@ void aom_d153_predictor_4x4_c(uint8_t *dst, ptrdiff_t stride,
   DST(1, 3) = AVG3(L, K, J);
 }
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE void highbd_d207e_predictor(uint16_t *dst, ptrdiff_t stride,
                                           int bw, int bh, const uint16_t *above,
                                           const uint16_t *left, int bd) {
@@ -918,7 +917,6 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
     dst += stride;
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 // This serves as a wrapper function, so that all the prediction functions
 // can be unified and accessed as a pointer array. Note that the boundary
@@ -930,7 +928,6 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
     type##_predictor(dst, stride, width, height, above, left); \
   }
 
-#if CONFIG_HIGHBITDEPTH
 #define intra_pred_highbd_sized(type, width, height)                        \
   void aom_highbd_##type##_predictor_##width##x##height##_c(                \
       uint16_t *dst, ptrdiff_t stride, const uint16_t *above,               \
@@ -1022,59 +1019,6 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_highbd_sized(type, 2, 2) \
   intra_pred_above_4x4(type)
 #endif  // CONFIG_TX64X64
-
-#else
-
-#if CONFIG_TX64X64
-#define intra_pred_rectangular(type) \
-  intra_pred_sized(type, 4, 8) \
-  intra_pred_sized(type, 8, 4) \
-  intra_pred_sized(type, 8, 16) \
-  intra_pred_sized(type, 16, 8) \
-  intra_pred_sized(type, 16, 32) \
-  intra_pred_sized(type, 32, 16) \
-  intra_pred_sized(type, 32, 64) \
-  intra_pred_sized(type, 64, 32) \
-  intra_pred_sized(type, 4, 16) \
-  intra_pred_sized(type, 16, 4) \
-  intra_pred_sized(type, 8, 32) \
-  intra_pred_sized(type, 32, 8) \
-  intra_pred_sized(type, 16, 64) \
-  intra_pred_sized(type, 64, 16)
-#define intra_pred_above_4x4(type) \
-  intra_pred_sized(type, 8, 8) \
-  intra_pred_sized(type, 16, 16) \
-  intra_pred_sized(type, 32, 32) \
-  intra_pred_sized(type, 64, 64) \
-  intra_pred_rectangular(type)
-#define intra_pred_allsizes(type) \
-  intra_pred_sized(type, 2, 2) \
-  intra_pred_sized(type, 4, 4) \
-  intra_pred_above_4x4(type)
-#else  // CONFIG_TX64X64
-#define intra_pred_rectangular(type) \
-  intra_pred_sized(type, 4, 8) \
-  intra_pred_sized(type, 8, 4) \
-  intra_pred_sized(type, 8, 16) \
-  intra_pred_sized(type, 16, 8) \
-  intra_pred_sized(type, 16, 32) \
-  intra_pred_sized(type, 32, 16) \
-  intra_pred_sized(type, 4, 16) \
-  intra_pred_sized(type, 16, 4) \
-  intra_pred_sized(type, 8, 32) \
-  intra_pred_sized(type, 32, 8)
-#define intra_pred_above_4x4(type) \
-  intra_pred_sized(type, 8, 8) \
-  intra_pred_sized(type, 16, 16) \
-  intra_pred_sized(type, 32, 32) \
-  intra_pred_rectangular(type)
-#define intra_pred_allsizes(type) \
-  intra_pred_sized(type, 2, 2) \
-  intra_pred_sized(type, 4, 4) \
-  intra_pred_above_4x4(type)
-#endif  // CONFIG_TX64X64
-
-#endif  // CONFIG_HIGHBITDEPTH
 
 intra_pred_allsizes(d207e)
 intra_pred_allsizes(d63e)

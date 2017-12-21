@@ -164,10 +164,8 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
 }
 
 #define DCT_MAX_VALUE 16384
-#if CONFIG_HIGHBITDEPTH
 #define DCT_MAX_VALUE_HIGH10 65536
 #define DCT_MAX_VALUE_HIGH12 262144
-#endif  // CONFIG_HIGHBITDEPTH
 
 /* Coefficients are predicted via a 3-dimensional probability table. */
 

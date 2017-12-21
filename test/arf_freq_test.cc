@@ -50,9 +50,7 @@ const TestVideoParam kTestVectors[] = {
   { "hantro_collage_w352h288.yuv", 352, 288, 30, 1, 8, AOM_IMG_FMT_I420,
     AOM_BITS_8, 0 },
   { "rush_hour_444.y4m", 352, 288, 30, 1, 8, AOM_IMG_FMT_I444, AOM_BITS_8, 1 },
-#if CONFIG_HIGHBITDEPTH
-// Add list of profile 2/3 test videos here ...
-#endif  // CONFIG_HIGHBITDEPTH
+  // Add list of profile 2/3 test videos here ...
 };
 
 const TestEncodeParam kEncodeVectors[] = {

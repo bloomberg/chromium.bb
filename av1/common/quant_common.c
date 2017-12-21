@@ -132,7 +132,6 @@ static const int16_t dc_qlookup_Q3[QINDEX_RANGE] = {
   1184, 1232, 1282, 1336,
 };
 
-#if CONFIG_HIGHBITDEPTH
 static const int16_t dc_qlookup_10_Q3[QINDEX_RANGE] = {
   4,    9,    10,   13,   15,   17,   20,   22,   25,   28,   31,   34,   37,
   40,   43,   47,   50,   53,   57,   60,   64,   68,   71,   75,   78,   82,
@@ -182,7 +181,6 @@ static const int16_t dc_qlookup_12_Q3[QINDEX_RANGE] = {
   13501, 13913, 14343, 14807, 15290, 15812, 16356, 16943, 17575, 18237, 18949,
   19718, 20521, 21387,
 };
-#endif
 
 static const int16_t ac_qlookup_Q3[QINDEX_RANGE] = {
   4,    8,    9,    10,   11,   12,   13,   14,   15,   16,   17,   18,   19,
@@ -207,7 +205,6 @@ static const int16_t ac_qlookup_Q3[QINDEX_RANGE] = {
   1567, 1597, 1628, 1660, 1692, 1725, 1759, 1793, 1828,
 };
 
-#if CONFIG_HIGHBITDEPTH
 static const int16_t ac_qlookup_10_Q3[QINDEX_RANGE] = {
   4,    9,    11,   13,   16,   18,   21,   24,   27,   30,   33,   37,   40,
   44,   48,   51,   55,   59,   63,   67,   71,   75,   79,   83,   88,   92,
@@ -257,7 +254,6 @@ static const int16_t ac_qlookup_12_Q3[QINDEX_RANGE] = {
   22766, 23214, 23662, 24126, 24590, 25070, 25551, 26047, 26559, 27071, 27599,
   28143, 28687, 29247,
 };
-#endif
 
 #if !CONFIG_DAALA_TX
 
@@ -291,7 +287,6 @@ static const int16_t ac_qlookup_12_Q3[QINDEX_RANGE] = {
 // underflow to 0 in the actual quantization routines.
 
 int16_t av1_dc_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
-#if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_8: return dc_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
     case AOM_BITS_10: return dc_qlookup_10_Q3[clamp(qindex + delta, 0, MAXQ)];
@@ -300,14 +295,9 @@ int16_t av1_dc_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
-#else
-  (void)bit_depth;
-  return dc_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
-#endif
 }
 
 int16_t av1_ac_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
-#if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_8: return ac_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
     case AOM_BITS_10: return ac_qlookup_10_Q3[clamp(qindex + delta, 0, MAXQ)];
@@ -316,10 +306,6 @@ int16_t av1_ac_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
-#else
-  (void)bit_depth;
-  return ac_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
-#endif
 }
 
 // In AV1 TX, the coefficients are always scaled up a factor of 8 (3
@@ -336,7 +322,6 @@ int16_t av1_ac_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth) {
 int16_t av1_qindex_from_ac_Q3(int ac_Q3, aom_bit_depth_t bit_depth) {
   int i;
   const int16_t *tab = ac_qlookup_Q3;
-#if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_10: {
       tab = ac_qlookup_10_Q3;
@@ -350,7 +335,6 @@ int16_t av1_qindex_from_ac_Q3(int ac_Q3, aom_bit_depth_t bit_depth) {
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
-#endif
   (void)bit_depth;
   for (i = 0; i < QINDEX_RANGE; i++) {
     if (ac_Q3 <= tab[i]) return i;

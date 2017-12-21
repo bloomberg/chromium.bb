@@ -50,31 +50,23 @@ static void subtract_block(const MACROBLOCKD *xd, int rows, int cols,
                            int16_t *diff, ptrdiff_t diff_stride,
                            const uint8_t *src8, ptrdiff_t src_stride,
                            const uint8_t *pred8, ptrdiff_t pred_stride) {
-#if !CONFIG_HIGHBITDEPTH
-  (void)xd;
-#endif
-
   if (check_subtract_block_size(rows, cols)) {
-#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       aom_highbd_subtract_block_c(rows, cols, diff, diff_stride, src8,
                                   src_stride, pred8, pred_stride, xd->bd);
       return;
     }
-#endif  // CONFIG_HIGHBITDEPTH
     aom_subtract_block_c(rows, cols, diff, diff_stride, src8, src_stride, pred8,
                          pred_stride);
 
     return;
   }
 
-#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     aom_highbd_subtract_block(rows, cols, diff, diff_stride, src8, src_stride,
                               pred8, pred_stride, xd->bd);
     return;
   }
-#endif  // CONFIG_HIGHBITDEPTH
   aom_subtract_block(rows, cols, diff, diff_stride, src8, src_stride, pred8,
                      pred_stride);
 }
@@ -737,12 +729,10 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_DAALA_TX
     daala_inv_txfm_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
 #else
-#if CONFIG_HIGHBITDEPTH
     if (txfm_param.is_hbd) {
       av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, &txfm_param);
       return;
     }
-#endif  //  CONFIG_HIGHBITDEPTH
     if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
       av1_iwht4x4_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
     } else {

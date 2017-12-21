@@ -239,7 +239,6 @@ static INLINE unsigned int masked_sad4xh_ssse3(
   return (sad + 31) >> 6;
 }
 
-#if CONFIG_HIGHBITDEPTH
 // For width a multiple of 8
 static INLINE unsigned int highbd_masked_sad_ssse3(
     const uint8_t *src8, int src_stride, const uint8_t *a8, int a_stride,
@@ -424,5 +423,3 @@ static INLINE unsigned int highbd_masked_sad4xh_ssse3(
   int sad = _mm_cvtsi128_si32(res);
   return (sad + 31) >> 6;
 }
-
-#endif

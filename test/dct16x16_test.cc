@@ -258,7 +258,6 @@ void iht16x16_ref(const tran_low_t *in, uint8_t *dest, int stride,
   av1_iht16x16_256_add_c(in, dest, stride, txfm_param);
 }
 
-#if CONFIG_HIGHBITDEPTH
 void fht16x16_10(const int16_t *in, tran_low_t *out, int stride,
                  TxfmParam *txfm_param) {
   av1_fwd_txfm2d_16x16_c(in, out, stride, txfm_param->tx_type, 10);
@@ -280,7 +279,6 @@ void iht16x16_12(const tran_low_t *in, uint8_t *out, int stride,
   av1_inv_txfm2d_add_16x16_c(in, CONVERT_TO_SHORTPTR(out), stride,
                              txfm_param->tx_type, 12);
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 class Trans16x16TestBase {
  public:
@@ -301,10 +299,8 @@ class Trans16x16TestBase {
       DECLARE_ALIGNED(16, tran_low_t, test_temp_block[kNumCoeffs]);
       DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
       DECLARE_ALIGNED(16, uint8_t, src[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
       DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
       DECLARE_ALIGNED(16, uint16_t, src16[kNumCoeffs]);
-#endif
 
       // Initialize a test block with input range [-mask_, mask_].
       for (int j = 0; j < kNumCoeffs; ++j) {
@@ -312,12 +308,10 @@ class Trans16x16TestBase {
           src[j] = rnd.Rand8();
           dst[j] = rnd.Rand8();
           test_input_block[j] = src[j] - dst[j];
-#if CONFIG_HIGHBITDEPTH
         } else {
           src16[j] = rnd.Rand16() & mask_;
           dst16[j] = rnd.Rand16() & mask_;
           test_input_block[j] = src16[j] - dst16[j];
-#endif
         }
       }
 
@@ -325,20 +319,14 @@ class Trans16x16TestBase {
           RunFwdTxfm(test_input_block, test_temp_block, pitch_));
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
-#if CONFIG_HIGHBITDEPTH
       } else {
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(test_temp_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
-#endif
       }
 
       for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_HIGHBITDEPTH
         const int32_t diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
-#else
-        const int32_t diff = dst[j] - src[j];
-#endif
         const uint32_t error = diff * diff;
         if (max_error < error) max_error = error;
         total_error += error;
@@ -412,10 +400,8 @@ class Trans16x16TestBase {
 
     DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, ref[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
     DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint16_t, ref16[kNumCoeffs]);
-#endif
 
     for (int i = 0; i < count_test_block; ++i) {
       // Initialize a test block with input range [-mask_, mask_].
@@ -432,10 +418,8 @@ class Trans16x16TestBase {
       // clear reconstructed pixel buffers
       memset(dst, 0, kNumCoeffs * sizeof(uint8_t));
       memset(ref, 0, kNumCoeffs * sizeof(uint8_t));
-#if CONFIG_HIGHBITDEPTH
       memset(dst16, 0, kNumCoeffs * sizeof(uint16_t));
       memset(ref16, 0, kNumCoeffs * sizeof(uint16_t));
-#endif
 
       // quantization with maximum allowed step sizes
       output_ref_block[0] = (output_ref_block[0] / dc_thred) * dc_thred;
@@ -444,20 +428,16 @@ class Trans16x16TestBase {
       if (bit_depth_ == AOM_BITS_8) {
         inv_txfm_ref(output_ref_block, ref, pitch_, &txfm_param_);
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(output_ref_block, dst, pitch_));
-#if CONFIG_HIGHBITDEPTH
       } else {
         inv_txfm_ref(output_ref_block, CONVERT_TO_BYTEPTR(ref16), pitch_,
                      &txfm_param_);
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(output_ref_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
-#endif
       }
       if (bit_depth_ == AOM_BITS_8) {
         for (int j = 0; j < kNumCoeffs; ++j) EXPECT_EQ(ref[j], dst[j]);
-#if CONFIG_HIGHBITDEPTH
       } else {
         for (int j = 0; j < kNumCoeffs; ++j) EXPECT_EQ(ref16[j], dst16[j]);
-#endif
       }
     }
   }
@@ -469,10 +449,8 @@ class Trans16x16TestBase {
     DECLARE_ALIGNED(16, tran_low_t, coeff[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, src[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
     DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint16_t, src16[kNumCoeffs]);
-#endif  // CONFIG_HIGHBITDEPTH
 
     for (int i = 0; i < count_test_block; ++i) {
       double out_r[kNumCoeffs];
@@ -483,12 +461,10 @@ class Trans16x16TestBase {
           src[j] = rnd.Rand8();
           dst[j] = rnd.Rand8();
           in[j] = src[j] - dst[j];
-#if CONFIG_HIGHBITDEPTH
         } else {
           src16[j] = rnd.Rand16() & mask_;
           dst16[j] = rnd.Rand16() & mask_;
           in[j] = src16[j] - dst16[j];
-#endif  // CONFIG_HIGHBITDEPTH
         }
       }
 
@@ -498,20 +474,14 @@ class Trans16x16TestBase {
 
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, 16));
-#if CONFIG_HIGHBITDEPTH
       } else {
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16), 16));
-#endif  // CONFIG_HIGHBITDEPTH
       }
 
       for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
-#else
-        const int diff = dst[j] - src[j];
-#endif  // CONFIG_HIGHBITDEPTH
         const uint32_t error = diff * diff;
         EXPECT_GE(1u, error)
             << "Error: 16x16 IDCT has error " << error << " at index " << j;
@@ -527,10 +497,8 @@ class Trans16x16TestBase {
     DECLARE_ALIGNED(16, tran_low_t, coeff[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint8_t, ref[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
     DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
     DECLARE_ALIGNED(16, uint16_t, ref16[kNumCoeffs]);
-#endif  // CONFIG_HIGHBITDEPTH
 
     for (int i = 0; i < count_test_block; ++i) {
       for (int j = 0; j < kNumCoeffs; ++j) {
@@ -543,31 +511,23 @@ class Trans16x16TestBase {
         if (bit_depth_ == AOM_BITS_8) {
           dst[j] = 0;
           ref[j] = 0;
-#if CONFIG_HIGHBITDEPTH
         } else {
           dst16[j] = 0;
           ref16[j] = 0;
-#endif  // CONFIG_HIGHBITDEPTH
         }
       }
       if (bit_depth_ == AOM_BITS_8) {
         ref_txfm(coeff, ref, pitch_);
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
       } else {
-#if CONFIG_HIGHBITDEPTH
         ref_txfm(coeff, CONVERT_TO_BYTEPTR(ref16), pitch_);
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16), pitch_));
-#endif  // CONFIG_HIGHBITDEPTH
       }
 
       for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - ref[j] : dst16[j] - ref16[j];
-#else
-        const int diff = dst[j] - ref[j];
-#endif  // CONFIG_HIGHBITDEPTH
         const uint32_t error = diff * diff;
         EXPECT_EQ(0u, error) << "Error: 16x16 IDCT Comparison has error "
                              << error << " at index " << j;
@@ -639,7 +599,6 @@ class Trans16x16HT : public Trans16x16TestBase,
     pitch_ = 16;
     mask_ = (1 << bit_depth_) - 1;
     txfm_param_.tx_type = GET_PARAM(2);
-#if CONFIG_HIGHBITDEPTH
     switch (bit_depth_) {
       case AOM_BITS_10:
         fwd_txfm_ref = fht16x16_10;
@@ -654,10 +613,6 @@ class Trans16x16HT : public Trans16x16TestBase,
         inv_txfm_ref = iht16x16_ref;
         break;
     }
-#else
-    fwd_txfm_ref = fht16x16_ref;
-    inv_txfm_ref = iht16x16_ref;
-#endif
   }
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
@@ -732,12 +687,8 @@ class PartialTrans16x16Test : public ::testing::TestWithParam<
 };
 
 TEST_P(PartialTrans16x16Test, Extremes) {
-#if CONFIG_HIGHBITDEPTH
   const int16_t maxval =
       static_cast<int16_t>(clip_pixel_highbd(1 << 30, bit_depth_));
-#else
-  const int16_t maxval = 255;
-#endif
   const int minval = -maxval;
   DECLARE_ALIGNED(16, int16_t, input[kNumCoeffs]);
   DECLARE_ALIGNED(16, tran_low_t, output[kNumCoeffs]);
@@ -754,12 +705,8 @@ TEST_P(PartialTrans16x16Test, Extremes) {
 }
 
 TEST_P(PartialTrans16x16Test, Random) {
-#if CONFIG_HIGHBITDEPTH
   const int16_t maxval =
       static_cast<int16_t>(clip_pixel_highbd(1 << 30, bit_depth_));
-#else
-  const int16_t maxval = 255;
-#endif
   DECLARE_ALIGNED(16, int16_t, input[kNumCoeffs]);
   DECLARE_ALIGNED(16, tran_low_t, output[kNumCoeffs]);
   ACMRandom rnd(ACMRandom::DeterministicSeed());
@@ -777,19 +724,10 @@ TEST_P(PartialTrans16x16Test, Random) {
 
 using std::tr1::make_tuple;
 
-#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(C, Trans16x16DCT,
                         ::testing::Values(make_tuple(&aom_fdct16x16_c,
                                                      &aom_idct16x16_256_add_c,
                                                      DCT_DCT, AOM_BITS_8)));
-#else
-INSTANTIATE_TEST_CASE_P(C, Trans16x16DCT,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_c,
-                                                     &aom_idct16x16_256_add_c,
-                                                     DCT_DCT, AOM_BITS_8)));
-#endif  // CONFIG_HIGHBITDEPTH
-
-#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     C, Trans16x16HT,
     ::testing::Values(
@@ -809,46 +747,8 @@ INSTANTIATE_TEST_CASE_P(
                    AOM_BITS_8),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, ADST_ADST,
                    AOM_BITS_8)));
-#else
-INSTANTIATE_TEST_CASE_P(
-    C, Trans16x16HT,
-    ::testing::Values(make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c,
-                                 DCT_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c,
-                                 ADST_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c,
-                                 DCT_ADST, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c,
-                                 ADST_ADST, AOM_BITS_8)));
-#endif  // CONFIG_HIGHBITDEPTH
 
-#if HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    NEON, Trans16x16DCT,
-    ::testing::Values(make_tuple(&aom_fdct16x16_c, &aom_idct16x16_256_add_neon,
-                                 DCT_DCT, AOM_BITS_8)));
-#endif
-
-#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(SSE2, Trans16x16DCT,
-                        ::testing::Values(make_tuple(
-                            &aom_fdct16x16_sse2, &aom_idct16x16_256_add_sse2,
-                            DCT_DCT, AOM_BITS_8)));
-#if !CONFIG_DAALA_TX16
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans16x16HT,
-    ::testing::Values(make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
-                                 DCT_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
-                                 ADST_DCT, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
-                                 DCT_ADST, AOM_BITS_8),
-                      make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
-                                 ADST_ADST, AOM_BITS_8)));
-#endif  // CONFIG_DAALA_TX16
-#endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, Trans16x16DCT,
                         ::testing::Values(make_tuple(&aom_fdct16x16_sse2,
                                                      &aom_idct16x16_256_add_c,
@@ -865,13 +765,6 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
                                  ADST_ADST, AOM_BITS_8)));
 #endif
-#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
-
-#if HAVE_MSA && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(MSA, Trans16x16DCT,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_msa,
-                                                     &aom_idct16x16_256_add_msa,
-                                                     DCT_DCT, AOM_BITS_8)));
-#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE2
 }  // namespace
 #endif  // !CONFIG_DAALA_TX

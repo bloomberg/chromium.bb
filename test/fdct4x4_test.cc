@@ -57,7 +57,6 @@ void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
   av1_fwht4x4_c(in, out, stride);
 }
 
-#if CONFIG_HIGHBITDEPTH
 void fht4x4_10(const int16_t *in, tran_low_t *out, int stride,
                TxfmParam *txfm_param) {
   av1_fwd_txfm2d_4x4_c(in, out, stride, txfm_param->tx_type, 10);
@@ -87,7 +86,6 @@ void iwht4x4_10(const tran_low_t *in, uint8_t *out, int stride) {
 void iwht4x4_12(const tran_low_t *in, uint8_t *out, int stride) {
   aom_highbd_iwht4x4_16_add_c(in, out, stride, 12);
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 class Trans4x4DCT : public libaom_test::TransformTestBase,
                     public ::testing::TestWithParam<Dct4x4Param> {
@@ -142,13 +140,11 @@ class Trans4x4HT : public libaom_test::TransformTestBase,
     mask_ = (1 << bit_depth_) - 1;
     num_coeffs_ = GET_PARAM(4);
     txfm_param_.tx_type = GET_PARAM(2);
-#if CONFIG_HIGHBITDEPTH
     switch (bit_depth_) {
       case AOM_BITS_10: fwd_txfm_ref = fht4x4_10; break;
       case AOM_BITS_12: fwd_txfm_ref = fht4x4_12; break;
       default: fwd_txfm_ref = fht4x4_ref; break;
     }
-#endif
   }
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
@@ -216,7 +212,6 @@ INSTANTIATE_TEST_CASE_P(C, Trans4x4DCT,
                                                      &aom_idct4x4_16_add_c,
                                                      DCT_DCT, AOM_BITS_8, 16)));
 
-#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     DISABLED_C, Trans4x4HT,
     ::testing::Values(
@@ -240,20 +235,7 @@ INSTANTIATE_TEST_CASE_P(
                    16),
         make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, ADST_ADST, AOM_BITS_8,
                    16)));
-#else
-INSTANTIATE_TEST_CASE_P(
-    C, Trans4x4HT,
-    ::testing::Values(make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, DCT_DCT,
-                                 AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, ADST_DCT,
-                                 AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, DCT_ADST,
-                                 AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_c, ADST_ADST,
-                                 AOM_BITS_8, 16)));
-#endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     C, Trans4x4WHT,
     ::testing::Values(make_tuple(&av1_highbd_fwht4x4_c, &iwht4x4_10, DCT_DCT,
@@ -262,32 +244,6 @@ INSTANTIATE_TEST_CASE_P(
                                  AOM_BITS_12, 16),
                       make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_c, DCT_DCT,
                                  AOM_BITS_8, 16)));
-#else
-INSTANTIATE_TEST_CASE_P(C, Trans4x4WHT,
-                        ::testing::Values(make_tuple(&av1_fwht4x4_c,
-                                                     &aom_iwht4x4_16_add_c,
-                                                     DCT_DCT, AOM_BITS_8, 16)));
-#endif  // CONFIG_HIGHBITDEPTH
-
-#if HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(NEON, Trans4x4DCT,
-                        ::testing::Values(make_tuple(&aom_fdct4x4_c,
-                                                     &aom_idct4x4_16_add_neon,
-                                                     DCT_DCT, AOM_BITS_8, 16)));
-#endif  // HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_NEON && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    NEON, Trans4x4HT,
-    ::testing::Values(make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_neon,
-                                 DCT_DCT, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_neon,
-                                 ADST_DCT, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_neon,
-                                 DCT_ADST, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_neon,
-                                 ADST_ADST, AOM_BITS_8, 16)));
-#endif  // HAVE_NEON && !CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSE2 && !CONFIG_DAALA_TX4
 INSTANTIATE_TEST_CASE_P(
@@ -298,26 +254,7 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_DCT, AOM_BITS_8, 16)));
 #endif
 
-#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4DCT,
-                        ::testing::Values(make_tuple(&aom_fdct4x4_sse2,
-                                                     &aom_idct4x4_16_add_sse2,
-                                                     DCT_DCT, AOM_BITS_8, 16)));
-#if !CONFIG_DAALA_TX4
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans4x4HT,
-    ::testing::Values(make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2,
-                                 DCT_DCT, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2,
-                                 ADST_DCT, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2,
-                                 DCT_ADST, AOM_BITS_8, 16),
-                      make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2,
-                                 ADST_ADST, AOM_BITS_8, 16)));
-#endif  // !CONFIG_DAALA_TX4
-#endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_TX4
+#if HAVE_SSE2 && !CONFIG_DAALA_TX4
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
     ::testing::Values(make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
@@ -328,13 +265,7 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_ADST, AOM_BITS_8, 16),
                       make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c,
                                  ADST_ADST, AOM_BITS_8, 16)));
-#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_TX4
+#endif  // HAVE_SSE2 && !CONFIG_DAALA_TX4
 
-#if HAVE_MSA && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(MSA, Trans4x4DCT,
-                        ::testing::Values(make_tuple(&aom_fdct4x4_msa,
-                                                     &aom_idct4x4_16_add_msa,
-                                                     DCT_DCT, AOM_BITS_8, 16)));
-#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 }  // namespace
 #endif  // !CONFIG_DAALA_TX

@@ -58,15 +58,9 @@
 #define BGSPRITE_MASK_BLOCK_SIZE 4
 
 typedef struct {
-#if CONFIG_HIGHBITDEPTH
   uint16_t y;
   uint16_t u;
   uint16_t v;
-#else
-  uint8_t y;
-  uint8_t u;
-  uint8_t v;
-#endif  // CONFIG_HIGHBITDEPTH
   uint8_t exists;
 } YuvPixel;
 
@@ -78,15 +72,9 @@ typedef struct {
   double u_mean[2];
   double v_mean[2];
 
-#if CONFIG_HIGHBITDEPTH
   uint16_t y;
   uint16_t u;
   uint16_t v;
-#else
-  uint8_t y;
-  uint8_t u;
-  uint8_t v;
-#endif  // CONFIG_HIGHBITDEPTH
   double final_var;
 } YuvPixelGaussian;
 
@@ -258,11 +246,9 @@ static void build_image_stack(YV12_BUFFER_CONFIG **const frames,
     invert_params(params[i], transform_params);
     params_to_matrix(transform_params, transform_matrix);
 
-#if CONFIG_HIGHBITDEPTH
     const uint16_t *y_buffer16 = CONVERT_TO_SHORTPTR(frames[i]->y_buffer);
     const uint16_t *u_buffer16 = CONVERT_TO_SHORTPTR(frames[i]->u_buffer);
     const uint16_t *v_buffer16 = CONVERT_TO_SHORTPTR(frames[i]->v_buffer);
-#endif  // CONFIG_HIGHBITDEPTH
 
     for (int y = 0; y < transformed_height; ++y) {
       for (int x = 0; x < transformed_width; ++x) {
@@ -306,7 +292,6 @@ static void build_image_stack(YV12_BUFFER_CONFIG **const frames,
                 int uvchannel_idx = (interp_y >> frames[i]->subsampling_y) *
                                         frames[i]->uv_stride +
                                     (interp_x >> frames[i]->subsampling_x);
-#if CONFIG_HIGHBITDEPTH
                 if (frames[i]->flags & YV12_FLAG_HIGHBITDEPTH) {
                   interpolated_yvalue += (1 - fabs(u - x_decimal)) *
                                          (1 - fabs(v - y_decimal)) *
@@ -318,7 +303,6 @@ static void build_image_stack(YV12_BUFFER_CONFIG **const frames,
                                          (1 - fabs(v - y_decimal)) *
                                          v_buffer16[uvchannel_idx];
                 } else {
-#endif  // CONFIG_HIGHBITDEPTH
                   interpolated_yvalue += (1 - fabs(u - x_decimal)) *
                                          (1 - fabs(v - y_decimal)) *
                                          frames[i]->y_buffer[ychannel_idx];
@@ -328,9 +312,7 @@ static void build_image_stack(YV12_BUFFER_CONFIG **const frames,
                   interpolated_vvalue += (1 - fabs(u - x_decimal)) *
                                          (1 - fabs(v - y_decimal)) *
                                          frames[i]->v_buffer[uvchannel_idx];
-#if CONFIG_HIGHBITDEPTH
                 }
-#endif  // CONFIG_HIGHBITDEPTH
               }
             }
           }
@@ -346,21 +328,17 @@ static void build_image_stack(YV12_BUFFER_CONFIG **const frames,
           int pano_x = x + x_min[i] + x_offset;
           int pano_y = y + y_min[i] + y_offset;
 
-#if CONFIG_HIGHBITDEPTH
           if (frames[i]->flags & YV12_FLAG_HIGHBITDEPTH) {
             img_stack[pano_y][pano_x][i].y = (uint16_t)interpolated_yvalue;
             img_stack[pano_y][pano_x][i].u = (uint16_t)interpolated_uvalue;
             img_stack[pano_y][pano_x][i].v = (uint16_t)interpolated_vvalue;
             img_stack[pano_y][pano_x][i].exists = 1;
           } else {
-#endif  // CONFIG_HIGHBITDEPTH
             img_stack[pano_y][pano_x][i].y = (uint8_t)interpolated_yvalue;
             img_stack[pano_y][pano_x][i].u = (uint8_t)interpolated_uvalue;
             img_stack[pano_y][pano_x][i].v = (uint8_t)interpolated_vvalue;
             img_stack[pano_y][pano_x][i].exists = 1;
-#if CONFIG_HIGHBITDEPTH
           }
-#endif  // CONFIG_HIGHBITDEPTH
         } else if (image_x >= 0 && image_x < frame_width && image_y >= 0 &&
                    image_y < frame_height) {
           // Place in panorama stack.
@@ -371,21 +349,17 @@ static void build_image_stack(YV12_BUFFER_CONFIG **const frames,
           int uvchannel_idx =
               (image_y >> frames[i]->subsampling_y) * frames[i]->uv_stride +
               (image_x >> frames[i]->subsampling_x);
-#if CONFIG_HIGHBITDEPTH
           if (frames[i]->flags & YV12_FLAG_HIGHBITDEPTH) {
             img_stack[pano_y][pano_x][i].y = y_buffer16[ychannel_idx];
             img_stack[pano_y][pano_x][i].u = u_buffer16[uvchannel_idx];
             img_stack[pano_y][pano_x][i].v = v_buffer16[uvchannel_idx];
             img_stack[pano_y][pano_x][i].exists = 1;
           } else {
-#endif  // CONFIG_HIGHBITDEPTH
             img_stack[pano_y][pano_x][i].y = frames[i]->y_buffer[ychannel_idx];
             img_stack[pano_y][pano_x][i].u = frames[i]->u_buffer[uvchannel_idx];
             img_stack[pano_y][pano_x][i].v = frames[i]->v_buffer[uvchannel_idx];
             img_stack[pano_y][pano_x][i].exists = 1;
-#if CONFIG_HIGHBITDEPTH
           }
-#endif  // CONFIG_HIGHBITDEPTH
         }
       }
     }
@@ -528,20 +502,16 @@ static void blend_mean(const int width, const int height, const int num_frames,
 
       if (count != 0) {
         blended_img[y][x].exists = 1;
-#if CONFIG_HIGHBITDEPTH
         if (highbitdepth) {
           blended_img[y][x].y = (uint16_t)OD_DIVU(y_sum, count);
           blended_img[y][x].u = (uint16_t)OD_DIVU(u_sum, count);
           blended_img[y][x].v = (uint16_t)OD_DIVU(v_sum, count);
         } else {
-#endif  // CONFIG_HIGHBITDEPTH
           (void)highbitdepth;
           blended_img[y][x].y = (uint8_t)OD_DIVU(y_sum, count);
           blended_img[y][x].u = (uint8_t)OD_DIVU(u_sum, count);
           blended_img[y][x].v = (uint8_t)OD_DIVU(v_sum, count);
-#if CONFIG_HIGHBITDEPTH
         }
-#endif  // CONFIG_HIGHBITDEPTH
       } else {
         blended_img[y][x].exists = 0;
       }
@@ -759,7 +729,6 @@ static void resample_panorama(YuvPixel **blended_img, const int center_idx,
   const int y_offset = -pano_y_min;
   const int crop_x_offset = x_min[center_idx] + x_offset;
   const int crop_y_offset = y_min[center_idx] + y_offset;
-#if CONFIG_HIGHBITDEPTH
   if (panorama->flags & YV12_FLAG_HIGHBITDEPTH) {
     // Use median Y value.
     uint16_t *pano_y_buffer16 = CONVERT_TO_SHORTPTR(panorama->y_buffer);
@@ -810,7 +779,6 @@ static void resample_panorama(YuvPixel **blended_img, const int center_idx,
       }
     }
   } else {
-#endif  // CONFIG_HIGHBITDEPTH
     // Use blended Y value.
     for (int y = 0; y < panorama->y_height; ++y) {
       for (int x = 0; x < panorama->y_width; ++x) {
@@ -858,9 +826,7 @@ static void resample_panorama(YuvPixel **blended_img, const int center_idx,
         }
       }
     }
-#if CONFIG_HIGHBITDEPTH
   }
-#endif  // CONFIG_HIGHBITDEPTH
 }
 
 #if BGSPRITE_ENABLE_SEGMENTATION
@@ -917,8 +883,7 @@ static void combine_arf(YV12_BUFFER_CONFIG *const temporal_arf,
                 (x >> temporal_arf->subsampling_x);
 
             if (count > amount) {
-// Foreground; use temporal arf.
-#if CONFIG_HIGHBITDEPTH
+              // Foreground; use temporal arf.
               if (temporal_arf->flags & YV12_FLAG_HIGHBITDEPTH) {
                 uint16_t *pano_y_buffer16 =
                     CONVERT_TO_SHORTPTR(temporal_arf->y_buffer);
@@ -930,16 +895,12 @@ static void combine_arf(YV12_BUFFER_CONFIG *const temporal_arf,
                 blended_img[y][x].u = pano_u_buffer16[uvchannel_idx];
                 blended_img[y][x].v = pano_v_buffer16[uvchannel_idx];
               } else {
-#endif  // CONFIG_HIGHBITDEPTH
                 blended_img[y][x].y = temporal_arf->y_buffer[ychannel_idx];
                 blended_img[y][x].u = temporal_arf->u_buffer[uvchannel_idx];
                 blended_img[y][x].v = temporal_arf->v_buffer[uvchannel_idx];
-#if CONFIG_HIGHBITDEPTH
               }
-#endif  // CONFIG_HIGHBITDEPTH
             } else {
-// Background; use bgsprite arf.
-#if CONFIG_HIGHBITDEPTH
+              // Background; use bgsprite arf.
               if (bgsprite->flags & YV12_FLAG_HIGHBITDEPTH) {
                 uint16_t *pano_y_buffer16 =
                     CONVERT_TO_SHORTPTR(bgsprite->y_buffer);
@@ -951,13 +912,10 @@ static void combine_arf(YV12_BUFFER_CONFIG *const temporal_arf,
                 blended_img[y][x].u = pano_u_buffer16[uvchannel_idx];
                 blended_img[y][x].v = pano_v_buffer16[uvchannel_idx];
               } else {
-#endif  // CONFIG_HIGHBITDEPTH
                 blended_img[y][x].y = bgsprite->y_buffer[ychannel_idx];
                 blended_img[y][x].u = bgsprite->u_buffer[uvchannel_idx];
                 blended_img[y][x].v = bgsprite->v_buffer[uvchannel_idx];
-#if CONFIG_HIGHBITDEPTH
               }
-#endif  // CONFIG_HIGHBITDEPTH
             }
           }
         }
@@ -1024,9 +982,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
   memset(&bgsprite, 0, sizeof(bgsprite));
   aom_alloc_frame_buffer(&bgsprite, frames[0]->y_width, frames[0]->y_height,
                          frames[0]->subsampling_x, frames[0]->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
                          frames[0]->flags & YV12_FLAG_HIGHBITDEPTH,
-#endif
                          frames[0]->border, 0);
   aom_yv12_copy_frame(frames[0], &bgsprite);
   bgsprite.bit_depth = frames[0]->bit_depth;
@@ -1036,13 +992,10 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
 #if BGSPRITE_ENABLE_SEGMENTATION
   YV12_BUFFER_CONFIG temporal_bgsprite;
   memset(&temporal_bgsprite, 0, sizeof(temporal_bgsprite));
-  aom_alloc_frame_buffer(&temporal_bgsprite, frames[0]->y_width,
-                         frames[0]->y_height, frames[0]->subsampling_x,
-                         frames[0]->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                         frames[0]->flags & YV12_FLAG_HIGHBITDEPTH,
-#endif
-                         frames[0]->border, 0);
+  aom_alloc_frame_buffer(
+      &temporal_bgsprite, frames[0]->y_width, frames[0]->y_height,
+      frames[0]->subsampling_x, frames[0]->subsampling_y,
+      frames[0]->flags & YV12_FLAG_HIGHBITDEPTH, frames[0]->border, 0);
   aom_yv12_copy_frame(frames[0], &temporal_bgsprite);
   temporal_bgsprite.bit_depth = frames[0]->bit_depth;
 
@@ -1078,9 +1031,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
   memset(&temporal_arf, 0, sizeof(temporal_arf));
   aom_alloc_frame_buffer(&temporal_arf, frames[0]->y_width, frames[0]->y_height,
                          frames[0]->subsampling_x, frames[0]->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
                          frames[0]->flags & YV12_FLAG_HIGHBITDEPTH,
-#endif
                          frames[0]->border, 0);
   aom_yv12_copy_frame(frames[0], &temporal_arf);
   temporal_arf.bit_depth = frames[0]->bit_depth;
@@ -1171,10 +1122,7 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   int inliers_by_motion[RANSAC_NUM_MOTIONS];
   for (int frame = 0; frame < frames_to_stitch - 1; ++frame) {
     const int global_motion_ret = compute_global_motion_feature_based(
-        model, frames[frame + 1], frames[frame],
-#if CONFIG_HIGHBITDEPTH
-        cpi->common.bit_depth,
-#endif  // CONFIG_HIGHBITDEPTH
+        model, frames[frame + 1], frames[frame], cpi->common.bit_depth,
         inliers_by_motion, params[frame + 1], RANSAC_NUM_MOTIONS);
 
     // Quit if global motion had an error.

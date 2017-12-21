@@ -83,10 +83,9 @@ MASKSADMxN(64, 16)
 MASKSADMxN(32, 128)
 MASKSADMxN(128, 32)
 #endif
-/* clang-format on */
+    /* clang-format on */
 
-#if CONFIG_HIGHBITDEPTH
-                                static INLINE
+    static INLINE
     unsigned int highbd_masked_sad(const uint8_t *src8, int src_stride,
                                    const uint8_t *a8, int a_stride,
                                    const uint8_t *b8, int b_stride,
@@ -156,7 +155,6 @@ HIGHBD_MASKSADMXN(64, 16)
 HIGHBD_MASKSADMXN(32, 128)
 HIGHBD_MASKSADMXN(128, 32)
 #endif
-#endif  // CONFIG_HIGHBITDEPTH
 
 // pre: predictor being evaluated
 // wsrc: target weighted prediction (has been *4096 to keep precision)
@@ -216,10 +214,9 @@ OBMCSADMxN(64, 16)
 OBMCSADMxN(32, 128)
 OBMCSADMxN(128, 32)
 #endif
-/* clang-format on */
+    /* clang-format on */
 
-#if CONFIG_HIGHBITDEPTH
-                                static INLINE
+    static INLINE
     unsigned int highbd_obmc_sad(const uint8_t *pre8, int pre_stride,
                                  const int32_t *wsrc, const int32_t *mask,
                                  int width, int height) {
@@ -277,5 +274,4 @@ HIGHBD_OBMCSADMXN(32, 128)
 HIGHBD_OBMCSADMXN(128, 32)
 #endif
 /* clang-format on */
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_AV1

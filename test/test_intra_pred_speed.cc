@@ -634,7 +634,6 @@ INTRA_PRED_TEST(MSA, TestIntraPred32, "intra32x32", aom_dc_predictor_32x32_msa,
 
 // -----------------------------------------------------------------------------
 // High Bitdepth
-#if CONFIG_HIGHBITDEPTH
 namespace {
 
 typedef void (*AvxHighbdPredFunc)(uint16_t *dst, ptrdiff_t y_stride,
@@ -1119,6 +1118,5 @@ HIGHBD_INTRA_PRED_TEST(
     aom_highbd_paeth_predictor_32x16_c, aom_highbd_smooth_predictor_32x16_c,
     aom_highbd_smooth_v_predictor_32x16_c,
     aom_highbd_smooth_h_predictor_32x16_c)
-#endif  // CONFIG_HIGHBITDEPTH
 
 #include "test/test_libaom.cc"

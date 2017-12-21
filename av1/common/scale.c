@@ -62,14 +62,9 @@ MV32 av1_scale_mv(const MV *mvq4, int x, int y,
   return res;
 }
 
-#if CONFIG_HIGHBITDEPTH
 void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
                                        int other_h, int this_w, int this_h,
                                        int use_highbd) {
-#else
-void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
-                                       int other_h, int this_w, int this_h) {
-#endif
   if (!valid_ref_frame_size(other_w, other_h, this_w, this_h)) {
     sf->x_scale_fp = REF_INVALID_SCALE;
     sf->y_scale_fp = REF_INVALID_SCALE;
@@ -137,7 +132,6 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
   sf->predict[1][1][0] = aom_convolve8;
   sf->predict[1][1][1] = aom_convolve8_avg;
 
-#if CONFIG_HIGHBITDEPTH
   if (use_highbd) {
     if (sf->x_step_q4 == SCALE_SUBPEL_SHIFTS) {
       if (sf->y_step_q4 == SCALE_SUBPEL_SHIFTS) {
@@ -180,7 +174,6 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
     sf->highbd_predict[1][1][0] = aom_highbd_convolve8;
     sf->highbd_predict[1][1][1] = aom_highbd_convolve8_avg;
   }
-#endif  // CONFIG_HIGHBITDEPTH
 
   // AV1 convolve functions
   // Special case convolve functions should produce the same result as

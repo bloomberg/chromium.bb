@@ -740,12 +740,9 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
 
   if (!cpi->lookahead)
-    cpi->lookahead = av1_lookahead_init(oxcf->width, oxcf->height,
-                                        cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                                        cm->use_highbitdepth,
-#endif
-                                        oxcf->lag_in_frames);
+    cpi->lookahead = av1_lookahead_init(
+        oxcf->width, oxcf->height, cm->subsampling_x, cm->subsampling_y,
+        cm->use_highbitdepth, oxcf->lag_in_frames);
   if (!cpi->lookahead)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate lag buffers");
@@ -753,11 +750,8 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
   // TODO(agrange) Check if ARF is enabled and skip allocation if not.
   if (aom_realloc_frame_buffer(&cpi->alt_ref_buffer, oxcf->width, oxcf->height,
                                cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                               cm->use_highbitdepth,
-#endif
-                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                               NULL, NULL))
+                               cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                               cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
 }
@@ -766,11 +760,8 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   if (aom_realloc_frame_buffer(&cpi->last_frame_uf, cm->width, cm->height,
                                cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                               cm->use_highbitdepth,
-#endif
-                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                               NULL, NULL))
+                               cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                               cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame buffer");
 
@@ -782,10 +773,7 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 #else
           cm->width, cm->height,
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-          cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-          cm->use_highbitdepth,
-#endif
+          cm->subsampling_x, cm->subsampling_y, cm->use_highbitdepth,
           AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
@@ -793,21 +781,15 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,
                                cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                               cm->use_highbitdepth,
-#endif
-                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                               NULL, NULL))
+                               cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                               cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled source buffer");
 
   if (aom_realloc_frame_buffer(&cpi->scaled_last_source, cm->width, cm->height,
                                cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                               cm->use_highbitdepth,
-#endif
-                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                               NULL, NULL))
+                               cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                               cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled last source buffer");
 }
@@ -1064,9 +1046,7 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
 
   cm->profile = oxcf->profile;
   cm->bit_depth = oxcf->bit_depth;
-#if CONFIG_HIGHBITDEPTH
   cm->use_highbitdepth = oxcf->use_highbitdepth;
-#endif
   cm->color_space = oxcf->color_space;
 #if CONFIG_COLORSPACE_HEADERS
   cm->transfer_function = oxcf->transfer_function;
@@ -1109,7 +1089,6 @@ static void set_rc_buffer_sizes(RATE_CONTROL *rc,
       (maximum == 0) ? bandwidth / 8 : maximum * bandwidth / 1000;
 }
 
-#if CONFIG_HIGHBITDEPTH
 #if CONFIG_JNT_COMP
 #define HIGHBD_BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX3F, SDX8F, SDX4DF, JSDAF, \
                    JSVAF)                                                     \
@@ -3056,7 +3035,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
     }
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 static void realloc_segmentation_maps(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3201,9 +3179,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->ext_refresh_frame_flags_pending = 0;
   cpi->ext_refresh_frame_context_pending = 0;
 
-#if CONFIG_HIGHBITDEPTH
   highbd_set_var_fns(cpi);
-#endif
 #if CONFIG_AMVR
   cm->seq_force_integer_mv = 2;
 #endif
@@ -3392,11 +3368,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   }
 #endif
 
-#if CONFIG_HIGHBITDEPTH
   int buf_scaler = 2;
-#else
-  int buf_scaler = 1;
-#endif
   CHECK_MEM_ERROR(
       cm, cpi->td.mb.above_pred_buf,
       (uint8_t *)aom_memalign(16,
@@ -3783,9 +3755,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_HIGHBITDEPTH
   highbd_set_var_fns(cpi);
-#endif
 
   /* av1_init_quantizer() is first called here. Add check in
    * av1_frame_init_quantizer() so that av1_init_quantizer is only
@@ -3989,12 +3959,8 @@ static void generate_psnr_packet(AV1_COMP *cpi) {
   struct aom_codec_cx_pkt pkt;
   int i;
   PSNR_STATS psnr;
-#if CONFIG_HIGHBITDEPTH
   aom_calc_highbd_psnr(cpi->source, cpi->common.frame_to_show, &psnr,
                        cpi->td.mb.e_mbd.bd, cpi->oxcf.input_bit_depth);
-#else
-  aom_calc_psnr(cpi->source, cpi->common.frame_to_show, &psnr);
-#endif
 
   for (i = 0; i < 4; ++i) {
     pkt.data.psnr.samples[i] = psnr.samples[i];
@@ -4165,7 +4131,6 @@ void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
   uint8_t *src = s->y_buffer;
   int h = cm->height;
   if (yuv_rec_file == NULL) return;
-#if CONFIG_HIGHBITDEPTH
   if (s->flags & YV12_FLAG_HIGHBITDEPTH) {
     uint16_t *src16 = CONVERT_TO_SHORTPTR(s->y_buffer);
 
@@ -4193,7 +4158,6 @@ void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
     fflush(yuv_rec_file);
     return;
   }
-#endif  // CONFIG_HIGHBITDEPTH
 
   do {
     fwrite(src, s->y_width, 1, yuv_rec_file);
@@ -4633,7 +4597,6 @@ static void scale_references(AV1_COMP *cpi) {
         new_fb_ptr = &pool->frame_bufs[new_fb];
         if (force_scaling || new_fb_ptr->buf.y_crop_width != cm->width ||
             new_fb_ptr->buf.y_crop_height != cm->height) {
-#if CONFIG_HIGHBITDEPTH
           if (aom_realloc_frame_buffer(
                   &new_fb_ptr->buf, cm->width, cm->height, cm->subsampling_x,
                   cm->subsampling_y, cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
@@ -4642,15 +4605,6 @@ static void scale_references(AV1_COMP *cpi) {
                                "Failed to allocate frame buffer");
           av1_resize_and_extend_frame(ref, &new_fb_ptr->buf,
                                       (int)cm->bit_depth);
-#else
-          if (aom_realloc_frame_buffer(&new_fb_ptr->buf, cm->width, cm->height,
-                                       cm->subsampling_x, cm->subsampling_y,
-                                       AOM_BORDER_IN_PIXELS, cm->byte_alignment,
-                                       NULL, NULL, NULL))
-            aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                               "Failed to allocate frame buffer");
-          av1_resize_and_extend_frame(ref, &new_fb_ptr->buf);
-#endif
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
           alloc_frame_mvs(cm, new_fb);
 #if CONFIG_SEGMENT_PRED_LAST
@@ -4905,24 +4859,16 @@ static void init_ref_frame_bufs(AV1_COMMON *cm) {
 #endif
 }
 
-static void check_initial_width(AV1_COMP *cpi,
-#if CONFIG_HIGHBITDEPTH
-                                int use_highbitdepth,
-#endif
+static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
                                 int subsampling_x, int subsampling_y) {
   AV1_COMMON *const cm = &cpi->common;
 
-  if (!cpi->initial_width ||
-#if CONFIG_HIGHBITDEPTH
-      cm->use_highbitdepth != use_highbitdepth ||
-#endif
+  if (!cpi->initial_width || cm->use_highbitdepth != use_highbitdepth ||
       cm->subsampling_x != subsampling_x ||
       cm->subsampling_y != subsampling_y) {
     cm->subsampling_x = subsampling_x;
     cm->subsampling_y = subsampling_y;
-#if CONFIG_HIGHBITDEPTH
     cm->use_highbitdepth = use_highbitdepth;
-#endif
 
     alloc_raw_frame_buffers(cpi);
     init_ref_frame_bufs(cm);
@@ -4939,12 +4885,8 @@ static void check_initial_width(AV1_COMP *cpi,
 // Returns 1 if the assigned width or height was <= 0.
 static int set_size_literal(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *cm = &cpi->common;
-#if CONFIG_HIGHBITDEPTH
   check_initial_width(cpi, cm->use_highbitdepth, cm->subsampling_x,
                       cm->subsampling_y);
-#else
-  check_initial_width(cpi, cm->subsampling_x, cm->subsampling_y);
-#endif  // CONFIG_HIGHBITDEPTH
 
   if (width <= 0 || height <= 0) return 1;
 
@@ -4989,11 +4931,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   // Reset the frame pointers to the current frame size.
   if (aom_realloc_frame_buffer(get_frame_new_buffer(cm), cm->width, cm->height,
                                cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                               cm->use_highbitdepth,
-#endif
-                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                               NULL, NULL))
+                               cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
+                               cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
@@ -5024,15 +4963,9 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     if (buf_idx != INVALID_IDX) {
       YV12_BUFFER_CONFIG *const buf = &cm->buffer_pool->frame_bufs[buf_idx].buf;
       ref_buf->buf = buf;
-#if CONFIG_HIGHBITDEPTH
       av1_setup_scale_factors_for_frame(
           &ref_buf->sf, buf->y_crop_width, buf->y_crop_height, cm->width,
           cm->height, (buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0);
-#else
-      av1_setup_scale_factors_for_frame(&ref_buf->sf, buf->y_crop_width,
-                                        buf->y_crop_height, cm->width,
-                                        cm->height);
-#endif  // CONFIG_HIGHBITDEPTH
       if (av1_is_scaled(&ref_buf->sf)) aom_extend_frame_borders(buf);
     } else {
       ref_buf->buf = NULL;
@@ -5040,14 +4973,9 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   }
 
 #if CONFIG_INTRABC
-#if CONFIG_HIGHBITDEPTH
   av1_setup_scale_factors_for_frame(&xd->sf_identity, cm->width, cm->height,
                                     cm->width, cm->height,
                                     cm->use_highbitdepth);
-#else
-  av1_setup_scale_factors_for_frame(&xd->sf_identity, cm->width, cm->height,
-                                    cm->width, cm->height);
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_INTRABC
 
   set_ref_ptrs(cm, xd, LAST_FRAME, LAST_FRAME);
@@ -5253,21 +5181,15 @@ static void superres_post_encode(AV1_COMP *cpi) {
     if (aom_realloc_frame_buffer(
             &cpi->scaled_source, cm->superres_upscaled_width,
             cm->superres_upscaled_height, cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-            cm->use_highbitdepth,
-#endif  // CONFIG_HIGHBITDEPTH
-            AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
+            cm->use_highbitdepth, AOM_BORDER_IN_PIXELS, cm->byte_alignment,
+            NULL, NULL, NULL))
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to reallocate scaled source buffer for superres");
     assert(cpi->scaled_source.y_crop_width == cm->superres_upscaled_width);
     assert(cpi->scaled_source.y_crop_height == cm->superres_upscaled_height);
-#if CONFIG_HIGHBITDEPTH
     av1_resize_and_extend_frame(cpi->unscaled_source, &cpi->scaled_source,
                                 (int)cm->bit_depth);
-#else
-    av1_resize_and_extend_frame(cpi->unscaled_source, &cpi->scaled_source);
-#endif  // CONFIG_HIGHBITDEPTH
     cpi->source = &cpi->scaled_source;
   }
 }
@@ -5414,10 +5336,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   if (cpi->unscaled_last_source != NULL)
     cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
                                              &cpi->scaled_last_source);
-#if CONFIG_HIGHBITDEPTH
   cpi->source->buf_8bit_valid = 0;
-#endif
-
   if (frame_is_intra_only(cm) == 0) {
     scale_references(cpi);
   }
@@ -5470,9 +5389,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
   set_size_independent_vars(cpi);
 
-#if CONFIG_HIGHBITDEPTH
   cpi->source->buf_8bit_valid = 0;
-#endif
 
   aom_clear_system_state();
   setup_frame_size(cpi);
@@ -5572,16 +5489,11 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
         int64_t high_err_target = cpi->ambient_err;
         int64_t low_err_target = cpi->ambient_err >> 1;
 
-#if CONFIG_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           kf_err = aom_highbd_get_y_sse(cpi->source, get_frame_new_buffer(cm));
         } else {
           kf_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
         }
-#else
-        kf_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
-#endif  // CONFIG_HIGHBITDEPTH
-
         // Prevent possible divide by zero error below for perfect KF
         kf_err += !kf_err;
 
@@ -6214,18 +6126,14 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     const int frame_id_length = FRAME_ID_LENGTH;
     if (cm->current_frame_id == -1) {
       int lsb, msb;
-/* quasi-random initialization of current_frame_id for a key frame */
-#if CONFIG_HIGHBITDEPTH
+      /* quasi-random initialization of current_frame_id for a key frame */
       if (cpi->source->flags & YV12_FLAG_HIGHBITDEPTH) {
         lsb = CONVERT_TO_SHORTPTR(cpi->source->y_buffer)[0] & 0xff;
         msb = CONVERT_TO_SHORTPTR(cpi->source->y_buffer)[1] & 0xff;
       } else {
-#endif
         lsb = cpi->source->y_buffer[0] & 0xff;
         msb = cpi->source->y_buffer[1] & 0xff;
-#if CONFIG_HIGHBITDEPTH
       }
-#endif
       cm->current_frame_id = ((msb << 8) + lsb) % (1 << frame_id_length);
     } else {
       cm->current_frame_id =
@@ -6262,16 +6170,12 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // fixed interval. Note the reconstruction error if it is the frame before
   // the force key frame
   if (cpi->rc.next_key_frame_forced && cpi->rc.frames_to_key == 1) {
-#if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
       cpi->ambient_err =
           aom_highbd_get_y_sse(cpi->source, get_frame_new_buffer(cm));
     } else {
       cpi->ambient_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
     }
-#else
-    cpi->ambient_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
-#endif  // CONFIG_HIGHBITDEPTH
   }
 
   // If the encoder forced a KEY_FRAME decision
@@ -6527,23 +6431,14 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
   int res = 0;
   const int subsampling_x = sd->subsampling_x;
   const int subsampling_y = sd->subsampling_y;
-#if CONFIG_HIGHBITDEPTH
   const int use_highbitdepth = (sd->flags & YV12_FLAG_HIGHBITDEPTH) != 0;
-#endif
 
-#if CONFIG_HIGHBITDEPTH
   check_initial_width(cpi, use_highbitdepth, subsampling_x, subsampling_y);
-#else
-  check_initial_width(cpi, subsampling_x, subsampling_y);
-#endif  // CONFIG_HIGHBITDEPTH
 
   aom_usec_timer_start(&timer);
 
   if (av1_lookahead_push(cpi->lookahead, sd, time_stamp, end_time,
-#if CONFIG_HIGHBITDEPTH
-                         use_highbitdepth,
-#endif  // CONFIG_HIGHBITDEPTH
-                         frame_flags))
+                         use_highbitdepth, frame_flags))
     res = -1;
   aom_usec_timer_mark(&timer);
   cpi->time_receive_data += aom_usec_timer_elapsed(&timer);
@@ -6726,12 +6621,10 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
 #endif
   cpi->bytes += frame_bytes;
 
-#if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
     in_bit_depth = cpi->oxcf.input_bit_depth;
     bit_depth = cm->bit_depth;
   }
-#endif
   if (cm->show_frame) {
     const YV12_BUFFER_CONFIG *orig = cpi->source;
     const YV12_BUFFER_CONFIG *recon = cpi->common.frame_to_show;
@@ -6742,28 +6635,20 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
       PSNR_STATS psnr;
       double frame_ssim2 = 0.0, weight = 0.0;
       aom_clear_system_state();
-// TODO(yaowu): unify these two versions into one.
-#if CONFIG_HIGHBITDEPTH
+      // TODO(yaowu): unify these two versions into one.
       aom_calc_highbd_psnr(orig, recon, &psnr, bit_depth, in_bit_depth);
-#else
-      aom_calc_psnr(orig, recon, &psnr);
-#endif  // CONFIG_HIGHBITDEPTH
 
       adjust_image_stat(psnr.psnr[1], psnr.psnr[2], psnr.psnr[3], psnr.psnr[0],
                         &cpi->psnr);
       cpi->total_sq_error += psnr.sse[0];
       cpi->total_samples += psnr.samples[0];
       samples = psnr.samples[0];
-// TODO(yaowu): unify these two versions into one.
-#if CONFIG_HIGHBITDEPTH
+      // TODO(yaowu): unify these two versions into one.
       if (cm->use_highbitdepth)
         frame_ssim2 =
             aom_highbd_calc_ssim(orig, recon, &weight, bit_depth, in_bit_depth);
       else
         frame_ssim2 = aom_calc_ssim(orig, recon, &weight);
-#else
-      frame_ssim2 = aom_calc_ssim(orig, recon, &weight);
-#endif  // CONFIG_HIGHBITDEPTH
 
       cpi->worst_ssim = AOMMIN(cpi->worst_ssim, frame_ssim2);
       cpi->summed_quality += frame_ssim2 * weight;
@@ -6784,10 +6669,7 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
 #endif
     }
     if (cpi->b_calculate_blockiness) {
-#if CONFIG_HIGHBITDEPTH
-      if (!cm->use_highbitdepth)
-#endif
-      {
+      if (!cm->use_highbitdepth) {
         const double frame_blockiness =
             av1_get_blockiness(orig->y_buffer, orig->y_stride, recon->y_buffer,
                                recon->y_stride, orig->y_width, orig->y_height);
@@ -6796,10 +6678,7 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
       }
 
       if (cpi->b_calculate_consistency) {
-#if CONFIG_HIGHBITDEPTH
-        if (!cm->use_highbitdepth)
-#endif
-        {
+        if (!cm->use_highbitdepth) {
           const double this_inconsistency = aom_get_ssim_metrics(
               orig->y_buffer, orig->y_stride, recon->y_buffer, recon->y_stride,
               orig->y_width, orig->y_height, cpi->ssim_vars, &cpi->metrics, 1);
@@ -7247,9 +7126,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif  // CONFIG_FRAME_MARKER
 
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
-#if CONFIG_HIGHBITDEPTH
   cm->cur_frame->buf.buf_8bit_valid = 0;
-#endif
 
   // Start with a 0 size frame.
   *size = 0;

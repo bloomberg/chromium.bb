@@ -517,7 +517,6 @@ void av1_convolve_2d_scale_sse4_1(const uint8_t *src, int src_stride,
             filter_params_y, conv_params, 8);
 }
 
-#if CONFIG_HIGHBITDEPTH
 // An wrapper to generate the SHUFPD instruction with __m128i types (just
 // writing _mm_shuffle_pd at the callsites gets a bit ugly because of the
 // casts)
@@ -724,4 +723,3 @@ void av1_highbd_convolve_2d_scale_sse4_1(
     vfilter(tmp, im_h, dst, dst_stride, w, h, subpel_y_qn, y_step_qn,
             filter_params_y, conv_params, bd);
 }
-#endif  // CONFIG_HIGHBITDEPTH

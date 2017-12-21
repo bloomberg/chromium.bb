@@ -95,13 +95,11 @@ static uint32_t variance_ref(const uint8_t *src, const uint8_t *ref, int l2w,
         diff = src[y * src_stride + x] - ref[y * ref_stride + x];
         se += diff;
         sse += diff * diff;
-#if CONFIG_HIGHBITDEPTH
       } else {
         diff = CONVERT_TO_SHORTPTR(src)[y * src_stride + x] -
                CONVERT_TO_SHORTPTR(ref)[y * ref_stride + x];
         se += diff;
         sse += diff * diff;
-#endif  // CONFIG_HIGHBITDEPTH
       }
     }
   }
@@ -142,7 +140,6 @@ static uint32_t subpel_variance_ref(const uint8_t *ref, const uint8_t *src,
         const int diff = r - src[w * y + x];
         se += diff;
         sse += diff * diff;
-#if CONFIG_HIGHBITDEPTH
       } else {
         uint16_t *ref16 = CONVERT_TO_SHORTPTR(ref);
         uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
@@ -156,7 +153,6 @@ static uint32_t subpel_variance_ref(const uint8_t *ref, const uint8_t *src,
         const int diff = r - src16[w * y + x];
         se += diff;
         sse += diff * diff;
-#endif  // CONFIG_HIGHBITDEPTH
       }
     }
   }
@@ -194,7 +190,6 @@ static uint32_t subpel_avg_variance_ref(const uint8_t *ref, const uint8_t *src,
             ((r + second_pred[w * y + x] + 1) >> 1) - src[w * y + x];
         se += diff;
         sse += diff * diff;
-#if CONFIG_HIGHBITDEPTH
       } else {
         const uint16_t *ref16 = CONVERT_TO_SHORTPTR(ref);
         const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
@@ -209,7 +204,6 @@ static uint32_t subpel_avg_variance_ref(const uint8_t *ref, const uint8_t *src,
         const int diff = ((r + sec16[w * y + x] + 1) >> 1) - src16[w * y + x];
         se += diff;
         sse += diff * diff;
-#endif  // CONFIG_HIGHBITDEPTH
       }
     }
   }
@@ -250,7 +244,6 @@ static uint32_t jnt_subpel_avg_variance_ref(
 
         se += diff;
         sse += diff * diff;
-#if CONFIG_HIGHBITDEPTH
       } else {
         const uint16_t *ref16 = CONVERT_TO_SHORTPTR(ref);
         const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
@@ -270,7 +263,6 @@ static uint32_t jnt_subpel_avg_variance_ref(
 
         se += diff;
         sse += diff * diff;
-#endif  // CONFIG_HIGHBITDEPTH
       }
     }
   }
@@ -375,23 +367,19 @@ class MainTestClass
     ref_ = new uint8_t[block_size() * unit];
     ASSERT_TRUE(src_ != NULL);
     ASSERT_TRUE(ref_ != NULL);
-#if CONFIG_HIGHBITDEPTH
     if (use_high_bit_depth()) {
       // TODO(skal): remove!
       src_ = CONVERT_TO_BYTEPTR(src_);
       ref_ = CONVERT_TO_BYTEPTR(ref_);
     }
-#endif
   }
 
   virtual void TearDown() {
-#if CONFIG_HIGHBITDEPTH
     if (use_high_bit_depth()) {
       // TODO(skal): remove!
       src_ = reinterpret_cast<uint8_t *>(CONVERT_TO_SHORTPTR(src_));
       ref_ = reinterpret_cast<uint8_t *>(CONVERT_TO_SHORTPTR(ref_));
     }
-#endif
 
     aom_free(src_);
     delete[] ref_;
@@ -466,11 +454,9 @@ void MainTestClass<VarianceFunctionType>::RefTest() {
       if (!use_high_bit_depth()) {
         src_[j] = rnd_.Rand8();
         ref_[j] = rnd_.Rand8();
-#if CONFIG_HIGHBITDEPTH
       } else {
         CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask();
         CONVERT_TO_SHORTPTR(ref_)[j] = rnd_.Rand16() & mask();
-#endif  // CONFIG_HIGHBITDEPTH
       }
     }
     unsigned int sse1, sse2, var1, var2;
@@ -496,11 +482,9 @@ void MainTestClass<VarianceFunctionType>::RefStrideTest() {
       if (!use_high_bit_depth()) {
         src_[src_ind] = rnd_.Rand8();
         ref_[ref_ind] = rnd_.Rand8();
-#if CONFIG_HIGHBITDEPTH
       } else {
         CONVERT_TO_SHORTPTR(src_)[src_ind] = rnd_.Rand16() & mask();
         CONVERT_TO_SHORTPTR(ref_)[ref_ind] = rnd_.Rand16() & mask();
-#endif  // CONFIG_HIGHBITDEPTH
       }
     }
     unsigned int sse1, sse2;
@@ -523,12 +507,10 @@ void MainTestClass<VarianceFunctionType>::OneQuarterTest() {
     memset(src_, 255, block_size());
     memset(ref_, 255, half);
     memset(ref_ + half, 0, half);
-#if CONFIG_HIGHBITDEPTH
   } else {
     aom_memset16(CONVERT_TO_SHORTPTR(src_), 255 << byte_shift(), block_size());
     aom_memset16(CONVERT_TO_SHORTPTR(ref_), 255 << byte_shift(), half);
     aom_memset16(CONVERT_TO_SHORTPTR(ref_) + half, 0, half);
-#endif  // CONFIG_HIGHBITDEPTH
   }
   unsigned int sse, var, expected;
   ASM_REGISTER_STATE_CHECK(
@@ -611,7 +593,6 @@ class SubpelVarianceTest
       src_ = reinterpret_cast<uint8_t *>(aom_memalign(16, block_size()));
       sec_ = reinterpret_cast<uint8_t *>(aom_memalign(16, block_size()));
       ref_ = new uint8_t[block_size() + width() + height() + 1];
-#if CONFIG_HIGHBITDEPTH
     } else {
       src_ = CONVERT_TO_BYTEPTR(reinterpret_cast<uint16_t *>(
           aom_memalign(16, block_size() * sizeof(uint16_t))));
@@ -619,7 +600,6 @@ class SubpelVarianceTest
           aom_memalign(16, block_size() * sizeof(uint16_t))));
       ref_ = CONVERT_TO_BYTEPTR(aom_memalign(
           16, (block_size() + width() + height() + 1) * sizeof(uint16_t)));
-#endif  // CONFIG_HIGHBITDEPTH
     }
     ASSERT_TRUE(src_ != NULL);
     ASSERT_TRUE(sec_ != NULL);
@@ -631,12 +611,10 @@ class SubpelVarianceTest
       aom_free(src_);
       delete[] ref_;
       aom_free(sec_);
-#if CONFIG_HIGHBITDEPTH
     } else {
       aom_free(CONVERT_TO_SHORTPTR(src_));
       aom_free(CONVERT_TO_SHORTPTR(ref_));
       aom_free(CONVERT_TO_SHORTPTR(sec_));
-#endif  // CONFIG_HIGHBITDEPTH
     }
     libaom_test::ClearSystemState();
   }
@@ -674,7 +652,6 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::RefTest() {
         for (int j = 0; j < block_size() + width() + height() + 1; j++) {
           ref_[j] = rnd_.Rand8();
         }
-#if CONFIG_HIGHBITDEPTH
       } else {
         for (int j = 0; j < block_size(); j++) {
           CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask();
@@ -682,7 +659,6 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::RefTest() {
         for (int j = 0; j < block_size() + width() + height() + 1; j++) {
           CONVERT_TO_SHORTPTR(ref_)[j] = rnd_.Rand16() & mask();
         }
-#endif  // CONFIG_HIGHBITDEPTH
       }
       unsigned int sse1, sse2;
       unsigned int var1;
@@ -710,14 +686,12 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::ExtremeRefTest() {
         memset(src_ + half, 255, half);
         memset(ref_, 255, half);
         memset(ref_ + half, 0, half + width() + height() + 1);
-#if CONFIG_HIGHBITDEPTH
       } else {
         aom_memset16(CONVERT_TO_SHORTPTR(src_), mask(), half);
         aom_memset16(CONVERT_TO_SHORTPTR(src_) + half, 0, half);
         aom_memset16(CONVERT_TO_SHORTPTR(ref_), 0, half);
         aom_memset16(CONVERT_TO_SHORTPTR(ref_) + half, mask(),
                      half + width() + height() + 1);
-#endif  // CONFIG_HIGHBITDEPTH
       }
       unsigned int sse1, sse2;
       unsigned int var1;
@@ -744,7 +718,6 @@ void SubpelVarianceTest<SubpixAvgVarMxNFunc>::RefTest() {
         for (int j = 0; j < block_size() + width() + height() + 1; j++) {
           ref_[j] = rnd_.Rand8();
         }
-#if CONFIG_HIGHBITDEPTH
       } else {
         for (int j = 0; j < block_size(); j++) {
           CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask();
@@ -753,7 +726,6 @@ void SubpelVarianceTest<SubpixAvgVarMxNFunc>::RefTest() {
         for (int j = 0; j < block_size() + width() + height() + 1; j++) {
           CONVERT_TO_SHORTPTR(ref_)[j] = rnd_.Rand16() & mask();
         }
-#endif  // CONFIG_HIGHBITDEPTH
       }
       uint32_t sse1, sse2;
       uint32_t var1, var2;
@@ -781,7 +753,6 @@ void SubpelVarianceTest<JntSubpixAvgVarMxNFunc>::RefTest() {
         for (int j = 0; j < block_size() + width() + height() + 1; j++) {
           ref_[j] = rnd_.Rand8();
         }
-#if CONFIG_HIGHBITDEPTH
       } else {
         for (int j = 0; j < block_size(); j++) {
           CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask();
@@ -790,7 +761,6 @@ void SubpelVarianceTest<JntSubpixAvgVarMxNFunc>::RefTest() {
         for (int j = 0; j < block_size() + width() + height() + 1; j++) {
           CONVERT_TO_SHORTPTR(ref_)[j] = rnd_.Rand16() & mask();
         }
-#endif  // CONFIG_HIGHBITDEPTH
       }
       for (int x0 = 0; x0 < 2; ++x0) {
         for (int y0 = 0; y0 < 4; ++y0) {
@@ -940,7 +910,6 @@ INSTANTIATE_TEST_CASE_P(
                                    0)));
 #endif  // CONFIG_JNT_COMP
 
-#if CONFIG_HIGHBITDEPTH
 typedef MainTestClass<VarianceMxNFunc> AvxHBDMseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxHBDVarianceTest;
 typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxHBDSubpelVarianceTest;
@@ -1032,14 +1001,14 @@ const VarianceParams kArrayHBDVariance_c[] = {
 INSTANTIATE_TEST_CASE_P(C, AvxHBDVarianceTest,
                         ::testing::ValuesIn(kArrayHBDVariance_c));
 
-#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
+#if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, AvxHBDVarianceTest,
     ::testing::Values(
         VarianceParams(2, 2, &aom_highbd_8_variance4x4_sse4_1, 8),
         VarianceParams(2, 2, &aom_highbd_10_variance4x4_sse4_1, 10),
         VarianceParams(2, 2, &aom_highbd_12_variance4x4_sse4_1, 12)));
-#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE4_1
 
 const SubpelVarianceParams kArrayHBDSubpelVariance_c[] = {
 #if CONFIG_AV1 && CONFIG_EXT_PARTITION
@@ -1185,7 +1154,6 @@ const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_c[] = {
 };
 INSTANTIATE_TEST_CASE_P(C, AvxHBDSubpelAvgVarianceTest,
                         ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_c));
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, SumOfSquaresTest,
@@ -1247,7 +1215,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelAvgVarianceParams(2, 3, &aom_sub_pixel_avg_variance4x8_sse2, 0),
         SubpelAvgVarianceParams(2, 2, &aom_sub_pixel_avg_variance4x4_sse2, 0)));
 
-#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
+#if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, AvxSubpelVarianceTest,
     ::testing::Values(
@@ -1270,9 +1238,8 @@ INSTANTIATE_TEST_CASE_P(
         SubpelAvgVarianceParams(2, 2,
                                 &aom_highbd_12_sub_pixel_avg_variance4x4_sse4_1,
                                 12)));
-#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE4_1
 
-#if CONFIG_HIGHBITDEPTH
 /* TODO(debargha): This test does not support the highbd version
 INSTANTIATE_TEST_CASE_P(
     SSE2, AvxHBDMseTest,
@@ -1433,7 +1400,6 @@ const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_sse2[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE2, AvxHBDSubpelAvgVarianceTest,
                         ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_sse2));
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3

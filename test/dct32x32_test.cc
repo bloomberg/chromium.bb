@@ -100,10 +100,8 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
   DECLARE_ALIGNED(16, tran_low_t, test_temp_block[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, src[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, src16[kNumCoeffs]);
-#endif
 
   for (int i = 0; i < count_test_block; ++i) {
     // Initialize a test block with input range [-mask_, mask_].
@@ -112,32 +110,24 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
         src[j] = rnd.Rand8();
         dst[j] = rnd.Rand8();
         test_input_block[j] = src[j] - dst[j];
-#if CONFIG_HIGHBITDEPTH
       } else {
         src16[j] = rnd.Rand16() & mask_;
         dst16[j] = rnd.Rand16() & mask_;
         test_input_block[j] = src16[j] - dst16[j];
-#endif
       }
     }
 
     ASM_REGISTER_STATE_CHECK(fwd_txfm_(test_input_block, test_temp_block, 32));
     if (bit_depth_ == AOM_BITS_8) {
       ASM_REGISTER_STATE_CHECK(inv_txfm_(test_temp_block, dst, 32));
-#if CONFIG_HIGHBITDEPTH
     } else {
       ASM_REGISTER_STATE_CHECK(
           inv_txfm_(test_temp_block, CONVERT_TO_BYTEPTR(dst16), 32));
-#endif
     }
 
     for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_HIGHBITDEPTH
       const int32_t diff =
           bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
-#else
-      const int32_t diff = dst[j] - src[j];
-#endif
       const uint32_t error = diff * diff;
       if (max_error < error) max_error = error;
       total_error += error;
@@ -233,10 +223,8 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
   DECLARE_ALIGNED(16, tran_low_t, coeff[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, src[kNumCoeffs]);
-#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, src16[kNumCoeffs]);
-#endif
 
   for (int i = 0; i < count_test_block; ++i) {
     double out_r[kNumCoeffs];
@@ -247,12 +235,10 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
         src[j] = rnd.Rand8();
         dst[j] = rnd.Rand8();
         in[j] = src[j] - dst[j];
-#if CONFIG_HIGHBITDEPTH
       } else {
         src16[j] = rnd.Rand16() & mask_;
         dst16[j] = rnd.Rand16() & mask_;
         in[j] = src16[j] - dst16[j];
-#endif
       }
     }
 
@@ -261,18 +247,12 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
       coeff[j] = static_cast<tran_low_t>(round(out_r[j]));
     if (bit_depth_ == AOM_BITS_8) {
       ASM_REGISTER_STATE_CHECK(inv_txfm_(coeff, dst, 32));
-#if CONFIG_HIGHBITDEPTH
     } else {
       ASM_REGISTER_STATE_CHECK(inv_txfm_(coeff, CONVERT_TO_BYTEPTR(dst16), 32));
-#endif
     }
     for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_HIGHBITDEPTH
       const int diff =
           bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
-#else
-      const int diff = dst[j] - src[j];
-#endif
       const int error = diff * diff;
       EXPECT_GE(1, error) << "Error: 32x32 IDCT has error " << error
                           << " at index " << j;
@@ -298,12 +278,8 @@ class PartialTrans32x32Test
 };
 
 TEST_P(PartialTrans32x32Test, Extremes) {
-#if CONFIG_HIGHBITDEPTH
   const int16_t maxval =
       static_cast<int16_t>(clip_pixel_highbd(1 << 30, bit_depth_));
-#else
-  const int16_t maxval = 255;
-#endif
   const int minval = -maxval;
   DECLARE_ALIGNED(16, int16_t, input[kNumCoeffs]);
   DECLARE_ALIGNED(16, tran_low_t, output[kNumCoeffs]);
@@ -320,12 +296,8 @@ TEST_P(PartialTrans32x32Test, Extremes) {
 }
 
 TEST_P(PartialTrans32x32Test, Random) {
-#if CONFIG_HIGHBITDEPTH
   const int16_t maxval =
       static_cast<int16_t>(clip_pixel_highbd(1 << 30, bit_depth_));
-#else
-  const int16_t maxval = 255;
-#endif
   DECLARE_ALIGNED(16, int16_t, input[kNumCoeffs]);
   DECLARE_ALIGNED(16, tran_low_t, output[kNumCoeffs]);
   ACMRandom rnd(ACMRandom::DeterministicSeed());
@@ -343,44 +315,14 @@ TEST_P(PartialTrans32x32Test, Random) {
 
 using std::tr1::make_tuple;
 
-#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     C, Trans32x32Test,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c, 0,
                                  AOM_BITS_8),
                       make_tuple(&aom_fdct32x32_rd_c, &aom_idct32x32_1024_add_c,
                                  1, AOM_BITS_8)));
-#else
-INSTANTIATE_TEST_CASE_P(
-    C, Trans32x32Test,
-    ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c, 0,
-                                 AOM_BITS_8),
-                      make_tuple(&aom_fdct32x32_rd_c, &aom_idct32x32_1024_add_c,
-                                 1, AOM_BITS_8)));
-#endif  // CONFIG_HIGHBITDEPTH
 
-#if HAVE_NEON && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    NEON, Trans32x32Test,
-    ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_neon,
-                                 DCT_DCT, AOM_BITS_8),
-                      make_tuple(&aom_fdct32x32_rd_c,
-                                 &aom_idct32x32_1024_add_neon, ADST_DCT,
-                                 AOM_BITS_8)));
-#endif  // HAVE_NEON && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans32x32Test,
-    ::testing::Values(make_tuple(&aom_fdct32x32_sse2,
-                                 &aom_idct32x32_1024_add_sse2, DCT_DCT,
-                                 AOM_BITS_8),
-                      make_tuple(&aom_fdct32x32_rd_sse2,
-                                 &aom_idct32x32_1024_add_sse2, ADST_DCT,
-                                 AOM_BITS_8)));
-#endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
+#if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, Trans32x32Test,
                         ::testing::Values(make_tuple(&aom_fdct32x32_sse2,
                                                      &aom_idct32x32_1024_add_c,
@@ -388,9 +330,9 @@ INSTANTIATE_TEST_CASE_P(SSE2, Trans32x32Test,
                                           make_tuple(&aom_fdct32x32_rd_sse2,
                                                      &aom_idct32x32_1024_add_c,
                                                      ADST_DCT, AOM_BITS_8)));
-#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE2
 
-#if HAVE_AVX2 && !CONFIG_HIGHBITDEPTH
+#if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(
     AVX2, Trans32x32Test,
     ::testing::Values(make_tuple(&aom_fdct32x32_avx2,
@@ -399,27 +341,5 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&aom_fdct32x32_rd_avx2,
                                  &aom_idct32x32_1024_add_sse2, ADST_DCT,
                                  AOM_BITS_8)));
-#endif  // HAVE_AVX2 && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_AVX2 && CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    AVX2, Trans32x32Test,
-    ::testing::Values(make_tuple(&aom_fdct32x32_avx2,
-                                 &aom_idct32x32_1024_add_sse2, DCT_DCT,
-                                 AOM_BITS_8),
-                      make_tuple(&aom_fdct32x32_rd_avx2,
-                                 &aom_idct32x32_1024_add_sse2, ADST_DCT,
-                                 AOM_BITS_8)));
-#endif  // HAVE_AVX2 && CONFIG_HIGHBITDEPTH
-
-#if HAVE_MSA && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    MSA, Trans32x32Test,
-    ::testing::Values(make_tuple(&aom_fdct32x32_msa,
-                                 &aom_idct32x32_1024_add_msa, DCT_DCT,
-                                 AOM_BITS_8),
-                      make_tuple(&aom_fdct32x32_rd_msa,
-                                 &aom_idct32x32_1024_add_msa, ADST_DCT,
-                                 AOM_BITS_8)));
-#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
+#endif  // HAVE_AVX2
 }  // namespace

@@ -37,7 +37,6 @@ const int number_of_iterations = 10000;
 
 const int kSpeedTestNum = 500000;
 
-#if CONFIG_HIGHBITDEPTH
 typedef uint16_t Pixel;
 #define PIXEL_WIDTH 16
 
@@ -47,17 +46,6 @@ typedef void (*dual_loop_op_t)(Pixel *s, int p, const uint8_t *blimit0,
                                const uint8_t *limit0, const uint8_t *thresh0,
                                const uint8_t *blimit1, const uint8_t *limit1,
                                const uint8_t *thresh1, int bd);
-#else
-typedef uint8_t Pixel;
-#define PIXEL_WIDTH 8
-
-typedef void (*loop_op_t)(Pixel *s, int p, const uint8_t *blimit,
-                          const uint8_t *limit, const uint8_t *thresh);
-typedef void (*dual_loop_op_t)(Pixel *s, int p, const uint8_t *blimit0,
-                               const uint8_t *limit0, const uint8_t *thresh0,
-                               const uint8_t *blimit1, const uint8_t *limit1,
-                               const uint8_t *thresh1);
-#endif  // CONFIG_HIGHBITDEPTH
 
 typedef std::tr1::tuple<loop_op_t, loop_op_t, int> loop8_param_t;
 typedef std::tr1::tuple<dual_loop_op_t, dual_loop_op_t, int> dualloop8_param_t;
@@ -190,15 +178,9 @@ TEST_P(Loop8Test6Param, OperationCheck) {
                     thresh[16]) = { tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp,
                                     tmp, tmp, tmp, tmp, tmp, tmp, tmp, tmp };
     InitInput(s, ref_s, &rnd, *limit, mask_, p, i);
-#if CONFIG_HIGHBITDEPTH
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_);
     ASM_REGISTER_STATE_CHECK(
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_));
-#else
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh);
-    ASM_REGISTER_STATE_CHECK(
-        loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh));
-#endif  // CONFIG_HIGHBITDEPTH
 
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
@@ -253,15 +235,9 @@ TEST_P(Loop8Test6Param, ValueCheck) {
       s[j] = rnd.Rand16() & mask_;
       ref_s[j] = s[j];
     }
-#if CONFIG_HIGHBITDEPTH
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_);
     ASM_REGISTER_STATE_CHECK(
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_));
-#else
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh);
-    ASM_REGISTER_STATE_CHECK(
-        loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh));
-#endif  // CONFIG_HIGHBITDEPTH
 
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
@@ -280,12 +256,8 @@ TEST_P(Loop8Test6Param, ValueCheck) {
 TEST_P(Loop8Test6Param, DISABLED_Speed) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = kSpeedTestNum;
-#if CONFIG_HIGHBITDEPTH
   const int32_t bd = bit_depth_;
   DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
-#else
-  DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
-#endif  // CONFIG_HIGHBITDEPTH
 
   uint8_t tmp = GetOuterThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
@@ -306,11 +278,7 @@ TEST_P(Loop8Test6Param, DISABLED_Speed) {
   }
 
   for (int i = 0; i < count_test_block; ++i) {
-#if CONFIG_HIGHBITDEPTH
     loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, bd);
-#else
-    loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh);
-#endif  // CONFIG_HIGHBITDEPTH
   }
 }
 
@@ -350,18 +318,11 @@ TEST_P(Loop8Test9Param, OperationCheck) {
     int32_t p = kNumCoeffs / 32;
     const uint8_t limit = *limit0 < *limit1 ? *limit0 : *limit1;
     InitInput(s, ref_s, &rnd, limit, mask_, p, i);
-#if CONFIG_HIGHBITDEPTH
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
                        limit1, thresh1, bit_depth_);
     ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
                                             thresh0, blimit1, limit1, thresh1,
                                             bit_depth_));
-#else
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
-                       limit1, thresh1);
-    ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
-                                            thresh0, blimit1, limit1, thresh1));
-#endif  // CONFIG_HIGHBITDEPTH
 
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
@@ -415,18 +376,11 @@ TEST_P(Loop8Test9Param, ValueCheck) {
       s[j] = rnd.Rand16() & mask_;
       ref_s[j] = s[j];
     }
-#if CONFIG_HIGHBITDEPTH
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
                        limit1, thresh1, bit_depth_);
     ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
                                             thresh0, blimit1, limit1, thresh1,
                                             bit_depth_));
-#else
-    ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
-                       limit1, thresh1);
-    ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
-                                            thresh0, blimit1, limit1, thresh1));
-#endif  // CONFIG_HIGHBITDEPTH
 
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
@@ -445,11 +399,7 @@ TEST_P(Loop8Test9Param, ValueCheck) {
 TEST_P(Loop8Test9Param, DISABLED_Speed) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = kSpeedTestNum;
-#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
-#else
-  DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
-#endif  // CONFIG_HIGHBITDEPTH
 
   uint8_t tmp = GetOuterThresh(&rnd);
   DECLARE_ALIGNED(16, const uint8_t,
@@ -481,21 +431,15 @@ TEST_P(Loop8Test9Param, DISABLED_Speed) {
   }
 
   for (int i = 0; i < count_test_block; ++i) {
-#if CONFIG_HIGHBITDEPTH
     const int32_t bd = bit_depth_;
     loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1, limit1,
                    thresh1, bd);
-#else
-    loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1, limit1,
-                   thresh1);
-#endif  // CONFIG_HIGHBITDEPTH
   }
 }
 
 using std::tr1::make_tuple;
 
 #if HAVE_SSE2
-#if CONFIG_HIGHBITDEPTH
 
 const loop8_param_t kHbdLoop8Test6[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_sse2, &aom_highbd_lpf_horizontal_4_c,
@@ -566,37 +510,9 @@ const loop8_param_t kHbdLoop8Test6[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
                         ::testing::ValuesIn(kHbdLoop8Test6));
-#else
-const loop8_param_t kLoop8Test6[] = {
-  make_tuple(&aom_lpf_horizontal_4_sse2, &aom_lpf_horizontal_4_c, 8),
-  make_tuple(&aom_lpf_horizontal_8_sse2, &aom_lpf_horizontal_8_c, 8),
-#if !CONFIG_DEBLOCK_13TAP
-  // Despite the name the following funcition is doing 15-tap filtering
-  // which is changed to 13-tap and not yet implemented in SIMD
-  make_tuple(&aom_lpf_horizontal_16_sse2, &aom_lpf_horizontal_16_c, 8),
-#endif
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_lpf_horizontal_16_dual_sse2, &aom_lpf_horizontal_16_dual_c,
-             8),
-#endif
-  make_tuple(&aom_lpf_vertical_4_sse2, &aom_lpf_vertical_4_c, 8),
-  make_tuple(&aom_lpf_vertical_8_sse2, &aom_lpf_vertical_8_c, 8),
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_lpf_vertical_16_sse2, &aom_lpf_vertical_16_c, 8),
-#endif
-#if !CONFIG_PARALLEL_DEBLOCKING
-  make_tuple(&aom_lpf_vertical_16_dual_sse2, &aom_lpf_vertical_16_dual_c, 8)
-#endif
-};
-
-INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
-                        ::testing::ValuesIn(kLoop8Test6));
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
-#if CONFIG_HIGHBITDEPTH
-
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
 const loop8_param_t kHbdLoop8Test6Avx2[] = {
   make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
@@ -618,21 +534,8 @@ INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
 
 #endif
 #endif
-#endif
-
-#if HAVE_AVX2 && (!CONFIG_HIGHBITDEPTH) && (!CONFIG_PARALLEL_DEBLOCKING)
-INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
-                        ::testing::Values(
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-                            make_tuple(&aom_lpf_horizontal_16_dual_avx2,
-                                       &aom_lpf_horizontal_16_dual_c, 8),
-#endif
-                            make_tuple(&aom_lpf_horizontal_16_avx2,
-                                       &aom_lpf_horizontal_16_c, 8)));
-#endif
 
 #if HAVE_SSE2
-#if CONFIG_HIGHBITDEPTH
 const dualloop8_param_t kHbdLoop8Test9[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_sse2,
              &aom_highbd_lpf_horizontal_4_dual_c, 8),
@@ -662,23 +565,9 @@ const dualloop8_param_t kHbdLoop8Test9[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param,
                         ::testing::ValuesIn(kHbdLoop8Test9));
-#else
-#if !CONFIG_PARALLEL_DEBLOCKING
-const dualloop8_param_t kLoop8Test9[] = {
-  make_tuple(&aom_lpf_horizontal_4_dual_sse2, &aom_lpf_horizontal_4_dual_c, 8),
-  make_tuple(&aom_lpf_horizontal_8_dual_sse2, &aom_lpf_horizontal_8_dual_c, 8),
-  make_tuple(&aom_lpf_vertical_4_dual_sse2, &aom_lpf_vertical_4_dual_c, 8),
-  make_tuple(&aom_lpf_vertical_8_dual_sse2, &aom_lpf_vertical_8_dual_c, 8)
-};
-
-INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param,
-                        ::testing::ValuesIn(kLoop8Test9));
-#endif
-#endif  // CONFIG_HIGHBITDEPTH
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
-#if CONFIG_HIGHBITDEPTH
 const dualloop8_param_t kHbdLoop8Test9Avx2[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_avx2,
              &aom_highbd_lpf_horizontal_4_dual_c, 8),
@@ -709,100 +598,5 @@ const dualloop8_param_t kHbdLoop8Test9Avx2[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test9Param,
                         ::testing::ValuesIn(kHbdLoop8Test9Avx2));
 #endif
-#endif
-
-#if HAVE_NEON && (!CONFIG_PARALLEL_DEBLOCKING)
-#if CONFIG_HIGHBITDEPTH
-// No neon high bitdepth functions.
-#else
-INSTANTIATE_TEST_CASE_P(
-    NEON, Loop8Test6Param,
-    ::testing::Values(
-#if HAVE_NEON_ASM
-        // Using #if inside the macro is unsupported on MSVS but the tests are
-        // not
-        // currently built for MSVS with ARM and NEON.
-        make_tuple(&aom_lpf_horizontal_16_neon, &aom_lpf_horizontal_16_c, 8),
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-        make_tuple(&aom_lpf_horizontal_16_dual_neon,
-                   &aom_lpf_horizontal_16_dual_c, 8),
-        make_tuple(&aom_lpf_vertical_16_neon, &aom_lpf_vertical_16_c, 8),
-        make_tuple(&aom_lpf_vertical_16_dual_neon, &aom_lpf_vertical_16_dual_c,
-                   8),
-#endif
-#endif  // HAVE_NEON_ASM
-        make_tuple(&aom_lpf_horizontal_8_neon, &aom_lpf_horizontal_8_c, 8),
-        make_tuple(&aom_lpf_vertical_8_neon, &aom_lpf_vertical_8_c, 8),
-        make_tuple(&aom_lpf_horizontal_4_neon, &aom_lpf_horizontal_4_c, 8),
-        make_tuple(&aom_lpf_vertical_4_neon, &aom_lpf_vertical_4_c, 8)));
-INSTANTIATE_TEST_CASE_P(NEON, Loop8Test9Param,
-                        ::testing::Values(
-#if HAVE_NEON_ASM
-                            make_tuple(&aom_lpf_horizontal_8_dual_neon,
-                                       &aom_lpf_horizontal_8_dual_c, 8),
-                            make_tuple(&aom_lpf_vertical_8_dual_neon,
-                                       &aom_lpf_vertical_8_dual_c, 8),
-#endif  // HAVE_NEON_ASM
-                            make_tuple(&aom_lpf_horizontal_4_dual_neon,
-                                       &aom_lpf_horizontal_4_dual_c, 8),
-                            make_tuple(&aom_lpf_vertical_4_dual_neon,
-                                       &aom_lpf_vertical_4_dual_c, 8)));
-#endif  // CONFIG_HIGHBITDEPTH
-#endif  // HAVE_NEON && (!CONFIG_PARALLEL_DEBLOCKING)
-
-#if HAVE_DSPR2 && !CONFIG_HIGHBITDEPTH && (!CONFIG_PARALLEL_DEBLOCKING)
-INSTANTIATE_TEST_CASE_P(
-    DSPR2, Loop8Test6Param,
-    ::testing::Values(
-        make_tuple(&aom_lpf_horizontal_4_dspr2, &aom_lpf_horizontal_4_c, 8),
-        make_tuple(&aom_lpf_horizontal_8_dspr2, &aom_lpf_horizontal_8_c, 8),
-        make_tuple(&aom_lpf_horizontal_16, &aom_lpf_horizontal_16, 8),
-        make_tuple(&aom_lpf_horizontal_16_dual, &aom_lpf_horizontal_16_dual, 8),
-        make_tuple(&aom_lpf_vertical_4_dspr2, &aom_lpf_vertical_4_c, 8),
-#if CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-        make_tuple(&aom_lpf_vertical_16_dspr2, &aom_lpf_vertical_16_c, 8),
-        make_tuple(&aom_lpf_vertical_16_dual_dspr2, &aom_lpf_vertical_16_dual_c,
-                   8),
-#endif
-        make_tuple(&aom_lpf_vertical_8_dspr2, &aom_lpf_vertical_8_c, 8)));
-
-INSTANTIATE_TEST_CASE_P(
-    DSPR2, Loop8Test9Param,
-    ::testing::Values(make_tuple(&aom_lpf_horizontal_4_dual_dspr2,
-                                 &aom_lpf_horizontal_4_dual_c, 8),
-                      make_tuple(&aom_lpf_horizontal_8_dual_dspr2,
-                                 &aom_lpf_horizontal_8_dual_c, 8),
-                      make_tuple(&aom_lpf_vertical_4_dual_dspr2,
-                                 &aom_lpf_vertical_4_dual_c, 8),
-                      make_tuple(&aom_lpf_vertical_8_dual_dspr2,
-                                 &aom_lpf_vertical_8_dual_c, 8)));
-#endif  // HAVE_DSPR2 && !CONFIG_HIGHBITDEPTH && (!CONFIG_PARALLEL_DEBLOCKING)
-
-#if HAVE_MSA && (!CONFIG_HIGHBITDEPTH) && (!CONFIG_PARALLEL_DEBLOCKING)
-INSTANTIATE_TEST_CASE_P(
-    MSA, Loop8Test6Param,
-    ::testing::Values(
-        make_tuple(&aom_lpf_horizontal_4_msa, &aom_lpf_horizontal_4_c, 8),
-        make_tuple(&aom_lpf_horizontal_8_msa, &aom_lpf_horizontal_8_c, 8),
-        make_tuple(&aom_lpf_horizontal_16_msa, &aom_lpf_horizontal_16_c, 8),
-#if CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-        make_tuple(&aom_lpf_horizontal_16_dual_msa,
-                   &aom_lpf_horizontal_16_dual_c, 8),
-        make_tuple(&aom_lpf_vertical_16_msa, &aom_lpf_vertical_16_c, 8),
-#endif
-        make_tuple(&aom_lpf_vertical_4_msa, &aom_lpf_vertical_4_c, 8),
-        make_tuple(&aom_lpf_vertical_8_msa, &aom_lpf_vertical_8_c, 8)));
-
-INSTANTIATE_TEST_CASE_P(
-    MSA, Loop8Test9Param,
-    ::testing::Values(make_tuple(&aom_lpf_horizontal_4_dual_msa,
-                                 &aom_lpf_horizontal_4_dual_c, 8),
-                      make_tuple(&aom_lpf_horizontal_8_dual_msa,
-                                 &aom_lpf_horizontal_8_dual_c, 8),
-                      make_tuple(&aom_lpf_vertical_4_dual_msa,
-                                 &aom_lpf_vertical_4_dual_c, 8),
-                      make_tuple(&aom_lpf_vertical_8_dual_msa,
-                                 &aom_lpf_vertical_8_dual_c, 8)));
-#endif  // HAVE_MSA && (!CONFIG_HIGHBITDEPTH) && (!CONFIG_PARALLEL_DEBLOCKING)
 
 }  // namespace

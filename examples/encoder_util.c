@@ -79,21 +79,16 @@ static void find_mismatch_helper(const aom_image_t *const img1,
                                  const aom_image_t *const img2,
                                  int use_highbitdepth, int yloc[4], int uloc[4],
                                  int vloc[4]) {
-#if !CONFIG_HIGHBITDEPTH
-  assert(!use_highbitdepth);
-#endif  // !CONFIG_HIGHBITDEPTH
   find_mismatch_plane(img1, img2, AOM_PLANE_Y, use_highbitdepth, yloc);
   find_mismatch_plane(img1, img2, AOM_PLANE_U, use_highbitdepth, uloc);
   find_mismatch_plane(img1, img2, AOM_PLANE_V, use_highbitdepth, vloc);
 }
 
-#if CONFIG_HIGHBITDEPTH
 void aom_find_mismatch_high(const aom_image_t *const img1,
                             const aom_image_t *const img2, int yloc[4],
                             int uloc[4], int vloc[4]) {
   find_mismatch_helper(img1, img2, 1, yloc, uloc, vloc);
 }
-#endif
 
 void aom_find_mismatch(const aom_image_t *const img1,
                        const aom_image_t *const img2, int yloc[4], int uloc[4],
@@ -115,12 +110,10 @@ int aom_compare_img(const aom_image_t *const img1,
   match &= (img1->fmt == img2->fmt);
   match &= (img1->d_w == img2->d_w);
   match &= (img1->d_h == img2->d_h);
-#if CONFIG_HIGHBITDEPTH
   if (img1->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
     l_w *= 2;
     c_w *= 2;
   }
-#endif
 
   for (int plane = 0; plane < num_planes; ++plane) {
     uint32_t height = plane ? c_h : img1->d_h;

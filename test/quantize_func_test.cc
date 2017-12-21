@@ -301,7 +301,6 @@ const QuantizeParam kQParamArrayAvx2[] = {
              AOM_BITS_8),
   make_tuple(&av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_avx2, TX_32X32,
              TYPE_FP, AOM_BITS_8),
-#if CONFIG_HIGHBITDEPTH
   make_tuple(&highbd_quan16x16_wrapper<av1_highbd_quantize_fp_c>,
              &highbd_quan16x16_wrapper<av1_highbd_quantize_fp_avx2>, TX_16X16,
              TYPE_FP, AOM_BITS_8),
@@ -337,7 +336,6 @@ const QuantizeParam kQParamArrayAvx2[] = {
              TYPE_B, AOM_BITS_10),
   make_tuple(&aom_highbd_quantize_b_c, &aom_highbd_quantize_b_avx2, TX_16X16,
              TYPE_B, AOM_BITS_12),
-#endif  // CONFIG_HIGHBITDEPTH
 };
 
 INSTANTIATE_TEST_CASE_P(AVX2, QuantizeTest,
@@ -348,7 +346,6 @@ INSTANTIATE_TEST_CASE_P(AVX2, QuantizeTest,
 const QuantizeParam kQParamArraySSE2[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_sse2, TX_16X16, TYPE_FP,
              AOM_BITS_8),
-#if CONFIG_HIGHBITDEPTH
   make_tuple(&aom_highbd_quantize_b_c, &aom_highbd_quantize_b_sse2, TX_16X16,
              TYPE_B, AOM_BITS_8),
   make_tuple(&aom_highbd_quantize_b_c, &aom_highbd_quantize_b_sse2, TX_16X16,
@@ -361,28 +358,10 @@ const QuantizeParam kQParamArraySSE2[] = {
              TX_32X32, TYPE_B, AOM_BITS_10),
   make_tuple(&aom_highbd_quantize_b_32x32_c, &aom_highbd_quantize_b_32x32_sse2,
              TX_32X32, TYPE_B, AOM_BITS_12),
-#endif
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
                         ::testing::ValuesIn(kQParamArraySSE2));
-#endif
-
-#if !CONFIG_HIGHBITDEPTH && HAVE_SSSE3 && ARCH_X86_64
-const QuantizeParam kQ16x16ParamArraySSSE3[] = {
-  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_ssse3, TX_16X16, TYPE_FP,
-             AOM_BITS_8),
-};
-INSTANTIATE_TEST_CASE_P(SSSE3, QuantizeTest,
-                        ::testing::ValuesIn(kQ16x16ParamArraySSSE3));
-
-// TODO(any):
-//  The following test does not pass yet
-const QuantizeParam kQ32x32ParamArraySSSE3[] = { make_tuple(
-    &av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_ssse3, TX_32X32, TYPE_FP,
-    AOM_BITS_8) };
-INSTANTIATE_TEST_CASE_P(DISABLED_SSSE3, QuantizeTest,
-                        ::testing::ValuesIn(kQ32x32ParamArraySSSE3));
 #endif
 
 }  // namespace

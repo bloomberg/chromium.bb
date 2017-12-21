@@ -35,7 +35,6 @@ void fht32x32_ref(const int16_t *in, tran_low_t *out, int stride,
   av1_fht32x32_c(in, out, stride, txfm_param);
 }
 
-#if CONFIG_HIGHBITDEPTH
 typedef void (*IHbdHtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                            TX_TYPE tx_type, int bd);
 typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
@@ -48,7 +47,6 @@ void highbd_fht32x32_ref(const int16_t *in, int32_t *out, int stride,
                          TX_TYPE tx_type, int bd) {
   av1_fwd_txfm2d_32x32_c(in, out, stride, tx_type, bd);
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if (HAVE_SSE2 || HAVE_AVX2) && !CONFIG_DAALA_TX32
 void dummy_inv_txfm(const tran_low_t *in, uint8_t *out, int stride,
@@ -94,7 +92,6 @@ class AV1Trans32x32HT : public libaom_test::TransformTestBase,
 TEST_P(AV1Trans32x32HT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(AV1Trans32x32HT, MemCheck) { RunMemCheck(); }
 
-#if CONFIG_HIGHBITDEPTH
 class AV1HighbdTrans32x32HT
     : public ::testing::TestWithParam<HighbdHt32x32Param> {
  public:
@@ -161,7 +158,6 @@ void AV1HighbdTrans32x32HT::RunBitexactCheck() {
 }
 
 TEST_P(AV1HighbdTrans32x32HT, HighbdCoeffCheck) { RunBitexactCheck(); }
-#endif  // CONFIG_HIGHBITDEPTH
 
 using std::tr1::make_tuple;
 

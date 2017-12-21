@@ -16,9 +16,7 @@ using std::tr1::tuple;
 using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
 using libaom_test::AV1WarpFilter::AV1WarpFilterTest;
-#if CONFIG_HIGHBITDEPTH
 using libaom_test::AV1HighbdWarpFilter::AV1HighbdWarpFilterTest;
-#endif
 
 namespace {
 
@@ -29,14 +27,12 @@ INSTANTIATE_TEST_CASE_P(
     SSE4_1, AV1WarpFilterTest,
     libaom_test::AV1WarpFilter::BuildParams(av1_warp_affine_sse4_1));
 
-#if CONFIG_HIGHBITDEPTH
 TEST_P(AV1HighbdWarpFilterTest, CheckOutput) {
   RunCheckOutput(av1_highbd_warp_affine_sse4_1);
 }
 
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdWarpFilterTest,
                         libaom_test::AV1HighbdWarpFilter::GetDefaultParams());
-#endif
 
 #else  // CONFIG_JNT_COMP && HAVE_SSE4_1
 TEST_P(AV1WarpFilterTest, CheckOutput) { RunCheckOutput(GET_PARAM(3)); }
@@ -49,9 +45,7 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AV1WarpFilterTest,
     libaom_test::AV1WarpFilter::BuildParams(av1_warp_affine_ssse3));
-#endif
 
-#if CONFIG_HIGHBITDEPTH && HAVE_SSSE3
 TEST_P(AV1HighbdWarpFilterTest, CheckOutput) {
   RunCheckOutput(av1_highbd_warp_affine_ssse3);
 }

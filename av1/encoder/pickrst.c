@@ -49,22 +49,18 @@ typedef int64_t (*sse_part_extractor_type)(const YV12_BUFFER_CONFIG *a,
                                            int hstart, int width, int vstart,
                                            int height);
 
-#define NUM_EXTRACTORS (3 * (1 + CONFIG_HIGHBITDEPTH))
+#define NUM_EXTRACTORS (3 * (1 + 1))
 
 static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
   aom_get_y_sse_part,        aom_get_u_sse_part,
-  aom_get_v_sse_part,
-#if CONFIG_HIGHBITDEPTH
-  aom_highbd_get_y_sse_part, aom_highbd_get_u_sse_part,
-  aom_highbd_get_v_sse_part,
-#endif  // CONFIG_HIGHBITDEPTH
+  aom_get_v_sse_part,        aom_highbd_get_y_sse_part,
+  aom_highbd_get_u_sse_part, aom_highbd_get_v_sse_part,
 };
 
 static int64_t sse_restoration_tile(const RestorationTileLimits *limits,
                                     const YV12_BUFFER_CONFIG *src,
                                     const YV12_BUFFER_CONFIG *dst, int plane,
                                     int highbd) {
-  assert(CONFIG_HIGHBITDEPTH || !highbd);
   return sse_part_extractors[3 * highbd + plane](
       src, dst, limits->h_start, limits->h_end - limits->h_start,
       limits->v_start, limits->v_end - limits->v_start);
@@ -169,13 +165,8 @@ static int64_t try_restoration_tile(const RestSearchCtxt *rsc,
 #else
   (void)tile_rect;
 #endif
-#if CONFIG_HIGHBITDEPTH
   const int bit_depth = cm->bit_depth;
   const int highbd = cm->use_highbitdepth;
-#else
-  const int bit_depth = 8;
-  const int highbd = 0;
-#endif
 
   const YV12_BUFFER_CONFIG *fts = cm->frame_to_show;
 
@@ -467,13 +458,8 @@ static void search_sgrproj(const RestorationTileLimits *limits,
 
   const MACROBLOCK *const x = rsc->x;
   const AV1_COMMON *const cm = rsc->cm;
-#if CONFIG_HIGHBITDEPTH
   const int highbd = cm->use_highbitdepth;
   const int bit_depth = cm->bit_depth;
-#else
-  const int highbd = 0;
-  const int bit_depth = 8;
-#endif  // CONFIG_HIGHBITDEPTH
 
   uint8_t *dgd_start =
       rsc->dgd_buffer + limits->v_start * rsc->dgd_stride + limits->h_start;
@@ -572,7 +558,6 @@ static void compute_stats(int wiener_win, const uint8_t *dgd,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static double find_average_highbd(const uint16_t *src, int h_start, int h_end,
                                   int v_start, int v_end, int stride) {
   uint64_t sum = 0;
@@ -629,7 +614,6 @@ static void compute_stats_highbd(int wiener_win, const uint8_t *dgd8,
     }
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 static INLINE int wrap_index(int i, int wiener_win) {
   const int wiener_halfwin1 = (wiener_win >> 1) + 1;
@@ -993,14 +977,12 @@ static void search_wiener(const RestorationTileLimits *limits,
   double H[WIENER_WIN2 * WIENER_WIN2];
   double vfilterd[WIENER_WIN], hfilterd[WIENER_WIN];
 
-#if CONFIG_HIGHBITDEPTH
   const AV1_COMMON *const cm = rsc->cm;
   if (cm->use_highbitdepth)
     compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
                          limits->h_start, limits->h_end, limits->v_start,
                          limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
   else
-#endif  // CONFIG_HIGHBITDEPTH
     compute_stats(wiener_win, rsc->dgd_buffer, rsc->src_buffer, limits->h_start,
                   limits->h_end, limits->v_start, limits->v_end,
                   rsc->dgd_stride, rsc->src_stride, M, H);
@@ -1074,12 +1056,7 @@ static void search_norestore(const RestorationTileLimits *limits,
   RestSearchCtxt *rsc = (RestSearchCtxt *)priv;
   RestUnitSearchInfo *rusi = &rsc->rusi[rest_unit_idx];
 
-#if CONFIG_HIGHBITDEPTH
   const int highbd = rsc->cm->use_highbitdepth;
-#else
-  const int highbd = 0;
-#endif  // CONFIG_HIGHBITDEPTH
-
   rusi->sse[RESTORE_NONE] = sse_restoration_tile(
       limits, rsc->src, rsc->cm->frame_to_show, rsc->plane, highbd);
 
@@ -1193,11 +1170,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
     double best_cost = 0;
     RestorationType best_rtype = RESTORE_NONE;
 
-#if CONFIG_HIGHBITDEPTH
     const int highbd = rsc.cm->use_highbitdepth;
-#else
-    const int highbd = 0;
-#endif
     extend_frame(rsc.dgd_buffer, rsc.plane_width, rsc.plane_height,
                  rsc.dgd_stride, RESTORATION_BORDER, RESTORATION_BORDER,
                  highbd);

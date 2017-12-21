@@ -243,10 +243,8 @@ typedef struct AV1Common {
   int largest_tile_id;
 #endif
 
-#if CONFIG_HIGHBITDEPTH
   // Marks if we need to use 16bit frame buffers (1: yes, 0: no).
   int use_highbitdepth;
-#endif
   YV12_BUFFER_CONFIG *frame_to_show;
   RefCntBuffer *prev_frame;
 

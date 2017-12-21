@@ -114,7 +114,6 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
                                           uint8_t *dst, int dst_stride,
                                           int subpel_x, int subpel_y,
@@ -177,7 +176,6 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
     }
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 // Set to (1 << 5) if the 32-ary codebooks are used for any bock size
 #define MAX_WEDGE_TYPES (1 << 4)
@@ -265,12 +263,10 @@ void build_compound_seg_mask(uint8_t *mask, SEG_MASK_TYPE mask_type,
                              const uint8_t *src0, int src0_stride,
                              const uint8_t *src1, int src1_stride,
                              BLOCK_SIZE sb_type, int h, int w);
-#if CONFIG_HIGHBITDEPTH
 void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
                                     const uint8_t *src0, int src0_stride,
                                     const uint8_t *src1, int src1_stride,
                                     BLOCK_SIZE sb_type, int h, int w, int bd);
-#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
@@ -322,14 +318,12 @@ void av1_build_inter_predictor(
     const WarpTypesAllowed *warp_types, int p_col, int p_row, int plane,
     int ref, enum mv_precision precision, int x, int y, const MACROBLOCKD *xd);
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_build_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
     InterpFilters interp_filters, const WarpTypesAllowed *warp_types, int p_col,
     int p_row, int plane, enum mv_precision precision, int x, int y,
     const MACROBLOCKD *xd);
-#endif
 
 static INLINE int scaled_buffer_offset(int x_offset, int y_offset, int stride,
                                        const struct scale_factors *sf) {

@@ -11,13 +11,12 @@ static __m128i xx_load_extend_8_32(const void *p) {
   return _mm_cvtepu8_epi32(xx_loadl_32(p));
 }
 
-#if CONFIG_HIGHBITDEPTH
 // Load 4 halfwords from the possibly-misaligned pointer p, extend each
 // halfword to 32-bit precision and return them in an SSE register.
 static __m128i xx_load_extend_16_32(const void *p) {
   return _mm_cvtepu16_epi32(xx_loadl_64(p));
 }
-#endif
+
 // Compute the scan of an SSE register holding 4 32-bit integers. If the
 // register holds x0..x3 then the scan will hold x0, x0+x1, x0+x1+x2,
 // x0+x1+x2+x3
@@ -73,7 +72,6 @@ static void integral_images(const uint8_t *src, int src_stride, int width,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 // Compute two integral images from src. B sums elements; A sums their squares
 //
 // A and B should be aligned to 16 bytes. buf_stride should be a multiple of 4.
@@ -117,7 +115,6 @@ static void integral_images_highbd(const uint16_t *src, int src_stride,
     }
   }
 }
-#endif
 
 // Compute four values of boxsum from the given integral image. ii should point
 // at the middle of the box (for the first value). r is the box radius
@@ -328,14 +325,12 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
       SGRPROJ_BORDER_HORZ + dgd_stride * SGRPROJ_BORDER_VERT;
   const uint8_t *dgd0 = dgd8 - dgd_diag_border;
 
-// Generate integral images from the input. C will contain sums of squares; D
-// will contain just sums
-#if CONFIG_HIGHBITDEPTH
+  // Generate integral images from the input. C will contain sums of squares; D
+  // will contain just sums
   if (highbd)
     integral_images_highbd(CONVERT_TO_SHORTPTR(dgd0), dgd_stride, width_ext,
                            height_ext, Ctl, Dtl, buf_stride);
   else
-#endif  // CONFIG_HIGHBITDEPTH
     integral_images(dgd0, dgd_stride, width_ext, height_ext, Ctl, Dtl,
                     buf_stride);
 

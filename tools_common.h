@@ -153,12 +153,9 @@ void aom_img_write(const aom_image_t *img, FILE *file);
 int aom_img_read(aom_image_t *img, FILE *file);
 
 double sse_to_psnr(double samples, double peak, double mse);
-
-#if CONFIG_HIGHBITDEPTH
 void aom_img_upshift(aom_image_t *dst, aom_image_t *src, int input_shift);
 void aom_img_downshift(aom_image_t *dst, aom_image_t *src, int down_shift);
 void aom_img_truncate_16_to_8(aom_image_t *dst, aom_image_t *src);
-#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

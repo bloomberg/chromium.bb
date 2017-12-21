@@ -265,7 +265,6 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(filter_ls),
                        ::testing::ValuesIn(filter_ls)));
 
-#if CONFIG_HIGHBITDEPTH
 #ifndef __clang_analyzer__
 TEST(AV1ConvolveTest, av1_highbd_convolve) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
@@ -387,7 +386,6 @@ TEST(AV1ConvolveTest, av1_highbd_convolve_avg) {
     }
   }
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 #define CONVOLVE_SPEED_TEST 0
 #if CONVOLVE_SPEED_TEST

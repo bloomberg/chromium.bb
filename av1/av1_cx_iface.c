@@ -378,11 +378,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #endif
   }
 
-#if !CONFIG_HIGHBITDEPTH
-  if (cfg->g_profile > (unsigned int)PROFILE_1) {
-    ERROR("Profile > 1 not supported in this build configuration");
-  }
-#endif
   if (cfg->g_profile <= (unsigned int)PROFILE_1 &&
       cfg->g_bit_depth > AOM_BITS_8) {
     ERROR("Codec high bit-depth not supported in profile < 2");
@@ -1066,10 +1061,8 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
 
     if (res == AOM_CODEC_OK) {
       set_encoder_config(&priv->oxcf, &priv->cfg, &priv->extra_cfg);
-#if CONFIG_HIGHBITDEPTH
       priv->oxcf.use_highbitdepth =
           (ctx->init_flags & AOM_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
-#endif
       priv->cpi = av1_create_compressor(&priv->oxcf, priv->buffer_pool);
       if (priv->cpi == NULL)
         res = AOM_CODEC_MEM_ERROR;
@@ -1757,13 +1750,11 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 CODEC_INTERFACE(aom_codec_av1_cx) = {
   "AOMedia Project AV1 Encoder" VERSION_STRING,
   AOM_CODEC_INTERNAL_ABI_VERSION,
-#if CONFIG_HIGHBITDEPTH
-  AOM_CODEC_CAP_HIGHBITDEPTH |
-#endif
-      AOM_CODEC_CAP_ENCODER | AOM_CODEC_CAP_PSNR,  // aom_codec_caps_t
-  encoder_init,                                    // aom_codec_init_fn_t
-  encoder_destroy,                                 // aom_codec_destroy_fn_t
-  encoder_ctrl_maps,                               // aom_codec_ctrl_fn_map_t
+  AOM_CODEC_CAP_HIGHBITDEPTH | AOM_CODEC_CAP_ENCODER |
+      AOM_CODEC_CAP_PSNR,  // aom_codec_caps_t
+  encoder_init,            // aom_codec_init_fn_t
+  encoder_destroy,         // aom_codec_destroy_fn_t
+  encoder_ctrl_maps,       // aom_codec_ctrl_fn_map_t
   {
       // NOLINT
       NULL,  // aom_codec_peek_si_fn_t

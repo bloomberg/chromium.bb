@@ -179,7 +179,6 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
   }
 #endif
 
-#if CONFIG_HIGHBITDEPTH
 typedef void highbd_filter8_1dfunction(const uint16_t *src_ptr,
                                        const ptrdiff_t src_pitch,
                                        uint16_t *output_ptr,
@@ -283,6 +282,5 @@ typedef void highbd_filter8_1dfunction(const uint16_t *src_ptr,
                                     w, h, bd);                                \
     }                                                                         \
   }
-#endif  // CONFIG_HIGHBITDEPTH
 
 #endif  // AOM_DSP_X86_CONVOLVE_H_

@@ -28,10 +28,7 @@ void *aom_memalign(size_t align, size_t size);
 void *aom_malloc(size_t size);
 void *aom_calloc(size_t num, size_t size);
 void aom_free(void *memblk);
-
-#if CONFIG_HIGHBITDEPTH
 void *aom_memset16(void *dest, int val, size_t length);
-#endif
 
 #include <string.h>
 

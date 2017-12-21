@@ -309,26 +309,6 @@ const PartialInvTxfmParam c_partial_idct_tests[] = {
 INSTANTIATE_TEST_CASE_P(C, PartialIDctTest,
                         ::testing::ValuesIn(c_partial_idct_tests));
 
-#if HAVE_NEON && !CONFIG_HIGHBITDEPTH
-const PartialInvTxfmParam neon_partial_idct_tests[] = {
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_1_add_neon>, TX_32X32, 1, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_10_add_neon>, TX_16X16, 10, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_1_add_neon>, TX_16X16, 1, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_12_add_neon>, TX_8X8, 12, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_1_add_neon>, TX_8X8, 1, 8, 1),
-  make_tuple(&aom_fdct4x4_c, &wrapper<aom_idct4x4_16_add_c>,
-             &wrapper<aom_idct4x4_1_add_neon>, TX_4X4, 1, 8, 1)
-};
-
-INSTANTIATE_TEST_CASE_P(NEON, PartialIDctTest,
-                        ::testing::ValuesIn(neon_partial_idct_tests));
-#endif  // HAVE_NEON && !CONFIG_HIGHBITDEPTH
-
 #if HAVE_SSE2
 const PartialInvTxfmParam sse2_partial_idct_tests[] = {
   make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
@@ -403,69 +383,5 @@ const PartialInvTxfmParam avx2_partial_idct_tests[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, PartialIDctTest,
                         ::testing::ValuesIn(avx2_partial_idct_tests));
 #endif  // HAVE_AVX2
-
-#if HAVE_DSPR2 && !CONFIG_HIGHBITDEPTH
-const PartialInvTxfmParam dspr2_partial_idct_tests[] = {
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_1024_add_dspr2>, TX_32X32, 1024, 8, 1),
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_1024_add_dspr2>, TX_32X32, 135, 8, 1),
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_34_add_dspr2>, TX_32X32, 34, 8, 1),
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_1_add_dspr2>, TX_32X32, 1, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_256_add_dspr2>, TX_16X16, 256, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_10_add_dspr2>, TX_16X16, 10, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_1_add_dspr2>, TX_16X16, 1, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_64_add_dspr2>, TX_8X8, 64, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_12_add_dspr2>, TX_8X8, 12, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_1_add_dspr2>, TX_8X8, 1, 8, 1),
-  make_tuple(&aom_fdct4x4_c, &wrapper<aom_idct4x4_16_add_c>,
-             &wrapper<aom_idct4x4_16_add_dspr2>, TX_4X4, 16, 8, 1),
-  make_tuple(&aom_fdct4x4_c, &wrapper<aom_idct4x4_16_add_c>,
-             &wrapper<aom_idct4x4_1_add_dspr2>, TX_4X4, 1, 8, 1)
-};
-
-INSTANTIATE_TEST_CASE_P(DSPR2, PartialIDctTest,
-                        ::testing::ValuesIn(dspr2_partial_idct_tests));
-#endif  // HAVE_DSPR2 && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_MSA && !CONFIG_HIGHBITDEPTH
-const PartialInvTxfmParam msa_partial_idct_tests[] = {
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_1024_add_msa>, TX_32X32, 1024, 8, 1),
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_1024_add_msa>, TX_32X32, 135, 8, 1),
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_34_add_msa>, TX_32X32, 34, 8, 1),
-  make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
-             &wrapper<aom_idct32x32_1_add_msa>, TX_32X32, 1, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_256_add_msa>, TX_16X16, 256, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_10_add_msa>, TX_16X16, 10, 8, 1),
-  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
-             &wrapper<aom_idct16x16_1_add_msa>, TX_16X16, 1, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_64_add_msa>, TX_8X8, 64, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_12_add_msa>, TX_8X8, 12, 8, 1),
-  make_tuple(&aom_fdct8x8_c, &wrapper<aom_idct8x8_64_add_c>,
-             &wrapper<aom_idct8x8_1_add_msa>, TX_8X8, 1, 8, 1),
-  make_tuple(&aom_fdct4x4_c, &wrapper<aom_idct4x4_16_add_c>,
-             &wrapper<aom_idct4x4_16_add_msa>, TX_4X4, 16, 8, 1),
-  make_tuple(&aom_fdct4x4_c, &wrapper<aom_idct4x4_16_add_c>,
-             &wrapper<aom_idct4x4_1_add_msa>, TX_4X4, 1, 8, 1)
-};
-
-INSTANTIATE_TEST_CASE_P(MSA, PartialIDctTest,
-                        ::testing::ValuesIn(msa_partial_idct_tests));
-#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 
 }  // namespace
