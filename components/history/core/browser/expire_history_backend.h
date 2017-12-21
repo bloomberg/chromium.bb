@@ -149,6 +149,9 @@ class ExpireHistoryBackend {
     std::set<GURL> deleted_favicons;
   };
 
+  // Returns a vector with all visits that eventually redirect to |visits|.
+  VisitVector GetVisitsAndRedirectParents(const VisitVector& visits);
+
   // Deletes the visit-related stuff for all the visits in the given list, and
   // adds the rows for unique URLs affected to the affected_urls list in
   // the dependencies structure.
