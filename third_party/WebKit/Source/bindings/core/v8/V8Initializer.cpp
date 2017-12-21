@@ -574,20 +574,19 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
     }
   }
 
-  void SetProtection(void* data, size_t length, Protection protection) {
-    CHECK(SetProtection(protection, data, length));
-  }
-
-  bool SetProtection(Protection protection, void* data, size_t length) {
+  void SetProtection(void* data,
+                     size_t length,
+                     Protection protection) override {
     switch (protection) {
       case Protection::kNoAccess:
-        return WTF::SetSystemPagesAccess(data, length, WTF::PageInaccessible);
+        CHECK(WTF::SetSystemPagesAccess(data, length, WTF::PageInaccessible));
+        return;
       case Protection::kReadWrite:
-        return WTF::SetSystemPagesAccess(data, length, WTF::PageReadWrite);
+        CHECK(WTF::SetSystemPagesAccess(data, length, WTF::PageReadWrite));
+        return;
       default:
         NOTREACHED();
     }
-    return false;
   }
 };
 
