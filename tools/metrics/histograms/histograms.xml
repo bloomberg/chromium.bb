@@ -49860,6 +49860,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.ApChannelSwitch" enum="WiFiApChannelSwitch">
+  <owner>matthewmwang@chromium.org</owner>
+  <summary>
+    Chrome OS network usage metric sampled when an AP switches channels. Shows
+    the old frequency band and the new frequency band.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.ApDisconnectReason" enum="WiFiReasonCode">
   <owner>kirtika@chromium.org</owner>
   <summary>
