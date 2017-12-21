@@ -23,6 +23,8 @@
 
 namespace content {
 
+class CursorRendererUndoer;
+
 // CursorRenderer is an abstract base class that handles all the
 // non-platform-specific common cursor rendering functionality. In order to
 // track the cursor, the platform-specific implementation will listen to
@@ -49,9 +51,12 @@ class CONTENT_EXPORT CursorRenderer {
   virtual void SetTargetView(gfx::NativeView view) = 0;
 
   // Renders cursor on the given video frame within the content region,
-  // returning true if |frame| was modified.
+  // returning true if |frame| was modified. |undoer| is optional: If provided,
+  // it will be updated with state necessary for later undoing the cursor
+  // rendering.
   bool RenderOnVideoFrame(media::VideoFrame* frame,
-                          const gfx::Rect& region_in_frame);
+                          const gfx::Rect& region_in_frame,
+                          CursorRendererUndoer* undoer);
 
   // Sets a callback that will be run whenever RenderOnVideoFrame() should be
   // called soon, to update the mouse cursor location or image in the video.
@@ -171,6 +176,24 @@ class CONTENT_EXPORT CursorRenderer {
   base::WeakPtrFactory<CursorRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorRenderer);
+};
+
+// Restores the original content of a VideoFrame, to the point before cursor
+// rendering modified it. See CursorRenderer::RenderOnVideoFrame().
+class CONTENT_EXPORT CursorRendererUndoer {
+ public:
+  CursorRendererUndoer();
+  ~CursorRendererUndoer();
+
+  void TakeSnapshot(const media::VideoFrame& frame, const gfx::Rect& rect);
+
+  // Restores the frame content to the point where TakeSnapshot() was last
+  // called.
+  void Undo(media::VideoFrame* frame) const;
+
+ private:
+  gfx::Rect rect_;
+  std::vector<uint8_t> snapshot_;
 };
 
 }  // namespace content

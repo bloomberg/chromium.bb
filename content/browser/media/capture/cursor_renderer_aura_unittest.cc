@@ -76,13 +76,13 @@ class CursorRendererAuraTest : public AuraTestBase {
           media::PIXEL_FORMAT_YV12, dummy_frame_size,
           gfx::Rect(dummy_frame_size), dummy_frame_size, base::TimeDelta());
     }
-    return cursor_renderer_ &&
-           cursor_renderer_->RenderOnVideoFrame(dummy_frame_.get(),
-                                                dummy_frame_->visible_rect());
+    return RenderCursorOnVideoFrame(dummy_frame_.get(), nullptr);
   }
 
-  bool RenderCursorOnVideoFrame(media::VideoFrame* frame) {
-    return cursor_renderer_->RenderOnVideoFrame(frame, frame->visible_rect());
+  bool RenderCursorOnVideoFrame(media::VideoFrame* frame,
+                                CursorRendererUndoer* undoer) {
+    return cursor_renderer_->RenderOnVideoFrame(frame, frame->visible_rect(),
+                                                undoer);
   }
 
   bool IsUserInteractingWithView() {
@@ -119,12 +119,12 @@ class CursorRendererAuraTest : public AuraTestBase {
                              gfx::Rect rect) {
     bool y_found = false, u_found = false, v_found = false;
     for (int y = rect.y(); y < rect.bottom(); ++y) {
-      uint8_t* yplane = frame->data(media::VideoFrame::kYPlane) +
-                        y * frame->row_bytes(media::VideoFrame::kYPlane);
-      uint8_t* uplane = frame->data(media::VideoFrame::kUPlane) +
-                        (y / 2) * frame->row_bytes(media::VideoFrame::kUPlane);
-      uint8_t* vplane = frame->data(media::VideoFrame::kVPlane) +
-                        (y / 2) * frame->row_bytes(media::VideoFrame::kVPlane);
+      uint8_t* yplane = frame->visible_data(media::VideoFrame::kYPlane) +
+                        y * frame->stride(media::VideoFrame::kYPlane);
+      uint8_t* uplane = frame->visible_data(media::VideoFrame::kUPlane) +
+                        (y / 2) * frame->stride(media::VideoFrame::kUPlane);
+      uint8_t* vplane = frame->visible_data(media::VideoFrame::kVPlane) +
+                        (y / 2) * frame->stride(media::VideoFrame::kVPlane);
       for (int x = rect.x(); x < rect.right(); ++x) {
         if (yplane[x] != 0)
           y_found = true;
@@ -233,9 +233,12 @@ TEST_F(CursorRendererAuraTest, CursorRenderedOnFrame) {
   MoveMouseCursorWithinWindow();
   EXPECT_TRUE(CursorDisplayed());
 
-  EXPECT_FALSE(NonZeroPixelsInRegion(frame, gfx::Rect(50, 50, 70, 70)));
-  EXPECT_TRUE(RenderCursorOnVideoFrame(frame.get()));
+  EXPECT_FALSE(NonZeroPixelsInRegion(frame, frame->visible_rect()));
+  CursorRendererUndoer undoer;
+  EXPECT_TRUE(RenderCursorOnVideoFrame(frame.get(), &undoer));
   EXPECT_TRUE(NonZeroPixelsInRegion(frame, gfx::Rect(50, 50, 70, 70)));
+  undoer.Undo(frame.get());
+  EXPECT_FALSE(NonZeroPixelsInRegion(frame, frame->visible_rect()));
 }
 
 TEST_F(CursorRendererAuraTest, CursorRenderedOnRootWindow) {

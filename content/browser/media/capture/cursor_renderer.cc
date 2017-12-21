@@ -90,7 +90,8 @@ void CursorRenderer::SnapshotCursorState() {
 }
 
 bool CursorRenderer::RenderOnVideoFrame(media::VideoFrame* frame,
-                                        const gfx::Rect& region_in_frame) {
+                                        const gfx::Rect& region_in_frame,
+                                        CursorRendererUndoer* undoer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(render_sequence_checker_);
   DCHECK(frame);
 
@@ -152,17 +153,22 @@ bool CursorRenderer::RenderOnVideoFrame(media::VideoFrame* frame,
       gfx::Rect(cursor_position, gfx::Size(scaled_cursor_bitmap_.width(),
                                            scaled_cursor_bitmap_.height())),
       frame->visible_rect());
+  if (rect.IsEmpty())
+    return false;
+
+  if (undoer)
+    undoer->TakeSnapshot(*frame, rect);
 
   // Render the cursor in the video frame. This loop also performs a simple
   // RGB→YUV color space conversion, with alpha-blended compositing.
   for (int y = rect.y(); y < rect.bottom(); ++y) {
     int cursor_y = y - cursor_position.y();
-    uint8_t* yplane = frame->data(media::VideoFrame::kYPlane) +
-                      y * frame->row_bytes(media::VideoFrame::kYPlane);
-    uint8_t* uplane = frame->data(media::VideoFrame::kUPlane) +
-                      (y / 2) * frame->row_bytes(media::VideoFrame::kUPlane);
-    uint8_t* vplane = frame->data(media::VideoFrame::kVPlane) +
-                      (y / 2) * frame->row_bytes(media::VideoFrame::kVPlane);
+    uint8_t* yplane = frame->visible_data(media::VideoFrame::kYPlane) +
+                      y * frame->stride(media::VideoFrame::kYPlane);
+    uint8_t* uplane = frame->visible_data(media::VideoFrame::kUPlane) +
+                      (y / 2) * frame->stride(media::VideoFrame::kUPlane);
+    uint8_t* vplane = frame->visible_data(media::VideoFrame::kVPlane) +
+                      (y / 2) * frame->stride(media::VideoFrame::kVPlane);
     for (int x = rect.x(); x < rect.right(); ++x) {
       int cursor_x = x - cursor_position.x();
       SkColor color = scaled_cursor_bitmap_.getColor(cursor_x, cursor_y);
@@ -175,6 +181,8 @@ bool CursorRenderer::RenderOnVideoFrame(media::VideoFrame* frame,
       yplane[x] = alpha_blend(alpha, color_y, yplane[x]);
 
       // Only sample U and V at even coordinates.
+      // TODO(miu): This isn't right. We should be blending four cursor pixels
+      // into each U or V output pixel.
       if ((x % 2 == 0) && (y % 2 == 0)) {
         int color_u = clip_byte(
             ((color_r * -38 + color_g * -74 + color_b * 112 + 128) >> 8) + 128);
@@ -270,6 +278,71 @@ void CursorRenderer::OnMouseHasGoneIdle() {
   SnapshotCursorState();
   if (!needs_redraw_callback_.is_null()) {
     needs_redraw_callback_.Run();
+  }
+}
+
+CursorRendererUndoer::CursorRendererUndoer() = default;
+
+CursorRendererUndoer::~CursorRendererUndoer() = default;
+
+namespace {
+
+// Returns the rect of pixels in a Chroma plane affected by the given |rect| in
+// the Luma plane.
+gfx::Rect ToEncompassingChromaRect(const gfx::Rect& rect) {
+  const int left = rect.x() / 2;
+  const int top = rect.y() / 2;
+  const int right = (rect.right() + 1) / 2;
+  const int bottom = (rect.bottom() + 1) / 2;
+  return gfx::Rect(left, top, right - left, bottom - top);
+}
+
+constexpr size_t kYuvPlanes[] = {media::VideoFrame::kYPlane,
+                                 media::VideoFrame::kUPlane,
+                                 media::VideoFrame::kVPlane};
+
+}  // namespace
+
+void CursorRendererUndoer::TakeSnapshot(const media::VideoFrame& frame,
+                                        const gfx::Rect& rect) {
+  DCHECK(frame.visible_rect().Contains(rect));
+
+  rect_ = rect;
+  const gfx::Rect chroma_rect = ToEncompassingChromaRect(rect_);
+  snapshot_.resize(rect_.size().GetArea() + 2 * chroma_rect.size().GetArea());
+
+  uint8_t* dst = snapshot_.data();
+  for (auto plane : kYuvPlanes) {
+    const gfx::Rect& plane_rect =
+        (plane == media::VideoFrame::kYPlane) ? rect_ : chroma_rect;
+    const int stride = frame.stride(plane);
+    const uint8_t* src =
+        frame.visible_data(plane) + plane_rect.y() * stride + plane_rect.x();
+    for (int row = 0; row < plane_rect.height(); ++row) {
+      memcpy(dst, src, plane_rect.width());
+      src += stride;
+      dst += plane_rect.width();
+    }
+  }
+}
+
+void CursorRendererUndoer::Undo(media::VideoFrame* frame) const {
+  DCHECK(frame->visible_rect().Contains(rect_));
+
+  const gfx::Rect chroma_rect = ToEncompassingChromaRect(rect_);
+
+  const uint8_t* src = snapshot_.data();
+  for (auto plane : kYuvPlanes) {
+    const gfx::Rect& plane_rect =
+        (plane == media::VideoFrame::kYPlane) ? rect_ : chroma_rect;
+    const int stride = frame->stride(plane);
+    uint8_t* dst =
+        frame->visible_data(plane) + plane_rect.y() * stride + plane_rect.x();
+    for (int row = 0; row < plane_rect.height(); ++row) {
+      memcpy(dst, src, plane_rect.width());
+      src += plane_rect.width();
+      dst += stride;
+    }
   }
 }
 
