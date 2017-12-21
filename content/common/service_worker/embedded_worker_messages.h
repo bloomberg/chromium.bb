@@ -7,16 +7,9 @@
 
 #include <stdint.h>
 
-#include <string>
-
-#include "content/common/service_worker/embedded_worker_settings.h"
-#include "content/common/service_worker/embedded_worker_start_params.h"
-#include "content/public/common/console_message_level.h"
-#include "content/public/common/web_preferences.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

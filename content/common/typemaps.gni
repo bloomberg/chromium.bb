@@ -12,7 +12,6 @@ typemaps = [
   "//content/common/media/media_devices.typemap",
   "//content/common/media/media_stream.typemap",
   "//content/common/push_messaging.typemap",
-  "//content/common/service_worker/embedded_worker.typemap",
   "//content/common/service_worker/service_worker_event_dispatcher.typemap",
   "//content/common/service_worker/service_worker_fetch_request.typemap",
   "//content/common/service_worker/service_worker_provider.typemap",

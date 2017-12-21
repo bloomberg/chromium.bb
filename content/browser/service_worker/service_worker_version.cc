@@ -32,8 +32,8 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/common/origin_trials/trial_policy_impl.h"
+#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
-#include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -1532,7 +1532,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       ServiceWorkerProviderHost::PreCreateForController(context());
   provider_host_ = pending_provider_host->AsWeakPtr();
 
-  auto params = std::make_unique<EmbeddedWorkerStartParams>();
+  auto params = mojom::EmbeddedWorkerStartParams::New();
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;
