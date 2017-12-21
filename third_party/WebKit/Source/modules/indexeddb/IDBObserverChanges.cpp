@@ -31,15 +31,6 @@ ScriptValue IDBObserverChanges::records(ScriptState* script_state) {
 
 IDBObserverChanges* IDBObserverChanges::Create(
     IDBDatabase* database,
-    const WebVector<WebIDBObservation>& observations,
-    const WebVector<int32_t>& observation_indices,
-    v8::Isolate* isolate) {
-  return new IDBObserverChanges(database, nullptr, observations,
-                                observation_indices, isolate);
-}
-
-IDBObserverChanges* IDBObserverChanges::Create(
-    IDBDatabase* database,
     IDBTransaction* transaction,
     const WebVector<WebIDBObservation>& observations,
     const WebVector<int32_t>& observation_indices,
