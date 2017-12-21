@@ -49,8 +49,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION,
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class MediaRouterIntegrationTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

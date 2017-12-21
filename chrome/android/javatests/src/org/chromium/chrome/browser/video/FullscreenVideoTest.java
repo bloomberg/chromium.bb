@@ -39,9 +39,8 @@ import java.util.concurrent.TimeoutException;
  * Test suite for fullscreen video implementation.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.
-Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
 public class FullscreenVideoTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

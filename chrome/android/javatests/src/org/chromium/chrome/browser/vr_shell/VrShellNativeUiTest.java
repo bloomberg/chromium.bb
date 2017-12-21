@@ -28,7 +28,6 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.TimeoutException;
@@ -37,8 +36,7 @@ import java.util.concurrent.TimeoutException;
  * End-to-end tests for native UI presentation in VR Browser mode.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-webvr"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
 public class VrShellNativeUiTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class

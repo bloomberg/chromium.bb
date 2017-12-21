@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -42,12 +41,9 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * Test suite for Sync.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // TODO(crbug.com/781368) remove once feature enabled.
-        "enable-features=SyncUSSTypedURL"
-})
+        "enable-features=SyncUSSTypedURL"})
 @RetryOnFailure // crbug.com/637448
 public class SyncTest {
     @Rule

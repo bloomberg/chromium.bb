@@ -47,8 +47,7 @@ import java.util.concurrent.TimeoutException;
  * "VR Shell".
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-webvr"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
 public class VrShellNavigationTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class

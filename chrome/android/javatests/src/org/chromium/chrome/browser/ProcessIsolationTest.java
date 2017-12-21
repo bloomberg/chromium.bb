@@ -31,8 +31,7 @@ import java.util.HashSet;
  * Test to make sure browser and renderer are seperated process.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ProcessIsolationTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

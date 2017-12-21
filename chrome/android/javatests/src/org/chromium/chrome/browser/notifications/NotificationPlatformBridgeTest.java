@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
@@ -70,11 +69,7 @@ import java.util.concurrent.TimeoutException;
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        // Preconnect causes issues with the single-threaded Java test server.
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class NotificationPlatformBridgeTest {
     @Rule
     public NotificationTestRule mNotificationTestRule = new NotificationTestRule();

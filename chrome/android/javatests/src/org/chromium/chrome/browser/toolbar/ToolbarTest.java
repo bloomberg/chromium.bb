@@ -38,8 +38,7 @@ import org.chromium.ui.test.util.UiRestriction;
  * Tests for toolbar manager behavior.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ToolbarTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

@@ -114,7 +114,6 @@ import javax.annotation.Nullable;
 // NOTE: Disable online detection so we we'll default to online on test bots with no network.
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
         ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED,
         "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION,
         "disable-features=" + ChromeFeatureList.FULLSCREEN_ACTIVITY})

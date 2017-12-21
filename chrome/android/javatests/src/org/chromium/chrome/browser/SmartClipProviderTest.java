@@ -39,8 +39,7 @@ import java.util.concurrent.TimeoutException;
  * Tests for the SmartClipProvider.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SmartClipProviderTest implements Handler.Callback {
     // This is a key for meta-data in the package manifest. It should NOT
     // change, as OEMs will use it when they look for the SmartClipProvider

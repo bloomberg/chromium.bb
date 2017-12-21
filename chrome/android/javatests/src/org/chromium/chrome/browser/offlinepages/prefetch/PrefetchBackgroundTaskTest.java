@@ -20,7 +20,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
@@ -38,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 /** Unit tests for {@link PrefetchBackgroundTask}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
         "enable-features=OfflinePagesPrefetching"})
 public class PrefetchBackgroundTaskTest {
     @Rule

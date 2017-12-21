@@ -32,8 +32,9 @@ import org.chromium.net.test.EmbeddedTestServer;
  * Tests for zooming into & out of a selected & deselected editable text field.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+})
 public class FocusedEditableTextFieldZoomTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

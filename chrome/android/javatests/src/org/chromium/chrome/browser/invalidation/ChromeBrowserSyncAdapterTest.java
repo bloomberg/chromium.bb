@@ -41,8 +41,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * Tests for ChromeBrowserSyncAdapter.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ChromeBrowserSyncAdapterTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

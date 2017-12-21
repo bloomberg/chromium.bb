@@ -36,10 +36,7 @@ import java.util.Set;
 
 /** An integration test for the Android payment app finder. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @MediumTest
 public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     @Rule

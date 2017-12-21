@@ -39,8 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Integration tests for interaction of the AutofillPopup and a keyboard.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AutofillPopupWithKeyboardTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

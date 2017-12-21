@@ -32,9 +32,11 @@ import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.Callable;
 
+/**
+ * Tests the metrics recording for main intent behaviours.
+ */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class MainIntentBehaviorMetricsIntegrationTest {
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =

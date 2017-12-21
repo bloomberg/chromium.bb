@@ -42,9 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({"enable-features=AutofillKeyboardAccessory",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.
+Add({"enable-features=AutofillKeyboardAccessory", ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AutofillKeyboardAccessoryTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

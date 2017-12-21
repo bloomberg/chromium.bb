@@ -22,8 +22,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
  * Test suite for out of process heap profiling.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ProfilingProcessHostAndroidTest {
     private static final String TAG = "ProfilingProcessHostAndroidTest";
     @Rule

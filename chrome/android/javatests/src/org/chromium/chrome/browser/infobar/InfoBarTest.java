@@ -49,8 +49,7 @@ import java.util.concurrent.TimeoutException;
 
 /** Tests for the InfoBars. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class InfoBarTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

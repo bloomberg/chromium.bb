@@ -58,8 +58,7 @@ import java.util.concurrent.TimeoutException;
 @RetryOnFailure
 @SuppressLint("NewApi")
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PrintingControllerTest {
     @Rule
     public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

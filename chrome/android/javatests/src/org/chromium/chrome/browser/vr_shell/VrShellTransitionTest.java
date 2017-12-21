@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule
 import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -49,8 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * into the VR browser.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class VrShellTransitionTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.

@@ -6,7 +6,6 @@ package org.chromium.chrome.test;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE;
-import static org.chromium.chrome.test.ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
@@ -28,7 +27,7 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 /**
  * Junit4 rule for tests testing the Chrome Home bottom sheet.
  */
-@CommandLineFlags.Add({DISABLE_FIRST_RUN_EXPERIENCE, DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({DISABLE_FIRST_RUN_EXPERIENCE})
 public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     /** An observer used to record events that occur with respect to the bottom sheet. */
     public static class Observer extends EmptyBottomSheetObserver {

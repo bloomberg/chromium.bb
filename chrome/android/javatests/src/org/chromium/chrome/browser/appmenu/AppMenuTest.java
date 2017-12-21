@@ -39,8 +39,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AppMenuTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

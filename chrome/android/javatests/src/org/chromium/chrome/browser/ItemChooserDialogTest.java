@@ -37,8 +37,7 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
  * Tests for the ItemChooserDialog class.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RetryOnFailure
 public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCallback {
     @Rule
