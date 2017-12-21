@@ -39,7 +39,7 @@ namespace ui {
 
 namespace {
 
-const int kDefaultTransitionDurationMs = 120;
+const int kLayerAnimatorDefaultTransitionDurationMs = 120;
 
 }  // namespace
 
@@ -76,8 +76,8 @@ LayerAnimator* LayerAnimator::CreateDefaultAnimator() {
 
 // static
 LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
-  return new LayerAnimator(
-      base::TimeDelta::FromMilliseconds(kDefaultTransitionDurationMs));
+  return new LayerAnimator(base::TimeDelta::FromMilliseconds(
+      kLayerAnimatorDefaultTransitionDurationMs));
 }
 
 // This macro provides the implementation for the setter and getter (well,

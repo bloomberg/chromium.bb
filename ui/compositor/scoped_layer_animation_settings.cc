@@ -12,9 +12,11 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
 
+namespace ui {
+
 namespace {
 
-const int kDefaultTransitionDurationMs = 200;
+const int kScopedLayerAnimationDefaultTransitionDurationMs = 200;
 
 template <typename Trait>
 class ScopedLayerAnimationObserver : public ui::ImplicitAnimationObserver,
@@ -104,8 +106,6 @@ void AddScopedDeferredPaintingObserverRecursive(
 
 }  // namespace
 
-namespace ui {
-
 // ScopedLayerAnimationSettings ------------------------------------------------
 ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
     scoped_refptr<LayerAnimator> animator)
@@ -115,8 +115,8 @@ ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
       old_transition_duration_(animator->GetTransitionDuration()),
       old_tween_type_(animator->tween_type()),
       old_preemption_strategy_(animator->preemption_strategy()) {
-  SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kDefaultTransitionDurationMs));
+  SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      kScopedLayerAnimationDefaultTransitionDurationMs));
 }
 
 ScopedLayerAnimationSettings::~ScopedLayerAnimationSettings() {
