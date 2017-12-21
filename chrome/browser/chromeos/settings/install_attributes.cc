@@ -19,7 +19,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/proto/install_attributes.pb.h"
@@ -27,8 +27,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
-
-namespace cu = cryptohome_util;
 
 namespace {
 
@@ -143,8 +141,8 @@ void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
                                               base::Optional<bool> is_ready) {
   if (is_ready.value_or(false)) {
     registration_mode_ = policy::DEVICE_MODE_NOT_SET;
-    if (!cu::InstallAttributesIsInvalid() &&
-        !cu::InstallAttributesIsFirstInstall()) {
+    if (!tpm_util::InstallAttributesIsInvalid() &&
+        !tpm_util::InstallAttributesIsFirstInstall()) {
       device_locked_ = true;
 
       static const char* const kEnterpriseAttributes[] = {
@@ -159,7 +157,7 @@ void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
       std::map<std::string, std::string> attr_map;
       for (size_t i = 0; i < arraysize(kEnterpriseAttributes); ++i) {
         std::string value;
-        if (cu::InstallAttributesGet(kEnterpriseAttributes[i], &value))
+        if (tpm_util::InstallAttributesGet(kEnterpriseAttributes[i], &value))
           attr_map[kEnterpriseAttributes[i]] = value;
       }
 
@@ -261,19 +259,20 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
   }
 
   // Clearing the TPM password seems to be always a good deal.
-  if (cu::TpmIsEnabled() && !cu::TpmIsBeingOwned() && cu::TpmIsOwned()) {
+  if (tpm_util::TpmIsEnabled() && !tpm_util::TpmIsBeingOwned() &&
+      tpm_util::TpmIsOwned()) {
     cryptohome_client_->CallTpmClearStoredPasswordAndBlock();
   }
 
   // Make sure we really have a working InstallAttrs.
-  if (cu::InstallAttributesIsInvalid()) {
+  if (tpm_util::InstallAttributesIsInvalid()) {
     LOG(ERROR) << "Install attributes invalid.";
     device_lock_running_ = false;
     callback.Run(LOCK_BACKEND_INVALID);
     return;
   }
 
-  if (!cu::InstallAttributesIsFirstInstall()) {
+  if (!tpm_util::InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Install attributes already installed.";
     device_lock_running_ = false;
     callback.Run(LOCK_ALREADY_LOCKED);
@@ -288,20 +287,21 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
     enterprise_owned = "true";
   }
   std::string mode = GetDeviceModeString(device_mode);
-  if (!cu::InstallAttributesSet(kAttrConsumerKioskEnabled, kiosk_enabled) ||
-      !cu::InstallAttributesSet(kAttrEnterpriseOwned, enterprise_owned) ||
-      !cu::InstallAttributesSet(kAttrEnterpriseMode, mode) ||
-      !cu::InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
-      !cu::InstallAttributesSet(kAttrEnterpriseRealm, realm) ||
-      !cu::InstallAttributesSet(kAttrEnterpriseDeviceId, device_id)) {
+  if (!tpm_util::InstallAttributesSet(kAttrConsumerKioskEnabled,
+                                      kiosk_enabled) ||
+      !tpm_util::InstallAttributesSet(kAttrEnterpriseOwned, enterprise_owned) ||
+      !tpm_util::InstallAttributesSet(kAttrEnterpriseMode, mode) ||
+      !tpm_util::InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
+      !tpm_util::InstallAttributesSet(kAttrEnterpriseRealm, realm) ||
+      !tpm_util::InstallAttributesSet(kAttrEnterpriseDeviceId, device_id)) {
     LOG(ERROR) << "Failed writing attributes.";
     device_lock_running_ = false;
     callback.Run(LOCK_SET_ERROR);
     return;
   }
 
-  if (!cu::InstallAttributesFinalize() ||
-      cu::InstallAttributesIsFirstInstall()) {
+  if (!tpm_util::InstallAttributesFinalize() ||
+      tpm_util::InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Failed locking.";
     device_lock_running_ = false;
     callback.Run(LOCK_FINALIZE_ERROR);

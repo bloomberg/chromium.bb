@@ -89,7 +89,7 @@
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/cryptohome/tpm_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -1230,7 +1230,7 @@ void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
 void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
   BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-Start", false);
 
-  if (!cryptohome_util::TpmIsEnabled() || cryptohome_util::TpmIsBeingOwned()) {
+  if (!tpm_util::TpmIsEnabled() || tpm_util::TpmIsBeingOwned()) {
     FinalizePrepareProfile(profile);
     return;
   }
@@ -1249,7 +1249,7 @@ void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
       base::BindOnce(&UserSessionManager::OnCryptohomeOperationCompleted,
                      AsWeakPtr(), profile);
   CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
-  if (cryptohome_util::TpmIsOwned())
+  if (tpm_util::TpmIsOwned())
     client->TpmClearStoredPassword(std::move(callback));
   else
     client->TpmCanAttemptOwnership(std::move(callback));
