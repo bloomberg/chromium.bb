@@ -486,6 +486,12 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   # End av1_high encoder functions
 
+  # txb
+  if (aom_config("CONFIG_LV_MAP") eq "yes") {
+    add_proto qw/void av1_get_nz_map_contexts/, "const uint8_t *const levels, const int16_t *const scan, const uint16_t eob, const TX_SIZE tx_size, const TX_TYPE tx_type, int8_t *const coeff_contexts";
+    specialize qw/av1_get_nz_map_contexts sse2/;
+  }
+
   add_proto qw/uint64_t av1_wedge_sse_from_residuals/, "const int16_t *r1, const int16_t *d, const uint8_t *m, int N";
   specialize qw/av1_wedge_sse_from_residuals sse2/;
   add_proto qw/int av1_wedge_sign_from_residuals/, "const int16_t *ds, const uint8_t *m, int N, int64_t limit";

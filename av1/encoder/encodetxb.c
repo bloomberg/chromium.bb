@@ -314,11 +314,10 @@ static INLINE void av1_txb_init_levels(const tran_low_t *const coeff,
   }
 }
 
-static void av1_get_nz_map_contexts(const uint8_t *const levels,
-                                    const int16_t *const scan,
-                                    const uint16_t eob, const TX_SIZE tx_size,
-                                    const TX_TYPE tx_type,
-                                    int8_t *const coeff_contexts) {
+void av1_get_nz_map_contexts_c(const uint8_t *const levels,
+                               const int16_t *const scan, const uint16_t eob,
+                               const TX_SIZE tx_size, const TX_TYPE tx_type,
+                               int8_t *const coeff_contexts) {
   const int bwl = get_txb_bwl(tx_size);
 #if CONFIG_LV_MAP_MULTI
   const int height = get_txb_high(tx_size);

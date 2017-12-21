@@ -400,6 +400,10 @@ if (CONFIG_LV_MAP)
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/encodetxb.c"
       "${AOM_ROOT}/av1/encoder/encodetxb.h")
+
+  set(AOM_AV1_ENCODER_INTRIN_SSE2
+      ${AOM_AV1_ENCODER_INTRIN_SSE2}
+      "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse2.c")
 endif ()
 
 if (CONFIG_CFL)

@@ -123,6 +123,10 @@ AV1_CX_SRCS-yes += encoder/hash_motion.h
 endif
 AV1_CX_SRCS-yes += encoder/pickcdef.c
 
+ifeq ($(CONFIG_LV_MAP),yes)
+AV1_COMMON_SRCS-$(HAVE_SSE2) += encoder/x86/encodetxb_sse2.c
+endif
+
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/av1_quantize_sse2.c
 AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/av1_quantize_avx2.c
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/temporal_filter_apply_sse2.asm
