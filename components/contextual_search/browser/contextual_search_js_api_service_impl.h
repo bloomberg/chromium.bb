@@ -20,6 +20,15 @@ class ContextualSearchJsApiServiceImpl
   ~ContextualSearchJsApiServiceImpl() override;
 
   // Mojo ContextualSearchApiService implementation.
+  // Determines if the JavaScript API should be enabled for the given |gurl|.
+  // The given |callback| will be notified with the answer.
+  void ShouldEnableJsApi(
+      const GURL& gurl,
+      contextual_search::mojom::ContextualSearchJsApiService::
+          ShouldEnableJsApiCallback callback) override;
+
+  // Handles a JavaScript call to set the caption in the Bar to
+  // the given |message|.
   void HandleSetCaption(const std::string& message, bool does_answer) override;
 
  private:

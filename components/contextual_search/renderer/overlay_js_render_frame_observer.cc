@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/contextual_search/renderer/contextual_search_wrapper.h"
-#include "components/contextual_search/renderer/overlay_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "v8/include/v8.h"
 
 namespace contextual_search {
@@ -20,54 +22,40 @@ namespace contextual_search {
 OverlayJsRenderFrameObserver::OverlayJsRenderFrameObserver(
     content::RenderFrame* render_frame,
     service_manager::BinderRegistry* registry)
-    : RenderFrameObserver(render_frame),
-      is_contextual_search_overlay_(false),
-      weak_factory_(this) {
-  registry->AddInterface(base::Bind(
-      &OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService,
-      weak_factory_.GetWeakPtr()));
-}
+    : RenderFrameObserver(render_frame), weak_factory_(this) {}
 
 OverlayJsRenderFrameObserver::~OverlayJsRenderFrameObserver() {}
 
-void OverlayJsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
-  can_bind_requests_ = true;
-}
-
-void OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService(
-    mojom::OverlayPageNotifierServiceRequest request) {
-  if (!can_bind_requests_)
-    return;
-  mojo::MakeStrongBinding(
-      base::MakeUnique<OverlayPageNotifierServiceImpl>(
-          weak_factory_.GetWeakPtr()),
-      std::move(request));
-}
-
-void OverlayJsRenderFrameObserver::SetIsContextualSearchOverlay() {
-  is_contextual_search_overlay_ = true;
-}
-
 void OverlayJsRenderFrameObserver::DidClearWindowObject() {
-  if (is_contextual_search_overlay_) {
-    contextual_search::ContextualSearchWrapper::Install(render_frame());
+  if (!did_start_enabling_js_api_) {
+    blink::WebURL url = render_frame()->GetWebFrame()->GetDocument().Url();
+    GURL gurl(url);
+    if (!url.IsEmpty() && EnsureServiceConnected()) {
+      did_start_enabling_js_api_ = true;
+      contextual_search_js_api_service_->ShouldEnableJsApi(
+          gurl, base::BindOnce(&OverlayJsRenderFrameObserver::EnableJsApi,
+                               weak_factory_.GetWeakPtr()));
+    }
   }
 }
 
-void OverlayJsRenderFrameObserver::DidFinishLoad() {
-  // If no message about the Contextual Search overlay was received at this
-  // point, there will not be one; remove the OverlayPageNotifierService
-  // from the registry.
-  DestroyOverlayPageNotifierService();
+void OverlayJsRenderFrameObserver::EnableJsApi(bool should_enable) {
+  if (!should_enable)
+    return;
+  contextual_search::ContextualSearchWrapper::Install(render_frame());
 }
 
-void OverlayJsRenderFrameObserver::DestroyOverlayPageNotifierService() {
-  can_bind_requests_ = false;
+bool OverlayJsRenderFrameObserver::EnsureServiceConnected() {
+  if (render_frame() && (!contextual_search_js_api_service_ ||
+                         !contextual_search_js_api_service_.is_bound())) {
+    render_frame()->GetRemoteInterfaces()->GetInterface(
+        &contextual_search_js_api_service_);
+    return true;
+  }
+  return false;
 }
 
 void OverlayJsRenderFrameObserver::OnDestruct() {
-  DestroyOverlayPageNotifierService();
   delete this;
 }
 

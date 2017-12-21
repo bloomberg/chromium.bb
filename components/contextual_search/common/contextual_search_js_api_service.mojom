@@ -4,9 +4,15 @@
 
 module contextual_search.mojom;
 
+import "url/mojo/url.mojom";
+
 // This service is implemented by the browser process and is used by the
 // renderer when a Contextual Search JavaScript API function is called.
 interface ContextualSearchJsApiService {
+
+  // Determines if this JavaScript API should be enabled for the given URL.
+  // The asynchronous callback will be notified with the answer.
+  ShouldEnableJsApi(url.mojom.Url url) => (bool should_enable);
 
   // Handle a call from the JS API to set the caption, and indicate whether
   // the caption provides an answer (such as an actual definition), rather than
