@@ -492,11 +492,12 @@ public class VrShellImpl
         mLastContentHeight = height;
         mLastContentDpr = dpr;
 
+        // Native pages don't listen to our DPR changes, so to get them to render at the correct
+        // size we need to make them larger.
+        DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
+        float dip = primaryDisplay.getDipScale();
+
         if (mNativePage != null) {
-            // Native pages don't listen to our DPR changes, so to get them to render at the correct
-            // size we need to make them larger.
-            DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
-            float dip = primaryDisplay.getDipScale();
             width *= (dip / dpr);
             height *= (dip / dpr);
         }
@@ -505,7 +506,7 @@ public class VrShellImpl
         int surfaceHeight = (int) Math.ceil(height * dpr);
 
         Point size = new Point(surfaceWidth, surfaceHeight);
-        mContentVirtualDisplay.update(size, dpr, null, null, null, null, null);
+        mContentVirtualDisplay.update(size, dpr, dip / dpr, null, null, null, null, null);
         assert mTab != null;
         if (mTab.getContentViewCore() != null) {
             nativeOnPhysicalBackingSizeChanged(
