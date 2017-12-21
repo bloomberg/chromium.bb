@@ -8,6 +8,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSTokenizer.h"
+#include "core/frame/UseCounter.h"
+#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -493,6 +495,142 @@ TEST(CSSSelectorParserTest, ASCIILowerHTMLQuirks) {
     ASSERT_TRUE(selector);
     EXPECT_EQ(AtomicString(test_case.expected), test_case.getter(selector));
   }
+}
+
+TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
+  std::unique_ptr<DummyPageHolder> dummy_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  Document* doc = &dummy_holder->GetDocument();
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kSecureContext,
+      CSSParserContext::kDynamicProfile, doc);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+
+  auto ExpectCount = [doc, context, sheet](const char* selector,
+                                           WebFeature feature) {
+    EXPECT_FALSE(UseCounter::IsCounted(*doc, feature));
+
+    CSSTokenizer tokenizer(selector);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorParser::ParseSelector(range, context, sheet);
+
+    EXPECT_TRUE(UseCounter::IsCounted(*doc, feature));
+  };
+
+  ExpectCount("::cue", WebFeature::kCSSSelectorCue);
+  ExpectCount("::-internal-media-controls-overlay-cast-button",
+              WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton);
+  ExpectCount("::-webkit-calendar-picker-indicator",
+              WebFeature::kCSSSelectorWebkitCalendarPickerIndicator);
+  ExpectCount("::-webkit-clear-button",
+              WebFeature::kCSSSelectorWebkitClearButton);
+  ExpectCount("::-webkit-color-swatch",
+              WebFeature::kCSSSelectorWebkitColorSwatch);
+  ExpectCount("::-webkit-color-swatch-wrapper",
+              WebFeature::kCSSSelectorWebkitColorSwatchWrapper);
+  ExpectCount("::-webkit-date-and-time-value",
+              WebFeature::kCSSSelectorWebkitDateAndTimeValue);
+  ExpectCount("::-webkit-datetime-edit",
+              WebFeature::kCSSSelectorWebkitDatetimeEdit);
+  ExpectCount("::-webkit-datetime-edit-ampm-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditAmpmField);
+  ExpectCount("::-webkit-datetime-edit-day-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditDayField);
+  ExpectCount("::-webkit-datetime-edit-fields-wrapper",
+              WebFeature::kCSSSelectorWebkitDatetimeEditFieldsWrapper);
+  ExpectCount("::-webkit-datetime-edit-hour-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditHourField);
+  ExpectCount("::-webkit-datetime-edit-millisecond-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditMillisecondField);
+  ExpectCount("::-webkit-datetime-edit-minute-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditMinuteField);
+  ExpectCount("::-webkit-datetime-edit-month-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditMonthField);
+  ExpectCount("::-webkit-datetime-edit-second-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditSecondField);
+  ExpectCount("::-webkit-datetime-edit-text",
+              WebFeature::kCSSSelectorWebkitDatetimeEditText);
+  ExpectCount("::-webkit-datetime-edit-week-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditWeekField);
+  ExpectCount("::-webkit-datetime-edit-year-field",
+              WebFeature::kCSSSelectorWebkitDatetimeEditYearField);
+  ExpectCount("::-webkit-details-marker",
+              WebFeature::kCSSSelectorWebkitDetailsMarker);
+  ExpectCount("::-webkit-file-upload-button",
+              WebFeature::kCSSSelectorWebkitFileUploadButton);
+  ExpectCount("::-webkit-inner-spin-button",
+              WebFeature::kCSSSelectorWebkitInnerSpinButton);
+  ExpectCount("::-webkit-input-placeholder",
+              WebFeature::kCSSSelectorWebkitInputPlaceholder);
+  ExpectCount("::-webkit-media-controls",
+              WebFeature::kCSSSelectorWebkitMediaControls);
+  ExpectCount("::-webkit-media-controls-current-time-display",
+              WebFeature::kCSSSelectorWebkitMediaControlsCurrentTimeDisplay);
+  ExpectCount("::-webkit-media-controls-enclosure",
+              WebFeature::kCSSSelectorWebkitMediaControlsEnclosure);
+  ExpectCount("::-webkit-media-controls-fullscreen-button",
+              WebFeature::kCSSSelectorWebkitMediaControlsFullscreenButton);
+  ExpectCount("::-webkit-media-controls-mute-button",
+              WebFeature::kCSSSelectorWebkitMediaControlsMuteButton);
+  ExpectCount("::-webkit-media-controls-overlay-enclosure",
+              WebFeature::kCSSSelectorWebkitMediaControlsOverlayEnclosure);
+  ExpectCount("::-webkit-media-controls-overlay-play-button",
+              WebFeature::kCSSSelectorWebkitMediaControlsOverlayPlayButton);
+  ExpectCount("::-webkit-media-controls-panel",
+              WebFeature::kCSSSelectorWebkitMediaControlsPanel);
+  ExpectCount("::-webkit-media-controls-play-button",
+              WebFeature::kCSSSelectorWebkitMediaControlsPlayButton);
+  ExpectCount("::-webkit-media-controls-timeline",
+              WebFeature::kCSSSelectorWebkitMediaControlsTimeline);
+  ExpectCount("::-webkit-media-controls-timeline-container",
+              WebFeature::kCSSSelectorWebkitMediaControlsTimelineContainer);
+  ExpectCount("::-webkit-media-controls-time-remaining-display",
+              WebFeature::kCSSSelectorWebkitMediaControlsTimeRemainingDisplay);
+  ExpectCount(
+      "::-webkit-media-controls-toggle-closed-captions-button",
+      WebFeature::kCSSSelectorWebkitMediaControlsToggleClosedCaptionsButton);
+  ExpectCount("::-webkit-media-controls-volume-slider",
+              WebFeature::kCSSSelectorWebkitMediaControlsVolumeSlider);
+  ExpectCount("::-webkit-media-slider-container",
+              WebFeature::kCSSSelectorWebkitMediaSliderContainer);
+  ExpectCount("::-webkit-media-slider-thumb",
+              WebFeature::kCSSSelectorWebkitMediaSliderThumb);
+  ExpectCount("::-webkit-media-text-track-container",
+              WebFeature::kCSSSelectorWebkitMediaTextTrackContainer);
+  ExpectCount("::-webkit-media-text-track-display",
+              WebFeature::kCSSSelectorWebkitMediaTextTrackDisplay);
+  ExpectCount("::-webkit-media-text-track-region",
+              WebFeature::kCSSSelectorWebkitMediaTextTrackRegion);
+  ExpectCount("::-webkit-media-text-track-region-container",
+              WebFeature::kCSSSelectorWebkitMediaTextTrackRegionContainer);
+  ExpectCount("::-webkit-meter-bar", WebFeature::kCSSSelectorWebkitMeterBar);
+  ExpectCount("::-webkit-meter-even-less-good-value",
+              WebFeature::kCSSSelectorWebkitMeterEvenLessGoodValue);
+  ExpectCount("::-webkit-meter-inner-element",
+              WebFeature::kCSSSelectorWebkitMeterInnerElement);
+  ExpectCount("::-webkit-meter-optimum-value",
+              WebFeature::kCSSSelectorWebkitMeterOptimumValue);
+  ExpectCount("::-webkit-meter-suboptimum-value",
+              WebFeature::kCSSSelectorWebkitMeterSuboptimumValue);
+  ExpectCount("::-webkit-progress-bar",
+              WebFeature::kCSSSelectorWebkitProgressBar);
+  ExpectCount("::-webkit-progress-inner-element",
+              WebFeature::kCSSSelectorWebkitProgressInnerElement);
+  ExpectCount("::-webkit-progress-value",
+              WebFeature::kCSSSelectorWebkitProgressValue);
+  ExpectCount("::-webkit-search-cancel-button",
+              WebFeature::kCSSSelectorWebkitSearchCancelButton);
+  ExpectCount("::-webkit-slider-container",
+              WebFeature::kCSSSelectorWebkitSliderContainer);
+  ExpectCount("::-webkit-slider-runnable-track",
+              WebFeature::kCSSSelectorWebkitSliderRunnableTrack);
+  ExpectCount("::-webkit-slider-thumb",
+              WebFeature::kCSSSelectorWebkitSliderThumb);
+  ExpectCount("::-webkit-textfield-decoration-container",
+              WebFeature::kCSSSelectorWebkitTextfieldDecorationContainer);
+  ExpectCount("::-webkit-unrecognized",
+              WebFeature::kCSSSelectorWebkitUnknownPseudo);
 }
 
 }  // namespace blink

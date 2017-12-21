@@ -17282,6 +17282,48 @@ Called by update_net_error_codes.py.-->
   <int value="2275" label="FileAccessedSharedWorker"/>
   <int value="2276" label="V8MediaKeys_GetStatusForPolicy_Method"/>
   <int value="2277" label="V8DeoptimizerDisableSpeculation"/>
+  <int value="2278" label="CSSSelectorCue"/>
+  <int value="2279" label="CSSSelectorWebkitCalendarPickerIndicator"/>
+  <int value="2280" label="CSSSelectorWebkitClearButton"/>
+  <int value="2281" label="CSSSelectorWebkitColorSwatch"/>
+  <int value="2282" label="CSSSelectorWebkitColorSwatchWrapper"/>
+  <int value="2283" label="CSSSelectorWebkitDateAndTimeValue"/>
+  <int value="2284" label="CSSSelectorWebkitDatetimeEdit"/>
+  <int value="2285" label="CSSSelectorWebkitDatetimeEditAmpmField"/>
+  <int value="2286" label="CSSSelectorWebkitDatetimeEditDayField"/>
+  <int value="2287" label="CSSSelectorWebkitDatetimeEditFieldsWrapper"/>
+  <int value="2288" label="CSSSelectorWebkitDatetimeEditHourField"/>
+  <int value="2289" label="CSSSelectorWebkitDatetimeEditMillisecondField"/>
+  <int value="2290" label="CSSSelectorWebkitDatetimeEditMinuteField"/>
+  <int value="2291" label="CSSSelectorWebkitDatetimeEditMonthField"/>
+  <int value="2292" label="CSSSelectorWebkitDatetimeEditSecondField"/>
+  <int value="2293" label="CSSSelectorWebkitDatetimeEditText"/>
+  <int value="2294" label="CSSSelectorWebkitDatetimeEditWeekField"/>
+  <int value="2295" label="CSSSelectorWebkitDatetimeEditYearField"/>
+  <int value="2296" label="CSSSelectorWebkitDetailsMarker"/>
+  <int value="2297" label="CSSSelectorWebkitFileUploadButton"/>
+  <int value="2298" label="CSSSelectorWebkitInnerSpinButton"/>
+  <int value="2299" label="CSSSelectorWebkitInputPlaceholder"/>
+  <int value="2300" label="CSSSelectorWebkitMediaSliderContainer"/>
+  <int value="2301" label="CSSSelectorWebkitMediaSliderThumb"/>
+  <int value="2302" label="CSSSelectorWebkitMediaTextTrackContainer"/>
+  <int value="2303" label="CSSSelectorWebkitMediaTextTrackDisplay"/>
+  <int value="2304" label="CSSSelectorWebkitMediaTextTrackRegion"/>
+  <int value="2305" label="CSSSelectorWebkitMediaTextTrackRegionContainer"/>
+  <int value="2306" label="CSSSelectorWebkitMeterBar"/>
+  <int value="2307" label="CSSSelectorWebkitMeterEvenLessGoodValue"/>
+  <int value="2308" label="CSSSelectorWebkitMeterInnerElement"/>
+  <int value="2309" label="CSSSelectorWebkitMeterOptimumValue"/>
+  <int value="2310" label="CSSSelectorWebkitMeterSuboptimumValue"/>
+  <int value="2311" label="CSSSelectorWebkitProgressBar"/>
+  <int value="2312" label="CSSSelectorWebkitProgressInnerElement"/>
+  <int value="2313" label="CSSSelectorWebkitProgressValue"/>
+  <int value="2314" label="CSSSelectorWebkitSearchCancelButton"/>
+  <int value="2315" label="CSSSelectorWebkitSliderContainer"/>
+  <int value="2316" label="CSSSelectorWebkitSliderRunnableTrack"/>
+  <int value="2317" label="CSSSelectorWebkitSliderThumb"/>
+  <int value="2318" label="CSSSelectorWebkitTextfieldDecorationContainer"/>
+  <int value="2319" label="CSSSelectorWebkitUnknownPseudo"/>
 </enum>
 
 <enum name="FeedbackSource">
