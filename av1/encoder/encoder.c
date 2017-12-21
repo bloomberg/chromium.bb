@@ -6024,13 +6024,15 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   set_arf_sign_bias(cpi);
 #endif  // !CONFIG_FRAME_SIGN_BIAS
 
-#if CONFIG_TEMPMV_SIGNALING
+#if CONFIG_TEMPMV_SIGNALING || CONFIG_FWD_KF
   // frame type has been decided outside of this function call
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
+#endif  // CONFIG_TEMPMV_SIGNALING || CONFIG_FWD_KF
+#if CONFIG_TEMPMV_SIGNALING
   cm->use_ref_frame_mvs =
       !cpi->oxcf.disable_tempmv && !cm->cur_frame->intra_only;
   cm->use_prev_frame_mvs = cm->use_ref_frame_mvs;
-#endif
+#endif  // CONFIG_TEMPMV_SIGNALING
 
   // Reset the frame packet stamp index.
   if (cm->frame_type == KEY_FRAME) cm->current_video_frame = 0;
@@ -7010,6 +7012,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cpi->refresh_bwd_ref_frame = 0;
   cpi->refresh_alt2_ref_frame = 0;
   cpi->refresh_alt_ref_frame = 0;
+
+#if CONFIG_FWD_KF
+  // TODO(zoeliu@gmail.com): To support forward-KEY_FRAME and set up the
+  //                         following flag accordingly.
+  cm->reset_decoder_state = 0;
+#endif  // CONFIG_FWD_KF
 
 #if !CONFIG_XIPHRC
   if (oxcf->pass == 2 && cm->show_existing_frame) {
