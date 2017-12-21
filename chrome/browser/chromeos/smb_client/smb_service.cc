@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
 
@@ -21,7 +23,8 @@ namespace smb_client {
 SmbService::SmbService(Profile* profile)
     : profile_(profile),
       weak_ptr_factory_(this) {
-  GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>());
+  if (base::FeatureList::IsEnabled(features::kNativeSmb))
+    GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>());
 }
 
 SmbService::~SmbService() {}
