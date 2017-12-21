@@ -2013,6 +2013,15 @@ if (enable_java_templates) {
               "@FileArg($_rebased_ordered_libraries_json:java_libraries_list)",
           "NATIVE_LIBRARIES_VERSION_NUMBER=$_native_lib_version_arg",
         ]
+        if (current_cpu == "arm" || current_cpu == "arm64") {
+          defines += [ "ANDROID_APP_CPU_FAMILY_ARM" ]
+        } else if (current_cpu == "x86" || current_cpu == "x64") {
+          defines += [ "ANDROID_APP_CPU_FAMILY_X86" ]
+        } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
+          defines += [ "ANDROID_APP_CPU_FAMILY_MIPS" ]
+        } else {
+          assert(false, "Unsupported CPU family")
+        }
         if (_use_chromium_linker) {
           defines += [ "ENABLE_CHROMIUM_LINKER" ]
         }
