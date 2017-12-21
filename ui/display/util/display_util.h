@@ -12,6 +12,9 @@
 
 namespace display {
 
+// 1 inch in mm.
+constexpr float kInchInMm = 25.4f;
+
 // Returns true if a given size is in the list of bogus sizes in mm that should
 // be ignored.
 DISPLAY_UTIL_EXPORT bool IsDisplaySizeBlackListed(

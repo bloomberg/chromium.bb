@@ -45,9 +45,6 @@ const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
     {0.0f, 1.0f},
 };
 
-// 1 inch in mm.
-const float kInchInMm = 25.4f;
-
 // The minimum pixel width whose monitor can be called as '4K'.
 const int kMinimumWidthFor4K = 3840;
 
