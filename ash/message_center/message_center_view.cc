@@ -597,6 +597,11 @@ void MessageCenterView::SetVisibilityMode(Mode mode, bool animate) {
   source_height_ = source_view_ ? source_view_->GetHeightForWidth(width()) : 0;
   target_height_ = target_view_ ? target_view_->GetHeightForWidth(width()) : 0;
 
+  int contents_max_height =
+      max_height_ - button_bar_->GetPreferredSize().height();
+  source_height_ = std::min(contents_max_height, source_height_);
+  target_height_ = std::min(contents_max_height, target_height_);
+
   if (source_view_)
     source_view_->SetVisible(true);
   if (target_view_)
@@ -706,14 +711,14 @@ int MessageCenterView::GetSettingsHeightForWidth(int width) const {
 
 int MessageCenterView::GetContentHeightDuringAnimation(int width) const {
   DCHECK(settings_transition_animation_);
-  int content_height = settings_transition_animation_->CurrentValueBetween(
+  int contents_height = settings_transition_animation_->CurrentValueBetween(
       target_view_ == settings_view_ ? 0 : source_height_,
       source_view_ == settings_view_ ? 0 : target_height_);
   if (target_view_ == settings_view_)
-    content_height = std::max(source_height_, content_height);
+    contents_height = std::max(source_height_, contents_height);
   if (source_view_ == settings_view_)
-    content_height = std::max(target_height_, content_height);
-  return content_height;
+    contents_height = std::max(target_height_, contents_height);
+  return contents_height;
 }
 
 }  // namespace ash
