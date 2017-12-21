@@ -182,7 +182,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   bool IsReadyToActivate() const;
   bool IsLameDuckActiveVersion() const;
-  void StartLameDuckTimerIfNeeded();
+  void StartLameDuckTimer();
   void RemoveLameDuckIfNeeded();
 
   // Promotes the waiting version to active version. If |delay| is true, waits

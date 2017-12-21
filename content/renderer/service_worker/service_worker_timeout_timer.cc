@@ -79,8 +79,10 @@ void ServiceWorkerTimeoutTimer::EndEvent(int event_id) {
   DCHECK(iter != id_event_map_.end());
   inflight_events_.erase(iter->second);
   id_event_map_.erase(iter);
-  if (inflight_events_.empty())
+  if (inflight_events_.empty()) {
     idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
+    MaybeTriggerIdleTimer();
+  }
 }
 
 void ServiceWorkerTimeoutTimer::PushPendingTask(
@@ -88,6 +90,13 @@ void ServiceWorkerTimeoutTimer::PushPendingTask(
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(did_idle_timeout());
   pending_tasks_.emplace(std::move(pending_task));
+}
+
+void ServiceWorkerTimeoutTimer::SetIdleTimerDelayToZero() {
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  zero_idle_timer_delay_ = true;
+  if (inflight_events_.empty())
+    MaybeTriggerIdleTimer();
 }
 
 void ServiceWorkerTimeoutTimer::UpdateStatus() {
@@ -107,13 +116,26 @@ void ServiceWorkerTimeoutTimer::UpdateStatus() {
   }
 
   // If |inflight_events_| is empty, the worker is now idle.
-  if (inflight_events_.empty() && idle_time_.is_null())
+  if (inflight_events_.empty() && idle_time_.is_null()) {
     idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
+    if (MaybeTriggerIdleTimer())
+      return;
+  }
 
   if (!idle_time_.is_null() && idle_time_ < now) {
     did_idle_timeout_ = true;
     idle_callback_.Run();
   }
+}
+
+bool ServiceWorkerTimeoutTimer::MaybeTriggerIdleTimer() {
+  DCHECK(inflight_events_.empty());
+  if (!zero_idle_timer_delay_)
+    return false;
+
+  did_idle_timeout_ = true;
+  idle_callback_.Run();
+  return true;
 }
 
 ServiceWorkerTimeoutTimer::EventInfo::EventInfo(

@@ -349,6 +349,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchPaymentRequestEventCallback callback) override;
   void Ping(PingCallback callback) override;
+  void SetIdleTimerDelayToZero() override;
 
   void OnNotificationClickEvent(
       int request_id,

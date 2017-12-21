@@ -636,7 +636,15 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
                          request, "Handled", was_handled);
   request_timeouts_.erase(request->timeout_iter);
   pending_requests_.Remove(request_id);
-  if (!HasWork()) {
+  // Non-S13nServiceWorker:
+  // Trigger OnNoWork() if no inflight events exist.
+  //
+  // S13nServiceWorker:
+  // OnNoWork() will be triggered later by StopWorkerIfIdle(), which will be
+  // called when the renderer-side idle timeout calls
+  // mojom::EmbeddedWorkerInstanceHost::RequestTermination() if no inflight
+  // events exist for a while.
+  if (!ServiceWorkerUtils::IsServicificationEnabled() && !HasWork()) {
     for (auto& observer : listeners_)
       observer.OnNoWork(this);
   }
@@ -722,7 +730,10 @@ void ServiceWorkerVersion::OnStreamResponseStarted() {
 void ServiceWorkerVersion::OnStreamResponseFinished() {
   DCHECK_GT(pending_stream_response_count_, 0);
   pending_stream_response_count_--;
-  if (!HasWork()) {
+  if (!ServiceWorkerUtils::IsServicificationEnabled() && !HasWork()) {
+    // S13nServiceWorker:
+    // TODO(https://crbug.com/774374): OnNoWork should be triggered here when
+    // the worker is idle since the last termination request.
     for (auto& observer : listeners_)
       observer.OnNoWork(this);
   }
@@ -1731,6 +1742,13 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
   if (!ping_controller_->IsTimedOut() && HasWork())
     return;
   embedded_worker_->StopIfNotAttachedToDevTools();
+
+  // S13nServiceWorker: OnNoWork may trigger activation of the waiting
+  // version.
+  if (ServiceWorkerUtils::IsServicificationEnabled() && !HasWork()) {
+    for (auto& observer : listeners_)
+      observer.OnNoWork(this);
+  }
 }
 
 bool ServiceWorkerVersion::HasWork() const {

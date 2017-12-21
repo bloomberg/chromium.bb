@@ -343,6 +343,8 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
 
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
 
+  void SetIdleTimerDelayToZero() override { NOTIMPLEMENTED(); }
+
  private:
   base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
   const int thread_id_;
