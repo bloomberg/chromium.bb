@@ -694,6 +694,8 @@ void OfflinePageMetadataStoreSQL::SetStateForTesting(StoreState state,
 
 void OfflinePageMetadataStoreSQL::InitializeInternal(
     base::OnceClosure pending_command) {
+  TRACE_EVENT_ASYNC_BEGIN1("offline_pages", "Metadata Store", this, "is reopen",
+                           !last_closing_time_.is_null());
   DCHECK_EQ(state_, StoreState::NOT_LOADED);
 
   if (!last_closing_time_.is_null()) {
@@ -720,11 +722,17 @@ void OfflinePageMetadataStoreSQL::InitializeInternal(
 void OfflinePageMetadataStoreSQL::OnInitializeInternalDone(
     base::OnceClosure pending_command,
     bool success) {
+  TRACE_EVENT_ASYNC_STEP_PAST1("offline_pages", "Metadata Store", this,
+                               "Initializing", "succeeded", success);
   // TODO(fgorski): DCHECK initialization is in progress, once we have a
   // relevant value for the store state.
-  state_ = success ? StoreState::LOADED : StoreState::FAILED_LOADING;
-  if (state_ != StoreState::LOADED)
+  if (success) {
+    state_ = StoreState::LOADED;
+  } else {
+    state_ = StoreState::FAILED_LOADING;
     db_.reset();
+    TRACE_EVENT_ASYNC_END0("offline_pages", "Metadata Store", this);
+  }
 
   CHECK(!pending_command.is_null());
   std::move(pending_command).Run();
@@ -746,6 +754,7 @@ void OfflinePageMetadataStoreSQL::CloseInternal() {
     ReportStoreEvent(OfflinePagesStoreEvent::STORE_CLOSE_SKIPPED);
     return;
   }
+  TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Metadata Store", this, "Open");
 
   last_closing_time_ = base::Time::Now();
   ReportStoreEvent(OfflinePagesStoreEvent::STORE_CLOSED);
@@ -762,6 +771,9 @@ void OfflinePageMetadataStoreSQL::CloseInternal() {
 void OfflinePageMetadataStoreSQL::CloseInternalDone(
     std::unique_ptr<sql::Connection> db) {
   db.reset();
+  TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Metadata Store", this,
+                               "Closing");
+  TRACE_EVENT_ASYNC_END0("offline_pages", "Metadata Store", this);
 }
 
 }  // namespace offline_pages

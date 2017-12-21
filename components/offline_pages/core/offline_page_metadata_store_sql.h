@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 
 namespace base {
@@ -122,6 +123,9 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
       return;
     }
 
+    TRACE_EVENT_ASYNC_BEGIN1("offline_pages",
+                             "Metadata Store: Command execution", this,
+                             "is store loaded", state_ == StoreState::LOADED);
     // This if allows to run commands later, after store was given a chance to
     // initialize. They would be failing immediately otherwise.
     if (state_ == StoreState::INITIALIZING) {
@@ -129,6 +133,9 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
           base::BindOnce(&OfflinePageMetadataStoreSQL::Execute<T>,
                          weak_ptr_factory_.GetWeakPtr(),
                          std::move(run_callback), std::move(result_callback)));
+      TRACE_EVENT_ASYNC_END1("offline_pages",
+                             "Metadata Store: Command execution", this,
+                             "postponed", true);
       return;
     }
 
@@ -165,6 +172,8 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
         base::BindOnce(&OfflinePageMetadataStoreSQL::CloseInternal,
                        closing_weak_ptr_factory_.GetWeakPtr()),
         kClosingDelay);
+    TRACE_EVENT_ASYNC_END0("offline_pages", "Metadata Store: Command execution",
+                           this);
 
     std::move(result_callback).Run(std::move(result));
   }
