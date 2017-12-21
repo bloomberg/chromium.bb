@@ -131,7 +131,7 @@ class CHROMEOS_EXPORT Printer {
   // |uri_|.
   bool IsIppEverywhere() const;
 
-  // Returns true if |effective_uri_| needs to be computed before the pritner
+  // Returns true if |effective_uri_| needs to be computed before the printer
   // can be installed.
   bool RequiresIpResolution() const;
 
