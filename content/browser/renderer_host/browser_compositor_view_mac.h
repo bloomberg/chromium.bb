@@ -115,10 +115,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   // Returns nullptr if no compositor is attached.
   ui::Compositor* CompositorForTesting() const;
 
-  // Forces a new LocalSurfaceId to be allocated. Called when properties that
-  // need to be synchronized between browser and renderer changes.
-  void AllocateNewLocalSurfaceId();
-
  private:
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to
   // manage being visible, hidden, or occluded.

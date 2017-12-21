@@ -864,6 +864,18 @@ void RenderWidgetHostViewAura::SetTooltipText(
   }
 }
 
+void RenderWidgetHostViewAura::UpdateScreenInfo(gfx::NativeView view) {
+  RenderWidgetHostViewBase::UpdateScreenInfo(view);
+  if (!host_->auto_resize_enabled())
+    return;
+
+  window_->AllocateLocalSurfaceId();
+  host_->DidAllocateLocalSurfaceIdForAutoResize(
+      host_->last_auto_resize_request_number());
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasResized();
+}
+
 gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
   return delegated_frame_host_
              ? delegated_frame_host_->GetRequestedRendererSize()
@@ -2463,16 +2475,6 @@ void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
   RenderFrameHostImpl* rfh = GetFocusedFrame();
   if (rfh) {
     rfh->GetFrameInputHandler()->ScrollFocusedEditableNodeIntoRect(node_rect);
-  }
-}
-
-void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
-  window_->AllocateLocalSurfaceId();
-  if (delegated_frame_host_)
-    delegated_frame_host_->WasResized();
-  if (host_->auto_resize_enabled()) {
-    host_->DidAllocateLocalSurfaceIdForAutoResize(
-        host_->last_auto_resize_request_number());
   }
 }
 

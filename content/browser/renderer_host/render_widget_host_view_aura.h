@@ -138,6 +138,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
+  void UpdateScreenInfo(gfx::NativeView view) override;
   gfx::Size GetRequestedRendererSize() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(const gfx::Rect& src_rect,
@@ -203,7 +204,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
                      base::OnceCallback<void(const base::UnguessableToken&)>
                          callback) override;
-  void OnSynchronizedDisplayPropertiesChanged() override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;

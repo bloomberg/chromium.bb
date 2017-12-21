@@ -552,9 +552,4 @@ ui::Compositor* BrowserCompositorMac::CompositorForTesting() const {
   return nullptr;
 }
 
-void BrowserCompositorMac::AllocateNewLocalSurfaceId() {
-  delegated_frame_host_surface_id_ =
-      parent_local_surface_id_allocator_.GenerateId();
-}
-
 }  // namespace content

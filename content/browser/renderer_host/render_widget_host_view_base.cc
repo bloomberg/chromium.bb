@@ -250,10 +250,8 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (impl && impl->delegate())
     impl->delegate()->SendScreenRects();
 
-  if (HasDisplayPropertyChanged(view) && impl) {
-    OnSynchronizedDisplayPropertiesChanged();
+  if (HasDisplayPropertyChanged(view) && impl)
     impl->NotifyScreenInfoChanged();
-  }
 }
 
 bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
