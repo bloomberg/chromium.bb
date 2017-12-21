@@ -275,8 +275,7 @@ void UiSceneCreator::CreateScene() {
 }
 
 void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
-  auto element = base::MakeUnique<UiElement>();
-  element->SetName(k2dBrowsingRoot);
+  auto element = Create<UiElement>(k2dBrowsingRoot, kPhaseNone);
   element->set_hit_testable(false);
   element->AddBinding(base::MakeUnique<Binding<bool>>(
       base::BindRepeating(
@@ -291,20 +290,23 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
 
   scene_->AddUiElement(kRoot, std::move(element));
 
-  element = base::MakeUnique<UiElement>();
-  element->SetName(k2dBrowsingBackground);
+  element = Create<UiElement>(k2dBrowsingBackground, kPhaseNone);
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
-  element = base::MakeUnique<UiElement>();
-  element->SetName(k2dBrowsingVisibiltyControlForOmnibox);
+  element =
+      Create<UiElement>(k2dBrowsingVisibiltyControlForOmnibox, kPhaseNone);
   element->set_hit_testable(false);
   element->AddBinding(VR_BIND(bool, Model, model_, omnibox_input_active,
                               UiElement, element.get(), SetVisible(!value)));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
-  element = base::MakeUnique<UiElement>();
-  element->SetName(k2dBrowsingForeground);
+  element = Create<UiElement>(k2dBrowsingVisibiltyControlForVoice, kPhaseNone);
+  element->set_hit_testable(false);
+  scene_->AddUiElement(k2dBrowsingVisibiltyControlForOmnibox,
+                       std::move(element));
+
+  element = Create<UiElement>(k2dBrowsingForeground, kPhaseNone);
   element->set_hit_testable(false);
   element->SetTransitionedProperties({OPACITY});
   element->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
@@ -325,11 +327,9 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
             }
           },
           base::Unretained(element.get()))));
-  scene_->AddUiElement(k2dBrowsingVisibiltyControlForOmnibox,
-                       std::move(element));
+  scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
 
-  element = base::MakeUnique<UiElement>();
-  element->SetName(k2dBrowsingContentGroup);
+  element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
   element->SetSize(kContentWidth, kContentHeight);
   element->set_hit_testable(false);
@@ -957,13 +957,13 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
                    &DiscButton::SetButtonColors);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(close_button));
 
-  UiElement* browser_foregroud =
-      scene_->GetUiElementByName(k2dBrowsingForeground);
+  UiElement* foreground_control =
+      scene_->GetUiElementByName(k2dBrowsingVisibiltyControlForVoice);
   // k2dBrowsingForeground's visibility binding use the visibility of two
   // other elements which update their bindings after this one. So the
   // visibility of k2dBrowsingForeground will be one frame behind correct value.
   // This is not noticable in practice and simplify our logic a lot.
-  browser_foregroud->AddBinding(base::MakeUnique<Binding<bool>>(
+  foreground_control->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](UiElement* listening, UiElement* result) {
             return listening->GetTargetOpacity() == 0.f &&
@@ -972,7 +972,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
           base::Unretained(listening_ui_root),
           base::Unretained(speech_result_parent)),
       base::Bind([](UiElement* e, const bool& value) { e->SetVisible(value); },
-                 base::Unretained(browser_foregroud))));
+                 base::Unretained(foreground_control))));
 }
 
 void UiSceneCreator::CreateController() {

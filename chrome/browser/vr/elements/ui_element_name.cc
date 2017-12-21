@@ -47,6 +47,7 @@ static const char* g_ui_element_name_strings[] = {
     "kOmniboxOuterLayout",
     "kOmniboxShadow",
     "k2dBrowsingVisibiltyControlForOmnibox",
+    "k2dBrowsingVisibiltyControlForVoice",
     "kIndicatorLayout",
     "kAudioCaptureIndicator",
     "kVideoCaptureIndicator",
