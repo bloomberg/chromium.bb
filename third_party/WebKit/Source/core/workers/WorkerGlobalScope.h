@@ -40,6 +40,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "platform/wtf/ListHashSet.h"
+#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
 
@@ -125,6 +126,9 @@ class CORE_EXPORT WorkerGlobalScope
 
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
+
+  void ImportModuleScript(const KURL& module_url_record,
+                          network::mojom::FetchCredentialsMode);
 
   double TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
