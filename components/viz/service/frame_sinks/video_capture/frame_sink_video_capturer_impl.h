@@ -14,8 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -105,6 +106,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // exceeding 60% of the design limit is considered "red line" operation.
   static constexpr float kTargetPipelineUtilization = 0.6f;
 
+  // The amount of time to wait before retrying a refresh frame request.
+  static constexpr base::TimeDelta kRefreshFrameRetryInterval =
+      base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 4);
+
  private:
   friend class FrameSinkVideoCapturerTest;
 
@@ -158,8 +163,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // Use the default base::TimeTicks clock; but allow unit tests to provide a
   // replacement.
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* clock_ = &default_tick_clock_;
+  base::TickClock* clock_;
 
   // Current image format.
   media::VideoPixelFormat pixel_format_ = kDefaultPixelFormat;
@@ -196,6 +200,11 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // delivered in the same order they are captured.
   int64_t next_capture_frame_number_ = 0;
   int64_t next_delivery_frame_number_ = 0;
+
+  // When the oracle rejects a "refresh frame" request, this timer is set to
+  // auto-retry the refresh at a later point. This ensures refresh frame
+  // requests eventually result in a frame being delivered to the consumer.
+  base::OneShotTimer refresh_frame_retry_timer_;
 
   // Provides a pool of VideoFrames that can be efficiently delivered across
   // processes. The size of this pool is used to limit the maximum number of
