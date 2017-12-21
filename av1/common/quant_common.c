@@ -17,113 +17,100 @@
 #include "av1/common/blockd.h"
 
 #if CONFIG_NEW_QUANT
-// Bin widths expressed as a fraction over 128 of the quant stepsize,
-// for the quantization bins 0-4.
+// Zero-bin widths expressed as a fraction over 128 of the quant stepsize.
 // So a value x indicates the bin is actually factor x/128 of the
-// nominal quantization step.  For the zero bin, the width is only
+// nominal quantization step. The width is only
 // for one side of zero, so the actual width is twice that.
 //
 // Functions with nuq correspond to "non uniform quantization"
 // TODO(sarahparker, debargha): Optimize these tables
 
 typedef struct {
-  uint8_t knots[NUQ_KNOTS];  // offsets
-  uint8_t doff;              // dequantization
+  uint8_t zbin;  // zero-bin width
+  uint8_t doff;  // dequantization offset
 } qprofile_type;
 
 static const qprofile_type nuq[QUANT_PROFILES][2] = {
   {
       // lossless
-      { { 64, 128, 128 }, 0 },  // dc
-      { { 64, 128, 128 }, 0 },  // ac
+      { 64, 0 },  // dc
+      { 64, 0 },  // ac
   },
   {
       // intra, dq_type 0, high quality
-      { { 64, 128, 128 }, 3 },  // dc
-      { { 64, 128, 128 }, 3 },  // ac
+      { 64, 3 },  // dc
+      { 64, 3 },  // ac
   },
   {
       // intra, dq_type 0, low quality
-      { { 64, 128, 128 }, 14 },  // dc
-      { { 64, 128, 128 }, 14 },  // ac
+      { 64, 14 },  // dc
+      { 64, 14 },  // ac
   },
   {
       // inter, dq_type 0, high quality
-      { { 64, 128, 128 }, 4 },  // dc
-      { { 64, 128, 128 }, 4 },  // ac
+      { 64, 4 },  // dc
+      { 64, 4 },  // ac
   },
   {
       // inter, dq_type 0, low quality
-      { { 64, 128, 128 }, 8 },  // dc
-      { { 64, 128, 128 }, 8 },  // ac
+      { 64, 8 },  // dc
+      { 64, 8 },  // ac
   },
   {
       // intra, dq_type 1, high quality
-      { { 82, 128, 128 }, 4 },  // dc
-      { { 80, 128, 128 }, 8 },  // ac
+      { 82, 4 },  // dc
+      { 80, 8 },  // ac
   },
   {
       // intra, dq_type 1, low quality
-      { { 76, 128, 128 }, 12 },  // dc
-      { { 72, 128, 128 }, 16 },  // ac
+      { 76, 12 },  // dc
+      { 72, 16 },  // ac
   },
   {
       // inter, dq_type 1, high quality
-      { { 82, 128, 128 }, 4 },  // dc
-      { { 80, 128, 128 }, 8 },  // ac
+      { 82, 4 },  // dc
+      { 80, 8 },  // ac
   },
   {
       // inter, dq_type 1, low quality
-      { { 76, 128, 128 }, 12 },  // dc
-      { { 72, 128, 128 }, 16 },  // ac
+      { 76, 12 },  // dc
+      { 72, 16 },  // ac
   }
 };
 
-static const uint8_t *get_nuq_knots(int is_ac_coeff, int q_profile) {
-  return nuq[q_profile][is_ac_coeff].knots;
+static INLINE uint8_t get_nuq_zbin(int is_ac_coeff, int q_profile) {
+  return nuq[q_profile][is_ac_coeff].zbin;
 }
 
-static INLINE int16_t quant_to_doff_fixed(int is_ac_coeff, int q_profile) {
+static INLINE uint8_t quant_to_doff_fixed(int is_ac_coeff, int q_profile) {
   return nuq[q_profile][is_ac_coeff].doff;
 }
 
-// get cumulative bins
+// get zero bin width
 static INLINE void get_cuml_bins_nuq(int q, int is_ac_coeff,
-                                     tran_low_t *cuml_bins, int q_profile) {
-  const uint8_t *knots = get_nuq_knots(is_ac_coeff, q_profile);
-  int16_t cuml_knots[NUQ_KNOTS];
-  int i;
-  cuml_knots[0] = knots[0];
-  for (i = 1; i < NUQ_KNOTS; ++i) cuml_knots[i] = cuml_knots[i - 1] + knots[i];
-  for (i = 0; i < NUQ_KNOTS; ++i)
-    cuml_bins[i] = ROUND_POWER_OF_TWO(cuml_knots[i] * q, 7);
+                                     tran_low_t *zbin_width, int q_profile) {
+  const uint8_t zbin = get_nuq_zbin(is_ac_coeff, q_profile);
+  zbin_width[0] = ROUND_POWER_OF_TWO(zbin * q, 7);
 }
 
 void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
                              tran_low_t *cuml_bins, int q_profile) {
-  const uint8_t *knots = get_nuq_knots(is_ac_coeff, q_profile);
   tran_low_t cuml_bins_[NUQ_KNOTS], *cuml_bins_ptr;
   tran_low_t doff;
-  int i;
+  // Get the quantization boundary for the zero bin
+  const uint8_t zbin = get_nuq_zbin(is_ac_coeff, q_profile);
   cuml_bins_ptr = (cuml_bins ? cuml_bins : cuml_bins_);
   get_cuml_bins_nuq(q, is_ac_coeff, cuml_bins_ptr, q_profile);
-  dq[0] = 0;
-  for (i = 1; i < NUQ_KNOTS; ++i) {
-    doff = quant_to_doff_fixed(is_ac_coeff, q_profile);
-    doff = ROUND_POWER_OF_TWO(doff * knots[i], 7);
-    dq[i] =
-        cuml_bins_ptr[i - 1] + ROUND_POWER_OF_TWO((knots[i] - doff * 2) * q, 8);
-  }
+
+  // Get the dequantization offset that will be applied to all non-zero bins.
+  // This is computed as: ((x0 - 64 - d) / 128) * Q
   doff = quant_to_doff_fixed(is_ac_coeff, q_profile);
-  dq[NUQ_KNOTS] =
-      cuml_bins_ptr[NUQ_KNOTS - 1] + ROUND_POWER_OF_TWO((64 - doff) * q, 7);
+  dq[0] = ROUND_POWER_OF_TWO((zbin - 64 - doff) * q, 7);
 }
 
 tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq) {
-  if (v <= NUQ_KNOTS)
-    return dq[v];
-  else
-    return dq[NUQ_KNOTS] + (v - NUQ_KNOTS) * q;
+  if (v == 0) return 0;
+  return (q * v) + *dq;
 }
 
 tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq) {
