@@ -69,18 +69,6 @@ void DeleteAllReportsInDirectory(base::FilePath directory) {
   }
 }
 
-// Callback for base::debug::SetCrashKeyReportingFunctions
-void SetCrashKeyValueImpl(const base::StringPiece& key,
-                          const base::StringPiece& value) {
-  AddReportParameter(base::SysUTF8ToNSString(key.as_string()),
-                     base::SysUTF8ToNSString(value.as_string()), true);
-}
-
-// Callback for base::debug::SetCrashKeyReportingFunctions
-void ClearCrashKeyValueImpl(const base::StringPiece& key) {
-  RemoveReportParameter(base::SysUTF8ToNSString(key.as_string()));
-}
-
 // Callback for logging::SetLogMessageHandler
 bool FatalMessageHandler(int severity,
                          const char* file,
@@ -131,8 +119,6 @@ void CacheUploadingEnabled(bool uploading_enabled) {
 void Start(const std::string& channel_name) {
   DCHECK(!g_crash_reporter_enabled);
   [[BreakpadController sharedInstance] start:YES];
-  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueImpl,
-                                             &ClearCrashKeyValueImpl);
   logging::SetLogMessageHandler(&FatalMessageHandler);
   g_crash_reporter_enabled = true;
   // Register channel information.

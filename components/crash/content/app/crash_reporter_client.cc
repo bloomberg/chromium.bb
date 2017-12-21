@@ -118,10 +118,6 @@ bool CrashReporterClient::GetCrashMetricsLocation(base::FilePath* crash_dir) {
   return false;
 }
 
-size_t CrashReporterClient::RegisterCrashKeys() {
-  return 0;
-}
-
 bool CrashReporterClient::UseCrashKeysWhiteList() {
   return false;
 }

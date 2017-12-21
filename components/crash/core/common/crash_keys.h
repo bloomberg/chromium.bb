@@ -5,13 +5,7 @@
 #ifndef COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_
 #define COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_
 
-#include <stddef.h>
-
 #include <string>
-
-#include "base/debug/crash_logging.h"
-#include "build/build_config.h"
-#include "components/crash/core/common/crash_key.h"
 
 namespace base {
 class CommandLine;
@@ -37,33 +31,6 @@ void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
 
 // Clears all the CommandLine-related crash keys.
 void ResetCommandLineForTesting();
-
-// Crash Key Constants /////////////////////////////////////////////////////////
-
-// kChunkMaxLength is the platform-specific maximum size that a value in a
-// single chunk can be; see base::debug::InitCrashKeys. The maximum lengths
-// specified by breakpad include the trailing NULL, so the actual length of the
-// chunk is one less.
-#if defined(OS_MACOSX)
-const size_t kChunkMaxLength = 255;
-#else  // OS_MACOSX
-const size_t kChunkMaxLength = 63;
-#endif  // !OS_MACOSX
-
-// A small crash key, guaranteed to never be split into multiple pieces.
-const size_t kSmallSize = 63;
-
-// A medium crash key, which will be chunked on certain platforms but not
-// others. Guaranteed to never be more than four chunks.
-const size_t kMediumSize = kSmallSize * 4;
-
-// A large crash key, which will be chunked on all platforms. This should be
-// used sparingly.
-const size_t kLargeSize = kSmallSize * 16;
-
-// A very large crash key, which will be chunked on all platforms. This should
-// be used very sparingly.
-const size_t kHugeSize = kLargeSize * 2;
 
 }  // namespace crash_keys
 

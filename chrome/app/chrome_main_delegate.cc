@@ -50,6 +50,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "components/nacl/common/features.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"

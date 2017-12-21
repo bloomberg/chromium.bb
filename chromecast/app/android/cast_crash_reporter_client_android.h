@@ -30,7 +30,6 @@ class CastCrashReporterClientAndroid
   int GetAndroidMinidumpDescriptor() override;
   bool GetCollectStatsConsent() override;
   bool EnableBreakpadForProcess(const std::string& process_type) override;
-  size_t RegisterCrashKeys() override;
 
  private:
   std::string process_type_;

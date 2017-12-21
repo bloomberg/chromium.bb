@@ -27,7 +27,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -1107,27 +1106,13 @@ bool IsInWhiteList(const base::StringPiece& key) {
   return false;
 }
 
-void SetCrashKeyValue(const base::StringPiece& key,
-                      const base::StringPiece& value) {
-  if (!g_use_crash_key_white_list || IsInWhiteList(key)) {
-    crash_reporter::internal::GetCrashKeyStorage()->SetKeyValue(key.data(),
-                                                                value.data());
-  }
-}
-
-void ClearCrashKey(const base::StringPiece& key) {
-  crash_reporter::internal::GetCrashKeyStorage()->RemoveKey(key.data());
-}
-
 // GetCrashReporterClient() cannot call any Set methods until after
 // InitCrashKeys().
 void InitCrashKeys() {
   crash_reporter::InitializeCrashKeys();
-  GetCrashReporterClient()->RegisterCrashKeys();
   g_use_crash_key_white_list =
       GetCrashReporterClient()->UseCrashKeysWhiteList();
   g_crash_key_white_list = GetCrashReporterClient()->GetCrashKeyWhiteList();
-  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValue, &ClearCrashKey);
 }
 
 // Miscellaneous initialization functions to call after Breakpad has been
@@ -1943,11 +1928,6 @@ void InitCrashReporter(const std::string& process_type,
 #else
 void InitCrashReporter(const std::string& process_type) {
 #endif  // defined(OS_ANDROID)
-  // The maximum lengths specified by breakpad include the trailing NULL, so the
-  // actual length of the chunk is one less.
-  static_assert(crash_keys::kChunkMaxLength == 63, "kChunkMaxLength mismatch");
-  static_assert(crash_keys::kSmallSize <= crash_keys::kChunkMaxLength,
-                "crash key chunk size too small");
 #if defined(OS_ANDROID)
   // This will guarantee that the BuildInfo has been initialized and subsequent
   // calls will not require memory allocation.

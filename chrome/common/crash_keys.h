@@ -5,26 +5,17 @@
 #ifndef CHROME_COMMON_CRASH_KEYS_H_
 #define CHROME_COMMON_CRASH_KEYS_H_
 
-#include <stddef.h>
-
 #include <set>
 #include <string>
-#include <vector>
 
-#include "base/debug/crash_logging.h"
 #include "base/macros.h"
-#include "build/build_config.h"
-#include "components/crash/core/common/crash_keys.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 class CommandLine;
 }
 
 namespace crash_keys {
-
-// Registers all of the potential crash keys that can be sent to the crash
-// reporting server. Returns the size of the union of all keys.
-size_t RegisterChromeCrashKeys();
 
 // Sets the kNumSwitches key and the set of keys named using kSwitchFormat based
 // on the given |command_line|.

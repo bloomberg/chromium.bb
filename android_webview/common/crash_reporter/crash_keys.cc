@@ -4,11 +4,7 @@
 
 #include "android_webview/common/crash_reporter/crash_keys.h"
 
-#include "base/debug/crash_logging.h"
 #include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/core/common/crash_keys.h"
-
-using namespace crash_keys;
 
 namespace android_webview {
 namespace crash_keys {
@@ -17,10 +13,6 @@ const char kAppPackageName[] = "app-package-name";
 const char kAppPackageVersionCode[] = "app-package-version-code";
 
 const char kAndroidSdkInt[] = "android-sdk-int";
-
-size_t RegisterWebViewCrashKeys() {
-  return 0;
-}
 
 // clang-format off
 const char* const kWebViewCrashKeyWhiteList[] = {

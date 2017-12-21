@@ -6,8 +6,6 @@ source_set("crash_report") {
   sources = [
     "breakpad_helper.h",
     "breakpad_helper.mm",
-    "crash_keys.cc",
-    "crash_keys.h",
     "crash_report_background_uploader.h",
     "crash_report_background_uploader.mm",
     "crash_report_multi_parameter.h",
