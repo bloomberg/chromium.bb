@@ -25,6 +25,8 @@ const CGFloat kLocationBarShadowHeight = 2.0f;
 const CGFloat kLocationBarShadowInset = 1.0f;
 const CGFloat kIcongnitoLocationBackgroundColor = 0x737373;
 
+const CGFloat klocationBarStackViewBottomMargin = 8.0f;
+
 const CGFloat kProgressBarHeight = 2.0f;
 
 const CGFloat kToolsMenuButtonWidth = 44.0f;
