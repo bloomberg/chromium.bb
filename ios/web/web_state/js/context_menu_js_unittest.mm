@@ -248,7 +248,13 @@ TEST_F(ContextMenuJsTest, UnsupportedReferrerPolicy) {
 
 // Tests that getElementFromPoint finds an element at the bottom of a very long
 // page.
-TEST_F(ContextMenuJsTest, FLAKY_LinkOfTextFromTallPage) {
+// TODO(crbug.com/796418): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_LinkOfTextFromTallPage LinkOfTextFromTallPage
+#else
+#define MAYBE_LinkOfTextFromTallPage FLAKY_LinkOfTextFromTallPage
+#endif
+TEST_F(ContextMenuJsTest, MAYBE_LinkOfTextFromTallPage) {
   const char kHtml[] =
       "<html><body>"
       " <div style='height:4000px'></div>"
