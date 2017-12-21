@@ -10,6 +10,7 @@
  */
 
 #include "./aom_dsp_rtcd.h"
+#include "./av1_rtcd.h"
 #include "av1/common/filter.h"
 #include "av1/common/scale.h"
 #include "aom_dsp/aom_filter.h"
@@ -180,4 +181,13 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
     sf->highbd_predict[1][1][1] = aom_highbd_convolve8_avg;
   }
 #endif  // CONFIG_HIGHBITDEPTH
+
+  // subpel_x_q4 == 0 && subpel_y_q4 == 0
+  sf->convolve[0][0][1] = av1_convolve_2d_copy;
+  // subpel_x_q4 == 0
+  sf->convolve[0][1][1] = av1_convolve_y;
+  // subpel_y_q4 == 0
+  sf->convolve[1][0][1] = av1_convolve_x;
+  // subpel_x_q4 != 0 && subpel_y_q4 != 0
+  sf->convolve[1][1][1] = av1_convolve_2d;
 }

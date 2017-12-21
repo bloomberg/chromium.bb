@@ -12,6 +12,7 @@
 #ifndef AV1_COMMON_SCALE_H_
 #define AV1_COMMON_SCALE_H_
 
+#include "av1/common/convolve.h"
 #include "av1/common/mv.h"
 #include "aom_dsp/aom_convolve.h"
 
@@ -38,6 +39,9 @@ struct scale_factors {
 #if CONFIG_HIGHBITDEPTH
   highbd_convolve_fn_t highbd_predict[2][2][2];  // horiz, vert, avg
 #endif                                           // CONFIG_HIGHBITDEPTH
+
+  // convolve_fn_ptr[subpel_x != 0][subpel_y != 0][is_compound]
+  aom_convolve_fn_t convolve[2][2][2];
 };
 
 MV32 av1_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf);

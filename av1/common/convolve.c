@@ -721,7 +721,8 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
                             InterpFilters interp_filters, const int subpel_x_q4,
                             int x_step_q4, const int subpel_y_q4, int y_step_q4,
-                            int scaled, ConvolveParams *conv_params) {
+                            int scaled, ConvolveParams *conv_params,
+                            const struct scale_factors *sf) {
   (void)x_step_q4;
   (void)y_step_q4;
   (void)dst;
@@ -737,6 +738,7 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
 #endif
 
 #if CONFIG_JNT_COMP
+  (void)sf;
   if (scaled) {
     av1_convolve_2d_scale(src, src_stride, conv_params->dst,
                           conv_params->dst_stride, w, h, &filter_params_x,
@@ -772,21 +774,9 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
   } else {
     // Special case convolve functions should produce the same result as
     // av1_convolve_2d.
-    if (subpel_x_q4 == 0 && subpel_y_q4 == 0) {
-      av1_convolve_2d_copy(src, src_stride, dst, dst_stride, w, h,
-                           &filter_params_x, &filter_params_y, subpel_x_q4,
-                           subpel_y_q4, conv_params);
-    } else if (subpel_x_q4 == 0) {
-      av1_convolve_y(src, src_stride, dst, dst_stride, w, h, &filter_params_x,
-                     &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
-    } else if (subpel_y_q4 == 0) {
-      av1_convolve_x(src, src_stride, dst, dst_stride, w, h, &filter_params_x,
-                     &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
-    } else {
-      // subpel_x_q4 != 0 && subpel_y_q4 != 0
-      av1_convolve_2d(src, src_stride, dst, dst_stride, w, h, &filter_params_x,
-                      &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
-    }
+    sf->convolve[subpel_x_q4 != 0][subpel_y_q4 != 0][1](
+        src, src_stride, dst, dst_stride, w, h, &filter_params_x,
+        &filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
   }
 #endif  // CONFIG_JNT_COMP
 }
