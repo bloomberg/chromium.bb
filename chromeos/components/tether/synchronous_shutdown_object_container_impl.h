@@ -28,6 +28,7 @@ class ActiveHostNetworkStateUpdater;
 class AsynchronousShutdownObjectContainer;
 class NetworkConnectionHandlerTetherDelegate;
 class DeviceIdTetherNetworkGuidMap;
+class GmsCoreNotificationsStateTrackerImpl;
 class HostScanner;
 class HostScanScheduler;
 class HostScanDevicePrioritizerImpl;
@@ -54,6 +55,8 @@ class SynchronousShutdownObjectContainerImpl
     static std::unique_ptr<SynchronousShutdownObjectContainer> NewInstance(
         AsynchronousShutdownObjectContainer* asychronous_container,
         NotificationPresenter* notification_presenter,
+        GmsCoreNotificationsStateTrackerImpl*
+            gms_core_notifications_state_tracker,
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
         NetworkConnect* network_connect,
@@ -64,6 +67,8 @@ class SynchronousShutdownObjectContainerImpl
     virtual std::unique_ptr<SynchronousShutdownObjectContainer> BuildInstance(
         AsynchronousShutdownObjectContainer* asychronous_container,
         NotificationPresenter* notification_presenter,
+        GmsCoreNotificationsStateTrackerImpl*
+            gms_core_notifications_state_tracker,
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
         NetworkConnect* network_connect,
@@ -77,6 +82,8 @@ class SynchronousShutdownObjectContainerImpl
   SynchronousShutdownObjectContainerImpl(
       AsynchronousShutdownObjectContainer* asychronous_container,
       NotificationPresenter* notification_presenter,
+      GmsCoreNotificationsStateTrackerImpl*
+          gms_core_notifications_state_tracker,
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,
       NetworkConnect* network_connect,

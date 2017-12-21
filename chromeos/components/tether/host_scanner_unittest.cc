@@ -18,6 +18,7 @@
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
+#include "chromeos/components/tether/gms_core_notifications_state_tracker_impl.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/master_host_scan_cache.h"
@@ -201,6 +202,8 @@ class HostScannerTest : public NetworkStateTest {
         std::make_unique<FakeHostScanDevicePrioritizer>();
     mock_tether_host_response_recorder_ =
         std::make_unique<MockTetherHostResponseRecorder>();
+    gms_core_notifications_state_tracker_ =
+        std::make_unique<GmsCoreNotificationsStateTrackerImpl>();
     fake_notification_presenter_ =
         std::make_unique<FakeNotificationPresenter>();
     device_id_tether_network_guid_map_ =
@@ -219,6 +222,7 @@ class HostScannerTest : public NetworkStateTest {
         fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
+        gms_core_notifications_state_tracker_.get(),
         fake_notification_presenter_.get(),
         device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
         test_clock_.get()));
@@ -379,6 +383,8 @@ class HostScannerTest : public NetworkStateTest {
   std::unique_ptr<HostScanDevicePrioritizer> fake_host_scan_device_prioritizer_;
   std::unique_ptr<MockTetherHostResponseRecorder>
       mock_tether_host_response_recorder_;
+  std::unique_ptr<GmsCoreNotificationsStateTrackerImpl>
+      gms_core_notifications_state_tracker_;
   std::unique_ptr<FakeNotificationPresenter> fake_notification_presenter_;
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>

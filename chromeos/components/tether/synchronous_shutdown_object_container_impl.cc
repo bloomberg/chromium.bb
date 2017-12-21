@@ -43,6 +43,7 @@ std::unique_ptr<SynchronousShutdownObjectContainer>
 SynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     AsynchronousShutdownObjectContainer* asychronous_container,
     NotificationPresenter* notification_presenter,
+    GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect,
@@ -51,8 +52,9 @@ SynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      asychronous_container, notification_presenter, pref_service,
-      network_state_handler, network_connect, network_connection_handler);
+      asychronous_container, notification_presenter,
+      gms_core_notifications_state_tracker, pref_service, network_state_handler,
+      network_connect, network_connection_handler);
 }
 
 // static
@@ -67,18 +69,21 @@ std::unique_ptr<SynchronousShutdownObjectContainer>
 SynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     AsynchronousShutdownObjectContainer* asychronous_container,
     NotificationPresenter* notification_presenter,
+    GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler) {
   return std::make_unique<SynchronousShutdownObjectContainerImpl>(
-      asychronous_container, notification_presenter, pref_service,
-      network_state_handler, network_connect, network_connection_handler);
+      asychronous_container, notification_presenter,
+      gms_core_notifications_state_tracker, pref_service, network_state_handler,
+      network_connect, network_connection_handler);
 }
 
 SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
     AsynchronousShutdownObjectContainer* asychronous_container,
     NotificationPresenter* notification_presenter,
+    GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect,
@@ -130,6 +135,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           asychronous_container->ble_connection_manager(),
           host_scan_device_prioritizer_.get(),
           tether_host_response_recorder_.get(),
+          gms_core_notifications_state_tracker,
           notification_presenter,
           device_id_tether_network_guid_map_.get(),
           master_host_scan_cache_.get(),

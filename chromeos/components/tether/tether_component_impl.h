@@ -35,6 +35,7 @@ namespace tether {
 
 class AsynchronousShutdownObjectContainer;
 class CrashRecoveryManager;
+class GmsCoreNotificationsStateTrackerImpl;
 class NotificationPresenter;
 class SynchronousShutdownObjectContainer;
 class TetherHostFetcher;
@@ -50,6 +51,8 @@ class TetherComponentImpl : public TetherComponent {
         cryptauth::CryptAuthService* cryptauth_service,
         TetherHostFetcher* tether_host_fetcher,
         NotificationPresenter* notification_presenter,
+        GmsCoreNotificationsStateTrackerImpl*
+            gms_core_notifications_state_tracker,
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
@@ -65,6 +68,8 @@ class TetherComponentImpl : public TetherComponent {
         cryptauth::CryptAuthService* cryptauth_service,
         TetherHostFetcher* tether_host_fetcher,
         NotificationPresenter* notification_presenter,
+        GmsCoreNotificationsStateTrackerImpl*
+            gms_core_notifications_state_tracker,
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
@@ -81,6 +86,8 @@ class TetherComponentImpl : public TetherComponent {
       cryptauth::CryptAuthService* cryptauth_service,
       TetherHostFetcher* tether_host_fetcher,
       NotificationPresenter* notification_presenter,
+      GmsCoreNotificationsStateTrackerImpl*
+          gms_core_notifications_state_tracker,
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,

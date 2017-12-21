@@ -75,6 +75,8 @@ class FakeSynchronousShutdownObjectContainerFactory
   std::unique_ptr<SynchronousShutdownObjectContainer> BuildInstance(
       AsynchronousShutdownObjectContainer* asychronous_container,
       NotificationPresenter* notification_presenter,
+      GmsCoreNotificationsStateTrackerImpl*
+          gms_core_notifications_state_tracker,
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,
       NetworkConnect* network_connect,
@@ -153,8 +155,9 @@ class TetherComponentImplTest : public testing::Test {
 
     component_ = std::make_unique<TetherComponentImpl>(
         nullptr /* cryptauth_service */, nullptr /* tether_host_fetcher */,
-        nullptr /* notification_presenter */, nullptr /* pref_service */,
-        nullptr /* network_state_handler */,
+        nullptr /* notification_presenter */,
+        nullptr /* gms_core_notifications_state_tracker */,
+        nullptr /* pref_service */, nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,
         nullptr /* network_connect */, nullptr /* network_connection_handler */,
         nullptr /* adapter */);
