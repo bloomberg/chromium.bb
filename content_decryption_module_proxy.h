@@ -32,10 +32,9 @@ class CDM_CLASS_API CdmProxy {
     // There will be more values in the future e.g. for D3D11 RSA method.
   };
 
-  // Initializes the proxy with the |client|, which must be valid until
-  // Destroy() is called. The results will be returned in
+  // Initializes the proxy. The results will be returned in
   // CdmProxyClient::OnInitialized().
-  virtual void Initialize(CdmProxyClient* client) = 0;
+  virtual void Initialize() = 0;
 
   // Processes and updates the state of the proxy.
   // |output_data_size| is required by some protocol to set up the output data.
