@@ -14,11 +14,9 @@ import "url/mojo/url.mojom";
 
 enum AuthenticatorStatus {
   SUCCESS,
-  CANCELLED,
   PENDING_REQUEST,
   NOT_ALLOWED_ERROR,
   NOT_SUPPORTED_ERROR,
-  SECURITY_ERROR,
   UNKNOWN_ERROR,
   NOT_IMPLEMENTED,
 };

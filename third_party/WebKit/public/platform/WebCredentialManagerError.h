@@ -11,13 +11,10 @@ namespace blink {
 // the list as the API evolves.
 enum WebCredentialManagerError {
   kWebCredentialManagerNoError = 0,
-  kWebCredentialManagerDisabledError,
   kWebCredentialManagerPendingRequestError,
   kWebCredentialManagerPasswordStoreUnavailableError,
   kWebCredentialManagerNotAllowedError,
   kWebCredentialManagerNotSupportedError,
-  kWebCredentialManagerSecurityError,
-  kWebCredentialManagerCancelledError,
   kWebCredentialManagerUnknownError,
   kWebCredentialManagerNotImplementedError,
   kWebCredentialManagerErrorLastType = kWebCredentialManagerUnknownError,

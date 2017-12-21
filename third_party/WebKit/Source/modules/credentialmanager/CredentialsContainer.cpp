@@ -233,10 +233,6 @@ bool IsIconURLEmptyOrSecure(const Credential* credential) {
 void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
                                        WebCredentialManagerError reason) {
   switch (reason) {
-    case kWebCredentialManagerDisabledError:
-      resolver->Reject(DOMException::Create(
-          kInvalidStateError, "The credential manager is disabled."));
-      break;
     case kWebCredentialManagerPendingRequestError:
       resolver->Reject(DOMException::Create(kInvalidStateError,
                                             "A request is already pending."));
@@ -249,15 +245,6 @@ void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
       resolver->Reject(DOMException::Create(
           kNotSupportedError,
           "Parameters for this operation are not supported."));
-      break;
-    case kWebCredentialManagerSecurityError:
-      resolver->Reject(DOMException::Create(kSecurityError,
-                                            "The operation is insecure and "
-                                            "is not allowed."));
-      break;
-    case kWebCredentialManagerCancelledError:
-      resolver->Reject(DOMException::Create(
-          kNotAllowedError, "The user cancelled the operation."));
       break;
     case kWebCredentialManagerNotImplementedError:
       resolver->Reject(DOMException::Create(

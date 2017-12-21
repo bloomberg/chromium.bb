@@ -24,8 +24,6 @@ void MockCredentialManagerClient::SetResponse(
 void MockCredentialManagerClient::SetError(const std::string& error) {
   if (error == "pending")
     error_ = blink::kWebCredentialManagerPendingRequestError;
-  if (error == "disabled")
-    error_ = blink::kWebCredentialManagerDisabledError;
   if (error == "unknown")
     error_ = blink::kWebCredentialManagerUnknownError;
   if (error.empty())

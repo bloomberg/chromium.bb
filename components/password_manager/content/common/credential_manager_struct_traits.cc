@@ -56,8 +56,6 @@ EnumTraits<password_manager::mojom::CredentialManagerError,
   switch (input) {
     case password_manager::CredentialManagerError::SUCCESS:
       return password_manager::mojom::CredentialManagerError::SUCCESS;
-    case password_manager::CredentialManagerError::DISABLED:
-      return password_manager::mojom::CredentialManagerError::DISABLED;
     case password_manager::CredentialManagerError::PENDINGREQUEST:
       return password_manager::mojom::CredentialManagerError::PENDINGREQUEST;
     case password_manager::CredentialManagerError::PASSWORDSTOREUNAVAILABLE:
@@ -79,9 +77,6 @@ bool EnumTraits<password_manager::mojom::CredentialManagerError,
   switch (input) {
     case password_manager::mojom::CredentialManagerError::SUCCESS:
       *output = password_manager::CredentialManagerError::SUCCESS;
-      return true;
-    case password_manager::mojom::CredentialManagerError::DISABLED:
-      *output = password_manager::CredentialManagerError::DISABLED;
       return true;
     case password_manager::mojom::CredentialManagerError::PENDINGREQUEST:
       *output = password_manager::CredentialManagerError::PENDINGREQUEST;
