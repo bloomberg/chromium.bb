@@ -55,7 +55,8 @@ void GetProcessDataMemoryInformation(
     pmi.pid = *i;
     pmi.num_processes = 1;
 
-    if (pmi.pid == base::GetCurrentProcId())
+    base::ProcessId current_pid = base::GetCurrentProcId();
+    if (pmi.pid == current_pid)
       pmi.process_type = content::PROCESS_TYPE_BROWSER;
     else
       pmi.process_type = content::PROCESS_TYPE_UNKNOWN;
@@ -63,8 +64,13 @@ void GetProcessDataMemoryInformation(
     std::unique_ptr<base::ProcessMetrics> metrics(
         base::ProcessMetrics::CreateProcessMetrics(*i));
     metrics->GetWorkingSetKBytes(&pmi.working_set);
-    // TODO(dcastagna): Compute number of open fds (pmi.num_open_fds) and soft
-    // limits (pmi.open_fds_soft_limit) on android.
+
+    // TODO(ssid): Reading "/proc/fd" only works for current process. For child
+    // processes, the values need to be computed by the process itself.
+    if (pmi.pid == current_pid) {
+      pmi.num_open_fds = metrics->GetOpenFdCount();
+      pmi.open_fds_soft_limit = metrics->GetOpenFdSoftLimit();
+    }
 
     out->processes.push_back(pmi);
   }
