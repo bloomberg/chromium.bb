@@ -6,31 +6,24 @@
   await dp.Target.setAttachToFrames({value: true});
 
   await dp.Page.enable();
+  dp.Network.enable();
+  dp.Network.setUserAgentOverride({userAgent: 'test'});
   session.evaluate(`
     var iframe = document.createElement('iframe');
-    iframe.src = 'http://devtools.oopif.test:8000/inspector-protocol/target/resources/test-page.html';
+    iframe.src = 'http://devtools.oopif.test:8000/inspector-protocol/network/resources/echo-headers.php?headers=HTTP_USER_AGENT';
     document.body.appendChild(iframe);
   `);
 
-  var sessionId = (await dp.Target.onceAttachedToTarget()).params.sessionId;
-  await dp.Target.sendMessageToTarget({
-    sessionId: sessionId,
-    message: JSON.stringify({id: 1, method: 'Network.enable'})
-  });
-  await dp.Target.sendMessageToTarget({
-    sessionId: sessionId,
-    message: JSON.stringify({id: 2, method: 'Network.setUserAgentOverride', params: {userAgent: 'test'}})
-  });
-  dp.Target.sendMessageToTarget({
-    sessionId: sessionId,
-    message: JSON.stringify({id: 3, method: 'Runtime.runIfWaitingForDebugger'})
-  });
-  dp.Target.onReceivedMessageFromTarget(event => {
-    var message = JSON.parse(event.params.message);
-    if (message.method === 'Network.requestWillBeSent') {
-      testRunner.log('sessionId matches: ' + (sessionId === event.params.sessionId));
-      testRunner.log(`User-Agent = ${message.params.request.headers['User-Agent']}`);
-      testRunner.completeTest();
-    }
-  });
+  let sessionId = (await dp.Target.onceAttachedToTarget()).params.sessionId;
+  let dp1 = session.createChild(sessionId).protocol;
+  dp1.Network.enable();
+  dp1.Network.setUserAgentOverride({userAgent: 'test (subframe)'});
+  dp1.Runtime.runIfWaitingForDebugger();
+  let params = (await dp1.Network.onceRequestWillBeSent()).params;
+  testRunner.log(`User-Agent = ${params.request.headers['User-Agent']}`);
+  await dp1.Network.onceLoadingFinished();
+  let content = (await dp1.Network.getResponseBody({requestId: params.requestId})).result.body;
+  testRunner.log(`content (should have user-agent header overriden): ${content}`);
+
+  testRunner.completeTest();
 })
