@@ -10,4 +10,8 @@ int InternalsRTCPeerConnection::peerConnectionCount(Internals& internals) {
   return RTCPeerConnection::PeerConnectionCount();
 }
 
+int InternalsRTCPeerConnection::peerConnectionCountLimit(Internals& internals) {
+  return RTCPeerConnection::PeerConnectionCountLimit();
+}
+
 }  // namespace blink
