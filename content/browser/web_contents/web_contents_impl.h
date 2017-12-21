@@ -356,7 +356,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnAudioStateChanged(bool is_audible) override;
   base::TimeTicks GetLastActiveTime() const override;
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
-  base::TimeTicks GetLastHiddenTime() const override;
   void WasShown() override;
   void WasHidden() override;
   bool IsVisible() const override;
@@ -1495,10 +1494,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The time that this WebContents was last made active. The initial value is
   // the WebContents creation time.
   base::TimeTicks last_active_time_;
-
-  // The time that this WebContents was last made hidden. The initial value is
-  // zero.
-  base::TimeTicks last_hidden_time_;
 
   // See description above setter.
   bool closed_by_user_gesture_;
