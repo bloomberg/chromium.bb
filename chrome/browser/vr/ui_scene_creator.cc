@@ -123,7 +123,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   description_text->SetDrawPhase(kPhaseForeground);
   description_text->SetType(kTypeOmniboxSuggestionDescriptionText);
   description_text->set_hit_testable(false);
-  content_text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
+  description_text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   description_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
   description_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
   BindColor(model, description_text.get(),
