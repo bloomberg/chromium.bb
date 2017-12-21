@@ -39,7 +39,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/resource_response.h"
@@ -166,6 +165,8 @@ NavigationController* NavigatorImpl::GetController() {
   return controller_;
 }
 
+// TODO(clamy): See if we can remove this function now that PlzNavigate has
+// shipped.
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
@@ -191,49 +192,6 @@ void NavigatorImpl::DidStartProvisionalLoad(
                                 render_frame_host->GetSiteInstance(),
                                 render_frame_host->navigation_handle());
   }
-
-  if (is_error_page || IsBrowserSideNavigationEnabled())
-    return;
-
-  if (render_frame_host->navigation_handle()) {
-    if (render_frame_host->navigation_handle()->is_transferring()) {
-      // If the navigation is completing a transfer, this
-      // DidStartProvisionalLoad should not correspond to a new navigation.
-      DCHECK_EQ(url, render_frame_host->navigation_handle()->GetURL());
-      render_frame_host->navigation_handle()->set_is_transferring(false);
-      return;
-    }
-
-    // This ensures that notifications about the end of the previous
-    // navigation are sent before notifications about the start of the
-    // new navigation.
-    render_frame_host->SetNavigationHandle(
-        std::unique_ptr<NavigationHandleImpl>());
-  }
-
-  // It is safer to assume navigations are renderer-initiated unless shown
-  // otherwise. Browser navigations generally have more privileges, and they
-  // should always have a pending NavigationEntry to distinguish them.
-  bool is_renderer_initiated = true;
-  int pending_nav_entry_id = 0;
-  bool started_from_context_menu = false;
-  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
-  if (pending_entry) {
-    is_renderer_initiated = pending_entry->is_renderer_initiated();
-    pending_nav_entry_id = pending_entry->GetUniqueID();
-    started_from_context_menu = pending_entry->has_started_from_context_menu();
-  }
-
-  std::vector<GURL> validated_redirect_chain = redirect_chain;
-  for (size_t i = 0; i < validated_redirect_chain.size(); ++i)
-    render_process_host->FilterURL(false, &validated_redirect_chain[i]);
-  render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
-      validated_url, validated_redirect_chain,
-      render_frame_host->frame_tree_node(), is_renderer_initiated,
-      false,  // is_same_document
-      navigation_start, pending_nav_entry_id, started_from_context_menu,
-      CSPDisposition::CHECK,  // should_check_main_world_csp
-      false));                // is_form_submission
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
@@ -378,8 +336,6 @@ bool NavigatorImpl::NavigateToEntry(
       previews_state, is_same_document_history_load,
       is_history_navigation_in_new_child, post_body, navigation_start);
   if (frame_tree_node->IsMainFrame() && frame_tree_node->navigation_request()) {
-    // TODO(carlosk): extend these traces to support subframes and
-    // non-PlzNavigate navigations.
     // For the trace below we're using the navigation handle as the async
     // trace id, |navigation_start| as the timestamp and reporting the
     // FrameTreeNode id as a parameter. For navigations where no network
@@ -826,11 +782,9 @@ void NavigatorImpl::RequestTransferURL(
                   false, false, post_body);
 }
 
-// PlzNavigate
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
                                       bool proceed,
                                       const base::TimeTicks& proceed_time) {
-  CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
@@ -875,7 +829,6 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
   // See https://crbug.com/770157.
 }
 
-// PlzNavigate
 void NavigatorImpl::OnBeginNavigation(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
@@ -883,7 +836,6 @@ void NavigatorImpl::OnBeginNavigation(
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
-  CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
   NavigationRequest* ongoing_navigation_request =
@@ -959,10 +911,8 @@ void NavigatorImpl::OnAbortNavigation(FrameTreeNode* frame_tree_node) {
   CancelNavigation(frame_tree_node, false);
 }
 
-// PlzNavigate
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node,
                                      bool inform_renderer) {
-  CHECK(IsBrowserSideNavigationEnabled());
   if (frame_tree_node->navigation_request() &&
       frame_tree_node->navigation_request()->navigation_handle()) {
     frame_tree_node->navigation_request()
@@ -1036,7 +986,6 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {
   }
 }
 
-// PlzNavigate
 void NavigatorImpl::RequestNavigation(
     FrameTreeNode* frame_tree_node,
     const GURL& dest_url,
@@ -1049,7 +998,6 @@ void NavigatorImpl::RequestNavigation(
     bool is_history_navigation_in_new_child,
     const scoped_refptr<ResourceRequestBody>& post_body,
     base::TimeTicks navigation_start) {
-  CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(frame_tree_node);
 
   // This value must be set here because creating a NavigationRequest might
@@ -1184,7 +1132,6 @@ void NavigatorImpl::DidStartMainFrameNavigation(
   bool has_browser_initiated_pending_entry =
       pending_entry && !pending_entry->is_renderer_initiated();
 
-  // PlzNavigate
   // A pending navigation entry is created in OnBeginNavigation(). The renderer
   // sends a provisional load notification after that. We don't want to create
   // a duplicate navigation entry here.
