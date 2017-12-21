@@ -16,6 +16,7 @@
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace content {
 
@@ -54,35 +55,6 @@ void HistogramController::OnHistogramDataCollected(
                                           pickled_histograms);
   }
 }
-
-class FetcherCallbackRunner {
- public:
-  FetcherCallbackRunner(int sequence_number)
-      : sequence_number_(sequence_number), did_run_(false) {}
-
-  ~FetcherCallbackRunner() {
-    if (!did_run_) {
-      Run(std::vector<std::string>());
-    }
-  }
-  static content::mojom::ChildHistogramFetcher::
-      GetChildNonPersistentHistogramDataCallback
-      Make(int sequence_number) {
-    return base::BindOnce(
-        &FetcherCallbackRunner::Run,
-        std::make_unique<FetcherCallbackRunner>(sequence_number));
-  }
-
-  void Run(const std::vector<std::string>& pickled_histograms) {
-    did_run_ = true;
-    HistogramController::GetInstance()->OnHistogramDataCollected(
-        sequence_number_, pickled_histograms);
-  }
-
- private:
-  int sequence_number_;
-  bool did_run_;
-};
 
 void HistogramController::Register(HistogramSubscriber* subscriber) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -187,7 +159,10 @@ void HistogramController::GetHistogramDataFromChildProcesses(
     if (auto* child_histogram_fetcher =
             GetChildHistogramFetcherInterface(iter.GetHost())) {
       child_histogram_fetcher->GetChildNonPersistentHistogramData(
-          FetcherCallbackRunner::Make(sequence_number));
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              base::BindOnce(&HistogramController::OnHistogramDataCollected,
+                             base::Unretained(this), sequence_number),
+              std::vector<std::string>()));
       ++pending_processes;
     }
   }
@@ -207,7 +182,10 @@ void HistogramController::GetHistogramData(int sequence_number) {
     if (auto* child_histogram_fetcher =
             GetChildHistogramFetcherInterface(it.GetCurrentValue())) {
       child_histogram_fetcher->GetChildNonPersistentHistogramData(
-          FetcherCallbackRunner::Make(sequence_number));
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              base::BindOnce(&HistogramController::OnHistogramDataCollected,
+                             base::Unretained(this), sequence_number),
+              std::vector<std::string>()));
       ++pending_processes;
     }
   }
