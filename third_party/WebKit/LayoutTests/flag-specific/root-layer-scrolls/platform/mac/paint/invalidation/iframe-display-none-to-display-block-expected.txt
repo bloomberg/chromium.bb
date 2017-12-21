@@ -45,10 +45,6 @@
       "reason": "appeared"
     },
     {
-      "object": "VerticalScrollbar",
-      "reason": "scroll control"
-    },
-    {
       "object": "LayoutView #document",
       "reason": "style change"
     },
