@@ -29,6 +29,12 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+namespace mojom {
+class CookieManager;
+}
+}  // namespace network
+
 namespace storage {
 class QuotaManager;
 class SpecialStoragePolicy;
@@ -71,12 +77,13 @@ class CONTENT_EXPORT StoragePartition {
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
   virtual mojom::NetworkContext* GetNetworkContext() = 0;
-  // Returns a pointer to a URLLoaderFactory owned by the storage partition.
-  // Prefer to use this instead of creating a new URLLoaderFactory when issuing
-  // requests from the Browser process, to share resources. The returned
-  // URLLoaderFactory should not be sent to subprocesses, due to its
-  // permissions.
+  // Returns a pointer to a URLLoaderFactory/CookieManager owned by the
+  // storage partition.  Prefer to use this instead of creating a new
+  // URLLoaderFactory when issuing requests from the Browser process, to
+  // share resources and preserve ordering.
   virtual mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() = 0;
+  virtual network::mojom::CookieManager*
+  GetCookieManagerForBrowserProcess() = 0;
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
