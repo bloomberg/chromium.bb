@@ -350,9 +350,15 @@ TEST_P(LayerTreeResourceProviderTest,
   viz::ResourceId tran_id = provider().ImportResource(
       tran, viz::SingleReleaseCallback::Create(base::Bind(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
-  viz::ResourceId norm_id = provider().CreateResource(
-      gfx::Size(3, 4), viz::ResourceTextureHint::kDefault, viz::RGBA_8888,
-      gfx::ColorSpace());
+  viz::ResourceId norm_id;
+  if (use_gpu()) {
+    norm_id = provider().CreateGpuTextureResource(
+        gfx::Size(3, 4), viz::ResourceTextureHint::kDefault, viz::RGBA_8888,
+        gfx::ColorSpace());
+  } else {
+    norm_id =
+        provider().CreateBitmapResource(gfx::Size(3, 4), gfx::ColorSpace());
+  }
   provider().AllocateForTesting(norm_id);
 
   // Export the resources.

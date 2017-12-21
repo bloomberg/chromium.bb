@@ -24,14 +24,16 @@ class CC_EXPORT ScopedResource : public Resource {
   explicit ScopedResource(ResourceProvider* provider);
   virtual ~ScopedResource();
 
-  void Allocate(const gfx::Size& size,
-                viz::ResourceTextureHint hint,
-                viz::ResourceFormat format,
-                const gfx::ColorSpace& color_space);
-  void AllocateWithGpuMemoryBuffer(const gfx::Size& size,
-                                   viz::ResourceFormat format,
-                                   gfx::BufferUsage usage,
-                                   const gfx::ColorSpace& color_space);
+  void AllocateSoftware(const gfx::Size& size,
+                        const gfx::ColorSpace& color_space);
+  void AllocateGpuTexture(const gfx::Size& size,
+                          viz::ResourceTextureHint hint,
+                          viz::ResourceFormat format,
+                          const gfx::ColorSpace& color_space);
+  void AllocateGpuMemoryBuffer(const gfx::Size& size,
+                               viz::ResourceFormat format,
+                               gfx::BufferUsage usage,
+                               const gfx::ColorSpace& color_space);
   void Free();
 
   viz::ResourceTextureHint hint() const { return hint_; }

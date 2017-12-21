@@ -36,8 +36,6 @@ namespace cc {
 
 namespace {
 
-const viz::ResourceFormat kRGBResourceFormat = viz::RGBA_8888;
-
 VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
     media::VideoPixelFormat format,
     GLuint target,
@@ -237,23 +235,28 @@ VideoResourceUpdater::RecycleOrAllocateResource(
 
   // There was nothing available to reuse or recycle. Allocate a new resource.
   return AllocateResource(resource_size, resource_format, color_space,
-                          !software_resource);
+                          software_resource);
 }
 
 VideoResourceUpdater::ResourceList::iterator
 VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
                                        viz::ResourceFormat format,
                                        const gfx::ColorSpace& color_space,
-                                       bool has_mailbox) {
+                                       bool software_resource) {
+  viz::ResourceId resource_id;
+  gpu::Mailbox mailbox;
+
   // TODO(danakj): Abstract out hw/sw resource create/delete from
   // ResourceProvider and stop using ResourceProvider in this class.
-  const viz::ResourceId resource_id = resource_provider_->CreateResource(
-      plane_size, viz::ResourceTextureHint::kDefault, format, color_space);
-  DCHECK_NE(resource_id, 0u);
-
-  gpu::Mailbox mailbox;
-  if (has_mailbox) {
+  if (software_resource) {
+    DCHECK_EQ(format, viz::RGBA_8888);
+    resource_id =
+        resource_provider_->CreateBitmapResource(plane_size, color_space);
+  } else {
     DCHECK(context_provider_);
+
+    resource_id = resource_provider_->CreateGpuTextureResource(
+        plane_size, viz::ResourceTextureHint::kDefault, format, color_space);
 
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 
@@ -342,7 +345,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   // Obviously, this is suboptimal and should be addressed once ubercompositor
   // starts shaping up.
   if (software_compositor || texture_needs_rgb_conversion) {
-    output_resource_format = kRGBResourceFormat;
+    output_resource_format = viz::RGBA_8888;
     output_plane_count = 1;
     bits_per_channel = 8;
   }
@@ -385,7 +388,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   if (software_compositor || texture_needs_rgb_conversion) {
     DCHECK_EQ(plane_resources.size(), 1u);
     PlaneResource& plane_resource = *plane_resources[0];
-    DCHECK_EQ(plane_resource.resource_format(), kRGBResourceFormat);
+    DCHECK_EQ(plane_resource.resource_format(), viz::RGBA_8888);
     DCHECK(!software_compositor ||
            plane_resource.resource_id() > viz::kInvalidResourceId);
     DCHECK_EQ(software_compositor, plane_resource.mailbox().IsZero());

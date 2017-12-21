@@ -116,6 +116,7 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
 }
 
 void CreateTestTwoColoredTextureDrawQuad(
+    bool gpu_resource,
     const gfx::Rect& rect,
     SkColor texel_color,
     SkColor texel_stripe_color,
@@ -143,8 +144,16 @@ void CreateTestTwoColoredTextureDrawQuad(
       pixels[i * rect.width() + k] = pixel_stripe_color;
     }
   }
-  ResourceId resource = resource_provider->CreateResource(
-      rect.size(), ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+
+  ResourceId resource;
+  if (gpu_resource) {
+    resource = resource_provider->CreateGpuTextureResource(
+        rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
+        gfx::ColorSpace());
+  } else {
+    resource =
+        resource_provider->CreateBitmapResource(rect.size(), gfx::ColorSpace());
+  }
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
@@ -161,7 +170,8 @@ void CreateTestTwoColoredTextureDrawQuad(
                false);
 }
 
-void CreateTestTextureDrawQuad(const gfx::Rect& rect,
+void CreateTestTextureDrawQuad(bool gpu_resource,
+                               const gfx::Rect& rect,
                                SkColor texel_color,
                                float vertex_opacity[4],
                                SkColor background_color,
@@ -178,8 +188,15 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   size_t num_pixels = static_cast<size_t>(rect.width()) * rect.height();
   std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
-  ResourceId resource = resource_provider->CreateResource(
-      rect.size(), ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+  ResourceId resource;
+  if (gpu_resource) {
+    resource = resource_provider->CreateGpuTextureResource(
+        rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
+        gfx::ColorSpace());
+  } else {
+    resource =
+        resource_provider->CreateBitmapResource(rect.size(), gfx::ColorSpace());
+  }
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
@@ -195,7 +212,8 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
                false);
 }
 
-void CreateTestTextureDrawQuad(const gfx::Rect& rect,
+void CreateTestTextureDrawQuad(bool gpu_resource,
+                               const gfx::Rect& rect,
                                SkColor texel_color,
                                SkColor background_color,
                                bool premultiplied_alpha,
@@ -203,8 +221,8 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
                                cc::ResourceProvider* resource_provider,
                                RenderPass* render_pass) {
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-  CreateTestTextureDrawQuad(rect, texel_color, vertex_opacity, background_color,
-                            premultiplied_alpha, shared_state,
+  CreateTestTextureDrawQuad(gpu_resource, rect, texel_color, vertex_opacity,
+                            background_color, premultiplied_alpha, shared_state,
                             resource_provider, render_pass);
 }
 
@@ -611,10 +629,10 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
   const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
       media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane, rect.size());
 
-  ResourceId y_resource = resource_provider->CreateResource(
+  ResourceId y_resource = resource_provider->CreateGpuTextureResource(
       rect.size(), ResourceTextureHint::kDefault,
       resource_provider->YuvResourceFormat(8), gfx_color_space);
-  ResourceId u_resource = resource_provider->CreateResource(
+  ResourceId u_resource = resource_provider->CreateGpuTextureResource(
       uv_tex_size, ResourceTextureHint::kDefault, RGBA_8888, gfx_color_space);
   ResourceId v_resource = u_resource;
   ResourceId a_resource = 0;
@@ -816,12 +834,12 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestTextureDrawQuad(gfx::Rect(this->device_viewport_size_),
-                            SkColorSetARGB(128, 0, 255, 0),  // Texel color.
-                            SK_ColorTRANSPARENT,  // Background color.
-                            true,                 // Premultiplied alpha.
-                            shared_state, this->resource_provider_.get(),
-                            pass.get());
+  CreateTestTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(128, 0, 255, 0),  // Texel color.
+      SK_ColorTRANSPARENT,             // Background color.
+      true,                            // Premultiplied alpha.
+      shared_state, this->resource_provider_.get(), pass.get());
 
   auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad->SetNew(shared_state, rect, rect, SK_ColorWHITE, false);
@@ -844,12 +862,12 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
   texture_quad_state->opacity = 0.8f;
 
-  CreateTestTextureDrawQuad(gfx::Rect(this->device_viewport_size_),
-                            SkColorSetARGB(204, 120, 255, 120),  // Texel color.
-                            SK_ColorGREEN,  // Background color.
-                            true,           // Premultiplied alpha.
-                            texture_quad_state, this->resource_provider_.get(),
-                            pass.get());
+  CreateTestTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(204, 120, 255, 120),  // Texel color.
+      SK_ColorGREEN,                       // Background color.
+      true,                                // Premultiplied alpha.
+      texture_quad_state, this->resource_provider_.get(), pass.get());
 
   SharedQuadState* color_quad_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -975,13 +993,13 @@ TEST_F(GLRendererPixelTest,
   texture_quad_state->opacity = 0.8f;
 
   float vertex_opacity[4] = {1.f, 1.f, 0.f, 0.f};
-  CreateTestTextureDrawQuad(gfx::Rect(this->device_viewport_size_),
-                            SkColorSetARGB(204, 120, 255, 120),  // Texel color.
-                            vertex_opacity,
-                            SK_ColorGREEN,  // Background color.
-                            true,           // Premultiplied alpha.
-                            texture_quad_state, this->resource_provider_.get(),
-                            pass.get());
+  CreateTestTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(204, 120, 255, 120),  // Texel color.
+      vertex_opacity,
+      SK_ColorGREEN,  // Background color.
+      true,           // Premultiplied alpha.
+      texture_quad_state, this->resource_provider_.get(), pass.get());
 
   SharedQuadState* color_quad_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1129,12 +1147,14 @@ SkColor GetColor<cc::GLRendererWithExpandedViewport>(const SkColor& color) {
 TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
   this->SetupQuadStateAndRenderPass();
   CreateTestTwoColoredTextureDrawQuad(
-      this->quad_rect_, GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 0)),
+      this->use_gpu(), this->quad_rect_,
+      GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 0)),
       GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 255)), SK_ColorTRANSPARENT,
       true, this->front_quad_state_, this->resource_provider_.get(),
       this->render_pass_.get());
   CreateTestTwoColoredTextureDrawQuad(
-      this->quad_rect_, GetColor<TypeParam>(SkColorSetARGB(255, 0, 255, 0)),
+      this->use_gpu(), this->quad_rect_,
+      GetColor<TypeParam>(SkColorSetARGB(255, 0, 255, 0)),
       GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 0)), SK_ColorTRANSPARENT,
       true, this->back_quad_state_, this->resource_provider_.get(),
       this->render_pass_.get());
@@ -1214,12 +1234,14 @@ TYPED_TEST(IntersectingQuadPixelTest, RenderPassQuads) {
       gfx::Transform(), this->quad_rect_, child_pass2.get());
 
   CreateTestTwoColoredTextureDrawQuad(
-      this->quad_rect_, GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 0)),
+      this->use_gpu(), this->quad_rect_,
+      GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 0)),
       GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 255)), SK_ColorTRANSPARENT,
       true, child1_quad_state, this->resource_provider_.get(),
       child_pass1.get());
   CreateTestTwoColoredTextureDrawQuad(
-      this->quad_rect_, GetColor<TypeParam>(SkColorSetARGB(255, 0, 255, 0)),
+      this->use_gpu(), this->quad_rect_,
+      GetColor<TypeParam>(SkColorSetARGB(255, 0, 255, 0)),
       GetColor<TypeParam>(SkColorSetARGB(255, 0, 0, 0)), SK_ColorTRANSPARENT,
       true, child2_quad_state, this->resource_provider_.get(),
       child_pass2.get());
@@ -1301,12 +1323,12 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithoutBackground) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestTextureDrawQuad(gfx::Rect(this->device_viewport_size_),
-                            SkColorSetARGB(128, 0, 255, 0),  // Texel color.
-                            SK_ColorTRANSPARENT,  // Background color.
-                            false,                // Premultiplied alpha.
-                            shared_state, this->resource_provider_.get(),
-                            pass.get());
+  CreateTestTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(128, 0, 255, 0),  // Texel color.
+      SK_ColorTRANSPARENT,             // Background color.
+      false,                           // Premultiplied alpha.
+      shared_state, this->resource_provider_.get(), pass.get());
 
   auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad->SetNew(shared_state, rect, rect, SK_ColorWHITE, false);
@@ -1330,12 +1352,12 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithBackground) {
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
   texture_quad_state->opacity = 0.8f;
 
-  CreateTestTextureDrawQuad(gfx::Rect(this->device_viewport_size_),
-                            SkColorSetARGB(204, 120, 255, 120),  // Texel color.
-                            SK_ColorGREEN,  // Background color.
-                            false,          // Premultiplied alpha.
-                            texture_quad_state, this->resource_provider_.get(),
-                            pass.get());
+  CreateTestTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(204, 120, 255, 120),  // Texel color.
+      SK_ColorGREEN,                       // Background color.
+      false,                               // Premultiplied alpha.
+      texture_quad_state, this->resource_provider_.get(), pass.get());
 
   SharedQuadState* color_quad_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -2156,9 +2178,15 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
     rect.Inset(6, 6, 4, 4);
   }
 
-  ResourceId mask_resource_id = this->resource_provider_->CreateResource(
-      mask_rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
-      gfx::ColorSpace());
+  ResourceId mask_resource_id;
+  if (this->use_gpu()) {
+    mask_resource_id = this->resource_provider_->CreateGpuTextureResource(
+        mask_rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
+        gfx::ColorSpace());
+  } else {
+    mask_resource_id = this->resource_provider_->CreateBitmapResource(
+        mask_rect.size(), gfx::ColorSpace());
+  }
 
   this->resource_provider_->CopyToResource(
       mask_resource_id, reinterpret_cast<uint8_t*>(bitmap.getPixels()),
@@ -2242,9 +2270,15 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
     rect.Inset(6, 6, 4, 4);
   }
 
-  ResourceId mask_resource_id = this->resource_provider_->CreateResource(
-      mask_rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
-      gfx::ColorSpace());
+  ResourceId mask_resource_id;
+  if (this->use_gpu()) {
+    mask_resource_id = this->resource_provider_->CreateGpuTextureResource(
+        mask_rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
+        gfx::ColorSpace());
+  } else {
+    mask_resource_id = this->resource_provider_->CreateBitmapResource(
+        mask_rect.size(), gfx::ColorSpace());
+  }
 
   this->resource_provider_->CopyToResource(
       mask_resource_id, reinterpret_cast<uint8_t*>(bitmap.getPixels()),
@@ -2715,8 +2749,14 @@ TEST_F(GLRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   canvas.clear(SK_ColorTRANSPARENT);
 
   gfx::Size tile_size(32, 32);
-  ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+  ResourceId resource;
+  if (this->use_gpu()) {
+    resource = this->resource_provider_->CreateGpuTextureResource(
+        tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+  } else {
+    resource = this->resource_provider_->CreateBitmapResource(
+        tile_size, gfx::ColorSpace());
+  }
 
   this->resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
@@ -3135,8 +3175,14 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   draw_point_color(&canvas, 1, 1, SK_ColorGREEN);
 
   gfx::Size tile_size(2, 2);
-  ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+  ResourceId resource;
+  if (this->use_gpu()) {
+    resource = this->resource_provider_->CreateGpuTextureResource(
+        tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+  } else {
+    resource = this->resource_provider_->CreateBitmapResource(
+        tile_size, gfx::ColorSpace());
+  }
 
   this->resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
@@ -3180,8 +3226,8 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   draw_point_color(&canvas, 1, 1, SK_ColorGREEN);
 
   gfx::Size tile_size(2, 2);
-  ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+  ResourceId resource = this->resource_provider_->CreateBitmapResource(
+      tile_size, gfx::ColorSpace());
 
   this->resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
@@ -3228,8 +3274,8 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   }
 
   gfx::Size tile_size(2, 2);
-  ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
+  ResourceId resource = this->resource_provider_->CreateBitmapResource(
+      tile_size, gfx::ColorSpace());
 
   this->resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
@@ -3567,7 +3613,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
     inset_rect.Inset(6, 6, 4, 4);
   }
 
-  ResourceId resource = this->resource_provider_->CreateResource(
+  ResourceId resource = this->resource_provider_->CreateGpuTextureResource(
       mask_rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
       gfx::ColorSpace());
 
@@ -3741,7 +3787,7 @@ TEST_P(ColorTransformPixelTest, Basic) {
     SharedQuadState* shared_state =
         CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-    ResourceId resource = resource_provider_->CreateResource(
+    ResourceId resource = resource_provider_->CreateGpuTextureResource(
         rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
         src_color_space_);
     resource_provider_->CopyToResource(resource, input_colors.data(),

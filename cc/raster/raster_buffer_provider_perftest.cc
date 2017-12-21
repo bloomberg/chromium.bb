@@ -264,8 +264,8 @@ class RasterBufferProviderPerfTestBase {
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
       auto resource =
           std::make_unique<ScopedResource>(resource_provider_.get());
-      resource->Allocate(size, viz::ResourceTextureHint::kDefault,
-                         viz::RGBA_8888, gfx::ColorSpace());
+      resource->AllocateGpuTexture(size, viz::ResourceTextureHint::kDefault,
+                                   viz::RGBA_8888, gfx::ColorSpace());
 
       // No tile ids are given to support partial updates.
       std::unique_ptr<RasterBuffer> raster_buffer;

@@ -223,12 +223,14 @@ class RasterBufferProviderTest
   std::unique_ptr<ScopedResource> AllocateResource(const gfx::Size& size) {
     auto resource = std::make_unique<ScopedResource>(resource_provider_.get());
     if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY) {
-      resource->AllocateWithGpuMemoryBuffer(
+      resource->AllocateGpuMemoryBuffer(
           size, viz::RGBA_8888, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
           gfx::ColorSpace());
+    } else if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_BITMAP) {
+      resource->AllocateSoftware(size, gfx::ColorSpace());
     } else {
-      resource->Allocate(size, viz::ResourceTextureHint::kDefault,
-                         viz::RGBA_8888, gfx::ColorSpace());
+      resource->AllocateGpuTexture(size, viz::ResourceTextureHint::kDefault,
+                                   viz::RGBA_8888, gfx::ColorSpace());
     }
     return resource;
   }

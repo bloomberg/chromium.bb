@@ -3422,7 +3422,7 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   if (!overlay_resource_pool_) {
     DCHECK(current_task_runner_);
     overlay_resource_pool_ = cc::ResourcePool::Create(
-        resource_provider_, current_task_runner_.get(),
+        resource_provider_, true, current_task_runner_.get(),
         ResourceTextureHint::kOverlay, base::TimeDelta::FromSeconds(3),
         settings_->disallow_non_exact_resource_reuse);
   }
@@ -3633,8 +3633,9 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
     backbuffer_format = resource_provider_->best_texture_format();
   }
 
-  resource->Allocate(enlarged_size, texturehint, backbuffer_format,
-                     current_frame()->current_render_pass->color_space);
+  resource->AllocateGpuTexture(
+      enlarged_size, texturehint, backbuffer_format,
+      current_frame()->current_render_pass->color_space);
 }
 
 bool GLRenderer::IsRenderPassResourceAllocated(

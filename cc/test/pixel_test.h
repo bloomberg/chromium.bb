@@ -96,6 +96,8 @@ class RendererPixelTest : public PixelTest {
     return static_cast<RendererType*>(renderer_.get());
   }
 
+  bool use_gpu() { return !!child_context_provider_; }
+
  protected:
   void SetUp() override;
 };

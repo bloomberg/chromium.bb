@@ -88,6 +88,7 @@ std::unique_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
 }
 
 void HeadsUpDisplayLayerImpl::AcquireResource(
+    DrawMode draw_mode,
     ResourceProvider* resource_provider) {
   for (auto& resource : resources_) {
     if (!resource_provider->InUseByConsumer(resource->id())) {
@@ -97,9 +98,20 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
   }
 
   auto resource = std::make_unique<ScopedResource>(resource_provider);
-  resource->Allocate(
-      internal_content_bounds_, viz::ResourceTextureHint::kFramebuffer,
-      resource_provider->best_render_buffer_format(), gfx::ColorSpace());
+  switch (draw_mode) {
+    case DRAW_MODE_NONE:
+    case DRAW_MODE_RESOURCELESS_SOFTWARE:
+      NOTREACHED();
+      break;
+    case DRAW_MODE_HARDWARE:
+      resource->AllocateGpuTexture(
+          internal_content_bounds_, viz::ResourceTextureHint::kFramebuffer,
+          resource_provider->best_render_buffer_format(), gfx::ColorSpace());
+      break;
+    case DRAW_MODE_SOFTWARE:
+      resource->AllocateSoftware(internal_content_bounds_, gfx::ColorSpace());
+      break;
+  }
   resources_.push_back(std::move(resource));
 }
 
@@ -125,7 +137,7 @@ bool HeadsUpDisplayLayerImpl::WillDraw(
                 resource_provider->max_texture_size()));
 
   ReleaseUnmatchedSizeResources(resource_provider);
-  AcquireResource(resource_provider);
+  AcquireResource(draw_mode, resource_provider);
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 

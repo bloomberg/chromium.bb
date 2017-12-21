@@ -176,7 +176,7 @@ class CC_EXPORT VideoResourceUpdater {
   ResourceList::iterator AllocateResource(const gfx::Size& plane_size,
                                           viz::ResourceFormat format,
                                           const gfx::ColorSpace& color_space,
-                                          bool has_mailbox);
+                                          bool software_resource);
   void DeleteResource(ResourceList::iterator resource_it);
   void CopyHardwarePlane(media::VideoFrame* video_frame,
                          const gfx::ColorSpace& resource_color_space,

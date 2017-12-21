@@ -110,11 +110,13 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
 }
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
+                           bool gpu_resources,
                            base::SingleThreadTaskRunner* task_runner,
                            viz::ResourceTextureHint hint,
                            const base::TimeDelta& expiration_delay,
                            bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),
+      use_gpu_resources_(gpu_resources),
       use_gpu_memory_buffers_(false),
       hint_(hint),
       task_runner_(task_runner),
@@ -189,10 +191,12 @@ Resource* ResourcePool::CreateResource(const gfx::Size& size,
       PoolResource::Create(resource_provider_);
 
   if (use_gpu_memory_buffers_) {
-    pool_resource->AllocateWithGpuMemoryBuffer(size, format, usage_,
-                                               color_space);
+    pool_resource->AllocateGpuMemoryBuffer(size, format, usage_, color_space);
+  } else if (use_gpu_resources_) {
+    pool_resource->AllocateGpuTexture(size, hint_, format, color_space);
   } else {
-    pool_resource->Allocate(size, hint_, format, color_space);
+    DCHECK_EQ(format, viz::RGBA_8888);
+    pool_resource->AllocateSoftware(size, color_space);
   }
 
   DCHECK(ResourceUtil::VerifySizeInBytes<size_t>(pool_resource->size(),

@@ -60,9 +60,10 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
 
       *raster_buffer_provider =
           BitmapRasterBufferProvider::Create(resource_provider);
-      *resource_pool = ResourcePool::Create(
-          resource_provider, task_runner, viz::ResourceTextureHint::kDefault,
-          ResourcePool::kDefaultExpirationDelay, false);
+      *resource_pool =
+          ResourcePool::Create(resource_provider, false, task_runner,
+                               viz::ResourceTextureHint::kDefault,
+                               ResourcePool::kDefaultExpirationDelay, false);
       break;
     case GPU:
       EXPECT_TRUE(compositor_context_provider);
@@ -74,7 +75,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
           resource_provider, false, 0, viz::PlatformColor::BestTextureFormat(),
           false);
       *resource_pool =
-          ResourcePool::Create(resource_provider, task_runner,
+          ResourcePool::Create(resource_provider, true, task_runner,
                                viz::ResourceTextureHint::kFramebuffer,
                                ResourcePool::kDefaultExpirationDelay, false);
       break;
@@ -99,9 +100,10 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
           resource_provider, max_bytes_per_copy_operation, false,
           max_staging_buffer_usage_in_bytes,
           viz::PlatformColor::BestTextureFormat());
-      *resource_pool = ResourcePool::Create(
-          resource_provider, task_runner, viz::ResourceTextureHint::kDefault,
-          ResourcePool::kDefaultExpirationDelay, false);
+      *resource_pool =
+          ResourcePool::Create(resource_provider, true, task_runner,
+                               viz::ResourceTextureHint::kDefault,
+                               ResourcePool::kDefaultExpirationDelay, false);
       break;
   }
 }
