@@ -2851,6 +2851,8 @@ TEST_F(SplitViewWindowSelectorTest, SnappedWindowBoundsTest) {
       CreateWindowWithMinimumSize(bounds, size));
   std::unique_ptr<aura::Window> window3(
       CreateWindowWithMinimumSize(bounds, size));
+  const int screen_width =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
   ToggleOverview();
 
   // Drag |window1| selector item to snap to left.
@@ -2872,9 +2874,10 @@ TEST_F(SplitViewWindowSelectorTest, SnappedWindowBoundsTest) {
   // Test that split view mode is ended. Overview mode is still active.
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
-  // Test that |window1| has been moved out of the work area and is invisible.
-  EXPECT_LE(window1->bounds().x(), -kMinimumBoundSize);
-  EXPECT_EQ(window1->bounds().width(), kMinimumBoundSize);
+  // Test that |window1| has the dimensions of a tablet mode maxed window, so
+  // that when it is placed back on the grid it will not look skinny.
+  EXPECT_LE(window1->bounds().x(), 0);
+  EXPECT_EQ(window1->bounds().width(), screen_width);
 
   // Drag |window2| selector item to snap to right.
   WindowSelectorItem* selector_item2 =
@@ -2899,9 +2902,57 @@ TEST_F(SplitViewWindowSelectorTest, SnappedWindowBoundsTest) {
   // Test that split view mode is ended. Overview mode is still active.
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
-  // Test that |window2| has been moved out of the work area and is invisible.
-  EXPECT_GE(window2->bounds().x(), work_area_rect.x());
-  EXPECT_EQ(window2->bounds().width(), kMinimumBoundSize);
+  // Test that |window2| has the dimensions of a tablet mode maxed window, so
+  // that when it is placed back on the grid it will not look skinny.
+  EXPECT_GE(window2->bounds().x(), 0);
+  EXPECT_EQ(window2->bounds().width(), screen_width);
+}
+
+// Verify that if the split view divider is dragged all the way to the edge, the
+// window being dragged gets returned to the overview list, if overview mode is
+// still active.
+TEST_F(SplitViewWindowSelectorTest,
+       DividerDraggedToEdgeReturnsWindowToOverviewList) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  ToggleOverview();
+  // Drag |window1| selector item to snap to left. There should be two items on
+  // the overview grid afterwards, |window2| and |window3|.
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(selector_item1, gfx::Point(0, 0));
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_TRUE(split_view_controller()->split_view_divider());
+  std::vector<aura::Window*> window_list =
+      window_selector_controller()->GetWindowsListInOverviewGridsForTesting();
+  EXPECT_EQ(2u, window_list.size());
+  EXPECT_TRUE(std::find(window_list.begin(), window_list.end(),
+                        window1.get()) == window_list.end());
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+  // Drag the divider to the left edge.
+  const gfx::Rect divider_bounds =
+      GetSplitViewDividerBounds(/*is_dragging=*/false);
+  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator().DragMouseTo(0, 0);
+
+  // Verify that it is still in overview mode and that |window1| is returned to
+  // the overview list.
+  EXPECT_TRUE(IsSelecting());
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  window_list =
+      window_selector_controller()->GetWindowsListInOverviewGridsForTesting();
+  EXPECT_EQ(3u, window_list.size());
+  EXPECT_TRUE(std::find(window_list.begin(), window_list.end(),
+                        window1.get()) != window_list.end());
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 }
 
 }  // namespace ash

@@ -93,6 +93,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // this grid owns.
   bool Contains(const aura::Window* window) const;
 
+  // Adds |window| to the grid. Intended to be used by split view. |window|
+  // cannot already be on the grid.
+  void AddItem(aura::Window* window);
+
   // Removes |selector_item| from the grid.
   void RemoveItem(WindowSelectorItem* selector_item);
 

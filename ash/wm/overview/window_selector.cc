@@ -26,6 +26,7 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/splitview/split_view_overview_overlay.h"
 #include "ash/wm/switchable_windows.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
@@ -294,7 +295,7 @@ void WindowSelector::Init(const WindowList& windows,
     // overview are observed. See http://crbug.com/384495.
     for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
       window_grid->PrepareForOverview();
-      window_grid->PositionWindows(true);
+      window_grid->PositionWindows(/*animate=*/true);
     }
 
     search_image_ = gfx::CreateVectorIcon(
@@ -482,6 +483,30 @@ WindowGrid* WindowSelector::GetGridWithRootWindow(aura::Window* root_window) {
   }
 
   return nullptr;
+}
+
+void WindowSelector::AddItem(aura::Window* window) {
+  // Early exit if a grid already contains |window|.
+  WindowGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
+  if (!grid || grid->Contains(window))
+    return;
+
+  // This is meant to be called when a item in split view mode was previously
+  // snapped but should now be returned to the window grid (ie. split view
+  // divider dragged to either edge).
+  DCHECK(SplitViewController::ShouldAllowSplitView());
+  DCHECK(Shell::Get()->split_view_controller()->CanSnap(window));
+
+  // The dimensions of |window| will be very slim because of dragging the
+  // divider to the edge. Change the window dimensions to its tablet mode
+  // dimensions. Note: if split view is no longer constrained to tablet mode
+  // this will be need to updated.
+  TabletModeWindowState::UpdateWindowPosition(wm::GetWindowState(window));
+  grid->AddItem(window);
+
+  // Transfer focus from |window| to the text widget, to match the behavior of
+  // entering overview mode in the beginning.
+  wm::ActivateWindow(GetTextFilterWidgetWindow());
 }
 
 void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item) {
@@ -815,7 +840,7 @@ void WindowSelector::OnDisplayBoundsChanged() {
     SetBoundsForWindowGridsInScreen(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window())));
   }
-  PositionWindows(/* animate */ false);
+  PositionWindows(/*animate=*/false);
   RepositionTextFilterOnDisplayMetricsChange();
   if (split_view_overview_overlay_)
     split_view_overview_overlay_->OnDisplayBoundsChanged();

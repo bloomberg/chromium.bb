@@ -65,6 +65,8 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   void RemoveAndDestroyAnimationObserver(
       DelayedAnimationObserver* animation) override;
 
+  WindowSelector* window_selector() { return window_selector_.get(); }
+
  private:
   friend class WindowSelectorTest;
 
