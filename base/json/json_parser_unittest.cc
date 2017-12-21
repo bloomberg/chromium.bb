@@ -10,6 +10,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,12 +62,12 @@ TEST_F(JSONParserTest, NextChar) {
 TEST_F(JSONParserTest, ConsumeString) {
   std::string input("\"test\",|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
-  std::unique_ptr<Value> value(parser->ConsumeString());
+  Optional<Value> value(parser->ConsumeString());
   EXPECT_EQ('"', *parser->pos_);
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   std::string str;
   EXPECT_TRUE(value->GetAsString(&str));
   EXPECT_EQ("test", str);
@@ -75,12 +76,12 @@ TEST_F(JSONParserTest, ConsumeString) {
 TEST_F(JSONParserTest, ConsumeList) {
   std::string input("[true, false],|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
-  std::unique_ptr<Value> value(parser->ConsumeList());
+  Optional<Value> value(parser->ConsumeList());
   EXPECT_EQ(']', *parser->pos_);
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   base::ListValue* list;
   EXPECT_TRUE(value->GetAsList(&list));
   EXPECT_EQ(2u, list->GetSize());
@@ -89,12 +90,12 @@ TEST_F(JSONParserTest, ConsumeList) {
 TEST_F(JSONParserTest, ConsumeDictionary) {
   std::string input("{\"abc\":\"def\"},|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
-  std::unique_ptr<Value> value(parser->ConsumeDictionary());
+  Optional<Value> value(parser->ConsumeDictionary());
   EXPECT_EQ('}', *parser->pos_);
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   base::DictionaryValue* dict;
   EXPECT_TRUE(value->GetAsDictionary(&dict));
   std::string str;
@@ -106,12 +107,12 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
   // Literal |true|.
   std::string input("true,|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
-  std::unique_ptr<Value> value(parser->ConsumeLiteral());
+  Optional<Value> value(parser->ConsumeLiteral());
   EXPECT_EQ('e', *parser->pos_);
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   bool bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&bool_value));
   EXPECT_TRUE(bool_value);
@@ -124,7 +125,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsBoolean(&bool_value));
   EXPECT_FALSE(bool_value);
 
@@ -136,7 +137,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->is_none());
 }
 
@@ -144,12 +145,12 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   // Integer.
   std::string input("1234,|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
-  std::unique_ptr<Value> value(parser->ConsumeNumber());
+  Optional<Value> value(parser->ConsumeNumber());
   EXPECT_EQ('4', *parser->pos_);
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   int number_i;
   EXPECT_TRUE(value->GetAsInteger(&number_i));
   EXPECT_EQ(1234, number_i);
@@ -162,7 +163,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsInteger(&number_i));
   EXPECT_EQ(-1234, number_i);
 
@@ -174,7 +175,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   double number_d;
   EXPECT_TRUE(value->GetAsDouble(&number_d));
   EXPECT_EQ(12.34, number_d);
@@ -187,7 +188,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsDouble(&number_d));
   EXPECT_EQ(42000, number_d);
 
@@ -199,7 +200,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsDouble(&number_d));
   EXPECT_EQ(3.14159, number_d);
 
@@ -211,7 +212,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
 
   TestLastThree(parser.get());
 
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsDouble(&number_d));
   EXPECT_EQ(420, number_d);
 }
@@ -359,8 +360,8 @@ TEST_F(JSONParserTest, ReplaceInvalidCharacters) {
   const std::string quoted_bogus_char = "\"" + bogus_char + "\"";
   std::unique_ptr<JSONParser> parser(
       NewTestParser(quoted_bogus_char, JSON_REPLACE_INVALID_CHARACTERS));
-  std::unique_ptr<Value> value(parser->ConsumeString());
-  ASSERT_TRUE(value.get());
+  Optional<Value> value(parser->ConsumeString());
+  ASSERT_TRUE(value);
   std::string str;
   EXPECT_TRUE(value->GetAsString(&str));
   EXPECT_EQ(kUnicodeReplacementString, str);
@@ -370,8 +371,8 @@ TEST_F(JSONParserTest, ReplaceInvalidUTF16EscapeSequence) {
   const std::string invalid = "\"\\ufffe\"";
   std::unique_ptr<JSONParser> parser(
       NewTestParser(invalid, JSON_REPLACE_INVALID_CHARACTERS));
-  std::unique_ptr<Value> value(parser->ConsumeString());
-  ASSERT_TRUE(value.get());
+  Optional<Value> value(parser->ConsumeString());
+  ASSERT_TRUE(value);
   std::string str;
   EXPECT_TRUE(value->GetAsString(&str));
   EXPECT_EQ(kUnicodeReplacementString, str);

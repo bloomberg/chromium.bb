@@ -6,10 +6,10 @@
 
 #include <cmath>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -72,7 +72,7 @@ JSONParser::JSONParser(int options)
 
 JSONParser::~JSONParser() = default;
 
-std::unique_ptr<Value> JSONParser::Parse(StringPiece input) {
+Optional<Value> JSONParser::Parse(StringPiece input) {
   start_pos_ = input.data();
   pos_ = start_pos_;
   end_pos_ = start_pos_ + input.length();
@@ -95,15 +95,15 @@ std::unique_ptr<Value> JSONParser::Parse(StringPiece input) {
   }
 
   // Parse the first and any nested tokens.
-  std::unique_ptr<Value> root(ParseNextToken());
+  Optional<Value> root(ParseNextToken());
   if (!root)
-    return nullptr;
+    return nullopt;
 
   // Make sure the input stream is at an end.
   if (GetNextToken() != T_END_OF_INPUT) {
     if (!CanConsume(1) || (NextChar() && GetNextToken() != T_END_OF_INPUT)) {
       ReportError(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, 1);
-      return nullptr;
+      return nullopt;
     }
   }
 
@@ -302,11 +302,11 @@ bool JSONParser::EatComment() {
   return false;
 }
 
-std::unique_ptr<Value> JSONParser::ParseNextToken() {
+Optional<Value> JSONParser::ParseNextToken() {
   return ParseToken(GetNextToken());
 }
 
-std::unique_ptr<Value> JSONParser::ParseToken(Token token) {
+Optional<Value> JSONParser::ParseToken(Token token) {
   switch (token) {
     case T_OBJECT_BEGIN:
       return ConsumeDictionary();
@@ -322,20 +322,20 @@ std::unique_ptr<Value> JSONParser::ParseToken(Token token) {
       return ConsumeLiteral();
     default:
       ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
-      return nullptr;
+      return nullopt;
   }
 }
 
-std::unique_ptr<Value> JSONParser::ConsumeDictionary() {
+Optional<Value> JSONParser::ConsumeDictionary() {
   if (*pos_ != '{') {
     ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
-    return nullptr;
+    return nullopt;
   }
 
   StackMarker depth_check(&stack_depth_);
   if (depth_check.IsTooDeep()) {
     ReportError(JSONReader::JSON_TOO_MUCH_NESTING, 1);
-    return nullptr;
+    return nullopt;
   }
 
   std::vector<Value::DictStorage::value_type> dict_storage;
@@ -345,13 +345,13 @@ std::unique_ptr<Value> JSONParser::ConsumeDictionary() {
   while (token != T_OBJECT_END) {
     if (token != T_STRING) {
       ReportError(JSONReader::JSON_UNQUOTED_DICTIONARY_KEY, 1);
-      return nullptr;
+      return nullopt;
     }
 
     // First consume the key.
     StringBuilder key;
     if (!ConsumeStringRaw(&key)) {
-      return nullptr;
+      return nullopt;
     }
 
     // Read the separator.
@@ -359,18 +359,19 @@ std::unique_ptr<Value> JSONParser::ConsumeDictionary() {
     token = GetNextToken();
     if (token != T_OBJECT_PAIR_SEPARATOR) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-      return nullptr;
+      return nullopt;
     }
 
     // The next token is the value. Ownership transfers to |dict|.
     NextChar();
-    std::unique_ptr<Value> value = ParseNextToken();
+    Optional<Value> value = ParseNextToken();
     if (!value) {
       // ReportError from deeper level.
-      return nullptr;
+      return nullopt;
     }
 
-    dict_storage.emplace_back(key.DestructiveAsString(), std::move(value));
+    dict_storage.emplace_back(key.DestructiveAsString(),
+                              std::make_unique<Value>(std::move(*value)));
 
     NextChar();
     token = GetNextToken();
@@ -379,42 +380,41 @@ std::unique_ptr<Value> JSONParser::ConsumeDictionary() {
       token = GetNextToken();
       if (token == T_OBJECT_END && !(options_ & JSON_ALLOW_TRAILING_COMMAS)) {
         ReportError(JSONReader::JSON_TRAILING_COMMA, 1);
-        return nullptr;
+        return nullopt;
       }
     } else if (token != T_OBJECT_END) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
-      return nullptr;
+      return nullopt;
     }
   }
 
-  return std::make_unique<Value>(
-      Value::DictStorage(std::move(dict_storage), KEEP_LAST_OF_DUPES));
+  return Value(Value::DictStorage(std::move(dict_storage), KEEP_LAST_OF_DUPES));
 }
 
-std::unique_ptr<Value> JSONParser::ConsumeList() {
+Optional<Value> JSONParser::ConsumeList() {
   if (*pos_ != '[') {
     ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
-    return nullptr;
+    return nullopt;
   }
 
   StackMarker depth_check(&stack_depth_);
   if (depth_check.IsTooDeep()) {
     ReportError(JSONReader::JSON_TOO_MUCH_NESTING, 1);
-    return nullptr;
+    return nullopt;
   }
 
-  std::unique_ptr<ListValue> list(new ListValue);
+  Value::ListStorage list_storage;
 
   NextChar();
   Token token = GetNextToken();
   while (token != T_ARRAY_END) {
-    std::unique_ptr<Value> item = ParseToken(token);
+    Optional<Value> item = ParseToken(token);
     if (!item) {
       // ReportError from deeper level.
-      return nullptr;
+      return nullopt;
     }
 
-    list->Append(std::move(item));
+    list_storage.push_back(std::move(*item));
 
     NextChar();
     token = GetNextToken();
@@ -423,23 +423,23 @@ std::unique_ptr<Value> JSONParser::ConsumeList() {
       token = GetNextToken();
       if (token == T_ARRAY_END && !(options_ & JSON_ALLOW_TRAILING_COMMAS)) {
         ReportError(JSONReader::JSON_TRAILING_COMMA, 1);
-        return nullptr;
+        return nullopt;
       }
     } else if (token != T_ARRAY_END) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-      return nullptr;
+      return nullopt;
     }
   }
 
-  return std::move(list);
+  return Value(std::move(list_storage));
 }
 
-std::unique_ptr<Value> JSONParser::ConsumeString() {
+Optional<Value> JSONParser::ConsumeString() {
   StringBuilder string;
   if (!ConsumeStringRaw(&string))
-    return nullptr;
+    return nullopt;
 
-  return std::make_unique<Value>(string.DestructiveAsString());
+  return Value(string.DestructiveAsString());
 }
 
 bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
@@ -690,7 +690,7 @@ void JSONParser::DecodeUTF8(const int32_t& point, StringBuilder* dest) {
   }
 }
 
-std::unique_ptr<Value> JSONParser::ConsumeNumber() {
+Optional<Value> JSONParser::ConsumeNumber() {
   const char* num_start = pos_;
   const int start_index = index_;
   int end_index = start_index;
@@ -700,7 +700,7 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
 
   if (!ReadInt(false)) {
     ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-    return nullptr;
+    return nullopt;
   }
   end_index = index_;
 
@@ -709,7 +709,7 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
     NextChar();
     if (!ReadInt(true)) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-      return nullptr;
+      return nullopt;
     }
     end_index = index_;
   }
@@ -719,14 +719,14 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
     NextChar();
     if (!CanConsume(1)) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-      return nullptr;
+      return nullopt;
     }
     if (*pos_ == '-' || *pos_ == '+') {
       NextChar();
     }
     if (!ReadInt(true)) {
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-      return nullptr;
+      return nullopt;
     }
     end_index = index_;
   }
@@ -746,7 +746,7 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
       break;
     default:
       ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-      return nullptr;
+      return nullopt;
   }
 
   pos_ = exit_pos;
@@ -756,15 +756,15 @@ std::unique_ptr<Value> JSONParser::ConsumeNumber() {
 
   int num_int;
   if (StringToInt(num_string, &num_int))
-    return std::make_unique<Value>(num_int);
+    return Value(num_int);
 
   double num_double;
   if (StringToDouble(num_string.as_string(), &num_double) &&
       std::isfinite(num_double)) {
-    return std::make_unique<Value>(num_double);
+    return Value(num_double);
   }
 
-  return nullptr;
+  return nullopt;
 }
 
 bool JSONParser::ReadInt(bool allow_leading_zeros) {
@@ -791,7 +791,7 @@ bool JSONParser::ReadInt(bool allow_leading_zeros) {
   return true;
 }
 
-std::unique_ptr<Value> JSONParser::ConsumeLiteral() {
+Optional<Value> JSONParser::ConsumeLiteral() {
   switch (*pos_) {
     case 't': {
       const char kTrueLiteral[] = "true";
@@ -799,10 +799,10 @@ std::unique_ptr<Value> JSONParser::ConsumeLiteral() {
       if (!CanConsume(kTrueLen) ||
           !StringsAreEqual(pos_, kTrueLiteral, kTrueLen)) {
         ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-        return nullptr;
+        return nullopt;
       }
       NextNChars(kTrueLen - 1);
-      return std::make_unique<Value>(true);
+      return Value(true);
     }
     case 'f': {
       const char kFalseLiteral[] = "false";
@@ -810,10 +810,10 @@ std::unique_ptr<Value> JSONParser::ConsumeLiteral() {
       if (!CanConsume(kFalseLen) ||
           !StringsAreEqual(pos_, kFalseLiteral, kFalseLen)) {
         ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-        return nullptr;
+        return nullopt;
       }
       NextNChars(kFalseLen - 1);
-      return std::make_unique<Value>(false);
+      return Value(false);
     }
     case 'n': {
       const char kNullLiteral[] = "null";
@@ -821,14 +821,14 @@ std::unique_ptr<Value> JSONParser::ConsumeLiteral() {
       if (!CanConsume(kNullLen) ||
           !StringsAreEqual(pos_, kNullLiteral, kNullLen)) {
         ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-        return nullptr;
+        return nullopt;
       }
       NextNChars(kNullLen - 1);
-      return std::make_unique<Value>();
+      return Value(Value::Type::NONE);
     }
     default:
       ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
-      return nullptr;
+      return nullopt;
   }
 }
 
