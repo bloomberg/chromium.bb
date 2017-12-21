@@ -496,6 +496,9 @@ public class EditorDialog
      * @param editorModel The description of the editor user interface to display.
      */
     public void show(EditorModel editorModel) {
+        // If an asynchronous task calls show, while the activity is already finishing, return.
+        if (((Activity) mContext).isFinishing()) return;
+
         setOnShowListener(this);
         setOnDismissListener(this);
         mEditorModel = editorModel;
@@ -520,7 +523,7 @@ public class EditorDialog
 
     @Override
     public void onShow(DialogInterface dialog) {
-        if (mDialogInOutAnimator != null) return;
+        if (mDialogInOutAnimator != null && mIsDismissed) return;
 
         // Hide keyboard and disable EditText views for animation efficiency.
         if (getCurrentFocus() != null) UiUtils.hideKeyboard(getCurrentFocus());
