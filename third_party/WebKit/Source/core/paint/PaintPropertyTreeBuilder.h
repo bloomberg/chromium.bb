@@ -48,6 +48,12 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // be updated whenever |transform| is; flattening only needs to happen
     // to immediate children.
     bool should_flatten_inherited_transform = false;
+
+    // True if making filter a containing block for all descendants would
+    // change this context to a different one. This is used only for
+    // use-counting.
+    bool containing_block_changed_under_filter = false;
+
     // Rendering context for 3D sorting. See
     // TransformPaintPropertyNode::renderingContextId.
     unsigned rendering_context_id = 0;
