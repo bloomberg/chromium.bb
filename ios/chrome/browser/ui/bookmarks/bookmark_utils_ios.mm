@@ -23,7 +23,6 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_cells.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_position_cache.h"
 #include "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -64,8 +63,8 @@ const CGFloat menuMargin = 16;
 const CGFloat titleMargin = 73;
 const CGFloat titleToIconDistance = 33;
 const CGFloat menuAnimationDuration = 0.2;
+// TODO(crbug.com/753599): Remove kPositionCacheKey when cleanup old bookmarks.
 NSString* const kPositionCacheKey = @"BookmarksStarsPositionCacheKey";
-NSString* const kUIPositionCacheKey = @"BookmarksUIPositionCacheKey";
 NSString* const kBookmarksSnackbarCategory = @"BookmarksSnackbarCategory";
 
 const BookmarkNode* FindFolderById(bookmarks::BookmarkModel* model,
@@ -657,6 +656,8 @@ std::vector<NodeVector::size_type> MissingNodesIndices(
 
 #pragma mark - Cache position in collection view.
 
+// TODO(crbug.com/753599): This function is used in old bookmarks only.  Remove
+// it when cleanup old bookmarks.
 void CachePosition(CGFloat position, BookmarkMenuItem* item) {
   BookmarkPositionCache* cache = nil;
   switch (item.type) {
@@ -675,34 +676,6 @@ void CachePosition(CGFloat position, BookmarkMenuItem* item) {
   NSData* data = [NSKeyedArchiver archivedDataWithRootObject:cache];
   [[NSUserDefaults standardUserDefaults] setObject:data
                                             forKey:kPositionCacheKey];
-}
-
-void CacheBookmarkUIPosition(BookmarkPathCache* cache) {
-  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:cache];
-  [[NSUserDefaults standardUserDefaults] setObject:data
-                                            forKey:kUIPositionCacheKey];
-}
-
-BookmarkPathCache* GetBookmarkUIPositionCache(bookmarks::BookmarkModel* model) {
-  NSData* data =
-      [[NSUserDefaults standardUserDefaults] objectForKey:kUIPositionCacheKey];
-  if (!data || ![data isKindOfClass:[NSData class]])
-    return nil;
-  BookmarkPathCache* cache = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-  if (!cache)
-    return nil;
-
-  // If the cache was at root node, consider it as nothing was cached.
-  if (cache.folderId == model->root_node()->id())
-    return nil;
-
-  // Create bookmark Path.
-  const BookmarkNode* bookmark = FindFolderById(model, cache.folderId);
-  // The bookmark node is gone from model, maybe deleted remotely.
-  if (!bookmark)
-    return nil;
-
-  return cache;
 }
 
 NSArray* CreateBookmarkPath(bookmarks::BookmarkModel* model, int64_t folderId) {
@@ -725,6 +698,8 @@ NSArray* CreateBookmarkPath(bookmarks::BookmarkModel* model, int64_t folderId) {
   return [[bookmarkPath reverseObjectEnumerator] allObjects];
 }
 
+// TODO(crbug.com/753599): This function is used in old bookmarks only.  Remove
+// it when cleanup old bookmarks.
 BOOL GetPositionCache(bookmarks::BookmarkModel* model,
                       BookmarkMenuItem** item,
                       CGFloat* position) {
@@ -764,12 +739,10 @@ BOOL GetPositionCache(bookmarks::BookmarkModel* model,
   return YES;
 }
 
+// TODO(crbug.com/753599): This function is used in old bookmarks only.  Remove
+// it when cleanup old bookmarks.
 void ClearPositionCache() {
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:kPositionCacheKey];
 }
 
-void ClearBookmarkUIPositionCache() {
-  [[NSUserDefaults standardUserDefaults]
-      removeObjectForKey:kUIPositionCacheKey];
-}
 }  // namespace bookmark_utils_ios

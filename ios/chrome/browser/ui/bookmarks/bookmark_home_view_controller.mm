@@ -254,10 +254,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     // Cache position for BookmarkTableView in new UI.
-    BookmarkPathCache* cache = [BookmarkPathCache
-        cacheForBookmarkFolder:_rootNode->id()
-                      position:self.bookmarksTableView.contentPosition];
-    bookmark_utils_ios::CacheBookmarkUIPosition(cache);
+    [BookmarkPathCache
+        cacheBookmarkUIPositionWithPrefService:self.browserState->GetPrefs()
+                                      folderId:_rootNode->id()
+                                scrollPosition:(double)self.bookmarksTableView
+                                                   .contentPosition];
     return;
   }
 }
@@ -912,11 +913,18 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (![self isViewLoaded])
     return;
 
+  int64_t unusedFolderId;
+  double unusedScrollPosition;
   // Bookmark Model is loaded after presenting Bookmarks,  we need to check
   // again here if restoring of cache position is needed.  It is to prevent
   // crbug.com/765503.
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration) &&
-      bookmark_utils_ios::GetBookmarkUIPositionCache(_bookmarks)) {
+      [BookmarkPathCache
+          getBookmarkUIPositionCacheWithPrefService:self.browserState
+                                                        ->GetPrefs()
+                                              model:self.bookmarks
+                                           folderId:&unusedFolderId
+                                     scrollPosition:&unusedScrollPosition]) {
     self.isReconstructingFromCache = YES;
   }
 
@@ -1043,17 +1051,25 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)setupUIStackCacheIfApplicable {
   self.isReconstructingFromCache = NO;
-  BookmarkPathCache* pathCache =
-      bookmark_utils_ios::GetBookmarkUIPositionCache(self.bookmarks);
-  // If pathCache is nil or the cached folder is rootnode, then return.
-  if (!pathCache || pathCache.folderId == _rootNode->id()) {
+
+  int64_t folderId;
+  double scrollPosition;
+  // If folderId is invalid or rootNode reached the cached folderId, stop
+  // stacking and return.
+  if (![BookmarkPathCache
+          getBookmarkUIPositionCacheWithPrefService:self.browserState
+                                                        ->GetPrefs()
+                                              model:self.bookmarks
+                                           folderId:&folderId
+                                     scrollPosition:&scrollPosition] ||
+      folderId == _rootNode->id()) {
     return;
   }
 
   // Otherwise drill down until we recreate the UI stack for the cached bookmark
   // path.
   NSMutableArray* mutablePath = [bookmark_utils_ios::CreateBookmarkPath(
-      self.bookmarks, pathCache.folderId) mutableCopy];
+      self.bookmarks, folderId) mutableCopy];
   if (!mutablePath) {
     return;
   }
@@ -1075,9 +1091,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   BookmarkHomeViewController* controller =
       [self createControllerWithRootFolder:node];
   // Only scroll to the last viewing position for the leaf node.
-  if (mutablePath.count == 1 && pathCache.position) {
+  if (mutablePath.count == 1 && scrollPosition) {
     [controller
-        setCachedContentPosition:[NSNumber numberWithFloat:pathCache.position]];
+        setCachedContentPosition:[NSNumber numberWithDouble:scrollPosition]];
   }
   controller.isReconstructingFromCache = YES;
   [self.navigationController pushViewController:controller animated:NO];

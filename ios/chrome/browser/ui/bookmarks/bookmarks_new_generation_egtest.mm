@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -143,7 +144,10 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
              @"Not all bookmarks were removed.");
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
-  bookmark_utils_ios::ClearBookmarkUIPositionCache();
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  [BookmarkPathCache
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - Tests

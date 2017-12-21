@@ -49,6 +49,8 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -118,6 +120,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterVoiceSearchBrowserStatePrefs(registry);
 
   [BookmarkMediator registerBrowserStatePrefs:registry];
+  [BookmarkPathCache registerBrowserStatePrefs:registry];
   [SigninPromoViewMediator registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
 
