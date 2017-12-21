@@ -83,7 +83,7 @@ _VULCANIZE_REDIRECT_ARGS = list(itertools.chain.from_iterable(map(
 def _undo_mapping(mappings, url):
   for (redirect_url, file_path) in mappings:
     if url.startswith(redirect_url):
-      return url.replace(redirect_url, file_path + os.sep)
+      return url.replace(redirect_url, file_path + os.sep, 1)
   # TODO(dbeam): can we make this stricter?
   return url
 

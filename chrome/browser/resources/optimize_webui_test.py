@@ -23,10 +23,15 @@ class OptimizeWebUiTest(unittest.TestCase):
     for tmp_dir in self._tmp_dirs:
       shutil.rmtree(tmp_dir)
 
-  def _write_file_to_src_dir(self, file_name, file_contents):
+  def _write_file_to_src_dir(self, file_path, file_contents):
     if not self._tmp_src_dir:
       self._tmp_src_dir = self._create_tmp_dir()
-    with open(os.path.join(self._tmp_src_dir, file_name), 'w') as tmp_file:
+    file_path_normalized = os.path.normpath(os.path.join(self._tmp_src_dir,
+                                                         file_path))
+    file_dir = os.path.dirname(file_path_normalized)
+    if not os.path.exists(file_dir):
+      os.makedirs(file_dir)
+    with open(file_path_normalized, 'w') as tmp_file:
       tmp_file.write(file_contents)
 
   def _create_tmp_dir(self):
@@ -57,8 +62,13 @@ class OptimizeWebUiTest(unittest.TestCase):
   def testSimpleOptimize(self):
     self._write_file_to_src_dir('element.html', '<div>got here!</div>')
     self._write_file_to_src_dir('element.js', "alert('yay');")
+    self._write_file_to_src_dir('element_in_dir/element_in_dir.html',
+                                '<script src="element_in_dir.js">')
+    self._write_file_to_src_dir('element_in_dir/element_in_dir.js',
+                                "alert('hello from element_in_dir');")
     self._write_file_to_src_dir('ui.html', '''
 <link rel="import" href="element.html">
+<link rel="import" href="element_in_dir/element_in_dir.html">
 <script src="element.js"></script>
 ''')
 
@@ -68,17 +78,24 @@ class OptimizeWebUiTest(unittest.TestCase):
                        js_out_file='fast.js')
 
     fast_html = self._read_out_file('fast.html')
-    self.assertFalse('element.html' in fast_html)
-    self.assertFalse('element.js' in fast_html)
-    self.assertTrue('got here!' in fast_html)
-    self.assertTrue('<script src="fast.js"></script>' in fast_html)
+    self.assertNotIn('element.html', fast_html)
+    self.assertNotIn('element.js', fast_html)
+    self.assertNotIn('element_in_dir.html', fast_html)
+    self.assertNotIn('element_in_dir.js', fast_html)
+    self.assertIn('got here!', fast_html)
+    self.assertIn('<script src="fast.js"></script>', fast_html)
 
     fast_js = self._read_out_file('fast.js')
-    self.assertTrue('yay' in fast_js)
+    self.assertIn('yay', fast_js)
+    self.assertIn('hello from element_in_dir', fast_js)
 
     depfile_d = self._read_out_file('depfile.d')
-    self.assertTrue('element.html' in depfile_d)
-    self.assertTrue('element.js' in depfile_d)
+    self.assertIn('element.html', depfile_d)
+    self.assertIn('element.js', depfile_d)
+    self.assertIn(os.path.normpath('element_in_dir/element_in_dir.html'),
+                  depfile_d)
+    self.assertIn(os.path.normpath('element_in_dir/element_in_dir.js'),
+                  depfile_d)
 
 
 if __name__ == '__main__':
