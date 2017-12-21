@@ -94,6 +94,8 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey.storageidtest";
   static const char kExternalClearKeyDifferentGuidTestKeySystem[] =
       "org.chromium.externalclearkey.differentguid";
+  static const char kExternalClearKeyCdmProxyTestKeySystem[] =
+      "org.chromium.externalclearkey.cdmproxytest";
 
   std::vector<WebPluginMimeType::Param> additional_params;
   if (!IsPepperCdmAvailable(cdm::kExternalClearKeyPepperType,
@@ -145,6 +147,10 @@ static void AddExternalClearKey(
   // A key system that is registered with a different CDM GUID.
   concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
       kExternalClearKeyDifferentGuidTestKeySystem));
+
+  // A key system that triggers CDM Proxy test in ClearKeyCdm.
+  concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
+      kExternalClearKeyCdmProxyTestKeySystem));
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)

@@ -26,6 +26,7 @@
 #include "media/cdm/ppapi/cdm_file_io_test.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy_impl.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_proxy_test.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_video_decoder.h"
 #include "media/media_features.h"
 
@@ -72,6 +73,8 @@ const char kExternalClearKeyStorageIdTestKeySystem[] =
     "org.chromium.externalclearkey.storageidtest";
 const char kExternalClearKeyDifferentGuidTestKeySystem[] =
     "org.chromium.externalclearkey.differentguid";
+const char kExternalClearKeyCdmProxyTestKeySystem[] =
+    "org.chromium.externalclearkey.cdmproxytest";
 
 const int64_t kSecondsPerMinute = 60;
 const int64_t kMsPerSecond = 1000;
@@ -261,7 +264,8 @@ void* CreateCdmInstance(int cdm_interface_version,
       key_system_string != kExternalClearKeyCrashKeySystem &&
       key_system_string != kExternalClearKeyVerifyCdmHostTestKeySystem &&
       key_system_string != kExternalClearKeyStorageIdTestKeySystem &&
-      key_system_string != kExternalClearKeyDifferentGuidTestKeySystem) {
+      key_system_string != kExternalClearKeyDifferentGuidTestKeySystem &&
+      key_system_string != kExternalClearKeyCdmProxyTestKeySystem) {
     DVLOG(1) << "Unsupported key system:" << key_system_string;
     return nullptr;
   }
@@ -432,6 +436,8 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
     VerifyCdmHostTest();
   } else if (key_system_ == kExternalClearKeyStorageIdTestKeySystem) {
     StartStorageIdTest();
+  } else if (key_system_ == kExternalClearKeyCdmProxyTestKeySystem) {
+    StartCdmProxyTest();
   }
 }
 
@@ -957,6 +963,23 @@ void ClearKeyCdm::StartStorageIdTest() {
 
   // Request the latest available version.
   cdm_host_proxy_->RequestStorageId(0);
+}
+
+void ClearKeyCdm::StartCdmProxyTest() {
+  DVLOG(1) << __func__;
+  DCHECK(!cdm_proxy_test_);
+
+  cdm_proxy_test_.reset(new CdmProxyTest(cdm_host_proxy_.get()));
+  cdm_proxy_test_->Run(base::BindOnce(&ClearKeyCdm::OnCdmProxyTestComplete,
+                                      base::Unretained(this)));
+}
+
+void ClearKeyCdm::OnCdmProxyTestComplete(bool success) {
+  DVLOG(1) << __func__;
+  DCHECK(cdm_proxy_test_);
+
+  cdm_proxy_test_.reset();
+  OnUnitTestComplete(success);
 }
 
 }  // namespace media
