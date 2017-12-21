@@ -42,6 +42,10 @@ class NetTestSuite : public base::TestSuite {
   static void SetScopedTaskEnvironment(
       base::test::ScopedTaskEnvironment::MainThreadType type);
 
+  // Sets the global ScopedTaskEnvironment to a new environment of the default
+  // type used by NetTestSuite.
+  static void ResetScopedTaskEnvironment();
+
  protected:
   // Called from within Initialize(), but separate so that derived classes
   // can initialize the NetTestSuite instance only and not
