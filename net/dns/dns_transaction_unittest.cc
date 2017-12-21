@@ -462,8 +462,7 @@ class DnsTransactionTest : public testing::Test {
     for (size_t i = 0; i < socket_data_.size(); ++i) {
       EXPECT_TRUE(socket_data_[i]->GetProvider()->AllWriteDataConsumed()) << i;
     }
-    NetTestSuite::SetScopedTaskEnvironment(
-        base::test::ScopedTaskEnvironment::MainThreadType::IO);
+    NetTestSuite::ResetScopedTaskEnvironment();
   }
 
  protected:
