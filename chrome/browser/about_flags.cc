@@ -23,7 +23,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/switches.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -2783,10 +2782,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQuickUnlockFingerprintDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kQuickUnlockFingerprint)},
 #endif  // OS_CHROMEOS
-    {"browser-task-scheduler", flag_descriptions::kBrowserTaskSchedulerName,
-     flag_descriptions::kBrowserTaskSchedulerDescription, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableBrowserTaskScheduler,
-                               switches::kDisableBrowserTaskScheduler)},
 #if defined(OS_ANDROID)
     {"no-credit-card-abort", flag_descriptions::kNoCreditCardAbort,
      flag_descriptions::kNoCreditCardAbortDescription, kOsAndroid,
