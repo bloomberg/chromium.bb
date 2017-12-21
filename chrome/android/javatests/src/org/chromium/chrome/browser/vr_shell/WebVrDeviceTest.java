@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIM
 import android.os.Build;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction;
+import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -71,6 +73,27 @@ public class WebVrDeviceTest {
                 VrTestFramework.getHtmlTestFile("test_device_capabilities_match_expectations"),
                 PAGE_LOAD_TIMEOUT_S);
         VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('" + Build.DEVICE + "')",
+                mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests that the magic-window-only GVR-less implementation causes a VRDisplay to be present
+     * when GVR isn't present and has expected capabilities.
+     */
+    @Test
+    @MediumTest
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    public void testGvrlessMagicWindowCapabilities() throws InterruptedException {
+        // Make Chrome think that VrCore is not installed
+        VrShellDelegateUtils.setVrCoreCompatibility(VrCoreCompatibility.VR_NOT_AVAILABLE);
+
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("test_device_capabilities_match_expectations"),
+                PAGE_LOAD_TIMEOUT_S);
+        Assert.assertTrue(
+                VrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
+        VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('VR Orientation Device')",
                 mVrTestFramework.getFirstTabWebContents());
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
