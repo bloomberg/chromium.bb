@@ -44,6 +44,7 @@
 #include "google_apis/google_api_keys.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_sink.h"
 #include "ui/gfx/geometry/size.h"
@@ -187,6 +188,8 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
   AddCallback("setOobeBootstrappingSlave",
               &CoreOobeHandler::HandleSetOobeBootstrappingSlave);
+  AddRawCallback("getPrimaryDisplayNameForTesting",
+                 &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -546,6 +549,23 @@ void CoreOobeHandler::HandleSetOobeBootstrappingSlave() {
   g_browser_process->local_state()->SetBoolean(prefs::kIsBootstrappingSlave,
                                                true);
   chrome::AttemptRestart();
+}
+
+void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  const auto primary_display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  const display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  const std::string display_name =
+      display_manager->GetDisplayNameForId(primary_display_id);
+
+  AllowJavascript();
+  ResolveJavascriptCallback(*callback_id, base::Value(display_name));
 }
 
 void CoreOobeHandler::InitDemoModeDetection() {

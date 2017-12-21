@@ -444,6 +444,19 @@ cr.define('cr.ui', function() {
     Oobe.getInstance().setClientAreaSize(width, height);
   };
 
+  /**
+   * Get the primary display's name.
+   *
+   * Same as the displayInfo.name parameter returned by
+   * chrome.system.display.getInfo(), but unlike chrome.system it's available
+   * during OOBE.
+   *
+   * @return {string} The name of the primary display.
+   */
+  Oobe.getPrimaryDisplayNameForTesting = function() {
+    return cr.sendWithPromise('getPrimaryDisplayNameForTesting');
+  };
+
   // Export
   return {Oobe: Oobe};
 });

@@ -378,7 +378,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   const ManagedDisplayInfo& GetDisplayInfo(int64_t display_id) const;
 
   // Returns the human-readable name for the display |id|.
-  std::string GetDisplayNameForId(int64_t id);
+  std::string GetDisplayNameForId(int64_t id) const;
 
   // Returns the display id that is capable of UI scaling. On device, this
   // returns internal display's ID if its device scale factor is 2, or invalid
