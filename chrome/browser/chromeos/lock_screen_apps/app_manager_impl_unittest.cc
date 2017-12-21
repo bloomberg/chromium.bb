@@ -38,6 +38,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_event_router.h"
 #include "extensions/common/api/app_runtime.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -49,6 +50,8 @@ using extensions::ListBuilder;
 namespace lock_screen_apps {
 
 namespace {
+
+constexpr int kMaxLockScreenAppReloadsCount = 3;
 
 std::unique_ptr<arc::ArcSession> ArcSessionFactory() {
   ADD_FAILURE() << "Attempt to create arc session.";
@@ -371,6 +374,13 @@ class LockScreenAppManagerImplTest
     app_manager()->Initialize(profile, lock_screen_profile_creator_.get());
     if (create_lock_screen_profile)
       CreateLockScreenProfile();
+    app_manager()->Start(
+        base::Bind(&LockScreenAppManagerImplTest::OnNoteTakingChanged,
+                   base::Unretained(this)));
+  }
+
+  void RestartLockScreenAppManager() {
+    app_manager()->Stop();
     app_manager()->Start(
         base::Bind(&LockScreenAppManagerImplTest::OnNoteTakingChanged,
                    base::Unretained(this)));
@@ -1264,6 +1274,259 @@ TEST_P(LockScreenAppManagerImplTest,
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+}
+
+TEST_P(LockScreenAppManagerImplTest, ReloadLockScreenAppAfterAppCrash) {
+  set_needs_lock_screen_event_router();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+  ResetNoteTakingChangedCount();
+
+  // Simulate lock screen note app crash.
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->TerminateExtension(note_taking_app->id());
+
+  // Even though the app was terminated, the observers should not see any state
+  // change - the app should be reloaded when launch is requested next time.
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_TRUE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_EQ(note_taking_app->id(), app_manager()->GetNoteTakingAppId());
+
+  // App launch should be successful - this action should reload the
+  // terminated app.
+  EXPECT_TRUE(app_manager()->LaunchNoteTaking());
+
+  // Verify the lock screen note app is enabled.
+  const extensions::Extension* lock_app =
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
+          ->GetExtensionById(note_taking_app->id(),
+                             extensions::ExtensionRegistry::ENABLED);
+  ASSERT_TRUE(lock_app);
+  EXPECT_EQ("1.0", lock_app->VersionString());
+
+  // Verify the lock screen app was sent launch event.
+  ASSERT_EQ(1u, event_observer()->launched_apps().size());
+  EXPECT_EQ(lock_app->id(), event_observer()->launched_apps()[0]);
+  event_observer()->ClearLaunchedApps();
+}
+
+TEST_P(LockScreenAppManagerImplTest, AppReloadFailure) {
+  set_needs_lock_screen_event_router();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+  ResetNoteTakingChangedCount();
+
+  // Simulate lock screen note app crash.
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->TerminateExtension(note_taking_app->id());
+
+  // Even though the app was terminated, the observers should not see any state
+  // change - the app should be reloaded when launch is requested next time.
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_TRUE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_EQ(note_taking_app->id(), app_manager()->GetNoteTakingAppId());
+
+  // Disable the note taking app in the lock screen app profile - this should
+  // prevent app reload.
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->DisableExtension(note_taking_app->id(),
+                         extensions::disable_reason::DISABLE_USER_ACTION);
+
+  // App launch should fail - given that the app got disabled, it should not
+  // be reloadable anymore.
+  EXPECT_FALSE(app_manager()->LaunchNoteTaking());
+
+  // Make sure that note taking is not reported as available any longer.
+  EXPECT_EQ(1, note_taking_changed_count());
+  ResetNoteTakingChangedCount();
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+}
+
+TEST_P(LockScreenAppManagerImplTest, LockScreenAppGetsUninstalled) {
+  set_needs_lock_screen_event_router();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+  ResetNoteTakingChangedCount();
+
+  // Disable the note taking app in the lock screen app profile.
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->UninstallExtension(note_taking_app->id(),
+                           extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+
+  // Note taking should be reported to be unavailable if the app was uninstalled
+  // from the lock screen profile.
+  EXPECT_EQ(1, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+}
+
+TEST_P(LockScreenAppManagerImplTest, TerminatedAppGetsUninstalled) {
+  set_needs_lock_screen_event_router();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+  ResetNoteTakingChangedCount();
+
+  // Simulate lock screen note app crash.
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->TerminateExtension(note_taking_app->id());
+
+  // Even though the app was terminated, the observers should not see any state
+  // change - the app should be reloaded when launch is requested next time.
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_EQ(note_taking_app->id(), app_manager()->GetNoteTakingAppId());
+
+  // Disable the note taking app in the lock screen app profile - this should
+  // prevent app reload.
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->UninstallExtension(note_taking_app->id(),
+                           extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+
+  // Note taking should be reported to be unavailable if the app was uninstalled
+  // from the lock screen profile.
+  EXPECT_EQ(1, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+}
+
+TEST_P(LockScreenAppManagerImplTest, DoNotReloadLockScreenAppWhenDisabled) {
+  set_needs_lock_screen_event_router();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+  ResetNoteTakingChangedCount();
+
+  // Disable the lock screen app..
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->DisableExtension(note_taking_app->id(),
+                         extensions::disable_reason::DISABLE_USER_ACTION);
+
+  EXPECT_EQ(1, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+  EXPECT_FALSE(app_manager()->LaunchNoteTaking());
+  EXPECT_FALSE(
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
+          ->GetExtensionById(note_taking_app->id(),
+                             extensions::ExtensionRegistry::EVERYTHING));
+
+  app_manager()->Stop();
+}
+
+TEST_P(LockScreenAppManagerImplTest,
+       RestartingAppManagerAfterLockScreenAppDisabled) {
+  set_needs_lock_screen_event_router();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+  ResetNoteTakingChangedCount();
+
+  // Disable the lock screen app..
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->DisableExtension(note_taking_app->id(),
+                         extensions::disable_reason::DISABLE_USER_ACTION);
+
+  EXPECT_EQ(1, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+
+  // Restarting the app manager should enable lock screen app again.
+  RestartLockScreenAppManager();
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+
+  EXPECT_TRUE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_EQ(note_taking_app->id(), app_manager()->GetNoteTakingAppId());
+  EXPECT_TRUE(app_manager()->LaunchNoteTaking());
+
+  // Verify the lock screen app was sent launch event.
+  ASSERT_EQ(1u, event_observer()->launched_apps().size());
+  EXPECT_EQ(note_taking_app->id(), event_observer()->launched_apps()[0]);
+}
+
+TEST_P(LockScreenAppManagerImplTest, AppNotReloadedAfterRepeatedCrashes) {
+  set_needs_lock_screen_event_router();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+  ResetNoteTakingChangedCount();
+
+  // Simulate lock screen note app crash and launch few times.
+  for (int i = 0; i < kMaxLockScreenAppReloadsCount; ++i) {
+    extensions::ExtensionSystem::Get(LockScreenProfile())
+        ->extension_service()
+        ->TerminateExtension(note_taking_app->id());
+    EXPECT_TRUE(app_manager()->LaunchNoteTaking());
+  }
+
+  // If app is reloaded too many times, lock screen app should eventually
+  // become unavailable.
+  extensions::ExtensionSystem::Get(LockScreenProfile())
+      ->extension_service()
+      ->TerminateExtension(note_taking_app->id());
+
+  EXPECT_EQ(1, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+  EXPECT_FALSE(app_manager()->LaunchNoteTaking());
+  EXPECT_FALSE(extensions::ExtensionRegistry::Get(LockScreenProfile())
+                   ->GetExtensionById(note_taking_app->id(),
+                                      extensions::ExtensionRegistry::ENABLED));
+  event_observer()->ClearLaunchedApps();
+
+  // Restarting the app manager should enable lock screen app again.
+  RestartLockScreenAppManager();
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+
+  EXPECT_TRUE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_EQ(note_taking_app->id(), app_manager()->GetNoteTakingAppId());
+  EXPECT_TRUE(app_manager()->LaunchNoteTaking());
+
+  // Verify the lock screen app was sent launch event.
+  ASSERT_EQ(1u, event_observer()->launched_apps().size());
+  EXPECT_EQ(note_taking_app->id(), event_observer()->launched_apps()[0]);
 }
 
 }  // namespace lock_screen_apps

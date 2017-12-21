@@ -2265,6 +2265,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.LockScreen.NoteTakingApp.AppStatusOnNoteLaunch"
+    enum="LockScreenNoteAppStatusOnLaunch">
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Reported when a user attempts to launch a note taking app on the lock
+    screen. It reports the note taking app state in the lock screen apps profile
+    at the launch attempt time - for example, whether the app was enabled, or
+    whether the app had been terminated and an app reload was attempted.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Apps.LockScreen.NoteTakingApp.AppWindowLifeTime"
     units="ms">
   <owner>tbarzic@chromium.org</owner>
@@ -2328,6 +2339,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.LockScreen.NoteTakingApp.LockScreenAppUnloaded"
+    enum="LockScreenAppUnloadStatus">
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Reported when a note taking app is unloaded from the lock screen apps
+    profile while lock screen note taking is available. Reports the unload
+    reason type, which can be used to deduce whether the app can be reloaded in
+    the profile. The app unload event is not reported if the app is unloaded due
+    to lock screen note taking becoming unavailble (e.g. when the user unlocks
+    the screen).
+  </summary>
+</histogram>
+
 <histogram name="Apps.LockScreen.NoteTakingApp.LockScreenInstallationDuration"
     units="ms">
   <owner>tbarzic@chromium.org</owner>
@@ -2345,6 +2369,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The reason the note taking on lock screen was ended (and lock screen app
     window was closed).
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.NoteTakingApp.ReloadCountOnAppTermination">
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Reported when a note taking app is terminated in the lock screen apps
+    profile. It reports the number of times the app was reloaded in the lock
+    screen apps profile during the current lock screen session (prior to the
+    termination).
   </summary>
 </histogram>
 
