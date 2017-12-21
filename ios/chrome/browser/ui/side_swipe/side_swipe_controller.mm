@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
@@ -335,7 +336,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       // If the toolbar is hidden, move it to visible.
       [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
     }
-    [[model_ currentTab] updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+    SnapshotTabHelper::FromWebState([model_ currentTab].webState)
+        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kSideSwipeWillStartNotification
                       object:nil];
@@ -513,7 +515,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     }
 
     // Ensure that there's an up-to-date snapshot of the current tab.
-    [[model_ currentTab] updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+    SnapshotTabHelper::FromWebState([model_ currentTab].webState)
+        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
     // Hide the infobar after snapshot has been updated (see the previous line)
     // to avoid it obscuring the cards in the side swipe view.
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];

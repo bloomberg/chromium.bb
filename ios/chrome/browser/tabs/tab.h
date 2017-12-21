@@ -190,41 +190,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // TODO(crbug.com/778823): Remove this code.
 - (void)updateFullscreenWithToolbarVisible:(BOOL)visible;
 
-// Returns a snapshot of the current page, backed by disk so it can be purged
-// and reloaded easily. The snapshot may be in memory, saved on disk or not
-// present at all.
-// 1) If the snapshot is in memory |block| will be called synchronously with
-// the existing image.
-// 2) If the snapshot is saven on disk |block| will be called asynchronously
-// once the image is retrieved.
-// 3) If the snapshot is not present at all |block| will be called
-// asynchronously with a new snapshot.
-// It is possible for |block| to not be called at all if there is no way to
-// build a snapshot. |block| will always call back on the original thread.
-- (void)retrieveSnapshot:(void (^)(UIImage*))callback;
-
-// Invalidates the cached snapshot for the webcontroller's current session and
-// forces a more recent snapshot to be generated and stored. Returns the
-// snapshot with or without the overlayed views (e.g. infobar, voice search
-// button, etc.), and either of the visible frame or of the full screen.
-- (UIImage*)updateSnapshotWithOverlay:(BOOL)shouldAddOverlay
-                     visibleFrameOnly:(BOOL)visibleFrameOnly;
-
-// Snaps a snapshot image for the current page including optional infobars.
-// Returns an autoreleased image cropped and scaled appropriately, with or
-// without the overlayed views (e.g. infobar, voice search button, etc.), and
-// either of the visible frame or of the full screen.
-// Returns nil if a snapshot cannot be generated.
-- (UIImage*)generateSnapshotWithOverlay:(BOOL)shouldAddOverlay
-                       visibleFrameOnly:(BOOL)visibleFrameOnly;
-
-// When snapshot coalescing is enabled, mutiple calls to generate a snapshot
-// with the same parameters may be coalesced.
-- (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled;
-
-// Requests deletion of the Tab snapshot.
-- (void)removeSnapshot;
-
 // Called when this tab is shown.
 - (void)wasShown;
 

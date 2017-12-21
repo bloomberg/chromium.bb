@@ -19,11 +19,13 @@ source_set("snapshots") {
     "snapshot_generator_delegate.h",
     "snapshot_overlay.h",
     "snapshot_overlay.mm",
+    "snapshot_tab_helper.h",
     "snapshots_util.h",
     "snapshots_util.mm",
   ]
   deps = [
     "//base",
+    "//components/infobars/core",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//ios/chrome/browser",
@@ -36,35 +38,19 @@ source_set("snapshots") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "lru_cache_unittest.mm",
-    "snapshot_cache_unittest.mm",
-    "snapshots_util_unittest.mm",
-  ]
-  deps = [
-    ":snapshots",
-    "//base",
-    "//ios/chrome/browser/ui",
-    "//ios/web",
-    "//ios/web/public/test",
-    "//testing/gtest",
-  ]
-}
-
 source_set("snapshots_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "snapshot_generator.h",
     "snapshot_generator.mm",
     "snapshot_overlay_provider.h",
+    "snapshot_tab_helper.mm",
   ]
   deps = [
     ":snapshots",
     "//base",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/web",
     "//ios/web/public",
@@ -72,5 +58,42 @@ source_set("snapshots_internal") {
   libs = [
     "UIKit.framework",
     "WebKit.framework",
+  ]
+}
+
+source_set("test_utils") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "fake_snapshot_generator_delegate.h",
+    "fake_snapshot_generator_delegate.mm",
+  ]
+  deps = [
+    ":snapshots",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "lru_cache_unittest.mm",
+    "snapshot_cache_unittest.mm",
+    "snapshot_tab_helper_unittest.mm",
+    "snapshots_util_unittest.mm",
+  ]
+  deps = [
+    ":snapshots",
+    ":snapshots_internal",
+    ":test_utils",
+    "//base",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ui",
+    "//ios/web",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes:fakes",
+    "//testing/gtest",
+    "//ui/base:test_support",
+    "//ui/gfx",
   ]
 }

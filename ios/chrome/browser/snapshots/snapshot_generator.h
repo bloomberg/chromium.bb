@@ -20,7 +20,7 @@ class WebState;
 
 // Designated initializer.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                        delegate:(id<SnapshotGeneratorDelegate>)delegate
+               snapshotSessionId:(NSString*)snapshotSessionId
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -32,12 +32,16 @@ class WebState;
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled;
 
 // Gets a color snapshot for the current page, calling |callback| once it has
-// been retrieved or regenerated.
+// been retrieved or regenerated. If the snapshot cannot be generated, the
+// |callback| will be called with nil.
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback;
 
 // Gets a grey snapshot for the current page, calling |callback| once it has
-// been retrieved or regenerated.
-- (void)retrieveGreySnapshot:(void (^)(UIImage*))callback;
+// been retrieved or regenerated. If |generate| is NO, then the snapshot will
+// not be generated if missing.  If the snapshot cannot be generated, the
+// |callback| will be called with nil.
+- (void)retrieveGreySnapshot:(void (^)(UIImage*))callback
+                    generate:(BOOL)generate;
 
 // Invalidates the cached snapshot for the current page, generates and caches
 // a new snapshot. Returns the snapshot with or without the overlayed views
@@ -52,6 +56,12 @@ class WebState;
 // screen.
 - (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay
                         visibleFrameOnly:(BOOL)visibleFrameOnly;
+
+// Requests deletion of the current page snapshot from disk and memory.
+- (void)removeSnapshot;
+
+// The SnapshotGenerator delegate.
+@property(nonatomic, weak) id<SnapshotGeneratorDelegate> delegate;
 
 @end
 

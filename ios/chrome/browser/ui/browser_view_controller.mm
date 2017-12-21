@@ -101,6 +101,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
@@ -1764,8 +1765,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     } else {
       UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
       tab.view.frame = _contentArea.bounds;
-      pageScreenshot.image =
-          [tab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+      pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
+                                 ->UpdateSnapshot(/*with_overlays=*/true,
+                                                  /*visible_frame_only=*/true);
       newPage = pageScreenshot;
       offset =
           pageScreenshot.frame.size.height - pageScreenshot.image.size.height;
@@ -1797,11 +1799,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           }
         });
   } else {
-    // -updateSnapshotWithOverlay will force a screen redraw, so take the
+    // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
     // snapshot before adding the views needed for the background animation.
     Tab* topTab = [_model currentTab];
-    UIImage* image = [topTab updateSnapshotWithOverlay:YES
-                                      visibleFrameOnly:self.isToolbarOnScreen];
+    UIImage* image =
+        SnapshotTabHelper::FromWebState(topTab.webState)
+            ->UpdateSnapshot(/*with_overlays=*/true,
+                             /*visible_frame_only=*/self.isToolbarOnScreen);
 
     // The size of the |image| above can be wrong if the snapshot fails, grab
     // the correct size here.
@@ -1847,8 +1851,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           // will be captured in the new tab animation, but isn't desired for
           // the stack view snapshots.
           id nativeController = [self nativeControllerForTab:topTab];
-          if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)])
-            [topTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+          if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
+            SnapshotTabHelper::FromWebState(topTab.webState)
+                ->UpdateSnapshot(/*with_overlays=*/true,
+                                 /*visible_frame_only=*/true);
+          }
           startVoiceSearchIfNecessaryBlock();
         });
     // Reset the foreground tab completion block so that it can never be
@@ -2609,6 +2616,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   DCHECK(!prerenderService ||
          !prerenderService->IsWebStatePrerendered(tab.webState));
 
+  SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(tab);
+
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
           PasswordTabHelper::FromWebState(tab.webState)) {
@@ -2676,8 +2685,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
-          PasswordTabHelper::FromWebState(tab.webState))
+          PasswordTabHelper::FromWebState(tab.webState)) {
     passwordTabHelper->SetDispatcher(nil);
+  }
 
   tab.dialogDelegate = nil;
   tab.snapshotOverlayProvider = nil;
@@ -2701,6 +2711,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
               self.browserState)) {
     accountConsistencyService->RemoveWebStateHandler(tab.webState);
   }
+
+  SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(nil);
 }
 
 // Called when a tab is selected in the model. Make any required view changes.
@@ -2982,7 +2994,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   // Requested web state should not be blocked from opening.
   Tab* currentTab = LegacyTabHelper::GetTabForWebState(webState);
-  [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+  SnapshotTabHelper::FromWebState(currentTab.webState)
+      ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
 
   // Tabs open by DOM are always renderer initiated.
   web::NavigationManager::WebLoadParams params(GURL{});
@@ -4212,7 +4225,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     bool canPruneItems =
         [newTab navigationManager]->CanPruneAllButLastCommittedItem();
 
-    if (oldTab && newTab && canPruneItems) {
+    if (canPruneItems) {
       [newTab navigationManager]->CopyStateFromAndPrune(
           [oldTab navigationManager]);
 
@@ -4222,6 +4235,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
       [_model webStateList]->ReplaceWebStateAt([_model indexOfTab:oldTab],
                                                std::move(newWebState));
       _insertedTabWasPrerenderedTab = NO;
+
+      if ([newTab loadFinished]) {
+        // If the page has finished loading, take a snapshot.  If the page is
+        // still loading, do nothing, as the tab helper will automatically take
+        // a snapshot once the load completes.
+        SnapshotTabHelper::FromWebState(newTab.webState)
+            ->UpdateSnapshot(
+                /*with_overlays=*/true, /*visible_frame_only=*/true);
+      }
 
       if (typed_or_generated_transition) {
         LoadTimingTabHelper::FromWebState(newTab.webState)
@@ -4567,7 +4589,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // because the currentTab will change after the switch.
     Tab* currentTab = [_model currentTab];
     if (currentTab) {
-      [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+      SnapshotTabHelper::FromWebState(currentTab.webState)
+          ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
     }
     // Not for this browser state, send it on its way.
     [self.dispatcher switchModesAndOpenNewTab:command];
@@ -4618,7 +4641,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // have enough time to finish appearing before a snapshot is requested.
   Tab* currentTab = [_model currentTab];
   if (currentTab && self.viewVisible) {
-    [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+    SnapshotTabHelper::FromWebState(currentTab.webState)
+        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   }
   [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
                    transition:ui::PAGE_TRANSITION_TYPED];
@@ -4848,7 +4872,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // iPad.
   UIImageView* exitingPage = [self pageOpenCloseAnimationView];
   exitingPage.image =
-      [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+      SnapshotTabHelper::FromWebState(currentTab.webState)
+          ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
 
   // Close the actual tab, and add its image as a subview.
   [_model closeTabAtIndex:tabIndex];
@@ -5476,7 +5501,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)voiceSearchBarDidUpdateButtonState:(id<VoiceSearchBar>)voiceSearchBar {
   DCHECK_EQ(_voiceSearchBar, voiceSearchBar);
-  [self.tabModel.currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+  SnapshotTabHelper::FromWebState(self.tabModel.currentTab.webState)
+      ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
 }
 
 #pragma mark - VoiceSearchPresenter

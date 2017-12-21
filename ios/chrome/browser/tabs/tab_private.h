@@ -39,12 +39,4 @@ class WebStateImpl;
 
 @end
 
-@interface Tab (Private)
-
-// Attaches tab helper-like objects for AttachTabHelpers. Those objects should
-// be converted in real tab helpers and created by AttachTabHelpers.
-- (void)attachTabHelpers;
-
-@end
-
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_PRIVATE_H_

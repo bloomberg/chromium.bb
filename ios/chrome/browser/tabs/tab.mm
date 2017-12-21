@@ -62,8 +62,8 @@
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_generator.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
@@ -139,8 +139,6 @@ NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
 NSString* const kTabUrlKey = @"url";
 
 namespace {
-class TabInfoBarObserver;
-
 // Returns true if |item| is the result of a HTTP redirect.
 // Returns false if |item| is nullptr;
 bool IsItemRedirectItem(web::NavigationItem* item) {
@@ -168,10 +166,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   // overscrollActionsView above the toolbar.
   OverscrollActionsController* _overscrollActionsController;
 
-  // Handles retrieving, generating and updating snapshots of CRWWebController's
-  // web page.
-  SnapshotGenerator* _snapshotGenerator;
-
   // WebStateImpl for this tab.
   web::WebStateImpl* _webStateImpl;
 
@@ -180,9 +174,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
   // Universal Second Factor (U2F) call controller.
   U2FController* _secondFactorController;
-
-  // C++ observer used to trigger snapshots after the removal of InfoBars.
-  std::unique_ptr<TabInfoBarObserver> _tabInfoBarObserver;
 
   // View displayed upon PagePlaceholderTabHelperDelegate request.
   UIImageView* _pagePlaceholder;
@@ -200,52 +191,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
     (web::NavigationContext*)navigation;
 
 @end
-
-namespace {
-// Observer class that listens for infobar signals.
-class TabInfoBarObserver : public infobars::InfoBarManager::Observer {
- public:
-  TabInfoBarObserver(Tab* owner, infobars::InfoBarManager* infobar_manager);
-  ~TabInfoBarObserver() override;
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override;
-  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
-  void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
-                         infobars::InfoBar* new_infobar) override;
-
- private:
-  __weak Tab* owner_;
-  ScopedObserver<infobars::InfoBarManager, TabInfoBarObserver> scoped_observer_;
-  DISALLOW_COPY_AND_ASSIGN(TabInfoBarObserver);
-};
-
-TabInfoBarObserver::TabInfoBarObserver(
-    Tab* owner,
-    infobars::InfoBarManager* infobar_manager)
-    : owner_(owner), scoped_observer_(this) {
-  DCHECK(infobar_manager);
-  scoped_observer_.Add(infobar_manager);
-}
-
-TabInfoBarObserver::~TabInfoBarObserver() {}
-
-void TabInfoBarObserver::OnInfoBarAdded(infobars::InfoBar* infobar) {
-  // Update snapshots after the infobar has been added.
-  [owner_ updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-}
-
-void TabInfoBarObserver::OnInfoBarRemoved(infobars::InfoBar* infobar,
-                                          bool animate) {
-  // Update snapshots after the infobar has been removed.
-  [owner_ updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-}
-
-void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
-                                           infobars::InfoBar* new_infobar) {
-  // Update snapshots after the infobar has been replaced.
-  [owner_ updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-}
-
-}  // anonymous namespace
 
 @implementation Tab
 
@@ -278,10 +223,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
     [self updateLastVisitedTimestamp];
     [[self webController] setDelegate:self];
-
-    _snapshotGenerator =
-        [[SnapshotGenerator alloc] initWithWebState:_webStateImpl
-                                           delegate:self];
   }
   return self;
 }
@@ -290,11 +231,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // The WebState owns the Tab, so -webStateDestroyed: should be called before
   // -dealloc and _webStateImpl set to nullptr.
   DCHECK(!_webStateImpl);
-}
-
-- (void)attachTabHelpers {
-  _tabInfoBarObserver = std::make_unique<TabInfoBarObserver>(
-      self, InfoBarManagerImpl::FromWebState(self.webState));
 }
 
 - (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
@@ -340,10 +276,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Check whether |item| has been marked as a voice search result navigation.
   return VoiceSearchNavigationTabHelper::FromWebState(self.webState)
       ->IsNavigationFromVoiceSearch(item);
-}
-
-- (void)retrieveSnapshot:(void (^)(UIImage*))callback {
-  [_snapshotGenerator retrieveSnapshot:callback];
 }
 
 - (NSString*)title {
@@ -456,8 +388,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   self.overscrollActionsControllerDelegate = nil;
   self.passKitDialogProvider = nil;
   self.snapshotOverlayProvider = nil;
-
-  _tabInfoBarObserver.reset();
 
   [_openInController detachFromWebController];
   _openInController = nil;
@@ -888,7 +818,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     wasPost = lastCommittedItem->HasPostData();
     lastCommittedURL = lastCommittedItem->GetVirtualURL();
   }
-  [_snapshotGenerator setSnapshotCoalescingEnabled:YES];
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen) &&
       !loadSuccess) {
     [_legacyFullscreenController disableFullScreen];
@@ -921,10 +850,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         finishPageLoadForTab:self
                  loadSuccess:loadSuccess];
   }
-
-  if (loadSuccess)
-    [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-  [_snapshotGenerator setSnapshotCoalescingEnabled:NO];
 }
 
 - (void)webState:(web::WebState*)webState
@@ -1002,44 +927,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)getPlaceholderOverlayImageWithCompletionHandler:
     (void (^)(UIImage*))completionHandler {
-  NSString* sessionID = self.tabId;
-  // The snapshot is always grey, even if |useGreyImageCache_| is NO, as this
-  // overlay represents an out-of-date website and is shown only until the
-  // has begun loading. However, if |useGreyImageCache_| is YES, the grey image
-  // is already cached in memory for swiping, and a cache miss is acceptable.
-  // In other cases, such as during startup, either disk access or a greyspace
-  // conversion is required, as there will be no grey snapshots in memory.
-  if (useGreyImageCache_) {
-    [SnapshotCacheFactory::GetForBrowserState(self.browserState)
-        greyImageForSessionID:sessionID
-                     callback:completionHandler];
-  } else {
-    [_snapshotGenerator retrieveGreySnapshot:completionHandler];
-  }
-}
-
-- (UIImage*)updateSnapshotWithOverlay:(BOOL)shouldAddOverlay
-                     visibleFrameOnly:(BOOL)visibleFrameOnly {
-  UIImage* snapshot =
-      [_snapshotGenerator updateSnapshotWithOverlays:shouldAddOverlay
-                                    visibleFrameOnly:visibleFrameOnly];
-  return snapshot;
-}
-
-- (UIImage*)generateSnapshotWithOverlay:(BOOL)shouldAddOverlay
-                       visibleFrameOnly:(BOOL)visibleFrameOnly {
-  return [_snapshotGenerator generateSnapshotWithOverlays:shouldAddOverlay
-                                         visibleFrameOnly:visibleFrameOnly];
-}
-
-- (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled {
-  [_snapshotGenerator setSnapshotCoalescingEnabled:snapshotCoalescingEnabled];
-}
-
-- (void)removeSnapshot {
-  DCHECK(self.tabId);
-  [SnapshotCacheFactory::GetForBrowserState(self.browserState)
-      removeImageWithSessionID:self.tabId];
+  // The snapshot is always grey as this overlay represents an out-of-date
+  // website and is shown only until the load begins. If |useGreyImageCache_|
+  // is YES, the grey image is already cached in memory for swiping, and a
+  // cache miss is acceptable. In other cases, such as during startyp, either
+  // disk access or a greyspace conversion is required as there will be no
+  // grey snapshots in memory.
+  SnapshotTabHelper::FromWebState(self.webState)
+      ->RetrieveGreySnapshot(completionHandler, !useGreyImageCache_);
 }
 
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods

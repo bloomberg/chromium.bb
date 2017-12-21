@@ -101,6 +101,7 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
@@ -1812,12 +1813,18 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   // expensive we activate snapshot coalescing in the scope of this function
   // which will cache the first snapshot for the tab and reuse it instead of
   // regenerating a new one each time.
-  [currentTab setSnapshotCoalescingEnabled:YES];
-  base::ScopedClosureRunner runner(base::BindBlockArc(^{
-    [currentTab setSnapshotCoalescingEnabled:NO];
-  }));
+  base::ScopedClosureRunner runner;
+  if (currentTab && currentTab.webState) {
+    SnapshotTabHelper::FromWebState(currentTab.webState)
+        ->SetSnapshotCoalescingEnabled(true);
+    runner.ReplaceClosure(base::BindBlockArc(^{
+      SnapshotTabHelper::FromWebState(currentTab.webState)
+          ->SetSnapshotCoalescingEnabled(false);
+    }));
 
-  [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+    SnapshotTabHelper::FromWebState(currentTab.webState)
+        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+  }
 
   if (!_tabSwitcherController) {
     if (IsIPadIdiom()) {

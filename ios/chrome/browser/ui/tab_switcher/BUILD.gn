@@ -72,6 +72,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",

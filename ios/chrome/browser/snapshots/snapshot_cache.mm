@@ -328,11 +328,10 @@ void ConvertAndSaveGreyImage(NSString* session_id,
                          callback:(void (^)(UIImage*))callback {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
   DCHECK(sessionID);
+  DCHECK(callback);
 
-  UIImage* image = [lruCache_ objectForKey:sessionID];
-  if (image) {
-    if (callback)
-      callback(image);
+  if (UIImage* image = [lruCache_ objectForKey:sessionID]) {
+    callback(image);
     return;
   }
 
@@ -345,7 +344,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   const base::FilePath cacheDirectory = cacheDirectory_;
   const ImageScale snapshotsScale = snapshotsScale_;
 
-  __weak SnapshotCache* weakSelf = self;
+  __weak LRUCache* weakLRUCache = lruCache_;
   base::PostTaskAndReplyWithResult(
       taskRunner_.get(), FROM_HERE,
       base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
@@ -354,11 +353,9 @@ void ConvertAndSaveGreyImage(NSString* session_id,
             sessionID, IMAGE_TYPE_COLOR, snapshotsScale, cacheDirectory));
       }),
       base::BindBlockArc(^(base::scoped_nsobject<UIImage> image) {
-        __strong SnapshotCache* strongSelf = weakSelf;
-        if (image && strongSelf)
-          [strongSelf->lruCache_ setObject:image forKey:sessionID];
-        if (callback)
-          callback(image);
+        if (image)
+          [weakLRUCache setObject:image forKey:sessionID];
+        callback(image);
       }));
 }
 
@@ -486,7 +483,9 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 - (void)handleBecomeActive {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
   for (NSString* sessionID in pinnedIDs_)
-    [self retrieveImageForSessionID:sessionID callback:nil];
+    [self retrieveImageForSessionID:sessionID
+                           callback:^(UIImage*){
+                           }];
 }
 
 - (void)saveGreyImage:(UIImage*)greyImage forKey:(NSString*)sessionID {
@@ -517,15 +516,15 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   base::PostTaskAndReplyWithResult(
       taskRunner_.get(), FROM_HERE,
       base::BindBlockArc(^base::scoped_nsobject<UIImage>() {
-        base::scoped_nsobject<UIImage> result(image);
         // If the image is not in the cache, load it from disk.
-        if (!result) {
-          result.reset(ReadImageForSessionFromDisk(
-              sessionID, IMAGE_TYPE_COLOR, snapshotsScale, cacheDirectory));
+        UIImage* localImage = image;
+        if (!localImage) {
+          localImage = ReadImageForSessionFromDisk(
+              sessionID, IMAGE_TYPE_COLOR, snapshotsScale, cacheDirectory);
         }
-        if (result)
-          result.reset(GreyImage(result));
-        return result;
+        if (localImage)
+          localImage = GreyImage(localImage);
+        return base::scoped_nsobject<UIImage>(localImage);
       }),
       base::BindBlockArc(^(base::scoped_nsobject<UIImage> greyImage) {
         [weakSelf saveGreyImage:greyImage forKey:sessionID];
@@ -556,8 +555,10 @@ void ConvertAndSaveGreyImage(NSString* session_id,
                      callback:(void (^)(UIImage*))callback {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
   DCHECK(greyImageDictionary_);
-  UIImage* image = [greyImageDictionary_ objectForKey:sessionID];
-  if (image) {
+  DCHECK(sessionID);
+  DCHECK(callback);
+
+  if (UIImage* image = [greyImageDictionary_ objectForKey:sessionID]) {
     callback(image);
     [self clearGreySessionInfo];
   } else {
@@ -569,9 +570,11 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 - (void)retrieveGreyImageForSessionID:(NSString*)sessionID
                              callback:(void (^)(UIImage*))callback {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenceChecker_);
+  DCHECK(sessionID);
+  DCHECK(callback);
+
   if (greyImageDictionary_) {
-    UIImage* image = [greyImageDictionary_ objectForKey:sessionID];
-    if (image) {
+    if (UIImage* image = [greyImageDictionary_ objectForKey:sessionID]) {
       callback(image);
       return;
     }
@@ -596,14 +599,14 @@ void ConvertAndSaveGreyImage(NSString* session_id,
       }),
       base::BindBlockArc(^(base::scoped_nsobject<UIImage> image) {
         if (image) {
-          if (callback)
-            callback(image);
+          callback(image);
           return;
         }
         [weakSelf retrieveImageForSessionID:sessionID
-                                   callback:^(UIImage* local_image) {
-                                     if (callback && local_image)
-                                       callback(GreyImage(local_image));
+                                   callback:^(UIImage* localImage) {
+                                     if (localImage)
+                                       localImage = GreyImage(localImage);
+                                     callback(localImage);
                                    }];
       }));
 }

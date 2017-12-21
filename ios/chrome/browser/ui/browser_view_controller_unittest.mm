@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
@@ -258,6 +259,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
     [currentTab setWebState:webStateImpl_.get()];
     webStateImpl_->SetWebController(webControllerMock);
+
+    SnapshotTabHelper::CreateForWebState(webStateImpl_.get(),
+                                         [[NSUUID UUID] UUIDString]);
 
     id passKitController =
         [OCMockObject niceMockForClass:[PKAddPassesViewController class]];

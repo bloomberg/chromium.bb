@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/history/history_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -401,6 +402,7 @@ TEST_F(TabTest, GetSuggestedFilenameFromDefaultName) {
 TEST_F(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
   id partialMock = OCMPartialMock(
       SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
+  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_.tabId);
   [[partialMock reject] removeImageWithSessionID:tab_.tabId];
 
   // Use @try/@catch as -reject raises an exception.
@@ -417,9 +419,10 @@ TEST_F(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
 TEST_F(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
   id partialMock = OCMPartialMock(
       SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
+  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_.tabId);
   OCMExpect([partialMock removeImageWithSessionID:tab_.tabId]);
 
-  [tab_ removeSnapshot];
+  SnapshotTabHelper::FromWebState(tab_.webState)->RemoveSnapshot();
   EXPECT_OCMOCK_VERIFY(partialMock);
 }
 
