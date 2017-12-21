@@ -33,12 +33,16 @@ class DataReductionProxyDataUseObserver
   ~DataReductionProxyDataUseObserver() override;
 
  private:
+  friend class DataReductionProxyDataUseObserverTest;
+
   // PageLoadObserver methods.
   void OnPageLoadCommit(data_use_measurement::DataUse* data_use) override;
   void OnPageResourceLoad(const net::URLRequest& request,
                           data_use_measurement::DataUse* data_use) override;
   void OnPageDidFinishLoad(data_use_measurement::DataUse* data_use) override;
   void OnPageLoadConcluded(data_use_measurement::DataUse* data_use) override {}
+
+  const void* GetDataUsePreviewsUserDataKeyForTesting();
 
   // |data_reduction_proxy_io_data_| owns |this| and is destroyed only after
   // |this| is destroyed in the IO thread.
