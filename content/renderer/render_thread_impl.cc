@@ -406,7 +406,8 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
       stream_priority, gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext/" +
            ui::command_buffer_metrics::ContextTypeToString(type)),
-      automatic_flushes, support_locking, limits, attributes, nullptr, type);
+      automatic_flushes, support_locking, limits, attributes,
+      nullptr /* share_context */, type);
 }
 
 // Hook that allows single-sample metric code from //components/metrics to
@@ -894,8 +895,6 @@ void RenderThreadImpl::Init(
 
   is_gpu_rasterization_forced_ =
       command_line.HasSwitch(switches::kForceGpuRasterization);
-  is_async_worker_context_enabled_ =
-      command_line.HasSwitch(switches::kEnableGpuAsyncWorkerContext);
 
   if (command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount)) {
     std::string string_value = command_line.GetSwitchValueASCII(
@@ -1646,10 +1645,6 @@ bool RenderThreadImpl::IsGpuRasterizationForced() {
   return is_gpu_rasterization_forced_;
 }
 
-bool RenderThreadImpl::IsAsyncWorkerContextEnabled() {
-  return is_async_worker_context_enabled_;
-}
-
 int RenderThreadImpl::GetGpuRasterizationMSAASampleCount() {
   return gpu_rasterization_msaa_sample_count_;
 }
@@ -2102,7 +2097,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     return;
   }
 
-  scoped_refptr<ui::ContextProviderCommandBuffer> worker_context_provider =
+  scoped_refptr<viz::RasterContextProvider> worker_context_provider =
       SharedCompositorWorkerContextProvider();
   if (!worker_context_provider) {
     // Cause the compositor to wait and try again.
@@ -2132,18 +2127,12 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
 
-  // The compositor context shares resources with the worker context unless
-  // the worker is async.
-  ui::ContextProviderCommandBuffer* share_context =
-      worker_context_provider.get();
-  if (IsAsyncWorkerContextEnabled())
-    share_context = nullptr;
-
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider(
       new ui::ContextProviderCommandBuffer(
           gpu_channel_host, GetGpuMemoryBufferManager(), kGpuStreamIdDefault,
           kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle, url,
-          automatic_flushes, support_locking, limits, attributes, share_context,
+          automatic_flushes, support_locking, limits, attributes,
+          nullptr /* share_context */,
           ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {
@@ -2428,7 +2417,7 @@ base::TaskRunner* RenderThreadImpl::GetWorkerTaskRunner() {
   return categorized_worker_pool_.get();
 }
 
-scoped_refptr<ui::ContextProviderCommandBuffer>
+scoped_refptr<viz::RasterContextProvider>
 RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   DCHECK(IsMainThread());
   // Try to reuse existing shared worker context provider.
@@ -2447,25 +2436,18 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
     return shared_worker_context_provider_;
   }
 
-  int32_t stream_id = kGpuStreamIdDefault;
-  gpu::SchedulingPriority stream_priority = kGpuStreamPriorityDefault;
-  if (is_async_worker_context_enabled_) {
-    stream_id = kGpuStreamIdWorker;
-    stream_priority = kGpuStreamPriorityWorker;
-  }
-
   bool support_locking = true;
   bool support_oop_rasterization =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOOPRasterization);
-  bool support_gles2_interface = !support_oop_rasterization;
+  bool support_gles2_interface = false;
   bool support_raster_interface = true;
   shared_worker_context_provider_ = CreateOffscreenContext(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
       gpu::SharedMemoryLimits(), support_locking, support_gles2_interface,
       support_raster_interface, support_oop_rasterization,
-      ui::command_buffer_metrics::RENDER_WORKER_CONTEXT, stream_id,
-      stream_priority);
+      ui::command_buffer_metrics::RENDER_WORKER_CONTEXT, kGpuStreamIdWorker,
+      kGpuStreamPriorityWorker);
   auto result = shared_worker_context_provider_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
     shared_worker_context_provider_ = nullptr;

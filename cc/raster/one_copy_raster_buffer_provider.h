@@ -32,8 +32,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       int max_copy_texture_chromium_size,
       bool use_partial_raster,
       int max_staging_buffer_usage_in_bytes,
-      viz::ResourceFormat preferred_tile_format,
-      bool async_worker_context_enabled);
+      viz::ResourceFormat preferred_tile_format);
   ~OneCopyRasterBufferProvider() override;
 
   // Overridden from RasterBufferProvider:
@@ -129,8 +128,6 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
 
   const viz::ResourceFormat preferred_tile_format_;
   StagingBufferPool staging_pool_;
-
-  const bool async_worker_context_enabled_;
 
   std::set<RasterBufferImpl*> pending_raster_buffers_;
 

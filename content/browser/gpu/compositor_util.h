@@ -39,9 +39,6 @@ CONTENT_EXPORT bool IsMainFrameBeforeActivationEnabled();
 // Returns true if images can be decode asynchronously from rasterization.
 CONTENT_EXPORT bool IsCheckerImagingEnabled();
 
-// Returns true if worker context runs asynchronously in the gpu process.
-CONTENT_EXPORT bool IsGpuAsyncWorkerContextEnabled();
-
 // Returns true if image animations should run in the compositor.
 CONTENT_EXPORT bool IsCompositorImageAnimationEnabled();
 

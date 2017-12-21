@@ -40,7 +40,6 @@ class CC_EXPORT LayerTreeSettings {
   bool can_use_lcd_text = true;
   bool use_distance_field_text = false;
   bool gpu_rasterization_forced = false;
-  bool async_worker_context_enabled = false;
   int gpu_rasterization_msaa_sample_count = 0;
   float gpu_rasterization_skewport_target_time_in_seconds = 0.2f;
   bool create_low_res_tiling = false;

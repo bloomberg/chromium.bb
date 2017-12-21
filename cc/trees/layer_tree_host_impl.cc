@@ -2565,8 +2565,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     *raster_buffer_provider = std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
-        msaa_sample_count, settings_.preferred_tile_format,
-        settings_.async_worker_context_enabled, oop_raster_enabled);
+        msaa_sample_count, settings_.preferred_tile_format, oop_raster_enabled);
     return;
   }
 
@@ -2604,7 +2603,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       GetTaskRunner(), compositor_context_provider, worker_context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
-      settings_.preferred_tile_format, settings_.async_worker_context_enabled);
+      settings_.preferred_tile_format);
 }
 
 void LayerTreeHostImpl::SetLayerTreeMutator(
