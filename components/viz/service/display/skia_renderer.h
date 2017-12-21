@@ -17,8 +17,6 @@ class SkNWayCanvas;
 namespace cc {
 class OutputSurface;
 class RenderPassDrawQuad;
-class ResourceProvider;
-class ScopedResource;
 }  // namespace cc
 
 namespace viz {
@@ -44,7 +42,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
  protected:
   bool CanPartialSwap() override;
-  ResourceFormat BackbufferFormat() const override;
   void UpdateRenderPassTextures(
       const RenderPassList& render_passes_in_draw_order,
       const base::flat_map<RenderPassId, RenderPassRequirements>&
@@ -52,7 +49,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void AllocateRenderPassResourceIfNeeded(
       const RenderPassId& render_pass_id,
       const gfx::Size& enlarged_size,
-      ResourceTextureHint texturehint) override;
+      ResourceTextureHint texture_hint) override;
   bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const override;
   gfx::Size GetRenderPassTextureSize(
@@ -104,8 +101,14 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       SkShader::TileMode content_tile_mode) const;
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
-  base::flat_map<RenderPassId, std::unique_ptr<cc::ScopedResource>>
-      render_pass_textures_;
+  struct RenderPassBacking {
+    uint32_t gl_id;
+    gfx::Size size;
+    ResourceTextureHint usage_hint;
+    ResourceFormat format;
+    gfx::ColorSpace color_space;
+  };
+  base::flat_map<RenderPassId, RenderPassBacking> render_pass_backings_;
 
   bool disable_picture_quad_image_filtering_ = false;
 
@@ -113,16 +116,13 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   gfx::Rect scissor_rect_;
 
   sk_sp<SkSurface> root_surface_;
+  sk_sp<SkSurface> non_root_surface_;
   sk_sp<SkSurface> overdraw_surface_;
   std::unique_ptr<SkCanvas> overdraw_canvas_;
   std::unique_ptr<SkNWayCanvas> nway_canvas_;
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;
-  std::unique_ptr<cc::ResourceProvider::ScopedWriteLockGL>
-      current_framebuffer_lock_;
-  std::unique_ptr<cc::ResourceProvider::ScopedSkSurface>
-      current_framebuffer_surface_lock_;
 
   bool use_swap_with_bounds_ = false;
 

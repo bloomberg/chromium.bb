@@ -4,11 +4,11 @@
 
 #include "components/viz/service/display/skia_renderer.h"
 
+#include "base/bits.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
@@ -17,7 +17,9 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_fence.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -83,7 +85,14 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 #endif
 }
 
-SkiaRenderer::~SkiaRenderer() {}
+SkiaRenderer::~SkiaRenderer() {
+  gpu::gles2::GLES2Interface* gl =
+      output_surface_->context_provider()->ContextGL();
+  for (auto& pair : render_pass_backings_) {
+    RenderPassBacking& backing = pair.second;
+    gl->DeleteTextures(1, &backing.gl_id);
+  }
+}
 
 bool SkiaRenderer::CanPartialSwap() {
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -93,15 +102,6 @@ bool SkiaRenderer::CanPartialSwap() {
     return false;
   auto* context_provider = output_surface_->context_provider();
   return context_provider->ContextCapabilities().post_sub_buffer;
-}
-
-ResourceFormat SkiaRenderer::BackbufferFormat() const {
-  // From GL Renderer.
-  if (current_frame()->current_render_pass->color_space.IsHDR() &&
-      resource_provider_->IsRenderBufferFormatSupported(RGBA_F16)) {
-    return RGBA_F16;
-  }
-  return resource_provider_->best_texture_format();
 }
 
 void SkiaRenderer::BeginDrawingFrame() {
@@ -146,8 +146,7 @@ void SkiaRenderer::FinishDrawingFrame() {
     root_surface_->getCanvas()->drawImage(image.get(), 0, 0, &paint);
     root_surface_->getCanvas()->flush();
   }
-  current_framebuffer_surface_lock_ = nullptr;
-  current_framebuffer_lock_ = nullptr;
+  non_root_surface_ = nullptr;
   current_canvas_ = nullptr;
 
   swap_buffer_rect_ = current_frame()->root_damage_rect;
@@ -191,7 +190,7 @@ void SkiaRenderer::EnsureScissorTestDisabled() {
 
 void SkiaRenderer::BindFramebufferToOutputSurface() {
   DCHECK(!output_surface_->HasExternalStencilTest());
-  current_framebuffer_lock_ = nullptr;
+  non_root_surface_ = nullptr;
 
   // LegacyFontHost will get LCD text and skia figures out what type to use.
   SkSurfaceProps surface_props =
@@ -260,31 +259,28 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 }
 
 void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
-  cc::ScopedResource* texture = render_pass_textures_[render_pass_id].get();
-  DCHECK(texture);
-  DCHECK(texture->id());
 #if BUILDFLAG(ENABLE_VULKAN)
   NOTIMPLEMENTED();
   return;
 #endif
 
-  // Explicitly release lock, otherwise we can crash when try to lock
-  // same texture again.
-  current_framebuffer_surface_lock_ = nullptr;
-  current_framebuffer_lock_ = nullptr;
-  current_framebuffer_lock_ =
-      base::WrapUnique(new cc::ResourceProvider::ScopedWriteLockGL(
-          resource_provider_, texture->id()));
+  RenderPassBacking& backing = render_pass_backings_[render_pass_id];
+  DCHECK(backing.gl_id);
 
-  current_framebuffer_surface_lock_ =
-      base::WrapUnique(new cc::ResourceProvider::ScopedSkSurface(
-          output_surface_->context_provider()->GrContext(),
-          current_framebuffer_lock_->GetTexture(),
-          current_framebuffer_lock_->target(),
-          current_framebuffer_lock_->size(),
-          current_framebuffer_lock_->format(), false, true, 0));
-
-  current_canvas_ = current_framebuffer_surface_lock_->surface()->getCanvas();
+  GrGLTextureInfo texture_info;
+  texture_info.fID = backing.gl_id;
+  texture_info.fTarget = GL_TEXTURE_2D;
+  GrBackendTexture backend_texture(backing.size.width(), backing.size.height(),
+                                   ToGrPixelConfig(backing.format),
+                                   texture_info);
+  constexpr uint32_t flags = 0;
+  // LegacyFontHost will get LCD text and skia figures out what type to use.
+  SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
+  int msaa_sample_count = 0;
+  non_root_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      output_surface_->context_provider()->GrContext(), backend_texture,
+      kTopLeft_GrSurfaceOrigin, msaa_sample_count, nullptr, &surface_props);
+  current_canvas_ = non_root_surface_->getCanvas();
 }
 
 void SkiaRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
@@ -611,13 +607,11 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   NOTIMPLEMENTED();
   return;
 #endif
-  cc::ScopedResource* content_texture =
-      render_pass_textures_[quad->render_pass_id].get();
-  DCHECK(content_texture);
-  DCHECK(content_texture->id());
-  DCHECK(!IsSoftwareResource(content_texture->id()));
+  RenderPassBacking& content_texture =
+      render_pass_backings_[quad->render_pass_id];
+  DCHECK(content_texture.gl_id);
   cc::DisplayResourceProvider::ScopedReadLockSkImage lock(
-      resource_provider_, content_texture->id());
+      resource_provider_, content_texture.gl_id);
   if (!lock.sk_image())
     return;
 
@@ -766,7 +760,7 @@ void SkiaRenderer::UpdateRenderPassTextures(
     const base::flat_map<RenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
   std::vector<RenderPassId> passes_to_delete;
-  for (const auto& pair : render_pass_textures_) {
+  for (const auto& pair : render_pass_backings_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
     if (render_pass_it == render_passes_in_frame.end()) {
       passes_to_delete.push_back(pair.first);
@@ -775,56 +769,116 @@ void SkiaRenderer::UpdateRenderPassTextures(
 
     gfx::Size required_size = render_pass_it->second.size;
     ResourceTextureHint required_hint = render_pass_it->second.hint;
-    cc::ScopedResource* texture = pair.second.get();
-    DCHECK(texture);
 
-    bool size_appropriate = texture->size().width() >= required_size.width() &&
-                            texture->size().height() >= required_size.height();
-    bool hint_appropriate = (texture->hint() & required_hint) == required_hint;
-    if (texture->id() && (!size_appropriate || !hint_appropriate))
-      texture->Free();
+    const RenderPassBacking& backing = pair.second;
+    bool size_appropriate = backing.size.width() >= required_size.width() &&
+                            backing.size.height() >= required_size.height();
+    bool hint_appropriate =
+        (backing.usage_hint & required_hint) == required_hint;
+    if (!size_appropriate || !hint_appropriate)
+      passes_to_delete.push_back(pair.first);
   }
 
-  // Delete RenderPass textures from the previous frame that will not be used
+  gpu::gles2::GLES2Interface* gl =
+      output_surface_->context_provider()->ContextGL();
+
+  // Delete RenderPass backings from the previous frame that will not be used
   // again.
-  for (size_t i = 0; i < passes_to_delete.size(); ++i)
-    render_pass_textures_.erase(passes_to_delete[i]);
+  for (size_t i = 0; i < passes_to_delete.size(); ++i) {
+    auto it = render_pass_backings_.find(passes_to_delete[i]);
+    RenderPassBacking& backing = it->second;
+    gl->DeleteTextures(1, &backing.gl_id);
+    render_pass_backings_.erase(it);
+  }
 }
 
 void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
     const gfx::Size& enlarged_size,
-    ResourceTextureHint texturehint) {
+    ResourceTextureHint texture_hint) {
 #if BUILDFLAG(ENABLE_VULKAN)
   NOTIMPLEMENTED();
   return;
 #endif
-  auto& resource = render_pass_textures_[render_pass_id];
-  if (resource && resource->id())
+  auto it = render_pass_backings_.find(render_pass_id);
+  if (it != render_pass_backings_.end())
     return;
 
-  if (!resource)
-    resource = std::make_unique<cc::ScopedResource>(resource_provider_);
-  resource->Allocate(enlarged_size, texturehint, BackbufferFormat(),
-                     current_frame()->current_render_pass->color_space);
+  ContextProvider* context_provider = output_surface_->context_provider();
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+  const gpu::Capabilities& caps = context_provider->ContextCapabilities();
+
+  uint32_t texture_id;
+  gl->GenTextures(1, &texture_id);
+  gl->BindTexture(GL_TEXTURE_2D, texture_id);
+
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  if (caps.texture_usage) {
+    if (texture_hint & ResourceTextureHint::kFramebuffer) {
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE,
+                        GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+    }
+  }
+
+  ResourceFormat backbuffer_format;
+  if (current_frame()->current_render_pass->color_space.IsHDR()) {
+    // If a platform does not support half-float renderbuffers then it should
+    // not should request HDR rendering.
+    DCHECK(caps.texture_half_float_linear);
+    DCHECK(caps.color_buffer_half_float_rgba);
+    backbuffer_format = RGBA_F16;
+  } else {
+    backbuffer_format =
+        PlatformColor::BestSupportedTextureFormat(caps.texture_format_bgra8888);
+  }
+
+  // If |texture_storage| is available, then we can use TexStorage2DEXT to make
+  // an immutable texture backing, which allows for optimized usage. Otherwise
+  // we must use the traditional TexImage2D to generate the texture backing.
+  if (caps.texture_storage) {
+    GLint levels = 1;
+    // If |texture_npot| is availble, and mipmaps are desired, we generate a
+    // mipmap for each power of 2 size. This is only done when using
+    // TexStorage2DEXT.
+    if (caps.texture_npot) {
+      if (texture_hint & ResourceTextureHint::kMipmap) {
+        levels += base::bits::Log2Floor(
+            std::max(enlarged_size.width(), enlarged_size.height()));
+      }
+    }
+    gl->TexStorage2DEXT(GL_TEXTURE_2D, levels,
+                        TextureStorageFormat(backbuffer_format),
+                        enlarged_size.width(), enlarged_size.height());
+  } else {
+    gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(backbuffer_format),
+                   enlarged_size.width(), enlarged_size.height(), 0,
+                   GLDataFormat(backbuffer_format),
+                   GLDataType(backbuffer_format), nullptr);
+  }
+
+  RenderPassBacking& backing = render_pass_backings_[render_pass_id];
+  backing.gl_id = texture_id;
+  backing.size = enlarged_size;
+  backing.usage_hint = texture_hint;
+  backing.format = backbuffer_format;
+  backing.color_space = current_frame()->current_render_pass->color_space;
+  gl->BindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool SkiaRenderer::IsRenderPassResourceAllocated(
     const RenderPassId& render_pass_id) const {
-  auto texture_it = render_pass_textures_.find(render_pass_id);
-  if (texture_it == render_pass_textures_.end())
-    return false;
-
-  cc::ScopedResource* texture = texture_it->second.get();
-  DCHECK(texture);
-  return texture->id() != 0;
+  auto it = render_pass_backings_.find(render_pass_id);
+  return it != render_pass_backings_.end();
 }
 
 gfx::Size SkiaRenderer::GetRenderPassTextureSize(
     const RenderPassId& render_pass_id) {
-  cc::ScopedResource* texture = render_pass_textures_[render_pass_id].get();
-  DCHECK(texture);
-  return texture->size();
+  auto it = render_pass_backings_.find(render_pass_id);
+  DCHECK(it != render_pass_backings_.end());
+  return it->second.size;
 }
 
 }  // namespace viz
