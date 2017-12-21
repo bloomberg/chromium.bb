@@ -987,43 +987,42 @@ bool ContainerNode::GetUpperLeftCorner(FloatPoint& point) const {
     return false;
 
   // FIXME: What is this code really trying to do?
-  // TODO(xiaochengh): Rename |o| to |runner|.
-  LayoutObject* o = GetLayoutObject();
-  if (!o->IsInline() || o->IsAtomicInlineLevel()) {
-    point = o->LocalToAbsolute(FloatPoint(), kUseTransforms);
+  LayoutObject* runner = GetLayoutObject();
+  if (!runner->IsInline() || runner->IsAtomicInlineLevel()) {
+    point = runner->LocalToAbsolute(FloatPoint(), kUseTransforms);
     return true;
   }
 
   // Find the next text/image child, to get a position.
-  while (o) {
-    const LayoutObject* const previous = o;
-    if (LayoutObject* o_first_child = o->SlowFirstChild()) {
-      o = o_first_child;
-    } else if (o->NextSibling()) {
-      o = o->NextSibling();
+  while (runner) {
+    const LayoutObject* const previous = runner;
+    if (LayoutObject* runner_first_child = runner->SlowFirstChild()) {
+      runner = runner_first_child;
+    } else if (runner->NextSibling()) {
+      runner = runner->NextSibling();
     } else {
       LayoutObject* next = nullptr;
-      while (!next && o->Parent()) {
-        o = o->Parent();
-        next = o->NextSibling();
+      while (!next && runner->Parent()) {
+        runner = runner->Parent();
+        next = runner->NextSibling();
       }
-      o = next;
+      runner = next;
 
-      if (!o)
+      if (!runner)
         break;
     }
-    DCHECK(o);
+    DCHECK(runner);
 
-    if (!o->IsInline() || o->IsAtomicInlineLevel()) {
-      point = o->LocalToAbsolute(FloatPoint(), kUseTransforms);
+    if (!runner->IsInline() || runner->IsAtomicInlineLevel()) {
+      point = runner->LocalToAbsolute(FloatPoint(), kUseTransforms);
       return true;
     }
 
-    if (o->IsText() && !o->IsBR()) {
+    if (runner->IsText() && !runner->IsBR()) {
       const Optional<FloatPoint> maybe_point =
-          ToLayoutText(o)->GetUpperLeftCorner();
+          ToLayoutText(runner)->GetUpperLeftCorner();
       if (maybe_point.has_value()) {
-        point = o->LocalToAbsolute(maybe_point.value(), kUseTransforms);
+        point = runner->LocalToAbsolute(maybe_point.value(), kUseTransforms);
         return true;
       }
       if (previous->GetNode() == this) {
@@ -1033,15 +1032,15 @@ bool ContainerNode::GetUpperLeftCorner(FloatPoint& point) const {
         // whitespace child (because |previous| has moved).
         continue;
       }
-      point = o->LocalToAbsolute(FloatPoint(), kUseTransforms);
+      point = runner->LocalToAbsolute(FloatPoint(), kUseTransforms);
       return true;
     }
 
-    if (o->IsAtomicInlineLevel()) {
-      DCHECK(o->IsBox());
-      LayoutBox* box = ToLayoutBox(o);
+    if (runner->IsAtomicInlineLevel()) {
+      DCHECK(runner->IsBox());
+      LayoutBox* box = ToLayoutBox(runner);
       point = FloatPoint(box->Location());
-      point = o->Container()->LocalToAbsolute(point, kUseTransforms);
+      point = runner->Container()->LocalToAbsolute(point, kUseTransforms);
       return true;
     }
   }
@@ -1050,7 +1049,7 @@ bool ContainerNode::GetUpperLeftCorner(FloatPoint& point) const {
   // calculate the scroll position, we must be at the end of the
   // document. Scroll to the bottom.
   // FIXME: who said anything about scrolling?
-  if (!o && GetDocument().View()) {
+  if (!runner && GetDocument().View()) {
     point = FloatPoint(0, GetDocument().View()->ContentsHeight());
     return true;
   }
