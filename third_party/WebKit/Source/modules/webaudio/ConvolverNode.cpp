@@ -32,7 +32,6 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/ConvolverOptions.h"
 #include "platform/audio/Reverb.h"
-#include "platform/wtf/PtrUtil.h"
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.
@@ -137,9 +136,9 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   buffer_bus->SetSampleRate(buffer->sampleRate());
 
   // Create the reverb with the given impulse response.
-  std::unique_ptr<Reverb> reverb = WTF::WrapUnique(new Reverb(
+  std::unique_ptr<Reverb> reverb = std::make_unique<Reverb>(
       buffer_bus.get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize,
-      Context() && Context()->HasRealtimeConstraint(), normalize_));
+      Context() && Context()->HasRealtimeConstraint(), normalize_);
 
   {
     // The context must be locked since changing the buffer can

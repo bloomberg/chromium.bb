@@ -58,7 +58,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/ByteOrder.h"
 #include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa/utils.h"
 #include "platform/wtf/text/StringBuffer.h"

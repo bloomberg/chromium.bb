@@ -46,7 +46,6 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {

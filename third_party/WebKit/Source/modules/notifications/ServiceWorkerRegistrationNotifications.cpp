@@ -21,7 +21,6 @@
 #include "platform/Histogram.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
@@ -106,7 +105,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
   ScriptPromise promise = resolver->Promise();
 
   std::unique_ptr<WebNotificationShowCallbacks> callbacks =
-      WTF::WrapUnique(new CallbackPromiseAdapter<void, void>(resolver));
+      std::make_unique<CallbackPromiseAdapter<void, void>>(resolver);
   ServiceWorkerRegistrationNotifications::From(execution_context, registration)
       .PrepareShow(data, std::move(callbacks));
 

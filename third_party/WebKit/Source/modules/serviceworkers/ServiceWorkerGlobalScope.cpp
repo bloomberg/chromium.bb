@@ -32,6 +32,8 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -65,7 +67,6 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
@@ -236,7 +237,7 @@ void ServiceWorkerGlobalScope::SetRegistration(
   if (!GetExecutionContext())
     return;
   registration_ = ServiceWorkerRegistration::GetOrCreate(
-      GetExecutionContext(), WTF::WrapUnique(handle.release()));
+      GetExecutionContext(), base::WrapUnique(handle.release()));
 }
 
 bool ServiceWorkerGlobalScope::AddEventListenerInternal(

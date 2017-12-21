@@ -10,7 +10,6 @@
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
 #include "public/platform/modules/presentation/presentation.mojom-blink.h"
 

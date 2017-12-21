@@ -45,7 +45,6 @@
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"

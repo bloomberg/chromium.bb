@@ -14,7 +14,6 @@
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothUUID.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -24,7 +24,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
@@ -283,7 +282,7 @@ class StubWebServiceWorkerProvider {
   // other methods must not be called after the
   // StubWebServiceWorkerProvider dies.
   std::unique_ptr<WebServiceWorkerProvider> Provider() {
-    return WTF::WrapUnique(new WebServiceWorkerProviderImpl(*this));
+    return std::make_unique<WebServiceWorkerProviderImpl>(*this);
   }
 
   size_t RegisterCallCount() { return register_call_count_; }

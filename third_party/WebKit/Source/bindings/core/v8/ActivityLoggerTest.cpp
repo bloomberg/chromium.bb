@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -9,7 +10,6 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/bindings/V8DOMActivityLogger.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/WebCache.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,7 +75,7 @@ class ActivityLoggerTest : public ::testing::Test {
   ActivityLoggerTest() {
     activity_logger_ = new TestActivityLogger();
     V8DOMActivityLogger::SetActivityLogger(kIsolatedWorldId, String(),
-                                           WTF::WrapUnique(activity_logger_));
+                                           base::WrapUnique(activity_logger_));
     web_view_helper_.Initialize();
     script_controller_ = &web_view_helper_.GetWebView()
                               ->MainFrameImpl()

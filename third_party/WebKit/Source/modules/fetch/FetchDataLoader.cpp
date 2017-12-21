@@ -15,7 +15,6 @@
 #include "platform/network/ParsedContentDisposition.h"
 #include "platform/network/http_names.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"

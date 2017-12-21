@@ -9,7 +9,6 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/mediacapturefromelement/CanvasCaptureMediaStreamTrack.h"
 #include "modules/mediastream/MediaStream.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCanvasCaptureHandler.h"
 #include "public/platform/WebMediaStream.h"

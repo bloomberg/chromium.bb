@@ -31,6 +31,8 @@
 #include "modules/mediasource/MediaSource.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -47,7 +49,6 @@
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebSourceBuffer.h"
@@ -797,7 +798,7 @@ std::unique_ptr<WebSourceBuffer> MediaSource::CreateWebSourceBuffer(
   switch (
       web_media_source_->AddSourceBuffer(type, codecs, &web_source_buffer)) {
     case WebMediaSource::kAddStatusOk:
-      return WTF::WrapUnique(web_source_buffer);
+      return base::WrapUnique(web_source_buffer);
     case WebMediaSource::kAddStatusNotSupported:
       DCHECK(!web_source_buffer);
       // 2.2

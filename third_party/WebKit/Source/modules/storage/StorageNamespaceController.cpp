@@ -9,7 +9,6 @@
 #include "core/frame/ContentSettingsClient.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/storage/StorageNamespace.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebStorageNamespace.h"
 #include "public/web/WebViewClient.h"

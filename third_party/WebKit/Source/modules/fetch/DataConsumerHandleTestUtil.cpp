@@ -7,7 +7,6 @@
 #include <memory>
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -29,7 +28,7 @@ class WaitingHandle final : public WebDataConsumerHandle {
     }
   };
   std::unique_ptr<Reader> ObtainReader(Client*) override {
-    return WTF::WrapUnique(new ReaderImpl);
+    return std::make_unique<ReaderImpl>();
   }
 
   const char* DebugName() const override { return "WaitingHandle"; }
@@ -260,7 +259,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Add(const Command& command) {
 
 std::unique_ptr<WebDataConsumerHandle>
 DataConsumerHandleTestUtil::CreateWaitingDataConsumerHandle() {
-  return WTF::WrapUnique(new WaitingHandle);
+  return std::make_unique<WaitingHandle>();
 }
 
 }  // namespace blink

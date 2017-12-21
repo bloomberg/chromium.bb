@@ -37,7 +37,6 @@
 #include "modules/webaudio/PeriodicWaveOptions.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -30,7 +30,6 @@
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -94,8 +93,8 @@ int SQLiteStatement::Prepare() {
 
   // Need to pass non-stack |const char*| and |sqlite3_stmt*| to avoid race
   // with Oilpan stack scanning.
-  std::unique_ptr<const char*> tail = WTF::WrapUnique(new const char*);
-  std::unique_ptr<sqlite3_stmt*> statement = WTF::WrapUnique(new sqlite3_stmt*);
+  std::unique_ptr<const char*> tail = std::make_unique<const char*>();
+  std::unique_ptr<sqlite3_stmt*> statement = std::make_unique<sqlite3_stmt*>();
   *tail = nullptr;
   *statement = nullptr;
   int error;

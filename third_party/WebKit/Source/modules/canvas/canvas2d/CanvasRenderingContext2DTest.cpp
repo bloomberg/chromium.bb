@@ -32,7 +32,6 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/wtf/ByteSwap.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -252,8 +251,9 @@ void CanvasRenderingContext2DTest::TearDown() {
 std::unique_ptr<Canvas2DLayerBridge> CanvasRenderingContext2DTest::MakeBridge(
     const IntSize& size,
     Canvas2DLayerBridge::AccelerationMode acceleration_mode) {
-  std::unique_ptr<Canvas2DLayerBridge> bridge = WTF::WrapUnique(
-      new Canvas2DLayerBridge(size, 0, acceleration_mode, CanvasColorParams()));
+  std::unique_ptr<Canvas2DLayerBridge> bridge =
+      std::make_unique<Canvas2DLayerBridge>(size, 0, acceleration_mode,
+                                            CanvasColorParams());
   bridge->SetCanvasResourceHost(canvas_element_);
   return bridge;
 }

@@ -12,7 +12,6 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBRequestLoader.h"
 #include "modules/indexeddb/IDBValue.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 
 namespace blink {

@@ -44,7 +44,6 @@
 #include "platform/FileMetadata.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"

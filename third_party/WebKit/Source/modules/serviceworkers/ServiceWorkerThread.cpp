@@ -36,7 +36,6 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
 #include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

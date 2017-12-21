@@ -24,20 +24,22 @@
  */
 
 #include "modules/webaudio/WaveShaperNode.h"
+
+#include <memory>
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/WaveShaperOptions.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 WaveShaperNode::WaveShaperNode(BaseAudioContext& context) : AudioNode(context) {
   SetHandler(AudioBasicProcessorHandler::Create(
       AudioHandler::kNodeTypeWaveShaper, *this, context.sampleRate(),
-      WTF::WrapUnique(new WaveShaperProcessor(context.sampleRate(), 1))));
+      std::make_unique<WaveShaperProcessor>(context.sampleRate(), 1)));
 
   Handler().Initialize();
 }

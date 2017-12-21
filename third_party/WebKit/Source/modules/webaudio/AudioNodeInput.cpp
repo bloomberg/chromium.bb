@@ -24,10 +24,12 @@
  */
 
 #include "modules/webaudio/AudioNodeInput.h"
+
 #include <algorithm>
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "modules/webaudio/AudioNodeOutput.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -40,7 +42,7 @@ inline AudioNodeInput::AudioNodeInput(AudioHandler& handler)
 }
 
 std::unique_ptr<AudioNodeInput> AudioNodeInput::Create(AudioHandler& handler) {
-  return WTF::WrapUnique(new AudioNodeInput(handler));
+  return base::WrapUnique(new AudioNodeInput(handler));
 }
 
 void AudioNodeInput::Connect(AudioNodeOutput& output) {

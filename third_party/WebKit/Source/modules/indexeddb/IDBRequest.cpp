@@ -52,7 +52,6 @@
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebBlobInfo.h"
 
 using blink::WebIDBCursor;

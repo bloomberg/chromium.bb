@@ -31,6 +31,8 @@
 #include "modules/filesystem/DOMFileSystemSync.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -42,7 +44,6 @@
 #include "modules/filesystem/FileWriterBaseCallback.h"
 #include "modules/filesystem/FileWriterSync.h"
 #include "platform/FileMetadata.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 
@@ -96,7 +97,7 @@ class CreateFileHelper final : public AsyncFileSystemCallbacks {
       const String& name,
       const KURL& url,
       FileSystemType type) {
-    return WTF::WrapUnique(static_cast<AsyncFileSystemCallbacks*>(
+    return base::WrapUnique(static_cast<AsyncFileSystemCallbacks*>(
         new CreateFileHelper(result, name, url, type)));
   }
 

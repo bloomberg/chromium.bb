@@ -31,7 +31,6 @@
 #include "modules/webaudio/DynamicsCompressorOptions.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DynamicsCompressor.h"
-#include "platform/wtf/PtrUtil.h"
 
 // Set output to stereo by default.
 static const unsigned defaultNumberOfOutputChannels = 2;
@@ -119,8 +118,8 @@ void DynamicsCompressorHandler::Initialize() {
     return;
 
   AudioHandler::Initialize();
-  dynamics_compressor_ = WTF::WrapUnique(new DynamicsCompressor(
-      Context()->sampleRate(), defaultNumberOfOutputChannels));
+  dynamics_compressor_ = std::make_unique<DynamicsCompressor>(
+      Context()->sampleRate(), defaultNumberOfOutputChannels);
 }
 
 void DynamicsCompressorHandler::ClearInternalStateWhenDisabled() {

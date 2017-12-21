@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
@@ -27,7 +29,6 @@
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
 #include "modules/fetch/ResponseInit.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
@@ -244,7 +245,7 @@ class CacheStorageTest : public ::testing::Test {
 
   Cache* CreateCache(ScopedFetcherForTests* fetcher,
                      WebServiceWorkerCache* web_cache) {
-    return Cache::Create(fetcher, WTF::WrapUnique(web_cache));
+    return Cache::Create(fetcher, base::WrapUnique(web_cache));
   }
 
   ScriptState* GetScriptState() {

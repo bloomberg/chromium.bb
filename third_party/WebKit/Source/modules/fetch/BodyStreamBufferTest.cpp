@@ -15,7 +15,6 @@
 #include "platform/blob/BlobURL.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
