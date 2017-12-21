@@ -173,9 +173,6 @@ void PrintJob::Cancel() {
     return;
   is_canceling_ = true;
 
-  // Be sure to live long enough.
-  scoped_refptr<PrintJob> handle(this);
-
   DCHECK(RunsTasksInCurrentSequence());
   if (worker_ && worker_->IsRunning()) {
     // Call this right now so it renders the context invalid. Do not use
@@ -280,6 +277,8 @@ void PrintJob::StartPdfToEmfConversion(
 
 void PrintJob::OnPdfConversionStarted(int page_count) {
   if (page_count <= 0) {
+    // Be sure to live long enough.
+    scoped_refptr<PrintJob> handle(this);
     pdf_conversion_state_.reset();
     Cancel();
     return;
@@ -295,6 +294,8 @@ void PrintJob::OnPdfPageConverted(int page_number,
   DCHECK(pdf_conversion_state_);
   if (!document_.get() || !metafile || page_number < 0 ||
       static_cast<size_t>(page_number) >= pdf_page_mapping_.size()) {
+    // Be sure to live long enough.
+    scoped_refptr<PrintJob> handle(this);
     pdf_conversion_state_.reset();
     Cancel();
     return;
