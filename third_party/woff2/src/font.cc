@@ -1,18 +1,10 @@
-// Copyright 2013 Google Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Font management utilities
+/* Copyright 2013 Google Inc. All Rights Reserved.
+
+   Distributed under MIT license.
+   See file LICENSE for detail or copy at https://opensource.org/licenses/MIT
+*/
+
+/* Font management utilities */
 
 #include "./font.h"
 
@@ -131,6 +123,9 @@ bool ReadCollectionFont(Buffer* file, const uint8_t* data, size_t len,
       (*all_tables)[table.offset] = font->FindTable(table.tag);
     } else {
       table.reuse_of = (*all_tables)[table.offset];
+      if (table.tag != table.reuse_of->tag) {
+        return FONT_COMPRESSION_FAILURE();
+      }
     }
 
   }
@@ -331,8 +326,11 @@ int NumGlyphs(const Font& font) {
     return 0;
   }
   int index_fmt = IndexFormat(font);
-  int num_glyphs = (loca_table->length / (index_fmt == 0 ? 2 : 4)) - 1;
-  return num_glyphs;
+  int loca_record_size = (index_fmt == 0 ? 2 : 4);
+  if (loca_table->length < loca_record_size) {
+    return 0;
+  }
+  return (loca_table->length / loca_record_size) - 1;
 }
 
 int IndexFormat(const Font& font) {

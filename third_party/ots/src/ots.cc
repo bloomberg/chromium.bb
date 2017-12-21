@@ -14,7 +14,7 @@
 #include <map>
 #include <vector>
 
-#include "third_party/woff2/src/woff2_dec.h"
+#include <woff2/decode.h>
 
 // The OpenType Font File
 // http://www.microsoft.com/typography/otspec/otff.htm
