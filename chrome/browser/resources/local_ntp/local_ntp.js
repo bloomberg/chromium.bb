@@ -169,9 +169,7 @@ var WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
  * @enum {number}
  * @const
  */
-var KEYCODE = {
-  ENTER: 13
-};
+var KEYCODE = {ENTER: 13, SPACE: 32};
 
 
 /**
@@ -597,11 +595,13 @@ function init() {
   var undoLink = $(IDS.UNDO_LINK);
   undoLink.addEventListener('click', onUndo);
   registerKeyHandler(undoLink, KEYCODE.ENTER, onUndo);
+  registerKeyHandler(undoLink, KEYCODE.SPACE, onUndo);
   undoLink.textContent = configData.translatedStrings.undoThumbnailRemove;
 
   var restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onRestoreAll);
+  registerKeyHandler(restoreAllLink, KEYCODE.SPACE, onRestoreAll);
   restoreAllLink.textContent =
       configData.translatedStrings.restoreThumbnailsShort;
 
