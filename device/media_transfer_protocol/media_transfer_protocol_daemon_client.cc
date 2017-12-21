@@ -35,6 +35,25 @@ mojom::MtpFileEntry GetMojoMtpFileEntryFromProtobuf(
       static_cast<mojom::MtpFileEntry::FileType>(entry.file_type()));
 }
 
+mojom::MtpStorageInfo GetMojoMtpStorageInfoFromProtobuf(
+    const MtpStorageInfo& protobuf) {
+  return mojom::MtpStorageInfo(
+        protobuf.storage_name(),
+        protobuf.vendor(),
+        protobuf.vendor_id(),
+        protobuf.product(),
+        protobuf.product_id(),
+        protobuf.device_flags(),
+        protobuf.storage_type(),
+        protobuf.filesystem_type(),
+        protobuf.access_capability(),
+        protobuf.max_capacity(),
+        protobuf.free_space_in_bytes(),
+        protobuf.free_space_in_objects(),
+        protobuf.storage_description(),
+        protobuf.volume_identifier());
+}
+
 // The MediaTransferProtocolDaemonClient implementation.
 class MediaTransferProtocolDaemonClientImpl
     : public MediaTransferProtocolDaemonClient {
@@ -326,7 +345,7 @@ class MediaTransferProtocolDaemonClientImpl
       error_callback.Run();
       return;
     }
-    callback.Run(protobuf);
+    callback.Run(GetMojoMtpStorageInfoFromProtobuf(protobuf));
   }
 
   // Handles the result of OpenStorage and calls |callback| or |error_callback|.

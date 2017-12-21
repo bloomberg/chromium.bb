@@ -25,7 +25,7 @@ class TestMediaTransferProtocolManagerChromeOS
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   const std::vector<std::string> GetStorages() const override;
-  const MtpStorageInfo* GetStorageInfo(
+  const device::mojom::MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const override;
   void GetStorageInfoFromDevice(
       const std::string& storage_name,

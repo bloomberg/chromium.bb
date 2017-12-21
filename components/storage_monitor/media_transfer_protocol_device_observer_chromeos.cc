@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/removable_device_constants.h"
-#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
 namespace storage_monitor {
 
@@ -41,20 +40,21 @@ std::string GetStorageIdFromStorageName(const std::string& storage_name) {
 }
 
 // Returns a unique device id from the given |storage_info|.
-std::string GetDeviceIdFromStorageInfo(const MtpStorageInfo& storage_info) {
+std::string GetDeviceIdFromStorageInfo(
+    const device::mojom::MtpStorageInfo& storage_info) {
   const std::string storage_id =
-      GetStorageIdFromStorageName(storage_info.storage_name());
+      GetStorageIdFromStorageName(storage_info.storage_name);
   if (storage_id.empty())
     return std::string();
 
   // Some devices have multiple data stores. Therefore, include storage id as
   // part of unique id along with vendor, model and volume information.
-  const std::string vendor_id = base::UintToString(storage_info.vendor_id());
-  const std::string model_id = base::UintToString(storage_info.product_id());
+  const std::string vendor_id = base::UintToString(storage_info.vendor_id);
+  const std::string model_id = base::UintToString(storage_info.product_id);
   return StorageInfo::MakeDeviceId(
       StorageInfo::MTP_OR_PTP,
       kVendorModelVolumeStoragePrefix + vendor_id + ":" + model_id + ":" +
-          storage_info.volume_identifier() + ":" + storage_id);
+          storage_info.volume_identifier + ":" + storage_id);
 }
 
 // Returns the |data_store_id| string in the required format.
@@ -65,12 +65,12 @@ std::string GetFormattedIdString(const std::string& data_store_id) {
 
 // Helper function to get device label from storage information.
 base::string16 GetDeviceLabelFromStorageInfo(
-    const MtpStorageInfo& storage_info) {
+    const device::mojom::MtpStorageInfo& storage_info) {
   std::string device_label;
-  const std::string& vendor_name = storage_info.vendor();
+  const std::string& vendor_name = storage_info.vendor;
   device_label = vendor_name;
 
-  const std::string& product_name = storage_info.product();
+  const std::string& product_name = storage_info.product;
   if (!product_name.empty()) {
     if (!device_label.empty())
       device_label += " ";
@@ -79,12 +79,12 @@ base::string16 GetDeviceLabelFromStorageInfo(
 
   // Add the data store id to the device label.
   if (!device_label.empty()) {
-    const std::string& volume_id = storage_info.volume_identifier();
+    const std::string& volume_id = storage_info.volume_identifier;
     if (!volume_id.empty()) {
       device_label += GetFormattedIdString(volume_id);
     } else {
       const std::string data_store_id =
-          GetStorageIdFromStorageName(storage_info.storage_name());
+          GetStorageIdFromStorageName(storage_info.storage_name);
       if (!data_store_id.empty())
         device_label += GetFormattedIdString(data_store_id);
     }
@@ -103,7 +103,7 @@ void GetStorageInfo(const std::string& storage_name,
                     base::string16* vendor_name,
                     base::string16* product_name) {
   DCHECK(!storage_name.empty());
-  const MtpStorageInfo* storage_info =
+  const device::mojom::MtpStorageInfo* storage_info =
       mtp_manager->GetStorageInfo(storage_name);
 
   if (!storage_info)
@@ -112,8 +112,8 @@ void GetStorageInfo(const std::string& storage_name,
   *id = GetDeviceIdFromStorageInfo(*storage_info);
   *label = GetDeviceLabelFromStorageInfo(*storage_info);
   *location = GetDeviceLocationFromStorageName(storage_name);
-  *vendor_name = base::UTF8ToUTF16(storage_info->vendor());
-  *product_name = base::UTF8ToUTF16(storage_info->product());
+  *vendor_name = base::UTF8ToUTF16(storage_info->vendor);
+  *product_name = base::UTF8ToUTF16(storage_info->product);
 }
 
 }  // namespace
