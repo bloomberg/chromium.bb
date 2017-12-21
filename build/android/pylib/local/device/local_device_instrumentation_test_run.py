@@ -812,18 +812,11 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def _ShouldRetry(self, test, result):
-    def not_run(res):
-      if isinstance(res, list):
-        return any(not_run(r) for r in res)
-      return res.GetType() == base_test_result.ResultType.NOTRUN
-
-    if 'RetryOnFailure' in test.get('annotations', {}) or not_run(result):
-      return True
-
-    # TODO(jbudorick): Remove this log message once @RetryOnFailure has been
-    # enabled for a while. See crbug.com/619055 for more details.
-    logging.error('Default retries are being phased out. crbug.com/619055')
-    return False
+    # We've tried to disable retries in the past with mixed results.
+    # See crbug.com/619055 for historical context and crbug.com/797002
+    # for ongoing efforts.
+    del test, result
+    return True
 
   #override
   def _ShouldShard(self):
