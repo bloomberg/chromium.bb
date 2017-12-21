@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -71,14 +72,24 @@ namespace settings {
 
 InternetHandler::InternetHandler(Profile* profile) : profile_(profile) {
   DCHECK(profile_);
+
   arc_vpn_provider_manager_ = app_list::ArcVpnProviderManager::Get(profile_);
   if (arc_vpn_provider_manager_)
     arc_vpn_provider_manager_->AddObserver(this);
+
+  TetherService* tether_service = TetherService::Get(profile);
+  gms_core_notifications_state_tracker_ =
+      tether_service ? tether_service->GetGmsCoreNotificationsStateTracker()
+                     : nullptr;
+  if (gms_core_notifications_state_tracker_)
+    gms_core_notifications_state_tracker_->AddObserver(this);
 }
 
 InternetHandler::~InternetHandler() {
   if (arc_vpn_provider_manager_)
     arc_vpn_provider_manager_->RemoveObserver(this);
+  if (gms_core_notifications_state_tracker_)
+    gms_core_notifications_state_tracker_->RemoveObserver(this);
 }
 
 void InternetHandler::RegisterMessages() {
@@ -124,6 +135,10 @@ void InternetHandler::OnArcVpnProviderUpdated(
   arc_vpn_providers_[arc_vpn_provider->package_name] =
       ArcVpnProviderToValue(arc_vpn_provider);
   SendArcVpnProviders();
+}
+
+void InternetHandler::OnGmsCoreNotificationStateChanged() {
+  SetGmsCoreNotificationsDisabledDeviceNames();
 }
 
 void InternetHandler::AddNetwork(const base::ListValue* args) {
@@ -217,12 +232,8 @@ void InternetHandler::RequestArcVpnProviders(const base::ListValue* args) {
 
 void InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames(
     const base::ListValue* args) {
-  // TODO(khorimoto): Send an actual list of device names. Currently, an empty
-  // list is sent. See crbug.com/765966.
-  std::vector<std::string> device_names;
-
   AllowJavascript();
-  SetGmsCoreNotificationsDisabledDeviceNames(device_names);
+  SetGmsCoreNotificationsDisabledDeviceNames();
 }
 
 void InternetHandler::SetArcVpnProviders(
@@ -248,9 +259,15 @@ void InternetHandler::SendArcVpnProviders() {
   FireWebUIListener(kSendArcVpnProviders, arc_vpn_providers_value);
 }
 
-void InternetHandler::SetGmsCoreNotificationsDisabledDeviceNames(
-    const std::vector<std::string>& device_names) {
+void InternetHandler::SetGmsCoreNotificationsDisabledDeviceNames() {
+  if (!gms_core_notifications_state_tracker_)
+    return;
+
   device_names_without_notifications_.clear();
+
+  const std::vector<std::string> device_names =
+      gms_core_notifications_state_tracker_
+          ->GetGmsCoreNotificationsDisabledDeviceNames();
   for (const auto& device_name : device_names) {
     device_names_without_notifications_.emplace_back(
         std::make_unique<base::Value>(device_name));
@@ -274,5 +291,16 @@ gfx::NativeWindow InternetHandler::GetNativeWindow() const {
   return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 
+void InternetHandler::SetGmsCoreNotificationsStateTrackerForTesting(
+    chromeos::tether::GmsCoreNotificationsStateTracker*
+        gms_core_notifications_state_tracker) {
+  if (gms_core_notifications_state_tracker_)
+    gms_core_notifications_state_tracker_->RemoveObserver(this);
+
+  gms_core_notifications_state_tracker_ = gms_core_notifications_state_tracker;
+  gms_core_notifications_state_tracker_->AddObserver(this);
+}
+
 }  // namespace settings
+
 }  // namespace chromeos
