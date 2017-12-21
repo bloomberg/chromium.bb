@@ -169,36 +169,61 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   }
 
   gpu::gles2::ContextCreationAttribHelper attrib_helper;
-  std::vector<int32_t> attribs;
   if (attrib_list) {
     for (const int32_t* attr = attrib_list; attr[0] != PP_GRAPHICS3DATTRIB_NONE;
          attr += 2) {
-      switch (attr[0]) {
+      int32_t key = attr[0];
+      int32_t value = attr[1];
+      switch (key) {
+        case PP_GRAPHICS3DATTRIB_ALPHA_SIZE:
+          attrib_helper.alpha_size = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_BLUE_SIZE:
+          attrib_helper.blue_size = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_GREEN_SIZE:
+          attrib_helper.green_size = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_RED_SIZE:
+          attrib_helper.red_size = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_DEPTH_SIZE:
+          attrib_helper.depth_size = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_STENCIL_SIZE:
+          attrib_helper.stencil_size = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_SAMPLES:
+          attrib_helper.samples = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS:
+          attrib_helper.sample_buffers = value;
+          break;
+        case PP_GRAPHICS3DATTRIB_SWAP_BEHAVIOR:
+          attrib_helper.buffer_preserved =
+              value == PP_GRAPHICS3DATTRIB_BUFFER_PRESERVED;
+          break;
         case PP_GRAPHICS3DATTRIB_WIDTH:
-          attrib_helper.offscreen_framebuffer_size.set_width(attr[1]);
+          attrib_helper.offscreen_framebuffer_size.set_width(value);
           break;
         case PP_GRAPHICS3DATTRIB_HEIGHT:
-          attrib_helper.offscreen_framebuffer_size.set_height(attr[1]);
+          attrib_helper.offscreen_framebuffer_size.set_height(value);
           break;
         case PP_GRAPHICS3DATTRIB_GPU_PREFERENCE:
           attrib_helper.gpu_preference =
-              (attr[1] == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
+              (value == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
                   ? gl::PreferIntegratedGpu
                   : gl::PreferDiscreteGpu;
           break;
         case PP_GRAPHICS3DATTRIB_SINGLE_BUFFER:
-          attrib_helper.single_buffer = !!attr[1];
+          attrib_helper.single_buffer = !!value;
           break;
         default:
-          attribs.push_back(attr[0]);
-          attribs.push_back(attr[1]);
-          break;
+          DLOG(ERROR) << "Invalid context creation attribute: " << attr[0];
+          return 0;
       }
     }
-    attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
-  if (!attrib_helper.Parse(attribs))
-    return 0;
 
   HostResource result;
   gpu::Capabilities capabilities;

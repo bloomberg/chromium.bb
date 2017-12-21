@@ -323,8 +323,6 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   ContextCreationAttribHelper();
   ContextCreationAttribHelper(const ContextCreationAttribHelper& other);
 
-  bool Parse(const std::vector<int32_t>& attribs);
-
   gfx::Size offscreen_framebuffer_size;
   gl::GpuPreference gpu_preference = gl::PreferIntegratedGpu;
   // -1 if invalid or unspecified.
