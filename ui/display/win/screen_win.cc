@@ -183,10 +183,10 @@ MONITORINFOEX MonitorInfoFromHMONITOR(HMONITOR monitor) {
   return monitor_info;
 }
 
-BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
-                                  HDC hdc,
-                                  LPRECT rect,
-                                  LPARAM data) {
+BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
+                                                HDC hdc,
+                                                LPRECT rect,
+                                                LPARAM data) {
   std::vector<DisplayInfo>* display_infos =
       reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
@@ -197,7 +197,7 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
 
 std::vector<DisplayInfo> GetDisplayInfosFromSystem() {
   std::vector<DisplayInfo> display_infos;
-  EnumDisplayMonitors(nullptr, nullptr, EnumMonitorCallback,
+  EnumDisplayMonitors(nullptr, nullptr, EnumMonitorForDisplayInfoCallback,
                       reinterpret_cast<LPARAM>(&display_infos));
   DCHECK_EQ(static_cast<size_t>(::GetSystemMetrics(SM_CMONITORS)),
             display_infos.size());
