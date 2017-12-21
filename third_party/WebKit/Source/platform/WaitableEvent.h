@@ -41,6 +41,9 @@ class WaitableEvent;
 
 namespace blink {
 
+// TODO(crbug.com/796799): Deprecate blink::WaitableEvent and use
+// base::WaitableEvent instead.
+//
 // Provides a thread synchronization that can be used to allow one thread to
 // wait until another thread to finish some work.
 class PLATFORM_EXPORT WaitableEvent {

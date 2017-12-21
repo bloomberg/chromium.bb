@@ -409,6 +409,17 @@ void ResourceDispatcher::OnRequestComplete(
   peer->OnCompletedRequest(renderer_status);
 }
 
+mojom::DownloadedTempFilePtr ResourceDispatcher::TakeDownloadedTempFile(
+    int request_id) {
+  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end())
+    return nullptr;
+  PendingRequestInfo* request_info = it->second.get();
+  if (!request_info->url_loader_client)
+    return nullptr;
+  return request_info->url_loader_client->TakeDownloadedTempFile();
+}
+
 bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
@@ -594,14 +605,16 @@ void ResourceDispatcher::StartSync(
     SyncLoadResponse* response,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    double timeout) {
   CheckSchemeForReferrerPolicy(*request);
 
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
     mojom::URLLoaderFactoryPtrInfo url_loader_factory_copy;
     url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_copy));
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
+    base::WaitableEvent completed_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
 
     // Prepare the configured throttles for use on a separate thread.
     for (const auto& throttle : throttles)
@@ -617,9 +630,10 @@ void ResourceDispatcher::StartSync(
                        std::move(request), routing_id, frame_origin,
                        traffic_annotation, std::move(url_loader_factory_copy),
                        std::move(throttles), base::Unretained(response),
-                       base::Unretained(&event)));
+                       base::Unretained(&completed_event),
+                       base::Unretained(terminate_sync_load_event_), timeout));
 
-    event.Wait();
+    completed_event.Wait();
   } else {
     SyncLoadResult result;
     IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
@@ -633,18 +647,18 @@ void ResourceDispatcher::StartSync(
 
     response->error_code = result.error_code;
     response->url = result.final_url;
-    response->headers = result.headers;
-    response->mime_type = result.mime_type;
-    response->charset = result.charset;
-    response->request_time = result.request_time;
-    response->response_time = result.response_time;
-    response->load_timing = result.load_timing;
-    response->devtools_info = result.devtools_info;
+    response->info.headers = result.headers;
+    response->info.mime_type = result.mime_type;
+    response->info.charset = result.charset;
+    response->info.request_time = result.request_time;
+    response->info.response_time = result.response_time;
+    response->info.load_timing = result.load_timing;
+    response->info.devtools_info = result.devtools_info;
     response->data.swap(result.data);
-    response->download_file_path = result.download_file_path;
-    response->socket_address = result.socket_address;
-    response->encoded_data_length = result.encoded_data_length;
-    response->encoded_body_length = result.encoded_body_length;
+    response->info.download_file_path = result.download_file_path;
+    response->info.socket_address = result.socket_address;
+    response->info.encoded_data_length = result.encoded_data_length;
+    response->info.encoded_body_length = result.encoded_body_length;
   }
 }
 

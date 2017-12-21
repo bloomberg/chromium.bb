@@ -145,6 +145,10 @@ void WebURLRequest::SetCacheMode(mojom::FetchCacheMode cache_mode) {
   resource_request_->SetCacheMode(cache_mode);
 }
 
+double WebURLRequest::TimeoutInterval() const {
+  return resource_request_->TimeoutInterval();
+}
+
 WebString WebURLRequest::HttpMethod() const {
   return resource_request_->HttpMethod();
 }

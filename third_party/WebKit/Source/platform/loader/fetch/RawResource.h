@@ -30,6 +30,7 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/wtf/Optional.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
 namespace blink {
@@ -80,6 +81,10 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 
+  WTF::Optional<int64_t> DownloadedFileLength() const {
+    return downloaded_file_length_;
+  }
+
  private:
   class RawResourceFactory : public NonTextResourceFactory {
    public:
@@ -110,6 +115,8 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
   bool MatchPreload(const FetchParameters&, WebTaskRunner*) override;
   void NotifyFinished() override;
+
+  WTF::Optional<int64_t> downloaded_file_length_;
 
   // Used for preload matching.
   std::unique_ptr<BufferingDataPipeWriter> data_pipe_writer_;

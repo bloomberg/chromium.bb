@@ -34,6 +34,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace net {
 struct RedirectInfo;
 }
@@ -91,6 +95,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   //
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
+  // |timeout| (in seconds) is used to abort the sync request on timeouts.
   virtual void StartSync(
       std::unique_ptr<ResourceRequest> request,
       int routing_id,
@@ -99,7 +104,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       SyncLoadResponse* response,
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles);
+      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      double timeout);
 
   // Call this method to initiate the request. If this method succeeds, then
   // the peer's methods will be called asynchronously to report various events.
@@ -123,6 +129,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       mojom::URLLoaderFactory* url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
+
+  mojom::DownloadedTempFilePtr TakeDownloadedTempFile(int request_id);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
@@ -170,6 +178,15 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   }
 
   void OnTransferSizeUpdated(int request_id, int32_t transfer_size_diff);
+
+  // This is used only when |this| is created for a worker thread.
+  // Sets |terminate_sync_load_event_| which will be signaled from the main
+  // thread when the worker thread is being terminated so that the sync requests
+  // requested on the worker thread can be aborted.
+  void set_terminate_sync_load_event(
+      base::WaitableEvent* terminate_sync_load_event) {
+    terminate_sync_load_event_ = terminate_sync_load_event;
+  }
 
  private:
   friend class URLLoaderClientImpl;
@@ -295,6 +312,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
   scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter_;
+
+  base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 

@@ -19,14 +19,24 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     : worker_script_url_(worker_script_url),
       url_loader_factory_getter_info_(
           std::move(url_loader_factory_getter_info)),
-      service_worker_provider_id_(service_worker_provider_id) {}
+      service_worker_provider_id_(service_worker_provider_id),
+      terminate_sync_load_event_(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
+
+base::WaitableEvent*
+ServiceWorkerFetchContextImpl::GetTerminateSyncLoadEvent() {
+  return &terminate_sync_load_event_;
+}
 
 void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>(
       nullptr, std::move(loading_task_runner));
+  resource_dispatcher_->set_terminate_sync_load_event(
+      &terminate_sync_load_event_);
 
   url_loader_factory_getter_ = url_loader_factory_getter_info_.Bind();
 }
