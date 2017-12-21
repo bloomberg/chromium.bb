@@ -16948,7 +16948,7 @@ Called by update_net_error_codes.py.-->
   <int value="1958" label="MediaStreamConstraintsGoogDAEchoCancellation"/>
   <int value="1959" label="MediaStreamConstraintsGoogNoiseReduction"/>
   <int value="1960" label="MediaStreamConstraintsGoogPowerLineFrequency"/>
-  <int value="1961" label="ViewportFixedPositionUnderFilter"/>
+  <int value="1961" label="ViewportFixedPositionUnderFilter (obsolete)"/>
   <int value="1962"
       label="RequestMIDIAccessWithSysExOption_ObscuredByFootprinting"/>
   <int value="1963"
