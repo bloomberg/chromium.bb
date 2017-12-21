@@ -13,11 +13,11 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "components/cbor/cbor_writer.h"
 #include "content/browser/webauth/attestation_object.h"
 #include "content/browser/webauth/attested_credential_data.h"
 #include "content/browser/webauth/authenticator_data.h"
 #include "content/browser/webauth/authenticator_utils.h"
-#include "content/browser/webauth/cbor/cbor_writer.h"
 #include "content/browser/webauth/collected_client_data.h"
 #include "content/browser/webauth/ec_public_key.h"
 #include "content/browser/webauth/fido_attestation_statement.h"
@@ -577,8 +577,8 @@ TEST_F(AuthenticatorImplTest, TestU2fAttestationStatementCBOR) {
   std::unique_ptr<FidoAttestationStatement> fido_attestation_statement =
       FidoAttestationStatement::CreateFromU2fRegisterResponse(
           GetTestRegisterResponse());
-  auto cbor =
-      CBORWriter::Write(CBORValue(fido_attestation_statement->GetAsCBORMap()));
+  auto cbor = cbor::CBORWriter::Write(
+      cbor::CBORValue(fido_attestation_statement->GetAsCBORMap()));
   ASSERT_TRUE(cbor.has_value());
   EXPECT_EQ(GetU2fAttestationStatementCBOR(), cbor.value());
 }

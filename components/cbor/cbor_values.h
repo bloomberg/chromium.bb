@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_VALUES_H_
-#define CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_VALUES_H_
+#ifndef COMPONENTS_CBOR_CBOR_VALUES_H_
+#define COMPONENTS_CBOR_CBOR_VALUES_H_
 
 #include <stdint.h>
 #include <string>
@@ -13,15 +13,15 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "content/common/content_export.h"
+#include "components/cbor/cbor_export.h"
 
-namespace content {
+namespace cbor {
 
 // A class for Concise Binary Object Representation (CBOR) values.
 // This does not support:
 //  * Floating-point numbers.
 //  * Indefinite-length encodings.
-class CONTENT_EXPORT CBORValue {
+class CBOR_EXPORT CBORValue {
  public:
   struct CTAPLess {
     // Comparison predicate to order keys in a dictionary as required by the
@@ -166,6 +166,6 @@ class CONTENT_EXPORT CBORValue {
 
   DISALLOW_COPY_AND_ASSIGN(CBORValue);
 };
-}  // namespace content
+}  // namespace cbor
 
-#endif  // CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_VALUES_H_
+#endif  // COMPONENTS_CBOR_CBOR_VALUES_H_

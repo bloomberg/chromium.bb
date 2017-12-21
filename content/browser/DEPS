@@ -19,6 +19,7 @@ include_rules = [
   "+components/ukm",
   "+components/url_formatter",
   "+components/viz",
+  "+components/cbor",
 
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",

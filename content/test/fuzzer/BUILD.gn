@@ -99,15 +99,3 @@ proto_library("html_tree_proto") {
   ]
   testonly = true
 }
-
-fuzzer_test("cbor_reader_fuzzer") {
-  sources = [
-    "cbor_reader_fuzzer.cc",
-  ]
-  deps = [
-    ":fuzzer_support",
-    "//content/browser:for_content_tests",
-  ]
-  seed_corpus = "../data/fuzzer_corpus/cbor_data/"
-  libfuzzer_options = [ "max_len=65535" ]
-}

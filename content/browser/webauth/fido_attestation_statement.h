@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/cbor/cbor_values.h"
 #include "content/browser/webauth/attestation_statement.h"
 #include "content/common/content_export.h"
 
@@ -29,7 +30,7 @@ class CONTENT_EXPORT FidoAttestationStatement : public AttestationStatement {
 
   // Produces a map in the following format:
   // { "x5c": [ x509_certs bytes ], "sig": signature bytes ] }
-  CBORValue::MapValue GetAsCBORMap() override;
+  cbor::CBORValue::MapValue GetAsCBORMap() override;
 
  private:
   const std::vector<uint8_t> signature_;

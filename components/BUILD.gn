@@ -70,6 +70,7 @@ test("components_unittests") {
     "//components/browsing_data/core:unit_tests",
     "//components/bubble:unit_tests",
     "//components/captive_portal:unit_tests",
+    "//components/cbor:unit_tests",
     "//components/client_update_protocol:unit_tests",
     "//components/cloud_devices/common:unit_tests",
     "//components/component_updater:unit_tests",

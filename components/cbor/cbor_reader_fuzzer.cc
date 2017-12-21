@@ -5,12 +5,10 @@
 #include <stdint.h>
 #include <algorithm>
 
-#include "content/browser/webauth/cbor/cbor_reader.h"  // nogncheck
-#include "content/browser/webauth/cbor/cbor_writer.h"  // nogncheck
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "components/cbor/cbor_reader.h"  // nogncheck
+#include "components/cbor/cbor_writer.h"  // nogncheck
 
-namespace content {
+namespace cbor {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<uint8_t> input(data, data + size);
@@ -29,4 +27,4 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   return 0;
 }
 
-}  // namespace content
+}  // namespace cbor

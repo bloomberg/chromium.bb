@@ -6,8 +6,9 @@
 
 #include <utility>
 
+#include "components/cbor/cbor_values.h"
+#include "components/cbor/cbor_writer.h"
 #include "content/browser/webauth/attestation_statement.h"
-#include "content/browser/webauth/cbor/cbor_writer.h"
 
 namespace content {
 
@@ -24,14 +25,14 @@ AttestationObject::AttestationObject(
       attestation_statement_(std::move(statement)) {}
 
 std::vector<uint8_t> AttestationObject::SerializeToCBOREncodedBytes() {
-  CBORValue::MapValue map;
-  map[CBORValue(kFormatKey)] =
-      CBORValue(attestation_statement_->format_name().c_str());
-  map[CBORValue(kAuthDataKey)] =
-      CBORValue(authenticator_data_->SerializeToByteArray());
-  map[CBORValue(kAttestationKey)] =
-      CBORValue(attestation_statement_->GetAsCBORMap());
-  auto cbor = CBORWriter::Write(CBORValue(map));
+  cbor::CBORValue::MapValue map;
+  map[cbor::CBORValue(kFormatKey)] =
+      cbor::CBORValue(attestation_statement_->format_name().c_str());
+  map[cbor::CBORValue(kAuthDataKey)] =
+      cbor::CBORValue(authenticator_data_->SerializeToByteArray());
+  map[cbor::CBORValue(kAttestationKey)] =
+      cbor::CBORValue(attestation_statement_->GetAsCBORMap());
+  auto cbor = cbor::CBORWriter::Write(cbor::CBORValue(map));
   if (cbor.has_value()) {
     return cbor.value();
   }
