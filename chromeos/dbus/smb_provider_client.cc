@@ -90,6 +90,39 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &callback);
   }
 
+  void OpenFile(int32_t mount_id,
+                const base::FilePath& file_path,
+                bool writeable,
+                OpenFileCallback callback) override {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kOpenFileMethod);
+    dbus::MessageWriter writer(&method_call);
+    smbprovider::OpenFileOptions open_file_options;
+    open_file_options.set_mount_id(mount_id);
+    open_file_options.set_file_path(file_path.value());
+    open_file_options.set_writeable(writeable);
+    writer.AppendProtoAsArrayOfBytes(open_file_options);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SmbProviderClientImpl::HandleOpenFileCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(&callback)));
+  }
+
+  void CloseFile(int32_t file_id, CloseFileCallback callback) override {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kCloseFileMethod);
+    dbus::MessageWriter writer(&method_call);
+    smbprovider::CloseFileOptions close_file_options;
+    close_file_options.set_file_id(file_id);
+    writer.AppendProtoAsArrayOfBytes(close_file_options);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SmbProviderClientImpl::HandleCloseFileCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(&callback)));
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -143,6 +176,40 @@ class SmbProviderClientImpl : public SmbProviderClient {
                              dbus::Response* response) {
     if (!response) {
       DLOG(ERROR) << "Unmount: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
+    }
+    dbus::MessageReader reader(response);
+    std::move(callback).Run(GetErrorFromReader(&reader));
+  }
+
+  // Handles D-Bus callback for OpenFile.
+  void HandleOpenFileCallback(OpenFileCallback callback,
+                              dbus::Response* response) {
+    if (!response) {
+      DLOG(ERROR) << "OpenFile: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, -1);
+      return;
+    }
+    dbus::MessageReader reader(response);
+    smbprovider::ErrorType error = GetErrorFromReader(&reader);
+    if (error != smbprovider::ERROR_OK) {
+      std::move(callback).Run(error, -1);
+      return;
+    }
+    int32_t file_id = -1;
+    if (!reader.PopInt32(&file_id) || file_id < 0) {
+      LOG(ERROR) << "OpenFile: failed to parse mount id";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED, -1);
+      return;
+    }
+    std::move(callback).Run(smbprovider::ERROR_OK, file_id);
+  }
+
+  // Handles D-Bus callback for CloseFile.
+  void HandleCloseFileCallback(CloseFileCallback callback,
+                               dbus::Response* response) {
+    if (!response) {
+      DLOG(ERROR) << "CloseFile: failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
     }
     dbus::MessageReader reader(response);

@@ -30,6 +30,10 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
   using GetMetdataEntryCallback =
       base::OnceCallback<void(smbprovider::ErrorType error,
                               const smbprovider::DirectoryEntry& entry)>;
+  using OpenFileCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error, int32_t file_id)>;
+  using CloseFileCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error)>;
 
   ~SmbProviderClient() override;
 
@@ -60,6 +64,18 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
   virtual void GetMetadataEntry(int32_t mount_id,
                                 const base::FilePath& entry_path,
                                 GetMetdataEntryCallback callback) = 0;
+
+  // Calls OpenFile. Using the corresponding mount |mount_id|, this opens the
+  // file at a given |file_path|, and passes a file handle to the supplied
+  // OpenFileCallback.
+  virtual void OpenFile(int32_t mount_id,
+                        const base::FilePath& file_path,
+                        bool writeable,
+                        OpenFileCallback callback) = 0;
+
+  // Calls CloseFile. This closes the file with handle |file_id|. Subsequent
+  // operations using file with this handle will fail.
+  virtual void CloseFile(int32_t file_id, CloseFileCallback callback) = 0;
 
  protected:
   // Create() should be used instead.
