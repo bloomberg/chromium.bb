@@ -322,7 +322,13 @@ void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
 }
 
 void ServiceWorkerProviderHost::SetTopmostFrameUrl(const GURL& url) {
+  DCHECK(IsProviderForClient());
   topmost_frame_url_ = url;
+}
+
+const GURL& ServiceWorkerProviderHost::topmost_frame_url() const {
+  DCHECK(IsProviderForClient());
+  return topmost_frame_url_;
 }
 
 void ServiceWorkerProviderHost::SetControllerVersionAttribute(
@@ -442,7 +448,8 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerRegistrationObjectHost(
 
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
   return GetContentClient()->browser()->AllowServiceWorker(
-      scope, topmost_frame_url(), dispatcher_host_->resource_context(),
+      scope, IsProviderForClient() ? topmost_frame_url() : document_url(),
+      dispatcher_host_->resource_context(),
       base::Bind(&WebContentsImpl::FromRenderFrameHostID, render_process_id_,
                  frame_id()));
 }
