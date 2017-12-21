@@ -13,8 +13,10 @@
   </div>
 </div>
 <script src="../../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
+
+var t = async_test();
 
 function runTest() {
   var content = document.createElement("span");
@@ -22,33 +24,20 @@ function runTest() {
   div.appendChild(content);
   div.id = "child";
   target.replaceChild(div, child);
-  requestAnimationFrame(checkResult);
+  requestAnimationFrame(t.step_func_done(checkResult));
 }
 
 function checkResult() {
-  if (window.internals) {
-    var clientRect = window.internals.visualRect(myspan.firstChild);
-    test(function() {
-      // Check that the visual rect for the child has been initialized
-      // to a non-zero (and hence presumably correct) size.
-      assert_true(clientRect.width > 0);
-      assert_true(clientRect.height > 0);
-    });
-  }
-  if (window.testRunner)
-    testRunner.notifyDone();
-}
-
-if (window.testRunner) {
-  window.testRunner.waitUntilDone();
-  window.testRunner.dumpAsText();
+  var clientRect = window.internals.visualRect(myspan.firstChild);
+  // Check that the visual rect for the child has been initialized
+  // to a non-zero (and hence presumably correct) size.
+  assert_true(clientRect.width > 0);
+  assert_true(clientRect.height > 0);
 }
 
 onload = function() {
   requestAnimationFrame(function() {
-    requestAnimationFrame(function() {
-      runTest();
-    });
+    requestAnimationFrame(t.step_func(runTest));
   });
 }
 </script>
