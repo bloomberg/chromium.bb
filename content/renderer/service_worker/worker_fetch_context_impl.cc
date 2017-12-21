@@ -103,7 +103,10 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
           std::move(service_worker_container_host_info)),
       url_loader_factory_getter_info_(
           std::move(url_loader_factory_getter_info)),
-      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
+      thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()),
+      terminate_sync_load_event_(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName,
@@ -113,6 +116,10 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
 
 WorkerFetchContextImpl::~WorkerFetchContextImpl() {}
 
+base::WaitableEvent* WorkerFetchContextImpl::GetTerminateSyncLoadEvent() {
+  return &terminate_sync_load_event_;
+}
+
 void WorkerFetchContextImpl::InitializeOnWorkerThread(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
   DCHECK(loading_task_runner->RunsTasksInCurrentSequence());
@@ -120,6 +127,8 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread(
   DCHECK(!binding_.is_bound());
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>(
       nullptr, std::move(loading_task_runner));
+  resource_dispatcher_->set_terminate_sync_load_event(
+      &terminate_sync_load_event_);
 
   url_loader_factory_getter_ = url_loader_factory_getter_info_.Bind();
   if (service_worker_client_request_.is_pending())

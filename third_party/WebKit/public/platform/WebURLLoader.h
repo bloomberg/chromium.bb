@@ -51,12 +51,14 @@ class WebURLLoader {
   // Load the request synchronously, returning results directly to the
   // caller upon completion.  There is no mechanism to interrupt a
   // synchronous load!!
-  virtual void LoadSynchronously(const WebURLRequest&,
-                                 WebURLResponse&,
-                                 base::Optional<WebURLError>&,
-                                 WebData&,
-                                 int64_t& encoded_data_length,
-                                 int64_t& encoded_body_length) = 0;
+  virtual void LoadSynchronously(
+      const WebURLRequest&,
+      WebURLResponse&,
+      base::Optional<WebURLError>&,
+      WebData&,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      base::Optional<int64_t>& downloaded_file_length) = 0;
 
   // Load the request asynchronously, sending notifications to the given
   // client.  The client will receive no further notifications if the

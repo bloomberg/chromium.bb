@@ -67,14 +67,15 @@ void ThreadableLoader::LoadResourceSynchronously(
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
   if (context.IsWorkerGlobalScope()) {
-    WorkerThreadableLoader::LoadResourceSynchronously(
-        ToWorkerGlobalScope(context), request, client, options,
-        resource_loader_options);
+    DocumentThreadableLoader::LoadResourceSynchronously(
+        *ThreadableLoadingContext::Create(*ToWorkerGlobalScope(&context)),
+        request, client, options, resource_loader_options);
     return;
   }
 
   DocumentThreadableLoader::LoadResourceSynchronously(
-      ToDocument(context), request, client, options, resource_loader_options);
+      *ThreadableLoadingContext::Create(*ToDocument(&context)), request, client,
+      options, resource_loader_options);
 }
 
 }  // namespace blink
