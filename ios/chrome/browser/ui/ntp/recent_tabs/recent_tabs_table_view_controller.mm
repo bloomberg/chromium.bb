@@ -55,6 +55,9 @@
 
 // Key for saving collapsed session state in the UserDefaults.
 NSString* const kCollapsedSectionsKey = @"ChromeRecentTabsCollapsedSections";
+// Accessibility identifier for the main view.
+NSString* const kRecentTabsTableViewControllerAccessibilityIdentifier =
+    @"recent_tabs_view_controller";
 
 namespace {
 
@@ -196,7 +199,8 @@ enum CellType {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.accessibilityIdentifier = @"recent_tabs_view_controller";
+  self.view.accessibilityIdentifier =
+      kRecentTabsTableViewControllerAccessibilityIdentifier;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.estimatedRowHeight =
       [SessionTabDataView desiredHeightInUITableViewCell];
