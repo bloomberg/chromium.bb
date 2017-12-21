@@ -31,6 +31,7 @@
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/scheduler/renderer_process_type.h"
+#include "third_party/WebKit/common/page/launching_process_state.h"
 
 namespace blink {
 namespace scheduler {
@@ -271,7 +272,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                       "RendererScheduler.Hidden",
                       renderer_scheduler_impl,
                       HiddenStateToString),
-      renderer_backgrounded(false,
+      renderer_backgrounded(kLaunchingProcessIsBackgrounded,
                             "RendererScheduler.Backgrounded",
                             renderer_scheduler_impl,
                             BackgroundStateToString),
@@ -280,11 +281,10 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
           "RendererScheduler.StoppingWhenBackgroundedEnabled",
           renderer_scheduler_impl,
           YesNoStateToString),
-      stopped_when_backgrounded(
-          false,
-          "RendererScheduler.StoppedWhenBackgrounded",
-          renderer_scheduler_impl,
-          YesNoStateToString),
+      stopped_when_backgrounded(false,
+                                "RendererScheduler.StoppedWhenBackgrounded",
+                                renderer_scheduler_impl,
+                                YesNoStateToString),
       was_shutdown(false,
                    "RendererScheduler.WasShutdown",
                    renderer_scheduler_impl,
@@ -294,11 +294,10 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
           "RendererScheduler.LoadingTaskEstimatedCostMs",
           renderer_scheduler_impl,
           TimeDeltaToMilliseconds),
-      timer_task_estimated_cost(
-          base::TimeDelta(),
-          "RendererScheduler.TimerTaskEstimatedCostMs",
-          renderer_scheduler_impl,
-          TimeDeltaToMilliseconds),
+      timer_task_estimated_cost(base::TimeDelta(),
+                                "RendererScheduler.TimerTaskEstimatedCostMs",
+                                renderer_scheduler_impl,
+                                TimeDeltaToMilliseconds),
       loading_tasks_seem_expensive(
           false,
           "RendererScheduler.LoadingTasksSeemExpensive",
@@ -312,11 +311,10 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                                "RendererScheduler.TouchstartExpectedSoon",
                                renderer_scheduler_impl,
                                YesNoStateToString),
-      have_seen_a_begin_main_frame(
-          false,
-          "RendererScheduler.HasSeenBeginMainFrame",
-          renderer_scheduler_impl,
-          YesNoStateToString),
+      have_seen_a_begin_main_frame(false,
+                                   "RendererScheduler.HasSeenBeginMainFrame",
+                                   renderer_scheduler_impl,
+                                   YesNoStateToString),
       have_reported_blocking_intervention_in_current_policy(
           false,
           "RendererScheduler.HasReportedBlockingInterventionInCurrentPolicy",
