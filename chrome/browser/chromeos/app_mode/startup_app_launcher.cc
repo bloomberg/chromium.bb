@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/syslog_logging.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/crx_file/id_util.h"
 #include "components/session_manager/core/session_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -36,7 +35,6 @@
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/load_flags.h"
 
-using content::BrowserThread;
 using extensions::Extension;
 
 namespace chromeos {
@@ -55,20 +53,15 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
       app_id_(app_id),
       diagnostic_mode_(diagnostic_mode),
       delegate_(delegate),
+      kiosk_app_manager_observer_(this),
+      install_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
   DCHECK(crx_file::id_util::IdIsValid(app_id_));
-  KioskAppManager::Get()->AddObserver(this);
+  kiosk_app_manager_observer_.Add(KioskAppManager::Get());
 }
 
-StartupAppLauncher::~StartupAppLauncher() {
-  KioskAppManager::Get()->RemoveObserver(this);
-
-  // StartupAppLauncher can be deleted at anytime during the launch process
-  // through a user bailout shortcut.
-  extensions::InstallTrackerFactory::GetForBrowserContext(profile_)
-      ->RemoveObserver(this);
-}
+StartupAppLauncher::~StartupAppLauncher() = default;
 
 void StartupAppLauncher::Initialize() {
   MaybeInitializeNetwork();
@@ -158,16 +151,15 @@ void StartupAppLauncher::MaybeLaunchApp() {
   // If the app is not offline enabled, make sure the network is ready before
   // launching.
   if (offline_enabled || delegate_->IsNetworkReady()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&StartupAppLauncher::OnReadyToLaunch,
-                                           weak_ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&StartupAppLauncher::OnReadyToLaunch,
+                                  weak_ptr_factory_.GetWeakPtr()));
   } else {
     ++launch_attempt_;
     if (launch_attempt_ < kMaxLaunchAttempt) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&StartupAppLauncher::MaybeInitializeNetwork,
-                         weak_ptr_factory_.GetWeakPtr()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&StartupAppLauncher::MaybeInitializeNetwork,
+                                    weak_ptr_factory_.GetWeakPtr()));
       return;
     }
     OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_LAUNCH);
@@ -244,9 +236,7 @@ void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
     return;
   }
 
-  extensions::InstallTracker* tracker =
-      extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
-  tracker->RemoveObserver(this);
+  install_observer_.RemoveAll();
   if (delegate_->IsShowingNetworkConfigScreen()) {
     SYSLOG(WARNING) << "Showing network config screen";
     return;
@@ -424,9 +414,8 @@ void StartupAppLauncher::BeginInstall() {
           ->IsIdPending(app_id_)) {
     delegate_->OnInstallingApp();
     // Observe the crx installation events.
-    extensions::InstallTracker* tracker =
-        extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
-    tracker->AddObserver(this);
+    install_observer_.Add(
+        extensions::InstallTrackerFactory::GetForBrowserContext(profile_));
     return;
   }
 
@@ -463,9 +452,8 @@ void StartupAppLauncher::MaybeInstallSecondaryApps() {
   if (IsAnySecondaryAppPending()) {
     delegate_->OnInstallingApp();
     // Observe the crx installation events.
-    extensions::InstallTracker* tracker =
-        extensions::InstallTrackerFactory::GetForBrowserContext(profile_);
-    tracker->AddObserver(this);
+    install_observer_.Add(
+        extensions::InstallTrackerFactory::GetForBrowserContext(profile_));
     return;
   }
 
