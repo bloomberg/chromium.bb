@@ -127,11 +127,7 @@ void AXAuraObjCache::FireEvent(AXAuraObjWrapper* aura_obj,
     delegate_->OnEvent(aura_obj, event_type);
 }
 
-AXAuraObjCache::AXAuraObjCache()
-    : current_id_(1),
-      is_destroying_(false),
-      delegate_(nullptr),
-      root_window_(nullptr) {}
+AXAuraObjCache::AXAuraObjCache() = default;
 
 AXAuraObjCache::~AXAuraObjCache() {
   is_destroying_ = true;
@@ -139,7 +135,10 @@ AXAuraObjCache::~AXAuraObjCache() {
 }
 
 View* AXAuraObjCache::GetFocusedView() {
-  aura::client::FocusClient* focus_client = GetFocusClient(root_window_);
+  if (root_windows_.empty())
+    return nullptr;
+  aura::client::FocusClient* focus_client =
+      GetFocusClient(*root_windows_.begin());
   if (!focus_client)
     return nullptr;
 
@@ -182,15 +181,15 @@ void AXAuraObjCache::OnWindowFocused(aura::Window* gained_focus,
 }
 
 void AXAuraObjCache::OnRootWindowObjCreated(aura::Window* window) {
-  root_window_ = window;
-  if (GetFocusClient(window))
+  if (root_windows_.empty() && GetFocusClient(window))
     GetFocusClient(window)->AddObserver(this);
+  root_windows_.insert(window);
 }
 
 void AXAuraObjCache::OnRootWindowObjDestroyed(aura::Window* window) {
-  if (GetFocusClient(window))
+  root_windows_.erase(window);
+  if (root_windows_.empty() && GetFocusClient(window))
     GetFocusClient(window)->RemoveObserver(this);
-  root_window_ = nullptr;
 }
 
 template <typename AuraViewWrapper, typename AuraView>
