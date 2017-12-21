@@ -65,6 +65,7 @@ class Modulator;
 class Navigator;
 class PostMessageTimer;
 class Screen;
+class ScriptPromise;
 class ScriptState;
 class ScrollToOptions;
 class SecurityOrigin;
@@ -216,6 +217,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   CSSStyleDeclaration* getComputedStyle(
       Element*,
       const String& pseudo_elt = String()) const;
+
+  // Acessibility Object Model
+  ScriptPromise getComputedAccessibleNode(ScriptState*, Element*);
 
   // WebKit extension
   CSSRuleList* getMatchedCSSRules(Element*, const String& pseudo_elt) const;

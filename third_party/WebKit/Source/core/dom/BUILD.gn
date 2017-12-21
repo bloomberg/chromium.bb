@@ -38,6 +38,8 @@ blink_core_sources("dom") {
     "CollectionIndexCache.h",
     "Comment.cpp",
     "Comment.h",
+    "ComputedAccessibleNode.cpp",
+    "ComputedAccessibleNode.h",
     "ContainerNode.cpp",
     "ContainerNode.h",
     "ContextFeatures.cpp",

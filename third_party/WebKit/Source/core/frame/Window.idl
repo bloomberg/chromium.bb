@@ -173,6 +173,10 @@
     //  90 is when rotated counter clockwise.
     [MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
 
+    // Accessibility Object Model
+    // https://github.com/WICG/aom/blob/master/explainer.md
+    [RuntimeEnabled=AccessibilityObjectModel, CallWith=ScriptState] Promise<ComputedAccessibleNode> getComputedAccessibleNode(Element element);
+
     // Non-standard APIs
     [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
     [MeasureAs=WindowEvent, Custom, NotEnumerable] attribute Event event;

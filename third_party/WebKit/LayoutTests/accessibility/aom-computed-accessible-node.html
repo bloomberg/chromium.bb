@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<script src="../resources/gc.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<!--
+
+Accessibility Object Model
+Explainer: https://github.com/WICG/aom/blob/master/explainer.md
+Spec: https://wicg.github.io/aom/spec/
+
+-->
+
+<p id="button1" role="button">Click</p>
+
+<script>
+
+test(function(t) {
+    assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
+}, "Make sure that Accessibility Object Model is enabled");
+
+promise_test(() => {
+    var element = document.getElementById("button1");
+    return window.getComputedAccessibleNode(element).then(computedAXNode => {
+      assert_true(computedAXNode != null);
+    });
+}, 'Ensure that a non null value is returned from getComputedAccessibleNode');
+
+promise_test(() => {
+    var element = document.getElementById("button1");
+    return window.getComputedAccessibleNode(element).then(computedAXNode => {
+      assert_equals(computedAXNode.role, "button");
+    });
+}, "ComputedAccessibleNode.role");
+
+promise_test(() => {
+    var element = document.getElementById("button1");
+    return window.getComputedAccessibleNode(element).then(computedAXNode => {
+      assert_equals(computedAXNode.name, "Click");
+    });
+}, "ComputedAccessibleNode.name");
+
+</script>
+
+<p id="button2" role="button" aria-label="axButton">Click</p>
+
+<script>
+
+promise_test(() => {
+    var element = document.getElementById("button2");
+    return window.getComputedAccessibleNode(element).then(computedAXNode => {
+      assert_equals(computedAXNode.name, "axButton");
+    });
+}, "ComputedAccessibleNode.name set through ARIA.");
+
+promise_test(() => {
+    var element = document.getElementById("button2");
+    return window.getComputedAccessibleNode(element).then(computedAXNode1 => {
+      window.getComputedAccessibleNode(element).then(computedAXNode2 => {
+        assert_true(computedAXNode1 === computedAXNode2);
+      });
+    });
+}, "Multiple calls to getComputedAccessibleNode will return the same node.");
+
+// This tests the current behaviour where the returned ComputedAccessibleNode
+// always contains the most up to date state of the Element it corresponds to.
+// This behaviour may change in future as the API is further developed.
+promise_test(() => {
+    var element = document.getElementById("button2");
+    return window.getComputedAccessibleNode(element).then(computedAXNode => {
+      assert_equals(computedAXNode.name, "axButton");
+      element.accessibleNode.label = "new-accessible-label";
+      assert_equals(computedAXNode.name, "new-accessible-label");
+    });
+}, "ComputedAccessibleNode always returns the current accessible name of an element.")
+
+</script>

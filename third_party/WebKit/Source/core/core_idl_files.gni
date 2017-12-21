@@ -104,6 +104,7 @@ core_idl_files =
                     "dom/CDATASection.idl",
                     "dom/CharacterData.idl",
                     "dom/Comment.idl",
+                    "dom/ComputedAccessibleNode.idl",
                     "dom/DOMException.idl",
                     "dom/DOMImplementation.idl",
                     "dom/DOMStringList.idl",

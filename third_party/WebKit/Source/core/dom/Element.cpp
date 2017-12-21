@@ -51,6 +51,7 @@
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
+#include "core/dom/ComputedAccessibleNode.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/Document.h"
@@ -1276,6 +1277,14 @@ AccessibleNode* Element::accessibleNode() {
 
   ElementRareData& rare_data = EnsureElementRareData();
   return rare_data.EnsureAccessibleNode(this);
+}
+
+ComputedAccessibleNode* Element::ComputedAccessibleNode() {
+  if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled())
+    return nullptr;
+
+  ElementRareData& rare_data = EnsureElementRareData();
+  return rare_data.EnsureComputedAccessibleNode(this);
 }
 
 const AtomicString& Element::getAttribute(
