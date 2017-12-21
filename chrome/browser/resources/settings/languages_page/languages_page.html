@@ -214,12 +214,12 @@
           </div>
           <!-- |enable_spellchecking| may be set by policy, but if it's enabled,
                we shouldn't display the policy indicator. -->
-          <template is="dom-if" if="[[spellCheckDisabled_]]">
+          <template is="dom-if" if="[[spellCheckDisabled_]]" restamp>
             <cr-policy-pref-indicator
                 pref="[[prefs.browser.enable_spellchecking]]">
             </cr-policy-pref-indicator>
           </template>
-          <template is="dom-if" if="[[!spellCheckDisabled_]]">
+          <template is="dom-if" if="[[!spellCheckDisabled_]]" restamp>
             <cr-expand-button expanded="{{spellCheckOpened_}}"
                 alt="$i18n{spellCheckExpandA11yLabel}">
             </cr-expand-button>
