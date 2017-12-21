@@ -425,7 +425,7 @@ _BANNED_CPP_FUNCTIONS = (
       r'std::regex',
       (
         'Using std::regex adds unnecessary binary size to Chrome. Please use',
-        're2::RE2 instead (crbug/755321)',
+        're2::RE2 instead (crbug.com/755321)',
       ),
       True,
       (),
@@ -443,7 +443,7 @@ _BANNED_CPP_FUNCTIONS = (
       r'/\bbase::Bind\(',
       (
           'Please consider using base::Bind{Once,Repeating} instead '
-          'of base::Bind. (crbug/714018)',
+          'of base::Bind. (crbug.com/714018)',
       ),
       False,
       (),
@@ -452,7 +452,7 @@ _BANNED_CPP_FUNCTIONS = (
       r'/\bbase::Callback<',
       (
           'Please consider using base::{Once,Repeating}Callback instead '
-          'of base::Callback. (crbug/714018)',
+          'of base::Callback. (crbug.com/714018)',
       ),
       False,
       (),
@@ -461,7 +461,7 @@ _BANNED_CPP_FUNCTIONS = (
       r'/\bbase::Closure\b',
       (
           'Please consider using base::{Once,Repeating}Closure instead '
-          'of base::Closure. (crbug/714018)',
+          'of base::Closure. (crbug.com/714018)',
       ),
       False,
       (),
@@ -2086,7 +2086,8 @@ def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   # Mac, so skip it on other platforms.
   if input_api.platform != 'linux2':
     return []
-  # TODO(agrieve): Update when there's a better way to detect this: crbug/570091
+  # TODO(agrieve): Update when there's a better way to detect
+  # this: crbug.com/570091
   is_android = input_api.os_path.exists('third_party/android_tools')
   pydeps_files = _ALL_PYDEPS_FILES if is_android else _GENERIC_PYDEPS_FILES
   results = []
