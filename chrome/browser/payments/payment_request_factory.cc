@@ -4,6 +4,7 @@
 
 #include "chrome/browser/payments/payment_request_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -22,7 +23,7 @@ void CreatePaymentRequest(mojom::PaymentRequestRequest request,
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(
           render_frame_host, web_contents,
-          base::MakeUnique<ChromePaymentRequestDelegate>(web_contents),
+          std::make_unique<ChromePaymentRequestDelegate>(web_contents),
           std::move(request),
           /*observer_for_testing=*/nullptr);
 }

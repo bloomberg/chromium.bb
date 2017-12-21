@@ -39,7 +39,7 @@ PaymentDetailsModifier ConvertPaymentDetailsModifier(
     const mojom::PaymentDetailsModifierPtr& modifier_entry) {
   PaymentDetailsModifier modifier;
   if (modifier_entry->total) {
-    modifier.total = base::MakeUnique<PaymentItem>(
+    modifier.total = std::make_unique<PaymentItem>(
         ConvertPaymentItem(modifier_entry->total));
   }
   modifier.additional_display_items.reserve(
@@ -128,7 +128,7 @@ PaymentDetails ConvertPaymentDetails(
   PaymentDetails details;
   if (details_entry->total) {
     details.total =
-        base::MakeUnique<PaymentItem>(ConvertPaymentItem(details_entry->total));
+        std::make_unique<PaymentItem>(ConvertPaymentItem(details_entry->total));
   }
   details.display_items.reserve(details_entry->display_items.size());
   for (const mojom::PaymentItemPtr& display_item :

@@ -4,6 +4,8 @@
 
 #include "components/payments/content/android/payment_manifest_downloader_android.h"
 
+#include <memory>
+
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ptr_util.h"
@@ -72,7 +74,7 @@ void PaymentManifestDownloaderAndroid::DownloadPaymentMethodManifest(
       GURL(base::android::ConvertJavaStringToUTF8(
           env, Java_PaymentManifestDownloader_getUriString(env, juri))),
       base::BindOnce(&DownloadCallback::OnPaymentMethodManifestDownload,
-                     base::MakeUnique<DownloadCallback>(jcallback)));
+                     std::make_unique<DownloadCallback>(jcallback)));
 }
 
 void PaymentManifestDownloaderAndroid::DownloadWebAppManifest(
@@ -84,7 +86,7 @@ void PaymentManifestDownloaderAndroid::DownloadWebAppManifest(
       GURL(base::android::ConvertJavaStringToUTF8(
           env, Java_PaymentManifestDownloader_getUriString(env, juri))),
       base::BindOnce(&DownloadCallback::OnWebAppManifestDownload,
-                     base::MakeUnique<DownloadCallback>(jcallback)));
+                     std::make_unique<DownloadCallback>(jcallback)));
 }
 
 void PaymentManifestDownloaderAndroid::Destroy(

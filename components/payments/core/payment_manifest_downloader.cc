@@ -172,7 +172,7 @@ void PaymentManifestDownloader::InitiateDownload(
   fetcher->SetRequestContext(context_.get());
   fetcher->Start();
 
-  auto download = base::MakeUnique<Download>();
+  auto download = std::make_unique<Download>();
   download->request_type = request_type;
   download->fetcher = std::move(fetcher);
   download->callback = std::move(callback);
