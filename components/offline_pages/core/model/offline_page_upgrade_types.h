@@ -41,6 +41,21 @@ struct StartUpgradeResult {
 // Callback delivering results of starting the upgrade.
 typedef base::OnceCallback<void(StartUpgradeResult)> StartUpgradeCallback;
 
+// Enumeration of possible statuses of upgrade process completion.
+enum class CompleteUpgradeStatus {
+  SUCCESS,
+  DB_ERROR,
+  ITEM_MISSING,
+  DIGEST_VERIFICATION_FAILED,
+  TEMPORARY_FILE_MISSING,
+  TARGET_FILE_NAME_IN_USE,
+  RENAMING_FAILED,
+  DB_ERROR_POST_FILE_RENAME,
+};
+
+// Callback for completing the upgrade.
+typedef base::OnceCallback<void(CompleteUpgradeStatus)> CompleteUpgradeCallback;
+
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_MODEL_OFFLINE_PAGE_UPRGRADE_TYPES_H_
