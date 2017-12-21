@@ -78,7 +78,15 @@ class CONTENT_EXPORT CBORValue {
     STRING = 3,
     ARRAY = 4,
     MAP = 5,
+    SIMPLE_VALUE = 7,
     NONE = -1,
+  };
+
+  enum class SimpleValue {
+    FALSE_VALUE = 20,
+    TRUE_VALUE = 21,
+    NULL_VALUE = 22,
+    UNDEFINED = 23,
   };
 
   CBORValue(CBORValue&& that) noexcept;
@@ -100,6 +108,8 @@ class CONTENT_EXPORT CBORValue {
   explicit CBORValue(const MapValue& in_map);
   explicit CBORValue(MapValue&& in_map) noexcept;
 
+  explicit CBORValue(SimpleValue in_simple);
+
   CBORValue& operator=(CBORValue&& that) noexcept;
 
   ~CBORValue();
@@ -119,9 +129,11 @@ class CONTENT_EXPORT CBORValue {
   bool is_string() const { return type() == Type::STRING; }
   bool is_array() const { return type() == Type::ARRAY; }
   bool is_map() const { return type() == Type::MAP; }
+  bool is_simple() const { return type() == Type::SIMPLE_VALUE; }
 
   // These will all fatally assert if the type doesn't match.
   const uint64_t& GetUnsigned() const;
+  SimpleValue GetSimpleValue() const;
   const BinaryValue& GetBytestring() const;
   // Returned string may contain NUL characters.
   const std::string& GetString() const;
@@ -132,6 +144,7 @@ class CONTENT_EXPORT CBORValue {
   Type type_;
 
   union {
+    SimpleValue simple_value_;
     uint64_t unsigned_value_;
     BinaryValue bytestring_value_;
     std::string string_value_;

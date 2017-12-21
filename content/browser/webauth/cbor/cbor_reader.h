@@ -23,6 +23,7 @@
 //     * 3: UTF-8 strings.
 //     * 4: Definite-length arrays.
 //     * 5: Definite-length maps.
+//     * 7: Simple values.
 //
 // Requirements for canonical CBOR representation:
 //  - Duplicate keys for map are not allowed.
@@ -30,8 +31,9 @@
 //    lexical order.
 //
 // Known limitations and interpretations of the RFC:
-//  - Does not support negative integers, floating point numbers, indefinite
-//    data streams and tagging.
+//  - Does not support negative integers, indefinite data streams and tagging.
+//  - Floating point representations and BREAK stop code in major
+//    type 7 are not supported.
 //  - Non-character codepoint are not supported for Major type 3.
 //  - Incomplete CBOR data items are treated as syntax errors.
 //  - Trailing data bytes are treated as errors.
@@ -41,6 +43,8 @@
 //    by setting |max_nesting_level|.
 //  - Only CBOR maps with integer or string type keys are supported due to the
 //    cost of serialization when sorting map keys.
+//  - Simple values that are unassigned/reserved as per RFC 7049 are not
+//    supported and treated as errors.
 
 namespace content {
 
@@ -60,6 +64,8 @@ class CONTENT_EXPORT CBORReader {
     DUPLICATE_KEY,
     OUT_OF_ORDER_KEY,
     NON_MINIMAL_CBOR_ENCODING,
+    UNSUPPORTED_SIMPLE_VALUE,
+    UNSUPPORTED_FLOATING_POINT_VALUE,
   };
 
   // CBOR nested depth sufficient for most use cases.
@@ -82,7 +88,9 @@ class CONTENT_EXPORT CBORReader {
  private:
   CBORReader(Bytes::const_iterator it, const Bytes::const_iterator end);
   base::Optional<CBORValue> DecodeCBOR(int max_nesting_level);
-  bool ReadUnsignedInt(int additional_info, uint64_t* length);
+  bool ReadUnsignedInt(uint8_t additional_info, uint64_t* length);
+  base::Optional<CBORValue> ReadSimpleValue(uint8_t additional_info,
+                                            uint64_t value);
   base::Optional<CBORValue> ReadBytes(uint64_t num_bytes);
   base::Optional<CBORValue> ReadString(uint64_t num_bytes);
   base::Optional<CBORValue> ReadCBORArray(uint64_t length,

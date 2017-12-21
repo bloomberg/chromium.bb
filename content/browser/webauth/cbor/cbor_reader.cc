@@ -5,6 +5,8 @@
 #include "content/browser/webauth/cbor/cbor_reader.h"
 
 #include <math.h>
+#include <utility>
+
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -41,6 +43,10 @@ const char kMapKeyOutOfOrder[] =
     "order.";
 const char kNonMinimalCBOREncoding[] =
     "Unsigned integers must be encoded with minimum number of bytes.";
+const char kUnsupportedSimpleValue[] =
+    "Unsupported or unassigned simple value.";
+const char kUnsupportedFloatingPointValue[] =
+    "Floating point numbers are not supported.";
 
 }  // namespace
 
@@ -95,6 +101,8 @@ base::Optional<CBORValue> CBORReader::DecodeCBOR(int max_nesting_level) {
       return ReadCBORArray(length, max_nesting_level);
     case CBORValue::Type::MAP:
       return ReadCBORMap(length, max_nesting_level);
+    case CBORValue::Type::SIMPLE_VALUE:
+      return ReadSimpleValue(additional_info, length);
     case CBORValue::Type::NONE:
       break;
   }
@@ -103,10 +111,10 @@ base::Optional<CBORValue> CBORReader::DecodeCBOR(int max_nesting_level) {
   return base::nullopt;
 }
 
-bool CBORReader::ReadUnsignedInt(int additional_info, uint64_t* length) {
+bool CBORReader::ReadUnsignedInt(uint8_t additional_info, uint64_t* value) {
   uint8_t additional_bytes = 0;
   if (additional_info < 24) {
-    *length = additional_info;
+    *value = additional_info;
     return true;
   } else if (additional_info == 24) {
     additional_bytes = 1;
@@ -132,8 +140,31 @@ bool CBORReader::ReadUnsignedInt(int additional_info, uint64_t* length) {
     int_data |= *it_++;
   }
 
-  *length = int_data;
+  *value = int_data;
   return CheckUintEncodedByteLength(additional_bytes, int_data);
+}
+
+base::Optional<CBORValue> CBORReader::ReadSimpleValue(uint8_t additional_info,
+                                                      uint64_t value) {
+  // Floating point numbers are not supported.
+  if (additional_info > 24 && additional_info < 28) {
+    error_code_ = DecoderError::UNSUPPORTED_FLOATING_POINT_VALUE;
+    return base::nullopt;
+  }
+
+  CHECK_LE(value, 255u);
+  CBORValue::SimpleValue possibly_unsupported_simple_value =
+      static_cast<CBORValue::SimpleValue>(static_cast<int>(value));
+  switch (possibly_unsupported_simple_value) {
+    case CBORValue::SimpleValue::FALSE_VALUE:
+    case CBORValue::SimpleValue::TRUE_VALUE:
+    case CBORValue::SimpleValue::NULL_VALUE:
+    case CBORValue::SimpleValue::UNDEFINED:
+      return CBORValue(possibly_unsupported_simple_value);
+  }
+
+  error_code_ = DecoderError::UNSUPPORTED_SIMPLE_VALUE;
+  return base::nullopt;
 }
 
 base::Optional<CBORValue> CBORReader::ReadString(uint64_t num_bytes) {
@@ -278,6 +309,10 @@ const char* CBORReader::ErrorCodeToString(DecoderError error) {
       return kMapKeyOutOfOrder;
     case DecoderError::NON_MINIMAL_CBOR_ENCODING:
       return kNonMinimalCBOREncoding;
+    case DecoderError::UNSUPPORTED_SIMPLE_VALUE:
+      return kUnsupportedSimpleValue;
+    case DecoderError::UNSUPPORTED_FLOATING_POINT_VALUE:
+      return kUnsupportedFloatingPointValue;
     default:
       NOTREACHED();
       return "Unknown error code.";

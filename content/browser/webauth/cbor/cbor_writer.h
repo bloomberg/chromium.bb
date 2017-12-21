@@ -25,6 +25,8 @@
 //     * 4: Arrays, with the number of elements known at the start.
 //     * 5: Maps, with the number of elements known at the start
 //              of the container.
+//     * 7: Simple values.
+//
 // Unsupported:
 //  * Negative integers.
 //  * Floating-point numbers.
@@ -68,7 +70,7 @@ class CONTENT_EXPORT CBORWriter {
       size_t max_nesting_level = kDefaultMaxNestingDepth);
 
  private:
-  CBORWriter(std::vector<uint8_t>* cbor);
+  explicit CBORWriter(std::vector<uint8_t>* cbor);
 
   // Called recursively to build the CBOR bytestring. When completed,
   // |encoded_cbor_| will contain the CBOR.

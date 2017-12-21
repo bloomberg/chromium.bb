@@ -35,6 +35,9 @@ CBORValue::CBORValue(Type type) : type_(type) {
     case Type::MAP:
       new (&map_value_) MapValue();
       return;
+    case Type::SIMPLE_VALUE:
+      simple_value_ = CBORValue::SimpleValue::UNDEFINED;
+      return;
     case Type::NONE:
       return;
   }
@@ -81,6 +84,11 @@ CBORValue::CBORValue(const MapValue& in_map) : type_(Type::MAP), map_value_() {
 CBORValue::CBORValue(MapValue&& in_map) noexcept
     : type_(Type::MAP), map_value_(std::move(in_map)) {}
 
+CBORValue::CBORValue(SimpleValue in_simple)
+    : type_(Type::SIMPLE_VALUE), simple_value_(in_simple) {
+  CHECK(static_cast<int>(in_simple) >= 20 && static_cast<int>(in_simple) <= 23);
+}
+
 CBORValue& CBORValue::operator=(CBORValue&& that) noexcept {
   InternalCleanup();
   InternalMoveConstructFrom(std::move(that));
@@ -106,6 +114,8 @@ CBORValue CBORValue::Clone() const {
       return CBORValue(array_value_);
     case Type::MAP:
       return CBORValue(map_value_);
+    case Type::SIMPLE_VALUE:
+      return CBORValue(simple_value_);
   }
 
   NOTREACHED();
@@ -137,6 +147,11 @@ const CBORValue::MapValue& CBORValue::GetMap() const {
   return map_value_;
 }
 
+CBORValue::SimpleValue CBORValue::GetSimpleValue() const {
+  CHECK(is_simple());
+  return simple_value_;
+}
+
 void CBORValue::InternalMoveConstructFrom(CBORValue&& that) {
   type_ = that.type_;
 
@@ -155,6 +170,9 @@ void CBORValue::InternalMoveConstructFrom(CBORValue&& that) {
       return;
     case Type::MAP:
       new (&map_value_) MapValue(std::move(that.map_value_));
+      return;
+    case Type::SIMPLE_VALUE:
+      simple_value_ = that.simple_value_;
       return;
     case Type::NONE:
       return;
@@ -178,6 +196,7 @@ void CBORValue::InternalCleanup() {
       break;
     case Type::NONE:
     case Type::UNSIGNED:
+    case Type::SIMPLE_VALUE:
       break;
   }
   type_ = Type::NONE;
