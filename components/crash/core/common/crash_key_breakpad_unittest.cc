@@ -168,4 +168,31 @@ TEST_F(CrashKeyBreakpadTest, SetTwoChunked) {
   EXPECT_EQ(std::string(2, '3'), storage()->GetValueForKey("big__5"));
 }
 
+TEST_F(CrashKeyBreakpadTest, ChunkSingleEntry) {
+  static CrashKeyString<200> crash_key("split");
+
+  EXPECT_EQ(0u, storage()->GetCount());
+
+  crash_key.Set("test");
+
+  ASSERT_EQ(1u, storage()->GetCount());
+  EXPECT_STREQ("test", storage()->GetValueForKey("split"));
+
+  crash_key.Set(std::string(127, 'z') + "bloop");
+
+  ASSERT_EQ(2u, storage()->GetCount());
+  EXPECT_EQ(std::string(127, 'z'), storage()->GetValueForKey("split__1"));
+  EXPECT_STREQ("bloop", storage()->GetValueForKey("split__2"));
+
+  crash_key.Set("abcdefg");
+
+  ASSERT_EQ(1u, storage()->GetCount());
+  EXPECT_STREQ("abcdefg", storage()->GetValueForKey("split"));
+
+  crash_key.Set("hijklmnop");
+
+  ASSERT_EQ(1u, storage()->GetCount());
+  EXPECT_STREQ("hijklmnop", storage()->GetValueForKey("split"));
+}
+
 }  // namespace crash_reporter
