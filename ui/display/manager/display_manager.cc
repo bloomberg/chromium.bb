@@ -241,6 +241,47 @@ bool ValidateMatrixForDisplayInfoList(
   return true;
 }
 
+// Defines the ranges in which the number of displays can reside as reported by
+// UMA in the case of Unified Desktop mode.
+//
+// WARNING: These values are persisted to logs. Entries should not be
+//          renumbered and numeric values should never be reused.
+enum class DisplayCountRange {
+  // Exactly 2 displays.
+  k2Displays = 0,
+  // Range (2 : 4] displays.
+  kUpTo4Displays = 1,
+  // Range (4 : 6] displays.
+  kUpTo6Displays = 2,
+  // Range (6 : 8] displays.
+  kUpTo8Displays = 3,
+  // Greater than 8 displays.
+  kGreaterThan8Displays = 4,
+
+  // Always keep this the last item.
+  kCount,
+};
+
+// Returns the display count range bucket in which |display_count| resides.
+DisplayCountRange GetUnifiedDisplayCountRange(int display_count) {
+  // Note that Unified Mode cannot be enabled with a single display.
+  DCHECK_GE(display_count, 2);
+
+  if (display_count <= 2)
+    return DisplayCountRange::k2Displays;
+
+  if (display_count <= 4)
+    return DisplayCountRange::kUpTo4Displays;
+
+  if (display_count <= 6)
+    return DisplayCountRange::kUpTo6Displays;
+
+  if (display_count <= 8)
+    return DisplayCountRange::kUpTo8Displays;
+
+  return DisplayCountRange::kGreaterThan8Displays;
+}
+
 }  // namespace
 
 DisplayManager::BeginEndNotifier::BeginEndNotifier(
@@ -852,6 +893,9 @@ void DisplayManager::UpdateDisplaysWith(
 
   if (multi_display_mode_ != MIRRORING)
     multi_display_mode_ = current_default_multi_display_mode_;
+
+  UMA_HISTOGRAM_ENUMERATION("DisplayManager.MultiDisplayMode",
+                            multi_display_mode_, MULTI_DISPLAY_MODE_LAST + 1);
 
   CreateSoftwareMirroringDisplayInfo(&new_display_info_list);
 
@@ -1756,6 +1800,11 @@ void DisplayManager::CreateUnifiedDesktopDisplayInfo(
   display_info_list->clear();
   display_info_list->emplace_back(unified_display_info);
   InsertAndUpdateDisplayInfo(unified_display_info);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "DisplayManager.UnifiedDesktopDisplayCountRange",
+      GetUnifiedDisplayCountRange(software_mirroring_display_list_.size()),
+      DisplayCountRange::kCount);
 }
 
 Display* DisplayManager::FindDisplayForId(int64_t id) {
