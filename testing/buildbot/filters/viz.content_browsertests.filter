@@ -46,6 +46,7 @@
 -SitePerProcessBrowserTest.InputEventRouterGesturePreventDefaultTargetMapTest
 -SitePerProcessBrowserTest.InputEventRouterGestureTargetMapTest
 -SitePerProcessBrowserTest.InputEventRouterTouchpadGestureTargetTest
+-SitePerProcessBrowserTest.HitTestNestedFrames
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.NestedSurfaceHitTestTest
 -SitePerProcessBrowserTest.PopupMenuTest
@@ -58,7 +59,6 @@
 -SitePerProcessBrowserTest.SurfaceHitTestTest
 -SitePerProcessBrowserTest.TwoSubframesCreatePopupMenuWidgetsSimultaneously
 -SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest
--SitePerProcessBrowserTest.HitTestNestedFrames
 
 # Copy Surface timing out http://crbug.com/785257
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.*
