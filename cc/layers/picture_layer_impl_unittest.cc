@@ -5049,29 +5049,20 @@ TEST_F(HalfWidthTileTest, TileSizes) {
   host_impl()->SetViewportSize(gfx::Size(2000, 2000));
   host_impl()->NotifyReadyToActivate();
 
+  // Basic test.
   layer->set_gpu_raster_max_texture_size(host_impl()->device_viewport_size());
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));
   EXPECT_EQ(result.width(),
             MathUtil::UncheckedRoundUp(
-                (2000 + 2 * PictureLayerTiling::kBorderTexels) / 2, 32));
+                2000 / 2 + 2 * PictureLayerTiling::kBorderTexels, 32));
   EXPECT_EQ(result.height(), 512);
 
-  // Clamp and round-up, when smaller than viewport.
-  // Tile-height doubles to 50% when width shrinks to <= 50%.
-  host_impl()->SetViewportSize(gfx::Size(1000, 1000));
+  // When using odd sized viewport bounds, we should round up.
+  host_impl()->SetViewportSize(gfx::Size(509, 1000));
   layer->set_gpu_raster_max_texture_size(host_impl()->device_viewport_size());
-  result = layer->CalculateTileSize(gfx::Size(447, 10000));
-  EXPECT_EQ(result.width(), 448);
-  EXPECT_EQ(result.height(), 512);
-
-  // Largest layer is 50% of viewport width (rounded up), and
-  // 50% of viewport in height.
-  result = layer->CalculateTileSize(gfx::Size(447, 400));
-  EXPECT_EQ(result.width(), 448);
-  EXPECT_EQ(result.height(), 448);
-  result = layer->CalculateTileSize(gfx::Size(500, 499));
-  EXPECT_EQ(result.width(), 512);
-  EXPECT_EQ(result.height(), 512);
+  result = layer->CalculateTileSize(gfx::Size(10000, 10000));
+  EXPECT_EQ(result.width(), 288);
+  EXPECT_EQ(result.height(), 256);
 }
 
 TEST_F(NoLowResPictureLayerImplTest, LowResWasHighResCollision) {
