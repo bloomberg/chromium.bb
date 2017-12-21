@@ -639,9 +639,9 @@ bool IsVoiceInteractionEnabled() {
 }
 
 bool IsZipArchiverUnpackerEnabled() {
-  // Disabled by default.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableZipArchiverUnpacker);
+  // Enabled by default.
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableZipArchiverUnpacker);
 }
 
 bool IsSigninFrameClientCertsEnabled() {
