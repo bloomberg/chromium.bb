@@ -21,6 +21,12 @@ constants.Dir = {
 };
 
 /**
+ * Represents a point.
+ * @typedef {{x: (number), y: (number)}}
+ */
+constants.Point;
+
+/**
  * If a node contains more characters than this, it should not be visited during
  * object navigation.
  *
