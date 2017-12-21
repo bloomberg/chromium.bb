@@ -4,9 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Tests how utilities functions highlight text and then revert/re-apply highlighting changes.\n`);
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=70244">Bug 70244</a>
-    `);
 
   function dumpTextNodesAsString(node) {
     var result = '';

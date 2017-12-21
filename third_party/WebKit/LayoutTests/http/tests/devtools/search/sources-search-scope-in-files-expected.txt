@@ -1,6 +1,6 @@
 Tests that ScriptSearchScope performs search across all sources correctly.
 
-Total uiSourceCodes: 8
+Total uiSourceCodes: 7
 
 Running: testIgnoreCase
 Search result #1: uiSourceCode.url = file:///var/www/search.css

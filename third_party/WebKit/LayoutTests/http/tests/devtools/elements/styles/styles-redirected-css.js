@@ -7,8 +7,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=68631">Bug 68631</a>
-
       <div id="test_div">test</div>
     `);
   await TestRunner.addStylesheetTag('../styles/resources/styles-redirected-css.php');

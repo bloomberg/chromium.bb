@@ -4,7 +4,7 @@ Tests that Debugger.getFunctionDetails command returns correct location. Bug 718
 Running: testGetFirstLineFunctionDetails
 firstLineFunction type = function
 Function details: 
-lineNumber: 14
+lineNumber: 9
 columnNumber: 34
 scriptId is valid: true
 functionName: firstLineFunction
@@ -13,7 +13,7 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetNonFirstLineFunctionDetails
 notFirstLineFunction type = function
 Function details: 
-lineNumber: 19
+lineNumber: 14
 columnNumber: 37
 scriptId is valid: true
 functionName: notFirstLineFunction
@@ -22,7 +22,7 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetDetailsOfFunctionWithInferredName
 obj.m type = function
 Function details: 
-lineNumber: 25
+lineNumber: 20
 columnNumber: 23
 scriptId is valid: true
 functionName: m
@@ -31,7 +31,7 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetDetailsOfFunctionWithDisplayName
 functionWithDisplayName type = function
 Function details: 
-lineNumber: 28
+lineNumber: 23
 columnNumber: 40
 scriptId is valid: true
 functionName: user-friendly name
@@ -40,7 +40,7 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetDetailsOfFunctionWithDisplayNameGetter
 functionWithDisplayNameGetter type = function
 Function details: 
-lineNumber: 31
+lineNumber: 26
 columnNumber: 46
 scriptId is valid: true
 functionName: functionWithDisplayNameGetter
@@ -49,7 +49,7 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testSmallClosure
 smallClosure type = function
 Function details: 
-lineNumber: 34
+lineNumber: 29
 columnNumber: 57
 scriptId is valid: true
 functionName: 
@@ -59,7 +59,7 @@ scopeChain #1: Global; <global object properties omitted>
 Running: testBigClosure
 bigClosure type = function
 Function details: 
-lineNumber: 47
+lineNumber: 42
 columnNumber: 35
 scriptId is valid: true
 functionName: 
@@ -71,7 +71,7 @@ scopeChain #3: Global; <global object properties omitted>
 Running: testGenFunction
 gen type = function
 Function details: 
-lineNumber: 54
+lineNumber: 49
 columnNumber: 21
 scriptId is valid: true
 functionName: gen

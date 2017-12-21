@@ -6,12 +6,6 @@
   TestRunner.addResult(`Tests that the console can preserve log messages across navigations. Bug 53359\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that the console can preserve log messages across navigations.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=53359">Bug 53359</a>
-      </p>
-  `);
 
   ConsoleModel.consoleModel.addMessage(new ConsoleModel.ConsoleMessage(
       TestRunner.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other,

@@ -7,10 +7,6 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      Tests responses in network tab for two XHRs sent without any delay between them.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=91630">Bug 91630</a>
-    `);
 
   function initArgs(method, url, async, payload) {
     var args = {};

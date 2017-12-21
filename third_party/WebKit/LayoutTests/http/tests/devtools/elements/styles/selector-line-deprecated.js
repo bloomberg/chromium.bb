@@ -13,10 +13,6 @@
         color: green;
       }
       </style>
-      <p>
-      Tests that selector line is computed correctly regardless of its start column. <a href="https://bugs.webkit.org/show_bug.cgi?id=110732">Bug 110732</a>.
-      </p>
-
       <div id="container">
           <div id="inspected">Text</div>
       </div>

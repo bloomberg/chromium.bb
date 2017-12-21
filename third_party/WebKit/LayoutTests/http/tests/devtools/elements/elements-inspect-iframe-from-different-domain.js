@@ -9,10 +9,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>Test that web inspector can select element in an iframe even if the element was created
-      via <code>createElement</code> of <code>document</code> other than iframe's <code>document</code>.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=60031">Bug 60031</a>
-      </p>
       <iframe style="width:400px"></iframe>
     `);
   await TestRunner.evaluateInPagePromise(`

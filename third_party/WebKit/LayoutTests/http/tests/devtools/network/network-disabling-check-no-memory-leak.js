@@ -7,12 +7,6 @@
       `Tests that after disabling network domain, content saved on backend is removed. https://bugs.webkit.org/show_bug.cgi?id=67995`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <p>
-       Tests that after disabling network domain, content saved on backend is removed.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=67995">Bug 67995</a>
-      </p>
-    `);
 
   NetworkTestRunner.recordNetwork();
   NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', true, step2);

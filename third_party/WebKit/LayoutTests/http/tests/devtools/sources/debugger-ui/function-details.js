@@ -6,11 +6,6 @@
   TestRunner.addResult(`Tests that Debugger.getFunctionDetails command returns correct location. Bug 71808\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-        <p>Tests that Debugger.getFunctionDetails command returns correct location.
-        <a href="https://bugs.webkit.org/show_bug.cgi?id=71808">Bug 71808</a>
-        </p>
-      `);
   await TestRunner.evaluateInPagePromise(`
         function firstLineFunction()
 

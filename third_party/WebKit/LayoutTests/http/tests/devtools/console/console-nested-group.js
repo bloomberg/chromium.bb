@@ -7,13 +7,7 @@
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-    <p>
-    Tests that console.group/groupEnd messages won't be coalesced. <a href="https://bugs.webkit.org/show_bug.cgi?id=56114">Bug 56114.</a>
-    <a href="https://bugs.webkit.org/show_bug.cgi?id=63521">Bug 63521.</a>
 
-    </p>
-  `);
   await TestRunner.evaluateInPagePromise(`
     console.group("outer group");
     console.group("inner group");

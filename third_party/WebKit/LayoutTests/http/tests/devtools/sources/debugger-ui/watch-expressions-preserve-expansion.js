@@ -8,9 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=99304">Bug 99304</a>
-    `);
   await TestRunner.evaluateInPagePromise(`
       var globalObject = {
           foo: {

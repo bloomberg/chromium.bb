@@ -8,10 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that adding a new rule works when there is a STYLE element after BODY. TIMEOUT SHOULD NOT OCCUR! <a href="https://bugs.webkit.org/show_bug.cgi?id=111299">Bug 111299</a>
-      </p>
-
       <div id="inspected" style="font-size: 12px">Text</div>
     `);
   await TestRunner.evaluateInPagePromise(`

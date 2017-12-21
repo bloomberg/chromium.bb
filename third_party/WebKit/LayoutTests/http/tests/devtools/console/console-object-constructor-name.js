@@ -7,12 +7,7 @@
       `Tests that the name of the function invoked as object constructor will be displayed as its type in the front-end. Bug 50063.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that the name of the function invoked as object constructor will be displayed as its type in the front-end.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=50063">Bug 50063.</a>
-      </p>
-  `);
+
   await TestRunner.evaluateInPagePromise(`
       function Parent() { }
       function Child() { }

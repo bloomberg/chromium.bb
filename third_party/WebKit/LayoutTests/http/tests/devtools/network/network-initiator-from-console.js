@@ -6,9 +6,6 @@
   TestRunner.addResult(`Tests that there is no javascript error when console evaluation causes resource loading.\n`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=65466">Bug 65466</a>
-    `);
 
   TestRunner.reloadPage(step1);
 

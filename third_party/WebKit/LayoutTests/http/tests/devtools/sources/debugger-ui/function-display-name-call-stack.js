@@ -6,11 +6,6 @@
   TestRunner.addResult(`Tests that we display function's "displayName" property in the call stack. CrBug 17356\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>Tests that we display function's &quot;displayName&quot; property in the call stack.
-      <a href="http://code.google.com/p/chromium/issues/detail?id=17356">CrBug 17356</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       var error = false;
 

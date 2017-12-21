@@ -9,12 +9,7 @@
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-    <p>
-    Test that console.dir(document.__proto__) won't result in an exception when the message
-    is formatted in the inspector.<a bug="https://bugs.webkit.org/show_bug.cgi?id=27169">Bug  27169.</a>
-    </p>
-  `);
+
   await TestRunner.evaluateInPagePromise(`
     console.dir(document.__proto__);
   `);

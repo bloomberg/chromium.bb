@@ -7,12 +7,6 @@
       `Tests that object's __proto__ property is present in object properties section when script is paused on a breakpoint.Bug 41214\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that object's __proto__ property is present in object properties section when
-      script is paused on a breakpoint.<a href="https://bugs.webkit.org/show_bug.cgi?id=41214">Bug 41214</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function C()
       {

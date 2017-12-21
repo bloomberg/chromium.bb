@@ -29,10 +29,6 @@
           transition: all 1ms;
       }
       </style>
-      <p>
-      Tests the matching performed in AnimationModel of groups composed of transitions,
-      which are applied through a variety of selectors.
-      </p>
 
       <div id="node1" style="background-color: red"></div>
       <div id="node2" style="background-color: red"></div>

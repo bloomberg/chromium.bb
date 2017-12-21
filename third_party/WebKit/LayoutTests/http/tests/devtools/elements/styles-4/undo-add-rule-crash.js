@@ -11,9 +11,6 @@
       @keyframes cfpulse1 { 0% { opacity: 0.1;  } }
       .c1 { animation-name: cfpulse1;  }
       </style>
-      Tests that the inspected page does not crash after undoing a new rule addition. <a href="https://bugs.webkit.org/show_bug.cgi?id=104806">Bug 104806</a>
-
-      <p>The test has passed (no crash).</p>
       <div id="inspected"><div id="other"></div>
       <style>
       @keyframes cfpulse1 { 0% { opacity: 0.1;  } }

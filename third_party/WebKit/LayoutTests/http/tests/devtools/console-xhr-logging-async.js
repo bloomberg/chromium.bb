@@ -7,9 +7,6 @@
       `Tests that XMLHttpRequest Logging works when Enabled and doesn't show logs when Disabled for asynchronous XHRs.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('network_test_runner');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=79229">Bug 79229</a>
-    `);
 
   step1();
 

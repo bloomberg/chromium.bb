@@ -13,9 +13,6 @@
         color: green;
       }
       </style>
-      <p>
-      Tests that renaming a selector updates element styles. <a href="https://bugs.webkit.org/show_bug.cgi?id=70018">Bug 70018</a>.
-      </p>
 
       <div id="inspected" style="color: red">Text</div>
       <div id="other"></div>

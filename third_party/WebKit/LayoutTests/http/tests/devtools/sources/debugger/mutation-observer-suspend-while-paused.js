@@ -8,11 +8,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that DOM Mutation Observers do not attempt to deliver mutation records while the debugger is paused.<a href="https://bugs.webkit.org/show_bug.cgi?id=105810">Bug 105810</a>
-      </p>
-    `);
 
   var setup = 'window.testDiv = document.createElement(\'div\');\n' +
       'window.deliveryCount = 0;\n' +

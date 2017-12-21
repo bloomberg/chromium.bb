@@ -6,12 +6,6 @@
   TestRunner.addResult(`Tests XHR network resource type and content for synchronous requests. Bug 61205\n`);
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <p>
-       Tests XHR network resource type and content for synchronous requests.
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=61205">Bug 61205</a>
-      </p>
-    `);
 
   NetworkTestRunner.recordNetwork();
   NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', false, step2);

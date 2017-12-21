@@ -9,10 +9,6 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that DOM debugger will not crash when editing DOM nodes from the Web Inspector. <a href="https://code.google.com/p/chromium/issues/detail?id=249655">Chromium bug 249655</a>
-      </p>
-
       <div id="rootElement" style="color: red">
       <div id="elementToRemove"></div>
       </div>

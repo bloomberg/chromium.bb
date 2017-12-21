@@ -9,13 +9,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
 
-  await TestRunner.loadHTML(`
-    <p>
-    Tests that evaluation in console still works even if script evals are prohibited by Content-Security-Policy.
-    <a href="https://bugs.webkit.org/show_bug.cgi?id=60800">Bug 60800.</a>
-    </p>
-  `);
-
   ConsoleTestRunner.evaluateInConsole('1+2', step1);
 
   function step1() {

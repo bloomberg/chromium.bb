@@ -11,9 +11,6 @@
   <head>
   <link rel="import" href="../resources/imported-document.html">
   <head>
-  <body>
-  <p>This test verifies that imported document is rendered within the import link.</p>
-  </body>
   `);
 
   // Warm up highlighter module.

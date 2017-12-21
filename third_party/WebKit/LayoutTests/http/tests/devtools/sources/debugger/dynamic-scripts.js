@@ -8,10 +8,6 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=99324">Bug 99324</a>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function appendDynamicScriptElement(src, content)
       {

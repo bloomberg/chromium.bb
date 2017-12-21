@@ -8,10 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that reloading page during styles sidebar pane editing cancels editing and re-renders the
-      sidebar pane.
-      </p>
       <div id="inspected" style="color: blue">Text</div>
     `);
   await TestRunner.evaluateInPagePromise(`

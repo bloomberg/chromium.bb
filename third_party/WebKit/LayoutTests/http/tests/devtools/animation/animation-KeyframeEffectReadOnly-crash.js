@@ -8,11 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that animations can be created with KeyframeEffect and
-      KeyframeEffectReadOnly without crashing.
-      </p>
-
       <div id="node" style="background-color: red; height: 100px"></div>
       <div id="nodeRO" style="background-color: red; height: 100px"></div>
     `);

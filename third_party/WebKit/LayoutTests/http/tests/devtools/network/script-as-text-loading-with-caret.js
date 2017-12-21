@@ -7,11 +7,6 @@
       `Tests console message when script is loaded with incorrect text/html mime type and the URL contains the '^' character.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  await TestRunner.loadHTML(`
-      <p>Tests console message when script is loaded with incorrect text/html mime
-      type and the URL contains the '^' character.</p>
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=103248">Bug 103248</a>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function loadScript()
       {

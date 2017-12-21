@@ -32,8 +32,6 @@ This test verifies that imported document is rendered within the import link.
                   </html>
           </link>
       </head>
-    - <body>
-          <p>This test verifies that imported document is rendered within the import link.</p>
-      </body>
+      <body></body>
   </html>
 

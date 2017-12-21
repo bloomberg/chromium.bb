@@ -4,9 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Tests tabbed pane max tab element width calculation.\n`);
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=75005">Bug 75005</a>
-    `);
 
   function calculateAndDumpMaxWidth(measuredWidths, totalWidth) {
     var maxWidth = UI.TabbedPane.prototype._calculateMaxWidth(measuredWidths, totalWidth);

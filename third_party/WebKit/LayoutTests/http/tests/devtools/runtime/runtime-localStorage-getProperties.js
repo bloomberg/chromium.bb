@@ -4,11 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Tests RemoteObject.getProperties on localStorage object. 66215\n`);
-  await TestRunner.loadHTML(`
-      <p>
-      Tests RemoteObject.getProperties on localStorage object. <a href="https://bugs.webkit.org/show_bug.cgi?id=66215">66215</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       localStorage.testProperty = "testPropertyValue";
   `);

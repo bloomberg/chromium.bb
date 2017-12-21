@@ -7,9 +7,6 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=70906">Bug 70906</a>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

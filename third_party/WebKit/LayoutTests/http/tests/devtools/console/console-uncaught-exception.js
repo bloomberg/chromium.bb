@@ -6,11 +6,7 @@
   TestRunner.addResult(`Tests that uncaught exceptions are logged into console.Bug 47250.\n`);
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that uncaught exceptions are logged into console.<a href="https://bugs.webkit.org/show_bug.cgi?id=47250">Bug 47250.</a>
-      </p>
-  `);
+
   await TestRunner.evaluateInPagePromise(`
       function loadIframe()
       {

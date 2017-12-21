@@ -8,10 +8,6 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests that the &quot;style&quot; attribute removal results in the Styles sidebar pane update (not a crash). <a href="http://bugs.webkit.org/show_bug.cgi?id=51478">Bug 51478</a>
-      </p>
-
       <div id="inspected" style="color: red"></div>
     `);
 

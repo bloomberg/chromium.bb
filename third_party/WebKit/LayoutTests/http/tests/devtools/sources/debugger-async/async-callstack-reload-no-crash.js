@@ -6,12 +6,6 @@
   TestRunner.addResult(`Tests that page reload with async stacks turned on does not crash. Bug 441223.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.loadHTML(`
-      <p>
-      Tests that page reload with async stacks turned on does not crash.
-      <a href="https://code.google.com/p/chromium/issues/detail?id=441223">Bug 441223.</a>
-      </p>
-    `);
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
       {

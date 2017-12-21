@@ -12,7 +12,6 @@ Tests that src and href element targets are rewritten properly.
               <div id="id5">5</div>
               Show All Nodes (5 More)
           </div>
-          <p>\n      Tests that src and href element targets are rewritten properly.\n      </p>
       </body>
   </html>
 =========== Modified children ===========
@@ -27,7 +26,6 @@ Tests that src and href element targets are rewritten properly.
               <div id="id5">5</div>
               Show All Nodes (6 More)
           </div>
-          <p>\n      Tests that src and href element targets are rewritten properly.\n      </p>
       </body>
   </html>
 =========== Loaded all children ===========
@@ -47,7 +45,6 @@ Tests that src and href element targets are rewritten properly.
               <div id="id10">10</div>
               <a></a>
           </div>
-          <p>\n      Tests that src and href element targets are rewritten properly.\n      </p>
       </body>
   </html>
 

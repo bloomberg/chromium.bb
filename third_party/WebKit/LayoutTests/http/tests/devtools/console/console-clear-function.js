@@ -7,9 +7,6 @@
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
-  await TestRunner.loadHTML(`
-    <a href="https://bugs.webkit.org/show_bug.cgi?id=101021">Bug 101021</a>
-  `);
   await TestRunner.evaluateInPagePromise(`
     function log()
     {

@@ -8,10 +8,7 @@
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
-      <p>
-      Tests DOMAgent.setOuterHTML invoked on body tag. See https://bugs.webkit.org/show_bug.cgi?id=62272.
       <iframe src="../resources/set-outer-html-body-iframe.html" onload="runTest()"></iframe>
-      </p>
     `);
 
   var htmlNode;

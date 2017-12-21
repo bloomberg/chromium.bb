@@ -4,9 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Tests DataGrid column auto size calculation.\n`);
-  await TestRunner.loadHTML(`
-      <a href="https://bugs.webkit.org/show_bug.cgi?id=101363">Bug 101363</a>
-    `);
 
   runtime.loadModulePromise('data_grid').then(function() {
     function testAutoSize(widths, minPercent, maxPercent) {
