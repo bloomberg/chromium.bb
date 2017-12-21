@@ -20,12 +20,18 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -34,7 +40,23 @@ namespace subresource_filter {
 const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
 
 class SubresourceFilterSettingsBrowserTest
-    : public SubresourceFilterBrowserTest {};
+    : public SubresourceFilterBrowserTest {
+ public:
+  void SetUp() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(::testing::_))
+        .WillRepeatedly(::testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+    SubresourceFilterBrowserTest::SetUp();
+  }
+
+  void UpdatePolicy(const policy::PolicyMap& policy) {
+    provider_.UpdateChromePolicy(policy);
+    base::RunLoop().RunUntilIdle();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider provider_;
+};
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
                        ContentSettingsWhitelist_DoNotActivate) {
@@ -89,6 +111,46 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 
   // No message for loads that are not activated.
   EXPECT_TRUE(console_observer.message().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
+                       DrivenByEnterprisePolicy) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  content::ConsoleObserverDelegate console_observer(web_contents(),
+                                                    kActivationConsoleMessage);
+  web_contents()->SetDelegate(&console_observer);
+
+  // Disable Ads blocking via enterprise policy.
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kAdsSettingForIntrusiveAdsSites,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             std::make_unique<base::Value>(CONTENT_SETTING_ALLOW), nullptr);
+  UpdatePolicy(policy);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  // No message for whitelisted url.
+  EXPECT_TRUE(console_observer.message().empty());
+
+  // Since the policy change can take effect without browser restart, verify
+  // that blocking ads via policy here should start blocking ads.
+  policy.Set(policy::key::kAdsSettingForIntrusiveAdsSites,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             std::make_unique<base::Value>(CONTENT_SETTING_BLOCK), nullptr);
+  UpdatePolicy(policy);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
