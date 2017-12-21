@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
@@ -215,7 +216,13 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, DISABLED_Precheck) {
   EXPECT_EQ("success", GetPageFragment());
 }
 
-IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, OneShotRecognition) {
+// Flaky on mac, see https://crbug.com/794645.
+#if defined(OS_MACOSX)
+#define MAYBE_OneShotRecognition DISABLED_OneShotRecognition
+#else
+#define MAYBE_OneShotRecognition OneShotRecognition
+#endif
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, MAYBE_OneShotRecognition) {
   NavigateToURLBlockUntilNavigationsComplete(
       shell(), GetTestUrlFromFragment("oneshot"), 2);
 
