@@ -43,7 +43,7 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = class_name | to_lower_case %}
   bool has{{class_name}}s() const { return !m_{{getter_name}}s.IsEmpty(); }
-  const HeapHashSet<Member<{{class_name}}>>& {{getter_name}}s() const { return m_{{getter_name}}s; }
+  const HeapListHashSet<Member<{{class_name}}>>& {{getter_name}}s() const { return m_{{getter_name}}s; }
   void add{{class_name}}({{class_name}}* agent);
   void remove{{class_name}}({{class_name}}* agent);
 
@@ -57,7 +57,7 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = class_name | to_lower_case %}
-  HeapHashSet<Member<{{class_name}}>> m_{{getter_name}}s;
+  HeapListHashSet<Member<{{class_name}}>> m_{{getter_name}}s;
 {% endfor %}
 
   // Number of sinks with an enabled agent of each type, used to keep
