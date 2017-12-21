@@ -1086,15 +1086,17 @@ void RenderWidgetHostViewMac::SetTooltipText(
   }
 }
 
-void RenderWidgetHostViewMac::UpdateScreenInfo(gfx::NativeView view) {
-  RenderWidgetHostViewBase::UpdateScreenInfo(view);
-
-  if (!render_widget_host_ || !render_widget_host_->auto_resize_enabled())
+void RenderWidgetHostViewMac::OnSynchronizedDisplayPropertiesChanged() {
+  if (!render_widget_host_)
     return;
 
-  render_widget_host_->DidAllocateLocalSurfaceIdForAutoResize(
-      render_widget_host_->last_auto_resize_request_number());
+  browser_compositor_->AllocateNewLocalSurfaceId();
   browser_compositor_->WasResized();
+
+  if (render_widget_host_->auto_resize_enabled()) {
+    render_widget_host_->DidAllocateLocalSurfaceIdForAutoResize(
+        render_widget_host_->last_auto_resize_request_number());
+  }
 }
 
 bool RenderWidgetHostViewMac::SupportsSpeech() const {
