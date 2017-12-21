@@ -2496,6 +2496,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   if (plane == 0)
     mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = best_tx_type;
   x->plane[plane].txb_entropy_ctx[block] = best_txb_ctx;
+  x->plane[plane].eobs[block] = best_eob;
 
   if (!is_inter_block(mbmi)) {
     // intra mode needs decoded result such that the next transform block
