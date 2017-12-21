@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(async function(testRunner) {
+(async function() {
   // about:blank never fires a load event so just wait until we see the URL change
   function navigateToAboutBlankAndWait() {
     var listenerPromise = new Promise(resolve => {

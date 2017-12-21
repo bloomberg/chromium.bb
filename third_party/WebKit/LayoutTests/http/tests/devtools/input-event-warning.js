@@ -47,8 +47,6 @@
           }
           var deadline = performance.now() + 100;
           while (performance.now() < deadline) {};
-          if (window.testRunner)
-              window.testRunner.setDumpConsoleMessages(false);
           for (var event of events)
               target.dispatchEvent(event);
 

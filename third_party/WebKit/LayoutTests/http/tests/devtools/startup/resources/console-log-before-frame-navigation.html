@@ -5,12 +5,6 @@
 window.addEventListener("message", receiveMessage, false);
 
 function receiveMessage(event) {
-    if (event.data != "frameReloaded") {
-        testFailed("Unexpected message: " + event.data);
-        if (window.testRunner)
-            testRunner.notifyDone();
-        return;
-    }
     testRunner.inspectSecondaryWindow();
 }
 </script>

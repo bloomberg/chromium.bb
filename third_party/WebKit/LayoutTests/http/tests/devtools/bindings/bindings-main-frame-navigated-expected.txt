@@ -33,7 +33,6 @@ Removed: 10 uiSourceCodes
 [-] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
 [-] http://127.0.0.1:8000/devtools/resources/inspected-page.html
 [-] _test_attachFrame.js
-Workspace: 2 uiSourceCodes.
-[+] debugger:///VM[XXX] empty-page.html
+Workspace: 1 uiSourceCodes.
 [+] http://127.0.0.1:8000/devtools/bindings/resources/empty-page.html
 

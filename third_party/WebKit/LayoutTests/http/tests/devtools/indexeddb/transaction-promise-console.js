@@ -10,9 +10,6 @@
     // Note: every test that uses a storage API must manually clean-up state from previous tests.
   await ApplicationTestRunner.resetState();
 
-  testRunner.waitUntilDone();
-  testRunner.showWebInspector();
-
   var dbname = location.href;
   indexedDB.deleteDatabase(dbname).onsuccess = function() {
 

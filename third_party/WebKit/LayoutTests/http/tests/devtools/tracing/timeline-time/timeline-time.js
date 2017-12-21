@@ -7,8 +7,6 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
   await TestRunner.evaluateInPagePromise(`
-      testRunner.setDumpConsoleMessages(false);
-
       function simpleConsoleTime()
       {
           console.time("a");

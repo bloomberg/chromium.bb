@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(async function(testRunner) {
+(async function() {
   TestRunner.addResult('Tests that audits panel works when only performance category is selected.\n');
 
   await TestRunner.loadModule('audits2_test_runner');
