@@ -9,8 +9,6 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -25,8 +23,6 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using browsing_data::BrowsingDataCounter;
@@ -41,8 +37,6 @@ class SyncAwareCounterTest : public SyncTest {
 
   void SetUpOnMainThread() override {
     fake_web_history_service_.reset(new history::FakeWebHistoryService(
-        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
-        SigninManagerFactory::GetForProfile(browser()->profile()),
         browser()->profile()->GetRequestContext()));
     run_loop_.reset(new base::RunLoop());
   }

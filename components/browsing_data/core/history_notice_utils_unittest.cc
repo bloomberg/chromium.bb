@@ -10,10 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/history/core/test/fake_web_history_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/version_info/version_info.h"
@@ -64,16 +60,11 @@ class TestSyncService : public syncer::FakeSyncService {
 
 class HistoryNoticeUtilsTest : public ::testing::Test {
  public:
-  HistoryNoticeUtilsTest()
-    : signin_client_(nullptr),
-      signin_manager_(&signin_client_, &account_tracker_) {
-  }
+  HistoryNoticeUtilsTest() {}
 
   void SetUp() override {
     sync_service_.reset(new TestSyncService());
     history_service_.reset(new history::FakeWebHistoryService(
-        &oauth2_token_service_,
-        &signin_manager_,
         url_request_context_));
     history_service_->SetupFakeResponse(true /* success */, net::HTTP_OK);
   }
@@ -120,10 +111,6 @@ class HistoryNoticeUtilsTest : public ::testing::Test {
       run_loop_->Quit();
   }
 
-  FakeProfileOAuth2TokenService oauth2_token_service_;
-  AccountTrackerService account_tracker_;
-  TestSigninClient signin_client_;
-  FakeSigninManagerBase signin_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   std::unique_ptr<TestSyncService> sync_service_;
   std::unique_ptr<history::FakeWebHistoryService> history_service_;

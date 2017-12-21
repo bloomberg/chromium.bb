@@ -14,9 +14,6 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "url/gurl.h"
 
-class OAuth2TokenService;
-class SigninManagerBase;
-
 namespace history {
 
 // A fake WebHistoryService for testing.
@@ -33,8 +30,6 @@ namespace history {
 class FakeWebHistoryService : public WebHistoryService {
  public:
   FakeWebHistoryService(
-      OAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   ~FakeWebHistoryService() override;
 
