@@ -227,7 +227,7 @@ void BackgroundImageGeometry::SetRepeatX(const FillLayer& fill_layer,
   // handle large positions.
   if (unsnapped_tile_width) {
     LayoutUnit computed_x_position =
-        RoundedMinimumValueForLength(fill_layer.XPosition(),
+        RoundedMinimumValueForLength(fill_layer.PositionX(),
                                      unsnapped_available_width) -
         offset_for_cell;
     float number_of_tiles_in_position;
@@ -263,7 +263,7 @@ void BackgroundImageGeometry::SetRepeatY(const FillLayer& fill_layer,
   // handle large positions.
   if (unsnapped_tile_height) {
     LayoutUnit computed_y_position =
-        RoundedMinimumValueForLength(fill_layer.YPosition(),
+        RoundedMinimumValueForLength(fill_layer.PositionY(),
                                      unsnapped_available_height) -
         offset_for_cell;
     float number_of_tiles_in_position;
@@ -623,7 +623,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
       positioning_area_size.Height() - TileSize().Height();
 
   LayoutUnit computed_x_position =
-      RoundedMinimumValueForLength(fill_layer.XPosition(), available_width) -
+      RoundedMinimumValueForLength(fill_layer.PositionX(), available_width) -
       offset_in_background_.X();
   if (background_repeat_x == EFillRepeat::kRoundFill &&
       positioning_area_size.Width() > LayoutUnit() &&
@@ -652,7 +652,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   }
 
   LayoutUnit computed_y_position =
-      RoundedMinimumValueForLength(fill_layer.YPosition(), available_height) -
+      RoundedMinimumValueForLength(fill_layer.PositionY(), available_height) -
       offset_in_background_.Y();
   if (background_repeat_y == EFillRepeat::kRoundFill &&
       positioning_area_size.Height() > LayoutUnit() &&

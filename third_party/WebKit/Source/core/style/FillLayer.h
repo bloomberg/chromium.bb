@@ -60,8 +60,8 @@ class CORE_EXPORT FillLayer {
   ~FillLayer();
 
   StyleImage* GetImage() const { return image_.Get(); }
-  const Length& XPosition() const { return x_position_; }
-  const Length& YPosition() const { return y_position_; }
+  const Length& PositionX() const { return position_x_; }
+  const Length& PositionY() const { return position_y_; }
   BackgroundEdgeOrigin BackgroundXOrigin() const {
     return static_cast<BackgroundEdgeOrigin>(background_x_origin_);
   }
@@ -101,8 +101,8 @@ class CORE_EXPORT FillLayer {
   }
 
   bool IsImageSet() const { return image_set_; }
-  bool IsXPositionSet() const { return x_pos_set_; }
-  bool IsYPositionSet() const { return y_pos_set_; }
+  bool IsPositionXSet() const { return pos_x_set_; }
+  bool IsPositionYSet() const { return pos_y_set_; }
   bool IsBackgroundXOriginSet() const { return background_x_origin_set_; }
   bool IsBackgroundYOriginSet() const { return background_y_origin_set_; }
   bool IsAttachmentSet() const { return attachment_set_; }
@@ -121,15 +121,15 @@ class CORE_EXPORT FillLayer {
     image_ = i;
     image_set_ = true;
   }
-  void SetXPosition(const Length& position) {
-    x_position_ = position;
-    x_pos_set_ = true;
+  void SetPositionX(const Length& position) {
+    position_x_ = position;
+    pos_x_set_ = true;
     background_x_origin_set_ = false;
     background_x_origin_ = static_cast<unsigned>(BackgroundEdgeOrigin::kLeft);
   }
-  void SetYPosition(const Length& position) {
-    y_position_ = position;
-    y_pos_set_ = true;
+  void SetPositionY(const Length& position) {
+    position_y_ = position;
+    pos_y_set_ = true;
     background_y_origin_set_ = false;
     background_y_origin_ = static_cast<unsigned>(BackgroundEdgeOrigin::kTop);
   }
@@ -187,12 +187,12 @@ class CORE_EXPORT FillLayer {
     image_.Clear();
     image_set_ = false;
   }
-  void ClearXPosition() {
-    x_pos_set_ = false;
+  void ClearPositionX() {
+    pos_x_set_ = false;
     background_x_origin_set_ = false;
   }
-  void ClearYPosition() {
-    y_pos_set_ = false;
+  void ClearPositionY() {
+    pos_y_set_ = false;
     background_y_origin_set_ = false;
   }
 
@@ -286,10 +286,10 @@ class CORE_EXPORT FillLayer {
   static FillSize InitialFillSize(EFillLayerType type) {
     return FillSize(InitialFillSizeType(type), InitialFillSizeLength(type));
   }
-  static Length InitialFillXPosition(EFillLayerType) {
+  static Length InitialFillPositionX(EFillLayerType) {
     return Length(0.0, kPercent);
   }
-  static Length InitialFillYPosition(EFillLayerType) {
+  static Length InitialFillPositionY(EFillLayerType) {
     return Length(0.0, kPercent);
   }
   static StyleImage* InitialFillImage(EFillLayerType) { return nullptr; }
@@ -310,8 +310,8 @@ class CORE_EXPORT FillLayer {
 
   Persistent<StyleImage> image_;
 
-  Length x_position_;
-  Length y_position_;
+  Length position_x_;
+  Length position_y_;
 
   LengthSize size_length_;
 
@@ -333,8 +333,8 @@ class CORE_EXPORT FillLayer {
   unsigned origin_set_ : 1;
   unsigned repeat_x_set_ : 1;
   unsigned repeat_y_set_ : 1;
-  unsigned x_pos_set_ : 1;
-  unsigned y_pos_set_ : 1;
+  unsigned pos_x_set_ : 1;
+  unsigned pos_y_set_ : 1;
   unsigned background_x_origin_set_ : 1;
   unsigned background_y_origin_set_ : 1;
   unsigned composite_set_ : 1;
