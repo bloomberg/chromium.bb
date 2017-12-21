@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "media/midi/midi_input_port_android.h"
 #include "media/midi/midi_manager.h"
-#include "media/midi/midi_scheduler.h"
 
 namespace midi {
 
