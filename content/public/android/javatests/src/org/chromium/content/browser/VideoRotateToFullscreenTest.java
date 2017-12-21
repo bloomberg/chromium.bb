@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
@@ -95,6 +96,7 @@ public class VideoRotateToFullscreenTest {
     @MediumTest
     @Feature({"VideoRotateToFullscreen"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @DisabledTest(message = "crbug.com/726977")
     public void testPortraitToLandscapeAndBack() throws Exception {
         // Start off in portrait screen orientation.
         mRule.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
