@@ -78,7 +78,7 @@ static_library("variations") {
   deps = [
     "proto",
     "//base",
-    "//components/crash/core/common",
+    "//components/crash/core/common:crash_key",
     "//components/prefs",
     "//crypto",
     "//third_party/mt19937ar",
