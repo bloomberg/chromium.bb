@@ -20,10 +20,8 @@
 
 namespace blink {
 
-constexpr size_t NavigatorBeacon::kMaxAllowance;
-
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
-    : Supplement<Navigator>(navigator), transmitted_bytes_(0) {}
+    : Supplement<Navigator>(navigator) {}
 
 NavigatorBeacon::~NavigatorBeacon() {}
 
@@ -66,10 +64,6 @@ bool NavigatorBeacon::CanSendBeacon(ExecutionContext* context,
   return true;
 }
 
-void NavigatorBeacon::AddTransmittedBytes(size_t sent_bytes) {
-  transmitted_bytes_ += sent_bytes;
-}
-
 bool NavigatorBeacon::sendBeacon(
     ScriptState* script_state,
     Navigator& navigator,
@@ -90,15 +84,11 @@ bool NavigatorBeacon::SendBeaconImpl(
   if (!CanSendBeacon(context, url, exception_state))
     return false;
 
-  size_t allowance =
-      kMaxAllowance - std::min(kMaxAllowance, transmitted_bytes_);
-  size_t beacon_size = 0;
   bool allowed;
 
   if (data.IsArrayBufferView()) {
-    allowed =
-        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance, url,
-                               data.GetAsArrayBufferView().View(), beacon_size);
+    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url,
+                                     data.GetAsArrayBufferView().View());
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
     if (!FetchUtils::IsCORSSafelistedContentType(AtomicString(blob->type()))) {
@@ -113,17 +103,17 @@ bool NavigatorBeacon::SendBeaconImpl(
         return false;
       }
     }
-    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
-                                     url, blob, beacon_size);
+    allowed =
+        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, blob);
   } else if (data.IsString()) {
-    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
-                                     url, data.GetAsString(), beacon_size);
+    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url,
+                                     data.GetAsString());
   } else if (data.IsFormData()) {
-    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
-                                     url, data.GetAsFormData(), beacon_size);
+    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url,
+                                     data.GetAsFormData());
   } else {
-    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
-                                     url, String(), beacon_size);
+    allowed =
+        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, String());
   }
 
   if (!allowed) {
@@ -131,7 +121,6 @@ bool NavigatorBeacon::SendBeaconImpl(
     return false;
   }
 
-  AddTransmittedBytes(beacon_size);
   return true;
 }
 
