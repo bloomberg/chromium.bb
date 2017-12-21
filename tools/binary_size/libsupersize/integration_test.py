@@ -12,6 +12,7 @@ import logging
 import os
 import unittest
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -29,9 +30,10 @@ _TEST_OUTPUT_DIR = os.path.join(_TEST_DATA_DIR, 'mock_output_directory')
 _TEST_TOOL_PREFIX = os.path.join(
     os.path.abspath(_TEST_DATA_DIR), 'mock_toolchain', '')
 _TEST_MAP_PATH = os.path.join(_TEST_DATA_DIR, 'test.map')
-_TEST_ELF_PATH = os.path.join(_TEST_OUTPUT_DIR, 'elf')
 _TEST_PAK_PATH = os.path.join(_TEST_OUTPUT_DIR, 'en-US.pak')
 _TEST_PAK_INFO_PATH = os.path.join(_TEST_OUTPUT_DIR, 'en-US.pak.info')
+_TEST_ELF_PATH = os.path.join(_TEST_OUTPUT_DIR, 'elf')  # Dynamically created
+_TEST_ELF_FILE_BEGIN = os.path.join(_TEST_OUTPUT_DIR, 'elf.begin')
 
 update_goldens = False
 
@@ -99,6 +101,20 @@ def _DiffCounts(sym):
 class IntegrationTest(unittest.TestCase):
   maxDiff = None  # Don't trucate diffs in errors.
   cached_size_info = {}
+
+  @classmethod
+  def setUpClass(cls):
+    shutil.copy(_TEST_ELF_FILE_BEGIN, _TEST_ELF_PATH)
+    with open(_TEST_ELF_PATH, 'a') as elf_file:
+      data = '0'
+      # Exactly 128MB of data (2^27), extra bytes will be accounted in overhead.
+      for _ in range(27):
+        data = data + data
+      elf_file.write(data)
+
+  @classmethod
+  def tearDownClass(cls):
+    os.remove(_TEST_ELF_PATH)
 
   def _CloneSizeInfo(self, use_output_directory=True, use_elf=True,
                      use_pak=False):
