@@ -60,7 +60,7 @@ Polymer({
      */
     cameraVideoModeEnabled_: {
       type: Boolean,
-      value: true,
+      value: false,
     },
   },
 
