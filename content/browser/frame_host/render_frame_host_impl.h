@@ -130,11 +130,9 @@ struct CommonNavigationParams;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
-struct NavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponse;
 struct SubresourceLoaderParams;
-struct StartNavigationParams;
 
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
@@ -346,12 +344,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // call FrameTreeNode::IsLoading.
   bool is_loading() const { return is_loading_; }
 
-  // Sets this RenderFrameHost loading state. This is only used in the case of
-  // transfer navigations, where no DidStart/DidStopLoading notifications
-  // should be sent during the transfer.
-  // TODO(clamy): Remove this once PlzNavigate ships.
-  void set_is_loading(bool is_loading) { is_loading_ = is_loading; }
-
   // Returns true if this is a top-level frame, or if this frame's RenderFrame
   // is in a different process from its parent frame. Local roots are
   // distinguished by owning a RenderWidgetHost, which manages input events
@@ -392,12 +384,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetNavigationHandle(
       std::unique_ptr<NavigationHandleImpl> navigation_handle);
 
-  // Gives the ownership of |navigation_handle_| to the caller.
-  // This happens during transfer navigations, where it should be transferred
-  // from the RenderFrameHost that issued the initial request to the new
-  // RenderFrameHost that will issue the transferring request.
-  std::unique_ptr<NavigationHandleImpl> PassNavigationHandleOwnership();
-
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler and move to
   // a blank document.  If |proxy| is not null, it should also create a
@@ -408,9 +394,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SwapOut(RenderFrameProxyHost* proxy, bool is_loading);
 
   // Whether an ongoing navigation is waiting for a BeforeUnload ACK from the
-  // RenderFrame. Currently this only happens in cross-site navigations.
-  // PlzNavigate: this happens in every browser-initiated navigation that is not
-  // same-page.
+  // RenderFrame.
   bool is_waiting_for_beforeunload_ack() const {
     return is_waiting_for_beforeunload_ack_;
   }
@@ -426,53 +410,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // until SwapOut is called, at which point it is pending deletion.
   bool is_active() { return !is_waiting_for_swapout_ack_; }
 
-  // Sends the given navigation message. Use this rather than sending it
-  // yourself since this does the internal bookkeeping described below. This
-  // function takes ownership of the provided message pointer.
-  //
-  // If a cross-site request is in progress, we may be suspended while waiting
-  // for the onbeforeunload handler, so this function might buffer the message
-  // rather than sending it.
-  void Navigate(const CommonNavigationParams& common_params,
-                const StartNavigationParams& start_params,
-                const RequestNavigationParams& request_params);
-
   // Navigates to an interstitial page represented by the provided data URL.
   void NavigateToInterstitialURL(const GURL& data_url);
 
   // Stop the load in progress.
   void Stop();
 
-  // Returns whether navigation messages are currently suspended for this
-  // RenderFrameHost. Only true during a cross-site navigation, while waiting
-  // for the onbeforeunload handler.
-  bool are_navigations_suspended() const { return navigations_suspended_; }
-
-  // Suspends (or unsuspends) any navigation messages from being sent from this
-  // RenderFrameHost. This is called when a pending RenderFrameHost is created
-  // for a cross-site navigation, because we must suspend any navigations until
-  // we hear back from the old renderer's onbeforeunload handler. Note that it
-  // is important that only one navigation event happen after calling this
-  // method with |suspend| equal to true. If |suspend| is false and there is a
-  // suspended_nav_message_, this will send the message. This function should
-  // only be called to toggle the state; callers should check
-  // are_navigations_suspended() first. If |suspend| is false, the time that the
-  // user decided the navigation should proceed should be passed as
-  // |proceed_time|.
-  void SetNavigationsSuspended(bool suspend,
-                               const base::TimeTicks& proceed_time);
-
-  // Clears any suspended navigation state after a cross-site navigation is
-  // canceled or suspended. This is important if we later return to this
-  // RenderFrameHost.
-  void CancelSuspendedNavigations();
-
   // Runs the beforeunload handler for this frame. |for_navigation| indicates
-  // whether this call is for the current frame during a cross-process
-  // navigation. False means we're closing the entire tab. |is_reload|
-  // indicates whether the navigation is a reload of the page or not. If
-  // |for_navigation| is false, |is_reload| should be false as well.
-  // PlzNavigate: this call happens on all browser-initiated navigations.
+  // whether this call is for the current frame during a navigation. False means
+  // we're closing the entire tab. |is_reload| indicates whether the navigation
+  // is a reload of the page or not. If |for_navigation| is false, |is_reload|
+  // should be false as well.
   void DispatchBeforeUnload(bool for_navigation, bool is_reload);
 
   // Simulate beforeunload ack on behalf of renderer if it's unrenresponsive.
@@ -580,7 +528,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 #endif
 
-  // PlzNavigate: Indicates that a navigation is ready to commit and can be
+  // Indicates that a navigation is ready to commit and can be
   // handled by this RenderFrame.
   // |subresource_loader_params| is used in network service land to pass
   // the parameters to create a custom subresource loader in the renderer
@@ -595,7 +543,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       const base::UnguessableToken& devtools_navigation_token);
 
-  // PlzNavigate
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
   void FailedNavigation(const CommonNavigationParams& common_params,
@@ -663,7 +610,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
 
-  // PlzNavigate: returns the PreviewsState of the last successful navigation
+  // Returns the PreviewsState of the last successful navigation
   // that made a network request. The PreviewsState is a bitmask of potentially
   // several Previews optimizations.
   PreviewsState last_navigation_previews_state() const {
@@ -979,13 +926,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frames, it will return the current frame's view.
   RenderWidgetHostViewBase* GetViewForAccessibility();
 
-  // Sends a navigate message to the RenderFrame and notifies DevTools about
-  // navigation happening. Should be used instead of sending the message
-  // directly.
-  void SendNavigateMessage(const CommonNavigationParams& common_params,
-                           const StartNavigationParams& start_params,
-                           const RequestNavigationParams& request_params);
-
   // Returns the child FrameTreeNode if |child_frame_routing_id| is an
   // immediate child of this FrameTreeNode.  |child_frame_routing_id| is
   // considered untrusted, so the renderer process is killed if it refers to a
@@ -1060,8 +1000,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // based on its parent frame.
   void ResetFeaturePolicy();
 
-  // PlzNavigate: Called when the frame has consumed the StreamHandle and it
-  // can be released.
+  // Called when the frame has consumed the StreamHandle and it can be released.
   void OnStreamHandleConsumed(const GURL& stream_url);
 
   // TODO(ekaramad): One major purpose behind the API is to traverse the frame
@@ -1167,20 +1106,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(creis): Use this for main frames as well when RVH goes away.
   bool render_frame_created_;
 
-  // Whether we should buffer outgoing Navigate messages rather than sending
-  // them. This will be true when a RenderFrameHost is created for a cross-site
-  // request, until we hear back from the onbeforeunload handler of the old
-  // RenderFrameHost.
-  bool navigations_suspended_;
-
-  // Holds the parameters for a suspended navigation. This can only happen while
-  // this RFH is the pending RenderFrameHost of a RenderFrameHostManager. There
-  // will only ever be one suspended navigation, because RenderFrameHostManager
-  // will destroy the pending RenderFrameHost and create a new one if a second
-  // navigation occurs.
-  // PlzNavigate: unused as navigations are never suspended.
-  std::unique_ptr<NavigationParams> suspended_nav_params_;
-
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
 
@@ -1196,9 +1121,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Valid only when is_waiting_for_beforeunload_ack_ or
   // IsWaitingForUnloadACK is true.  This tells us if the unload request
   // is for closing the entire tab ( = false), or only this RenderFrameHost in
-  // the case of a navigation ( = true). Currently only cross-site navigations
-  // require a beforeUnload/unload ACK.
-  // PlzNavigate: all navigations require a beforeUnload ACK.
+  // the case of a navigation ( = true).
   bool unload_ack_is_for_navigation_;
 
   // The timeout monitor that runs from when the beforeunload is started in
@@ -1210,7 +1133,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // document or not.
   bool is_loading_;
 
-  // PlzNavigate
   // Used to track whether a commit is expected in this frame. Only used in
   // tests.
   bool pending_commit_;
@@ -1281,8 +1203,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // already exists it will still be used.
   bool no_create_browser_accessibility_manager_for_testing_;
 
-  // PlzNavigate: Owns the stream used in navigations to store the body of the
-  // response once it has started.
+  // Owns the stream used in navigations to store the body of the response once
+  // it has started.
   std::unique_ptr<StreamHandle> stream_handle_;
 
   // Context shared for each mojom::PermissionService instance created for this
@@ -1299,8 +1221,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Tracks a navigation happening in this frame. Note that while there can be
   // two navigations in the same FrameTreeNode, there can only be one
   // navigation per RenderFrameHost.
-  // PlzNavigate: before the navigation is ready to be committed, the
-  // NavigationHandle for it is owned by the NavigationRequest.
+  // Before the navigation is ready to be committed, the NavigationHandle for it
+  // is owned by the NavigationRequest.
   std::unique_ptr<NavigationHandleImpl> navigation_handle_;
 
   // The associated WebUIImpl and its type. They will be set if the current
@@ -1327,9 +1249,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // audio streams).
   bool is_audible_;
 
-  // PlzNavigate: The Previews state of the last navigation. This is used during
-  // history navigation of subframes to ensure that subframes navigate with the
-  // same Previews status as the top-level frame.
+  // The Previews state of the last navigation. This is used during history
+  // navigation of subframes to ensure that subframes navigate with the same
+  // Previews status as the top-level frame.
   PreviewsState last_navigation_previews_state_;
 
   bool has_committed_any_navigation_ = false;

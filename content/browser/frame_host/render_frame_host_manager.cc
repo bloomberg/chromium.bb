@@ -306,48 +306,25 @@ void RenderFrameHostManager::SetIsLoading(bool is_loading) {
 }
 
 void RenderFrameHostManager::OnBeforeUnloadACK(
-    bool for_cross_site_transition,
     bool proceed,
     const base::TimeTicks& proceed_time) {
-  if (for_cross_site_transition) {
-    DCHECK(!IsBrowserSideNavigationEnabled());
-    // Ignore if we're not in a cross-process navigation.
-    if (!pending_render_frame_host_)
-      return;
+  bool proceed_to_fire_unload;
+  delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
+                                                &proceed_to_fire_unload);
 
-    if (proceed) {
-      // Ok to unload the current page, so proceed with the cross-process
-      // navigation.
-      if (pending_render_frame_host_ &&
-          pending_render_frame_host_->are_navigations_suspended()) {
-        pending_render_frame_host_->SetNavigationsSuspended(false,
-                                                            proceed_time);
-      }
-    } else {
-      // Current page says to cancel.
+  if (proceed_to_fire_unload) {
+    // If we're about to close the tab and there's a pending RFH, cancel it.
+    // Otherwise, if the navigation in the pending RFH completes before the
+    // close in the current RFH, we'll lose the tab close.
+    if (pending_render_frame_host_) {
       CancelPending();
     }
-  } else {
-    // Non-cross-process transition means closing the entire tab.
-    bool proceed_to_fire_unload;
-    delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
-                                                  &proceed_to_fire_unload);
 
-    if (proceed_to_fire_unload) {
-      // If we're about to close the tab and there's a pending RFH, cancel it.
-      // Otherwise, if the navigation in the pending RFH completes before the
-      // close in the current RFH, we'll lose the tab close.
-      if (pending_render_frame_host_) {
-        CancelPending();
-      }
+    // Clean up the speculative RenderFrameHost if there is one.
+    if (speculative_render_frame_host_)
+      CleanUpNavigation();
 
-      // PlzNavigate: clean up the speculative RenderFrameHost if there is one.
-      if (IsBrowserSideNavigationEnabled() && speculative_render_frame_host_)
-        CleanUpNavigation();
-
-      // This is not a cross-process navigation; the tab is being closed.
-      render_frame_host_->render_view_host()->ClosePage();
-    }
+    render_frame_host_->render_view_host()->ClosePage();
   }
 }
 
@@ -546,9 +523,6 @@ void RenderFrameHostManager::DiscardUnusedFrame(
   RenderViewHostImpl* rvh = render_frame_host->render_view_host();
   RenderFrameProxyHost* proxy = nullptr;
   if (site_instance->HasSite() && site_instance->active_frame_count() > 1) {
-    // Any currently suspended navigations are no longer needed.
-    render_frame_host->CancelSuspendedNavigations();
-
     // If a proxy already exists for the |site_instance|, just reuse it instead
     // of creating a new one. There is no need to call SwapOut on the
     // |render_frame_host|, as this method is only called to discard a pending
@@ -2386,24 +2360,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       DCHECK(transfer_navigation_handle_ &&
              transfer_navigation_handle_->GetGlobalRequestID() ==
                  transferred_request_id);
-    } else if (!pending_render_frame_host_->are_navigations_suspended()) {
-      // If the pending RFH hasn't already been suspended from a previous
-      // attempt to navigate it, then we need to wait for the beforeunload
-      // handler to run.  Suspend navigations in the pending RFH until we hear
-      // back from the old RFH's beforeunload handler (via OnBeforeUnloadACK or
-      // a timeout).  If the handler returns false, we'll have to cancel the
-      // request.
-      //
-      // Also make sure the old RenderFrame stops, in case a load is in
-      // progress.  (We don't want to do this for transfers, since it will
-      // interrupt the transfer with an unexpected DidStopLoading.)
-      render_frame_host_->Send(new FrameMsg_Stop(
-          render_frame_host_->GetRoutingID()));
-      pending_render_frame_host_->SetNavigationsSuspended(true,
-                                                          base::TimeTicks());
-      render_frame_host_->DispatchBeforeUnload(true, is_reload);
     }
-
     return pending_render_frame_host_.get();
   }
 
