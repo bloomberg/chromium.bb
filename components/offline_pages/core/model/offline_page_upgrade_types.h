@@ -26,8 +26,8 @@ struct StartUpgradeResult {
   StartUpgradeResult();
   explicit StartUpgradeResult(StartUpgradeStatus status);
   StartUpgradeResult(StartUpgradeStatus status,
-                     std::string digest,
-                     base::FilePath file_path);
+                     const std::string& digest,
+                     const base::FilePath& file_path);
 
   // Support for move semantics.
   StartUpgradeResult(StartUpgradeResult&& other) = default;
