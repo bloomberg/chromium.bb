@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -98,6 +99,7 @@ class CreateArchiveTaskTest
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<base::Clock> clock_;
 
   OfflinePageItem last_page_of_archive_;
   OfflinePageArchiver* last_saved_archiver_;
@@ -121,6 +123,7 @@ CreateArchiveTaskTest::CreateArchiveTaskTest()
 CreateArchiveTaskTest::~CreateArchiveTaskTest() {}
 
 void CreateArchiveTaskTest::SetUp() {
+  clock_.reset(new base::SimpleTestClock);
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 }
 
@@ -173,7 +176,7 @@ void CreateArchiveTaskTest::CreateArchiveWithParams(
     const SavePageParams& save_page_params,
     OfflinePageArchiver* archiver) {
   task_ = base::MakeUnique<CreateArchiveTask>(
-      archives_dir(), save_page_params, archiver,
+      archives_dir(), save_page_params, archiver, clock_.get(),
       base::Bind(&CreateArchiveTaskTest::OnCreateArchiveDone, AsWeakPtr()));
   task_->Run();
   PumpLoop();

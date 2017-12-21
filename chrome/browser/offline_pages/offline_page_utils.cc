@@ -60,7 +60,7 @@ void OnGetPagesByURLDone(
       }
     } else {
       // This is consistent with exact match against original url done in
-      // OfflinePageModelImpl.
+      // GetPagesTask.
       DCHECK(url == page.original_url);
       if (!selected_page_for_original_url ||
           page.creation_time > selected_page_for_original_url->creation_time) {

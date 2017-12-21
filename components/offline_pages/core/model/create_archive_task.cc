@@ -19,12 +19,13 @@ CreateArchiveTask::CreateArchiveTask(
     const base::FilePath& archives_dir,
     const OfflinePageModel::SavePageParams& save_page_params,
     OfflinePageArchiver* archiver,
+    base::Clock* clock,
     const CreateArchiveTaskCallback& callback)
     : archives_dir_(archives_dir),
       save_page_params_(save_page_params),
       archiver_(archiver),
       callback_(callback),
-      clock_(new base::DefaultClock()),
+      clock_(clock),
       skip_clearing_original_url_for_testing_(false) {
   DCHECK(!callback_.is_null());
 }
