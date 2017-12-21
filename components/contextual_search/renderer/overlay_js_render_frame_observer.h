@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/contextual_search/common/overlay_page_notifier_service.mojom.h"
+#include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -27,31 +27,27 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   ~OverlayJsRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
-  void DidStartProvisionalLoad(
-      blink::WebDocumentLoader* document_loader) override;
   void DidClearWindowObject() override;
-  void DidFinishLoad() override;
-
-  // Flag the current page as a contextual search overlay.
-  void SetIsContextualSearchOverlay();
 
  private:
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
-  // Creates the OverlayPageNotifierService connecting the browser to this
-  // observer.
-  void CreateOverlayPageNotifierService(
-      mojom::OverlayPageNotifierServiceRequest request);
-  // Destroys the OverlayPageNotifierService.
-  void DestroyOverlayPageNotifierService();
+  // Helper function to ensure that this class has connected to the CS service.
+  // Returns false if cannot connect.
+  bool EnsureServiceConnected();
 
-  // Track if the current page is presented in the contextual search overlay.
-  bool is_contextual_search_overlay_;
+  // Enables or disables the JS API.
+  void EnableJsApi(bool should_enable);
 
-  // Requests for mojom::OverlayPageNotifierService are only bound while
-  // a load is active.
-  bool can_bind_requests_ = false;
+  // The CS service to notify when deciding to enable the API or when API calls
+  // are made.
+  mojom::ContextualSearchJsApiServicePtr contextual_search_js_api_service_;
+
+  // Remembers whether we did start enabling the JS API by making a request
+  // to the Contextaual Search service to ask if we should enable for this
+  // URL or not.
+  bool did_start_enabling_js_api_ = false;
 
   base::WeakPtrFactory<OverlayJsRenderFrameObserver> weak_factory_;
 

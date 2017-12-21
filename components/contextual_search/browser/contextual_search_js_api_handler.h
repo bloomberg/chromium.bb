@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
 
 namespace contextual_search {
 
@@ -17,6 +18,16 @@ class ContextualSearchJsApiHandler {
  public:
   ContextualSearchJsApiHandler() {}
   virtual ~ContextualSearchJsApiHandler() {}
+
+  // Enabling API, determines if the JS API should be enabled for the given URL.
+  virtual void ShouldEnableJsApi(
+      const GURL& gurl,
+      contextual_search::mojom::ContextualSearchJsApiService::
+          ShouldEnableJsApiCallback callback) = 0;
+
+  //=======
+  // JS API
+  //=======
 
   // Set the caption in the Contextual Search Bar, and indicate whether
   // the caption provides an answer (such as an actual definition), rather than

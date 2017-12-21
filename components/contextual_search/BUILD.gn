@@ -7,7 +7,9 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojo_bindings") {
   sources = [
     "common/contextual_search_js_api_service.mojom",
-    "common/overlay_page_notifier_service.mojom",
+  ]
+  public_deps = [
+    "//url/mojo:url_mojom_gurl",
   ]
 }
 
@@ -45,8 +47,6 @@ static_library("renderer") {
     "renderer/contextual_search_wrapper.h",
     "renderer/overlay_js_render_frame_observer.cc",
     "renderer/overlay_js_render_frame_observer.h",
-    "renderer/overlay_page_notifier_service_impl.cc",
-    "renderer/overlay_page_notifier_service_impl.h",
   ]
   deps = [
     ":mojo_bindings",
