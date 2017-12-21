@@ -4528,6 +4528,16 @@ bool Element::RemoveInlineStyleProperty(CSSPropertyID property_id) {
   return did_change;
 }
 
+bool Element::RemoveInlineStyleProperty(const AtomicString& property_name) {
+  DCHECK(IsStyledElement());
+  if (!InlineStyle())
+    return false;
+  bool did_change = EnsureMutableInlineStyle().RemoveProperty(property_name);
+  if (did_change)
+    InlineStyleChanged();
+  return did_change;
+}
+
 void Element::RemoveAllInlineStyleProperties() {
   DCHECK(IsStyledElement());
   if (!InlineStyle())

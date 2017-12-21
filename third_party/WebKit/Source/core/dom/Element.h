@@ -378,6 +378,7 @@ class CORE_EXPORT Element : public ContainerNode {
                               bool important = false);
 
   bool RemoveInlineStyleProperty(CSSPropertyID);
+  bool RemoveInlineStyleProperty(const AtomicString&);
   void RemoveAllInlineStyleProperties();
 
   void SynchronizeStyleAttributeInternal() const;
