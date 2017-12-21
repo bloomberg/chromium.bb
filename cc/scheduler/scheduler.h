@@ -202,6 +202,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_ = false;
+  bool inside_scheduled_action_ = false;
   SchedulerStateMachine::Action inside_action_ =
       SchedulerStateMachine::Action::NONE;
 
