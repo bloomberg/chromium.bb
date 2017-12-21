@@ -77,9 +77,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     // The number of ms to wait for the rendering activity to be started.
     private static final int ACTIVITY_START_TIMEOUT_MS = 1000;
 
-    // TODO(mariakhomenko): crbug.com/796312 Remove all references.
-    public static final String DISABLE_NETWORK_PREDICTION_FLAG = "notarealflag";
-
     private static final long OMNIBOX_FIND_SUGGESTION_TIMEOUT_MS = 10 * 1000;
 
     protected boolean mSkipClearAppData;

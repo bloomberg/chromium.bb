@@ -49,8 +49,7 @@ import java.util.concurrent.TimeoutException;
  * can continue opening the next URL when they are restarted.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PopularUrlsTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

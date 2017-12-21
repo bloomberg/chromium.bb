@@ -40,8 +40,7 @@ import java.util.concurrent.TimeoutException;
  * Services than is installed on the test devices. See http://crbug.com/514449
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class TranslateInfoBarTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

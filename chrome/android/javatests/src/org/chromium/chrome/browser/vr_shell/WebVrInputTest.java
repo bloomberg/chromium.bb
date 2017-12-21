@@ -57,9 +57,8 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-webvr",
-        "enable-gamepad-extensions"})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr", "enable-gamepad-extensions"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR is only supported on K+
 public class WebVrInputTest {
     @ClassParameter

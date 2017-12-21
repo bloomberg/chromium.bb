@@ -59,8 +59,7 @@ import java.util.concurrent.TimeUnit;
  * storage.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class OfflinePageSavePageLaterEvaluationTest {
     /**
      * Class which is used to calculate time difference.

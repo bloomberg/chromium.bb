@@ -30,10 +30,7 @@ import java.net.URI;
 
 /** An integration test for the payment manifest downloader. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @MediumTest
 public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Rule

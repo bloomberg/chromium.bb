@@ -27,7 +27,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
         "enable-blink-features=InstalledApp",
 })
 public class InstalledAppTest {

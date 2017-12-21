@@ -39,7 +39,6 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 /** Integration tests for WebAPK feature. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
 public class WebApkIntegrationTest {
     @Rule

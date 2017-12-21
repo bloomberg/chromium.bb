@@ -36,9 +36,8 @@ import java.util.concurrent.TimeoutException;
  * Tests for checking whether the media are paused when unplugging the headset
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.
-Add({MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY, ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PauseOnHeadsetUnplugTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

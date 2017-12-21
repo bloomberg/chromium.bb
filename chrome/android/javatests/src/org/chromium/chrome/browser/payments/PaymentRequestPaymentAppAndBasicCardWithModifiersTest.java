@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.payments.mojom.BasicCardType;
@@ -43,11 +42,8 @@ import java.util.concurrent.TimeoutException;
  * modifiers.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-        ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES, ENABLE_WEB_PAYMENTS_MODIFIERS,
-})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES, ENABLE_WEB_PAYMENTS_MODIFIERS})
 public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule = new PaymentRequestTestRule(

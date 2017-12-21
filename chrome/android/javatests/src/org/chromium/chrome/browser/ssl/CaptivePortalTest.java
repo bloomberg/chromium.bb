@@ -22,7 +22,6 @@ import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -42,10 +41,7 @@ import java.util.concurrent.Callable;
 /** Tests for the Captive portal interstitial. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @MediumTest
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @CommandLineParameter({"", "enable-features=" + ChromeFeatureList.CAPTIVE_PORTAL_CERTIFICATE_LIST})
 public class CaptivePortalTest {
     private static final String CAPTIVE_PORTAL_INTERSTITIAL_TITLE_PREFIX = "Connect to";

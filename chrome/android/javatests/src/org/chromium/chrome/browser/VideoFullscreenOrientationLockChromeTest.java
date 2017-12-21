@@ -22,7 +22,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
@@ -41,7 +40,6 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
         MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY,
         "enable-features=VideoFullscreenOrientationLock",
         "disable-features=" + ChromeFeatureList.FULLSCREEN_ACTIVITY})

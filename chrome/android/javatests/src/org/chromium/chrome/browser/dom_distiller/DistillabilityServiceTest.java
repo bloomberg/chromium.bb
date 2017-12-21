@@ -37,9 +37,10 @@ import java.util.concurrent.TimeoutException;
  * Tests for making sure the distillability service is communicating correctly.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-dom-distiller", "reader-mode-heuristics=alwaystrue",
+@CommandLineFlags.Add({
+        "enable-dom-distiller", "reader-mode-heuristics=alwaystrue",
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+})
 public class DistillabilityServiceTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

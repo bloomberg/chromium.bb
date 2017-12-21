@@ -37,8 +37,7 @@ import java.util.concurrent.TimeoutException;
  *  hence is tested via content_browsertests.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ShapeDetectionTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

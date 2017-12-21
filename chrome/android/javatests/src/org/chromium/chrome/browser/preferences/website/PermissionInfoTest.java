@@ -27,8 +27,7 @@ import java.util.concurrent.ExecutionException;
 
 /** Tests for the PermissionInfoTest. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PermissionInfoTest {
     private static final String DSE_ORIGIN = "https://www.google.com";
     private static final String OTHER_ORIGIN = "https://www.other.com";

@@ -17,7 +17,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.payments.mojom.BasicCardType;
@@ -31,13 +30,10 @@ import javax.annotation.Nullable;
  * A payment integration test for service worker based payment apps.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // For all the tests in this file, we expect abort exception when there is no supported
         // payment instruments instead of showing payment request UI.
-        "enable-features=" + ChromeFeatureList.NO_CREDIT_CARD_ABORT,
-})
+        "enable-features=" + ChromeFeatureList.NO_CREDIT_CARD_ABORT})
 public class PaymentRequestServiceWorkerPaymentAppTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule = new PaymentRequestTestRule(

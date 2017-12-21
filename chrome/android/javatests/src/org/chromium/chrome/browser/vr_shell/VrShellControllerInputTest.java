@@ -24,7 +24,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Coordinates;
@@ -39,8 +38,7 @@ import java.util.concurrent.TimeoutException;
  * End-to-end tests for Daydream controller input while in the VR browser.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VIEWER_DAYDREAM})
 public class VrShellControllerInputTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class

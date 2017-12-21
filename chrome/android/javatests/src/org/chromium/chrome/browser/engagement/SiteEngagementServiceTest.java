@@ -24,8 +24,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
  * Test for the Site Engagement Service Java binding.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SiteEngagementServiceTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

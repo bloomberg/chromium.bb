@@ -44,8 +44,7 @@ import java.util.concurrent.TimeoutException;
  * Tests the behavior of the bottom sheet when used with the back button.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetBackBehaviorTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/simple.html";

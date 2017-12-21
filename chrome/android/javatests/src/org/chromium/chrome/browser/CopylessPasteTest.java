@@ -27,7 +27,6 @@ import org.chromium.blink.mojom.document_metadata.Property;
 import org.chromium.blink.mojom.document_metadata.Values;
 import org.chromium.blink.mojom.document_metadata.WebPage;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -41,8 +40,8 @@ import java.util.concurrent.TimeoutException;
  * Tests Copyless Paste AppIndexing using instrumented tests.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=CopylessPaste"})
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=CopylessPaste"})
 @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 public class CopylessPasteTest {
     @Rule

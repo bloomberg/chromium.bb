@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule
 import org.chromium.chrome.browser.vr_shell.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 
@@ -36,8 +35,7 @@ import java.util.concurrent.TimeoutException;
  * Tests for the infobar that prompts the user to enter feedback on their VR browsing experience.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-webvr"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
 @RetryOnFailure(message = "These tests have a habit of hitting a race condition, preventing "
                 + "VR entry. See crbug.com/762724")

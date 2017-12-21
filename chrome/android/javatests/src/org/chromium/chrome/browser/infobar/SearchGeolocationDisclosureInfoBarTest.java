@@ -33,8 +33,7 @@ import java.util.concurrent.TimeoutException;
 
 /** Tests for the SearchGeolocationDisclosureInfobar. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SearchGeolocationDisclosureInfoBarTest {
     private static final String SEARCH_PAGE = "/chrome/test/data/android/google.html";
 

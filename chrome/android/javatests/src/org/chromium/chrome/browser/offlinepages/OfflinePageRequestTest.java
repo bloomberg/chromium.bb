@@ -33,8 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 /** Unit tests for offline page request handling. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class OfflinePageRequestTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -39,8 +38,9 @@ import org.chromium.ui.test.util.UiRestriction;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
-@CommandLineFlags.Add({"enable-features=ChromeHome", ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({
+        "enable-features=ChromeHome", ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+})
 public class ChromeHomeDownloadManagerTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
 

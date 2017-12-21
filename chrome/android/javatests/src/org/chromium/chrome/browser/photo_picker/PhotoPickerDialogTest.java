@@ -42,12 +42,9 @@ import java.util.concurrent.TimeUnit;
  * Tests for the PhotoPickerDialog class.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-})
-public class PhotoPickerDialogTest implements PhotoPickerListener,
-        SelectionObserver<PickerBitmap>, DecoderServiceHost.ServiceReadyCallback {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
+                                              DecoderServiceHost.ServiceReadyCallback {
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(30);
 

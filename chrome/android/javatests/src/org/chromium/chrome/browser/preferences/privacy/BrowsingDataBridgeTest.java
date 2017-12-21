@@ -35,8 +35,7 @@ import java.util.List;
  * Integration tests for ClearBrowsingDataPreferences.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class BrowsingDataBridgeTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
