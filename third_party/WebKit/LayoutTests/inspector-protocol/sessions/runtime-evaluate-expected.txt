@@ -4,6 +4,7 @@ window.foo=42 in session1
     id : <number>
     result : {
         result : {
+            description : 42
             type : number
             value : 42
         }
@@ -14,6 +15,7 @@ window.foo in session2
     id : <number>
     result : {
         result : {
+            description : 42
             type : number
             value : 42
         }
@@ -24,6 +26,7 @@ window.foo in session3
     id : <number>
     result : {
         result : {
+            description : 42
             type : number
             value : 42
         }
