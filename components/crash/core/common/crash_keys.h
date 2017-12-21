@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <string>
-#include <vector>
 
 #include "base/debug/crash_logging.h"
 #include "build/build_config.h"
@@ -25,9 +24,6 @@ namespace crash_keys {
 // dashes before setting the crash key).
 void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid);
 void ClearMetricsClientId();
-
-// Sets the list of active experiment/variations info.
-void SetVariationsList(const std::vector<std::string>& variations);
 
 // A function returning true if |flag| is a switch that should be filtered out
 // of crash keys.

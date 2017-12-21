@@ -64,28 +64,6 @@ void ClearMetricsClientId() {
 #endif
 }
 
-void SetVariationsList(const std::vector<std::string>& variations) {
-  static crash_reporter::CrashKeyString<8> num_variations_key(
-      "num-experiments");
-  num_variations_key.Set(base::NumberToString(variations.size()));
-
-  static constexpr size_t kVariationsKeySize = 2048;
-  static crash_reporter::CrashKeyString<kVariationsKeySize> crash_key(
-      "variations");
-
-  std::string variations_string;
-  variations_string.reserve(kVariationsKeySize);
-
-  for (const auto& variation : variations) {
-    // Do not truncate an individual experiment.
-    if (variations_string.size() + variation.size() >= kVariationsKeySize)
-      break;
-    variations_string += variation;
-    variations_string += ",";
-  }
-  crash_key.Set(variations_string);
-}
-
 using SwitchesCrashKey = crash_reporter::CrashKeyString<64>;
 static SwitchesCrashKey switches_keys[] = {
     {"switch-1", SwitchesCrashKey::Tag::kArray},
