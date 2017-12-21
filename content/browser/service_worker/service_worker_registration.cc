@@ -199,7 +199,16 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
     return;
   }
 
-  StartLameDuckTimerIfNeeded();
+  if (IsLameDuckActiveVersion()) {
+    if (ServiceWorkerUtils::IsServicificationEnabled() &&
+        active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
+      // If the waiting worker is ready and the active worker needs to be
+      // swapped out, ask the active worker to trigger idle timer as soon as
+      // possible.
+      active_version()->event_dispatcher()->SetIdleTimerDelayToZero();
+    }
+    StartLameDuckTimer();
+  }
 }
 
 void ServiceWorkerRegistration::ClaimClients() {
@@ -264,12 +273,27 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
   if (!context_)
     return;
   DCHECK_EQ(active_version(), version);
-  if (is_uninstalling_)
+  if (is_uninstalling_) {
     Clear();
-  else if (IsReadyToActivate())
+    return;
+  }
+
+  if (IsReadyToActivate()) {
     ActivateWaitingVersion(true /* delay */);
-  else
-    StartLameDuckTimerIfNeeded();
+    return;
+  }
+
+  if (IsLameDuckActiveVersion()) {
+    if (ServiceWorkerUtils::IsServicificationEnabled() &&
+        should_activate_when_ready_ &&
+        active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
+      // If the waiting worker is ready and the active worker needs to be
+      // swapped out, ask the active worker to trigger idle timer as soon as
+      // possible.
+      active_version()->event_dispatcher()->SetIdleTimerDelayToZero();
+    }
+    StartLameDuckTimer();
+  }
 }
 
 void ServiceWorkerRegistration::OnNoWork(ServiceWorkerVersion* version) {
@@ -305,10 +329,10 @@ bool ServiceWorkerRegistration::IsLameDuckActiveVersion() const {
          !active_version()->HasControllee();
 }
 
-void ServiceWorkerRegistration::StartLameDuckTimerIfNeeded() {
-  if (!IsLameDuckActiveVersion() || lame_duck_timer_.IsRunning()) {
+void ServiceWorkerRegistration::StartLameDuckTimer() {
+  DCHECK(IsLameDuckActiveVersion());
+  if (lame_duck_timer_.IsRunning())
     return;
-  }
 
   lame_duck_timer_.Start(
       FROM_HERE, kMaxLameDuckTime,

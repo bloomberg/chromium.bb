@@ -154,4 +154,9 @@ interface ServiceWorkerEventDispatcher {
   // worker. Unlike the other functions in this interface, Ping() does not
   // dispatch an event.
   Ping() => ();
+
+  // S13nServiceWorker:
+  // Lets the idle timer request termination immediately after all inflight
+  // events are handled without delay.
+  SetIdleTimerDelayToZero();
 };

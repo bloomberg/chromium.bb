@@ -62,6 +62,11 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // (did_idle_timeout() returns true).
   void PushPendingTask(base::OnceClosure pending_task);
 
+  // Sets the |zero_idle_timer_delay_| to true and triggers the idle callback if
+  // there are not inflight events. If there are, the callback will be called
+  // next time when the set of inflight events becomes empty in EndEvent().
+  void SetIdleTimerDelayToZero();
+
   // Returns true if the timer thinks no events ran for a while, and has
   // triggered the |idle_callback| passed to the constructor. It'll be reset to
   // false again when StartEvent() is called.
@@ -82,6 +87,10 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
  private:
   // Updates the internal states and fires timeout callbacks if any.
   void UpdateStatus();
+
+  // Triggers idle timer if |zero_idle_timer_delay_| is true. Returns true if
+  // the idle callback is called.
+  bool MaybeTriggerIdleTimer();
 
   struct EventInfo {
     EventInfo(int id,
@@ -106,6 +115,10 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // For idle timeouts. The time the service worker started being considered
   // idle. This time is null if there are any inflight events.
   base::TimeTicks idle_time_;
+
+  // Set to true if the idle callback should be fired immediately after all
+  // inflight events finish.
+  bool zero_idle_timer_delay_ = false;
 
   // For idle timeouts. Invoked when UpdateStatus() is called after
   // |idle_time_|.
