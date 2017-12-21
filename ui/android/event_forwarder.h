@@ -15,6 +15,10 @@ class EventForwarder {
  public:
   ~EventForwarder();
 
+  base::android::ScopedJavaLocalRef<jobject> GetJavaWindowAndroid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   jboolean OnTouchEvent(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

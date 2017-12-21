@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "jni/EventForwarder_jni.h"
 #include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/gesture_event_android.h"
@@ -38,6 +39,12 @@ ScopedJavaLocalRef<jobject> EventForwarder::GetJavaObject() {
                                    switches::IsTouchDragDropEnabled()));
   }
   return ScopedJavaLocalRef<jobject>(java_obj_);
+}
+
+ScopedJavaLocalRef<jobject> EventForwarder::GetJavaWindowAndroid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return view_->GetWindowAndroid()->GetJavaObject();
 }
 
 jboolean EventForwarder::OnTouchEvent(JNIEnv* env,
