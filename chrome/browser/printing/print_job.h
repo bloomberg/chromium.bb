@@ -67,13 +67,15 @@ class PrintJob : public PrintJobWorkerOwner,
   void StartPrinting();
 
   // Asks for the worker thread to finish its queued tasks and disconnects the
-  // delegate object. The PrintJobManager will remove its reference. This may
-  // have the side-effect of destroying the object if the caller doesn't have a
-  // handle to the object. Use PrintJob::is_stopped() to check whether the
-  // worker thread has actually stopped.
+  // delegate object. The PrintJobManager will remove its reference.
+  // WARNING: This may have the side-effect of destroying the object if the
+  // caller doesn't have a handle to the object. Use PrintJob::is_stopped() to
+  // check whether the worker thread has actually stopped.
   void Stop();
 
   // Cancels printing job and stops the worker thread. Takes effect immediately.
+  // The caller must have a reference to the PrintJob before calling Cancel(),
+  // since Cancel() calls Stop(). See WARNING above for Stop().
   void Cancel();
 
   // Synchronously wait for the job to finish. It is mainly useful when the
