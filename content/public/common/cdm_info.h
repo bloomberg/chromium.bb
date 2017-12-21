@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/version.h"
 #include "content/common/content_export.h"
+#include "media/base/video_codecs.h"
 
 namespace content {
 
@@ -21,7 +22,7 @@ struct CONTENT_EXPORT CdmInfo {
           const base::Version& version,
           const base::FilePath& path,
           const std::string& file_system_id,
-          const std::vector<std::string>& supported_codecs,
+          const std::vector<media::VideoCodec>& supported_video_codecs,
           bool supports_persistent_license,
           const std::string& supported_key_system,
           bool supports_sub_key_systems);
@@ -46,10 +47,12 @@ struct CONTENT_EXPORT CdmInfo {
   // digits(0-9), or "._-".
   std::string file_system_id;
 
-  // List of codecs supported by the CDM (e.g. vp8).
-  // TODO(jrummell): use the enums from media::AudioCodec and media::VideoCodec
-  // instead of strings.
-  std::vector<std::string> supported_codecs;
+  // List of video codecs supported by the CDM (e.g. vp8). This is the set of
+  // codecs that can be decrypted and decoded by the CDM. As this is generic,
+  // not all profiles or levels of the specified codecs may actually be
+  // supported.
+  // TODO(crbug.com/796725) Find a way to include profiles and levels.
+  std::vector<media::VideoCodec> supported_video_codecs;
 
   // Whether this CDM supports persistent licenses.
   bool supports_persistent_license;
