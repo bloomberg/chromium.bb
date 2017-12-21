@@ -174,6 +174,15 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   void NavigationFailed();
   void DidStopLoading();
 
+  // Keep track of if this page is hidden by an interstitial, in which case
+  // we need to suppress all events.
+  void set_hidden_by_interstitial_page(bool hidden) {
+    hidden_by_interstitial_page_ = hidden;
+  }
+  bool hidden_by_interstitial_page() const {
+    return hidden_by_interstitial_page_;
+  }
+
   // Pretend that the given node has focus, for testing only. Doesn't
   // communicate with the renderer and doesn't fire any events.
   void SetFocusLocallyForTesting(BrowserAccessibility* node);
@@ -413,6 +422,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;
+
+  // Interstitial page, like an SSL warning.
+  // If so we need to suppress any events.
+  bool hidden_by_interstitial_page_ = false;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
 

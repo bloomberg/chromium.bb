@@ -1014,4 +1014,24 @@ RenderWidgetHostInputEventRouter* InterstitialPageImpl::GetInputEventRouter() {
   return web_contents_impl->GetInputEventRouter();
 }
 
+BrowserAccessibilityManager*
+InterstitialPageImpl::GetRootBrowserAccessibilityManager() {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents_);
+  if (!web_contents_impl)
+    return nullptr;
+
+  return web_contents_impl->GetRootBrowserAccessibilityManager();
+}
+
+BrowserAccessibilityManager*
+InterstitialPageImpl::GetOrCreateRootBrowserAccessibilityManager() {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents_);
+  if (!web_contents_impl)
+    return nullptr;
+
+  return web_contents_impl->GetOrCreateRootBrowserAccessibilityManager();
+}
+
 }  // namespace content

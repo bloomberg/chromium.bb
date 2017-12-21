@@ -73,6 +73,7 @@ class SSLBlockingPage : public SSLBlockingPageBase {
  protected:
   friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
   friend class SSLUITestBase;
+  friend class InterstitialAccessibilityBrowserTest;
 
   SSLBlockingPage(
       content::WebContents* web_contents,

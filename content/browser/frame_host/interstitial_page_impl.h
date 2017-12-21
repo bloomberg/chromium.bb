@@ -169,6 +169,9 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   TextInputManager* GetTextInputManager() override;
   void GetScreenInfo(content::ScreenInfo* screen_info) override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
+  BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
+  BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager()
+      override;
 
   bool enabled() const { return enabled_; }
   WebContents* web_contents() const;
