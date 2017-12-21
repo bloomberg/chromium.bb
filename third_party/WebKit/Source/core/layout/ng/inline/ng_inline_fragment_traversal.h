@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGInlineFragmentIterator_h
-#define NGInlineFragmentIterator_h
-
-// TODO(xiaochengh): Rename this file into ng_inline_fragment_traversal.h
+#ifndef NGInlineFragmentTraversal_h
+#define NGInlineFragmentTraversal_h
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_physical_fragment.h"
@@ -15,7 +13,6 @@
 namespace blink {
 
 class LayoutObject;
-class NGPhysicalBoxFragment;
 class NGPhysicalContainerFragment;
 
 // Utility class for traversing the physical fragment tree.
@@ -52,28 +49,6 @@ class CORE_EXPORT NGInlineFragmentTraversal {
       const LayoutObject* target);
 };
 
-// TODO(xiaochengh): Convert clients of NGInlineFragmentIterator to use
-// NGInlineFragmentTraversal::SelfFragmentsOf().
-
-// Iterate through inline descendant fragments.
-class CORE_EXPORT NGInlineFragmentIterator {
-  STACK_ALLOCATED();
-
- public:
-  // Create an iterator that returns inline fragments produced from the
-  // specified LayoutObject.
-  NGInlineFragmentIterator(const NGPhysicalBoxFragment&,
-                           const LayoutObject* filter);
-
-  using Results = Vector<NGPhysicalFragmentWithOffset, 1>;
-
-  Results::const_iterator begin() const { return results_.begin(); }
-  Results::const_iterator end() const { return results_.end(); }
-
- private:
-  Results results_;
-};
-
 }  // namespace blink
 
-#endif  // NGInlineFragmentIterator_h
+#endif  // NGInlineFragmentTraversal_h

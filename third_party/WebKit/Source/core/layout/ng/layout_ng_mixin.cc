@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "core/layout/HitTestLocation.h"
-#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
 #include "core/layout/ng/inline/ng_inline_node_data.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_result.h"
