@@ -8,6 +8,7 @@ import("//build/config/mac/symbols.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
+import("//components/cronet/native/include/headers.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//testing/test.gni")
 import("//url/features.gni")
@@ -53,6 +54,7 @@ _cronet_deps = [
   ":cronet_version_header",
   ":generate_accept_languages",
   "//base:base",
+  "//components/cronet/native:cronet_native_impl",
   "//components/grpc_support",
   "//components/metrics:metrics",
   "//third_party/metrics_proto",
@@ -85,6 +87,7 @@ _cronet_sources = [
 
 _cronet_public_headers = [ "Cronet.h" ]
 _cronet_public_headers += grpc_public_headers
+_cronet_public_headers += cronet_native_public_headers
 
 source_set("cronet_sources") {
   deps = _cronet_deps
@@ -162,6 +165,7 @@ test("cronet_unittests_ios") {
     ":cronet_sources_with_global_state",
     "//base",
     "//base/test:test_support",
+    "//components/cronet/native:cronet_native_unittests",
     "//components/metrics",
     "//net",
     "//testing/gtest",

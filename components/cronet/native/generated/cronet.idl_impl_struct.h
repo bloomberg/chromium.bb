@@ -15,22 +15,6 @@
 
 #include "base/macros.h"
 
-// Struct Cronet_Buffer.
-struct Cronet_Buffer {
- public:
-  Cronet_Buffer();
-  ~Cronet_Buffer();
-
-  int32_t size = 0;
-  int32_t limit = 0;
-  int32_t position = 0;
-  RawDataPtr data;
-  Cronet_BufferCallbackPtr callback;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Cronet_Buffer);
-};
-
 // Struct Cronet_Exception.
 struct Cronet_Exception {
  public:

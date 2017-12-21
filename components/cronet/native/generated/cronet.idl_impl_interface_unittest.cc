@@ -10,6 +10,84 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Test of Cronet_Buffer interface.
+class Cronet_BufferTest : public ::testing::Test {
+ protected:
+  void SetUp() override {}
+
+  void TearDown() override {}
+
+  Cronet_BufferTest() {}
+  ~Cronet_BufferTest() override {}
+
+ public:
+  bool InitWithDataAndCallback_called_ = false;
+  bool InitWithAlloc_called_ = false;
+  bool GetSize_called_ = false;
+  bool GetData_called_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Cronet_BufferTest);
+};
+
+namespace {
+// Implementation of Cronet_Buffer methods for testing.
+void TestCronet_Buffer_InitWithDataAndCallback(
+    Cronet_BufferPtr self,
+    RawDataPtr data,
+    uint64_t size,
+    Cronet_BufferCallbackPtr callback) {
+  CHECK(self);
+  Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
+  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  CHECK(test);
+  test->InitWithDataAndCallback_called_ = true;
+}
+void TestCronet_Buffer_InitWithAlloc(Cronet_BufferPtr self, uint64_t size) {
+  CHECK(self);
+  Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
+  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  CHECK(test);
+  test->InitWithAlloc_called_ = true;
+}
+uint64_t TestCronet_Buffer_GetSize(Cronet_BufferPtr self) {
+  CHECK(self);
+  Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
+  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  CHECK(test);
+  test->GetSize_called_ = true;
+
+  return static_cast<uint64_t>(0);
+}
+RawDataPtr TestCronet_Buffer_GetData(Cronet_BufferPtr self) {
+  CHECK(self);
+  Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
+  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  CHECK(test);
+  test->GetData_called_ = true;
+
+  return static_cast<RawDataPtr>(0);
+}
+}  // namespace
+
+// Test that Cronet_Buffer stub forwards function calls as expected.
+TEST_F(Cronet_BufferTest, TestCreate) {
+  Cronet_BufferPtr test = Cronet_Buffer_CreateStub(
+      TestCronet_Buffer_InitWithDataAndCallback,
+      TestCronet_Buffer_InitWithAlloc, TestCronet_Buffer_GetSize,
+      TestCronet_Buffer_GetData);
+  CHECK(test);
+  Cronet_Buffer_SetContext(test, this);
+  CHECK(!InitWithDataAndCallback_called_);
+  CHECK(!InitWithAlloc_called_);
+  Cronet_Buffer_GetSize(test);
+  CHECK(GetSize_called_);
+  Cronet_Buffer_GetData(test);
+  CHECK(GetData_called_);
+
+  Cronet_Buffer_Destroy(test);
+}
+
 // Test of Cronet_BufferCallback interface.
 class Cronet_BufferCallbackTest : public ::testing::Test {
  protected:

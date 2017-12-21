@@ -12,44 +12,42 @@ module Cronet;
 /**
  * Data buffer provided by the application to read and write data.
  */
-struct Buffer {
+interface Buffer {
   /**
-   * Size of |data| buffer in bytes. Limited to int32 for Java compatibility.
+   * Initialize Buffer with raw buffer |data| of |size| allocated by the app.
+   * The |callback| is invoked when buffer is destroyed.
    */
-  int32 size = 0;
+  InitWithDataAndCallback(handle data, uint64 size, BufferCallback callback);
 
   /**
-   * Maximum |position| in |data| for reading or writing of data. Cannot exceed
-   * |size|.
+   * Initialize Buffer by allocating buffer of |size|. The content of allocated
+   * data is not initialized.
    */
-  int32 limit = 0;
+  InitWithAlloc(uint64 size);
 
   /**
-   * Current position in |data| for reading or writing of data. Cannot exceed
-   * |size|.
+   * Return size of data owned by this buffer.
    */
-  int32 position = 0;
+  [Sync]
+  GetSize() => (uint64 size);
 
   /**
-   * App-provided buffer of |size| bytes. Allocated by the app, and owned by
-   * Buffer until BufferCallback.OnDestroy is invoked.
+   * Return raw pointer to |data| owned by this buffer.
    */
-  handle data;
-
-  /**
-   * App-provided callback that gets invoked when Buffer is destroyed, so
-   * |data| can be freed.
-   */
-  BufferCallback callback;
+  [Sync]
+  GetData() => (handle data);
 };
 
 /**
- * App-provided callback that gets invoked when Buffer is destroyed.
+ * App-provided callback passed to Buffer::InitWithDataAndCallback that gets invoked
+ * when Buffer is destroyed.
  */
 [Abstract]
 interface BufferCallback {
   /**
-   * Method invoked when |buffer| is destroyed so its app-allocated |data| can be freed.
+   * Method invoked when |buffer| is destroyed so its app-allocated |data| can
+   * be freed. If a UrlRequest has ownership of a Buffer and the UrlRequest is destroyed
+   * (e.g. Cronet_UrlRequest_Destroy() is called), then Cronet will call OnDestroy().
    */
   OnDestroy(Buffer buffer);
 };
@@ -168,6 +166,10 @@ interface Runnable {
  */
 [Abstract]
 interface Executor {
+  /**
+   * Takes ownership of |command| and runs it synchronously or asynchronously.
+   * Destroys the |command| after execution.
+   */
   Execute(Runnable command);
 };
 

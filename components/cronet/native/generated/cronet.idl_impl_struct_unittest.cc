@@ -23,28 +23,6 @@ class CronetStructTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CronetStructTest);
 };
 
-// Test Struct Cronet_Buffer setters and getters.
-TEST_F(CronetStructTest, TestCronet_Buffer) {
-  Cronet_BufferPtr first = Cronet_Buffer_Create();
-  Cronet_BufferPtr second = Cronet_Buffer_Create();
-
-  // Copy values from |first| to |second|.
-  Cronet_Buffer_set_size(second, Cronet_Buffer_get_size(first));
-  EXPECT_EQ(Cronet_Buffer_get_size(first), Cronet_Buffer_get_size(second));
-  Cronet_Buffer_set_limit(second, Cronet_Buffer_get_limit(first));
-  EXPECT_EQ(Cronet_Buffer_get_limit(first), Cronet_Buffer_get_limit(second));
-  Cronet_Buffer_set_position(second, Cronet_Buffer_get_position(first));
-  EXPECT_EQ(Cronet_Buffer_get_position(first),
-            Cronet_Buffer_get_position(second));
-  Cronet_Buffer_set_data(second, Cronet_Buffer_get_data(first));
-  EXPECT_EQ(Cronet_Buffer_get_data(first), Cronet_Buffer_get_data(second));
-  Cronet_Buffer_set_callback(second, Cronet_Buffer_get_callback(first));
-  EXPECT_EQ(Cronet_Buffer_get_callback(first),
-            Cronet_Buffer_get_callback(second));
-  Cronet_Buffer_Destroy(first);
-  Cronet_Buffer_Destroy(second);
-}
-
 // Test Struct Cronet_Exception setters and getters.
 TEST_F(CronetStructTest, TestCronet_Exception) {
   Cronet_ExceptionPtr first = Cronet_Exception_Create();
