@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/test_rappor_service.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -49,7 +50,8 @@ class InfoBarAndroid;
 constexpr char kTabUnderVisibleTime[] = "Tab.TabUnder.VisibleTime";
 constexpr char kTabUnderVisibleTimeBefore[] = "Tab.TabUnder.VisibleTimeBefore";
 constexpr char kPopupToTabUnder[] = "Tab.TabUnder.PopupToTabUnderTime";
-constexpr char kTabUnderAction[] = "Tab.TabUnderAction";
+constexpr char kTabUnderActionOTR[] = "Tab.TabUnderAction.OTR";
+constexpr char kTabUnderActionNonOTR[] = "Tab.TabUnderAction.NonOTR";
 
 class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -378,6 +380,43 @@ class BlockTabUnderTest : public PopupOpenerTabHelperTest {
   DISALLOW_COPY_AND_ASSIGN(BlockTabUnderTest);
 };
 
+// Parameterized by a boolean which determines if an incognito profile should be
+// used.
+class BlockTabUnderIncognitoTest : public BlockTabUnderTest,
+                                   public testing::WithParamInterface<bool> {
+ public:
+  BlockTabUnderIncognitoTest() {}
+  ~BlockTabUnderIncognitoTest() override {}
+
+  content::BrowserContext* CreateBrowserContext() override {
+    original_profile_ = ChromeRenderViewHostTestHarness::CreateBrowserContext();
+    incognito_profile_ =
+        static_cast<Profile*>(original_profile_)->GetOffTheRecordProfile();
+    return original_profile_;
+  }
+
+  content::BrowserContext* GetBrowserContext() override {
+    return GetParam() ? incognito_profile_ : original_profile_;
+  }
+
+  const char* GetActionHistogram() const {
+    return GetParam() ? kTabUnderActionOTR : kTabUnderActionNonOTR;
+  }
+
+ private:
+  // Owned by the original profile.
+  content::BrowserContext* incognito_profile_ = nullptr;
+
+  // Owned by the RenderViewHostTestHarness.
+  content::BrowserContext* original_profile_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(BlockTabUnderIncognitoTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        BlockTabUnderIncognitoTest,
+                        testing::Values(true, false));
+
 TEST_F(BlockTabUnderTest, SimpleTabUnder_IsBlocked) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   SimulatePopup();
@@ -523,11 +562,11 @@ TEST_F(BlockTabUnderTest, MultipleRedirectAttempts_AreBlocked) {
   ExpectUIShown(true);
 }
 
-TEST_F(BlockTabUnderTest,
+TEST_P(BlockTabUnderIncognitoTest,
        MultipleRedirectAttempts_AreBlockedAndLogsActionMetrics) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   histogram_tester()->ExpectUniqueSample(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 1);
   SimulatePopup();
 
@@ -537,21 +576,21 @@ TEST_F(BlockTabUnderTest,
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
 
   histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 4);
   histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kBlocked), 3);
   histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 3);
-  histogram_tester()->ExpectTotalCount(kTabUnderAction, 10);
+  histogram_tester()->ExpectTotalCount(GetActionHistogram(), 10);
 }
 
-TEST_F(BlockTabUnderTest, ClickThroughAction) {
+TEST_P(BlockTabUnderIncognitoTest, ClickThroughAction) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   histogram_tester()->ExpectUniqueSample(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 1);
   SimulatePopup();
 
@@ -572,12 +611,12 @@ TEST_F(BlockTabUnderTest, ClickThroughAction) {
       static_cast<int>(ListItemPosition::kLastItem), 1);
 #endif
   histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kClickedThrough), 1);
 }
 
 // kDidTabUnder is not reported multiple times for redirects.
-TEST_F(BlockTabUnderTest, DisableFeature_LogsDidTabUnder) {
+TEST_P(BlockTabUnderIncognitoTest, DisableFeature_LogsDidTabUnder) {
   DisableFeature();
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   SimulatePopup();
@@ -591,12 +630,12 @@ TEST_F(BlockTabUnderTest, DisableFeature_LogsDidTabUnder) {
   simulator->Redirect(a_url);
   simulator->Commit();
   histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 2);
   histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
+      GetActionHistogram(),
       static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 1);
-  histogram_tester()->ExpectTotalCount(kTabUnderAction, 3);
+  histogram_tester()->ExpectTotalCount(GetActionHistogram(), 3);
 }
 
 TEST_F(BlockTabUnderTest, LogsRapporAndUkm) {

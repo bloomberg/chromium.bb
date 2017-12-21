@@ -106564,6 +106564,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="OfflinePages.Prefetching.ActionRetryAttempts"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="OffTheRecordType" separator=".">
+  <suffix name="OTR" label="Off-the-record profile"/>
+  <suffix name="NonOTR" label="Non off-the-record profile"/>
+  <affected-histogram name="Tab.TabUnderAction"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="OmniboxPageContext" separator=".">
   <suffix name="INVALID_SPEC" label="invalid spec; shouldn't happen"/>
   <suffix name="NTP"

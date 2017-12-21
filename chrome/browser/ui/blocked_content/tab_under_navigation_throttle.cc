@@ -21,6 +21,7 @@
 #include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -40,15 +41,22 @@
 
 namespace {
 
-void LogAction(TabUnderNavigationThrottle::Action action) {
+void LogAction(TabUnderNavigationThrottle::Action action, bool off_the_record) {
   UMA_HISTOGRAM_ENUMERATION("Tab.TabUnderAction", action,
                             TabUnderNavigationThrottle::Action::kCount);
+  if (off_the_record) {
+    UMA_HISTOGRAM_ENUMERATION("Tab.TabUnderAction.OTR", action,
+                              TabUnderNavigationThrottle::Action::kCount);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Tab.TabUnderAction.NonOTR", action,
+                              TabUnderNavigationThrottle::Action::kCount);
+  }
 }
 
 #if defined(OS_ANDROID)
 typedef FramebustBlockMessageDelegate::InterventionOutcome InterventionOutcome;
 
-void LogOutcome(InterventionOutcome outcome) {
+void LogOutcome(bool off_the_record, InterventionOutcome outcome) {
   TabUnderNavigationThrottle::Action action;
   switch (outcome) {
     case InterventionOutcome::kAccepted:
@@ -58,11 +66,15 @@ void LogOutcome(InterventionOutcome outcome) {
       action = TabUnderNavigationThrottle::Action::kClickedThrough;
       break;
   }
-  LogAction(action);
+  LogAction(action, off_the_record);
 }
 #else
-void OnListItemClicked(const GURL& url, size_t index, size_t total_size) {
-  LogAction(TabUnderNavigationThrottle::Action::kClickedThrough);
+void OnListItemClicked(bool off_the_record,
+                       const GURL& url,
+                       size_t index,
+                       size_t total_size) {
+  LogAction(TabUnderNavigationThrottle::Action::kClickedThrough,
+            off_the_record);
   UMA_HISTOGRAM_ENUMERATION("Tab.TabUnder.ClickThroughPosition",
                             GetListItemPositionFromDistance(index, total_size),
                             ListItemPosition::kLast);
@@ -70,8 +82,9 @@ void OnListItemClicked(const GURL& url, size_t index, size_t total_size) {
 #endif
 
 void LogTabUnderAttempt(content::NavigationHandle* handle,
-                        base::Optional<ukm::SourceId> opener_source_id) {
-  LogAction(TabUnderNavigationThrottle::Action::kDidTabUnder);
+                        base::Optional<ukm::SourceId> opener_source_id,
+                        bool off_the_record) {
+  LogAction(TabUnderNavigationThrottle::Action::kDidTabUnder, off_the_record);
 
   // Log RAPPOR / UKM based on the opener URL, not the URL navigated to.
   const GURL& opener_url = handle->GetWebContents()->GetLastCommittedURL();
@@ -93,22 +106,6 @@ void LogTabUnderAttempt(content::NavigationHandle* handle,
   }
 }
 
-void ShowUI(content::WebContents* web_contents, const GURL& url) {
-#if defined(OS_ANDROID)
-  FramebustBlockInfoBar::Show(
-      web_contents, base::MakeUnique<FramebustBlockMessageDelegate>(
-                        web_contents, url, base::BindOnce(&LogOutcome)));
-#else
-  // TODO(csharrison): Instrument click-through metrics. This may be a bit
-  // difficult and requires attribution since this UI surface is shared with
-  // framebusting.
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  DCHECK(content_settings);
-  content_settings->OnFramebustBlocked(url, base::BindOnce(&OnListItemClicked));
-#endif
-}
-
 }  // namespace
 
 const base::Feature TabUnderNavigationThrottle::kBlockTabUnders{
@@ -127,6 +124,8 @@ TabUnderNavigationThrottle::~TabUnderNavigationThrottle() = default;
 TabUnderNavigationThrottle::TabUnderNavigationThrottle(
     content::NavigationHandle* handle)
     : content::NavigationThrottle(handle),
+      off_the_record_(
+          handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()),
       block_(base::FeatureList::IsEnabled(kBlockTabUnders)) {}
 
 // static
@@ -171,26 +170,46 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
       IsSuspiciousClientRedirect(navigation_handle(), started_in_background_)) {
     seen_tab_under_ = true;
     popup_opener->OnDidTabUnder();
+
     LogTabUnderAttempt(navigation_handle(),
-                       popup_opener->last_committed_source_id());
+                       popup_opener->last_committed_source_id(),
+                       off_the_record_);
 
     if (block_) {
-      const GURL& url = navigation_handle()->GetURL();
       const std::string error =
-          base::StringPrintf(kBlockTabUnderFormatMessage, url.spec().c_str());
+          base::StringPrintf(kBlockTabUnderFormatMessage,
+                             navigation_handle()->GetURL().spec().c_str());
       contents->GetMainFrame()->AddMessageToConsole(
           content::CONSOLE_MESSAGE_LEVEL_ERROR, error.c_str());
-      LogAction(Action::kBlocked);
-      ShowUI(contents, url);
+      LogAction(Action::kBlocked, off_the_record_);
+      ShowUI();
       return content::NavigationThrottle::CANCEL;
     }
   }
   return content::NavigationThrottle::PROCEED;
 }
 
+void TabUnderNavigationThrottle::ShowUI() {
+  content::WebContents* web_contents = navigation_handle()->GetWebContents();
+  const GURL& url = navigation_handle()->GetURL();
+  bool off_the_record = web_contents->GetBrowserContext()->IsOffTheRecord();
+#if defined(OS_ANDROID)
+  FramebustBlockInfoBar::Show(
+      web_contents,
+      base::MakeUnique<FramebustBlockMessageDelegate>(
+          web_contents, url, base::BindOnce(&LogOutcome, off_the_record)));
+#else
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  DCHECK(content_settings);
+  content_settings->OnFramebustBlocked(
+      url, base::BindOnce(&OnListItemClicked, off_the_record));
+#endif
+}
+
 content::NavigationThrottle::ThrottleCheckResult
 TabUnderNavigationThrottle::WillStartRequest() {
-  LogAction(Action::kStarted);
+  LogAction(Action::kStarted, off_the_record_);
   started_in_background_ = !navigation_handle()->GetWebContents()->IsVisible();
   return MaybeBlockNavigation();
 }
