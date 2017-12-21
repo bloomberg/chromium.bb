@@ -41,7 +41,6 @@
 #include "chrome/common/insecure_content_renderer.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -1608,7 +1607,7 @@ ContentSettingFramebustBlockBubbleModel::
   set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
   set_show_learn_more(false);
   set_title(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_MESSAGE));
-  set_done_button_text(l10n_util::GetStringUTF16(IDS_OK));
+  set_done_button_text(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_GOT_IT));
 
   auto* helper = FramebustBlockTabHelper::FromWebContents(web_contents);
 
