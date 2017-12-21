@@ -2087,7 +2087,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   int bw = block_size_wide[plane_bsize];
   int bh = block_size_high[plane_bsize];
   int disable_early_skip =
-      x->using_dist_8x8 && plane == 0 && bw >= 8 && bh >= 8 &&
+      x->using_dist_8x8 && plane == AOM_PLANE_Y && bw >= 8 && bh >= 8 &&
       (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4) &&
       x->tune_metric != AOM_TUNE_PSNR;
 #endif  // CONFIG_DIST_8X8
@@ -2166,12 +2166,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     args->exit_early = 1;
     return;
   }
-#if CONFIG_CFL
-  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
-    assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
-    cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
-  }
-#endif  // CONFIG_CFL
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
@@ -2185,6 +2179,13 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                       tx_size, a, l, args->use_fast_coef_costing,
                       &this_rd_stats);
 #endif  // !CONFIG_TXK_SEL
+
+#if CONFIG_CFL
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
+    assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
+    cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
+  }
+#endif  // CONFIG_CFL
 
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
@@ -2446,12 +2447,12 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
     return INT64_MAX;
   }
 #endif
-  txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, tx_size,
+  txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOM_PLANE_Y, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
 #if !CONFIG_TXK_SEL
-  int plane = 0;
-  rd_stats->rate += av1_tx_type_cost(cm, x, xd, bs, plane, tx_size, tx_type);
+  rd_stats->rate +=
+      av1_tx_type_cost(cm, x, xd, bs, AOM_PLANE_Y, tx_size, tx_type);
 #endif
 
   if (rd_stats->skip) {

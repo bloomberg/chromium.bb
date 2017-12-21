@@ -4366,8 +4366,6 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if !CONFIG_TXK_SEL
   TX_TYPE tx_type = mbmi->tx_type;
 #else
-  (void)blk_row;
-  (void)blk_col;
   // Only y plane's tx_type is updated
   if (plane > 0) return;
   TX_TYPE tx_type =

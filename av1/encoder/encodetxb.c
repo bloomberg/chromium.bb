@@ -386,8 +386,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
 
-  (void)blk_row;
-  (void)blk_col;
   aom_write_bin(w, eob == 0,
                 ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
 #if CONFIG_TXK_SEL
