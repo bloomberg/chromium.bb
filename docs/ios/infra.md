@@ -154,8 +154,8 @@ The `ios-device` bot on [chromium.mac] will read its configuration from
     {
       "app": "ios_chrome_unittests",
       "device type": "iPhone 5s",
-      "os": "10.0",
-      "xcode version": "8.0"
+      "os": "11.0",
+      "xcode build version": "9A235"
     }
   ]
 }
@@ -201,33 +201,35 @@ specific compiled app to run, for example:
   {
     "app": "ios_chrome_unittests",
     "device type": "iPhone 5s",
-    "os": "10.0",
-    "xcode version": "8.0"
+    "os": "11.0",
+    "xcode build version": "9A235"
   }
 ]
 ```
+
 This dict says to run `ios_chrome_unittests` on an `iPhone 5s` running iOS
-`10.0` using Xcode `8.0`. A test dict may optionally define a list of `test
-args`, which are arguments to pass directly to the test on the command line,
-and it may define a boolean value `xctest` to indicate whether the test is an
-[xctest] \(default if unspecified is `false`\). For example:
+`11.0` using Xcode build version `9A235`. A test dict may optionally define a
+list of `test args`, which are arguments to pass directly to the test on the
+command line, and it may define a boolean value `xctest` to indicate whether the
+test is an [xctest] \(default if unspecified is `false`\). For example:
+
 ```json
 "tests": [
   {
     "app": "ios_chrome_unittests",
     "device type": "iPhone 5s",
-    "os": "10.0",
+    "os": "11.0",
     "test args": [
       "--foo",
       "--bar"
     ],
-    "xcode version": "8.0"
+    "xcode build version": "9A235"
   },
   {
     "app": "ios_chrome_integration_egtests",
     "device type": "iPhone 5s",
-    "os": "10.0",
-    "xcode version": "8.0",
+    "os": "11.0",
+    "xcode build version": "9A235",
     "xctest": true
   }
 ]
@@ -245,13 +247,13 @@ subdirectory in the configs directory. For example:
   {
     "include": "common_tests.json",
     "device type": "iPhone 5s",
-    "os": "10.0",
-    "xcode version": "8.0"
+    "os": "11.0",
+    "xcode build version": "9A235"
   }
 ]
 ```
 This dict says to import the list of tests from the `tests` subdirectory and run
-each one on an `iPhone 5s` running iOS `10.0` using Xcode `8.0`. Here's what
+each one on an `iPhone 5s` running iOS `11.0` using Xcode `9A235`. Here's what
 `common_tests.json` might look like:
 ```json
 "tests": [
@@ -273,11 +275,14 @@ bot config. For example if `common_tests.json` specifies:
   {
     "app": "ios_chrome_integration_egtests",
     "xctest": true,
-    "xcode version": "8.0"
+    "xcode build version": "9A235"
   }
 ]
 ```
-Then the bot config may omit the `xctest` or `xcode version` keys, for example:
+
+Then the bot config may omit the `xctest` or `xcode build version` keys, for
+example:
+
 ```json
 {
   "comments": [
@@ -291,13 +296,35 @@ Then the bot config may omit the `xctest` or `xcode version` keys, for example:
     {
       "include": "common_tests.json",
       "device type": "iPhone 5s",
-      "os": "10.0"
+      "os": "11.0"
     }
   ]
 }
 ```
 Includes are not recursive, so `common_tests.json` may not itself include any
 `include` dicts.
+
+Some keywords such as `xcode build version` can also be set globally per build:
+
+```json
+{
+  "comments": [
+    "Sample config for a bot."
+  ],
+  "gn_args": [
+    "is_debug=true",
+    "target_cpu=\"x64\""
+  ],
+  "xcode build version": "9A235",
+  "tests": [
+    {
+      "app": "ios_chrome_integration_egtests",
+      "device type": "iPhone 5s",
+      "os": "11.0"
+    }
+  ]
+}
+```
 
 ### Uploading compiled artifacts from a bot
 
@@ -356,7 +383,7 @@ If `artifact` is a directory, you must specify `"compress": true`.
 [simulator]: https://developer.apple.com/library/content/documentation/IDEs/Conceptual/iOS_Simulator_Guide/Introduction/Introduction.html
 [src/ios/build/bots]: ../../ios/build/bots
 [src/ios/build/bots/scripts]: ../../ios/build/bots/scripts
-[swarming]: https://github.com/luci/luci-py/tree/master/appengine/swarming
+[swarming]: https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/
 [swarming server]: https://chromium-swarm.appspot.com
 [test runner]: ../../ios/build/bots/scripts/test_runner.py
 [tools/build]: https://chromium.googlesource.com/chromium/tools/build
