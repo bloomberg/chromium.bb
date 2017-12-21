@@ -80,12 +80,17 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
       bool started_in_background);
 
   content::NavigationThrottle::ThrottleCheckResult MaybeBlockNavigation();
+  void ShowUI();
 
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
   const char* GetNameForLogging() override;
+
+  // Store whether we're off the record as a member to avoid looking it up all
+  // the time.
+  bool off_the_record_ = false;
 
   bool started_in_background_ = false;
 

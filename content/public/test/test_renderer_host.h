@@ -249,6 +249,12 @@ class RenderViewHostTestHarness : public testing::Test {
   // BrowserContext.
   virtual BrowserContext* CreateBrowserContext();
 
+  // Derived classes can override this method to have the test harness use a
+  // different BrowserContext than the one owned by this class. This is most
+  // useful for off-the-record contexts, which are usually owned by the original
+  // context.
+  virtual BrowserContext* GetBrowserContext();
+
 #if defined(USE_AURA)
   aura::Window* root_window() { return aura_test_helper_->root_window(); }
 #endif
