@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webauth/cbor/cbor_writer.h"
+#include "components/cbor/cbor_writer.h"
 
 #include <string>
 
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "content/browser/webauth/cbor/cbor_binary.h"
+#include "components/cbor/cbor_binary.h"
 
-namespace content {
+namespace cbor {
 
 CBORWriter::~CBORWriter() {}
 
@@ -113,16 +113,16 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
 
 void CBORWriter::StartItem(CBORValue::Type type, uint64_t size) {
   encoded_cbor_->push_back(base::checked_cast<uint8_t>(
-      static_cast<unsigned>(type) << impl::kMajorTypeBitShift));
+      static_cast<unsigned>(type) << constants::kMajorTypeBitShift));
   SetUint(size);
 }
 
 void CBORWriter::SetAdditionalInformation(uint8_t additional_information) {
   DCHECK(!encoded_cbor_->empty());
-  DCHECK_EQ(additional_information & impl::kAdditionalInformationMask,
+  DCHECK_EQ(additional_information & constants::kAdditionalInformationMask,
             additional_information);
   encoded_cbor_->back() |=
-      (additional_information & impl::kAdditionalInformationMask);
+      (additional_information & constants::kAdditionalInformationMask);
 }
 
 void CBORWriter::SetUint(uint64_t value) {
@@ -136,19 +136,19 @@ void CBORWriter::SetUint(uint64_t value) {
       SetAdditionalInformation(base::checked_cast<uint8_t>(value));
       break;
     case 1:
-      SetAdditionalInformation(impl::kAdditionalInformation1Byte);
+      SetAdditionalInformation(constants::kAdditionalInformation1Byte);
       shift = 0;
       break;
     case 2:
-      SetAdditionalInformation(impl::kAdditionalInformation2Bytes);
+      SetAdditionalInformation(constants::kAdditionalInformation2Bytes);
       shift = 1;
       break;
     case 4:
-      SetAdditionalInformation(impl::kAdditionalInformation4Bytes);
+      SetAdditionalInformation(constants::kAdditionalInformation4Bytes);
       shift = 3;
       break;
     case 8:
-      SetAdditionalInformation(impl::kAdditionalInformation8Bytes);
+      SetAdditionalInformation(constants::kAdditionalInformation8Bytes);
       shift = 7;
       break;
     default:
@@ -173,4 +173,4 @@ size_t CBORWriter::GetNumUintBytes(uint64_t value) {
   return 8;
 }
 
-}  // namespace content
+}  // namespace cbor

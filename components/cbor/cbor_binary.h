@@ -4,11 +4,11 @@
 
 #include <stdint.h>
 
-#ifndef CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_BINARY_H_
-#define CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_BINARY_H_
+#ifndef COMPONENTS_CBOR_CBOR_BINARY_H_
+#define COMPONENTS_CBOR_CBOR_BINARY_H_
 
-namespace content {
-namespace impl {
+namespace cbor {
+namespace constants {
 
 // Mask selecting the low-order 5 bits of the "initial byte", which is where
 // the additional information is encoded.
@@ -29,7 +29,7 @@ static constexpr uint8_t kAdditionalInformation4Bytes = 26u;
 // Indicates the integer is in the next 8 bytes.
 static constexpr uint8_t kAdditionalInformation8Bytes = 27u;
 
-}  // namespace impl
-}  // namespace content
+}  // namespace constants
+}  // namespace cbor
 
-#endif  // CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_BINARY_H_
+#endif  // COMPONENTS_CBOR_CBOR_BINARY_H_

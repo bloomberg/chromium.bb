@@ -1660,13 +1660,6 @@ jumbo_source_set("browser") {
     "web_contents/web_drag_source_mac.mm",
     "web_contents/web_drag_utils_win.cc",
     "web_contents/web_drag_utils_win.h",
-    "webauth/cbor/cbor_binary.h",
-    "webauth/cbor/cbor_reader.cc",
-    "webauth/cbor/cbor_reader.h",
-    "webauth/cbor/cbor_values.cc",
-    "webauth/cbor/cbor_values.h",
-    "webauth/cbor/cbor_writer.cc",
-    "webauth/cbor/cbor_writer.h",
     "websockets/websocket_handshake_request_info_impl.cc",
     "websockets/websocket_handshake_request_info_impl.h",
     "websockets/websocket_impl.cc",
@@ -2185,7 +2178,10 @@ jumbo_source_set("browser") {
       "webauth/register_response_data.cc",
       "webauth/register_response_data.h",
     ]
-    deps += [ "//third_party/flac" ]
+    deps += [
+      "//components/cbor",
+      "//third_party/flac",
+    ]
   }
 
   if (is_mac) {

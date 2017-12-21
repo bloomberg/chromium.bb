@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_WEBAUTH_ATTESTATION_STATEMENT_H_
 
 #include "base/macros.h"
-#include "content/browser/webauth/cbor/cbor_values.h"
+#include "components/cbor/cbor_values.h"
 
 namespace content {
 
@@ -26,7 +26,7 @@ class AttestationStatement {
   // https://www.w3.org/TR/2017/WD-webauthn-20170505/#defined-attestation-formats
   // This is not a CBOR-encoded byte array, but the map that will be
   // nested within another CBOR object and encoded then.
-  virtual CBORValue::MapValue GetAsCBORMap() = 0;
+  virtual cbor::CBORValue::MapValue GetAsCBORMap() = 0;
 
   const std::string& format_name() { return format_; }
 
