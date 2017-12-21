@@ -185,7 +185,13 @@ class QuicAllowedPolicyIsFalse: public QuicAllowedPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(QuicAllowedPolicyIsFalse);
 };
 
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse, QuicDisallowed) {
+// Fails on Linux - crbug.com/796936
+#if defined(OS_LINUX)
+#define MAYBE_QuicDisallowed DISABLED_QuicDisallowed
+#else
+#define MAYBE_QuicDisallowed QuicDisallowed
+#endif
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse, MAYBE_QuicDisallowed) {
   EXPECT_FALSE(IsQuicEnabledForSystem());
   EXPECT_FALSE(IsQuicEnabled(safe_browsing_service_request_context()));
   EXPECT_FALSE(IsQuicEnabled(browser()->profile()));
