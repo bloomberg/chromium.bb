@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
@@ -18,7 +19,13 @@
 
 class Profile;
 
+namespace extensions {
+class InstallTracker;
+}
+
 namespace chromeos {
+
+class KioskAppManager;
 
 // Launches the app at startup. The flow roughly looks like this:
 // First call Initialize():
@@ -134,6 +141,12 @@ class StartupAppLauncher : public extensions::InstallObserver,
   bool extension_update_found_ = false;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<KioskAppManager, KioskAppManagerObserver>
+      kiosk_app_manager_observer_;
+
+  ScopedObserver<extensions::InstallTracker, extensions::InstallObserver>
+      install_observer_;
 
   base::WeakPtrFactory<StartupAppLauncher> weak_ptr_factory_;
 
