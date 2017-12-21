@@ -31,8 +31,6 @@ source_set("web") {
     "repost_form_tab_helper.mm",
     "sad_tab_tab_helper.h",
     "sad_tab_tab_helper.mm",
-    "tab_id_tab_helper.h",
-    "tab_id_tab_helper.mm",
   ]
   deps = [
     ":tab_helper_delegates",
@@ -47,6 +45,21 @@ source_set("web") {
     "//ui/base",
     "//url",
   ]
+  public_deps = [
+    ":tab_id_tab_helper",
+  ]
+}
+
+source_set("tab_id_tab_helper") {
+  sources = [
+    "tab_id_tab_helper.h",
+    "tab_id_tab_helper.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("tab_helper_delegates") {

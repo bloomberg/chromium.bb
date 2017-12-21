@@ -295,7 +295,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
-    "//ios/chrome/browser/snapshots:snapshots_internal",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/tabs",
@@ -386,7 +385,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/toolbar",
   ]
   allow_circular_includes_from = [
-    "//ios/chrome/browser/snapshots:snapshots_internal",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/stack_view",
