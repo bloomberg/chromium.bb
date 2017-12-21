@@ -724,6 +724,7 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/strings/sys_string_conversions_mac.mm',
         'base/synchronization/waitable_event_mac.cc',
         'base/sys_info_mac.mm',
+        'base/time/time_exploded_posix.cc',
         'base/time/time_mac.cc',
         'base/threading/platform_thread_mac.mm',
     ])
