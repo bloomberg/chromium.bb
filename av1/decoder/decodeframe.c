@@ -2843,8 +2843,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (cm->seq_params.frame_id_numbers_present_flag) {
     /* If bitmask is set, update reference frame id values and
        mark frames as valid for reference */
-    int refresh_frame_flags =
-        cm->frame_type == KEY_FRAME ? 0xFF : pbi->refresh_frame_flags;
+    int refresh_frame_flags = pbi->refresh_frame_flags;
     for (int i = 0; i < REF_FRAMES; i++) {
       if ((refresh_frame_flags >> i) & 1) {
         cm->ref_frame_id[i] = cm->current_frame_id;
