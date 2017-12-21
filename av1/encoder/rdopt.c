@@ -1908,6 +1908,12 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #endif  // CONFIG_DIST_8X8
 
   if (cpi->sf.use_transform_domain_distortion
+#if CONFIG_TX64X64
+      // Any 64-pt transforms only preserves half the coefficients.
+      // Therefore transform domain distortion is not valid for these
+      // transform sizes.
+      && txsize_sqr_up_map[tx_size] != TX_64X64
+#endif  // CONFIG_TX64X64
 #if CONFIG_DIST_8X8
       && !x->using_dist_8x8
 #endif
