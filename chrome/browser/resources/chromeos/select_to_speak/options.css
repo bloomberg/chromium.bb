@@ -51,6 +51,24 @@ h2 {
     width: 646px;
 }
 
+.sub-option {
+    font-size: 13px;
+    max-height: 60px;
+    opacity: 1;
+    overflow: hidden;
+    padding: 0 24px;
+    transition: max-height 150ms ease-in;
+    vertical-align: middle;
+    width: 622px;
+}
+
+.sub-option.hidden {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 150ms ease-out;
+}
+
 .option input[type='checkbox'] {
     -webkit-appearance: none;
     background-color: #fff;

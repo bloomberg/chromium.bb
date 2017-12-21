@@ -22,7 +22,20 @@ SelectToSpeakOptionsPage.prototype = {
     }.bind(this));
     this.syncSelectControlToPref_('voice', 'voice');
     this.syncSelectControlToPref_('rate', 'rate');
-    this.syncCheckboxControlToPref_('wordHighlight', 'wordHighlight');
+    this.syncCheckboxControlToPref_(
+        'wordHighlight', 'wordHighlight', function(checked) {
+          let elem = document.getElementById('highlightSubOption');
+          let select = document.getElementById('highlightColor');
+          if (checked) {
+            elem.classList.remove('hidden');
+            elem.setAttribute('aria-hidden', false);
+            select.disabled = false;
+          } else {
+            elem.classList.add('hidden');
+            elem.setAttribute('aria-hidden', true);
+            select.disabled = true;
+          }
+        });
     this.setUpHighlightListener_();
     chrome.metricsPrivate.recordUserAction(
         'Accessibility.CrosSelectToSpeak.LoadSettings');
@@ -89,9 +102,12 @@ SelectToSpeakOptionsPage.prototype = {
   /**
    * Populate a checkbox with its current setting.
    * @param {string} checkboxId The id of the checkbox element.
+   * @param {string} pref The name for a chrome.storage pref.
+   * @param {?function(boolean): undefined=} opt_onChange A function
+   * to be called every time the checkbox state is changed.
    * @private
    */
-  syncCheckboxControlToPref_: function(checkboxId, pref) {
+  syncCheckboxControlToPref_: function(checkboxId, pref, opt_onChange) {
     let checkbox = document.getElementById(checkboxId);
 
     function updateFromPref() {
@@ -99,6 +115,9 @@ SelectToSpeakOptionsPage.prototype = {
         let value = items[pref];
         if (value != null) {
           checkbox.checked = value;
+          if (opt_onChange) {
+            opt_onChange(checkbox.checked);
+          }
         }
       });
     }
