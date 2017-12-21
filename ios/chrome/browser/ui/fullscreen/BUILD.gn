@@ -39,6 +39,21 @@ source_set("new_fullscreen") {
   ]
 }
 
+source_set("new_fullscreen_coordinators") {
+  sources = [
+    "chrome_coordinator+fullscreen_disabling.h",
+    "chrome_coordinator+fullscreen_disabling.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":new_fullscreen",
+    "//base",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+}
+
 source_set("new_fullscreen_internal") {
   sources = [
     "fullscreen_controller_factory.mm",
