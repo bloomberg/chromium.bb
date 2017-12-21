@@ -23,8 +23,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/base/win/open_file_name_win.h"
 
-namespace chrome {
-
 namespace {
 
 // This class checks if the current executable is pinned to the taskbar. It also
@@ -284,5 +282,3 @@ void ShellUtilWinImpl::CallGetSaveFileName(
 
   std::move(callback).Run(base::FilePath(), 0);
 }
-
-}  // namespace chrome

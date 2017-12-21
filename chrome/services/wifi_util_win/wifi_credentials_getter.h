@@ -10,8 +10,6 @@
 #include "chrome/services/wifi_util_win/public/interfaces/wifi_credentials_getter.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace chrome {
-
 class WiFiCredentialsGetter : public chrome::mojom::WiFiCredentialsGetter {
  public:
   explicit WiFiCredentialsGetter(
@@ -27,7 +25,5 @@ class WiFiCredentialsGetter : public chrome::mojom::WiFiCredentialsGetter {
 
   DISALLOW_COPY_AND_ASSIGN(WiFiCredentialsGetter);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_WIFI_UTIL_WIN_WIFI_CREDENTIALS_GETTER_H_

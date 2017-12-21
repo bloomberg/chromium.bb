@@ -22,8 +22,6 @@ namespace media {
 class DataSource;
 }
 
-namespace chrome {
-
 // This class takes a MIME type and data source and parses its metadata. It
 // handles audio, video, and images. It delegates its operations to FFMPEG.
 // This class lives and operates on the utility thread of the utility process
@@ -61,7 +59,5 @@ class MediaMetadataParser {
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetadataParser);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_MEDIA_GALLERY_UTIL_MEDIA_METADATA_PARSER_H_

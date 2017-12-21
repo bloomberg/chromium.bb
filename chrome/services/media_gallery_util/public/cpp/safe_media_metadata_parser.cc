@@ -14,13 +14,11 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-namespace chrome {
-
 class SafeMediaMetadataParser::MediaDataSourceImpl
-    : public mojom::MediaDataSource {
+    : public chrome::mojom::MediaDataSource {
  public:
   MediaDataSourceImpl(SafeMediaMetadataParser* owner,
-                      mojom::MediaDataSourcePtr* interface)
+                      chrome::mojom::MediaDataSourcePtr* interface)
       : binding_(this, mojo::MakeRequest(interface)),
         safe_media_metadata_parser_(owner) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -36,7 +34,7 @@ class SafeMediaMetadataParser::MediaDataSourceImpl
                                                   length);
   }
 
-  mojo::Binding<mojom::MediaDataSource> binding_;
+  mojo::Binding<chrome::mojom::MediaDataSource> binding_;
   // |safe_media_metadata_parser_| owns |this|.
   SafeMediaMetadataParser* const safe_media_metadata_parser_;
 
@@ -85,7 +83,7 @@ void SafeMediaMetadataParser::StartOnIOThread(
   media_parser_ptr_.set_connection_error_handler(
       base::Bind(&SafeMediaMetadataParser::ParseMediaMetadataFailed, this));
 
-  mojom::MediaDataSourcePtr source;
+  chrome::mojom::MediaDataSourcePtr source;
   media_data_source_ = base::MakeUnique<MediaDataSourceImpl>(this, &source);
   media_parser_ptr_->ParseMediaMetadata(
       mime_type_, blob_size_, get_attached_images_, std::move(source),
@@ -131,7 +129,7 @@ void SafeMediaMetadataParser::ParseMediaMetadataDone(
 }
 
 void SafeMediaMetadataParser::StartBlobRequest(
-    mojom::MediaDataSource::ReadBlobCallback callback,
+    chrome::mojom::MediaDataSource::ReadBlobCallback callback,
     int64_t position,
     int64_t length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -143,7 +141,7 @@ void SafeMediaMetadataParser::StartBlobRequest(
 }
 
 void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
-    mojom::MediaDataSource::ReadBlobCallback callback,
+    chrome::mojom::MediaDataSource::ReadBlobCallback callback,
     int64_t position,
     int64_t length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -157,7 +155,7 @@ void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
 }
 
 void SafeMediaMetadataParser::BlobReaderDoneOnUIThread(
-    mojom::MediaDataSource::ReadBlobCallback callback,
+    chrome::mojom::MediaDataSource::ReadBlobCallback callback,
     std::unique_ptr<std::string> data,
     int64_t /* blob_total_size */) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -169,12 +167,10 @@ void SafeMediaMetadataParser::BlobReaderDoneOnUIThread(
 }
 
 void SafeMediaMetadataParser::FinishBlobRequest(
-    mojom::MediaDataSource::ReadBlobCallback callback,
+    chrome::mojom::MediaDataSource::ReadBlobCallback callback,
     std::unique_ptr<std::string> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (media_parser_ptr_)
     std::move(callback).Run(std::vector<uint8_t>(data->begin(), data->end()));
 }
-
-}  // namespace chrome

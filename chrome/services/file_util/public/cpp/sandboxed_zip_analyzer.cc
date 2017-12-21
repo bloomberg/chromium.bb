@@ -15,8 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-namespace chrome {
-
 SandboxedZipAnalyzer::SandboxedZipAnalyzer(
     const base::FilePath& zip_file,
     const ResultCallback& callback,
@@ -96,5 +94,3 @@ void SandboxedZipAnalyzer::AnalyzeFileDone(
   analyzer_ptr_.reset();
   callback_.Run(results);
 }
-
-}  // namespace chrome

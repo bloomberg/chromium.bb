@@ -9,8 +9,6 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace chrome {
-
 class FileUtilService : public service_manager::Service {
  public:
   FileUtilService();
@@ -32,7 +30,5 @@ class FileUtilService : public service_manager::Service {
 
   DISALLOW_COPY_AND_ASSIGN(FileUtilService);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_FILE_UTIL_FILE_UTIL_SERVICE_H_

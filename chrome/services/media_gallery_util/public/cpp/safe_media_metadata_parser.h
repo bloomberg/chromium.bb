@@ -26,8 +26,6 @@ namespace service_manager {
 class Connector;
 }
 
-namespace chrome {
-
 // Parses the media metadata of a Blob safely in a utility process. This class
 // expects the MIME type of the Blob to be already known. It creates a utility
 // process to do further MIME-type-specific metadata extraction from the Blob
@@ -76,19 +74,21 @@ class SafeMediaMetadataParser
 
   // Sequence of functions that bounces from the IO thread to the UI thread to
   // read the blob data, then sends the data back to the utility process.
-  void StartBlobRequest(mojom::MediaDataSource::ReadBlobCallback callback,
-                        int64_t position,
-                        int64_t length);
+  void StartBlobRequest(
+      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
+      int64_t position,
+      int64_t length);
   void StartBlobReaderOnUIThread(
-      mojom::MediaDataSource::ReadBlobCallback callback,
+      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
       int64_t position,
       int64_t length);
   void BlobReaderDoneOnUIThread(
-      mojom::MediaDataSource::ReadBlobCallback callback,
+      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
       std::unique_ptr<std::string> data,
       int64_t /* blob_total_size */);
-  void FinishBlobRequest(mojom::MediaDataSource::ReadBlobCallback callback,
-                         std::unique_ptr<std::string> data);
+  void FinishBlobRequest(
+      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
+      std::unique_ptr<std::string> data);
 
   // All member variables are only accessed on the IO thread.
   content::BrowserContext* const browser_context_;
@@ -104,7 +104,5 @@ class SafeMediaMetadataParser
 
   DISALLOW_COPY_AND_ASSIGN(SafeMediaMetadataParser);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_MEDIA_GALLERY_UTIL_PUBLIC_CPP_SAFE_MEDIA_METADATA_PARSER_H_

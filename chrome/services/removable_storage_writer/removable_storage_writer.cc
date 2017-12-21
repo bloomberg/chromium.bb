@@ -8,8 +8,6 @@
 
 #include "base/files/file_path.h"
 
-namespace chrome {
-
 RemovableStorageWriter::RemovableStorageWriter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
@@ -19,15 +17,13 @@ RemovableStorageWriter::~RemovableStorageWriter() = default;
 void RemovableStorageWriter::Write(
     const base::FilePath& source,
     const base::FilePath& target,
-    mojom::RemovableStorageWriterClientPtr client) {
+    chrome::mojom::RemovableStorageWriterClientPtr client) {
   writer_.Write(source, target, std::move(client));
 }
 
 void RemovableStorageWriter::Verify(
     const base::FilePath& source,
     const base::FilePath& target,
-    mojom::RemovableStorageWriterClientPtr client) {
+    chrome::mojom::RemovableStorageWriterClientPtr client) {
   writer_.Verify(source, target, std::move(client));
 }
-
-}  // namespace chrome

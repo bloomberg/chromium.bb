@@ -16,9 +16,7 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
-
-class RemovableStorageWriter : public mojom::RemovableStorageWriter {
+class RemovableStorageWriter : public chrome::mojom::RemovableStorageWriter {
  public:
   explicit RemovableStorageWriter(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
@@ -28,18 +26,16 @@ class RemovableStorageWriter : public mojom::RemovableStorageWriter {
   // mojom::RemovableStorageWriter implementation:
   void Write(const base::FilePath& source,
              const base::FilePath& target,
-             mojom::RemovableStorageWriterClientPtr client) override;
+             chrome::mojom::RemovableStorageWriterClientPtr client) override;
 
   void Verify(const base::FilePath& source,
               const base::FilePath& target,
-              mojom::RemovableStorageWriterClientPtr client) override;
+              chrome::mojom::RemovableStorageWriterClientPtr client) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   image_writer::ImageWriterHandler writer_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovableStorageWriter);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_SERVICES_REMOVABLE_STORAGE_WRITER_REMOVABLE_STORAGE_WRITER_H_
