@@ -13,10 +13,8 @@ StartUpgradeResult::StartUpgradeResult(StartUpgradeStatus status)
     : status(status) {}
 
 StartUpgradeResult::StartUpgradeResult(StartUpgradeStatus status,
-                                       std::string digest,
-                                       base::FilePath file_path)
-    : status(status),
-      digest(std::move(digest)),
-      file_path(std::move(file_path)) {}
+                                       const std::string& digest,
+                                       const base::FilePath& file_path)
+    : status(status), digest(digest), file_path(file_path) {}
 
 }  // namespace offline_pages

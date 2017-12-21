@@ -17,8 +17,6 @@ namespace offline_pages {
 
 namespace {
 
-const int64_t kMinFreeDiskSpaceInBytes = 10 * 1024 * 1024;  // 10 MB
-
 StartUpgradeResult StartOfflinePageUpgradeSync(
     int64_t offline_id,
     const base::FilePath& target_directory,
@@ -35,8 +33,11 @@ StartUpgradeResult StartOfflinePageUpgradeSync(
       " FROM offlinepages_v1 WHERE offline_id = ?";
   sql::Statement select_statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   select_statement.BindInt64(0, offline_id);
-  if (!select_statement.Step())
-    return StartUpgradeResult(StartUpgradeStatus::ITEM_MISSING);
+  if (!select_statement.Step()) {
+    return StartUpgradeResult(select_statement.Succeeded()
+                                  ? StartUpgradeStatus::ITEM_MISSING
+                                  : StartUpgradeStatus::DB_ERROR);
+  }
 
   base::FilePath file_path =
       store_utils::FromDatabaseFilePath(select_statement.ColumnString(0));
@@ -45,8 +46,6 @@ StartUpgradeResult StartOfflinePageUpgradeSync(
 
   int64_t free_disk_space_on_target =
       base::SysInfo::AmountOfFreeDiskSpace(target_directory);
-  if (free_disk_space_on_target < kMinFreeDiskSpaceInBytes)
-    return StartUpgradeResult(StartUpgradeStatus::NOT_ENOUGH_STORAGE);
 
   int64_t file_size = select_statement.ColumnInt64(1);
   if (free_disk_space_on_target < 2 * file_size)
