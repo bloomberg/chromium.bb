@@ -88,6 +88,15 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
       }
       return true;
     }
+
+    // Represents a simple value.
+    case CBORValue::Type::SIMPLE_VALUE: {
+      const CBORValue::SimpleValue simple_value = node.GetSimpleValue();
+      StartItem(CBORValue::Type::SIMPLE_VALUE,
+                base::checked_cast<uint64_t>(simple_value));
+      return true;
+    }
+
     default:
       break;
   }
