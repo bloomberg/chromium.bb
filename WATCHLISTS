@@ -240,9 +240,9 @@
     'blink_client_hints': {
       'filepath': 'third_party/WebKit/Source/core/loader/AcceptClientHints*' \
                   '|third_party/WebKit/Source/core/loader/FrameFetchContext*' \
-                  '|third_party/WebKit/Source/core/fetch/FetchContext*' \
-                  '|third_party/WebKit/Source/core/fetch/ImageResource*' \
-                  '|third_party/WebKit/Source/core/fetch/ResourceFetcher*'
+                  '|third_party/WebKit/Source/core/loader/resource/ImageResource*' \
+                  '|third_party/WebKit/Source/platform/loader/fetch/FetchContext*' \
+                  '|third_party/WebKit/Source/platform/loader/fetch/ResourceFetcher*'
     },
     'blink_clipboard': {
       'filepath': 'third_party/WebKit/Source/core/clipboard' \
