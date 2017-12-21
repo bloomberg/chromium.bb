@@ -77,6 +77,12 @@ SuccessFetcher::SuccessFetcher(bool success,
 SuccessFetcher::~SuccessFetcher() = default;
 
 void SuccessFetcher::Start() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SuccessFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
+}
+
+void SuccessFetcher::RunDelegate() {
   delegate()->OnURLFetchComplete(this);
 }
 

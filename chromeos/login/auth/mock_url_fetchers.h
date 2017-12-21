@@ -69,6 +69,9 @@ class SuccessFetcher : public net::TestURLFetcher {
   void Start() override;
 
  private:
+  void RunDelegate();
+
+  base::WeakPtrFactory<SuccessFetcher> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SuccessFetcher);
 };
 
