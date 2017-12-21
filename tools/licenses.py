@@ -102,7 +102,6 @@ PRUNE_DIRS = (VCS_METADATA_DIRS +
                'layout_tests'))            # lots of subdirs
 
 ADDITIONAL_PATHS = (
-    os.path.join('breakpad'),
     os.path.join('chrome', 'common', 'extensions', 'docs', 'examples'),
     os.path.join('chrome', 'test', 'chromeos', 'autotest'),
     os.path.join('chrome', 'test', 'data'),
