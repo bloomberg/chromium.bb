@@ -937,12 +937,76 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
           break;
         case CSSSelector::kPseudoWebKitCustomElement:
           if (context_->Mode() != kUASheetMode) {
-            if (current->Value() ==
-                "-internal-media-controls-overlay-cast-button") {
+            if (current->Value() == "cue") {
+              feature = WebFeature::kCSSSelectorCue;
+            } else if (current->Value() ==
+                       "-internal-media-controls-overlay-cast-button") {
               feature = WebFeature::
                   kCSSSelectorInternalMediaControlsOverlayCastButton;
+            } else if (current->Value() ==
+                       "-webkit-calendar-picker-indicator") {
+              feature = WebFeature::kCSSSelectorWebkitCalendarPickerIndicator;
+            } else if (current->Value() == "-webkit-clear-button") {
+              feature = WebFeature::kCSSSelectorWebkitClearButton;
+            } else if (current->Value() == "-webkit-color-swatch") {
+              feature = WebFeature::kCSSSelectorWebkitColorSwatch;
+            } else if (current->Value() == "-webkit-color-swatch-wrapper") {
+              feature = WebFeature::kCSSSelectorWebkitColorSwatchWrapper;
+            } else if (current->Value() == "-webkit-date-and-time-value") {
+              feature = WebFeature::kCSSSelectorWebkitDateAndTimeValue;
+            } else if (current->Value() == "-webkit-datetime-edit") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEdit;
+            } else if (current->Value() == "-webkit-datetime-edit-ampm-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditAmpmField;
+            } else if (current->Value() == "-webkit-datetime-edit-day-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditDayField;
+            } else if (current->Value() ==
+                       "-webkit-datetime-edit-fields-wrapper") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditFieldsWrapper;
+            } else if (current->Value() == "-webkit-datetime-edit-hour-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditHourField;
+            } else if (current->Value() ==
+                       "-webkit-datetime-edit-millisecond-field") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitDatetimeEditMillisecondField;
+            } else if (current->Value() ==
+                       "-webkit-datetime-edit-minute-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditMinuteField;
+            } else if (current->Value() ==
+                       "-webkit-datetime-edit-month-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditMonthField;
+            } else if (current->Value() ==
+                       "-webkit-datetime-edit-second-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditSecondField;
+            } else if (current->Value() == "-webkit-datetime-edit-text") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditText;
+            } else if (current->Value() == "-webkit-datetime-edit-week-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditWeekField;
+            } else if (current->Value() == "-webkit-datetime-edit-year-field") {
+              feature = WebFeature::kCSSSelectorWebkitDatetimeEditYearField;
+            } else if (current->Value() == "-webkit-details-marker") {
+              feature = WebFeature::kCSSSelectorWebkitDetailsMarker;
+            } else if (current->Value() == "-webkit-file-upload-button") {
+              feature = WebFeature::kCSSSelectorWebkitFileUploadButton;
+            } else if (current->Value() == "-webkit-inner-spin-button") {
+              feature = WebFeature::kCSSSelectorWebkitInnerSpinButton;
+            } else if (current->Value() == "-webkit-input-placeholder") {
+              feature = WebFeature::kCSSSelectorWebkitInputPlaceholder;
             } else if (current->Value() == "-webkit-media-controls") {
               feature = WebFeature::kCSSSelectorWebkitMediaControls;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-current-time-display") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaControlsCurrentTimeDisplay;
+            } else if (current->Value() == "-webkit-media-controls-enclosure") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsEnclosure;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-fullscreen-button") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaControlsFullscreenButton;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-mute-button") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsMuteButton;
             } else if (current->Value() ==
                        "-webkit-media-controls-overlay-enclosure") {
               feature =
@@ -951,41 +1015,75 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
                        "-webkit-media-controls-overlay-play-button") {
               feature =
                   WebFeature::kCSSSelectorWebkitMediaControlsOverlayPlayButton;
-            } else if (current->Value() == "-webkit-media-controls-enclosure") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsEnclosure;
             } else if (current->Value() == "-webkit-media-controls-panel") {
               feature = WebFeature::kCSSSelectorWebkitMediaControlsPanel;
             } else if (current->Value() ==
                        "-webkit-media-controls-play-button") {
               feature = WebFeature::kCSSSelectorWebkitMediaControlsPlayButton;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-current-time-display") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaControlsCurrentTimeDisplay;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-time-remaining-display") {
-              feature = WebFeature::
-                  kCSSSelectorWebkitMediaControlsTimeRemainingDisplay;
             } else if (current->Value() == "-webkit-media-controls-timeline") {
               feature = WebFeature::kCSSSelectorWebkitMediaControlsTimeline;
             } else if (current->Value() ==
                        "-webkit-media-controls-timeline-container") {
+              // Note: This feature is no longer implemented in Blink.
               feature =
                   WebFeature::kCSSSelectorWebkitMediaControlsTimelineContainer;
             } else if (current->Value() ==
-                       "-webkit-media-controls-mute-button") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsMuteButton;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-volume-slider") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsVolumeSlider;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-fullscreen-button") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaControlsFullscreenButton;
+                       "-webkit-media-controls-time-remaining-display") {
+              feature = WebFeature::
+                  kCSSSelectorWebkitMediaControlsTimeRemainingDisplay;
             } else if (current->Value() ==
                        "-webkit-media-controls-toggle-closed-captions-button") {
               feature = WebFeature::
                   kCSSSelectorWebkitMediaControlsToggleClosedCaptionsButton;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-volume-slider") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsVolumeSlider;
+            } else if (current->Value() == "-webkit-media-slider-container") {
+              feature = WebFeature::kCSSSelectorWebkitMediaSliderContainer;
+            } else if (current->Value() == "-webkit-media-slider-thumb") {
+              feature = WebFeature::kCSSSelectorWebkitMediaSliderThumb;
+            } else if (current->Value() ==
+                       "-webkit-media-text-track-container") {
+              feature = WebFeature::kCSSSelectorWebkitMediaTextTrackContainer;
+            } else if (current->Value() == "-webkit-media-text-track-display") {
+              feature = WebFeature::kCSSSelectorWebkitMediaTextTrackDisplay;
+            } else if (current->Value() == "-webkit-media-text-track-region") {
+              feature = WebFeature::kCSSSelectorWebkitMediaTextTrackRegion;
+            } else if (current->Value() ==
+                       "-webkit-media-text-track-region-container") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaTextTrackRegionContainer;
+            } else if (current->Value() == "-webkit-meter-bar") {
+              feature = WebFeature::kCSSSelectorWebkitMeterBar;
+            } else if (current->Value() ==
+                       "-webkit-meter-even-less-good-value") {
+              feature = WebFeature::kCSSSelectorWebkitMeterEvenLessGoodValue;
+            } else if (current->Value() == "-webkit-meter-inner-element") {
+              feature = WebFeature::kCSSSelectorWebkitMeterInnerElement;
+            } else if (current->Value() == "-webkit-meter-optimum-value") {
+              feature = WebFeature::kCSSSelectorWebkitMeterOptimumValue;
+            } else if (current->Value() == "-webkit-meter-suboptimum-value") {
+              feature = WebFeature::kCSSSelectorWebkitMeterSuboptimumValue;
+            } else if (current->Value() == "-webkit-progress-bar") {
+              feature = WebFeature::kCSSSelectorWebkitProgressBar;
+            } else if (current->Value() == "-webkit-progress-inner-element") {
+              feature = WebFeature::kCSSSelectorWebkitProgressInnerElement;
+            } else if (current->Value() == "-webkit-progress-value") {
+              feature = WebFeature::kCSSSelectorWebkitProgressValue;
+            } else if (current->Value() == "-webkit-search-cancel-button") {
+              feature = WebFeature::kCSSSelectorWebkitSearchCancelButton;
+            } else if (current->Value() == "-webkit-slider-container") {
+              feature = WebFeature::kCSSSelectorWebkitSliderContainer;
+            } else if (current->Value() == "-webkit-slider-runnable-track") {
+              feature = WebFeature::kCSSSelectorWebkitSliderRunnableTrack;
+            } else if (current->Value() == "-webkit-slider-thumb") {
+              feature = WebFeature::kCSSSelectorWebkitSliderThumb;
+            } else if (current->Value() ==
+                       "-webkit-textfield-decoration-container") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitTextfieldDecorationContainer;
+            } else {
+              feature = WebFeature::kCSSSelectorWebkitUnknownPseudo;
             }
           }
           break;
