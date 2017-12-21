@@ -24,6 +24,8 @@ metadata.html
 # iron-flex-layout
 iron-flex-layout/classes/
 
-#paper-material
+# paper-material
 paper-material/paper-material.html
-paper-material/paper-material.js
+
+# paper-spinner
+paper-spinner/paper-spinner.html
