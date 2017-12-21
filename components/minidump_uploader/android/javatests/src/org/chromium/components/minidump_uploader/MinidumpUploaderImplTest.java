@@ -11,6 +11,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
@@ -251,6 +252,16 @@ public class MinidumpUploaderImplTest {
         // Ensure we tell JobScheduler to reschedule the job.
         Assert.assertTrue(minidumpUploader.cancelUploads());
         stopStallingLatch.countDown();
+        // Wait for the MinidumpUploader worker thread to finish before ending the test. This is to
+        // ensure the worker thread doesn't continue running after the test finishes - trying to
+        // access directories or minidumps set up and deleted by the test framework.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                minidumpUploader.joinWorkerThreadForTesting();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private interface MinidumpUploadCallableCreator {
