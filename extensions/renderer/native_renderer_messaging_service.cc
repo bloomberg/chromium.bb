@@ -245,7 +245,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
   port->SetSender(v8_context, sender);
   std::vector<v8::Local<v8::Value>> args = {port.ToV8()};
   bindings_system_->api_system()->event_handler()->FireEventInContext(
-      event_name, v8_context, &args, nullptr);
+      event_name, v8_context, &args, nullptr, JSRunner::ResultCallback());
 }
 
 void NativeRendererMessagingService::DispatchOnMessageToListeners(

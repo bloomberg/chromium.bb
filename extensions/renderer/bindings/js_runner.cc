@@ -73,4 +73,11 @@ JSRunner* JSRunner::GetInstanceForTesting() {
   return g_instance_for_testing;
 }
 
+void JSRunner::RunJSFunction(v8::Local<v8::Function> function,
+                             v8::Local<v8::Context> context,
+                             int argc,
+                             v8::Local<v8::Value> argv[]) {
+  RunJSFunction(function, context, argc, argv, ResultCallback());
+}
+
 }  // namespace extensions
