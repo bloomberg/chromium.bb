@@ -541,7 +541,8 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable));
   scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner =
-      scheduler::WebTaskRunnerImpl::Create(task_runner, base::nullopt);
+      scheduler::WebTaskRunnerImpl::Create(task_runner,
+                                           TaskType::kInternalTest);
   TimerForTest<TimerTest> timer(web_task_runner, this,
                                 &TimerTest::CountingTask);
   timer.StartOneShot(TimeDelta(), FROM_HERE);
@@ -632,7 +633,8 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable));
   scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
-      scheduler::WebTaskRunnerImpl::Create(task_runner1, base::nullopt);
+      scheduler::WebTaskRunnerImpl::Create(task_runner1,
+                                           TaskType::kInternalTest);
   TaskObserver task_observer1(web_task_runner1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
 
@@ -640,7 +642,8 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable));
   scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
-      scheduler::WebTaskRunnerImpl::Create(task_runner2, base::nullopt);
+      scheduler::WebTaskRunnerImpl::Create(task_runner2,
+                                           TaskType::kInternalTest);
   TaskObserver task_observer2(web_task_runner2, &run_order);
   task_runner2->AddTaskObserver(&task_observer2);
 
@@ -672,7 +675,8 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable));
   scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
-      scheduler::WebTaskRunnerImpl::Create(task_runner1, base::nullopt);
+      scheduler::WebTaskRunnerImpl::Create(task_runner1,
+                                           TaskType::kInternalTest);
   TaskObserver task_observer1(web_task_runner1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
 
@@ -680,7 +684,8 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable));
   scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
-      scheduler::WebTaskRunnerImpl::Create(task_runner2, base::nullopt);
+      scheduler::WebTaskRunnerImpl::Create(task_runner2,
+                                           TaskType::kInternalTest);
   TaskObserver task_observer2(web_task_runner2, &run_order);
   task_runner2->AddTaskObserver(&task_observer2);
 
@@ -714,13 +719,15 @@ TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable));
   scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner1 =
-      scheduler::WebTaskRunnerImpl::Create(task_runner1, base::nullopt);
+      scheduler::WebTaskRunnerImpl::Create(task_runner1,
+                                           TaskType::kInternalTest);
 
   scoped_refptr<scheduler::TaskQueue> task_runner2(
       platform_->GetRendererScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable));
   scoped_refptr<scheduler::WebTaskRunnerImpl> web_task_runner2 =
-      scheduler::WebTaskRunnerImpl::Create(task_runner2, base::nullopt);
+      scheduler::WebTaskRunnerImpl::Create(task_runner2,
+                                           TaskType::kInternalTest);
 
   TimerForTest<TimerTest> timer(web_task_runner1, this,
                                 &TimerTest::CountingTask);
