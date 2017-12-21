@@ -1736,8 +1736,18 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  int cost = av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
-                                 &txb_ctx);
+  const int eob = x->plane[plane].eobs[block];
+  int cost;
+  if (eob) {
+    cost = av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
+                               &txb_ctx);
+  } else {
+    const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
+    const PLANE_TYPE plane_type = get_plane_type(plane);
+    const LV_MAP_COEFF_COST *const coeff_costs =
+        &x->coeff_costs[txs_ctx][plane_type];
+    cost = coeff_costs->txb_skip_cost[txb_ctx.txb_skip_ctx][1];
+  }
 #endif  // !CONFIG_LV_MAP
 #if TXCOEFF_COST_TIMER
   AV1_COMMON *tmp_cm = (AV1_COMMON *)&cpi->common;

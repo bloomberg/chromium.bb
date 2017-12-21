@@ -584,37 +584,33 @@ static INLINE int get_base_cost(tran_low_t abs_qc, int ctx,
     return coeff_base[abs_qc == level];
 }
 
-int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
-                        int blk_row, int blk_col, int block, TX_SIZE tx_size,
-                        TXB_CTX *txb_ctx) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
+// Note: don't call this function when eob is 0.
+int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
+                        const int plane, const int blk_row, const int blk_col,
+                        const int block, const TX_SIZE tx_size,
+                        const TXB_CTX *const txb_ctx) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size);
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
   const int eob = p->eobs[block];
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   int c, cost;
-  int txb_skip_ctx = txb_ctx->txb_skip_ctx;
-
+  const int txb_skip_ctx = txb_ctx->txb_skip_ctx;
   const int bwl = get_txb_bwl(tx_size);
   const int width = get_txb_wide(tx_size);
   const int height = get_txb_high(tx_size);
-
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *const scan = scan_order->scan;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
+  const LV_MAP_COEFF_COST *const coeff_costs =
+      &x->coeff_costs[txs_ctx][plane_type];
 
-  LV_MAP_COEFF_COST *coeff_costs = &x->coeff_costs[txs_ctx][plane_type];
-
-  if (eob == 0) {
-    cost = coeff_costs->txb_skip_cost[txb_skip_ctx][1];
-    return cost;
-  }
   cost = coeff_costs->txb_skip_cost[txb_skip_ctx][0];
 
   av1_txb_init_levels(qcoeff, width, height, levels);
