@@ -43,7 +43,7 @@ interface HTMLElement : Element {
     // https://html.spec.whatwg.org/#contenteditable
     [CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     [ImplementedAs=isContentEditableForBinding] readonly attribute boolean isContentEditable;
-    [RuntimeEnabled=InputModeAttribute, CEReactions, Reflect] attribute DOMString inputMode;
+    [RuntimeEnabled=InputModeAttribute, CEReactions, Reflect, ReflectOnly=("none","text","tel","url","email","numeric","decimal","search")] attribute DOMString inputMode;
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-htmlelement-interface

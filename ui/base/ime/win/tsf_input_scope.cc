@@ -138,13 +138,9 @@ InputScope ConvertTextInputTypeToInputScope(TextInputType text_input_type) {
 
 InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
   switch (text_input_mode) {
-    case TEXT_INPUT_MODE_FULL_WIDTH_LATIN:
-      return IS_ALPHANUMERIC_FULLWIDTH;
-    case TEXT_INPUT_MODE_KANA:
-      return IS_HIRAGANA;
-    case TEXT_INPUT_MODE_KATAKANA:
-      return IS_KATAKANA_FULLWIDTH;
     case TEXT_INPUT_MODE_NUMERIC:
+      return IS_DIGITS;
+    case TEXT_INPUT_MODE_DECIMAL:
       return IS_NUMBER;
     case TEXT_INPUT_MODE_TEL:
       return IS_TELEPHONE_FULLTELEPHONENUMBER;
@@ -152,6 +148,8 @@ InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
       return IS_EMAIL_SMTPEMAILADDRESS;
     case TEXT_INPUT_MODE_URL:
       return IS_URL;
+    case TEXT_INPUT_MODE_SEARCH:
+      return IS_SEARCH;
     default:
       return IS_DEFAULT;
   }

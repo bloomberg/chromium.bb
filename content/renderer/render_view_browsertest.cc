@@ -1004,29 +1004,24 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
 // changes.
 TEST_F(RenderViewImplTest, OnImeTypeChanged) {
   // Load an HTML page consisting of two input fields.
-  LoadHTML("<html>"
-           "<head>"
-           "</head>"
-           "<body>"
-           "<input id=\"test1\" type=\"text\" value=\"some text\"></input>"
-           "<input id=\"test2\" type=\"password\"></input>"
-           "<input id=\"test3\" type=\"text\" inputmode=\"verbatim\"></input>"
-           "<input id=\"test4\" type=\"text\" inputmode=\"latin\"></input>"
-           "<input id=\"test5\" type=\"text\" inputmode=\"latin-name\"></input>"
-           "<input id=\"test6\" type=\"text\" inputmode=\"latin-prose\">"
-               "</input>"
-           "<input id=\"test7\" type=\"text\" inputmode=\"full-width-latin\">"
-               "</input>"
-           "<input id=\"test8\" type=\"text\" inputmode=\"kana\"></input>"
-           "<input id=\"test9\" type=\"text\" inputmode=\"katakana\"></input>"
-           "<input id=\"test10\" type=\"text\" inputmode=\"numeric\"></input>"
-           "<input id=\"test11\" type=\"text\" inputmode=\"tel\"></input>"
-           "<input id=\"test12\" type=\"text\" inputmode=\"email\"></input>"
-           "<input id=\"test13\" type=\"text\" inputmode=\"url\"></input>"
-           "<input id=\"test14\" type=\"text\" inputmode=\"unknown\"></input>"
-           "<input id=\"test15\" type=\"text\" inputmode=\"verbatim\"></input>"
-           "</body>"
-           "</html>");
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test1\" type=\"text\" value=\"some text\"></input>"
+      "<input id=\"test2\" type=\"password\"></input>"
+      "<input id=\"test3\" type=\"text\" inputmode=\"none\"></input>"
+      "<input id=\"test4\" type=\"text\" inputmode=\"text\"></input>"
+      "<input id=\"test5\" type=\"text\" inputmode=\"tel\"></input>"
+      "<input id=\"test6\" type=\"text\" inputmode=\"url\"></input>"
+      "<input id=\"test7\" type=\"text\" inputmode=\"email\"></input>"
+      "<input id=\"test8\" type=\"text\" inputmode=\"numeric\"></input>"
+      "<input id=\"test9\" type=\"text\" inputmode=\"decimal\"></input>"
+      "<input id=\"test10\" type=\"text\" inputmode=\"search\"></input>"
+      "<input id=\"test11\" type=\"text\" inputmode=\"unknown\"></input>"
+      "</body>"
+      "</html>");
   render_thread_->sink().ClearMessages();
 
   struct InputModeTestCase {
@@ -1034,20 +1029,16 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     ui::TextInputMode expected_mode;
   };
   static const InputModeTestCase kInputModeTestCases[] = {
-     {"test1", ui::TEXT_INPUT_MODE_DEFAULT},
-     {"test3", ui::TEXT_INPUT_MODE_VERBATIM},
-     {"test4", ui::TEXT_INPUT_MODE_LATIN},
-     {"test5", ui::TEXT_INPUT_MODE_LATIN_NAME},
-     {"test6", ui::TEXT_INPUT_MODE_LATIN_PROSE},
-     {"test7", ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN},
-     {"test8", ui::TEXT_INPUT_MODE_KANA},
-     {"test9", ui::TEXT_INPUT_MODE_KATAKANA},
-     {"test10", ui::TEXT_INPUT_MODE_NUMERIC},
-     {"test11", ui::TEXT_INPUT_MODE_TEL},
-     {"test12", ui::TEXT_INPUT_MODE_EMAIL},
-     {"test13", ui::TEXT_INPUT_MODE_URL},
-     {"test14", ui::TEXT_INPUT_MODE_DEFAULT},
-     {"test15", ui::TEXT_INPUT_MODE_VERBATIM},
+      {"test1", ui::TEXT_INPUT_MODE_DEFAULT},
+      {"test3", ui::TEXT_INPUT_MODE_NONE},
+      {"test4", ui::TEXT_INPUT_MODE_TEXT},
+      {"test5", ui::TEXT_INPUT_MODE_TEL},
+      {"test6", ui::TEXT_INPUT_MODE_URL},
+      {"test7", ui::TEXT_INPUT_MODE_EMAIL},
+      {"test8", ui::TEXT_INPUT_MODE_NUMERIC},
+      {"test9", ui::TEXT_INPUT_MODE_DECIMAL},
+      {"test10", ui::TEXT_INPUT_MODE_SEARCH},
+      {"test11", ui::TEXT_INPUT_MODE_DEFAULT},
   };
 
   const int kRepeatCount = 10;
