@@ -215,6 +215,10 @@
 -SSLUIMITMSoftwareEnabledTest.TwoCertErrors_NoMITMSoftwareInterstitial/1
 -SSLUIMITMSoftwareEnabledTest.WrongCertError_NoMITMSoftwareInterstitial/0
 -SSLUIMITMSoftwareEnabledTest.WrongCertError_NoMITMSoftwareInterstitial/1
+-SSLUITest.SHA1IsDefaultDisabled/0
+-SSLUITest.SHA1IsDefaultDisabled/1
+-SSLUITest.CommonNameIsDefaultDisabled/0
+-SSLUITest.CommonNameIsDefaultDisabled/1
 -SSLUITest.TestBadHTTPSDownload/0
 -SSLUITest.TestBadHTTPSDownload/1
 -SSLUITest.TestHTTPSOCSPOk/0

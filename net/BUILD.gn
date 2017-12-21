@@ -2302,9 +2302,7 @@ static_library("http_server") {
     "server/web_socket_encoder.cc",
     "server/web_socket_encoder.h",
   ]
-  configs += [
-    "//build/config/compiler:wexit_time_destructors",
-  ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
     ":net",
     "//base",
@@ -2397,6 +2395,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/client_6.pk8",
     "data/ssl/certificates/client_6_ca.pem",
     "data/ssl/certificates/client_root_ca.pem",
+    "data/ssl/certificates/common_name_only.pem",
     "data/ssl/certificates/crit-codeSigning-chain.pem",
     "data/ssl/certificates/crlset_by_intermediate_serial.raw",
     "data/ssl/certificates/crlset_by_leaf_spki.raw",
@@ -2494,6 +2493,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/sha1_2016.pem",
     "data/ssl/certificates/sha1_dec_2015.pem",
     "data/ssl/certificates/sha1_jan_2016.pem",
+    "data/ssl/certificates/sha1_leaf.pem",
     "data/ssl/certificates/spdy_pooling.pem",
     "data/ssl/certificates/start_after_expiry.pem",
     "data/ssl/certificates/subjectAltName_sanity_check.pem",
@@ -2648,9 +2648,7 @@ static_library("test_support") {
     "url_request/url_request_test_util.h",
   ]
 
-  configs += [
-    "//build/config:precompiled_headers",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
     ":traffic_annotation",
@@ -5296,9 +5294,7 @@ test("net_unittests") {
   ]
   net_unfiltered_sources = []
 
-  configs += [
-    "//build/config:precompiled_headers",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
   defines = []
 
   deps = [
