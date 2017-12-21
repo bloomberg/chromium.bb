@@ -70,8 +70,13 @@ android {
 
 {{ expand_sourceset(main, 'main') }}
 {{ expand_sourceset(test, 'test') }}
-{{ expand_sourceset(android_test, 'androidTest') }}
+
+{% if android_test is defined %}
+{% for t in android_test %}
+{{ expand_sourceset(t, 'androidTest') }}
+{% endfor %}
     }
+{% endif %}
 
     defaultConfig {
         vectorDrawables.useSupportLibrary = true

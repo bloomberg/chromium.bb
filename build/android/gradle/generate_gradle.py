@@ -7,6 +7,7 @@
 
 import argparse
 import codecs
+import collections
 import glob
 import logging
 import os
@@ -151,7 +152,7 @@ class _ProjectEntry(object):
     self._build_config = None
     self._java_files = None
     self._all_entries = None
-    self.android_test_entry = None
+    self.android_test_entries = None
 
   @classmethod
   def FromGnTarget(cls, gn_target):
@@ -565,13 +566,14 @@ def _GenerateGradleFile(entry, generator, build_vars, source_properties,
   if bootclasspath:
     # Must use absolute path here.
     variables['bootclasspath'] = _RebasePath(bootclasspath)
-  if entry.android_test_entry:
-    variables['android_test'] = generator.Generate(
-        entry.android_test_entry)
-    for key, value in variables['android_test'].iteritems():
-      if isinstance(value, list):
-        variables['android_test'][key] = sorted(
-            set(value) - set(variables['main'][key]))
+  if entry.android_test_entries:
+    variables['android_test'] = []
+    for e in entry.android_test_entries:
+      test_entry = generator.Generate(e)
+      variables['android_test'].append(test_entry)
+      for key, value in test_entry.iteritems():
+        if isinstance(value, list):
+          test_entry[key] = sorted(set(value) - set(variables['main'][key]))
 
   return jinja_processor.Render(
       _TemplatePath(target_type.split('_')[0]), variables)
@@ -607,10 +609,10 @@ def _GenerateModuleAll(gradle_output_dir, generator, build_vars,
       'java_excludes': ['**/*.java'],
       'res_dirs': Relativize(res_dirs),
   }
-  variables['android_test'] = {
+  variables['android_test'] = [{
       'java_dirs': Relativize(test_java_dirs),
       'java_excludes': ['**/*.java'],
-  }
+  }]
   data = jinja_processor.Render(
       _TemplatePath(target_type.split('_')[0]), variables)
   _WriteFile(
@@ -685,22 +687,22 @@ def _CombineTestEntries(entries):
     - e.g. base_junit_tests > base_junit_test_support > base_java
   """
   combined_entries = []
-  android_test_entries = {}
+  android_test_entries = collections.defaultdict(list)
   for entry in entries:
     target_name = entry.GnTarget()
     if (target_name.endswith('_test_apk__apk') and
         'apk_under_test' in entry.Gradle()):
       apk_name = entry.Gradle()['apk_under_test']
-      android_test_entries[apk_name] = entry
+      android_test_entries[apk_name].append(entry)
     else:
       combined_entries.append(entry)
   for entry in combined_entries:
     target_name = entry.DepsInfo()['name']
     if target_name in android_test_entries:
-      entry.android_test_entry = android_test_entries[target_name]
+      entry.android_test_entries = android_test_entries[target_name]
       del android_test_entries[target_name]
   # Add unmatched test entries as individual targets.
-  combined_entries.extend(android_test_entries.values())
+  combined_entries.extend(e for l in android_test_entries.values() for e in l)
   return combined_entries
 
 
