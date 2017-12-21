@@ -48,11 +48,9 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   void OnVersionChange(long long old_version, long long new_version) override;
   void OnAbort(long long transaction_id, const WebIDBDatabaseError&) override;
   void OnComplete(long long transaction_id) override;
-  void OnChanges(
-      const std::unordered_map<int32_t, std::vector<int32_t>>&
-          observation_index_map,
-      const WebVector<WebIDBObservation>& observations,
-      const IDBDatabaseCallbacks::TransactionMap& transactions) override;
+  void OnChanges(const ObservationIndexMap&,
+                 const WebVector<WebIDBObservation>& observations,
+                 const TransactionMap& transactions) override;
   void Detach() override;
 
  private:

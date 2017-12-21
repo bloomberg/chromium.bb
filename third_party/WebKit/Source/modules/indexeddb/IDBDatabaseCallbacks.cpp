@@ -65,10 +65,9 @@ void IDBDatabaseCallbacks::OnComplete(int64_t transaction_id) {
 }
 
 void IDBDatabaseCallbacks::OnChanges(
-    const std::unordered_map<int32_t, std::vector<int32_t>>&
-        observation_index_map,
+    const WebIDBDatabaseCallbacks::ObservationIndexMap& observation_index_map,
     const WebVector<WebIDBObservation>& observations,
-    const TransactionMap& transactions) {
+    const WebIDBDatabaseCallbacks::TransactionMap& transactions) {
   if (!database_)
     return;
 
