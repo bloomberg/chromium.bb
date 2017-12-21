@@ -611,8 +611,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
   LV_MAP_COEFF_COST *coeff_costs = &x->coeff_costs[txs_ctx][plane_type];
 
-  cost = 0;
-
   if (eob == 0) {
     cost = coeff_costs->txb_skip_cost[txb_skip_ctx][1];
     return cost;
