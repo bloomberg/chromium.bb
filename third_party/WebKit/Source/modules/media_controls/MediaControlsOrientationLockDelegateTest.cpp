@@ -4,6 +4,8 @@
 
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 
+#include <memory>
+
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/FrameView.h"
@@ -190,7 +192,7 @@ class MediaControlsOrientationLockDelegateTest
     ScreenOrientationController* controller =
         ScreenOrientationController::From(*GetDocument().GetFrame());
     controller->lock(kWebScreenOrientationLockLandscape,
-                     WTF::WrapUnique(new DummyScreenOrientationCallback));
+                     std::make_unique<DummyScreenOrientationCallback>());
     EXPECT_TRUE(controller->MaybeHasActiveLock());
   }
 

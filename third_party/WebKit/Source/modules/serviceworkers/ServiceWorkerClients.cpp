@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -19,7 +21,6 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
 #include "platform/bindings/V8ThrowException.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
@@ -70,7 +71,7 @@ class GetCallback : public WebServiceWorkerClientCallbacks {
   void OnSuccess(
       std::unique_ptr<WebServiceWorkerClientInfo> web_client) override {
     std::unique_ptr<WebServiceWorkerClientInfo> client =
-        WTF::WrapUnique(web_client.release());
+        base::WrapUnique(web_client.release());
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;

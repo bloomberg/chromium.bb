@@ -30,14 +30,14 @@
 
 #include "modules/peerconnection/RTCCertificate.h"
 
+#include "base/memory/ptr_util.h"
 #include "platform/bindings/ToV8.h"
 #include "platform/bindings/V8Binding.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 RTCCertificate::RTCCertificate(std::unique_ptr<WebRTCCertificate> certificate)
-    : certificate_(WTF::WrapUnique(certificate.release())) {}
+    : certificate_(base::WrapUnique(certificate.release())) {}
 
 std::unique_ptr<WebRTCCertificate> RTCCertificate::CertificateShallowCopy()
     const {

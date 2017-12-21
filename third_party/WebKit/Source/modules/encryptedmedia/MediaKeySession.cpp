@@ -47,7 +47,6 @@
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebContentDecryptionModuleException.h"

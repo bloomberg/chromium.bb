@@ -25,17 +25,19 @@
 
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 
-#include "core/dom/DOMException.h"
-#include "platform/wtf/PtrUtil.h"
-
 #include <memory>
+#include <unordered_map>
+#include <vector>
+
+#include "base/memory/ptr_util.h"
+#include "core/dom/DOMException.h"
 
 namespace blink {
 
 // static
 std::unique_ptr<WebIDBDatabaseCallbacksImpl>
 WebIDBDatabaseCallbacksImpl::Create(IDBDatabaseCallbacks* callbacks) {
-  return WTF::WrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
+  return base::WrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
 }
 
 WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(

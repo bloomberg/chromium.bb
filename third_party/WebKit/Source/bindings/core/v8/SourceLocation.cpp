@@ -5,6 +5,8 @@
 #include "bindings/core/v8/SourceLocation.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -16,7 +18,6 @@
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -118,8 +119,8 @@ std::unique_ptr<SourceLocation> SourceLocation::Create(
     unsigned column_number,
     std::unique_ptr<v8_inspector::V8StackTrace> stack_trace,
     int script_id) {
-  return WTF::WrapUnique(new SourceLocation(url, line_number, column_number,
-                                            std::move(stack_trace), script_id));
+  return base::WrapUnique(new SourceLocation(
+      url, line_number, column_number, std::move(stack_trace), script_id));
 }
 
 // static
@@ -130,8 +131,8 @@ std::unique_ptr<SourceLocation> SourceLocation::CreateFromNonEmptyV8StackTrace(
   String url = ToCoreString(stack_trace->topSourceURL());
   unsigned line_number = stack_trace->topLineNumber();
   unsigned column_number = stack_trace->topColumnNumber();
-  return WTF::WrapUnique(new SourceLocation(url, line_number, column_number,
-                                            std::move(stack_trace), script_id));
+  return base::WrapUnique(new SourceLocation(
+      url, line_number, column_number, std::move(stack_trace), script_id));
 }
 
 // static
@@ -186,7 +187,7 @@ void SourceLocation::ToTracedValue(TracedValue* value, const char* name) const {
 }
 
 std::unique_ptr<SourceLocation> SourceLocation::Clone() const {
-  return WTF::WrapUnique(new SourceLocation(
+  return base::WrapUnique(new SourceLocation(
       url_.IsolatedCopy(), line_number_, column_number_,
       stack_trace_ ? stack_trace_->clone() : nullptr, script_id_));
 }

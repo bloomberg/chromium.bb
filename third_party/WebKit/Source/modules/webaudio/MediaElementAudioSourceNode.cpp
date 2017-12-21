@@ -35,7 +35,6 @@
 #include "platform/audio/AudioUtilities.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Locker.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {

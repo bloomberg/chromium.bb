@@ -28,7 +28,6 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"

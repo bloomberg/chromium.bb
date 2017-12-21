@@ -40,7 +40,6 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/PtrUtil.h"
 
 #include <memory>
 

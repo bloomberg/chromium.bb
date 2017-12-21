@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "modules/webaudio/IIRDSPKernel.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

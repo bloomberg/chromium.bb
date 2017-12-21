@@ -27,6 +27,8 @@
  */
 
 #include "modules/accessibility/AXRelationCache.h"
+
+#include "base/memory/ptr_util.h"
 #include "core/html/forms/HTMLLabelElement.h"
 #include "core/html/forms/LabelableElement.h"
 
@@ -56,7 +58,8 @@ void AXRelationCache::UpdateReverseRelations(const AXObject* relation_source,
     HashSet<AXID>* source_axids = id_attr_to_related_mapping_.at(target_id);
     if (!source_axids) {
       source_axids = new HashSet<AXID>();
-      id_attr_to_related_mapping_.Set(target_id, WTF::WrapUnique(source_axids));
+      id_attr_to_related_mapping_.Set(target_id,
+                                      base::WrapUnique(source_axids));
     }
     source_axids->insert(relation_source_axid);
   }

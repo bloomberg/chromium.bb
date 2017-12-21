@@ -37,7 +37,6 @@
 #include "core/frame/UseCounter.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

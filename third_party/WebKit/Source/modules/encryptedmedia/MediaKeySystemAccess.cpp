@@ -5,6 +5,8 @@
 #include "modules/encryptedmedia/MediaKeySystemAccess.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
@@ -14,7 +16,6 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
@@ -51,7 +52,7 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
 
     // 2.9. Let media keys be a new MediaKeys object.
     MediaKeys* media_keys = MediaKeys::Create(
-        GetExecutionContext(), supported_session_types_, WTF::WrapUnique(cdm));
+        GetExecutionContext(), supported_session_types_, base::WrapUnique(cdm));
 
     // 2.10. Resolve promise with media keys.
     Resolve(media_keys);

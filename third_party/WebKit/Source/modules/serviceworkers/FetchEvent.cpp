@@ -19,7 +19,6 @@
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/network/NetworkUtils.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
 

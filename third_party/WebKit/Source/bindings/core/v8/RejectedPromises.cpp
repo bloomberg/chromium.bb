@@ -5,6 +5,8 @@
 #include "bindings/core/v8/RejectedPromises.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContext.h"
@@ -17,7 +19,6 @@
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 
@@ -34,9 +35,9 @@ class RejectedPromises::Message final {
       const String& error_message,
       std::unique_ptr<SourceLocation> location,
       AccessControlStatus cors_status) {
-    return WTF::WrapUnique(new Message(script_state, promise, exception,
-                                       error_message, std::move(location),
-                                       cors_status));
+    return base::WrapUnique(new Message(script_state, promise, exception,
+                                        error_message, std::move(location),
+                                        cors_status));
   }
 
   bool IsCollected() { return collected_ || !script_state_->ContextIsValid(); }

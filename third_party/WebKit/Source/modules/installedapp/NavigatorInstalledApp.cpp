@@ -4,6 +4,8 @@
 
 #include "modules/installedapp/NavigatorInstalledApp.h"
 
+#include <memory>
+
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -17,7 +19,6 @@
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/installedapp/RelatedApplication.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/installedapp/WebRelatedApplication.h"
 
 namespace blink {
@@ -91,8 +92,9 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
     return promise;
   }
 
-  app_controller->GetInstalledRelatedApps(WTF::WrapUnique(
-      new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
+  app_controller->GetInstalledRelatedApps(
+      std::make_unique<CallbackPromiseAdapter<RelatedAppArray, void>>(
+          resolver));
   return promise;
 }
 

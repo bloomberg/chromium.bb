@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -52,7 +53,6 @@
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/FileMetadata.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebFileWriter.h"
 
 namespace blink {
@@ -165,9 +165,9 @@ std::unique_ptr<AsyncFileSystemCallbacks> EntryCallbacks::Create(
     DOMFileSystemBase* file_system,
     const String& expected_path,
     bool is_directory) {
-  return WTF::WrapUnique(new EntryCallbacks(success_callback, error_callback,
-                                            context, file_system, expected_path,
-                                            is_directory));
+  return base::WrapUnique(new EntryCallbacks(success_callback, error_callback,
+                                             context, file_system,
+                                             expected_path, is_directory));
 }
 
 EntryCallbacks::EntryCallbacks(EntryCallback* success_callback,
@@ -202,7 +202,7 @@ std::unique_ptr<AsyncFileSystemCallbacks> EntriesCallbacks::Create(
     ExecutionContext* context,
     DirectoryReaderBase* directory_reader,
     const String& base_path) {
-  return WTF::WrapUnique(new EntriesCallbacks(
+  return base::WrapUnique(new EntriesCallbacks(
       success_callback, error_callback, context, directory_reader, base_path));
 }
 
@@ -248,7 +248,7 @@ std::unique_ptr<AsyncFileSystemCallbacks> FileSystemCallbacks::Create(
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
     FileSystemType type) {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new FileSystemCallbacks(success_callback, error_callback, context, type));
 }
 
@@ -274,7 +274,7 @@ std::unique_ptr<AsyncFileSystemCallbacks> ResolveURICallbacks::Create(
     EntryCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context) {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new ResolveURICallbacks(success_callback, error_callback, context));
 }
 
@@ -317,8 +317,8 @@ std::unique_ptr<AsyncFileSystemCallbacks> MetadataCallbacks::Create(
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
     DOMFileSystemBase* file_system) {
-  return WTF::WrapUnique(new MetadataCallbacks(success_callback, error_callback,
-                                               context, file_system));
+  return base::WrapUnique(new MetadataCallbacks(
+      success_callback, error_callback, context, file_system));
 }
 
 MetadataCallbacks::MetadataCallbacks(MetadataCallback* success_callback,
@@ -341,7 +341,7 @@ std::unique_ptr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::Create(
     FileWriterBaseCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context) {
-  return WTF::WrapUnique(new FileWriterBaseCallbacks(
+  return base::WrapUnique(new FileWriterBaseCallbacks(
       file_writer, success_callback, error_callback, context));
 }
 
@@ -372,7 +372,7 @@ std::unique_ptr<AsyncFileSystemCallbacks> SnapshotFileCallback::Create(
     FileCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context) {
-  return WTF::WrapUnique(new SnapshotFileCallback(
+  return base::WrapUnique(new SnapshotFileCallback(
       filesystem, name, url, success_callback, error_callback, context));
 }
 
@@ -413,8 +413,8 @@ std::unique_ptr<AsyncFileSystemCallbacks> VoidCallbacks::Create(
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
     DOMFileSystemBase* file_system) {
-  return WTF::WrapUnique(new VoidCallbacks(success_callback, error_callback,
-                                           context, file_system));
+  return base::WrapUnique(new VoidCallbacks(success_callback, error_callback,
+                                            context, file_system));
 }
 
 VoidCallbacks::VoidCallbacks(VoidCallback* success_callback,

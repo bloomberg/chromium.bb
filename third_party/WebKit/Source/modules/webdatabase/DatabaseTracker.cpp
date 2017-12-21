@@ -30,6 +30,8 @@
 
 #include "modules/webdatabase/DatabaseTracker.h"
 
+#include <memory>
+
 #include "base/location.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -43,7 +45,6 @@
 #include "platform/weborigin/SecurityOriginHash.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
@@ -94,7 +95,7 @@ String DatabaseTracker::FullPathForDatabase(const SecurityOrigin* origin,
 void DatabaseTracker::AddOpenDatabase(Database* database) {
   MutexLocker open_database_map_lock(open_database_map_guard_);
   if (!open_database_map_)
-    open_database_map_ = WTF::WrapUnique(new DatabaseOriginMap);
+    open_database_map_ = std::make_unique<DatabaseOriginMap>();
 
   String origin_string = database->GetSecurityOrigin()->ToRawString();
   DatabaseNameMap* name_map = open_database_map_->at(origin_string);

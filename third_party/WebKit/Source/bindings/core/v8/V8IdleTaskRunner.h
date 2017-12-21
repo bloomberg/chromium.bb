@@ -27,12 +27,13 @@
 #define V8IdleTaskRunner_h
 
 #include <memory>
+
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "core/CoreExport.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 
@@ -48,7 +49,7 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   void PostIdleTask(v8::IdleTask* task) override {
     DCHECK(RuntimeEnabledFeatures::V8IdleTasksEnabled());
     scheduler_->PostIdleTask(
-        FROM_HERE, WTF::Bind(&v8::IdleTask::Run, WTF::WrapUnique(task)));
+        FROM_HERE, WTF::Bind(&v8::IdleTask::Run, base::WrapUnique(task)));
   }
 
  private:

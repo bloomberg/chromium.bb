@@ -42,7 +42,6 @@
 #include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 
 // How does a SQLTransaction work?
@@ -606,8 +605,8 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
     database_->SqliteDatabase().SetMaximumSize(database_->MaximumSize());
 
   DCHECK(!sqlite_transaction_);
-  sqlite_transaction_ = WTF::WrapUnique(
-      new SQLiteTransaction(database_->SqliteDatabase(), read_only_));
+  sqlite_transaction_ = std::make_unique<SQLiteTransaction>(
+      database_->SqliteDatabase(), read_only_);
 
   database_->ResetDeletes();
   database_->DisableAuthorizer();

@@ -4,12 +4,14 @@
 
 #include "modules/push_messaging/PushSubscriptionCallbacks.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushSubscription.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
 
 namespace blink {
@@ -32,7 +34,7 @@ void PushSubscriptionCallbacks::OnSuccess(
     return;
 
   resolver_->Resolve(PushSubscription::Take(
-      resolver_.Get(), WTF::WrapUnique(web_push_subscription.release()),
+      resolver_.Get(), base::WrapUnique(web_push_subscription.release()),
       service_worker_registration_));
 }
 

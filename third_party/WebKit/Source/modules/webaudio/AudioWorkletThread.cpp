@@ -5,6 +5,8 @@
 #include "modules/webaudio/AudioWorkletThread.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "modules/webaudio/AudioWorklet.h"
@@ -15,7 +17,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -31,7 +32,7 @@ std::unique_ptr<AudioWorkletThread> AudioWorkletThread::Create(
     WorkerReportingProxy& worker_reporting_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),
                "AudioWorkletThread::create");
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new AudioWorkletThread(loading_context, worker_reporting_proxy));
 }
 

@@ -4,6 +4,7 @@
 
 #include "modules/csspaint/CSSPaintDefinition.h"
 
+#include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/cssom/FilteredComputedStylePropertyMap.h"
@@ -15,7 +16,6 @@
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/graphics/PaintGeneratedImage.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

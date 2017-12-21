@@ -23,7 +23,6 @@
 #include "modules/webaudio/AudioWorkletThread.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebAudioLatencyHint.h"
@@ -87,7 +86,7 @@ class BaseAudioContextTestPlatform : public TestingPlatformSupport {
   }
 
   std::unique_ptr<WebThread> CreateThread(const char* name) override {
-    // return WTF::WrapUnique(old_platform_->CurrentThread());
+    // return base::WrapUnique(old_platform_->CurrentThread());
     return old_platform_->CreateThread(name);
   }
 

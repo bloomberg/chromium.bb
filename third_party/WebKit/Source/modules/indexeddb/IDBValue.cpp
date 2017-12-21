@@ -7,9 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "platform/blob/BlobData.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
 #include "v8/include/v8.h"
@@ -72,13 +73,14 @@ IDBValue::~IDBValue() {
 
 std::unique_ptr<IDBValue> IDBValue::Create(const WebIDBValue& value,
                                            v8::Isolate* isolate) {
-  return WTF::WrapUnique(new IDBValue(value, isolate));
+  return base::WrapUnique(new IDBValue(value, isolate));
 }
 
 std::unique_ptr<IDBValue> IDBValue::Create(std::unique_ptr<IDBValue> value,
                                            IDBKey* primary_key,
                                            const IDBKeyPath& key_path) {
-  return WTF::WrapUnique(new IDBValue(std::move(value), primary_key, key_path));
+  return base::WrapUnique(
+      new IDBValue(std::move(value), primary_key, key_path));
 }
 
 std::unique_ptr<IDBValue> IDBValue::Create(
@@ -87,7 +89,7 @@ std::unique_ptr<IDBValue> IDBValue::Create(
     Vector<WebBlobInfo> blob_info,
     const IDBKey* primary_key,
     const IDBKeyPath& key_path) {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new IDBValue(std::move(unwrapped_data), std::move(blob_data),
                    std::move(blob_info), primary_key, key_path));
 }

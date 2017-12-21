@@ -53,6 +53,9 @@ _CONFIG = [
             'base::RepeatingCallback',
             'base::RepeatingClosure',
 
+            # //base/memory/ptr_util.h.
+            'base::WrapUnique',
+
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 

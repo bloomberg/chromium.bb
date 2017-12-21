@@ -38,7 +38,6 @@
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/StorageLog.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {

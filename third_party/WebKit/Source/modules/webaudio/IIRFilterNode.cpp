@@ -4,6 +4,8 @@
 
 #include "modules/webaudio/IIRFilterNode.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -12,7 +14,6 @@
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/IIRFilterOptions.h"
 #include "platform/Histogram.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -67,8 +68,8 @@ IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
     : AudioNode(context) {
   SetHandler(AudioBasicProcessorHandler::Create(
       AudioHandler::kNodeTypeIIRFilter, *this, context.sampleRate(),
-      WTF::WrapUnique(new IIRProcessor(context.sampleRate(), 1,
-                                       feedforward_coef, feedback_coef))));
+      std::make_unique<IIRProcessor>(context.sampleRate(), 1, feedforward_coef,
+                                     feedback_coef)));
 
   // Histogram of the IIRFilter order.  createIIRFilter ensures that the length
   // of |feedbackCoef| is in the range [1, IIRFilter::kMaxOrder + 1].  The order

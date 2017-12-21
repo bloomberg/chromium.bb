@@ -31,7 +31,6 @@
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -35,6 +35,7 @@
 #include <set>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Nullable.h"
@@ -88,7 +89,6 @@
 #include "platform/peerconnection/RTCAnswerOptionsPlatform.h"
 #include "platform/peerconnection/RTCOfferOptionsPlatform.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
@@ -1606,7 +1606,7 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
     return;
 
   RTCDataChannel* channel =
-      RTCDataChannel::Create(GetExecutionContext(), WTF::WrapUnique(handler));
+      RTCDataChannel::Create(GetExecutionContext(), base::WrapUnique(handler));
   ScheduleDispatchEvent(RTCDataChannelEvent::Create(EventTypeNames::datachannel,
                                                     false, false, channel));
   has_data_channels_ = true;

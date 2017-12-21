@@ -18,7 +18,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/blob/BlobData.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"

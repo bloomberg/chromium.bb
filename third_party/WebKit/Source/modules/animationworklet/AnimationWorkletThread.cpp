@@ -5,6 +5,8 @@
 #include "modules/animationworklet/AnimationWorkletThread.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerBackingThread.h"
@@ -15,7 +17,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -26,7 +27,7 @@ std::unique_ptr<AnimationWorkletThread> AnimationWorkletThread::Create(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                "AnimationWorkletThread::create");
   DCHECK(IsMainThread());
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new AnimationWorkletThread(loading_context, worker_reporting_proxy));
 }
 

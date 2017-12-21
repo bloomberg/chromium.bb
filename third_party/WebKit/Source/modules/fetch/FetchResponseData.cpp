@@ -10,7 +10,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/network/http_names.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
 using Type = network::mojom::FetchResponseType;
@@ -167,7 +166,7 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state) {
   FetchResponseData* new_response = Create();
   new_response->type_ = type_;
   if (termination_reason_) {
-    new_response->termination_reason_ = WTF::WrapUnique(new TerminationReason);
+    new_response->termination_reason_ = std::make_unique<TerminationReason>();
     *new_response->termination_reason_ = *termination_reason_;
   }
   new_response->SetURLList(url_list_);
