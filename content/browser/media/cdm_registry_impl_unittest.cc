@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "content/public/common/cdm_info.h"
+#include "media/base/video_codecs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -24,8 +25,6 @@ const char kTestCdmGuid[] = "62FE9C4B-384E-48FD-B28A-9F6F248BC8CC";
 const char kTestPath[] = "/aa/bb";
 const char kVersion1[] = "1.1.1.1";
 const char kVersion2[] = "1.1.1.2";
-const char kTestCodecs[] = "vp9,avc1";
-const char kCodecDelimiter[] = ",";
 const char kTestKeySystem[] = "com.example.somesystem";
 const char kTestFileSystemId[] = "file_system_id";
 
@@ -40,18 +39,15 @@ class CdmRegistryImplTest : public testing::Test {
   void Register(const std::string& name,
                 const std::string& version,
                 const std::string& path,
-                const std::string& supported_codecs,
+                const std::vector<media::VideoCodec>& supported_video_codecs,
                 bool supports_persistent_license,
                 std::string supported_key_system,
                 bool supports_sub_key_systems = false) {
-    const std::vector<std::string> codecs =
-        base::SplitString(supported_codecs, kCodecDelimiter,
-                          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     cdm_registry_.RegisterCdm(
         CdmInfo(name, kTestCdmGuid, base::Version(version),
-                base::FilePath::FromUTF8Unsafe(path), kTestFileSystemId, codecs,
-                supports_persistent_license, supported_key_system,
-                supports_sub_key_systems));
+                base::FilePath::FromUTF8Unsafe(path), kTestFileSystemId,
+                supported_video_codecs, supports_persistent_license,
+                supported_key_system, supports_sub_key_systems));
   }
 
   bool IsRegistered(const std::string& name, const std::string& version) {
@@ -76,8 +72,8 @@ class CdmRegistryImplTest : public testing::Test {
 };
 
 TEST_F(CdmRegistryImplTest, Register) {
-  Register(kTestCdmName, kVersion1, kTestPath, kTestCodecs, true,
-           kTestKeySystem, true);
+  Register(kTestCdmName, kVersion1, kTestPath,
+           {media::kCodecVP8, media::kCodecVP9}, true, kTestKeySystem, true);
   std::vector<CdmInfo> cdms = cdm_registry_.GetAllRegisteredCdms();
   ASSERT_EQ(1u, cdms.size());
   CdmInfo cdm = cdms[0];
@@ -85,36 +81,33 @@ TEST_F(CdmRegistryImplTest, Register) {
   EXPECT_EQ(kVersion1, cdm.version.GetString());
   EXPECT_EQ(kTestPath, cdm.path.MaybeAsASCII());
   EXPECT_EQ(kTestFileSystemId, cdm.file_system_id);
-  EXPECT_EQ(2u, cdm.supported_codecs.size());
-  EXPECT_EQ("vp9", cdm.supported_codecs[0]);
-  EXPECT_EQ("avc1", cdm.supported_codecs[1]);
+  EXPECT_EQ(2u, cdm.supported_video_codecs.size());
+  EXPECT_EQ(media::kCodecVP8, cdm.supported_video_codecs[0]);
+  EXPECT_EQ(media::kCodecVP9, cdm.supported_video_codecs[1]);
   EXPECT_TRUE(cdm.supports_persistent_license);
   EXPECT_EQ(kTestKeySystem, cdm.supported_key_system);
   EXPECT_TRUE(cdm.supports_sub_key_systems);
 }
 
 TEST_F(CdmRegistryImplTest, ReRegister) {
-  Register(kTestCdmName, kVersion1, "/bb/cc", "unknown", false, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, "/bb/cc", {}, false, kTestKeySystem);
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion1));
 
   // Now register same key system with different values.
-  Register(kTestCdmName, kVersion1, kTestPath, kTestCodecs, false,
-           kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {}, false, kTestKeySystem);
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion1));
 }
 
 TEST_F(CdmRegistryImplTest, MultipleVersions) {
-  Register(kTestCdmName, kVersion1, kTestPath, kTestCodecs, false,
-           kTestKeySystem);
-  Register(kTestCdmName, kVersion2, "/bb/cc", "unknown", false, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {}, false, kTestKeySystem);
+  Register(kTestCdmName, kVersion2, "/bb/cc", {}, false, kTestKeySystem);
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion1));
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion2));
 }
 
 TEST_F(CdmRegistryImplTest, NewVersionInsertedFirst) {
-  Register(kTestCdmName, kVersion1, kTestPath, kTestCodecs, false,
-           kTestKeySystem);
-  Register(kTestCdmName, kVersion2, "/bb/cc", "unknown", false, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {}, false, kTestKeySystem);
+  Register(kTestCdmName, kVersion2, "/bb/cc", {}, false, kTestKeySystem);
 
   const std::vector<std::string> versions = GetVersions(kTestCdmGuid);
   EXPECT_EQ(2u, versions.size());

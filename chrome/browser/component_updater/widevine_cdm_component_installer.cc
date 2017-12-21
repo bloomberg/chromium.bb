@@ -39,6 +39,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "media/base/video_codecs.h"
 #include "media/cdm/supported_cdm_versions.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -223,6 +224,27 @@ std::string GetCodecs(const base::DictionaryValue& manifest) {
   return codecs;
 }
 
+std::vector<media::VideoCodec> ConvertCodecsString(const std::string& codecs) {
+  std::vector<media::VideoCodec> supported_video_codecs;
+  const std::vector<base::StringPiece> supported_codecs =
+      base::SplitStringPiece(codecs,
+                             std::string(1, kCdmSupportedCodecsValueDelimiter),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const auto& codec : supported_codecs) {
+    if (codec == kCdmSupportedCodecVp8)
+      supported_video_codecs.push_back(media::VideoCodec::kCodecVP8);
+    else if (codec == kCdmSupportedCodecVp9)
+      supported_video_codecs.push_back(media::VideoCodec::kCodecVP9);
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    else if (codec == kCdmSupportedCodecAvc1)
+      supported_video_codecs.push_back(media::VideoCodec::kCodecH264);
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+  }
+
+  return supported_video_codecs;
+}
+
 bool GetPersistentLicenseSupport(const base::DictionaryValue& manifest) {
   std::string supported;
   const base::Value* value = manifest.FindKey(kCdmPersistentLicenseSupportName);
@@ -257,13 +279,13 @@ void RegisterWidevineCdmWithChrome(
   const base::FilePath cdm_path =
       GetPlatformDirectory(cdm_install_dir)
           .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
-  const std::vector<std::string> supported_codecs = base::SplitString(
-      codecs, std::string(1, kCdmSupportedCodecsValueDelimiter),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  CdmRegistry::GetInstance()->RegisterCdm(
-      content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version,
-                       cdm_path, kWidevineCdmFileSystemId, supported_codecs,
-                       supports_persistent_license, kWidevineKeySystem, false));
+  std::vector<media::VideoCodec> supported_video_codecs =
+      ConvertCodecsString(codecs);
+
+  CdmRegistry::GetInstance()->RegisterCdm(content::CdmInfo(
+      kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version, cdm_path,
+      kWidevineCdmFileSystemId, supported_video_codecs,
+      supports_persistent_license, kWidevineKeySystem, false));
 }
 
 }  // namespace
