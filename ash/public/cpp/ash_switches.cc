@@ -37,6 +37,9 @@ const char kAshDisableSmoothScreenRotation[] =
 const char kAshDisableTabletAutohideTitlebars[] =
     "ash-disable-tablet-autohide-titlebars";
 
+// Disables the split view on tablet mode.
+const char kAshDisableTabletSplitView[] = "disable-tablet-splitview";
+
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.
@@ -71,9 +74,6 @@ const char kAshEnablePaletteOnAllDisplays[] =
 // Enables the sidebar.
 const char kAshSidebarEnabled[] = "enable-ash-sidebar";
 const char kAshSidebarDisabled[] = "disable-ash-sidebar";
-
-// Enables the split view on tablet mode.
-const char kAshEnableTabletSplitView[] = "enable-tablet-splitview";
 
 // Enables the observation of accelerometer events to enter tablet
 // mode.  The flag is "enable-touchview" not "enable-tabletmode" as this

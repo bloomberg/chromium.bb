@@ -1215,34 +1215,6 @@ TEST_F(TabletModeWindowManagerTest,
   EXPECT_EQ(w1->bounds().ToString(), requested_bounds.ToString());
 }
 
-// Check that snapping operations get ignored.
-TEST_F(TabletModeWindowManagerTest, SnapModeTests) {
-  gfx::Rect rect(20, 140, 100, 100);
-  std::unique_ptr<aura::Window> w1(
-      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
-  wm::WindowState* window_state = wm::GetWindowState(w1.get());
-  wm::WMEvent event_left(wm::WM_EVENT_SNAP_LEFT);
-  wm::WMEvent event_right(wm::WM_EVENT_SNAP_RIGHT);
-  window_state->OnWMEvent(&event_left);
-  EXPECT_TRUE(window_state->IsSnapped());
-
-  CreateTabletModeWindowManager();
-
-  // Fullscreen mode should now be off and it should not come back while in
-  // tablet mode.
-  EXPECT_FALSE(window_state->IsSnapped());
-  EXPECT_TRUE(window_state->IsMaximized());
-  window_state->OnWMEvent(&event_left);
-  EXPECT_FALSE(window_state->IsSnapped());
-  EXPECT_TRUE(window_state->IsMaximized());
-  window_state->OnWMEvent(&event_right);
-  EXPECT_FALSE(window_state->IsSnapped());
-  EXPECT_TRUE(window_state->IsMaximized());
-
-  DestroyTabletModeWindowManager();
-  EXPECT_TRUE(window_state->IsSnapped());
-}
-
 // Check that non maximizable windows cannot be dragged by the user.
 TEST_F(TabletModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   gfx::Rect rect(10, 10, 100, 100);
