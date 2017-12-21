@@ -201,7 +201,7 @@ TestRunner.Page = class {
 
   async createSession() {
     var sessionId = (await DevToolsAPI._sendCommandOrDie('Target.attachToTarget', {targetId: this._targetId})).sessionId;
-    var session = new TestRunner.Session(this, sessionId);
+    var session = new TestRunner.Session(this._testRunner, sessionId);
     DevToolsAPI._sessions.set(sessionId, session);
     return session;
   }
@@ -225,23 +225,47 @@ TestRunner.Page = class {
 };
 
 TestRunner.Session = class {
-  constructor(page, sessionId) {
-    this._testRunner = page._testRunner;
-    this._page = page;
+  constructor(testRunner, sessionId) {
+    this._testRunner = testRunner;
     this._sessionId = sessionId;
     this._requestId = 0;
     this._dispatchTable = new Map();
     this._eventHandlers = new Map();
     this.protocol = this._setupProtocol();
+    this._childSessions = null;
+    this._parentSession = null;
   }
 
   async disconnect() {
     await DevToolsAPI._sendCommandOrDie('Target.detachFromTarget', {sessionId: this._sessionId});
-    DevToolsAPI._sessions.delete(this._page._targetId);
+    if (this._parentSession)
+      this._parentSession._childSessions.delete(this._sessionId);
+    else
+      DevToolsAPI._sessions.delete(this._sessionId);
+  }
+
+  createChild(sessionId) {
+    if (!this._childSessions) {
+      this._childSessions = new Map();
+      this.protocol.Target.onReceivedMessageFromTarget(event => this._dispatchMessageFromTarget(event));
+    }
+    let session = new TestRunner.Session(this._testRunner, sessionId);
+    this._childSessions.set(sessionId, session);
+    session._parentSession = this;
+    return session;
+  }
+
+  _dispatchMessageFromTarget(event) {
+    var session = this._childSessions.get(event.params.sessionId);
+    if (session)
+      session._dispatchMessage(JSON.parse(event.params.message));
   }
 
   sendRawCommand(requestId, message) {
-    DevToolsAPI._sendCommandOrDie('Target.sendMessageToTarget', {sessionId: this._sessionId, message: message});
+    if (this._parentSession)
+      this._parentSession.sendCommand('Target.sendMessageToTarget', {sessionId: this._sessionId, message: message});
+    else
+      DevToolsAPI._sendCommandOrDie('Target.sendMessageToTarget', {sessionId: this._sessionId, message: message});
     return new Promise(f => this._dispatchTable.set(requestId, f));
   }
 
