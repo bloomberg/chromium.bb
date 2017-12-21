@@ -33,7 +33,13 @@ TEST(CBORValuesTest, TestNothrow) {
 TEST(CBORValuesTest, ConstructUnsigned) {
   CBORValue value(37);
   ASSERT_EQ(CBORValue::Type::UNSIGNED, value.type());
-  EXPECT_EQ(37u, value.GetUnsigned());
+  EXPECT_EQ(37u, value.GetInteger());
+}
+
+TEST(CBORValuesTest, ConstructNegative) {
+  CBORValue value(-1);
+  ASSERT_EQ(CBORValue::Type::NEGATIVE, value.type());
+  EXPECT_EQ(-1, value.GetInteger());
 }
 
 TEST(CBORValuesTest, ConstructStringFromConstCharPtr) {
@@ -133,13 +139,26 @@ TEST(CBORValuesTest, CopyUnsigned) {
   CBORValue value(74);
   CBORValue copied_value(value.Clone());
   ASSERT_EQ(value.type(), copied_value.type());
-  EXPECT_EQ(value.GetUnsigned(), copied_value.GetUnsigned());
+  EXPECT_EQ(value.GetInteger(), copied_value.GetInteger());
 
   CBORValue blank;
 
   blank = value.Clone();
   ASSERT_EQ(value.type(), blank.type());
-  EXPECT_EQ(value.GetUnsigned(), blank.GetUnsigned());
+  EXPECT_EQ(value.GetInteger(), blank.GetInteger());
+}
+
+TEST(CBORValuesTest, CopyNegativeInt) {
+  CBORValue value(-74);
+  CBORValue copied_value(value.Clone());
+  ASSERT_EQ(value.type(), copied_value.type());
+  EXPECT_EQ(value.GetInteger(), copied_value.GetInteger());
+
+  CBORValue blank;
+
+  blank = value.Clone();
+  ASSERT_EQ(value.type(), blank.type());
+  EXPECT_EQ(value.GetInteger(), blank.GetInteger());
 }
 
 TEST(CBORValuesTest, CopyString) {
@@ -175,8 +194,9 @@ TEST(CBORValuesTest, CopyArray) {
 
   CBORValue copied_value(value.Clone());
   ASSERT_EQ(1u, copied_value.GetArray().size());
-  EXPECT_EQ(value.GetArray()[0].GetUnsigned(),
-            copied_value.GetArray()[0].GetUnsigned());
+  ASSERT_TRUE(copied_value.GetArray()[0].is_unsigned());
+  EXPECT_EQ(value.GetArray()[0].GetInteger(),
+            copied_value.GetArray()[0].GetInteger());
 
   CBORValue blank;
   blank = value.Clone();
@@ -194,16 +214,16 @@ TEST(CBORValuesTest, CopyMap) {
   ASSERT_EQ(value.GetMap().count(key_a), 1u);
   ASSERT_EQ(copied_value.GetMap().count(key_a), 1u);
   ASSERT_TRUE(copied_value.GetMap().find(key_a)->second.is_unsigned());
-  EXPECT_EQ(value.GetMap().find(key_a)->second.GetUnsigned(),
-            copied_value.GetMap().find(key_a)->second.GetUnsigned());
+  EXPECT_EQ(value.GetMap().find(key_a)->second.GetInteger(),
+            copied_value.GetMap().find(key_a)->second.GetInteger());
 
   CBORValue blank;
   blank = value.Clone();
   EXPECT_EQ(1u, blank.GetMap().size());
   ASSERT_EQ(blank.GetMap().count(key_a), 1u);
   ASSERT_TRUE(blank.GetMap().find(key_a)->second.is_unsigned());
-  EXPECT_EQ(value.GetMap().find(key_a)->second.GetUnsigned(),
-            blank.GetMap().find(key_a)->second.GetUnsigned());
+  EXPECT_EQ(value.GetMap().find(key_a)->second.GetInteger(),
+            blank.GetMap().find(key_a)->second.GetInteger());
 }
 
 TEST(CBORValuesTest, CopySimpleValue) {
@@ -224,13 +244,26 @@ TEST(CBORValuesTest, MoveUnsigned) {
   CBORValue value(74);
   CBORValue moved_value(std::move(value));
   EXPECT_EQ(CBORValue::Type::UNSIGNED, moved_value.type());
-  EXPECT_EQ(74u, moved_value.GetUnsigned());
+  EXPECT_EQ(74u, moved_value.GetInteger());
 
   CBORValue blank;
 
   blank = CBORValue(654);
   EXPECT_EQ(CBORValue::Type::UNSIGNED, blank.type());
-  EXPECT_EQ(654u, blank.GetUnsigned());
+  EXPECT_EQ(654u, blank.GetInteger());
+}
+
+TEST(CBORValuesTest, MoveNegativeInteger) {
+  CBORValue value(-74);
+  CBORValue moved_value(std::move(value));
+  EXPECT_EQ(CBORValue::Type::NEGATIVE, moved_value.type());
+  EXPECT_EQ(-74, moved_value.GetInteger());
+
+  CBORValue blank;
+
+  blank = CBORValue(-654);
+  EXPECT_EQ(CBORValue::Type::NEGATIVE, blank.type());
+  EXPECT_EQ(-654, blank.GetInteger());
 }
 
 TEST(CBORValuesTest, MoveString) {
@@ -270,7 +303,7 @@ TEST(CBORValuesTest, MoveConstructMap) {
   ASSERT_EQ(CBORValue::Type::MAP, moved_value.type());
   ASSERT_EQ(moved_value.GetMap().count(key_a), 1u);
   ASSERT_TRUE(moved_value.GetMap().find(key_a)->second.is_unsigned());
-  EXPECT_EQ(123u, moved_value.GetMap().find(key_a)->second.GetUnsigned());
+  EXPECT_EQ(123u, moved_value.GetMap().find(key_a)->second.GetInteger());
 }
 
 TEST(CBORValuesTest, MoveAssignMap) {
@@ -283,7 +316,7 @@ TEST(CBORValuesTest, MoveAssignMap) {
   ASSERT_TRUE(blank.is_map());
   ASSERT_EQ(blank.GetMap().count(key_a), 1u);
   ASSERT_TRUE(blank.GetMap().find(key_a)->second.is_unsigned());
-  EXPECT_EQ(123u, blank.GetMap().find(key_a)->second.GetUnsigned());
+  EXPECT_EQ(123u, blank.GetMap().find(key_a)->second.GetInteger());
 }
 
 TEST(CBORValuesTest, MoveArray) {
@@ -292,18 +325,12 @@ TEST(CBORValuesTest, MoveArray) {
   CBORValue value(array);
   CBORValue moved_value(std::move(value));
   EXPECT_EQ(CBORValue::Type::ARRAY, moved_value.type());
-  EXPECT_EQ(123u, moved_value.GetArray().back().GetUnsigned());
+  EXPECT_EQ(123u, moved_value.GetArray().back().GetInteger());
 
   CBORValue blank;
   blank = CBORValue(std::move(array));
   EXPECT_EQ(CBORValue::Type::ARRAY, blank.type());
-  EXPECT_EQ(123u, blank.GetArray().back().GetUnsigned());
-}
-
-TEST(CBORValuesTest, SelfSwap) {
-  CBORValue test(1);
-  std::swap(test, test);
-  EXPECT_EQ(test.GetUnsigned(), 1u);
+  EXPECT_EQ(123u, blank.GetArray().back().GetInteger());
 }
 
 TEST(CBORValuesTest, MoveSimpleValue) {
@@ -317,6 +344,12 @@ TEST(CBORValuesTest, MoveSimpleValue) {
   blank = CBORValue(CBORValue::SimpleValue::UNDEFINED);
   EXPECT_EQ(CBORValue::Type::SIMPLE_VALUE, blank.type());
   EXPECT_EQ(CBORValue::SimpleValue::UNDEFINED, blank.GetSimpleValue());
+}
+
+TEST(CBORValuesTest, SelfSwap) {
+  CBORValue test(1);
+  std::swap(test, test);
+  EXPECT_EQ(test.GetInteger(), 1u);
 }
 
 }  // namespace content
