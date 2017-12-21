@@ -31,7 +31,7 @@
     readonly attribute DOMString? key;
     readonly attribute DOMString? oldValue;
     readonly attribute DOMString? newValue;
-    readonly attribute DOMString url;
+    readonly attribute USVString url;
     readonly attribute Storage? storageArea;
 
     // Non-standard API
@@ -41,6 +41,6 @@
                                                                  [Default=Undefined] optional DOMString keyArg,
                                                                  [Default=Undefined] optional DOMString? oldValueArg,
                                                                  [Default=Undefined] optional DOMString? newValueArg,
-                                                                 [Default=Undefined] optional DOMString urlArg,
+                                                                 [Default=Undefined] optional USVString urlArg,
                                                                  [Default=Undefined] optional Storage storageAreaArg);
 };

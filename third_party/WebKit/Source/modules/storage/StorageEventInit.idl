@@ -8,6 +8,6 @@ dictionary StorageEventInit : EventInit {
     DOMString? key;
     DOMString? oldValue;
     DOMString? newValue;
-    DOMString url;
+    USVString url;
     Storage? storageArea;
 };
