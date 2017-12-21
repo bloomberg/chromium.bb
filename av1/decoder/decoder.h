@@ -116,10 +116,7 @@ aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi, int idx,
 aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
                                       YV12_BUFFER_CONFIG *sd);
 
-static INLINE uint8_t read_marker(const uint8_t *data) { return *data; }
-
-// This function is exposed for use in tests, as well as the inlined function
-// "read_marker".
+// This function is exposed for use in tests
 aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
                                            uint32_t sizes[8], int *count,
                                            int *index_size);

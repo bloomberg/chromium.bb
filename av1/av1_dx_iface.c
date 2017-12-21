@@ -772,7 +772,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
 
         // Account for suboptimal termination by the encoder.
         while (data_start < data_end) {
-          const uint8_t marker = read_marker(data_start);
+          const uint8_t marker = data_start[0];
           if (marker) break;
           ++data_start;
         }

@@ -470,7 +470,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
   size_t frame_sz_sum = 0;
 
   assert(data_sz);
-  marker = read_marker(data);
+  marker = data[0];
   *count = 0;
 
   if ((marker & 0xe0) == 0xc0) {
@@ -484,7 +484,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
     if (data_sz < index_sz) return AOM_CODEC_CORRUPT_FRAME;
 
     {
-      const uint8_t marker2 = read_marker(data + index_sz - 1);
+      const uint8_t marker2 = data[index_sz - 1];
 
       // This chunk is marked as having a superframe index but doesn't have
       // the matching marker byte at the front of the index therefore it's an
