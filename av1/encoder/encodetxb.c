@@ -161,6 +161,54 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
   const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
   TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
 
+#if CONFIG_LV_MAP_MULTI
+  (void)max_eob_pt;
+  const int eob_multi_size = txsize_log2_minus4[tx_size];
+  const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
+
+  switch (eob_multi_size) {
+    case 0:
+      ++counts->eob_multi16[plane][eob_multi_ctx][eob_pt - 1];
+      if (allow_update_cdf)
+        update_cdf(ec_ctx->eob_flag_cdf16[plane][eob_multi_ctx], eob_pt - 1, 5);
+      break;
+    case 1:
+      ++counts->eob_multi32[plane][eob_multi_ctx][eob_pt - 1];
+      if (allow_update_cdf)
+        update_cdf(ec_ctx->eob_flag_cdf32[plane][eob_multi_ctx], eob_pt - 1, 6);
+      break;
+    case 2:
+      ++counts->eob_multi64[plane][eob_multi_ctx][eob_pt - 1];
+      if (allow_update_cdf)
+        update_cdf(ec_ctx->eob_flag_cdf64[plane][eob_multi_ctx], eob_pt - 1, 7);
+      break;
+    case 3:
+      ++counts->eob_multi128[plane][eob_multi_ctx][eob_pt - 1];
+      if (allow_update_cdf)
+        update_cdf(ec_ctx->eob_flag_cdf128[plane][eob_multi_ctx], eob_pt - 1,
+                   8);
+      break;
+    case 4:
+      ++counts->eob_multi256[plane][eob_multi_ctx][eob_pt - 1];
+      if (allow_update_cdf)
+        update_cdf(ec_ctx->eob_flag_cdf256[plane][eob_multi_ctx], eob_pt - 1,
+                   9);
+      break;
+    case 5:
+      ++counts->eob_multi512[plane][eob_multi_ctx][eob_pt - 1];
+      if (allow_update_cdf)
+        update_cdf(ec_ctx->eob_flag_cdf512[plane][eob_multi_ctx], eob_pt - 1,
+                   10);
+      break;
+    case 6:
+    default:
+      ++counts->eob_multi1024[plane][eob_multi_ctx][eob_pt - 1];
+      if (allow_update_cdf)
+        update_cdf(ec_ctx->eob_flag_cdf1024[plane][eob_multi_ctx], eob_pt - 1,
+                   11);
+      break;
+  }
+#else
   for (int i = 1; i < max_eob_pt; i++) {
     int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
     counts->eob_flag[txs_ctx][plane][eob_pos_ctx][eob_pt == i]++;
@@ -171,6 +219,7 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
       break;
     }
   }
+#endif
 
   if (k_eob_offset_bits[eob_pt] > 0) {
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
@@ -182,12 +231,22 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
 }
 
 static int get_eob_cost(int eob, int seg_eob,
-                        const LV_MAP_COEFF_COST *txb_costs, TX_TYPE tx_type) {
+#if CONFIG_LV_MAP_MULTI
+                        const LV_MAP_EOB_COST *txb_eob_costs,
+                        const LV_MAP_COEFF_COST *txb_costs,
+#else
+                        const LV_MAP_COEFF_COST *txb_costs,
+#endif
+                        TX_TYPE tx_type) {
   int eob_extra, dummy;
   const int eob_pt = get_eob_pos_token(eob, &eob_extra);
   const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
   int eob_cost = 0;
-
+#if CONFIG_LV_MAP_MULTI
+  (void)max_eob_pt;
+  const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
+  eob_cost = txb_eob_costs->eob_cost[eob_multi_ctx][eob_pt - 1];
+#else
   for (int i = 1; i < max_eob_pt; i++) {
     int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
     eob_cost += txb_costs->eob_cost[eob_pos_ctx][eob_pt == i];
@@ -195,6 +254,8 @@ static int get_eob_cost(int eob, int seg_eob,
       break;
     }
   }
+#endif
+
   if (k_eob_offset_bits[eob_pt] > 0) {
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
     int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
@@ -423,6 +484,42 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const int eob_pt = get_eob_pos_token(eob, &eob_extra);
   const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
 
+#if CONFIG_LV_MAP_MULTI
+  (void)max_eob_pt;
+  const int eob_multi_size = txsize_log2_minus4[tx_size];
+  const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
+  switch (eob_multi_size) {
+    case 0:
+      aom_write_symbol(w, eob_pt - 1,
+                       ec_ctx->eob_flag_cdf16[plane_type][eob_multi_ctx], 5);
+      break;
+    case 1:
+      aom_write_symbol(w, eob_pt - 1,
+                       ec_ctx->eob_flag_cdf32[plane_type][eob_multi_ctx], 6);
+      break;
+    case 2:
+      aom_write_symbol(w, eob_pt - 1,
+                       ec_ctx->eob_flag_cdf64[plane_type][eob_multi_ctx], 7);
+      break;
+    case 3:
+      aom_write_symbol(w, eob_pt - 1,
+                       ec_ctx->eob_flag_cdf128[plane_type][eob_multi_ctx], 8);
+      break;
+    case 4:
+      aom_write_symbol(w, eob_pt - 1,
+                       ec_ctx->eob_flag_cdf256[plane_type][eob_multi_ctx], 9);
+      break;
+    case 5:
+      aom_write_symbol(w, eob_pt - 1,
+                       ec_ctx->eob_flag_cdf512[plane_type][eob_multi_ctx], 10);
+      break;
+    default:
+      aom_write_symbol(w, eob_pt - 1,
+                       ec_ctx->eob_flag_cdf1024[plane_type][eob_multi_ctx], 11);
+      break;
+  }
+
+#else
   for (int i = 1; i < max_eob_pt; i++) {
     int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
 
@@ -434,6 +531,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       break;
     }
   }
+#endif
 
   if (k_eob_offset_bits[eob_pt] > 0) {
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
@@ -668,6 +766,18 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   const LV_MAP_COEFF_COST *const coeff_costs =
       &x->coeff_costs[txs_ctx][plane_type];
 
+#if CONFIG_LV_MAP_MULTI
+  const int eob_multi_size = txsize_log2_minus4[tx_size];
+  const LV_MAP_EOB_COST *const eob_costs =
+      &x->eob_costs[eob_multi_size][plane_type];
+#endif
+
+  cost = 0;
+
+  if (eob == 0) {
+    cost = coeff_costs->txb_skip_cost[txb_skip_ctx][1];
+    return cost;
+  }
   cost = coeff_costs->txb_skip_cost[txb_skip_ctx][0];
 
   av1_txb_init_levels(qcoeff, width, height, levels);
@@ -677,7 +787,13 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
 #endif
 
   const int seg_eob = av1_get_max_eob(tx_size);
-  int eob_cost = get_eob_cost(eob, seg_eob, coeff_costs, tx_type);
+  int eob_cost = get_eob_cost(eob, seg_eob,
+#if CONFIG_LV_MAP_MULTI
+                              eob_costs, coeff_costs,
+#else
+                              coeff_costs,
+#endif
+                              tx_type);
 #if !CONFIG_LV_MAP_MULTI
   av1_get_br_level_counts(levels, width, height, level_counts);
 #endif
@@ -1284,6 +1400,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
   return accu_cost_diff;
 }
 
+#if !CONFIG_LV_MAP_MULTI
 static int get_low_coeff_cost(int coeff_idx, const TxbCache *txb_cache,
                               const LV_MAP_COEFF_COST *txb_costs,
                               const TxbInfo *txb_info) {
@@ -1317,6 +1434,7 @@ static int get_low_coeff_cost(int coeff_idx, const TxbCache *txb_cache,
 #endif
   return cost;
 }
+#endif
 
 static INLINE void set_eob(TxbInfo *txb_info, int eob) {
   txb_info->eob = eob;
@@ -1340,6 +1458,7 @@ static INLINE int get_eob_ctx(const int coeff_idx,  // raster order
   return 0;
 }
 
+#if !CONFIG_LV_MAP_MULTI
 // TODO(angiebird): add static to this function once it's called
 int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
                    const LV_MAP_COEFF_COST *txb_costs, TxbInfo *txb_info,
@@ -1386,6 +1505,7 @@ int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
   }
   return cost_diff;
 }
+#endif
 
 // TODO(angiebird): add static to this function it's called
 void update_level_down(const int coeff_idx, TxbCache *const txb_cache,
@@ -1704,6 +1824,7 @@ void test_try_change_eob(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
 }
 #endif
 
+#if !CONFIG_LV_MAP_MULTI
 void try_level_down_facade(LevelDownStats *stats, int scan_idx,
                            const TxbCache *txb_cache,
                            const LV_MAP_COEFF_COST *txb_costs,
@@ -1761,9 +1882,13 @@ void try_level_down_facade(LevelDownStats *stats, int scan_idx,
   if (stats->rd_diff < 0) stats->update = 1;
   return;
 }
+#endif
 
 #if 1
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                        const LV_MAP_EOB_COST *txb_eob_costs,
+#endif
                         TxbCache *txb_cache, int dry_run, int fast_mode) {
   (void)fast_mode;
   (void)txb_cache;
@@ -1808,8 +1933,13 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   // forward optimize the nz_map`
   const int init_eob = txb_info->eob;
   const int seg_eob = txb_info->seg_eob;
-  const int eob_cost =
-      get_eob_cost(init_eob, seg_eob, txb_costs, txb_info->tx_type);
+  const int eob_cost = get_eob_cost(init_eob, seg_eob,
+#if CONFIG_LV_MAP_MULTI
+                                    txb_eob_costs, txb_costs,
+#else
+                                    txb_costs,
+#endif
+                                    txb_info->tx_type);
 
   // backward optimize the level-k map
   int64_t accu_rate = eob_cost;
@@ -1834,8 +1964,13 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
     } else {
       if (has_nz_tail < 2) {
         // check if it is better to make this the last significant coefficient
-        int cur_eob_rate =
-            get_eob_cost(si + 1, seg_eob, txb_costs, txb_info->tx_type);
+        int cur_eob_rate = get_eob_cost(si + 1, seg_eob,
+#if CONFIG_LV_MAP_MULTI
+                                        txb_eob_costs, txb_costs,
+#else
+                                        txb_costs,
+#endif
+                                        txb_info->tx_type);
         cur_eob_rd_cost = RDCOST(txb_info->rdmult, cur_eob_rate, 0);
         prev_eob_rd_cost =
 #if CONFIG_LV_MAP_MULTI
@@ -2083,6 +2218,11 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   int dq = get_dq_profile(x->qindex, is_inter, plane_type);
   const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
 #endif  // CONFIG_NEW_QUANT
+#if CONFIG_LV_MAP_MULTI
+  const int eob_multi_size = txsize_log2_minus4[tx_size];
+  const LV_MAP_EOB_COST txb_eob_costs =
+      x->eob_costs[eob_multi_size][plane_type];
+#endif
 
 #if CONFIG_DAALA_TX
   const int shift = 0;
@@ -2123,7 +2263,11 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
-  const int update = optimize_txb(&txb_info, &txb_costs, NULL, 0, fast_mode);
+  const int update = optimize_txb(&txb_info, &txb_costs,
+#if CONFIG_LV_MAP_MULTI
+                                  &txb_eob_costs,
+#endif
+                                  NULL, 0, fast_mode);
 
   if (update) {
     p->eobs[block] = txb_info.eob;

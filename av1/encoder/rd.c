@@ -417,6 +417,35 @@ void av1_set_mvcost(MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame, int ref,
 
 #if CONFIG_LV_MAP
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
+#if CONFIG_LV_MAP_MULTI
+  for (int eob_multi_size = 0; eob_multi_size < 7; ++eob_multi_size) {
+    for (int plane = 0; plane < PLANE_TYPES; ++plane) {
+      LV_MAP_EOB_COST *pcost = &x->eob_costs[eob_multi_size][plane];
+
+      for (int ctx = 0; ctx < 2; ++ctx) {
+        aom_cdf_prob *pcdf;
+        switch (eob_multi_size) {
+          case 0: pcdf = fc->eob_flag_cdf16[plane][ctx]; break;
+          case 1: pcdf = fc->eob_flag_cdf32[plane][ctx]; break;
+          case 2: pcdf = fc->eob_flag_cdf64[plane][ctx]; break;
+          case 3: pcdf = fc->eob_flag_cdf128[plane][ctx]; break;
+          case 4: pcdf = fc->eob_flag_cdf256[plane][ctx]; break;
+          case 5: pcdf = fc->eob_flag_cdf512[plane][ctx]; break;
+          case 6:
+          default: pcdf = fc->eob_flag_cdf1024[plane][ctx]; break;
+        }
+        av1_cost_tokens_from_cdf(pcost->eob_cost[ctx], pcdf, NULL);
+#if 0
+            printf("[%d, %d, %d]: ", eob_multi_size, plane, ctx);
+            for (int i = 0; i < 5; i++) {
+              printf("(%d, %d, %d) ", i, pcost->eob_cost[ctx][i], pcdf[i]);
+            }
+            printf("\n");
+#endif
+      }
+    }
+  }
+#endif
   for (int tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (int plane = 0; plane < PLANE_TYPES; ++plane) {
       LV_MAP_COEFF_COST *pcost = &x->coeff_costs[tx_size][plane];
@@ -437,10 +466,10 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
       for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->nz_map_cost[ctx],
                                  fc->nz_map_cdf[tx_size][plane][ctx], NULL);
-#endif
       for (int ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->eob_cost[ctx],
                                  fc->eob_flag_cdf[tx_size][plane][ctx], NULL);
+#endif
 
       for (int ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->eob_extra_cost[ctx],

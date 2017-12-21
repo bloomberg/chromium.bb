@@ -126,6 +126,86 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   int eob_extra = 0;
   int eob_pt = 1;
 
+#if CONFIG_LV_MAP_MULTI
+  (void)max_eob_pt;
+  const int eob_multi_size = txsize_log2_minus4[tx_size];
+  const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
+  switch (eob_multi_size) {
+    case 0:
+      eob_pt = av1_read_record_symbol(
+                   counts, r, ec_ctx->eob_flag_cdf16[plane_type][eob_multi_ctx],
+                   5, ACCT_STR) +
+               1;
+      break;
+    case 1:
+      eob_pt = av1_read_record_symbol(
+                   counts, r, ec_ctx->eob_flag_cdf32[plane_type][eob_multi_ctx],
+                   6, ACCT_STR) +
+               1;
+      break;
+    case 2:
+      eob_pt = av1_read_record_symbol(
+                   counts, r, ec_ctx->eob_flag_cdf64[plane_type][eob_multi_ctx],
+                   7, ACCT_STR) +
+               1;
+      break;
+    case 3:
+      eob_pt =
+          av1_read_record_symbol(
+              counts, r, ec_ctx->eob_flag_cdf128[plane_type][eob_multi_ctx], 8,
+              ACCT_STR) +
+          1;
+      break;
+    case 4:
+      eob_pt =
+          av1_read_record_symbol(
+              counts, r, ec_ctx->eob_flag_cdf256[plane_type][eob_multi_ctx], 9,
+              ACCT_STR) +
+          1;
+      break;
+    case 5:
+      eob_pt =
+          av1_read_record_symbol(
+              counts, r, ec_ctx->eob_flag_cdf512[plane_type][eob_multi_ctx], 10,
+              ACCT_STR) +
+          1;
+      break;
+    case 6:
+    default:
+      eob_pt =
+          av1_read_record_symbol(
+              counts, r, ec_ctx->eob_flag_cdf1024[plane_type][eob_multi_ctx],
+              11, ACCT_STR) +
+          1;
+      break;
+  }
+  if (counts) {
+    switch (eob_multi_size) {
+      case 0:
+        ++counts->eob_multi16[plane_type][eob_multi_ctx][eob_pt - 1];
+        break;
+      case 1:
+        ++counts->eob_multi32[plane_type][eob_multi_ctx][eob_pt - 1];
+        break;
+      case 2:
+        ++counts->eob_multi64[plane_type][eob_multi_ctx][eob_pt - 1];
+        break;
+      case 3:
+        ++counts->eob_multi128[plane_type][eob_multi_ctx][eob_pt - 1];
+        break;
+      case 4:
+        ++counts->eob_multi256[plane_type][eob_multi_ctx][eob_pt - 1];
+        break;
+      case 5:
+        ++counts->eob_multi512[plane_type][eob_multi_ctx][eob_pt - 1];
+        break;
+      case 6:
+      default:
+        ++counts->eob_multi1024[plane_type][eob_multi_ctx][eob_pt - 1];
+        break;
+    }
+  }
+#else
   for (eob_pt = 1; eob_pt < max_eob_pt; eob_pt++) {
     const int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, eob_pt);
     const int is_equal = av1_read_record_bin(
@@ -141,6 +221,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       break;
     }
   }
+#endif
 
   // printf("Dec: ");
   if (k_eob_offset_bits[eob_pt] > 0) {

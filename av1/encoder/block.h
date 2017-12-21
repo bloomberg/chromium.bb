@@ -67,9 +67,9 @@ typedef struct {
   int base_eob_cost[SIG_COEF_CONTEXTS_EOB][3];
   int base_cost[SIG_COEF_CONTEXTS][4];
 #else
+  int eob_cost[EOB_COEF_CONTEXTS][2];
   int nz_map_cost[SIG_COEF_CONTEXTS][2];
 #endif
-  int eob_cost[EOB_COEF_CONTEXTS][2];
   int eob_extra_cost[EOB_COEF_CONTEXTS][2];
   int dc_sign_cost[DC_SIGN_CONTEXTS][2];
 #if !CONFIG_LV_MAP_MULTI
@@ -80,6 +80,10 @@ typedef struct {
   int br_cost[BASE_RANGE_SETS][LEVEL_CONTEXTS][2];
 #endif
 } LV_MAP_COEFF_COST;
+
+#if CONFIG_LV_MAP_MULTI
+typedef struct { int eob_cost[2][11]; } LV_MAP_EOB_COST;
+#endif
 
 typedef struct {
   tran_low_t tcoeff[MAX_MB_PLANE][MAX_SB_SQUARE];
@@ -261,6 +265,9 @@ struct macroblock {
 
 #if CONFIG_LV_MAP
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
+#if CONFIG_LV_MAP_MULTI
+  LV_MAP_EOB_COST eob_costs[7][2];
+#endif
   uint16_t cb_offset;
 #endif
 

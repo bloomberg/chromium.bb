@@ -86,11 +86,12 @@ typedef struct frame_contexts {
 
 #if CONFIG_LV_MAP
   aom_prob txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS];
-  aom_prob eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
   aom_prob eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
   aom_prob dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS];
 
 #if !CONFIG_LV_MAP_MULTI
+  aom_prob eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
+
   aom_prob nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS];
   aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                      [COEFF_BASE_CONTEXTS];
@@ -104,13 +105,20 @@ typedef struct frame_contexts {
 #if !CONFIG_LV_MAP_MULTI
   aom_cdf_prob nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
                          [CDF_SIZE(2)];
-#endif
   aom_cdf_prob eob_flag_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
                            [CDF_SIZE(2)];
+#endif
   aom_cdf_prob eob_extra_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
                             [CDF_SIZE(2)];
   aom_cdf_prob dc_sign_cdf[PLANE_TYPES][DC_SIGN_CONTEXTS][CDF_SIZE(2)];
 #if CONFIG_LV_MAP_MULTI
+  aom_cdf_prob eob_flag_cdf16[PLANE_TYPES][2][CDF_SIZE(5)];
+  aom_cdf_prob eob_flag_cdf32[PLANE_TYPES][2][CDF_SIZE(6)];
+  aom_cdf_prob eob_flag_cdf64[PLANE_TYPES][2][CDF_SIZE(7)];
+  aom_cdf_prob eob_flag_cdf128[PLANE_TYPES][2][CDF_SIZE(8)];
+  aom_cdf_prob eob_flag_cdf256[PLANE_TYPES][2][CDF_SIZE(9)];
+  aom_cdf_prob eob_flag_cdf512[PLANE_TYPES][2][CDF_SIZE(10)];
+  aom_cdf_prob eob_flag_cdf1024[PLANE_TYPES][2][CDF_SIZE(11)];
   aom_cdf_prob coeff_base_eob_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS_EOB]
                                  [CDF_SIZE(3)];
   aom_cdf_prob coeff_base_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]
@@ -276,6 +284,14 @@ typedef struct FRAME_COUNTS {
                        [2];
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS][2];
 #else
+  unsigned int eob_multi16[PLANE_TYPES][2][5];
+  unsigned int eob_multi32[PLANE_TYPES][2][6];
+  unsigned int eob_multi64[PLANE_TYPES][2][7];
+  unsigned int eob_multi128[PLANE_TYPES][2][8];
+  unsigned int eob_multi256[PLANE_TYPES][2][9];
+  unsigned int eob_multi512[PLANE_TYPES][2][10];
+  unsigned int eob_multi1024[PLANE_TYPES][2][11];
+
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE - 1][LEVEL_CONTEXTS]
                         [2];
   unsigned int coeff_lps_multi[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
