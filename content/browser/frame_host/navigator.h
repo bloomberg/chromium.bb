@@ -141,7 +141,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       scoped_refptr<ResourceRequestBody> post_body,
       const std::string& extra_headers) {}
 
-  // PlzNavigate
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If
   // |frame_tree_node| has a NavigationRequest waiting for the renderer
   // response, then the request is either started or canceled, depending on the
@@ -150,18 +149,15 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
                                  bool proceed,
                                  const base::TimeTicks& proceed_time) {}
 
-  // PlzNavigate
   // Used to start a new renderer-initiated navigation, following a
   // BeginNavigation IPC from the renderer.
   virtual void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                                  const CommonNavigationParams& common_params,
                                  mojom::BeginNavigationParamsPtr begin_params);
 
-  // PlzNavigate
   // Used to abort an ongoing renderer-initiated navigation.
   virtual void OnAbortNavigation(FrameTreeNode* frame_tree_node) {}
 
-  // PlzNavigate
   // Cancel a NavigationRequest for |frame_tree_node|. If the request is
   // renderer-initiated and |inform_renderer| is true, an IPC will be sent to
   // the renderer process to inform it that the navigation it requested was
