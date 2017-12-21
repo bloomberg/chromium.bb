@@ -3727,3 +3727,7 @@ crbug.com/795250 [ Win7 ] virtual/scroll_customization/fast/events/touch/gesture
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Skip ]
+
+# Slight Skia rendering change - drawing zero length line with round caps as circle
+crbug.com/796913 virtual/gpu/fast/canvas/canvas-zero-length-lineCap.html [ NeedsManualRebaseline ]
+
