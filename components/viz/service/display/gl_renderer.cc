@@ -446,16 +446,6 @@ bool GLRenderer::CanPartialSwap() {
   return context_provider->ContextCapabilities().post_sub_buffer;
 }
 
-ResourceFormat GLRenderer::BackbufferFormat() const {
-  if (current_frame()->current_render_pass->color_space.IsHDR()) {
-    // If a platform does not support half-float renderbuffers then it should
-    // not should request HDR rendering.
-    DCHECK(resource_provider_->IsRenderBufferFormatSupported(RGBA_F16));
-    return RGBA_F16;
-  }
-  return resource_provider_->best_texture_format();
-}
-
 void GLRenderer::DidChangeVisibility() {
   if (visible_) {
     output_surface_->EnsureBackbuffer();
@@ -3632,7 +3622,18 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
 
   if (!resource)
     resource = std::make_unique<cc::ScopedResource>(resource_provider_);
-  resource->Allocate(enlarged_size, texturehint, BackbufferFormat(),
+
+  ResourceFormat backbuffer_format;
+  if (current_frame()->current_render_pass->color_space.IsHDR()) {
+    // If a platform does not support half-float renderbuffers then it should
+    // not should request HDR rendering.
+    DCHECK(resource_provider_->IsRenderBufferFormatSupported(RGBA_F16));
+    backbuffer_format = RGBA_F16;
+  } else {
+    backbuffer_format = resource_provider_->best_texture_format();
+  }
+
+  resource->Allocate(enlarged_size, texturehint, backbuffer_format,
                      current_frame()->current_render_pass->color_space);
 }
 
