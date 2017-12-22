@@ -213,6 +213,12 @@ struct PairWithWeakHandling : public StrongWeakPair {
       visitor->Trace(first);
     return false;
   }
+
+  // Incremental marking requires that these objects have a regular tracing
+  // method that is used for eagerly tracing through them in case they are
+  // in-place constructed in a container. In this case, we only care about
+  // strong fields.
+  void Trace(blink::Visitor* visitor) { visitor->Trace(first); }
 };
 
 template <typename T>
