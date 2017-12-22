@@ -247,13 +247,9 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
         if (dialog_->is_reload()) {
           default_button = l10n_util::GetNSStringWithFixup(
               IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL);
-          other_button = l10n_util::GetNSStringWithFixup(
-              IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
         } else {
           default_button = l10n_util::GetNSStringWithFixup(
               IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
-          other_button = l10n_util::GetNSStringWithFixup(
-              IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
         }
       }
       break;
