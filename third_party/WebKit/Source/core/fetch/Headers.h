@@ -6,8 +6,8 @@
 #define Headers_h
 
 #include "bindings/core/v8/Iterable.h"
-#include "modules/ModulesExport.h"
-#include "modules/fetch/FetchHeaderList.h"
+#include "core/CoreExport.h"
+#include "core/fetch/FetchHeaderList.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
@@ -20,8 +20,8 @@ class ExceptionState;
 using HeadersInit = ByteStringSequenceSequenceOrByteStringByteStringRecord;
 
 // http://fetch.spec.whatwg.org/#headers-class
-class MODULES_EXPORT Headers final : public ScriptWrappable,
-                                     public PairIterable<String, String> {
+class CORE_EXPORT Headers final : public ScriptWrappable,
+                                  public PairIterable<String, String> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -5,8 +5,8 @@
 #include "modules/fetch/FetchResponseData.h"
 
 #include "core/fetch/BodyStreamBuffer.h"
+#include "core/fetch/FetchHeaderList.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/fetch/FetchHeaderList.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/network/http_names.h"

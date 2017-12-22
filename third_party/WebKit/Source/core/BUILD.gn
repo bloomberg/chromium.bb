@@ -1767,6 +1767,7 @@ jumbo_source_set("unit_tests") {
     "fetch/DataConsumerHandleTestUtil.cpp",
     "fetch/DataConsumerHandleTestUtil.h",
     "fetch/FetchDataLoaderTest.cpp",
+    "fetch/FetchHeaderListTest.cpp",
     "fetch/FormDataBytesConsumerTest.cpp",
     "fetch/MultipartParserTest.cpp",
     "fetch/ReadableStreamBytesConsumerTest.cpp",

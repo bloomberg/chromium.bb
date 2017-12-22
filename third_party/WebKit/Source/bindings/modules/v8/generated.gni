@@ -28,8 +28,6 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/boolean_or_constrain_boolean_parameters.h",
   "$bindings_modules_v8_output_dir/boolean_or_media_track_constraints.cc",
   "$bindings_modules_v8_output_dir/boolean_or_media_track_constraints.h",
-  "$bindings_modules_v8_output_dir/byte_string_sequence_sequence_or_byte_string_byte_string_record.cc",
-  "$bindings_modules_v8_output_dir/byte_string_sequence_sequence_or_byte_string_byte_string_record.h",
   "$bindings_modules_v8_output_dir/canvas_image_source.cc",
   "$bindings_modules_v8_output_dir/canvas_image_source.h",
   "$bindings_modules_v8_output_dir/client_or_service_worker_or_message_port.cc",

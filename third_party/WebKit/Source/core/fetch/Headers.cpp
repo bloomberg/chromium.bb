@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/Headers.h"
+#include "core/fetch/Headers.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
-#include "bindings/modules/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
+#include "bindings/core/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
 #include "core/dom/Iterator.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/wtf/text/WTFString.h"
@@ -212,7 +212,7 @@ void Headers::set(const String& name,
 // classes. For example, when initializing a Request object it is possible that
 // a Request's Headers must be filled with an existing Headers object.
 void Headers::FillWith(const Headers* object, ExceptionState& exception_state) {
-  DCHECK(header_list_->size() == 0);
+  DCHECK_EQ(header_list_->size(), 0U);
   for (const auto& header : object->header_list_->List()) {
     append(header.first, header.second, exception_state);
     if (exception_state.HadException())
