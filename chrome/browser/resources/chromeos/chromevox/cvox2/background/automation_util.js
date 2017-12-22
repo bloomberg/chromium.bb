@@ -259,7 +259,7 @@ AutomationUtil.isDescendantOf = function(node, ancestor) {
  * with respect to their parents, the hit test considers all children before
  * their parents when looking for a matching node.
  * @param {AutomationNode} node Subtree to search.
- * @param {constants.Point} point
+ * @param {cvox.Point} point
  * @return {AutomationNode}
  */
 AutomationUtil.hitTest = function(node, point) {
