@@ -309,7 +309,20 @@ float PdfAccessibilityTree::GetDeviceScaleFactor() const {
 content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
   content::RenderFrame* render_frame =
       host_->GetRenderFrameForInstance(instance_);
-  return render_frame ? render_frame->GetRenderAccessibility() : nullptr;
+  if (!render_frame)
+    return nullptr;
+  content::RenderAccessibility* render_accessibility =
+      render_frame->GetRenderAccessibility();
+  if (!render_accessibility)
+    return nullptr;
+
+  // If RenderAccessibility is unable to generate valid positive IDs,
+  // we shouldn't use it. This can happen if Blink accessibility is disabled
+  // after we started generating the accessible PDF.
+  if (render_accessibility->GenerateAXID() <= 0)
+    return nullptr;
+
+  return render_accessibility;
 }
 
 gfx::Transform* PdfAccessibilityTree::MakeTransformFromViewInfo() {
