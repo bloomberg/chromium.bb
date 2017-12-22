@@ -15,6 +15,21 @@ LoadTimeDataTest.prototype = {
   browsePreload: 'chrome://resources/html/load_time_data.html',
 };
 
+TEST_F('LoadTimeDataTest', 'sanitizeInnerHtml', function() {
+  // A few tests to see that that data is being passed through. The
+  // sanitizeInnerHtml() function calls into parseHtmlSubset() which has its
+  // own tests (that don't need to be repeated here).
+  assertEquals(
+      '<a href="chrome://foo"></a>',
+      loadTimeData.sanitizeInnerHtml('<a href="chrome://foo"></a>'));
+  assertThrows(() => {
+    loadTimeData.sanitizeInnerHtml('<div></div>');
+  }, 'DIV is not supported');
+  assertEquals(
+      '<div></div>',
+      loadTimeData.sanitizeInnerHtml('<div></div>', {tags: ['div']}));
+});
+
 TEST_F('LoadTimeDataTest', 'getStringPieces', function() {
   function assertSubstitutedPieces(expected, var_args) {
     var var_args = Array.prototype.slice.call(arguments, 1);
