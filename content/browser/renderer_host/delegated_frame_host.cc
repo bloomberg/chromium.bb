@@ -202,7 +202,8 @@ viz::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {
 viz::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
     viz::SurfaceHittestDelegate* delegate,
     const gfx::PointF& point,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    bool* out_query_renderer) {
   *transformed_point = point;
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   if (!surface_id.is_valid() || enable_viz_)
@@ -210,8 +211,9 @@ viz::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
   viz::SurfaceHittest hittest(delegate,
                               GetFrameSinkManager()->surface_manager());
   gfx::Transform target_transform;
-  viz::SurfaceId target_local_surface_id = hittest.GetTargetSurfaceAtPoint(
-      surface_id, gfx::ToFlooredPoint(point), &target_transform);
+  viz::SurfaceId target_local_surface_id =
+      hittest.GetTargetSurfaceAtPoint(surface_id, gfx::ToFlooredPoint(point),
+                                      &target_transform, out_query_renderer);
   if (target_local_surface_id.is_valid())
     target_transform.TransformPoint(transformed_point);
   return target_local_surface_id;

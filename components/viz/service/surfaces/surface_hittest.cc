@@ -25,16 +25,25 @@ SurfaceHittest::~SurfaceHittest() {}
 SurfaceId SurfaceHittest::GetTargetSurfaceAtPoint(
     const SurfaceId& root_surface_id,
     const gfx::Point& point,
-    gfx::Transform* transform) {
+    gfx::Transform* transform,
+    bool* out_query_renderer) {
   SurfaceId out_surface_id = root_surface_id;
 
   // Reset the output transform to identity.
   if (transform)
     *transform = gfx::Transform();
 
+  *out_query_renderer = false;
+
   std::set<const RenderPass*> referenced_passes;
   GetTargetSurfaceAtPointInternal(root_surface_id, 0, point, &referenced_passes,
-                                  &out_surface_id, transform);
+                                  &out_surface_id, transform,
+                                  out_query_renderer);
+  // Any point that hits an OOPIF can defer to renderer-based hit testing
+  // in order to check whether there might be transparent elements
+  // occluding it. Such elements would not have DrawQuads present here.
+  if (root_surface_id != out_surface_id)
+    *out_query_renderer = true;
 
   return out_surface_id;
 }
@@ -82,7 +91,8 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
     const gfx::Point& point_in_root_target,
     std::set<const RenderPass*>* referenced_passes,
     SurfaceId* out_surface_id,
-    gfx::Transform* out_transform) {
+    gfx::Transform* out_transform,
+    bool* out_query_renderer) {
   const RenderPass* render_pass =
       GetRenderPassForSurfaceById(surface_id, render_pass_id);
   if (!render_pass)
@@ -105,6 +115,7 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
 
   gfx::Point point_in_render_pass_space(point_in_root_target);
   transform_from_root_target.TransformPoint(&point_in_render_pass_space);
+  bool non_surface_was_hit = false;
 
   for (const DrawQuad* quad : render_pass->quad_list) {
     gfx::Transform target_to_quad_transform;
@@ -114,56 +125,87 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
       continue;
     }
 
-    if (quad->material == DrawQuad::SURFACE_CONTENT) {
-      // We've hit a SurfaceDrawQuad, we need to recurse into this
-      // Surface.
-      const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
+    switch (quad->material) {
+      case DrawQuad::SURFACE_CONTENT: {
+        // We've hit a SurfaceDrawQuad, we need to recurse into this
+        // Surface.
+        const SurfaceDrawQuad* surface_quad =
+            SurfaceDrawQuad::MaterialCast(quad);
 
-      if (delegate_ &&
-          delegate_->RejectHitTarget(surface_quad, point_in_quad_space)) {
-        continue;
+        if (delegate_ &&
+            delegate_->RejectHitTarget(surface_quad, point_in_quad_space)) {
+          continue;
+        }
+
+        // If a point hits a Surface after hitting a non-Surface quad, we should
+        // defer to the renderer. Some DrawQuads are not valid hit test targets
+        // and information needed to distinguish them is not available here.
+        if (non_surface_was_hit) {
+          *out_query_renderer = true;
+          return true;
+        }
+
+        gfx::Transform transform_to_child_space;
+        if (GetTargetSurfaceAtPointInternal(
+                surface_quad->primary_surface_id, 0, point_in_quad_space,
+                referenced_passes, out_surface_id, &transform_to_child_space,
+                out_query_renderer)) {
+          *out_transform = transform_to_child_space * target_to_quad_transform *
+                           transform_from_root_target;
+          return true;
+        } else if (delegate_ && delegate_->AcceptHitTarget(
+                                    surface_quad, point_in_quad_space)) {
+          *out_surface_id = surface_quad->primary_surface_id;
+          *out_transform = transform_to_child_space * target_to_quad_transform *
+                           transform_from_root_target;
+          return true;
+        }
+        break;
       }
 
-      gfx::Transform transform_to_child_space;
-      if (GetTargetSurfaceAtPointInternal(
-              surface_quad->primary_surface_id, 0, point_in_quad_space,
-              referenced_passes, out_surface_id, &transform_to_child_space)) {
-        *out_transform = transform_to_child_space * target_to_quad_transform *
-                         transform_from_root_target;
-        return true;
-      } else if (delegate_ && delegate_->AcceptHitTarget(surface_quad,
-                                                         point_in_quad_space)) {
-        *out_surface_id = surface_quad->primary_surface_id;
-        *out_transform = transform_to_child_space * target_to_quad_transform *
-                         transform_from_root_target;
-        return true;
+      case DrawQuad::RENDER_PASS: {
+        // We've hit a RenderPassDrawQuad, we need to recurse into this
+        // RenderPass.
+        const RenderPassDrawQuad* render_quad =
+            RenderPassDrawQuad::MaterialCast(quad);
+
+        SurfaceId out_surface_id_candidate;
+        gfx::Transform transform_to_child_space;
+
+        if (GetTargetSurfaceAtPointInternal(
+                surface_id, render_quad->render_pass_id, point_in_root_target,
+                referenced_passes, &out_surface_id_candidate,
+                &transform_to_child_space, out_query_renderer)) {
+          // If |non_surface_was_hit| is set, then the above call was only for
+          // the purpose of potentially setting |out_query_renderer|.
+          if (!non_surface_was_hit) {
+            *out_transform = transform_to_child_space;
+            *out_surface_id = out_surface_id_candidate;
+            if (surface_id == out_surface_id_candidate) {
+              // Don't return here even though we hit a viable target, in order
+              // to continue looking for occluded surfaces that might be
+              // underneath.
+              non_surface_was_hit = true;
+            } else {
+              return true;
+            }
+          }
+        }
+        break;
       }
 
-      continue;
+      default: {
+        // We've hit a different type of quad in the current Surface. Typically
+        // this quad will receive the event, but continue iterating to look for
+        // occluded surface quads.
+        *out_surface_id = surface_id;
+        non_surface_was_hit = true;
+      }
     }
-
-    if (quad->material == DrawQuad::RENDER_PASS) {
-      // We've hit a RenderPassDrawQuad, we need to recurse into this
-      // RenderPass.
-      const RenderPassDrawQuad* render_quad =
-          RenderPassDrawQuad::MaterialCast(quad);
-
-      gfx::Transform transform_to_child_space;
-      if (GetTargetSurfaceAtPointInternal(
-              surface_id, render_quad->render_pass_id, point_in_root_target,
-              referenced_passes, out_surface_id, &transform_to_child_space)) {
-        *out_transform = transform_to_child_space;
-        return true;
-      }
-
-      continue;
-    }
-
-    // We've hit a different type of quad in the current Surface. There's no
-    // need to iterate anymore, this is the quad that receives the event.
-    *out_surface_id = surface_id;
-    return true;
   }
+
+  if (non_surface_was_hit)
+    return true;
 
   // No quads were found beneath the provided |point|.
   return false;

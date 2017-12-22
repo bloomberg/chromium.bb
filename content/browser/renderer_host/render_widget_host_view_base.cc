@@ -435,7 +435,8 @@ viz::LocalSurfaceId RenderWidgetHostViewBase::GetLocalSurfaceId() const {
 viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
     viz::SurfaceHittestDelegate* delegate,
     const gfx::PointF& point,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    bool* out_query_renderer) {
   NOTREACHED();
   return viz::FrameSinkId();
 }

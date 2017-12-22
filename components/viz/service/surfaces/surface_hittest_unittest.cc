@@ -34,6 +34,7 @@ struct TestCase {
   gfx::Point input_point;
   SurfaceId expected_layer_tree_frame_sink_id;
   gfx::Point expected_output_point;
+  bool query_renderer;
 };
 
 void RunTests(SurfaceHittestDelegate* delegate,
@@ -41,15 +42,17 @@ void RunTests(SurfaceHittestDelegate* delegate,
               TestCase* tests,
               size_t test_count) {
   SurfaceHittest hittest(delegate, manager);
+  bool query_renderer;
   for (size_t i = 0; i < test_count; ++i) {
     const TestCase& test = tests[i];
     gfx::Point point(test.input_point);
     gfx::Transform transform;
     EXPECT_EQ(test.expected_layer_tree_frame_sink_id,
               hittest.GetTargetSurfaceAtPoint(test.input_surface_id, point,
-                                              &transform));
+                                              &transform, &query_renderer));
     transform.TransformPoint(&point);
     EXPECT_EQ(test.expected_output_point, point);
+    EXPECT_EQ(test.query_renderer, query_renderer);
 
     // Verify that GetTransformToTargetSurface returns true and returns the same
     // transform as returned by GetTargetSurfaceAtPoint.
@@ -127,9 +130,10 @@ TEST_F(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
     SurfaceHittest hittest(nullptr, surface_manager());
     // It is expected this test will complete without crashes.
     gfx::Transform transform;
-    EXPECT_EQ(root_surface_id,
-              hittest.GetTargetSurfaceAtPoint(
-                  root_surface_id, gfx::Point(100, 100), &transform));
+    bool query_renderer;
+    EXPECT_EQ(root_surface_id, hittest.GetTargetSurfaceAtPoint(
+                                   root_surface_id, gfx::Point(100, 100),
+                                   &transform, &query_renderer));
   }
 
   root_support().EvictCurrentSurface();
@@ -149,7 +153,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface) {
                                        std::move(root_frame));
   TestCase tests[] = {
       {root_surface_id, gfx::Point(100, 100), root_surface_id,
-       gfx::Point(100, 100)},
+       gfx::Point(100, 100), false},
   };
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
@@ -198,17 +202,17 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
                                         std::move(child_frame));
 
   TestCase tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
-                       gfx::Point(10, 10)},
+                       gfx::Point(10, 10), false},
                       {root_surface_id, gfx::Point(99, 99), root_surface_id,
-                       gfx::Point(99, 99)},
+                       gfx::Point(99, 99), false},
                       {root_surface_id, gfx::Point(100, 100), child_surface_id,
-                       gfx::Point(50, 50)},
+                       gfx::Point(50, 50), true},
                       {root_surface_id, gfx::Point(199, 199), child_surface_id,
-                       gfx::Point(149, 149)},
+                       gfx::Point(149, 149), true},
                       {root_surface_id, gfx::Point(200, 200), root_surface_id,
-                       gfx::Point(200, 200)},
+                       gfx::Point(200, 200), false},
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
-                       gfx::Point(290, 290)}};
+                       gfx::Point(290, 290), false}};
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
 
@@ -229,10 +233,13 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
 
     gfx::Point point(100, 100);
     gfx::Transform transform;
-    EXPECT_EQ(root_surface_id, hittest.GetTargetSurfaceAtPoint(
-                                   root_surface_id, point, &transform));
+    bool query_renderer;
+    EXPECT_EQ(root_surface_id,
+              hittest.GetTargetSurfaceAtPoint(root_surface_id, point,
+                                              &transform, &query_renderer));
     transform.TransformPoint(&point);
     EXPECT_EQ(gfx::Point(100, 100), point);
+    EXPECT_EQ(query_renderer, false);
 
     gfx::Point point_in_target_space(100, 100);
     gfx::Transform target_transform;
@@ -242,6 +249,73 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
     EXPECT_NE(transform, target_transform);
     EXPECT_EQ(gfx::Point(25, 25), point_in_target_space);
   }
+
+  root_support().EvictCurrentSurface();
+  child_support().EvictCurrentSurface();
+}
+
+TEST_F(SurfaceHittestTest, Hittest_OccludedChildSurface) {
+  // Creates a root surface.
+  gfx::Rect root_rect(300, 300);
+  RenderPass* root_pass = nullptr;
+  CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
+
+  // Add a solid quad to the root surface, occluding the child surface.
+  gfx::Rect root_solid_quad_rect(100, 100);
+  CreateSolidColorDrawQuad(
+      root_pass,
+      gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f, 0.0f, 1.0f, 0.0f, 50.0f, 0.0f,
+                     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+      root_rect, root_solid_quad_rect);
+
+  // Add a reference to the child surface on the root surface.
+  ParentLocalSurfaceIdAllocator child_allocator;
+  LocalSurfaceId child_local_surface_id = child_allocator.GenerateId();
+  SurfaceId child_surface_id(kChildFrameSink, child_local_surface_id);
+  gfx::Rect child_rect(200, 200);
+  CreateSurfaceDrawQuad(
+      root_pass,
+      gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f, 0.0f, 1.0f, 0.0f, 50.0f, 0.0f,
+                     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+      root_rect, child_rect, child_surface_id);
+
+  // Submit the root frame.
+  ParentLocalSurfaceIdAllocator root_allocator;
+  LocalSurfaceId root_local_surface_id = root_allocator.GenerateId();
+  SurfaceId root_surface_id(kRootFrameSink, root_local_surface_id);
+  root_support().SubmitCompositorFrame(root_local_surface_id,
+                                       std::move(root_frame));
+
+  // Creates a child surface.
+  RenderPass* child_pass = nullptr;
+  CompositorFrame child_frame = CreateCompositorFrame(child_rect, &child_pass);
+
+  // Add a solid quad in the child surface.
+  gfx::Rect child_solid_quad_rect(100, 100);
+  CreateSolidColorDrawQuad(
+      child_pass,
+      gfx::Transform(1.0f, 0.0f, 0.0f, 50.0f, 0.0f, 1.0f, 0.0f, 50.0f, 0.0f,
+                     0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+      root_rect, child_solid_quad_rect);
+
+  // Submit the frame.
+  child_support().SubmitCompositorFrame(child_local_surface_id,
+                                        std::move(child_frame));
+
+  TestCase tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
+                       gfx::Point(10, 10), false},
+                      {root_surface_id, gfx::Point(99, 99), root_surface_id,
+                       gfx::Point(99, 99), true},
+                      {root_surface_id, gfx::Point(100, 100), root_surface_id,
+                       gfx::Point(100, 100), true},
+                      {root_surface_id, gfx::Point(199, 199), child_surface_id,
+                       gfx::Point(149, 149), true},
+                      {root_surface_id, gfx::Point(200, 200), root_surface_id,
+                       gfx::Point(200, 200), false},
+                      {root_surface_id, gfx::Point(290, 290), root_surface_id,
+                       gfx::Point(290, 290), false}};
+
+  RunTests(nullptr, surface_manager(), tests, arraysize(tests));
 
   root_support().EvictCurrentSurface();
   child_support().EvictCurrentSurface();
@@ -295,17 +369,17 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
                                         std::move(child_frame));
 
   TestCase tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
-                       gfx::Point(10, 10)},
+                       gfx::Point(10, 10), false},
                       {root_surface_id, gfx::Point(99, 99), root_surface_id,
-                       gfx::Point(99, 99)},
+                       gfx::Point(99, 99), false},
                       {root_surface_id, gfx::Point(100, 100), child_surface_id,
-                       gfx::Point(50, 50)},
+                       gfx::Point(50, 50), true},
                       {root_surface_id, gfx::Point(199, 199), child_surface_id,
-                       gfx::Point(149, 149)},
+                       gfx::Point(149, 149), true},
                       {root_surface_id, gfx::Point(200, 200), root_surface_id,
-                       gfx::Point(200, 200)},
+                       gfx::Point(200, 200), false},
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
-                       gfx::Point(290, 290)}};
+                       gfx::Point(290, 290), false}};
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
 
@@ -355,21 +429,21 @@ TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
 
   TestCase tests[] = {// These tests just miss the RenderPassDrawQuad.
                       {root_surface_id, gfx::Point(49, 49), root_surface_id,
-                       gfx::Point(49, 49)},
+                       gfx::Point(49, 49), false},
                       {root_surface_id, gfx::Point(150, 150), root_surface_id,
-                       gfx::Point(150, 150)},
+                       gfx::Point(150, 150), false},
                       // These tests just hit the boundaries of the
                       // RenderPassDrawQuad.
                       {root_surface_id, gfx::Point(50, 50), root_surface_id,
-                       gfx::Point(50, 50)},
+                       gfx::Point(50, 50), false},
                       {root_surface_id, gfx::Point(149, 149), root_surface_id,
-                       gfx::Point(149, 149)},
+                       gfx::Point(149, 149), false},
                       // These tests fall somewhere in the center of the
                       // RenderPassDrawQuad.
                       {root_surface_id, gfx::Point(99, 99), root_surface_id,
-                       gfx::Point(99, 99)},
+                       gfx::Point(99, 99), false},
                       {root_surface_id, gfx::Point(100, 100), root_surface_id,
-                       gfx::Point(100, 100)}};
+                       gfx::Point(100, 100), false}};
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
 
@@ -417,17 +491,18 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
                                         std::move(child_frame));
 
   TestCase test_expectations_without_insets[] = {
-      {root_surface_id, gfx::Point(55, 55), child_surface_id, gfx::Point(5, 5)},
+      {root_surface_id, gfx::Point(55, 55), child_surface_id, gfx::Point(5, 5),
+       true},
       {root_surface_id, gfx::Point(60, 60), child_surface_id,
-       gfx::Point(10, 10)},
+       gfx::Point(10, 10), true},
       {root_surface_id, gfx::Point(239, 239), child_surface_id,
-       gfx::Point(189, 189)},
+       gfx::Point(189, 189), true},
       {root_surface_id, gfx::Point(244, 244), child_surface_id,
-       gfx::Point(194, 194)},
-      {root_surface_id, gfx::Point(50, 50), root_surface_id,
-       gfx::Point(50, 50)},
+       gfx::Point(194, 194), true},
+      {root_surface_id, gfx::Point(50, 50), root_surface_id, gfx::Point(50, 50),
+       false},
       {root_surface_id, gfx::Point(249, 249), root_surface_id,
-       gfx::Point(249, 249)},
+       gfx::Point(249, 249), false},
   };
 
   TestSurfaceHittestDelegate empty_delegate;
@@ -441,22 +516,22 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   TestCase test_expectations_with_reject_insets[] = {
       // Point (55, 55) falls outside the child surface due to the insets
       // introduced above.
-      {root_surface_id, gfx::Point(55, 55), root_surface_id,
-       gfx::Point(55, 55)},
+      {root_surface_id, gfx::Point(55, 55), root_surface_id, gfx::Point(55, 55),
+       false},
       // These two points still fall within the child surface.
       {root_surface_id, gfx::Point(60, 60), child_surface_id,
-       gfx::Point(10, 10)},
+       gfx::Point(10, 10), true},
       {root_surface_id, gfx::Point(239, 239), child_surface_id,
-       gfx::Point(189, 189)},
+       gfx::Point(189, 189), true},
       // Point (244, 244) falls outside the child surface due to the insets
       // introduced above.
       {root_surface_id, gfx::Point(244, 244), root_surface_id,
-       gfx::Point(244, 244)},
+       gfx::Point(244, 244), false},
       // Next two points also fall within within the insets indroduced above.
-      {root_surface_id, gfx::Point(50, 50), root_surface_id,
-       gfx::Point(50, 50)},
+      {root_surface_id, gfx::Point(50, 50), root_surface_id, gfx::Point(50, 50),
+       false},
       {root_surface_id, gfx::Point(249, 249), root_surface_id,
-       gfx::Point(249, 249)},
+       gfx::Point(249, 249), false},
   };
 
   TestSurfaceHittestDelegate reject_delegate;
@@ -471,17 +546,19 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   EXPECT_EQ(0, reject_delegate.accept_target_overrides());
 
   TestCase test_expectations_with_accept_insets[] = {
-      {root_surface_id, gfx::Point(55, 55), child_surface_id, gfx::Point(5, 5)},
+      {root_surface_id, gfx::Point(55, 55), child_surface_id, gfx::Point(5, 5),
+       true},
       {root_surface_id, gfx::Point(60, 60), child_surface_id,
-       gfx::Point(10, 10)},
+       gfx::Point(10, 10), true},
       {root_surface_id, gfx::Point(239, 239), child_surface_id,
-       gfx::Point(189, 189)},
+       gfx::Point(189, 189), true},
       {root_surface_id, gfx::Point(244, 244), child_surface_id,
-       gfx::Point(194, 194)},
+       gfx::Point(194, 194), true},
       // Next two points fall within within the insets indroduced above.
-      {root_surface_id, gfx::Point(50, 50), child_surface_id, gfx::Point(0, 0)},
+      {root_surface_id, gfx::Point(50, 50), child_surface_id, gfx::Point(0, 0),
+       true},
       {root_surface_id, gfx::Point(249, 249), child_surface_id,
-       gfx::Point(199, 199)},
+       gfx::Point(199, 199), true},
   };
 
   TestSurfaceHittestDelegate accept_delegate;

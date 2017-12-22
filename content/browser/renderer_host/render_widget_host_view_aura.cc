@@ -1655,7 +1655,8 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
     viz::SurfaceHittestDelegate* delegate,
     const gfx::PointF& point,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    bool* out_query_renderer) {
   DCHECK(device_scale_factor_ != 0.0f);
 
   // TODO: this shouldn't be used with aura-mus, so that the null check so
@@ -1670,7 +1671,7 @@ viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
   gfx::PointF point_in_pixels =
       gfx::ConvertPointToPixel(device_scale_factor_, point);
   viz::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(
-      delegate, point_in_pixels, transformed_point);
+      delegate, point_in_pixels, transformed_point, out_query_renderer);
   *transformed_point =
       gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
 

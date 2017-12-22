@@ -289,12 +289,17 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindViewAtLocation(
     // hittesting data send by the renderer.
     HittestDelegate delegate(hittest_data_);
 
+    // TODO(kenrb, sadrul): If this is set to true by FrameSinkIdAtPoint,
+    // invoke the InputTargetClient interface on the root view's frame (and on
+    // any OOPIFs also, if any are hit).
+    bool query_renderer = false;
+
     // The conversion of point to transform_point is done over the course of the
     // hit testing, and reflect transformations that would normally be applied
     // in the renderer process if the event was being routed between frames
     // within a single process with only one RenderWidgetHost.
-    frame_sink_id =
-        root_view->FrameSinkIdAtPoint(&delegate, point, transformed_point);
+    frame_sink_id = root_view->FrameSinkIdAtPoint(
+        &delegate, point, transformed_point, &query_renderer);
   }
 
   // TODO(kenrb): There should be a better way to handle hit tests to surfaces

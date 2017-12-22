@@ -1538,14 +1538,15 @@ viz::FrameSinkId RenderWidgetHostViewMac::GetFrameSinkId() {
 viz::FrameSinkId RenderWidgetHostViewMac::FrameSinkIdAtPoint(
     viz::SurfaceHittestDelegate* delegate,
     const gfx::PointF& point,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    bool* out_query_renderer) {
   // The surface hittest happens in device pixels, so we need to convert the
   // |point| from DIPs to pixels before hittesting.
   float scale_factor = ui::GetScaleFactorForNativeView(cocoa_view_);
   gfx::PointF point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
   viz::SurfaceId id =
       browser_compositor_->GetDelegatedFrameHost()->SurfaceIdAtPoint(
-          delegate, point_in_pixels, transformed_point);
+          delegate, point_in_pixels, transformed_point, out_query_renderer);
   *transformed_point = gfx::ConvertPointToDIP(scale_factor, *transformed_point);
 
   // It is possible that the renderer has not yet produced a surface, in which
