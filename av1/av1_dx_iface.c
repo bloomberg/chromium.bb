@@ -158,13 +158,32 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
 #if !CONFIG_OBU
 static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
                                               struct aom_read_bit_buffer *rb) {
+#if CONFIG_CICP
+  aom_color_primaries_t color_primaries;
+  aom_transfer_characteristics_t transfer_characteristics;
+  aom_matrix_coefficients_t matrix_coefficients;
+#else
   aom_color_space_t color_space;
+#endif
 #if CONFIG_COLORSPACE_HEADERS
   int subsampling_x = 0;
   int subsampling_y = 0;
 #endif
 
   if (profile >= PROFILE_2) rb->bit_offset += 1;  // Bit-depth 10 or 12.
+#if CONFIG_CICP
+  int color_description_present_flag = aom_rb_read_bit(rb);
+  if (color_description_present_flag) {
+    color_primaries = (aom_color_primaries_t)aom_rb_read_literal(rb, 8);
+    transfer_characteristics =
+        (aom_transfer_characteristics_t)aom_rb_read_literal(rb, 8);
+    matrix_coefficients = (aom_matrix_coefficients_t)aom_rb_read_literal(rb, 8);
+  } else {
+    color_primaries = AOM_CICP_CP_UNSPECIFIED;
+    transfer_characteristics = AOM_CICP_TC_UNSPECIFIED;
+    matrix_coefficients = AOM_CICP_MC_UNSPECIFIED;
+  }
+#else
 #if CONFIG_COLORSPACE_HEADERS
   color_space = (aom_color_space_t)aom_rb_read_literal(rb, 5);
   rb->bit_offset += 5;  // Transfer function
@@ -172,14 +191,23 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
   color_space =
       (aom_color_space_t)aom_rb_read_literal(rb, 3 + CONFIG_MONO_VIDEO);
 #endif
+#endif
+#if CONFIG_CICP
+  if (color_primaries == AOM_CICP_CP_BT_709 &&
+      transfer_characteristics == AOM_CICP_TC_SRGB &&
+      matrix_coefficients == AOM_CICP_MC_IDENTITY) {  // it would be better to
+                                                      // remove this dependency
+                                                      // too
+#else
   if (color_space == AOM_CS_SRGB) {
+#endif
     if (profile == PROFILE_1 || profile == PROFILE_3) {
       rb->bit_offset += 1;  // unused
     } else {
       // RGB is only available in version 1.
       return 0;
     }
-#if CONFIG_MONO_VIDEO
+#if CONFIG_MONO_VIDEO && !CONFIG_CICP
   } else if (color_space == AOM_CS_MONOCHROME) {
     return 1;
 #endif  // CONFIG_MONO_VIDEO

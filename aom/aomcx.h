@@ -342,6 +342,74 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TUNE_CONTENT,
 
+#if CONFIG_CICP
+  /*!\brief Codec control function to set color space info.
+   * \note Valid ranges: 0..23, default is "Unspecified".
+   *                     0 = For future use
+   *                     1 = BT.709
+   *                     2 = Unspecified
+   *                     3 = For future use
+   *                     4 = BT.470 System M (historical)
+   *                     5 = BT.470 System B, G (historical)
+   *                     6 = BT.601
+   *                     7 = SMPTE 240
+   *                     8 = Generic film (color filters using illuminant C)
+   *                     9 = BT.2020, BT.2100
+   *                     10 = SMPTE 428 (CIE 1921 XYZ)
+   *                     11 = SMPTE RP 431-2
+   *                     12 = SMPTE EG 432-1
+   *                     13 = For future use (values 13 - 21)
+   *                     22 = EBU Tech. 3213-E
+   *                     23 = For future use
+   */
+  AV1E_SET_COLOR_PRIMARIES,
+
+  /*!\brief Codec control function to set transfer function info.
+   * \note Valid ranges: 0..19, default is "Unspecified".
+   *                     0 = For future use
+   *                     1 = BT.709
+   *                     2 = Unspecified
+   *                     3 = For future use
+   *                     4 = BT.470 System M (historical)
+   *                     5 = BT.470 System B, G (historical)
+   *                     6 = BT.601
+   *                     7 = SMPTE 240 M
+   *                     8 = Linear
+   *                     9 = Logarithmic (100 : 1 range)
+   *                     10 = Logarithmic (100 * Sqrt(10) : 1 range)
+   *                     11 = IEC 61966-2-4
+   *                     12 = BT.1361
+   *                     13 = sRGB or sYCC
+   *                     14 = BT.2020 10-bit systems
+   *                     15 = BT.2020 12-bit systems
+   *                     16 = SMPTE ST 2084, ITU BT.2100 PQ
+   *                     17 = SMPTE ST 428
+   *                     18 = BT.2100 HLG, ARIB STD-B67
+   *                     19 = For future use
+   */
+  AV1E_SET_TRANSFER_CHARACTERISTICS,
+
+  /*!\brief Codec control function to set transfer function info.
+   * \note Valid ranges: 0..15, default is "Unspecified".
+   *                     0 = Identity matrix
+   *                     1 = BT.709
+   *                     2 = Unspecified
+   *                     3 = For future use
+   *                     4 = US FCC 73.628
+   *                     5 = BT.470 System B, G (historical)
+   *                     6 = BT.601
+   *                     7 = SMPTE 240 M
+   *                     8 = YCgCo
+   *                     9 = BT.2020 non-constant luminance, BT.2100 YCbCr
+   *                     10 = BT.2020 constant luminance
+   *                     11 = SMPTE ST 2085 YDzDx
+   *                     12 = Chromaticity-derived non-constant luminance
+   *                     13 = Chromaticity-derived constant luminance
+   *                     14 = BT.2100 ICtCp
+   *                     15 = For future use
+   */
+  AV1E_SET_MATRIX_COEFFICIENTS,
+#else
   /*!\brief Codec control function to set color space info.
    * \note Valid ranges: 0..9, default is "UNKNOWN".
    *                     0 = UNKNOWN,
@@ -367,6 +435,7 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TRANSFER_FUNCTION,
 
+#endif
   /*!\brief Codec control function to set chroma 4:2:0 sample position info.
    * \note Valid ranges: 0..3, default is "UNKNOWN".
    *                     0 = UNKNOWN,
@@ -521,15 +590,15 @@ enum aome_enc_control_id {
   AV1E_SET_MTU,
 
   /*!\brief Codec control function to set dependent_horz_tiles.
-  *
-  * In encoding and decoding, AV1 allows enabling dependent horizontal tile
-  * The parameter for this control describes the value of this flag,
-  * which has a valid range [0, 1]:
-  *            0 = disable dependent horizontal tile
-  *            1 = enable dependent horizontal tile,
-  *
-  * By default, the value is 0, i.e. disable dependent horizontal tile.
-  */
+   *
+   * In encoding and decoding, AV1 allows enabling dependent horizontal tile
+   * The parameter for this control describes the value of this flag,
+   * which has a valid range [0, 1]:
+   *            0 = disable dependent horizontal tile
+   *            1 = enable dependent horizontal tile,
+   *
+   * By default, the value is 0, i.e. disable dependent horizontal tile.
+   */
   AV1E_SET_TILE_DEPENDENT_ROWS,
 
   /*!\brief Codec control function to set the number of symbols in an ANS data
@@ -545,12 +614,12 @@ enum aome_enc_control_id {
   AV1E_SET_ANS_WINDOW_SIZE_LOG2,
 
   /*!\brief Codec control function to set temporal mv prediction
-  * enabling/disabling.
-  *
-  * This will enable or disable temporal mv predicton. The default value is 0.
-  *
-  * Experiment: TEMPMV_SIGNALING
-  */
+   * enabling/disabling.
+   *
+   * This will enable or disable temporal mv predicton. The default value is 0.
+   *
+   * Experiment: TEMPMV_SIGNALING
+   */
   AV1E_SET_DISABLE_TEMPMV,
 
   /*!\brief Codec control function to set loop_filter_across_tiles_v_enabled
@@ -583,15 +652,15 @@ enum aome_enc_control_id {
   AV1E_SET_TILE_LOOPFILTER,
 
   /*!\brief Codec control function to set the delta q mode
-  *
-  * AV1 has a segment based feature that allows encoder to adaptively change
-  * quantization parameter for each segment within a frame to improve the
-  * subjective quality. the delta q mode is added on top of segment based
-  * feature, and allows control per 64x64 q and lf delta.This control makes
-  * encoder operate in one of the several DELTA_Q_modes supported.
-  *
-  * By default, encoder operates with DELTAQ_Mode 0(deltaq signaling off).
-  */
+   *
+   * AV1 has a segment based feature that allows encoder to adaptively change
+   * quantization parameter for each segment within a frame to improve the
+   * subjective quality. the delta q mode is added on top of segment based
+   * feature, and allows control per 64x64 q and lf delta.This control makes
+   * encoder operate in one of the several DELTA_Q_modes supported.
+   *
+   * By default, encoder operates with DELTAQ_Mode 0(deltaq signaling off).
+   */
   AV1E_SET_DELTAQ_MODE,
 
   /*!\brief Codec control function to set the single tile decoding mode to 0 or
@@ -805,12 +874,24 @@ AOM_CTRL_USE_TYPE(AV1E_SET_NOISE_SENSITIVITY, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_TUNE_CONTENT, int) /* aom_tune_content */
 #define AOM_CTRL_AV1E_SET_TUNE_CONTENT
 
+#if CONFIG_CICP
+AOM_CTRL_USE_TYPE(AV1E_SET_COLOR_PRIMARIES, int)
+#define AOM_CTRL_AV1E_SET_COLOR_PRIMARIES
+
+AOM_CTRL_USE_TYPE(AV1E_SET_TRANSFER_CHARACTERISTICS, int)
+#define AOM_CTRL_AV1E_SET_TRANSFER_CHARACTERISTICS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_MATRIX_COEFFICIENTS, int)
+#define AOM_CTRL_AV1E_SET_MATRIX_COEFFICIENTS
+
+#else
 AOM_CTRL_USE_TYPE(AV1E_SET_COLOR_SPACE, int)
 #define AOM_CTRL_AV1E_SET_COLOR_SPACE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TRANSFER_FUNCTION, int)
 #define AOM_CTRL_AV1E_SET_TRANSFER_FUNCTION
 
+#endif
 AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SAMPLE_POSITION, int)
 #define AOM_CTRL_AV1E_SET_CHROMA_SAMPLE_POSITION
 

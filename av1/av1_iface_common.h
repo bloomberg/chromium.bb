@@ -37,9 +37,17 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
       bps = 12;
     }
   }
+#if CONFIG_CICP
+  img->cp = yv12->color_primaries;
+  img->tc = yv12->transfer_characteristics;
+  img->mc = yv12->matrix_coefficients;
+#else
   img->cs = yv12->color_space;
+#endif
 #if CONFIG_COLORSPACE_HEADERS
+#if !CONFIG_CICP
   img->tf = yv12->transfer_function;
+#endif
   img->csp = yv12->chroma_sample_position;
 #endif
   img->range = yv12->color_range;
@@ -103,9 +111,17 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
 
   yv12->y_stride = img->stride[AOM_PLANE_Y];
   yv12->uv_stride = img->stride[AOM_PLANE_U];
+#if CONFIG_CICP
+  yv12->color_primaries = img->cp;
+  yv12->transfer_characteristics = img->tc;
+  yv12->matrix_coefficients = img->mc;
+#else
   yv12->color_space = img->cs;
+#endif
 #if CONFIG_COLORSPACE_HEADERS
+#if !CONFIG_CICP
   yv12->transfer_function = img->tf;
+#endif
   yv12->chroma_sample_position = img->csp;
 #endif
   yv12->color_range = img->range;

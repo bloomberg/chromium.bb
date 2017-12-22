@@ -149,8 +149,14 @@ static bool compare_img(const aom_image_t *img1, const aom_image_t *img2,
                         int *const mismatch_row, int *const mismatch_col,
                         int *const mismatch_plane, int *const mismatch_pix1,
                         int *const mismatch_pix2) {
+#if CONFIG_CICP
+  if (img1->fmt != img2->fmt || img1->cp != img2->cp || img1->tc != img2->tc ||
+      img1->mc != img2->mc || img1->d_w != img2->d_w ||
+      img1->d_h != img2->d_h) {
+#else
   if (img1->fmt != img2->fmt || img1->cs != img2->cs ||
       img1->d_w != img2->d_w || img1->d_h != img2->d_h) {
+#endif
     if (mismatch_row != NULL) *mismatch_row = -1;
     if (mismatch_col != NULL) *mismatch_col = -1;
     return false;

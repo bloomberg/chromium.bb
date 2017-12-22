@@ -504,8 +504,78 @@ static const arg_def_t max_gf_interval = ARG_DEF(
     NULL, "max-gf-interval", 1,
     "max gf/arf frame interval (default 0, indicating in-built behavior)");
 
+#if CONFIG_CICP
+static const struct arg_enum_list color_primaries_enum[] = {
+  { "bt709", AOM_CICP_CP_BT_709 },
+  { "unspecified", AOM_CICP_CP_UNSPECIFIED },
+  { "bt601", AOM_CICP_CP_BT_601 },
+  { "bt470m", AOM_CICP_CP_BT_470_M },
+  { "bt470bg", AOM_CICP_CP_BT_470_B_G },
+  { "smpte240", AOM_CICP_CP_SMPTE_240 },
+  { "film", AOM_CICP_CP_GENERIC_FILM },
+  { "bt2020", AOM_CICP_CP_BT_2020 },
+  { "xyz", AOM_CICP_CP_XYZ },
+  { "smpte431", AOM_CICP_CP_SMPTE_431 },
+  { "smpte432", AOM_CICP_CP_SMPTE_432 },
+  { "ebu3213", AOM_CICP_CP_EBU_3213 },
+  { NULL, 0 }
+};
+
+static const arg_def_t input_color_primaries = ARG_DEF_ENUM(
+    NULL, "color-primaries", 1,
+    "Color primaries (CICP) of input content:", color_primaries_enum);
+
+static const struct arg_enum_list transfer_characteristics_enum[] = {
+  { "unspecified", AOM_CICP_CP_UNSPECIFIED },
+  { "bt709", AOM_CICP_TC_BT_709 },
+  { "bt470m", AOM_CICP_TC_BT_470_M },
+  { "bt470bg", AOM_CICP_TC_BT_470_B_G },
+  { "bt601", AOM_CICP_TC_BT_601 },
+  { "smpte240", AOM_CICP_TC_SMPTE_240 },
+  { "lin", AOM_CICP_TC_LINEAR },
+  { "log100", AOM_CICP_TC_LOG_100 },
+  { "log100sq10", AOM_CICP_TC_LOG_100_SQRT10 },
+  { "iec61966", AOM_CICP_TC_IEC_61966 },
+  { "bt1361", AOM_CICP_TC_BT_1361 },
+  { "srgb", AOM_CICP_TC_SRGB },
+  { "bt2020-10bit", AOM_CICP_TC_BT_2020_10_BIT },
+  { "bt2020-12bit", AOM_CICP_TC_BT_2020_12_BIT },
+  { "smpte2084", AOM_CICP_TC_SMPTE_2084 },
+  { "hlg", AOM_CICP_TC_HLG },
+  { "smpte428", AOM_CICP_TC_SMPTE_428 },
+  { NULL, 0 }
+};
+
+static const arg_def_t input_transfer_characteristics =
+    ARG_DEF_ENUM(NULL, "transfer-characteristics", 1,
+                 "Transfer characteristics (CICP) of input content:",
+                 transfer_characteristics_enum);
+
+static const struct arg_enum_list matrix_coefficients_enum[] = {
+  { "identity", AOM_CICP_MC_IDENTITY },
+  { "bt709", AOM_CICP_MC_BT_709 },
+  { "unspecified", AOM_CICP_MC_UNSPECIFIED },
+  { "fcc73", AOM_CICP_MC_FCC },
+  { "bt470bg", AOM_CICP_MC_BT_470_B_G },
+  { "bt601", AOM_CICP_MC_BT_601 },
+  { "smpte240", AOM_CICP_CP_SMPTE_240 },
+  { "ycgco", AOM_CICP_MC_SMPTE_YCGCO },
+  { "bt2020ncl", AOM_CICP_MC_BT_2020_NCL },
+  { "bt2020cl", AOM_CICP_MC_BT_2020_CL },
+  { "smpte2085", AOM_CICP_MC_SMPTE_2085 },
+  { "chromncl", AOM_CICP_MC_CHROMAT_NCL },
+  { "chromcl", AOM_CICP_MC_CHROMAT_CL },
+  { "ictcp", AOM_CICP_MC_ICTCP },
+  { NULL, 0 }
+};
+
+static const arg_def_t input_matrix_coefficients = ARG_DEF_ENUM(
+    NULL, "matrix-coefficients", 1,
+    "Matrix coefficients (CICP) of input content:", matrix_coefficients_enum);
+
+#else
 static const struct arg_enum_list color_space_enum[] = {
-  { "unknown", AOM_CS_UNKNOWN },
+  { "unspecified", AOM_CS_UNKNOWN },
   { "bt601", AOM_CS_BT_601 },
   { "bt709", AOM_CS_BT_709 },
   { "smpte170", AOM_CS_SMPTE_170 },
@@ -513,7 +583,7 @@ static const struct arg_enum_list color_space_enum[] = {
   { "bt2020ncl", AOM_CS_BT_2020_NCL },
   { "bt2020cl", AOM_CS_BT_2020_CL },
   { "sRGB", AOM_CS_SRGB },
-  { "ICtCp", AOM_CS_ICTCP },
+  { "ictcp", AOM_CS_ICTCP },
   { "monochrome", AOM_CS_MONOCHROME },
   { NULL, 0 }
 };
@@ -534,6 +604,7 @@ static const arg_def_t input_transfer_function = ARG_DEF_ENUM(
     NULL, "transfer-function", 1,
     "The transfer function of input content:", transfer_function_enum);
 
+#endif
 static const struct arg_enum_list chroma_sample_position_enum[] = {
   { "unknown", AOM_CSP_UNKNOWN },
   { "vertical", AOM_CSP_VERTICAL },
@@ -614,8 +685,14 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &frame_periodic_boost,
                                        &noise_sens,
                                        &tune_content,
+#if CONFIG_CICP
+                                       &input_color_primaries,
+                                       &input_transfer_characteristics,
+                                       &input_matrix_coefficients,
+#else
                                        &input_color_space,
                                        &input_transfer_function,
+#endif
                                        &input_chroma_sample_position,
                                        &min_gf_interval,
                                        &max_gf_interval,
@@ -676,8 +753,14 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_FRAME_PERIODIC_BOOST,
                                         AV1E_SET_NOISE_SENSITIVITY,
                                         AV1E_SET_TUNE_CONTENT,
+#if CONFIG_CICP
+                                        AV1E_SET_COLOR_PRIMARIES,
+                                        AV1E_SET_TRANSFER_CHARACTERISTICS,
+                                        AV1E_SET_MATRIX_COEFFICIENTS,
+#else
                                         AV1E_SET_COLOR_SPACE,
                                         AV1E_SET_TRANSFER_FUNCTION,
+#endif
                                         AV1E_SET_CHROMA_SAMPLE_POSITION,
                                         AV1E_SET_MIN_GF_INTERVAL,
                                         AV1E_SET_MAX_GF_INTERVAL,

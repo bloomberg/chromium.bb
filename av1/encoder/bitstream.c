@@ -3281,16 +3281,37 @@ static void write_bitdepth_colorspace_sampling(
     assert(cm->bit_depth > AOM_BITS_8);
     aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_10 ? 0 : 1);
   }
+#if CONFIG_CICP
+  if (cm->color_primaries == AOM_CICP_CP_UNSPECIFIED &&
+      cm->transfer_characteristics == AOM_CICP_TC_UNSPECIFIED &&
+      cm->matrix_coefficients == AOM_CICP_MC_UNSPECIFIED) {
+    aom_wb_write_bit(wb, 0);  // No color description present
+  } else {
+    aom_wb_write_bit(wb, 1);  // Color description present
+    aom_wb_write_literal(wb, cm->color_primaries, 8);
+    aom_wb_write_literal(wb, cm->transfer_characteristics, 8);
+    aom_wb_write_literal(wb, cm->matrix_coefficients, 8);
+  }
+#else
 #if CONFIG_COLORSPACE_HEADERS
   aom_wb_write_literal(wb, cm->color_space, 5);
   aom_wb_write_literal(wb, cm->transfer_function, 5);
 #else
   aom_wb_write_literal(wb, cm->color_space, 3 + CONFIG_MONO_VIDEO);
 #endif
+#endif
+#if CONFIG_CICP
+  if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
+      cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
+      cm->matrix_coefficients ==
+          AOM_CICP_MC_IDENTITY) {  // it would be better to remove this
+                                   // dependency too
+#else
   if (cm->color_space == AOM_CS_SRGB) {
+#endif
     assert(cm->profile == PROFILE_1 || cm->profile == PROFILE_3);
     aom_wb_write_bit(wb, 0);  // unused
-#if CONFIG_MONO_VIDEO
+#if CONFIG_MONO_VIDEO && !CONFIG_CICP
   } else if (cm->color_space == AOM_CS_MONOCHROME) {
     return;
 #endif  // CONFIG_MONO_VIDEO

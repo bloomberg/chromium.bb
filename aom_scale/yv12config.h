@@ -98,8 +98,14 @@ typedef struct yv12_buffer_config {
   int subsampling_x;
   int subsampling_y;
   unsigned int bit_depth;
+#if CONFIG_CICP
+  aom_color_primaries_t color_primaries;
+  aom_transfer_characteristics_t transfer_characteristics;
+  aom_matrix_coefficients_t matrix_coefficients;
+#else
   aom_color_space_t color_space;
   aom_transfer_function_t transfer_function;
+#endif
   aom_chroma_sample_position_t chroma_sample_position;
   aom_color_range_t color_range;
   int render_width;

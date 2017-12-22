@@ -98,8 +98,20 @@ void aom_find_mismatch(const aom_image_t *const img1,
 
 int aom_compare_img(const aom_image_t *const img1,
                     const aom_image_t *const img2) {
+#if CONFIG_CICP
+  assert(img1->cp == img2->cp);
+  assert(img1->tc == img2->tc);
+  assert(img1->mc == img2->mc);
+#else
   assert(img1->cs == img2->cs);
+#endif
+
+#if CONFIG_CICP
+  int num_planes = 3;  // We need to decide on monochrome video based
+                       // on something else than the color space
+#else
   int num_planes = img1->cs == AOM_CS_MONOCHROME ? 1 : 3;
+#endif
 
   uint32_t l_w = img1->d_w;
   uint32_t c_w = (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;

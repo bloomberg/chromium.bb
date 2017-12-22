@@ -40,9 +40,17 @@ struct EncodeParameters {
   int32_t error_resilient;
   int32_t frame_parallel;
   aom_color_range_t color_range;
+#if CONFIG_CICP
+  aom_color_primaries_t cp;
+  aom_transfer_characteristics_t tc;
+  aom_matrix_coefficients_t mc;
+#else
   aom_color_space_t cs;
+#endif
 #if CONFIG_COLORSPACE_HEADERS
+#if !CONFIG_CICP
   aom_transfer_function_t tf;
+#endif
   aom_chroma_sample_position_t csp;
 #endif
   int render_size[2];
@@ -50,14 +58,70 @@ struct EncodeParameters {
 };
 
 const EncodeParameters kAV1EncodeParameterSet[] = {
+#if CONFIG_CICP && CONFIG_COLORSPACE_HEADERS
+  { 0,
+    0,
+    1,
+    0,
+    0,
+    AOM_CR_FULL_RANGE,
+    AOM_CICP_CP_BT_2020,
+    AOM_CICP_TC_BT_2020_10_BIT,
+    AOM_CICP_MC_BT_2020_NCL,
+    AOM_CSP_COLOCATED,
+    { 0, 0 } },
+  { 0,
+    0,
+    0,
+    1,
+    0,
+    AOM_CR_STUDIO_RANGE,
+    AOM_CICP_CP_BT_601,
+    AOM_CICP_TC_BT_601,
+    AOM_CICP_MC_BT_601,
+    AOM_CSP_VERTICAL,
+    { 0, 0 } },
+  { 0,
+    0,
+    0,
+    0,
+    0,
+    AOM_CR_STUDIO_RANGE,
+    AOM_CICP_CP_BT_2020,
+    AOM_CICP_TC_SMPTE_2084,
+    AOM_CICP_MC_BT_2020_NCL,
+    AOM_CSP_COLOCATED,
+    { 0, 0 } },
+  { 0,
+    0,
+    0,
+    1,
+    0,
+    AOM_CR_STUDIO_RANGE,
+    AOM_CICP_CP_BT_709,
+    AOM_CICP_TC_BT_709,
+    AOM_CICP_MC_BT_709,
+    AOM_CSP_VERTICAL,
+    { 0, 0 } },
+#else
+#if CONFIG_COLORSPACE_HEADERS
+  { 0,
+    0,
+    1,
+    0,
+    0,
+    AOM_CR_FULL_RANGE,
+    AOM_CS_BT_2020_NCL,
+    AOM_TF_BT_709,
+    AOM_CSP_COLOCATED,
+    { 0, 0 } },
+#else
+  { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020{ 0, 0 } },
   { 0, 0, 0, 1, 0, AOM_CR_STUDIO_RANGE, AOM_CS_BT_601, { 0, 0 } },
   { 0, 0, 0, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_709, { 0, 0 } },
-#if CONFIG_COLORSPACE_HEADERS
-  { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020_NCL, { 0, 0 } },
-#else
-  { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020, { 0, 0 } },
-#endif
   { 0, 2, 0, 0, 1, AOM_CR_STUDIO_RANGE, AOM_CS_UNKNOWN, { 640, 480 } },
+#endif
+#endif
   // TODO(JBB): Test profiles (requires more work).
 };
 
@@ -85,9 +149,17 @@ class AvxEncoderParmsGetToDecoder
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
+#if CONFIG_CICP
+      encoder->Control(AV1E_SET_COLOR_PRIMARIES, encode_parms.cp);
+      encoder->Control(AV1E_SET_TRANSFER_CHARACTERISTICS, encode_parms.tc);
+      encoder->Control(AV1E_SET_MATRIX_COEFFICIENTS, encode_parms.mc);
+#else
       encoder->Control(AV1E_SET_COLOR_SPACE, encode_parms.cs);
+#endif
 #if CONFIG_COLORSPACE_HEADERS
+#if !CONFIG_CICP
       encoder->Control(AV1E_SET_TRANSFER_FUNCTION, encode_parms.tf);
+#endif
       encoder->Control(AV1E_SET_CHROMA_SAMPLE_POSITION, encode_parms.csp);
 #endif
       encoder->Control(AV1E_SET_COLOR_RANGE, encode_parms.color_range);
@@ -128,9 +200,17 @@ class AvxEncoderParmsGetToDecoder
       EXPECT_EQ(0, common->use_prev_frame_mvs);
     }
     EXPECT_EQ(encode_parms.color_range, common->color_range);
+#if CONFIG_CICP
+    EXPECT_EQ(encode_parms.cp, common->color_primaries);
+    EXPECT_EQ(encode_parms.tc, common->transfer_characteristics);
+    EXPECT_EQ(encode_parms.mc, common->matrix_coefficients);
+#else
     EXPECT_EQ(encode_parms.cs, common->color_space);
+#endif
 #if CONFIG_COLORSPACE_HEADERS
+#if !CONFIG_CICP
     EXPECT_EQ(encode_parms.tf, common->transfer_function);
+#endif
     EXPECT_EQ(encode_parms.csp, common->chroma_sample_position);
 #endif
     if (encode_parms.render_size[0] > 0 && encode_parms.render_size[1] > 0) {
