@@ -152,6 +152,20 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
       options.ToValue()));
 }
 
+void ExtensionOptionsGuest::AddNewContents(WebContents* source,
+                                           WebContents* new_contents,
+                                           WindowOpenDisposition disposition,
+                                           const gfx::Rect& initial_rect,
+                                           bool user_gesture,
+                                           bool* was_blocked) {
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return;
+
+  embedder_web_contents()->GetDelegate()->AddNewContents(
+      source, new_contents, disposition, initial_rect, user_gesture,
+      was_blocked);
+}
+
 WebContents* ExtensionOptionsGuest::OpenURLFromTab(
     WebContents* source,
     const content::OpenURLParams& params) {

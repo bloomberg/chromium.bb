@@ -39,7 +39,9 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   void InstallPlatformApp();
 
-  void InstallExtensionWithInPageOptions();
+  // Installs chrome/test/data/extensions/options_page_in_view extension
+  // and returns it back to the caller.  Can return null upon failure.
+  const extensions::Extension* InstallExtensionWithInPageOptions();
 
   void AddManagedPolicyProvider();
 
@@ -50,6 +52,8 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   // Shrinks the web contents view in order to ensure vertical overflow.
   void ShrinkWebContentsView();
+
+  const base::FilePath& test_data_dir() { return test_data_dir_; }
 
  private:
   const extensions::Extension* InstallExtension(const base::FilePath& path);

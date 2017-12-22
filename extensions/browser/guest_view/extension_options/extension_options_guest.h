@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
@@ -36,6 +38,12 @@ class ExtensionOptionsGuest
   void OnPreferredSizeChanged(const gfx::Size& pref_size) final;
 
   // content::WebContentsDelegate implementation.
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) final;
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) final;
