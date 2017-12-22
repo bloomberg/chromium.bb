@@ -232,7 +232,7 @@ deps = {
   },
 
   'src/ios/third_party/motion_animator_objc/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-motion/motion-animator-objc.git' + '@' + 'f31562c64954525d21b74bc638bd5b7625a32d20',
+      'url': Var('chromium_git') + '/external/github.com/material-motion/motion-animator-objc.git' + '@' + 'ff39ecc69fdee46d388cc9f882201d54c3d5039c',
       'condition': 'checkout_ios',
   },
 
