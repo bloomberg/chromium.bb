@@ -1,0 +1,91 @@
+{
+  "name": "color-convert",
+  "description": "Plain color conversion functions",
+  "version": "1.9.1",
+  "author": {
+    "name": "Heather Arthur",
+    "email": "fayearthur@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Qix-/color-convert.git"
+  },
+  "scripts": {
+    "pretest": "xo",
+    "test": "node test/basic.js"
+  },
+  "keywords": [
+    "color",
+    "colour",
+    "convert",
+    "converter",
+    "conversion",
+    "rgb",
+    "hsl",
+    "hsv",
+    "hwb",
+    "cmyk",
+    "ansi",
+    "ansi16"
+  ],
+  "files": [
+    "index.js",
+    "conversions.js",
+    "css-keywords.js",
+    "route.js"
+  ],
+  "xo": {
+    "rules": {
+      "default-case": 0,
+      "no-inline-comments": 0,
+      "operator-linebreak": 0
+    }
+  },
+  "devDependencies": {
+    "chalk": "^1.1.1",
+    "xo": "^0.11.2"
+  },
+  "dependencies": {
+    "color-name": "^1.1.1"
+  },
+  "gitHead": "1df58eff59b30d075513860cf69f8aec4620140d",
+  "bugs": {
+    "url": "https://github.com/Qix-/color-convert/issues"
+  },
+  "homepage": "https://github.com/Qix-/color-convert#readme",
+  "_id": "color-convert@1.9.1",
+  "_npmVersion": "5.5.1",
+  "_nodeVersion": "9.0.0",
+  "_npmUser": {
+    "name": "qix",
+    "email": "i.am.qix@gmail.com"
+  },
+  "dist": {
+    "integrity": "sha512-mjGanIiwQJskCC18rPR6OmrZ6fm2Lc7PeGFYwCmy5J34wC6F1PzdGL6xeMfmgicfYcNLGuVFA3WzXtIDCQSZxQ==",
+    "shasum": "c1261107aeb2f294ebffec9ed9ecad529a6097ed",
+    "tarball": "https://registry.npmjs.org/color-convert/-/color-convert-1.9.1.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "harth",
+      "email": "fayearthur@gmail.com"
+    },
+    {
+      "name": "moox",
+      "email": "m@moox.io"
+    },
+    {
+      "name": "qix",
+      "email": "i.am.qix@gmail.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/color-convert-1.9.1.tgz_1510178336068_0.0703919562511146"
+  },
+  "directories": {},
+  "_shasum": "c1261107aeb2f294ebffec9ed9ecad529a6097ed",
+  "_resolved": "https://registry.npmjs.org/color-convert/-/color-convert-1.9.1.tgz",
+  "_from": "color-convert@>=1.9.0 <2.0.0"
+}

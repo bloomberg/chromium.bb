@@ -1,0 +1,95 @@
+{
+  "name": "ansi-regex",
+  "version": "3.0.0",
+  "description": "Regular expression for matching ANSI escape codes",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chalk/ansi-regex.git"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "sindresorhus.com"
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "scripts": {
+    "test": "xo && ava",
+    "view-supported": "node fixtures/view-codes.js"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "ansi",
+    "styles",
+    "color",
+    "colour",
+    "colors",
+    "terminal",
+    "console",
+    "cli",
+    "string",
+    "tty",
+    "escape",
+    "formatting",
+    "rgb",
+    "256",
+    "shell",
+    "xterm",
+    "command-line",
+    "text",
+    "regex",
+    "regexp",
+    "re",
+    "match",
+    "test",
+    "find",
+    "pattern"
+  ],
+  "devDependencies": {
+    "ava": "*",
+    "xo": "*"
+  },
+  "gitHead": "0a8cc19946c03c38520fe8c086b8adb66f9cce0b",
+  "bugs": {
+    "url": "https://github.com/chalk/ansi-regex/issues"
+  },
+  "homepage": "https://github.com/chalk/ansi-regex#readme",
+  "_id": "ansi-regex@3.0.0",
+  "_shasum": "ed0317c322064f79466c02966bddb605ab37d998",
+  "_from": "ansi-regex@>=3.0.0 <4.0.0",
+  "_npmVersion": "2.15.11",
+  "_nodeVersion": "4.8.3",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "dist": {
+    "shasum": "ed0317c322064f79466c02966bddb605ab37d998",
+    "tarball": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-3.0.0.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "dthree",
+      "email": "threedeecee@gmail.com"
+    },
+    {
+      "name": "qix",
+      "email": "i.am.qix@gmail.com"
+    },
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/ansi-regex-3.0.0.tgz_1497985412590_0.5700640194118023"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-3.0.0.tgz",
+  "readme": "ERROR: No README data found!"
+}

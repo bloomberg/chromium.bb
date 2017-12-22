@@ -60,7 +60,8 @@ module.exports = {
             if (node.type === "MemberExpression") {
                 if (node.object.type === "Identifier") {
                     return true;
-                } else if (node.object.type === "MemberExpression") {
+                }
+                if (node.object.type === "MemberExpression") {
                     return containsOnlyIdentifiers(node.object);
                 }
             }
@@ -164,7 +165,7 @@ module.exports = {
 
                 // as long as you're the child of a function at this point you should be asked to return
                 if (findClosestParentOfType(node, ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"])) {
-                    context.report(node, "Expected return with your callback function.");
+                    context.report({ node, message: "Expected return with your callback function." });
                 }
 
             }
