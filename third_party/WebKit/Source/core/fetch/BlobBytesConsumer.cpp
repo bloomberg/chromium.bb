@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/BlobBytesConsumer.h"
+#include "core/fetch/BlobBytesConsumer.h"
 
+#include "core/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "core/loader/ThreadableLoader.h"
-#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"

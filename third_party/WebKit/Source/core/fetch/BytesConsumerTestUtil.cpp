@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/BytesConsumerTestUtil.h"
+#include "core/fetch/BytesConsumerTestUtil.h"
 
 #include "core/dom/ExecutionContext.h"
 #include "platform/WebTaskRunner.h"

@@ -8,9 +8,9 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
+#include "core/fetch/BytesConsumer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/ModulesExport.h"
-#include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -26,7 +26,7 @@ class ScriptState;
 // The ReadableStreamReader handle held in a ReadableStreamDataConsumerHandle
 // is weak. A user must guarantee that the ReadableStreamReader object is kept
 // alive appropriately.
-class MODULES_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
+class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   WTF_MAKE_NONCOPYABLE(ReadableStreamBytesConsumer);
   USING_PRE_FINALIZER(ReadableStreamBytesConsumer, Dispose);
 

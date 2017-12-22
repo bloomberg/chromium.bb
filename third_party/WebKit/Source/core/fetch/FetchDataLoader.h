@@ -5,8 +5,8 @@
 #ifndef FetchDataLoader_h
 #define FetchDataLoader_h
 
+#include "core/CoreExport.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/ModulesExport.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
@@ -27,10 +27,10 @@ class FormData;
 // - Client's methods can be called synchronously in start().
 // - If FetchDataLoader::cancel() is called, Client's methods will not be
 //   called anymore.
-class MODULES_EXPORT FetchDataLoader
+class CORE_EXPORT FetchDataLoader
     : public GarbageCollectedFinalized<FetchDataLoader> {
  public:
-  class MODULES_EXPORT Client : public GarbageCollectedMixin {
+  class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() {}
 

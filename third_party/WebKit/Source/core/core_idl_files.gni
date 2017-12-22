@@ -165,6 +165,7 @@ core_idl_files =
                     "events/TransitionEvent.idl",
                     "events/UIEvent.idl",
                     "events/WheelEvent.idl",
+                    "fetch/Body.idl",
                     "fileapi/Blob.idl",
                     "fileapi/File.idl",
                     "fileapi/FileList.idl",

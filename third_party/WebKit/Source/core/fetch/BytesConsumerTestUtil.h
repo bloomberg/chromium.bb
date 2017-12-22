@@ -5,8 +5,8 @@
 #ifndef BytesConsumerTestUtil_h
 #define BytesConsumerTestUtil_h
 
-#include "modules/fetch/BytesConsumer.h"
-#include "modules/fetch/FetchDataLoader.h"
+#include "core/fetch/BytesConsumer.h"
+#include "core/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Vector.h"

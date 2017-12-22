@@ -6,7 +6,7 @@
 #define BytesConsumer_h
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/ModulesExport.h"
+#include "core/CoreExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
@@ -24,7 +24,7 @@ class ExecutionContext;
 // BytesConsumer has four states: waiting, readable, closed and errored. Once
 // the state becomes closed or errored, it will never change. |readable| means
 // that the BytesConsumer is ready to read non-empty bytes synchronously.
-class MODULES_EXPORT BytesConsumer
+class CORE_EXPORT BytesConsumer
     : public GarbageCollectedFinalized<BytesConsumer> {
  public:
   enum class Result {
@@ -45,7 +45,7 @@ class MODULES_EXPORT BytesConsumer
     // The returned blob can have an invalid size.
     kAllowBlobWithInvalidSize
   };
-  class MODULES_EXPORT Error {
+  class CORE_EXPORT Error {
    public:
     Error() {}
     explicit Error(const String& message) : message_(message) {}
@@ -56,7 +56,7 @@ class MODULES_EXPORT BytesConsumer
     String message_;
   };
   // Client gets notification from the associated ByteConsumer.
-  class MODULES_EXPORT Client : public GarbageCollectedMixin {
+  class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() {}
 

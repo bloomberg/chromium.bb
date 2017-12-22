@@ -7,10 +7,10 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/fetch/BytesConsumer.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "modules/ModulesExport.h"
-#include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -23,10 +23,10 @@ class WebDataConsumerHandle;
 
 // A BlobBytesConsumer is created from a blob handle and it will
 // return a valid handle from drainAsBlobDataHandle as much as possible.
-class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
-                                               public ContextLifecycleObserver,
-                                               public BytesConsumer::Client,
-                                               public ThreadableLoaderClient {
+class CORE_EXPORT BlobBytesConsumer final : public BytesConsumer,
+                                            public ContextLifecycleObserver,
+                                            public BytesConsumer::Client,
+                                            public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(BlobBytesConsumer);
   USING_PRE_FINALIZER(BlobBytesConsumer, Cancel);
 

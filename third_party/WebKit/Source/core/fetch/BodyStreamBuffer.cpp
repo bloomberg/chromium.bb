@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/BodyStreamBuffer.h"
+#include "core/fetch/BodyStreamBuffer.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/fetch/Body.h"
+#include "core/fetch/ReadableStreamBytesConsumer.h"
 #include "core/streams/ReadableStreamDefaultControllerWrapper.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/fetch/Body.h"
-#include "modules/fetch/ReadableStreamBytesConsumer.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/bindings/V8ThrowException.h"

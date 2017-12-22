@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/FormDataBytesConsumer.h"
+#include "core/fetch/FormDataBytesConsumer.h"
 
+#include "core/fetch/BlobBytesConsumer.h"
+#include "core/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
-#include "modules/fetch/BlobBytesConsumer.h"
-#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/FormDataEncoder.h"

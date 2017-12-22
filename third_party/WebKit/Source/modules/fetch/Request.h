@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/modules/v8/request_or_usv_string.h"
+#include "core/fetch/Body.h"
 #include "modules/ModulesExport.h"
-#include "modules/fetch/Body.h"
 #include "modules/fetch/FetchRequestData.h"
 #include "modules/fetch/Headers.h"
 #include "platform/bindings/ScriptWrappable.h"

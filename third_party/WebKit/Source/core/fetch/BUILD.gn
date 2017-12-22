@@ -1,0 +1,69 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/WebKit/Source/core/core.gni")
+
+blink_core_sources("fetch") {
+  sources = [
+    "BlobBytesConsumer.cpp",
+    "BlobBytesConsumer.h",
+    "Body.cpp",
+    "Body.h",
+    "BodyStreamBuffer.cpp",
+    "BodyStreamBuffer.h",
+    "BytesConsumer.cpp",
+    "BytesConsumer.h",
+    "BytesConsumerForDataConsumerHandle.cpp",
+    "BytesConsumerForDataConsumerHandle.h",
+    "FetchDataLoader.cpp",
+    "FetchDataLoader.h",
+
+    # TODO(nhiroki): Move these files from modules/fetch to core/fetch.
+    # (https://crbug.com/794837)
+    # "FetchHeaderList.cpp",
+    # "FetchHeaderList.h",
+    # "FetchManager.cpp",
+    # "FetchManager.h",
+    # "FetchRequestData.cpp",
+    # "FetchRequestData.h",
+    # "FetchResponseData.cpp",
+    # "FetchResponseData.h",
+
+    "FormDataBytesConsumer.cpp",
+    "FormDataBytesConsumer.h",
+
+    # TODO(nhiroki): Move these files from modules/fetch to core/fetch.
+    # (https://crbug.com/794837)
+    # "GlobalFetch.cpp",
+    # "GlobalFetch.h",
+    # "Headers.cpp",
+    # "Headers.h",
+
+    "MultipartParser.cpp",
+    "MultipartParser.h",
+    "ReadableStreamBytesConsumer.cpp",
+    "ReadableStreamBytesConsumer.h",
+
+    # TODO(nhiroki): Move these files from modules/fetch to core/fetch.
+    # (https://crbug.com/794837)
+    # "Request.cpp",
+    # "Request.h",
+    # "RequestInit.cpp",
+    # "RequestInit.h",
+    # "Response.cpp",
+    # "Response.h",
+  ]
+
+  if (is_win && is_component_build) {
+    # Body.cpp exports a class (MODULES_EXPORT) that inherits from
+    # PairIterable<String, String> that is also used as base class by an
+    # imported (CORE_EXPORT) class and that confuses the Windows
+    # linker/compiler. https://crbug.com/739340
+    jumbo_excluded_sources = [ "Body.cpp" ]
+  }
+
+  public_deps = [
+    "//third_party/WebKit/Source/platform",
+  ]
+}

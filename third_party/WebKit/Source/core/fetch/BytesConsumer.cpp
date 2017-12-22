@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/BytesConsumer.h"
+#include "core/fetch/BytesConsumer.h"
 
 #include <string.h>
 #include <algorithm>
 #include "base/memory/scoped_refptr.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/fetch/BlobBytesConsumer.h"
+#include "core/fetch/BlobBytesConsumer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/Functional.h"
@@ -202,9 +202,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       client_ = client;
     }
 
-    void ClearClient() override {
-      client_ = nullptr;
-    }
+    void ClearClient() override { client_ = nullptr; }
 
     void Cancel() override {
       DCHECK(!chunk_in_use_);

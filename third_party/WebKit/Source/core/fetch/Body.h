@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
@@ -27,9 +27,9 @@ class ScriptState;
 // spec only Response has it and Request has a byte stream defined in the
 // Encoding spec. The spec should be fixed shortly to be aligned with this
 // implementation.
-class MODULES_EXPORT Body : public ScriptWrappable,
-                            public ActiveScriptWrappable<Body>,
-                            public ContextClient {
+class CORE_EXPORT Body : public ScriptWrappable,
+                         public ActiveScriptWrappable<Body>,
+                         public ContextClient {
   WTF_MAKE_NONCOPYABLE(Body);
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Body);

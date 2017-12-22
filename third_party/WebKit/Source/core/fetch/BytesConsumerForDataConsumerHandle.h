@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/ModulesExport.h"
-#include "modules/fetch/BytesConsumer.h"
+#include "core/CoreExport.h"
+#include "core/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDataConsumerHandle.h"
@@ -18,7 +18,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class MODULES_EXPORT BytesConsumerForDataConsumerHandle final
+class CORE_EXPORT BytesConsumerForDataConsumerHandle final
     : public BytesConsumer,
       public WebDataConsumerHandle::Client {
   EAGERLY_FINALIZE();

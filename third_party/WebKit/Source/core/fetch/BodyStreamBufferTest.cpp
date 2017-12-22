@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/BodyStreamBuffer.h"
+#include "core/fetch/BodyStreamBuffer.h"
 
 #include <memory>
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
+#include "core/fetch/BlobBytesConsumer.h"
+#include "core/fetch/BytesConsumerTestUtil.h"
+#include "core/fetch/FormDataBytesConsumer.h"
 #include "core/html/forms/FormData.h"
-#include "modules/fetch/BlobBytesConsumer.h"
-#include "modules/fetch/BytesConsumerTestUtil.h"
-#include "modules/fetch/FormDataBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/network/EncodedFormData.h"
