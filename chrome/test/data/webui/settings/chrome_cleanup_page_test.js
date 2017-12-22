@@ -75,7 +75,7 @@ class TestChromeCleanupProxy extends TestBrowserProxy {
 var chromeCleanupPage = null;
 
 /** @type {?TestDownloadsBrowserProxy} */
-var ChromeCleanupProxy = null;
+var chromeCleanupProxy = null;
 
 var shortFileList = ['file 1', 'file 2', 'file 3'];
 var exactSizeFileList = ['file 1', 'file 2', 'file 3', 'file 4'];
@@ -95,8 +95,8 @@ var defaultScannerResults = {
  *     cleanup feature is enabled.
  */
 function initParametrizedTest(userInitiatedCleanupsEnabled) {
-  ChromeCleanupProxy = new TestChromeCleanupProxy();
-  settings.ChromeCleanupProxyImpl.instance_ = ChromeCleanupProxy;
+  chromeCleanupProxy = new TestChromeCleanupProxy();
+  settings.ChromeCleanupProxyImpl.instance_ = chromeCleanupProxy;
 
   PolymerTest.clearBody();
 
@@ -179,7 +179,7 @@ function startCleanupFromInfected(
   var actionButton = chromeCleanupPage.$$('#action-button');
   assertTrue(!!actionButton);
   MockInteractions.tap(actionButton);
-  return ChromeCleanupProxy.whenCalled('startCleanup')
+  return chromeCleanupProxy.whenCalled('startCleanup')
       .then(function(logsUploadEnabled) {
         assertFalse(logsUploadEnabled);
         cr.webUIListenerCallback(
@@ -198,7 +198,7 @@ function rebootFromRebootRequired() {
   var actionButton = chromeCleanupPage.$$('#action-button');
   assertTrue(!!actionButton);
   MockInteractions.tap(actionButton);
-  return ChromeCleanupProxy.whenCalled('restartComputer');
+  return chromeCleanupProxy.whenCalled('restartComputer');
 }
 
 /**
@@ -219,7 +219,7 @@ function cleanupFailure(userInitiatedCleanupsEnabled) {
   } else {
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
-    return ChromeCleanupProxy.whenCalled('dismissCleanupPage');
+    return chromeCleanupProxy.whenCalled('dismissCleanupPage');
   }
 }
 
@@ -240,7 +240,7 @@ function cleanupSuccess(userInitiatedCleanupsEnabled) {
   } else {
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
-    return ChromeCleanupProxy.whenCalled('dismissCleanupPage');
+    return chromeCleanupProxy.whenCalled('dismissCleanupPage');
   }
 }
 
@@ -270,7 +270,7 @@ function testLogsUploading(testingScanOffered) {
   assertFalse(logsControl.checked);
 
   MockInteractions.tap(logsControl.$.control);
-  return ChromeCleanupProxy.whenCalled('setLogsUploadPermission')
+  return chromeCleanupProxy.whenCalled('setLogsUploadPermission')
       .then(function(logsUploadEnabled) {
         assertTrue(logsUploadEnabled);
       });
@@ -422,6 +422,24 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
         settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED);
   });
 
+  test('scanOfferedOnInitiallyIdle_CleanerDownloadFailed', function() {
+    scanOfferedOnInitiallyIdle(
+        settings.ChromeCleanupIdleReason.CLEANER_DOWNLOAD_FAILED);
+  });
+
+  test('cleanerDownloadFailure', function() {
+    cr.webUIListenerCallback('chrome-cleanup-on-reporter-running');
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-idle',
+        settings.ChromeCleanupIdleReason.CLEANER_DOWNLOAD_FAILED);
+    Polymer.dom.flush();
+
+    var actionButton = chromeCleanupPage.$$('#action-button');
+    assertTrue(!!actionButton);
+    MockInteractions.tap(actionButton);
+    return chromeCleanupProxy.whenCalled('startScanning');
+  });
+
   test('reporterFoundNothing', function() {
     cr.webUIListenerCallback('chrome-cleanup-on-reporter-running');
     cr.webUIListenerCallback(
@@ -453,7 +471,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
     var actionButton = chromeCleanupPage.$$('#action-button');
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
-    return ChromeCleanupProxy.whenCalled('startScanning')
+    return chromeCleanupProxy.whenCalled('startScanning')
         .then(function(logsUploadEnabled) {
           assertFalse(logsUploadEnabled);
           cr.webUIListenerCallback('chrome-cleanup-on-scanning', false);

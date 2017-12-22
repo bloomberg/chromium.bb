@@ -78,6 +78,7 @@ class ChromeCleanerController {
     kUserDeclinedCleanup,
     kCleaningFailed,
     kCleaningSucceeded,
+    kCleanerDownloadFailed,
   };
 
   enum class UserResponse {

@@ -576,7 +576,7 @@ void ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified(
   DCHECK(reporter_invocation_);
 
   if (executable_path.empty()) {
-    idle_reason_ = IdleReason::kScanningFailed;
+    idle_reason_ = IdleReason::kCleanerDownloadFailed;
     SetStateAndNotifyObservers(State::kIdle);
     RecordPromptNotShownWithReasonHistogram(
         NO_PROMPT_REASON_CLEANER_DOWNLOAD_FAILED);
