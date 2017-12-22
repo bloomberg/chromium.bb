@@ -72,7 +72,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
 
   // Deprecated. Use namespace-level Post(Delayed)CrossThreadTask() defined
   // below.
-  void PostTask(const base::Location&, CrossThreadClosure);
   void PostDelayedTask(const base::Location&,
                        CrossThreadClosure,
                        TimeDelta delay);
