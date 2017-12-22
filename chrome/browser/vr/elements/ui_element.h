@@ -241,7 +241,8 @@ class UiElement : public cc::AnimationTarget {
   virtual void SetOpacity(float opacity);
 
   CornerRadii corner_radii() const { return corner_radii_; }
-  void set_corner_radii(const CornerRadii& radii) { corner_radii_ = radii; }
+  void SetCornerRadii(const CornerRadii& radii);
+  virtual void OnSetCornerRadii(const CornerRadii& radii);
 
   float corner_radius() const {
     DCHECK(corner_radii_.AllEqual());
@@ -250,7 +251,7 @@ class UiElement : public cc::AnimationTarget {
 
   // Syntax sugar for setting all corner radii to the same value.
   void set_corner_radius(float corner_radius) {
-    set_corner_radii(
+    SetCornerRadii(
         {corner_radius, corner_radius, corner_radius, corner_radius});
   }
 

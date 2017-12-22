@@ -31,6 +31,7 @@ class Text : public TexturedElement {
   explicit Text(float font_height_dmms);
   ~Text() override;
 
+  void SetFontHeightInDmm(float font_height_dmms);
   void SetText(const base::string16& text);
   void SetColor(SkColor color);
 

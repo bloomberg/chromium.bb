@@ -21,12 +21,6 @@ static bool g_rerender_if_not_dirty_for_testing_ = false;
 TexturedElement::TexturedElement(int maximum_width)
     : maximum_width_(maximum_width) {}
 
-TexturedElement::TexturedElement(int maximum_width, ResizeVertically unused)
-    : maximum_width_(maximum_width), resize_vertically_(true) {}
-
-TexturedElement::TexturedElement(int maximum_width, ResizeHorizontally unused)
-    : maximum_width_(maximum_width), resize_vertically_(false) {}
-
 TexturedElement::~TexturedElement() = default;
 
 void TexturedElement::Initialize(SkiaSurfaceProvider* provider) {
@@ -79,17 +73,10 @@ void TexturedElement::UpdateElementSize() {
   // Adjust the width/height of this element according to the texture. Size in
   // the other direction is determined by the associated texture.
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  if (resize_vertically_) {
-    DCHECK_GT(stale_size().width(), 0.f);
-    float height =
-        drawn_size.height() / drawn_size.width() * stale_size().width();
-    SetSize(stale_size().width(), height);
-  } else {
-    DCHECK_GT(stale_size().height(), 0.f);
-    float width =
-        drawn_size.width() / drawn_size.height() * stale_size().height();
-    SetSize(width, stale_size().height());
-  }
+  DCHECK_GT(stale_size().width(), 0.f);
+  float height =
+      drawn_size.height() / drawn_size.width() * stale_size().width();
+  SetSize(stale_size().width(), height);
 }
 
 void TexturedElement::Render(UiElementRenderer* renderer,
