@@ -234,10 +234,11 @@ def main():
   reached_symbols = GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
       sorted_dumps, instrumented_native_lib, args.offsets_output)
   logging.info('Reached Symbols = %d', len(reached_symbols))
-  total_size = sum(s.size for s in reached_symbols)
-  logging.info('Total reached size = %d', total_size)
   matched_in_regular_build = MatchSymbolsInRegularBuild(reached_symbols,
                                                         regular_native_lib)
+  total_size = sum(s.size for s in matched_in_regular_build)
+  logging.info('Total reached size = %d', total_size)
+
   with open(args.output, 'w') as f:
     for s in matched_in_regular_build:
       f.write(s.name + '\n')
