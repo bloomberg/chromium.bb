@@ -31009,6 +31009,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="IOS.IPHBubbleDismissalReason" enum="BubbleDismissalReason">
+  <owner>gchatz@chromium.org</owner>
+  <summary>
+    Tracks the reason for why the In Product Help bubble was dismissed.
+  </summary>
+</histogram>
+
 <histogram name="IOS.MailtoURLRewritten" enum="Boolean">
   <owner>pkl@chromium.org</owner>
   <summary>

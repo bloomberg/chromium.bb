@@ -4207,6 +4207,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="App provided items"/>
 </enum>
 
+<enum name="BubbleDismissalReason">
+  <int value="0" label="The timer dismissed the bubble."/>
+  <int value="1" label="A tap inside the bubble caused dismissal."/>
+  <int value="2" label="A tap outside the bubble caused dismissal."/>
+</enum>
+
 <enum name="BubbleType">
   <int value="0" label="Unknown Bubble"/>
   <int value="1" label="Mock Bubble"/>
