@@ -3070,6 +3070,13 @@ NSString* const kTransitionToolbarAnimationKey =
 - (void)cardSet:(CardSet*)cardSet
     didRemoveCard:(StackCard*)removedCard
           atIndex:(NSUInteger)index {
+  // If card was tapped during a transition, but its WebState was closed before
+  // the animation finishes, reset |transitionTappedCard|, as attempting to
+  // show that Tab upon finishing the animation will result in a crash since its
+  // WebState is destroyed.
+  if (removedCard == self.transitionTappedCard)
+    self.transitionTappedCard = nil;
+
   if (cardSet == _activeCardSet) {
     // Reenable the gesture handlers (disabled in
     // -cardSet:willRemoveCard:atIndex). It is now safe to do so as the card
