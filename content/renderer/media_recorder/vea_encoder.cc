@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/containers/queue.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -119,6 +120,8 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
 void VEAEncoder::NotifyError(media::VideoEncodeAccelerator::Error error) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
+  UMA_HISTOGRAM_ENUMERATION("Media.MediaRecorder.VEAError", error,
+                            media::VideoEncodeAccelerator::kErrorMax + 1);
   on_error_callback_.Run();
   error_notified_ = true;
 }

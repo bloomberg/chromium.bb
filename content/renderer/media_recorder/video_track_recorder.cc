@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -455,6 +456,7 @@ void VideoTrackRecorder::InitializeEncoder(
   const gfx::Size& input_size = frame->visible_rect().size();
   if (allow_vea_encoder && CanUseAcceleratedEncoder(codec, input_size.width(),
                                                     input_size.height())) {
+    UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", true);
     const auto vea_profile = GetCodecEnumerator()->CodecIdToVEAProfile(codec);
     encoder_ = new VEAEncoder(
         on_encoded_video_callback,
@@ -462,6 +464,7 @@ void VideoTrackRecorder::InitializeEncoder(
                                             weak_ptr_factory_.GetWeakPtr())),
         bits_per_second, vea_profile, input_size);
   } else {
+    UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", false);
     switch (codec) {
 #if BUILDFLAG(RTC_USE_H264)
       case CodecId::H264:

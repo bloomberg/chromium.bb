@@ -34520,6 +34520,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.MediaRecorder.VEAError"
+    enum="VideoDecodeAcceleratorError">
+  <owner>shenghao@chromium.org</owner>
+  <owner>mcasas@chromium.org</owner>
+  <summary>The errors HW video encode encounters in MediaRecorder.</summary>
+</histogram>
+
+<histogram name="Media.MediaRecorder.VEAUsed" enum="MediaRecorderVEAUsed">
+  <owner>shenghao@chromium.org</owner>
+  <owner>mcasas@chromium.org</owner>
+  <summary>Whether HW video encode is used in MediaRecorder.</summary>
+</histogram>
+
 <histogram name="Media.MicrophoneMuted" enum="MicrophoneMuteResult">
   <owner>henrika@chromium.org</owner>
   <summary>
