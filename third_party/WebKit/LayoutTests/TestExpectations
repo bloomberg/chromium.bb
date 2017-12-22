@@ -151,12 +151,6 @@ crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Time
 # Fails because of an 8bit precision error in the YUV -> RGB conversion matrix
 crbug.com/774567 [ Win Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
 
-# Failing after the Skia roll https://chromium.googlesource.com/chromium/src/+/dc8531cb84f4d3334fc520c2c9269935a90d0c30
-crbug.com/796766 [ Mac Win Linux ] fast/webgl/texImage-imageBitmap-from-canvas-resize.html [ Failure Pass ]
-crbug.com/796766 [ Mac Win Linux ] fast/webgl/texImage-imageBitmap-from-image-resize.html [ Failure Pass ]
-crbug.com/796766 [ Mac Win Linux ] fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Failure Pass ]
-crbug.com/796766 [ Mac Win Linux ] fast/webgl/texImage-imageBitmap-from-offscreen-canvas-resize.html [ Failure Pass ]
-
 # Fails because the manual test hasn't been automated yet
 crbug.com/762054 external/wpt/css/cssom-view/overscrollBehavior-manual.html [ Skip ]
 
