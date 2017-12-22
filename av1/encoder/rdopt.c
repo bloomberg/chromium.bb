@@ -2294,6 +2294,24 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 #endif  // CONFIG_DIST_8X8
 
+#if CONFIG_FILTER_INTRA
+static int skip_invalid_tx_size_for_filter_intra(const MB_MODE_INFO *mbmi,
+                                                 int plane,
+                                                 RD_STATS *rd_stats) {
+  if (plane == 0 && !is_inter_block(mbmi) &&
+      mbmi->filter_intra_mode_info.use_filter_intra &&
+      !av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+    rd_stats->rate = INT_MAX;
+    rd_stats->dist = INT64_MAX;
+    rd_stats->skip = 0;
+    rd_stats->sse = INT64_MAX;
+    return 1;
+  } else {
+    return 0;
+  }
+}
+#endif
+
 static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                              RD_STATS *rd_stats, int64_t ref_best_rd, int plane,
                              BLOCK_SIZE bsize, TX_SIZE tx_size,
@@ -2309,6 +2327,13 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   av1_init_rd_stats(&args.rd_stats);
 
   if (plane == 0) xd->mi[0]->mbmi.tx_size = tx_size;
+
+#if CONFIG_FILTER_INTRA
+  if (skip_invalid_tx_size_for_filter_intra(&xd->mi[0]->mbmi, plane,
+                                            rd_stats)) {
+    return;
+  }
+#endif
 
   av1_get_entropy_contexts(bsize, tx_size, pd, args.t_above, args.t_left);
 
@@ -2407,13 +2432,7 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->tx_type = tx_type;
   mbmi->tx_size = tx_size;
 #if CONFIG_FILTER_INTRA
-  if (!is_inter_block(mbmi) && mbmi->filter_intra_mode_info.use_filter_intra &&
-      !av1_filter_intra_allowed_txsize(tx_size)) {
-    rd_stats->rate = INT_MAX;
-    // Note: Initialize following to avoid uninitialied warnings.
-    rd_stats->dist = INT64_MAX;
-    rd_stats->skip = 0;
-    rd_stats->sse = INT64_MAX;
+  if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
     return INT64_MAX;
   }
 #endif
@@ -2514,6 +2533,11 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
       !x->use_default_inter_tx_type) {
     prune = prune_tx(cpi, bs, x, xd, tx_set_type, 0);
   }
+#if CONFIG_FILTER_INTRA
+  if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
+    return;
+  }
+#endif
   if (get_ext_tx_types(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used) >
           1 &&
       !xd->lossless[mbmi->segment_id]) {
@@ -2582,6 +2606,11 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->tx_type = DCT_DCT;
   mbmi->min_tx_size = TX_4X4;
 
+#if CONFIG_FILTER_INTRA
+  if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
+    return;
+  }
+#endif
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, mbmi->tx_size,
                    cpi->sf.use_fast_coef_costing);
 }
