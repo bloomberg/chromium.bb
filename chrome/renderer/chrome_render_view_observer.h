@@ -5,16 +5,11 @@
 #ifndef CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
 #define CHROME_RENDERER_CHROME_RENDER_VIEW_OBSERVER_H_
 
-#include <set>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
-#include "build/build_config.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "extensions/features/features.h"
 #include "url/gurl.h"
 
 namespace web_cache {
@@ -33,15 +28,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   void Navigate(const GURL& url) override;
   void OnDestruct() override;
-
-#if defined(OS_ANDROID)
-  void OnUpdateBrowserControlsState(content::BrowserControlsState constraints,
-                                    content::BrowserControlsState current,
-                                    bool animate);
-#endif
 
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
