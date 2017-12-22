@@ -1755,7 +1755,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
 TEST_F(WebContentsImplTest,
        ShowInterstitialFromBrowserNewNavigationProceed) {
   // Navigate to a page.
-  GURL url1("http://www.google.com");
+  GURL url1("http://www.thepage.com/one");
   NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
 
@@ -1797,7 +1797,7 @@ TEST_F(WebContentsImplTest,
 
   // Simulate the navigation to the page, that's when the interstitial gets
   // hidden.
-  GURL url3("http://www.thepage.com");
+  GURL url3("http://www.thepage.com/two");
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(0, true, url3);
 
@@ -2241,7 +2241,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedMultipleCommands) {
 // Test showing an interstitial while another interstitial is already showing.
 TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
   // Navigate to a page so we have a navigation entry in the controller.
-  GURL start_url("http://www.google.com");
+  GURL start_url("http://www.thepage.com/one");
   NavigationSimulator::NavigateAndCommitFromDocument(start_url,
                                                      main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
@@ -2280,7 +2280,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
 
   // Let's make sure interstitial2 is working as intended.
   interstitial2->Proceed();
-  GURL landing_url("http://www.thepage.com");
+  GURL landing_url("http://www.thepage.com/two");
   main_test_rfh()->SendNavigate(0, true, landing_url);
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
@@ -2297,7 +2297,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
 // interstitial.
 TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
   // Navigate to a page so we have a navigation entry in the controller.
-  GURL start_url("http://www.google.com");
+  GURL start_url("http://www.thepage.com/one");
   NavigationSimulator::NavigateAndCommitFromDocument(start_url,
                                                      main_test_rfh());
   EXPECT_EQ(1, controller().GetEntryCount());
@@ -2340,7 +2340,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
 
   // Let's make sure interstitial2 is working as intended.
   interstitial2->Proceed();
-  GURL landing_url("http://www.thepage.com");
+  GURL landing_url("http://www.thepage.com/two");
   main_test_rfh()->SendNavigate(0, true, landing_url);
 
   RunAllPendingInMessageLoop();
@@ -3241,9 +3241,9 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
 // TODO(fdegans): Rewrite the test for PlzNavigate when DidStartLoading and
 // DidStopLoading are properly called.
 TEST_F(WebContentsImplTest, NoEarlyStop) {
-  const GURL kUrl1("http://www.chromium.org");
+  const GURL kUrl1("http://www.chromium.org/one");
   const GURL kUrl2("http://www.google.com");
-  const GURL kUrl3("http://www.wikipedia.org");
+  const GURL kUrl3("http://www.chromium.org/two");
 
   contents()->NavigateAndCommit(kUrl1);
 
