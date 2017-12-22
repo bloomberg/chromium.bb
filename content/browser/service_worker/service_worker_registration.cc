@@ -315,7 +315,7 @@ bool ServiceWorkerRegistration::IsReadyToActivate() const {
     return true;
   }
   if (IsLameDuckActiveVersion()) {
-    return !active->HasWork() ||
+    return !active->HasWorkInBrowser() ||
            waiting->TimeSinceSkipWaiting() > kMaxLameDuckTime ||
            active->TimeSinceNoControllees() > kMaxLameDuckTime;
   }

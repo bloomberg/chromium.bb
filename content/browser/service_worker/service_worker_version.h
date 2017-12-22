@@ -246,7 +246,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Stops the worker if it is idle (has no in-flight requests) or timed out
   // ping.
-  void StopWorkerIfIdle();
+  //
+  // S13nServiceWorker:
+  // |requested_from_renderer| should be true if StopWorkerIfIdle() is called by
+  // mojom::EmbeddedWorkerInstanceHost::RequestTermination().
+  void StopWorkerIfIdle(bool requested_from_renderer);
 
   // Skips waiting and forces this version to become activated.
   void SkipWaitingFromDevTools();
@@ -438,10 +442,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // S13nServiceWorker: returns true if the worker has work on the browser.
   // Note that this method may return false even when the service worker still
   // has work to do; clients may dispatch events to the service worker directly.
-  // You can ensure no inflight requests exist if HasWork() returns false when
-  // the renderer requests termination, which means in StopWorkerIfIdle()
-  // through mojom::EmbeddedWorkerInstanceHost::RequestTermination().
-  bool HasWork() const;
+  // You can ensure no inflight requests exist when HasWorkInBrowser() returns
+  // false and |idle_timer_fired_in_renderer_| is true, or when the worker is
+  // stopped.
+  bool HasWorkInBrowser() const;
 
   // Returns the number of pending external request count of this worker.
   size_t GetExternalRequestCountForTest() const {
@@ -729,6 +733,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void CleanUpExternalRequest(const std::string& request_uuid,
                               ServiceWorkerStatusCode status);
 
+  // Called if no inflight events exist on the browser process.
+  // Non-S13nServiceWorker: Triggers OnNoWork().
+  // S13nServiceWorker: Triggers OnNoWork() if the renderer-side idle timeout
+  // has been fired or the worker has been stopped.
+  void OnNoWorkInBrowser();
+
   const int64_t version_id_;
   const int64_t registration_id_;
   const GURL script_url_;
@@ -776,6 +786,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // the browser process. We try to not stop the service worker while there is
   // an ongoing response.
   int pending_stream_response_count_ = 0;
+
+  // S13nServiceWorker:
+  // Set to true if the worker has no inflight events and the idle timer has
+  // been triggered. Set back to false if another event starts since the worker
+  // is no longer idle.
+  bool idle_timer_fired_in_renderer_ = false;
 
   // Keeps track of the provider hosting this running service worker for this
   // version. |provider_host_| is always valid as long as this version is

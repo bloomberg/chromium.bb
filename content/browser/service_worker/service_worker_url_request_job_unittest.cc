@@ -341,7 +341,7 @@ class ServiceWorkerURLRequestJobTest
                       expected_response, expect_valid_ssl);
   }
 
-  bool HasWork() { return version_->HasWork(); }
+  bool HasWork() { return version_->HasWorkInBrowser(); }
 
   // Runs a request where the active worker starts a request in ACTIVATING state
   // and fails to reach ACTIVATED.
@@ -1449,10 +1449,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
   EXPECT_FALSE(info->response_is_in_cache_storage());
   EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
 
-  EXPECT_TRUE(version_->HasWork());
+  EXPECT_TRUE(version_->HasWorkInBrowser());
   helper->FinishWaitUntil();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(version_->HasWork());
+  EXPECT_FALSE(version_->HasWorkInBrowser());
 }
 
 // Test cancelling the URLRequest while the fetch event is in flight.
@@ -1477,12 +1477,12 @@ TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
   base::RunLoop().RunUntilIdle();
 
   // Respond to the fetch event.
-  EXPECT_TRUE(version_->HasWork());
+  EXPECT_TRUE(version_->HasWorkInBrowser());
   helper->Respond();
   base::RunLoop().RunUntilIdle();
 
   // The fetch event request should no longer be in-flight.
-  EXPECT_FALSE(version_->HasWork());
+  EXPECT_FALSE(version_->HasWorkInBrowser());
 }
 
 // TODO(kinuko): Add more tests with different response data and also for
