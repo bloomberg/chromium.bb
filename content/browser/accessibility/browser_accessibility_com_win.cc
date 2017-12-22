@@ -1801,8 +1801,6 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
       owner()->GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
 
   win_attributes_->value = GetValue();
-
-  CalculateRelationships();
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {

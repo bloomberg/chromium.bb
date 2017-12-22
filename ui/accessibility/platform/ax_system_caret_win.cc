@@ -134,4 +134,14 @@ bool AXSystemCaretWin::IsOffscreen() const {
   return false;
 }
 
+std::set<int32_t> AXSystemCaretWin::GetReverseRelations(AXIntAttribute attr,
+                                                        int32_t dst_id) {
+  return std::set<int32_t>();
+}
+
+std::set<int32_t> AXSystemCaretWin::GetReverseRelations(AXIntListAttribute attr,
+                                                        int32_t dst_id) {
+  return std::set<int32_t>();
+}
+
 }  // namespace ui

@@ -51,12 +51,6 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   }
 
  protected:
-  void BuildRelationships(ComPtr<IAccessible2> accessible) {
-    CHECK(accessible);
-    AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(accessible.Get());
-    node->CalculateRelationships();
-  }
-
   ComPtr<IAccessible> IAccessibleFromNode(AXNode* node) {
     TestAXNodeWrapper* wrapper =
         TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
@@ -87,6 +81,16 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
     accessible.CopyTo(service_provider.GetAddressOf());
     ComPtr<IAccessible2> result;
     CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2,
+                                                   result.GetAddressOf())));
+    return result;
+  }
+
+  ComPtr<IAccessible2_2> ToIAccessible2_2(ComPtr<IAccessible> accessible) {
+    CHECK(accessible);
+    ComPtr<IServiceProvider> service_provider;
+    accessible.CopyTo(service_provider.GetAddressOf());
+    ComPtr<IAccessible2_2> result;
+    CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2_2,
                                                    result.GetAddressOf())));
     return result;
   }
@@ -1460,10 +1464,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
   EXPECT_EQ(S_OK, result.CopyTo(ax_child2.GetAddressOf()));
   result.Reset();
 
-  BuildRelationships(root_iaccessible2);
-  BuildRelationships(ax_child1);
-  BuildRelationships(ax_child2);
-
   LONG n_relations = 0;
   LONG n_targets = 0;
   ScopedBstr relation_type;
@@ -1476,9 +1476,11 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
 
   EXPECT_HRESULT_SUCCEEDED(
       root_iaccessible2->get_relation(0, describedby_relation.GetAddressOf()));
+
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_relationType(relation_type.Receive()));
   EXPECT_EQ(L"describedBy", base::string16(relation_type));
+
   relation_type.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(describedby_relation->get_nTargets(&n_targets));
@@ -1491,6 +1493,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
   EXPECT_HRESULT_SUCCEEDED(
       describedby_relation->get_target(1, target.GetAddressOf()));
   target.Reset();
+
   describedby_relation.Reset();
 
   // Test the reverse relations.
@@ -1530,6 +1533,92 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
   target.Reset();
 
   // TODO(dougt): Try adding one more relation.
+}
+
+TEST_F(AXPlatformNodeWinTest, TestRelationTargetsOfType) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = AX_ROLE_ROOT_WEB_AREA;
+  root.AddIntAttribute(AX_ATTR_DETAILS_ID, 2);
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = AX_ROLE_STATIC_TEXT;
+
+  root.child_ids.push_back(2);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = AX_ROLE_STATIC_TEXT;
+  std::vector<int32_t> labelledby_ids = {1, 4};
+  child2.AddIntListAttribute(AX_ATTR_LABELLEDBY_IDS, labelledby_ids);
+
+  root.child_ids.push_back(3);
+
+  AXNodeData child3;
+  child3.id = 4;
+  child3.role = AX_ROLE_STATIC_TEXT;
+  child3.AddIntAttribute(AX_ATTR_DETAILS_ID, 2);
+
+  root.child_ids.push_back(4);
+
+  Init(root, child1, child2, child3);
+  ComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
+  ComPtr<IAccessible2_2> root_iaccessible2 = ToIAccessible2_2(root_iaccessible);
+
+  ComPtr<IDispatch> result;
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(1),
+                                                  result.GetAddressOf()));
+  ComPtr<IAccessible2_2> ax_child1;
+  EXPECT_EQ(S_OK, result.CopyTo(ax_child1.GetAddressOf()));
+  result.Reset();
+
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(2),
+                                                  result.GetAddressOf()));
+  ComPtr<IAccessible2_2> ax_child2;
+  EXPECT_EQ(S_OK, result.CopyTo(ax_child2.GetAddressOf()));
+  result.Reset();
+
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(3),
+                                                  result.GetAddressOf()));
+  ComPtr<IAccessible2_2> ax_child3;
+  EXPECT_EQ(S_OK, result.CopyTo(ax_child3.GetAddressOf()));
+  result.Reset();
+
+  {
+    ScopedBstr type(L"details");
+    IUnknown** targets;
+    LONG n_targets;
+    EXPECT_EQ(S_OK, root_iaccessible2->get_relationTargetsOfType(
+                        type, 0, &targets, &n_targets));
+    ASSERT_EQ(1, n_targets);
+    EXPECT_EQ(ax_child1.Get(), targets[0]);
+    CoTaskMemFree(targets);
+  }
+
+  {
+    ScopedBstr type(IA2_RELATION_LABELLED_BY);
+    IUnknown** targets;
+    LONG n_targets;
+    EXPECT_EQ(S_OK, ax_child2->get_relationTargetsOfType(type, 0, &targets,
+                                                         &n_targets));
+    ASSERT_EQ(2, n_targets);
+    EXPECT_EQ(root_iaccessible2.Get(), targets[0]);
+    EXPECT_EQ(ax_child3.Get(), targets[1]);
+    CoTaskMemFree(targets);
+  }
+
+  {
+    ScopedBstr type(L"detailsFor");
+    IUnknown** targets;
+    LONG n_targets;
+    EXPECT_EQ(S_OK, ax_child1->get_relationTargetsOfType(type, 0, &targets,
+                                                         &n_targets));
+    ASSERT_EQ(2, n_targets);
+    EXPECT_EQ(root_iaccessible2.Get(), targets[0]);
+    EXPECT_EQ(ax_child3.Get(), targets[1]);
+    CoTaskMemFree(targets);
+  }
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedChildrenZero) {

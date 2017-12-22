@@ -284,15 +284,33 @@ gfx::RectF AXTree::GetTreeBounds(const AXNode* node,
 }
 
 std::set<int32_t> AXTree::GetReverseRelations(AXIntAttribute attr,
-                                              int32_t dst_id) {
+                                              int32_t dst_id) const {
   DCHECK(IsNodeIdIntAttribute(attr));
-  return int_reverse_relations_[attr][dst_id];
+
+  // Conceptually, this is the "const" version of:
+  //   return int_reverse_relations_[attr][dst_id];
+  const auto& attr_relations = int_reverse_relations_.find(attr);
+  if (attr_relations != int_reverse_relations_.end()) {
+    const auto& result = attr_relations->second.find(dst_id);
+    if (result != attr_relations->second.end())
+      return result->second;
+  }
+  return std::set<int32_t>();
 }
 
 std::set<int32_t> AXTree::GetReverseRelations(AXIntListAttribute attr,
-                                              int32_t dst_id) {
+                                              int32_t dst_id) const {
   DCHECK(IsNodeIdIntListAttribute(attr));
-  return intlist_reverse_relations_[attr][dst_id];
+
+  // Conceptually, this is the "const" version of:
+  //   return intlist_reverse_relations_[attr][dst_id];
+  const auto& attr_relations = intlist_reverse_relations_.find(attr);
+  if (attr_relations != intlist_reverse_relations_.end()) {
+    const auto& result = attr_relations->second.find(dst_id);
+    if (result != attr_relations->second.end())
+      return result->second;
+  }
+  return std::set<int32_t>();
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
