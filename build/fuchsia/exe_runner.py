@@ -24,6 +24,8 @@ def main():
                            '<bootfs_path>=<local_path>')
   parser.add_argument('--no-autorun', action='store_true',
                       help='Disable generating an autorun file')
+  parser.add_argument('--forward-ssh-port', action='store',
+                      help='Forward specified host port to SSH.')
   args, child_args = parser.parse_known_args()
 
   runtime_deps = ReadRuntimeDeps(args.runtime_deps_path, args.output_directory)
@@ -50,7 +52,8 @@ def main():
   if not bootfs:
     return 2
 
-  return RunFuchsia(bootfs, args.device, args.kernel, args.dry_run, None)
+  return RunFuchsia(bootfs, args.device, args.kernel, args.dry_run,
+                    forward_ssh_port=args.forward_ssh_port)
 
 
 if __name__ == '__main__':
