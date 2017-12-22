@@ -84,8 +84,8 @@ int file_is_obu(struct AvxInputContext *input_ctx) {
   uint8_t obutd[PRE_OBU_SIZE_BYTES + OBU_HEADER_SIZE_BYTES];
   int size;
 
-#if !CONFIG_ADD_4BYTES_OBUSIZE || !CONFIG_OBU
-  warn("obudec.c requires CONFIG_ADD_4BYTES_OBUSIZE and CONFIG_OBU");
+#if !CONFIG_OBU
+  warn("obudec.c requires CONFIG_OBU");
   return 0;
 #endif
 

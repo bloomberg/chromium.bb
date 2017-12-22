@@ -40,6 +40,7 @@ if (AOM_DIST_EXAMPLES)
 endif ()
 
 if (AOM_DIST_TOOLS)
+  listify_string("${AOM_DIST_TOOLS}" "AOM_DIST_TOOLS")
   foreach (tool ${AOM_DIST_TOOLS})
     file(INSTALL "${tool}" DESTINATION "${AOM_DIST_DIR}/bin/tools")
   endforeach ()

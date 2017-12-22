@@ -4699,12 +4699,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #endif
         buf->data = dst + total_size;
 
-// The last tile of the tile group does not have a header.
-#if CONFIG_ADD_4BYTES_OBUSIZE
+        // The last tile of the tile group does not have a header.
         if (!is_last_tile_in_tg) total_size += 4;
-#else
-      total_size += 4;
-#endif
 
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
@@ -4738,12 +4734,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
           // size of this tile
           mem_put_le32(buf->data, tile_size);
         } else {
-#if CONFIG_ADD_4BYTES_OBUSIZE
           // write current tile group size
           mem_put_le32(data, curr_tg_data_size);
-#else
-        mem_put_le32(buf->data, tile_size);
-#endif
         }
 
         total_size += tile_size;
@@ -4782,9 +4774,7 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
         write_obu_header(OBU_SEQUENCE_HEADER, 0, data + PRE_OBU_SIZE_BYTES);
     obu_size +=
         write_sequence_header_obu(cpi, data + PRE_OBU_SIZE_BYTES + obu_size);
-#if CONFIG_ADD_4BYTES_OBUSIZE
     mem_put_le32(data, obu_size);
-#endif
     data += obu_size + PRE_OBU_SIZE_BYTES;
   }
 
@@ -4802,9 +4792,7 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #endif
                              data + PRE_OBU_SIZE_BYTES + obu_size);
   obu_size += frame_header_size;
-#if CONFIG_ADD_4BYTES_OBUSIZE
   mem_put_le32(data, obu_size);
-#endif
   data += obu_size + PRE_OBU_SIZE_BYTES;
 
   if (cm->show_existing_frame) {

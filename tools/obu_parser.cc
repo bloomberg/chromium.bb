@@ -13,13 +13,12 @@
 #include <string>
 
 // TODO(tomfinegan): Remove the aom_config.h include as soon as possible. At
-// present it's required because w/out aom_config.h it's impossible to know how
-// Obus are being written out by the library (because
-// CONFIG_ADD_4BYTES_OBUSIZE).
+// present it's required because aom_config.h determines if the library writes
+// OBUs.
 #include "./aom_config.h"
 
-#if !CONFIG_ADD_4BYTES_OBUSIZE || !CONFIG_OBU
-#error "obu_parser.cc requires CONFIG_ADD_4BYTES_OBUSIZE and CONFIG_OBU"
+#if !CONFIG_OBU
+#error "obu_parser.cc requires CONFIG_OBU"
 #endif
 
 #include "aom_ports/mem_ops.h"
@@ -153,7 +152,7 @@ void PrintObuHeader(const ObuHeader *header) {
 }
 
 bool DumpObu(const uint8_t *data, int length) {
-  const int kObuLengthFieldSizeBytes = 4;  // Assumes CONFIG_ADD_4BYTES_OBUSIZE.
+  const int kObuLengthFieldSizeBytes = 4;
   const int kObuHeaderLengthSizeBytes = 1;
   const int kMinimumBytesRequired =
       kObuLengthFieldSizeBytes + kObuHeaderLengthSizeBytes;

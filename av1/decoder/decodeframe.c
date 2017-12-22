@@ -1797,12 +1797,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
       aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Truncated packet or corrupt tile size");
   } else {
-#if !CONFIG_OBU || CONFIG_ADD_4BYTES_OBUSIZE
     size = data_end - *data;
-#else
-    size = mem_get_varsize(*data, tile_size_bytes);
-    *data += tile_size_bytes;
-#endif
   }
 
   buf->data = *data;
@@ -1838,6 +1833,7 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   for (int r = 0; r < tile_rows; ++r) {
     for (int c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
+
 #if CONFIG_OBU
       const int is_last = (tc == endTile);
       const size_t hdr_offset = 0;

@@ -54,11 +54,8 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
 
 #define AOM_FRAME_MARKER 0x2
 
-#if CONFIG_ADD_4BYTES_OBUSIZE
+// Size of OBU length field.
 #define PRE_OBU_SIZE_BYTES 4
-#else
-#define PRE_OBU_SIZE_BYTES 0
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"
