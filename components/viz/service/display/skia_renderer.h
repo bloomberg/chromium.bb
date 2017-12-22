@@ -48,8 +48,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
           render_passes_in_frame) override;
   void AllocateRenderPassResourceIfNeeded(
       const RenderPassId& render_pass_id,
-      const gfx::Size& enlarged_size,
-      ResourceTextureHint texture_hint) override;
+      const RenderPassRequirements& requirements) override;
   bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const override;
   gfx::Size GetRenderPassTextureSize(
@@ -104,7 +103,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   struct RenderPassBacking {
     uint32_t gl_id;
     gfx::Size size;
-    ResourceTextureHint usage_hint;
+    bool mipmap;
     ResourceFormat format;
     gfx::ColorSpace color_space;
   };

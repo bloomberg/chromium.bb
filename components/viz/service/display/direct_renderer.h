@@ -107,7 +107,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   struct RenderPassRequirements {
     gfx::Size size;
-    ResourceTextureHint hint;
+    bool mipmap = false;
   };
 
   static gfx::RectF QuadVertexRect();
@@ -132,8 +132,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
-  static ResourceTextureHint RenderPassTextureHint(
-      const RenderPass* render_pass);
 
   void FlushPolygons(
       base::circular_deque<std::unique_ptr<DrawPolygon>>* poly_list,
@@ -165,8 +163,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
           render_passes_in_frame) = 0;
   virtual void AllocateRenderPassResourceIfNeeded(
       const RenderPassId& render_pass_id,
-      const gfx::Size& enlarged_size,
-      ResourceTextureHint texturehint) = 0;
+      const RenderPassRequirements& requirements) = 0;
   virtual bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const = 0;
   virtual gfx::Size GetRenderPassTextureSize(

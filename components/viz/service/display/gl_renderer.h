@@ -102,8 +102,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
           render_passes_in_frame) override;
   void AllocateRenderPassResourceIfNeeded(
       const RenderPassId& render_pass_id,
-      const gfx::Size& enlarged_size,
-      ResourceTextureHint texturehint) override;
+      const RenderPassRequirements& requirements) override;
   bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const override;
   gfx::Size GetRenderPassTextureSize(
