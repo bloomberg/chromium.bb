@@ -145,7 +145,8 @@ generate_origin_trial_features("bindings_core_origin_trial_features") {
   ]
 }
 
-if (use_jumbo_build) {
+if (is_win || use_jumbo_build) {
+  # On Windows Official release builds, we try to preserve symbol space.
   bindings_core_generated_interface_files =
       [ "$bindings_core_v8_output_dir/V8GeneratedCoreBindings.cpp" ]
 } else {
@@ -172,7 +173,7 @@ group("bindings_core_v8_generated") {
   public_deps = [
     ":bindings_core_impl_generated",
   ]
-  if (use_jumbo_build) {
+  if (is_win || use_jumbo_build) {
     public_deps += [ ":generate_bindings_core_v8_all_interfaces" ]
   } else {
     public_deps += [ ":generate_bindings_core_v8_interfaces" ]
