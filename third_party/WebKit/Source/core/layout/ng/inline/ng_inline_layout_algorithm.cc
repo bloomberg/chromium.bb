@@ -189,31 +189,17 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   BidiReorder();
   box_states_->UpdateAfterReorder(&line_box_);
   LayoutUnit inline_size = box_states_->ComputeInlinePositions(&line_box_);
+  const NGLineHeightMetrics& line_box_metrics =
+      box_states_->LineBoxState().metrics;
 
   // Handle out-of-flow positioned objects. They need inline offsets for their
   // static positions.
-  bool has_fragments = false;
-  for (auto& child : line_box_) {
-    if (child.out_of_flow_positioned_box) {
-      NGBlockNode node(ToLayoutBox(child.out_of_flow_positioned_box));
-      container_builder_.AddInlineOutOfFlowChildCandidate(
-          node, NGLogicalOffset(child.offset.inline_offset, LayoutUnit()),
-          line_info->BaseDirection(), child.out_of_flow_containing_box);
-      child.out_of_flow_positioned_box = child.out_of_flow_containing_box =
-          nullptr;
-    } else if (!has_fragments) {
-      has_fragments = child.HasFragment();
-    }
-  }
-
-  if (!has_fragments) {
+  if (!PlaceOutOfFlowObjects(*line_info, line_box_metrics)) {
     // If we have out-of-flow objects but nothing else, we don't have line box
     // metrics nor BFC offset. Exit early.
     return;
   }
 
-  const NGLineHeightMetrics& line_box_metrics =
-      box_states_->LineBoxState().metrics;
   DCHECK(!line_box_metrics.IsEmpty());
 
   NGBfcOffset line_bfc_offset(line_info->LineBfcOffset());
@@ -343,6 +329,39 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
   line_box_.AddChild(std::move(item_result->layout_result),
                      NGLogicalOffset{inline_offset, line_top},
                      item_result->inline_size, item.BidiLevel());
+}
+
+// Place all out-of-flow objects in |line_box_| and clear them.
+// @return whether |line_box_| has any in-flow fragments.
+bool NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
+    const NGLineInfo& line_info,
+    const NGLineHeightMetrics& line_box_metrics) {
+  bool has_fragments = false;
+  for (auto& child : line_box_) {
+    if (LayoutObject* box = child.out_of_flow_positioned_box) {
+      // The static position is at the line-top. Ignore the block_offset.
+      NGLogicalOffset static_offset(child.offset.inline_offset, LayoutUnit());
+
+      // If a block-level box appears in the middle of a line, move the static
+      // position to where the next block will be placed.
+      if (static_offset.inline_offset &&
+          !box->StyleRef().IsOriginalDisplayInlineType()) {
+        static_offset.inline_offset = LayoutUnit();
+        if (!line_box_metrics.IsEmpty())
+          static_offset.block_offset = line_box_metrics.LineHeight();
+      }
+
+      container_builder_.AddInlineOutOfFlowChildCandidate(
+          NGBlockNode(ToLayoutBox(box)), static_offset,
+          line_info.BaseDirection(), child.out_of_flow_containing_box);
+
+      child.out_of_flow_positioned_box = child.out_of_flow_containing_box =
+          nullptr;
+    } else if (!has_fragments) {
+      has_fragments = child.HasFragment();
+    }
+  }
+  return has_fragments;
 }
 
 // Place a list marker.
