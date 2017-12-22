@@ -292,6 +292,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   ~AXPlatformNodeWin() override;
 
+  // Return the number of instances of AXPlatformNodeWin, for leak testing.
+  static size_t GetInstanceCountForTesting();
+
   // Represents a non-static text node in IAccessibleHypertext. This character
   // is embedded in the response to IAccessibleText::get_text, indicating the
   // position where a non-static text child object appears.
