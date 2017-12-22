@@ -93,7 +93,7 @@ class ResourceDispatcherTest : public testing::Test,
     request->method = "GET";
     request->url = GURL(kTestPageUrl);
     request->site_for_cookies = GURL(kTestPageUrl);
-    request->referrer_policy = blink::kWebReferrerPolicyDefault;
+    request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
     request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
     request->priority = net::LOW;
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;

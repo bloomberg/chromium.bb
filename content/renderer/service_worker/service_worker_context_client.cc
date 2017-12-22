@@ -203,7 +203,8 @@ void ToWebServiceWorkerRequest(const ResourceRequest& request,
     web_request->SetBody(body);
   }
   web_request->SetReferrer(blink::WebString::FromUTF8(request.referrer.spec()),
-                           request.referrer_policy);
+                           Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                               request.referrer_policy));
   web_request->SetMode(request.fetch_request_mode);
   web_request->SetIsMainResourceLoad(
       ServiceWorkerUtils::IsMainResourceType(request.resource_type));

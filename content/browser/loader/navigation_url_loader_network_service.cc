@@ -458,9 +458,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     resource_request_->method = redirect_info_.new_method;
     resource_request_->site_for_cookies = redirect_info_.new_site_for_cookies;
     resource_request_->referrer = GURL(redirect_info_.new_referrer);
-    resource_request_->referrer_policy =
-        Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-            redirect_info_.new_referrer_policy);
+    resource_request_->referrer_policy = redirect_info_.new_referrer_policy;
     url_chain_.push_back(redirect_info_.new_url);
 
     Restart();
@@ -723,7 +721,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   // URLRequest class to set these fields. whereas we use ResourceRequest here.
   new_request->request_initiator = request_info->begin_params->initiator_origin;
   new_request->referrer = request_info->common_params.referrer.url;
-  new_request->referrer_policy = request_info->common_params.referrer.policy;
+  new_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
+      request_info->common_params.referrer.policy);
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
 

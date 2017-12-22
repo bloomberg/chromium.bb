@@ -7,6 +7,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/referrer.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -29,7 +30,8 @@ void BitmapFetcher::Init(const std::string& referrer,
   auto resource_request = std::make_unique<content::ResourceRequest>();
   resource_request->url = url_;
   resource_request->referrer = GURL(referrer);
-  resource_request->referrer_policy = referrer_policy;
+  resource_request->referrer_policy =
+      content::Referrer::ReferrerPolicyForUrlRequest(referrer_policy);
   resource_request->load_flags = load_flags;
   simple_loader_ = content::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation_);

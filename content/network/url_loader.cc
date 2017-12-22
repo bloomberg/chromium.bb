@@ -224,7 +224,9 @@ URLLoader::URLLoader(NetworkContext* context,
 
   url_request_->set_site_for_cookies(request.site_for_cookies);
 
-  const Referrer referrer(request.referrer, request.referrer_policy);
+  const Referrer referrer(request.referrer,
+                          Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                              request.referrer_policy));
   Referrer::SetReferrerForRequest(url_request_.get(), referrer);
 
   url_request_->SetExtraRequestHeaders(request.headers);

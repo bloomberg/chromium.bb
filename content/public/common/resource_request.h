@@ -19,6 +19,7 @@
 #include "content/public/common/service_worker_modes.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
@@ -57,7 +58,8 @@ struct CONTENT_EXPORT ResourceRequest {
   GURL referrer;
 
   // The referrer policy to use.
-  blink::WebReferrerPolicy referrer_policy = blink::kWebReferrerPolicyAlways;
+  net::URLRequest::ReferrerPolicy referrer_policy =
+      net::URLRequest::NEVER_CLEAR_REFERRER;
 
   // The frame's visibility state.
   blink::mojom::PageVisibilityState visibility_state =

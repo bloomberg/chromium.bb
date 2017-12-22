@@ -169,7 +169,8 @@ std::unique_ptr<ResourceRequest> CreateResourceRequest(
   request->do_not_prompt_for_login = params->do_not_prompt_for_login();
   request->site_for_cookies = params->url();
   request->referrer = params->referrer().url;
-  request->referrer_policy = params->referrer().policy;
+  request->referrer_policy =
+      Referrer::ReferrerPolicyForUrlRequest(params->referrer().policy);
   request->download_to_file = true;
   request->allow_download = true;
   request->is_main_frame = true;

@@ -102,7 +102,7 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.site_for_cookies = url;  // bypass third-party cookie blocking
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
-  request.referrer_policy = blink::kWebReferrerPolicyDefault;
+  request.referrer_policy = Referrer::GetDefaultReferrerPolicy();
   request.load_flags = 0;
   request.plugin_child_id = -1;
   request.resource_type = type;

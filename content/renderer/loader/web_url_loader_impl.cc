@@ -613,7 +613,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
           : base::Optional<url::Origin>(request.RequestorOrigin());
   resource_request->referrer = referrer_url;
 
-  resource_request->referrer_policy = request.GetReferrerPolicy();
+  resource_request->referrer_policy =
+      Referrer::ReferrerPolicyForUrlRequest(request.GetReferrerPolicy());
 
   resource_request->headers = GetWebURLRequestHeaders(request);
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
