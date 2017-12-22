@@ -14,10 +14,10 @@
         default-value="100" input-label="$i18n{scalingLabel}"
         input-string="{{inputString_}}" input-valid="{{inputValid_}}"
         hint-message="$i18n{scalingInstruction}" class="multirow-controls">
-      <div slot="opt-outside-content" id="fit-to-page-container"
-          class="checkbox" hidden$="[[!settings.fitToPage.available]]">
+      <div slot="opt-outside-content" class="checkbox"
+          hidden$="[[!settings.fitToPage.available]]">
         <label aria-live="polite">
-          <input class="checkbox" type="checkbox"
+          <input type="checkbox" id="fit-to-page-checkbox"
               on-change="onFitToPageChange_">
           <span>$i18n{optionFitToPage}</span>
         </label>

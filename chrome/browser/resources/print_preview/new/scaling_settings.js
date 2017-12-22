@@ -24,57 +24,73 @@ Polymer({
   /** @private {number} */
   fitToPageFlag_: 0,
 
-  /** @private {boolean} */
-  isInitialized_: false,
-
   observers: [
-    'onInputChanged_(inputString_, inputValid_, documentInfo.isModifiable)',
-    'onInitialized_(settings.scaling.value)'
+    'onFitToPageSettingChange_(settings.fitToPage.value, ' +
+        'settings.fitToPage.available, documentInfo.fitToPageScaling)',
+    'onInputChanged_(inputString_, inputValid_)',
+    'onScalingSettingChanged_(settings.scaling.value)',
   ],
 
-  /**
-   * Updates the input string when the setting has been initialized.
-   * @private
-   */
-  onInitialized_: function() {
-    // Avoid loops from setting inputString_ -> onInputChanged_ sets scaling
-    // value -> onInitialized_ sets inputString_
-    if (this.isInitialized_)
+  /** @private */
+  onFitToPageSettingChange_: function() {
+    const fitToPage = this.getSetting('fitToPage');
+    if (!fitToPage.available)
       return;
-    this.isInitialized_ = true;
-    const scaling = this.getSetting('scaling');
-    this.inputString_ = /** @type {string} */ (scaling.value);
+    this.$$('#fit-to-page-checkbox').checked = fitToPage.value;
+    if (!fitToPage.value) {
+      // Fit to page is no longer checked. Update the display.
+      this.inputString_ = this.lastValidScaling_;
+    } else if (fitToPage.value) {
+      // Set flag to number of expected calls to onInputChanged_. If scaling
+      // is valid, 1 call will occur due to the change to |inputString_|. If
+      // not, 2 calls will occur, since |inputValid_| will also change.
+      this.fitToPageFlag_ = this.inputValid_ ? 1 : 2;
+      this.inputString_ = this.documentInfo.fitToPageScaling;
+    }
   },
 
   /**
-   * Updates model.settings.scaling based on the validity and current value of
-   * the scaling input.
+   * Updates the input string when scaling setting is set.
+   * @private
+   */
+  onScalingSettingChanged_: function() {
+    // Update last valid scaling and ensure input string matches.
+    this.lastValidScaling_ =
+        /** @type {string} */ (this.getSetting('scaling').value);
+    this.inputString_ = this.lastValidScaling_;
+  },
+
+  /**
+   * Updates scaling and fit to page settings based on the validity and current
+   * value of the scaling input.
    * @private
    */
   onInputChanged_: function() {
-    if (this.fitToPageFlag_ > 0) {
+    const fitToPage = this.$$('#fit-to-page-checkbox').checked;
+    if (fitToPage && this.fitToPageFlag_ == 0) {
+      // User modified scaling while fit to page was checked. Uncheck fit to
+      // page.
+      if (this.inputValid_)
+        this.setSetting('scaling', this.inputString_);
+      else
+        this.setSettingValid('scaling', false);
+      this.$$('#fit-to-page-checkbox').checked = false;
+      this.setSetting('fitToPage', false);
+    } else if (fitToPage) {
+      // Fit to page was checked and scaling changed as a result.
       this.fitToPageFlag_--;
+      this.setSettingValid('scaling', true);
     } else {
-      const checkbox = this.$$('.checkbox input[type="checkbox"]');
-      if (checkbox.checked && !this.documentInfo.isModifiable) {
-        checkbox.checked = false;
-      } else if (this.inputValid_) {
-        this.lastValidScaling_ = this.inputString_;
-      }
-      this.setSetting('scaling', this.inputString_);
+      // User modified scaling while fit to page was not checked or
+      // scaling setting was set.
+      this.setSettingValid('scaling', this.inputValid_);
+      if (this.inputValid_)
+        this.setSetting('scaling', this.inputString_);
     }
-    this.setSettingValid('scaling', this.inputValid_);
   },
 
-  /**
-   * Updates scaling as needed based on the value of the fit to page checkbox.
-   */
+  /** @private */
   onFitToPageChange_: function() {
-    if (this.$$('.checkbox input[type="checkbox"]').checked) {
-      this.fitToPageFlag_ = 2;
-      this.set('inputString_', this.documentInfo.fitToPageScaling);
-    } else {
-      this.set('inputString_', this.lastValidScaling_);
-    }
+    this.setSetting('fitToPage', this.$$('#fit-to-page-checkbox').checked);
   },
 });
