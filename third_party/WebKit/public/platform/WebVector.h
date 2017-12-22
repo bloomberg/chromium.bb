@@ -78,11 +78,11 @@ class WebVector {
   template <typename C>
   WebVector(const C& other) : data_(other.begin(), other.end()) {}
 
-  WebVector(WebVector<T>&& other) { Swap(other); }
+  WebVector(WebVector<T>&& other) noexcept { Swap(other); }
 
-  WebVector(std::vector<T>&& other) : data_(std::move(other)) {}
+  WebVector(std::vector<T>&& other) noexcept : data_(std::move(other)) {}
 
-  std::vector<T> ReleaseVector() { return std::move(data_); }
+  std::vector<T> ReleaseVector() noexcept { return std::move(data_); }
 
   WebVector& operator=(const WebVector& other) {
     if (this != &other)
@@ -90,7 +90,7 @@ class WebVector {
     return *this;
   }
 
-  WebVector& operator=(WebVector&& other) {
+  WebVector& operator=(WebVector&& other) noexcept {
     if (this != &other)
       Swap(other);
     return *this;
@@ -103,7 +103,7 @@ class WebVector {
     return *this;
   }
 
-  WebVector<T>& operator=(std::vector<T>&& other) {
+  WebVector<T>& operator=(std::vector<T>&& other) noexcept {
     data_ = std::move(other);
     return *this;
   }
