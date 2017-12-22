@@ -6,7 +6,7 @@
 #define MultipartParser_h
 
 #include "base/macros.h"
-#include "modules/ModulesExport.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/wtf/Assertions.h"
@@ -23,11 +23,11 @@ namespace blink {
 //   encodings "binary", "7bit" and "8bit" are OK).
 // - If MultipartParser::cancel() is called, Client's methods will not be
 //   called anymore.
-class MODULES_EXPORT MultipartParser final
+class CORE_EXPORT MultipartParser final
     : public GarbageCollectedFinalized<MultipartParser> {
  public:
   // Client recieves parsed part header fields and data.
-  class MODULES_EXPORT Client : public GarbageCollectedMixin {
+  class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() = default;
     // The method is called whenever header fields of a part are parsed.

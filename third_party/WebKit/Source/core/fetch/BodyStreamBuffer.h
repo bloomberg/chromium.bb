@@ -5,24 +5,24 @@
 #ifndef BodyStreamBuffer_h
 #define BodyStreamBuffer_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMException.h"
+#include "core/fetch/BytesConsumer.h"
+#include "core/fetch/FetchDataLoader.h"
 #include "core/streams/UnderlyingSourceBase.h"
-#include "modules/ModulesExport.h"
-#include "modules/fetch/BytesConsumer.h"
-#include "modules/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include <memory>
 
 namespace blink {
 
 class EncodedFormData;
 class ScriptState;
 
-class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
-                                              public BytesConsumer::Client {
+class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
+                                           public BytesConsumer::Client {
   WTF_MAKE_NONCOPYABLE(BodyStreamBuffer);
   USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
 

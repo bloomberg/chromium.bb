@@ -5,10 +5,11 @@
 #include "modules/fetch/FetchRequestData.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/fetch/BlobBytesConsumer.h"
+#include "core/fetch/BodyStreamBuffer.h"
+#include "core/fetch/BytesConsumer.h"
+#include "core/fetch/FormDataBytesConsumer.h"
 #include "core/loader/ThreadableLoader.h"
-#include "modules/fetch/BlobBytesConsumer.h"
-#include "modules/fetch/BodyStreamBuffer.h"
-#include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -16,7 +17,6 @@
 #include "platform/network/http_names.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "third_party/WebKit/Source/modules/fetch/FormDataBytesConsumer.h"
 
 namespace blink {
 

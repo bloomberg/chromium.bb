@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/FetchDataLoader.h"
+#include "core/fetch/FetchDataLoader.h"
 
 #include <memory>
+#include "core/fetch/BytesConsumerForDataConsumerHandle.h"
+#include "core/fetch/BytesConsumerTestUtil.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/forms/FormData.h"
-#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
-#include "modules/fetch/BytesConsumerTestUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

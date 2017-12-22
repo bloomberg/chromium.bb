@@ -6,8 +6,8 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/fetch/BodyStreamBuffer.h"
 #include "core/loader/ThreadableLoader.h"
-#include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchManager.h"
 #include "modules/fetch/RequestInit.h"
 #include "platform/bindings/V8PrivateProperty.h"

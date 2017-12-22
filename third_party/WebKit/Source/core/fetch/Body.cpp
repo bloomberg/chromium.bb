@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/Body.h"
+#include "core/fetch/Body.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/fetch/BodyStreamBuffer.h"
+#include "core/fetch/FetchDataLoader.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/forms/FormData.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "core/url/URLSearchParams.h"
-#include "modules/fetch/BodyStreamBuffer.h"
-#include "modules/fetch/FetchDataLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/network/ParsedContentType.h"

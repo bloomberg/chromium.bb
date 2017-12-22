@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/FormDataBytesConsumer.h"
+#include "core/fetch/FormDataBytesConsumer.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "core/fetch/BytesConsumerTestUtil.h"
 #include "core/html/forms/FormData.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/fetch/BytesConsumerTestUtil.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "platform/blob/BlobData.h"

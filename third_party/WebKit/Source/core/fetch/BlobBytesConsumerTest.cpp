@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/BlobBytesConsumer.h"
+#include "core/fetch/BlobBytesConsumer.h"
 
+#include "core/fetch/BytesConsumerTestUtil.h"
+#include "core/fetch/DataConsumerHandleTestUtil.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/testing/PageTestBase.h"
-#include "modules/fetch/BytesConsumerTestUtil.h"
-#include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/blob/BlobData.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceResponse.h"

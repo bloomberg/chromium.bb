@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/ReadableStreamBytesConsumer.h"
+#include "core/fetch/ReadableStreamBytesConsumer.h"
 
 #include <memory>
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "core/fetch/BytesConsumerTestUtil.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/fetch/BytesConsumerTestUtil.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/heap/Handle.h"

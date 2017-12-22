@@ -6,8 +6,8 @@
 #define FormDataBytesConsumer_h
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/ModulesExport.h"
-#include "modules/fetch/BytesConsumer.h"
+#include "core/CoreExport.h"
+#include "core/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -19,13 +19,13 @@ class EncodedFormData;
 
 class FormDataBytesConsumer final : public BytesConsumer {
  public:
-  explicit MODULES_EXPORT FormDataBytesConsumer(const String&);
-  explicit MODULES_EXPORT FormDataBytesConsumer(DOMArrayBuffer*);
-  explicit MODULES_EXPORT FormDataBytesConsumer(DOMArrayBufferView*);
-  MODULES_EXPORT FormDataBytesConsumer(const void* data, size_t);
-  MODULES_EXPORT FormDataBytesConsumer(ExecutionContext*,
-                                       scoped_refptr<EncodedFormData>);
-  MODULES_EXPORT static FormDataBytesConsumer* CreateForTesting(
+  explicit CORE_EXPORT FormDataBytesConsumer(const String&);
+  explicit CORE_EXPORT FormDataBytesConsumer(DOMArrayBuffer*);
+  explicit CORE_EXPORT FormDataBytesConsumer(DOMArrayBufferView*);
+  CORE_EXPORT FormDataBytesConsumer(const void* data, size_t);
+  CORE_EXPORT FormDataBytesConsumer(ExecutionContext*,
+                                    scoped_refptr<EncodedFormData>);
+  CORE_EXPORT static FormDataBytesConsumer* CreateForTesting(
       ExecutionContext* execution_context,
       scoped_refptr<EncodedFormData> form_data,
       BytesConsumer* consumer) {
@@ -67,9 +67,9 @@ class FormDataBytesConsumer final : public BytesConsumer {
   static BytesConsumer* GetImpl(ExecutionContext*,
                                 scoped_refptr<EncodedFormData>,
                                 BytesConsumer* consumer_for_testing);
-  MODULES_EXPORT FormDataBytesConsumer(ExecutionContext*,
-                                       scoped_refptr<EncodedFormData>,
-                                       BytesConsumer* consumer_for_testing);
+  CORE_EXPORT FormDataBytesConsumer(ExecutionContext*,
+                                    scoped_refptr<EncodedFormData>,
+                                    BytesConsumer* consumer_for_testing);
 
   const Member<BytesConsumer> impl_;
 };

@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/fetch/Body.h"
+#include "core/fetch/BodyStreamBuffer.h"
 #include "modules/ModulesExport.h"
-#include "modules/fetch/Body.h"
-#include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchResponseData.h"
 #include "modules/fetch/Headers.h"
 #include "platform/bindings/ScriptWrappable.h"

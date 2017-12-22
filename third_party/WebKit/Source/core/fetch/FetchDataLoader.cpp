@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/FetchDataLoader.h"
+#include "core/fetch/FetchDataLoader.h"
 
 #include <memory>
+#include "core/fetch/BytesConsumer.h"
+#include "core/fetch/MultipartParser.h"
 #include "core/fileapi/File.h"
 #include "core/html/forms/FormData.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "modules/fetch/BytesConsumer.h"
-#include "modules/fetch/MultipartParser.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/network/ParsedContentDisposition.h"
