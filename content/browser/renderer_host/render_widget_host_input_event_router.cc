@@ -26,7 +26,7 @@
 namespace {
 
 void TransformEventTouchPositions(blink::WebTouchEvent* event,
-                                  const gfx::Vector2d& delta) {
+                                  const gfx::Vector2dF& delta) {
   for (unsigned i = 0; i < event->touches_length; ++i) {
     event->touches[i].SetPositionInWidget(
         event->touches[i].PositionInWidget().x + delta.x(),
@@ -233,20 +233,6 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
 
 RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindViewAtLocation(
     RenderWidgetHostViewBase* root_view,
-    const gfx::Point& point,
-    const gfx::Point& point_in_screen,
-    viz::EventSource source,
-    gfx::Point* transformed_point) const {
-  gfx::PointF temp_point(*transformed_point);
-  RenderWidgetHostViewBase* view =
-      FindViewAtLocation(root_view, gfx::PointF(point),
-                         gfx::PointF(point_in_screen), source, &temp_point);
-  *transformed_point = gfx::ToFlooredPoint(temp_point);
-  return view;
-}
-
-RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindViewAtLocation(
-    RenderWidgetHostViewBase* root_view,
     const gfx::PointF& point,
     const gfx::PointF& point_in_screen,
     viz::EventSource source,
@@ -365,8 +351,7 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
       wheel_target_.target = FindViewAtLocation(
           root_view, event->PositionInWidget(), event->PositionInScreen(),
           viz::EventSource::MOUSE, &transformed_point);
-      wheel_target_.delta =
-          gfx::ToFlooredVector2d(transformed_point - event->PositionInWidget());
+      wheel_target_.delta = transformed_point - event->PositionInWidget();
       target = wheel_target_.target;
     } else {
       if (wheel_target_.target) {
@@ -494,10 +479,10 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         // Since this is the first touch, it defines the target for the rest
         // of this sequence.
         DCHECK(!touch_target_.target);
-        gfx::Point transformed_point;
-        gfx::Point original_point(event->touches[0].PositionInWidget().x,
-                                  event->touches[0].PositionInWidget().y);
-        gfx::Point original_point_in_screen(
+        gfx::PointF transformed_point;
+        gfx::PointF original_point(event->touches[0].PositionInWidget().x,
+                                   event->touches[0].PositionInWidget().y);
+        gfx::PointF original_point_in_screen(
             event->touches[0].PositionInScreen().x,
             event->touches[0].PositionInScreen().y);
         touch_target_.target = FindViewAtLocation(
@@ -1018,9 +1003,9 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
   // gesture start, then the target must be recalculated.
   if (event->unique_touch_event_id == 0 ||
       (no_matching_id && is_gesture_start)) {
-    gfx::Point transformed_point;
-    gfx::Point original_point(event->x, event->y);
-    gfx::Point original_point_in_screen(event->global_x, event->global_y);
+    gfx::PointF transformed_point;
+    gfx::PointF original_point(event->x, event->y);
+    gfx::PointF original_point_in_screen(event->global_x, event->global_y);
     touchscreen_gesture_target_.target =
         FindViewAtLocation(root_view, original_point, original_point_in_screen,
                            viz::EventSource::TOUCH, &transformed_point);
@@ -1059,9 +1044,9 @@ void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
 
   if (event->GetType() == blink::WebInputEvent::kGesturePinchBegin ||
       event->GetType() == blink::WebInputEvent::kGestureFlingStart) {
-    gfx::Point transformed_point;
-    gfx::Point original_point(event->x, event->y);
-    gfx::Point original_point_in_screen(event->global_x, event->global_y);
+    gfx::PointF transformed_point;
+    gfx::PointF original_point(event->x, event->y);
+    gfx::PointF original_point_in_screen(event->global_x, event->global_y);
     touchpad_gesture_target_.target =
         FindViewAtLocation(root_view, original_point, original_point_in_screen,
                            viz::EventSource::TOUCH, &transformed_point);
