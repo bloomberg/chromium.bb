@@ -48,9 +48,8 @@ void VoiceSearchTabHelper::NavigationEntryCommitted(
     // TODO(mlamouri): this is even more wrong because it makes assumptions with
     // regards to the default autoplay policy.
     prefs.autoplay_policy =
-        gesture_required
-            ? content::AutoplayPolicy::kDocumentUserActivationRequired
-            : content::AutoplayPolicy::kNoUserGestureRequired;
+        gesture_required ? content::AutoplayPolicy::kUserGestureRequired
+                         : content::AutoplayPolicy::kNoUserGestureRequired;
     host->UpdateWebkitPreferences(prefs);
   }
 }

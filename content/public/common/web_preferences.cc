@@ -232,7 +232,11 @@ WebPreferences::WebPreferences()
       presentation_receiver(false),
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
-      autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired) {
+#if defined(OS_ANDROID)
+      autoplay_policy(AutoplayPolicy::kUserGestureRequired) {
+#else
+      autoplay_policy(AutoplayPolicy::kNoUserGestureRequired) {
+#endif  // defined(OS_ANDROID)
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");
