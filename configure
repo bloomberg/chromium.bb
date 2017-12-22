@@ -319,7 +319,6 @@ EXPERIMENT_LIST="
     obu
     add_4bytes_obusize
     amvr
-    lpf_sb
     opt_ref_mv
     tmv
     ext_warped_motion

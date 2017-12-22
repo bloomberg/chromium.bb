@@ -96,12 +96,6 @@ extern "C" {
 #define DEFAULT_DELTA_LF_MULTI 0
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
-#if CONFIG_LPF_SB
-// Half of maximum loop filter length (15-tap)
-#define FILT_BOUNDARY_OFFSET 0
-#define FILT_BOUNDARY_MI_OFFSET (FILT_BOUNDARY_OFFSET >> MI_SIZE_LOG2)
-#endif  // CONFIG_LPF_SB
-
 #if CONFIG_JNT_COMP
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
   DIST,

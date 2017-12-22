@@ -320,20 +320,6 @@ typedef struct MB_MODE_INFO {
 #endif
 
   BOUNDARY_TYPE boundary_info;
-#if CONFIG_LPF_SB
-#if CONFIG_LOOPFILTER_LEVEL
-  // 0: y plane vert, 1: y plane horz, 2: u plane, 3: v plane
-  uint8_t filt_lvl[4];
-  int reuse_sb_lvl[4];
-  int sign[4];
-  int delta[4];
-#else
-  uint8_t filt_lvl;
-  int reuse_sb_lvl;
-  int sign;
-  int delta;
-#endif  // CONFIG_LOOPFILTER_LEVEL
-#endif  // CONFIG_LPF_SB
 
 #if CONFIG_JNT_COMP
   int compound_idx;

@@ -56,9 +56,6 @@
 #endif
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/extend.h"
-#if CONFIG_LPF_SB
-#include "av1/encoder/picklpf.h"
-#endif
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/segmentation.h"
@@ -3096,34 +3093,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
                         &dummy_rdc, INT64_MAX, pc_root, NULL);
     }
-#if CONFIG_LPF_SB
-    // TODO(chengchen): change to allow intraBC. It requires to store the
-    // unfiltered frame to a buffer and process later.
-    if (cm->allow_screen_content_tools) {
-#if CONFIG_LOOPFILTER_LEVEL
-      int filter_lvl[4];
-
-      struct loopfilter *lf = &cpi->common.lf;
-      filter_lvl[0] = lf->filter_level[0];
-      filter_lvl[1] = lf->filter_level[1];
-      filter_lvl[2] = lf->filter_level_u;
-      filter_lvl[3] = lf->filter_level_v;
-      av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[0],
-                            filter_lvl[1], 0, 1, mi_row, mi_col);
-      av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[2],
-                            filter_lvl[2], 1, 1, mi_row, mi_col);
-      av1_loop_filter_frame(cm->frame_to_show, cm, xd, filter_lvl[3],
-                            filter_lvl[3], 2, 1, mi_row, mi_col);
-#else
-      int filter_lvl;
-
-      struct loopfilter *lf = &cpi->common.lf;
-      filter_lvl = lf->filter_level;
-      av1_loop_filter_frame(get_frame_new_buffer(cm), cm, xd, filter_lvl, 0, 1,
-                            mi_row, mi_col);
-#endif  // CONFIG_LOOPFILTER_LEVEL
-    }
-#endif  // CONFIG_LPF_SB
   }
 }
 
@@ -3295,11 +3264,6 @@ static void encode_tiles(AV1_COMP *cpi) {
   int tile_col, tile_row;
 
   av1_init_tile_data(cpi);
-
-#if CONFIG_LPF_SB
-  cm->frame_to_show = get_frame_new_buffer(cm);
-  av1_pick_filter_level(cpi->source, cpi, LPF_PICK_FROM_Q);
-#endif
 
   for (tile_row = 0; tile_row < cm->tile_rows; ++tile_row)
     for (tile_col = 0; tile_col < cm->tile_cols; ++tile_col)

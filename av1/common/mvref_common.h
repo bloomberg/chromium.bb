@@ -461,9 +461,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 #define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels
 #define INTRABC_DELAY_SB64 (INTRABC_DELAY_PIXELS / 64)
 #define USE_WAVE_FRONT 1  // Use only top left area of frame for reference.
-#if CONFIG_LPF_SB
-#define INTRABC_FILTER_DELAY 8  // Delay of 8 pixels
-#endif                          // CONFIG_LPF_SB
 
 static INLINE void av1_find_ref_dv(int_mv *ref_dv, const TileInfo *const tile,
                                    int mib_size, int mi_row, int mi_col) {
@@ -497,24 +494,11 @@ static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
   const int src_left_edge = mi_col * MI_SIZE * SCALE_PX_TO_MV + dv.col;
   const int tile_left_edge = tile->mi_col_start * MI_SIZE * SCALE_PX_TO_MV;
   if (src_left_edge < tile_left_edge) return 0;
-// Is the bottom right inside the current tile?
-#if CONFIG_LPF_SB
-  // Because of loop filter, the bottom 8 rows and the rightmost 8 cols of
-  // IntraBC area now is invalid. It is equal to let the valid region add an
-  // offset of the filter delay
-  const int src_bottom_edge =
-      (mi_row * MI_SIZE + bh + INTRABC_FILTER_DELAY) * SCALE_PX_TO_MV + dv.row;
-#else
+  // Is the bottom right inside the current tile?
   const int src_bottom_edge = (mi_row * MI_SIZE + bh) * SCALE_PX_TO_MV + dv.row;
-#endif  // CONFIG_LPF_SB
   const int tile_bottom_edge = tile->mi_row_end * MI_SIZE * SCALE_PX_TO_MV;
   if (src_bottom_edge > tile_bottom_edge) return 0;
-#if CONFIG_LPF_SB
-  const int src_right_edge =
-      (mi_col * MI_SIZE + bw + INTRABC_FILTER_DELAY) * SCALE_PX_TO_MV + dv.col;
-#else
   const int src_right_edge = (mi_col * MI_SIZE + bw) * SCALE_PX_TO_MV + dv.col;
-#endif  // CONFIG_LPF_SB
   const int tile_right_edge = tile->mi_col_end * MI_SIZE * SCALE_PX_TO_MV;
   if (src_right_edge > tile_right_edge) return 0;
 

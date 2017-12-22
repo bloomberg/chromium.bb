@@ -2208,18 +2208,8 @@ static void av1_filter_block_plane_vert(
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-#if CONFIG_LPF_SB
-  int y_range = mi_row ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
-  y_range = AOMMIN(y_range, cm->mi_rows);
-  y_range >>= scale_vert;
-
-  int x_range = mi_col ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
-  x_range = AOMMIN(x_range, cm->mi_cols);
-  x_range >>= scale_horz;
-#else
   const int y_range = (MAX_MIB_SIZE >> scale_vert);
   const int x_range = (MAX_MIB_SIZE >> scale_horz);
-#endif  // CONFIG_LPF_SB
   for (int y = 0; y < y_range; y += row_step) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
     for (int x = 0; x < x_range; x += col_step) {
@@ -2329,18 +2319,8 @@ static void av1_filter_block_plane_horz(
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-#if CONFIG_LPF_SB
-  int y_range = mi_row ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
-  y_range = AOMMIN(y_range, cm->mi_rows);
-  y_range >>= scale_vert;
-
-  int x_range = mi_col ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
-  x_range = AOMMIN(x_range, cm->mi_cols);
-  x_range >>= scale_horz;
-#else
   const int y_range = (MAX_MIB_SIZE >> scale_vert);
   const int x_range = (MAX_MIB_SIZE >> scale_horz);
-#endif  // CONFIG_LPF_SB
   for (int y = 0; y < y_range; y += row_step) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
     for (int x = 0; x < x_range; x += col_step) {
@@ -2443,9 +2423,6 @@ static void av1_filter_block_plane_horz(
 
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                           struct macroblockd_plane *planes, int start, int stop,
-#if CONFIG_LPF_SB
-                          int col_start, int col_end,
-#endif
                           int y_only) {
 #if CONFIG_LOOPFILTER_LEVEL
   // y_only no longer has its original meaning.
@@ -2459,12 +2436,10 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   const int plane_start = 0;
   const int plane_end = num_planes;
 #endif  // CONFIG_LOOPFILTER_LEVEL
-#if !CONFIG_LPF_SB
 #if CONFIG_PARALLEL_DEBLOCKING
   const int col_start = 0;
   const int col_end = cm->mi_cols;
 #endif
-#endif  // CONFIG_LPF_SB
   int mi_row, mi_col;
   int plane;
 
@@ -2516,12 +2491,7 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #if CONFIG_LOOPFILTER_LEVEL
                            int frame_filter_level_r,
 #endif
-                           int y_only, int partial_frame
-#if CONFIG_LPF_SB
-                           ,
-                           int mi_row, int mi_col
-#endif
-                           ) {
+                           int y_only, int partial_frame) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
@@ -2536,30 +2506,6 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #else
   if (!frame_filter_level) return;
 #endif
-#if CONFIG_LPF_SB
-  int start_mi_col;
-  int end_mi_col;
-
-  // In the experiment of deblocking filtering per superblock.
-  // When partial_frame is 1, it indicates we are searching for the best filter
-  // level for current superblock. We reuse frame_filter_level as filter level
-  // for superblock, no longer for the whole frame.
-  // When partial_frame is 0, it's in the actual filtering stage for the frame
-  if (partial_frame) {
-    start_mi_row = AOMMAX(0, mi_row - FILT_BOUNDARY_MI_OFFSET);
-    start_mi_col = AOMMAX(0, mi_col - FILT_BOUNDARY_MI_OFFSET);
-    const int mi_row_range = mi_row - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
-    const int mi_col_range = mi_col - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
-    end_mi_row = AOMMIN(mi_row_range, cm->mi_rows);
-    end_mi_col = AOMMIN(mi_col_range, cm->mi_cols);
-  } else {
-    start_mi_row = 0;
-    mi_rows_to_filter = cm->mi_rows;
-    end_mi_row = start_mi_row + mi_rows_to_filter;
-    start_mi_col = 0;
-    end_mi_col = cm->mi_cols;
-  }
-#else
   start_mi_row = 0;
   mi_rows_to_filter = cm->mi_rows;
   if (partial_frame && cm->mi_rows > 8) {
@@ -2576,7 +2522,6 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #else
   av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level);
 #endif
-#endif  // CONFIG_LPF_SB
 
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
@@ -2587,12 +2532,7 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #endif
 #endif
 
-#if CONFIG_LPF_SB
-  av1_loop_filter_rows(frame, cm, xd->plane, start_mi_row, end_mi_row,
-                       start_mi_col, end_mi_col, y_only);
-#else
   av1_loop_filter_rows(frame, cm, xd->plane, start_mi_row, end_mi_row, y_only);
-#endif  // CONFIG_LPF_SB
 
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
@@ -2618,11 +2558,7 @@ void av1_loop_filter_data_reset(LFWorkerData *lf_data,
 
 int av1_loop_filter_worker(LFWorkerData *const lf_data, void *unused) {
   (void)unused;
-#if !CONFIG_LPF_SB
   av1_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
                        lf_data->start, lf_data->stop, lf_data->y_only);
-#else
-  (void)lf_data;
-#endif  // CONFIG_LPF_SB
   return 1;
 }

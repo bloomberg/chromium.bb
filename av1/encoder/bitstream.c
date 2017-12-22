@@ -2439,9 +2439,9 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 #endif  // CONFIG_LOOP_RESTORATION
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
-#if CONFIG_INTRABC && !CONFIG_LPF_SB
+#if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
-#endif  // CONFIG_INTRABC && !CONFIG_LPF_SB
+#endif  // CONFIG_INTRABC
   int i;
   struct loopfilter *lf = &cm->lf;
 

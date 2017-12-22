@@ -27,7 +27,6 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/picklpf.h"
 
-#if !CONFIG_LPF_SB
 static void yv12_copy_plane(const YV12_BUFFER_CONFIG *src_bc,
                             YV12_BUFFER_CONFIG *dst_bc, int plane) {
   switch (plane) {
@@ -37,7 +36,6 @@ static void yv12_copy_plane(const YV12_BUFFER_CONFIG *src_bc,
     default: assert(plane >= 0 && plane <= 2); break;
   }
 }
-#endif  // CONFIG_LPF_SB
 
 int av1_get_max_filter_level(const AV1_COMP *cpi) {
   if (cpi->oxcf.pass == 2) {
@@ -48,7 +46,6 @@ int av1_get_max_filter_level(const AV1_COMP *cpi) {
   }
 }
 
-#if !CONFIG_LPF_SB
 static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 AV1_COMP *const cpi, int filt_level,
                                 int partial_frame
@@ -213,7 +210,6 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   if (best_cost_ret) *best_cost_ret = RDCOST_DBL(x->rdmult, 0, best_err);
   return filt_best;
 }
-#endif  // CONFIG_LPF_SB
 
 void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                            LPF_PICK_METHOD method) {
@@ -278,7 +274,6 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level = clamp(filt_guess, min_filter_level, max_filter_level);
 #endif
   } else {
-#if !CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 2);
@@ -295,6 +290,5 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level =
         search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);
 #endif  // CONFIG_LOOPFILTER_LEVEL
-#endif  // !CONFIG_LPF_SB
   }
 }
