@@ -64,8 +64,7 @@ android_library("webapk_java") {
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
   ]
 
-  # Manifest used for linting (determining unused resources).
-  android_manifest = shell_apk_manifest
+  android_manifest_for_lint = shell_apk_manifest
 }
 
 template("webapk_tmpl") {

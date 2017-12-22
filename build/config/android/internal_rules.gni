@@ -2403,6 +2403,13 @@ if (enable_java_templates) {
             "proguard_configs",
             "type",
           ])
+      if (type == "android_apk") {
+        forward_variables_from(invoker,
+                               [
+                                 "android_manifest",
+                                 "android_manifest_dep",
+                               ])
+      }
       build_config = _build_config
       is_prebuilt = _is_prebuilt
       possible_config_deps = _accumulated_deps
@@ -2411,14 +2418,6 @@ if (enable_java_templates) {
       bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
                                invoker.bypass_platform_checks
 
-      if (type == "android_apk") {
-        # TODO(agrieve): forward this for all types once deps are fixed.
-        forward_variables_from(invoker,
-                               [
-                                 "android_manifest",
-                                 "android_manifest_dep",
-                               ])
-      }
       if (defined(_final_jar_path)) {
         jar_path = _final_jar_path
         ijar_path = _final_ijar_path
@@ -2491,7 +2490,13 @@ if (enable_java_templates) {
 
       if (_has_lint_target) {
         android_lint("${_main_target_name}__lint") {
+          # TODO(agrieve): Move this forward into the if block once downstream
+          #     is updated.
           forward_variables_from(invoker, [ "android_manifest" ])
+          if (invoker.type == "android_apk") {
+          } else if (defined(invoker.android_manifest_for_lint)) {
+            android_manifest = invoker.android_manifest_for_lint
+          }
           build_config = _build_config
           jar_path = _javac_jar_path
           deps = _accumulated_deps

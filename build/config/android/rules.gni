@@ -715,8 +715,8 @@ if (enable_java_templates) {
   #   generated_resource_files: List of all files in |generated_resource_dirs|.
   #     |generated_resource_dirs| must be specified in |generated_resource_files|
   #     is specified.
-  #   android_manifest: AndroidManifest.xml for this target. Defaults to
-  #     //build/android/AndroidManifest.xml.
+  #   android_manifest: AndroidManifest.xml for this target (optional). Will be
+  #     merged into apks that directly or indirectly depend on this target.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
   #   custom_package: java package for generated .java files.
   #   v14_skip: If true, don't run v14 resource generator on this. Defaults to
@@ -1565,7 +1565,10 @@ if (enable_java_templates) {
   # This target creates an Android library containing java code and Android
   # resources.
   #
-  # Supports all variables of java_library().
+  # Supports all variables of java_library(), plus:
+  #   android_manifest_for_lint: Path to AndroidManifest.xml (optional). This
+  #     manifest will be used by Android lint, but will not be merged into apks.
+  #     To have a manifest merged, add it to an android_resources() target.
   #   deps: In addition to defining java deps, this can also include
   #     android_assets() and android_resources() targets.
   #   dex_path: If set, the resulting .dex.jar file will be placed under this
