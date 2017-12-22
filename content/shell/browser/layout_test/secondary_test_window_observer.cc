@@ -16,6 +16,8 @@ SecondaryTestWindowObserver::SecondaryTestWindowObserver(
     WebContents* web_contents)
     : WebContentsObserver(web_contents) {
   BlinkTestController* blink_test_controller = BlinkTestController::Get();
+  if (!blink_test_controller)
+    return;
   DCHECK(!blink_test_controller->IsMainWindow(web_contents));
 
   // Ensure that any preexisting frames (likely just the main frame) are handled
@@ -30,9 +32,12 @@ SecondaryTestWindowObserver::~SecondaryTestWindowObserver() {}
 
 void SecondaryTestWindowObserver::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
-  DCHECK(!BlinkTestController::Get()->IsMainWindow(
+  BlinkTestController* blink_test_controller = BlinkTestController::Get();
+  if (!blink_test_controller)
+    return;
+  DCHECK(!blink_test_controller->IsMainWindow(
       WebContents::FromRenderFrameHost(render_frame_host)));
-  BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+  blink_test_controller->HandleNewRenderFrameHost(render_frame_host);
 }
 
 }  // namespace content
