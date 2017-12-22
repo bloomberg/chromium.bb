@@ -17,6 +17,7 @@ settings.ChromeCleanupIdleReason = {
   USER_DECLINED_CLEANUP: 'user_declined_cleanup',
   CLEANING_FAILED: 'cleaning_failed',
   CLEANING_SUCCEEDED: 'cleaning_succeeded',
+  CLEANER_DOWNLOAD_FAILED: 'cleaner_download_failed',
 };
 
 /**
@@ -47,6 +48,7 @@ settings.ChromeCleanerCardState = {
   SCANNING_FAILED: 'scanning_failed',
   CLEANUP_SUCCEEDED: 'cleanup_succeeded',
   CLEANING_FAILED: 'cleanup_failed',
+  CLEANER_DOWNLOAD_FAILED: 'cleaner_download_failed',
 };
 
 /**
@@ -486,6 +488,11 @@ Polymer({
             settings.ChromeCleanerCardState.CLEANUP_SUCCEEDED);
         break;
 
+      case settings.ChromeCleanupIdleReason.CLEANER_DOWNLOAD_FAILED:
+        this.renderCleanupCard_(
+            settings.ChromeCleanerCardState.CLEANER_DOWNLOAD_FAILED);
+        break;
+
       default:
         assert(false, `Unknown idle reason: ${idleReason}`);
     }
@@ -779,7 +786,14 @@ Polymer({
         doAction: this.dismiss_.bind(
             this,
             settings.ChromeCleanupDismissSource.CLEANUP_FAILURE_DONE_BUTTON),
-      }
+      },
+
+      TRY_SCAN_AGAIN: {
+        label: this.i18n('chromeCleanupTitleTryAgainButtonLabel'),
+        // TODO(crbug.com/776538): do not run the reporter component again.
+        // Try downloading the cleaner and scan with it instead.
+        doAction: this.startScanning_.bind(this),
+      },
     };
 
     // If user-initiated cleanups are enabled, there is no need for a custom
@@ -888,6 +902,15 @@ Polymer({
           actionButton: null,
           flags: learnMoreIfUserInitiatedCleanupsDisabled,
         }
+      ],
+      [
+        settings.ChromeCleanerCardState.CLEANER_DOWNLOAD_FAILED, {
+          title: this.i18n('chromeCleanupTitleNoInternet'),
+          explanation: this.i18n('chromeCleanupExplanationNoInternet'),
+          icon: icons.WARNING,
+          actionButton: actionButtons.TRY_SCAN_AGAIN,
+          flags: learnMoreIfUserInitiatedCleanupsDisabled,
+        },
       ],
     ]);
   },

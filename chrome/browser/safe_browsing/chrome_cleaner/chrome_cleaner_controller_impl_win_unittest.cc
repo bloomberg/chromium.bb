@@ -393,6 +393,10 @@ class ChromeCleanerControllerTest
   ChromeCleanerController::IdleReason ExpectedIdleReason() {
     EXPECT_EQ(ExpectedFinalState(), State::kIdle);
 
+    if (process_status_ == CleanerProcessStatus::kFetchFailure) {
+      return IdleReason::kCleanerDownloadFailed;
+    }
+
     if (process_status_ != CleanerProcessStatus::kFetchSuccessValidProcess ||
         crash_point_ == CrashPoint::kOnStartup ||
         crash_point_ == CrashPoint::kAfterConnection) {

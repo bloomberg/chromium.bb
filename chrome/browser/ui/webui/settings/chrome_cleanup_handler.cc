@@ -91,6 +91,8 @@ std::string IdleReasonToString(
       return "cleaning_failed";
     case ChromeCleanerController::IdleReason::kCleaningSucceeded:
       return "cleaning_succeeded";
+    case ChromeCleanerController::IdleReason::kCleanerDownloadFailed:
+      return "cleaner_download_failed";
   }
   NOTREACHED();
   return "";
