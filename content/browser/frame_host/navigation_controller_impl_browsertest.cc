@@ -112,6 +112,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadCrossSiteSubframe) {
 // in the expected parts of the NavigationEntry in each stage of navigation, and
 // that we don't kill the renderer on reload.  See https://crbug.com/522567.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and WebView Guest tag [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
+  // once WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   const GURL base_url("http://baseurl");
   const GURL history_url("http://historyurl");
   const std::string data = "<html><body>foo</body></html>";
@@ -165,6 +176,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
 // See https://crbug.com/612196.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        LoadDataWithBaseURLTitleAfterBack) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and WebView Guest tag [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
+  // once WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   const GURL base_url("http://baseurl");
   const GURL history_url(
       embedded_test_server()->GetURL("/navigation_controller/form.html"));
@@ -285,6 +307,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NavigateFromLoadDataWithBaseURL) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and WebView Guest tag [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
+  // once WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   const GURL base_url("http://baseurl");
   const GURL history_url("http://historyurl");
   const std::string data = "<html><body></body></html>";
@@ -329,6 +362,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        FragmentNavigateFromLoadDataWithBaseURL) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and WebView Guest tag [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
+  // once WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   const GURL base_url("http://baseurl");
   const GURL history_url("http://historyurl");
   const std::string data =
@@ -697,6 +741,17 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
 // crash.  See https://crbug.com/768575.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NavigateBackInChildOfLoadDataWithBaseURL) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and WebView Guest tag [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
+  // once WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   GURL iframe_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_links.html"));
 
