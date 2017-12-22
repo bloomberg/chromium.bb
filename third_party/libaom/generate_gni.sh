@@ -312,6 +312,10 @@ echo "Generate config files."
 all_platforms="--enable-external-build --enable-postproc --disable-av1-encoder"
 all_platforms="${all_platforms} --size-limit=16384x16384"
 all_platforms="${all_platforms} --enable-realtime-only --disable-install-docs"
+# TODO(tomfinegan): This is a workaround for
+# https://bugs.chromium.org/p/aomedia/issues/detail?id=1173. It should be
+# removed once the quality issue is sorted out.
+all_platforms="${all_platforms} --disable-highbitdepth"
 x86_platforms="--enable-pic --as=yasm"
 gen_config_files linux/ia32 "--target=x86-linux-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files linux/x64 "--target=x86_64-linux-gcc ${all_platforms} ${x86_platforms}"
