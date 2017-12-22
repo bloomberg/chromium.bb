@@ -17,12 +17,6 @@ namespace {
 
 const int kIgnoreCommitsDurationInMilliseconds = 100;
 
-ui::IMEEngineHandlerInterface* GetEngine() {
-  if (ui::IMEBridge::Get())
-    return ui::IMEBridge::Get()->GetCurrentEngineHandler();
-  return nullptr;
-}
-
 }  // namespace
 
 namespace ui {
