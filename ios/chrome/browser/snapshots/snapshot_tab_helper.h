@@ -41,9 +41,8 @@ class SnapshotTabHelper : public web::WebStateObserver,
   // Retrieves a grey snapshot for the current page, invoking |callback|
   // with the image. The callback may be called synchronously is there is
   // a cached snapshot available in memory, otherwise it will be invoked
-  // asynchronously after retrieved from disk or re-generated. If |generate|
-  // is false, then the snapshot is not regenerated if not found in cache.
-  void RetrieveGreySnapshot(void (^callback)(UIImage*), bool generate);
+  // asynchronously after retrieved from disk or re-generated.
+  void RetrieveGreySnapshot(void (^callback)(UIImage*));
 
   // Invalidates the cached snapshot for the current page and forces the
   // generation of a more recent snapshot. Returns the snapshot with or

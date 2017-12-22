@@ -114,9 +114,8 @@ void SnapshotTabHelper::RetrieveColorSnapshot(void (^callback)(UIImage*)) {
   [snapshot_generator_ retrieveSnapshot:callback];
 }
 
-void SnapshotTabHelper::RetrieveGreySnapshot(void (^callback)(UIImage*),
-                                             bool generate) {
-  [snapshot_generator_ retrieveGreySnapshot:callback generate:generate];
+void SnapshotTabHelper::RetrieveGreySnapshot(void (^callback)(UIImage*)) {
+  [snapshot_generator_ retrieveGreySnapshot:callback];
 }
 
 UIImage* SnapshotTabHelper::UpdateSnapshot(bool with_overlays,

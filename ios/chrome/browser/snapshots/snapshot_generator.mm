@@ -162,13 +162,12 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   }
 }
 
-- (void)retrieveGreySnapshot:(void (^)(UIImage*))callback
-                    generate:(BOOL)generate {
+- (void)retrieveGreySnapshot:(void (^)(UIImage*))callback {
   DCHECK(callback);
 
   __weak SnapshotGenerator* weakSelf = self;
   void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
-    if (!image && generate) {
+    if (!image) {
       image = [weakSelf updateSnapshotWithOverlays:YES visibleFrameOnly:YES];
       if (image)
         image = GreyImage(image);

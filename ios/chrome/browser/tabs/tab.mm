@@ -195,7 +195,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 @implementation Tab
 
 @synthesize browserState = _browserState;
-@synthesize useGreyImageCache = useGreyImageCache_;
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
@@ -927,14 +926,8 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
 - (void)getPlaceholderOverlayImageWithCompletionHandler:
     (void (^)(UIImage*))completionHandler {
-  // The snapshot is always grey as this overlay represents an out-of-date
-  // website and is shown only until the load begins. If |useGreyImageCache_|
-  // is YES, the grey image is already cached in memory for swiping, and a
-  // cache miss is acceptable. In other cases, such as during startyp, either
-  // disk access or a greyspace conversion is required as there will be no
-  // grey snapshots in memory.
   SnapshotTabHelper::FromWebState(self.webState)
-      ->RetrieveGreySnapshot(completionHandler, !useGreyImageCache_);
+      ->RetrieveGreySnapshot(completionHandler);
 }
 
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods

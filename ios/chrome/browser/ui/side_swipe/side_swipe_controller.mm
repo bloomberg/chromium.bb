@@ -285,16 +285,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   }
   [SnapshotCacheFactory::GetForBrowserState(browserState_)
       createGreyCache:sessionIDs];
-  for (Tab* tab in model_) {
-    tab.useGreyImageCache = YES;
-  }
 }
 
 - (void)deleteGreyCache {
   [SnapshotCacheFactory::GetForBrowserState(browserState_) removeGreyCache];
-  for (Tab* tab in model_) {
-    tab.useGreyImageCache = NO;
-  }
 }
 
 - (void)handlePan:(SideSwipeGestureRecognizer*)gesture {
