@@ -421,6 +421,9 @@
       <structure name="IDR_SETTINGS_CONTROLS_TOGGLE_BUTTON_JS"
                  file="controls/settings_toggle_button.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_COOKIE_INFO_HTML"
+                 file="site_settings/cookie_info.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_COOKIE_INFO_JS"
                  file="site_settings/cookie_info.js"
                  type="chrome_html" />
