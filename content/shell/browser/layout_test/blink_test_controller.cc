@@ -478,8 +478,7 @@ void BlinkTestController::LoadDevToolsJSTest() {
   devtools_window_ = main_window_;
   Shell* secondary = SecondaryWindow();
   devtools_bindings_ = std::make_unique<LayoutTestDevToolsBindings>(
-      devtools_window_->web_contents(), secondary->web_contents(), "",
-      test_url_, true);
+      devtools_window_->web_contents(), secondary->web_contents(), test_url_);
 }
 
 bool BlinkTestController::ResetAfterLayoutTest() {
@@ -578,10 +577,6 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NavigateSecondaryWindow,
                         OnNavigateSecondaryWindow)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowDevTools, OnShowDevTools)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_EvaluateInDevTools,
-                        OnEvaluateInDevTools)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseDevTools, OnCloseDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LoadURLForFrame, OnLoadURLForFrame)
@@ -974,26 +969,6 @@ void BlinkTestController::OnNavigateSecondaryWindow(const GURL& url) {
 void BlinkTestController::OnInspectSecondaryWindow() {
   if (devtools_bindings_)
     devtools_bindings_->Attach();
-}
-
-void BlinkTestController::OnShowDevTools(const std::string& settings,
-                                         const std::string& frontend_url) {
-  devtools_window_ = SecondaryWindow();
-  devtools_bindings_ = std::make_unique<LayoutTestDevToolsBindings>(
-      devtools_window_->web_contents(), main_window_->web_contents(), settings,
-      GURL(frontend_url), false);
-  devtools_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
-  devtools_window_->web_contents()->Focus();
-}
-
-void BlinkTestController::OnEvaluateInDevTools(
-    int call_id, const std::string& script) {
-  if (devtools_bindings_)
-    devtools_bindings_->EvaluateInFrontend(call_id, script);
-}
-
-void BlinkTestController::OnCloseDevTools() {
-  devtools_bindings_.reset();
 }
 
 void BlinkTestController::OnGoToOffset(int offset) {

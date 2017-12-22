@@ -2965,10 +2965,6 @@ void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
   frame_->AddMessageToConsole(wcm);
 }
 
-void RenderFrameImpl::DetachDevToolsForTest() {
-  frame_->DetachAllDevToolsSessionsForTesting();
-}
-
 void RenderFrameImpl::SetPreviewsState(PreviewsState previews_state) {
   previews_state_ = previews_state;
 }

@@ -1570,11 +1570,6 @@ WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
              : WebRect();
 }
 
-void WebLocalFrameImpl::DetachAllDevToolsSessionsForTesting() {
-  if (dev_tools_agent_)
-    dev_tools_agent_->DetachAllSessionsForTesting();
-}
-
 WebString WebLocalFrameImpl::GetLayerTreeAsTextForTesting(
     bool show_debug_info) const {
   if (!GetFrame())

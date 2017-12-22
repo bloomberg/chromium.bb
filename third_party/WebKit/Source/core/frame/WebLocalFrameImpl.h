@@ -234,7 +234,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebDOMEvent&) override;
 
   WebRect GetSelectionBoundsRectForTesting() const override;
-  void DetachAllDevToolsSessionsForTesting() override;
 
   WebString GetLayerTreeAsTextForTesting(
       bool show_debug_info = false) const override;
