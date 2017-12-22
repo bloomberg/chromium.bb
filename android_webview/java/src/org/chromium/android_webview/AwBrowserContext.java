@@ -24,6 +24,7 @@ public class AwBrowserContext {
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwFormDatabase mFormDatabase;
     private AwServiceWorkerController mServiceWorkerController;
+    private AwTracingController mTracingController;
     private Context mApplicationContext;
 
     public AwBrowserContext(SharedPreferences sharedPreferences, Context applicationContext) {
@@ -52,6 +53,13 @@ public class AwBrowserContext {
             mServiceWorkerController = new AwServiceWorkerController(mApplicationContext, this);
         }
         return mServiceWorkerController;
+    }
+
+    public AwTracingController getTracingController() {
+        if (mTracingController == null) {
+            mTracingController = new AwTracingController();
+        }
+        return mTracingController;
     }
 
     /**

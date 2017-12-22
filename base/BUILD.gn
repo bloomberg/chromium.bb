@@ -2860,6 +2860,7 @@ if (is_android) {
       "android/library_loader/library_loader_hooks.h",
       "memory/memory_pressure_listener.h",
       "metrics/histogram_base.h",
+      "trace_event/trace_config.h",
     ]
   }
 
