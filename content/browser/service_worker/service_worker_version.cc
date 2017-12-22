@@ -595,6 +595,13 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   request_rawptr->timeout_iter = iter;
   if (expiration_time > max_request_expiration_time_)
     max_request_expiration_time_ = expiration_time;
+
+  // S13nServiceWorker:
+  // Even if the worker is in the idle state, the new event which is about to
+  // be dispatched will reset the idle status. That means the worker can receive
+  // events directly from any clients, so we cannot trigger OnNoWork after this
+  // point.
+  idle_timer_fired_in_renderer_ = false;
   return request_id;
 }
 
@@ -636,19 +643,9 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
                          request, "Handled", was_handled);
   request_timeouts_.erase(request->timeout_iter);
   pending_requests_.Remove(request_id);
-  // Non-S13nServiceWorker:
-  // Trigger OnNoWork() if no inflight events exist.
-  //
-  // S13nServiceWorker:
-  // OnNoWork() will be triggered later by StopWorkerIfIdle(), which will be
-  // called when the renderer-side idle timeout calls
-  // mojom::EmbeddedWorkerInstanceHost::RequestTermination() if no inflight
-  // events exist for a while.
-  if (!ServiceWorkerUtils::IsServicificationEnabled() && !HasWork()) {
-    for (auto& observer : listeners_)
-      observer.OnNoWork(this);
-  }
 
+  if (!HasWorkInBrowser())
+    OnNoWorkInBrowser();
   return true;
 }
 
@@ -730,13 +727,8 @@ void ServiceWorkerVersion::OnStreamResponseStarted() {
 void ServiceWorkerVersion::OnStreamResponseFinished() {
   DCHECK_GT(pending_stream_response_count_, 0);
   pending_stream_response_count_--;
-  if (!ServiceWorkerUtils::IsServicificationEnabled() && !HasWork()) {
-    // S13nServiceWorker:
-    // TODO(https://crbug.com/774374): OnNoWork should be triggered here when
-    // the worker is idle since the last termination request.
-    for (auto& observer : listeners_)
-      observer.OnNoWork(this);
-  }
+  if (!HasWorkInBrowser())
+    OnNoWorkInBrowser();
 }
 
 void ServiceWorkerVersion::AddListener(Listener* listener) {
@@ -1527,6 +1519,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   // again from OnStoppedInternal if StopWorker is called before OnStarted.
 
   StartTimeoutTimer();
+  idle_timer_fired_in_renderer_ = false;
 
   std::unique_ptr<ServiceWorkerProviderHost> pending_provider_host =
       ServiceWorkerProviderHost::PreCreateForController(context());
@@ -1703,7 +1696,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // skip this check.
   if (!ServiceWorkerUtils::IsServicificationEnabled() &&
       GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
-    StopWorkerIfIdle();
+    StopWorkerIfIdle(false /* requested_from_renderer */);
     return;
   }
 
@@ -1726,32 +1719,51 @@ void ServiceWorkerVersion::OnPingTimeout() {
   // TODO(falken): Change the error code to SERVICE_WORKER_ERROR_TIMEOUT.
   embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::kLevelVerbose,
                                         kNotRespondingErrorMesage);
-  StopWorkerIfIdle();
+  StopWorkerIfIdle(false /* requested_from_renderer */);
 }
 
-void ServiceWorkerVersion::StopWorkerIfIdle() {
+void ServiceWorkerVersion::StopWorkerIfIdle(bool requested_from_renderer) {
   if (running_status() == EmbeddedWorkerStatus::STOPPED ||
       running_status() == EmbeddedWorkerStatus::STOPPING ||
       !stop_callbacks_.empty()) {
     return;
   }
 
-  // StopWorkerIfIdle() may be called for two reasons: "idle-timeout" or
-  // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), check if the
-  // worker really is idle.
-  if (!ping_controller_->IsTimedOut() && HasWork())
+  if (!ServiceWorkerUtils::IsServicificationEnabled()) {
+    // StopWorkerIfIdle() may be called for two reasons: "idle-timeout" or
+    // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), check if
+    // the worker really is idle.
+    if (!ping_controller_->IsTimedOut() && HasWorkInBrowser())
+      return;
+    embedded_worker_->StopIfNotAttachedToDevTools();
+    return;
+  }
+
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  // Ping timeout
+  if (ping_controller_->IsTimedOut()) {
+    DCHECK(!requested_from_renderer);
+    embedded_worker_->StopIfNotAttachedToDevTools();
+    return;
+  }
+
+  // Idle timeout
+  DCHECK(requested_from_renderer);
+  DCHECK(start_callbacks_.empty());
+  idle_timer_fired_in_renderer_ = true;
+
+  // We may still have some work in the browser-side that are not
+  // observable by the renderer, i.e. response streaming. In such case
+  // we return here with setting |idle_timer_fired_in_renderer_| to true.
+  // It will be checked later (i.e. when streaming finishes) to see if we
+  // we should fire OnNoWork().
+  if (HasWorkInBrowser())
     return;
   embedded_worker_->StopIfNotAttachedToDevTools();
-
-  // S13nServiceWorker: OnNoWork may trigger activation of the waiting
-  // version.
-  if (ServiceWorkerUtils::IsServicificationEnabled() && !HasWork()) {
-    for (auto& observer : listeners_)
-      observer.OnNoWork(this);
-  }
+  OnNoWorkInBrowser();
 }
 
-bool ServiceWorkerVersion::HasWork() const {
+bool ServiceWorkerVersion::HasWorkInBrowser() const {
   return !pending_requests_.IsEmpty() || pending_stream_response_count_ > 0 ||
          !start_callbacks_.empty();
 }
@@ -1930,6 +1942,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
                            should_restart);
     ClearTick(&stop_time_);
   }
+  idle_timer_fired_in_renderer_ = false;
   StopTimeoutTimer();
 
   // Fire all stop callbacks.
@@ -1968,9 +1981,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
     observer.OnRunningStateChanged(this);
   if (should_restart) {
     StartWorkerInternal();
-  } else if (!HasWork()) {
-    for (auto& observer : listeners_)
-      observer.OnNoWork(this);
+  } else if (!HasWorkInBrowser()) {
+    OnNoWorkInBrowser();
   }
 }
 
@@ -1985,6 +1997,25 @@ void ServiceWorkerVersion::CleanUpExternalRequest(
   if (status == SERVICE_WORKER_OK)
     return;
   external_request_uuid_to_request_id_.erase(request_uuid);
+}
+
+void ServiceWorkerVersion::OnNoWorkInBrowser() {
+  DCHECK(!HasWorkInBrowser());
+  if (!ServiceWorkerUtils::IsServicificationEnabled()) {
+    for (auto& observer : listeners_)
+      observer.OnNoWork(this);
+    return;
+  }
+
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  if (!idle_timer_fired_in_renderer_ &&
+      running_status() != EmbeddedWorkerStatus::STOPPED) {
+    return;
+  }
+
+  for (auto& observer : listeners_)
+    observer.OnNoWork(this);
+  idle_timer_fired_in_renderer_ = false;
 }
 
 }  // namespace content

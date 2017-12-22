@@ -709,7 +709,7 @@ void EmbeddedWorkerInstance::RequestTermination() {
 
   if (status() == EmbeddedWorkerStatus::STOPPING)
     return;
-  owner_version_->StopWorkerIfIdle();
+  owner_version_->StopWorkerIfIdle(true /* requested_from_renderer */);
 }
 
 void EmbeddedWorkerInstance::OnReadyForInspection() {

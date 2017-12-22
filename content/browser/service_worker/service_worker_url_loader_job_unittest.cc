@@ -733,7 +733,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
-  EXPECT_TRUE(version_->HasWork());
+  EXPECT_TRUE(version_->HasWorkInBrowser());
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -819,10 +819,10 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponseAndCancel) {
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
   EXPECT_FALSE(job_->WasCanceled());
-  EXPECT_TRUE(version_->HasWork());
+  EXPECT_TRUE(version_->HasWorkInBrowser());
   job_->Cancel();
   EXPECT_TRUE(job_->WasCanceled());
-  EXPECT_FALSE(version_->HasWork());
+  EXPECT_FALSE(version_->HasWorkInBrowser());
 
   // Although ServiceworkerURLLoaderJob resets its URLLoaderClient pointer in
   // Cancel(), the URLLoaderClient still exists. In this test, it is |client_|
@@ -889,9 +889,9 @@ TEST_F(ServiceWorkerURLLoaderJobTest, EarlyResponse) {
 
   // Although the response was already received, the event remains outstanding
   // until waitUntil() resolves.
-  EXPECT_TRUE(version_->HasWork());
+  EXPECT_TRUE(version_->HasWorkInBrowser());
   helper_->FinishWaitUntil();
-  EXPECT_FALSE(version_->HasWork());
+  EXPECT_FALSE(version_->HasWorkInBrowser());
 }
 
 // Test asking the job to fallback to network. In production code, this happens
