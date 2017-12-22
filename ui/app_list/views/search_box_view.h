@@ -86,9 +86,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   // Moves focus forward/backwards in response to TAB.
   bool MoveTabFocus(bool move_backwards);
 
-  // Moves focus to contents or SearchBox and unselects buttons.
-  void ResetTabFocus(bool on_contents);
-
   // Sets voice label for Back button depending on whether a folder is open.
   void SetBackButtonLabel(bool folder);
 
@@ -243,9 +240,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
 
   // Owned by |content_container_|. It is deleted when the view is deleted.
   views::BoxLayout* box_layout_ = nullptr;
-
-  // Whether the app list focus is enabled.
-  const bool is_app_list_focus_enabled_;
 
   SearchBoxFocus focused_view_;  // Which element has TAB'd focus.
 

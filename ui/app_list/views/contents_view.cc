@@ -223,10 +223,6 @@ void ContentsView::ActivePageChanged() {
     app_list_main_view_->search_box_view()->Layout();
     app_list_main_view_->search_box_view()->SetBackButtonLabel(folder_active);
   }
-
-  // Whenever the page changes, the custom launcher page is considered to have
-  // been reset.
-  app_list_main_view_->search_box_view()->ResetTabFocus(false);
 }
 
 void ContentsView::ShowSearchResults(bool show) {

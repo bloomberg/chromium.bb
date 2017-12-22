@@ -134,9 +134,6 @@ class APP_LIST_EXPORT SearchResultView
   // Whether this view is selected.
   bool selected_ = false;
 
-  // Whether the app list focus is enabled.
-  const bool is_app_list_focus_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(SearchResultView);
 };
 

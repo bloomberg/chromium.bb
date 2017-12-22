@@ -33,7 +33,6 @@ bool APP_LIST_EXPORT IsAnswerCardEnabled();
 bool APP_LIST_EXPORT IsBackgroundBlurEnabled();
 bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
 bool APP_LIST_EXPORT IsPlayStoreAppSearchEnabled();
-bool APP_LIST_EXPORT IsAppListFocusEnabled();
 std::string APP_LIST_EXPORT AnswerServerUrl();
 std::string APP_LIST_EXPORT AnswerServerQuerySuffix();
 

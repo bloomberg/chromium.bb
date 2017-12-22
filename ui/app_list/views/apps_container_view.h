@@ -133,9 +133,6 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage,
 
   const bool is_fullscreen_app_list_enabled_;
 
-  // Whether the app list focus is enabled.
-  const bool is_app_list_focus_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };
 

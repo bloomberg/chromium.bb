@@ -356,7 +356,6 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       contents_view_(contents_view),
       bounds_animator_(this),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
-      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()),
       page_flip_delay_in_ms_(is_fullscreen_app_list_enabled_
                                  ? kPageFlipDelayInMsFullscreen
                                  : kPageFlipDelayInMs),
@@ -997,114 +996,18 @@ void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (is_app_list_focus_enabled_) {
-    // Let the FocusManager handle Left/Right keys.
-    if (!CanProcessUpDownKeyTraversal(event))
-      return false;
-
-    AppListViewState state = contents_view_->app_list_view()->app_list_state();
-    bool arrow_up = event.key_code() == ui::VKEY_UP;
-    if (state == AppListViewState::PEEKING)
-      return HandleFocusMovementInPeekingState(arrow_up);
-
-    DCHECK(state == AppListViewState::FULLSCREEN_ALL_APPS);
-    return HandleFocusMovementInFullscreenAllAppsState(arrow_up);
-  }
-  // TODO(weidongg/766807) Remove everything below when the flag is enabled by
-  // default.
-  bool handled = false;
-  if (suggestions_container_ &&
-      suggestions_container_->selected_index() != -1) {
-    int selected_suggested_index = suggestions_container_->selected_index();
-    handled = suggestions_container_->GetTileItemView(selected_suggested_index)
-                  ->OnKeyPressed(event);
-  }
-
-  if (expand_arrow_view_ && expand_arrow_view_->selected())
-    handled = expand_arrow_view_->OnKeyPressed(event);
-
-  if (selected_view_)
-    handled = static_cast<views::View*>(selected_view_)->OnKeyPressed(event);
-
-  if (!handled) {
-    const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
-    switch (event.key_code()) {
-      case ui::VKEY_LEFT:
-        if (!base::i18n::IsRTL() && is_fullscreen_app_list_enabled_ &&
-            suggestions_container_ &&
-            suggestions_container_->selected_index() == 0) {
-          // Left arrow key moves focus back to search box when
-          // |suggestions_container|'s first app is selected in LTR.
-          ClearAnySelectedView();
-          return false;
-        }
-        MoveSelected(0, -forward_dir, 0);
-        return true;
-      case ui::VKEY_RIGHT:
-        if (base::i18n::IsRTL() && is_fullscreen_app_list_enabled_ &&
-            suggestions_container_ &&
-            suggestions_container_->selected_index() == 0) {
-          // Right arrow key moves focus back to search box when
-          // |suggestions_container|'s first app is selected in RTL.
-          ClearAnySelectedView();
-          return false;
-        }
-
-        MoveSelected(0, forward_dir, 0);
-        return true;
-      case ui::VKEY_UP:
-        if (is_fullscreen_app_list_enabled_ && suggestions_container_ &&
-            suggestions_container_->selected_index() != -1) {
-          // Up arrow key moves focus back to search box when
-          // |suggestions_container| is selected.
-          ClearAnySelectedView();
-          return false;
-        }
-        if (is_fullscreen_app_list_enabled_ || selected_view_) {
-          // Don't initiate selection with UP in non-fullscreen app list. In
-          // fullscreen app list, UP is already handled by SearchBoxView.
-          MoveSelected(0, 0, -1);
-        }
-        return true;
-      case ui::VKEY_DOWN:
-        MoveSelected(0, 0, 1);
-        return true;
-      case ui::VKEY_PRIOR: {
-        MoveSelected(-1, 0, 0);
-        return true;
-      }
-      case ui::VKEY_NEXT: {
-        MoveSelected(1, 0, 0);
-        return true;
-      }
-      case ui::VKEY_TAB: {
-        if (event.IsShiftDown()) {
-          ClearAnySelectedView();  // ContentsView will move focus back.
-        } else {
-          MoveSelected(0, 0, 0);  // Ensure but don't change selection.
-          handled = true;         // TABing internally doesn't move focus.
-        }
-        break;
-      }
-      default:
-        break;
-    }
-  }
-
-  return handled;
-}
-
-bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
-  if (is_app_list_focus_enabled_) {
-    // TODO(weidongg/766807) Remove this function when the flag is enabled by
-    // default.
+  // Let the FocusManager handle Left/Right keys.
+  if (!CanProcessUpDownKeyTraversal(event))
     return false;
-  }
-  bool handled = false;
-  if (selected_view_)
-    handled = selected_view_->OnKeyReleased(event);
 
-  return handled;
+  const AppListViewState state =
+      contents_view_->app_list_view()->app_list_state();
+  const bool arrow_up = event.key_code() == ui::VKEY_UP;
+  if (state == AppListViewState::PEEKING)
+    return HandleFocusMovementInPeekingState(arrow_up);
+
+  DCHECK(state == AppListViewState::FULLSCREEN_ALL_APPS);
+  return HandleFocusMovementInFullscreenAllAppsState(arrow_up);
 }
 
 void AppsGridView::ViewHierarchyChanged(

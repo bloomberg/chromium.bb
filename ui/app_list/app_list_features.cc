@@ -37,11 +37,6 @@ bool IsPlayStoreAppSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
 }
 
-bool IsAppListFocusEnabled() {
-  // TODO(766807): Remove this method.
-  return true;
-}
-
 std::string AnswerServerUrl() {
   const std::string experiment_url =
       base::GetFieldTrialParamValueByFeature(kEnableAnswerCard, "ServerUrl");
