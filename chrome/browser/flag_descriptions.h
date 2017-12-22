@@ -898,6 +898,9 @@ extern const char kTrySupportedChannelLayoutsDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
+extern const char kEnablePreventLayerSquashingName[];
+extern const char kEnablePreventLayerSquashingDescription[];
+
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
 
