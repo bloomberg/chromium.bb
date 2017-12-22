@@ -7042,6 +7042,10 @@ RenderFrameImpl::GetDefaultURLLoaderFactoryGetter() {
   return url_loader_factory_getter_.get();
 }
 
+void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
+  OnSetAccessibilityMode(new_mode);
+}
+
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {
   if (frame_->GetDocument().IsPluginDocument())
     return frame_->GetDocument().To<WebPluginDocument>().Plugin();

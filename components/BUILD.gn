@@ -470,6 +470,11 @@ if (!is_ios) {
       data += [ "$root_out_dir/Content Shell.app/" ]
     }
 
+    if (!is_android) {
+      sources += [ "pdf/renderer/pdf_accessibility_tree_browsertest.cc" ]
+      deps += [ "//components/pdf/renderer" ]
+    }
+
     if (is_android) {
       sources += [
         "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",

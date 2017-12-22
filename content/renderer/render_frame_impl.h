@@ -497,6 +497,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // It is invalid to call this in an incomplete env where
   // RenderThreadImpl::current() returns nullptr (e.g. in some tests).
   ChildURLLoaderFactoryGetter* GetDefaultURLLoaderFactoryGetter() override;
+  void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
 
   // blink::mojom::EngagementClient implementation:
   void SetEngagementLevel(const url::Origin& origin,

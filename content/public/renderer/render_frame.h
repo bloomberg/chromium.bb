@@ -23,6 +23,7 @@
 #include "third_party/WebKit/public/platform/TaskType.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
+#include "ui/accessibility/ax_modes.h"
 
 namespace blink {
 class AssociatedInterfaceProvider;
@@ -262,6 +263,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns a default ChildURLLoaderFactoryGetter for the RenderFrame.
   // Used to obtain a right mojom::URLLoaderFactory.
   virtual ChildURLLoaderFactoryGetter* GetDefaultURLLoaderFactoryGetter() = 0;
+
+  // Set the accessibility mode to force creation of RenderAccessibility.
+  virtual void SetAccessibilityModeForTest(ui::AXMode new_mode) = 0;
 
  protected:
   ~RenderFrame() override {}
