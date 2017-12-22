@@ -7,5 +7,5 @@
 /* Media Patent License 1.0 was not distributed with this source code in the */
 /* PATENTS file, you can obtain it at www.aomedia.org/license/patent. */
 #include "aom/aom_codec.h"
-static const char* const cfg = "--target=x86-win32-vs12 --enable-external-build --enable-postproc --disable-av1-encoder --size-limit=16384x16384 --enable-realtime-only --disable-install-docs --enable-pic --as=yasm";
+static const char* const cfg = "--target=x86-win32-vs12 --enable-external-build --enable-postproc --disable-av1-encoder --size-limit=16384x16384 --enable-realtime-only --disable-install-docs --disable-highbitdepth --enable-pic --as=yasm";
 const char *aom_codec_build_config(void) {return cfg;}
