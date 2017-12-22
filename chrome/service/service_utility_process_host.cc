@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -24,7 +25,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/win_util.h"
-#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "content/public/common/child_process_host.h"
@@ -95,8 +95,7 @@ class ServiceSandboxedProcessLauncherDelegate
 
 class ServiceUtilityProcessHost::PdfToEmfState {
  public:
-  explicit PdfToEmfState(ServiceUtilityProcessHost* host)
-      : host_(host), page_count_(0), current_page_(0), pages_in_progress_(0) {}
+  explicit PdfToEmfState(ServiceUtilityProcessHost* host) : host_(host) {}
   ~PdfToEmfState() { Stop(); }
 
   bool Start(base::File pdf_file,
@@ -162,11 +161,11 @@ class ServiceUtilityProcessHost::PdfToEmfState {
   }
 
   base::ScopedTempDir temp_dir_;
-  ServiceUtilityProcessHost* host_;
+  ServiceUtilityProcessHost* const host_;
   base::queue<base::File> emf_files_;
-  int page_count_;
-  int current_page_;
-  int pages_in_progress_;
+  int page_count_ = 0;
+  int current_page_ = 0;
+  int pages_in_progress_ = 0;
 };
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
@@ -196,7 +195,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
 
-  pdf_to_emf_state_.reset(new PdfToEmfState(this));
+  pdf_to_emf_state_ = std::make_unique<PdfToEmfState>(this);
   return pdf_to_emf_state_->Start(std::move(pdf_file), render_settings);
 }
 
@@ -388,12 +387,10 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone(
 void ServiceUtilityProcessHost::OnPDFToEmfFinished(bool success) {
   if (!waiting_for_reply_)
     return;
+
   waiting_for_reply_ = false;
-  if (success) {
-    ReportUmaEvent(SERVICE_UTILITY_METAFILE_SUCCEEDED);
-  } else {
-    ReportUmaEvent(SERVICE_UTILITY_METAFILE_FAILED);
-  }
+  ReportUmaEvent(success ? SERVICE_UTILITY_METAFILE_SUCCEEDED
+                         : SERVICE_UTILITY_METAFILE_FAILED);
   client_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::OnRenderPDFPagesToMetafileDone,
                             client_.get(), success));
