@@ -169,7 +169,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
  private:
   void HandleRequestUnmountCallback(
       const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType smb_error) const;
+      smbprovider::ErrorType error) const;
 
   void HandleRequestReadDirectoryCallback(
       const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
@@ -181,6 +181,14 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
       const ProvidedFileSystemInterface::GetMetadataCallback& callback,
       smbprovider::ErrorType error,
       const smbprovider::DirectoryEntry& entry) const;
+
+  void HandleRequestOpenFileCallback(const OpenFileCallback& callback,
+                                     smbprovider::ErrorType error,
+                                     int32_t file_id) const;
+
+  void HandleRequestCloseFileCallback(
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      smbprovider::ErrorType error) const;
 
   int32_t GetMountId() const;
 
