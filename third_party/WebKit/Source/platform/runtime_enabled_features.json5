@@ -334,7 +334,7 @@
     },
     {
       name: "DisplayNoneIFrameCreatesNoLayoutObject",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "DocumentCookie",
