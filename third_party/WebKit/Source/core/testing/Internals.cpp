@@ -63,7 +63,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/SelectionTemplate.h"
-#include "core/editing/SurroundingText.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarker.h"
@@ -3192,31 +3191,6 @@ void Internals::Trace(blink::Visitor* visitor) {
 void Internals::setValueForUser(HTMLInputElement* element,
                                 const String& value) {
   element->SetValueForUser(value);
-}
-
-String Internals::textSurroundingNode(Node* node,
-                                      int x,
-                                      int y,
-                                      unsigned long max_length) {
-  if (!node)
-    return String();
-
-  // VisiblePosition and SurroundingText must be created with clean layout.
-  node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      node->GetDocument().Lifecycle());
-
-  if (!node->GetLayoutObject())
-    return String();
-  blink::WebPoint point(x, y);
-  SurroundingText surrounding_text(
-      EphemeralRange(
-          CreateVisiblePosition(node->GetLayoutObject()->PositionForPoint(
-                                    static_cast<IntPoint>(point)))
-              .DeepEquivalent()
-              .ParentAnchoredEquivalent()),
-      max_length);
-  return surrounding_text.Content();
 }
 
 void Internals::setFocused(bool focused) {
