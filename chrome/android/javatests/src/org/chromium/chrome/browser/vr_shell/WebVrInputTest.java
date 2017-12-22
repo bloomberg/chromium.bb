@@ -13,7 +13,6 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.MotionEvent;
 import android.view.View;
@@ -43,9 +42,9 @@ import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TouchCommon;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -107,8 +106,7 @@ public class WebVrInputTest {
                         touchRegisteredLatch.countDown();
                     }
                 });
-        ClickUtils.mouseSingleClickView(InstrumentationRegistry.getInstrumentation(),
-                mVrTestRule.getActivity().getWindow().getDecorView().getRootView());
+        TouchCommon.singleClickView(mVrTestRule.getActivity().getWindow().getDecorView());
         Assert.assertTrue("VrShellImpl dispatched touches",
                 touchRegisteredLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS));
         VrTestFramework.executeStepAndWait(
