@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_util.h"
 #include "components/exo/shell_surface.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
@@ -608,9 +608,10 @@ void ArcAppWindowLauncherController::RegisterApp(
     arc::Intent intent;
     if (arc::ParseIntent(app_window_info->launch_intent(), &intent) &&
         intent.HasExtraParam(arc::kInitialStartParam)) {
+      DCHECK(!arc::IsRobotAccountMode());
       arc::UpdatePlayStoreShowTime(
           base::Time::Now() - opt_in_management_check_start_time_,
-          arc::policy_util::IsAccountManaged(owner()->profile()));
+          owner()->profile());
     }
     opt_in_management_check_start_time_ = base::Time();
   }
