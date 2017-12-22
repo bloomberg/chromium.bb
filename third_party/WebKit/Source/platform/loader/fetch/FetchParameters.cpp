@@ -122,9 +122,7 @@ void FetchParameters::MakeSynchronous() {
   // Synchronous requests should always be max priority, lest they hang the
   // renderer.
   resource_request_.SetPriority(ResourceLoadPriority::kHighest);
-  if (resource_request_.TimeoutInterval() == INT_MAX) {
-    resource_request_.SetTimeoutInterval(10);
-  }
+  resource_request_.SetTimeoutInterval(10);
   options_.synchronous_policy = kRequestSynchronously;
 }
 
