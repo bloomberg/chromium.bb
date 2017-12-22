@@ -96,6 +96,7 @@ def gen_request_data(properties=None, **kwargs):
       'caches': [],
       'cipd_input': None,
       'command': None,
+      'relative_cwd': None,
       'dimensions': [
         {'key': 'foo', 'value': 'bar'},
         {'key': 'os', 'value': 'Mac'},
@@ -335,6 +336,7 @@ class TestSwarmingTrigger(NetTestCase):
             caches=[],
             cipd_input=None,
             command=['a', 'b'],
+            relative_cwd=None,
             dimensions=[('foo', 'bar'), ('os', 'Mac')],
             env={},
             env_prefixes=[],
@@ -411,6 +413,7 @@ class TestSwarmingTrigger(NetTestCase):
             caches=[],
             cipd_input=None,
             command=['a', 'b'],
+            relative_cwd=None,
             dimensions=[('foo', 'bar'), ('os', 'Mac')],
             env={},
             env_prefixes=[],
@@ -479,6 +482,7 @@ class TestSwarmingTrigger(NetTestCase):
                         version='abc123')],
                 server=None),
             command=['a', 'b'],
+            relative_cwd=None,
             dimensions=[('foo', 'bar'), ('os', 'Mac')],
             env={},
             env_prefixes=[],
@@ -896,6 +900,7 @@ class TestMain(NetTestCase):
         'caches': [],
         'cipd_input': None,
         'command': ['python', '-c', 'print(\'hi\')'],
+        'relative_cwd': 'deeep',
         'dimensions': [
           {'key': 'foo', 'value': 'bar'},
         ],
@@ -927,6 +932,7 @@ class TestMain(NetTestCase):
         '--swarming', 'https://localhost:1',
         '--dimension', 'foo', 'bar',
         '--raw-cmd',
+        '--relative-cwd', 'deeep',
         '--',
         'python',
         '-c',
@@ -953,6 +959,7 @@ class TestMain(NetTestCase):
         'caches': [],
         'cipd_input': None,
         'command': ['python', '-c', 'print(\'hi\')'],
+        'relative_cwd': None,
         'dimensions': [
           {'key': 'foo', 'value': 'bar'},
         ],
@@ -1016,6 +1023,7 @@ class TestMain(NetTestCase):
         'caches': [],
         'cipd_input': None,
         'command': ['python', '-c', 'print(\'hi\')'],
+        'relative_cwd': None,
         'dimensions': [
           {'key': 'foo', 'value': 'bar'},
         ],
@@ -1204,6 +1212,7 @@ class TestMain(NetTestCase):
               'caches': [],
               'cipd_input': None,
               'command': None,
+              'relative_cwd': None,
               'dimensions': [
                 {'key': 'foo', 'value': 'bar'},
                 {'key': 'os', 'value': 'Mac'},

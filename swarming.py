@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.10.0'
+__version__ = '0.10.1'
 
 import collections
 import datetime
@@ -111,6 +111,7 @@ TaskProperties = collections.namedtuple(
       'caches',
       'cipd_input',
       'command',
+      'relative_cwd',
       'dimensions',
       'env',
       'env_prefixes',
@@ -975,6 +976,10 @@ def add_trigger_options(parser):
       help='When set, the command after -- is used as-is without run_isolated. '
            'In this case, the .isolated file is expected to not have a command')
   group.add_option(
+      '--relative-cwd',
+      help='Ignore the isolated \'relative_cwd\' and use this one instead; '
+           'requires --raw-cmd')
+  group.add_option(
       '--cipd-package', action='append', default=[], metavar='PKG',
       help='CIPD packages to install on the Swarming bot. Uses the format: '
            'path:package_name:version')
@@ -1061,7 +1066,14 @@ def process_trigger_options(parser, options, args):
   extra_args = None
   if options.raw_cmd:
     command = args
+    if options.relative_cwd:
+      a = os.path.normpath(os.path.abspath(options.relative_cwd))
+      if not a.startswith(os.getcwd()):
+        parser.error(
+            '--relative-cwd must not try to escape the working directory')
   else:
+    if options.relative_cwd:
+      parser.error('--relative-cwd requires --raw-cmd')
     extra_args = args
 
   # CIPD
@@ -1101,6 +1113,7 @@ def process_trigger_options(parser, options, args):
       caches=caches,
       cipd_input=cipd_input,
       command=command,
+      relative_cwd=options.relative_cwd,
       dimensions=options.dimensions,
       env=options.env,
       env_prefixes=[StringListPair(k, v) for k, v in env_prefixes.iteritems()],
