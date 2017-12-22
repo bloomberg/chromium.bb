@@ -12,10 +12,8 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
-namespace app_list {
-class AppListModel;
+class ChromeAppListItem;
 class SearchModel;
-}  // namespace app_list
 
 class ChromeAppListModelUpdater : public AppListModelUpdater {
  public:
@@ -30,14 +28,12 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void RemoveUninstalledItem(const std::string& id) override;
   void MoveItemToFolder(const std::string& id,
                         const std::string& folder_id) override;
-  void SetItemPosition(const std::string& id,
-                       const syncer::StringOrdinal& new_position) override;
   void SetStatus(app_list::AppListModel::Status status) override;
   void SetState(app_list::AppListModel::State state) override;
-  void SetItemName(const std::string& id, const std::string& name) override;
   void HighlightItemInstalledFromUI(const std::string& id) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
 
+  // Methods for item querying.
   ChromeAppListItem* FindItem(const std::string& id) override;
   size_t ItemCount() override;
   ChromeAppListItem* ItemAtForTest(size_t index) override;
@@ -49,7 +45,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   bool SearchEngineIsGoogle() override;
   std::map<std::string, size_t> GetIdToAppListIndexMap() override;
 
-  // For SynchableService:
+  // Methods for AppListSyncableService:
   void AddItemToOemFolder(
       std::unique_ptr<ChromeAppListItem> item,
       app_list::AppListSyncableService::SyncItem* oem_sync_item,
@@ -63,6 +59,22 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
       app_list::AppListSyncableService::SyncItem* sync_item,
       bool update_name,
       bool update_folder);
+
+ protected:
+  // AppListModelUpdater:
+  // Methods only used by ChromeAppListItem that talk to ash directly.
+  void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
+  void SetItemName(const std::string& id, const std::string& name) override;
+  void SetItemNameAndShortName(const std::string& id,
+                               const std::string& name,
+                               const std::string& short_name) override;
+  void SetItemPosition(const std::string& id,
+                       const syncer::StringOrdinal& new_position) override;
+  void SetItemFolderId(const std::string& id,
+                       const std::string& folder_id) override;
+  void SetItemIsInstalling(const std::string& id, bool is_installing) override;
+  void SetItemPercentDownloaded(const std::string& id,
+                                int32_t percent_downloaded) override;
 
  private:
   // TODO(hejq): Remove this friend. Currently |model_| and |search_model_| are

@@ -12,6 +12,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
+class ChromeAppListItem;
+
 class FakeAppListModelUpdater : public AppListModelUpdater {
  public:
   FakeAppListModelUpdater();

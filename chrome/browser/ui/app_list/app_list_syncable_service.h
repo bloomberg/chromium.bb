@@ -45,6 +45,7 @@ class PrefRegistrySyncable;
 
 namespace app_list {
 
+// TODO(hejq): Remove AppListItem when we have a mojo struct for this.
 class AppListItem;
 // TODO(hejq): Remove these when we get rid of |GetModel| and |GetSearchModel|.
 class AppListModel;

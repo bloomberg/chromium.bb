@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 class AppListControllerDelegate;
+class ChromeAppListItem;
 class Profile;
 
 // This abstract class populates and maintains the given |model| with

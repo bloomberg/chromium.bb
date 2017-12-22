@@ -16,6 +16,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 class FastShowPickler;
+class ChromeAppListModelUpdater;
 
 namespace ui {
 class MenuModel;
@@ -88,6 +89,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   virtual std::string ToDebugString() const;
 
  protected:
+  // TODO(hejq): remove this when we have mojo interfaces.
+  friend class ::ChromeAppListModelUpdater;
+
   friend class ::FastShowPickler;
   friend class AppListItemList;
   friend class AppListItemListTest;

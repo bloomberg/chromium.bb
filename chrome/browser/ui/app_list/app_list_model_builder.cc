@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+
 AppListModelBuilder::AppListModelBuilder(AppListControllerDelegate* controller,
                                          const char* item_type)
     : controller_(controller), item_type_(item_type) {}
