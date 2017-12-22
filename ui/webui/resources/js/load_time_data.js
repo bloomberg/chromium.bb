@@ -114,6 +114,7 @@ function LoadTimeData(){}
      * @return {string}
      */
     sanitizeInnerHtml: function(rawString, opts) {
+      opts = opts || {};
       return parseHtmlSubset('<b>' + rawString + '</b>', opts.tags, opts.attrs)
           .firstChild.innerHTML;
     },
