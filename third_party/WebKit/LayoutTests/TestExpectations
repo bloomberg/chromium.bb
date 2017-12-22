@@ -1946,7 +1946,6 @@ crbug.com/626703 external/wpt/svg/path/bearing/relative.svg [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.html [ Skip ]
 crbug.com/626703 external/wpt/svg/path/bearing/absolute.svg [ Failure ]
-crbug.com/626703 [ Android Win7 ] external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Timeout ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-color/t32-opacity-offscreen-b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-color/t32-opacity-offscreen-with-alpha-c.xht [ Failure ]
@@ -1964,7 +1963,6 @@ crbug.com/626703 [ Linux Mac ] virtual/outofblink-cors/external/wpt/service-work
 crbug.com/626703 external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Timeout ]
 crbug.com/626703 [ Linux Mac ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/clients-get.https.html [ Timeout ]
 crbug.com/626703 [ Linux Mac ] virtual/mojo-blobs/external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1i.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1j.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1k.html [ Failure ]
@@ -2404,6 +2402,8 @@ crbug.com/796733 [ Win ] external/wpt/css/css-ui/text-overflow-014.html [ Pass F
 crbug.com/796733 [ Win ] external/wpt/css/css-ui/text-overflow-015.html [ Pass Failure ]
 crbug.com/796733 [ Win ] external/wpt/css/css-ui/text-overflow-016.html [ Pass Failure ]
 crbug.com/796733 [ Win ] external/wpt/css/css-ui/text-overflow-020.html [ Pass Failure ]
+
+crbug.com/796668 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Skip ]
 
 # This test times out on debug builds, see https://crbug.com/755810
 crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Skip ]
