@@ -734,12 +734,6 @@ std::unique_ptr<base::DictionaryValue> PrerenderContents::GetAsValue() const {
   return dict_value;
 }
 
-bool PrerenderContents::IsCrossSiteNavigationPending() const {
-  return prerender_contents_ &&
-         prerender_contents_->GetSiteInstance() !=
-             prerender_contents_->GetPendingSiteInstance();
-}
-
 void PrerenderContents::PrepareForUse() {
   SetFinalStatus(FINAL_STATUS_USED);
 

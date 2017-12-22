@@ -27,13 +27,10 @@
 
 namespace content {
 class BrowserContext;
-class FrameNavigationEntry;
 class FrameTreeNode;
 class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
-class NavigationEntryImpl;
-class NavigationHandleImpl;
 class NavigationRequest;
 class NavigatorTestWithBrowserSideNavigation;
 class RenderFrameHostDelegate;
@@ -108,11 +105,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // There is additional complexity that some of the functions we need in
   // WebContentsImpl are inherited and non-virtual. These are named with
   // "RenderManager" so that the duplicate implementation of them will be clear.
-  //
-  // Functions and parameters whose description are prefixed by PlzNavigate are
-  // part of a navigation refactoring project, currently behind the
-  // enable-browser-side-navigation flag. The idea is to move the logic behind
-  // driving navigations from the renderer to the browser.
   class CONTENT_EXPORT Delegate {
    public:
     // Initializes the given renderer if necessary and creates the view ID
@@ -246,35 +238,16 @@ class CONTENT_EXPORT RenderFrameHostManager
   // somehwere else.
   void RemoveOuterDelegateFrame();
 
-  // Returns the pending RenderFrameHost, or null if there is no pending one.
-  RenderFrameHostImpl* pending_frame_host() const {
-    return pending_render_frame_host_.get();
-  }
-
   // Returns the speculative RenderFrameHost, or null if there is no speculative
   // one.
   RenderFrameHostImpl* speculative_frame_host() const {
     return speculative_render_frame_host_.get();
   }
 
-  // TODO(creis): Remove this when we no longer use RVH for navigation.
-  RenderViewHostImpl* pending_render_view_host() const;
-
   // Returns the WebUI associated with the ongoing navigation, it being either
   // the active or the pending one from the navigating RenderFrameHost. Returns
   // null if there's no ongoing navigation or if no WebUI applies.
   WebUIImpl* GetNavigatingWebUI() const;
-
-  // Called when we want to instruct the renderer to navigate to the given
-  // navigation entry. It may create a new RenderFrameHost or re-use an existing
-  // one. The RenderFrameHost to navigate will be returned. Returns NULL if one
-  // could not be created. |dest_url| takes precedence over the |frame_entry|'s
-  // url (this is necessary because ReloadOriginalRequest navigates to a
-  // different URL than the last committed entry, without modifying it).
-  RenderFrameHostImpl* Navigate(const GURL& dest_url,
-                                const FrameNavigationEntry& frame_entry,
-                                const NavigationEntryImpl& entry,
-                                bool is_reload);
 
   // Instructs the various live views to stop. Called when the user directed the
   // page to stop loading.
@@ -360,13 +333,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrameHostManager. Returns MSG_ROUTING_NONE if none is found.
   int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
 
-  // PlzNavigate
   // Notifies the RenderFrameHostManager that a new NavigationRequest has been
   // created and set in the FrameTreeNode so that it can speculatively create a
   // new RenderFrameHost (and potentially a new process) if needed.
   void DidCreateNavigationRequest(NavigationRequest* request);
 
-  // PlzNavigate
   // Called (possibly several times) during a navigation to select or create an
   // appropriate RenderFrameHost for the provided URL. The returned pointer will
   // be for the current or the speculative RenderFrameHost and the instance is
@@ -374,11 +345,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   RenderFrameHostImpl* GetFrameHostForNavigation(
       const NavigationRequest& request);
 
-  // PlzNavigate
   // Clean up any state for any ongoing navigation.
   void CleanUpNavigation();
 
-  // PlzNavigate
   // Clears the speculative members, returning the RenderFrameHost to the caller
   // for disposal.
   std::unique_ptr<RenderFrameHostImpl> UnsetSpeculativeRenderFrameHost();
@@ -632,12 +601,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool IsCurrentlySameSite(RenderFrameHostImpl* candidate,
                            const GURL& dest_url);
 
-  // Creates a new RenderFrameHostImpl for the |new_instance| and assign it to
-  // |pending_render_frame_host_| while respecting the opener route if needed
-  // and stores it in pending_render_frame_host_.
-  void CreatePendingRenderFrameHost(SiteInstance* old_instance,
-                                    SiteInstance* new_instance);
-
   // Ensure that we have created all needed proxies for a new RFH with
   // SiteInstance |new_instance|: (1) create swapped-out RVHs and proxies for
   // the new RFH's opener chain if we are staying in the same BrowsingInstance;
@@ -674,7 +637,6 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool hidden,
       bool renderer_initiated_creation);
 
-  // PlzNavigate
   // Create and initialize a speculative RenderFrameHost for an ongoing
   // navigation. It might be destroyed and re-created later if the navigation
   // is redirected to a different SiteInstance.
@@ -694,10 +656,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // when the current RenderFrameHost commits and it has a pending WebUI.
   void CommitPendingWebUI();
 
-  // Sets the pending RenderFrameHost to be the active one. Call when the
+  // Sets the speculative RenderFrameHost to be the active one. Called when the
   // pending RenderFrameHost commits.
-  // If PlzNavigate is enabled the method will set the speculative (not pending)
-  // RenderFrameHost to be the active one.
   void CommitPending();
 
   // Helper to call CommitPending() in all necessary cases.
@@ -718,27 +678,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DiscardUnusedFrame(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
 
-  // Terminates and deletes the pending RenderFrameHost.
-  void CancelPending();
-
-  // Clears pending_render_frame_host_, returning it to the caller for disposal.
-  std::unique_ptr<RenderFrameHostImpl> UnsetPendingRenderFrameHost();
-
   // Helper method to set the active RenderFrameHost. Returns the old
   // RenderFrameHost and updates counts.
   std::unique_ptr<RenderFrameHostImpl> SetRenderFrameHost(
       std::unique_ptr<RenderFrameHostImpl> render_frame_host);
-
-  RenderFrameHostImpl* UpdateStateForNavigate(
-      const GURL& dest_url,
-      SiteInstance* source_instance,
-      SiteInstance* dest_instance,
-      ui::PageTransition transition,
-      bool dest_is_restore,
-      bool dest_is_view_source_mode,
-      const GlobalRequestID& transferred_request_id,
-      int bindings,
-      bool is_reload);
 
   // Updates the pending WebUI of the current RenderFrameHost for a same-site
   // navigation.
@@ -777,19 +720,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Eventually, RenderViewHost will be replaced with a page context.
   std::unique_ptr<RenderFrameHostImpl> render_frame_host_;
 
-  // A RenderFrameHost used to load a cross-site page. This remains hidden
-  // while a cross-site request is pending until it calls DidNavigate.
-  // Note: This member is not used in PlzNavigate.
-  std::unique_ptr<RenderFrameHostImpl> pending_render_frame_host_;
-
-  // This is used to temporarily store the NavigationHandle during
-  // transferring navigations. The handle needs to be stored because the old
-  // RenderFrameHost may be discarded before a new RenderFrameHost is created
-  // for the navigation.
-  // PlzNavigate: this will never be set since there are no transferring
-  // navigations in PlzNavigate.
-  std::unique_ptr<NavigationHandleImpl> transfer_navigation_handle_;
-
   // Proxy hosts, indexed by site instance ID.
   std::unordered_map<int32_t, std::unique_ptr<RenderFrameProxyHost>>
       proxy_hosts_;
@@ -798,15 +728,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   using RFHPendingDeleteList = std::list<std::unique_ptr<RenderFrameHostImpl>>;
   RFHPendingDeleteList pending_delete_hosts_;
 
-  // PlzNavigate
   // Stores a speculative RenderFrameHost which is created early in a navigation
   // so a renderer process can be started in parallel, if needed.
   // This is purely a performance optimization and is not required for correct
   // behavior. The speculative RenderFrameHost might be discarded later on if
   // the final URL's SiteInstance isn't compatible with the one used to create
   // it.
-  // Note: PlzNavigate only uses the speculative RenderFrameHost, not the
-  // pending one.
   std::unique_ptr<RenderFrameHostImpl> speculative_render_frame_host_;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;

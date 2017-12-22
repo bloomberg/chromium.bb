@@ -403,16 +403,6 @@ std::unique_ptr<WebContents> PrerenderManager::SwapInternal(
     return nullptr;
   }
 
-  // If the prerendered page is in the middle of a cross-site navigation,
-  // don't swap it in because there isn't a good way to merge histories.
-  if (prerender_data->contents()->IsCrossSiteNavigationPending()) {
-    histograms_->RecordFinalStatus(prerender_data->contents()->origin(),
-                                   FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
-    prerender_data->contents()->Destroy(
-        FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
-    return nullptr;
-  }
-
   // At this point, we've determined that we will use the prerender.
   content::RenderProcessHost* process_host =
       prerender_data->contents()->GetRenderViewHost()->GetProcess();

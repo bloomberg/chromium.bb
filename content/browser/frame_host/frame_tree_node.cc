@@ -424,23 +424,16 @@ FrameTreeNode* FrameTreeNode::NextSibling() const {
 bool FrameTreeNode::IsLoading() const {
   RenderFrameHostImpl* current_frame_host =
       render_manager_.current_frame_host();
-  RenderFrameHostImpl* pending_frame_host =
-      render_manager_.pending_frame_host();
 
   DCHECK(current_frame_host);
 
-  if (IsBrowserSideNavigationEnabled()) {
-    if (navigation_request_)
-      return true;
+  if (navigation_request_)
+    return true;
 
-    RenderFrameHostImpl* speculative_frame_host =
-        render_manager_.speculative_frame_host();
-    if (speculative_frame_host && speculative_frame_host->is_loading())
-      return true;
-  } else {
-    if (pending_frame_host && pending_frame_host->is_loading())
-      return true;
-  }
+  RenderFrameHostImpl* speculative_frame_host =
+      render_manager_.speculative_frame_host();
+  if (speculative_frame_host && speculative_frame_host->is_loading())
+    return true;
   return current_frame_host->is_loading();
 }
 
@@ -630,22 +623,15 @@ void FrameTreeNode::BeforeUnloadCanceled() {
   DCHECK(current_frame_host);
   current_frame_host->ResetLoadingState();
 
-  if (IsBrowserSideNavigationEnabled()) {
-    RenderFrameHostImpl* speculative_frame_host =
-        render_manager_.speculative_frame_host();
-    if (speculative_frame_host)
-      speculative_frame_host->ResetLoadingState();
-    // Note: there is no need to set an error code on the NavigationHandle here
-    // as it has not been created yet. It is only created when the
-    // BeforeUnloadACK is received.
-    if (navigation_request_)
-      ResetNavigationRequest(false, true);
-  } else {
-    RenderFrameHostImpl* pending_frame_host =
-        render_manager_.pending_frame_host();
-    if (pending_frame_host)
-      pending_frame_host->ResetLoadingState();
-  }
+  RenderFrameHostImpl* speculative_frame_host =
+      render_manager_.speculative_frame_host();
+  if (speculative_frame_host)
+    speculative_frame_host->ResetLoadingState();
+  // Note: there is no need to set an error code on the NavigationHandle here
+  // as it has not been created yet. It is only created when the
+  // BeforeUnloadACK is received.
+  if (navigation_request_)
+    ResetNavigationRequest(false, true);
 }
 
 void FrameTreeNode::OnSetHasReceivedUserGesture() {

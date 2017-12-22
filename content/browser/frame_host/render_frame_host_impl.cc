@@ -1426,11 +1426,7 @@ void RenderFrameHostImpl::CancelInitialHistoryLoad() {
   // A Javascript navigation interrupted the initial history load.  Check if an
   // initial subframe cross-process navigation needs to be canceled as a result.
   // TODO(creis, clamy): Cancel any cross-process navigation.
-  if (GetParent() && !frame_tree_node_->has_committed_real_load() &&
-      frame_tree_node_->render_manager()->pending_frame_host()) {
-    frame_tree_node_->render_manager()->CancelPendingIfNecessary(
-        frame_tree_node_->render_manager()->pending_frame_host());
-  }
+  NOTIMPLEMENTED();
 }
 
 void RenderFrameHostImpl::OnDocumentOnLoadCompleted(

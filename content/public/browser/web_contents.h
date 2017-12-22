@@ -353,10 +353,6 @@ class WebContents : public PageNavigator,
   // Returns the SiteInstance associated with the current page.
   virtual SiteInstance* GetSiteInstance() const = 0;
 
-  // Returns the SiteInstance for the pending navigation, if any.  Otherwise
-  // returns the current SiteInstance.
-  virtual SiteInstance* GetPendingSiteInstance() const = 0;
-
   // Returns whether this WebContents is loading a resource.
   virtual bool IsLoading() const = 0;
 

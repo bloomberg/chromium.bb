@@ -648,11 +648,6 @@ WebContentsImpl::~WebContentsImpl() {
   // destroyed.
   RenderFrameHostManager* root = GetRenderManager();
 
-  if (root->pending_frame_host()) {
-    root->pending_frame_host()->SetRenderFrameCreated(false);
-    root->pending_frame_host()->SetNavigationHandle(
-        std::unique_ptr<NavigationHandleImpl>());
-  }
   root->current_frame_host()->SetRenderFrameCreated(false);
   root->current_frame_host()->SetNavigationHandle(
       std::unique_ptr<NavigationHandleImpl>());
@@ -676,11 +671,6 @@ WebContentsImpl::~WebContentsImpl() {
 
   for (auto& observer : observers_)
     observer.FrameDeleted(root->current_frame_host());
-
-  if (root->pending_render_view_host()) {
-    for (auto& observer : observers_)
-      observer.RenderViewDeleted(root->pending_render_view_host());
-  }
 
   for (auto& observer : observers_)
     observer.RenderViewDeleted(root->current_host());
@@ -1075,13 +1065,8 @@ void WebContentsImpl::SetAccessibilityMode(ui::AXMode mode) {
 
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
     UpdateAccessibilityModeOnFrame(node->current_frame_host());
-    // Also update accessibility mode on the pending RenderFrameHost for this
-    // FrameTreeNode, if one exists.  speculative_frame_host() is used with
-    // PlzNavigate, and pending_frame_host() is used without it.
-    RenderFrameHost* pending_frame_host =
-        node->render_manager()->pending_frame_host();
-    if (pending_frame_host)
-      UpdateAccessibilityModeOnFrame(pending_frame_host);
+    // Also update accessibility mode on the speculative RenderFrameHost for
+    // this FrameTreeNode, if one exists.
     RenderFrameHost* speculative_frame_host =
         node->render_manager()->speculative_frame_host();
     if (speculative_frame_host)
@@ -1308,14 +1293,6 @@ const base::string16& WebContentsImpl::GetTitle() const {
 
 SiteInstanceImpl* WebContentsImpl::GetSiteInstance() const {
   return GetRenderManager()->current_host()->GetSiteInstance();
-}
-
-SiteInstanceImpl* WebContentsImpl::GetPendingSiteInstance() const {
-  RenderViewHostImpl* dest_rvh =
-      GetRenderManager()->pending_render_view_host() ?
-          GetRenderManager()->pending_render_view_host() :
-          GetRenderManager()->current_host();
-  return dest_rvh->GetSiteInstance();
 }
 
 bool WebContentsImpl::IsLoading() const {
@@ -4787,9 +4764,7 @@ bool WebContentsImpl::HasPersistentVideo() const {
 }
 
 RenderFrameHost* WebContentsImpl::GetPendingMainFrame() {
-  if (IsBrowserSideNavigationEnabled())
-    return GetRenderManager()->speculative_frame_host();
-  return GetRenderManager()->pending_frame_host();
+  return GetRenderManager()->speculative_frame_host();
 }
 
 bool WebContentsImpl::HasActiveEffectivelyFullscreenVideo() const {

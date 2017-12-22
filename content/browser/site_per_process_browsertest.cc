@@ -3930,9 +3930,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // message loop, so no IPCs that alter the frame tree can be processed.
   FrameTreeNode* child = root->child_at(1);
   SiteInstance* site = nullptr;
-  bool browser_side_navigation = IsBrowserSideNavigationEnabled();
-  std::string cross_site_rfh_type =
-      browser_side_navigation ? "speculative" : "pending";
+  std::string cross_site_rfh_type = "speculative";
   {
     TestNavigationObserver observer(shell()->web_contents());
     TestFrameNavigationObserver navigation_observer(child);
@@ -3941,13 +3939,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator()->GetController()->LoadURLWithParams(params);
 
-    if (browser_side_navigation) {
-      site = child->render_manager()
-                 ->speculative_frame_host()
-                 ->GetSiteInstance();
-    } else {
-      site = child->render_manager()->pending_frame_host()->GetSiteInstance();
-    }
+    site = child->render_manager()->speculative_frame_host()->GetSiteInstance();
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site);
 
     std::string tree = base::StringPrintf(
@@ -3965,7 +3957,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // Now that the verification is done, run the message loop and wait for the
     // navigation to complete.
     navigation_observer.Wait();
-    EXPECT_FALSE(child->render_manager()->pending_frame_host());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_EQ(cross_site_url, observer.last_navigation_url());
 
@@ -3994,14 +3985,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator()->GetController()->LoadURLWithParams(params);
 
-    SiteInstance* site2;
-    if (browser_side_navigation) {
-      site2 = child->render_manager()
-                  ->speculative_frame_host()
-                  ->GetSiteInstance();
-    } else {
-      site2 = child->render_manager()->pending_frame_host()->GetSiteInstance();
-    }
+    SiteInstance* site2 =
+        child->render_manager()->speculative_frame_host()->GetSiteInstance();
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site2);
     EXPECT_NE(site, site2);
 
@@ -5992,9 +5977,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   TestNavigationObserver navigation_observer(shell()->web_contents());
   shell()->LoadURL(a_url);
   RenderViewHostImpl* pending_rvh =
-      IsBrowserSideNavigationEnabled()
-          ? root->render_manager()->speculative_frame_host()->render_view_host()
-          : root->render_manager()->pending_render_view_host();
+      root->render_manager()->speculative_frame_host()->render_view_host();
   EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
   EXPECT_FALSE(rvh_routing_id == pending_rvh->GetRoutingID() &&
                rvh_process_id == pending_rvh->GetProcess()->GetID());
@@ -7819,15 +7802,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // observer to ensure there is no crash when a new RenderFrame creation is
   // attempted.
   RenderProcessHost* process =
-      IsBrowserSideNavigationEnabled()
-          ? node->render_manager()->speculative_frame_host()->GetProcess()
-          : node->render_manager()->pending_frame_host()->GetProcess();
+      node->render_manager()->speculative_frame_host()->GetProcess();
   RenderProcessHostWatcher watcher(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   int frame_routing_id =
-      IsBrowserSideNavigationEnabled()
-          ? node->render_manager()->speculative_frame_host()->GetRoutingID()
-          : node->render_manager()->pending_frame_host()->GetRoutingID();
+      node->render_manager()->speculative_frame_host()->GetRoutingID();
   int proxy_routing_id =
       node->render_manager()->GetProxyToParent()->GetRoutingID();
 
@@ -9996,9 +9975,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // The pending RFH should be in the same process as the popup.
   RenderFrameHostImpl* pending_rfh =
-      IsBrowserSideNavigationEnabled()
-          ? root->render_manager()->speculative_frame_host()
-          : root->render_manager()->pending_frame_host();
+      root->render_manager()->speculative_frame_host();
   RenderProcessHost* pending_process = pending_rfh->GetProcess();
   EXPECT_EQ(pending_process,
             popup_shell->web_contents()->GetMainFrame()->GetProcess());
@@ -10014,9 +9991,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // be reused while it's not live in the next navigation.
   {
     RenderFrameHostImpl* pending_rfh =
-        IsBrowserSideNavigationEnabled()
-            ? root->render_manager()->speculative_frame_host()
-            : root->render_manager()->pending_frame_host();
+        root->render_manager()->speculative_frame_host();
     EXPECT_FALSE(pending_rfh);
   }
 
@@ -11326,7 +11301,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL frame_url(
       embedded_test_server()->GetURL("a.com", "/cross-site/b.com/title2.html"));
   NavigateIframeToURL(shell()->web_contents(), "child-0", frame_url);
-  EXPECT_FALSE(root->child_at(0)->render_manager()->pending_frame_host());
+  EXPECT_FALSE(root->child_at(0)->render_manager()->speculative_frame_host());
   GURL redirected_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   EXPECT_EQ(root->child_at(0)->current_url(), redirected_url);
   EXPECT_EQ(b_site_instance,
@@ -11334,7 +11309,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Try the same navigation, but use the browser-initiated path.
   NavigateFrameToURL(root->child_at(0), frame_url);
-  EXPECT_FALSE(root->child_at(0)->render_manager()->pending_frame_host());
+  EXPECT_FALSE(root->child_at(0)->render_manager()->speculative_frame_host());
   EXPECT_EQ(root->child_at(0)->current_url(), redirected_url);
   EXPECT_EQ(b_site_instance,
             root->child_at(0)->current_frame_host()->GetSiteInstance());
