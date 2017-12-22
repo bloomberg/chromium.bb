@@ -33,6 +33,9 @@ GPU_EXPORT void GetGpuInfoFromCommandLine(const base::CommandLine& command_line,
 GPU_EXPORT GpuFeatureInfo
 ComputeGpuFeatureInfoWithHardwareAccelerationDisabled();
 
+// Set GPU feature status for SwiftShader.
+GPU_EXPORT GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader();
+
 // This function should only be called from the GPU process, or the Browser
 // process while using in-process GPU. This function is safe to call at any
 // point, and is not dependent on sandbox initialization.

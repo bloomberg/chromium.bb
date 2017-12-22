@@ -80,6 +80,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.enable_nv12_dxgi_video =
       !command_line->HasSwitch(switches::kDisableNv12DxgiVideo);
 #endif
+  gpu_preferences.disable_software_rasterizer =
+      command_line->HasSwitch(switches::kDisableSoftwareRasterizer);
   gpu_preferences.compile_shader_always_succeeds =
       command_line->HasSwitch(switches::kCompileShaderAlwaysSucceeds);
   gpu_preferences.disable_gl_error_limit =

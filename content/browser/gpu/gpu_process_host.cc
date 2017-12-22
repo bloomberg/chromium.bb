@@ -363,9 +363,7 @@ bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInProcessGPU) ||
-      (host->valid_ &&
-       (host->swiftshader_rendering_ ||
-        !GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()))) {
+      host->valid_) {
     return true;
   }
 
@@ -1212,6 +1210,7 @@ void GpuProcessHost::RecordProcessCrash() {
           !disable_crash_limit) {
         // SwiftShader is too unstable to use. Disable it for current session.
         gpu_enabled_ = false;
+        GpuDataManagerImpl::GetInstance()->DisableSwiftShader();
       }
     } else {
       ++gpu_crash_count_;

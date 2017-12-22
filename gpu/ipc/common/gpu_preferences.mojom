@@ -33,6 +33,7 @@ struct GpuPreferences {
   bool enable_zero_copy_dxgi_video;
   bool enable_nv12_dxgi_video;
   bool enable_media_foundation_vea_on_windows7;
+  bool disable_software_rasterizer;
 
   bool compile_shader_always_succeeds;
   bool disable_gl_error_limit;

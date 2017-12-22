@@ -20,6 +20,7 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/ipc/service/switches.h"
 #include "ui/gfx/switches.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_utils.h"
@@ -133,11 +134,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     gpu::InitializeSwitchableGPUs(
         gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   }
-  if (kGpuFeatureStatusEnabled !=
-      gpu_feature_info_
-          .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
-    gpu_preferences_.disable_accelerated_video_decode = true;
-  }
 #endif  // OS_ANDROID
   gpu_info_.in_process_gpu = false;
 
@@ -201,13 +197,17 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
+  bool use_swiftshader = ShouldEnableSwiftShader(command_line);
   // Load and initialize the GL implementation and locate the GL entry points if
   // needed. This initialization may have already happened if running in the
   // browser process, for example.
   bool gl_initialized = gl::GetGLImplementation() != gl::kGLImplementationNone;
+  if (gl_initialized && use_swiftshader) {
+    gl::init::ShutdownGL(true);
+    gl_initialized = false;
+  }
   if (!gl_initialized)
     gl_initialized = gl::init::InitializeGLNoExtensionsOneOff();
-
   if (!gl_initialized) {
     VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
     return false;
@@ -220,17 +220,32 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // By skipping the following code on Mac, we don't really lose anything,
   // because the basic GPU information is passed down from the host process.
 #if !defined(OS_MACOSX)
-  CollectGraphicsInfo(&gpu_info_);
-  if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
-    return false;
-  gpu::SetKeysForCrashLogging(gpu_info_);
-  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+  if (!use_swiftshader) {
+    CollectGraphicsInfo(&gpu_info_);
+    if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
+      return false;
+    gpu::SetKeysForCrashLogging(gpu_info_);
+    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+    use_swiftshader = ShouldEnableSwiftShader(command_line);
+    if (use_swiftshader) {
+      gl::init::ShutdownGL(true);
+      gl_initialized = gl::init::InitializeGLNoExtensionsOneOff();
+      if (!gl_initialized) {
+        VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
+                << "failed";
+        return false;
+      }
+    }
+  }
+#endif
+  if (use_swiftshader) {
+    AdjustInfoToSwiftShader();
+  }
   if (kGpuFeatureStatusEnabled !=
       gpu_feature_info_
           .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
     gpu_preferences_.disable_accelerated_video_decode = true;
   }
-#endif
 
   if (!gpu_feature_info_.disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(
@@ -249,7 +264,17 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   // Software GL is expected to run slowly, so disable the watchdog
   // in that case.
-  if (gl::GetGLImplementation() == gl::GetSoftwareGLImplementation()) {
+  // In SwiftShader case, the implementation is actually EGLGLES2.
+  if (!use_swiftshader && command_line->HasSwitch(switches::kUseGL)) {
+    std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
+    if (use_gl == gl::kGLImplementationSwiftShaderName ||
+        use_gl == gl::kGLImplementationSwiftShaderForWebGLName) {
+      use_swiftshader = true;
+    }
+  }
+  if (use_swiftshader ||
+      gl::GetGLImplementation() == gl::GetSoftwareGLImplementation()) {
+    gpu_info_.software_rendering = true;
     if (watchdog_thread_)
       watchdog_thread_->Stop();
     watchdog_thread_ = nullptr;
@@ -303,13 +328,28 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
         gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   }
 
+  bool use_swiftshader = ShouldEnableSwiftShader(command_line);
   if (!gl::init::InitializeGLNoExtensionsOneOff()) {
     VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
     return;
   }
 
-  gpu::CollectContextGraphicsInfo(&gpu_info_);
-  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+  if (!use_swiftshader) {
+    gpu::CollectContextGraphicsInfo(&gpu_info_);
+    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+    use_swiftshader = ShouldEnableSwiftShader(command_line);
+    if (use_swiftshader) {
+      gl::init::ShutdownGL(true);
+      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+        VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
+                << "with SwiftShader";
+        return;
+      }
+    }
+  }
+  if (use_swiftshader) {
+    AdjustInfoToSwiftShader();
+  }
   if (!gpu_feature_info_.disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(
         gpu_feature_info_.disabled_extensions);
@@ -317,6 +357,33 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
     VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
   }
+}
+
+bool GpuInit::ShouldEnableSwiftShader(base::CommandLine* command_line) {
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
+  if (gpu_preferences_.disable_software_rasterizer)
+    return false;
+  // Don't overwrite user preference.
+  if (command_line->HasSwitch(switches::kUseGL))
+    return false;
+  if (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] !=
+      kGpuFeatureStatusEnabled) {
+    command_line->AppendSwitchASCII(
+        switches::kUseGL, gl::kGLImplementationSwiftShaderForWebGLName);
+    return true;
+  }
+  return false;
+#else
+  return false;
+#endif
+}
+
+void GpuInit::AdjustInfoToSwiftShader() {
+  gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
+  gpu_info_.gl_vendor = "Google Inc. (" + gpu_info_.gl_vendor + ")";
+  gpu_info_.gl_renderer = "Google SwiftShader (" + gpu_info_.gl_renderer + ")";
+  gpu_info_.gl_version =
+      "OpenGL ES 2.0 SwiftShader (" + gpu_info_.gl_version + ")";
 }
 
 }  // namespace gpu
