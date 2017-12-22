@@ -32,8 +32,8 @@ var refBufLowPremul= [
 
 var refBufLowUnpremul = [
     255,0,0,255,    255,0,0,197,    255,0,0,83,     255,0,0,26,
-    191,63,0,255,   192,63,0,197,   190,61,0,83,    186,59,0,26,
-    63,191,0,255,   63,192,0,197,   61,190,0,83,    59,186,0,26,
+    191,63,0,255,   191,63,0,197,   191,63,0,83,    191,63,0,26,
+    63,191,0,255,   63,191,0,197,   63,191,0,83,    63,191,0,26,
     0,255,0,255,    0,255,0,197,    0,255,0,83,     0,255,0,26];
 
 var refBufLowPremulFlipY = [
@@ -44,8 +44,8 @@ var refBufLowPremulFlipY = [
 
 var refBufLowUnpremulFlipY = [
     0,255,0,255,    0,255,0,197,    0,255,0,83,     0,255,0,26,
-    63,191,0,255,   63,192,0,197,   61,190,0,83,    59,186,0,26,
-    191,63,0,255,   192,63,0,197,   190,61,0,83,    186,59,0,26,
+    63,191,0,255,   63,191,0,197,   63,191,0,83,    63,191,0,26,
+    191,63,0,255,   191,63,0,197,   191,63,0,83,    191,63,0,26,
     255,0,0,255,    255,0,0,197,    255,0,0,83,     255,0,0,26];
 
 //-------------- Reference Buffers for Medium Filter Quality ---------------//
@@ -54,56 +54,30 @@ var refBufMediumUnpremul = refBufLowUnpremul;
 var refBufMediumPremulFlipY = refBufLowPremulFlipY;
 var refBufMediumUnpremulFlipY = refBufLowUnpremulFlipY;
 
-//-------- Reference Buffers for High Filter Quality (Premul Source) -------//
-var refBufHighPremulSourcePremul = [
-    255,0,0,255,    200,0,0,200,    81,0,0,81,      21,0,0,21,
+//---------------- Reference Buffers for High Filter Quality ---------------//
+var refBufHighPremul = [
+    255,0,0,255,    204,0,0,200,    83,0,0,81,      21,0,0,21,
     198,63,0,255,   152,48,0,200,   62,20,0,81,     16,5,0,21,
     63,198,0,255,   48,152,0,200,   20,62,0,81,     5,16,0,21,
-    0,255,0,255,    0,200,0,200,    0,81,0,81,      0,21,0,21];
+    0,255,0,255,    0,204,0,200,    0,83,0,81,      0,21,0,21];
 
-var refBufHighUnpremulSourcePremul = [
-    255,0,0,255,    255,0,0,200,    255,0,0,81,     255,0,0,21,
-    198,63,0,255,   194,61,0,200,   195,63,0,81,    194,61,0,21,
-    63,198,0,255,   61,194,0,200,   63,195,0,81,    61,194,0,21,
-    0,255,0,255,    0,255,0,200,    0,255,0,81,     0,255,0,21];
-
-var refBufHighPremulFlipYSourcePremul = [
-    0,255,0,255,    0,200,0,200,    0,81,0,81,      0,21,0,21,
-    63,198,0,255,   48,152,0,200,   20,62,0,81,     5,16,0,21,
-    198,63,0,255,   152,48,0,200,   62,20,0,81,     16,5,0,21,
-    255,0,0,255,    200,0,0,200,    81,0,0,81,      21,0,0,21];
-
-var refBufHighUnpremulFlipYSourcePremul = [
-    0,255,0,255,    0,255,0,200,    0,255,0,81,     0,255,0,21,
-    63,198,0,255,   61,194,0,200,   63,195,0,81,    61,194,0,21,
-    198,63,0,255,   194,61,0,200,   195,63,0,81,    194,61,0,21,
-    255,0,0,255,    255,0,0,200,    255,0,0,81,     255,0,0,21];
-
-//------- Reference Buffers for High Filter Quality (Unpremul Source) ------//
-var refBufHighPremulSourceUnpremul = [
-    255,0,0,255,    200,0,0,200,    81,0,0,81,      21,0,0,21,
-    198,63,0,255,   152,48,0,200,   62,20,0,81,     16,5,0,21,
-    63,198,0,255,   48,152,0,200,   20,62,0,81,     5,16,0,21,
-    0,255,0,255,    0,200,0,200,    0,81,0,81,      0,21,0,21];
-
-var refBufHighUnpremulSourceUnpremul = [
+var refBufHighUnpremul = [
     255,0,0,255,    255,0,0,200,    255,0,0,81,     255,0,0,21,
     193,62,0,255,   193,62,0,200,   193,62,0,81,    193,62,0,21,
     62,193,0,255,   62,193,0,200,   62,193,0,81,    62,193,0,21,
     0,255,0,255,    0,255,0,200,    0,255,0,81,     0,255,0,21];
 
-var refBufHighPremulFlipYSourceUnpremul = [
-    0,255,0,255,    0,200,0,200,    0,81,0,81,      0,21,0,21,
+var refBufHighPremulFlipY = [
+    0,255,0,255,    0,204,0,200,    0,83,0,81,      0,21,0,21,
     63,198,0,255,   48,152,0,200,   20,62,0,81,     5,16,0,21,
     198,63,0,255,   152,48,0,200,   62,20,0,81,     16,5,0,21,
-    255,0,0,255,    200,0,0,200,    81,0,0,81,      21,0,0,21];
+    255,0,0,255,    204,0,0,200,    83,0,0,81,      21,0,0,21];
 
-var refBufHighUnpremulFlipYSourceUnpremul = [
+var refBufHighUnpremulFlipY = [
     0,255,0,255,    0,255,0,200,    0,255,0,81,     0,255,0,21,
     62,193,0,255,   62,193,0,200,   62,193,0,81,    62,193,0,21,
     193,62,0,255,   193,62,0,200,   193,62,0,81,    193,62,0,21,
     255,0,0,255,    255,0,0,200,    255,0,0,81,     255,0,0,21];
-
 
 var wtu = WebGLTestUtils;
 var tiu = TexImageUtils;
@@ -111,8 +85,8 @@ var gl = null;
 var internalFormat = "RGBA";
 var pixelFormat = "RGBA";
 var pixelType = "UNSIGNED_BYTE";
-var opaqueTolerance = 0;
-var transparentTolerance = 0;
+var opaqueTolerance = 1;
+var transparentTolerance = 1;
 var transparentToleranceForBlob = 5;
 
 function getRefBuffer(testOptions, flipY, premultiplyAlpha) {
@@ -125,12 +99,6 @@ function getRefBuffer(testOptions, flipY, premultiplyAlpha) {
         refBufName += "Unpremul";
     if (flipY)
         refBufName += "FlipY";
-    if (testOptions.resizeQuality == "high") {
-        if (testOptions.sourceIsPremul)
-            refBufName += "SourcePremul";
-        else
-            refBufName += "SourceUnpremul";
-    }
     return eval(refBufName);
 }
 
