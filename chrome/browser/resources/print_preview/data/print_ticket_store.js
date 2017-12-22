@@ -47,6 +47,12 @@ cr.define('print_preview', function() {
       this.documentInfo_ = documentInfo;
 
       /**
+       * The destination that capabilities were last received for.
+       * @private {?print_preview.Destination}
+       */
+      this.destination_ = null;
+
+      /**
        * Printing capabilities of Chromium and the currently selected
        * destination.
        * @type {!print_preview.CapabilitiesHolder}
@@ -531,7 +537,11 @@ cr.define('print_preview', function() {
      * @private
      */
     onSelectedDestinationCapabilitiesReady_() {
-      if (this.capabilitiesHolder_.get() != null) {
+      const selectedDestination = this.destinationStore_.selectedDestination;
+      const isFirstUpdate = this.capabilitiesHolder_.get() == null;
+      // Only clear the ticket items if the user selected a new destination
+      // and this is not the first update.
+      if (!isFirstUpdate && this.destination_ != selectedDestination) {
         this.customMargins_.updateValue(null);
         if (this.marginsType_.getValue() ==
             print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
@@ -540,10 +550,9 @@ cr.define('print_preview', function() {
         }
         this.vendorItems_.updateValue({});
       }
-      const caps =
-          assert(this.destinationStore_.selectedDestination.capabilities);
-      const isFirstUpdate = this.capabilitiesHolder_.get() == null;
+      const caps = assert(selectedDestination.capabilities);
       this.capabilitiesHolder_.set(caps);
+      this.destination_ = selectedDestination;
       if (isFirstUpdate) {
         this.isInitialized_ = true;
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
