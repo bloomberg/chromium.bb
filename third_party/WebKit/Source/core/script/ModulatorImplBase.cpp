@@ -119,7 +119,8 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
 
 ScriptModule ModulatorImplBase::CompileModule(
     const String& provided_source,
-    const String& url_str,
+    const KURL& source_url,
+    const KURL& base_url,
     const ScriptFetchOptions& options,
     AccessControlStatus access_control_status,
     const TextPosition& position,
@@ -139,9 +140,9 @@ ScriptModule ModulatorImplBase::CompileModule(
 
   // Step 5. Let result be ParseModule(script source, realm, script).
   ScriptState::Scope scope(script_state_.get());
-  return ScriptModule::Compile(script_state_->GetIsolate(), script_source,
-                               url_str, options, access_control_status,
-                               position, exception_state);
+  return ScriptModule::Compile(
+      script_state_->GetIsolate(), script_source, source_url, base_url, options,
+      access_control_status, position, exception_state);
 }
 
 ScriptValue ModulatorImplBase::InstantiateModule(ScriptModule script_module) {

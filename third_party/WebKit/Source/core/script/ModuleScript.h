@@ -28,6 +28,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   static ModuleScript* Create(
       const String& source_text,
       Modulator*,
+      const KURL& source_url,
       const KURL& base_url,
       const ScriptFetchOptions&,
       AccessControlStatus,
