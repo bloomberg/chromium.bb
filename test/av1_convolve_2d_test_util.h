@@ -25,8 +25,8 @@ namespace libaom_test {
 namespace AV1Convolve2D {
 
 typedef void (*convolve_2d_func)(const uint8_t *src, int src_stride,
-                                 const uint8_t *dst, int dst_stride, int w,
-                                 int h, InterpFilterParams *filter_params_x,
+                                 uint8_t *dst, int dst_stride, int w, int h,
+                                 InterpFilterParams *filter_params_x,
                                  InterpFilterParams *filter_params_y,
                                  const int subpel_x_q4, const int subpel_y_q4,
                                  ConvolveParams *conv_params);

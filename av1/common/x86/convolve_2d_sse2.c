@@ -17,8 +17,8 @@
 #include "aom_dsp/aom_filter.h"
 #include "av1/common/convolve.h"
 
-void av1_convolve_2d_sse2(const uint8_t *src, int src_stride,
-                          const uint8_t *dst0, int dst_stride0, int w, int h,
+void av1_convolve_2d_sse2(const uint8_t *src, int src_stride, uint8_t *dst0,
+                          int dst_stride0, int w, int h,
                           InterpFilterParams *filter_params_x,
                           InterpFilterParams *filter_params_y,
                           const int subpel_x_q4, const int subpel_y_q4,
@@ -205,8 +205,8 @@ void av1_convolve_2d_sse2(const uint8_t *src, int src_stride,
 }
 
 void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
-                               const uint8_t *dst0, int dst_stride0, int w,
-                               int h, InterpFilterParams *filter_params_x,
+                               uint8_t *dst0, int dst_stride0, int w, int h,
+                               InterpFilterParams *filter_params_x,
                                InterpFilterParams *filter_params_y,
                                const int subpel_x_q4, const int subpel_y_q4,
                                ConvolveParams *conv_params) {
@@ -322,8 +322,8 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
 
 #if CONFIG_JNT_COMP
 void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
-                                   const uint8_t *dst0, int dst_stride0, int w,
-                                   int h, InterpFilterParams *filter_params_x,
+                                   uint8_t *dst0, int dst_stride0, int w, int h,
+                                   InterpFilterParams *filter_params_x,
                                    InterpFilterParams *filter_params_y,
                                    const int subpel_x_q4, const int subpel_y_q4,
                                    ConvolveParams *conv_params) {

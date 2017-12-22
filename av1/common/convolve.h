@@ -44,8 +44,8 @@ typedef struct ConvolveParams {
 } ConvolveParams;
 
 typedef void (*aom_convolve_fn_t)(const uint8_t *src, int src_stride,
-                                  const uint8_t *dst, int dst_stride, int w,
-                                  int h, InterpFilterParams *filter_params_x,
+                                  uint8_t *dst, int dst_stride, int w, int h,
+                                  InterpFilterParams *filter_params_x,
                                   InterpFilterParams *filter_params_y,
                                   const int subpel_x_q4, const int subpel_y_q4,
                                   ConvolveParams *conv_params);
