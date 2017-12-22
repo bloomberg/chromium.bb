@@ -94,33 +94,19 @@ class SmbProviderClientImpl : public SmbProviderClient {
                 const base::FilePath& file_path,
                 bool writeable,
                 OpenFileCallback callback) override {
-    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
-                                 smbprovider::kOpenFileMethod);
-    dbus::MessageWriter writer(&method_call);
-    smbprovider::OpenFileOptions open_file_options;
-    open_file_options.set_mount_id(mount_id);
-    open_file_options.set_file_path(file_path.value());
-    open_file_options.set_writeable(writeable);
-    writer.AppendProtoAsArrayOfBytes(open_file_options);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SmbProviderClientImpl::HandleOpenFileCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Passed(&callback)));
+    smbprovider::OpenFileOptions options;
+    options.set_mount_id(mount_id);
+    options.set_file_path(file_path.value());
+    options.set_writeable(writeable);
+    CallMethod(smbprovider::kOpenFileMethod, options,
+               &SmbProviderClientImpl::HandleOpenFileCallback, &callback);
   }
 
   void CloseFile(int32_t file_id, CloseFileCallback callback) override {
-    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
-                                 smbprovider::kCloseFileMethod);
-    dbus::MessageWriter writer(&method_call);
-    smbprovider::CloseFileOptions close_file_options;
-    close_file_options.set_file_id(file_id);
-    writer.AppendProtoAsArrayOfBytes(close_file_options);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SmbProviderClientImpl::HandleCloseFileCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Passed(&callback)));
+    smbprovider::CloseFileOptions options;
+    options.set_file_id(file_id);
+    CallMethod(smbprovider::kCloseFileMethod, options,
+               &SmbProviderClientImpl::HandleCloseFileCallback, &callback);
   }
 
  protected:
