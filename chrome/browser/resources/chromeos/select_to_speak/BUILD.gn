@@ -26,7 +26,12 @@ run_jsbundler("select_to_speak_copied_files") {
   mode = "copy"
   dest_dir = select_to_speak_out_dir
   sources = [
+    "../chromevox/cvox2/background/automation_predicate.js",
+    "../chromevox/cvox2/background/automation_util.js",
+    "../chromevox/cvox2/background/constants.js",
+    "../chromevox/cvox2/background/tree_walker.js",
     "checked.png",
+    "closure_shim.js",
     "options.css",
     "options.html",
     "paragraph_utils.js",
@@ -39,6 +44,7 @@ run_jsbundler("select_to_speak_copied_files") {
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
     rebase_path(closure_library_dir, root_build_dir) + ":closure",
+    rebase_path("../chromevox/cvox2/background", root_build_dir) + ":",
   ]
 }
 
