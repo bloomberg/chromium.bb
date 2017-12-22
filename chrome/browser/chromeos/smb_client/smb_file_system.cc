@@ -143,8 +143,8 @@ AbortCallback SmbFileSystem::RequestUnmount(
 
 void SmbFileSystem::HandleRequestUnmountCallback(
     const storage::AsyncFileUtil::StatusCallback& callback,
-    smbprovider::ErrorType smb_error) const {
-  callback.Run(TranslateError(smb_error));
+    smbprovider::ErrorType error) const {
+  callback.Run(TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::GetMetadata(
@@ -188,15 +188,37 @@ AbortCallback SmbFileSystem::ReadDirectory(
 AbortCallback SmbFileSystem::OpenFile(const base::FilePath& file_path,
                                       file_system_provider::OpenFileMode mode,
                                       const OpenFileCallback& callback) {
-  NOTIMPLEMENTED();
+  bool writeable =
+      mode == file_system_provider::OPEN_FILE_MODE_WRITE ? true : false;
+  GetSmbProviderClient()->OpenFile(
+      GetMountId(), file_path, writeable,
+      base::BindOnce(&SmbFileSystem::HandleRequestOpenFileCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return AbortCallback();
+}
+
+void SmbFileSystem::HandleRequestOpenFileCallback(
+    const OpenFileCallback& callback,
+    smbprovider::ErrorType error,
+    int32_t file_id) const {
+  callback.Run(file_id, TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::CloseFile(
     int file_handle,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  GetSmbProviderClient()->CloseFile(
+      file_handle,
+      base::BindOnce(&SmbFileSystem::HandleRequestCloseFileCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return AbortCallback();
+}
+
+// TODO(baileyberro): refactor basic error callbacks out into one function.
+void SmbFileSystem::HandleRequestCloseFileCallback(
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    smbprovider::ErrorType error) const {
+  callback.Run(TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::ReadFile(
