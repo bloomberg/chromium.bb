@@ -5,15 +5,18 @@
 #ifndef TOOLS_GN_ITEM_H_
 #define TOOLS_GN_ITEM_H_
 
+#include <set>
 #include <string>
 
 #include "tools/gn/label.h"
+#include "tools/gn/source_file.h"
 #include "tools/gn/visibility.h"
 
 class Config;
 class ParseNode;
 class Pool;
 class Settings;
+class SourceFile;
 class Target;
 class Toolchain;
 
@@ -21,7 +24,9 @@ class Toolchain;
 // graph.
 class Item {
  public:
-  Item(const Settings* settings, const Label& label);
+  Item(const Settings* settings,
+       const Label& label,
+       const std::set<SourceFile>& build_dependency_files = {});
   virtual ~Item();
 
   const Settings* settings() const { return settings_; }
@@ -50,6 +55,12 @@ class Item {
   // be used in logging and error messages.
   std::string GetItemTypeName() const;
 
+  // Returns the set of build files that may affect this item, please refer to
+  // Scope for how this is determined.
+  const std::set<SourceFile>& build_dependency_files() const {
+    return build_dependency_files_;
+  }
+
   // Called when this item is resolved, meaning it and all of its dependents
   // have no unresolved deps. Returns true on success. Sets the error and
   // returns false on failure.
@@ -58,6 +69,7 @@ class Item {
  private:
   const Settings* settings_;
   Label label_;
+  const std::set<SourceFile> build_dependency_files_;
   const ParseNode* defined_from_;
 
   Visibility visibility_;

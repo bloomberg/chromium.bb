@@ -55,7 +55,11 @@ class Target : public Item {
   typedef std::vector<SourceFile> FileList;
   typedef std::vector<std::string> StringVector;
 
-  Target(const Settings* settings, const Label& label);
+  // We track the set of build files that may affect this target, please refer
+  // to Scope for how this is determined.
+  Target(const Settings* settings,
+         const Label& label,
+         const std::set<SourceFile>& build_dependency_files = {});
   ~Target() override;
 
   // Returns a string naming the output type.

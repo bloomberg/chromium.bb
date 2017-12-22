@@ -28,8 +28,10 @@ const char* Toolchain::kToolCopyBundleData = "copy_bundle_data";
 const char* Toolchain::kToolCompileXCAssets = "compile_xcassets";
 const char* Toolchain::kToolAction = "action";
 
-Toolchain::Toolchain(const Settings* settings, const Label& label)
-    : Item(settings, label), setup_complete_(false) {}
+Toolchain::Toolchain(const Settings* settings,
+                     const Label& label,
+                     const std::set<SourceFile>& build_dependency_files)
+    : Item(settings, label, build_dependency_files), setup_complete_(false) {}
 
 Toolchain::~Toolchain() = default;
 

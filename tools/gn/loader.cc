@@ -24,9 +24,7 @@ namespace {
 
 struct SourceFileAndOrigin {
   SourceFileAndOrigin(const SourceFile& f, const LocationRange& o)
-      : file(f),
-        origin(o) {
-  }
+      : file(f), origin(o) {}
 
   SourceFile file;
   LocationRange origin;
@@ -39,9 +37,7 @@ struct SourceFileAndOrigin {
 struct LoaderImpl::LoadID {
   LoadID() = default;
   LoadID(const SourceFile& f, const Label& tc_name)
-      : file(f),
-        toolchain_name(tc_name) {
-  }
+      : file(f), toolchain_name(tc_name) {}
 
   bool operator<(const LoadID& other) const {
     if (file.value() == other.file.value())
@@ -61,9 +57,10 @@ struct LoaderImpl::ToolchainRecord {
   ToolchainRecord(const BuildSettings* build_settings,
                   const Label& toolchain_label,
                   const Label& default_toolchain_label)
-      : settings(build_settings,
-                 GetOutputSubdirName(toolchain_label,
-                     toolchain_label == default_toolchain_label)),
+      : settings(
+            build_settings,
+            GetOutputSubdirName(toolchain_label,
+                                toolchain_label == default_toolchain_label)),
         is_toolchain_loaded(false),
         is_config_loaded(false) {
     settings.set_default_toolchain_label(default_toolchain_label);
@@ -111,7 +108,8 @@ void LoaderImpl::Load(const SourceFile& file,
                       const LocationRange& origin,
                       const Label& in_toolchain_name) {
   const Label& toolchain_name = in_toolchain_name.is_null()
-      ? default_toolchain_label_ : in_toolchain_name;
+                                    ? default_toolchain_label_
+                                    : in_toolchain_name;
   LoadID load_id(file, toolchain_name);
   if (!invocations_.insert(load_id).second)
     return;  // Already in set, so this file was already loaded or schedulerd.
@@ -253,6 +251,7 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
   Scope our_scope(settings->base_config());
   ScopePerFileProvider per_file_provider(&our_scope, true);
   our_scope.set_source_dir(file_name.GetDir());
+  our_scope.AddBuildDependencyFile(file_name);
 
   // Targets, etc. generated as part of running this file will end up here.
   Scope::ItemVector collected_items;
@@ -294,9 +293,11 @@ void LoaderImpl::BackgroundLoadBuildConfig(
 
   Scope* base_config = settings->base_config();
   base_config->set_source_dir(SourceDir("//"));
+  base_config->AddBuildDependencyFile(
+      settings->build_settings()->build_config_file());
 
-  settings->build_settings()->build_args().SetupRootScope(
-      base_config, toolchain_overrides);
+  settings->build_settings()->build_args().SetupRootScope(base_config,
+                                                          toolchain_overrides);
 
   base_config->SetProcessingBuildConfig();
 
@@ -306,7 +307,7 @@ void LoaderImpl::BackgroundLoadBuildConfig(
     base_config->SetProperty(kDefaultToolchainKey, &default_toolchain_label);
 
   ScopedTrace trace(TraceItem::TRACE_FILE_EXECUTE,
-      settings->build_settings()->build_config_file().value());
+                    settings->build_settings()->build_config_file().value());
   trace.SetToolchain(settings->toolchain_label());
 
   Err err;
@@ -327,7 +328,8 @@ void LoaderImpl::BackgroundLoadBuildConfig(
     // The default toolchain must have been set in the default build config
     // file.
     if (default_toolchain_label.is_null()) {
-      g_scheduler->FailWithError(Err(Location(),
+      g_scheduler->FailWithError(Err(
+          Location(),
           "The default build config file did not call set_default_toolchain()",
           "If you don't call this, I can't figure out what toolchain to use\n"
           "for all of this code."));
@@ -423,6 +425,5 @@ bool LoaderImpl::AsyncLoadFile(
     return g_scheduler->input_file_manager()->AsyncLoadFile(
         origin, build_settings, file_name, callback, err);
   }
-  return async_load_file_.Run(
-      origin, build_settings, file_name, callback, err);
+  return async_load_file_.Run(origin, build_settings, file_name, callback, err);
 }

@@ -20,6 +20,35 @@
 
 namespace {
 
+bool ItemContainsBuildDependencyFile(const Item* item,
+                                     const SourceFile& source_file) {
+  const auto& build_dependency_files = item->build_dependency_files();
+  return build_dependency_files.end() !=
+         build_dependency_files.find(source_file);
+}
+
+class MockBuilder {
+ public:
+  void OnItemDefined(std::unique_ptr<Item> item);
+  std::vector<const Item*> GetAllItems() const;
+
+ private:
+  std::vector<std::unique_ptr<Item>> items_;
+};
+
+void MockBuilder::OnItemDefined(std::unique_ptr<Item> item) {
+  items_.push_back(std::move(item));
+}
+
+std::vector<const Item*> MockBuilder::GetAllItems() const {
+  std::vector<const Item*> result;
+  for (const auto& item : items_) {
+    result.push_back(item.get());
+  }
+
+  return result;
+}
+
 class MockInputFileManager {
  public:
   typedef base::Callback<void(const ParseNode*)> Callback;
@@ -119,6 +148,7 @@ class LoaderTest : public testing::Test {
  protected:
   Scheduler scheduler_;
   BuildSettings build_settings_;
+  MockBuilder mock_builder_;
   MockInputFileManager mock_ifm_;
 };
 
@@ -181,6 +211,54 @@ TEST_F(LoaderTest, Foo) {
   mock_ifm_.IssueAllPending();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(mock_ifm_.HasTwoPending(second_file, third_file));
+
+  EXPECT_FALSE(scheduler_.is_failed());
+}
+
+TEST_F(LoaderTest, BuildDependencyFilesAreCollected) {
+  SourceFile build_config("//build/config/BUILDCONFIG.gn");
+  SourceFile root_build("//BUILD.gn");
+  build_settings_.set_build_config_file(build_config);
+  build_settings_.set_item_defined_callback(base::Bind(
+      &MockBuilder::OnItemDefined, base::Unretained(&mock_builder_)));
+
+  scoped_refptr<LoaderImpl> loader(new LoaderImpl(&build_settings_));
+  mock_ifm_.AddCannedResponse(build_config,
+                              "set_default_toolchain(\"//tc:tc\")");
+  mock_ifm_.AddCannedResponse(SourceFile("//test.gni"), "concurrent_jobs = 1");
+  std::string root_build_content =
+      "executable(\"a\") { sources = [ \"a.cc\" ] }\n"
+      "config(\"b\") { configs = [\"//t:t\"] }\n"
+      "toolchain(\"c\") {}\n"
+      "pool(\"d\") { depth = 1 }";
+  mock_ifm_.AddCannedResponse(root_build, root_build_content);
+
+  loader->set_async_load_file(mock_ifm_.GetCallback());
+
+  // Request the root build file be loaded. This should kick off the default
+  // build config loading.
+  loader->Load(root_build, LocationRange(), Label());
+  EXPECT_TRUE(mock_ifm_.HasOnePending(build_config));
+
+  // Completing the build config load should kick off the root build file load.
+  mock_ifm_.IssueAllPending();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(mock_ifm_.HasOnePending(root_build));
+
+  // Completing the root build file should define a target which must have
+  // set of source files hashes.
+  mock_ifm_.IssueAllPending();
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<const Item*> items = mock_builder_.GetAllItems();
+  EXPECT_TRUE(items[0]->AsTarget());
+  EXPECT_TRUE(ItemContainsBuildDependencyFile(items[0], root_build));
+  EXPECT_TRUE(items[1]->AsConfig());
+  EXPECT_TRUE(ItemContainsBuildDependencyFile(items[1], root_build));
+  EXPECT_TRUE(items[2]->AsToolchain());
+  EXPECT_TRUE(ItemContainsBuildDependencyFile(items[2], root_build));
+  EXPECT_TRUE(items[3]->AsPool());
+  EXPECT_TRUE(ItemContainsBuildDependencyFile(items[3], root_build));
 
   EXPECT_FALSE(scheduler_.is_failed());
 }
