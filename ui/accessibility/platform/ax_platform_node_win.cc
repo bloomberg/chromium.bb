@@ -367,6 +367,11 @@ AXPlatformNodeWin::~AXPlatformNodeWin() {
     g_unique_id_map.Get().erase(unique_id_);
 }
 
+// static
+size_t AXPlatformNodeWin::GetInstanceCountForTesting() {
+  return g_unique_id_map.Get().size();
+}
+
 const base::char16 AXPlatformNodeWin::kEmbeddedCharacter = L'\xfffc';
 
 void AXPlatformNodeWin::CalculateRelationships() {

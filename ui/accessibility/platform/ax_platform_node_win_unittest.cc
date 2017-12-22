@@ -44,6 +44,12 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
     win::CreateATLModuleIfNeeded();
   }
 
+  void TearDown() override {
+    // Destroy the tree and make sure we're not leaking any objects.
+    tree_.reset(nullptr);
+    ASSERT_EQ(0U, AXPlatformNodeWin::GetInstanceCountForTesting());
+  }
+
  protected:
   void BuildRelationships(ComPtr<IAccessible2> accessible) {
     CHECK(accessible);
