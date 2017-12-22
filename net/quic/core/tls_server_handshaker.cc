@@ -57,7 +57,9 @@ TlsServerHandshaker::TlsServerHandshaker(QuicCryptoStream* stream,
                                          QuicSession* session,
                                          SSL_CTX* ssl_ctx,
                                          ProofSource* proof_source)
-    : TlsHandshaker(stream, session, ssl_ctx), proof_source_(proof_source) {
+    : TlsHandshaker(stream, session, ssl_ctx),
+      proof_source_(proof_source),
+      crypto_negotiated_params_(new QuicCryptoNegotiatedParameters) {
   // Set callback to provide SNI.
   // SSL_CTX_set_tlsext_servername_callback(ssl_ctx, SelectCertificateCallback);
 
@@ -179,6 +181,7 @@ void TlsServerHandshaker::AdvanceHandshake() {
   if (should_close) {
     QUIC_LOG(WARNING) << "SSL_do_handshake failed; SSL_get_error returns "
                       << ssl_error << ", state_ = " << state_;
+    ERR_print_errors_fp(stderr);
     CloseConnection();
   }
 }
@@ -201,15 +204,21 @@ void TlsServerHandshaker::FinishHandshake() {
     return;
   }
 
+  QUIC_LOG(INFO) << "Server: setting crypters";
+  QuicEncrypter* initial_encrypter = CreateEncrypter(server_secret);
+  session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, initial_encrypter);
   QuicEncrypter* encrypter = CreateEncrypter(server_secret);
   session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE, encrypter);
 
+  QuicDecrypter* initial_decrypter = CreateDecrypter(client_secret);
+  session()->connection()->SetDecrypter(ENCRYPTION_INITIAL, initial_decrypter);
   QuicDecrypter* decrypter = CreateDecrypter(client_secret);
-  session()->connection()->SetDecrypter(ENCRYPTION_FORWARD_SECURE, decrypter);
+  session()->connection()->SetAlternativeDecrypter(ENCRYPTION_FORWARD_SECURE,
+                                                   decrypter, true);
 
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
 
-  session()->connection()->NeuterUnencryptedPackets();
+  session()->NeuterUnencryptedData();
   encryption_established_ = true;
   handshake_confirmed_ = true;
 }

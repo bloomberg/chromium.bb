@@ -428,7 +428,6 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation4) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
-  SetQuicReloadableFlag(quic_bbr_ack_aggregation_window, true);
   CreateDefaultSetup();
   SetConnectionOption(kBBR4);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -455,7 +454,6 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
-  SetQuicReloadableFlag(quic_bbr_ack_aggregation_window, true);
   CreateDefaultSetup();
   SetConnectionOption(kBBR5);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -552,7 +550,6 @@ TEST_F(BbrSenderTest, StartupMediumRecoveryStates) {
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
   bool simulator_result;
   CreateSmallBufferSetup();
-  SetQuicReloadableFlag(quic_bbr_conservation_in_startup, true);
   SetConnectionOption(kBBS2);
 
   bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
@@ -603,7 +600,6 @@ TEST_F(BbrSenderTest, StartupGrowthRecoveryStates) {
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
   bool simulator_result;
   CreateSmallBufferSetup();
-  SetQuicReloadableFlag(quic_bbr_conservation_in_startup, true);
   SetConnectionOption(kBBS3);
 
   bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
@@ -1042,7 +1038,6 @@ TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
 TEST_F(BbrSenderTest, SimpleTransferNoConservationInStartup) {
   // Adding TSO CWND causes packet loss before exiting startup.
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
-  SetQuicReloadableFlag(quic_bbr_conservation_in_startup, true);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBS1);
@@ -1105,6 +1100,37 @@ TEST_F(BbrSenderTest, ResumeConnectionState) {
   ExpectApproxEq(kTestRtt, sender_->ExportDebugState().min_rtt, 0.01f);
 
   DriveOutOfStartup();
+}
+
+// Test with a min CWND of 1 instead of 4 packets.
+TEST_F(BbrSenderTest, ProbeRTTMinCWND1) {
+  SetQuicReloadableFlag(quic_one_tlp, true);
+  CreateDefaultSetup();
+  SetConnectionOption(kMIN1);
+  DriveOutOfStartup();
+
+  // We have no intention of ever finishing this transfer.
+  bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
+
+  // Wait until the connection enters PROBE_RTT.
+  const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(12);
+  bool simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return sender_->ExportDebugState().mode == BbrSender::PROBE_RTT;
+      },
+      timeout);
+  ASSERT_TRUE(simulator_result);
+  ASSERT_EQ(BbrSender::PROBE_RTT, sender_->ExportDebugState().mode);
+  // The PROBE_RTT CWND should be 1 if the min CWND is 1.
+  EXPECT_EQ(kDefaultTCPMSS, sender_->GetCongestionWindow());
+
+  // Exit PROBE_RTT.
+  const QuicTime probe_rtt_start = clock_->Now();
+  const QuicTime::Delta time_to_exit_probe_rtt =
+      kTestRtt + QuicTime::Delta::FromMilliseconds(200);
+  simulator_.RunFor(1.5 * time_to_exit_probe_rtt);
+  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  EXPECT_GE(sender_->ExportDebugState().min_rtt_timestamp, probe_rtt_start);
 }
 
 }  // namespace test

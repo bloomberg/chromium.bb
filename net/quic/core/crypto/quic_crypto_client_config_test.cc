@@ -7,6 +7,7 @@
 #include "net/quic/core/crypto/proof_verifier.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -173,7 +174,8 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_InitializeFrom) {
 
 TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicCryptoClientConfig::CachedState state;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   config.set_user_agent_id("quic-tester");
   config.set_alpn("hq");
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
@@ -200,7 +202,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
 }
 
 TEST_F(QuicCryptoClientConfigTest, PreferAesGcm) {
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   if (config.aead.size() > 1)
     EXPECT_NE(kAESG, config.aead[0]);
   config.PreferAesGcm();
@@ -209,7 +212,8 @@ TEST_F(QuicCryptoClientConfigTest, PreferAesGcm) {
 
 TEST_F(QuicCryptoClientConfigTest, InchoateChloSecure) {
   QuicCryptoClientConfig::CachedState state;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   CryptoHandshakeMessage msg;
@@ -240,7 +244,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCIDNoEXPY) {
       scfg.GetSerialized(Perspective::IS_CLIENT).AsStringPiece(), now, expiry,
       &details);
 
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   CryptoHandshakeMessage msg;
@@ -268,7 +273,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
       QuicWallTime::FromUNIXSeconds(1), QuicWallTime::FromUNIXSeconds(0),
       &details);
 
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   CryptoHandshakeMessage msg;
@@ -285,7 +291,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
 
 TEST_F(QuicCryptoClientConfigTest, FillClientHello) {
   QuicCryptoClientConfig::CachedState state;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   QuicConnectionId kConnectionId = 1234;
@@ -325,7 +332,8 @@ TEST_F(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params(
       new QuicCryptoNegotiatedParameters);
   string error;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   EXPECT_EQ(QUIC_VERSION_NEGOTIATION_MISMATCH,
             config.ProcessServerHello(msg, 0, supported_versions.front(),
                                       supported_versions, &cached, out_params,
@@ -334,7 +342,8 @@ TEST_F(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
 }
 
 TEST_F(QuicCryptoClientConfigTest, InitializeFrom) {
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   QuicServerId canonical_server_id("www.google.com", 443,
                                    PRIVACY_MODE_DISABLED);
   QuicCryptoClientConfig::CachedState* state =
@@ -355,7 +364,8 @@ TEST_F(QuicCryptoClientConfigTest, InitializeFrom) {
 }
 
 TEST_F(QuicCryptoClientConfigTest, Canonical) {
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   config.AddCanonicalSuffix(".google.com");
   QuicServerId canonical_id1("www.google.com", 443, PRIVACY_MODE_DISABLED);
   QuicServerId canonical_id2("mail.google.com", 443, PRIVACY_MODE_DISABLED);
@@ -379,7 +389,8 @@ TEST_F(QuicCryptoClientConfigTest, Canonical) {
 }
 
 TEST_F(QuicCryptoClientConfigTest, CanonicalNotUsedIfNotValid) {
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   config.AddCanonicalSuffix(".google.com");
   QuicServerId canonical_id1("www.google.com", 443, PRIVACY_MODE_DISABLED);
   QuicServerId canonical_id2("mail.google.com", 443, PRIVACY_MODE_DISABLED);
@@ -394,7 +405,8 @@ TEST_F(QuicCryptoClientConfigTest, CanonicalNotUsedIfNotValid) {
 }
 
 TEST_F(QuicCryptoClientConfigTest, ClearCachedStates) {
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
 
   // Create two states on different origins.
   struct TestCase {
@@ -490,7 +502,8 @@ TEST_F(QuicCryptoClientConfigTest, ProcessReject) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params(
       new QuicCryptoNegotiatedParameters);
   string error;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   EXPECT_EQ(QUIC_NO_ERROR,
             config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
                                     AllSupportedTransportVersions().front(), "",
@@ -511,7 +524,8 @@ TEST_F(QuicCryptoClientConfigTest, ProcessRejectWithLongTTL) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params(
       new QuicCryptoNegotiatedParameters);
   string error;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   EXPECT_EQ(QUIC_NO_ERROR,
             config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
                                     AllSupportedTransportVersions().front(), "",
@@ -538,7 +552,8 @@ TEST_F(QuicCryptoClientConfigTest, ProcessStatelessReject) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params(
       new QuicCryptoNegotiatedParameters);
   string error;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   EXPECT_EQ(QUIC_NO_ERROR,
             config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
                                     AllSupportedTransportVersions().front(), "",
@@ -560,7 +575,8 @@ TEST_F(QuicCryptoClientConfigTest, BadlyFormattedStatelessReject) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params(
       new QuicCryptoNegotiatedParameters);
   string error;
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
             config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
                                     AllSupportedTransportVersions().front(), "",
@@ -579,7 +595,8 @@ TEST_F(QuicCryptoClientConfigTest, ServerNonceinSHLO) {
   supported_versions.push_back(version);
   msg.SetVersionVector(kVER, supported_versions);
 
-  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
+  QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
+                                TlsClientHandshaker::CreateSslCtx());
   QuicCryptoClientConfig::CachedState cached;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params(
       new QuicCryptoNegotiatedParameters);

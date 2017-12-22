@@ -861,14 +861,12 @@ const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return "Largest observed too low.";
   }
 
-  // TODO(wub): Remove this check along with
-  // FLAGS_quic_reloadable_flag_quic_deprecate_largest_observed.
   if (!incoming_ack.packets.Empty() &&
       incoming_ack.packets.Max() != LargestAcked(incoming_ack)) {
     QUIC_BUG << ENDPOINT
              << "Peer last received packet: " << incoming_ack.packets.Max()
              << " which is not equal to largest observed: "
-             << incoming_ack.deprecated_largest_observed;
+             << incoming_ack.largest_acked;
     return "Last received packet not equal to largest observed.";
   }
 
@@ -1221,10 +1219,7 @@ void QuicConnection::SendRstStream(QuicStreamId id,
     return;
   }
   // Flush stream frames of reset stream.
-  if (GetQuicReloadableFlag(quic_remove_on_stream_frame_discarded) &&
-      packet_generator_.HasPendingStreamFramesOfStream(id)) {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_remove_on_stream_frame_discarded, 2, 2);
+  if (packet_generator_.HasPendingStreamFramesOfStream(id)) {
     packet_generator_.FlushAllQueuedFrames();
   }
 
@@ -2364,9 +2359,6 @@ QuicConnection::ScopedPacketFlusher::ScopedPacketFlusher(
   // If caller wants us to include an ack, check the delayed-ack timer to see if
   // there's ack info to be sent.
   if (ShouldSendAck(ack_mode)) {
-    DCHECK(ack_mode == SEND_ACK || connection_->ack_frame_updated() ||
-           connection_->stop_waiting_count_ > 1);
-
     if (!GetQuicReloadableFlag(quic_strict_ack_handling) ||
         !connection_->GetUpdatedAckFrame().ack_frame->packets.Empty()) {
       QUIC_DVLOG(1) << "Bundling ack with outgoing packet.";
@@ -2377,6 +2369,9 @@ QuicConnection::ScopedPacketFlusher::ScopedPacketFlusher(
 
 bool QuicConnection::ScopedPacketFlusher::ShouldSendAck(
     AckBundling ack_mode) const {
+  // If the ack alarm is set, make sure the ack has been updated.
+  DCHECK(!connection_->ack_alarm_->IsSet() || connection_->ack_frame_updated())
+      << "ack_mode:" << ack_mode;
   switch (ack_mode) {
     case SEND_ACK:
       return true;
@@ -2741,9 +2736,9 @@ void QuicConnection::UpdatePacketContent(PacketContent type) {
   current_peer_migration_type_ = NO_CHANGE;
 }
 
-void QuicConnection::SetStreamNotifier(
-    StreamNotifierInterface* stream_notifier) {
-  sent_packet_manager_.SetStreamNotifier(stream_notifier);
+void QuicConnection::SetSessionNotifier(
+    SessionNotifierInterface* session_notifier) {
+  sent_packet_manager_.SetSessionNotifier(session_notifier);
 }
 
 void QuicConnection::SetDataProducer(

@@ -1157,8 +1157,6 @@ component("net") {
       "quic/core/congestion_control/rtt_stats.h",
       "quic/core/congestion_control/send_algorithm_interface.cc",
       "quic/core/congestion_control/send_algorithm_interface.h",
-      "quic/core/congestion_control/tcp_cubic_sender_base.cc",
-      "quic/core/congestion_control/tcp_cubic_sender_base.h",
       "quic/core/congestion_control/tcp_cubic_sender_bytes.cc",
       "quic/core/congestion_control/tcp_cubic_sender_bytes.h",
       "quic/core/congestion_control/windowed_filter.h",
@@ -3251,6 +3249,8 @@ source_set("quic_test_tools") {
 
   if (is_linux) {
     sources += [
+      "tools/quic/test_tools/bad_packet_writer.cc",
+      "tools/quic/test_tools/bad_packet_writer.h",
       "tools/quic/test_tools/limited_mtu_test_writer.cc",
       "tools/quic/test_tools/limited_mtu_test_writer.h",
       "tools/quic/test_tools/mock_epoll_server.cc",

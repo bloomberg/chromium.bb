@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -35,7 +36,8 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
             QuicServerId("example.com", 443, PRIVACY_MODE_DISABLED),
             &crypto_config_,
             push_promise_index),
-        crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
+        crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+                       TlsClientHandshaker::CreateSslCtx()),
         authorized_(true) {}
   ~MockQuicSpdyClientSession() override {}
 

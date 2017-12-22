@@ -7,6 +7,8 @@
 #include "net/quic/core/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/core/quic_types.h"
+#include "net/quic/core/tls_client_handshaker.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/quartc/quartc_factory.h"
 #include "net/quic/quartc/quartc_factory_interface.h"
 #include "net/quic/quartc/quartc_packet_writer.h"
@@ -300,8 +302,6 @@ class FakeTransport : public QuartcSessionInterface::PacketTransport {
  public:
   explicit FakeTransport(FakeTransportChannel* channel) : channel_(channel) {}
 
-  bool CanWrite() override { return true; }
-
   int Write(const char* buffer, size_t buf_len) override {
     DCHECK(channel_);
     return channel_->SendPacket(buffer, buf_len);
@@ -422,6 +422,9 @@ class QuartcSessionTest : public ::testing::Test,
         new QuartcPacketWriter(client_transport_.get(), kDefaultMaxPacketSize));
     server_writer_.reset(
         new QuartcPacketWriter(server_transport_.get(), kDefaultMaxPacketSize));
+
+    client_writer_->SetWritable();
+    server_writer_->SetWritable();
   }
 
   // The parameters are used to control whether the handshake will success or
@@ -435,14 +438,16 @@ class QuartcSessionTest : public ::testing::Test,
     client_channel_->SetObserver(client_peer_.get());
     server_channel_->SetObserver(server_peer_.get());
 
-    client_peer_->SetClientCryptoConfig(
-        new QuicCryptoClientConfig(std::unique_ptr<ProofVerifier>(
-            new FakeProofVerifier(client_handshake_success))));
+    client_peer_->SetClientCryptoConfig(new QuicCryptoClientConfig(
+        std::unique_ptr<ProofVerifier>(
+            new FakeProofVerifier(client_handshake_success)),
+        TlsClientHandshaker::CreateSslCtx()));
 
     QuicCryptoServerConfig* server_config = new QuicCryptoServerConfig(
         "TESTING", QuicRandom::GetInstance(),
         std::unique_ptr<FakeProofSource>(
-            new FakeProofSource(server_handshake_success)));
+            new FakeProofSource(server_handshake_success)),
+        TlsServerHandshaker::CreateSslCtx());
     // Provide server with serialized config string to prove ownership.
     QuicCryptoServerConfig::ConfigOptions options;
     std::unique_ptr<QuicServerConfigProtobuf> primary_config(

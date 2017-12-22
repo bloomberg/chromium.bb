@@ -4342,7 +4342,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
 
   // Use kSmallLargestObservedto make this test finished in a short time.
   QuicAckFrame ack_frame;
-  ack_frame.deprecated_largest_observed = kSmallLargestObserved;
+  ack_frame.largest_acked = kSmallLargestObserved;
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   // 300 ack blocks.
   for (size_t i = 2; i < 2 * 300; i += 2) {

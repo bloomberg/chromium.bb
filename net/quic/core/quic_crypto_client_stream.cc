@@ -15,8 +15,10 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
 using std::string;
@@ -36,8 +38,21 @@ QuicCryptoClientStream::QuicCryptoClientStream(
     ProofHandler* proof_handler)
     : QuicCryptoClientStreamBase(session) {
   DCHECK_EQ(Perspective::IS_CLIENT, session->connection()->perspective());
-  handshaker_.reset(new QuicCryptoClientHandshaker(
-      server_id, this, session, verify_context, crypto_config, proof_handler));
+  switch (session->connection()->version().handshake_protocol) {
+    case PROTOCOL_QUIC_CRYPTO:
+      handshaker_ = QuicMakeUnique<QuicCryptoClientHandshaker>(
+          server_id, this, session, verify_context, crypto_config,
+          proof_handler);
+      break;
+    case PROTOCOL_TLS1_3:
+      handshaker_ = QuicMakeUnique<TlsClientHandshaker>(
+          this, session, server_id, crypto_config->proof_verifier(),
+          crypto_config->ssl_ctx(), verify_context);
+      break;
+    case PROTOCOL_UNSUPPORTED:
+      QUIC_BUG << "Attempting to create QuicCryptoClientStream for unknown "
+                  "handshake protocol";
+  }
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {}

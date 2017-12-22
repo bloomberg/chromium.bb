@@ -25,7 +25,7 @@ void QuicCryptoHandshaker::SendHandshakeMessage(
     const CryptoHandshakeMessage& message) {
   QUIC_DVLOG(1) << ENDPOINT << "Sending "
                 << message.DebugString(session()->perspective());
-  session()->connection()->NeuterUnencryptedPackets();
+  session()->NeuterUnencryptedData();
   session()->OnCryptoHandshakeMessageSent(message);
   const QuicData& data = message.GetSerialized(session()->perspective());
   stream_->WriteOrBufferData(QuicStringPiece(data.data(), data.length()), false,

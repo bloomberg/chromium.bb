@@ -34,6 +34,8 @@ class QuicStreamSequencerBufferPeer {
 
   QuicStreamSequencerBuffer::BufferBlock* GetBlock(size_t index);
 
+  // TODO(fayang): Rename this to IntervalSize when deprecating
+  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
   int GapSize();
 
   std::list<QuicStreamSequencerBuffer::Gap> GetGaps();
@@ -49,9 +51,15 @@ class QuicStreamSequencerBufferPeer {
 
   void set_gaps(const std::list<QuicStreamSequencerBuffer::Gap>& gaps);
 
+  void AddBytesReceived(QuicStreamOffset offset, QuicByteCount length);
+
   bool IsBufferAllocated();
 
   size_t block_count();
+
+  const QuicIntervalSet<QuicStreamOffset>& bytes_received();
+
+  bool allow_overlapping_data();
 
  private:
   QuicStreamSequencerBuffer* buffer_;

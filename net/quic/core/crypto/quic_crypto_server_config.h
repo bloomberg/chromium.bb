@@ -28,6 +28,7 @@
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace net {
 
@@ -194,9 +195,11 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     server. Not owned.
   // |proof_source|: provides certificate chains and signatures. This class
   //     takes ownership of |proof_source|.
+  // |ssl_ctx|: The SSL_CTX used for doing TLS handshakes.
   QuicCryptoServerConfig(QuicStringPiece source_address_token_secret,
                          QuicRandom* server_nonce_entropy,
-                         std::unique_ptr<ProofSource> proof_source);
+                         std::unique_ptr<ProofSource> proof_source,
+                         bssl::UniquePtr<SSL_CTX> ssl_ctx);
   ~QuicCryptoServerConfig();
 
   // TESTING is a magic parameter for passing to the constructor in tests.
@@ -391,6 +394,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   void set_rejection_observer(RejectionObserver* rejection_observer) {
     rejection_observer_ = rejection_observer;
   }
+
+  ProofSource* proof_source() const;
+
+  SSL_CTX* ssl_ctx() const;
 
  private:
   friend class test::QuicCryptoServerConfigPeer;
@@ -739,6 +746,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // proof_source_ contains an object that can provide certificate chains and
   // signatures.
   std::unique_ptr<ProofSource> proof_source_;
+
+  // ssl_ctx_ contains the server configuration for doing TLS handshakes.
+  bssl::UniquePtr<SSL_CTX> ssl_ctx_;
 
   // ephemeral_key_source_ contains an object that caches ephemeral keys for a
   // short period of time.

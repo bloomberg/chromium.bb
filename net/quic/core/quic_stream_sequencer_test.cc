@@ -565,7 +565,7 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
   sequencer_->MarkConsumed(6);
 }
 
-TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
+TEST_F(QuicStreamSequencerTest, OverlappingFramesReceived) {
   // The peer should never send us non-identical stream frames which contain
   // overlapping byte ranges - if they do, we close the connection.
   QuicStreamId id =
@@ -575,9 +575,15 @@ TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
   sequencer_->OnStreamFrame(frame1);
 
   QuicStreamFrame frame2(id, false, 2, QuicStringPiece("hello"));
-  EXPECT_CALL(stream_,
-              CloseConnectionWithDetails(QUIC_OVERLAPPING_STREAM_DATA, _))
-      .Times(1);
+  if (GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
+    EXPECT_CALL(stream_,
+                CloseConnectionWithDetails(QUIC_OVERLAPPING_STREAM_DATA, _))
+        .Times(0);
+  } else {
+    EXPECT_CALL(stream_,
+                CloseConnectionWithDetails(QUIC_OVERLAPPING_STREAM_DATA, _))
+        .Times(1);
+  }
   sequencer_->OnStreamFrame(frame2);
 }
 

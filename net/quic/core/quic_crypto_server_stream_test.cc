@@ -20,6 +20,8 @@
 #include "net/quic/core/quic_crypto_client_stream.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
+#include "net/quic/core/tls_client_handshaker.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
@@ -66,11 +68,13 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
   explicit QuicCryptoServerStreamTest(std::unique_ptr<ProofSource> proof_source)
       : server_crypto_config_(QuicCryptoServerConfig::TESTING,
                               QuicRandom::GetInstance(),
-                              std::move(proof_source)),
+                              std::move(proof_source),
+                              TlsServerHandshaker::CreateSslCtx()),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
-        client_crypto_config_(crypto_test_utils::ProofVerifierForTesting()) {
+        client_crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+                              TlsClientHandshaker::CreateSslCtx()) {
     SetQuicReloadableFlag(enable_quic_stateless_reject_support, false);
   }
 
@@ -204,6 +208,22 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
   //   * One to complete the handshake.
   Initialize();
   EXPECT_EQ(2, CompleteCryptoHandshake());
+  EXPECT_TRUE(server_stream()->encryption_established());
+  EXPECT_TRUE(server_stream()->handshake_confirmed());
+}
+
+TEST_P(QuicCryptoServerStreamTest, ConnectedAfterTlsHandshake) {
+  FLAGS_quic_supports_tls_handshake = true;
+  client_options_.only_tls_versions = true;
+  supported_versions_.clear();
+  for (QuicTransportVersion transport_version :
+       AllSupportedTransportVersions()) {
+    supported_versions_.push_back(
+        ParsedQuicVersion(PROTOCOL_TLS1_3, transport_version));
+  }
+  Initialize();
+  CompleteCryptoHandshake();
+  EXPECT_EQ(PROTOCOL_TLS1_3, server_stream()->handshake_protocol());
   EXPECT_TRUE(server_stream()->encryption_established());
   EXPECT_TRUE(server_stream()->handshake_confirmed());
 }

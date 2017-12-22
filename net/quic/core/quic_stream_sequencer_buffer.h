@@ -7,8 +7,8 @@
 
 // QuicStreamSequencerBuffer is a circular stream buffer with random write and
 // in-sequence read. It consists of a vector of pointers pointing
-// to memory blocks created as needed and a list of Gaps to indicate
-// the missing data between the data already written into the buffer.
+// to memory blocks created as needed and an interval set recording received
+// data.
 // - Data are written in with offset indicating where it should be in the
 // stream, and the buffer grown as needed (up to the maximum buffer capacity),
 // without expensive copying (extra blocks are allocated).
@@ -184,7 +184,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   bool RetireBlock(size_t index);
 
   // Should only be called after the indexed block is read till the end of the
-  // block or a gap has been reached.
+  // block or missing data has been reached.
   // If the block at |block_index| contains no buffered data, the block
   // should be retired.
   // Return false on success, or false otherwise.
@@ -192,6 +192,8 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
 
   // Called within OnStreamData() to update the gap OnStreamData() writes into
   // (remove, split or change begin/end offset).
+  // TODO(fayang): Remove this when deprecating
+  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
   void UpdateGapList(std::list<Gap>::iterator gap_with_new_data_written,
                      QuicStreamOffset start_offset,
                      size_t bytes_written);
@@ -217,6 +219,12 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Returns number of bytes available to be read out.
   size_t ReadableBytes() const;
 
+  // Returns offset of first missing byte.
+  QuicStreamOffset FirstMissingByte() const;
+
+  // Returns offset of highest received byte + 1.
+  QuicStreamOffset NextExpectedByte() const;
+
   // Called after Readv() and MarkConsumed() to keep frame_arrival_time_map_
   // up to date.
   // |offset| is the byte next read should start from. All frames before it
@@ -239,6 +247,8 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   QuicStreamOffset total_bytes_read_;
 
   // Contains Gaps which represents currently missing data.
+  // TODO(fayang): Remove list of gaps when deprecating
+  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
   std::list<Gap> gaps_;
 
   // An ordered, variable-length list of blocks, with the length limited
@@ -250,12 +260,21 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   size_t num_bytes_buffered_;
 
   // Stores all the buffered frames' start offset, length and arrival time.
+  // TODO(fayang): Remove this when deprecating
+  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
   std::map<QuicStreamOffset, FrameInfo> frame_arrival_time_map_;
 
   // For debugging use after free, assigned to 123456 in constructor and 654321
   // in destructor. As long as it's not 123456, this means either use after free
   // or memory corruption.
   int32_t destruction_indicator_;
+
+  // Currently received data.
+  QuicIntervalSet<QuicStreamOffset> bytes_received_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
+  const bool allow_overlapping_data_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencerBuffer);
 };

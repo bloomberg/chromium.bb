@@ -7,6 +7,7 @@
 #include <string>
 
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_quic_client_promised_info.h"
@@ -34,7 +35,8 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
             QuicServerId("example.com", 443, PRIVACY_MODE_DISABLED),
             &crypto_config_,
             push_promise_index),
-        crypto_config_(crypto_test_utils::ProofVerifierForTesting()) {}
+        crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+                       TlsClientHandshaker::CreateSslCtx()) {}
   ~MockQuicSpdyClientSession() override {}
 
   MOCK_METHOD1(CloseStream, void(QuicStreamId stream_id));

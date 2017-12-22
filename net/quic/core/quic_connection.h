@@ -679,8 +679,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // the MTU discovery alarm.
   void DiscoverMtu();
 
-  // Sets the stream notifer on the SentPacketManager.
-  void SetStreamNotifier(StreamNotifierInterface* stream_notifier);
+  // Sets the session notifier on the SentPacketManager.
+  void SetSessionNotifier(SessionNotifierInterface* session_notifier);
 
   // Set data producer in framer.
   void SetDataProducer(QuicStreamFrameDataProducer* data_producer);

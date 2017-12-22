@@ -7,6 +7,7 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_text_utils.h"
@@ -30,7 +31,8 @@ QuicClientBase::QuicClientBase(
       initialized_(false),
       local_port_(0),
       config_(config),
-      crypto_config_(std::move(proof_verifier)),
+      crypto_config_(std::move(proof_verifier),
+                     TlsClientHandshaker::CreateSslCtx()),
       helper_(helper),
       alarm_factory_(alarm_factory),
       supported_versions_(supported_versions),

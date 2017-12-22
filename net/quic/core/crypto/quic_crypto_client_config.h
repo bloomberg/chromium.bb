@@ -18,6 +18,7 @@
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace net {
 
@@ -206,8 +207,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     virtual bool Matches(const QuicServerId& server_id) const = 0;
   };
 
-  explicit QuicCryptoClientConfig(
-      std::unique_ptr<ProofVerifier> proof_verifier);
+  QuicCryptoClientConfig(std::unique_ptr<ProofVerifier> proof_verifier,
+                         bssl::UniquePtr<SSL_CTX> ssl_ctx);
   ~QuicCryptoClientConfig();
 
   // LookupOrCreate returns a CachedState for the given |server_id|. If no such
@@ -313,6 +314,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   ChannelIDSource* channel_id_source() const;
 
+  SSL_CTX* ssl_ctx() const;
+
   // SetChannelIDSource sets a ChannelIDSource that will be called, when the
   // server supports channel IDs, to obtain a channel ID for signing a message
   // proving possession of the channel ID. This object takes ownership of
@@ -385,6 +388,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   std::unique_ptr<ProofVerifier> proof_verifier_;
   std::unique_ptr<ChannelIDSource> channel_id_source_;
+  bssl::UniquePtr<SSL_CTX> ssl_ctx_;
 
   // The |user_agent_id_| passed in QUIC's CHLO message.
   std::string user_agent_id_;

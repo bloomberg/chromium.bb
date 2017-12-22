@@ -56,6 +56,7 @@
 #include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/quic_simple_server_stream.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/test_tools/bad_packet_writer.h"
 #include "net/tools/quic/test_tools/packet_dropping_test_writer.h"
 #include "net/tools/quic/test_tools/packet_reordering_writer.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
@@ -2959,6 +2960,25 @@ TEST_P(EndToEndTest, SendStatelessResetTokenInShlo) {
   EXPECT_TRUE(config->HasReceivedStatelessResetToken());
   EXPECT_EQ(1010101u, config->ReceivedStatelessResetToken());
   client_->Disconnect();
+}
+
+// Regression test of b/70782529.
+TEST_P(EndToEndTest, DoNotCrashOnPacketWriteError) {
+  ASSERT_TRUE(Initialize());
+  BadPacketWriter* bad_writer =
+      new BadPacketWriter(/*packet_causing_write_error=*/5,
+                          /*error_code=*/90);
+  std::unique_ptr<QuicTestClient> client(CreateQuicClient(bad_writer));
+
+  // 1 MB body.
+  string body(1024 * 1024, 'a');
+  SpdyHeaderBlock headers;
+  headers[":method"] = "POST";
+  headers[":path"] = "/foo";
+  headers[":scheme"] = "https";
+  headers[":authority"] = server_hostname_;
+
+  client->SendCustomSynchronousRequest(headers, body);
 }
 
 class EndToEndBufferedPacketsTest : public EndToEndTest {

@@ -10,6 +10,7 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -176,7 +177,8 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         crypto_config_(new QuicCryptoServerConfig(
             QuicCryptoServerConfig::TESTING,
             QuicRandom::GetInstance(),
-            crypto_test_utils::ProofSourceForTesting())),
+            crypto_test_utils::ProofSourceForTesting(),
+            TlsServerHandshaker::CreateSslCtx())),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         session_(connection_,

@@ -95,11 +95,6 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
    public:
     virtual ~PacketTransport() {}
 
-    // Called by the QuartcPacketWriter to check if the underneath transport is
-    // writable. True if packets written are expected to be sent.  False if
-    // packets will be dropped.
-    virtual bool CanWrite() = 0;
-
     // Called by the QuartcPacketWriter when writing packets to the network.
     // Return the number of written bytes. Return 0 if the write is blocked.
     virtual int Write(const char* buffer, size_t buf_len) = 0;

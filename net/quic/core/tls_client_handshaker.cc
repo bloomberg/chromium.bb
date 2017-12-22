@@ -46,7 +46,8 @@ TlsClientHandshaker::TlsClientHandshaker(QuicCryptoStream* stream,
     : TlsHandshaker(stream, session, ssl_ctx),
       server_id_(server_id),
       proof_verifier_(proof_verifier),
-      verify_context_(verify_context) {}
+      verify_context_(verify_context),
+      crypto_negotiated_params_(new QuicCryptoNegotiatedParameters) {}
 
 TlsClientHandshaker::~TlsClientHandshaker() {
   if (proof_verify_callback_) {
@@ -179,15 +180,21 @@ void TlsClientHandshaker::FinishHandshake() {
     return;
   }
 
+  QUIC_LOG(INFO) << "Client: setting crypters";
+  QuicEncrypter* initial_encrypter = CreateEncrypter(client_secret);
+  session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, initial_encrypter);
   QuicEncrypter* encrypter = CreateEncrypter(client_secret);
   session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE, encrypter);
 
+  QuicDecrypter* initial_decrypter = CreateDecrypter(server_secret);
+  session()->connection()->SetDecrypter(ENCRYPTION_INITIAL, initial_decrypter);
   QuicDecrypter* decrypter = CreateDecrypter(server_secret);
-  session()->connection()->SetDecrypter(ENCRYPTION_FORWARD_SECURE, decrypter);
+  session()->connection()->SetAlternativeDecrypter(ENCRYPTION_FORWARD_SECURE,
+                                                   decrypter, true);
 
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
 
-  session()->connection()->NeuterUnencryptedPackets();
+  session()->NeuterUnencryptedData();
   encryption_established_ = true;
   handshake_confirmed_ = true;
 }

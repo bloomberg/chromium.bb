@@ -16,6 +16,7 @@
 #include "net/quic/core/quic_spdy_client_session_base.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
@@ -154,7 +155,8 @@ class QuicChromiumClientStreamTest
     : public ::testing::TestWithParam<QuicTransportVersion> {
  public:
   QuicChromiumClientStreamTest()
-      : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
+      : crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+                       TlsClientHandshaker::CreateSslCtx()),
         session_(new MockQuicConnection(
                      &helper_,
                      &alarm_factory_,

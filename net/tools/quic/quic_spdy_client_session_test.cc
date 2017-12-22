@@ -8,6 +8,7 @@
 
 #include "net/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -66,7 +67,8 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSession {
 class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
  protected:
   QuicSpdyClientSessionTest()
-      : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
+      : crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+                       TlsClientHandshaker::CreateSslCtx()),
         promised_stream_id_(kInvalidStreamId),
         associated_stream_id_(kInvalidStreamId) {
     Initialize();

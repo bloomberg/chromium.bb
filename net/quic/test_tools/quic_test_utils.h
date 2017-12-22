@@ -936,6 +936,16 @@ class MockPacketCreatorDelegate : public QuicPacketCreator::DelegateInterface {
   DISALLOW_COPY_AND_ASSIGN(MockPacketCreatorDelegate);
 };
 
+class MockSessionNotifier : public SessionNotifierInterface {
+ public:
+  MockSessionNotifier();
+  ~MockSessionNotifier() override;
+
+  MOCK_METHOD2(OnFrameAcked, void(const QuicFrame&, QuicTime::Delta));
+  MOCK_METHOD1(OnStreamFrameRetransmitted, void(const QuicStreamFrame&));
+  MOCK_METHOD1(OnFrameLost, void(const QuicFrame&));
+};
+
 // Creates a client session for testing.
 //
 // server_id: The server id associated with this stream.

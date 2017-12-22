@@ -20,6 +20,7 @@ WriteResult QuartcPacketWriter::WritePacket(
   DCHECK(packet_transport_);
   int bytes_written = packet_transport_->Write(buffer, buf_len);
   if (bytes_written <= 0) {
+    writable_ = false;
     return WriteResult(WRITE_STATUS_BLOCKED, EWOULDBLOCK);
   }
   return WriteResult(WRITE_STATUS_OK, bytes_written);
@@ -30,8 +31,7 @@ bool QuartcPacketWriter::IsWriteBlockedDataBuffered() const {
 }
 
 bool QuartcPacketWriter::IsWriteBlocked() const {
-  DCHECK(packet_transport_);
-  return !packet_transport_->CanWrite();
+  return !writable_;
 }
 
 QuicByteCount QuartcPacketWriter::GetMaxPacketSize(
@@ -39,6 +39,8 @@ QuicByteCount QuartcPacketWriter::GetMaxPacketSize(
   return max_packet_size_;
 }
 
-void QuartcPacketWriter::SetWritable() {}
+void QuartcPacketWriter::SetWritable() {
+  writable_ = true;
+}
 
 }  // namespace net

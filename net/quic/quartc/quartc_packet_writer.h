@@ -32,8 +32,8 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
   bool IsWriteBlockedDataBuffered() const override;
 
   // Whether the underneath |transport_| is blocked. If this returns true,
-  // outgoing QUIC packets are queued by QuicConnection until
-  // Transport::Observer::OnCanWrite() is called.
+  // outgoing QUIC packets are queued by QuicConnection until SetWritable() is
+  // called.
   bool IsWriteBlocked() const override;
 
   // Maximum size of the QUIC packet which can be written. Users such as WebRTC
@@ -42,8 +42,7 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
   QuicByteCount GetMaxPacketSize(
       const QuicSocketAddress& peer_address) const override;
 
-  // This method is not used because the network layer in WebRTC will determine
-  // the writing states.
+  // Sets the packet writer to a writable (non-blocked) state.
   void SetWritable() override;
 
  private:
@@ -51,6 +50,9 @@ class QUIC_EXPORT_PRIVATE QuartcPacketWriter : public QuicPacketWriter {
   QuartcSessionInterface::PacketTransport* packet_transport_;
   // The maximum size of the packet can be written by this writer.
   QuicByteCount max_packet_size_;
+
+  // Whether packets can be written.
+  bool writable_ = false;
 };
 
 }  // namespace net

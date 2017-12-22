@@ -268,6 +268,9 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // The largest value the |congestion_window_| can achieve.
   QuicByteCount max_congestion_window_;
 
+  // The smallest value the |congestion_window_| can achieve.
+  QuicByteCount min_congestion_window_;
+
   // The current pacing rate of the connection.
   QuicBandwidth pacing_rate_;
 

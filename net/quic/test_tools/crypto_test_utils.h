@@ -112,6 +112,10 @@ struct FakeClientOptions {
 
   // The Token Binding params that the client supports and will negotiate.
   QuicTagVector token_binding_params;
+
+  // If only_tls_versions is set, then the client will only use TLS for the
+  // crypto handshake.
+  bool only_tls_versions = false;
 };
 
 // returns: the number of client hellos that the client sent.
