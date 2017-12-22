@@ -158,6 +158,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                  unsigned num_glyphs,
                  hb_buffer_t*);
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>);
+  void InsertRunForIndex(unsigned start_character_index);
   void ReorderRtlRuns(unsigned run_size_before);
 
   float width_;

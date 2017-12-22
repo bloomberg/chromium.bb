@@ -227,6 +227,8 @@ size_t ShapeResult::ByteSize() const {
 }
 
 unsigned ShapeResult::StartIndexForResult() const {
+  if (UNLIKELY(runs_.IsEmpty()))
+    return 0;
   const RunInfo& first_run = *runs_.front();
   if (!Rtl())
     return first_run.start_index_;
@@ -236,6 +238,8 @@ unsigned ShapeResult::StartIndexForResult() const {
 }
 
 unsigned ShapeResult::EndIndexForResult() const {
+  if (UNLIKELY(runs_.IsEmpty()))
+    return NumCharacters();
   const RunInfo& first_run = *runs_.front();
   if (!Rtl())
     return first_run.start_index_ + NumCharacters();
@@ -672,6 +676,17 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
   // If we didn't find an existing slot to place it, append.
   if (run)
     runs_.push_back(std::move(run));
+}
+
+// Insert a |RunInfo| without glyphs. |StartIndexForResult()| needs a run to
+// compute the start character index. When all glyphs are missing, this function
+// synthesize a run without glyphs.
+void ShapeResult::InsertRunForIndex(unsigned start_character_index) {
+  DCHECK(runs_.IsEmpty());
+  runs_.push_back(base::MakeUnique<RunInfo>(
+      primary_font_.get(), !Rtl() ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
+      CanvasRotationInVertical::kRegular, HB_SCRIPT_UNKNOWN,
+      start_character_index, 0, num_characters_));
 }
 
 ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
