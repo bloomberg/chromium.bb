@@ -123,9 +123,12 @@ class LineLayoutItem {
 
   Document& GetDocument() const { return layout_object_->GetDocument(); }
 
-  // TODO(dgrogan): This is the only caller: move the logic from LayoutObject
-  // to here.
-  bool PreservesNewline() const { return layout_object_->PreservesNewline(); }
+  bool PreservesNewline() const {
+    if (IsSVGInlineText())
+      return false;
+
+    return Style()->PreserveNewline();
+  }
 
   unsigned length() const { return layout_object_->length(); }
 
