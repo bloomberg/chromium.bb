@@ -105,13 +105,13 @@ void Referrer::ComputeReferrerInfo(std::string* out_referrer_string,
     *out_referrer_string = referrer.url.spec();
   }
 
-  *out_policy = ReferrerPolicyForUrlRequest(referrer);
+  *out_policy = ReferrerPolicyForUrlRequest(referrer.policy);
 }
 
 // static
 net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
-    const Referrer& referrer) {
-  switch (referrer.policy) {
+    blink::WebReferrerPolicy referrer_policy) {
+  switch (referrer_policy) {
     case blink::kWebReferrerPolicyAlways:
       return net::URLRequest::NEVER_CLEAR_REFERRER;
     case blink::kWebReferrerPolicyNever:
@@ -171,6 +171,15 @@ blink::WebReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
   }
   NOTREACHED();
   return blink::kWebReferrerPolicyDefault;
+}
+
+net::URLRequest::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kReducedReferrerGranularity)) {
+    return net::URLRequest::
+        REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
+  }
+  return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 }
 
 }  // namespace content

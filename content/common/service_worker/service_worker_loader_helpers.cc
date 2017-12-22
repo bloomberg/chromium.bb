@@ -62,8 +62,9 @@ ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
   new_request->keepalive = request.keepalive;
   new_request->is_reload = ui::PageTransitionCoreTypeIs(
       request.transition_type, ui::PAGE_TRANSITION_RELOAD);
-  new_request->referrer =
-      Referrer(GURL(request.referrer), request.referrer_policy);
+  new_request->referrer = Referrer(
+      GURL(request.referrer), Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                                  request.referrer_policy));
   new_request->fetch_type = ServiceWorkerFetchType::FETCH;
   return new_request;
 }
@@ -125,7 +126,9 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
   net::URLRequest::ReferrerPolicy referrer_policy;
   Referrer::ComputeReferrerInfo(
       &referrer_string, &referrer_policy,
-      Referrer(original_request.referrer, original_request.referrer_policy));
+      Referrer(original_request.referrer,
+               Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                   original_request.referrer_policy)));
 
   // If the request is a MAIN_FRAME request, the first-party URL gets
   // updated on redirects.

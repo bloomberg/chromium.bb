@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/common/possibly_associated_interface_ptr.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/render_frame.h"
@@ -277,7 +278,7 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   if (base::LowerCaseEqualsASCII(header, net::HttpRequestHeaders::kReferer)) {
     request_.referrer = GURL(value);
     DCHECK(request_.referrer.is_valid());
-    request_.referrer_policy = blink::kWebReferrerPolicyDefault;
+    request_.referrer_policy = Referrer::GetDefaultReferrerPolicy();
   } else {
     request_.headers.SetHeader(header, value);
   }

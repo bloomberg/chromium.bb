@@ -324,7 +324,7 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
   redirect_info.new_site_for_cookies = new_url;
   redirect_info.new_referrer = referrer_.url.spec();
   redirect_info.new_referrer_policy =
-      Referrer::ReferrerPolicyForUrlRequest(referrer_);
+      Referrer::ReferrerPolicyForUrlRequest(referrer_.policy);
 
   url_loader->CallOnRequestRedirected(
       redirect_info, scoped_refptr<ResourceResponse>(new ResourceResponse));

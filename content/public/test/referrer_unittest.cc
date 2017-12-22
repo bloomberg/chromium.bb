@@ -36,10 +36,9 @@ TEST(ReferrerTest, BlinkNetRoundTripConversion) {
   };
 
   for (auto policy : policies) {
-    EXPECT_EQ(
-        Referrer::ReferrerPolicyForUrlRequest(Referrer(
-            GURL(), Referrer::NetReferrerPolicyToBlinkReferrerPolicy(policy))),
-        policy);
+    EXPECT_EQ(Referrer::ReferrerPolicyForUrlRequest(
+                  Referrer::NetReferrerPolicyToBlinkReferrerPolicy(policy)),
+              policy);
   }
 }
 

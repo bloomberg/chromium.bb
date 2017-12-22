@@ -16,7 +16,9 @@ namespace content {
 // This struct holds a referrer URL, as well as the referrer policy to be
 // applied to this URL. When passing around referrers that will eventually end
 // up being used for URL requests, always use this struct.
+
 struct CONTENT_EXPORT Referrer {
+  // TODO(jam): convert this to hold the net enum
   Referrer(const GURL& url, blink::WebReferrerPolicy policy)
       : url(url), policy(policy) {}
   Referrer() : policy(blink::kWebReferrerPolicyDefault) {}
@@ -35,10 +37,12 @@ struct CONTENT_EXPORT Referrer {
                                   const Referrer& referrer);
 
   static net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
-      const Referrer& referrer);
+      blink::WebReferrerPolicy referrer_policy);
 
   static blink::WebReferrerPolicy NetReferrerPolicyToBlinkReferrerPolicy(
       net::URLRequest::ReferrerPolicy net_policy);
+
+  static net::URLRequest::ReferrerPolicy GetDefaultReferrerPolicy();
 };
 
 }  // namespace content

@@ -452,9 +452,7 @@ void ServiceWorkerSubresourceLoader::FollowRedirect() {
   resource_request_.method = redirect_info_->new_method;
   resource_request_.site_for_cookies = redirect_info_->new_site_for_cookies;
   resource_request_.referrer = GURL(redirect_info_->new_referrer);
-  resource_request_.referrer_policy =
-      Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-          redirect_info_->new_referrer_policy);
+  resource_request_.referrer_policy = redirect_info_->new_referrer_policy;
 
   // Restart the request.
   status_ = Status::kNotStarted;

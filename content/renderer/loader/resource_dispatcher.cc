@@ -56,9 +56,10 @@ void RemoteToLocalTimeTicks(
 }
 
 void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
-  if ((request.referrer_policy == blink::kWebReferrerPolicyDefault ||
+  if ((request.referrer_policy == Referrer::GetDefaultReferrerPolicy() ||
        request.referrer_policy ==
-           blink::kWebReferrerPolicyNoReferrerWhenDowngrade) &&
+           net::URLRequest::
+               CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
       request.referrer.SchemeIsCryptographic() &&
       !request.url.SchemeIsCryptographic()) {
     LOG(FATAL) << "Trying to send secure referrer for insecure request "
