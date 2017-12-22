@@ -11,7 +11,6 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisibleSelection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/forms/TextControlElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -23,8 +22,8 @@ class SurroundingTextTest : public ::testing::Test {
  protected:
   Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
   void SetHTML(const String&);
-  VisibleSelection Select(int offset) { return Select(offset, offset); }
-  VisibleSelection Select(int start, int end);
+  EphemeralRange Select(int offset) { return Select(offset, offset); }
+  EphemeralRange Select(int start, int end);
 
  private:
   void SetUp() override;
@@ -41,21 +40,18 @@ void SurroundingTextTest::SetHTML(const String& content) {
   GetDocument().UpdateStyleAndLayout();
 }
 
-VisibleSelection SurroundingTextTest::Select(int start, int end) {
+EphemeralRange SurroundingTextTest::Select(int start, int end) {
   Element* element = GetDocument().getElementById("selection");
-  return CreateVisibleSelection(
-      SelectionInDOMTree::Builder()
-          .Collapse(Position(ToText(element->firstChild()), start))
-          .Extend(Position(ToText(element->firstChild()), end))
-          .Build());
+  return EphemeralRange(Position(element->firstChild(), start),
+                        Position(element->firstChild(), end));
 }
 
 TEST_F(SurroundingTextTest, BasicCaretSelection) {
   SetHTML(String("<p id='selection'>foo bar</p>"));
 
   {
-    VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1);
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("f", surrounding_text.Content());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
@@ -63,8 +59,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 5);
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 5);
 
     // maxlength/2 is used on the left and right.
     EXPECT_EQ("foo", surrounding_text.Content().SimplifyWhiteSpace());
@@ -73,8 +69,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 42);
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -82,8 +78,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(7);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 42);
+    EphemeralRange selection = Select(7);
+    SurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(8u, surrounding_text.StartOffsetInContent());
@@ -91,8 +87,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 2);
+    EphemeralRange selection = Select(6);
+    SurroundingText surrounding_text(selection, 2);
 
     EXPECT_EQ("ar", surrounding_text.Content());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -100,8 +96,8 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 42);
+    EphemeralRange selection = Select(6);
+    SurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(7u, surrounding_text.StartOffsetInContent());
@@ -113,8 +109,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
   SetHTML(String("<p id='selection'>Lorem ipsum dolor sit amet</p>"));
 
   {
-    VisibleSelection selection = Select(0, 5);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 1);
+    EphemeralRange selection = Select(0, 5);
+    SurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("Lorem ", surrounding_text.Content());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
@@ -122,8 +118,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0, 5);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 5);
+    EphemeralRange selection = Select(0, 5);
+    SurroundingText surrounding_text(selection, 5);
 
     EXPECT_EQ("Lorem ip", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -131,8 +127,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0, 5);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 42);
+    EphemeralRange selection = Select(0, 5);
+    SurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -141,8 +137,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(6, 11);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 2);
+    EphemeralRange selection = Select(6, 11);
+    SurroundingText surrounding_text(selection, 2);
 
     EXPECT_EQ(" ipsum ", surrounding_text.Content());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -150,8 +146,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(6, 11);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 42);
+    EphemeralRange selection = Select(6, 11);
+    SurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -161,8 +157,8 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
 
   {
     // Last word.
-    VisibleSelection selection = Select(22, 26);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 8);
+    EphemeralRange selection = Select(22, 26);
+    SurroundingText surrounding_text(selection, 8);
 
     EXPECT_EQ("sit amet", surrounding_text.Content());
     EXPECT_EQ(4u, surrounding_text.StartOffsetInContent());
@@ -176,8 +172,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
              "selected node</div>"));
 
   {
-    VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1);
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("f", surrounding_text.Content());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
@@ -185,8 +181,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 5);
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 5);
 
     EXPECT_EQ("foo", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -194,8 +190,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1337);
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -204,8 +200,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 2);
+    EphemeralRange selection = Select(6);
+    SurroundingText surrounding_text(selection, 2);
 
     EXPECT_EQ("ar", surrounding_text.Content());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -213,8 +209,8 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
   }
 
   {
-    VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1337);
+    EphemeralRange selection = Select(6);
+    SurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -229,8 +225,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
              "selected node</div>"));
 
   {
-    VisibleSelection selection = Select(0, 1);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 1);
+    EphemeralRange selection = Select(0, 1);
+    SurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("fo", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
@@ -238,8 +234,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0, 3);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 12);
+    EphemeralRange selection = Select(0, 3);
+    SurroundingText surrounding_text(selection, 12);
 
     EXPECT_EQ("e of foo bar", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(5u, surrounding_text.StartOffsetInContent());
@@ -247,8 +243,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0, 3);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 1337);
+    EphemeralRange selection = Select(0, 3);
+    SurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -257,8 +253,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(4, 7);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 12);
+    EphemeralRange selection = Select(4, 7);
+    SurroundingText surrounding_text(selection, 12);
 
     EXPECT_EQ("foo bar the se",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -267,8 +263,8 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
   }
 
   {
-    VisibleSelection selection = Select(0, 7);
-    SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 1337);
+    EphemeralRange selection = Select(0, 7);
+    SurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -287,9 +283,9 @@ TEST_F(SurroundingTextTest, TextAreaSelection) {
       (TextControlElement*)GetDocument().getElementById("selection");
 
   text_ctrl->SetSelectionRange(4, 7);
-  VisibleSelection selection = CreateVisibleSelection(text_ctrl->Selection());
+  EphemeralRange selection = text_ctrl->Selection().ComputeRange();
 
-  SurroundingText surrounding_text(FirstEphemeralRangeOf(selection), 20);
+  SurroundingText surrounding_text(selection, 20);
 
   EXPECT_EQ("abc def ghi", surrounding_text.Content().SimplifyWhiteSpace());
   EXPECT_EQ(4u, surrounding_text.StartOffsetInContent());
