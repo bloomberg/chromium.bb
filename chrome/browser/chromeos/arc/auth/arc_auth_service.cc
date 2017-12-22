@@ -149,8 +149,7 @@ void ArcAuthService::OnAuthorizationComplete(mojom::ArcSignInStatus status,
     // Note, UMA for initial signin is updated from ArcSessionManager.
     DCHECK_NE(mojom::ArcSignInStatus::SUCCESS_ALREADY_PROVISIONED, status);
     UpdateReauthorizationResultUMA(
-        ConvertArcSignInStatusToProvisioningResult(status),
-        policy_util::IsAccountManaged(profile_));
+        ConvertArcSignInStatusToProvisioningResult(status), profile_);
     return;
   }
 

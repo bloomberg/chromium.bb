@@ -8,13 +8,21 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "components/arc/arc_util.h"
 
 namespace arc {
 
 namespace {
 
-std::string GetHistogramName(const std::string& base_name, bool managed) {
-  return base_name + (managed ? "Managed" : "Unmanaged");
+// Adds a suffix to the name based on the account type.
+std::string GetHistogramName(const std::string& base_name,
+                             const Profile* profile) {
+  return base_name +
+         (IsRobotAccountMode()
+              ? "RobotAccount"
+              : (policy_util::IsAccountManaged(profile) ? "Managed"
+                                                        : "Unmanaged"));
 }
 
 }  // namespace
@@ -39,36 +47,38 @@ void UpdateOptInFlowResultUMA(OptInFlowResult result) {
                             static_cast<int>(OptInFlowResult::SIZE));
 }
 
-void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed) {
+void UpdateProvisioningResultUMA(ProvisioningResult result,
+                                 const Profile* profile) {
   DCHECK_NE(result, ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
   base::UmaHistogramEnumeration(
-      GetHistogramName("Arc.Provisioning.Result.", managed), result,
+      GetHistogramName("Arc.Provisioning.Result.", profile), result,
       ProvisioningResult::SIZE);
 }
 
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,
-                              bool managed) {
+                              const Profile* profile) {
   std::string histogram_name = "Arc.Provisioning.TimeDelta.";
   histogram_name += success ? "Success." : "Failure.";
   // The macro UMA_HISTOGRAM_CUSTOM_TIMES expects a constant string, but since
   // this measurement happens very infrequently, we do not need to use a macro
   // here.
-  base::UmaHistogramCustomTimes(GetHistogramName(histogram_name, managed),
+  base::UmaHistogramCustomTimes(GetHistogramName(histogram_name, profile),
                                 elapsed_time, base::TimeDelta::FromSeconds(1),
                                 base::TimeDelta::FromMinutes(6), 50);
 }
 
-void UpdateReauthorizationResultUMA(ProvisioningResult result, bool managed) {
+void UpdateReauthorizationResultUMA(ProvisioningResult result,
+                                    const Profile* profile) {
   base::UmaHistogramEnumeration(
-      GetHistogramName("Arc.Reauthorization.Result.", managed), result,
+      GetHistogramName("Arc.Reauthorization.Result.", profile), result,
       ProvisioningResult::SIZE);
 }
 
 void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
-                             bool managed) {
+                             const Profile* profile) {
   base::UmaHistogramCustomTimes(
-      GetHistogramName("Arc.PlayStoreShown.TimeDelta.", managed), elapsed_time,
+      GetHistogramName("Arc.PlayStoreShown.TimeDelta.", profile), elapsed_time,
       base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(10), 50);
 }
 

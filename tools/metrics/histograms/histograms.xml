@@ -2799,6 +2799,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.Provisioning.Result.RobotAccount"
+    enum="ArcProvisioningResult">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    The result (success or the type of failure) of ARC provisioning on managed
+    devices with a robot account (Public Session or Kiosk).
+  </summary>
+</histogram>
+
 <histogram name="Arc.Provisioning.Result.Unmanaged"
     enum="ArcProvisioningResult">
   <owner>alexchau@google.com</owner>
@@ -2815,6 +2825,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Elapsed time from the signing in process start to call to onSignInFailed for
     managed users.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Provisioning.TimeDelta.Failure.RobotAccount" units="ms">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    Elapsed time from the signing in process start to call to onSignInFailed for
+    managed users with a robot account (Public Session or Kiosk).
   </summary>
 </histogram>
 
@@ -2836,6 +2855,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.Provisioning.TimeDelta.Success.RobotAccount" units="ms">
+  <owner>alexchau@google.com</owner>
+  <owner>phweiss@google.com</owner>
+  <summary>
+    Elapsed time from the signing in process start to successful call to
+    onSignInComplete for managed users with a robot account (Public Session or
+    Kiosk).
+  </summary>
+</histogram>
+
 <histogram name="Arc.Provisioning.TimeDelta.Success.Unmanaged" units="ms">
   <owner>alexchau@google.com</owner>
   <owner>phweiss@google.com</owner>
@@ -2851,6 +2880,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The result (success or the type of failure) of ARC reauthorization on
     managed devices.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Reauthorization.Result.RobotAccount"
+    enum="ArcProvisioningResult">
+  <owner>khmel@google.com</owner>
+  <summary>
+    The result (success or the type of failure) of ARC reauthorization on
+    managed devices with a robot account (Public Session or Kiosk).
   </summary>
 </histogram>
 
