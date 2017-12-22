@@ -71,13 +71,13 @@ class CORE_EXPORT ScriptSourceCode final {
 
   const String& Source() const { return source_; }
   CachedMetadataHandler* CacheHandler() const { return cache_handler_; }
-  KURL Url() const;
+  const KURL& Url() const { return url_; }
   int StartLine() const { return start_position_.line_.OneBasedInt(); }
   const TextPosition& StartPosition() const { return start_position_; }
   ScriptSourceLocationType SourceLocationType() const {
     return source_location_type_;
   }
-  String SourceMapUrl() const;
+  const String& SourceMapUrl() const { return source_map_url_; }
 
   ScriptStreamer* Streamer() const { return streamer_; }
 

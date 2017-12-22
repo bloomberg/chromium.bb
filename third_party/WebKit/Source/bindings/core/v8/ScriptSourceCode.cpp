@@ -80,12 +80,4 @@ void ScriptSourceCode::Trace(blink::Visitor* visitor) {
   visitor->Trace(streamer_);
 }
 
-KURL ScriptSourceCode::Url() const {
-  return url_;
-}
-
-String ScriptSourceCode::SourceMapUrl() const {
-  return source_map_url_;
-}
-
 }  // namespace blink
