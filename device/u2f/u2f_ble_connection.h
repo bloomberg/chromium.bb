@@ -67,11 +67,16 @@ class U2fBleConnection : public BluetoothAdapter::Observer {
 
   const std::string& address() const { return address_; }
 
-  void ReadControlPointLength(ControlPointLengthCallback callback);
-  void ReadServiceRevisions(ServiceRevisionsCallback callback);
-  void WriteControlPoint(const std::vector<uint8_t>& data, WriteCallback);
-  void WriteServiceRevision(ServiceRevision service_revision,
-                            WriteCallback callback);
+  virtual void Connect();
+  virtual void ReadControlPointLength(ControlPointLengthCallback callback);
+  virtual void ReadServiceRevisions(ServiceRevisionsCallback callback);
+  virtual void WriteControlPoint(const std::vector<uint8_t>& data,
+                                 WriteCallback callback);
+  virtual void WriteServiceRevision(ServiceRevision service_revision,
+                                    WriteCallback callback);
+
+ protected:
+  explicit U2fBleConnection(std::string device_address);
 
  private:
   // BluetoothAdapter::Observer:

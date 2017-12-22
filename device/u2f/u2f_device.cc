@@ -12,7 +12,9 @@
 
 namespace device {
 
-U2fDevice::U2fDevice() : channel_id_(kBroadcastChannel), capabilities_(0) {}
+constexpr base::TimeDelta U2fDevice::kDeviceTimeout;
+
+U2fDevice::U2fDevice() = default;
 
 U2fDevice::~U2fDevice() = default;
 

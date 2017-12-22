@@ -432,6 +432,7 @@ TEST_F(U2fBleConnectionTest, Address) {
   U2fBleConnection connection(device_address,
                               base::BindRepeating(connect_do_nothing),
                               base::BindRepeating(read_do_nothing));
+  connection.Connect();
   EXPECT_EQ(device_address, connection.address());
   AddU2Device(device_address);
 
@@ -447,6 +448,7 @@ TEST_F(U2fBleConnectionTest, DeviceNotPresent) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(do_nothing));
+  connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_FALSE(result);
 }
@@ -461,6 +463,7 @@ TEST_F(U2fBleConnectionTest, PreConnected) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(do_nothing));
+  connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 }
 
@@ -471,6 +474,7 @@ TEST_F(U2fBleConnectionTest, PostConnected) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(do_nothing));
+  connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_FALSE(result);
 
@@ -490,6 +494,7 @@ TEST_F(U2fBleConnectionTest, DeviceDisconnect) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(do_nothing));
+  connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
 
@@ -508,6 +513,7 @@ TEST_F(U2fBleConnectionTest, ReadStatusNotifications) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               read_callback.GetCallback());
+  connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 
   std::vector<uint8_t> payload = ToByteVector("foo");
@@ -529,6 +535,7 @@ TEST_F(U2fBleConnectionTest, ReadControlPointLength) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(read_do_nothing));
+  connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 
   TestReadControlPointLengthCallback length_callback;
@@ -565,6 +572,7 @@ TEST_F(U2fBleConnectionTest, ReadServiceRevisions) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(read_do_nothing));
+  connection.Connect();
   EXPECT_TRUE(connection_status_callback.WaitForResult());
 
   TestReadServiceRevisionsCallback revisions_callback;
@@ -664,6 +672,7 @@ TEST_F(U2fBleConnectionTest, WriteControlPoint) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(read_do_nothing));
+  connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
 
@@ -689,6 +698,7 @@ TEST_F(U2fBleConnectionTest, WriteServiceRevision) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(read_do_nothing));
+  connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
 
@@ -735,6 +745,7 @@ TEST_F(U2fBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
   U2fBleConnection connection(device_address,
                               connection_status_callback.GetCallback(),
                               base::BindRepeating(do_nothing));
+  connection.Connect();
   bool result = connection_status_callback.WaitForResult();
   EXPECT_TRUE(result);
 

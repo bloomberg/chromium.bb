@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "device/u2f/u2f_command_type.h"
@@ -77,7 +78,7 @@ class U2fBleFrame {
   // The |max_fragment_size| parameter ought to be at least 3. The resulting
   // fragments' binary sizes will not exceed this value.
   std::pair<U2fBleFrameInitializationFragment,
-            std::vector<U2fBleFrameContinuationFragment>>
+            base::queue<U2fBleFrameContinuationFragment>>
   ToFragments(size_t max_fragment_size) const;
 
  private:
@@ -99,12 +100,13 @@ class U2fBleFrame {
 class U2fBleFrameFragment {
  public:
   base::span<const uint8_t> fragment() const { return fragment_; }
+  virtual size_t Serialize(std::vector<uint8_t>* buffer) const = 0;
 
  protected:
   U2fBleFrameFragment();
   explicit U2fBleFrameFragment(base::span<const uint8_t> fragment);
   U2fBleFrameFragment(const U2fBleFrameFragment& frame);
-  ~U2fBleFrameFragment();
+  virtual ~U2fBleFrameFragment();
 
  private:
   base::span<const uint8_t> fragment_;
@@ -127,7 +129,7 @@ class U2fBleFrameInitializationFragment : public U2fBleFrameFragment {
   U2fCommandType command() const { return command_; }
   uint16_t data_length() const { return data_length_; }
 
-  size_t Serialize(std::vector<uint8_t>* buffer) const;
+  size_t Serialize(std::vector<uint8_t>* buffer) const override;
 
  private:
   U2fCommandType command_ = U2fCommandType::UNDEFINED;
@@ -147,7 +149,7 @@ class U2fBleFrameContinuationFragment : public U2fBleFrameFragment {
 
   uint8_t sequence() const { return sequence_; }
 
-  size_t Serialize(std::vector<uint8_t>* buffer) const;
+  size_t Serialize(std::vector<uint8_t>* buffer) const override;
 
  private:
   uint8_t sequence_ = 0;

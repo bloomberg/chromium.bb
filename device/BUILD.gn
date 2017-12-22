@@ -74,6 +74,7 @@ test("device_unittests") {
     "test/run_all_unittests.cc",
     "u2f/u2f_apdu_unittest.cc",
     "u2f/u2f_ble_connection_unittest.cc",
+    "u2f/u2f_ble_device_unittest.cc",
     "u2f/u2f_ble_frames_unittest.cc",
     "u2f/u2f_discovery_unittest.cc",
     "u2f/u2f_message_unittest.cc",
