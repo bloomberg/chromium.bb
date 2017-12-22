@@ -60,7 +60,10 @@ Polymer({
      */
     cameraVideoModeEnabled_: {
       type: Boolean,
-      value: false,
+      value: function() {
+        return loadTimeData.getBoolean('changePictureVideoModeEnabled');
+      },
+      readOnly: true,
     },
   },
 

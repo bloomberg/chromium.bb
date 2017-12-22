@@ -148,6 +148,10 @@ const base::Feature kCaptureThumbnailDependingOnTransitionType{
 const base::Feature kCaptureThumbnailOnNavigatingAway{
     "CaptureThumbnailOnNavigatingAway", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables change picture video mode.
+const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Whether to trigger app banner installability checks on page load.
 const base::Feature kCheckInstallabilityForBannerOnLoad{
     "CheckInstallabilityForBannerOnLoad", base::FEATURE_DISABLED_BY_DEFAULT};

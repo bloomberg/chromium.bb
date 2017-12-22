@@ -68,6 +68,7 @@
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -543,6 +544,9 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
                                : "on");
   localized_strings->SetString(
       "showMdLogin", ash::switches::IsUsingWebUiLock() ? "off" : "on");
+  localized_strings->SetBoolean(
+      "changePictureVideoModeEnabled",
+      base::FeatureList::IsEnabled(features::kChangePictureVideoMode));
 }
 
 void OobeUI::AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler) {
