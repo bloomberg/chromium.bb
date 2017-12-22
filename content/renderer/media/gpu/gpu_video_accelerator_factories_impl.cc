@@ -305,8 +305,10 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat() {
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
   viz::ContextProvider::ScopedContextLock lock(context_provider_);
   auto capabilities = context_provider_->ContextCapabilities();
-  if (capabilities.image_ycbcr_420v)
+  if (capabilities.image_ycbcr_420v &&
+      !capabilities.image_ycbcr_420v_disabled_for_video_frames) {
     return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;
+  }
   if (capabilities.image_ycbcr_422)
     return media::GpuVideoAcceleratorFactories::OutputFormat::UYVY;
   if (capabilities.texture_rg)

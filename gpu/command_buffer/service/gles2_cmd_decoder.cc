@@ -4008,6 +4008,9 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().chromium_image_ycbcr_422;
   caps.image_ycbcr_420v =
       feature_info_->feature_flags().chromium_image_ycbcr_420v;
+  caps.image_ycbcr_420v_disabled_for_video_frames =
+      group_->gpu_preferences()
+          .disable_biplanar_gpu_memory_buffers_for_video_frames;
   caps.max_copy_texture_chromium_size =
       workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
