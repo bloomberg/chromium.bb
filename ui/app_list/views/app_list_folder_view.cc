@@ -10,7 +10,6 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
@@ -55,8 +54,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
       view_model_(new views::ViewModel),
       model_(model),
       folder_item_(NULL),
-      hide_for_reparent_(false),
-      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {
+      hide_for_reparent_(false) {
   AddChildView(folder_header_view_);
   view_model_->Add(folder_header_view_, kIndexFolderHeader);
 
@@ -128,32 +126,6 @@ gfx::Size AppListFolderView::CalculatePreferredSize() const {
 void AppListFolderView::Layout() {
   CalculateIdealBounds();
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
-}
-
-bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (is_app_list_focus_enabled_) {
-    // TODO(weidongg/766807) Remove this function when the flag is enabled by
-    // default.
-    return false;
-  }
-  // Process TAB if focus should go to header; otherwise, AppsGridView will do
-  // the right thing.
-  if (event.key_code() == ui::VKEY_TAB) {
-    if (items_grid_view_->has_selected_view() == event.IsShiftDown() &&
-        !folder_header_view_->HasTextFocus()) {
-      folder_header_view_->SetTextFocus();
-      items_grid_view_->ClearAnySelectedView();
-      return true;
-    } else {
-      GiveBackFocusToSearchBox();
-    }
-  }
-
-  // This will select an app in the list, so we need to relinquish focus.
-  if (event.key_code() == ui::VKEY_DOWN)
-    GiveBackFocusToSearchBox();
-
-  return items_grid_view_->OnKeyPressed(event);
 }
 
 void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {

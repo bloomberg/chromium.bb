@@ -62,7 +62,6 @@ class AppListFolderView : public views::View,
   // views::View
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // AppListModelObserver
   void OnAppListItemWillBeDeleted(AppListItem* item) override;
@@ -121,9 +120,6 @@ class AppListFolderView : public views::View,
   bool hide_for_reparent_;
 
   base::string16 accessible_name_;
-
-  // Whether the app list focus is enabled.
-  const bool is_app_list_focus_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

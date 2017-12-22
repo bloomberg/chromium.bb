@@ -15,7 +15,6 @@
 #include "components/wallpaper/wallpaper_color_profile.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -170,8 +169,7 @@ class SearchBoxImageButton : public views::ImageButton {
 class SearchBoxTextfield : public views::Textfield {
  public:
   explicit SearchBoxTextfield(SearchBoxView* search_box_view)
-      : search_box_view_(search_box_view),
-        is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {}
+      : search_box_view_(search_box_view) {}
   ~SearchBoxTextfield() override = default;
 
   // Overridden from views::View:
@@ -203,9 +201,6 @@ class SearchBoxTextfield : public views::Textfield {
  private:
   SearchBoxView* const search_box_view_;
 
-  // Whether the app list focus is enabled.
-  const bool is_app_list_focus_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(SearchBoxTextfield);
 };
 
@@ -217,7 +212,6 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       content_container_(new views::View),
       search_box_(new SearchBoxTextfield(this)),
       app_list_view_(app_list_view),
-      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()),
       focused_view_(FOCUS_NONE) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -442,23 +436,6 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
   return (focused_view_ < FOCUS_CONTENTS_VIEW);
 }
 
-void SearchBoxView::ResetTabFocus(bool on_contents) {
-  if (is_app_list_focus_enabled_) {
-    // TODO(weidongg/766807) Remove this function when the flag is enabled by
-    // default.
-    return;
-  }
-
-  if (back_button_)
-    back_button_->SetSelected(false);
-  if (speech_button_)
-    speech_button_->SetSelected(false);
-  if (close_button_)
-    close_button_->SetSelected(false);
-  SetSelected(false);
-  focused_view_ = on_contents ? FOCUS_CONTENTS_VIEW : FOCUS_NONE;
-}
-
 void SearchBoxView::SetBackButtonLabel(bool folder) {
   if (!back_button_)
     return;
@@ -499,8 +476,6 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
   UpdateSearchBoxBorder();
   UpdateKeyboardVisibility();
 
-  if (focused_view_ != FOCUS_CONTENTS_VIEW)
-    ResetTabFocus(false);
   content_container_->Layout();
   SchedulePaint();
 }
@@ -748,96 +723,33 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   const bool is_trimmed_query_empty = IsSearchBoxTrimmedQueryEmpty();
   // If the query is only whitespace, don't transition the AppListView state.
   app_list_view_->SetStateFromSearchBoxView(is_trimmed_query_empty);
-  // Opened search box is shown when |is_trimmed_query_empty| is false and vice
-  // versa. Set the focus to the search results page when opened search box is
-  // shown. Otherwise, set the focus to search box.
-  ResetTabFocus(!is_trimmed_query_empty);
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
-  if (is_app_list_focus_enabled_) {
-    if (key_event.type() == ui::ET_KEY_PRESSED &&
-        key_event.key_code() == ui::VKEY_RETURN) {
-      if (!IsSearchBoxTrimmedQueryEmpty()) {
-        // Hitting Enter when focus is on search box opens the first result.
-        ui::KeyEvent event(key_event);
-        views::View* first_result_view =
-            static_cast<ContentsView*>(contents_view_)
-                ->search_results_page_view()
-                ->first_result_view();
-        if (first_result_view)
-          first_result_view->OnKeyEvent(&event);
-        return true;
-      }
-
-      if (!is_search_box_active()) {
-        SetSearchBoxActive(true);
-        return true;
-      }
-      return false;
+  if (key_event.type() == ui::ET_KEY_PRESSED &&
+      key_event.key_code() == ui::VKEY_RETURN) {
+    if (!IsSearchBoxTrimmedQueryEmpty()) {
+      // Hitting Enter when focus is on search box opens the first result.
+      ui::KeyEvent event(key_event);
+      views::View* first_result_view =
+          static_cast<ContentsView*>(contents_view_)
+              ->search_results_page_view()
+              ->first_result_view();
+      if (first_result_view)
+        first_result_view->OnKeyEvent(&event);
+      return true;
     }
 
-    if (CanProcessLeftRightKeyTraversal(key_event))
-      return ProcessLeftRightKeyTraversalForTextfield(search_box_, key_event);
+    if (!is_search_box_active()) {
+      SetSearchBoxActive(true);
+      return true;
+    }
     return false;
   }
-  // TODO(weidongg/766807) Remove everything below when the flag is enabled by
-  // default.
-  if (key_event.type() == ui::ET_KEY_PRESSED) {
-    if (key_event.key_code() == ui::VKEY_TAB &&
-        focused_view_ != FOCUS_CONTENTS_VIEW &&
-        MoveTabFocus(key_event.IsShiftDown()))
-      return true;
 
-    if ((key_event.key_code() == ui::VKEY_LEFT ||
-         key_event.key_code() == ui::VKEY_RIGHT) &&
-        focused_view_ == FOCUS_SEARCH_BOX && !search_box_->text().empty()) {
-      // When focus is on |search_box_| and query is not empty, then left and
-      // arrow key should move cursor in |search_box_|. In this situation only
-      // tab key could move the focus outside |search_box_|.
-      return false;
-    }
-
-    if (IsArrowKey(key_event) && focused_view_ != FOCUS_CONTENTS_VIEW &&
-        MoveArrowFocus(key_event))
-      return true;
-
-    if (focused_view_ == FOCUS_BACK_BUTTON && back_button_ &&
-        back_button_->OnKeyPressed(key_event))
-      return true;
-
-    if (focused_view_ == FOCUS_MIC_BUTTON && speech_button_ &&
-        speech_button_->OnKeyPressed(key_event))
-      return true;
-
-    if (focused_view_ == FOCUS_CLOSE_BUTTON && close_button_ &&
-        close_button_->OnKeyPressed(key_event))
-      return true;
-
-    const bool handled = contents_view_ && contents_view_->visible() &&
-                         contents_view_->OnKeyPressed(key_event);
-
-    return handled;
-  }
-
-  if (key_event.type() == ui::ET_KEY_RELEASED) {
-    if (focused_view_ == FOCUS_BACK_BUTTON && back_button_ &&
-        back_button_->OnKeyReleased(key_event))
-      return true;
-
-    if (focused_view_ == FOCUS_MIC_BUTTON && speech_button_ &&
-        speech_button_->OnKeyReleased(key_event))
-      return true;
-
-    if (focused_view_ == FOCUS_CLOSE_BUTTON && close_button_ &&
-        close_button_->OnKeyReleased(key_event))
-      return true;
-
-    return contents_view_ && contents_view_->visible() &&
-           contents_view_->OnKeyReleased(key_event);
-  }
-
+  if (CanProcessLeftRightKeyTraversal(key_event))
+    return ProcessLeftRightKeyTraversalForTextfield(search_box_, key_event);
   return false;
 }
 
