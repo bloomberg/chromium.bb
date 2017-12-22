@@ -23,6 +23,7 @@
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -31,12 +32,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-#if defined(OS_MACOSX)
-#include "media/mojo/interfaces/media_service_mac.mojom.h"
-#else
-#include "media/mojo/interfaces/media_service.mojom.h"
-#endif  // defined(OS_MACOSX)
 
 using testing::Exactly;
 using testing::Invoke;

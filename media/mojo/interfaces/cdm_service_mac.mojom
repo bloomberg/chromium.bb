@@ -12,20 +12,18 @@ import "services/service_manager/public/interfaces/interface_provider.mojom";
 // TODO(xhwang): Merge this file with media_service.mojom once EnabledIf
 // attribute is supported in mojom files. See https://crbug.com/676224
 
-// A service to provide media InterfaceFactory, typically to the media pipeline
-// running in the renderer process. The service itself runs in the process
-// specified by the |mojo_media_host| gn build flag, or in the utility process
-// when this service runs as an standalone CDM service (see gn build flag
-// |enable_standalone_cdm_service| for details). The service is always connected
-// from the browser process.
-// TODO(crbug.com/771791): Separate CdmService from MediaService.
-interface MediaService {
-  // Loads the CDM at |cdm_path| into the process.
-  // Since the client will not know whether LoadCdm() has been called by a
-  // previous MediaService instance, the client should always call it after
-  // interface connection. If the CDM is already loaded, this will be a no-op.
+// A service to provide media InterfaceFactory to provide CDM service, typically
+// to the media pipeline running in the renderer process. The service itself
+// runs in the CDM (utility) process. The service is always connected from the
+// browser process.
+interface CdmService {
+  // Loads the CDM at |cdm_path| into the process. Must be called before
+  // CreateInterfaceFactory(). Since the client will not know whether LoadCdm()
+  // has been called by a previous CdmService instance, the client should always
+  // call it after service connection. If the CDM is already loaded, this will
+  // be a no-op.
   // |token_provider| can be used to get a sandbox seatbelt extension token
-  // synchronously so that the MediaService instance can load the CDM and other
+  // synchronously so that the CdmService instance can load the CDM and other
   // needed files within the Mac sandbox.
   LoadCdm(mojo.common.mojom.FilePath cdm_path,
           SeatbeltExtensionTokenProvider? token_provider);

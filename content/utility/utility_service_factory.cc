@@ -34,7 +34,7 @@
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
 #include "media/mojo/features.h"                     // nogncheck
 #include "media/mojo/interfaces/constants.mojom.h"   // nogncheck
-#include "media/mojo/services/media_service.h"       // nogncheck
+#include "media/mojo/services/cdm_service.h"         // nogncheck
 #include "media/mojo/services/mojo_cdm_helper.h"     // nogncheck
 #include "media/mojo/services/mojo_media_client.h"   // nogncheck
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
@@ -100,7 +100,7 @@ class CdmMojoMediaClient final : public media::MojoMediaClient {
 
 std::unique_ptr<service_manager::Service> CreateCdmService() {
   return std::unique_ptr<service_manager::Service>(
-      new ::media::MediaService(std::make_unique<CdmMojoMediaClient>()));
+      new ::media::CdmService(std::make_unique<CdmMojoMediaClient>()));
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
