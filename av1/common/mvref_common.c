@@ -729,11 +729,11 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
     const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
 
-    const int tpl_sample_pos[9][2] = {
-      { -2, hoffset }, { 0, hoffset },  { voffset, hoffset },
-      { voffset, 0 },  { voffset, -2 }, { voffset, -4 },
-      { -4, hoffset }, { voffset, 4 },  { 2, hoffset + 4 },
+    const int tpl_sample_pos[3][2] = {
+      { voffset, -2 }, { voffset, hoffset }, { voffset - 2, hoffset },
     };
+    const int allow_extension = (xd->n8_h >= mi_size_high[BLOCK_8X8]) &&
+                                (xd->n8_w >= mi_size_wide[BLOCK_8X8]);
 
     for (int blk_row = 0; blk_row < xd->n8_h;
          blk_row += mi_size_high[BLOCK_8X8]) {
@@ -751,7 +751,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
 
-    for (int i = 0; i < 9; ++i) {
+    for (int i = 0; i < 3 && allow_extension; ++i) {
       const int blk_row = tpl_sample_pos[i][0];
       const int blk_col = tpl_sample_pos[i][1];
 
