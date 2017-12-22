@@ -53,8 +53,8 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   void PostDelayedTask(const base::Location& location,
                        CrossThreadClosure task,
                        TimeDelta delay) {
-    thread_->GetWebTaskRunner()->PostDelayedTask(location, std::move(task),
-                                                 delay);
+    PostDelayedCrossThreadTask(*thread_->GetWebTaskRunner(), location,
+                               std::move(task), delay);
   }
 
   bool IsCurrentThread() const { return thread_->IsCurrentThread(); }

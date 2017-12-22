@@ -151,8 +151,9 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
   thread_->PostIdleTask(
       FROM_HERE, base::BindOnce(&MockIdleTask::Run, WTF::Unretained(&task)));
   // We need to post a wake-up task or idle work will never happen.
-  thread_->GetWebTaskRunner()->PostDelayedTask(
-      FROM_HERE, CrossThreadBind([] {}), TimeDelta::FromMilliseconds(50));
+  PostDelayedCrossThreadTask(*thread_->GetWebTaskRunner(), FROM_HERE,
+                             CrossThreadBind([] {}),
+                             TimeDelta::FromMilliseconds(50));
 
   completion.Wait();
 }
@@ -189,8 +190,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
   PostCrossThreadTask(
       *thread_->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
-  thread_->GetWebTaskRunner()->PostDelayedTask(
-      FROM_HERE,
+  PostDelayedCrossThreadTask(
+      *thread_->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run,
                       WTF::CrossThreadUnretained(&delayed_task)),
       TimeDelta::FromMilliseconds(50));
