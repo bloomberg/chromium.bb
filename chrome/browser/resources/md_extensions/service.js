@@ -261,8 +261,10 @@ cr.define('extensions', function() {
 
     /** @override */
     updateAllExtensions() {
-      chrome.developerPrivate.autoUpdate();
-      chrome.metricsPrivate.recordUserAction('Options_UpdateExtensions');
+      return new Promise((resolve) => {
+        chrome.developerPrivate.autoUpdate(resolve);
+        chrome.metricsPrivate.recordUserAction('Options_UpdateExtensions');
+      });
     }
 
     /** @override */

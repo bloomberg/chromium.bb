@@ -289,6 +289,9 @@ class DeveloperPrivateAutoUpdateFunction : public DeveloperPrivateAPIFunction {
  protected:
   ~DeveloperPrivateAutoUpdateFunction() override;
   ResponseAction Run() override;
+
+ private:
+  void OnComplete();
 };
 
 class DeveloperPrivateGetItemsInfoFunction

@@ -19,7 +19,10 @@ cr.define('extensions', function() {
      */
     loadUnpacked() {}
 
-    /** Updates all extensions. */
+    /**
+     * Updates all extensions.
+     * @return {!Promise}
+     */
     updateAllExtensions() {}
   }
 
@@ -48,6 +51,8 @@ cr.define('extensions', function() {
         value: false,
       },
     },
+
+    behaviors: [I18nBehavior],
 
     hostAttributes: {
       role: 'banner',
@@ -105,7 +110,12 @@ cr.define('extensions', function() {
 
     /** @private */
     onUpdateNowTap_: function() {
-      this.delegate.updateAllExtensions();
+      this.delegate.updateAllExtensions().then(() => {
+        Polymer.IronA11yAnnouncer.requestAvailability();
+        this.fire('iron-announce', {
+          text: this.i18n('toolbarUpdateDone'),
+        });
+      });
     },
   });
 

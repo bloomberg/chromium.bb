@@ -586,9 +586,17 @@ ExtensionFunction::ResponseAction DeveloperPrivateAutoUpdateFunction::Run() {
     ExtensionUpdater::CheckParams params;
     params.fetch_priority = ManifestFetchData::FetchPriority::FOREGROUND;
     params.install_immediately = true;
+    // TODO(crbug.com/714018): Replace base::BindRepeating with base::BindOnce.
+    params.callback =
+        base::BindRepeating(&DeveloperPrivateAutoUpdateFunction::OnComplete,
+                            this /* ref counted */);
     updater->CheckNow(params);
   }
-  return RespondNow(NoArguments());
+  return RespondLater();
+}
+
+void DeveloperPrivateAutoUpdateFunction::OnComplete() {
+  Respond(NoArguments());
 }
 
 DeveloperPrivateGetExtensionsInfoFunction::
