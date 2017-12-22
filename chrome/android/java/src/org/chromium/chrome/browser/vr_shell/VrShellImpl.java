@@ -627,10 +627,24 @@ public class VrShellImpl
 
     @Override
     public void setWebVrModeEnabled(boolean enabled, boolean showToast) {
-        if (!enabled && !mPendingVSyncPause) mContentVrWindowAndroid.setVSyncPaused(false);
-        // TODO(mthiesse, crbug.com/760970) We shouldn't have to wait for the controls to be hidden
-        // before pausing VSync. Something is going wrong in the controls code and should be fixed.
-        mPendingVSyncPause = enabled;
+        if (enabled) {
+            // Use showToast as a proxy for whether we were in VR before switching to WebVR mode
+            // (and the controls are already hidden). We can't check whether the controls are hidden
+            // directly due to bug mentioned below. This will all be fixed and cleaned up with the
+            // fallback UI path (https://crbug.com/793430).
+            if (showToast) {
+                mContentVrWindowAndroid.setVSyncPaused(true);
+                mPendingVSyncPause = false;
+            } else {
+                // TODO(mthiesse, https://crbug.com/760970) We shouldn't have to wait for the
+                // controls to be hidden before pausing VSync. Something is going wrong in the
+                // controls code and should be fixed.
+                mPendingVSyncPause = true;
+            }
+        } else {
+            mContentVrWindowAndroid.setVSyncPaused(false);
+            mPendingVSyncPause = false;
+        }
 
         nativeSetWebVrMode(mNativeVrShell, enabled, showToast);
     }
