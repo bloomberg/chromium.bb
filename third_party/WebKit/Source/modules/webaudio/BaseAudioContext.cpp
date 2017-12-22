@@ -862,9 +862,10 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
 void BaseAudioContext::ScheduleMainThreadCleanup() {
   if (has_posted_cleanup_task_)
     return;
-  Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-      FROM_HERE, CrossThreadBind(&BaseAudioContext::PerformCleanupOnMainThread,
-                                 WrapCrossThreadPersistent(this)));
+  PostCrossThreadTask(
+      *Platform::Current()->MainThread()->GetWebTaskRunner(), FROM_HERE,
+      CrossThreadBind(&BaseAudioContext::PerformCleanupOnMainThread,
+                      WrapCrossThreadPersistent(this)));
   has_posted_cleanup_task_ = true;
 }
 

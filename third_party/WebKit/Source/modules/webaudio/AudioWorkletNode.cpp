@@ -154,8 +154,8 @@ void AudioWorkletHandler::SetProcessorOnRenderThread(
   AudioWorkletProcessorState new_state;
   new_state = processor_ ? AudioWorkletProcessorState::kRunning
                          : AudioWorkletProcessorState::kError;
-  task_runner_->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
       CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
                       WrapRefCounted(this), new_state));
 }
@@ -169,8 +169,8 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
   new_state = processor_->IsRunnable()
       ? AudioWorkletProcessorState::kStopped
       : AudioWorkletProcessorState::kError;
-  task_runner_->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
       CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
                       WrapRefCounted(this), new_state));
 

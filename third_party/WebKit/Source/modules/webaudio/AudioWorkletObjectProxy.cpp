@@ -38,14 +38,12 @@ void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {
   if (processor_info_list->size() == 0)
     return;
 
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnthrottled)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(
-              &AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList,
-              GetAudioWorkletMessagingProxyWeakPtr(),
-              WTF::Passed(std::move(processor_info_list))));
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnthrottled), FROM_HERE,
+      CrossThreadBind(
+          &AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList,
+          GetAudioWorkletMessagingProxyWeakPtr(),
+          WTF::Passed(std::move(processor_info_list))));
 }
 
 void AudioWorkletObjectProxy::WillDestroyWorkerGlobalScope() {

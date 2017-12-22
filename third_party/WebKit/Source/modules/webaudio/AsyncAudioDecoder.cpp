@@ -78,14 +78,15 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
   // We also want to avoid notifying the main thread if AudioContext does not
   // exist any more.
   if (context) {
-    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-        FROM_HERE, CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
-                                   WrapCrossThreadPersistent(audio_data),
-                                   WrapCrossThreadPersistent(success_callback),
-                                   WrapCrossThreadPersistent(error_callback),
-                                   WTF::RetainedRef(std::move(bus)),
-                                   WrapCrossThreadPersistent(resolver),
-                                   WrapCrossThreadPersistent(context)));
+    PostCrossThreadTask(
+        *Platform::Current()->MainThread()->GetWebTaskRunner(), FROM_HERE,
+        CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
+                        WrapCrossThreadPersistent(audio_data),
+                        WrapCrossThreadPersistent(success_callback),
+                        WrapCrossThreadPersistent(error_callback),
+                        WTF::RetainedRef(std::move(bus)),
+                        WrapCrossThreadPersistent(resolver),
+                        WrapCrossThreadPersistent(context)));
   }
 }
 

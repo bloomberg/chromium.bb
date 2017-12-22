@@ -231,9 +231,9 @@ void AudioScheduledSourceHandler::FinishWithoutOnEnded() {
 void AudioScheduledSourceHandler::Finish() {
   FinishWithoutOnEnded();
 
-  task_runner_->PostTask(
-      FROM_HERE, CrossThreadBind(&AudioScheduledSourceHandler::NotifyEnded,
-                                 WrapRefCounted(this)));
+  PostCrossThreadTask(*task_runner_, FROM_HERE,
+                      CrossThreadBind(&AudioScheduledSourceHandler::NotifyEnded,
+                                      WrapRefCounted(this)));
 }
 
 void AudioScheduledSourceHandler::NotifyEnded() {

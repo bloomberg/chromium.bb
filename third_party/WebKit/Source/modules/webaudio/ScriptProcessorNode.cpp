@@ -222,8 +222,8 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
       if (Context()->HasRealtimeConstraint()) {
         // Fire the event on the main thread with the appropriate buffer
         // index.
-        task_runner_->PostTask(
-            FROM_HERE,
+        PostCrossThreadTask(
+            *task_runner_, FROM_HERE,
             CrossThreadBind(&ScriptProcessorHandler::FireProcessEvent,
                             WrapRefCounted(this), double_buffer_index_));
       } else {
@@ -232,8 +232,8 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
         std::unique_ptr<WaitableEvent> waitable_event =
             std::make_unique<WaitableEvent>();
 
-        task_runner_->PostTask(
-            FROM_HERE,
+        PostCrossThreadTask(
+            *task_runner_, FROM_HERE,
             CrossThreadBind(
                 &ScriptProcessorHandler::FireProcessEventForOfflineAudioContext,
                 WrapRefCounted(this), double_buffer_index_,

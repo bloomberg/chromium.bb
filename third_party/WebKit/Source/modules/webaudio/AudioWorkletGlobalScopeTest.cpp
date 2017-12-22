@@ -82,50 +82,46 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
   void RunBasicTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    thread->GetTaskRunner(TaskType::kInternalTest)
-        ->PostTask(
-            FROM_HERE,
-            CrossThreadBind(
-                &AudioWorkletGlobalScopeTest::RunBasicTestOnWorkletThread,
-                CrossThreadUnretained(this), CrossThreadUnretained(thread),
-                CrossThreadUnretained(&waitable_event)));
+    PostCrossThreadTask(
+        *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+        CrossThreadBind(
+            &AudioWorkletGlobalScopeTest::RunBasicTestOnWorkletThread,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
   void RunSimpleProcessTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    thread->GetTaskRunner(TaskType::kInternalTest)
-        ->PostTask(FROM_HERE,
-                   CrossThreadBind(&AudioWorkletGlobalScopeTest::
-                                       RunSimpleProcessTestOnWorkletThread,
-                                   CrossThreadUnretained(this),
-                                   CrossThreadUnretained(thread),
-                                   CrossThreadUnretained(&waitable_event)));
+    PostCrossThreadTask(
+        *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+        CrossThreadBind(
+            &AudioWorkletGlobalScopeTest::RunSimpleProcessTestOnWorkletThread,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
   void RunParsingTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    thread->GetTaskRunner(TaskType::kInternalTest)
-        ->PostTask(
-            FROM_HERE,
-            CrossThreadBind(
-                &AudioWorkletGlobalScopeTest::RunParsingTestOnWorkletThread,
-                CrossThreadUnretained(this), CrossThreadUnretained(thread),
-                CrossThreadUnretained(&waitable_event)));
+    PostCrossThreadTask(
+        *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+        CrossThreadBind(
+            &AudioWorkletGlobalScopeTest::RunParsingTestOnWorkletThread,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
   void RunParsingParameterDescriptorTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    thread->GetTaskRunner(TaskType::kInternalTest)
-        ->PostTask(
-            FROM_HERE,
-            CrossThreadBind(
-                &AudioWorkletGlobalScopeTest::
-                    RunParsingParameterDescriptorTestOnWorkletThread,
-                CrossThreadUnretained(this), CrossThreadUnretained(thread),
-                CrossThreadUnretained(&waitable_event)));
+    PostCrossThreadTask(
+        *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+        CrossThreadBind(&AudioWorkletGlobalScopeTest::
+                            RunParsingParameterDescriptorTestOnWorkletThread,
+                        CrossThreadUnretained(this),
+                        CrossThreadUnretained(thread),
+                        CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 

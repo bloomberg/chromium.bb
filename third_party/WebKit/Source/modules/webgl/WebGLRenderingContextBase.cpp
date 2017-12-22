@@ -617,10 +617,10 @@ CreateContextProviderOnWorkerThread(
   creation_info.using_gpu_compositing = using_gpu_compositing;
   scoped_refptr<WebTaskRunner> task_runner =
       Platform::Current()->MainThread()->GetWebTaskRunner();
-  task_runner->PostTask(
-      FROM_HERE, CrossThreadBind(&CreateContextProviderOnMainThread,
-                                 CrossThreadUnretained(&creation_info),
-                                 CrossThreadUnretained(&waitable_event)));
+  PostCrossThreadTask(*task_runner, FROM_HERE,
+                      CrossThreadBind(&CreateContextProviderOnMainThread,
+                                      CrossThreadUnretained(&creation_info),
+                                      CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
   return std::move(creation_info.created_context_provider);
 }
