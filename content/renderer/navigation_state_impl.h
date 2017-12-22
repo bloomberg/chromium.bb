@@ -19,7 +19,6 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
   static NavigationStateImpl* CreateBrowserInitiated(
       const CommonNavigationParams& common_params,
-      const StartNavigationParams& start_params,
       const RequestNavigationParams& request_params);
 
   static NavigationStateImpl* CreateContentInitiated();
@@ -30,7 +29,6 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   bool IsContentInitiated() override;
 
   const CommonNavigationParams& common_params() const { return common_params_; }
-  const StartNavigationParams& start_params() const { return start_params_; }
   const RequestNavigationParams& request_params() const {
     return request_params_;
   }
@@ -46,7 +44,6 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
  private:
   NavigationStateImpl(const CommonNavigationParams& common_params,
-                      const StartNavigationParams& start_params,
                       const RequestNavigationParams& request_params,
                       bool is_content_initiated);
 
@@ -57,7 +54,6 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   const bool is_content_initiated_;
 
   CommonNavigationParams common_params_;
-  const StartNavigationParams start_params_;
 
   // Note: if IsContentInitiated() is false, whether this navigation should
   // replace the current entry in the back/forward history list is determined by

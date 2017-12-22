@@ -531,8 +531,7 @@ void RenderViewTest::Reload(const GURL& url) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
-  frame->Navigate(common_params, StartNavigationParams(),
-                  RequestNavigationParams());
+  frame->Navigate(common_params, RequestNavigationParams());
   FrameLoadWaiter(frame).Wait();
   view_->GetWebView()->UpdateAllLifecyclePhases();
 }
@@ -678,7 +677,7 @@ void RenderViewTest::GoToOffset(int offset,
 
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
-  frame->Navigate(common_params, StartNavigationParams(), request_params);
+  frame->Navigate(common_params, request_params);
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.

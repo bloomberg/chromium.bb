@@ -235,29 +235,14 @@ class NavigationControllerTest
   }
 
   bool HasNavigationRequest() {
-    if (IsBrowserSideNavigationEnabled()) {
-      return contents()->GetFrameTree()->root()->navigation_request() !=
-             nullptr;
-    }
-    return process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID)
-        != nullptr;
+    return contents()->GetFrameTree()->root()->navigation_request() != nullptr;
   }
 
   const GURL GetLastNavigationURL() {
-    if (IsBrowserSideNavigationEnabled()) {
-      NavigationRequest* navigation_request =
-          contents()->GetFrameTree()->root()->navigation_request();
-      CHECK(navigation_request);
-      return navigation_request->common_params().url;
-    }
-    const IPC::Message* message =
-        process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
-    CHECK(message);
-    std::tuple<CommonNavigationParams, StartNavigationParams,
-               RequestNavigationParams>
-        nav_params;
-    FrameMsg_Navigate::Read(message, &nav_params);
-    return std::get<0>(nav_params).url;
+    NavigationRequest* navigation_request =
+        contents()->GetFrameTree()->root()->navigation_request();
+    CHECK(navigation_request);
+    return navigation_request->common_params().url;
   }
 
  protected:

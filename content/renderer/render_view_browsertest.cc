@@ -246,7 +246,6 @@ class RenderViewImplTest : public RenderViewTest {
   void GoToOffsetWithParams(int offset,
                             const PageState& state,
                             const CommonNavigationParams common_params,
-                            const StartNavigationParams start_params,
                             RequestNavigationParams request_params) {
     EXPECT_TRUE(common_params.transition & ui::PAGE_TRANSITION_FORWARD_BACK);
     int pending_offset = offset + view()->history_list_offset_;
@@ -256,7 +255,7 @@ class RenderViewImplTest : public RenderViewTest {
     request_params.pending_history_list_offset = pending_offset;
     request_params.current_history_list_offset = view()->history_list_offset_;
     request_params.current_history_list_length = view()->history_list_length_;
-    frame()->Navigate(common_params, start_params, request_params);
+    frame()->Navigate(common_params, request_params);
 
     // The load actually happens asynchronously, so we pump messages to process
     // the pending continuation.
@@ -514,7 +513,6 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
 TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   // An http url will trigger a resource load so cannot be used here.
   CommonNavigationParams common_params;
-  StartNavigationParams start_params;
   RequestNavigationParams request_params;
   common_params.url = GURL("data:text/html,<div>Page</div>");
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
@@ -528,7 +526,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   post_data->AppendBytes(raw_data, length);
   common_params.post_data = post_data;
 
-  frame()->Navigate(common_params, start_params, request_params);
+  frame()->Navigate(common_params, request_params);
   base::RunLoop().RunUntilIdle();
 
   auto last_commit_params = frame()->TakeLastCommitParams();
@@ -570,8 +568,7 @@ TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
       "data:text/html,<html><head><title>Data page</title></head></html>";
 
   render_thread_->sink().ClearMessages();
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    request_params);
+  frame()->Navigate(common_params, request_params);
   const IPC::Message* frame_title_msg = nullptr;
   do {
     base::RunLoop().RunUntilIdle();
@@ -807,13 +804,12 @@ TEST_F(RenderViewImplScaleFactorTest, UpdateDSFAfterSwapIn) {
 
   // Navigate to other page, which triggers the swap in.
   CommonNavigationParams common_params;
-  StartNavigationParams start_params;
   RequestNavigationParams request_params;
   common_params.url = GURL("data:text/html,<div>Page</div>");
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
 
-  provisional_frame->Navigate(common_params, start_params, request_params);
+  provisional_frame->Navigate(common_params, request_params);
 
   EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale, view()->webview()->ZoomFactorForDeviceScaleFactor());
@@ -953,7 +949,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_C.pending_history_list_offset = 2;
   request_params_C.nav_entry_id = 3;
   request_params_C.page_state = state_C;
-  frame()->Navigate(common_params_C, StartNavigationParams(), request_params_C);
+  frame()->Navigate(common_params_C, request_params_C);
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
@@ -972,7 +968,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_B.pending_history_list_offset = 1;
   request_params_B.nav_entry_id = 2;
   request_params_B.page_state = state_B;
-  frame()->Navigate(common_params_B, StartNavigationParams(), request_params_B);
+  frame()->Navigate(common_params_B, request_params_B);
 
   // Back to page A and commit.
   CommonNavigationParams common_params;
@@ -985,7 +981,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params.pending_history_list_offset = 0;
   request_params.nav_entry_id = 1;
   request_params.page_state = state_A;
-  frame()->Navigate(common_params, StartNavigationParams(), request_params);
+  frame()->Navigate(common_params, request_params);
   base::RunLoop().RunUntilIdle();
 
   // Now ensure that the UpdateState message we receive is consistent
@@ -1311,8 +1307,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    RequestNavigationParams());
+  frame()->Navigate(common_params, RequestNavigationParams());
 
   // An error occurred.
   view()->GetMainRenderFrame()->DidFailProvisionalLoad(
@@ -1331,8 +1326,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    RequestNavigationParams());
+  frame()->Navigate(common_params, RequestNavigationParams());
 
   // A cancellation occurred.
   view()->GetMainRenderFrame()->DidFailProvisionalLoad(
@@ -1703,7 +1697,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   TestRenderFrame* subframe =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromWebFrame(
           frame()->GetWebFrame()->FindFrameByName("frame")));
-  subframe->Navigate(common_params, StartNavigationParams(), request_params);
+  subframe->Navigate(common_params, request_params);
   FrameLoadWaiter(subframe).Wait();
 
   // Copy the document content to std::wstring and compare with the
@@ -1812,8 +1806,7 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->Navigate(common_params, StartNavigationParams(),
-                       RequestNavigationParams());
+  main_frame->Navigate(common_params, RequestNavigationParams());
 
   // An error occurred.
   main_frame->DidFailProvisionalLoad(error, blink::kWebStandardCommit);
@@ -1840,8 +1833,7 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->Navigate(common_params, StartNavigationParams(),
-                       RequestNavigationParams());
+  main_frame->Navigate(common_params, RequestNavigationParams());
 
   // An error occurred.
   main_frame->DidFailProvisionalLoad(error, blink::kWebStandardCommit);
@@ -1872,8 +1864,7 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->Navigate(common_params, StartNavigationParams(),
-                       RequestNavigationParams());
+  main_frame->Navigate(common_params, RequestNavigationParams());
 
   // Emulate a 4xx/5xx main resource response with an empty body.
   main_frame->DidReceiveResponse(response);
@@ -2026,8 +2017,7 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
 TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
 
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    RequestNavigationParams());
+  frame()->Navigate(common_params, RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
@@ -2043,8 +2033,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartSanitized) {
   auto late_common_params = MakeCommonNavigationParams(TimeDelta::FromDays(42));
   late_common_params.method = "POST";
 
-  frame()->Navigate(late_common_params, StartNavigationParams(),
-                    RequestNavigationParams());
+  frame()->Navigate(late_common_params, RequestNavigationParams());
   base::RunLoop().RunUntilIdle();
   base::Time after_navigation =
       base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -2064,8 +2053,7 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   ExecuteJavaScriptForTests("document.title = 'Hi!';");
 
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    RequestNavigationParams());
+  frame()->Navigate(common_params, RequestNavigationParams());
 
   FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
@@ -2090,8 +2078,7 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
 
   // The browser navigation_start should not be used because beforeunload will
   // be fired during Navigate.
-  frame()->Navigate(common_params, StartNavigationParams(),
-                    RequestNavigationParams());
+  frame()->Navigate(common_params, RequestNavigationParams());
 
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
@@ -2124,7 +2111,7 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_back.navigation_type =
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(-1, back_state, common_params_back,
-                       StartNavigationParams(), RequestNavigationParams());
+                       RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   if (!IsBrowserSideNavigationEnabled()) {
@@ -2147,7 +2134,7 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_forward.navigation_type =
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(1, forward_state, common_params_forward,
-                       StartNavigationParams(), RequestNavigationParams());
+                       RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   if (!IsBrowserSideNavigationEnabled()) {
@@ -2172,7 +2159,7 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   request_params.pending_history_list_offset = 1;
   request_params.current_history_list_offset = 0;
   request_params.current_history_list_length = 1;
-  frame()->Navigate(common_params, StartNavigationParams(), request_params);
+  frame()->Navigate(common_params, request_params);
 
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
@@ -2225,8 +2212,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   request_params.current_history_list_length = 2;
   request_params.current_history_list_offset = 1;
   request_params.pending_history_list_offset = 2;
-  frame()->Navigate(CommonNavigationParams(), StartNavigationParams(),
-                    request_params);
+  frame()->Navigate(CommonNavigationParams(), request_params);
 
   // The history list in RenderView should have been updated.
   EXPECT_EQ(1, view()->HistoryBackListCount());

@@ -89,26 +89,6 @@ CommonNavigationParams::CommonNavigationParams(
 CommonNavigationParams::~CommonNavigationParams() {
 }
 
-StartNavigationParams::StartNavigationParams()
-    : transferred_request_child_id(-1),
-      transferred_request_request_id(-1) {
-}
-
-StartNavigationParams::StartNavigationParams(
-    const std::string& extra_headers,
-    int transferred_request_child_id,
-    int transferred_request_request_id)
-    : extra_headers(extra_headers),
-      transferred_request_child_id(transferred_request_child_id),
-      transferred_request_request_id(transferred_request_request_id) {
-}
-
-StartNavigationParams::StartNavigationParams(
-    const StartNavigationParams& other) = default;
-
-StartNavigationParams::~StartNavigationParams() {
-}
-
 RequestNavigationParams::RequestNavigationParams()
     : is_overriding_user_agent(false),
       can_load_local_resources(false),
@@ -170,10 +150,8 @@ RequestNavigationParams::~RequestNavigationParams() {
 
 NavigationParams::NavigationParams(
     const CommonNavigationParams& common_params,
-    const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params)
     : common_params(common_params),
-      start_params(start_params),
       request_params(request_params) {
 }
 

@@ -20,8 +20,6 @@ RequestExtraData::RequestExtraData()
       allow_download_(true),
       transition_type_(ui::PAGE_TRANSITION_LINK),
       should_replace_current_entry_(false),
-      transferred_request_child_id_(-1),
-      transferred_request_request_id_(-1),
       service_worker_provider_id_(kInvalidServiceWorkerProviderId),
       originated_from_service_worker_(false),
       initiated_in_secure_context_(false),
@@ -41,8 +39,6 @@ void RequestExtraData::CopyToResourceRequest(ResourceRequest* request) const {
   request->allow_download = allow_download_;
   request->transition_type = transition_type_;
   request->should_replace_current_entry = should_replace_current_entry_;
-  request->transferred_request_child_id = transferred_request_child_id_;
-  request->transferred_request_request_id = transferred_request_request_id_;
   request->service_worker_provider_id = service_worker_provider_id_;
   request->originated_from_service_worker = originated_from_service_worker_;
 
