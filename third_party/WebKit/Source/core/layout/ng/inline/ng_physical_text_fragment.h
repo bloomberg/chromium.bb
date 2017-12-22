@@ -106,6 +106,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                                    TextShapeResult()};
   }
 
+  bool IsLineBreak() const;
+
  private:
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
