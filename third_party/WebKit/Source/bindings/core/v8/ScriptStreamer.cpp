@@ -360,9 +360,9 @@ void ScriptStreamer::StreamingCompleteOnBackgroundThread() {
 
   // notifyFinished might already be called, or it might be called in the
   // future (if the parsing finishes earlier because of a parse error).
-  loading_task_runner_->PostTask(
-      FROM_HERE, CrossThreadBind(&ScriptStreamer::StreamingComplete,
-                                 WrapCrossThreadPersistent(this)));
+  PostCrossThreadTask(*loading_task_runner_, FROM_HERE,
+                      CrossThreadBind(&ScriptStreamer::StreamingComplete,
+                                      WrapCrossThreadPersistent(this)));
 
   // The task might delete ScriptStreamer, so it's not safe to do anything
   // after posting it. Note that there's no way to guarantee that this

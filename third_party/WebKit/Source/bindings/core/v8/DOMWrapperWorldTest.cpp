@@ -82,8 +82,8 @@ void WorkerThreadFunc(WorkerBackingThread* thread,
   worlds.clear();
 
   thread->ShutdownOnBackingThread();
-  main_thread_task_runner->PostTask(FROM_HERE,
-                                    CrossThreadBind(&testing::ExitRunLoop));
+  PostCrossThreadTask(*main_thread_task_runner, FROM_HERE,
+                      CrossThreadBind(&testing::ExitRunLoop));
 }
 
 TEST(DOMWrapperWorldTest, Basic) {

@@ -80,9 +80,9 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
         WTF::Passed(std::move(queued_task.message)),
         WTF::Passed(std::move(queued_task.channels)),
         CrossThreadUnretained(GetWorkerThread()), queued_task.stack_id);
-    GetWorkerThread()
-        ->GetTaskRunner(TaskType::kPostedMessage)
-        ->PostTask(FROM_HERE, std::move(task));
+    PostCrossThreadTask(
+        *GetWorkerThread()->GetTaskRunner(TaskType::kPostedMessage), FROM_HERE,
+        std::move(task));
   }
   queued_early_tasks_.clear();
 }
@@ -101,9 +101,9 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
         CrossThreadUnretained(&WorkerObjectProxy()), std::move(message),
         WTF::Passed(std::move(channels)),
         CrossThreadUnretained(GetWorkerThread()), stack_id);
-    GetWorkerThread()
-        ->GetTaskRunner(TaskType::kPostedMessage)
-        ->PostTask(FROM_HERE, std::move(task));
+    PostCrossThreadTask(
+        *GetWorkerThread()->GetTaskRunner(TaskType::kPostedMessage), FROM_HERE,
+        std::move(task));
   } else {
     // GetWorkerThread() returns nullptr while the worker thread is being
     // created. In that case, push events into the queue and dispatch them in
@@ -164,13 +164,11 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   // The HTML spec requires to queue an error event using the DOM manipulation
   // task source.
   // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
-  GetWorkerThread()
-      ->GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(FROM_HERE,
-                 CrossThreadBind(
-                     &DedicatedWorkerObjectProxy::ProcessUnhandledException,
-                     CrossThreadUnretained(worker_object_proxy_.get()),
-                     exception_id, CrossThreadUnretained(GetWorkerThread())));
+  PostCrossThreadTask(
+      *GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      CrossThreadBind(&DedicatedWorkerObjectProxy::ProcessUnhandledException,
+                      CrossThreadUnretained(worker_object_proxy_.get()),
+                      exception_id, CrossThreadUnretained(GetWorkerThread())));
 }
 
 void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {

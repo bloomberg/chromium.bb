@@ -109,9 +109,9 @@ void MessagePort::MessageAvailable() {
   if (AtomicTestAndSetToOne(&pending_dispatch_task_))
     return;
 
-  task_runner_->PostTask(FROM_HERE,
-                         CrossThreadBind(&MessagePort::DispatchMessages,
-                                         WrapCrossThreadPersistent(this)));
+  PostCrossThreadTask(*task_runner_, FROM_HERE,
+                      CrossThreadBind(&MessagePort::DispatchMessages,
+                                      WrapCrossThreadPersistent(this)));
 }
 
 void MessagePort::start() {

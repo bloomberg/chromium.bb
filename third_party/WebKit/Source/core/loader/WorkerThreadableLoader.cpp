@@ -78,12 +78,14 @@ class WorkerThreadableLoader::AsyncTaskForwarder final
   void ForwardTask(const base::Location& location,
                    CrossThreadClosure task) override {
     DCHECK(IsMainThread());
-    worker_loading_task_runner_->PostTask(location, std::move(task));
+    PostCrossThreadTask(*worker_loading_task_runner_, location,
+                        std::move(task));
   }
   void ForwardTaskWithDoneSignal(const base::Location& location,
                                  CrossThreadClosure task) override {
     DCHECK(IsMainThread());
-    worker_loading_task_runner_->PostTask(location, std::move(task));
+    PostCrossThreadTask(*worker_loading_task_runner_, location,
+                        std::move(task));
   }
   void Abort() override { DCHECK(IsMainThread()); }
 
@@ -236,18 +238,17 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
   scoped_refptr<WebTaskRunner> worker_loading_task_runner =
       worker_global_scope_->GetTaskRunner(TaskType::kUnspecedLoading);
-  parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(
-              &MainThreadLoaderHolder::CreateAndStart,
-              WrapCrossThreadPersistent(this),
-              WrapCrossThreadPersistent(worker_thread->GetLoadingContext()),
-              std::move(worker_loading_task_runner),
-              WrapCrossThreadPersistent(
-                  worker_thread->GetWorkerThreadLifecycleContext()),
-              request, threadable_loader_options_, resource_loader_options_,
-              event_with_tasks));
+  PostCrossThreadTask(
+      *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+      CrossThreadBind(
+          &MainThreadLoaderHolder::CreateAndStart,
+          WrapCrossThreadPersistent(this),
+          WrapCrossThreadPersistent(worker_thread->GetLoadingContext()),
+          std::move(worker_loading_task_runner),
+          WrapCrossThreadPersistent(
+              worker_thread->GetWorkerThreadLifecycleContext()),
+          request, threadable_loader_options_, resource_loader_options_,
+          event_with_tasks));
 
   event_with_tasks->Wait();
 
@@ -272,19 +273,19 @@ void WorkerThreadableLoader::OverrideTimeout(
   DCHECK(!IsMainThread());
   if (!main_thread_loader_holder_)
     return;
-  parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(&MainThreadLoaderHolder::OverrideTimeout,
-                          main_thread_loader_holder_, timeout_milliseconds));
+  PostCrossThreadTask(
+      *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+      CrossThreadBind(&MainThreadLoaderHolder::OverrideTimeout,
+                      main_thread_loader_holder_, timeout_milliseconds));
 }
 
 void WorkerThreadableLoader::Cancel() {
   DCHECK(!IsMainThread());
   if (main_thread_loader_holder_) {
-    parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
-        ->PostTask(FROM_HERE, CrossThreadBind(&MainThreadLoaderHolder::Cancel,
-                                              main_thread_loader_holder_));
+    PostCrossThreadTask(
+        *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+        CrossThreadBind(&MainThreadLoaderHolder::Cancel,
+                        main_thread_loader_holder_));
     main_thread_loader_holder_ = nullptr;
   }
 
@@ -314,10 +315,10 @@ void WorkerThreadableLoader::DidStart(
   DCHECK(main_thread_loader_holder);
   if (!client_) {
     // The thread is terminating.
-    parent_frame_task_runners_->Get(TaskType::kUnspecedLoading)
-        ->PostTask(FROM_HERE, CrossThreadBind(&MainThreadLoaderHolder::Cancel,
-                                              WrapCrossThreadPersistent(
-                                                  main_thread_loader_holder)));
+    PostCrossThreadTask(
+        *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+        CrossThreadBind(&MainThreadLoaderHolder::Cancel,
+                        WrapCrossThreadPersistent(main_thread_loader_holder)));
     return;
   }
 

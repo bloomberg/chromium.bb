@@ -128,23 +128,22 @@ void WorkerThread::EvaluateClassicScript(
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsMainThread());
-  GetTaskRunner(TaskType::kUnthrottled)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
-                          CrossThreadUnretained(this), script_url, source_code,
-                          WTF::Passed(std::move(cached_meta_data)), stack_id));
+  PostCrossThreadTask(
+      *GetTaskRunner(TaskType::kUnthrottled), FROM_HERE,
+      CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
+                      CrossThreadUnretained(this), script_url, source_code,
+                      WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
 void WorkerThread::ImportModuleScript(
     const KURL& script_url,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK(IsMainThread());
-  GetTaskRunner(TaskType::kUnthrottled)
-      ->PostTask(FROM_HERE, CrossThreadBind(
-                                &WorkerThread::ImportModuleScriptOnWorkerThread,
-                                CrossThreadUnretained(this), script_url,
-                                credentials_mode));
+  PostCrossThreadTask(
+      *GetTaskRunner(TaskType::kUnthrottled), FROM_HERE,
+      CrossThreadBind(&WorkerThread::ImportModuleScriptOnWorkerThread,
+                      CrossThreadUnretained(this), script_url,
+                      credentials_mode));
 }
 
 void WorkerThread::Terminate() {
@@ -247,11 +246,10 @@ void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
     if (GetIsolate() && thread_state_ != ThreadState::kReadyToShutdown)
       inspector_task_runner_->InterruptAndRunAllTasksDontWait(GetIsolate());
   }
-  GetTaskRunner(TaskType::kUnthrottled)
-      ->PostTask(FROM_HERE,
-                 CrossThreadBind(
-                     &WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread,
-                     CrossThreadUnretained(this)));
+  PostCrossThreadTask(
+      *GetTaskRunner(TaskType::kUnthrottled), FROM_HERE,
+      CrossThreadBind(&WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread,
+                      CrossThreadUnretained(this)));
 }
 
 void WorkerThread::StartRunningDebuggerTasksOnPauseOnWorkerThread() {
