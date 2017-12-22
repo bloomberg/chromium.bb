@@ -137,14 +137,6 @@ int32_t WebRtcAudioDeviceNotImpl::StereoRecording(bool* enabled) const {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceNotImpl::SetAGC(bool enable) {
-  return 0;
-}
-
-bool WebRtcAudioDeviceNotImpl::AGC() const {
-  return true;
-}
-
 bool WebRtcAudioDeviceNotImpl::BuiltInAECIsAvailable() const {
   return false;
 }
