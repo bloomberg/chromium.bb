@@ -196,10 +196,6 @@ const base::Feature kMojoInputMessages{"MojoInputMessages",
 const base::Feature kMojoSessionStorage{"MojoSessionStorage",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables/disables hardware video encode acceleration using Mojo (falls back).
-const base::Feature kMojoVideoEncodeAccelerator{
-    "MojoVideoEncodeAccelerator", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // ES6 Modules dynamic imports.
 const base::Feature kModuleScriptsDynamicImport{
     "ModuleScriptsDynamicImport", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -531,9 +531,6 @@ extern const char kMhtmlGeneratorOptionDescription[];
 extern const char kMhtmlSkipNostoreMain[];
 extern const char kMhtmlSkipNostoreAll[];
 
-extern const char kMojoVideoEncodeAcceleratorName[];
-extern const char kMojoVideoEncodeAcceleratorDescription[];
-
 extern const char kModuleScriptsDynamicImportName[];
 extern const char kModuleScriptsDynamicImportDescription[];
 
