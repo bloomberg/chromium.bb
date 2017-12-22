@@ -49,36 +49,35 @@ class PredicateWrapper {
   // Return true if the given cookie should be deleted.
   bool Predicate(const net::CanonicalCookie& cookie) {
     // Ignore begin/end times; they're handled by method args.
-    bool result = true;
+    // Deleted cookies must satisfy all conditions, so if any of the
+    // below matches fail return false early.
 
     // Delete if the cookie is not in excluding_domains_.
-    if (use_excluding_domains_ && result)
-      result &= !DomainMatches(cookie, excluding_domains_);
+    if (use_excluding_domains_ && DomainMatches(cookie, excluding_domains_))
+      return false;
 
     // Delete if the cookie is in including_domains_.
-    if (use_including_domains_ && result)
-      result &= DomainMatches(cookie, including_domains_);
+    if (use_including_domains_ && !DomainMatches(cookie, including_domains_))
+      return false;
 
     // Delete if the cookie has a specified name.
-    if (use_cookie_name_ && result)
-      result &= (cookie_name_ == cookie.Name());
+    if (use_cookie_name_ && !(cookie_name_ == cookie.Name()))
+      return false;
 
     // Delete if the cookie matches the URL.
-    if (use_url_ && result)
-      result &= cookie.IncludeForRequestURL(url_, options_);
+    if (use_url_ && !cookie.IncludeForRequestURL(url_, options_))
+      return false;
 
     // Delete if the cookie is not the correct persistent or session type.
     if (session_control_ !=
             network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL &&
-        result) {
-      // Relies on the assumption that there are only three values possible for
-      // session_control.
-      result &=
-          (cookie.IsPersistent() ==
-           (session_control_ ==
-            network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES));
+        (cookie.IsPersistent() !=
+         (session_control_ ==
+          network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES))) {
+      return false;
     }
-    return result;
+
+    return true;
   }
 
  private:
