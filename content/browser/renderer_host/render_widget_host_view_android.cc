@@ -2308,6 +2308,7 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(
     OnDidNotProduceFrame(
         viz::BeginFrameAck(args.source_id, args.sequence_number, false));
   }
+  host_->ProgressFling(args.frame_time);
 }
 
 const viz::BeginFrameArgs& RenderWidgetHostViewAndroid::LastUsedBeginFrameArgs()
