@@ -7,6 +7,7 @@
 
 // IPC messages for resource loading.
 //
+// WE ARE DEPRECATING THIS FILE. DO NOT ADD A NEW MESSAGE.
 // NOTE: All messages must send an |int request_id| as their first parameter.
 
 #include <stdint.h>
@@ -258,110 +259,5 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
   IPC_STRUCT_TRAITS_MEMBER(ssl_info)
 IPC_STRUCT_TRAITS_END()
-
-// Resource messages sent from the browser to the renderer.
-
-// Sent when the headers are available for a resource request.
-IPC_MESSAGE_CONTROL2(ResourceMsg_ReceivedResponse,
-                     int /* request_id */,
-                     content::ResourceResponseHead)
-
-// Sent when cached metadata from a resource request is ready.
-IPC_MESSAGE_CONTROL2(ResourceMsg_ReceivedCachedMetadata,
-                     int /* request_id */,
-                     std::vector<uint8_t> /* data */)
-
-// Sent as upload progress is being made.
-IPC_MESSAGE_CONTROL3(ResourceMsg_UploadProgress,
-                     int /* request_id */,
-                     int64_t /* position */,
-                     int64_t /* size */)
-
-// Sent when the request has been redirected.  The receiver is expected to
-// respond with either a FollowRedirect message (if the redirect is to be
-// followed) or a CancelRequest message (if it should not be followed).
-IPC_MESSAGE_CONTROL3(ResourceMsg_ReceivedRedirect,
-                     int /* request_id */,
-                     net::RedirectInfo /* redirect_info */,
-                     content::ResourceResponseHead)
-
-// Sent to set the shared memory buffer to be used to transmit response data to
-// the renderer.  Subsequent DataReceived messages refer to byte ranges in the
-// shared memory buffer.  The shared memory buffer should be retained by the
-// renderer until the resource request completes.
-//
-// NOTE: The shared memory handle should already be mapped into the process
-// that receives this message.
-IPC_MESSAGE_CONTROL3(ResourceMsg_SetDataBuffer,
-                     int /* request_id */,
-                     base::SharedMemoryHandle /* shm_handle */,
-                     int /* shm_size */)
-
-// Sent when some data from a resource request is ready.  The data offset and
-// length specify a byte range into the shared memory buffer provided by the
-// SetDataBuffer message.
-IPC_MESSAGE_CONTROL4(ResourceMsg_DataReceived,
-                     int /* request_id */,
-                     int /* data_offset */,
-                     int /* data_length */,
-                     int /* encoded_data_length */)
-
-// Sent when some data from a resource request has been downloaded to
-// file. This is only called in the 'download_to_file' case and replaces
-// ResourceMsg_DataReceived in the call sequence in that case.
-IPC_MESSAGE_CONTROL3(ResourceMsg_DataDownloaded,
-                     int /* request_id */,
-                     int /* data_len */,
-                     int /* encoded_data_length */)
-
-// Sent when the request has been completed.
-IPC_MESSAGE_CONTROL2(ResourceMsg_RequestComplete,
-                     int /* request_id */,
-                     network::URLLoaderCompletionStatus)
-
-// Resource messages sent from the renderer to the browser.
-
-// Makes a resource request via the browser.
-IPC_MESSAGE_CONTROL4(
-    ResourceHostMsg_RequestResource,
-    int /* routing_id */,
-    int /* request_id */,
-    content::ResourceRequest,
-    net::MutableNetworkTrafficAnnotationTag /* network_traffic_annotation */)
-
-// Cancels a resource request with the ID given as the parameter.
-IPC_MESSAGE_CONTROL1(ResourceHostMsg_CancelRequest,
-                     int /* request_id */)
-
-// Follows a redirect that occured for the resource request with the ID given
-// as the parameter.
-IPC_MESSAGE_CONTROL1(ResourceHostMsg_FollowRedirect,
-                     int /* request_id */)
-
-// Makes a synchronous resource request via the browser.
-IPC_SYNC_MESSAGE_ROUTED2_1(ResourceHostMsg_SyncLoad,
-                           int /* request_id */,
-                           content::ResourceRequest,
-                           content::SyncLoadResult)
-
-// Sent when the renderer process is done processing a DataReceived
-// message.
-IPC_MESSAGE_CONTROL1(ResourceHostMsg_DataReceived_ACK,
-                     int /* request_id */)
-
-// Sent by the renderer process to acknowledge receipt of a
-// UploadProgress message.
-IPC_MESSAGE_CONTROL1(ResourceHostMsg_UploadProgress_ACK,
-                     int /* request_id */)
-
-// Sent when the renderer process deletes a resource loader.
-IPC_MESSAGE_CONTROL1(ResourceHostMsg_ReleaseDownloadedFile,
-                     int /* request_id */)
-
-// Sent by the renderer when a resource request changes priority.
-IPC_MESSAGE_CONTROL3(ResourceHostMsg_DidChangePriority,
-                     int /* request_id */,
-                     net::RequestPriority,
-                     int /* intra_priority_value */)
 
 #endif  // CONTENT_COMMON_RESOURCE_MESSAGES_H_

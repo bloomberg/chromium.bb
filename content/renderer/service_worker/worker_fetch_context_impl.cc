@@ -125,8 +125,8 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread(
   DCHECK(loading_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!resource_dispatcher_);
   DCHECK(!binding_.is_bound());
-  resource_dispatcher_ = std::make_unique<ResourceDispatcher>(
-      nullptr, std::move(loading_task_runner));
+  resource_dispatcher_ =
+      std::make_unique<ResourceDispatcher>(std::move(loading_task_runner));
   resource_dispatcher_->set_terminate_sync_load_event(
       &terminate_sync_load_event_);
 

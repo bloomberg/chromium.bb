@@ -8,7 +8,6 @@
 
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/resource_messages.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/url_response_body_consumer.h"
 #include "net/url_request/redirect_info.h"
@@ -144,10 +143,15 @@ void URLLoaderClientImpl::SetDefersLoading() {
 
 void URLLoaderClientImpl::UnsetDefersLoading() {
   is_deferred_ = false;
+
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&URLLoaderClientImpl::FlushDeferredMessages,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void URLLoaderClientImpl::FlushDeferredMessages() {
-  DCHECK(!is_deferred_);
+  if (is_deferred_)
+    return;
   std::vector<std::unique_ptr<DeferredMessage>> messages;
   messages.swap(deferred_messages_);
   bool has_completion_message = false;

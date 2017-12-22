@@ -77,7 +77,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       is_external_request_(false),
       cors_preflight_policy_(
           network::mojom::CORSPreflightPolicy::kConsiderPreflight),
-      loading_ipc_type_(WebURLRequest::LoadingIPCType::kMojo),
       is_same_document_navigation_(false),
       input_perf_metric_report_policy_(
           InputToLoadPerfMetricReportPolicy::kNoReport),
@@ -119,7 +118,6 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   ui_start_time_ = data->ui_start_time_;
   is_external_request_ = data->is_external_request_;
   cors_preflight_policy_ = data->cors_preflight_policy_;
-  loading_ipc_type_ = data->loading_ipc_type_;
   input_perf_metric_report_policy_ = data->input_perf_metric_report_policy_;
   redirect_status_ = data->redirect_status_;
 }
@@ -206,7 +204,6 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->ui_start_time_ = ui_start_time_;
   data->is_external_request_ = is_external_request_;
   data->cors_preflight_policy_ = cors_preflight_policy_;
-  data->loading_ipc_type_ = loading_ipc_type_;
   data->input_perf_metric_report_policy_ = input_perf_metric_report_policy_;
   data->redirect_status_ = redirect_status_;
   return data;

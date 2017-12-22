@@ -15,7 +15,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -24,7 +23,6 @@
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
-#include "content/common/resource_messages.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_request.h"
@@ -34,8 +32,6 @@
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/loader/resource_scheduling_filter.h"
-#include "content/renderer/loader/shared_memory_received_data_factory.h"
 #include "content/renderer/loader/site_isolation_stats_gatherer.h"
 #include "content/renderer/loader/sync_load_context.h"
 #include "content/renderer/loader/sync_load_response.h"
@@ -57,14 +53,6 @@ void RemoteToLocalTimeTicks(
     base::TimeTicks* time) {
   RemoteTimeTicks remote_time = RemoteTimeTicks::FromTimeTicks(*time);
   *time = converter.ToLocalTimeTicks(remote_time).ToTimeTicks();
-}
-
-void CrashOnMapFailure() {
-#if defined(OS_WIN)
-  DWORD last_err = GetLastError();
-  base::debug::Alias(&last_err);
-#endif
-  CHECK(false);
 }
 
 void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
@@ -121,51 +109,12 @@ int ResourceDispatcher::MakeRequestID() {
 }
 
 ResourceDispatcher::ResourceDispatcher(
-    IPC::Sender* sender,
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
-    : message_sender_(sender),
-      delegate_(nullptr),
-      io_timestamp_(base::TimeTicks()),
+    : delegate_(nullptr),
       thread_task_runner_(thread_task_runner),
       weak_factory_(this) {}
 
 ResourceDispatcher::~ResourceDispatcher() {
-}
-
-bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
-  if (!IsResourceDispatcherMessage(message)) {
-    return false;
-  }
-
-  int request_id;
-
-  base::PickleIterator iter(message);
-  if (!iter.ReadInt(&request_id)) {
-    NOTREACHED() << "malformed resource message";
-    return true;
-  }
-
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info) {
-    // Release resources in the message if it is a data message.
-    ReleaseResourcesInDataMessage(message);
-    return true;
-  }
-
-  if (request_info->is_deferred) {
-    request_info->deferred_message_queue.push_back(new IPC::Message(message));
-    return true;
-  }
-
-  // Make sure any deferred messages are dispatched before we dispatch more.
-  if (!request_info->deferred_message_queue.empty()) {
-    request_info->deferred_message_queue.push_back(new IPC::Message(message));
-    FlushDeferredMessages(request_id);
-    return true;
-  }
-
-  DispatchMessage(message);
-  return true;
 }
 
 ResourceDispatcher::PendingRequestInfo*
@@ -186,13 +135,6 @@ void ResourceDispatcher::OnUploadProgress(int request_id,
     return;
 
   request_info->peer->OnUploadProgress(position, size);
-
-  // URLLoaderClientImpl has its own acknowledgement, and doesn't need the IPC
-  // message here.
-  if (!request_info->url_loader) {
-    // Acknowledge receipt
-    message_sender_->Send(new ResourceHostMsg_UploadProgress_ACK(request_id));
-  }
 }
 
 void ResourceDispatcher::OnReceivedResponse(
@@ -201,7 +143,7 @@ void ResourceDispatcher::OnReceivedResponse(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->response_start = ConsumeIOTimestamp();
+  request_info->response_start = base::TimeTicks::Now();
 
   if (delegate_) {
     std::unique_ptr<RequestPeer> new_peer = delegate_->OnReceivedResponse(
@@ -241,80 +183,6 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
   }
 }
 
-void ResourceDispatcher::OnSetDataBuffer(int request_id,
-                                         base::SharedMemoryHandle shm_handle,
-                                         int shm_size) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnSetDataBuffer");
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
-    return;
-
-  bool shm_valid = base::SharedMemory::IsHandleValid(shm_handle);
-  CHECK((shm_valid && shm_size > 0) || (!shm_valid && !shm_size));
-
-  request_info->buffer.reset(
-      new base::SharedMemory(shm_handle, true));  // read only
-  request_info->received_data_factory =
-      base::MakeRefCounted<SharedMemoryReceivedDataFactory>(
-          message_sender_, request_id, request_info->buffer);
-
-  bool ok = request_info->buffer->Map(shm_size);
-  if (!ok) {
-    base::SharedMemoryHandle shm_handle_copy = shm_handle;
-    base::debug::Alias(&shm_handle_copy);
-
-    CrashOnMapFailure();
-    return;
-  }
-
-  // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
-  CHECK_GE(shm_size, 0);
-  CHECK_LE(shm_size, 512 * 1024);
-  request_info->buffer_size = shm_size;
-}
-
-void ResourceDispatcher::OnReceivedData(int request_id,
-                                        int data_offset,
-                                        int data_length,
-                                        int encoded_data_length) {
-  TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedData");
-  DCHECK_GT(data_length, 0);
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  bool send_ack = true;
-  if (request_info && data_length > 0) {
-    CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
-    CHECK_GE(request_info->buffer_size, data_offset + data_length);
-
-    const char* data_start = static_cast<char*>(request_info->buffer->memory());
-    CHECK(data_start);
-    CHECK(data_start + data_offset);
-    const char* data_ptr = data_start + data_offset;
-
-    // Check whether this response data is compliant with our cross-site
-    // document blocking policy. We only do this for the first chunk of data.
-    if (request_info->site_isolation_metadata.get()) {
-      SiteIsolationStatsGatherer::OnReceivedFirstChunk(
-          request_info->site_isolation_metadata, data_ptr, data_length);
-      request_info->site_isolation_metadata.reset();
-    }
-
-    std::unique_ptr<RequestPeer::ReceivedData> data =
-        request_info->received_data_factory->Create(data_offset, data_length);
-    // |data| takes care of ACKing.
-    send_ack = false;
-    request_info->peer->OnReceivedData(std::move(data));
-  }
-
-  // Get the request info again as the client callback may modify the info.
-  request_info = GetPendingRequestInfo(request_id);
-  if (request_info && encoded_data_length > 0)
-    request_info->peer->OnTransferSizeUpdated(encoded_data_length);
-
-  // Acknowledge the reception of this data.
-  if (send_ack)
-    message_sender_->Send(new ResourceHostMsg_DataReceived_ACK(request_id));
-}
-
 void ResourceDispatcher::OnDownloadedData(int request_id,
                                           int data_len,
                                           int encoded_data_length) {
@@ -333,7 +201,7 @@ void ResourceDispatcher::OnReceivedRedirect(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->response_start = ConsumeIOTimestamp();
+  request_info->response_start = base::TimeTicks::Now();
 
   ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
@@ -349,8 +217,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info->response_url = redirect_info.new_url;
     request_info->response_method = redirect_info.new_method;
     request_info->response_referrer = GURL(redirect_info.new_referrer);
-    request_info->pending_redirect_message.reset(
-        new ResourceHostMsg_FollowRedirect(request_id));
+    request_info->has_pending_redirect = true;
     if (!request_info->is_deferred) {
       FollowPendingRedirect(request_info);
     }
@@ -361,14 +228,9 @@ void ResourceDispatcher::OnReceivedRedirect(
 
 void ResourceDispatcher::FollowPendingRedirect(
     PendingRequestInfo* request_info) {
-  IPC::Message* msg = request_info->pending_redirect_message.release();
-  if (msg) {
-    if (request_info->url_loader) {
-      request_info->url_loader->FollowRedirect();
-      delete msg;
-    } else {
-      message_sender_->Send(msg);
-    }
+  if (request_info->has_pending_redirect) {
+    request_info->has_pending_redirect = false;
+    request_info->url_loader->FollowRedirect();
   }
 }
 
@@ -380,11 +242,8 @@ void ResourceDispatcher::OnRequestComplete(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->completion_time = ConsumeIOTimestamp();
+  request_info->completion_time = base::TimeTicks::Now();
   request_info->buffer.reset();
-  if (request_info->received_data_factory)
-    request_info->received_data_factory->Stop();
-  request_info->received_data_factory = nullptr;
   request_info->buffer_size = 0;
 
   RequestPeer* peer = request_info->peer.get();
@@ -425,15 +284,6 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   if (it == pending_requests_.end())
     return false;
 
-  PendingRequestInfo* request_info = it->second.get();
-
-  // |url_loader_client| releases the downloaded file. Otherwise (i.e., we
-  // are using Chrome IPC), we should release it here.
-  bool release_downloaded_file =
-      request_info->download_to_file && !it->second->url_loader_client;
-
-  ReleaseResourcesInMessageQueue(&request_info->deferred_message_queue);
-
   // Cancel loading.
   it->second->url_loader = nullptr;
   // Clear URLLoaderClient to stop receiving further Mojo IPC from the browser
@@ -445,14 +295,6 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   // handled.
   thread_task_runner_->DeleteSoon(FROM_HERE, it->second.release());
   pending_requests_.erase(it);
-
-  if (release_downloaded_file) {
-    message_sender_->Send(
-        new ResourceHostMsg_ReleaseDownloadedFile(request_id));
-  }
-
-  if (resource_scheduling_filter_.get())
-    resource_scheduling_filter_->ClearRequestIdTaskRunner(request_id);
 
   return true;
 }
@@ -466,9 +308,6 @@ void ResourceDispatcher::Cancel(int request_id) {
 
   // Cancel the request if it didn't complete, and clean it up so the bridge
   // will receive no more messages.
-  const PendingRequestInfo& info = *it->second;
-  if (info.completion_time.is_null() && !info.url_loader)
-    message_sender_->Send(new ResourceHostMsg_CancelRequest(request_id));
   RemovePendingRequest(request_id);
 }
 
@@ -480,19 +319,12 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
   }
   if (value) {
     request_info->is_deferred = value;
-    if (request_info->url_loader_client)
-      request_info->url_loader_client->SetDefersLoading();
+    request_info->url_loader_client->SetDefersLoading();
   } else if (request_info->is_deferred) {
     request_info->is_deferred = false;
-
-    if (request_info->url_loader_client)
-      request_info->url_loader_client->UnsetDefersLoading();
+    request_info->url_loader_client->UnsetDefersLoading();
 
     FollowPendingRedirect(request_info);
-
-    thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ResourceDispatcher::FlushDeferredMessages,
-                                  weak_factory_.GetWeakPtr(), request_id));
   }
 }
 
@@ -501,12 +333,7 @@ void ResourceDispatcher::DidChangePriority(int request_id,
                                            int intra_priority_value) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   DCHECK(request_info);
-  if (request_info->url_loader) {
-    request_info->url_loader->SetPriority(new_priority, intra_priority_value);
-  } else {
-    message_sender_->Send(new ResourceHostMsg_DidChangePriority(
-        request_id, new_priority, intra_priority_value));
-  }
+  request_info->url_loader->SetPriority(new_priority, intra_priority_value);
 }
 
 void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
@@ -544,72 +371,17 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
 }
 
-void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(ResourceDispatcher, message)
-    IPC_MESSAGE_HANDLER(ResourceMsg_UploadProgress, OnUploadProgress)
-    IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedResponse, OnReceivedResponse)
-    IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedCachedMetadata,
-                        OnReceivedCachedMetadata)
-    IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
-    IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBuffer, OnSetDataBuffer)
-    IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)
-    IPC_MESSAGE_HANDLER(ResourceMsg_DataDownloaded, OnDownloadedData)
-    IPC_MESSAGE_HANDLER(ResourceMsg_RequestComplete, OnRequestComplete)
-  IPC_END_MESSAGE_MAP()
-}
-
-void ResourceDispatcher::FlushDeferredMessages(int request_id) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info || request_info->is_deferred)
-    return;
-
-  if (request_info->url_loader) {
-    DCHECK(request_info->deferred_message_queue.empty());
-    request_info->url_loader_client->FlushDeferredMessages();
-    return;
-  }
-
-  // Because message handlers could result in request_info being destroyed,
-  // we need to work with a stack reference to the deferred queue.
-  MessageQueue q;
-  q.swap(request_info->deferred_message_queue);
-  while (!q.empty()) {
-    IPC::Message* m = q.front();
-    q.pop_front();
-    DispatchMessage(*m);
-    delete m;
-    // We need to find the request again in the list as it may have completed
-    // by now and the request_info instance above may be invalid.
-    request_info = GetPendingRequestInfo(request_id);
-    if (!request_info) {
-      // The recipient is gone, the messages won't be handled and
-      // resources they might hold won't be released. Explicitly release
-      // them from here so that they won't leak.
-      ReleaseResourcesInMessageQueue(&q);
-      return;
-    }
-    // If this request is deferred in the context of the above message, then
-    // we should honor the same and stop dispatching further messages.
-    if (request_info->is_deferred) {
-      request_info->deferred_message_queue.swap(q);
-      return;
-    }
-  }
-}
-
 void ResourceDispatcher::StartSync(
     std::unique_ptr<ResourceRequest> request,
     int routing_id,
     const url::Origin& frame_origin,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SyncLoadResponse* response,
-    blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     double timeout) {
   CheckSchemeForReferrerPolicy(*request);
 
-  if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
     mojom::URLLoaderFactoryPtrInfo url_loader_factory_copy;
     url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_copy));
     base::WaitableEvent completed_event(
@@ -634,32 +406,6 @@ void ResourceDispatcher::StartSync(
                        base::Unretained(terminate_sync_load_event_), timeout));
 
     completed_event.Wait();
-  } else {
-    SyncLoadResult result;
-    IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
-        routing_id, MakeRequestID(), *request, &result);
-
-    // NOTE: This may pump events (see RenderThread::Send).
-    if (!message_sender_->Send(msg)) {
-      response->error_code = net::ERR_FAILED;
-      return;
-    }
-
-    response->error_code = result.error_code;
-    response->url = result.final_url;
-    response->info.headers = result.headers;
-    response->info.mime_type = result.mime_type;
-    response->info.charset = result.charset;
-    response->info.request_time = result.request_time;
-    response->info.response_time = result.response_time;
-    response->info.load_timing = result.load_timing;
-    response->info.devtools_info = result.devtools_info;
-    response->data.swap(result.data);
-    response->info.download_file_path = result.download_file_path;
-    response->info.socket_address = result.socket_address;
-    response->info.encoded_data_length = result.encoded_data_length;
-    response->info.encoded_body_length = result.encoded_body_length;
-  }
 }
 
 int ResourceDispatcher::StartAsync(
@@ -670,7 +416,6 @@ int ResourceDispatcher::StartAsync(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
     std::unique_ptr<RequestPeer> peer,
-    blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
@@ -682,11 +427,6 @@ int ResourceDispatcher::StartAsync(
       std::move(peer), request->resource_type, request->render_frame_id,
       frame_origin, request->url, request->method, request->referrer,
       request->download_to_file);
-
-  if (resource_scheduling_filter_.get() && loading_task_runner) {
-    resource_scheduling_filter_->SetRequestIdTaskRunner(request_id,
-                                                        loading_task_runner);
-  }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       loading_task_runner ? loading_task_runner : thread_task_runner_;
@@ -703,35 +443,27 @@ int ResourceDispatcher::StartAsync(
     return request_id;
   }
 
-  if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        loading_task_runner ? loading_task_runner : thread_task_runner_;
-    std::unique_ptr<URLLoaderClientImpl> client(
-        new URLLoaderClientImpl(request_id, this, task_runner));
+  std::unique_ptr<URLLoaderClientImpl> client(
+      new URLLoaderClientImpl(request_id, this, task_runner));
 
-    uint32_t options = mojom::kURLLoadOptionNone;
-    // TODO(jam): use this flag for ResourceDispatcherHost code path once
-    // MojoLoading is the only IPC code path.
-    if (base::FeatureList::IsEnabled(features::kNetworkService) &&
-        request->fetch_request_context_type != REQUEST_CONTEXT_TYPE_FETCH) {
-      // MIME sniffing should be disabled for a request initiated by fetch().
-      options |= mojom::kURLLoadOptionSniffMimeType;
-    }
-    if (is_sync)
-      options |= mojom::kURLLoadOptionSynchronous;
-
-    std::unique_ptr<ThrottlingURLLoader> url_loader =
-        ThrottlingURLLoader::CreateLoaderAndStart(
-            url_loader_factory, std::move(throttles), routing_id, request_id,
-            options, *request, client.get(), traffic_annotation,
-            std::move(task_runner));
-    pending_requests_[request_id]->url_loader = std::move(url_loader);
-    pending_requests_[request_id]->url_loader_client = std::move(client);
-  } else {
-    message_sender_->Send(new ResourceHostMsg_RequestResource(
-        routing_id, request_id, *request,
-        net::MutableNetworkTrafficAnnotationTag(traffic_annotation)));
+  uint32_t options = mojom::kURLLoadOptionNone;
+  // TODO(jam): use this flag for ResourceDispatcherHost code path once
+  // MojoLoading is the only IPC code path.
+  if (base::FeatureList::IsEnabled(features::kNetworkService) &&
+      request->fetch_request_context_type != REQUEST_CONTEXT_TYPE_FETCH) {
+    // MIME sniffing should be disabled for a request initiated by fetch().
+    options |= mojom::kURLLoadOptionSniffMimeType;
   }
+  if (is_sync)
+    options |= mojom::kURLLoadOptionSynchronous;
+
+  std::unique_ptr<ThrottlingURLLoader> url_loader =
+      ThrottlingURLLoader::CreateLoaderAndStart(
+          url_loader_factory, std::move(throttles), routing_id, request_id,
+          options, *request, client.get(), traffic_annotation,
+          std::move(task_runner));
+  pending_requests_[request_id]->url_loader = std::move(url_loader);
+  pending_requests_[request_id]->url_loader_client = std::move(client);
 
   return request_id;
 }
@@ -791,14 +523,6 @@ base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(
   return base::TimeTicks::FromInternalValue(result);
 }
 
-base::TimeTicks ResourceDispatcher::ConsumeIOTimestamp() {
-  if (io_timestamp_ == base::TimeTicks())
-    return base::TimeTicks::Now();
-  base::TimeTicks result = io_timestamp_;
-  io_timestamp_ = base::TimeTicks();
-  return result;
-}
-
 void ResourceDispatcher::ContinueForNavigation(
     int request_id,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
@@ -822,65 +546,6 @@ void ResourceDispatcher::ContinueForNavigation(
     return;
 
   client_ptr->Bind(std::move(url_loader_client_endpoints));
-}
-
-// static
-bool ResourceDispatcher::IsResourceDispatcherMessage(
-    const IPC::Message& message) {
-  switch (message.type()) {
-    case ResourceMsg_UploadProgress::ID:
-    case ResourceMsg_ReceivedResponse::ID:
-    case ResourceMsg_ReceivedCachedMetadata::ID:
-    case ResourceMsg_ReceivedRedirect::ID:
-    case ResourceMsg_SetDataBuffer::ID:
-    case ResourceMsg_DataReceived::ID:
-    case ResourceMsg_DataDownloaded::ID:
-    case ResourceMsg_RequestComplete::ID:
-      return true;
-
-    default:
-      break;
-  }
-
-  return false;
-}
-
-// static
-void ResourceDispatcher::ReleaseResourcesInDataMessage(
-    const IPC::Message& message) {
-  base::PickleIterator iter(message);
-  int request_id;
-  if (!iter.ReadInt(&request_id)) {
-    NOTREACHED() << "malformed resource message";
-    return;
-  }
-
-  // If the message contains a shared memory handle, we should close the handle
-  // or there will be a memory leak.
-  if (message.type() == ResourceMsg_SetDataBuffer::ID) {
-    base::SharedMemoryHandle shm_handle;
-    if (IPC::ParamTraits<base::SharedMemoryHandle>::Read(&message,
-                                                         &iter,
-                                                         &shm_handle)) {
-      if (base::SharedMemory::IsHandleValid(shm_handle))
-        base::SharedMemory::CloseHandle(shm_handle);
-    }
-  }
-}
-
-// static
-void ResourceDispatcher::ReleaseResourcesInMessageQueue(MessageQueue* queue) {
-  while (!queue->empty()) {
-    IPC::Message* message = queue->front();
-    ReleaseResourcesInDataMessage(*message);
-    queue->pop_front();
-    delete message;
-  }
-}
-
-void ResourceDispatcher::SetResourceSchedulingFilter(
-    scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter) {
-  resource_scheduling_filter_ = resource_scheduling_filter;
 }
 
 }  // namespace content
