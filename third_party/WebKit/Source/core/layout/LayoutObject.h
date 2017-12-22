@@ -882,8 +882,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool HasShapeOutside() const { return Style() && Style()->ShapeOutside(); }
 
-  inline bool PreservesNewline() const;
-
   // The pseudo element style can be cached or uncached.  Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
   // has no concept of changing state).
@@ -2716,13 +2714,6 @@ inline void LayoutObject::SetNeedsPositionedMovementLayout() {
 #endif
   if (!already_needed_layout)
     MarkContainerChainForLayout();
-}
-
-inline bool LayoutObject::PreservesNewline() const {
-  if (IsSVGInlineText())
-    return false;
-
-  return Style()->PreserveNewline();
 }
 
 inline void LayoutObject::SetHasBoxDecorationBackground(bool b) {
