@@ -315,4 +315,146 @@ TEST_F(SurroundingTextTest, EmptyInputElementWithChild) {
   EXPECT_TRUE(surrounding_text.Content().IsEmpty());
 }
 
+TEST_F(SurroundingTextTest, ButtonsAndParagraph) {
+  SetHTML(
+      String("<button>.</button>12345"
+             "<p id='selection'>6789 12345</p>"
+             "6789<button>.</button>"));
+
+  {
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 100);
+
+    EXPECT_EQ("12345\n6789 12345\n\n6789", surrounding_text.Content());
+    EXPECT_EQ(6u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(6u, surrounding_text.EndOffsetInContent());
+  }
+
+  {
+    EphemeralRange selection = Select(5);
+    SurroundingText surrounding_text(selection, 6);
+
+    EXPECT_EQ("89 123", surrounding_text.Content());
+    EXPECT_EQ(3u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(3u, surrounding_text.EndOffsetInContent());
+  }
+
+  {
+    EphemeralRange selection = Select(0);
+    SurroundingText surrounding_text(selection, 0);
+
+    EXPECT_TRUE(surrounding_text.Content().IsEmpty());
+  }
+
+  {
+    EphemeralRange selection = Select(5);
+    SurroundingText surrounding_text(selection, 1);
+
+    EXPECT_EQ("1", surrounding_text.Content());
+    EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(0u, surrounding_text.EndOffsetInContent());
+  }
+
+  {
+    EphemeralRange selection = Select(6);
+    SurroundingText surrounding_text(selection, 2);
+
+    EXPECT_EQ("12", surrounding_text.Content());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
+  }
+}
+
+TEST_F(SurroundingTextTest, SelectElementAndText) {
+  SetHTML(String(
+      "<select>.</select>"
+      "<div>57th Street and Lake Shore Drive</div>"
+      " <span>Chicago</span> <span id='selection'>IL</span> <span>60637</span>"
+      "<select>.</select>"));
+
+  EphemeralRange selection = Select(0);
+  SurroundingText surrounding_text(selection, 100);
+
+  EXPECT_STREQ(
+      "\xEF\xBF\xBC\n57th Street and Lake Shore Drive\nChicago IL 60637",
+      surrounding_text.Content().Utf8().data());
+  EXPECT_EQ(43u, surrounding_text.StartOffsetInContent());
+  EXPECT_EQ(43u, surrounding_text.EndOffsetInContent());
+}
+
+TEST_F(SurroundingTextTest, FieldsetElementAndText) {
+  SetHTML(
+      String("<fieldset>.</fieldset>12345<button>abc</button>"
+             "<p>6789<br><span id='selection'>12345</span></p>"
+             "6789<textarea>abc</textarea>0123<fieldset>.</fieldset>"));
+
+  EphemeralRange selection = Select(0);
+  SurroundingText surrounding_text(selection, 100);
+
+  EXPECT_EQ("\n6789\n12345\n\n6789", surrounding_text.Content());
+  EXPECT_EQ(6u, surrounding_text.StartOffsetInContent());
+  EXPECT_EQ(6u, surrounding_text.EndOffsetInContent());
+}
+
+TEST_F(SurroundingTextTest, ButtonScriptAndComment) {
+  SetHTML(
+      String("<button>.</button>"
+             "<div id='selection'>This is <!-- comment --!>a test "
+             "<script language='javascript'></script>"
+             "example<button>.</button>"));
+
+  EphemeralRange selection = Select(0);
+  SurroundingText surrounding_text(selection, 100);
+
+  EXPECT_EQ("\nThis is a test example", surrounding_text.Content());
+  EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+  EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
+}
+
+TEST_F(SurroundingTextTest, ButtonAndLongDiv) {
+  SetHTML(
+      String("<button>.</button>"
+             "<div id='selection'>012345678901234567890123456789</div>"
+             "<button>.</button>"));
+
+  EphemeralRange selection = Select(15);
+  SurroundingText surrounding_text(selection, 12);
+
+  EXPECT_EQ("901234567890", surrounding_text.Content());
+  EXPECT_EQ(6u, surrounding_text.StartOffsetInContent());
+  EXPECT_EQ(6u, surrounding_text.EndOffsetInContent());
+}
+
+TEST_F(SurroundingTextTest, EmptySurroundingTextInOptionsAndButton) {
+  SetHTML(
+      String("<option>.</option>12345"
+             "<button id='selection'>test</button>"
+             "<option>.</option>"));
+
+  {
+    EphemeralRange selection = Select(1);
+    SurroundingText surrounding_text(selection, 100);
+
+    EXPECT_TRUE(surrounding_text.Content().IsEmpty());
+  }
+
+  {
+    EphemeralRange selection = Select(3);
+    SurroundingText surrounding_text(selection, 100);
+
+    EXPECT_TRUE(surrounding_text.Content().IsEmpty());
+  }
+}
+
+TEST_F(SurroundingTextTest, SingleDotParagraph) {
+  SetHTML(String("<p id='selection'>.</p>"));
+
+  EphemeralRange selection = Select(0);
+  SurroundingText surrounding_text(selection, 2);
+
+  EXPECT_EQ("\n.", surrounding_text.Content());
+  EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+  EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
+}
+
 }  // namespace blink

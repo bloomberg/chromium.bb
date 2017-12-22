@@ -495,8 +495,6 @@ class Internals final : public ScriptWrappable {
 
   void setValueForUser(HTMLInputElement*, const String&);
 
-  String textSurroundingNode(Node*, int x, int y, unsigned long max_length);
-
   void setFocused(bool);
   void setInitialFocus(bool);
 
