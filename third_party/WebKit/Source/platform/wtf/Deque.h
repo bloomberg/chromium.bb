@@ -37,6 +37,7 @@
 
 #include "base/macros.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/ConstructTraits.h"
 #include "platform/wtf/Vector.h"
 
 namespace WTF {
@@ -498,7 +499,8 @@ inline void Deque<T, inlineCapacity, Allocator>::push_back(U&& value) {
     end_ = 0;
   else
     ++end_;
-  new (NotNull, new_element) T(std::forward<U>(value));
+  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      new_element, std::forward<U>(value));
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -509,7 +511,8 @@ inline void Deque<T, inlineCapacity, Allocator>::push_front(U&& value) {
     start_ = buffer_.capacity() - 1;
   else
     --start_;
-  new (NotNull, &buffer_.Buffer()[start_]) T(std::forward<U>(value));
+  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      &buffer_.Buffer()[start_], std::forward<U>(value));
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -521,7 +524,8 @@ inline void Deque<T, inlineCapacity, Allocator>::emplace_back(Args&&... args) {
     end_ = 0;
   else
     ++end_;
-  new (NotNull, new_element) T(std::forward<Args>(args)...);
+  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      new_element, std::forward<Args>(args)...);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -532,7 +536,8 @@ inline void Deque<T, inlineCapacity, Allocator>::emplace_front(Args&&... args) {
     start_ = buffer_.capacity() - 1;
   else
     --start_;
-  new (NotNull, &buffer_.Buffer()[start_]) T(std::forward<Args>(args)...);
+  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      &buffer_.Buffer()[start_], std::forward<Args>(args)...);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
