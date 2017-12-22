@@ -113,35 +113,39 @@ void InlineBox::ShowLineTreeForThis() const {
   GetLineLayoutItem().ContainingBlock().ShowLineTreeAndMark(this, "*");
 }
 
-void InlineBox::ShowLineTreeAndMark(const InlineBox* marked_box1,
+void InlineBox::DumpLineTreeAndMark(StringBuilder& string_builder,
+                                    const InlineBox* marked_box1,
                                     const char* marked_label1,
                                     const InlineBox* marked_box2,
                                     const char* marked_label2,
                                     const LayoutObject* obj,
                                     int depth) const {
-  int printed_characters = 0;
+  StringBuilder string_inlinebox;
   if (this == marked_box1)
-    printed_characters += fprintf(stderr, "%s", marked_label1);
+    string_inlinebox.Append(marked_label1);
   if (this == marked_box2)
-    printed_characters += fprintf(stderr, "%s", marked_label2);
+    string_inlinebox.Append(marked_label2);
   if (GetLineLayoutItem().IsEqual(obj))
-    printed_characters += fprintf(stderr, "*");
-  for (; printed_characters < depth * 2; printed_characters++)
-    fputc(' ', stderr);
+    string_inlinebox.Append("*");
+  while ((int)string_inlinebox.length() < (depth * 2))
+    string_inlinebox.Append(" ");
 
-  ShowBox(printed_characters);
+  DumpBox(string_inlinebox);
+  string_builder.Append('\n');
+  string_builder.Append(string_inlinebox);
 }
 
-void InlineBox::ShowBox(int printed_characters) const {
-  printed_characters += fprintf(stderr, "%s %p", BoxName(), this);
-  for (; printed_characters < kShowTreeCharacterOffset; printed_characters++)
-    fputc(' ', stderr);
-  fprintf(stderr, "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i\n",
-          GetLineLayoutItem().DecoratedName().Ascii().data(),
-          GetLineLayoutItem().DebugPointer(), X().ToFloat(), Y().ToFloat(),
-          Width().ToFloat(), Height().ToFloat(),
-          BaselinePosition(kAlphabeticBaseline).ToInt(),
-          BaselinePosition(kIdeographicBaseline).ToInt());
+void InlineBox::DumpBox(StringBuilder& string_inlinebox) const {
+  string_inlinebox.Append(String::Format("%s %p", BoxName(), this));
+  while (string_inlinebox.length() < kShowTreeCharacterOffset)
+    string_inlinebox.Append(" ");
+  string_inlinebox.Append(
+      String::Format("\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i",
+                     GetLineLayoutItem().DecoratedName().Ascii().data(),
+                     GetLineLayoutItem().DebugPointer(), X().ToFloat(),
+                     Y().ToFloat(), Width().ToFloat(), Height().ToFloat(),
+                     BaselinePosition(kAlphabeticBaseline).ToInt(),
+                     BaselinePosition(kIdeographicBaseline).ToInt()));
 }
 #endif
 

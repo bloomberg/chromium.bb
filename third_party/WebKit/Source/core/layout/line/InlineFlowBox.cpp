@@ -1691,17 +1691,19 @@ const char* InlineFlowBox::BoxName() const {
 
 #ifndef NDEBUG
 
-void InlineFlowBox::ShowLineTreeAndMark(const InlineBox* marked_box1,
+void InlineFlowBox::DumpLineTreeAndMark(StringBuilder& string_builder,
+                                        const InlineBox* marked_box1,
                                         const char* marked_label1,
                                         const InlineBox* marked_box2,
                                         const char* marked_label2,
                                         const LayoutObject* obj,
                                         int depth) const {
-  InlineBox::ShowLineTreeAndMark(marked_box1, marked_label1, marked_box2,
-                                 marked_label2, obj, depth);
-  for (const InlineBox* box = FirstChild(); box; box = box->NextOnLine())
-    box->ShowLineTreeAndMark(marked_box1, marked_label1, marked_box2,
-                             marked_label2, obj, depth + 1);
+  InlineBox::DumpLineTreeAndMark(string_builder, marked_box1, marked_label1,
+                                 marked_box2, marked_label2, obj, depth);
+  for (const InlineBox* box = FirstChild(); box; box = box->NextOnLine()) {
+    box->DumpLineTreeAndMark(string_builder, marked_box1, marked_label1,
+                             marked_box2, marked_label2, obj, depth + 1);
+  }
 }
 
 #endif

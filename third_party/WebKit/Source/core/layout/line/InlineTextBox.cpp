@@ -779,22 +779,21 @@ String InlineTextBox::GetText() const {
 
 #ifndef NDEBUG
 
-void InlineTextBox::ShowBox(int printed_characters) const {
+void InlineTextBox::DumpBox(StringBuilder& string_inlinetextbox) const {
   String value = GetText();
   value.Replace('\\', "\\\\");
   value.Replace('\n', "\\n");
-  printed_characters += fprintf(stderr, "%s %p", BoxName(), this);
-  for (; printed_characters < kShowTreeCharacterOffset; printed_characters++)
-    fputc(' ', stderr);
+  string_inlinetextbox.Append(String::Format("%s %p", BoxName(), this));
+  while (string_inlinetextbox.length() < kShowTreeCharacterOffset)
+    string_inlinetextbox.Append(" ");
   const LineLayoutText obj = GetLineLayoutItem();
-  printed_characters =
-      fprintf(stderr, "\t%s %p", obj.GetName(), obj.DebugPointer());
+  string_inlinetextbox.Append(
+      String::Format("\t%s %p", obj.GetName(), obj.DebugPointer()));
   const int kLayoutObjectCharacterOffset = 75;
-  for (; printed_characters < kLayoutObjectCharacterOffset;
-       printed_characters++)
-    fputc(' ', stderr);
-  fprintf(stderr, "(%d,%d) \"%s\"\n", Start(), Start() + Len(),
-          value.Utf8().data());
+  while (string_inlinetextbox.length() < kLayoutObjectCharacterOffset)
+    string_inlinetextbox.Append(" ");
+  string_inlinetextbox.Append(String::Format(
+      "(%d,%d) \"%s\"", Start(), Start() + Len(), value.Utf8().data()));
 }
 
 #endif
