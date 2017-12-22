@@ -83,7 +83,8 @@ class InlineFlowBox : public InlineBox {
 #endif
 
 #ifndef NDEBUG
-  void ShowLineTreeAndMark(const InlineBox* = nullptr,
+  void DumpLineTreeAndMark(StringBuilder&,
+                           const InlineBox* = nullptr,
                            const char* = nullptr,
                            const InlineBox* = nullptr,
                            const char* = nullptr,

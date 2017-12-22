@@ -124,8 +124,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   void ShowTreeForThis() const;
   void ShowLineTreeForThis() const;
 
-  virtual void ShowBox(int = 0) const;
-  virtual void ShowLineTreeAndMark(const InlineBox* = nullptr,
+  virtual void DumpBox(StringBuilder&) const;
+  virtual void DumpLineTreeAndMark(StringBuilder&,
+                                   const InlineBox* = nullptr,
                                    const char* = nullptr,
                                    const InlineBox* = nullptr,
                                    const char* = nullptr,

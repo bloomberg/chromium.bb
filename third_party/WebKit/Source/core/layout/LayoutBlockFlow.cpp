@@ -4768,11 +4768,14 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
                                           const InlineBox* marked_box2,
                                           const char* marked_label2,
                                           const LayoutObject* obj) const {
-  ShowLayoutObject();
+  StringBuilder string_blockflow;
+  DumpLayoutObject(string_blockflow);
   for (const RootInlineBox* root = FirstRootBox(); root;
-       root = root->NextRootBox())
-    root->ShowLineTreeAndMark(marked_box1, marked_label1, marked_box2,
-                              marked_label2, obj, 1);
+       root = root->NextRootBox()) {
+    root->DumpLineTreeAndMark(string_blockflow, marked_box1, marked_label1,
+                              marked_box2, marked_label2, obj, 1);
+  }
+  DLOG(INFO) << "\n" << string_blockflow.ToString().Utf8().data();
 }
 
 #endif

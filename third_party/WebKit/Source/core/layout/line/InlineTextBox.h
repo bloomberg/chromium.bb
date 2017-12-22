@@ -113,7 +113,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
       StringBuilder* characters_with_hyphen = nullptr) const;
 
 #ifndef NDEBUG
-  void ShowBox(int = 0) const override;
+  void DumpBox(StringBuilder&) const override;
 #endif
   const char* BoxName() const override;
   String DebugName() const override;
