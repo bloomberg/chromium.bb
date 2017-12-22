@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+
 FakeAppListModelUpdater::FakeAppListModelUpdater() {}
 
 FakeAppListModelUpdater::~FakeAppListModelUpdater() {}
@@ -17,7 +19,8 @@ void FakeAppListModelUpdater::AddItem(std::unique_ptr<ChromeAppListItem> item) {
 void FakeAppListModelUpdater::AddItemToFolder(
     std::unique_ptr<ChromeAppListItem> item,
     const std::string& folder_id) {
-  item->set_folder_id(folder_id);
+  ChromeAppListItem::TestApi test_api(item.get());
+  test_api.set_folder_id(folder_id);
   items_.push_back(std::move(item));
 }
 
@@ -34,16 +37,20 @@ void FakeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
 void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
                                                const std::string& folder_id) {
   size_t index;
-  if (FindItemIndexForTest(id, &index))
-    items_[index]->set_folder_id(folder_id);
+  if (FindItemIndexForTest(id, &index)) {
+    ChromeAppListItem::TestApi test_api(items_[index].get());
+    test_api.set_folder_id(folder_id);
+  }
 }
 
 void FakeAppListModelUpdater::SetItemPosition(
     const std::string& id,
     const syncer::StringOrdinal& new_position) {
   size_t index;
-  if (FindItemIndexForTest(id, &index))
-    items_[index]->set_position(new_position);
+  if (FindItemIndexForTest(id, &index)) {
+    ChromeAppListItem::TestApi test_api(items_[index].get());
+    test_api.set_position(new_position);
+  }
 }
 
 void FakeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {

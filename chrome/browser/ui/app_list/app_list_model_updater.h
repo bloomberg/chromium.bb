@@ -11,11 +11,27 @@
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+
+class ChromeAppListItem;
 
 // An interface to wrap AppListModel access in browser.
 class AppListModelUpdater {
  public:
+  class TestApi {
+   public:
+    explicit TestApi(AppListModelUpdater* model_updater)
+        : model_updater_(model_updater) {}
+    ~TestApi() = default;
+
+    void SetItemPosition(const std::string& id,
+                         const syncer::StringOrdinal& new_position) {
+      model_updater_->SetItemPosition(id, new_position);
+    }
+
+   private:
+    AppListModelUpdater* const model_updater_;
+  };
+
   // For AppListModel:
   virtual void AddItem(std::unique_ptr<ChromeAppListItem> item) {}
   virtual void AddItemToFolder(std::unique_ptr<ChromeAppListItem> item,
@@ -24,11 +40,8 @@ class AppListModelUpdater {
   virtual void RemoveUninstalledItem(const std::string& id) {}
   virtual void MoveItemToFolder(const std::string& id,
                                 const std::string& folder_id) {}
-  virtual void SetItemPosition(const std::string& id,
-                               const syncer::StringOrdinal& new_position) {}
   virtual void SetStatus(app_list::AppListModel::Status status) {}
   virtual void SetState(app_list::AppListModel::State state) {}
-  virtual void SetItemName(const std::string& id, const std::string& name) {}
   virtual void HighlightItemInstalledFromUI(const std::string& id) {}
   // For SearchModel:
   virtual void SetSearchEngineIsGoogle(bool is_google) {}
@@ -49,6 +62,20 @@ class AppListModelUpdater {
 
  protected:
   virtual ~AppListModelUpdater() {}
+
+  // Item field setters only used by ChromeAppListItem and its derived classes.
+  virtual void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) {}
+  virtual void SetItemName(const std::string& id, const std::string& name) {}
+  virtual void SetItemNameAndShortName(const std::string& id,
+                                       const std::string& name,
+                                       const std::string& short_name) {}
+  virtual void SetItemPosition(const std::string& id,
+                               const syncer::StringOrdinal& new_position) {}
+  virtual void SetItemFolderId(const std::string& id,
+                               const std::string& folder_id) {}
+  virtual void SetItemIsInstalling(const std::string& id, bool is_installing) {}
+  virtual void SetItemPercentDownloaded(const std::string& id,
+                                        int32_t percent_downloaded) {}
 };
 
 

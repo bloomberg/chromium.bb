@@ -11,6 +11,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "extensions/common/constants.h"
 
 ChromeAppListModelUpdater::ChromeAppListModelUpdater()
@@ -44,13 +45,6 @@ void ChromeAppListModelUpdater::MoveItemToFolder(const std::string& id,
   model_->MoveItemToFolder(item, folder_id);
 }
 
-void ChromeAppListModelUpdater::SetItemPosition(
-    const std::string& id,
-    const syncer::StringOrdinal& new_position) {
-  app_list::AppListItem* item = model_->FindItem(id);
-  model_->SetItemPosition(item, new_position);
-}
-
 void ChromeAppListModelUpdater::SetStatus(
     app_list::AppListModel::Status status) {
   model_->SetStatus(status);
@@ -58,13 +52,6 @@ void ChromeAppListModelUpdater::SetStatus(
 
 void ChromeAppListModelUpdater::SetState(app_list::AppListModel::State state) {
   model_->SetState(state);
-}
-
-void ChromeAppListModelUpdater::SetItemName(const std::string& id,
-                                            const std::string& name) {
-  app_list::AppListItem* item = model_->FindItem(id);
-  if (item)
-    model_->SetItemName(item, name);
 }
 
 void ChromeAppListModelUpdater::HighlightItemInstalledFromUI(
@@ -75,6 +62,65 @@ void ChromeAppListModelUpdater::HighlightItemInstalledFromUI(
 void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
   search_model_->SetSearchEngineIsGoogle(is_google);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods only used by ChromeAppListItem that talk to ash directly.
+
+void ChromeAppListModelUpdater::SetItemIcon(const std::string& id,
+                                            const gfx::ImageSkia& icon) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (item)
+    item->SetIcon(icon);
+}
+
+void ChromeAppListModelUpdater::SetItemName(const std::string& id,
+                                            const std::string& name) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (item)
+    model_->SetItemName(item, name);
+}
+
+void ChromeAppListModelUpdater::SetItemNameAndShortName(
+    const std::string& id,
+    const std::string& name,
+    const std::string& short_name) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (item)
+    item->SetNameAndShortName(name, short_name);
+}
+
+void ChromeAppListModelUpdater::SetItemPosition(
+    const std::string& id,
+    const syncer::StringOrdinal& new_position) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (item)
+    model_->SetItemPosition(item, new_position);
+}
+
+void ChromeAppListModelUpdater::SetItemFolderId(const std::string& id,
+                                                const std::string& folder_id) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (item)
+    item->set_folder_id(folder_id);
+}
+
+void ChromeAppListModelUpdater::SetItemIsInstalling(const std::string& id,
+                                                    bool is_installing) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (item)
+    item->SetIsInstalling(is_installing);
+}
+
+void ChromeAppListModelUpdater::SetItemPercentDownloaded(
+    const std::string& id,
+    int32_t percent_downloaded) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (item)
+    item->SetPercentDownloaded(percent_downloaded);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Methods for item querying
 
 ChromeAppListItem* ChromeAppListModelUpdater::FindItem(const std::string& id) {
   return static_cast<ChromeAppListItem*>(model_->FindItem(id));
@@ -133,7 +179,9 @@ ChromeAppListModelUpdater::ResolveOemFolderPosition(
   return oem_folder;
 }
 
-// For AppListSyncableService:
+////////////////////////////////////////////////////////////////////////////////
+// Methods for AppListSyncableService
+
 void ChromeAppListModelUpdater::AddItemToOemFolder(
     std::unique_ptr<ChromeAppListItem> item,
     app_list::AppListSyncableService::SyncItem* oem_sync_item,
@@ -169,6 +217,9 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
     model_->MoveItemToFolder(app_item, sync_item->parent_id);
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// TODO(hejq): Move the following methods to ash.
 
 void ChromeAppListModelUpdater::FindOrCreateOemFolder(
     app_list::AppListSyncableService::SyncItem* oem_sync_item,

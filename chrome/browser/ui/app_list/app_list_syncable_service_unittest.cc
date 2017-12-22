@@ -176,14 +176,21 @@ class AppListSyncableServiceTest : public AppListTestBase {
     extensions::ExtensionSystem* extension_system =
         extensions::ExtensionSystem::Get(profile_.get());
     DCHECK(extension_system);
-    app_list_syncable_service_.reset(
-        new app_list::AppListSyncableService(profile_.get(), extension_system));
+    app_list_syncable_service_ =
+        std::make_unique<app_list::AppListSyncableService>(profile_.get(),
+                                                           extension_system);
+    model_updater_test_api_ =
+        std::make_unique<AppListModelUpdater::TestApi>(model_updater());
   }
 
   void TearDown() override { app_list_syncable_service_.reset(); }
 
   AppListModelUpdater* model_updater() {
     return app_list_syncable_service_->GetModelUpdater();
+  }
+
+  AppListModelUpdater::TestApi* model_updater_test_api() {
+    return model_updater_test_api_.get();
   }
 
   const app_list::AppListSyncableService::SyncItem* GetSyncItem(
@@ -198,6 +205,7 @@ class AppListSyncableServiceTest : public AppListTestBase {
 
  private:
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<AppListModelUpdater::TestApi> model_updater_test_api_;
   std::unique_ptr<app_list::AppListSyncableService> app_list_syncable_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListSyncableServiceTest);
@@ -226,8 +234,8 @@ TEST_F(AppListSyncableServiceTest, OEMFolderForConflictingPos) {
   ASSERT_TRUE(some_app_item);
 
   // Simulate position conflict.
-  model_updater()->SetItemPosition(web_store_item->id(),
-                                   some_app_item->position());
+  model_updater_test_api()->SetItemPosition(web_store_item->id(),
+                                            some_app_item->position());
 
   // Install an OEM app. It must be placed by default after web store app but in
   // case of app of the same position should be shifted next.

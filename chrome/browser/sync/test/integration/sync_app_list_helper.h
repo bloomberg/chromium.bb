@@ -13,10 +13,9 @@
 #include "base/memory/singleton.h"
 #include "components/sync/model/string_ordinal.h"
 
+class ChromeAppListItem;
 class Profile;
 class SyncTest;
-
-class ChromeAppListItem;
 
 class SyncAppListHelper {
  public:

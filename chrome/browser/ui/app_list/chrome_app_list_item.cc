@@ -15,7 +15,7 @@ namespace {
 
 AppListControllerDelegate* g_controller_for_test = nullptr;
 
-} // namespace
+}  // namespace
 
 // static
 void ChromeAppListItem::OverrideAppListControllerDelegateForTesting(
@@ -37,6 +37,16 @@ ChromeAppListItem::ChromeAppListItem(Profile* profile,
 }
 
 ChromeAppListItem::~ChromeAppListItem() {
+}
+
+void ChromeAppListItem::Activate(int event_flags) {}
+
+const char* ChromeAppListItem::GetItemType() const {
+  return "";
+}
+
+ui::MenuModel* ChromeAppListItem::GetContextMenuModel() {
+  return nullptr;
 }
 
 extensions::AppSorting* ChromeAppListItem::GetAppSorting() {
@@ -74,4 +84,16 @@ void ChromeAppListItem::SetDefaultPositionIfApplicable() {
   DCHECK(launch_ordinal.IsValid());
   set_position(syncer::StringOrdinal(page_ordinal.ToInternalValue() +
                                      launch_ordinal.ToInternalValue()));
+}
+
+bool ChromeAppListItem::CompareForTest(
+    const app_list::AppListItem* other) const {
+  return id() == other->id() && folder_id() == other->folder_id() &&
+         name() == other->name() && GetItemType() == other->GetItemType() &&
+         position().Equals(other->position());
+}
+
+std::string ChromeAppListItem::ToDebugString() const {
+  return id().substr(0, 8) + " '" + name() + "'" + " [" +
+         position().ToDebugString() + "]";
 }
