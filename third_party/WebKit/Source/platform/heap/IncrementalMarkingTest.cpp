@@ -582,6 +582,79 @@ TEST(IncrementalMarkingTest, HeapDoublyLinkedListAppend) {
   }
 }
 
+// =============================================================================
+// HeapDeque support. ==========================================================
+// =============================================================================
+
+TEST(IncrementalMarkingTest, HeapDequePushBackMember) {
+  Object* obj = Object::Create();
+  HeapDeque<Member<Object>> deq;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj});
+    deq.push_back(obj);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapDequePushFrontMember) {
+  Object* obj = Object::Create();
+  HeapDeque<Member<Object>> deq;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj});
+    deq.push_front(obj);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapDequeEmplaceBackMember) {
+  Object* obj = Object::Create();
+  HeapDeque<Member<Object>> deq;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj});
+    deq.emplace_back(obj);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapDequeEmplaceFrontMember) {
+  Object* obj = Object::Create();
+  HeapDeque<Member<Object>> deq;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj});
+    deq.emplace_front(obj);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapDequeCopyMember) {
+  Object* object = Object::Create();
+  HeapDeque<Member<Object>> deq1;
+  deq1.push_back(object);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {object});
+    HeapDeque<Member<Object>> deq2(deq1);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapDequeMoveMember) {
+  Object* object = Object::Create();
+  HeapDeque<Member<Object>> deq1;
+  deq1.push_back(object);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {object});
+    HeapDeque<Member<Object>> deq2(std::move(deq1));
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapDequeSwapMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapDeque<Member<Object>> deq1;
+  deq1.push_back(obj1);
+  HeapDeque<Member<Object>> deq2;
+  deq2.push_back(obj2);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
+    std::swap(deq1, deq2);
+  }
+}
+
 }  // namespace incremental_marking_test
 }  // namespace blink
 
