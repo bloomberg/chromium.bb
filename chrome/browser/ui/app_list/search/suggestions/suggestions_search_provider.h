@@ -30,7 +30,7 @@ class SuggestionsSearchProvider : public SearchProvider {
   ~SuggestionsSearchProvider() override;
 
   // SearchProvider overrides:
-  void Start(bool is_voice_query, const base::string16& query) override;
+  void Start(const base::string16& query) override;
 
  private:
   // Called when suggestions are available from the SuggestionsService.

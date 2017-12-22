@@ -56,8 +56,6 @@
 
 namespace {
 
-const int kAutoLaunchDefaultTimeoutMilliSec = 50;
-
 // The UMA histogram that logs which state search results are opened from.
 const char kAppListSearchResultOpenSourceHistogram[] =
     "Apps.AppListSearchResultOpenedSource";
@@ -189,7 +187,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   OnTemplateURLServiceChanged();
 
   // Clear search query.
-  search_model_->search_box()->Update(base::string16(), false,
+  search_model_->search_box()->Update(base::string16(),
                                       false /* initiated_by_user */);
 }
 
@@ -250,11 +248,7 @@ void AppListViewDelegate::StartSearch() {
 }
 
 void AppListViewDelegate::OpenSearchResult(app_list::SearchResult* result,
-                                           bool auto_launch,
                                            int event_flags) {
-  if (auto_launch)
-    base::RecordAction(base::UserMetricsAction("AppList_AutoLaunched"));
-
   // Record the search metric if the SearchResult is not a suggested app.
   if (result->display_type() != app_list::SearchResult::DISPLAY_RECOMMENDATION)
     RecordHistogram(model_updater_->TabletMode(),
@@ -268,17 +262,6 @@ void AppListViewDelegate::InvokeSearchResultAction(
     int action_index,
     int event_flags) {
   search_controller_->InvokeResultAction(result, action_index, event_flags);
-}
-
-base::TimeDelta AppListViewDelegate::GetAutoLaunchTimeout() {
-  return auto_launch_timeout_;
-}
-
-void AppListViewDelegate::AutoLaunchCanceled() {
-  if (search_model_ && search_model_->search_box()->is_voice_query()) {
-    base::RecordAction(base::UserMetricsAction("AppList_AutoLaunchCanceled"));
-  }
-  auto_launch_timeout_ = base::TimeDelta();
 }
 
 void AppListViewDelegate::ViewInitialized() {
@@ -330,17 +313,6 @@ void AppListViewDelegate::StartSpeechRecognitionForHotword(
       return;
     }
     service->StartSpeechRecognition(preamble);
-  }
-}
-
-void AppListViewDelegate::OnSpeechResult(const base::string16& result,
-                                         bool is_final) {
-  speech_ui_->SetSpeechResult(result, is_final);
-  if (is_final) {
-    auto_launch_timeout_ =
-        base::TimeDelta::FromMilliseconds(kAutoLaunchDefaultTimeoutMilliSec);
-    search_model_->search_box()->Update(result, true,
-                                        true /* initiated_by_user */);
   }
 }
 

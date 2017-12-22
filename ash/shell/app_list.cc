@@ -232,7 +232,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   app_list::SpeechUIModel* GetSpeechUI() override { return &speech_ui_; }
 
   void OpenSearchResult(app_list::SearchResult* result,
-                        bool auto_launch,
                         int event_flags) override {
     const ExampleSearchResult* example_result =
         static_cast<const ExampleSearchResult*>(result);
@@ -244,10 +243,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
                                 int event_flags) override {
     NOTIMPLEMENTED();
   }
-
-  base::TimeDelta GetAutoLaunchTimeout() override { return base::TimeDelta(); }
-
-  void AutoLaunchCanceled() override {}
 
   void StartSearch() override {
     base::string16 query;

@@ -47,9 +47,7 @@ class APP_LIST_EXPORT Mixer {
   void AddProviderToGroup(size_t group_id, SearchProvider* provider);
 
   // Collects the results, sorts and publishes them.
-  void MixAndPublish(bool is_voice_query,
-                     const KnownResults& known_results,
-                     size_t num_max_results);
+  void MixAndPublish(const KnownResults& known_results, size_t num_max_results);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);
@@ -81,7 +79,7 @@ class APP_LIST_EXPORT Mixer {
   // |results| may not have been sorted yet.
   static void RemoveDuplicates(SortedResults* results);
 
-  void FetchResults(bool is_voice_query, const KnownResults& known_results);
+  void FetchResults(const KnownResults& known_results);
 
   SearchModel::SearchResults* ui_results_;  // Not owned.
   Groups groups_;

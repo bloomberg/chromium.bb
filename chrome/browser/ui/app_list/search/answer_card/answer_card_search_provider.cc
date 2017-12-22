@@ -78,14 +78,12 @@ AnswerCardSearchProvider::AnswerCardSearchProvider(
 AnswerCardSearchProvider::~AnswerCardSearchProvider() {
 }
 
-void AnswerCardSearchProvider::Start(bool is_voice_query,
-                                     const base::string16& query) {
+void AnswerCardSearchProvider::Start(const base::string16& query) {
   // Reset the state.
   current_request_url_ = GURL();
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
 
-  if (query.empty() || is_voice_query ||
-      !model_updater_->SearchEngineIsGoogle()) {
+  if (query.empty() || !model_updater_->SearchEngineIsGoogle()) {
     DeleteCurrentResult();
     return;
   }

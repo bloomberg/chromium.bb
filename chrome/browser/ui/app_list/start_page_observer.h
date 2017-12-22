@@ -14,9 +14,6 @@ namespace app_list {
 
 class StartPageObserver {
  public:
-  // Invoked when a search query happens from the start page.
-  virtual void OnSpeechResult(const base::string16& query, bool is_final) = 0;
-
   // Invoked when a sound level of speech recognition is changed.
   virtual void OnSpeechSoundLevelChanged(int16_t level) = 0;
 

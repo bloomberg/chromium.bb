@@ -28,8 +28,7 @@ LauncherSearchProvider::LauncherSearchProvider(Profile* profile)
 LauncherSearchProvider::~LauncherSearchProvider() {
 }
 
-void LauncherSearchProvider::Start(bool /*is_voice_query*/,
-                                   const base::string16& query) {
+void LauncherSearchProvider::Start(const base::string16& query) {
   query_timer_.Stop();
 
   // Clear all search results of the previous query. Since results are

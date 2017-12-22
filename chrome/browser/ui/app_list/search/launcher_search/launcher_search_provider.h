@@ -27,7 +27,7 @@ class LauncherSearchProvider : public SearchProvider {
   explicit LauncherSearchProvider(Profile* profile);
   ~LauncherSearchProvider() override;
 
-  void Start(bool is_voice_query, const base::string16& query) override;
+  void Start(const base::string16& query) override;
   void SetSearchResults(
       const extensions::ExtensionId& extension_id,
       std::vector<std::unique_ptr<LauncherSearchResult>> extension_results);

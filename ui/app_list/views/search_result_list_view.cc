@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_result_view.h"
@@ -24,10 +23,6 @@
 namespace {
 
 constexpr int kMaxResults = 5;
-constexpr int kTimeoutIndicatorHeight = 2;
-constexpr int kTimeoutFramerate = 60;
-constexpr SkColor kTimeoutIndicatorColor =
-    SkColorSetARGBMacro(255, 30, 144, 255);
 
 }  // namespace
 
@@ -37,20 +32,13 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
                                            AppListViewDelegate* view_delegate)
     : main_view_(main_view),
       view_delegate_(view_delegate),
-      results_container_(new views::View),
-      auto_launch_indicator_(new views::View) {
+      results_container_(new views::View) {
   results_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   for (int i = 0; i < kMaxResults; ++i)
     results_container_->AddChildView(new SearchResultView(this));
   AddChildView(results_container_);
-
-  auto_launch_indicator_->SetBackground(
-      views::CreateSolidBackground(kTimeoutIndicatorColor));
-  auto_launch_indicator_->SetVisible(false);
-
-  AddChildView(auto_launch_indicator_);
 }
 
 SearchResultListView::~SearchResultListView() {}
@@ -62,29 +50,6 @@ bool SearchResultListView::IsResultViewSelected(
 
   return static_cast<const SearchResultView*>(
              results_container_->child_at(selected_index())) == result_view;
-}
-
-void SearchResultListView::UpdateAutoLaunchState() {
-  SetAutoLaunchTimeout(view_delegate_->GetAutoLaunchTimeout());
-}
-
-void SearchResultListView::SetAutoLaunchTimeout(
-    const base::TimeDelta& timeout) {
-  if (timeout > base::TimeDelta()) {
-    auto_launch_indicator_->SetVisible(true);
-    auto_launch_indicator_->SetBounds(0, 0, 0, kTimeoutIndicatorHeight);
-    auto_launch_animation_.reset(
-        new gfx::LinearAnimation(timeout, kTimeoutFramerate, this));
-    auto_launch_animation_->Start();
-  } else {
-    auto_launch_indicator_->SetVisible(false);
-    auto_launch_animation_.reset();
-  }
-}
-
-void SearchResultListView::CancelAutoLaunchTimeout() {
-  SetAutoLaunchTimeout(base::TimeDelta());
-  view_delegate_->AutoLaunchCanceled();
 }
 
 SearchResultView* SearchResultListView::GetResultViewAt(int index) const {
@@ -156,7 +121,6 @@ int SearchResultListView::DoUpdate() {
       result_view->SetVisible(false);
     }
   }
-  UpdateAutoLaunchState();
 
   set_container_score(
       display_results.empty() ? 0 : display_results.front()->relevance());
@@ -181,11 +145,6 @@ void SearchResultListView::UpdateSelectedIndex(int old_selected,
   }
 }
 
-void SearchResultListView::ForceAutoLaunchForTest() {
-  if (auto_launch_animation_)
-    AnimationEnded(auto_launch_animation_.get());
-}
-
 void SearchResultListView::Layout() {
   results_container_->SetBoundsRect(GetLocalBounds());
 }
@@ -198,43 +157,10 @@ int SearchResultListView::GetHeightForWidth(int w) const {
   return results_container_->GetHeightForWidth(w);
 }
 
-void SearchResultListView::VisibilityChanged(views::View* starting_from,
-                                             bool is_visible) {
-  if (is_visible)
-    UpdateAutoLaunchState();
-  else
-    CancelAutoLaunchTimeout();
-}
-
-void SearchResultListView::AnimationEnded(const gfx::Animation* animation) {
-  DCHECK_EQ(auto_launch_animation_.get(), animation);
-  if (results()->item_count() > 0) {
-    view_delegate_->OpenSearchResult(results()->GetItemAt(0), true,
-                                     ui::EF_NONE);
-  }
-
-  // The auto-launch has to be canceled explicitly. Think that one of searcher
-  // is extremely slow. Sometimes the events would happen in the following
-  // order:
-  //  1. The search results arrive, auto-launch is dispatched
-  //  2. Timed out and auto-launch the first search result
-  //  3. Then another searcher adds search results more
-  // At the step 3, we shouldn't dispatch the auto-launch again.
-  CancelAutoLaunchTimeout();
-}
-
-void SearchResultListView::AnimationProgressed(
-    const gfx::Animation* animation) {
-  DCHECK_EQ(auto_launch_animation_.get(), animation);
-  int indicator_width = auto_launch_animation_->CurrentValueBetween(0, width());
-  auto_launch_indicator_->SetBounds(0, 0, indicator_width,
-                                    kTimeoutIndicatorHeight);
-}
-
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
                                                  int event_flags) {
   if (view_delegate_ && view->result())
-    view_delegate_->OpenSearchResult(view->result(), false, event_flags);
+    view_delegate_->OpenSearchResult(view->result(), event_flags);
 }
 
 void SearchResultListView::SearchResultActionActivated(SearchResultView* view,

@@ -122,7 +122,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == this);
     if (search_result_)
-      view_delegate_->OpenSearchResult(search_result_, false, event.flags());
+      view_delegate_->OpenSearchResult(search_result_, event.flags());
   }
 
   // SearchResultObserver overrides:

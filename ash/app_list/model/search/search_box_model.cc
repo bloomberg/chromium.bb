@@ -20,8 +20,7 @@ SearchBoxModel::SpeechButtonProperty::SpeechButtonProperty(
 
 SearchBoxModel::SpeechButtonProperty::~SpeechButtonProperty() = default;
 
-SearchBoxModel::SearchBoxModel()
-    : is_voice_query_(false), is_tablet_mode_(false) {}
+SearchBoxModel::SearchBoxModel() : is_tablet_mode_(false) {}
 
 SearchBoxModel::~SearchBoxModel() = default;
 
@@ -74,9 +73,8 @@ void SearchBoxModel::SetTabletMode(bool started) {
 }
 
 void SearchBoxModel::Update(const base::string16& text,
-                            bool is_voice_query,
                             bool initiated_by_user) {
-  if (text_ == text && is_voice_query_ == is_voice_query)
+  if (text_ == text)
     return;
 
   if (initiated_by_user) {
@@ -88,7 +86,6 @@ void SearchBoxModel::Update(const base::string16& text,
     }
   }
   text_ = text;
-  is_voice_query_ = is_voice_query;
   for (auto& observer : observers_)
     observer.Update();
 }

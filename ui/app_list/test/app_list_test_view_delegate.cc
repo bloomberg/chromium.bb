@@ -42,7 +42,6 @@ SpeechUIModel* AppListTestViewDelegate::GetSpeechUI() {
 }
 
 void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
-                                               bool auto_launch,
                                                int event_flags) {
   const SearchModel::SearchResults* results = search_model_->results();
   for (size_t i = 0; i < results->item_count(); ++i) {
@@ -52,14 +51,6 @@ void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
     }
   }
   ++open_search_result_count_;
-}
-
-base::TimeDelta AppListTestViewDelegate::GetAutoLaunchTimeout() {
-  return auto_launch_timeout_;
-}
-
-void AppListTestViewDelegate::AutoLaunchCanceled() {
-  auto_launch_timeout_ = base::TimeDelta();
 }
 
 void AppListTestViewDelegate::Dismiss() {

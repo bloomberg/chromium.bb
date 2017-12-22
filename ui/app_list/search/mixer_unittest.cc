@@ -77,7 +77,7 @@ class TestSearchProvider : public SearchProvider {
   ~TestSearchProvider() override {}
 
   // SearchProvider overrides:
-  void Start(bool is_voice_query, const base::string16& query) override {
+  void Start(const base::string16& query) override {
     ClearResults();
     for (size_t i = 0; i < count_; ++i) {
       const std::string id =
@@ -116,7 +116,7 @@ class TestSearchProvider : public SearchProvider {
 
 class MixerTest : public testing::Test {
  public:
-  MixerTest() : is_voice_query_(false) {}
+  MixerTest() {}
   ~MixerTest() override {}
 
   // testing::Test overrides:
@@ -126,8 +126,6 @@ class MixerTest : public testing::Test {
     providers_.push_back(std::make_unique<TestSearchProvider>("app"));
     providers_.push_back(std::make_unique<TestSearchProvider>("omnibox"));
     providers_.push_back(std::make_unique<TestSearchProvider>("webstore"));
-
-    is_voice_query_ = false;
 
     mixer_.reset(new Mixer(results_.get()));
 
@@ -147,9 +145,9 @@ class MixerTest : public testing::Test {
     const base::string16 query;
 
     for (size_t i = 0; i < providers_.size(); ++i)
-      providers_[i]->Start(is_voice_query_, query);
+      providers_[i]->Start(query);
 
-    mixer_->MixAndPublish(is_voice_query_, known_results_, kMaxSearchResults);
+    mixer_->MixAndPublish(known_results_, kMaxSearchResults);
   }
 
   std::string GetResults() const {
@@ -169,11 +167,6 @@ class MixerTest : public testing::Test {
   TestSearchProvider* omnibox_provider() { return providers_[1].get(); }
   TestSearchProvider* webstore_provider() { return providers_[2].get(); }
 
-  // Sets whether test runs should be treated as a voice query.
-  void set_is_voice_query(bool is_voice_query) {
-    is_voice_query_ = is_voice_query;
-  }
-
   void AddKnownResult(const std::string& id, KnownResultType type) {
     known_results_[id] = type;
   }
@@ -182,8 +175,6 @@ class MixerTest : public testing::Test {
   std::unique_ptr<Mixer> mixer_;
   std::unique_ptr<SearchModel::SearchResults> results_;
   KnownResults known_results_;
-
-  bool is_voice_query_;
 
   std::vector<std::unique_ptr<TestSearchProvider>> providers_;
 
@@ -320,16 +311,6 @@ TEST_F(MixerTest, VoiceQuery) {
   omnibox_provider()->set_as_voice_result(1);
   RunQuery();
   EXPECT_EQ("omnibox0,omnibox1,omnibox2", GetResults());
-
-  // Perform a voice query. Expect voice result first.
-  set_is_voice_query(true);
-  RunQuery();
-  EXPECT_EQ("omnibox1,omnibox0,omnibox2", GetResults());
-
-  // All voice results should appear before non-voice results.
-  omnibox_provider()->set_as_voice_result(2);
-  RunQuery();
-  EXPECT_EQ("omnibox1,omnibox2,omnibox0", GetResults());
 }
 
 TEST_F(MixerTest, Publish) {

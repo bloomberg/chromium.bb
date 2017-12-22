@@ -92,19 +92,6 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   void SetSearchBoxActive(bool active) { view()->SetSearchBoxActive(active); }
 
-  void SetLongAutoLaunchTimeout() {
-    // Sets a long timeout that lasts longer than the test run.
-    view_delegate_.set_auto_launch_timeout(base::TimeDelta::FromDays(1));
-  }
-
-  base::TimeDelta GetAutoLaunchTimeout() {
-    return view_delegate_.GetAutoLaunchTimeout();
-  }
-
-  void ResetAutoLaunchTimeout() {
-    view_delegate_.set_auto_launch_timeout(base::TimeDelta());
-  }
-
   int GetContentsViewKeyPressCountAndReset() {
     return counter_view_->GetCountAndReset();
   }
@@ -150,29 +137,6 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewTest);
 };
-
-// TODO(crbug.com/781407) Re-enable the test once voice search is back.
-TEST_F(SearchBoxViewTest, DISABLED_CancelAutoLaunch) {
-  SetLongAutoLaunchTimeout();
-  ASSERT_NE(base::TimeDelta(), GetAutoLaunchTimeout());
-
-  // Normal key event cancels the timeout.
-  KeyPress(ui::VKEY_A);
-  EXPECT_EQ(base::TimeDelta(), GetAutoLaunchTimeout());
-  ResetAutoLaunchTimeout();
-
-  // Unusual key event doesn't cancel -- it will be canceled in
-  // SearchResultListView.
-  SetLongAutoLaunchTimeout();
-  KeyPress(ui::VKEY_DOWN);
-  EXPECT_NE(base::TimeDelta(), GetAutoLaunchTimeout());
-  ResetAutoLaunchTimeout();
-
-  // Clearing search box also cancels.
-  SetLongAutoLaunchTimeout();
-  view()->ClearSearch();
-  EXPECT_EQ(base::TimeDelta(), GetAutoLaunchTimeout());
-}
 
 // Tests that the close button is invisible by default.
 TEST_F(SearchBoxViewTest, CloseButtonInvisibleByDefault) {

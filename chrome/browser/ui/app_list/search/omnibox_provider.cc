@@ -28,14 +28,12 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
           base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
           this,
           AutocompleteClassifier::DefaultOmniboxProviders() &
-              ~AutocompleteProvider::TYPE_ZERO_SUGGEST)),
-      is_voice_query_(false) {}
+              ~AutocompleteProvider::TYPE_ZERO_SUGGEST)) {}
 
 OmniboxProvider::~OmniboxProvider() {}
 
-void OmniboxProvider::Start(bool is_voice_query, const base::string16& query) {
+void OmniboxProvider::Start(const base::string16& query) {
   controller_->Stop(false);
-  is_voice_query_ = is_voice_query;
   AutocompleteInput input =
       AutocompleteInput(query, metrics::OmniboxEventProto::INVALID_SPEC,
                         ChromeAutocompleteSchemeClassifier(profile_));
@@ -50,7 +48,7 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
       continue;
 
     new_results.emplace_back(base::MakeUnique<OmniboxResult>(
-        profile_, list_controller_, controller_.get(), is_voice_query_, match));
+        profile_, list_controller_, controller_.get(), match));
   }
   SwapResults(&new_results);
 }

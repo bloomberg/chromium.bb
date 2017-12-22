@@ -22,7 +22,6 @@ class OmniboxResult : public SearchResult {
   OmniboxResult(Profile* profile,
                 AppListControllerDelegate* list_controller,
                 AutocompleteController* autocomplete_controller,
-                bool is_voice_query,
                 const AutocompleteMatch& match);
   ~OmniboxResult() override;
 
@@ -43,7 +42,6 @@ class OmniboxResult : public SearchResult {
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
   AutocompleteController* autocomplete_controller_;
-  bool is_voice_query_;
   AutocompleteMatch match_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResult);

@@ -28,7 +28,7 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
   ~ArcPlayStoreSearchProvider() override;
 
   // SearchProvider:
-  void Start(bool is_voice_query, const base::string16& query) override;
+  void Start(const base::string16& query) override;
 
  private:
   void OnResults(base::TimeTicks query_start_time,

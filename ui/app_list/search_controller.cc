@@ -34,11 +34,9 @@ void SearchController::Start() {
   base::string16 query;
   base::TrimWhitespace(search_box_->text(), base::TRIM_ALL, &query);
 
-  is_voice_query_ = search_box_->is_voice_query();
-
   dispatching_query_ = true;
   for (const auto& provider : providers_)
-    provider->Start(is_voice_query_, query);
+    provider->Start(query);
 
   dispatching_query_ = false;
   query_for_recommendation_ = query.empty();
@@ -110,7 +108,7 @@ void SearchController::OnResultsChanged() {
 
   size_t num_max_results =
       query_for_recommendation_ ? kNumStartPageTiles : kMaxSearchResults;
-  mixer_->MixAndPublish(is_voice_query_, known_results, num_max_results);
+  mixer_->MixAndPublish(known_results, num_max_results);
 }
 
 }  // namespace app_list

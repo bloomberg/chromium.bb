@@ -41,10 +41,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   // SetProfileByPath() is called.
   void set_next_profile_app_count(int apps) { next_profile_app_count_ = apps; }
 
-  void set_auto_launch_timeout(const base::TimeDelta& timeout) {
-    auto_launch_timeout_ = timeout;
-  }
-
   // Returns the value of |stop_speech_recognition_count_| and then resets this
   // value to 0.
   int GetStopSpeechRecognitionCountAndReset();
@@ -58,13 +54,10 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   SpeechUIModel* GetSpeechUI() override;
   void StartSearch() override {}
   void OpenSearchResult(SearchResult* result,
-                        bool auto_launch,
                         int event_flags) override;
   void InvokeSearchResultAction(SearchResult* result,
                                 int action_index,
                                 int event_flags) override {}
-  base::TimeDelta GetAutoLaunchTimeout() override;
-  void AutoLaunchCanceled() override;
   void ViewInitialized() override {}
   void Dismiss() override;
   void ViewClosing() override {}
@@ -93,7 +86,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   std::unique_ptr<SearchModel> search_model_;
   SpeechUIModel speech_ui_;
   std::vector<SkColor> wallpaper_prominent_colors_;
-  base::TimeDelta auto_launch_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
 };

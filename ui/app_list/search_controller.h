@@ -62,8 +62,6 @@ class APP_LIST_EXPORT SearchController {
   std::unique_ptr<Mixer> mixer_;
   History* history_;  // KeyedService, not owned.
 
-  bool is_voice_query_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(SearchController);
 };
 

@@ -307,7 +307,6 @@ bool SearchBoxView::HasSearch() const {
 void SearchBoxView::ClearSearch() {
   search_box_->SetText(base::string16());
   UpdateCloseButtonVisisbility();
-  view_delegate_->AutoLaunchCanceled();
   // Updates model and fires query changed manually because SetText() above
   // does not generate ContentsChanged() notification.
   UpdateModel(false);
@@ -699,8 +698,7 @@ void SearchBoxView::SetSelected(bool selected) {
 void SearchBoxView::UpdateModel(bool initiated_by_user) {
   // Temporarily remove from observer to ignore notifications caused by us.
   search_model_->search_box()->RemoveObserver(this);
-  search_model_->search_box()->Update(search_box_->text(), false,
-                                      initiated_by_user);
+  search_model_->search_box()->Update(search_box_->text(), initiated_by_user);
   search_model_->search_box()->SetSelectionModel(
       search_box_->GetSelectionModel());
   search_model_->search_box()->AddObserver(this);
@@ -716,7 +714,6 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   // Set search box focused when query changes.
   search_box_->RequestFocus();
   UpdateModel(true);
-  view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
   SetSearchBoxActive(true);
   UpdateCloseButtonVisisbility();
