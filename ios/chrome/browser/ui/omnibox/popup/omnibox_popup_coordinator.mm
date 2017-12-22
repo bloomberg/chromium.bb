@@ -52,6 +52,7 @@
       [[OmniboxPopupMediator alloc] initWithFetcher:std::move(imageFetcher)
                                            delegate:_popupView.get()];
   self.popupViewController = [[OmniboxPopupViewController alloc] init];
+  self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
   self.mediator.incognito = self.browserState->IsOffTheRecord();
   self.mediator.consumer = self.popupViewController;
@@ -61,7 +62,6 @@
 
   self.popupViewController.imageRetriever = self.mediator;
   self.popupViewController.delegate = self.mediator;
-  self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
   _popupView->SetMediator(self.mediator);
 }
