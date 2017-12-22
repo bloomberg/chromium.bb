@@ -270,7 +270,7 @@ public abstract class AwContentsClient {
             if (mAcceptTypes == null) {
                 return new String[0];
             }
-            return mAcceptTypes.split(";");
+            return mAcceptTypes.split(",");
         }
 
         public boolean isCaptureEnabled() {
@@ -288,7 +288,7 @@ public abstract class AwContentsClient {
         public Intent createIntent() {
             String mimeType = "*/*";
             if (mAcceptTypes != null && !mAcceptTypes.trim().isEmpty()) {
-                mimeType = mAcceptTypes.split(";")[0];
+                mimeType = mAcceptTypes.split(",")[0];
             }
 
             Intent i = new Intent(Intent.ACTION_GET_CONTENT);
