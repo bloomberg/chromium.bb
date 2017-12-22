@@ -1632,7 +1632,7 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
     SetLayerBounds(size(), local_offset_data);
   } else {
     internal::ScopedChildrenLock lock(this);
-    for (auto* child : children_)
+    for (auto* child : GetChildrenInZOrder())
       child->MoveLayerToParent(parent_layer, local_offset_data);
   }
 }
