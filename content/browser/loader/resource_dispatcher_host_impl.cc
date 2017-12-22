@@ -43,7 +43,6 @@
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/loader/async_resource_handler.h"
 #include "content/browser/loader/cross_site_document_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
@@ -60,7 +59,6 @@
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/browser/loader/stream_resource_handler.h"
-#include "content/browser/loader/sync_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/loader/wake_lock_resource_throttle.h"
@@ -74,7 +72,6 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/common/loader_util.h"
 #include "content/common/net/url_request_service_worker_data.h"
-#include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,8 +91,6 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_request_body.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_start.h"
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -133,8 +128,6 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using storage::ShareableFileReference;
-using SyncLoadResultCallback =
-    content::ResourceDispatcherHostImpl::SyncLoadResultCallback;
 
 // ----------------------------------------------------------------------------
 
@@ -177,14 +170,8 @@ const int kDefaultDetachableCancelDelayMs = 30000;
 // Aborts a request before an URLRequest has actually been created.
 void AbortRequestBeforeItStarts(
     IPC::Sender* sender,
-    const SyncLoadResultCallback& sync_result_handler,
     int request_id,
     mojom::URLLoaderClientPtr url_loader_client) {
-  if (sync_result_handler) {
-    SyncLoadResult result;
-    result.error_code = net::ERR_ABORTED;
-    sync_result_handler.Run(&result);
-  } else {
     // Tell the renderer that this request was disallowed.
     network::URLLoaderCompletionStatus status;
     status.error_code = net::ERR_ABORTED;
@@ -193,12 +180,7 @@ void AbortRequestBeforeItStarts(
     status.completion_time = base::TimeTicks();
     status.encoded_data_length = 0;
     status.encoded_body_length = 0;
-    if (url_loader_client) {
-      url_loader_client->OnComplete(status);
-    } else {
-      sender->Send(new ResourceMsg_RequestComplete(request_id, status));
-    }
-  }
+    url_loader_client->OnComplete(status);
 }
 
 void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
@@ -236,22 +218,6 @@ PreviewsState DetermineEnabledPreviews(PreviewsState previews_to_allow,
       request, resource_context, previews_to_allow);
 
   return previews_state;
-}
-
-// Sends back the result of a synchronous loading result to the renderer through
-// Chrome IPC.
-void HandleSyncLoadResult(base::WeakPtr<ResourceMessageFilter> filter,
-                          std::unique_ptr<IPC::Message> sync_result,
-                          const SyncLoadResult* result) {
-  if (!filter)
-    return;
-
-  if (result) {
-    ResourceHostMsg_SyncLoad::WriteReplyParams(sync_result.get(), *result);
-  } else {
-    sync_result->set_reply_error();
-  }
-  filter->Send(sync_result.release());
 }
 
 bool ValidatePluginChildId(int plugin_child_id) {
@@ -754,60 +720,6 @@ void ResourceDispatcherHostImpl::OnShutdown() {
   scheduler_.reset();
 }
 
-bool ResourceDispatcherHostImpl::OnMessageReceived(
-    const IPC::Message& message,
-    ResourceRequesterInfo* requester_info) {
-  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ResourceDispatcherHostImpl, message,
-                                   requester_info)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_RequestResource, OnRequestResource)
-    IPC_MESSAGE_HANDLER_WITH_PARAM_DELAY_REPLY(ResourceHostMsg_SyncLoad,
-                                               OnSyncLoad)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_ReleaseDownloadedFile,
-                        OnReleaseDownloadedFile)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, OnDidChangePriority)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  if (!handled && IPC_MESSAGE_ID_CLASS(message.type()) == ResourceMsgStart) {
-    base::PickleIterator iter(message);
-    int request_id = -1;
-    bool ok = iter.ReadInt(&request_id);
-    DCHECK(ok);
-    GlobalRequestID id(requester_info->child_id(), request_id);
-    DelegateMap::iterator it = delegate_map_.find(id);
-    if (it != delegate_map_.end()) {
-      for (auto& delegate : *it->second) {
-        if (delegate.OnMessageReceived(message)) {
-          handled = true;
-          break;
-        }
-      }
-    }
-
-    // As the unhandled resource message effectively has no consumer, mark it as
-    // handled to prevent needless propagation through the filter pipeline.
-    handled = true;
-  }
-
-  return handled;
-}
-
-void ResourceDispatcherHostImpl::OnRequestResource(
-    ResourceRequesterInfo* requester_info,
-    int routing_id,
-    int request_id,
-    const ResourceRequest& request_data,
-    net::MutableNetworkTrafficAnnotationTag traffic_annotation) {
-  OnRequestResourceInternal(
-      requester_info, routing_id, request_id, false /* is_sync_load */,
-      request_data, nullptr, nullptr,
-      net::NetworkTrafficAnnotationTag(traffic_annotation));
-}
-
 void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     ResourceRequesterInfo* requester_info,
     int routing_id,
@@ -819,29 +731,8 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   BeginRequest(requester_info, request_id, request_data, is_sync_load,
-               SyncLoadResultCallback(), routing_id, std::move(mojo_request),
+               routing_id, std::move(mojo_request),
                std::move(url_loader_client), traffic_annotation);
-}
-
-// Begins a resource request with the given params on behalf of the specified
-// child process.  Responses will be dispatched through the given receiver. The
-// process ID is used to lookup WebContentsImpl from routing_id's in the case of
-// a request from a renderer.  request_context is the cookie/cache context to be
-// used for this request.
-//
-// If sync_result is non-null, then a SyncLoad reply will be generated, else
-// a normal asynchronous set of response messages will be generated.
-void ResourceDispatcherHostImpl::OnSyncLoad(
-    ResourceRequesterInfo* requester_info,
-    int request_id,
-    const ResourceRequest& request_data,
-    IPC::Message* sync_result) {
-  SyncLoadResultCallback callback =
-      base::Bind(&HandleSyncLoadResult, requester_info->filter()->GetWeakPtr(),
-                 base::Passed(WrapUnique(sync_result)));
-  BeginRequest(requester_info, request_id, request_data,
-               true /* is_sync_load */, callback, sync_result->routing_id(),
-               nullptr, nullptr, GetTrafficAnnotation());
 }
 
 bool ResourceDispatcherHostImpl::IsRequestIDInUse(
@@ -909,17 +800,6 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
       blocked_loaders_map_[new_routing_id] =
           std::move(blocked_loaders_map_[old_routing_id]);
       blocked_loaders_map_.erase(old_routing_id);
-    }
-  }
-  if (old_request_id != new_request_id) {
-    DelegateMap::iterator it = delegate_map_.find(old_request_id);
-    if (it != delegate_map_.end()) {
-      // Tell each delegate that the request ID has changed.
-      for (auto& delegate : *it->second)
-        delegate.set_request_id(new_request_id);
-      // Now store the observer list under the new request ID.
-      delegate_map_[new_request_id] = delegate_map_[old_request_id];
-      delegate_map_.erase(old_request_id);
     }
   }
 
@@ -999,7 +879,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
     int request_id,
     const ResourceRequest& request_data,
     bool is_sync_load,
-    const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
     int route_id,
     mojom::URLLoaderRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
@@ -1066,8 +945,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (is_shutdown_ ||
       !ShouldServiceRequest(child_id, request_data, request_data.headers,
                             requester_info, resource_context)) {
-    AbortRequestBeforeItStarts(requester_info->filter(), sync_result_handler,
-                               request_id, std::move(url_loader_client));
+    AbortRequestBeforeItStarts(requester_info->filter(), request_id,
+                               std::move(url_loader_client));
     return;
   }
 
@@ -1086,8 +965,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
         // will be used in UploadDataStream and ServiceWorkerURLRequestJob.
         if (!GetBodyBlobDataHandles(request_data.request_body.get(),
                                     resource_context, &blob_handles)) {
-          AbortRequestBeforeItStarts(requester_info->filter(),
-                                     sync_result_handler, request_id,
+          AbortRequestBeforeItStarts(requester_info->filter(), request_id,
                                      std::move(url_loader_client));
           return;
         }
@@ -1117,9 +995,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
               base::Bind(
                   &ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
                   base::Unretained(this), base::WrapRefCounted(requester_info),
-                  request_id, request_data, is_sync_load, sync_result_handler,
-                  route_id, request_data.headers,
-                  base::Passed(std::move(mojo_request)),
+                  request_id, request_data, is_sync_load, route_id,
+                  request_data.headers, base::Passed(std::move(mojo_request)),
                   base::Passed(std::move(url_loader_client)),
                   base::Passed(std::move(blob_handles)), traffic_annotation));
           return;
@@ -1127,12 +1004,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
       }
     }
   }
-  ContinuePendingBeginRequest(requester_info, request_id, request_data,
-                              is_sync_load, sync_result_handler, route_id,
-                              request_data.headers, std::move(mojo_request),
-                              std::move(url_loader_client),
-                              std::move(blob_handles), traffic_annotation,
-                              HeaderInterceptorResult::CONTINUE);
+  ContinuePendingBeginRequest(
+      requester_info, request_id, request_data, is_sync_load, route_id,
+      request_data.headers, std::move(mojo_request),
+      std::move(url_loader_client), std::move(blob_handles), traffic_annotation,
+      HeaderInterceptorResult::CONTINUE);
 }
 
 void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
@@ -1140,7 +1016,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     int request_id,
     const ResourceRequest& request_data,
     bool is_sync_load,
-    const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
     int route_id,
     const net::HttpRequestHeaders& headers,
     mojom::URLLoaderRequest mojo_request,
@@ -1149,7 +1024,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     HeaderInterceptorResult interceptor_result) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
-  DCHECK(!sync_result_handler || is_sync_load);
   if (interceptor_result != HeaderInterceptorResult::CONTINUE) {
     if (requester_info->IsRenderer() &&
         interceptor_result == HeaderInterceptorResult::KILL) {
@@ -1159,8 +1033,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       bad_message::ReceivedBadMessage(requester_info->filter(),
                                       bad_message::RDH_ILLEGAL_ORIGIN);
     }
-    AbortRequestBeforeItStarts(requester_info->filter(), sync_result_handler,
-                               request_id, std::move(url_loader_client));
+    AbortRequestBeforeItStarts(requester_info->filter(), request_id,
+                               std::move(url_loader_client));
     return;
   }
   int child_id = requester_info->child_id();
@@ -1183,8 +1057,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
                                                   request_data.url,
                                                   request_data.resource_type,
                                                   resource_context)) {
-    AbortRequestBeforeItStarts(requester_info->filter(), sync_result_handler,
-                               request_id, std::move(url_loader_client));
+    AbortRequestBeforeItStarts(requester_info->filter(), request_id,
+                               std::move(url_loader_client));
     return;
   }
 
@@ -1386,10 +1260,10 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
         new_request.get(), requester_info->appcache_service(), child_id,
         request_data.appcache_host_id, request_data.resource_type,
         request_data.should_reset_appcache);
-    handler = CreateResourceHandler(
-        requester_info.get(), new_request.get(), request_data,
-        sync_result_handler, route_id, child_id, resource_context,
-        std::move(mojo_request), std::move(url_loader_client));
+    handler = CreateResourceHandler(requester_info.get(), new_request.get(),
+                                    request_data, route_id, child_id,
+                                    resource_context, std::move(mojo_request),
+                                    std::move(url_loader_client));
   }
   if (handler)
     BeginRequestInternal(std::move(new_request), std::move(handler));
@@ -1400,7 +1274,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     ResourceRequesterInfo* requester_info,
     net::URLRequest* request,
     const ResourceRequest& request_data,
-    const SyncLoadResultCallback& sync_result_handler,
     int route_id,
     int child_id,
     ResourceContext* resource_context,
@@ -1409,36 +1282,21 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   // Construct the IPC resource handler.
   std::unique_ptr<ResourceHandler> handler;
-  if (sync_result_handler) {
-    // download_to_file is not supported for synchronous requests.
-    if (request_data.download_to_file) {
-      DCHECK(requester_info->IsRenderer());
-      bad_message::ReceivedBadMessage(requester_info->filter(),
-                                      bad_message::RDH_BAD_DOWNLOAD);
-      return std::unique_ptr<ResourceHandler>();
-    }
+  handler = CreateBaseResourceHandler(request, std::move(mojo_request),
+                                      std::move(url_loader_client),
+                                      request_data.resource_type);
 
-    DCHECK(!mojo_request.is_pending());
-    DCHECK(!url_loader_client);
-    handler.reset(new SyncResourceHandler(request, sync_result_handler, this));
-  } else {
-    handler = CreateBaseResourceHandler(request, std::move(mojo_request),
-                                        std::move(url_loader_client),
-                                        request_data.resource_type);
-
-    // The RedirectToFileResourceHandler depends on being next in the chain.
-    if (request_data.download_to_file) {
-      handler.reset(
-          new RedirectToFileResourceHandler(std::move(handler), request));
-    }
+  // The RedirectToFileResourceHandler depends on being next in the chain.
+  if (request_data.download_to_file) {
+    handler.reset(
+        new RedirectToFileResourceHandler(std::move(handler), request));
   }
 
   bool start_detached = request_data.download_to_network_cache_only;
 
   // Prefetches and <a ping> requests outlive their child process.
-  if (!sync_result_handler &&
-      (start_detached || request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
-       request_data.keepalive)) {
+  if (start_detached || request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
+      request_data.keepalive) {
     auto timeout =
         base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs);
     int timeout_set_by_finch_in_sec = base::GetFieldTrialParamByFeatureAsInt(
@@ -1472,14 +1330,10 @@ ResourceDispatcherHostImpl::CreateBaseResourceHandler(
     mojom::URLLoaderClientPtr url_loader_client,
     ResourceType resource_type) {
   std::unique_ptr<ResourceHandler> handler;
-  if (mojo_request.is_pending()) {
-    handler.reset(new MojoAsyncResourceHandler(
-        request, this, std::move(mojo_request), std::move(url_loader_client),
-        resource_type,
-        false));  // defer_on_response_started.
-  } else {
-    handler.reset(new AsyncResourceHandler(request, this));
-  }
+  handler.reset(
+      new MojoAsyncResourceHandler(request, this, std::move(mojo_request),
+                                   std::move(url_loader_client), resource_type,
+                                   false));  // defer_on_response_started.
   return handler;
 }
 
@@ -1593,27 +1447,6 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   return handler;
 }
 
-void ResourceDispatcherHostImpl::OnReleaseDownloadedFile(
-    ResourceRequesterInfo* requester_info,
-    int request_id) {
-  UnregisterDownloadedTempFile(requester_info->child_id(), request_id);
-}
-
-void ResourceDispatcherHostImpl::OnDidChangePriority(
-    ResourceRequesterInfo* requester_info,
-    int request_id,
-    net::RequestPriority new_priority,
-    int intra_priority_value) {
-  ResourceLoader* loader = GetLoader(requester_info->child_id(), request_id);
-  // The request may go away before processing this message, so |loader| can
-  // legitimately be null.
-  if (!loader)
-    return;
-
-  scheduler_->ReprioritizeRequest(loader->request(), new_priority,
-                                  intra_priority_value);
-}
-
 void ResourceDispatcherHostImpl::RegisterDownloadedTempFile(
     int child_id, int request_id, const base::FilePath& file_path) {
   scoped_refptr<ShareableFileReference> reference =
@@ -1648,18 +1481,6 @@ void ResourceDispatcherHostImpl::UnregisterDownloadedTempFile(
 
   // Note that we don't remove the security bits here. This will be done
   // when all file refs are deleted (see RegisterDownloadedTempFile).
-}
-
-bool ResourceDispatcherHostImpl::Send(IPC::Message* message) {
-  delete message;
-  return false;
-}
-
-void ResourceDispatcherHostImpl::OnCancelRequest(
-    ResourceRequesterInfo* requester_info,
-    int request_id) {
-  CancelRequestFromRenderer(
-      GlobalRequestID(requester_info->child_id(), request_id));
 }
 
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
@@ -2629,31 +2450,6 @@ ResourceLoader* ResourceDispatcherHostImpl::GetLoader(
 ResourceLoader* ResourceDispatcherHostImpl::GetLoader(int child_id,
                                                       int request_id) const {
   return GetLoader(GlobalRequestID(child_id, request_id));
-}
-
-void ResourceDispatcherHostImpl::RegisterResourceMessageDelegate(
-    const GlobalRequestID& id, ResourceMessageDelegate* delegate) {
-  DelegateMap::iterator it = delegate_map_.find(id);
-  if (it == delegate_map_.end()) {
-    it = delegate_map_.insert(
-                           std::make_pair(
-                               id,
-                               new base::ObserverList<ResourceMessageDelegate>))
-             .first;
-  }
-  it->second->AddObserver(delegate);
-}
-
-void ResourceDispatcherHostImpl::UnregisterResourceMessageDelegate(
-    const GlobalRequestID& id, ResourceMessageDelegate* delegate) {
-  DCHECK(base::ContainsKey(delegate_map_, id));
-  DelegateMap::iterator it = delegate_map_.find(id);
-  DCHECK(it->second->HasObserver(delegate));
-  it->second->RemoveObserver(delegate);
-  if (!it->second->might_have_observers()) {
-    delete it->second;
-    delegate_map_.erase(it);
-  }
 }
 
 bool ResourceDispatcherHostImpl::ShouldServiceRequest(
