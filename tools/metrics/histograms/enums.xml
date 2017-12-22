@@ -24919,6 +24919,7 @@ from previous Chrome versions.
   <int value="-1575984706" label="gl-composited-overlay-candidate-quad-border"/>
   <int value="-1575554415" label="AndroidPaymentAppsFilter:enabled"/>
   <int value="-1575430234" label="DontPrefetchLibraries:disabled"/>
+  <int value="-1575375861" label="enable-captive-portal-random-url"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1559789642" label="RunAllFlashInAllowMode:enabled"/>

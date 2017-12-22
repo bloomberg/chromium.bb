@@ -296,6 +296,9 @@ const char kDisableMdErrorScreen[] = "disable-md-error-screen";
 // Disables Settings based network configuration dialogs.
 const char kDisableNetworkSettingsConfig[] = "disable-network-settings-config";
 
+// Enables using a random url for captive portal detection.
+const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
+
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
