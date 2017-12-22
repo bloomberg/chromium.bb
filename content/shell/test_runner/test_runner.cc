@@ -121,7 +121,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   void ClearAllDatabases();
   void ClearPrinting();
-  void CloseWebInspector();
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
                                             int y,
                                             v8::Local<v8::Function> callback);
@@ -154,7 +153,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpTitleChanges();
   void DumpUserGestureInFrameLoadCallbacks();
   void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
-  void EvaluateInWebInspector(int call_id, const std::string& script);
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
   void ExecCommand(gin::Arguments* args);
   void ForceNextDrawingBufferCreationToFail();
@@ -249,7 +247,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetWillSendRequestClearHeader(const std::string& header);
   void SetWindowIsKey(bool value);
   void SetXSSAuditorEnabled(bool enabled);
-  void ShowWebInspector(gin::Arguments* args);
   void NavigateSecondaryWindow(const std::string& url);
   void InspectSecondaryWindow();
   void SimulateWebNotificationClick(gin::Arguments* args);
@@ -368,7 +365,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
       .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
-      .SetMethod("closeWebInspector", &TestRunnerBindings::CloseWebInspector)
       .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
                  &TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen)
       .SetMethod("didAcquirePointerLock",
@@ -424,8 +420,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::EnableAutoResizeMode)
       .SetMethod("enableUseZoomForDSF",
                  &TestRunnerBindings::EnableUseZoomForDSF)
-      .SetMethod("evaluateInWebInspector",
-                 &TestRunnerBindings::EvaluateInWebInspector)
       .SetMethod("evaluateScriptInIsolatedWorld",
                  &TestRunnerBindings::EvaluateScriptInIsolatedWorld)
       .SetMethod(
@@ -583,7 +577,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setWindowIsKey", &TestRunnerBindings::SetWindowIsKey)
       .SetMethod("setXSSAuditorEnabled",
                  &TestRunnerBindings::SetXSSAuditorEnabled)
-      .SetMethod("showWebInspector", &TestRunnerBindings::ShowWebInspector)
       .SetMethod("navigateSecondaryWindow",
                  &TestRunnerBindings::NavigateSecondaryWindow)
       .SetMethod("inspectSecondaryWindow",
@@ -1239,16 +1232,6 @@ void TestRunnerBindings::DumpNavigationPolicy() {
     runner_->DumpNavigationPolicy();
 }
 
-void TestRunnerBindings::ShowWebInspector(gin::Arguments* args) {
-  if (runner_) {
-    std::string settings;
-    args->GetNext(&settings);
-    std::string frontend_url;
-    args->GetNext(&frontend_url);
-    runner_->ShowWebInspector(settings, frontend_url);
-  }
-}
-
 void TestRunnerBindings::NavigateSecondaryWindow(const std::string& url) {
   if (runner_)
     runner_->NavigateSecondaryWindow(GURL(url));
@@ -1259,21 +1242,10 @@ void TestRunnerBindings::InspectSecondaryWindow() {
     runner_->InspectSecondaryWindow();
 }
 
-void TestRunnerBindings::CloseWebInspector() {
-  if (runner_)
-    runner_->CloseWebInspector();
-}
-
 bool TestRunnerBindings::IsChooserShown() {
   if (runner_)
     return runner_->IsChooserShown();
   return false;
-}
-
-void TestRunnerBindings::EvaluateInWebInspector(int call_id,
-                                                const std::string& script) {
-  if (runner_)
-    runner_->EvaluateInWebInspector(call_id, script);
 }
 
 void TestRunnerBindings::ClearAllDatabases() {
@@ -1968,11 +1940,6 @@ void TestRunner::SetV8CacheDisabled(bool disabled) {
                : blink::WebSettings::kV8CacheOptionsDefault);
 }
 
-void TestRunner::ShowDevTools(const std::string& settings,
-                              const std::string& frontend_url) {
-  delegate_->ShowDevTools(settings, frontend_url);
-}
-
 void TestRunner::NavigateSecondaryWindow(const GURL& url) {
   delegate_->NavigateSecondaryWindow(url);
 }
@@ -2587,11 +2554,6 @@ void TestRunner::SetUseMockTheme(bool use) {
   blink::SetMockThemeEnabledForTest(use);
 }
 
-void TestRunner::ShowWebInspector(const std::string& str,
-                                  const std::string& frontend_url) {
-  ShowDevTools(str, frontend_url);
-}
-
 void TestRunner::WaitUntilExternalURLLoad() {
   layout_test_runtime_flags_.set_wait_until_external_url_load(true);
   OnLayoutTestRuntimeFlagsChanged();
@@ -2635,17 +2597,8 @@ bool TestRunner::ShouldDumpJavaScriptDialogs() const {
   return layout_test_runtime_flags_.dump_javascript_dialogs();
 }
 
-void TestRunner::CloseWebInspector() {
-  delegate_->CloseDevTools();
-}
-
 bool TestRunner::IsChooserShown() {
   return 0 < chooser_count_;
-}
-
-void TestRunner::EvaluateInWebInspector(int call_id,
-                                        const std::string& script) {
-  delegate_->EvaluateInWebInspector(call_id, script);
 }
 
 void TestRunner::ClearAllDatabases() {

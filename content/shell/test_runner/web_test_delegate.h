@@ -131,17 +131,8 @@ class WebTestDelegate {
                                     const blink::WebSize& max_size) = 0;
   virtual void DisableAutoResizeMode(const blink::WebSize& new_size) = 0;
 
-  // Opens and closes the inspector.
-  virtual void ShowDevTools(const std::string& settings,
-                            const std::string& frontend_url) = 0;
-  virtual void CloseDevTools() = 0;
-
   virtual void NavigateSecondaryWindow(const GURL& url) = 0;
   virtual void InspectSecondaryWindow() = 0;
-
-  // Evaluate the given script in the DevTools agent.
-  virtual void EvaluateInWebInspector(int call_id,
-                                      const std::string& script) = 0;
 
   // Controls WebSQL databases.
   virtual void ClearAllDatabases() = 0;

@@ -212,10 +212,6 @@ class BlinkTestController : public WebContentsObserver,
   void OnSetPopupBlockingEnabled(bool block_popups);
   void OnTestFinished();
   void OnNavigateSecondaryWindow(const GURL& url);
-  void OnShowDevTools(const std::string& settings,
-                      const std::string& frontend_url);
-  void OnEvaluateInDevTools(int call_id, const std::string& script);
-  void OnCloseDevTools();
   void OnGoToOffset(int offset);
   void OnReload();
   void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);

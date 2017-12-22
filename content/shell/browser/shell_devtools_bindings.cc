@@ -174,21 +174,6 @@ void ShellDevToolsBindings::WebContentsDestroyed() {
   }
 }
 
-void ShellDevToolsBindings::SetPreferences(const std::string& json) {
-  preferences_.Clear();
-  if (json.empty())
-    return;
-  base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(json);
-  if (!parsed || !parsed->GetAsDictionary(&dict))
-    return;
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().is_string())
-      continue;
-    preferences_.SetWithoutPathExpansion(it.key(), it.value().CreateDeepCopy());
-  }
-}
-
 void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
   std::string method;

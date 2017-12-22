@@ -118,20 +118,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   // The actions below should only be done *once* per test.
   if (!initial_configuration)
     return;
-
-  bool is_legacy_devtools_test =
-      is_devtools_test &&
-      spec.find("integration_test_runner.html") == std::string::npos;
-  if (is_legacy_devtools_test) {
-    // Subfolder name determines default panel to open.
-    std::string folder = "/devtools/";
-    std::string test_path = spec.substr(spec.find(folder) + folder.length());
-    base::DictionaryValue settings;
-    settings.SetString("testPath", base::GetQuotedJSONString(spec));
-    std::string settings_string;
-    base::JSONWriter::Write(settings, &settings_string);
-    test_runner_->ShowDevTools(settings_string, std::string());
-  }
 }
 
 void TestInterfaces::WindowOpened(WebViewTestProxyBase* proxy) {

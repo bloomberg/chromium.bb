@@ -92,10 +92,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void DisableAutoResizeMode(const blink::WebSize& new_size) override;
   void NavigateSecondaryWindow(const GURL& url) override;
   void InspectSecondaryWindow() override;
-  void ShowDevTools(const std::string& settings,
-                    const std::string& frontend_url) override;
-  void CloseDevTools() override;
-  void EvaluateInWebInspector(int call_id, const std::string& script) override;
   void ClearAllDatabases() override;
   void SetDatabaseQuota(int quota) override;
   void SimulateWebNotificationClick(

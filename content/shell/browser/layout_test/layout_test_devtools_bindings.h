@@ -15,27 +15,18 @@ class WebContents;
 
 class LayoutTestDevToolsBindings : public ShellDevToolsBindings {
  public:
-  static GURL GetDevToolsPathAsURL(const std::string& frontend_url);
-
-  static GURL MapTestURLIfNeeded(const GURL& test_url,
-                                 bool* is_devtools_js_test);
+  static GURL MapTestURLIfNeeded(const GURL& test_url, bool* is_devtools_test);
 
   LayoutTestDevToolsBindings(WebContents* devtools_contents,
                              WebContents* inspected_contents,
-                             const std::string& settings,
-                             const GURL& frontend_url,
-                             bool new_harness);
+                             const GURL& frontend_url);
 
-  void EvaluateInFrontend(int call_id, const std::string& expression);
   void Attach() override;
 
   ~LayoutTestDevToolsBindings() override;
 
  private:
   class SecondaryObserver;
-
-  // ShellDevToolsBindings overrides.
-  void HandleMessageFromDevToolsFrontend(const std::string& message) override;
 
   // WebContentsObserver implementation.
   void RenderProcessGone(base::TerminationStatus status) override;
@@ -44,10 +35,8 @@ class LayoutTestDevToolsBindings : public ShellDevToolsBindings {
 
   void NavigateDevToolsFrontend();
 
-  bool ready_for_test_ = false;
   bool is_startup_test_ = false;
   GURL frontend_url_;
-  std::vector<std::pair<int, std::string>> pending_evaluations_;
   std::unique_ptr<SecondaryObserver> secondary_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestDevToolsBindings);

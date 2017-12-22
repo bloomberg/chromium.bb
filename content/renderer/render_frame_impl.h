@@ -484,7 +484,6 @@ class CONTENT_EXPORT RenderFrameImpl
                        const gfx::Range& range) override;
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
-  void DetachDevToolsForTest() override;
   void SetPreviewsState(PreviewsState previews_state) override;
   PreviewsState GetPreviewsState() const override;
   bool IsPasting() const override;

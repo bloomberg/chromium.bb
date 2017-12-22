@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -69,10 +67,13 @@ class LayoutTestDevToolsBindings::SecondaryObserver
 };
 
 // static.
-GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
-    const std::string& frontend_url) {
-  if (!frontend_url.empty())
-    return GURL(frontend_url);
+GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
+                                                    bool* is_devtools_test) {
+  std::string test_url_string = test_url.spec();
+  *is_devtools_test = test_url_string.find("/devtools/") != std::string::npos;
+  if (!*is_devtools_test)
+    return test_url;
+
   base::FilePath dir_exe;
   if (!PathService::Get(base::DIR_EXE, &dir_exe)) {
     NOTREACHED();
@@ -102,99 +103,45 @@ GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
       base::StringPrintf("%s?experiments=true", result.spec().c_str());
   if (is_debug_dev_tools)
     url_string += "&debugFrontend=true";
-  return GURL(url_string);
-}
-
-// static.
-GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
-                                                    bool* is_devtools_js_test) {
-  std::string spec = test_url.spec();
-  bool is_js_test =
-      base::EndsWith(spec, ".js", base::CompareCase::INSENSITIVE_ASCII);
-  *is_devtools_js_test =
-      spec.find("/devtools/") != std::string::npos && is_js_test;
-  if (!*is_devtools_js_test)
-    return test_url;
-  std::string url_string = GetDevToolsPathAsURL(std::string()).spec();
-  url_string += "&test=" + spec;
+  url_string += "&test=" + test_url_string;
   return GURL(url_string);
 }
 
 void LayoutTestDevToolsBindings::NavigateDevToolsFrontend() {
-  GURL devtools_url = GetDevToolsPathAsURL(frontend_url_.spec());
-  NavigationController::LoadURLParams params(devtools_url);
+  NavigationController::LoadURLParams params(frontend_url_);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   web_contents()->GetController().LoadURLWithParams(params);
   web_contents()->Focus();
 }
 
-void LayoutTestDevToolsBindings::EvaluateInFrontend(int call_id,
-                                                    const std::string& script) {
-  if (!ready_for_test_) {
-    pending_evaluations_.push_back(std::make_pair(call_id, script));
-    return;
-  }
-
-  std::string encoded_script;
-  base::JSONWriter::Write(base::Value(script), &encoded_script);
-  std::string source =
-      base::StringPrintf("DevToolsAPI.evaluateForTestInFrontend(%d, %s);",
-                         call_id, encoded_script.c_str());
-  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(source));
-}
-
 void LayoutTestDevToolsBindings::Attach() {
   DCHECK(is_startup_test_);
   ShellDevToolsBindings::Attach();
-  EvaluateInFrontend(0, "TestRunner._startupTestSetupFinished();");
+  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16("TestRunner._startupTestSetupFinished();\n//# "
+                        "sourceURL=layout_test_devtools_bindings.cc"));
 }
 
 LayoutTestDevToolsBindings::LayoutTestDevToolsBindings(
     WebContents* devtools_contents,
     WebContents* inspected_contents,
-    const std::string& settings,
-    const GURL& frontend_url,
-    bool new_harness)
+    const GURL& frontend_url)
     : ShellDevToolsBindings(devtools_contents, inspected_contents, nullptr),
       frontend_url_(frontend_url) {
-  SetPreferences(settings);
-  if (new_harness) {
-    is_startup_test_ =
-        frontend_url.query().find("/startup/") != std::string::npos;
-    secondary_observer_ =
-        std::make_unique<SecondaryObserver>(this, is_startup_test_);
-    if (!is_startup_test_) {
-      NavigationController::LoadURLParams params(
-          GetInspectedPageURL(frontend_url));
-      params.transition_type = ui::PageTransitionFromInt(
-          ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-      inspected_contents->GetController().LoadURLWithParams(params);
-    }
-  } else {
-    NavigateDevToolsFrontend();
-  }
+  is_startup_test_ =
+      frontend_url.query().find("/startup/") != std::string::npos;
+  secondary_observer_ =
+      std::make_unique<SecondaryObserver>(this, is_startup_test_);
+  if (is_startup_test_)
+    return;
+  NavigationController::LoadURLParams params(GetInspectedPageURL(frontend_url));
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  inspected_contents->GetController().LoadURLWithParams(params);
 }
 
 LayoutTestDevToolsBindings::~LayoutTestDevToolsBindings() {}
-
-void LayoutTestDevToolsBindings::HandleMessageFromDevToolsFrontend(
-    const std::string& message) {
-  std::string method;
-  base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
-  if (parsed_message && parsed_message->GetAsDictionary(&dict) &&
-      dict->GetString("method", &method) && method == "readyForTest") {
-    ready_for_test_ = true;
-    for (const auto& pair : pending_evaluations_)
-      EvaluateInFrontend(pair.first, pair.second);
-    pending_evaluations_.clear();
-    return;
-  }
-
-  ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(message);
-}
 
 void LayoutTestDevToolsBindings::RenderProcessGone(
     base::TerminationStatus status) {

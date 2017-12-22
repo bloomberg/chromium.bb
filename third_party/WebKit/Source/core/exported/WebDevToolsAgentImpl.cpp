@@ -610,14 +610,6 @@ bool WebDevToolsAgentImpl::CacheDisabled() {
   return false;
 }
 
-void WebDevToolsAgentImpl::DetachAllSessionsForTesting() {
-  Vector<int> session_ids;
-  for (auto& it : sessions_)
-    session_ids.push_back(it.key);
-  for (int session_id : session_ids)
-    DestroySession(session_id);
-}
-
 void WebDevToolsAgentImpl::FlushProtocolNotifications() {
   for (auto& it : sessions_)
     it.value->flushProtocolNotifications();
