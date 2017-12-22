@@ -40,6 +40,8 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
@@ -461,6 +463,11 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
       GetUserIdHashByUserIdForTesting(user_id);
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
   chromeos::WallpaperManager::Initialize();
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_ =
+      std::make_unique<WallpaperControllerClient>();
+  TestWallpaperController test_wallpaper_controller_;
+  wallpaper_controller_client_->InitForTesting(
+      test_wallpaper_controller_.CreateInterfacePtr());
   g_browser_process->local_state()->SetString(
       "PublicAccountPendingDataRemoval", user_email);
   user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,

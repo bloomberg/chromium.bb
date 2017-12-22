@@ -65,6 +65,8 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1162,8 +1164,12 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
 
-    // Initialize the WallpaperManager singleton.
+    // Initialize the WallpaperManager singleton and WallpaperControllerClient.
     chromeos::WallpaperManager::Initialize();
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
 
     // Initialize the rest.
     ChromeLauncherControllerTest::SetUp();
@@ -1180,6 +1186,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     ChromeLauncherControllerTest::TearDown();
     user_manager_enabler_.reset();
     chromeos::WallpaperManager::Shutdown();
+    wallpaper_controller_client_.reset();
 
     // A Task is leaked if we don't destroy everything, then run the message
     // loop.
@@ -1268,6 +1275,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   }
 
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+
+  TestWallpaperController test_wallpaper_controller_;
 
   ProfileToNameMap created_profiles_;
 

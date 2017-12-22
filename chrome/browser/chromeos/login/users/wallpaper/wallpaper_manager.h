@@ -57,20 +57,9 @@ void AssertCalledOnWallpaperSequence(base::SequencedTaskRunner* task_runner);
 // Name of wallpaper sequence token.
 extern const char kWallpaperSequenceTokenName[];
 
-// File path suffices of resized small or large wallpaper.
-// TODO(bshe): Use the same sub folder system as custom wallpapers use.
-// crbug.com/174928
-extern const char kSmallWallpaperSuffix[];
-extern const char kLargeWallpaperSuffix[];
-
 class WallpaperManager : public wm::ActivationChangeObserver,
                          public aura::WindowObserver {
  public:
-  class PendingWallpaper;
-
-  using MovableOnDestroyCallbackHolder =
-      ash::WallpaperController::MovableOnDestroyCallbackHolder;
-
   class CustomizedWallpaperRescaledFiles {
    public:
     CustomizedWallpaperRescaledFiles(const base::FilePath& path_downloaded,
@@ -202,9 +191,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
                        const AccountId& account_id,
                        std::unique_ptr<std::string> data);
 
-  // Returns queue size.
-  size_t GetPendingListSizeForTesting() const;
-
   // A wrapper of |WallpaperController::IsPolicyControlled|.
   bool IsPolicyControlled(const AccountId& account_id) const;
 
@@ -239,18 +225,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
 
   WallpaperManager();
 
-  // Gets |account_id|'s custom wallpaper at |wallpaper_path|. Falls back on
-  // original custom wallpaper. When |update_wallpaper| is true, sets wallpaper
-  // to the loaded wallpaper. Must run on wallpaper sequenced worker thread.
-  static void GetCustomWallpaperInternal(
-      const AccountId& account_id,
-      const wallpaper::WallpaperInfo& info,
-      const base::FilePath& wallpaper_path,
-      bool update_wallpaper,
-      const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
-      MovableOnDestroyCallbackHolder on_finish,
-      base::WeakPtr<WallpaperManager> weak_ptr);
-
   // Resize and save customized default wallpaper.
   static void ResizeCustomizedDefaultWallpaper(
       std::unique_ptr<gfx::ImageSkia> image,
@@ -283,13 +257,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // Note that before device is enrolled, it proceeds with untrusted setting.
   void InitializeRegisteredDeviceWallpaper();
 
-  // Loads |account_id|'s wallpaper. When |update_wallpaper| is true, sets
-  // wallpaper to the loaded wallpaper.
-  void LoadWallpaper(const AccountId& account_id,
-                     const wallpaper::WallpaperInfo& info,
-                     bool update_wallpaper,
-                     MovableOnDestroyCallbackHolder on_finish);
-
   // A wrapper of |WallpaperController::GetUserWallpaperInfo|.
   bool GetUserWallpaperInfo(const AccountId& account_id,
                             wallpaper::WallpaperInfo* info) const;
@@ -299,44 +266,12 @@ class WallpaperManager : public wm::ActivationChangeObserver,
                                 std::string* url,
                                 std::string* hash);
 
-  // Returns the file directory where the downloaded device wallpaper is saved.
-  base::FilePath GetDeviceWallpaperDir();
-
-  // Returns the full path for the downloaded device wallpaper.
-  base::FilePath GetDeviceWallpaperFilePath();
-
-  // Sets wallpaper to the decoded wallpaper if |update_wallpaper| is true.
-  // Otherwise, cache wallpaper to memory if not logged in.  (Takes a UserImage
-  // because that's the callback interface provided by UserImageLoader.)
-  void OnWallpaperDecoded(const AccountId& account_id,
-                          const wallpaper::WallpaperInfo& info,
-                          bool update_wallpaper,
-                          MovableOnDestroyCallbackHolder on_finish,
-                          std::unique_ptr<user_manager::UserImage> user_image);
-
   // A wrapper of |WallpaperController::SetDefaultWallpaperImpl|.
   void SetDefaultWallpaperImpl(const AccountId& account_id,
-                               bool show_wallpaper,
-                               MovableOnDestroyCallbackHolder on_finish);
-
-  // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is
-  // already loaded for that user, do nothing. Must be called on UI thread.
-  void StartLoad(const AccountId& account_id,
-                 const wallpaper::WallpaperInfo& info,
-                 bool update_wallpaper,
-                 const base::FilePath& wallpaper_path,
-                 MovableOnDestroyCallbackHolder on_finish);
-
-  // After completed load operation, update average load time.
-  void SaveLastLoadTime(const base::TimeDelta elapsed);
+                               bool show_wallpaper);
 
   // Notify all registered observers.
   void NotifyAnimationFinished();
-
-  // Calculates delay for the next wallpaper load. In most cases it is zero. It
-  // starts with the average wallpaper load time, and is reduced by the time
-  // passed after the last wallpaper load.
-  base::TimeDelta GetWallpaperLoadDelay() const;
 
   // This is called after we check that supplied default wallpaper files exist.
   void SetCustomizedDefaultWallpaperAfterCheck(
@@ -364,20 +299,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
 
   // Returns wallpaper subdirectory name for current resolution.
   const char* GetCustomWallpaperSubdirForCurrentResolution();
-
-  // Callback function for GetCustomWallpaperInternal().
-  void OnCustomWallpaperFileNotFound(const AccountId& account_id,
-                                     const base::FilePath& expected_path,
-                                     bool update_wallpaper,
-                                     MovableOnDestroyCallbackHolder on_finish);
-
-  // Returns modifiable PendingWallpaper. (Either |pending_inactive_| or a new
-  // |PendingWallpaper| object.)
-  PendingWallpaper* GetPendingWallpaper();
-
-  // This is called by PendingWallpaper when load is finished.
-  void RemovePendingWallpaperFromList(
-      PendingWallpaper* finished_loading_request);
 
   // Set wallpaper to |user_image| controlled by policy.  (Takes a UserImage
   // because that's the callback interface provided by UserImageLoader.)
@@ -423,6 +344,9 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // Returns the wallpaper cache map, or a dummy value under mash.
   ash::CustomWallpaperMap* GetWallpaperCacheMap();
 
+  // Returns the account id of |current_user_|, or an empty value under mash.
+  AccountId GetCurrentUserAccountId();
+
   std::unique_ptr<CrosSettings::ObserverSubscription>
       show_user_name_on_signin_subscription_;
 
@@ -448,32 +372,11 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // A placeholder for |wallpaper_cache_map_| under mash.
   ash::CustomWallpaperMap dummy_wallpaper_cache_map_;
 
-  // The last selected user on user pod row.
-  AccountId last_selected_user_ = EmptyAccountId();
-
   bool should_cache_wallpaper_ = false;
 
   base::ObserverList<Observer> observers_;
 
-  // These members are for the scheduler:
-
-  // When last load attempt finished.
-  base::Time last_load_finished_at_;
-
-  // last N wallpaper loads times.
-  base::circular_deque<base::TimeDelta> last_load_times_;
-
   bool retry_download_if_failed_ = true;
-
-  // Pointer to last inactive (waiting) entry of 'loading_' list.
-  // NULL when there is no inactive request.
-  PendingWallpaper* pending_inactive_ = nullptr;
-
-  // Owns PendingWallpaper.
-  // PendingWallpaper deletes itself from here on load complete.
-  // All pending will be finally deleted on destroy.
-  typedef std::vector<PendingWallpaper*> PendingList;
-  PendingList loading_;
 
   ScopedObserver<wm::ActivationClient, wm::ActivationChangeObserver>
       activation_client_observer_;

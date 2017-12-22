@@ -10,7 +10,6 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -19,46 +18,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {
-
-namespace {
-
-class TestWallpaperObserverPendingListEmpty
-    : public WallpaperManager::Observer {
- public:
-  explicit TestWallpaperObserverPendingListEmpty(
-      WallpaperManager* wallpaper_manager)
-      : empty_(false), wallpaper_manager_(wallpaper_manager) {
-    DCHECK(wallpaper_manager_);
-    wallpaper_manager_->AddObserver(this);
-  }
-
-  ~TestWallpaperObserverPendingListEmpty() override {
-    wallpaper_manager_->RemoveObserver(this);
-  }
-
-  void OnPendingListEmptyForTesting() override {
-    empty_ = true;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
-  void WaitForPendingListEmpty() {
-    if (wallpaper_manager_->GetPendingListSizeForTesting() == 0) {
-      empty_ = true;
-      return;
-    }
-    while (!empty_)
-      base::RunLoop().Run();
-  }
-
- private:
-  bool empty_;
-  WallpaperManager* wallpaper_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWallpaperObserverPendingListEmpty);
-};
-
-}  // namespace
-
 namespace wallpaper_manager_test_utils {
 
 const SkColor kLargeCustomWallpaperColor = SK_ColorDKGRAY;
@@ -103,11 +62,6 @@ bool ImageIsNearColor(gfx::ImageSkia image, SkColor expected_color) {
   }
 
   return true;
-}
-
-void WaitAsyncWallpaperLoadFinished() {
-  TestWallpaperObserverPendingListEmpty observer(WallpaperManager::Get());
-  observer.WaitForPendingListEmpty();
 }
 
 }  // namespace wallpaper_manager_test_utils

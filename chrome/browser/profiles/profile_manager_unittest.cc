@@ -56,6 +56,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -142,6 +144,10 @@ class ProfileManagerTest : public testing::Test {
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kTestType);
     chromeos::WallpaperManager::Initialize();
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
 
     // Have to manually reset the session type in between test runs because
     // some tests log in users.
@@ -157,6 +163,7 @@ class ProfileManagerTest : public testing::Test {
     content::RunAllTasksUntilIdle();
 #if defined(OS_CHROMEOS)
     session_type_.reset();
+    wallpaper_controller_client_.reset();
     chromeos::WallpaperManager::Shutdown();
 #endif
   }
@@ -234,6 +241,8 @@ class ProfileManagerTest : public testing::Test {
   chromeos::ScopedTestUserManager test_user_manager_;
   std::unique_ptr<base::AutoReset<extensions::FeatureSessionType>>
       session_type_;
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  TestWallpaperController test_wallpaper_controller_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManagerTest);
@@ -607,6 +616,11 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
     cl->AppendSwitch(::switches::kIncognito);
 
     chromeos::WallpaperManager::Initialize();
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
+
     // Have to manually reset the session type in between test runs because
     // RegisterUser() changes it.
     ASSERT_EQ(extensions::FeatureSessionType::INITIAL,
