@@ -20,6 +20,10 @@ const int64_t kMaxImageSizeInBytes =
 // TODO(crbug.com/776464): This should be changed to |ConvertToImageSkia| after
 // the use of |UserImage| in |WallpaperManager| is deprecated.
 void ConvertToUserImage(OnWallpaperDecoded callback, const SkBitmap& image) {
+  if (image.isNull()) {
+    std::move(callback).Run(std::make_unique<user_manager::UserImage>());
+    return;
+  }
   SkBitmap final_image = image;
   final_image.setImmutable();
   gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(final_image);

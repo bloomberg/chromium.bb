@@ -289,7 +289,8 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
   if (params->layout != wallpaper_base::WALLPAPER_LAYOUT_STRETCH &&
       resolution == ash::WallpaperController::WALLPAPER_RESOLUTION_SMALL) {
     file_name = base::FilePath(file_name)
-                    .InsertBeforeExtension(chromeos::kSmallWallpaperSuffix)
+                    .InsertBeforeExtension(
+                        ash::WallpaperController::kSmallWallpaperSuffix)
                     .value();
   }
   wallpaper_path = wallpaper_path.Append(file_name);
@@ -411,7 +412,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
     base::FilePath file_path =
         wallpaper_dir.Append(file_name).InsertBeforeExtension(
-            chromeos::kSmallWallpaperSuffix);
+            ash::WallpaperController::kSmallWallpaperSuffix);
     if (base::PathExists(file_path))
       return;
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
@@ -784,7 +785,8 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
          current = files.Next()) {
       std::string file_name = current.BaseName().RemoveExtension().value();
       // Do not add file name of small resolution wallpaper to the list.
-      if (!base::EndsWith(file_name, chromeos::kSmallWallpaperSuffix,
+      if (!base::EndsWith(file_name,
+                          ash::WallpaperController::kSmallWallpaperSuffix,
                           base::CompareCase::SENSITIVE))
         file_list.push_back(current.BaseName().value());
     }

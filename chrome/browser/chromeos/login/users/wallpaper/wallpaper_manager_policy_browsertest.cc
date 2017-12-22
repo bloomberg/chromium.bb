@@ -344,11 +344,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   SetSystemSalt();
   wallpaper::WallpaperInfo info;
   LoginUser(testUsers_[0]);
-  base::RunLoop().RunUntilIdle();
 
-  // First user: Wait until default wallpaper has been loaded (happens
-  // automatically) and store color to recognize it later.
-  RunUntilWallpaperChangeCount(1);
+  // First user: Stores the average color of the default wallpaper (set
+  // automatically) to be compared against later.
   const SkColor original_wallpaper_color = GetAverageWallpaperColor();
 
   // Second user: Set wallpaper policy to blue image.  This should not result in
@@ -357,14 +355,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
 
   // First user: Set wallpaper policy to red image and verify average color.
   InjectPolicy(0, kRedImageFileName);
-  RunUntilWallpaperChangeCount(2);
+  RunUntilWallpaperChangeCount(1);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(wallpaper::POLICY, info.type);
   ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 
   // First user: Set wallpaper policy to green image and verify average color.
   InjectPolicy(0, kGreenImageFileName);
-  RunUntilWallpaperChangeCount(3);
+  RunUntilWallpaperChangeCount(2);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(wallpaper::POLICY, info.type);
   ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
@@ -372,66 +370,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   // First user: Clear wallpaper policy and verify that the default wallpaper is
   // set again.
   InjectPolicy(0, "");
-  RunUntilWallpaperChangeCount(4);
+  RunUntilWallpaperChangeCount(3);
   GetUserWallpaperInfo(0, &info);
   ASSERT_EQ(wallpaper::DEFAULT, info.type);
   ASSERT_EQ(original_wallpaper_color, GetAverageWallpaperColor());
 
   // Check wallpaper change count to ensure that setting the second user's
   // wallpaper didn't have any effect.
-  ASSERT_EQ(4, wallpaper_change_count_);
-}
-
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
-                       DISABLED_PRE_PRE_PRE_WallpaperOnLoginScreen) {
-  RegisterUser(testUsers_[0]);
-  RegisterUser(testUsers_[1]);
-  StartupUtils::MarkOobeCompleted();
-}
-
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
-                       DISABLED_PRE_PRE_WallpaperOnLoginScreen) {
-  LoginUser(testUsers_[0]);
-
-  // Wait until default wallpaper has been loaded.
-  RunUntilWallpaperChangeCount(1);
-
-  // Set wallpaper policy to red image.
-  InjectPolicy(0, kRedImageFileName);
-
-  // Run until wallpaper has changed.
-  RunUntilWallpaperChangeCount(2);
-  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
-}
-
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
-                       DISABLED_PRE_WallpaperOnLoginScreen) {
-  LoginUser(testUsers_[1]);
-
-  // Wait until default wallpaper has been loaded.
-  RunUntilWallpaperChangeCount(1);
-
-  // Set wallpaper policy to green image.
-  InjectPolicy(1, kGreenImageFileName);
-
-  // Run until wallpaper has changed.
-  RunUntilWallpaperChangeCount(2);
-  ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
-}
-
-// Disabled due to flakiness: http://crbug.com/385648.
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
-                       DISABLED_WallpaperOnLoginScreen) {
-  // Wait for active pod's wallpaper to be loaded.
-  RunUntilWallpaperChangeCount(1);
-  ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
-
-  // Select the second pod (belonging to user 1).
-  ASSERT_TRUE(content::ExecuteScript(
-      LoginDisplayHost::default_host()->GetOobeUI()->web_ui()->GetWebContents(),
-      "document.getElementsByClassName('pod')[1].focus();"));
-  RunUntilWallpaperChangeCount(2);
-  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
+  ASSERT_EQ(3, wallpaper_change_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
@@ -444,14 +390,11 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
   SetSystemSalt();
   LoginUser(testUsers_[0]);
 
-  // Wait until default wallpaper has been loaded.
-  RunUntilWallpaperChangeCount(1);
-
   // Set wallpaper policy to red image.
   InjectPolicy(0, kRedImageFileName);
 
   // Run until wallpaper has changed.
-  RunUntilWallpaperChangeCount(2);
+  RunUntilWallpaperChangeCount(1);
   ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
   StartupUtils::MarkOobeCompleted();
 }
@@ -459,8 +402,6 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
   LoginUser(testUsers_[0]);
 
-  // Wait until wallpaper has been loaded.
-  RunUntilWallpaperChangeCount(1);
   ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 }
 
@@ -476,23 +417,20 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_DevicePolicyTest) {
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, DevicePolicyTest) {
   SetSystemSalt();
 
-  // Wait until default wallpaper has been loaded in the login screen.
-  RunUntilWallpaperChangeCount(1);
-
   // Set the device wallpaper policy. Test that the device policy controlled
   // wallpaper shows up in the login screen.
   InjectDevicePolicy(kRedImageFileName);
-  RunUntilWallpaperChangeCount(2);
+  RunUntilWallpaperChangeCount(1);
   EXPECT_TRUE(ShouldSetDeviceWallpaper(user_manager::SignInAccountId()));
   EXPECT_EQ(kRedImageColor, GetAverageWallpaperColor());
 
   // Log in a test user and set the user wallpaper policy. The user policy
   // controlled wallpaper shows up in the user session.
   LoginUser(testUsers_[0]);
-  RunUntilWallpaperChangeCount(3);
+  RunUntilWallpaperChangeCount(2);
 
   InjectPolicy(0, kGreenImageFileName);
-  RunUntilWallpaperChangeCount(4);
+  RunUntilWallpaperChangeCount(3);
   EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // Set the device wallpaper policy inside the user session. That that the

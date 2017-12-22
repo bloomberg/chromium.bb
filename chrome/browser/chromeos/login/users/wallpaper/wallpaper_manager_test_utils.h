@@ -30,10 +30,6 @@ gfx::ImageSkia CreateTestImage(int width, int height, SkColor color);
 // used.)
 bool ImageIsNearColor(gfx::ImageSkia image, SkColor expected_color);
 
-// Wait until all wallpaper loading is done, and WallpaperManager comes into
-// a stable state.
-void WaitAsyncWallpaperLoadFinished();
-
 }  // namespace wallpaper_manager_test_utils
 }  // namespace chromeos
 

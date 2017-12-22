@@ -15,6 +15,8 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "extensions/browser/api_test_utils.h"
@@ -184,6 +186,8 @@ class WallpaperPrivateApiMultiUserUnittest
 
  private:
   MultiUserWindowManagerChromeOS* multi_user_window_manager_;
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  TestWallpaperController test_wallpaper_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateApiMultiUserUnittest);
 };
@@ -191,6 +195,9 @@ class WallpaperPrivateApiMultiUserUnittest
 void WallpaperPrivateApiMultiUserUnittest::SetUp() {
   AshTestBase::SetUp();
   WallpaperManager::Initialize();
+  wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();
+  wallpaper_controller_client_->InitForTesting(
+      test_wallpaper_controller_.CreateInterfacePtr());
   fake_user_manager()->AddUser(test_account_id1_);
   fake_user_manager()->AddUser(test_account_id2_);
 }
@@ -199,6 +206,7 @@ void WallpaperPrivateApiMultiUserUnittest::TearDown() {
   MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
   WallpaperManager::Shutdown();
+  wallpaper_controller_client_.reset();
 }
 
 void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(
