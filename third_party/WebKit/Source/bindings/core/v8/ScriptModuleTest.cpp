@@ -223,12 +223,7 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
   EXPECT_EQ("b", resolver->Specifiers()[1]);
 }
 
-// Disabled temporarily, because until a V8-side change
-// (https://bugs.chromium.org/p/v8/issues/detail?id=1569) is landed, this
-// test fails because Instantiate() fails due to the evaluation error.
-// TODO(hiroshige): Re-enable this once the V8-side change is landed.
-// crbug.com/763597
-TEST(ScriptModuleTest, DISABLED_EvaluationErrrorIsRemembered) {
+TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
   V8TestingScope scope;
 
   auto modulator = new ScriptModuleTestModulator();
