@@ -65,13 +65,15 @@ class RegistryVerifier(verifier.Verifier):
               'required', 'optional', or 'forbidden'. Values are not checked if
               an 'optional' key is not present in the registry.
           'values' (optional) a dictionary where each key is a registry value
-              and its associated value is a dictionary with the following key
-              and values:
+              (which is expanded using Expand) and its associated value is a
+              dictionary with the following key and values:
                   'type' (optional) a string indicating the type of the registry
                       value. If not present, the corresponding value is expected
                       to be absent in the registry.
-                  'data' the associated data of the registry value if 'type' is
-                      specified. If it is a string, it is expanded using Expand.
+                  'data' (optional) the associated data of the registry value if
+                      'type' is specified. If it is a string, it is expanded
+                      using Expand. If not present, only the value's type is
+                      verified.
           'wow_key' (optional) a string indicating whether the view of the
               registry is KEY_WOW64_32KEY or KEY_WOW64_64KEY. If not present,
               the view of registry is determined by the bitness of the installer
@@ -107,6 +109,7 @@ class RegistryVerifier(verifier.Verifier):
     for value, value_expectation in expectation['values'].iteritems():
       # Query the value. It will throw a WindowsError if the value doesn't
       # exist.
+      value = variable_expander.Expand(value)
       try:
         data, value_type = _winreg.QueryValueEx(key_handle, value)
       except WindowsError:
@@ -123,6 +126,9 @@ class RegistryVerifier(verifier.Verifier):
       assert self._ValueTypeConstant(expected_value_type) == value_type, \
           "Value '%s' of registry key %s has unexpected type '%s'" % (
               value, key, expected_value_type)
+
+      if 'data' not in value_expectation:
+        return
 
       # Verify the associated data of the value.
       expected_data = value_expectation['data']
