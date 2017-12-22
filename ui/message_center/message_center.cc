@@ -22,7 +22,6 @@ void MessageCenter::Initialize() {
 
 // static
 MessageCenter* MessageCenter::Get() {
-  DCHECK(g_message_center);
   return g_message_center;
 }
 
