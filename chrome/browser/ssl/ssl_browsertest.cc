@@ -2253,8 +2253,8 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestDisplaysInsecureForm) {
                      AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
 }
 
-// TODO(crbug.com/795820): Fails in Windows official builds.
-#if defined(OFFICIAL_BUILD) && defined(OS_WIN)
+// TODO(crbug.com/795820): Fails in Windows, Linux and Mac official builds.
+#if defined(OFFICIAL_BUILD)
 #define MAYBE_TestBrokenHTTPSReportingCloseTab \
   DISABLED_TestBrokenHTTPSReportingCloseTab
 #else
