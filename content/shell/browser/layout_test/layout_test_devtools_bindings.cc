@@ -59,7 +59,8 @@ class LayoutTestDevToolsBindings::SecondaryObserver
 
   // WebContentsObserver implementation.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+    if (BlinkTestController::Get())
+      BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
   }
 
  private:
@@ -197,12 +198,14 @@ void LayoutTestDevToolsBindings::HandleMessageFromDevToolsFrontend(
 
 void LayoutTestDevToolsBindings::RenderProcessGone(
     base::TerminationStatus status) {
-  BlinkTestController::Get()->DevToolsProcessCrashed();
+  if (BlinkTestController::Get())
+    BlinkTestController::Get()->DevToolsProcessCrashed();
 }
 
 void LayoutTestDevToolsBindings::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
-  BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+  if (BlinkTestController::Get())
+    BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
 }
 
 void LayoutTestDevToolsBindings::DocumentAvailableInMainFrame() {

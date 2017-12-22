@@ -42,8 +42,12 @@ namespace {
 bool RunOneTest(
     const content::TestInfo& test_info,
     bool* ran_at_least_once,
+    content::BlinkTestController* blink_test_controller,
     const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
-  if (!content::BlinkTestController::Get()->PrepareForLayoutTest(
+  DCHECK(ran_at_least_once);
+  DCHECK(blink_test_controller);
+
+  if (!blink_test_controller->PrepareForLayoutTest(
           test_info.url, test_info.current_working_directory,
           test_info.enable_pixel_dumping, test_info.expected_pixel_hash)) {
     return false;
@@ -60,7 +64,7 @@ bool RunOneTest(
   main_runner->Run();
 #endif
 
-  if (!content::BlinkTestController::Get()->ResetAfterLayoutTest())
+  if (!blink_test_controller->ResetAfterLayoutTest())
     return false;
 
 #if defined(OS_ANDROID)
@@ -90,8 +94,10 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   bool ran_at_least_once = false;
   std::unique_ptr<content::TestInfo> test_info;
   while ((test_info = test_extractor.GetNextTest())) {
-    if (!RunOneTest(*test_info, &ran_at_least_once, main_runner))
+    if (!RunOneTest(*test_info, &ran_at_least_once, &test_controller,
+                    main_runner)) {
       break;
+    }
   }
   if (!ran_at_least_once) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

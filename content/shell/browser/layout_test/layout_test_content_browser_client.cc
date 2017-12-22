@@ -104,7 +104,8 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
 void LayoutTestContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* render_view_host,
     WebPreferences* prefs) {
-  BlinkTestController::Get()->OverrideWebkitPrefs(prefs);
+  if (BlinkTestController::Get())
+    BlinkTestController::Get()->OverrideWebkitPrefs(prefs);
 }
 
 void LayoutTestContentBrowserClient::ResourceDispatcherHostCreated() {
