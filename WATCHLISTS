@@ -1406,19 +1406,22 @@
         '|media/audio/audio_(output_controller|power_monitor)',
     },
     'tab_capture': {
-      'filepath': 'cc/output/copy_output_'\
-        '|chrome/browser/extensions/api/tab_capture/'\
+      'filepath': 'chrome/browser/extensions/api/tab_capture/'\
         '|chrome/renderer/resources/extensions/tab_capture_custom_bindings.js'\
         '|chrome/test/data/extensions/api_test/tab_capture/'\
+        '|components/viz/common/(frame_sinks/copy_output_|gl_helper|yuv_)'\
+        '|components/viz/service/display/'\
+        '|components/viz/service/frame_sinks/(frame_sink_manager'\
+            '|video_capture/)'\
         '|content/browser/media/capture/'\
-        '|content/browser/renderer_host/delegated_frame_host'\
         '|content/browser/renderer_host/media/(audio_'\
             '|media_stream_manager|video_)'\
         '|content/public/renderer/media_stream_'\
         '|content/renderer/media/(media_stream|(.+audio_source))'\
         '|media/audio/(audio_output_controller|fake_audio_|virtual_audio_)'\
         '|media/base/video_frame\.h'\
-        '|media/capture/',
+        '|media/capture/'\
+        '|services/viz/privileged/interfaces/compositing/frame_sink',
     },
     'tab_contents': {
       'filepath': 'chrome/browser/tab_contents/|'\
