@@ -7,19 +7,12 @@ cr.define('extension_code_section_tests', function() {
   /** @enum {string} */
   var TestNames = {
     Layout: 'layout',
+    LongSource: 'long source',
   };
 
   var suiteName = 'ExtensionCodeSectionTest';
 
   suite(suiteName, function() {
-    /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
-    var code = {
-      beforeHighlight: 'this part before the highlight\nAnd this too\n',
-      highlight: 'highlight this part\n',
-      afterHighlight: 'this part after the highlight\n',
-      message: 'Highlight message',
-    };
-
     /** @type {extensions.CodeSection} */
     var codeSection;
 
@@ -34,14 +27,19 @@ cr.define('extension_code_section_tests', function() {
     });
 
     test(assert(TestNames.Layout), function() {
-      Polymer.dom.flush();
+      /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
+      var code = {
+        beforeHighlight: 'this part before the highlight\nAnd this too\n',
+        highlight: 'highlight this part\n',
+        afterHighlight: 'this part after the highlight',
+        message: 'Highlight message',
+      };
 
       var testIsVisible = extension_test_util.isVisible.bind(null, codeSection);
       expectFalse(!!codeSection.code);
       expectTrue(codeSection.$$('#scroll-container').hidden);
       expectFalse(testIsVisible('#main'));
       expectTrue(testIsVisible('#no-code'));
-      expectEquals('', codeSection.$['line-numbers'].textContent.trim());
 
       codeSection.code = code;
       expectTrue(testIsVisible('#main'));
@@ -54,7 +52,63 @@ cr.define('extension_code_section_tests', function() {
       var highlightedText = window.getSelection().toString();
       expectEquals(code.highlight, highlightedText);
       expectEquals(
-          '1\n2\n3\n4\n5', codeSection.$['line-numbers'].textContent.trim());
+          '1\n2\n3\n4',
+          codeSection.$$('#line-numbers span').textContent.trim());
+    });
+
+    test(assert(TestNames.LongSource), function() {
+      /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
+      var code;
+      var lineNums;
+
+      function setCodeContent(beforeLineCount, afterLineCount) {
+        code = {
+          beforeHighlight: '',
+          highlight: 'highlight',
+          afterHighlight: '',
+          message: 'Highlight message',
+        };
+        for (let i = 0; i < beforeLineCount; i++)
+          code.beforeHighlight += 'a\n';
+        for (let i = 0; i < afterLineCount; i++)
+          code.afterHighlight += 'a\n';
+      }
+
+      setCodeContent(0, 2000);
+      codeSection.code = code;
+      lineNums = codeSection.$$('#line-numbers span').textContent;
+      // Length should be 1000 +- 1.
+      expectTrue(lineNums.split('\n').length >= 999);
+      expectTrue(lineNums.split('\n').length <= 1001);
+      expectTrue(!!lineNums.match(/^1\n/));
+      expectTrue(!!lineNums.match(/1000/));
+      expectFalse(!!lineNums.match(/1001/));
+      expectTrue(codeSection.$$('#line-numbers .more-code.before').hidden);
+      expectFalse(codeSection.$$('#line-numbers .more-code.after').hidden);
+
+      setCodeContent(1000, 1000);
+      codeSection.code = code;
+      lineNums = codeSection.$$('#line-numbers span').textContent;
+      // Length should be 1000 +- 1.
+      expectTrue(lineNums.split('\n').length >= 999);
+      expectTrue(lineNums.split('\n').length <= 1001);
+      expectFalse(!!lineNums.match(/^1\n/));
+      expectTrue(!!lineNums.match(/1000/));
+      expectFalse(!!lineNums.match(/1999/));
+      expectFalse(codeSection.$$('#line-numbers .more-code.before').hidden);
+      expectFalse(codeSection.$$('#line-numbers .more-code.after').hidden);
+
+      setCodeContent(2000, 0);
+      codeSection.code = code;
+      lineNums = codeSection.$$('#line-numbers span').textContent;
+      // Length should be 1000 +- 1.
+      expectTrue(lineNums.split('\n').length >= 999);
+      expectTrue(lineNums.split('\n').length <= 1001);
+      expectFalse(!!lineNums.match(/^1\n/));
+      expectTrue(!!lineNums.match(/1002/));
+      expectTrue(!!lineNums.match(/2000/));
+      expectFalse(codeSection.$$('#line-numbers .more-code.before').hidden);
+      expectTrue(codeSection.$$('#line-numbers .more-code.after').hidden);
     });
   });
 

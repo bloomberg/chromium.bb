@@ -597,6 +597,10 @@ TEST_F('CrExtensionsCodeSectionTest', 'Layout', function() {
   this.runMochaTest(extension_code_section_tests.TestNames.Layout);
 });
 
+TEST_F('CrExtensionsCodeSectionTest', 'LongSource', function() {
+  this.runMochaTest(extension_code_section_tests.TestNames.LongSource);
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Navigation Helper Tests
 
