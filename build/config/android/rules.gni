@@ -1478,6 +1478,88 @@ if (enable_java_templates) {
     }
   }
 
+  # Creates an Android .aar library.
+  #
+  # Currently supports:
+  #   * AndroidManifest.xml
+  #   * classes.jar
+  #   * res/
+  #   * R.txt
+  #   * proguard.txt
+  # Does not yet support:
+  #   * public.txt
+  #   * annotations.zip
+  #   * assets/
+  #   * jni/
+  # See: https://developer.android.com/studio/projects/android-library.html#aar-contents
+  #
+  # Variables:
+  #   output: Path to the output .aar.
+  #   proguard_configs: List of proguard configs (optional).
+  #   android_manifest: Path to AndroidManifest.xml (optional).
+  #
+  # Example
+  #   dist_aar("my_aar") {
+  #     deps = [ ":my_java_lib" ]
+  #     output = "$root_build_dir/MyLibrary.aar"
+  #   }
+  template("dist_aar") {
+    forward_variables_from(invoker, [ "testonly" ])
+
+    _deps = []
+    if (defined(invoker.deps)) {
+      _deps = invoker.deps
+    }
+
+    _build_config = "$target_gen_dir/$target_name.build_config"
+    _build_config_target_name = "${target_name}__build_config"
+
+    write_build_config(_build_config_target_name) {
+      type = "dist_aar"
+      forward_variables_from(invoker, [ "proguard_configs" ])
+      possible_config_deps = _deps
+      supports_android = true
+      requires_android = true
+      build_config = _build_config
+    }
+
+    _deps += [ ":$_build_config_target_name" ]
+
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+
+    action(target_name) {
+      forward_variables_from(invoker, [ "data" ])
+      depfile = "$target_gen_dir/$target_name.d"
+      deps = _deps
+      script = "//build/android/gyp/dist_aar.py"
+
+      inputs = [
+        _build_config,
+      ]
+
+      outputs = [
+        invoker.output,
+      ]
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--output",
+        rebase_path(invoker.output, root_build_dir),
+        "--jars=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
+        "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
+        "--r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
+        "--proguard-configs=@FileArg($_rebased_build_config:proguard:all_configs)",
+      ]
+      if (defined(invoker.android_manifest)) {
+        args += [
+          "--android-manifest",
+          rebase_path(invoker.android_manifest, root_build_dir),
+        ]
+      }
+    }
+  }
+
   # Declare an Android library target
   #
   # This target creates an Android library containing java code and Android
