@@ -660,7 +660,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     CancelCurrentFling();
 
 #ifndef NDEBUG
-  DCHECK(!expect_scroll_update_end_);
   expect_scroll_update_end_ = true;
 #endif
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
