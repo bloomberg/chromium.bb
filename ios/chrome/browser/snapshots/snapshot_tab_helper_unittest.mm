@@ -253,12 +253,10 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshot_CachedSnapshot) {
 
   __block UIImage* snapshot = nil;
   SnapshotTabHelper::FromWebState(&web_state_)
-      ->RetrieveGreySnapshot(
-          ^(UIImage* image) {
-            snapshot = image;
-            run_loop_ptr->Quit();
-          },
-          /*generate=*/true);
+      ->RetrieveGreySnapshot(^(UIImage* image) {
+        snapshot = image;
+        run_loop_ptr->Quit();
+      });
 
   run_loop.Run();
 
@@ -276,12 +274,10 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshot_DefaultSnapshotImage) {
 
   __block UIImage* snapshot = nil;
   SnapshotTabHelper::FromWebState(&web_state_)
-      ->RetrieveGreySnapshot(
-          ^(UIImage* image) {
-            snapshot = image;
-            run_loop_ptr->Quit();
-          },
-          /*generate=*/true);
+      ->RetrieveGreySnapshot(^(UIImage* image) {
+        snapshot = image;
+        run_loop_ptr->Quit();
+      });
 
   run_loop.Run();
 
@@ -301,12 +297,10 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshot_CannotTakeSnapshot) {
 
   __block UIImage* snapshot = nil;
   SnapshotTabHelper::FromWebState(&web_state_)
-      ->RetrieveGreySnapshot(
-          ^(UIImage* image) {
-            snapshot = image;
-            run_loop_ptr->Quit();
-          },
-          /*generate=*/false);
+      ->RetrieveGreySnapshot(^(UIImage* image) {
+        snapshot = image;
+        run_loop_ptr->Quit();
+      });
 
   run_loop.Run();
 
@@ -324,12 +318,10 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshot_NoCachedSnapshot) {
 
   __block UIImage* snapshot = nil;
   SnapshotTabHelper::FromWebState(&web_state_)
-      ->RetrieveGreySnapshot(
-          ^(UIImage* image) {
-            snapshot = image;
-            run_loop_ptr->Quit();
-          },
-          /*generate=*/true);
+      ->RetrieveGreySnapshot(^(UIImage* image) {
+        snapshot = image;
+        run_loop_ptr->Quit();
+      });
 
   run_loop.Run();
 
@@ -337,29 +329,6 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshot_NoCachedSnapshot) {
   EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));
   EXPECT_FALSE(IsDominantColorForImage(snapshot, [UIColor redColor]));
   EXPECT_EQ(delegate_.snapshotTakenCount, 1u);
-}
-
-// Tests that RetrieveGreySnapshot does not generate an image if |generate|
-// is false and there is no cached snapshot.
-TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshot_NoGenerate) {
-  AddDefaultWebStateView();
-
-  base::RunLoop run_loop;
-  base::RunLoop* run_loop_ptr = &run_loop;
-
-  __block UIImage* snapshot = nil;
-  SnapshotTabHelper::FromWebState(&web_state_)
-      ->RetrieveGreySnapshot(
-          ^(UIImage* image) {
-            snapshot = image;
-            run_loop_ptr->Quit();
-          },
-          /*generate=*/false);
-
-  run_loop.Run();
-
-  ASSERT_FALSE(snapshot);
-  EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
 // Tests that UpdateSnapshot ignores any cached snapshots, generate a new one

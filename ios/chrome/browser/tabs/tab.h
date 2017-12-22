@@ -98,9 +98,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // ID associated with this tab.
 @property(nonatomic, readonly) NSString* tabId;
 
-// |YES| if snapshot overlay should load from the grey image cache.
-@property(nonatomic, assign) BOOL useGreyImageCache;
-
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
 
