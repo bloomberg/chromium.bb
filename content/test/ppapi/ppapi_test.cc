@@ -16,7 +16,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 
@@ -58,10 +57,6 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose_gc");
 
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
-
-  command_line->AppendSwitchASCII(
-      switches::kAutoplayPolicy,
-      switches::autoplay::kNoUserGestureRequiredPolicy);
 }
 
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
