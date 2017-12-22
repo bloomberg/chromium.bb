@@ -6393,12 +6393,11 @@ static void RunAddConsoleMessageTask(MessageSource source,
 
 void Document::AddConsoleMessage(ConsoleMessage* console_message) {
   if (!IsContextThread()) {
-    GetTaskRunner(TaskType::kUnthrottled)
-        ->PostTask(FROM_HERE, CrossThreadBind(&RunAddConsoleMessageTask,
-                                              console_message->Source(),
-                                              console_message->Level(),
-                                              console_message->Message(),
-                                              WrapCrossThreadPersistent(this)));
+    PostCrossThreadTask(
+        *GetTaskRunner(TaskType::kUnthrottled), FROM_HERE,
+        CrossThreadBind(&RunAddConsoleMessageTask, console_message->Source(),
+                        console_message->Level(), console_message->Message(),
+                        WrapCrossThreadPersistent(this)));
     return;
   }
 

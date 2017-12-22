@@ -193,12 +193,11 @@ void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   // The HTML spec requires to queue a connect event using the DOM manipulation
   // task source.
   // https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface
-  GetWorkerThread()
-      ->GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(FROM_HERE, CrossThreadBind(
-                                &WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
-                                WTF::CrossThreadUnretained(this),
-                                WTF::Passed(std::move(web_channel))));
+  PostCrossThreadTask(
+      *GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      CrossThreadBind(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
+                      WTF::CrossThreadUnretained(this),
+                      WTF::Passed(std::move(web_channel))));
 }
 
 void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(

@@ -432,8 +432,8 @@ TEST_F(InteractiveDetectorTestWithDummyPage, TaskLongerThan5sBlocksTTI) {
   detector->OnFirstMeaningfulPaintDetected(t0 + 3.0);
 
   // Post a task with 6 seconds duration.
-  platform_->CurrentThread()->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *platform_->CurrentThread()->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(
           &InteractiveDetectorTestWithDummyPage::DummyTaskWithDuration,
           CrossThreadUnretained(this), 6.0));
@@ -456,8 +456,8 @@ TEST_F(InteractiveDetectorTestWithDummyPage, LongTaskAfterTTIDoesNothing) {
   detector->OnFirstMeaningfulPaintDetected(t0 + 3.0);
 
   // Long task 1.
-  platform_->CurrentThread()->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *platform_->CurrentThread()->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(
           &InteractiveDetectorTestWithDummyPage::DummyTaskWithDuration,
           CrossThreadUnretained(this), 0.1));
@@ -469,8 +469,8 @@ TEST_F(InteractiveDetectorTestWithDummyPage, LongTaskAfterTTIDoesNothing) {
   EXPECT_EQ(detector->GetInteractiveTime(), long_task_1_end_time);
 
   // Long task 2.
-  platform_->CurrentThread()->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *platform_->CurrentThread()->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(
           &InteractiveDetectorTestWithDummyPage::DummyTaskWithDuration,
           CrossThreadUnretained(this), 0.1));

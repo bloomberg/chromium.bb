@@ -17,32 +17,28 @@
 namespace blink {
 
 void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(FROM_HERE,
-                 CrossThreadBind(&ThreadedMessagingProxyBase::CountFeature,
-                                 MessagingProxyWeakPtr(), feature));
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      CrossThreadBind(&ThreadedMessagingProxyBase::CountFeature,
+                      MessagingProxyWeakPtr(), feature));
 }
 
 void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(FROM_HERE,
-                 CrossThreadBind(&ThreadedMessagingProxyBase::CountDeprecation,
-                                 MessagingProxyWeakPtr(), feature));
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      CrossThreadBind(&ThreadedMessagingProxyBase::CountDeprecation,
+                      MessagingProxyWeakPtr(), feature));
 }
 
 void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
                                                    MessageLevel level,
                                                    const String& message,
                                                    SourceLocation* location) {
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
-                          MessagingProxyWeakPtr(), source, level, message,
-                          WTF::Passed(location->Clone())));
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
+                      MessagingProxyWeakPtr(), source, level, message,
+                      WTF::Passed(location->Clone())));
 }
 
 void ThreadedObjectProxyBase::PostMessageToPageInspector(
@@ -50,31 +46,25 @@ void ThreadedObjectProxyBase::PostMessageToPageInspector(
     const String& message) {
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnthrottled)
-      ->PostTask(FROM_HERE,
-                 CrossThreadBind(
-                     &ThreadedMessagingProxyBase::PostMessageToPageInspector,
-                     MessagingProxyWeakPtr(), session_id, message));
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnthrottled), FROM_HERE,
+      CrossThreadBind(&ThreadedMessagingProxyBase::PostMessageToPageInspector,
+                      MessagingProxyWeakPtr(), session_id, message));
 }
 
 void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(&ThreadedMessagingProxyBase::TerminateGlobalScope,
-                          MessagingProxyWeakPtr()));
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      CrossThreadBind(&ThreadedMessagingProxyBase::TerminateGlobalScope,
+                      MessagingProxyWeakPtr()));
 }
 
 void ThreadedObjectProxyBase::DidTerminateWorkerThread() {
   // This will terminate the MessagingProxy.
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
-                          MessagingProxyWeakPtr()));
+  PostCrossThreadTask(
+      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      CrossThreadBind(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
+                      MessagingProxyWeakPtr()));
 }
 
 ParentFrameTaskRunners* ThreadedObjectProxyBase::GetParentFrameTaskRunners() {

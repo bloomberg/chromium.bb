@@ -154,8 +154,8 @@ void MojoWatcher::OnHandleReady(uintptr_t context,
   // dispatch a |MOJO_RESULT_CANCELLED| notification. That is always the last
   // notification received by this callback.
   MojoWatcher* watcher = reinterpret_cast<MojoWatcher*>(context);
-  watcher->task_runner_->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *watcher->task_runner_, FROM_HERE,
       CrossThreadBind(&MojoWatcher::RunReadyCallback,
                       WrapCrossThreadWeakPersistent(watcher), result));
 }

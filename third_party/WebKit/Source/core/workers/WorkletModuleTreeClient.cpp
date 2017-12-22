@@ -29,8 +29,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
     // Step 3: "If script is null, then queue a task on outsideSettings's
     // responsible event loop to run these steps:"
     // The steps are implemented in WorkletPendingTasks::Abort().
-    outside_settings_task_runner_->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *outside_settings_task_runner_, FROM_HERE,
         CrossThreadBind(&WorkletPendingTasks::Abort,
                         WrapCrossThreadPersistent(pending_tasks_.Get())));
     return;
@@ -47,8 +47,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   //
   // Check whether a syntax error happens.
   if (module_script->HasErrorToRethrow()) {
-    outside_settings_task_runner_->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *outside_settings_task_runner_, FROM_HERE,
         CrossThreadBind(&WorkletPendingTasks::Abort,
                         WrapCrossThreadPersistent(pending_tasks_.Get())));
     return;
@@ -68,8 +68,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   // Step 5: "Queue a task on outsideSettings's responsible event loop to run
   // these steps:"
   // The steps are implemented in WorkletPendingTasks::DecrementCounter().
-  outside_settings_task_runner_->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *outside_settings_task_runner_, FROM_HERE,
       CrossThreadBind(&WorkletPendingTasks::DecrementCounter,
                       WrapCrossThreadPersistent(pending_tasks_.Get())));
 };

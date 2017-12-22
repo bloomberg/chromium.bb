@@ -329,8 +329,8 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
   if (decoder) {
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
   }
-  task_runner->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
       CrossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::
                           ResolvePromiseOnOriginalThread,
                       WrapCrossThreadPersistent(this), std::move(frame)));

@@ -353,8 +353,8 @@ void BackgroundHTMLParser::RunOnMainThread(FunctionType function,
   if (IsMainThread()) {
     WTF::Bind(std::move(function), std::forward<Ps>(parameters)...).Run();
   } else {
-    loading_task_runner_->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *loading_task_runner_, FROM_HERE,
         CrossThreadBind(std::move(function), std::forward<Ps>(parameters)...));
   }
 }

@@ -63,17 +63,15 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     scoped_refptr<WebTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
-  GetWorkerThread()
-      ->GetTaskRunner(TaskType::kUnspecedLoading)
-      ->PostTask(FROM_HERE,
-                 CrossThreadBind(
-                     &ThreadedWorkletObjectProxy::FetchAndInvokeScript,
-                     CrossThreadUnretained(worklet_object_proxy_.get()),
-                     module_url_record,
-                     WrapCrossThreadPersistent(module_responses_map),
-                     credentials_mode, std::move(outside_settings_task_runner),
-                     WrapCrossThreadPersistent(pending_tasks),
-                     CrossThreadUnretained(GetWorkerThread())));
+  PostCrossThreadTask(
+      *GetWorkerThread()->GetTaskRunner(TaskType::kUnspecedLoading), FROM_HERE,
+      CrossThreadBind(&ThreadedWorkletObjectProxy::FetchAndInvokeScript,
+                      CrossThreadUnretained(worklet_object_proxy_.get()),
+                      module_url_record,
+                      WrapCrossThreadPersistent(module_responses_map),
+                      credentials_mode, std::move(outside_settings_task_runner),
+                      WrapCrossThreadPersistent(pending_tasks),
+                      CrossThreadUnretained(GetWorkerThread())));
 }
 
 void ThreadedWorkletMessagingProxy::WorkletObjectDestroyed() {

@@ -38,7 +38,8 @@ void ScriptStreamerThread::PostTask(CrossThreadClosure task) {
   MutexLocker locker(mutex_);
   DCHECK(!running_task_);
   running_task_ = true;
-  PlatformThread().GetWebTaskRunner()->PostTask(FROM_HERE, std::move(task));
+  PostCrossThreadTask(*PlatformThread().GetWebTaskRunner(), FROM_HERE,
+                      std::move(task));
 }
 
 void ScriptStreamerThread::TaskDone() {
