@@ -13,6 +13,7 @@
 namespace vr {
 
 class ContentInputDelegate;
+class Ui;
 class UiBrowserInterface;
 class UiScene;
 struct Model;
@@ -22,6 +23,7 @@ class UiSceneCreator {
  public:
   UiSceneCreator(UiBrowserInterface* browser,
                  UiScene* scene,
+                 Ui* ui,
                  ContentInputDelegate* content_input_delegate,
                  KeyboardDelegate* keyboard_delegate,
                  TextInputDelegate* text_input_delegate,
@@ -61,6 +63,7 @@ class UiSceneCreator {
 
   UiBrowserInterface* browser_;
   UiScene* scene_;
+  Ui* ui_;
   ContentInputDelegate* content_input_delegate_;
   KeyboardDelegate* keyboard_delegate_;
   TextInputDelegate* text_input_delegate_;

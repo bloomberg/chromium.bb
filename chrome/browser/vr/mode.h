@@ -8,6 +8,8 @@
 namespace vr {
 
 // Specifies one of Chrome's VR modes.
+// TODO(ymalik): These modes are currently only used for VR metrics. We should
+// use model/ui_modes.h instead.
 enum class Mode : int {
   kNoVr,
   kVr,          // All modes in VR.
