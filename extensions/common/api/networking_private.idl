@@ -439,6 +439,7 @@ namespace networkingPrivate {
     DOMString? StaticChallenge;
     DOMString? TLSAuthContents;
     DOMString? TLSRemote;
+    DOMString? TLSVersionMin;
     DOMString? UserAuthenticationType;
     DOMString? Username;
     DOMString? Verb;
@@ -479,6 +480,7 @@ namespace networkingPrivate {
     ManagedDOMString? StaticChallenge;
     ManagedDOMString? TLSAuthContents;
     ManagedDOMString? TLSRemote;
+    ManagedDOMString? TLSVersionMin;
     ManagedDOMString? UserAuthenticationType;
     ManagedDOMString? Username;
     ManagedDOMString? Verb;

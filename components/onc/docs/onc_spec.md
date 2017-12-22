@@ -881,6 +881,10 @@ L2TP over IPsec with pre-shared key:
     * If set, only allow connections to server hosts with X509 name or common
       name equal to this string.
 
+* **TLSVersionMin**
+    * (optional) - **string**
+    * If set, specifies the minimum TLS protocol version used by OpenVPN.
+
 * **UserAuthenticationType**
     * (optional, defaults to *None*) - **string**
     * Allowed values are:

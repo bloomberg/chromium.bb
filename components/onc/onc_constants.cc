@@ -389,6 +389,7 @@ const char kShaper[] = "Shaper";
 const char kStaticChallenge[] = "StaticChallenge";
 const char kTLSAuthContents[] = "TLSAuthContents";
 const char kTLSRemote[] = "TLSRemote";
+const char kTLSVersionMin[] = "TLSVersionMin";
 const char kUserAuthenticationType[] = "UserAuthenticationType";
 const char kVerb[] = "Verb";
 const char kVerifyHash[] = "VerifyHash";
