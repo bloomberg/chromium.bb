@@ -96,6 +96,8 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_gpu_service_logging = prefs.enable_gpu_service_logging();
     out->enable_gpu_service_tracing = prefs.enable_gpu_service_tracing();
     out->use_passthrough_cmd_decoder = prefs.use_passthrough_cmd_decoder();
+    out->disable_biplanar_gpu_memory_buffers_for_video_frames =
+        prefs.disable_biplanar_gpu_memory_buffers_for_video_frames();
     return true;
   }
 
@@ -210,6 +212,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool use_passthrough_cmd_decoder(const gpu::GpuPreferences& prefs) {
     return prefs.use_passthrough_cmd_decoder;
+  }
+  static bool disable_biplanar_gpu_memory_buffers_for_video_frames(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.disable_biplanar_gpu_memory_buffers_for_video_frames;
   }
 };
 

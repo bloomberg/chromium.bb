@@ -1050,9 +1050,9 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_RECTANGLE_ARB);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // TODO(dcastagna): Determine ycbcr_420v_image on CrOS at runtime
-  // querying minigbm. crbug.com/646148
+  // querying minigbm. https://crbug.com/646148
   if (gl::GetGLImplementation() != gl::kGLImplementationOSMesaGL) {
     AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
     feature_flags_.chromium_image_ycbcr_420v = true;
