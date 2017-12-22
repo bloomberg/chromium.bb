@@ -72,7 +72,10 @@ void ResourceMessageFilter::OnChannelClosing() {
 
 bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
-  return false;
+  // Check if InitializeOnIOThread() has been called.
+  DCHECK_EQ(this, requester_info_->filter());
+  return ResourceDispatcherHostImpl::Get()->OnMessageReceived(
+      message, requester_info_.get());
 }
 
 void ResourceMessageFilter::OnDestruct() const {

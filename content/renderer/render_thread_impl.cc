@@ -68,6 +68,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/gpu_stream_constants.h"
+#include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -101,7 +102,9 @@
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_input_event_filter.h"
+#include "content/renderer/loader/child_resource_message_filter.h"
 #include "content/renderer/loader/resource_dispatcher.h"
+#include "content/renderer/loader/resource_scheduling_filter.h"
 #include "content/renderer/mash_util.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
@@ -121,6 +124,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/renderer/scheduler/resource_dispatch_throttler.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_context_message_filter.h"
@@ -239,6 +243,16 @@ namespace {
 
 const int64_t kInitialIdleHandlerDelayMs = 1000;
 const int64_t kLongIdleHandlerDelayMs = 30 * 1000;
+
+#if defined(OS_ANDROID)
+// On Android, resource messages can each take ~1.5ms to dispatch on the browser
+// IO thread. Limiting the message rate to 3/frame at 60hz ensures that the
+// induced work takes but a fraction (~1/4) of the overall frame budget.
+const int kMaxResourceRequestsPerFlushWhenThrottled = 3;
+#else
+const int kMaxResourceRequestsPerFlushWhenThrottled = 8;
+#endif
+const double kThrottledResourceRequestFlushPeriodS = 1. / 60.;
 
 // Maximum allocation size allowed for image scaling filters that
 // require pre-scaling. Skia will fallback to a filter that doesn't
@@ -707,8 +721,11 @@ void RenderThreadImpl::Init(
       new NotificationDispatcher(thread_safe_sender());
   AddFilter(notification_dispatcher_->GetFilter());
 
-  resource_dispatcher_.reset(
-      new ResourceDispatcher(message_loop()->task_runner()));
+  resource_dispatcher_.reset(new ResourceDispatcher(
+      this, message_loop()->task_runner()));
+  resource_message_filter_ =
+      new ChildResourceMessageFilter(resource_dispatcher_.get());
+  AddFilter(resource_message_filter_.get());
   quota_dispatcher_.reset(new QuotaDispatcher(message_loop()->task_runner()));
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
@@ -733,6 +750,14 @@ void RenderThreadImpl::Init(
   main_thread_cache_storage_dispatcher_.reset(
       new CacheStorageDispatcher(thread_safe_sender()));
   file_system_dispatcher_.reset(new FileSystemDispatcher());
+
+  // Note: This may reorder messages from the ResourceDispatcher with respect to
+  // other subsystems.
+  resource_dispatch_throttler_.reset(new ResourceDispatchThrottler(
+      static_cast<RenderThread*>(this), renderer_scheduler_.get(),
+      base::TimeDelta::FromSecondsD(kThrottledResourceRequestFlushPeriodS),
+      kMaxResourceRequestsPerFlushWhenThrottled));
+  resource_dispatcher_->set_message_sender(resource_dispatch_throttler_.get());
 
   blob_message_filter_ = new BlobMessageFilter(GetFileThreadTaskRunner());
   AddFilter(blob_message_filter_.get());
@@ -1247,8 +1272,18 @@ void RenderThreadImpl::InitializeWebKit(
   } else {
     resource_task_queue2 = renderer_scheduler_->LoadingTaskRunner();
   }
-  // The ResourceDispatcher needs to use the same queue to ensure tasks are
-  // executed in the expected order.
+  // Add a filter that forces resource messages to be dispatched via a
+  // particular task runner.
+  scoped_refptr<ResourceSchedulingFilter> filter(
+      new ResourceSchedulingFilter(
+          resource_task_queue2, resource_dispatcher_.get()));
+  channel()->AddFilter(filter.get());
+  resource_dispatcher_->SetResourceSchedulingFilter(filter);
+
+  // The ChildResourceMessageFilter and the ResourceDispatcher need to use the
+  // same queue to ensure tasks are executed in the expected order.
+  resource_message_filter_->SetMainThreadTaskRunner(
+      resource_task_queue2);
   resource_dispatcher_->SetThreadTaskRunner(resource_task_queue2);
 
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
@@ -1584,6 +1619,9 @@ void RenderThreadImpl::SetRendererProcessType(
 }
 
 bool RenderThreadImpl::OnMessageReceived(const IPC::Message& msg) {
+  // Resource responses are sent to the resource dispatcher.
+  if (resource_dispatcher_->OnMessageReceived(msg))
+    return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
     return true;
   return ChildThreadImpl::OnMessageReceived(msg);
