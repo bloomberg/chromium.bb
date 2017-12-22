@@ -28,13 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/heap/Handle.h"
-#include <base/bind.h>
-#include <base/test/launcher/unit_test_launcher.h>
-#include <base/test/test_suite.h>
-#include <base/time/time.h>
-#include <content/test/blink_test_environment.h>
 #include <string.h>
+#include "base/bind.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
+#include "content/public/test/blink_test_environment.h"
+#include "platform/heap/ThreadState.h"
 
 class BlinkTestEnvironmentScope {
  public:

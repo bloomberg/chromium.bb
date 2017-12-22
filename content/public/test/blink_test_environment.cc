@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/blink_test_environment.h"
+#include "content/public/test/blink_test_environment.h"
 
 #include <string>
 
@@ -47,8 +47,7 @@ class TestEnvironment {
         &discardable_memory_allocator_);
   }
 
-  ~TestEnvironment() {
-  }
+  ~TestEnvironment() {}
 
   // This returns when both the main thread and the TaskSchedules queues are
   // empty.

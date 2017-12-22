@@ -34,7 +34,7 @@
 #include "base/test/test_suite.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "content/test/blink_test_environment.h"
+#include "content/public/test/blink_test_environment.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "v8/include/v8.h"
