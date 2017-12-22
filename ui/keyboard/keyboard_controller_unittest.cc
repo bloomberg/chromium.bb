@@ -240,9 +240,6 @@ class KeyboardControllerTest : public testing::Test,
 
  protected:
   // KeyboardControllerObserver overrides
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override {
-    // TODO(blakeo): remove this method
-  }
   void OnKeyboardVisibleBoundsChanging(const gfx::Rect& new_bounds) override {
     visible_bounds_ = new_bounds;
     visible_bounds_number_of_calls_++;
