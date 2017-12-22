@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gin/array_buffer.h"
+
 #include <stddef.h>
 #include <stdlib.h>
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "gin/array_buffer.h"
+#include "gin/features.h"
 #include "gin/per_isolate_data.h"
 
 #if defined(OS_POSIX)
@@ -17,7 +19,7 @@
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
 #endif
-#endif
+#endif  // defined(OS_POSIX)
 
 namespace gin {
 
@@ -33,6 +35,7 @@ static_assert(V8_ARRAY_BUFFER_INTERNAL_FIELD_COUNT == 2,
 // ArrayBufferAllocator -------------------------------------------------------
 
 void* ArrayBufferAllocator::Allocate(size_t length) {
+  // TODO(bbudge) Use partition allocator for malloc/calloc allocations.
   return calloc(1, length);
 }
 
@@ -41,11 +44,14 @@ void* ArrayBufferAllocator::AllocateUninitialized(size_t length) {
 }
 
 void* ArrayBufferAllocator::Reserve(size_t length) {
-  void* const hint = nullptr;
-#if defined(OS_POSIX)
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+  const bool commit = false;
+  return base::AllocPages(nullptr, length, base::kPageAllocationGranularity,
+                          base::PageInaccessible, commit);
+#elif defined(OS_POSIX)
   int const access_flag = PROT_NONE;
   void* const ret =
-      mmap(hint, length, access_flag, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+      mmap(nullptr, length, access_flag, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (ret == MAP_FAILED) {
     return nullptr;
   }
@@ -67,16 +73,15 @@ void ArrayBufferAllocator::Free(void* data,
     case AllocationMode::kNormal:
       Free(data, length);
       return;
-    case AllocationMode::kReservation: {
-#if defined(OS_POSIX)
-      int const ret = munmap(data, length);
-      CHECK(!ret);
+    case AllocationMode::kReservation:
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+      base::FreePages(data, length);
+#elif defined(OS_POSIX)
+      CHECK(!munmap(data, length));
 #else
-      BOOL const ret = VirtualFree(data, 0, MEM_RELEASE);
-      CHECK(ret);
+      CHECK(VirtualFree(data, 0, MEM_RELEASE));
 #endif
       return;
-    }
     default:
       NOTREACHED();
   }
@@ -85,27 +90,40 @@ void ArrayBufferAllocator::Free(void* data,
 void ArrayBufferAllocator::SetProtection(void* data,
                                          size_t length,
                                          Protection protection) {
+#if BUILDFLAG(USE_PARTITION_ALLOC)
   switch (protection) {
-    case Protection::kNoAccess: {
-#if defined(OS_POSIX)
-      int ret = mprotect(data, length, PROT_NONE);
-      CHECK(!ret);
-#else
-      BOOL ret = VirtualFree(data, length, MEM_DECOMMIT);
-      CHECK(ret);
-#endif
+    case Protection::kNoAccess:
+      CHECK(base::SetSystemPagesAccess(data, length, base::PageInaccessible));
       break;
-    }
     case Protection::kReadWrite:
-#if defined(OS_POSIX)
-      mprotect(data, length, PROT_READ | PROT_WRITE);
-#else
-      VirtualAlloc(data, length, MEM_COMMIT, PAGE_READWRITE);
-#endif
+      CHECK(base::SetSystemPagesAccess(data, length, base::PageReadWrite));
       break;
     default:
       NOTREACHED();
   }
+#elif defined(OS_POSIX)
+  switch (protection) {
+    case Protection::kNoAccess:
+      CHECK_EQ(0, mprotect(data, length, PROT_NONE));
+      break;
+    case Protection::kReadWrite:
+      CHECK_EQ(0, mprotect(data, length, PROT_READ | PROT_WRITE));
+      break;
+    default:
+      NOTREACHED();
+  }
+#else   // !defined(OS_POSIX)
+  switch (protection) {
+    case Protection::kNoAccess:
+      CHECK_NE(0, VirtualFree(data, length, MEM_DECOMMIT));
+      break;
+    case Protection::kReadWrite:
+      CHECK_NE(nullptr, VirtualAlloc(data, length, MEM_COMMIT, PAGE_READWRITE));
+      break;
+    default:
+      NOTREACHED();
+  }
+#endif  // !defined(OS_POSIX)
 }
 
 ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
