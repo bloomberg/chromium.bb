@@ -813,21 +813,22 @@ void SoftwareRenderer::UpdateRenderPassTextures(
 
 void SoftwareRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
-    const gfx::Size& enlarged_size,
-    ResourceTextureHint texture_hint) {
+    const RenderPassRequirements& requirements) {
   auto it = render_pass_bitmaps_.find(render_pass_id);
   if (it != render_pass_bitmaps_.end())
     return;
 
-  // The |texture_hint| is only used for gpu-based rendering, so not used here.
+  // The |requirements.mipmap| is only used for gpu-based rendering, so not used
+  // here.
   //
   // ColorSpace correctness for software compositing is a performance nightmare,
   // so we don't do it. If we did, then the color space of the current frame's
   // |current_render_pass| should be stored somewhere, but we should not set it
   // on the bitmap itself. Instead, we'd use it with a SkColorSpaceXformCanvas
   // that wraps the SkCanvas drawing into the bitmap.
-  SkImageInfo info = SkImageInfo::MakeN32(
-      enlarged_size.width(), enlarged_size.height(), kPremul_SkAlphaType);
+  SkImageInfo info =
+      SkImageInfo::MakeN32(requirements.size.width(),
+                           requirements.size.height(), kPremul_SkAlphaType);
   SkBitmap bitmap;
   bitmap.allocPixels(info);
   render_pass_bitmaps_.emplace(render_pass_id, std::move(bitmap));

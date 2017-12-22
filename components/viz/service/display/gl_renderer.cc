@@ -3609,13 +3609,13 @@ void GLRenderer::UpdateRenderPassTextures(
       passes_to_delete.push_back(pair.first);
       continue;
     }
-    gfx::Size required_size = render_pass_it->second.size;
-    ResourceTextureHint required_hint = render_pass_it->second.hint;
+    const RenderPassRequirements& requirements = render_pass_it->second;
     const ScopedRenderPassTexture& texture = pair.second;
-    bool size_appropriate = texture.size().width() >= required_size.width() &&
-                            texture.size().height() >= required_size.height();
-    bool hint_appropriate = (texture.hint() & required_hint) == required_hint;
-    if (!size_appropriate || !hint_appropriate)
+    bool size_appropriate =
+        texture.size().width() >= requirements.size.width() &&
+        texture.size().height() >= requirements.size.height();
+    bool mipmap_appropriate = !requirements.mipmap || texture.mipmap();
+    if (!size_appropriate || !mipmap_appropriate)
       passes_to_delete.push_back(pair.first);
   }
   // Delete RenderPass textures from the previous frame that will not be used
@@ -3639,18 +3639,15 @@ ResourceFormat GLRenderer::BackbufferFormat() const {
 
 void GLRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
-    const gfx::Size& enlarged_size,
-    ResourceTextureHint texturehint) {
-  const auto& caps = output_surface_->context_provider()->ContextCapabilities();
+    const RenderPassRequirements& requirements) {
   auto contents_texture_it = render_pass_textures_.find(render_pass_id);
   if (contents_texture_it != render_pass_textures_.end())
     return;
 
   ScopedRenderPassTexture contents_texture(
-      output_surface_->context_provider()->ContextGL(), enlarged_size,
-      texturehint, BackbufferFormat(),
-      current_frame()->current_render_pass->color_space, caps.texture_usage,
-      caps.texture_storage, caps.texture_npot);
+      output_surface_->context_provider(), requirements.size,
+      BackbufferFormat(), current_frame()->current_render_pass->color_space,
+      requirements.mipmap);
   render_pass_textures_[render_pass_id] = std::move(contents_texture);
 }
 

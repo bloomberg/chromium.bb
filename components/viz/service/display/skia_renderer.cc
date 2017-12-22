@@ -767,15 +767,12 @@ void SkiaRenderer::UpdateRenderPassTextures(
       continue;
     }
 
-    gfx::Size required_size = render_pass_it->second.size;
-    ResourceTextureHint required_hint = render_pass_it->second.hint;
-
+    const RenderPassRequirements& requirements = render_pass_it->second;
     const RenderPassBacking& backing = pair.second;
-    bool size_appropriate = backing.size.width() >= required_size.width() &&
-                            backing.size.height() >= required_size.height();
-    bool hint_appropriate =
-        (backing.usage_hint & required_hint) == required_hint;
-    if (!size_appropriate || !hint_appropriate)
+    bool size_appropriate = backing.size.width() >= requirements.size.width() &&
+                            backing.size.height() >= requirements.size.height();
+    bool mipmap_appropriate = !requirements.mipmap || backing.mipmap;
+    if (!size_appropriate || !mipmap_appropriate)
       passes_to_delete.push_back(pair.first);
   }
 
@@ -794,8 +791,7 @@ void SkiaRenderer::UpdateRenderPassTextures(
 
 void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
-    const gfx::Size& enlarged_size,
-    ResourceTextureHint texture_hint) {
+    const RenderPassRequirements& requirements) {
 #if BUILDFLAG(ENABLE_VULKAN)
   NOTIMPLEMENTED();
   return;
@@ -816,11 +812,11 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  // This texture will be bound as a framebuffer, so optimize for that.
   if (caps.texture_usage) {
-    if (texture_hint & ResourceTextureHint::kFramebuffer) {
-      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE,
-                        GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
-    }
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE,
+                      GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
   }
 
   ResourceFormat backbuffer_format;
@@ -843,26 +839,24 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     // If |texture_npot| is availble, and mipmaps are desired, we generate a
     // mipmap for each power of 2 size. This is only done when using
     // TexStorage2DEXT.
-    if (caps.texture_npot) {
-      if (texture_hint & ResourceTextureHint::kMipmap) {
-        levels += base::bits::Log2Floor(
-            std::max(enlarged_size.width(), enlarged_size.height()));
-      }
+    if (caps.texture_npot && requirements.mipmap) {
+      levels += base::bits::Log2Floor(
+          std::max(requirements.size.width(), requirements.size.height()));
     }
     gl->TexStorage2DEXT(GL_TEXTURE_2D, levels,
                         TextureStorageFormat(backbuffer_format),
-                        enlarged_size.width(), enlarged_size.height());
+                        requirements.size.width(), requirements.size.height());
   } else {
     gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(backbuffer_format),
-                   enlarged_size.width(), enlarged_size.height(), 0,
+                   requirements.size.width(), requirements.size.height(), 0,
                    GLDataFormat(backbuffer_format),
                    GLDataType(backbuffer_format), nullptr);
   }
 
   RenderPassBacking& backing = render_pass_backings_[render_pass_id];
   backing.gl_id = texture_id;
-  backing.size = enlarged_size;
-  backing.usage_hint = texture_hint;
+  backing.size = requirements.size;
+  backing.mipmap = requirements.mipmap;
   backing.format = backbuffer_format;
   backing.color_space = current_frame()->current_render_pass->color_space;
   gl->BindTexture(GL_TEXTURE_2D, 0);

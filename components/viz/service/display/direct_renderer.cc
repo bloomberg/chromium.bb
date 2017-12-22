@@ -194,7 +194,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
       }
     }
     render_passes_in_frame[pass->id] = {RenderPassTextureSize(pass.get()),
-                                        RenderPassTextureHint(pass.get())};
+                                        pass->generate_mipmap};
   }
   UpdateRenderPassTextures(render_passes_in_draw_order, render_passes_in_frame);
 }
@@ -625,8 +625,8 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   enlarged_size.Enlarge(enlarge_pass_texture_amount_.width(),
                         enlarge_pass_texture_amount_.height());
 
-  AllocateRenderPassResourceIfNeeded(render_pass->id, enlarged_size,
-                                     RenderPassTextureHint(render_pass));
+  AllocateRenderPassResourceIfNeeded(
+      render_pass->id, {enlarged_size, render_pass->generate_mipmap});
 
   // TODO(crbug.com/582554): This change applies only when Vulkan is enabled and
   // it will be removed once SkiaRenderer has complete support for Vulkan.
@@ -660,17 +660,6 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
 // static
 gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
   return render_pass->output_rect.size();
-}
-
-// static
-ResourceTextureHint DirectRenderer::RenderPassTextureHint(
-    const RenderPass* render_pass) {
-  // TODO(danakj): Pass these as 2 bools instead so subclasses don't have to
-  // worry about new hints being silently added to the field here.
-  ResourceTextureHint hint = ResourceTextureHint::kFramebuffer;
-  if (render_pass->generate_mipmap)
-    hint |= ResourceTextureHint::kMipmap;
-  return hint;
 }
 
 void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
