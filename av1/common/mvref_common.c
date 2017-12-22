@@ -45,6 +45,9 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
         if (ref_frame > INTRA_FRAME) {
           int8_t ref_idx = cm->ref_frame_side[ref_frame];
           if (ref_idx < 0) continue;
+          if ((abs(mi->mbmi.mv[idx].as_mv.row) > REFMVS_LIMIT) ||
+              (abs(mi->mbmi.mv[idx].as_mv.col) > REFMVS_LIMIT))
+            continue;
           mv->ref_frame[ref_idx] = ref_frame;
           mv->mv[ref_idx].as_int = mi->mbmi.mv[idx].as_int;
         }
