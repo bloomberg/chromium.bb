@@ -112,11 +112,6 @@ TaskHandle::TaskHandle(scoped_refptr<Runner> runner)
   DCHECK(runner_);
 }
 
-void WebTaskRunner::PostTask(const base::Location& location,
-                             CrossThreadClosure task) {
-  PostCrossThreadTask(*this, location, std::move(task));
-}
-
 void WebTaskRunner::PostDelayedTask(const base::Location& location,
                                     CrossThreadClosure task,
                                     TimeDelta delay) {
