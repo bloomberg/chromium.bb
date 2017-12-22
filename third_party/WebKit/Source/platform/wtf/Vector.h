@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/ConditionalDestructor.h"
+#include "platform/wtf/ConstructTraits.h"
 #include "platform/wtf/ContainerAnnotations.h"
 #include "platform/wtf/Forward.h"  // For default Vector template parameters.
 #include "platform/wtf/HashTableDeletedValueType.h"
@@ -123,11 +124,11 @@ struct VectorUnusedSlotClearer<true, T> {
 #endif
 };
 
-template <bool canInitializeWithMemset, typename T>
+template <bool canInitializeWithMemset, typename T, typename Allocator>
 struct VectorInitializer;
 
-template <typename T>
-struct VectorInitializer<false, T> {
+template <typename T, typename Allocator>
+struct VectorInitializer<false, T, Allocator> {
   STATIC_ONLY(VectorInitializer);
   static void Initialize(T* begin, T* end) {
     for (T* cur = begin; cur != end; ++cur)
@@ -135,8 +136,8 @@ struct VectorInitializer<false, T> {
   }
 };
 
-template <typename T>
-struct VectorInitializer<true, T> {
+template <typename T, typename Allocator>
+struct VectorInitializer<true, T, Allocator> {
   STATIC_ONLY(VectorInitializer);
   static void Initialize(T* begin, T* end) {
     memset(begin, 0,
@@ -144,15 +145,16 @@ struct VectorInitializer<true, T> {
   }
 };
 
-template <bool canMoveWithMemcpy, typename T>
+template <bool canMoveWithMemcpy, typename T, typename Allocator>
 struct VectorMover;
 
-template <typename T>
-struct VectorMover<false, T> {
+template <typename T, typename Allocator>
+struct VectorMover<false, T, Allocator> {
   STATIC_ONLY(VectorMover);
   static void Move(T* src, T* src_end, T* dst) {
     while (src != src_end) {
-      new (NotNull, dst) T(std::move(*src));
+      ConstructTraits<T, Allocator>::ConstructAndNotifyElement(dst,
+                                                               std::move(*src));
       src->~T();
       ++dst;
       ++src;
@@ -166,85 +168,98 @@ struct VectorMover<false, T> {
       while (src != src_end) {
         --src_end;
         --dst_end;
-        new (NotNull, dst_end) T(std::move(*src_end));
+        ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+            dst_end, std::move(*src_end));
         src_end->~T();
       }
     }
   }
   static void Swap(T* src, T* src_end, T* dst) {
     std::swap_ranges(src, src_end, dst);
+    const size_t len = src_end - src;
+    ConstructTraits<T, Allocator>::NotifyNewElements(src, len);
+    ConstructTraits<T, Allocator>::NotifyNewElements(dst, len);
   }
 };
 
-template <typename T>
-struct VectorMover<true, T> {
+template <typename T, typename Allocator>
+struct VectorMover<true, T, Allocator> {
   STATIC_ONLY(VectorMover);
   static void Move(const T* src, const T* src_end, T* dst) {
-    if (LIKELY(dst && src))
+    if (LIKELY(dst && src)) {
       memcpy(dst, src,
              reinterpret_cast<const char*>(src_end) -
                  reinterpret_cast<const char*>(src));
+      ConstructTraits<T, Allocator>::NotifyNewElements(dst, src_end - src);
+    }
   }
   static void MoveOverlapping(const T* src, const T* src_end, T* dst) {
-    if (LIKELY(dst && src))
+    if (LIKELY(dst && src)) {
       memmove(dst, src,
               reinterpret_cast<const char*>(src_end) -
                   reinterpret_cast<const char*>(src));
+      ConstructTraits<T, Allocator>::NotifyNewElements(dst, src_end - src);
+    }
   }
   static void Swap(T* src, T* src_end, T* dst) {
     std::swap_ranges(reinterpret_cast<char*>(src),
                      reinterpret_cast<char*>(src_end),
                      reinterpret_cast<char*>(dst));
+    const size_t len = src_end - src;
+    ConstructTraits<T, Allocator>::NotifyNewElements(src, len);
+    ConstructTraits<T, Allocator>::NotifyNewElements(dst, len);
   }
 };
 
-template <bool canCopyWithMemcpy, typename T>
+template <bool canCopyWithMemcpy, typename T, typename Allocator>
 struct VectorCopier;
 
-template <typename T>
-struct VectorCopier<false, T> {
+template <typename T, typename Allocator>
+struct VectorCopier<false, T, Allocator> {
   STATIC_ONLY(VectorCopier);
   template <typename U>
   static void UninitializedCopy(const U* src, const U* src_end, T* dst) {
     while (src != src_end) {
-      new (NotNull, dst) T(*src);
+      ConstructTraits<T, Allocator>::ConstructAndNotifyElement(dst, *src);
       ++dst;
       ++src;
     }
   }
 };
 
-template <typename T>
-struct VectorCopier<true, T> {
+template <typename T, typename Allocator>
+struct VectorCopier<true, T, Allocator> {
   STATIC_ONLY(VectorCopier);
   static void UninitializedCopy(const T* src, const T* src_end, T* dst) {
-    if (LIKELY(dst && src))
+    if (LIKELY(dst && src)) {
       memcpy(dst, src,
              reinterpret_cast<const char*>(src_end) -
                  reinterpret_cast<const char*>(src));
+      ConstructTraits<T, Allocator>::NotifyNewElements(dst, src_end - src);
+    }
   }
   template <typename U>
   static void UninitializedCopy(const U* src, const U* src_end, T* dst) {
-    VectorCopier<false, T>::UninitializedCopy(src, src_end, dst);
+    VectorCopier<false, T, Allocator>::UninitializedCopy(src, src_end, dst);
   }
 };
 
-template <bool canFillWithMemset, typename T>
+template <bool canFillWithMemset, typename T, typename Allocator>
 struct VectorFiller;
 
-template <typename T>
-struct VectorFiller<false, T> {
+template <typename T, typename Allocator>
+struct VectorFiller<false, T, Allocator> {
   STATIC_ONLY(VectorFiller);
   static void UninitializedFill(T* dst, T* dst_end, const T& val) {
     while (dst != dst_end) {
-      new (NotNull, dst) T(val);
+      ConstructTraits<T, Allocator>::ConstructAndNotifyElement(dst, T(val));
       ++dst;
     }
   }
 };
 
-template <typename T>
-struct VectorFiller<true, T> {
+template <typename T, typename Allocator>
+struct VectorFiller<true, T, Allocator> {
   STATIC_ONLY(VectorFiller);
   static void UninitializedFill(T* dst, T* dst_end, const T& val) {
     static_assert(sizeof(T) == sizeof(char), "size of type should be one");
@@ -302,7 +317,7 @@ struct VectorElementComparer<std::unique_ptr<T>> {
 // implementation detail of Vector, and you probably don't want to change this.
 // If you want to customize Vector's behavior, you should specialize
 // VectorTraits instead (defined in VectorTraits.h).
-template <typename T>
+template <typename T, typename Allocator>
 struct VectorTypeOperations {
   STATIC_ONLY(VectorTypeOperations);
   static void Destruct(T* begin, T* end) {
@@ -311,33 +326,33 @@ struct VectorTypeOperations {
   }
 
   static void Initialize(T* begin, T* end) {
-    VectorInitializer<VectorTraits<T>::kCanInitializeWithMemset, T>::Initialize(
-        begin, end);
+    VectorInitializer<VectorTraits<T>::kCanInitializeWithMemset, T,
+                      Allocator>::Initialize(begin, end);
   }
 
   static void Move(T* src, T* src_end, T* dst) {
-    VectorMover<VectorTraits<T>::kCanMoveWithMemcpy, T>::Move(src, src_end,
-                                                              dst);
+    VectorMover<VectorTraits<T>::kCanMoveWithMemcpy, T, Allocator>::Move(
+        src, src_end, dst);
   }
 
   static void MoveOverlapping(T* src, T* src_end, T* dst) {
-    VectorMover<VectorTraits<T>::kCanMoveWithMemcpy, T>::MoveOverlapping(
-        src, src_end, dst);
+    VectorMover<VectorTraits<T>::kCanMoveWithMemcpy, T,
+                Allocator>::MoveOverlapping(src, src_end, dst);
   }
 
   static void Swap(T* src, T* src_end, T* dst) {
-    VectorMover<VectorTraits<T>::kCanMoveWithMemcpy, T>::Swap(src, src_end,
-                                                              dst);
-  }
-
-  static void UninitializedCopy(const T* src, const T* src_end, T* dst) {
-    VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T>::UninitializedCopy(
+    VectorMover<VectorTraits<T>::kCanMoveWithMemcpy, T, Allocator>::Swap(
         src, src_end, dst);
   }
 
+  static void UninitializedCopy(const T* src, const T* src_end, T* dst) {
+    VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T,
+                 Allocator>::UninitializedCopy(src, src_end, dst);
+  }
+
   static void UninitializedFill(T* dst, T* dst_end, const T& val) {
-    VectorFiller<VectorTraits<T>::kCanFillWithMemset, T>::UninitializedFill(
-        dst, dst_end, val);
+    VectorFiller<VectorTraits<T>::kCanFillWithMemset, T,
+                 Allocator>::UninitializedFill(dst, dst_end, val);
   }
 
   static bool Compare(const T* a, const T* b, size_t size) {
@@ -515,10 +530,16 @@ class VectorBuffer<T, 0, Allocator>
                         OffsetRange other_hole) {
     static_assert(VectorTraits<T>::kCanSwapUsingCopyOrMove,
                   "Cannot swap HeapVectors of TraceWrapperMembers.");
-
     std::swap(buffer_, other.buffer_);
     std::swap(capacity_, other.capacity_);
     std::swap(size_, other.size_);
+    if (buffer_) {
+      ConstructTraits<T, Allocator>::NotifyNewElements(buffer_, size_);
+    }
+    if (other.buffer_) {
+      ConstructTraits<T, Allocator>::NotifyNewElements(other.buffer_,
+                                                       other.size_);
+    }
   }
 
   using Base::AllocateBuffer;
@@ -653,7 +674,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   void SwapVectorBuffer(VectorBuffer<T, inlineCapacity, Allocator>& other,
                         OffsetRange this_hole,
                         OffsetRange other_hole) {
-    using TypeOperations = VectorTypeOperations<T>;
+    using TypeOperations = VectorTypeOperations<T, Allocator>;
 
     static_assert(VectorTraits<T>::kCanSwapUsingCopyOrMove,
                   "Cannot swap HeapVectors of TraceWrapperMembers.");
@@ -664,6 +685,13 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       std::swap(buffer_, other.buffer_);
       std::swap(capacity_, other.capacity_);
       std::swap(size_, other.size_);
+      if (buffer_) {
+        ConstructTraits<T, Allocator>::NotifyNewElements(buffer_, size_);
+      }
+      if (other.buffer_) {
+        ConstructTraits<T, Allocator>::NotifyNewElements(other.buffer_,
+                                                         other.size_);
+      }
       return;
     }
 
@@ -959,7 +987,7 @@ class Vector
                                        Allocator::kIsGarbageCollected> {
   USE_ALLOCATOR(Vector, Allocator);
   using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
-  using TypeOperations = VectorTypeOperations<T>;
+  using TypeOperations = VectorTypeOperations<T, Allocator>;
   using OffsetRange = typename Base::OffsetRange;
 
  public:
@@ -1693,7 +1721,8 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
   DCHECK(Allocator::IsAllocationAllowed());
   if (LIKELY(size() != capacity())) {
     ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
-    new (NotNull, end()) T(std::forward<U>(val));
+    ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+        end(), std::forward<U>(val));
     ++size_;
     return;
   }
@@ -1710,7 +1739,8 @@ ALWAYS_INLINE T& Vector<T, inlineCapacity, Allocator>::emplace_back(
     ExpandCapacity(size() + 1);
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
-  T* t = new (NotNull, end()) T(std::forward<Args>(args)...);
+  T* t = ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      end(), std::forward<Args>(args)...);
   ++size_;
   return *t;
 }
@@ -1728,8 +1758,8 @@ void Vector<T, inlineCapacity, Allocator>::Append(const U* data,
   CHECK_GE(new_size, size_);
   T* dest = end();
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, new_size);
-  VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T>::UninitializedCopy(
-      data, &data[data_size], dest);
+  VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T,
+               Allocator>::UninitializedCopy(data, &data[data_size], dest);
   size_ = new_size;
 }
 
@@ -1744,7 +1774,8 @@ NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::AppendSlowCase(
   DCHECK(begin());
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
-  new (NotNull, end()) T(std::forward<U>(*ptr));
+  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      end(), std::forward<U>(*ptr));
   ++size_;
 }
 
@@ -1774,7 +1805,8 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::UncheckedAppend(
   push_back(std::forward<U>(val));
 #else
   DCHECK_LT(size(), capacity());
-  new (NotNull, end()) T(std::forward<U>(val));
+  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      end(), std::forward<U>(val));
   ++size_;
 #endif
 }
@@ -1793,7 +1825,8 @@ inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + 1);
-  new (NotNull, spot) T(std::forward<U>(*data));
+  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+      spot, std::forward<U>(*data));
   ++size_;
 }
 
@@ -1813,8 +1846,8 @@ void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, new_size);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + data_size);
-  VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T>::UninitializedCopy(
-      data, &data[data_size], spot);
+  VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T,
+               Allocator>::UninitializedCopy(data, &data[data_size], spot);
   size_ = new_size;
 }
 
@@ -1903,7 +1936,8 @@ bool operator==(const Vector<T, inlineCapacityA, Allocator>& a,
     return false;
   if (a.IsEmpty())
     return true;
-  return VectorTypeOperations<T>::Compare(a.data(), b.data(), a.size());
+  return VectorTypeOperations<T, Allocator>::Compare(a.data(), b.data(),
+                                                     a.size());
 }
 
 template <typename T,

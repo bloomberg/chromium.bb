@@ -178,7 +178,7 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
     DISALLOW_COPY_AND_ASSIGN(BackingBuffer);
   };
 
-  typedef VectorTypeOperations<T> TypeOperations;
+  typedef VectorTypeOperations<T, Allocator> TypeOperations;
   typedef DequeIteratorBase<T, inlineCapacity, Allocator> IteratorBase;
 
   void erase(size_t position);

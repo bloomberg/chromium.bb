@@ -12,6 +12,11 @@
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashTraits.h"
 
+namespace WTF {
+template <typename P, typename Allocator>
+class ConstructTraits;
+}  // namespace WTF
+
 namespace blink {
 
 template <typename T>
@@ -262,6 +267,9 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
     }
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
+
+  template <typename P, typename Allocator>
+  friend class WTF::ConstructTraits;
 };
 
 // A checked version of Member<>, verifying that only same-thread references
@@ -572,6 +580,28 @@ template <typename T>
 struct IsTraceable<blink::TraceWrapperMember<T>> {
   STATIC_ONLY(IsTraceable);
   static const bool value = true;
+};
+
+template <typename T, typename Allocator>
+class ConstructTraits<blink::Member<T>, Allocator> {
+  STATIC_ONLY(ConstructTraits);
+
+ public:
+  template <typename... Args>
+  static blink::Member<T>* ConstructAndNotifyElement(void* location,
+                                                     Args&&... args) {
+    blink::Member<T>* object =
+        new (NotNull, location) blink::Member<T>(std::forward<Args>(args)...);
+    object->WriteBarrier(object->raw_);
+    return object;
+  }
+
+  static void NotifyNewElements(blink::Member<T>* array, size_t len) {
+    while (len-- > 0) {
+      array->WriteBarrier(array->raw_);
+      array++;
+    }
+  }
 };
 
 }  // namespace WTF

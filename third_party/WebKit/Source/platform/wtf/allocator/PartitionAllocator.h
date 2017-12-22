@@ -106,6 +106,12 @@ class WTF_EXPORT PartitionAllocator {
   static void EnterGCForbiddenScope() {}
   static void LeaveGCForbiddenScope() {}
 
+  template <typename T, typename Traits>
+  static void NotifyNewObject(T* object) {}
+
+  template <typename T, typename Traits>
+  static void NotifyNewObjects(T* array, size_t len) {}
+
  private:
   static void* AllocateBacking(size_t, const char* type_name);
 };
