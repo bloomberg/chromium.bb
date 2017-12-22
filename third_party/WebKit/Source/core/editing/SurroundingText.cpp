@@ -105,23 +105,19 @@ void SurroundingText::Initialize(const Position& start_position,
 
   const TextIteratorBehavior behavior =
       TextIteratorBehavior::NoTrailingSpaceRangeLengthBehavior();
-  start_offset_in_content_ = TextIterator::RangeLength(
-      backwards_iterator.EndPosition(), start_position, behavior);
-  end_offset_in_content_ = TextIterator::RangeLength(
-      backwards_iterator.EndPosition(), end_position, behavior);
-  content_range_ = Range::Create(*document, backwards_iterator.EndPosition(),
-                                 forward_iterator.StartPosition());
-  DCHECK(content_range_);
+  const Position content_start = backwards_iterator.EndPosition();
+  const Position content_end = forward_iterator.StartPosition();
+  start_offset_in_content_ =
+      TextIterator::RangeLength(content_start, start_position, behavior);
+  end_offset_in_content_ =
+      TextIterator::RangeLength(content_start, end_position, behavior);
+  content_ = PlainText(
+      EphemeralRange(content_start, content_end),
+      TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
 }
 
 String SurroundingText::Content() const {
-  if (content_range_) {
-    // SurroundingText is created with clean layout and must not be stored
-    // through DOM or style changes, so layout must still be clean here.
-    DCHECK(!content_range_->OwnerDocument().NeedsLayoutTreeUpdate());
-    return content_range_->GetText();
-  }
-  return String();
+  return content_;
 }
 
 unsigned SurroundingText::StartOffsetInContent() const {
