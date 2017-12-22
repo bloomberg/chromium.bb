@@ -18709,6 +18709,46 @@
         ],
         "vm_tests": []
     },
+    "fizz-accelerator-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "fizz-accelerator"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "fizz-accelerator-llvm-next-toolchain-tryjob": {
+        "_template": "llvm_next_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz-accelerator"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "sync_chrome": false
+    },
+    "fizz-accelerator-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "fizz-accelerator"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "fizz-accelerator-llvm-toolchain-tryjob": {
+        "_template": "llvm_toolchain",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz-accelerator"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "sync_chrome": false
+    },
     "fizz-accelerator-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -18801,10 +18841,12 @@
     },
     "fizz-accelerator-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "fizz-accelerator"
         ],
         "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
         "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -18953,6 +18995,7 @@
             "fizz-accelerator"
         ],
         "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -34013,6 +34056,7 @@
             "expresso-release",
             "falco-release",
             "falco_li-release",
+            "fizz-accelerator-release",
             "fizz-release",
             "gale-release",
             "gandof-release",
@@ -34179,6 +34223,7 @@
             "expresso-release",
             "falco-release",
             "falco_li-release",
+            "fizz-accelerator-release",
             "fizz-release",
             "gale-release",
             "gandof-release",
