@@ -28,26 +28,31 @@ namespace examples {
 
 namespace {
 
-const char* kElideBehaviors[] = { "No Elide", "Truncate", "Elide Head",
-    "Elide Middle", "Elide Tail", "Elide Email", "Fade Tail" };
 const char* kAlignments[] = { "Left", "Center", "Right", "Head" };
 
 // A Label with a clamped preferred width to demonstrate eliding or wrapping.
-class PreferredSizeLabel : public Label {
+class ExamplePreferredSizeLabel : public Label {
  public:
-  PreferredSizeLabel() : Label() {
+  ExamplePreferredSizeLabel() : Label() {
     SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
   }
-  ~PreferredSizeLabel() override {}
+  ~ExamplePreferredSizeLabel() override {}
 
   // Label:
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(50, Label::CalculatePreferredSize().height());
   }
 
+  static const char* kElideBehaviors[];
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(PreferredSizeLabel);
+  DISALLOW_COPY_AND_ASSIGN(ExamplePreferredSizeLabel);
 };
+
+// static
+const char* ExamplePreferredSizeLabel::kElideBehaviors[] = {
+    "No Elide",   "Truncate",    "Elide Head", "Elide Middle",
+    "Elide Tail", "Elide Email", "Fade Tail"};
 
 }  // namespace
 
@@ -101,12 +106,12 @@ void LabelExample::CreateExampleView(View* container) {
   label->SetShadows(shadows);
   container->AddChildView(label);
 
-  label = new PreferredSizeLabel();
+  label = new ExamplePreferredSizeLabel();
   label->SetText(ASCIIToUTF16("A long label will elide toward its logical end "
       "if the text's width exceeds the label's available width."));
   container->AddChildView(label);
 
-  label = new PreferredSizeLabel();
+  label = new ExamplePreferredSizeLabel();
   label->SetText(ASCIIToUTF16("A multi-line label will wrap onto subsequent "
     "lines if the text's width exceeds the label's available width, which is "
     "helpful for extemely long text used to demonstrate line wrapping."));
@@ -183,8 +188,9 @@ void LabelExample::AddCustomLabel(View* container) {
 
   alignment_ = AddCombobox(layout, "Alignment: ", kAlignments,
                            arraysize(kAlignments));
-  elide_behavior_ = AddCombobox(layout, "Elide Behavior: ", kElideBehaviors,
-                                arraysize(kElideBehaviors));
+  elide_behavior_ = AddCombobox(
+      layout, "Elide Behavior: ", ExamplePreferredSizeLabel::kElideBehaviors,
+      arraysize(ExamplePreferredSizeLabel::kElideBehaviors));
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
@@ -209,7 +215,7 @@ void LabelExample::AddCustomLabel(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                         1, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 2);
-  custom_label_ = new PreferredSizeLabel();
+  custom_label_ = new ExamplePreferredSizeLabel();
   custom_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   custom_label_->SetElideBehavior(gfx::NO_ELIDE);
   custom_label_->SetText(textfield_->text());
