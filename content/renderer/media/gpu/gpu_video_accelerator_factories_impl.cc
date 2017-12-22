@@ -170,8 +170,6 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  DCHECK(base::FeatureList::IsEnabled(features::kMojoVideoEncodeAccelerator));
-
   media::mojom::VideoEncodeAcceleratorPtr vea;
   vea_provider_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
 

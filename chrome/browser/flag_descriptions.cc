@@ -848,12 +848,6 @@ const char kMhtmlGeneratorOptionDescription[] =
 const char kMhtmlSkipNostoreMain[] = "Skips no-store main frame.";
 const char kMhtmlSkipNostoreAll[] = "Skips all no-store resources.";
 
-const char kMojoVideoEncodeAcceleratorName[] =
-    "Hardware-accelerated video encoder accessed using Mojo IPC";
-const char kMojoVideoEncodeAcceleratorDescription[] =
-    "Use new Mojo IPC to access hardware-accelerated video encoder, where "
-    "available.";
-
 const char kModuleScriptsDynamicImportName[] =
     "Enable ECMAScript 6 modules dynamic import";
 const char kModuleScriptsDynamicImportDescription[] =
