@@ -1841,7 +1841,8 @@
       'gn_args': ('disable_file_support=true disable_ftp_support=true '
                   'enable_websockets=false use_platform_icu_alternatives=true '
                   'use_partition_alloc=false enable_reporting=false '
-                  'include_transport_security_state_preload_list=false'),
+                  'include_transport_security_state_preload_list=false '
+                  'clang_use_default_sample_profile=false'),
     },
 
     'cros_chrome_sdk': {
