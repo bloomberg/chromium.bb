@@ -402,6 +402,7 @@ ONC_EXPORT extern const char kShaper[];
 ONC_EXPORT extern const char kStaticChallenge[];
 ONC_EXPORT extern const char kTLSAuthContents[];
 ONC_EXPORT extern const char kTLSRemote[];
+ONC_EXPORT extern const char kTLSVersionMin[];
 ONC_EXPORT extern const char kUserAuthenticationType[];
 ONC_EXPORT extern const char kVerb[];
 ONC_EXPORT extern const char kVerifyHash[];
