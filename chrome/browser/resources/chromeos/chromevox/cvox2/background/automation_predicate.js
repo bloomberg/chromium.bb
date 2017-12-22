@@ -95,7 +95,8 @@ AutomationPredicate.button = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.editText = function(node) {
-  return node.state.editable && node.parent && !node.parent.state.editable;
+  return node.role == Role.TEXT_FIELD ||
+      (node.state.editable && node.parent && !node.parent.state.editable);
 };
 
 /** @type {AutomationPredicate.Unary} */

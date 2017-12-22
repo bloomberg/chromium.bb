@@ -883,3 +883,24 @@ TEST_F('OutputE2ETest', 'InlineBraille', function() {
                  o.brailleOutputForTest.string_);
   });
 });
+
+TEST_F('OutputE2ETest', 'TextFieldObeysRoleDescription', function() {
+  this.runWithLoadedTree(function(root) {/*!
+    <div role="textbox" aria-roledescription="square"></div>
+    <div role="region" aria-roledescription="circle"></div>
+  */}, function(root) {
+    var text = root.find({role: RoleType.TEXT_FIELD});
+
+    // True even though |text| does not have editable state.
+    assertTrue(AutomationPredicate.editText(text));
+
+    var o = new Output().withRichSpeechAndBraille(cursors.Range.fromNode(text));
+    assertEquals('|square', o.speechOutputForTest.string_);
+    assertEquals('square', o.brailleOutputForTest.string_);
+
+    var region = root.find({role: RoleType.REGION});
+    o = new Output().withRichSpeechAndBraille(cursors.Range.fromNode(region));
+    assertEquals('circle', o.speechOutputForTest.string_);
+    assertEquals('circle', o.brailleOutputForTest.string_);
+  });
+});
