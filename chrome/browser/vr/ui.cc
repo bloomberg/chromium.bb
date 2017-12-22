@@ -51,7 +51,7 @@ Ui::Ui(UiBrowserInterface* browser,
       input_manager_(base::MakeUnique<UiInputManager>(scene_.get())),
       weak_ptr_factory_(this) {
   InitializeModel(ui_initial_state);
-  UiSceneCreator(browser, scene_.get(), content_input_delegate_.get(),
+  UiSceneCreator(browser, scene_.get(), this, content_input_delegate_.get(),
                  keyboard_delegate, text_input_delegate, model_.get())
       .CreateScene();
 }
@@ -66,15 +66,24 @@ void Ui::SetWebVrMode(bool enabled, bool show_toast) {
   model_->web_vr.show_exit_toast = show_toast;
   if (enabled) {
     model_->web_vr.state = kWebVrAwaitingFirstFrame;
+    // We have this check here so that we don't set the mode to kModeWebVr when
+    // it should be kModeWebVrAutopresented. The latter is set when the UI is
+    // initialized.
+    if (!model_->web_vr_enabled())
+      model_->push_mode(kModeWebVr);
   } else {
     model_->web_vr.state = kWebVrNoTimeoutPending;
-    // This gets set to true when the UI is initialized.
-    model_->web_vr.started_for_autopresentation = false;
+    if (model_->web_vr_enabled())
+      model_->pop_mode();
   }
 }
 
 void Ui::SetFullscreen(bool enabled) {
-  model_->fullscreen = enabled;
+  if (enabled) {
+    model_->push_mode(kModeFullscreen);
+  } else {
+    model_->pop_mode(kModeFullscreen);
+  }
 }
 
 void Ui::SetToolbarState(const ToolbarState& state) {
@@ -154,10 +163,25 @@ void Ui::SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) {
   NOTREACHED();
 }
 
+void Ui::OnUiRequestedNavigation() {
+  model_->pop_mode(kModeEditingOmnibox);
+}
+
+void Ui::SetOmniboxEditingEnabled(bool enabled) {
+  if (enabled) {
+    model_->push_mode(kModeEditingOmnibox);
+  } else {
+    model_->pop_mode(kModeEditingOmnibox);
+  }
+}
+
 void Ui::SetSpeechRecognitionEnabled(bool enabled) {
-  model_->speech.recognizing_speech = enabled;
-  if (enabled)
+  if (enabled) {
+    model_->push_mode(kModeVoiceSearch);
     model_->speech.recognition_result.clear();
+  } else {
+    model_->pop_mode(kModeVoiceSearch);
+  }
 }
 
 void Ui::SetRecognitionResult(const base::string16& result) {
@@ -215,7 +239,7 @@ void Ui::OnKeyboardHidden() {
 
 void Ui::OnAppButtonClicked() {
   // App button clicks should be a no-op when auto-presenting WebVR.
-  if (model_->web_vr.started_for_autopresentation) {
+  if (model_->web_vr_autopresentation_enabled()) {
     return;
   }
 
@@ -245,17 +269,17 @@ void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
 }
 
 void Ui::OnWebVrFrameAvailable() {
-  if (model_->web_vr.is_enabled())
+  if (model_->web_vr_enabled())
     model_->web_vr.state = kWebVrPresenting;
 }
 
 void Ui::OnWebVrTimeoutImminent() {
-  if (model_->web_vr.is_enabled())
+  if (model_->web_vr_enabled())
     model_->web_vr.state = kWebVrTimeoutImminent;
 }
 
 void Ui::OnWebVrTimedOut() {
-  if (model_->web_vr.is_enabled())
+  if (model_->web_vr_enabled())
     model_->web_vr.state = kWebVrTimedOut;
 }
 
@@ -301,14 +325,20 @@ void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
 }
 
 void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
-  model_->web_vr.started_for_autopresentation =
-      ui_initial_state.web_vr_autopresentation_expected;
   model_->experimental_features_enabled =
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalFeatures);
   model_->speech.has_or_can_request_audio_permission =
       ui_initial_state.has_or_can_request_audio_permission;
-  model_->web_vr.state = ui_initial_state.in_web_vr ? kWebVrAwaitingFirstFrame
-                                                    : kWebVrNoTimeoutPending;
+  model_->ui_modes.clear();
+  model_->push_mode(kModeBrowsing);
+  if (ui_initial_state.in_web_vr) {
+    model_->web_vr.state = kWebVrAwaitingFirstFrame;
+    auto mode = ui_initial_state.web_vr_autopresentation_expected
+                    ? kModeWebVrAutopresented
+                    : kModeWebVr;
+    model_->push_mode(mode);
+  }
+
   model_->in_cct = ui_initial_state.in_cct;
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
   model_->skips_redraw_when_not_dirty =

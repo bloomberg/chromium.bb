@@ -81,6 +81,13 @@ const std::set<UiElementType> kHitTestableElementTypes = {
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarningBackground, kExitWarningText};
+const std::set<UiElementName> kElementsVisibleWithVoiceSearch = {
+    kSpeechRecognitionListening, kSpeechRecognitionMicrophoneIcon,
+    kSpeechRecognitionListeningCloseButton, kSpeechRecognitionCircle,
+    kSpeechRecognitionListeningGrowingCircle};
+const std::set<UiElementName> kElementsVisibleWithVoiceSearchResult = {
+    kSpeechRecognitionResult, kSpeechRecognitionCircle,
+    kSpeechRecognitionMicrophoneIcon, kSpeechRecognitionResultBackplane};
 
 static constexpr float kTolerance = 1e-5f;
 static constexpr float kSmallDelaySeconds = 0.1f;
@@ -260,6 +267,68 @@ TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
   model_->speech.has_or_can_request_audio_permission = false;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_FALSE(IsVisible(kVoiceSearchButton));
+}
+
+TEST_F(UiTest, UiModeWebVr) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  ui_->SetWebVrMode(true, false);
+  EXPECT_EQ(model_->ui_modes.size(), 2u);
+  EXPECT_EQ(model_->ui_modes[1], kModeWebVr);
+  EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
+  VerifyOnlyElementsVisible("WebVR", {kWebVrBackground});
+
+  ui_->SetWebVrMode(false, false);
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  VerifyOnlyElementsVisible("Browsing after WebVR", kElementsVisibleInBrowsing);
+}
+
+TEST_F(UiTest, UiModeVoiceSearch) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  ui_->SetSpeechRecognitionEnabled(true);
+  EXPECT_EQ(model_->ui_modes.size(), 2u);
+  EXPECT_EQ(model_->ui_modes[1], kModeVoiceSearch);
+  EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
+  ui_->SetSpeechRecognitionEnabled(true);
+  VerifyVisibility(kElementsVisibleWithVoiceSearch, true);
+
+  ui_->SetSpeechRecognitionEnabled(false);
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  EXPECT_TRUE(RunFor(MsToDelta(10)));
+  VerifyOnlyElementsVisible("Browsing", kElementsVisibleInBrowsing);
+}
+
+TEST_F(UiTest, UiModeOmniboxEditing) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  EXPECT_EQ(NumVisibleInTree(kOmniboxRoot), 0);
+  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  ui_->SetOmniboxEditingEnabled(true);
+  EXPECT_TRUE(RunFor(MsToDelta(1000)));
+  EXPECT_EQ(model_->ui_modes.size(), 2u);
+  EXPECT_EQ(model_->ui_modes[1], kModeEditingOmnibox);
+  EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
+  EXPECT_GT(NumVisibleInTree(kOmniboxRoot), 0);
+
+  ui_->SetOmniboxEditingEnabled(false);
+  EXPECT_TRUE(RunFor(MsToDelta(1000)));
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  VerifyOnlyElementsVisible("Browsing", kElementsVisibleInBrowsing);
 }
 
 TEST_F(UiTest, WebVrAutopresented) {
@@ -708,14 +777,18 @@ TEST_F(UiTest, WebVrTimeout) {
 TEST_F(UiTest, SpeechRecognitionUiVisibility) {
   CreateScene(kNotInCct, kNotInWebVr);
 
-  model_->speech.recognizing_speech = true;
+  ui_->SetSpeechRecognitionEnabled(true);
 
   // Start hiding browsing foreground and showing speech recognition listening
   // UI.
   EXPECT_TRUE(RunFor(MsToDelta(10)));
+  VerifyIsAnimating({k2dBrowsingForeground}, {OPACITY}, true);
+  VerifyIsAnimating({kSpeechRecognitionListening, kSpeechRecognitionResult},
+                    {OPACITY}, false);
+  ui_->SetSpeechRecognitionEnabled(true);
+  EXPECT_TRUE(RunFor(MsToDelta(10)));
   VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening},
                     {OPACITY}, true);
-  VerifyIsAnimating({kSpeechRecognitionResult}, {OPACITY}, false);
 
   EXPECT_TRUE(RunFor(MsToDelta(kSpeechRecognitionOpacityAnimationDurationMs)));
   // All opacity animations should be finished at this point.
@@ -724,12 +797,7 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
                     {OPACITY}, false);
   VerifyIsAnimating({kSpeechRecognitionListeningGrowingCircle}, {CIRCLE_GROW},
                     false);
-  VerifyVisibility(
-      {kSpeechRecognitionListening, kSpeechRecognitionListeningMicrophoneIcon,
-       kSpeechRecognitionListeningCloseButton,
-       kSpeechRecognitionListeningInnerCircle,
-       kSpeechRecognitionListeningGrowingCircle},
-      true);
+  VerifyVisibility(kElementsVisibleWithVoiceSearch, true);
   VerifyVisibility({k2dBrowsingForeground, kSpeechRecognitionResult}, false);
 
   model_->speech.speech_recognition_state = SPEECH_RECOGNITION_READY;
@@ -739,14 +807,11 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
 
   // Mock received speech result.
   model_->speech.recognition_result = base::ASCIIToUTF16("test");
-  model_->speech.recognizing_speech = false;
   model_->speech.speech_recognition_state = SPEECH_RECOGNITION_END;
+  ui_->SetSpeechRecognitionEnabled(false);
 
   EXPECT_TRUE(RunFor(MsToDelta(10)));
-  VerifyVisibility({kSpeechRecognitionResult, kSpeechRecognitionResultCircle,
-                    kSpeechRecognitionResultMicrophoneIcon,
-                    kSpeechRecognitionResultBackplane},
-                   true);
+  VerifyVisibility(kElementsVisibleWithVoiceSearchResult, true);
   // Speech result UI should show instantly while listening UI hide immediately.
   VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening,
                      kSpeechRecognitionResult},
@@ -772,20 +837,21 @@ TEST_F(UiTest, SpeechRecognitionUiVisibility) {
   // Visibility is as expected.
   VerifyVisibility({kSpeechRecognitionListening, kSpeechRecognitionResult},
                    false);
+
   EXPECT_TRUE(IsVisible(k2dBrowsingForeground));
 }
 
 TEST_F(UiTest, SpeechRecognitionUiVisibilityNoResult) {
   CreateScene(kNotInCct, kNotInWebVr);
 
-  model_->speech.recognizing_speech = true;
+  ui_->SetSpeechRecognitionEnabled(true);
   EXPECT_TRUE(RunFor(MsToDelta(kSpeechRecognitionOpacityAnimationDurationMs)));
   VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening},
                     {OPACITY}, false);
 
   // Mock exit without a recognition result
+  ui_->SetSpeechRecognitionEnabled(false);
   model_->speech.recognition_result.clear();
-  model_->speech.recognizing_speech = false;
   model_->speech.speech_recognition_state = SPEECH_RECOGNITION_END;
 
   EXPECT_TRUE(RunFor(MsToDelta(10)));
@@ -812,7 +878,7 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 0u);
 
-  model_->omnibox_input_active = true;
+  ui_->SetOmniboxEditingEnabled(true);
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 0u);
   EXPECT_EQ(NumVisibleInTree(kOmniboxSuggestions), 1);

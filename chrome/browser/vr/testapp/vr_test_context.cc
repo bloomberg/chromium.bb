@@ -359,11 +359,11 @@ void VrTestContext::CreateFakeTextInputOrCommit(bool commit) {
 }
 
 void VrTestContext::CreateFakeVoiceSearchResult() {
-  if (!model_->speech.recognizing_speech)
+  if (!model_->voice_search_enabled())
     return;
   ui_->SetRecognitionResult(
       base::UTF8ToUTF16("I would like to see cat videos, please."));
-  SetVoiceSearchActive(false);
+  ui_->SetSpeechRecognitionEnabled(false);
 }
 
 void VrTestContext::CycleWebVrModes() {
@@ -388,6 +388,7 @@ void VrTestContext::CycleWebVrModes() {
 void VrTestContext::ToggleSplashScreen() {
   if (!show_web_vr_splash_screen_) {
     UiInitialState state;
+    state.in_web_vr = true;
     state.web_vr_autopresentation_expected = true;
     ui_->ReinitializeForTest(state);
   } else {

@@ -143,6 +143,7 @@ static_library("vr_common") {
     "model/text_input_info.h",
     "model/toolbar_state.cc",
     "model/toolbar_state.h",
+    "model/ui_mode.h",
     "model/web_vr_model.h",
     "pose_util.cc",
     "pose_util.h",

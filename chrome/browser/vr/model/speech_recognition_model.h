@@ -10,7 +10,6 @@
 namespace vr {
 
 struct SpeechRecognitionModel {
-  bool recognizing_speech = false;
   int speech_recognition_state = 0;
   bool has_or_can_request_audio_permission = true;
   base::string16 recognition_result;

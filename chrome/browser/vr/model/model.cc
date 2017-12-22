@@ -12,7 +12,7 @@ Model::~Model() {}
 
 const ColorScheme& Model::color_scheme() const {
   ColorScheme::Mode mode = ColorScheme::kModeNormal;
-  if (fullscreen)
+  if (fullscreen_enabled())
     mode = ColorScheme::kModeFullscreen;
   if (incognito)
     mode = ColorScheme::kModeIncognito;

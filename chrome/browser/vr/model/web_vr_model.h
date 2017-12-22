@@ -28,19 +28,10 @@ enum WebVrState {
 struct WebVrModel {
   WebVrState state = kWebVrNoTimeoutPending;
 
-  // Whether this WebVR session was started in auto-presentation mode.
-  // TODO(ymalik): We should remove these bits once we add the notion of "ui
-  // modes" and WebVR auto-presentation should simply be a mode.
-  bool started_for_autopresentation = false;
+  // TODO(ymalik): We should be able to remove this by keeping a history of UI
+  // modes.
   bool show_exit_toast = false;
-
-  bool is_enabled() const { return state >= kWebVrAwaitingFirstFrame; }
-  bool show_splash_screen() const {
-    return started_for_autopresentation && state == kWebVrAwaitingFirstFrame;
-  }
-  bool has_produced_frames() const {
-    return is_enabled() && state == kWebVrPresenting;
-  }
+  bool has_produced_frames() const { return state == kWebVrPresenting; }
 };
 
 }  // namespace vr
