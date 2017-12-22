@@ -4,3 +4,9 @@ include_rules = [
     "+base/bits.h",
     "+base/sys_info.h",
 ]
+
+specific_include_rules = {
+    'RunAllTests\.cpp': [
+        "+content/public/test/blink_test_environment.h",
+    ],
+}
