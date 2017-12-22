@@ -23,16 +23,16 @@ namespace examples {
 
 namespace {
 
-class DialogExample : public DialogDelegateView {
+class WidgetDialogExample : public DialogDelegateView {
  public:
-  DialogExample();
-  ~DialogExample() override;
+  WidgetDialogExample();
+  ~WidgetDialogExample() override;
   base::string16 GetWindowTitle() const override;
   View* CreateExtraView() override;
   View* CreateFootnoteView() override;
 };
 
-class ModalDialogExample : public DialogExample {
+class ModalDialogExample : public WidgetDialogExample {
  public:
   ModalDialogExample() {}
 
@@ -43,25 +43,25 @@ class ModalDialogExample : public DialogExample {
   DISALLOW_COPY_AND_ASSIGN(ModalDialogExample);
 };
 
-DialogExample::DialogExample() {
+WidgetDialogExample::WidgetDialogExample() {
   SetBackground(CreateSolidBackground(SK_ColorGRAY));
   SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
-DialogExample::~DialogExample() {}
+WidgetDialogExample::~WidgetDialogExample() {}
 
-base::string16 DialogExample::GetWindowTitle() const {
+base::string16 WidgetDialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
 }
 
-View* DialogExample::CreateExtraView() {
+View* WidgetDialogExample::CreateExtraView() {
   return MdTextButton::CreateSecondaryUiButton(nullptr,
                                                ASCIIToUTF16("Extra button!"));
 }
 
-View* DialogExample::CreateFootnoteView() {
+View* WidgetDialogExample::CreateFootnoteView() {
   return new Label(ASCIIToUTF16("Footnote label!"));
 }
 
@@ -123,8 +123,9 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
       ShowWidget(sender, Widget::InitParams(Widget::InitParams::TYPE_POPUP));
       break;
     case DIALOG: {
-      DialogDelegate::CreateDialogWidget(new DialogExample(), NULL,
-          sender->GetWidget()->GetNativeView())->Show();
+      DialogDelegate::CreateDialogWidget(new WidgetDialogExample(), NULL,
+                                         sender->GetWidget()->GetNativeView())
+          ->Show();
       break;
     }
     case MODAL_DIALOG: {
