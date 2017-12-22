@@ -124,7 +124,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                                  viz::FrameSinkIdHash>;
   struct TargetData {
     RenderWidgetHostViewBase* target;
-    gfx::Vector2d delta;
+    gfx::Vector2dF delta;
 
     TargetData() : target(nullptr) {}
   };
@@ -135,13 +135,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       RenderWidgetHostViewBase* root_view,
       const blink::WebMouseEvent& event,
       gfx::PointF* transformed_point) const;
-
-  RenderWidgetHostViewBase* FindViewAtLocation(
-      RenderWidgetHostViewBase* root_view,
-      const gfx::Point& point,
-      const gfx::Point& point_in_screen,
-      viz::EventSource source,
-      gfx::Point* transformed_point) const;
 
   RenderWidgetHostViewBase* FindViewAtLocation(
       RenderWidgetHostViewBase* root_view,
