@@ -134,6 +134,7 @@ class BlobMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
 class CategorizedWorkerPool;
+class ChildResourceMessageFilter;
 class CompositorForwardingMessageFilter;
 class DomStorageDispatcher;
 class FileSystemDispatcher;
@@ -150,6 +151,7 @@ class QuotaDispatcher;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
+class ResourceDispatchThrottler;
 class ServiceWorkerMessageFilter;
 class VideoCaptureImplManager;
 
@@ -645,6 +647,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
+  std::unique_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
   std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
   std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
@@ -654,6 +657,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
   scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
+  scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 

@@ -24,6 +24,7 @@
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/resource_messages.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -302,6 +303,16 @@ TEST_F(RenderThreadImplMojoInputMessagesDisabledBrowserTest,
   thread_->compositor_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CheckRenderThreadInputHandlerManager, thread_));
+}
+
+// Disabled under LeakSanitizer due to memory leaks.
+TEST_F(RenderThreadImplBrowserTest,
+       WILL_LEAK(ResourceDispatchIPCTasksGoThroughScheduler)) {
+  sender()->Send(new ResourceHostMsg_FollowRedirect(0));
+  sender()->Send(new TestMsg_QuitRunLoop());
+
+  run_loop_->Run();
+  EXPECT_EQ(1, test_task_counter_->NumTasksPosted());
 }
 
 // Disabled under LeakSanitizer due to memory leaks.

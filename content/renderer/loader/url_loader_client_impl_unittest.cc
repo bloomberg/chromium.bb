@@ -11,6 +11,7 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
+#include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -20,10 +21,11 @@
 namespace content {
 
 class URLLoaderClientImplTest : public ::testing::Test,
+                                IPC::Sender,
                                 mojom::URLLoaderFactory {
  protected:
   URLLoaderClientImplTest()
-      : dispatcher_(new ResourceDispatcher(message_loop_.task_runner())),
+      : dispatcher_(new ResourceDispatcher(this, message_loop_.task_runner())),
         mojo_binding_(this) {
     mojo_binding_.Bind(mojo::MakeRequest(&url_loader_factory_proxy_));
 
@@ -32,6 +34,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
         TRAFFIC_ANNOTATION_FOR_TESTS, false,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
+        blink::WebURLRequest::LoadingIPCType::kMojo,
         url_loader_factory_proxy_.get(),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         mojom::URLLoaderClientEndpointsPtr());
@@ -44,6 +47,11 @@ class URLLoaderClientImplTest : public ::testing::Test,
   void TearDown() override {
     url_loader_client_ = nullptr;
     url_loader_factory_proxy_ = nullptr;
+  }
+
+  bool Send(IPC::Message* message) override {
+    ADD_FAILURE() << "IPC::Sender::Send should not be called.";
+    return false;
   }
 
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -508,44 +516,6 @@ TEST_F(URLLoaderClientImplTest,
   EXPECT_TRUE(request_peer_context_.complete);
   EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
   EXPECT_FALSE(request_peer_context_.cancelled);
-}
-
-TEST_F(URLLoaderClientImplTest, CancelOnReceiveDataWhileFlushing) {
-  request_peer_context_.cancel_on_receive_data = true;
-  dispatcher_->SetDefersLoading(request_id_, true);
-
-  ResourceResponseHead response_head;
-  network::URLLoaderCompletionStatus status;
-
-  mojo::DataPipe data_pipe(DataPipeOptions());
-  uint32_t size = 5;
-  MojoResult result = data_pipe.producer_handle->WriteData(
-      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
-  ASSERT_EQ(MOJO_RESULT_OK, result);
-  EXPECT_EQ(5u, size);
-
-  url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(status);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_EQ("", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_FALSE(request_peer_context_.cancelled);
-
-  dispatcher_->SetDefersLoading(request_id_, false);
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_EQ("", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_FALSE(request_peer_context_.cancelled);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_EQ("hello", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_TRUE(request_peer_context_.cancelled);
 }
 
 }  // namespace content
