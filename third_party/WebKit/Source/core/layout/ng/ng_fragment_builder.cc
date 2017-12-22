@@ -130,14 +130,15 @@ NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
   return *this;
 }
 
-
 void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
     NGBlockNode node,
-    const NGStaticPosition& static_position) {
+    const NGStaticPosition& static_position,
+    LayoutObject* inline_container) {
   DCHECK_GE(inline_size_, LayoutUnit());
   DCHECK_GE(block_size_, LayoutUnit());
 
-  NGOutOfFlowPositionedDescendant descendant{node, static_position};
+  NGOutOfFlowPositionedDescendant descendant{node, static_position,
+                                             inline_container};
   // Need 0,0 physical coordinates as child offset. Because offset
   // is stored as logical, must convert physical 0,0 to logical.
   NGLogicalOffset zero_offset;

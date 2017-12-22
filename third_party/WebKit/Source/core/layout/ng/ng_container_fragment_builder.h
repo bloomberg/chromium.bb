@@ -105,7 +105,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
       NGOutOfFlowPositionedDescendant);
 
   void GetAndClearOutOfFlowDescendantCandidates(
-      Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates);
+      Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
+      const LayoutObject* container);
 
 #ifndef NDEBUG
   String ToString() const;

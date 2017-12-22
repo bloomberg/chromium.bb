@@ -546,7 +546,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
     Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
     container_builder_.GetAndClearOutOfFlowDescendantCandidates(
-        &descendant_candidates);
+        &descendant_candidates, nullptr);
     for (auto& descendant : descendant_candidates)
       container_builder_.AddOutOfFlowDescendant(descendant);
 
@@ -638,7 +638,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
   container_builder_.GetAndClearOutOfFlowDescendantCandidates(
-      &descendant_candidates);
+      &descendant_candidates, nullptr);
   for (auto& descendant : descendant_candidates)
     container_builder_.AddOutOfFlowDescendant(descendant);
   return container_builder_.ToLineBoxFragment();

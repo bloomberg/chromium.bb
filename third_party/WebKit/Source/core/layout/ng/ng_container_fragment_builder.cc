@@ -124,7 +124,6 @@ NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
                                           NGPhysicalOffset())},
       child_offset));
 
-  child.SaveStaticOffsetForLegacy(child_offset);
   return *this;
 }
 
@@ -146,7 +145,6 @@ NGContainerFragmentBuilder::AddInlineOutOfFlowChildCandidate(
           inline_container),
       child_offset, line_direction));
 
-  child.SaveStaticOffsetForLegacy(child_offset);
   return *this;
 }
 
@@ -157,7 +155,8 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddOutOfFlowDescendant(
 }
 
 void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
-    Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates) {
+    Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
+    const LayoutObject* current_container) {
   DCHECK(descendant_candidates->IsEmpty());
 
   descendant_candidates->ReserveCapacity(oof_positioned_candidates_.size());
@@ -181,6 +180,12 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     descendant_candidates->push_back(NGOutOfFlowPositionedDescendant(
         candidate.descendant.node, builder_relative_position,
         candidate.descendant.inline_container));
+    NGLogicalOffset container_offset =
+        builder_relative_position.offset.ConvertToLogical(
+            GetWritingMode(), Direction(), builder_physical_size,
+            NGPhysicalSize());
+    candidate.descendant.node.SaveStaticOffsetForLegacy(container_offset,
+                                                        current_container);
   }
 
   // Clear our current canidate list. This may get modified again if the
