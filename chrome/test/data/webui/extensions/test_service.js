@@ -110,6 +110,7 @@ cr.define('extensions', function() {
     /** @override */
     updateAllExtensions() {
       this.methodCalled('updateAllExtensions');
+      return Promise.resolve();
     }
   }
 
