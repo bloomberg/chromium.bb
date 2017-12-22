@@ -44,7 +44,7 @@ const std::string GetSortKey(const icu::Collator& collator,
   if (expected_size > *buffer_size) {
     // If there wasn't enough space, grow the buffer and try again.
     *buffer_size = expected_size;
-    buffer->reset(new uint8_t[*buffer_size]);
+    *buffer = std::make_unique<uint8_t[]>(*buffer_size);
     DCHECK(buffer->get());
 
     expected_size = collator.getSortKey(icu_str, buffer->get(), *buffer_size);
@@ -121,7 +121,7 @@ std::map<std::string, std::string> GetLocalizedNames(
 
   std::map<std::string, std::string> localized_names;
   int32_t buffer_size = 1000;
-  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  auto buffer = std::make_unique<uint8_t[]>(buffer_size);
 
   for (const std::string& country_code :
        CountryDataMap::GetInstance()->country_codes()) {
@@ -200,7 +200,7 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
   // source string length.
   // [1] http://userguide.icu-project.org/collation/api#TOC-Examples
   int32_t buffer_size = country_name.size() * 4;
-  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  auto buffer = std::make_unique<uint8_t[]>(buffer_size);
   std::string sort_key =
       GetSortKey(collator, country_name, &buffer, &buffer_size);
 

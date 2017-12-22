@@ -153,7 +153,7 @@ class TestAutofillManager : public AutofillManager {
   }
 
   // Control the run loop from within tests.
-  void ResetRunLoop() { run_loop_.reset(new base::RunLoop()); }
+  void ResetRunLoop() { run_loop_ = std::make_unique<base::RunLoop>(); }
   void RunRunLoop() { run_loop_->Run(); }
 
   void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
@@ -351,25 +351,26 @@ void AutofillMetricsTest::SetUp() {
   test::DisableSystemServices(autofill_client_.GetPrefs());
 
   // Set up identity services.
-  signin_client_.reset(new TestSigninClient(autofill_client_.GetPrefs()));
-  account_tracker_.reset(new AccountTrackerService());
+  signin_client_ =
+      std::make_unique<TestSigninClient>(autofill_client_.GetPrefs());
+  account_tracker_ = std::make_unique<AccountTrackerService>();
   account_tracker_->Initialize(signin_client_.get());
 
-  signin_manager_.reset(
-      new FakeSigninManagerBase(signin_client_.get(), account_tracker_.get()));
+  signin_manager_ = std::make_unique<FakeSigninManagerBase>(
+      signin_client_.get(), account_tracker_.get());
   signin_manager_->Initialize(autofill_client_.GetPrefs());
 
-  personal_data_.reset(new TestPersonalDataManager());
+  personal_data_ = std::make_unique<TestPersonalDataManager>();
   personal_data_->set_database(autofill_client_.GetDatabase());
   personal_data_->SetPrefService(autofill_client_.GetPrefs());
   personal_data_->set_account_tracker(account_tracker_.get());
   personal_data_->set_signin_manager(signin_manager_.get());
-  autofill_driver_.reset(new TestAutofillDriver());
-  autofill_manager_.reset(new TestAutofillManager(
-      autofill_driver_.get(), &autofill_client_, personal_data_.get()));
+  autofill_driver_ = std::make_unique<TestAutofillDriver>();
+  autofill_manager_ = std::make_unique<TestAutofillManager>(
+      autofill_driver_.get(), &autofill_client_, personal_data_.get());
 
-  external_delegate_.reset(new AutofillExternalDelegate(
-      autofill_manager_.get(), autofill_driver_.get()));
+  external_delegate_ = std::make_unique<AutofillExternalDelegate>(
+      autofill_manager_.get(), autofill_driver_.get());
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Initialize the TestPersonalDataManager with some default data.
