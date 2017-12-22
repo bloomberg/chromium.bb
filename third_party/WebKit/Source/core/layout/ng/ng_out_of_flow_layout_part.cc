@@ -50,7 +50,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 void NGOutOfFlowLayoutPart::Run(bool update_legacy) {
   Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
   container_builder_->GetAndClearOutOfFlowDescendantCandidates(
-      &descendant_candidates);
+      &descendant_candidates, container_builder_->GetLayoutObject());
 
   while (descendant_candidates.size() > 0) {
     ComputeInlineContainingBlocks(descendant_candidates);
@@ -70,7 +70,7 @@ void NGOutOfFlowLayoutPart::Run(bool update_legacy) {
     // This happens when an absolute container has a fixed child.
     descendant_candidates.clear();
     container_builder_->GetAndClearOutOfFlowDescendantCandidates(
-        &descendant_candidates);
+        &descendant_candidates, container_builder_->GetLayoutObject());
   }
 }
 
@@ -108,6 +108,13 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
           default_containing_block_.style->GetWritingMode());
   // Translate start/end fragments into ContainingBlockInfo.
   for (auto& block_info : inline_container_fragments) {
+    if (!block_info.value.start_fragment) {
+      // This happens when Legacy block is the default container.
+      // In this case, container builder does not have any fragments because
+      // ng layout algorithm did not run.
+      DCHECK(false);
+      // TODO(atotic) ContainingBlockInfo must be computed from Legacy algorithm
+    }
     NGLogicalOffset inline_content_offset;
     NGPhysicalOffset inline_content_physical_offset;
     NGLogicalSize inline_cb_size;

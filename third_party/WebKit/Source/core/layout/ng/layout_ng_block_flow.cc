@@ -164,17 +164,14 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       NGStaticPosition::Create(parent_style->GetWritingMode(),
                                parent_style->Direction(), static_location);
 
-  container_builder.AddOutOfFlowLegacyCandidate(NGBlockNode(this),
-                                                static_position);
-
-  // LayoutObject::ContainingBlock() is not equal to LayoutObject::Container()
-  // when css container is inline. NG uses css container's style to determine
-  // whether containing block can contain the node, and therefore must use
-  // ::Container() because that object has the right Style().
   LayoutObject* css_container = Container();
-  DCHECK(css_container->IsBox());
-  NGOutOfFlowLayoutPart(NGBlockNode(ToLayoutBox(css_container)),
-                        *constraint_space, *container_style, &container_builder)
+  // Set correct container for inline containing blocks.
+  container_builder.AddOutOfFlowLegacyCandidate(
+      NGBlockNode(this), static_position,
+      css_container->IsBox() ? nullptr : css_container);
+
+  NGOutOfFlowLayoutPart(NGBlockNode(container), *constraint_space,
+                        *container_style, &container_builder)
       .Run(/* update_legacy */ false);
   scoped_refptr<NGLayoutResult> result = container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.

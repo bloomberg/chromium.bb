@@ -60,7 +60,9 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   NGFragmentBuilder& PropagateBreak(scoped_refptr<NGLayoutResult>);
   NGFragmentBuilder& PropagateBreak(scoped_refptr<NGPhysicalFragment>);
 
-  void AddOutOfFlowLegacyCandidate(NGBlockNode, const NGStaticPosition&);
+  void AddOutOfFlowLegacyCandidate(NGBlockNode,
+                                   const NGStaticPosition&,
+                                   LayoutObject* inline_container);
 
   // Set how much of the block size we've used so far for this box.
   NGFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
@@ -146,6 +148,8 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   void ComputeInlineContainerFragments(
       HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments,
       NGLogicalSize* container_size);
+
+  LayoutObject* GetLayoutObject() { return layout_object_; }
 
  private:
   NGLayoutInputNode node_;

@@ -59,7 +59,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void UseOldOutOfFlowPositioning();
 
   // Save static position for legacy AbsPos layout.
-  void SaveStaticOffsetForLegacy(const NGLogicalOffset&);
+  void SaveStaticOffsetForLegacy(const NGLogicalOffset&,
+                                 const LayoutObject* offset_container);
 
   bool CanUseNewLayout() const;
 
