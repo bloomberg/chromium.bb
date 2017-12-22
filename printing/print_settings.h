@@ -14,6 +14,7 @@
 #include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace printing {
 
@@ -101,17 +102,14 @@ class PRINTING_EXPORT PrintSettings {
   }
   const base::string16& device_name() const { return device_name_; }
 
-  void set_dpi(int dpi) {
-    dpi_[0] = dpi;
-    dpi_[1] = dpi;
-  }
+  void set_dpi(int dpi) { dpi_ = gfx::Size(dpi, dpi); }
   void set_dpi_xy(int dpi_horizontal, int dpi_vertical) {
-    dpi_[0] = dpi_horizontal;
-    dpi_[1] = dpi_vertical;
+    dpi_ = gfx::Size(dpi_horizontal, dpi_vertical);
   }
-  int dpi() const { return std::max(dpi_[0], dpi_[1]); }
-  int dpi_horizontal() const { return dpi_[0]; }
-  int dpi_vertical() const { return dpi_[1]; }
+
+  int dpi() const { return std::max(dpi_.width(), dpi_.height()); }
+  int dpi_horizontal() const { return dpi_.width(); }
+  int dpi_vertical() const { return dpi_.height(); }
 
   void set_scale_factor(double scale_factor) { scale_factor_ = scale_factor; }
   double scale_factor() const { return scale_factor_; }
@@ -238,7 +236,7 @@ class PRINTING_EXPORT PrintSettings {
   // Printer's device effective dots per inch in both axes. The two values will
   // generally be identical. However, on Windows, there are a few rare printers
   // that support resolutions with different DPI in different dimensions.
-  int dpi_[2];
+  gfx::Size dpi_;
 
   // Scale factor
   double scale_factor_;
