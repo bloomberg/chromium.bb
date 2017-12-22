@@ -192,6 +192,7 @@ enum {
 
 namespace ui {
 class AXPlatformNodeWin;
+class AXPlatformRelationWin;
 
 // A simple interface for a class that wants to be notified when IAccessible2
 // is used by a client, a strong indication that full accessibility support
@@ -225,45 +226,6 @@ struct AX_EXPORT AXHypertext {
 // listen to when usage of IAccessible2 is detected.
 extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>&
     GetIAccessible2UsageObserverList();
-
-//
-// AXPlatformNodeRelationWin
-//
-// A simple implementation of IAccessibleRelation, used to represent
-// a relationship between two accessible nodes in the tree.
-//
-class AXPlatformNodeRelationWin : public CComObjectRootEx<CComMultiThreadModel>,
-                                  public IAccessibleRelation {
- public:
-  BEGIN_COM_MAP(AXPlatformNodeRelationWin)
-  COM_INTERFACE_ENTRY(IAccessibleRelation)
-  END_COM_MAP()
-
-  AXPlatformNodeRelationWin();
-  virtual ~AXPlatformNodeRelationWin();
-
-  void Initialize(AXPlatformNodeWin* owner, const base::string16& type);
-  void AddTarget(int target_id);
-  void RemoveTarget(int target_id);
-
-  // IAccessibleRelation methods.
-  STDMETHODIMP get_relationType(BSTR* relation_type) override;
-  STDMETHODIMP get_nTargets(LONG* n_targets) override;
-  STDMETHODIMP get_target(LONG target_index, IUnknown** target) override;
-  STDMETHODIMP get_targets(LONG max_targets,
-                           IUnknown** targets,
-                           LONG* n_targets) override;
-  STDMETHODIMP get_localizedRelationType(BSTR* relation_type) override;
-
-  // Accessors.
-  const base::string16& get_type() const { return type_; }
-  const std::vector<int>& get_target_ids() const { return target_ids_; }
-
- private:
-  base::string16 type_;
-  Microsoft::WRL::ComPtr<AXPlatformNodeWin> owner_;
-  std::vector<int> target_ids_;
-};
 
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     AXPlatformNodeWin : public CComObjectRootEx<CComMultiThreadModel>,
@@ -300,8 +262,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // position where a non-static text child object appears.
   static const base::char16 kEmbeddedCharacter;
 
-  // Clear node's current relationships and set them to the default values.
-  void CalculateRelationships();
+  // Clear any AXPlatformRelationWin nodes owned by this node.
+  void ClearOwnRelations();
   static AXPlatformNode* GetFromUniqueId(int32_t unique_id);
   int32_t unique_id() const { return unique_id_; }
 
@@ -678,7 +640,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void Dispose() override;
 
   // Relationships between this node and other nodes.
-  std::vector<AXPlatformNodeRelationWin*> relations_;
+  std::vector<Microsoft::WRL::ComPtr<AXPlatformRelationWin>> relations_;
 
   AXHypertext old_hypertext_;
   AXHypertext hypertext_;
@@ -804,26 +766,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // Returns true if this node is in a treegrid.
   bool IsInTreeGrid();
-
-  //
-  // For adding / removing IA2 relations.
-  //
-  void AddRelation(const base::string16& relation_type, int target_id);
-  void AddBidirectionalRelations(const base::string16& relation_type,
-                                 const base::string16& reverse_relation_type,
-                                 AXIntListAttribute attribute);
-  void AddBidirectionalRelations(const base::string16& relation_type,
-                                 const base::string16& reverse_relation_type,
-                                 const std::vector<int32_t>& target_ids);
-  // Clears all the forward relations from this object to any other object and
-  // the associated  reverse relations on the other objects, but leaves any
-  // reverse relations on this object alone.
-  void ClearOwnRelations();
-  void RemoveBidirectionalRelationsOfType(
-      const base::string16& relation_type,
-      const base::string16& reverse_relation_type);
-  void RemoveTargetFromRelation(const base::string16& relation_type,
-                                int target_id);
 
   // Helper method for returning selected indicies. It is expected that the
   // caller ensures that the input has been validated.

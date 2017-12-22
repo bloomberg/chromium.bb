@@ -53,6 +53,10 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
+  std::set<int32_t> GetReverseRelations(ui::AXIntAttribute attr,
+                                        int32_t dst_id) override;
+  std::set<int32_t> GetReverseRelations(ui::AXIntListAttribute attr,
+                                        int32_t dst_id) override;
 
  protected:
   explicit NativeViewAccessibilityBase(View* view);

@@ -238,6 +238,18 @@ bool NativeViewAccessibilityBase::IsOffscreen() const {
   return false;
 }
 
+std::set<int32_t> NativeViewAccessibilityBase::GetReverseRelations(
+    ui::AXIntAttribute attr,
+    int32_t dst_id) {
+  return std::set<int32_t>();
+}
+
+std::set<int32_t> NativeViewAccessibilityBase::GetReverseRelations(
+    ui::AXIntListAttribute attr,
+    int32_t dst_id) {
+  return std::set<int32_t>();
+}
+
 gfx::RectF NativeViewAccessibilityBase::GetBoundsInScreen() const {
   return gfx::RectF(view()->GetBoundsInScreen());
 }

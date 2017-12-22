@@ -230,6 +230,17 @@ bool TestAXNodeWrapper::IsOffscreen() const {
   return false;
 }
 
+std::set<int32_t> TestAXNodeWrapper::GetReverseRelations(AXIntAttribute attr,
+                                                         int32_t dst_id) {
+  return tree_->GetReverseRelations(attr, dst_id);
+}
+
+std::set<int32_t> TestAXNodeWrapper::GetReverseRelations(
+    AXIntListAttribute attr,
+    int32_t dst_id) {
+  return tree_->GetReverseRelations(attr, dst_id);
+}
+
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),

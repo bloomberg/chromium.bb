@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 
+#include <set>
+
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -80,6 +82,19 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual bool IsOffscreen() const = 0;
 
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
+
+  // Given a node ID attribute (one where IsNodeIdIntAttribute is true),
+  // and a destination node ID, return a set of all source node IDs that
+  // have that relationship attribute between them and the destination.
+  virtual std::set<int32_t> GetReverseRelations(AXIntAttribute attr,
+                                                int32_t dst_id) = 0;
+
+  // Given a node ID list attribute (one where
+  // IsNodeIdIntListAttribute is true), and a destination node ID,
+  // return a set of all source node IDs that have that relationship
+  // attribute between them and the destination.
+  virtual std::set<int32_t> GetReverseRelations(AXIntListAttribute attr,
+                                                int32_t dst_id) = 0;
 
   //
   // Events.

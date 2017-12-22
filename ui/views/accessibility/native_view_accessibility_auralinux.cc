@@ -125,6 +125,16 @@ class AuraLinuxApplication
 
   bool ShouldIgnoreHoveredStateForTesting() override { return false; }
 
+  std::set<int32_t> GetReverseRelations(ui::AXIntAttribute attr,
+                                        int32_t dst_id) override {
+    return std::set<int32_t>();
+  }
+
+  std::set<int32_t> GetReverseRelations(ui::AXIntListAttribute attr,
+                                        int32_t dst_id) override {
+    return std::set<int32_t>();
+  }
+
  private:
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 

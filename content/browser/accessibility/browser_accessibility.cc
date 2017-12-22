@@ -854,6 +854,20 @@ bool BrowserAccessibility::IsOffscreen() const {
   return offscreen;
 }
 
+std::set<int32_t> BrowserAccessibility::GetReverseRelations(
+    ui::AXIntAttribute attr,
+    int32_t dst_id) {
+  DCHECK(manager_);
+  return manager_->ax_tree()->GetReverseRelations(attr, dst_id);
+}
+
+std::set<int32_t> BrowserAccessibility::GetReverseRelations(
+    ui::AXIntListAttribute attr,
+    int32_t dst_id) {
+  DCHECK(manager_);
+  return manager_->ax_tree()->GetReverseRelations(attr, dst_id);
+}
+
 gfx::NativeViewAccessible BrowserAccessibility::GetNativeViewAccessible() {
   // TODO(703369) On Windows, where we have started to migrate to an
   // AXPlatformNode implementation, the BrowserAccessibilityWin subclass has

@@ -204,14 +204,15 @@ class AX_EXPORT AXTree {
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true),
   // and a destination node ID, return a set of all source node IDs that
   // have that relationship attribute between them and the destination.
-  std::set<int32_t> GetReverseRelations(AXIntAttribute attr, int32_t dst_id);
+  std::set<int32_t> GetReverseRelations(AXIntAttribute attr,
+                                        int32_t dst_id) const;
 
   // Given a node ID list attribute (one where
   // IsNodeIdIntListAttribute is true), and a destination node ID,
   // return a set of all source node IDs that have that relationship
   // attribute between them and the destination.
   std::set<int32_t> GetReverseRelations(AXIntListAttribute attr,
-                                        int32_t dst_id);
+                                        int32_t dst_id) const;
 
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;
