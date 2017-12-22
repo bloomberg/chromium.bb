@@ -175,8 +175,6 @@ struct NavigationParams;
 struct RequestNavigationParams;
 struct ResourceResponseHead;
 struct ScreenInfo;
-struct StartNavigationParams;
-struct StreamOverrideParameters;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -967,9 +965,6 @@ class CONTENT_EXPORT RenderFrameImpl
   //
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
-  void OnNavigate(const CommonNavigationParams& common_params,
-                  const StartNavigationParams& start_params,
-                  const RequestNavigationParams& request_params);
   void OnBeforeUnload(bool is_reload);
   void OnSwapIn();
   void OnSwapOut(int proxy_routing_id,
@@ -1092,21 +1087,14 @@ class CONTENT_EXPORT RenderFrameImpl
                bool send_referrer,
                bool is_history_navigation_in_new_child);
 
-  // Performs a navigation in the frame. This provides a unified function for
-  // the current code path and the browser-side navigation path (in
-  // development). Currently used by OnNavigate, with all *NavigationParams
-  // provided by the browser. |stream_params| should be null.
-  // PlzNavigate: used by CommitNavigation, with |common_params| and
-  // |request_params| received by the browser. |stream_params| should be non
-  // null and created from the information provided by the browser.
-  // |start_params| is not used.
-  void NavigateInternal(
+  // Creates a WebURLRequest to use fo the commit of a navigation.
+  blink::WebURLRequest CreateURLRequestForCommit(
       const CommonNavigationParams& common_params,
-      const StartNavigationParams& start_params,
       const RequestNavigationParams& request_params,
-      std::unique_ptr<StreamOverrideParameters> stream_params,
-      base::Optional<URLLoaderFactoryBundle> subresource_loader_factories,
-      const base::UnguessableToken& devtools_navigation_token);
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      const ResourceResponseHead& head,
+      const GURL& body_url,
+      bool is_same_document_navigation);
 
   // Returns a URLLoaderFactoryBundle which can be used to request subresources
   // for this frame. Only valid to call when the Network Service is enabled.
@@ -1139,7 +1127,7 @@ class CONTENT_EXPORT RenderFrameImpl
                            base::string16* result);
 
   // Loads the appropriate error page for the specified failure into the frame.
-  // |entry| is only used by PlzNavigate when navigating to a history item.
+  // |entry| is only when navigating to a history item.
   void LoadNavigationErrorPage(
       const blink::WebURLRequest& failed_request,
       const blink::WebURLError& error,
@@ -1175,7 +1163,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const GURL& url,
       const RequestNavigationParams& request_params);
 
-  // PlzNavigate
   // Sends a FrameHostMsg_BeginNavigation to the browser
   void BeginNavigation(const NavigationPolicyInfo& info);
 
@@ -1540,7 +1527,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // See BindingsPolicy for details.
   int enabled_bindings_ = 0;
 
-  // PlzNavigate:
   // Contains information about a pending navigation to be sent to the browser.
   // We save information about the navigation in decidePolicyForNavigation().
   // The navigation is sent to the browser in didStartProvisionalLoad().
@@ -1559,9 +1545,9 @@ class CONTENT_EXPORT RenderFrameImpl
     explicit PendingNavigationInfo(const NavigationPolicyInfo& info);
   };
 
-  // PlzNavigate: Contains information about a pending navigation to be sent to
-  // the browser. This state is allocated in decidePolicyForNavigation() and
-  // is used and released in didStartProvisionalLoad().
+  // Contains information about a pending navigation to be sent to the browser.
+  // This state is allocated in decidePolicyForNavigation() and is used and
+  // released in didStartProvisionalLoad().
   std::unique_ptr<PendingNavigationInfo> pending_navigation_info_;
 
   service_manager::BindSourceInfo browser_info_;

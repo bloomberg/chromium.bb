@@ -36,7 +36,6 @@ namespace content {
 class ResourceRequestBody;
 struct CommonNavigationParams;
 struct RequestNavigationParams;
-struct StartNavigationParams;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
@@ -188,7 +187,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       FrameMsg_Navigate_Type::Value navigation_type,
       PreviewsState previews_state,
       const base::TimeTicks& navigation_start) const;
-  StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,

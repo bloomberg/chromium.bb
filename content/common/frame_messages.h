@@ -400,12 +400,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::StartNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(extra_headers)
-  IPC_STRUCT_TRAITS_MEMBER(transferred_request_child_id)
-  IPC_STRUCT_TRAITS_MEMBER(transferred_request_request_id)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationTiming)
   IPC_STRUCT_TRAITS_MEMBER(redirect_start)
   IPC_STRUCT_TRAITS_MEMBER(redirect_end)
@@ -741,13 +735,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 
 // Instructs the renderer to delete the RenderFrame.
 IPC_MESSAGE_ROUTED0(FrameMsg_Delete)
-
-// Tells the renderer to perform the specified navigation, interrupting any
-// existing navigation.
-IPC_MESSAGE_ROUTED3(FrameMsg_Navigate,
-                    content::CommonNavigationParams, /* common_params */
-                    content::StartNavigationParams,  /* start_params */
-                    content::RequestNavigationParams /* request_params */)
 
 // Instructs the renderer to invoke the frame's beforeunload event handler.
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.

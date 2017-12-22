@@ -701,13 +701,6 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       has_started_from_context_menu(), user_gesture);
 }
 
-StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
-    const {
-  return StartNavigationParams(extra_headers(),
-                               transferred_global_request_id().child_id,
-                               transferred_global_request_id().request_id);
-}
-
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     const FrameNavigationEntry& frame_entry,
     const GURL& original_url,

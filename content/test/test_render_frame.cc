@@ -137,17 +137,10 @@ void TestRenderFrame::WillSendRequest(blink::WebURLRequest& request) {
 }
 
 void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
-                               const StartNavigationParams& start_params,
                                const RequestNavigationParams& request_params) {
-  // PlzNavigate
-  if (IsBrowserSideNavigationEnabled()) {
-    CommitNavigation(ResourceResponseHead(), GURL(), common_params,
-                     request_params, mojom::URLLoaderClientEndpointsPtr(),
-                     URLLoaderFactoryBundle(),
-                     base::UnguessableToken::Create());
-  } else {
-    OnNavigate(common_params, start_params, request_params);
-  }
+  CommitNavigation(ResourceResponseHead(), GURL(), common_params,
+                   request_params, mojom::URLLoaderClientEndpointsPtr(),
+                   URLLoaderFactoryBundle(), base::UnguessableToken::Create());
 }
 
 void TestRenderFrame::SwapOut(

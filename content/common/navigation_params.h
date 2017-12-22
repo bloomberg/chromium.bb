@@ -157,37 +157,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
 };
 
 // Provided by the browser -----------------------------------------------------
-//
-// These structs are sent by the browser to the renderer to start/commit a
-// navigation depending on whether browser-side navigation is enabled.
-// Parameters used both in the current architecture and PlzNavigate should be
-// put in RequestNavigationParams.  Parameters only used by the current
-// architecture should go in StartNavigationParams.
-
-// Used by FrameMsg_Navigate. Holds the parameters needed by the renderer to
-// start a browser-initiated navigation besides those in CommonNavigationParams.
-// The difference with the RequestNavigationParams below is that they are only
-// used in the current architecture of navigation, and will not be used by
-// PlzNavigate.
-// PlzNavigate: These are not used.
-struct CONTENT_EXPORT StartNavigationParams {
-  StartNavigationParams();
-  StartNavigationParams(const std::string& extra_headers,
-                        int transferred_request_child_id,
-                        int transferred_request_request_id);
-  StartNavigationParams(const StartNavigationParams& other);
-  ~StartNavigationParams();
-
-  // Extra headers (separated by \n) to send during the request.
-  std::string extra_headers;
-
-  // The following two members identify a previous request that has been
-  // created before this navigation is being transferred to a new process.
-  // This serves the purpose of recycling the old request.
-  // Unless this refers to a transferred navigation, these values are -1 and -1.
-  int transferred_request_child_id;
-  int transferred_request_request_id;
-};
 
 // PlzNavigate
 // Timings collected in the browser during navigation for the
@@ -338,12 +307,10 @@ struct CONTENT_EXPORT RequestNavigationParams {
 // needs to provide to the renderer.
 struct NavigationParams {
   NavigationParams(const CommonNavigationParams& common_params,
-                   const StartNavigationParams& start_params,
                    const RequestNavigationParams& request_params);
   ~NavigationParams();
 
   CommonNavigationParams common_params;
-  StartNavigationParams start_params;
   RequestNavigationParams request_params;
 };
 
