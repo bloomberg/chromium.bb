@@ -35,6 +35,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -99,6 +100,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/network_service.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
@@ -128,11 +130,13 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/value_builder.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/interfaces/cookie_manager.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/database/database_identifier.h"
@@ -4792,6 +4796,20 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_FALSE(base::DirectoryExists(idb_path));
 }
 
+void SetCookieSaveData(bool* result_out,
+                       base::OnceClosure callback,
+                       bool result) {
+  *result_out = result;
+  std::move(callback).Run();
+}
+
+void GetCookiesSaveData(std::vector<net::CanonicalCookie>* result_out,
+                        base::OnceClosure callback,
+                        const std::vector<net::CanonicalCookie>& result) {
+  *result_out = result;
+  std::move(callback).Run();
+}
+
 // Verifies app state is removed upon uninstall.
 TEST_F(ExtensionServiceTest, ClearAppData) {
   InitializeEmptyExtensionService();
@@ -4828,25 +4846,37 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       origin2));
 
-  // Set a cookie for the extension.
-  net::CookieStore* cookie_store = profile()->GetRequestContext()
-                                            ->GetURLRequestContext()
-                                            ->cookie_store();
-  ASSERT_TRUE(cookie_store);
-  net::CookieOptions options;
-  cookie_store->SetCookieWithOptionsAsync(
-       origin1, "dummy=value", options,
-       base::Bind(&ExtensionCookieCallback::SetCookieCallback,
-                  base::Unretained(&callback)));
-  content::RunAllTasksUntilIdle();
-  EXPECT_TRUE(callback.result_);
+  content::mojom::NetworkContext* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetNetworkContext();
+  network::mojom::CookieManagerPtr cookie_manager_ptr;
+  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_ptr));
 
-  cookie_store->GetAllCookiesForURLAsync(
-      origin1,
-      base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
-                 base::Unretained(&callback)));
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(1U, callback.list_.size());
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+      origin1, "dummy=value", base::Time::Now(), net::CookieOptions()));
+  ASSERT_TRUE(cc.get());
+
+  {
+    bool set_result = false;
+    base::RunLoop run_loop;
+    cookie_manager_ptr->SetCanonicalCookie(
+        *cc.get(), origin1.SchemeIsCryptographic(), true /* modify_http_only */,
+        base::BindOnce(&SetCookieSaveData, &set_result,
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(set_result);
+  }
+
+  {
+    base::RunLoop run_loop;
+    std::vector<net::CanonicalCookie> cookies_result;
+    cookie_manager_ptr->GetCookieList(
+        origin1, net::CookieOptions(),
+        base::BindOnce(&GetCookiesSaveData, &cookies_result,
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(1U, cookies_result.size());
+  }
 
   // Open a database.
   storage::DatabaseTracker* db_tracker =
@@ -4885,13 +4915,17 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       origin1));
 
-  // Check that the cookie is still there.
-  cookie_store->GetAllCookiesForURLAsync(
-       origin1,
-       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
-                  base::Unretained(&callback)));
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(1U, callback.list_.size());
+  {
+    // Check that the cookie is still there.
+    base::RunLoop run_loop;
+    std::vector<net::CanonicalCookie> cookies_result;
+    cookie_manager_ptr->GetCookieList(
+        origin1, net::CookieOptions(),
+        base::BindOnce(&GetCookiesSaveData, &cookies_result,
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(1U, cookies_result.size());
+  }
 
   // Now uninstall the other. Storage should be cleared for the apps.
   UninstallExtension(id2);
@@ -4900,13 +4934,17 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
           origin1));
 
-  // Check that the cookie is gone.
-  cookie_store->GetAllCookiesForURLAsync(
-       origin1,
-       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
-                  base::Unretained(&callback)));
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(0U, callback.list_.size());
+  {
+    // Check that the cookie is gone.
+    base::RunLoop run_loop;
+    std::vector<net::CanonicalCookie> cookies_result;
+    cookie_manager_ptr->GetCookieList(
+        origin1, net::CookieOptions(),
+        base::BindOnce(&GetCookiesSaveData, &cookies_result,
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(0U, cookies_result.size());
+  }
 
   // The database should have vanished as well.
   db_tracker->task_runner()->PostTask(

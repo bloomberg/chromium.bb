@@ -844,11 +844,6 @@
 -PPAPINaClPNaClNonSfiTest.FileRef2
 -PPAPINaClPNaClNonSfiTest.URLLoader1
 
-# Disabled for first phase of extension system shift; will be re-enabled in
-# https://chromium-review.googlesource.com/c/chromium/src/+/776017.
--ExtensionApiTest.CookiesEventsSpanning
--ExtensionApiTest.CookiesEvents
-
 # Prevent tests from making real network requests.
 # https://crbug.com/793899
 -ExtensionApiTest.DoNotOpenUninstallUrlForBlacklistedExtensions
