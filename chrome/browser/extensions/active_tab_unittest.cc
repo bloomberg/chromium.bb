@@ -446,7 +446,7 @@ TEST_F(ActiveTabTest, Delegate) {
 #if defined(OS_CHROMEOS)
 // Test that the platform delegate is being set and the permission is prompted
 // for.
-TEST_F(ActiveTabTest, DelegateIsSet) {
+TEST_F(ActiveTabTest, DISABLED_DelegateIsSet) {
   // Necessary to prevent instantiation of ProfileSyncService, which messes with
   // our signin state below.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
