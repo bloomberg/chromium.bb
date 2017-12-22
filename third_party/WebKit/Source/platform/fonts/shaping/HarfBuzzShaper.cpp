@@ -885,6 +885,10 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
       ShapeSegment(&range_data, segment_range, result.get());
   }
 
+  // Ensure we have at least one run for StartIndexForResult().
+  if (UNLIKELY(result->runs_.IsEmpty() && start))
+    result->InsertRunForIndex(start);
+
 #if DCHECK_IS_ON()
   if (result)
     CheckShapeResultRange(result.get(), start, end, text_, font);
