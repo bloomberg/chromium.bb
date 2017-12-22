@@ -32,6 +32,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFace.h"
+#include "core/css/FontFaceSource.h"
 #include "platform/fonts/SegmentedFontData.h"
 #include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/wtf/Deque.h"
@@ -66,10 +67,11 @@ class CORE_EXPORT CSSFontFace final
   size_t ApproximateBlankCharacterCount() const;
 
   void AddSource(CSSFontFaceSource*);
+  void SetDisplay(FontDisplay);
 
   void DidBeginLoad();
   bool FontLoaded(RemoteFontFaceSource*);
-  bool DidBecomeVisibleFallback(RemoteFontFaceSource*);
+  bool FallbackVisibilityChanged(RemoteFontFaceSource*);
 
   scoped_refptr<SimpleFontData> GetFontData(const FontDescription&);
 

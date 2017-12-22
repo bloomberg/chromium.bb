@@ -15,21 +15,15 @@ class CSSFontFace;
 class FontSelector;
 class FontCustomPlatformData;
 
-enum FontDisplay {
-  kFontDisplayAuto,
-  kFontDisplayBlock,
-  kFontDisplaySwap,
-  kFontDisplayFallback,
-  kFontDisplayOptional,
-  kFontDisplayEnumMax
-};
-
 class RemoteFontFaceSource final : public CSSFontFaceSource,
                                    public FontResourceClient {
   USING_PRE_FINALIZER(RemoteFontFaceSource, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFontFaceSource);
 
  public:
+  enum Phase { kNoLimitExceeded, kShortLimitExceeded, kLongLimitExceeded };
+  // Periods of the Font Display Timeline.
+  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
   enum DisplayPeriod { kBlockPeriod, kSwapPeriod, kFailurePeriod };
 
   RemoteFontFaceSource(CSSFontFace*, FontSelector*, FontDisplay);
@@ -41,6 +35,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool IsValid() const override;
 
   void BeginLoadIfNeeded() override;
+  void SetDisplay(FontDisplay) override;
 
   void NotifyFinished(Resource*) override;
   void FontLoadShortLimitExceeded(FontResource*) override;
@@ -114,8 +109,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
     DataSource data_source_;
   };
 
-  void SwitchToSwapPeriod();
-  void SwitchToFailurePeriod();
+  void UpdatePeriod();
   bool ShouldTriggerWebFontsIntervention();
   bool IsLowPriorityLoadingAllowedForRemoteFont() const override;
 
@@ -126,7 +120,8 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   // |nullptr| if font is not loaded or failed to decode.
   scoped_refptr<FontCustomPlatformData> custom_font_data_;
 
-  const FontDisplay display_;
+  FontDisplay display_;
+  Phase phase_;
   DisplayPeriod period_;
   FontLoadHistograms histograms_;
   bool is_intervention_triggered_;

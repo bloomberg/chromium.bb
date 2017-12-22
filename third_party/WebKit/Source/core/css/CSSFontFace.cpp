@@ -75,6 +75,12 @@ bool CSSFontFace::FontLoaded(RemoteFontFaceSource* source) {
   return true;
 }
 
+void CSSFontFace::SetDisplay(FontDisplay value) {
+  for (auto& source : sources_) {
+    source->SetDisplay(value);
+  }
+}
+
 size_t CSSFontFace::ApproximateBlankCharacterCount() const {
   if (!sources_.IsEmpty() && sources_.front()->IsInBlockPeriod() &&
       segmented_font_face_)
@@ -82,7 +88,7 @@ size_t CSSFontFace::ApproximateBlankCharacterCount() const {
   return 0;
 }
 
-bool CSSFontFace::DidBecomeVisibleFallback(RemoteFontFaceSource* source) {
+bool CSSFontFace::FallbackVisibilityChanged(RemoteFontFaceSource* source) {
   if (!IsValid() || source != sources_.front())
     return false;
   if (segmented_font_face_)
