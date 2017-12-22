@@ -29,9 +29,8 @@ class TranslateHelper;
 
 // This class holds the Chrome specific parts of RenderFrame, and has the same
 // lifetime.
-class ChromeRenderFrameObserver
-    : public content::RenderFrameObserver,
-      public chrome::mojom::ChromeRenderFrame {
+class ChromeRenderFrameObserver : public content::RenderFrameObserver,
+                                  public chrome::mojom::ChromeRenderFrame {
  public:
   explicit ChromeRenderFrameObserver(content::RenderFrame* render_frame);
   ~ChromeRenderFrameObserver() override;
@@ -77,6 +76,9 @@ class ChromeRenderFrameObserver
   void SetClientSidePhishingDetection(bool enable_phishing_detection) override;
   void GetWebApplicationInfo(
       const GetWebApplicationInfoCallback& callback) override;
+  void UpdateBrowserControlsState(content::BrowserControlsState constraints,
+                                  content::BrowserControlsState current,
+                                  bool animate) override;
 
   void OnRenderFrameObserverRequest(
       chrome::mojom::ChromeRenderFrameAssociatedRequest request);

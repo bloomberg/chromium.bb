@@ -13,20 +13,19 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/common/browser_controls_state_param_traits.h"
 #include "chrome/common/features.h"
 #include "chrome/common/web_application_info_provider_param_traits.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/offline_pages/features/features.h"
-#include "content/public/common/browser_controls_state.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"
@@ -40,11 +39,6 @@
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebConsoleMessage::Level,
-                          blink::WebConsoleMessage::kLevelLast)
-IPC_ENUM_TRAITS_MAX_VALUE(content::BrowserControlsState,
-                          content::BROWSER_CONTROLS_STATE_LAST)
-
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
@@ -57,14 +51,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_RequestFileSystemAccessAsyncResponse,
                     int  /* request_id */,
                     bool /* allowed */)
-
-// Notifies the renderer whether hiding/showing the browser controls is enabled,
-// what the current state should be, and whether or not to animate to the
-// proper state.
-IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateBrowserControlsState,
-                    content::BrowserControlsState /* constraints */,
-                    content::BrowserControlsState /* current */,
-                    bool /* animate */)
 
 // JavaScript related messages -----------------------------------------------
 
