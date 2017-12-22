@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -261,10 +262,6 @@ class PdfConverterImpl : public PdfConverter {
   void OnTempPdfReady(ScopedTempFile pdf);
   void OnTempFileReady(GetPageCallbackData* callback_data,
                        ScopedTempFile temp_file);
-
-  // Additional message handler needed for Pdf to Emf
-  void OnPreCacheFontCharacters(const LOGFONT& log_font,
-                                const base::string16& characters);
 
   scoped_refptr<RefCountedTempDir> temp_dir_;
 
@@ -558,37 +555,6 @@ void PdfConverterImpl::OnFailed(const std::string& error_message) {
   }
 
   Stop();
-}
-
-void PdfConverterImpl::OnPreCacheFontCharacters(const LOGFONT& font,
-                                                const base::string16& str) {
-  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
-  // GDI fonts (http://crbug.com/383227), even when using DirectWrite.
-  // Eventually this shouldn't be added and should be moved to
-  // FontCacheDispatcher too. http://crbug.com/356346.
-
-  // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
-  // Except that for True Type fonts,
-  // GetTextMetrics will not load the font in memory.
-  // The only way windows seem to load properly, it is to create a similar
-  // device (like the one in which we print), then do an ExtTextOut,
-  // as we do in the printing thread, which is sandboxed.
-  HDC hdc = CreateEnhMetaFile(nullptr, nullptr, nullptr, nullptr);
-  HFONT font_handle = CreateFontIndirect(&font);
-  DCHECK(font_handle != nullptr);
-
-  HGDIOBJ old_font = SelectObject(hdc, font_handle);
-  DCHECK(old_font != nullptr);
-
-  ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, str.c_str(), str.length(), nullptr);
-
-  SelectObject(hdc, old_font);
-  DeleteObject(font_handle);
-
-  HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
-
-  if (metafile)
-    DeleteEnhMetaFile(metafile);
 }
 
 }  // namespace
