@@ -10,7 +10,6 @@ goog.provide('cvox.ChromeVoxBackground');
 
 goog.require('ChromeVoxState');
 goog.require('Msgs');
-goog.require('constants');
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.BrailleBackground');
 goog.require('cvox.BrailleCaptionsBackground');
@@ -88,7 +87,7 @@ cvox.ChromeVoxBackground.setPref = function(pref, value, announce) {
     cvox.BrailleCaptionsBackground.setActive(!!value);
   } else if (pref == 'position') {
     cvox.ChromeVox.position =
-        /** @type {Object<string, constants.Point>} */ (JSON.parse(
+        /** @type {Object<string, cvox.Point>} */ (JSON.parse(
             /** @type {string} */ (value)));
   }
   window['prefs'].setPref(pref, value);
