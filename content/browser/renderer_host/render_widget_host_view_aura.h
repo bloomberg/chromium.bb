@@ -189,7 +189,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate* delegate,
                                       const gfx::PointF& point,
-                                      gfx::PointF* transformed_point) override;
+                                      gfx::PointF* transformed_point,
+                                      bool* out_query_renderer) override;
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
                                        const viz::SurfaceId& original_surface,
                                        gfx::PointF* transformed_point) override;

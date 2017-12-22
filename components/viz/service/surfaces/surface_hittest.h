@@ -33,11 +33,18 @@ class VIZ_SERVICE_EXPORT SurfaceHittest {
   ~SurfaceHittest();
 
   // Returns the target surface that falls underneath the provided |point|.
+  // |out_query_renderer| is set to true if the result is not high confidence,
+  // which means that there could be a different result when hit testing is
+  // performed in the renderer process. In that case the returned SurfaceId and
+  // Transform should be ignored.
+  // When |out_query_renderer| is set to false the returned SurfaceId and
+  // Transform can be taken as correct without further verification.
   // Also returns the |transform| to convert the |point| to the target surface's
   // space.
   SurfaceId GetTargetSurfaceAtPoint(const SurfaceId& root_surface_id,
                                     const gfx::Point& point,
-                                    gfx::Transform* transform);
+                                    gfx::Transform* transform,
+                                    bool* out_query_renderer);
 
   // Returns whether the target surface falls inside the provide root surface.
   // Returns the |transform| to convert points from the root surface coordinate
@@ -61,7 +68,8 @@ class VIZ_SERVICE_EXPORT SurfaceHittest {
       const gfx::Point& point_in_root_target,
       std::set<const RenderPass*>* referenced_passes,
       SurfaceId* out_surface_id,
-      gfx::Transform* out_transform);
+      gfx::Transform* out_transform,
+      bool* out_query_renderer);
 
   bool GetTransformToTargetSurfaceInternal(
       const SurfaceId& root_surface_id,

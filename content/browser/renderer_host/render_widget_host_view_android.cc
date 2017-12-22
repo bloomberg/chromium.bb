@@ -853,7 +853,8 @@ viz::SurfaceId RenderWidgetHostViewAndroid::SurfaceIdForTesting() const {
 viz::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
     viz::SurfaceHittestDelegate* delegate,
     const gfx::PointF& point,
-    gfx::PointF* transformed_point) {
+    gfx::PointF* transformed_point,
+    bool* out_query_renderer) {
   if (!delegated_frame_host_)
     return viz::FrameSinkId();
 
@@ -869,7 +870,8 @@ viz::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
                                 GetFrameSinkManager()->surface_manager());
     gfx::Transform target_transform;
     surface_id = hittest.GetTargetSurfaceAtPoint(
-        surface_id, gfx::ToFlooredPoint(point_in_pixels), &target_transform);
+        surface_id, gfx::ToFlooredPoint(point_in_pixels), &target_transform,
+        out_query_renderer);
     *transformed_point = point_in_pixels;
     if (surface_id.is_valid())
       target_transform.TransformPoint(transformed_point);
