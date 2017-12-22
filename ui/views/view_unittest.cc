@@ -4937,6 +4937,41 @@ TEST_F(ViewTest, ChildViewZOrderChanged) {
   }
 }
 
+TEST_F(ViewTest, AttachChildViewWithComplicatedLayers) {
+  std::unique_ptr<View> grand_parent_view(new View());
+  grand_parent_view->SetPaintToLayer();
+
+  View* parent_view = new OrderableView();
+  parent_view->SetPaintToLayer();
+
+  // child_view1 has layer and has id OrderableView::VIEW_ID_RAISED.
+  View* child_view1 = new View;
+  child_view1->SetPaintToLayer();
+  child_view1->set_id(OrderableView::VIEW_ID_RAISED);
+  parent_view->AddChildView(child_view1);
+
+  // child_view2 has no layer.
+  View* child_view2 = new View;
+  // grand_child_view has layer.
+  View* grand_child_view = new View();
+  grand_child_view->SetPaintToLayer();
+  child_view2->AddChildView(grand_child_view);
+  parent_view->AddChildView(child_view2);
+  const std::vector<ui::Layer*>& layers = parent_view->layer()->children();
+  EXPECT_EQ(2u, layers.size());
+  EXPECT_EQ(layers[0], grand_child_view->layer());
+  EXPECT_EQ(layers[1], child_view1->layer());
+
+  // Attach parent_view to grand_parent_view. children layers of parent_view
+  // should not change.
+  grand_parent_view->AddChildView(parent_view);
+  const std::vector<ui::Layer*>& layers_after_attached
+      = parent_view->layer()->children();
+  EXPECT_EQ(2u, layers_after_attached.size());
+  EXPECT_EQ(layers_after_attached[0], grand_child_view->layer());
+  EXPECT_EQ(layers_after_attached[1], child_view1->layer());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observer tests.
 ////////////////////////////////////////////////////////////////////////////////
