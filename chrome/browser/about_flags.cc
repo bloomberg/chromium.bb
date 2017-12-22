@@ -3192,6 +3192,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
 
+    {"omnibox-ui-hide-steady-state-url-scheme-and-subdomains",
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsName,
+     flag_descriptions::
+         kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)},
+
     {"omnibox-ui-hide-suggestion-url-scheme",
      flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeName,
      flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeDescription, kOsAll,

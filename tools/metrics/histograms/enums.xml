@@ -24684,6 +24684,8 @@ from previous Chrome versions.
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
   <int value="-2132591642" label="enable-input-view"/>
+  <int value="-2124839789"
+      label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:enabled"/>
   <int value="-2122048316"
       label="DisplayPersistenceToggleInPermissionPrompts:enabled"/>
   <int value="-2119827860" label="ash-disable-maximize-mode-window-backdrop"/>
@@ -25030,6 +25032,8 @@ from previous Chrome versions.
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1289678848" label="SystemDownloadManager:enabled"/>
   <int value="-1288130734" label="OpenVR:disabled"/>
+  <int value="-1287511172"
+      label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:disabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1284637134" label="pull-to-refresh"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>

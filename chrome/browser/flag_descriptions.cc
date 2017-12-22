@@ -947,6 +947,12 @@ const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
     "Elides the path, query, and ref of suggested URLs in the Omnibox "
     "dropdown.";
 
+const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsName[] =
+    "Omnibox UI Hide Steady-State URL Scheme and Trivial Subdomains";
+const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription[] =
+    "In the Omnibox, hide the scheme and trivial subdomains from steady state "
+    "displayed URLs. Hidden portions are restored during editing.";
+
 const char kOmniboxUIHideSuggestionUrlSchemeName[] =
     "Omnibox UI Hide Suggestion URL Scheme";
 const char kOmniboxUIHideSuggestionUrlSchemeDescription[] =
