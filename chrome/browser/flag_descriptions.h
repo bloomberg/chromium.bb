@@ -219,6 +219,9 @@ extern const char kEnableBreakingNewsPushDescription[];
 extern const char kEnableBrotliName[];
 extern const char kEnableBrotliDescription[];
 
+extern const char kEnableCaptivePortalRandomUrl[];
+extern const char kEnableCaptivePortalRandomUrlDescription[];
+
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 

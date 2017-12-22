@@ -1447,6 +1447,10 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableNetworkPortalNotification,
          chromeos::switches::kDisableNetworkPortalNotification)},
+    {"enable-captive-portal-random-url",
+     flag_descriptions::kEnableCaptivePortalRandomUrl,
+     flag_descriptions::kEnableCaptivePortalRandomUrlDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableCaptivePortalRandomUrl)},
     {"disable-network-settings-config",
      flag_descriptions::kDisableNetworkSettingsConfigName,
      flag_descriptions::kDisableNetworkSettingsConfigDescription, kOsCrOS,
