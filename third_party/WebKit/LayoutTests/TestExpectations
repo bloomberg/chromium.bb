@@ -945,11 +945,9 @@ crbug.com/779170 virtual/mouseevent_fractional/fast/events/zoom-dblclick.html [ 
 crbug.com/526463 fast/events/wheel/mouse-wheel-scroll-latching.html [ Failure ]
 crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
 crbug.com/526463 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Failure Timeout ]
-crbug.com/526463 fast/events/wheel/latched-scroll-node-removed.html [ Failure ]
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/mouse-wheel-scroll-latching.html [ Failure ]
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Failure Timeout ]
-crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/latched-scroll-node-removed.html [ Failure ]
 
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -1800,8 +1798,6 @@ crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-current
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 
-crbug.com/699096 media/controls-drag-timebar-rendering.html [ Failure ]
-
 crbug.com/613659 external/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 external/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 external/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
@@ -2027,10 +2023,6 @@ crbug.com/626703 external/wpt/css/css-fonts/alternates-order.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-features-across-space-1.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-features-across-space-3.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-kerning-03.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-fonts/font-variant-01.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-fonts/font-variant-02.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-fonts/font-variant-03.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-fonts/font-variant-04.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-alternates-01.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-alternates-02.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-alternates-03.html [ Failure ]
@@ -2058,7 +2050,6 @@ crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006b.xht [ F
 crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006c.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-ui/text-overflow-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
 crbug.com/626703 external/wpt/css/cssom-view/matchMedia.xht [ Timeout ]
@@ -2439,8 +2430,6 @@ crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/locat
 
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
 
-crbug.com/781595 external/wpt/html/dom/documents/resource-metadata-management/document-lastModified-01.html [ Failure ]
-
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 external/wpt/workers/baseurl/alpha/worker.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
@@ -2776,10 +2765,6 @@ crbug.com/709227 external/wpt/websockets/constructor/002.html [ Failure ]
 crbug.com/709227 external/wpt/websockets/constructor/002.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/constructor/006.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/constructor/009.html?wss [ Failure ]
-crbug.com/709227 external/wpt/websockets/constructor/010.html [ Failure ]
-crbug.com/709227 external/wpt/websockets/constructor/010.html?wss [ Failure ]
-crbug.com/709227 external/wpt/websockets/constructor/011.html [ Failure ]
-crbug.com/709227 external/wpt/websockets/constructor/011.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/constructor/013.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/constructor/014.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/constructor/016.html?wss [ Failure ]
@@ -2817,8 +2802,6 @@ crbug.com/709227 external/wpt/websockets/keeping-connection-open/001.html?wss [ 
 crbug.com/709227 external/wpt/websockets/opening-handshake/002.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/opening-handshake/003.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/opening-handshake/005.html [ Failure ]
-crbug.com/709227 external/wpt/websockets/unload-a-document/001.html [ Failure ]
-crbug.com/709227 external/wpt/websockets/unload-a-document/001.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/unload-a-document/002.html [ Failure ]
 crbug.com/709227 external/wpt/websockets/unload-a-document/002.html?wss [ Failure ]
 
