@@ -46,7 +46,8 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   }
 
   void PostTask(const base::Location& location, CrossThreadClosure task) {
-    thread_->GetWebTaskRunner()->PostTask(location, std::move(task));
+    PostCrossThreadTask(*thread_->GetWebTaskRunner(), location,
+                        std::move(task));
   }
 
   void PostDelayedTask(const base::Location& location,

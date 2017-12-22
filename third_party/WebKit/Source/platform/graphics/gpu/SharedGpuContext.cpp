@@ -122,8 +122,8 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
     WaitableEvent waitable_event;
     scoped_refptr<WebTaskRunner> task_runner =
         Platform::Current()->MainThread()->GetWebTaskRunner();
-    task_runner->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *task_runner, FROM_HERE,
         CrossThreadBind(&CreateContextProviderOnMainThread,
                         only_if_gpu_compositing,
                         CrossThreadUnretained(&is_gpu_compositing_disabled_),

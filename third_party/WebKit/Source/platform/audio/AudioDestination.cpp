@@ -127,8 +127,8 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   // Use the dual-thread rendering model if the thread from AudioWorkletThread
   // is available.
   if (worklet_backing_thread_) {
-    worklet_backing_thread_->GetWebTaskRunner()->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *worklet_backing_thread_->GetWebTaskRunner(), FROM_HERE,
         CrossThreadBind(&AudioDestination::RequestRender, WrapRefCounted(this),
                         number_of_frames, frames_to_render, delay,
                         delay_timestamp, prior_frames_skipped));

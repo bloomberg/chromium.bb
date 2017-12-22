@@ -114,8 +114,8 @@ void MemoryCoordinator::OnPurgeMemory() {
     if (!thread->GetWebTaskRunner())
       continue;
 
-    thread->GetWebTaskRunner()->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *thread->GetWebTaskRunner(), FROM_HERE,
         CrossThreadBind(MemoryCoordinator::ClearThreadSpecificMemory));
   }
 }

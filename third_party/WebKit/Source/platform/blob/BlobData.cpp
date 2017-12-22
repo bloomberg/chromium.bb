@@ -354,8 +354,8 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
             if (file_runner) {
               // TODO(mek): Considering binding BytesProvider on the IO thread
               // instead, only using the File thread for actual file operations.
-              file_runner->PostTask(
-                  FROM_HERE,
+              PostCrossThreadTask(
+                  *file_runner, FROM_HERE,
                   CrossThreadBind(
                       &BindBytesProvider, WTF::Passed(std::move(provider)),
                       WTF::Passed(MakeRequest(&bytes_provider_info))));

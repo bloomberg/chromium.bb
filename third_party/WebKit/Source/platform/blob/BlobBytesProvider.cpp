@@ -84,8 +84,9 @@ class BlobBytesStreamer {
 // This keeps the process alive while blobs are being transferred.
 void IncreaseChildProcessRefCount() {
   if (!Platform::Current()->MainThread()->IsCurrentThread()) {
-    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-        FROM_HERE, CrossThreadBind(&IncreaseChildProcessRefCount));
+    PostCrossThreadTask(*Platform::Current()->MainThread()->GetWebTaskRunner(),
+                        FROM_HERE,
+                        CrossThreadBind(&IncreaseChildProcessRefCount));
     return;
   }
   Platform::Current()->SuddenTerminationChanged(false);
@@ -94,8 +95,9 @@ void IncreaseChildProcessRefCount() {
 
 void DecreaseChildProcessRefCount() {
   if (!Platform::Current()->MainThread()->IsCurrentThread()) {
-    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-        FROM_HERE, CrossThreadBind(&DecreaseChildProcessRefCount));
+    PostCrossThreadTask(*Platform::Current()->MainThread()->GetWebTaskRunner(),
+                        FROM_HERE,
+                        CrossThreadBind(&DecreaseChildProcessRefCount));
     return;
   }
   Platform::Current()->SuddenTerminationChanged(true);

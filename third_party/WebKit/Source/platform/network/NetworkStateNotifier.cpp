@@ -229,8 +229,8 @@ void NetworkStateNotifier::NotifyObservers(ObserverListMap& map,
   MutexLocker locker(mutex_);
   for (const auto& entry : map) {
     scoped_refptr<WebTaskRunner> task_runner = entry.key;
-    task_runner->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *task_runner, FROM_HERE,
         CrossThreadBind(&NetworkStateNotifier::NotifyObserversOnTaskRunner,
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(&map), type, task_runner, state));
