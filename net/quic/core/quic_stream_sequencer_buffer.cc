@@ -32,6 +32,8 @@ size_t CalculateBlockCount(size_t max_capacity_bytes) {
 // Upper limit of how many gaps allowed in buffer, which ensures a reasonable
 // number of iterations needed to find the right gap to fill when a frame
 // arrives.
+// TODO(fayang): Rename kMaxNumGapsAllowed to kMaxNumDataIntervalsAllowed when
+// deprecating quic_reloadable_flag_quic_allow_receiving_overlapping_data.
 const size_t kMaxNumGapsAllowed = 2 * kMaxPacketGap;
 
 }  // namespace
@@ -52,7 +54,12 @@ QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
       blocks_count_(CalculateBlockCount(max_capacity_bytes)),
       total_bytes_read_(0),
       blocks_(nullptr),
-      destruction_indicator_(123456) {
+      destruction_indicator_(123456),
+      allow_overlapping_data_(
+          GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
+  if (allow_overlapping_data_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_allow_receiving_overlapping_data);
+  }
   CHECK_GT(blocks_count_, 1u)
       << "blocks_count_ = " << blocks_count_
       << ", max_buffer_capacity_bytes_ = " << max_buffer_capacity_bytes_;
@@ -73,11 +80,18 @@ void QuicStreamSequencerBuffer::Clear() {
     }
   }
   num_bytes_buffered_ = 0;
-  // Reset gaps_ so that buffer is in a state as if all data before
-  // total_bytes_read_ has been consumed, and those after total_bytes_read_
-  // has never arrived.
-  gaps_ = std::list<Gap>(
-      1, Gap(total_bytes_read_, std::numeric_limits<QuicStreamOffset>::max()));
+  if (allow_overlapping_data_) {
+    bytes_received_.Clear();
+    bytes_received_.Add(0, total_bytes_read_);
+  } else {
+    // Reset gaps_ so that buffer is in a state as if all data before
+    // total_bytes_read_ has been consumed, and those after total_bytes_read_
+    // has never arrived.
+    gaps_ = std::list<Gap>(
+        1,
+        Gap(total_bytes_read_, std::numeric_limits<QuicStreamOffset>::max()));
+  }
+
   frame_arrival_time_map_.clear();
 }
 
@@ -105,6 +119,45 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
   if (size == 0) {
     *error_details = "Received empty stream frame without FIN.";
     return QUIC_EMPTY_STREAM_FRAME_NO_FIN;
+  }
+  if (allow_overlapping_data_) {
+    // Write beyond the current range this buffer is covering.
+    if (starting_offset + size >
+            total_bytes_read_ + max_buffer_capacity_bytes_ ||
+        starting_offset + size < starting_offset) {
+      *error_details = "Received data beyond available range.";
+      return QUIC_INTERNAL_ERROR;
+    }
+
+    QuicIntervalSet<QuicStreamOffset> newly_received(starting_offset,
+                                                     starting_offset + size);
+    newly_received.Difference(bytes_received_);
+    if (newly_received.Empty()) {
+      return QUIC_NO_ERROR;
+    }
+    bytes_received_.Add(starting_offset, starting_offset + size);
+    if (bytes_received_.Size() >= kMaxNumGapsAllowed) {
+      // This frame is going to create more intervals than allowed. Stop
+      // processing.
+      *error_details = "Too many data intervals received for this stream.";
+      return QUIC_TOO_MANY_STREAM_DATA_INTERVALS;
+    }
+    for (const auto& interval : newly_received) {
+      const QuicStreamOffset copy_offset = interval.min();
+      const QuicByteCount copy_length = interval.max() - interval.min();
+      size_t bytes_copy = 0;
+      if (!CopyStreamData(
+              copy_offset,
+              data.substr(copy_offset - starting_offset, copy_length),
+              &bytes_copy, error_details)) {
+        return QUIC_STREAM_SEQUENCER_INVALID_STATE;
+      }
+      *bytes_buffered += bytes_copy;
+      frame_arrival_time_map_.insert(
+          std::make_pair(copy_offset, FrameInfo(copy_length, timestamp)));
+    }
+    num_bytes_buffered_ += *bytes_buffered;
+    return QUIC_NO_ERROR;
   }
 
   // Find the first gap not ending before |offset|. This gap maybe the gap to
@@ -165,7 +218,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     // This frame is going to create one more gap which exceeds max number of
     // gaps allowed. Stop processing.
     *error_details = "Too many gaps created for this stream.";
-    return QUIC_TOO_MANY_FRAME_GAPS;
+    return QUIC_TOO_MANY_STREAM_DATA_INTERVALS;
   }
 
   if (!CopyStreamData(offset, data, bytes_buffered, error_details)) {
@@ -366,7 +419,7 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
   }
 
   size_t start_block_idx = NextBlockToRead();
-  QuicStreamOffset readable_offset_end = gaps_.front().begin_offset - 1;
+  QuicStreamOffset readable_offset_end = FirstMissingByte() - 1;
   DCHECK_GE(readable_offset_end + 1, total_bytes_read_);
   size_t end_block_offset = GetInBlockOffset(readable_offset_end);
   size_t end_block_idx = GetBlockIndex(readable_offset_end);
@@ -483,7 +536,7 @@ bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
 
 size_t QuicStreamSequencerBuffer::FlushBufferedFrames() {
   size_t prev_total_bytes_read = total_bytes_read_;
-  total_bytes_read_ = gaps_.back().begin_offset;
+  total_bytes_read_ = NextExpectedByte();
   Clear();
   return total_bytes_read_ - prev_total_bytes_read;
 }
@@ -494,7 +547,7 @@ void QuicStreamSequencerBuffer::ReleaseWholeBuffer() {
 }
 
 size_t QuicStreamSequencerBuffer::ReadableBytes() const {
-  return gaps_.front().begin_offset - total_bytes_read_;
+  return FirstMissingByte() - total_bytes_read_;
 }
 
 bool QuicStreamSequencerBuffer::HasBytesToRead() const {
@@ -537,27 +590,46 @@ bool QuicStreamSequencerBuffer::RetireBlockIfEmpty(size_t block_index) {
 
   // Check where the logical end of this buffer is.
   // Not empty if the end of circular buffer has been wrapped to this block.
-  if (GetBlockIndex(gaps_.back().begin_offset - 1) == block_index) {
+  if (GetBlockIndex(NextExpectedByte() - 1) == block_index) {
     return true;
   }
 
   // Read index remains in this block, which means a gap has been reached.
   if (NextBlockToRead() == block_index) {
-    Gap first_gap = gaps_.front();
-    DCHECK(first_gap.begin_offset == total_bytes_read_);
-    // Check where the next piece data is.
-    // Not empty if next piece of data is still in this chunk.
-    bool gap_ends_in_this_block =
-        (GetBlockIndex(first_gap.end_offset) == block_index);
-    if (gap_ends_in_this_block) {
-      return true;
+    if (allow_overlapping_data_) {
+      if (bytes_received_.Size() > 1) {
+        auto it = bytes_received_.begin();
+        ++it;
+        if (GetBlockIndex(it->min()) == block_index) {
+          // Do not retire the block if next data interval is in this block.
+          return true;
+        }
+      } else {
+        QUIC_BUG << "Read stopped at where it shouldn't.";
+        return false;
+      }
+    } else {
+      Gap first_gap = gaps_.front();
+      DCHECK(first_gap.begin_offset == total_bytes_read_);
+      // Check where the next piece data is.
+      // Not empty if next piece of data is still in this chunk.
+      bool gap_ends_in_this_block =
+          (GetBlockIndex(first_gap.end_offset) == block_index);
+      if (gap_ends_in_this_block) {
+        return true;
+      }
     }
   }
   return RetireBlock(block_index);
 }
 
 bool QuicStreamSequencerBuffer::Empty() const {
-  return gaps_.size() == 1 && gaps_.front().begin_offset == total_bytes_read_;
+  if (!allow_overlapping_data_) {
+    return gaps_.size() == 1 && gaps_.front().begin_offset == total_bytes_read_;
+  }
+  return bytes_received_.Empty() ||
+         (bytes_received_.Size() == 1 && total_bytes_read_ > 0 &&
+          bytes_received_.begin()->max() == total_bytes_read_);
 }
 
 size_t QuicStreamSequencerBuffer::GetBlockCapacity(size_t block_index) const {
@@ -596,6 +668,9 @@ void QuicStreamSequencerBuffer::UpdateFrameArrivalMap(QuicStreamOffset offset) {
 }
 
 string QuicStreamSequencerBuffer::GapsDebugString() {
+  if (allow_overlapping_data_) {
+    return bytes_received_.ToString();
+  }
   string current_gaps_string;
   for (const Gap& gap : gaps_) {
     QuicStreamOffset current_gap_begin = gap.begin_offset;
@@ -617,6 +692,27 @@ string QuicStreamSequencerBuffer::ReceivedFramesDebugString() {
         ") receiving time ", it.second.timestamp.ToDebuggingValue()));
   }
   return current_frames_string;
+}
+
+QuicStreamOffset QuicStreamSequencerBuffer::FirstMissingByte() const {
+  if (allow_overlapping_data_) {
+    if (bytes_received_.Empty() || bytes_received_.begin()->min() > 0) {
+      // Offset 0 is not received yet.
+      return 0;
+    }
+    return bytes_received_.begin()->max();
+  }
+  return gaps_.front().begin_offset;
+}
+
+QuicStreamOffset QuicStreamSequencerBuffer::NextExpectedByte() const {
+  if (allow_overlapping_data_) {
+    if (bytes_received_.Empty()) {
+      return 0;
+    }
+    return bytes_received_.rbegin()->max();
+  }
+  return gaps_.back().begin_offset;
 }
 
 }  //  namespace net

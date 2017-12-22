@@ -263,8 +263,8 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // Stream frames arrived too discontiguously so that stream sequencer buffer
-  // maintains too many gaps.
-  QUIC_TOO_MANY_FRAME_GAPS = 93,
+  // maintains too many intervals.
+  QUIC_TOO_MANY_STREAM_DATA_INTERVALS = 93,
 
   // Sequencer buffer get into weird state where continuing read/write will lead
   // to crash.

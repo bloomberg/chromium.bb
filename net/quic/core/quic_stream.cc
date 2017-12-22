@@ -73,9 +73,8 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
       send_buffer_(
           session->connection()->helper()->GetStreamSendBufferAllocator(),
           session->allow_multiple_acks_for_data()),
-      buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
-      remove_on_stream_frame_discarded_(
-          GetQuicReloadableFlag(quic_remove_on_stream_frame_discarded)) {
+      buffered_data_threshold_(
+          GetQuicFlag(FLAGS_quic_buffered_data_threshold)) {
   SetFromConfig();
 }
 
@@ -466,6 +465,10 @@ QuicTransportVersion QuicStream::transport_version() const {
   return session_->connection()->transport_version();
 }
 
+HandshakeProtocol QuicStream::handshake_protocol() const {
+  return session_->connection()->version().handshake_protocol;
+}
+
 void QuicStream::StopReading() {
   QUIC_DLOG(INFO) << ENDPOINT << "Stop reading from stream " << id();
   sequencer_.StopReading();
@@ -605,39 +608,6 @@ void QuicStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
   }
 }
 
-void QuicStream::OnStreamFrameDiscarded(QuicStreamOffset offset,
-                                        QuicByteCount data_length,
-                                        bool fin_discarded) {
-  if (remove_on_stream_frame_discarded_) {
-    // TODO(fayang): Remove OnStreamFrameDiscarded from StreamNotifierInterface
-    // when deprecating
-    // quic_reloadable_flag_quic_remove_on_stream_frame_discarded.
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_remove_on_stream_frame_discarded, 1, 2);
-    return;
-  }
-
-  QuicByteCount newly_acked_length = 0;
-  if (!send_buffer_.OnStreamDataAcked(offset, data_length,
-                                      &newly_acked_length)) {
-    CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
-                               "Trying to discard unsent data.");
-    return;
-  }
-  if (!fin_sent_ && fin_discarded) {
-    CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
-                               "Trying to discard unsent fin.");
-    return;
-  }
-  if (fin_discarded) {
-    fin_outstanding_ = false;
-    fin_lost_ = false;
-  }
-  if (!IsWaitingForAcks()) {
-    session_->OnStreamDoneWaitingForAcks(id_);
-  }
-}
-
 void QuicStream::OnStreamFrameLost(QuicStreamOffset offset,
                                    QuicByteCount data_length,
                                    bool fin_lost) {
@@ -650,8 +620,7 @@ void QuicStream::OnStreamFrameLost(QuicStreamOffset offset,
 }
 
 bool QuicStream::IsWaitingForAcks() const {
-  return (!remove_on_stream_frame_discarded_ || !rst_sent_ ||
-          stream_error_ == QUIC_STREAM_NO_ERROR) &&
+  return (!rst_sent_ || stream_error_ == QUIC_STREAM_NO_ERROR) &&
          (send_buffer_.stream_bytes_outstanding() || fin_outstanding_);
 }
 

@@ -436,7 +436,7 @@ void QuicCryptoClientHandshaker::DoReceiveREJ(
 
   // Receipt of a REJ message means that the server received the CHLO
   // so we can cancel and retransmissions.
-  session()->connection()->NeuterUnencryptedPackets();
+  session()->NeuterUnencryptedData();
 
   stateless_reject_received_ = in->tag() == kSREJ;
   string error_details;

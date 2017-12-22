@@ -17,20 +17,12 @@ namespace {
 // Default packet length.
 const uint32_t kDefaultLength = 1000;
 
-class MockStreamNotifier : public StreamNotifierInterface {
- public:
-  MOCK_METHOD2(OnStreamFrameAcked,
-               void(const QuicStreamFrame&, QuicTime::Delta));
-  MOCK_METHOD1(OnStreamFrameRetransmitted, void(const QuicStreamFrame&));
-  MOCK_METHOD1(OnStreamFrameDiscarded, void(const QuicStreamFrame&));
-};
-
 class QuicUnackedPacketMapTest : public QuicTest {
  protected:
   QuicUnackedPacketMapTest()
       : unacked_packets_(),
         now_(QuicTime::Zero() + QuicTime::Delta::FromMilliseconds(1000)) {
-    unacked_packets_.SetStreamNotifier(&notifier_);
+    unacked_packets_.SetSessionNotifier(&notifier_);
   }
 
   ~QuicUnackedPacketMapTest() override {}
@@ -116,7 +108,7 @@ class QuicUnackedPacketMapTest : public QuicTest {
   }
   QuicUnackedPacketMap unacked_packets_;
   QuicTime now_;
-  MockStreamNotifier notifier_;
+  MockSessionNotifier notifier_;
 };
 
 TEST_F(QuicUnackedPacketMapTest, RttOnly) {
@@ -173,7 +165,6 @@ TEST_F(QuicUnackedPacketMapTest, StopRetransmission) {
   VerifyRetransmittablePackets(retransmittable,
                                QUIC_ARRAYSIZE(retransmittable));
 
-  EXPECT_CALL(notifier_, OnStreamFrameDiscarded(_)).Times(1);
   unacked_packets_.CancelRetransmissionsForStream(stream_id);
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
@@ -193,7 +184,6 @@ TEST_F(QuicUnackedPacketMapTest, StopRetransmissionOnOtherStream) {
                                QUIC_ARRAYSIZE(retransmittable));
 
   // Stop retransmissions on another stream and verify the packet is unchanged.
-  EXPECT_CALL(notifier_, OnStreamFrameDiscarded(_)).Times(0);
   unacked_packets_.CancelRetransmissionsForStream(stream_id + 2);
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
@@ -215,7 +205,6 @@ TEST_F(QuicUnackedPacketMapTest, StopRetransmissionAfterRetransmission) {
   VerifyRetransmittablePackets(retransmittable,
                                QUIC_ARRAYSIZE(retransmittable));
 
-  EXPECT_CALL(notifier_, OnStreamFrameDiscarded(_)).Times(1);
   unacked_packets_.CancelRetransmissionsForStream(stream_id);
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));

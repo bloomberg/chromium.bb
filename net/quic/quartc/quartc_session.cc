@@ -4,6 +4,8 @@
 
 #include "net/quic/quartc/quartc_session.h"
 
+#include "net/quic/core/tls_client_handshaker.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 
 using std::string;
@@ -128,8 +130,8 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
   // Initialization with default crypto configuration.
   if (perspective_ == Perspective::IS_CLIENT) {
     std::unique_ptr<ProofVerifier> proof_verifier(new InsecureProofVerifier);
-    quic_crypto_client_config_.reset(
-        new QuicCryptoClientConfig(std::move(proof_verifier)));
+    quic_crypto_client_config_.reset(new QuicCryptoClientConfig(
+        std::move(proof_verifier), TlsClientHandshaker::CreateSslCtx()));
   } else {
     std::unique_ptr<ProofSource> proof_source(new DummyProofSource);
     // Generate a random source address token secret. For long-running servers
@@ -140,7 +142,8 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
                                              kInputKeyingMaterialLength);
     quic_crypto_server_config_.reset(new QuicCryptoServerConfig(
         string(source_address_token_secret, kInputKeyingMaterialLength),
-        helper_->GetRandomGenerator(), std::move(proof_source)));
+        helper_->GetRandomGenerator(), std::move(proof_source),
+        TlsServerHandshaker::CreateSslCtx()));
     // Provide server with serialized config string to prove ownership.
     QuicCryptoServerConfig::ConfigOptions options;
     // The |message| is used to handle the return value of AddDefaultConfig
@@ -282,6 +285,7 @@ void QuartcSession::SetDelegate(
 }
 
 void QuartcSession::OnTransportCanWrite() {
+  connection()->writer()->SetWritable();
   if (HasDataToWrite()) {
     connection()->OnCanWrite();
   }

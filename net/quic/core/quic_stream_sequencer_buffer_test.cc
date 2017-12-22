@@ -132,9 +132,16 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataWithinBlock) {
     ASSERT_EQ('a', block_ptr->buffer[helper_->GetInBlockOffset(800) + i]);
   }
   EXPECT_EQ(2, helper_->GapSize());
-  std::list<Gap> gaps = helper_->GetGaps();
-  EXPECT_EQ(800u, gaps.front().end_offset);
-  EXPECT_EQ(1824u, gaps.back().begin_offset);
+  EXPECT_EQ(0u, helper_->ReadableBytes());
+  if (helper_->allow_overlapping_data()) {
+    EXPECT_EQ(1u, helper_->bytes_received().Size());
+    EXPECT_EQ(800u, helper_->bytes_received().begin()->min());
+    EXPECT_EQ(1824u, helper_->bytes_received().begin()->max());
+  } else {
+    std::list<Gap> gaps = helper_->GetGaps();
+    EXPECT_EQ(800u, gaps.front().end_offset);
+    EXPECT_EQ(1824u, gaps.back().begin_offset);
+  }
   auto* frame_map = helper_->frame_arrival_time_map();
   EXPECT_EQ(1u, frame_map->size());
   EXPECT_EQ(800u, frame_map->begin()->first);
@@ -167,14 +174,25 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataWithOverlap) {
   EXPECT_EQ(QUIC_NO_ERROR,
             buffer_->OnStreamData(800, source, t1, &written, &error_details_));
   // Try to write to [0, 1024) and [1024, 2048).
-  // But no byte will be written since overlap.
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   QuicTime t2 = clock_.ApproximateNow();
+  auto* frame_map = helper_->frame_arrival_time_map();
+  if (helper_->allow_overlapping_data()) {
+    EXPECT_EQ(QUIC_NO_ERROR,
+              buffer_->OnStreamData(0, source, t2, &written, &error_details_));
+    EXPECT_EQ(QUIC_NO_ERROR, buffer_->OnStreamData(1024, source, t2, &written,
+                                                   &error_details_));
+    EXPECT_EQ(3u, frame_map->size());
+    EXPECT_EQ(t1, (*frame_map)[800].timestamp);
+    EXPECT_EQ(t2, (*frame_map)[0].timestamp);
+    EXPECT_EQ(t2, (*frame_map)[1824].timestamp);
+    return;
+  }
+  // But no byte will be written since overlap.
   EXPECT_EQ(QUIC_OVERLAPPING_STREAM_DATA,
             buffer_->OnStreamData(0, source, t2, &written, &error_details_));
   EXPECT_EQ(QUIC_OVERLAPPING_STREAM_DATA,
             buffer_->OnStreamData(1024, source, t2, &written, &error_details_));
-  auto* frame_map = helper_->frame_arrival_time_map();
   EXPECT_EQ(1u, frame_map->size());
   EXPECT_EQ(t1, (*frame_map)[800].timestamp);
 }
@@ -187,6 +205,31 @@ TEST_F(QuicStreamSequencerBufferTest,
   buffer_->OnStreamData(800, source, clock_.ApproximateNow(), &written,
                         &error_details_);
   source = string(800, 'b');
+  string one_byte = "c";
+  auto* frame_map = helper_->frame_arrival_time_map();
+  if (helper_->allow_overlapping_data()) {
+    // Write [1, 801).
+    EXPECT_EQ(QUIC_NO_ERROR,
+              buffer_->OnStreamData(1, source, clock_.ApproximateNow(),
+                                    &written, &error_details_));
+    // Write [0, 800).
+    EXPECT_EQ(QUIC_NO_ERROR,
+              buffer_->OnStreamData(0, source, clock_.ApproximateNow(),
+                                    &written, &error_details_));
+    // Write [1823, 1824).
+    EXPECT_EQ(QUIC_NO_ERROR,
+              buffer_->OnStreamData(1823, one_byte, clock_.ApproximateNow(),
+                                    &written, &error_details_));
+    EXPECT_EQ(0u, written);
+    // write one byte to [1824, 1825)
+    EXPECT_EQ(QUIC_NO_ERROR,
+              buffer_->OnStreamData(1824, one_byte, clock_.ApproximateNow(),
+                                    &written, &error_details_));
+    EXPECT_EQ(4u, frame_map->size());
+    EXPECT_TRUE(helper_->CheckBufferInvariants());
+    return;
+  }
+
   // Try to write to [1, 801), but should fail due to overlapping
   EXPECT_EQ(QUIC_OVERLAPPING_STREAM_DATA,
             buffer_->OnStreamData(1, source, clock_.ApproximateNow(), &written,
@@ -196,7 +239,6 @@ TEST_F(QuicStreamSequencerBufferTest,
             buffer_->OnStreamData(0, source, clock_.ApproximateNow(), &written,
                                   &error_details_));
   // Try to write one byte to [1823, 1824), but should count as duplicate
-  string one_byte = "c";
   EXPECT_EQ(QUIC_NO_ERROR,
             buffer_->OnStreamData(1823, one_byte, clock_.ApproximateNow(),
                                   &written, &error_details_));
@@ -205,7 +247,6 @@ TEST_F(QuicStreamSequencerBufferTest,
   EXPECT_EQ(QUIC_NO_ERROR,
             buffer_->OnStreamData(1824, one_byte, clock_.ApproximateNow(),
                                   &written, &error_details_));
-  auto* frame_map = helper_->frame_arrival_time_map();
   EXPECT_EQ(3u, frame_map->size());
   EXPECT_TRUE(helper_->CheckBufferInvariants());
 }
@@ -232,8 +273,13 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataInLongStreamWithOverlap) {
   // Assume a stream has already buffered almost 4GB.
   uint64_t total_bytes_read = pow(2, 32) - 1;
   helper_->set_total_bytes_read(total_bytes_read);
-  helper_->set_gaps(std::list<Gap>(
-      1, Gap(total_bytes_read, std::numeric_limits<QuicStreamOffset>::max())));
+  if (helper_->allow_overlapping_data()) {
+    helper_->AddBytesReceived(0, total_bytes_read);
+  } else {
+    helper_->set_gaps(std::list<Gap>(
+        1,
+        Gap(total_bytes_read, std::numeric_limits<QuicStreamOffset>::max())));
+  }
 
   // Three new out of order frames arrive.
   const size_t kBytesToWrite = 100;
@@ -817,8 +863,13 @@ TEST_F(QuicStreamSequencerBufferTest, TooManyGaps) {
 
     QuicStreamOffset last_straw = 2 * kMaxNumGapsAllowed - 1;
     if (begin == last_straw) {
-      EXPECT_EQ(QUIC_TOO_MANY_FRAME_GAPS, rs);
-      EXPECT_EQ("Too many gaps created for this stream.", error_details_);
+      EXPECT_EQ(QUIC_TOO_MANY_STREAM_DATA_INTERVALS, rs);
+      if (GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
+        EXPECT_EQ("Too many data intervals received for this stream.",
+                  error_details_);
+      } else {
+        EXPECT_EQ("Too many gaps created for this stream.", error_details_);
+      }
       break;
     }
   }

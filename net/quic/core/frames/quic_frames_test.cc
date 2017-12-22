@@ -25,7 +25,7 @@ class QuicFramesTest : public QuicTest {};
 
 TEST_F(QuicFramesTest, AckFrameToString) {
   QuicAckFrame frame;
-  frame.deprecated_largest_observed = 5;
+  frame.largest_acked = 5;
   frame.ack_delay_time = QuicTime::Delta::FromMicroseconds(3);
   frame.packets.Add(4);
   frame.packets.Add(5);
@@ -41,7 +41,7 @@ TEST_F(QuicFramesTest, AckFrameToString) {
 
 TEST_F(QuicFramesTest, BigAckFrameToString) {
   QuicAckFrame frame;
-  frame.deprecated_largest_observed = 500;
+  frame.largest_acked = 500;
   frame.ack_delay_time = QuicTime::Delta::FromMicroseconds(3);
   frame.packets.AddRange(4, 501);
   frame.received_packet_times = {
@@ -159,7 +159,7 @@ TEST_F(QuicFramesTest, StopWaitingFrameToString) {
 
 TEST_F(QuicFramesTest, IsAwaitingPacket) {
   QuicAckFrame ack_frame1;
-  ack_frame1.deprecated_largest_observed = 10u;
+  ack_frame1.largest_acked = 10u;
   ack_frame1.packets.AddRange(1, 11);
   EXPECT_TRUE(IsAwaitingPacket(ack_frame1, 11u, 0u));
   EXPECT_FALSE(IsAwaitingPacket(ack_frame1, 1u, 0u));
@@ -168,7 +168,7 @@ TEST_F(QuicFramesTest, IsAwaitingPacket) {
   EXPECT_TRUE(IsAwaitingPacket(ack_frame1, 11u, 0u));
 
   QuicAckFrame ack_frame2;
-  ack_frame2.deprecated_largest_observed = 100u;
+  ack_frame2.largest_acked = 100u;
   ack_frame2.packets.AddRange(21, 100);
   EXPECT_FALSE(IsAwaitingPacket(ack_frame2, 11u, 20u));
   EXPECT_FALSE(IsAwaitingPacket(ack_frame2, 80u, 20u));
@@ -334,7 +334,7 @@ TEST_F(QuicFramesTest, AddAdjacentReverse) {
 
 TEST_F(QuicFramesTest, RemoveSmallestInterval) {
   QuicAckFrame ack_frame1;
-  ack_frame1.deprecated_largest_observed = 100u;
+  ack_frame1.largest_acked = 100u;
   ack_frame1.packets.AddRange(51, 60);
   ack_frame1.packets.AddRange(71, 80);
   ack_frame1.packets.AddRange(91, 100);

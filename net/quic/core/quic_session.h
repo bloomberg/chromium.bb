@@ -23,7 +23,7 @@
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_stream_frame_data_producer.h"
 #include "net/quic/core/quic_write_blocked_list.h"
-#include "net/quic/core/stream_notifier_interface.h"
+#include "net/quic/core/session_notifier_interface.h"
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -39,7 +39,7 @@ class QuicSessionPeer;
 }  // namespace test
 
 class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
-                                        public StreamNotifierInterface,
+                                        public SessionNotifierInterface,
                                         public QuicStreamFrameDataProducer {
  public:
   // An interface from the session to the entity owning the session.
@@ -122,14 +122,11 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                        QuicByteCount data_length,
                        QuicDataWriter* writer) override;
 
-  // StreamNotifierInterface methods:
-  void OnStreamFrameAcked(const QuicStreamFrame& frame,
-                          QuicTime::Delta ack_delay_time) override;
+  // SessionNotifierInterface methods:
+  void OnFrameAcked(const QuicFrame& frame,
+                    QuicTime::Delta ack_delay_time) override;
   void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
-  void OnStreamFrameDiscarded(const QuicStreamFrame& frame) override;
-
-  // TODO(fayang): Add this function to StreamNotifierInterface.
-  void OnStreamFrameLost(const QuicStreamFrame& frame);
+  void OnFrameLost(const QuicFrame& frame) override;
 
   // Called on every incoming packet. Passes |packet| through to |connection_|.
   virtual void ProcessUdpPacket(const QuicSocketAddress& self_address,
@@ -235,6 +232,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // gets acked or is not interested in data being acked (which happens when
   // a stream is reset because of an error).
   void OnStreamDoneWaitingForAcks(QuicStreamId id);
+
+  // Called to cancel retransmission of unencypted crypto stream data.
+  void NeuterUnencryptedData();
 
   // Returns true if the session has data to be sent, either queued in the
   // connection, or in a write-blocked stream.

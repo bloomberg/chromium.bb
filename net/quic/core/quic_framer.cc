@@ -1410,7 +1410,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
   }
 
   QuicPacketNumber first_received = largest_acked + 1 - first_block_length;
-  ack_frame->deprecated_largest_observed = largest_acked;
+  ack_frame->largest_acked = largest_acked;
   ack_frame->packets.AddRange(first_received, largest_acked + 1);
 
   if (num_ack_blocks > 0) {

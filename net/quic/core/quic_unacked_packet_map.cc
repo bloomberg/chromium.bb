@@ -17,7 +17,7 @@ QuicUnackedPacketMap::QuicUnackedPacketMap()
       least_unacked_(1),
       bytes_in_flight_(0),
       pending_crypto_packet_count_(0),
-      stream_notifier_(nullptr) {}
+      session_notifier_(nullptr) {}
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   for (QuicTransmissionInfo& transmission_info : unacked_packets_) {
@@ -102,10 +102,10 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
   QuicTransmissionInfo* transmission_info =
       &unacked_packets_.at(old_packet_number - least_unacked_);
   QuicFrames* frames = &transmission_info->retransmittable_frames;
-  if (stream_notifier_ != nullptr) {
+  if (session_notifier_ != nullptr) {
     for (const QuicFrame& frame : *frames) {
       if (frame.type == STREAM_FRAME) {
-        stream_notifier_->OnStreamFrameRetransmitted(*frame.stream_frame);
+        session_notifier_->OnStreamFrameRetransmitted(*frame.stream_frame);
       }
     }
   }
@@ -237,15 +237,6 @@ void QuicUnackedPacketMap::CancelRetransmissionsForStream(
     if (frames->empty()) {
       continue;
     }
-    if (stream_notifier_ != nullptr) {
-      for (const QuicFrame& frame : *frames) {
-        if (frame.type != STREAM_FRAME ||
-            frame.stream_frame->stream_id != stream_id) {
-          continue;
-        }
-        stream_notifier_->OnStreamFrameDiscarded(*frame.stream_frame);
-      }
-    }
     RemoveFramesForStream(frames, stream_id);
     if (frames->empty()) {
       RemoveRetransmittability(packet_number);
@@ -332,22 +323,19 @@ QuicPacketNumber QuicUnackedPacketMap::GetLeastUnacked() const {
   return least_unacked_;
 }
 
-void QuicUnackedPacketMap::SetStreamNotifier(
-    StreamNotifierInterface* stream_notifier) {
-  stream_notifier_ = stream_notifier;
+void QuicUnackedPacketMap::SetSessionNotifier(
+    SessionNotifierInterface* session_notifier) {
+  session_notifier_ = session_notifier;
 }
 
-void QuicUnackedPacketMap::NotifyStreamFramesAcked(
-    const QuicTransmissionInfo& info,
-    QuicTime::Delta ack_delay) {
-  if (stream_notifier_ == nullptr) {
+void QuicUnackedPacketMap::NotifyFramesAcked(const QuicTransmissionInfo& info,
+                                             QuicTime::Delta ack_delay) {
+  if (session_notifier_ == nullptr) {
     return;
   }
 
   for (const QuicFrame& frame : info.retransmittable_frames) {
-    if (frame.type == STREAM_FRAME) {
-      stream_notifier_->OnStreamFrameAcked(*frame.stream_frame, ack_delay);
-    }
+    session_notifier_->OnFrameAcked(frame, ack_delay);
   }
 }
 

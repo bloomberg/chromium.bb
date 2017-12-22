@@ -6,6 +6,7 @@
 
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -149,7 +150,8 @@ class QuicServerDispatchPacketTest : public QuicTest {
   QuicServerDispatchPacketTest()
       : crypto_config_("blah",
                        QuicRandom::GetInstance(),
-                       crypto_test_utils::ProofSourceForTesting()),
+                       crypto_test_utils::ProofSourceForTesting(),
+                       TlsServerHandshaker::CreateSslCtx()),
         version_manager_(AllSupportedVersions()),
         dispatcher_(
             config_,

@@ -1447,9 +1447,9 @@ TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
   EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
       .WillOnce(Return(true));
   EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
-  session_.OnStreamFrameLost(frame3);
-  session_.OnStreamFrameLost(frame1);
-  session_.OnStreamFrameLost(frame2);
+  session_.OnFrameLost(QuicFrame(&frame3));
+  session_.OnFrameLost(QuicFrame(&frame1));
+  session_.OnFrameLost(QuicFrame(&frame2));
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // Mark streams 2 and 4 write blocked.
@@ -1490,9 +1490,6 @@ TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
 }
 
 TEST_P(QuicSessionTestServer, DonotRetransmitDataOfClosedStreams) {
-  if (!FLAGS_quic_reloadable_flag_quic_remove_on_stream_frame_discarded) {
-    return;
-  }
   InSequence s;
 
   TestStream* stream2 = session_.CreateOutgoingDynamicStream();
@@ -1506,9 +1503,9 @@ TEST_P(QuicSessionTestServer, DonotRetransmitDataOfClosedStreams) {
   EXPECT_CALL(*stream6, HasPendingRetransmission()).WillOnce(Return(true));
   EXPECT_CALL(*stream4, HasPendingRetransmission()).WillOnce(Return(true));
   EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
-  session_.OnStreamFrameLost(frame3);
-  session_.OnStreamFrameLost(frame2);
-  session_.OnStreamFrameLost(frame1);
+  session_.OnFrameLost(QuicFrame(&frame3));
+  session_.OnFrameLost(QuicFrame(&frame2));
+  session_.OnFrameLost(QuicFrame(&frame1));
 
   session_.MarkConnectionLevelWriteBlocked(stream2->id());
   session_.MarkConnectionLevelWriteBlocked(stream4->id());

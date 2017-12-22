@@ -20,6 +20,8 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/core/tls_client_handshaker.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -390,9 +392,9 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
       new PacketSavingConnection(helper, alarm_factory, Perspective::IS_SERVER,
                                  client_conn->supported_versions());
 
-  QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
-                                       QuicRandom::GetInstance(),
-                                       ProofSourceForTesting());
+  QuicCryptoServerConfig crypto_config(
+      QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
+      ProofSourceForTesting(), TlsServerHandshaker::CreateSslCtx());
   QuicCompressedCertsCache compressed_certs_cache(
       QuicCompressedCertsCache::kQuicCompressedCertsCacheSize);
   SetupCryptoServerConfigForTest(server_conn->clock(),
@@ -427,12 +429,22 @@ int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
                             QuicCryptoServerStream* server,
                             const QuicServerId& server_id,
                             const FakeClientOptions& options) {
-  PacketSavingConnection* client_conn =
-      new PacketSavingConnection(helper, alarm_factory, Perspective::IS_CLIENT);
+  ParsedQuicVersionVector supported_versions = AllSupportedVersions();
+  if (options.only_tls_versions) {
+    supported_versions.clear();
+    for (QuicTransportVersion transport_version :
+         AllSupportedTransportVersions()) {
+      supported_versions.push_back(
+          ParsedQuicVersion(PROTOCOL_TLS1_3, transport_version));
+    }
+  }
+  PacketSavingConnection* client_conn = new PacketSavingConnection(
+      helper, alarm_factory, Perspective::IS_CLIENT, supported_versions);
   // Advance the time, because timers do not like uninitialized times.
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 
-  QuicCryptoClientConfig crypto_config(ProofVerifierForTesting());
+  QuicCryptoClientConfig crypto_config(ProofVerifierForTesting(),
+                                       TlsClientHandshaker::CreateSslCtx());
   AsyncTestChannelIDSource* async_channel_id_source = nullptr;
   if (options.channel_id_enabled) {
     ChannelIDSource* source = ChannelIDSourceForTesting();
@@ -515,7 +527,7 @@ void CommunicateHandshakeMessagesAndRunCallbacks(
     QuicCryptoStream* server,
     CallbackSource* callback_source) {
   size_t client_i = 0, server_i = 0;
-  while (!client->handshake_confirmed()) {
+  while (!client->handshake_confirmed() || !server->handshake_confirmed()) {
     ASSERT_GT(client_conn->encrypted_packets_.size(), client_i);
     QUIC_LOG(INFO) << "Processing "
                    << client_conn->encrypted_packets_.size() - client_i
@@ -897,11 +909,37 @@ ChannelIDSource* ChannelIDSourceForTesting() {
   return new TestChannelIDSource();
 }
 
+void MovePacketsForTlsHandshake(PacketSavingConnection* source_conn,
+                                size_t* inout_packet_index,
+                                QuicCryptoStream* dest_stream,
+                                PacketSavingConnection* dest_conn,
+                                Perspective dest_perspective) {
+  SimpleQuicFramer framer(source_conn->supported_versions(), dest_perspective);
+  size_t index = *inout_packet_index;
+  for (; index < source_conn->encrypted_packets_.size(); index++) {
+    if (!framer.ProcessPacket(*source_conn->encrypted_packets_[index])) {
+      // The framer will be unable to decrypt forward-secure packets sent after
+      // the handshake is complete. Don't treat them as handshake packets.
+      break;
+    }
+
+    for (const auto& stream_frame : framer.stream_frames()) {
+      dest_conn->OnStreamFrame(*stream_frame);
+    }
+  }
+  *inout_packet_index = index;
+}
+
 void MovePackets(PacketSavingConnection* source_conn,
                  size_t* inout_packet_index,
                  QuicCryptoStream* dest_stream,
                  PacketSavingConnection* dest_conn,
                  Perspective dest_perspective) {
+  if (dest_stream->handshake_protocol() == PROTOCOL_TLS1_3) {
+    MovePacketsForTlsHandshake(source_conn, inout_packet_index, dest_stream,
+                               dest_conn, dest_perspective);
+    return;
+  }
   SimpleQuicFramer framer(source_conn->supported_versions(), dest_perspective);
   CryptoFramer crypto_framer;
   CryptoFramerVisitor crypto_visitor;

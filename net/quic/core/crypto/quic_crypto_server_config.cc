@@ -42,6 +42,7 @@
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using std::string;
 
@@ -152,13 +153,15 @@ QuicCryptoServerConfig::ConfigOptions::~ConfigOptions() {}
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     QuicStringPiece source_address_token_secret,
     QuicRandom* server_nonce_entropy,
-    std::unique_ptr<ProofSource> proof_source)
+    std::unique_ptr<ProofSource> proof_source,
+    bssl::UniquePtr<SSL_CTX> ssl_ctx)
     : replay_protection_(true),
       chlo_multiplier_(kMultiplier),
       configs_lock_(),
       primary_config_(nullptr),
       next_config_promotion_time_(QuicWallTime::Zero()),
       proof_source_(std::move(proof_source)),
+      ssl_ctx_(std::move(ssl_ctx)),
       source_address_token_future_secs_(3600),
       source_address_token_lifetime_secs_(86400),
       enable_serving_sct_(false),
@@ -1801,6 +1804,14 @@ string QuicCryptoServerConfig::NewSourceAddressToken(
 int QuicCryptoServerConfig::NumberOfConfigs() const {
   QuicReaderMutexLock locked(&configs_lock_);
   return configs_.size();
+}
+
+ProofSource* QuicCryptoServerConfig::proof_source() const {
+  return proof_source_.get();
+}
+
+SSL_CTX* QuicCryptoServerConfig::ssl_ctx() const {
+  return ssl_ctx_.get();
 }
 
 HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(

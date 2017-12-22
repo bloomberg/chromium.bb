@@ -29,6 +29,7 @@
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_text_utils.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using std::string;
 
@@ -56,8 +57,9 @@ void RecordDiskCacheServerConfigState(
 }  // namespace
 
 QuicCryptoClientConfig::QuicCryptoClientConfig(
-    std::unique_ptr<ProofVerifier> proof_verifier)
-    : proof_verifier_(std::move(proof_verifier)) {
+    std::unique_ptr<ProofVerifier> proof_verifier,
+    bssl::UniquePtr<SSL_CTX> ssl_ctx)
+    : proof_verifier_(std::move(proof_verifier)), ssl_ctx_(std::move(ssl_ctx)) {
   DCHECK(proof_verifier_.get());
   SetDefaults();
 }
@@ -922,6 +924,10 @@ ProofVerifier* QuicCryptoClientConfig::proof_verifier() const {
 
 ChannelIDSource* QuicCryptoClientConfig::channel_id_source() const {
   return channel_id_source_.get();
+}
+
+SSL_CTX* QuicCryptoClientConfig::ssl_ctx() const {
+  return ssl_ctx_.get();
 }
 
 void QuicCryptoClientConfig::SetChannelIDSource(ChannelIDSource* source) {

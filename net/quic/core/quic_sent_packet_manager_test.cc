@@ -1471,6 +1471,33 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtClient) {
   EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetMaxTailLossProbes(&manager_));
 }
 
+TEST_F(QuicSentPacketManagerTest, Negotiate1TLPFromOptionsAtServer) {
+  SetQuicReloadableFlag(quic_one_tlp, true);
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(k1TLP);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+  EXPECT_EQ(1u, QuicSentPacketManagerPeer::GetMaxTailLossProbes(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, Negotiate1TLPFromOptionsAtClient) {
+  SetQuicReloadableFlag(quic_one_tlp, true);
+  QuicConfig client_config;
+  QuicTagVector options;
+
+  options.push_back(k1TLP);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  client_config.SetConnectionOptionsToSend(options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(client_config);
+  EXPECT_EQ(1u, QuicSentPacketManagerPeer::GetMaxTailLossProbes(&manager_));
+}
+
 TEST_F(QuicSentPacketManagerTest, NegotiateTLPRttFromOptionsAtServer) {
   QuicConfig config;
   QuicTagVector options;

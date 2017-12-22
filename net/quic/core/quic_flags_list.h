@@ -114,29 +114,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_address_change_for_udp_proxy,
           true)
 
-// Deprecate QuicAckFrame.largest_observed since it is redundant.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_deprecate_largest_observed,
-          true)
-
-// When true, allows connection options to be sent to completely disable packet
-// conservation in QUIC BBR STARTUP or make it more aggressive.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup,
-          true)
-
-// Allows increasing the length of time ack aggregation is windowed for to 20
-// and 40 RTTs.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window,
-          true)
-
-// If true, OnStreamFrameDiscarded is not called on stream cancellation, and
-// canceled stream is immediately closed.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_remove_on_stream_frame_discarded,
-          true)
-
 // Explicitly send a connection close if the TLP count is greater than 0 when
 // idle timeout occurs.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp, true)
@@ -163,7 +140,7 @@ QUIC_FLAG(bool,
           true)
 
 // If true, use deframer from net/quic/http instead of net/http2.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_hq_deframer, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_hq_deframer, true)
 
 // If true, then 1) at sender, avoid sending empty acks, 2) at receiver, close
 // connection when a ack frame\'s first block length is 0, unless the ack is
@@ -178,3 +155,12 @@ QUIC_FLAG(bool,
 
 // If true, limit quic stream length to be below 2^62.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)
+
+// When true, enables the 1TLP connection option to configure QUIC to send one
+// TLP instead of 2.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, false)
+
+// If true, stream sequencer buffer allows receiving overlapping stream data.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_allow_receiving_overlapping_data,
+          false)

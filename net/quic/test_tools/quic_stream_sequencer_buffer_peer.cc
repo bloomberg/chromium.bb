@@ -64,16 +64,16 @@ bool QuicStreamSequencerBufferPeer::CheckInitialState() {
 
 bool QuicStreamSequencerBufferPeer::CheckBufferInvariants() {
   QuicStreamOffset data_span =
-      buffer_->gaps_.back().begin_offset - buffer_->total_bytes_read_;
+      buffer_->NextExpectedByte() - buffer_->total_bytes_read_;
   bool capacity_sane = data_span <= buffer_->max_buffer_capacity_bytes_ &&
                        data_span >= buffer_->num_bytes_buffered_;
   if (!capacity_sane) {
     QUIC_LOG(ERROR) << "data span is larger than capacity.";
     QUIC_LOG(ERROR) << "total read: " << buffer_->total_bytes_read_
-                    << " last byte: " << buffer_->gaps_.back().begin_offset;
+                    << " last byte: " << buffer_->NextExpectedByte();
   }
   bool total_read_sane =
-      buffer_->gaps_.front().begin_offset >= buffer_->total_bytes_read_;
+      buffer_->FirstMissingByte() >= buffer_->total_bytes_read_;
   if (!total_read_sane) {
     QUIC_LOG(ERROR) << "read across 1st gap.";
   }
@@ -106,7 +106,24 @@ BufferBlock* QuicStreamSequencerBufferPeer::GetBlock(size_t index) {
 }
 
 int QuicStreamSequencerBufferPeer::GapSize() {
-  return buffer_->gaps_.size();
+  if (!buffer_->allow_overlapping_data_) {
+    return buffer_->gaps_.size();
+  }
+  if (buffer_->bytes_received_.Empty()) {
+    return 1;
+  }
+  int gap_size = buffer_->bytes_received_.Size() + 1;
+  if (buffer_->bytes_received_.Empty()) {
+    return gap_size;
+  }
+  if (buffer_->bytes_received_.begin()->min() == 0) {
+    --gap_size;
+  }
+  if (buffer_->bytes_received_.rbegin()->max() ==
+      std::numeric_limits<uint64_t>::max()) {
+    --gap_size;
+  }
+  return gap_size;
 }
 
 std::list<Gap> QuicStreamSequencerBufferPeer::GetGaps() {
@@ -135,6 +152,11 @@ void QuicStreamSequencerBufferPeer::set_gaps(const std::list<Gap>& gaps) {
   buffer_->gaps_ = gaps;
 }
 
+void QuicStreamSequencerBufferPeer::AddBytesReceived(QuicStreamOffset offset,
+                                                     QuicByteCount length) {
+  buffer_->bytes_received_.Add(offset, offset + length);
+}
+
 bool QuicStreamSequencerBufferPeer::IsBufferAllocated() {
   return buffer_->blocks_ != nullptr;
 }
@@ -142,5 +164,15 @@ bool QuicStreamSequencerBufferPeer::IsBufferAllocated() {
 size_t QuicStreamSequencerBufferPeer::block_count() {
   return buffer_->blocks_count_;
 }
+
+const QuicIntervalSet<QuicStreamOffset>&
+QuicStreamSequencerBufferPeer::bytes_received() {
+  return buffer_->bytes_received_;
+}
+
+bool QuicStreamSequencerBufferPeer::allow_overlapping_data() {
+  return buffer_->allow_overlapping_data_;
+}
+
 }  // namespace test
 }  // namespace net

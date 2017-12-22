@@ -55,7 +55,7 @@ void QuicReceivedPacketManager::RecordPacketReceived(
         std::max(stats_->max_time_reordering_us, reordering_time_us);
   }
   if (packet_number > LargestAcked(ack_frame_)) {
-    ack_frame_.deprecated_largest_observed = packet_number;
+    ack_frame_.largest_acked = packet_number;
     time_largest_observed_ = receipt_time;
   }
   ack_frame_.packets.Add(packet_number);

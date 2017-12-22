@@ -3435,11 +3435,11 @@ TEST_P(QuicConnectionTest, MtuDiscoveryFailed) {
                                                  mtu_discovery_packets.end());
       ack.packets.AddRange(1, min_packet);
       ack.packets.AddRange(max_packet + 1, creator_->packet_number() + 1);
-      ack.deprecated_largest_observed = creator_->packet_number();
+      ack.largest_acked = creator_->packet_number();
 
     } else {
       ack.packets.AddRange(1, creator_->packet_number() + 1);
-      ack.deprecated_largest_observed = creator_->packet_number();
+      ack.largest_acked = creator_->packet_number();
     }
 
     ProcessAckPacket(&ack);

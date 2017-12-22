@@ -15,8 +15,10 @@
 #include "net/quic/core/quic_crypto_server_handshaker.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 
 using std::string;
@@ -52,9 +54,21 @@ QuicCryptoServerStream::QuicCryptoServerStream(
     Helper* helper)
     : QuicCryptoServerStreamBase(session) {
   DCHECK_EQ(Perspective::IS_SERVER, session->connection()->perspective());
-  handshaker_.reset(new QuicCryptoServerHandshaker(
-      crypto_config, this, compressed_certs_cache,
-      use_stateless_rejects_if_peer_supported, session, helper));
+  switch (session->connection()->version().handshake_protocol) {
+    case PROTOCOL_QUIC_CRYPTO:
+      handshaker_ = QuicMakeUnique<QuicCryptoServerHandshaker>(
+          crypto_config, this, compressed_certs_cache,
+          use_stateless_rejects_if_peer_supported, session, helper);
+      break;
+    case PROTOCOL_TLS1_3:
+      handshaker_ = QuicMakeUnique<TlsServerHandshaker>(
+          this, session, crypto_config->ssl_ctx(),
+          crypto_config->proof_source());
+      break;
+    case PROTOCOL_UNSUPPORTED:
+      QUIC_BUG << "Attempting to create QuicCryptoServerStream for unknown "
+                  "handshake protocol";
+  }
 }
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {}

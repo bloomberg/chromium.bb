@@ -18,7 +18,7 @@ namespace {
 
 QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed) {
   QuicAckFrame ack;
-  ack.deprecated_largest_observed = largest_observed;
+  ack.largest_acked = largest_observed;
   return ack;
 }
 

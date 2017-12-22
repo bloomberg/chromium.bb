@@ -95,9 +95,10 @@ struct QUIC_EXPORT_PRIVATE QuicAckFrame {
       std::ostream& os,
       const QuicAckFrame& ack_frame);
 
-  // The highest packet number we've observed from the peer.
-  // This is being deprecated.
-  QuicPacketNumber deprecated_largest_observed;
+  // The highest packet number we've observed from the peer. When |packets| is
+  // not empty, it should always be equal to packets.Max(). The |LargestAcked|
+  // function ensures this invariant in debug mode.
+  QuicPacketNumber largest_acked;
 
   // Time elapsed since largest_observed() was received until this Ack frame was
   // sent.
@@ -112,7 +113,11 @@ struct QUIC_EXPORT_PRIVATE QuicAckFrame {
 
 // The highest acked packet number we've observed from the peer. If no packets
 // have been observed, return 0.
-QUIC_EXPORT_PRIVATE QuicPacketNumber LargestAcked(const QuicAckFrame& frame);
+inline QUIC_EXPORT_PRIVATE QuicPacketNumber
+LargestAcked(const QuicAckFrame& frame) {
+  DCHECK(frame.packets.Empty() || frame.packets.Max() == frame.largest_acked);
+  return frame.largest_acked;
+}
 
 // True if the packet number is greater than largest_observed or is listed
 // as missing.

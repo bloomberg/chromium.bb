@@ -17,6 +17,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_data_reader.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/socket/udp_server_socket.h"
 #include "net/tools/quic/quic_simple_dispatcher.h"
 #include "net/tools/quic/quic_simple_per_connection_packet_writer.h"
@@ -52,7 +53,8 @@ QuicSimpleServer::QuicSimpleServer(
       crypto_config_options_(crypto_config_options),
       crypto_config_(kSourceAddressTokenSecret,
                      QuicRandom::GetInstance(),
-                     std::move(proof_source)),
+                     std::move(proof_source),
+                     TlsServerHandshaker::CreateSslCtx()),
       read_pending_(false),
       synchronous_read_count_(0),
       read_buffer_(new IOBufferWithSize(kReadBufferSize)),

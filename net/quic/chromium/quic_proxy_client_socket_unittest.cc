@@ -28,6 +28,7 @@
 #include "net/quic/chromium/quic_test_packet_maker.h"
 #include "net/quic/chromium/test_task_runner.h"
 #include "net/quic/core/crypto/null_encrypter.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -105,7 +106,8 @@ class QuicProxyClientSocketTest
 
   QuicProxyClientSocketTest()
       : version_(GetParam()),
-        crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
+        crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
+                       TlsClientHandshaker::CreateSslCtx()),
         connection_id_(2),
         client_maker_(version_,
                       connection_id_,

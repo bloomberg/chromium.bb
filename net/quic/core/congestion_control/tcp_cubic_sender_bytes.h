@@ -13,7 +13,7 @@
 #include "net/quic/core/congestion_control/cubic_bytes.h"
 #include "net/quic/core/congestion_control/hybrid_slow_start.h"
 #include "net/quic/core/congestion_control/prr_sender.h"
-#include "net/quic/core/congestion_control/tcp_cubic_sender_base.h"
+#include "net/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_packets.h"
@@ -24,11 +24,14 @@ namespace net {
 
 class RttStats;
 
+// Maximum window to allow when doing bandwidth resumption.
+const QuicPacketCount kMaxResumptionCongestionWindow = 200;
+
 namespace test {
 class TcpCubicSenderBytesPeer;
 }  // namespace test
 
-class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public TcpCubicSenderBase {
+class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public SendAlgorithmInterface {
  public:
   TcpCubicSenderBytes(const QuicClock* clock,
                       const RttStats* rtt_stats,
@@ -41,34 +44,96 @@ class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public TcpCubicSenderBase {
   // Start implementation of SendAlgorithmInterface.
   void SetFromConfig(const QuicConfig& config,
                      Perspective perspective) override;
+  void AdjustNetworkParameters(QuicBandwidth bandwidth,
+                               QuicTime::Delta rtt) override;
   void SetNumEmulatedConnections(int num_connections) override;
   void OnConnectionMigration() override;
+  void OnCongestionEvent(bool rtt_updated,
+                         QuicByteCount prior_in_flight,
+                         QuicTime event_time,
+                         const AckedPacketVector& acked_packets,
+                         const LostPacketVector& lost_packets) override;
+  void OnPacketSent(QuicTime sent_time,
+                    QuicByteCount bytes_in_flight,
+                    QuicPacketNumber packet_number,
+                    QuicByteCount bytes,
+                    HasRetransmittableData is_retransmittable) override;
+  void OnRetransmissionTimeout(bool packets_retransmitted) override;
+  bool CanSend(QuicByteCount bytes_in_flight) override;
+  QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const override;
+  QuicBandwidth BandwidthEstimate() const override;
   QuicByteCount GetCongestionWindow() const override;
   QuicByteCount GetSlowStartThreshold() const override;
   CongestionControlType GetCongestionControlType() const override;
+  bool InSlowStart() const override;
+  bool InRecovery() const override;
+  bool IsProbingForMoreBandwidth() const override;
+  std::string GetDebugState() const override;
+  void OnApplicationLimited(QuicByteCount bytes_in_flight) override;
   // End implementation of SendAlgorithmInterface.
 
   QuicByteCount min_congestion_window() const { return min_congestion_window_; }
 
  protected:
-  // TcpCubicSenderBase methods
+  // Compute the TCP Reno beta based on the current number of connections.
+  float RenoBeta() const;
+
+  bool IsCwndLimited(QuicByteCount bytes_in_flight) const;
+
+  // TODO(ianswett): Remove these and migrate to OnCongestionEvent.
+  void OnPacketAcked(QuicPacketNumber acked_packet_number,
+                     QuicByteCount acked_bytes,
+                     QuicByteCount prior_in_flight,
+                     QuicTime event_time);
   void SetCongestionWindowFromBandwidthAndRtt(QuicBandwidth bandwidth,
-                                              QuicTime::Delta rtt) override;
-  void SetCongestionWindowInPackets(QuicPacketCount congestion_window) override;
-  void SetMinCongestionWindowInPackets(
-      QuicPacketCount congestion_window) override;
-  void ExitSlowstart() override;
+                                              QuicTime::Delta rtt);
+  void SetCongestionWindowInPackets(QuicPacketCount congestion_window);
+  void SetMinCongestionWindowInPackets(QuicPacketCount congestion_window);
+  void ExitSlowstart();
   void OnPacketLost(QuicPacketNumber largest_loss,
                     QuicByteCount lost_bytes,
-                    QuicByteCount prior_in_flight) override;
+                    QuicByteCount prior_in_flight);
   void MaybeIncreaseCwnd(QuicPacketNumber acked_packet_number,
                          QuicByteCount acked_bytes,
                          QuicByteCount prior_in_flight,
-                         QuicTime event_time) override;
-  void HandleRetransmissionTimeout() override;
+                         QuicTime event_time);
+  void HandleRetransmissionTimeout();
 
  private:
   friend class test::TcpCubicSenderBytesPeer;
+
+  HybridSlowStart hybrid_slow_start_;
+  PrrSender prr_;
+  const RttStats* rtt_stats_;
+  QuicConnectionStats* stats_;
+
+  // If true, Reno congestion control is used instead of Cubic.
+  const bool reno_;
+
+  // Number of connections to simulate.
+  uint32_t num_connections_;
+
+  // Track the largest packet that has been sent.
+  QuicPacketNumber largest_sent_packet_number_;
+
+  // Track the largest packet that has been acked.
+  QuicPacketNumber largest_acked_packet_number_;
+
+  // Track the largest packet number outstanding when a CWND cutback occurs.
+  QuicPacketNumber largest_sent_at_last_cutback_;
+
+  // Whether to use 4 packets as the actual min, but pace lower.
+  bool min4_mode_;
+
+  // Whether the last loss event caused us to exit slowstart.
+  // Used for stats collection of slowstart_packets_lost
+  bool last_cutback_exited_slowstart_;
+
+  // When true, exit slow start with large cutback of congestion window.
+  bool slow_start_large_reduction_;
+
+  // When true, use unity pacing instead of PRR.
+  bool no_prr_;
 
   CubicBytes cubic_;
 

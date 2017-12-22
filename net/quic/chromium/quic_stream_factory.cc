@@ -49,6 +49,7 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/quic_connection.h"
+#include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/socket/client_socket_factory.h"
@@ -746,7 +747,8 @@ QuicStreamFactory::QuicStreamFactory(
           std::make_unique<ProofVerifierChromium>(cert_verifier,
                                                   ct_policy_enforcer,
                                                   transport_security_state,
-                                                  cert_transparency_verifier)),
+                                                  cert_transparency_verifier),
+          TlsClientHandshaker::CreateSslCtx()),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
       store_server_configs_in_properties_(store_server_configs_in_properties),

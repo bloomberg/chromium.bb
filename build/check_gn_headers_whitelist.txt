@@ -200,7 +200,7 @@ net/cert/scoped_nss_types.h
 net/dns/notify_watcher_mac.h
 net/http/http_status_code_list.h
 net/http/transport_security_state_static.h
-net/quic/core/stream_notifier_interface.h
+net/quic/core/session_notifier_interface.h
 ppapi/cpp/pass_ref.h
 ppapi/lib/gl/include/GLES2/gl2.h
 ppapi/lib/gl/include/GLES2/gl2ext.h

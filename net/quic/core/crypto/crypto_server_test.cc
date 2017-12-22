@@ -18,6 +18,7 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_socket_address_coder.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_flags.h"
@@ -109,7 +110,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         client_address_(QuicIpAddress::Loopback4(), 1234),
         config_(QuicCryptoServerConfig::TESTING,
                 rand_,
-                crypto_test_utils::ProofSourceForTesting()),
+                crypto_test_utils::ProofSourceForTesting(),
+                TlsServerHandshaker::CreateSslCtx()),
         peer_(&config_),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
@@ -1006,9 +1008,11 @@ TEST_F(CryptoServerConfigGenerationTest, Determinism) {
   MockClock clock;
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
-                           crypto_test_utils::ProofSourceForTesting());
+                           crypto_test_utils::ProofSourceForTesting(),
+                           TlsServerHandshaker::CreateSslCtx());
   QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
-                           crypto_test_utils::ProofSourceForTesting());
+                           crypto_test_utils::ProofSourceForTesting(),
+                           TlsServerHandshaker::CreateSslCtx());
   std::unique_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
   std::unique_ptr<CryptoHandshakeMessage> scfg_b(
@@ -1027,10 +1031,12 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDVaries) {
   MockClock clock;
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
-                           crypto_test_utils::ProofSourceForTesting());
+                           crypto_test_utils::ProofSourceForTesting(),
+                           TlsServerHandshaker::CreateSslCtx());
   rand_b.ChangeValue();
   QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
-                           crypto_test_utils::ProofSourceForTesting());
+                           crypto_test_utils::ProofSourceForTesting(),
+                           TlsServerHandshaker::CreateSslCtx());
   std::unique_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
   std::unique_ptr<CryptoHandshakeMessage> scfg_b(
@@ -1049,7 +1055,8 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
   MockClock clock;
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
-                           crypto_test_utils::ProofSourceForTesting());
+                           crypto_test_utils::ProofSourceForTesting(),
+                           TlsServerHandshaker::CreateSslCtx());
   std::unique_ptr<CryptoHandshakeMessage> scfg(
       a.AddDefaultConfig(&rand_a, &clock, options));
 

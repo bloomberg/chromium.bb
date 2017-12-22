@@ -992,13 +992,13 @@ TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
   session_->OnStreamFrameRetransmitted(frame1);
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(7, _));
-  session_->OnStreamFrameAcked(frame1, QuicTime::Delta::Zero());
+  session_->OnFrameAcked(QuicFrame(&frame1), QuicTime::Delta::Zero());
   EXPECT_CALL(*ack_listener1, OnPacketAcked(5, _));
-  session_->OnStreamFrameAcked(frame2, QuicTime::Delta::Zero());
+  session_->OnFrameAcked(QuicFrame(&frame2), QuicTime::Delta::Zero());
   EXPECT_CALL(*ack_listener2, OnPacketAcked(7, _));
-  session_->OnStreamFrameAcked(frame3, QuicTime::Delta::Zero());
+  session_->OnFrameAcked(QuicFrame(&frame3), QuicTime::Delta::Zero());
   EXPECT_CALL(*ack_listener2, OnPacketAcked(5, _));
-  session_->OnStreamFrameAcked(frame4, QuicTime::Delta::Zero());
+  session_->OnFrameAcked(QuicFrame(&frame4), QuicTime::Delta::Zero());
 }
 
 TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {

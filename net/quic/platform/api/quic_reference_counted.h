@@ -114,8 +114,8 @@ class QuicReferenceCountedPointer {
   explicit operator bool() const { return static_cast<bool>(impl_); }
 
   // Assignment operator on raw pointer. Drops a reference to current pointee,
-  // if any and replaces it with |p|. This garantee the reference count of *p is
-  // 1. This should only be used when a new object is created, calling this
+  // if any, and replaces it with |p|. This guarantees the reference count of *p
+  // is 1. This should only be used when a new object is created, calling this
   // on a already existent object is undefined behavior.
   QuicReferenceCountedPointer<T>& operator=(T* p) {
     impl_ = p;
