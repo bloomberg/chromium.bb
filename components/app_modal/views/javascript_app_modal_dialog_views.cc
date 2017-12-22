@@ -112,19 +112,10 @@ bool JavaScriptAppModalDialogViews::Accept() {
 
 base::string16 JavaScriptAppModalDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (parent_->is_before_unload_dialog()) {
-    if (button == ui::DIALOG_BUTTON_OK) {
-      return l10n_util::GetStringUTF16(
-          parent_->is_reload() ?
-          IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL :
-          IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
-    }
-    if (button == ui::DIALOG_BUTTON_CANCEL) {
-      return l10n_util::GetStringUTF16(
-          parent_->is_reload() ?
-          IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL :
-          IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
-    }
+  if (button == ui::DIALOG_BUTTON_OK && parent_->is_before_unload_dialog()) {
+    return l10n_util::GetStringUTF16(
+        parent_->is_reload() ? IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL
+                             : IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
   }
   return DialogDelegate::GetDialogButtonLabel(button);
 }

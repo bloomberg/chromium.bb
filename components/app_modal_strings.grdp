@@ -31,7 +31,7 @@
     </message>
   </if>
   <message name="IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION" desc="Optional UI shown on the message box, in the form of a checkbox, allowing the user to suppress additional message boxes from the page.">
-    Prevent this page from creating additional dialogs.
+    Prevent this page from creating additional dialogs
   </message>
 
   <!-- "Before Unload" Dialog Box strings -->
@@ -51,9 +51,6 @@
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which navigates the user away from the page.">
     Leave
   </message>
-  <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL" desc="The text on the button which cancels the navigation away from the page.">
-    Stay
-  </message>
 
   <!-- "Before Reload" Dialog Box strings (same as "Before Unload" but when reloading rather than unloading the page -->
   <if expr="not use_titlecase">
@@ -68,9 +65,6 @@
   </if>
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which reloads the page.">
     Reload
-  </message>
-  <message name="IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL" desc="The text on the button which cancels the page reload.">
-    Don’t Reload
   </message>
 
 </grit-part>
