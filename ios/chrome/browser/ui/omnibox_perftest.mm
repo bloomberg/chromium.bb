@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -119,6 +120,8 @@ class OmniboxPerfTest : public PerfTest {
     toolbarView.frame = toolbarFrame;
     // Add toolbar to window.
     [window_ addSubview:toolbarView];
+    AddNamedGuide(kOmniboxGuide, window_);
+    [toolbar_ didMoveToParentViewController:nil];
     base::test::ios::WaitUntilCondition(^bool() {
       return IsToolbarLoaded(window_);
     });
