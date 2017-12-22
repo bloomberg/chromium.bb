@@ -9,10 +9,12 @@
 
 #include "ash/app_list/model/search/search_result_observer.h"
 #include "base/macros.h"
-#include "ui/app_list/views/tile_item_view.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
+class ImageView;
 class MenuRunner;
 class Label;
 }  // namespace views
@@ -24,27 +26,37 @@ class SearchResult;
 class SearchResultContainerView;
 class PaginationModel;
 
-// A TileItemView that displays a search result.
+// A tile view that displays a search result. It hosts view for search result
+// that has SearchResult::DisplayType DISPLAY_TILE or DISPLAY_RECOMMENDATION.
 class APP_LIST_EXPORT SearchResultTileItemView
-    : public TileItemView,
+    : public views::Button,
+      public views::ButtonListener,
       public views::ContextMenuController,
       public SearchResultObserver {
  public:
   SearchResultTileItemView(SearchResultContainerView* result_container,
                            AppListViewDelegate* view_delegate,
-                           PaginationModel* pagination_model,
-                           bool is_suggested_app,
-                           bool is_play_store_search_enabled);
+                           PaginationModel* pagination_model);
   ~SearchResultTileItemView() override;
 
   SearchResult* result() { return item_; }
   void SetSearchResult(SearchResult* item);
 
-  // Overridden from TileItemView:
+  // Informs the SearchResultTileItemView of its parent's background color. The
+  // controls within the SearchResultTileItemView will adapt to suit the given
+  // color.
+  void SetParentBackgroundColor(SkColor color);
+
+  // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // Overridden from views::Button:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnFocus() override;
+  void OnBlur() override;
+  void StateChanged(ButtonState old_state) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Overridden from SearchResultObserver:
   void OnIconChanged() override;
@@ -59,37 +71,46 @@ class APP_LIST_EXPORT SearchResultTileItemView
                               ui::MenuSourceType source_type) override;
 
  private:
-  // Shows rating in proper format if |rating| is not negative. Otherwise, hides
-  // the rating label.
+  void SetIcon(const gfx::ImageSkia& icon);
+  void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
+  void SetTitle(const base::string16& title);
   void SetRating(float rating);
-
-  // Shows price if |price| is not empty. Otherwise, hides the price label.
   void SetPrice(const base::string16& price);
+
+  // Whether the tile view is a suggested app.
+  bool IsSuggestedAppTile() const;
 
   // Records an app being launched.
   void LogAppLaunch() const;
 
+  void UpdateBackgroundColor();
+
   // Overridden from views::View:
   void Layout() override;
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
-  // Whether the tile item view is a suggested app.
-  const bool is_suggested_app_;
-
-  SearchResultContainerView* result_container_;  // Parent view
+  SearchResultContainerView* const result_container_;  // Parent view
+  AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
+  PaginationModel* const pagination_model_;            // Owned by AppsGridView.
 
   // Owned by the model provided by the AppListViewDelegate.
   SearchResult* item_ = nullptr;
 
+  views::ImageView* icon_ = nullptr;         // Owned by views hierarchy.
+  views::ImageView* badge_ = nullptr;        // Owned by views hierarchy.
+  views::Label* title_ = nullptr;            // Owned by views hierarchy.
   views::Label* rating_ = nullptr;           // Owned by views hierarchy.
   views::Label* price_ = nullptr;            // Owned by views hierarchy.
   views::ImageView* rating_star_ = nullptr;  // Owned by views hierarchy.
 
-  AppListViewDelegate* view_delegate_;
-
-  PaginationModel* const pagination_model_;  // Owned by AppsGridView.
+  SkColor parent_background_color_ = SK_ColorTRANSPARENT;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
+
+  const bool is_play_store_app_search_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);
 };
