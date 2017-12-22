@@ -39,7 +39,8 @@ bool AutofillAssistant::CanShowCreditCardAssist(
 
   for (auto& cur_form : base::Reversed(form_structures)) {
     if (cur_form->IsCompleteCreditCardForm()) {
-      credit_card_form_data_.reset(new FormData(cur_form->ToFormData()));
+      credit_card_form_data_ =
+          std::make_unique<FormData>(cur_form->ToFormData());
       break;
     }
   }

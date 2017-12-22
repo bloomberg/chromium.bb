@@ -73,7 +73,7 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
                                     public testing::Test {
  public:
   AutofillDownloadManagerTest()
-      : request_context_(new net::TestURLRequestContextGetter(
+      : request_context_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
             base::ThreadTaskRunnerHandle::Get())),
         download_manager_(&driver_, this) {
     driver_.SetURLRequestContext(request_context_.get());

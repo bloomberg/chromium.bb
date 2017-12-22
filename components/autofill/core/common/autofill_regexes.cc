@@ -54,8 +54,8 @@ icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
                                          pattern.length());
 
     UErrorCode status = U_ZERO_ERROR;
-    std::unique_ptr<icu::RegexMatcher> matcher(
-        new icu::RegexMatcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status));
+    auto matcher = std::make_unique<icu::RegexMatcher>(
+        icu_pattern, UREGEX_CASE_INSENSITIVE, status);
     DCHECK(U_SUCCESS(status));
 
     auto result = matchers_.insert(std::make_pair(pattern, std::move(matcher)));

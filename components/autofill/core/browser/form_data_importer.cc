@@ -389,7 +389,7 @@ bool FormDataImporter::ImportCreditCard(
     }
   }
 
-  imported_credit_card->reset(new CreditCard(candidate_credit_card));
+  *imported_credit_card = std::make_unique<CreditCard>(candidate_credit_card);
   return true;
 }
 

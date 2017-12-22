@@ -23,7 +23,7 @@ class CountryComboboxModelTest : public testing::Test {
       : pref_service_(autofill::test::PrefServiceForTesting()) {
     manager_.SetPrefService(pref_service_.get());
     manager_.set_timezone_country_code("KR");
-    model_.reset(new CountryComboboxModel());
+    model_ = std::make_unique<CountryComboboxModel>();
     model_->SetCountries(manager_, base::Callback<bool(const std::string&)>(),
                          "en-US");
   }

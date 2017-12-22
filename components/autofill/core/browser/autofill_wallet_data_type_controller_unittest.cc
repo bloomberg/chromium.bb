@@ -89,9 +89,9 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
     prefs_.registry()->RegisterBooleanPref(
         autofill::prefs::kAutofillCreditCardEnabled, true);
 
-    web_data_service_ =
-        new FakeWebDataService(base::ThreadTaskRunnerHandle::Get(),
-                               base::ThreadTaskRunnerHandle::Get());
+    web_data_service_ = base::MakeRefCounted<FakeWebDataService>(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get());
     autofill_wallet_dtc_ = std::make_unique<AutofillWalletDataTypeController>(
         syncer::AUTOFILL_WALLET_DATA, base::ThreadTaskRunnerHandle::Get(),
         base::Bind(&base::DoNothing), this, web_data_service_);
@@ -118,10 +118,9 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
  protected:
   void SetStartExpectations() {
     autofill_wallet_dtc_->SetGenericChangeProcessorFactoryForTest(
-        base::WrapUnique<syncer::GenericChangeProcessorFactory>(
-            new syncer::FakeGenericChangeProcessorFactory(
-                std::make_unique<syncer::FakeGenericChangeProcessor>(
-                    syncer::AUTOFILL_WALLET_DATA, this))));
+        std::make_unique<syncer::FakeGenericChangeProcessorFactory>(
+            std::make_unique<syncer::FakeGenericChangeProcessor>(
+                syncer::AUTOFILL_WALLET_DATA, this)));
   }
 
   void Start() {

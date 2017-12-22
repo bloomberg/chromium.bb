@@ -32,7 +32,7 @@ using ::i18n::addressinput::AddressField;
 
 std::unique_ptr<AddressData> CreateAddressData(
     const base::Callback<base::string16(const AutofillType&)>& get_info) {
-  std::unique_ptr<AddressData> address_data(new AddressData());
+  auto address_data = std::make_unique<AddressData>();
   address_data->recipient = base::UTF16ToUTF8(
       get_info.Run(AutofillType(NAME_FULL)));
   address_data->organization = base::UTF16ToUTF8(

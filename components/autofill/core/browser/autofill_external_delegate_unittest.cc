@@ -121,12 +121,12 @@ class MockAutofillManager : public AutofillManager {
 class AutofillExternalDelegateUnitTest : public testing::Test {
  protected:
   void SetUp() override {
-    autofill_driver_.reset(new testing::NiceMock<MockAutofillDriver>());
-    autofill_manager_.reset(
-        new MockAutofillManager(autofill_driver_.get(), &autofill_client_));
-    external_delegate_.reset(
-        new AutofillExternalDelegate(
-            autofill_manager_.get(), autofill_driver_.get()));
+    autofill_driver_ =
+        std::make_unique<testing::NiceMock<MockAutofillDriver>>();
+    autofill_manager_ = std::make_unique<MockAutofillManager>(
+        autofill_driver_.get(), &autofill_client_);
+    external_delegate_ = std::make_unique<AutofillExternalDelegate>(
+        autofill_manager_.get(), autofill_driver_.get());
   }
 
   void TearDown() override {

@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -84,7 +85,8 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return nullptr;
 
-  std::unique_ptr<CreditCardField> credit_card_field(new CreditCardField);
+  // Using 'new' to access private constructor.
+  auto credit_card_field = base::WrapUnique(new CreditCardField());
   size_t saved_cursor = scanner->SaveCursor();
 
   // Credit card fields can appear in many different orders.

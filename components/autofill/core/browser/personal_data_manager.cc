@@ -1124,9 +1124,9 @@ std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
 }
 
 void PersonalDataManager::SetPrefService(PrefService* pref_service) {
-  enabled_pref_.reset(new BooleanPrefMember);
-  wallet_enabled_pref_.reset(new BooleanPrefMember);
-  credit_card_enabled_pref_.reset(new BooleanPrefMember);
+  enabled_pref_ = std::make_unique<BooleanPrefMember>();
+  wallet_enabled_pref_ = std::make_unique<BooleanPrefMember>();
+  credit_card_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   pref_service_ = pref_service;
   // |pref_service_| can be nullptr in tests.
   if (pref_service_) {

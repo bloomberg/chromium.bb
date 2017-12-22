@@ -31,7 +31,7 @@ AutofillClock::~AutofillClock(){};
 
 // static
 void AutofillClock::SetClock() {
-  g_autofill_clock.Get().clock_.reset(new base::DefaultClock());
+  g_autofill_clock.Get().clock_ = std::make_unique<base::DefaultClock>();
 }
 
 // static
