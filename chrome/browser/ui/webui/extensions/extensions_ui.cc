@@ -162,6 +162,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
                              IDS_MD_EXTENSIONS_ERROR_CONTEXT_UNKNOWN);
   source->AddLocalizedString("openInDevtool",
                              IDS_MD_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS);
+  source->AddLocalizedString("errorLinesNotShown",
+                             IDS_MD_EXTENSIONS_ERROR_LINES_NOT_SHOWN);
   source->AddLocalizedString("stackTrace", IDS_MD_EXTENSIONS_ERROR_STACK_TRACE);
   // TODO(dpapad): Unify with Settings' IDS_SETTINGS_WEB_STORE.
   source->AddLocalizedString("openChromeWebStore",

@@ -5,6 +5,19 @@
 cr.define('extensions', function() {
   'use strict';
 
+  /**
+   * @param {number} totalCount
+   * @param {number} oppositeCount
+   * @return {number}
+   */
+  function visibleLineCount(totalCount, oppositeCount) {
+    // We limit the number of lines shown for DOM performance.
+    const MAX_VISIBLE_LINES = 1000;
+    const max =
+        Math.max(MAX_VISIBLE_LINES / 2, MAX_VISIBLE_LINES - oppositeCount);
+    return Math.min(max, totalCount);
+  }
+
   const CodeSection = Polymer({
     is: 'extensions-code-section',
 
@@ -15,8 +28,6 @@ cr.define('extensions', function() {
        */
       code: {
         type: Object,
-        // We initialize to null so that Polymer sees it as defined and calls
-        // isMainHidden_().
         value: null,
       },
 
@@ -26,10 +37,16 @@ cr.define('extensions', function() {
        * changes.
        * @private
        */
-      codeText_: {
-        type: String,
-        computed: 'computeCodeText_(code.*)',
-      },
+      codeText_: String,
+
+      /** @private */
+      lineNumbers_: String,
+
+      /** @private */
+      truncatedBefore_: Number,
+
+      /** @private */
+      truncatedAfter_: Number,
 
       /**
        * The string to display if no |code| is set (e.g. because we couldn't
@@ -40,49 +57,86 @@ cr.define('extensions', function() {
     },
 
     observers: [
-      'onHighlightChanged_(code.highlight)',
+      'onCodeChanged_(code.*)',
     ],
 
     /**
-     * @return {string}
      * @private
      */
-    computeCodeText_: function() {
-      if (!this.code)
-        return '';
+    onCodeChanged_: function() {
+      if (!this.code ||
+          (!this.code.beforeHighlight && !this.code.highlight &&
+           !this.code.afterHighlight)) {
+        this.codeText_ = '';
+        this.lineNumbers_ = '';
+        return;
+      }
 
-      return this.code.beforeHighlight + this.code.highlight +
-          this.code.afterHighlight;
+      const before = this.code.beforeHighlight;
+      const highlight = this.code.highlight;
+      const after = this.code.afterHighlight;
+
+      const linesBefore = before ? before.split('\n') : [];
+      const linesAfter = after ? after.split('\n') : [];
+      const visibleLineCountBefore =
+          visibleLineCount(linesBefore.length, linesAfter.length);
+      const visibleLineCountAfter =
+          visibleLineCount(linesAfter.length, linesBefore.length);
+
+      const visibleBefore =
+          linesBefore.slice(linesBefore.length - visibleLineCountBefore)
+              .join('\n');
+      let visibleAfter = linesAfter.slice(0, visibleLineCountAfter).join('\n');
+      // If the last character is a \n, force it to be rendered.
+      if (visibleAfter.charAt(visibleAfter.length - 1) == '\n')
+        visibleAfter += ' ';
+
+      this.codeText_ = visibleBefore + highlight + visibleAfter;
+      this.truncatedBefore_ = linesBefore.length - visibleLineCountBefore;
+      this.truncatedAfter_ = linesAfter.length - visibleLineCountAfter;
+
+      this.setLineNumbers_(
+          this.truncatedBefore_ + 1,
+          this.truncatedBefore_ + this.codeText_.split('\n').length);
+      this.createHighlight_(
+          visibleBefore.length, visibleBefore.length + highlight.length);
+      this.scrollToHighlight_(visibleLineCountBefore);
     },
 
     /**
-     * Computes the content of the line numbers span, which basically just
-     * contains 1\n2\n3\n... for the number of lines.
+     * @param {number} lineCount
+     * @param {string} stringTemplate
      * @return {string}
      * @private
      */
-    computeLineNumbersContent_: function() {
-      if (!this.codeText_)
-        return '';
+    getLinesNotShownLabel_(lineCount, stringTemplate) {
+      return loadTimeData.substituteString(stringTemplate, lineCount);
+    },
 
-      const lines = this.codeText_.match(/\n/g);
-      const lineCount = lines ? lines.length : 0;
-      let textContent = '';
-      for (let i = 1; i <= lineCount + 1; ++i)
-        textContent += i + '\n';
-      return textContent;
+    /**
+     * @param {number} start
+     * @param {number} end
+     * @private
+     */
+    setLineNumbers_: function(start, end) {
+      let lineNumbers = '';
+      for (let i = start; i <= end; ++i)
+        lineNumbers += i + '\n';
+
+      this.lineNumbers_ = lineNumbers;
     },
 
     /**
      * Uses the native text-selection API to highlight desired code.
+     * @param {number} start
+     * @param {number} end
      * @private
      */
-    createHighlight_: function() {
+    createHighlight_: function(start, end) {
       const range = document.createRange();
       const node = this.$.source.querySelector('span').firstChild;
-      range.setStart(node, this.code.beforeHighlight.length);
-      range.setEnd(
-          node, this.code.beforeHighlight.length + this.code.highlight.length);
+      range.setStart(node, start);
+      range.setEnd(node, end);
 
       const selection = window.getSelection();
       selection.removeAllRanges();
@@ -90,44 +144,19 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Scroll the highlight code to roughly the middle. It will do smooth
-     * scrolling if the target scroll position is close-by, or jump to it if
-     * it's far away.
+     * @param {number} linesBeforeHighlight
      * @private
      */
-    scrollToHighlight_: function() {
+    scrollToHighlight_: function(linesBeforeHighlight) {
       const CSS_LINE_HEIGHT = 20;
-      const SCROLL_LOC_THRESHOLD = 100;
-
-      const linesBeforeHighlight = this.code.beforeHighlight.match(/\n/g);
 
       // Count how many pixels is above the highlighted code.
-      const highlightTop = linesBeforeHighlight ?
-          linesBeforeHighlight.length * CSS_LINE_HEIGHT :
-          0;
+      const highlightTop = linesBeforeHighlight * CSS_LINE_HEIGHT;
 
       // Find the position to show the highlight roughly in the middle.
       const targetTop = highlightTop - this.clientHeight * 0.5;
 
-      // Smooth scrolling if moving within ~100 LOC, otherwise just jump to it.
-      const behavior =
-          Math.abs(this.$['scroll-container'].scrollTop - targetTop) <
-              (CSS_LINE_HEIGHT * SCROLL_LOC_THRESHOLD) ?
-          'smooth' :
-          'auto';
-      this.$['scroll-container'].scrollTo({
-        top: targetTop,
-        behavior: behavior,
-      });
-    },
-
-    /** @private */
-    onHighlightChanged_: function() {
-      if (!this.codeText_)
-        return;
-
-      this.createHighlight_();
-      this.scrollToHighlight_();
+      this.$['scroll-container'].scrollTo({top: targetTop});
     },
   });
 
