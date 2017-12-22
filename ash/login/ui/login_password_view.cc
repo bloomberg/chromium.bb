@@ -85,6 +85,22 @@ class NonAccessibleSeparator : public views::Separator {
   DISALLOW_COPY_AND_ASSIGN(NonAccessibleSeparator);
 };
 
+// A textfield that selects all text on focus.
+class LoginTextfield : public views::Textfield {
+ public:
+  LoginTextfield() {}
+  ~LoginTextfield() override {}
+
+  // views::Textfield:
+  void OnFocus() override {
+    views::Textfield::OnFocus();
+    SelectAll(false /*reverse*/);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginTextfield);
+};
+
 // Set of resources for an easy unlock icon.
 struct IconBundle {
   // Creates an IconBundle for a static image.
@@ -379,7 +395,7 @@ LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
 
   // Password textfield. We control the textfield size by sizing the parent
   // view, as the textfield will expand to fill it.
-  textfield_ = new views::Textfield();
+  textfield_ = new LoginTextfield();
   textfield_->set_controller(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   textfield_->SetTextColor(kTextColor);
