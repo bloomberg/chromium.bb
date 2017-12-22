@@ -90,8 +90,8 @@ ProvisioningResult ConvertArcSignInStatusToProvisioningResult(
 }
 
 mojom::ChromeAccountType GetAccountType() {
-  return IsArcKioskMode() ? mojom::ChromeAccountType::ROBOT_ACCOUNT
-                          : mojom::ChromeAccountType::USER_ACCOUNT;
+  return IsRobotAccountMode() ? mojom::ChromeAccountType::ROBOT_ACCOUNT
+                              : mojom::ChromeAccountType::USER_ACCOUNT;
 }
 
 mojom::AccountInfoPtr CreateAccountInfo(bool is_enforced,
@@ -236,8 +236,8 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
   }
   // For non-AD enrolled devices an auth code is fetched.
   std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher;
-  if (IsArcKioskMode()) {
-    // In Kiosk mode, use Robot auth code fetching.
+  if (IsRobotAccountMode()) {
+    // In Kiosk and public session mode, use Robot auth code fetching.
     auth_code_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
   } else {
     // Optionally retrieve auth code in silent mode.

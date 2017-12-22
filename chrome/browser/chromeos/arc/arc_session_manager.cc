@@ -238,7 +238,8 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     scoped_opt_in_tracker_->TrackError();
 
   if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
-    if (IsArcKioskMode()) {
+    // TODO(poromov): Consider PublicSession offline mode.
+    if (IsRobotAccountMode()) {
       VLOG(1) << "Robot account auth code fetching error";
       // Log out the user. All the cleanup will be done in Shutdown() method.
       // The callback is not called because auth code is empty.
@@ -280,12 +281,17 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     // * In case ARC is enabled from OOBE.
     // * In ARC Kiosk mode, because the only one UI in kiosk mode must be the
     //   kiosk app and device is not needed for opt-in;
+    // * In Public Session mode, because Play Store will be hidden from users
+    //   and only apps configured by policy should be installed.
     // * When ARC is managed and all OptIn preferences are managed/unused, too,
     //   because the whole OptIn flow should happen as seamless as possible for
     //   the user.
+    // For Active Directory users we always show a page notifying them that they
+    // have to authenticate with their identity provider (through SAML) to make
+    // it less weird that a browser window pops up.
     const bool suppress_play_store_app =
         !IsPlayStoreAvailable() || IsArcOptInVerificationDisabled() ||
-        IsArcKioskMode() || oobe_start_ ||
+        IsRobotAccountMode() || oobe_start_ ||
         (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
          AreArcAllOptInPreferencesIgnorableForProfile(profile_));
     if (!suppress_play_store_app) {
@@ -395,7 +401,7 @@ void ArcSessionManager::Initialize() {
   // in typical use case there will be no one nearby the kiosk device, who can
   // do some action to solve the problem be means of UI.
   if (!g_disable_ui_for_testing && !IsArcOptInVerificationDisabled() &&
-      !IsArcKioskMode()) {
+      !IsRobotAccountMode()) {
     DCHECK(!support_host_);
     support_host_ = std::make_unique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
@@ -595,11 +601,12 @@ bool ArcSessionManager::RequestEnableImpl() {
   // not available, then directly start ARC with skipping Play Store ToS.
   // For Kiosk mode, skip ToS because it is very likely that near the device
   // there will be no one who is eligible to accept them.
-  // If opt-in verification is disabled, skip negotiation, too. This is for
-  // testing purpose.
+  // In Public Session mode ARC should be started silently without user
+  // interaction. If opt-in verification is disabled, skip negotiation, too.
+  // This is for testing purpose.
   const bool start_arc_directly =
-      prefs->GetBoolean(prefs::kArcSignedIn) || !arc::IsPlayStoreAvailable() ||
-      IsArcKioskMode() || IsArcOptInVerificationDisabled();
+      prefs->GetBoolean(prefs::kArcSignedIn) || ShouldArcAlwaysStart() ||
+      IsRobotAccountMode() || IsArcOptInVerificationDisabled();
 
   // When ARC is blocked because of filesystem compatibility, do not proceed
   // to starting ARC nor follow further state transitions.
@@ -690,9 +697,9 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(!terms_of_service_negotiator_);
-  // In Kiosk-mode, Terms of Service negotiation should be skipped.
-  // See also RequestEnableImpl().
-  DCHECK(!IsArcKioskMode());
+  // In Kiosk and Public Session mode, Terms of Service negotiation should be
+  // skipped. See also RequestEnableImpl().
+  DCHECK(!IsRobotAccountMode());
   // If opt-in verification is disabled, Terms of Service negotiation should
   // be skipped, too. See also RequestEnableImpl().
   DCHECK(!IsArcOptInVerificationDisabled());
@@ -858,9 +865,9 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
   DCHECK(!android_management_checker_);
 
   // Skip Android management check for testing.
-  // We also skip if Android management check for Kiosk mode,
-  // because there are no managed human users for Kiosk exist.
-  if (IsArcOptInVerificationDisabled() || IsArcKioskMode() ||
+  // We also skip if Android management check for Kiosk and Public Session mode,
+  // because there are no managed human users for them exist.
+  if (IsArcOptInVerificationDisabled() || IsRobotAccountMode() ||
       (g_disable_ui_for_testing &&
        !g_enable_check_android_management_for_testing)) {
     return;
