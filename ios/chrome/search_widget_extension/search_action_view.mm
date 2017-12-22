@@ -31,19 +31,10 @@ const CGFloat kIconSize = 35;
   if (self) {
     self.translatesAutoresizingMaskIntoConstraints = NO;
 
-    UIVibrancyEffect* primaryEffect;
-    UIVibrancyEffect* secondaryEffect;
-    if (@available(iOS 10, *)) {
-      primaryEffect = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
-      secondaryEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
-    }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-    else {
-      primaryEffect = [UIVibrancyEffect notificationCenterVibrancyEffect];
-      secondaryEffect = [UIVibrancyEffect notificationCenterVibrancyEffect];
-    }
-#endif  // !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED <
-        // __IPHONE_10_0
+    UIVibrancyEffect* primaryEffect =
+        [UIVibrancyEffect widgetPrimaryVibrancyEffect];
+    UIVibrancyEffect* secondaryEffect =
+        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
 
     UIVisualEffectView* primaryEffectView =
         [[UIVisualEffectView alloc] initWithEffect:primaryEffect];
@@ -59,11 +50,7 @@ const CGFloat kIconSize = 35;
     }
 
     UIView* circleView = [[UIView alloc] initWithFrame:CGRectZero];
-    if (@available(iOS 10, *)) {
-      circleView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
-    } else {
-      circleView.backgroundColor = [UIColor whiteColor];
-    }
+    circleView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
     circleView.layer.cornerRadius = kActionButtonSize / 2;
 
     UILabel* labelView = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -86,18 +73,12 @@ const CGFloat kIconSize = 35;
     [NSLayoutConstraint activateConstraints:ui_util::CreateSameConstraints(
                                                 secondaryEffectView, stack)];
     UIImage* iconImage = [UIImage imageNamed:imageName];
-    if (@available(iOS 10, *)) {
-      iconImage =
-          [iconImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    }
+    iconImage =
+        [iconImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
     UIImageView* icon = [[UIImageView alloc] initWithImage:iconImage];
     icon.translatesAutoresizingMaskIntoConstraints = NO;
-    if (@available(iOS 10, *)) {
-      [primaryEffectView.contentView addSubview:icon];
-    } else {
-      [self addSubview:icon];
-    }
+    [primaryEffectView.contentView addSubview:icon];
 
     [NSLayoutConstraint activateConstraints:@[
       [circleView.widthAnchor constraintEqualToConstant:kActionButtonSize],

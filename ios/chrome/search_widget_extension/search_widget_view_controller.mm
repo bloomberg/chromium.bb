@@ -71,15 +71,12 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  DCHECK(self.extensionContext);
 
-  CGFloat height = 110;
-  if (@available(iOS 10, *)) {
-    if (self.extensionContext) {
-      height = [self.extensionContext
-                   widgetMaximumSizeForDisplayMode:NCWidgetDisplayModeCompact]
-                   .height;
-    }
-  }
+  CGFloat height =
+      [self.extensionContext
+          widgetMaximumSizeForDisplayMode:NCWidgetDisplayModeCompact]
+          .height;
 
   // A local variable is necessary here as the property is declared weak and the
   // object would be deallocated before being retained by the addSubview call.
@@ -89,14 +86,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   [self.view addSubview:self.widgetView];
   [self updateWidget];
 
-  if (@available(iOS 10, *)) {
-    self.extensionContext.widgetLargestAvailableDisplayMode =
-        NCWidgetDisplayModeExpanded;
-  } else {
-    self.preferredContentSize =
-        CGSizeMake([[UIScreen mainScreen] bounds].size.width,
-                   [self.widgetView widgetHeight]);
-  }
+  self.extensionContext.widgetLargestAvailableDisplayMode =
+      NCWidgetDisplayModeExpanded;
 
   self.widgetView.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -110,11 +101,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
   // |widgetActiveDisplayMode| does not contain a valid value in viewDidLoad. By
   // the time viewWillAppear is called, it is correct, so set the mode here.
-  BOOL initiallyCompact = NO;
-  if (@available(iOS 10, *)) {
-    initiallyCompact = [self.extensionContext widgetActiveDisplayMode] ==
-                       NCWidgetDisplayModeCompact;
-  }
+  BOOL initiallyCompact = [self.extensionContext widgetActiveDisplayMode] ==
+                          NCWidgetDisplayModeCompact;
   [self.widgetView showMode:initiallyCompact];
 }
 
@@ -170,15 +158,6 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
       break;
   }
 }
-
-// Implementing this method removes the leading edge inset for iOS version < 10.
-// TODO(crbug.com/720490): Remove implementation when dropping ios9 support.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-- (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:
-    (UIEdgeInsets)defaultMa‌​rginInsets {
-  return UIEdgeInsetsZero;
-}
-#endif
 
 #pragma mark - SearchWidgetViewActionTarget
 
