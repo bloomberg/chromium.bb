@@ -36,7 +36,6 @@ bool DrawingDisplayItem::DrawsContent() const {
 #if DCHECK_IS_ON()
 void DrawingDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
-  json.SetString("rect", VisualRect().ToString());
   json.SetBoolean("opaque", known_to_be_opaque_);
 }
 #endif
