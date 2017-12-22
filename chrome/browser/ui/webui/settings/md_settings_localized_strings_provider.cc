@@ -1514,6 +1514,10 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("profileShortcutsEnabled",
                           ProfileShortcutManager::IsFeatureEnabled());
+
+  html_source->AddBoolean(
+      "changePictureVideoModeEnabled",
+      base::FeatureList::IsEnabled(features::kChangePictureVideoMode));
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
