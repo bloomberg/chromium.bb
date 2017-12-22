@@ -227,7 +227,7 @@ function PDFViewer(browserApi) {
   document.body.addEventListener('change-page', e => {
     this.viewport_.goToPage(e.detail.page);
     if (e.detail.origin == 'bookmark')
-      this.metrics.onBookmarkFollowed();
+      this.metrics.onFollowBookmark();
     else if (e.detail.origin == 'pageselector')
       this.metrics.onPageSelectorNavigation();
   });
