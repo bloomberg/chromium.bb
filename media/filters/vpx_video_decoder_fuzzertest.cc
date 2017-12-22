@@ -30,7 +30,6 @@ struct Env {
   base::AtExitManager at_exit_manager;
   base::MessageLoop message_loop;
 };
-Env* env = new Env();
 
 void OnDecodeComplete(const base::Closure& quit_closure, DecodeStatus status) {
   quit_closure.Run();
@@ -47,6 +46,11 @@ void OnOutputComplete(const scoped_refptr<VideoFrame>& frame) {}
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Create Env on the first run of LLVMFuzzerTestOneInput otherwise
+  // message_loop will be created before this process forks when used with AFL,
+  // causing hangs.
+  static Env* env = new Env();
+  ALLOW_UNUSED_LOCAL(env);
   std::mt19937_64 rng;
 
   {  // Seed rng from data.
