@@ -66,9 +66,10 @@ ModuleScript* ScriptModuleResolverImplTestModulator::GetFetchedModuleScript(
 
 ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
                                          V8TestingScope& scope) {
+  KURL js_url("https://example.com/referrer.js");
   ScriptModule referrer_record = ScriptModule::Compile(
-      scope.GetIsolate(), "import './target.js'; export const a = 42;",
-      "referrer.js", ScriptFetchOptions(), kSharableCrossOrigin,
+      scope.GetIsolate(), "import './target.js'; export const a = 42;", js_url,
+      js_url, ScriptFetchOptions(), kSharableCrossOrigin,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
@@ -79,8 +80,9 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
 ModuleScript* CreateTargetModuleScript(Modulator* modulator,
                                        V8TestingScope& scope,
                                        bool has_parse_error = false) {
+  KURL js_url("https://example.com/target.js");
   ScriptModule record = ScriptModule::Compile(
-      scope.GetIsolate(), "export const pi = 3.14;", "target.js",
+      scope.GetIsolate(), "export const pi = 3.14;", js_url, js_url,
       ScriptFetchOptions(), kSharableCrossOrigin,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL url("https://example.com/target.js");

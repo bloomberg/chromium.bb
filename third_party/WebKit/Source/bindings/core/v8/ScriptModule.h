@@ -35,7 +35,8 @@ class CORE_EXPORT ScriptModule final {
  public:
   static ScriptModule Compile(v8::Isolate*,
                               const String& source,
-                              const String& file_name,
+                              const KURL& source_url,
+                              const KURL& base_url,
                               const ScriptFetchOptions&,
                               AccessControlStatus,
                               const TextPosition&,

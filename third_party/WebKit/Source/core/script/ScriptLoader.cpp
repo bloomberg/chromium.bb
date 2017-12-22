@@ -508,11 +508,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         //     source text, settings, base URL, cryptographic nonce,
         //     parser state, and module script credentials mode."
         // TODO(kouhei,hiroshige): Update spec refs to use ScriptFetchOptions.
+        const KURL& source_url = element_document.Url();
         Modulator* modulator = Modulator::From(
             ToScriptStateForMainWorld(context_document->GetFrame()));
         ModuleScript* module_script = ModuleScript::Create(
-            element_->TextFromChildren(), modulator, base_url, options,
-            kSharableCrossOrigin, position);
+            element_->TextFromChildren(), modulator, source_url, base_url,
+            options, kSharableCrossOrigin, position);
 
         // 2. "If this returns null, set the script's script to null and abort
         //     these substeps; the script is ready."

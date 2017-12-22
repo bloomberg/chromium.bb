@@ -203,9 +203,9 @@ void ModuleScriptLoader::NotifyFetchFinished(
   // Step 10. "Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, and options."
   // [spec text]
-  module_script_ = ModuleScript::Create(params->GetSourceText(), modulator_,
-                                        params->GetResponseUrl(), options_,
-                                        params->GetAccessControlStatus());
+  module_script_ = ModuleScript::Create(
+      params->GetSourceText(), modulator_, params->GetResponseUrl(),
+      params->GetResponseUrl(), options_, params->GetAccessControlStatus());
 
   AdvanceState(State::kFinished);
 }

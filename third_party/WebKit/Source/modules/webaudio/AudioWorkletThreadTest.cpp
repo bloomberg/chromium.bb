@@ -81,9 +81,10 @@ class AudioWorkletThreadTest : public PageTestBase {
         thread->GlobalScope()->ScriptController()->GetScriptState();
     EXPECT_TRUE(script_state);
     ScriptState::Scope scope(script_state);
+    KURL js_url("https://example.com/worklet.js");
     ScriptModule module = ScriptModule::Compile(
-        script_state->GetIsolate(), "var counter = 0; ++counter;", "worklet.js",
-        ScriptFetchOptions(), kSharableCrossOrigin,
+        script_state->GetIsolate(), "var counter = 0; ++counter;", js_url,
+        js_url, ScriptFetchOptions(), kSharableCrossOrigin,
         TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
     ScriptValue exception = module.Instantiate(script_state);

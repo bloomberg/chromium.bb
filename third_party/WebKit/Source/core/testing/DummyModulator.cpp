@@ -113,7 +113,8 @@ ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
 }
 
 ScriptModule DummyModulator::CompileModule(const String& script,
-                                           const String& url_str,
+                                           const KURL& source_url,
+                                           const KURL& base_url,
                                            const ScriptFetchOptions&,
                                            AccessControlStatus,
                                            const TextPosition&,
