@@ -25,6 +25,30 @@
 extern "C" {
 #endif
 
+#define ARRAYOFFSET4(x, a, b, c, d) \
+  { ((a) + (x)), ((b) + (x)), ((c) + (x)), ((d) + (x)) }
+#define ARRAYOFFSET6(x, a, b, c, d, e, f)                            \
+  {                                                                  \
+    ((a) + (x)), ((b) + (x)), ((c) + (x)), ((d) + (x)), ((e) + (x)), \
+        ((f) + (x))                                                  \
+  }
+#define ARRAYOFFSET8(x, a, b, c, d, e, f, g, h)                      \
+  {                                                                  \
+    ((a) + (x)), ((b) + (x)), ((c) + (x)), ((d) + (x)), ((e) + (x)), \
+        ((f) + (x)), ((g) + (x)), ((h) + (x))                        \
+  }
+#define ARRAYOFFSET10(x, a, b, c, d, e, f, g, h, i, j)                  \
+  {                                                                     \
+    ((a) + (x)), ((b) + (x)), ((c) + (x)), ((d) + (x)), ((e) + (x)),    \
+        ((f) + (x)), ((g) + (x)), ((h) + (x)), ((i) + (x)), ((j) + (x)) \
+  }
+#define ARRAYOFFSET12(x, a, b, c, d, e, f, g, h, i, j, k, l)             \
+  {                                                                      \
+    ((a) + (x)), ((b) + (x)), ((c) + (x)), ((d) + (x)), ((e) + (x)),     \
+        ((f) + (x)), ((g) + (x)), ((h) + (x)), ((i) + (x)), ((j) + (x)), \
+        ((k) + (x)), ((l) + (x))                                         \
+  }
+
 #define MAX_TXFM_STAGE_NUM 12
 
 static const int cos_bit_min = 10;
