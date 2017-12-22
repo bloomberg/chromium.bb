@@ -427,7 +427,7 @@ Output.RULES = {
           $description $state $restriction`
     },
     rootWebArea: {enter: `$name`, speak: `$if($name, $name, $docUrl)`},
-    region: {speak: `$state $nameOrTextContent $description`},
+    region: {speak: `$state $nameOrTextContent $description $roleDescription`},
     row: {enter: `$node(tableRowHeader)`},
     rowHeader: {speak: `$nameOrTextContent $description $state`},
     staticText: {speak: `$name=`},
@@ -452,8 +452,11 @@ Output.RULES = {
           $description`,
     },
     textField: {
-      speak: `$name $value $if($multiline, @tag_textarea,
-          $if($inputType, $inputType, $role)) $description $state $restriction`,
+      speak: `$name $value
+          $if($roleDescription, $roleDescription,
+              $if($multiline, @tag_textarea,
+                  $if($inputType, $inputType, $role)))
+          $description $state $restriction`,
       braille: ``
     },
     timer: {speak: `$nameFromNode $descendants $value $state $description`},
