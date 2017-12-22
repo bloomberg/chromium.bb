@@ -209,7 +209,8 @@ def main():
       return 2
 
     return RunFuchsia(bootfs, args.device, args.kernel, args.dry_run,
-                      args.test_launcher_summary_output)
+                      test_launcher_summary_output=
+                          args.test_launcher_summary_output)
   finally:
     # Stop the spawner to make sure it doesn't leave testserver running, in
     # case some tests failed.
