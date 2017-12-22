@@ -199,7 +199,6 @@ Polymer({
     const knownSizeToSaveAsPdf = isSaveToPdf &&
         (!this.documentInfo.isModifiable ||
          this.documentInfo.hasCssMediaStyles);
-
     this.set('settings.copies.available', !!caps && !!(caps.copies));
     this.set('settings.collate.available', !!caps && !!(caps.collate));
     this.set('settings.layout.available', this.isLayoutAvailable_(caps));

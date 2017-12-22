@@ -236,8 +236,8 @@ Polymer({
     [['dpi', 'dpi'], ['mediaSize', 'mediaSize'], ['margins', 'marginsType'],
      ['color', 'isColorEnabled'], ['headerFooter', 'isHeaderFooterEnabled'],
      ['layout', 'isLandscapeEnabled'], ['collate', 'isCollateEnabled'],
-     ['fitToPage', 'isFitToPageEnabled'],
-     ['cssBackground', 'isCssBackgroundEnabled'], ['scaling', 'scaling'],
+     ['scaling', 'scaling'], ['fitToPage', 'isFitToPageEnabled'],
+     ['cssBackground', 'isCssBackgroundEnabled'],
     ].forEach(keys => updateIfDefined(keys[0], keys[1]));
   },
 });
