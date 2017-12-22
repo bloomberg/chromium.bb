@@ -55,6 +55,7 @@ import signal
 import subprocess
 import sys
 import threading
+import traceback
 
 import concurrent
 import models
@@ -669,8 +670,12 @@ class _BulkObjectFileAnalyzerSlave(object):
 
   def _WorkerThreadMain(self):
     while True:
-      func = self._job_queue.get()
-      func()
+      # Handle exceptions so test failure will be explicit and not block.
+      try:
+        func = self._job_queue.get()
+        func()
+      except Exception:
+        traceback.print_exc()
       self._job_queue.task_done()
 
   def _WaitForAnalyzePathJobs(self):
