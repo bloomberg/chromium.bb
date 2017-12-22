@@ -116,7 +116,6 @@ modules_idl_files =
           "encryptedmedia/MediaKeySystemAccess.idl",
           "encryptedmedia/MediaKeys.idl",
           "eventsource/EventSource.idl",
-          "fetch/Headers.idl",
           "fetch/Request.idl",
           "fetch/Response.idl",
           "filesystem/DOMFileSystem.idl",

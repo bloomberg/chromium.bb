@@ -7,7 +7,7 @@
 
 #include <map>
 #include <utility>
-#include "modules/ModulesExport.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
@@ -15,7 +15,7 @@
 namespace blink {
 
 // http://fetch.spec.whatwg.org/#terminology-headers
-class MODULES_EXPORT FetchHeaderList final
+class CORE_EXPORT FetchHeaderList final
     : public GarbageCollectedFinalized<FetchHeaderList> {
  public:
   struct ByteCaseInsensitiveCompare {

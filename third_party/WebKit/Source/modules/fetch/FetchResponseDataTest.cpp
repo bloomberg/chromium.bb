@@ -4,8 +4,8 @@
 
 #include "modules/fetch/FetchResponseData.h"
 
+#include "core/fetch/FetchHeaderList.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/fetch/FetchHeaderList.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"

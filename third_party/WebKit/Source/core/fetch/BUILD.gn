@@ -18,11 +18,11 @@ blink_core_sources("fetch") {
     "BytesConsumerForDataConsumerHandle.h",
     "FetchDataLoader.cpp",
     "FetchDataLoader.h",
+    "FetchHeaderList.cpp",
+    "FetchHeaderList.h",
 
     # TODO(nhiroki): Move these files from modules/fetch to core/fetch.
     # (https://crbug.com/794837)
-    # "FetchHeaderList.cpp",
-    # "FetchHeaderList.h",
     # "FetchManager.cpp",
     # "FetchManager.h",
     # "FetchRequestData.cpp",
@@ -37,9 +37,9 @@ blink_core_sources("fetch") {
     # (https://crbug.com/794837)
     # "GlobalFetch.cpp",
     # "GlobalFetch.h",
-    # "Headers.cpp",
-    # "Headers.h",
 
+    "Headers.cpp",
+    "Headers.h",
     "MultipartParser.cpp",
     "MultipartParser.h",
     "ReadableStreamBytesConsumer.cpp",

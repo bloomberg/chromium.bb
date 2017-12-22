@@ -6,8 +6,6 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("fetch") {
   sources = [
-    "FetchHeaderList.cpp",
-    "FetchHeaderList.h",
     "FetchManager.cpp",
     "FetchManager.h",
     "FetchRequestData.cpp",
@@ -16,8 +14,6 @@ blink_modules_sources("fetch") {
     "FetchResponseData.h",
     "GlobalFetch.cpp",
     "GlobalFetch.h",
-    "Headers.cpp",
-    "Headers.h",
     "Request.cpp",
     "Request.h",
     "RequestInit.cpp",
