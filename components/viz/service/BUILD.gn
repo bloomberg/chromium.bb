@@ -60,6 +60,8 @@ viz_component("service") {
     "display/overlay_strategy_underlay_cast.h",
     "display/program_binding.cc",
     "display/program_binding.h",
+    "display/scoped_render_pass_texture.cc",
+    "display/scoped_render_pass_texture.h",
     "display/shader.cc",
     "display/shader.h",
     "display/skia_renderer.cc",

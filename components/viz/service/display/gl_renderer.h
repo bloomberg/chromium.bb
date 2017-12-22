@@ -36,7 +36,6 @@ class GLRendererShaderTest;
 class OutputSurface;
 class Resource;
 class ResourcePool;
-class ScopedResource;
 class StreamVideoDrawQuad;
 }  // namespace cc
 
@@ -49,6 +48,7 @@ class GLES2Interface;
 namespace viz {
 
 class DynamicGeometryBinding;
+class ScopedRenderPassTexture;
 class StaticGeometryBinding;
 class TextureDrawQuad;
 struct DrawRenderPassDrawQuadParams;
@@ -288,9 +288,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
                                unsigned query,
                                int multiplier);
 
+  ResourceFormat BackbufferFormat() const;
+
   // A map from RenderPass id to the texture used to draw the RenderPass from.
-  base::flat_map<RenderPassId, std::unique_ptr<cc::ScopedResource>>
-      render_pass_textures_;
+  base::flat_map<RenderPassId, ScopedRenderPassTexture> render_pass_textures_;
 
   using OverlayResourceLock =
       std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockGL>;
@@ -342,10 +343,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   TexturedQuadDrawCache draw_cache_;
   int highp_threshold_cache_ = 0;
 
-  std::unique_ptr<cc::ResourceProvider::ScopedWriteLockGL>
-      current_framebuffer_lock_;
-  // This is valid when current_framebuffer_lock_ is not null.
-  ResourceFormat current_framebuffer_format_;
+  ScopedRenderPassTexture* current_framebuffer_texture_;
 
   class SyncQuery;
   base::circular_deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;
