@@ -16,7 +16,6 @@ class AppListViewDelegate;
 class ContentsView;
 class PaginationModel;
 class SearchResultTileItemView;
-class TileItemView;
 
 // A container that holds the suggested app tiles. If fullscreen app list is not
 // enabled, it also holds the all apps button.
@@ -25,8 +24,6 @@ class SuggestionsContainerView : public SearchResultContainerView {
   SuggestionsContainerView(ContentsView* contents_view,
                            PaginationModel* pagination_model);
   ~SuggestionsContainerView() override;
-
-  TileItemView* GetTileItemView(int index);
 
   const std::vector<SearchResultTileItemView*>& tile_views() const {
     return search_result_tile_views_;

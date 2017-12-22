@@ -101,8 +101,6 @@ component("app_list") {
     "views/speech_view.h",
     "views/suggestions_container_view.cc",
     "views/suggestions_container_view.h",
-    "views/tile_item_view.cc",
-    "views/tile_item_view.h",
     "views/top_icon_animation_view.cc",
     "views/top_icon_animation_view.h",
   ]

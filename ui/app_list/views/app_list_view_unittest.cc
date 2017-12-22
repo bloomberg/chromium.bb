@@ -44,7 +44,6 @@
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
-#include "ui/app_list/views/tile_item_view.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -1031,7 +1030,7 @@ TEST_F(AppListViewFocusTest, FirstResultNotSelectedAfterQuicklyHittingTab) {
   EXPECT_EQ(results_container->child_at(0), focused_view());
   EXPECT_EQ(tile_views[0], first_result_view);
   EXPECT_FALSE(
-      static_cast<SearchResultTileItemView*>(first_result_view)->selected());
+      static_cast<SearchResultTileItemView*>(first_result_view)->HasFocus());
   EXPECT_TRUE(static_cast<SearchResultView*>(focused_view())->selected());
 }
 

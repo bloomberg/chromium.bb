@@ -11,11 +11,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -37,6 +41,11 @@ constexpr int kSearchRatingStarSize = 12;
 constexpr int kSearchRatingStarHorizontalSpacing = 1;
 constexpr int kSearchRatingStarVerticalSpacing = 2;
 
+constexpr int kIconSelectedSize = 56;
+constexpr int kIconSelectedCornerRadius = 4;
+// Icon selected color, #000 8%.
+constexpr int kIconSelectedColor = SkColorSetARGBMacro(0x14, 0x00, 0x00, 0x00);
+
 constexpr SkColor kSearchTitleColor =
     SkColorSetARGBMacro(0xDF, 0x00, 0x00, 0x00);
 constexpr SkColor kSearchAppRatingColor =
@@ -46,23 +55,71 @@ constexpr SkColor kSearchAppPriceColor =
 constexpr SkColor kSearchRatingStarColor =
     SkColorSetARGBMacro(0x8F, 0x00, 0x00, 0x00);
 
+// The background image source for badge.
+class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
+ public:
+  explicit BadgeBackgroundImageSource(int size)
+      : CanvasImageSource(gfx::Size(size, size), false),
+        radius_(static_cast<float>(size / 2)) {}
+  ~BadgeBackgroundImageSource() override = default;
+
+ private:
+  // gfx::CanvasImageSource overrides:
+  void Draw(gfx::Canvas* canvas) override {
+    cc::PaintFlags flags;
+    flags.setColor(SK_ColorWHITE);
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawCircle(gfx::PointF(radius_, radius_), radius_, flags);
+  }
+
+  const float radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(BadgeBackgroundImageSource);
+};
+
 }  // namespace
 
 SearchResultTileItemView::SearchResultTileItemView(
     SearchResultContainerView* result_container,
     AppListViewDelegate* view_delegate,
-    PaginationModel* pagination_model,
-    bool is_suggested_app,
-    bool is_play_store_search_enabled)
-    : is_suggested_app_(is_suggested_app),
+    PaginationModel* pagination_model)
+    : views::Button(this),
       result_container_(result_container),
       view_delegate_(view_delegate),
-      pagination_model_(pagination_model) {
+      pagination_model_(pagination_model),
+      is_play_store_app_search_enabled_(
+          features::IsPlayStoreAppSearchEnabled()) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
 
-  if (is_play_store_search_enabled) {
+  // Prevent the icon view from interfering with our mouse events.
+  icon_ = new views::ImageView;
+  icon_->set_can_process_events_within_subtree(false);
+  icon_->SetVerticalAlignment(views::ImageView::LEADING);
+  AddChildView(icon_);
+
+  if (is_play_store_app_search_enabled_) {
+    badge_ = new views::ImageView;
+    badge_->set_can_process_events_within_subtree(false);
+    badge_->SetVerticalAlignment(views::ImageView::LEADING);
+    badge_->SetVisible(false);
+    AddChildView(badge_);
+  }
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title_ = new views::Label;
+  title_->SetAutoColorReadabilityEnabled(false);
+  title_->SetEnabledColor(kGridTitleColor);
+  title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
+  title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  title_->SetHandlesTooltips(false);
+  AddChildView(title_);
+
+  if (is_play_store_app_search_enabled_) {
     const gfx::FontList& font = AppListAppTitleFont();
     rating_ = new views::Label;
     rating_->SetEnabledColor(kSearchAppRatingColor);
@@ -120,13 +177,12 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetPrice(item_->formatted_price());
 
   const gfx::FontList& font = AppListAppTitleFont();
-  if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
-    set_is_recommendation(true);
-
-    title()->SetFontList(font);
-    title()->SetLineHeight(font.GetHeight());
-    title()->SetEnabledColor(kGridTitleColor);
-  } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
+  if (IsSuggestedAppTile()) {
+    title_->SetFontList(font);
+    title_->SetLineHeight(font.GetHeight());
+    title_->SetEnabledColor(kGridTitleColor);
+  } else {
+    DCHECK_EQ(SearchResult::DISPLAY_TILE, item_->display_type());
     // Set solid color background to avoid broken text. See crbug.com/746563.
     if (rating_) {
       rating_->SetBackground(
@@ -135,16 +191,16 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
     if (price_) {
       price_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
     }
-    title()->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
-    title()->SetFontList(font);
-    title()->SetLineHeight(font.GetHeight());
-    title()->SetEnabledColor(kSearchTitleColor);
+    title_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
+    title_->SetFontList(font);
+    title_->SetLineHeight(font.GetHeight());
+    title_->SetEnabledColor(kSearchTitleColor);
   }
 
-  title()->SetMaxLines(2);
-  title()->SetMultiLine(item_->display_type() == SearchResult::DISPLAY_TILE &&
-                        item_->result_type() ==
-                            SearchResult::RESULT_INSTALLED_APP);
+  title_->SetMaxLines(2);
+  title_->SetMultiLine(item_->display_type() == SearchResult::DISPLAY_TILE &&
+                       item_->result_type() ==
+                           SearchResult::RESULT_INSTALLED_APP);
 
   // Only refresh the icon if it's different from the old one. This prevents
   // flickering.
@@ -159,7 +215,7 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
     OnBadgeIconChanged();
   }
 
-  base::string16 accessible_name = title()->text();
+  base::string16 accessible_name = title_->text();
   if (rating_ && rating_->visible()) {
     accessible_name +=
         base::UTF8ToUTF16(", ") +
@@ -171,54 +227,40 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetAccessibleName(accessible_name);
 }
 
-void SearchResultTileItemView::SetRating(float rating) {
-  if (!rating_)
-    return;
-
-  if (rating < 0) {
-    rating_->SetVisible(false);
-    rating_star_->SetVisible(false);
-    return;
-  }
-
-  rating_->SetText(base::FormatDouble(rating, 1));
-  rating_->SetVisible(true);
-  rating_star_->SetVisible(true);
-}
-
-void SearchResultTileItemView::SetPrice(const base::string16& price) {
-  if (!price_)
-    return;
-
-  if (price.empty()) {
-    price_->SetVisible(false);
-    return;
-  }
-
-  price_->SetText(price);
-  price_->SetVisible(true);
-}
-
-void SearchResultTileItemView::LogAppLaunch() const {
-  // Only log the app launch if the class is being used as a suggested app.
-  if (!is_suggested_app_)
-    return;
-
-  UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen, is_suggested_app_);
-  base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
+void SearchResultTileItemView::SetParentBackgroundColor(SkColor color) {
+  parent_background_color_ = color;
+  UpdateBackgroundColor();
 }
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
-  if (is_suggested_app_)
+  if (IsSuggestedAppTile())
     LogAppLaunch();
 
   view_delegate_->OpenSearchResult(item_, false, event.flags());
 }
 
+void SearchResultTileItemView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+  // Specify |ui::AX_ATTR_DESCRIPTION| with an empty string, so that long
+  // truncated names are not read twice.
+  // Details of this issue:
+  // - The Play Store app's name is shown in a label |title_|.
+  // - If the name is too long, it'll get truncated and the full name will
+  //   go to the label's tooltip.
+  // - SearchResultTileItemView uses that label's tooltip as its tooltip.
+  // - If a view doesn't have |ui::AX_ATTR_DESCRIPTION| defined in the
+  //   |AXNodeData|, |AXViewObjWrapper::Serialize| will use the tooltip text
+  //   as its description.
+  // - We're customizing this view's accessible name, so it get focused
+  //   ChromeVox will read its accessible name and then its description.
+  node_data->AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "");
+}
+
 bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_RETURN) {
-    if (is_suggested_app_)
+    if (IsSuggestedAppTile())
       LogAppLaunch();
 
     view_delegate_->OpenSearchResult(item_, false, event.flags());
@@ -229,14 +271,45 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void SearchResultTileItemView::OnFocus() {
-  if (pagination_model_ && is_recommendation() &&
+  if (pagination_model_ && IsSuggestedAppTile() &&
       view_delegate_->GetModel()->state() == AppListModel::STATE_APPS) {
     // Go back to first page when app in suggestions container is focused.
     pagination_model_->SelectPage(0, false);
-  } else if (!is_recommendation()) {
+  } else if (!IsSuggestedAppTile()) {
     ScrollRectToVisible(GetLocalBounds());
   }
-  TileItemView::OnFocus();
+  UpdateBackgroundColor();
+}
+
+void SearchResultTileItemView::OnBlur() {
+  UpdateBackgroundColor();
+}
+
+void SearchResultTileItemView::StateChanged(ButtonState old_state) {
+  UpdateBackgroundColor();
+}
+
+void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
+  if (!item_ || !HasFocus())
+    return;
+
+  gfx::Rect rect(GetContentsBounds());
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  if (IsSuggestedAppTile()) {
+    rect.Inset((rect.width() - kGridSelectedSize) / 2,
+               (rect.height() - kGridSelectedSize) / 2);
+    flags.setColor(kGridSelectedColor);
+    canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
+  } else {
+    DCHECK(item_->display_type() == SearchResult::DISPLAY_TILE);
+    const int kLeftRightPadding = (rect.width() - kIconSelectedSize) / 2;
+    rect.Inset(kLeftRightPadding, 0);
+    rect.set_height(kIconSelectedSize);
+    flags.setColor(kIconSelectedColor);
+    canvas->DrawRoundRect(gfx::RectF(rect), kIconSelectedCornerRadius, flags);
+  }
 }
 
 void SearchResultTileItemView::OnIconChanged() {
@@ -279,7 +352,8 @@ void SearchResultTileItemView::ShowContextMenuForView(
   if (!menu_model)
     return;
 
-  if (!selected())
+  // TODO(warx): This is broken (https://crbug.com/795994).
+  if (!HasFocus())
     result_container_->ClearSelectedIndex();
 
   context_menu_runner_.reset(
@@ -289,45 +363,124 @@ void SearchResultTileItemView::ShowContextMenuForView(
                                   views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
-void SearchResultTileItemView::Layout() {
-  gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty())
+void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
+  icon_->SetImage(icon);
+}
+
+void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
+  if (!badge_)
     return;
 
-  if (!item_) {
-    TileItemView::Layout();
+  if (badge_icon.isNull()) {
+    badge_->SetVisible(false);
     return;
   }
 
-  if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
+  const int size = kBadgeBackgroundRadius * 2;
+  gfx::ImageSkia background(std::make_unique<BadgeBackgroundImageSource>(size),
+                            gfx::Size(size, size));
+  gfx::ImageSkia icon_with_background =
+      gfx::ImageSkiaOperations::CreateSuperimposedImage(background, badge_icon);
+
+  gfx::ShadowValues shadow_values;
+  shadow_values.push_back(
+      gfx::ShadowValue(gfx::Vector2d(0, 1), 0, SkColorSetARGB(0x33, 0, 0, 0)));
+  shadow_values.push_back(
+      gfx::ShadowValue(gfx::Vector2d(0, 1), 2, SkColorSetARGB(0x33, 0, 0, 0)));
+  badge_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+      icon_with_background, shadow_values));
+  badge_->SetVisible(true);
+}
+
+void SearchResultTileItemView::SetTitle(const base::string16& title) {
+  title_->SetText(title);
+}
+
+void SearchResultTileItemView::SetRating(float rating) {
+  if (!rating_)
+    return;
+
+  if (rating < 0) {
+    rating_->SetVisible(false);
+    rating_star_->SetVisible(false);
+    return;
+  }
+
+  rating_->SetText(base::FormatDouble(rating, 1));
+  rating_->SetVisible(true);
+  rating_star_->SetVisible(true);
+}
+
+void SearchResultTileItemView::SetPrice(const base::string16& price) {
+  if (!price_)
+    return;
+
+  if (price.empty()) {
+    price_->SetVisible(false);
+    return;
+  }
+
+  price_->SetText(price);
+  price_->SetVisible(true);
+}
+
+bool SearchResultTileItemView::IsSuggestedAppTile() const {
+  return item_ && item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION;
+}
+
+void SearchResultTileItemView::LogAppLaunch() const {
+  // Only log the app launch if the class is being used as a suggested app.
+  if (!IsSuggestedAppTile())
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen,
+                        true /* suggested app */);
+  base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
+}
+
+void SearchResultTileItemView::UpdateBackgroundColor() {
+  // Tell the label what color it will be drawn onto. It will use whether the
+  // background color is opaque or transparent to decide whether to use subpixel
+  // rendering. Does not actually set the label's background color.
+  title_->SetBackgroundColor(parent_background_color_);
+  SchedulePaint();
+}
+
+void SearchResultTileItemView::Layout() {
+  gfx::Rect rect(GetContentsBounds());
+  if (rect.IsEmpty() || !item_)
+    return;
+
+  if (IsSuggestedAppTile()) {
     rect.Inset(0, kGridIconTopPadding, 0, 0);
-    icon()->SetBoundsRect(rect);
+    icon_->SetBoundsRect(rect);
 
     rect.Inset(kGridTitleHorizontalPadding,
                kGridIconDimension + kGridTitleSpacing,
                kGridTitleHorizontalPadding, 0);
-    rect.set_height(title()->GetPreferredSize().height());
-    title()->SetBoundsRect(rect);
-  } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
+    rect.set_height(title_->GetPreferredSize().height());
+    title_->SetBoundsRect(rect);
+  } else {
+    DCHECK(item_->display_type() == SearchResult::DISPLAY_TILE);
     rect.Inset(0, kSearchTileTopPadding, 0, 0);
-    icon()->SetBoundsRect(rect);
+    icon_->SetBoundsRect(rect);
 
-    if (badge()) {
+    if (badge_) {
       gfx::Rect badge_rect(rect);
-      gfx::Size icon_size = icon()->GetImage().size();
+      gfx::Size icon_size = icon_->GetImage().size();
       badge_rect.Offset(
           (icon_size.width() - kAppBadgeIconSize) / 2,
           icon_size.height() - kBadgeBackgroundRadius - kAppBadgeIconSize / 2);
-      badge()->SetBoundsRect(badge_rect);
+      badge_->SetBoundsRect(badge_rect);
     }
 
     rect.Inset(0, kGridIconDimension + kSearchTitleSpacing, 0, 0);
-    rect.set_height(title()->GetPreferredSize().height());
-    title()->SetBoundsRect(rect);
+    rect.set_height(title_->GetPreferredSize().height());
+    title_->SetBoundsRect(rect);
 
     if (rating_) {
       gfx::Rect rating_rect(rect);
-      rating_rect.Inset(0, title()->GetPreferredSize().height(), 0, 0);
+      rating_rect.Inset(0, title_->GetPreferredSize().height(), 0, 0);
       rating_rect.set_size(rating_->GetPreferredSize());
       rating_rect.set_width(kSearchRatingSize);
       rating_->SetBoundsRect(rating_rect);
@@ -337,7 +490,7 @@ void SearchResultTileItemView::Layout() {
       gfx::Rect rating_star_rect(rect);
       rating_star_rect.Inset(
           kSearchRatingSize + kSearchRatingStarHorizontalSpacing,
-          title()->GetPreferredSize().height() +
+          title_->GetPreferredSize().height() +
               kSearchRatingStarVerticalSpacing,
           0, 0);
       rating_star_rect.set_size(rating_star_->GetPreferredSize());
@@ -347,42 +500,38 @@ void SearchResultTileItemView::Layout() {
     if (price_) {
       gfx::Rect price_rect(rect);
       price_rect.Inset(rect.width() - kSearchPriceSize,
-                       title()->GetPreferredSize().height(), 0, 0);
+                       title_->GetPreferredSize().height(), 0, 0);
       price_rect.set_size(price_->GetPreferredSize());
       price_->SetBoundsRect(price_rect);
     }
-  } else {
-    TileItemView::Layout();
   }
+}
+
+const char* SearchResultTileItemView::GetClassName() const {
+  return "SearchResultTileItemView";
 }
 
 gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
-  if (item_) {
-    if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION)
-      return gfx::Size(kGridTileWidth, kGridTileHeight);
-    if (item_->display_type() == SearchResult::DISPLAY_TILE)
-      return gfx::Size(kSearchTileWidth, kSearchTileHeight);
-  }
+  if (!item_)
+    return gfx::Size();
 
-  return TileItemView::CalculatePreferredSize();
+  if (IsSuggestedAppTile())
+    return gfx::Size(kGridTileWidth, kGridTileHeight);
+
+  DCHECK(item_->display_type() == SearchResult::DISPLAY_TILE);
+  return gfx::Size(kSearchTileWidth, kSearchTileHeight);
 }
 
-void SearchResultTileItemView::GetAccessibleNodeData(
-    ui::AXNodeData* node_data) {
-  TileItemView::GetAccessibleNodeData(node_data);
-  // Specify |ui::AX_ATTR_DESCRIPTION| with an empty string, so that long
-  // truncated names are not read twice.
-  // Details of this issue:
-  // - The Play Store app's name is shown in a label |TileItemView::title_|.
-  // - If the name is too long, it'll get truncated and the full name will
-  //   go to the label's tooltip.
-  // - |app_list::TileItemView| uses that label's tooltip as its tooltip.
-  // - If a view doesn't have |ui::AX_ATTR_DESCRIPTION| defined in the
-  //   |AXNodeData|, |AXViewObjWrapper::Serialize| will use the tooltip text
-  //   as its description.
-  // - We're customizing this view's accessible name, so it get focused
-  //   ChromeVox will read its accessible name and then its description.
-  node_data->AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "");
+bool SearchResultTileItemView::GetTooltipText(const gfx::Point& p,
+                                              base::string16* tooltip) const {
+  // Use the label to generate a tooltip, so that it will consider its text
+  // truncation in making the tooltip. We do not want the label itself to have a
+  // tooltip, so we only temporarily enable it to get the tooltip text from the
+  // label, then disable it again.
+  title_->SetHandlesTooltips(true);
+  bool handled = title_->GetTooltipText(p, tooltip);
+  title_->SetHandlesTooltips(false);
+  return handled;
 }
 
 }  // namespace app_list

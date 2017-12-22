@@ -30,12 +30,6 @@ SuggestionsContainerView::SuggestionsContainerView(
 
 SuggestionsContainerView::~SuggestionsContainerView() = default;
 
-TileItemView* SuggestionsContainerView::GetTileItemView(int index) {
-  DCHECK_GT(num_results(), index);
-
-  return search_result_tile_views_[index];
-}
-
 int SuggestionsContainerView::DoUpdate() {
   // Ignore updates and disable buttons when suggestions container view is not
   // shown.
@@ -76,13 +70,7 @@ int SuggestionsContainerView::DoUpdate() {
 }
 
 void SuggestionsContainerView::UpdateSelectedIndex(int old_selected,
-                                                   int new_selected) {
-  if (old_selected >= 0 && old_selected < num_results())
-    GetTileItemView(old_selected)->SetSelected(false);
-
-  if (new_selected >= 0 && new_selected < num_results())
-    GetTileItemView(new_selected)->SetSelected(true);
-}
+                                                   int new_selected) {}
 
 void SuggestionsContainerView::OnContainerSelected(
     bool /*from_bottom*/,
@@ -127,19 +115,14 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   // Add SearchResultTileItemViews to the container.
   int i = 0;
   search_result_tile_views_.reserve(apps_num);
-  const bool is_play_store_app_search_enabled =
-      features::IsPlayStoreAppSearchEnabled();
   tiles_layout_manager->StartRow(0, 0);
   DCHECK_LE(apps_num, kNumStartPageTiles);
   for (; i < apps_num; ++i) {
-    SearchResultTileItemView* tile_item = new SearchResultTileItemView(
-        this, view_delegate_, pagination_model_, true,
-
-        is_play_store_app_search_enabled);
+    SearchResultTileItemView* tile_item =
+        new SearchResultTileItemView(this, view_delegate_, pagination_model_);
     tiles_layout_manager->AddView(tile_item);
     AddChildView(tile_item);
     tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
-    tile_item->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
     search_result_tile_views_.emplace_back(tile_item);
   }
 }

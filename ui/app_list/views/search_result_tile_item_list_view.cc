@@ -65,8 +65,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     }
 
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(
-        this, view_delegate, nullptr, false /* Not a suggested app */,
-        is_play_store_app_search_enabled_);
+        this, view_delegate, nullptr /* pagination model */);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
@@ -107,12 +106,9 @@ views::View* SearchResultTileItemListView::GetFirstResultView() {
   return num_results() <= 0 ? nullptr : tile_views_[0];
 }
 
-void SearchResultTileItemListView::SetFirstResultSelected(bool selected) {
-  DCHECK(!tile_views_.empty());
-  if (num_results() <= 0)
-    return;
-  tile_views_[0]->SetSelected(selected);
-}
+// TODO(warx): This implementation is deprecated and should be removed as part
+// of removing "pseudo-focus" logic work (https://crbug.com/766807).
+void SearchResultTileItemListView::SetFirstResultSelected(bool selected) {}
 
 int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
@@ -154,16 +150,10 @@ int SearchResultTileItemListView::DoUpdate() {
   return display_results.size();
 }
 
+// TODO(warx): This implementation is deprecated and should be removed as part
+// of removing "pseudo-focus" logic work (https://crbug.com/766807).
 void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
-                                                       int new_selected) {
-  if (old_selected >= 0)
-    tile_views_[old_selected]->SetSelected(false);
-
-  if (new_selected >= 0) {
-    tile_views_[new_selected]->SetSelected(true);
-    ScrollRectToVisible(GetLocalBounds());
-  }
-}
+                                                       int new_selected) {}
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.

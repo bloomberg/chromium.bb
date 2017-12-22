@@ -37,7 +37,6 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
-#include "ui/app_list/views/tile_item_view.h"
 #include "ui/app_list/views/top_icon_animation_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
