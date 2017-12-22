@@ -37,6 +37,35 @@ constexpr int kPixelPerSec2K = 1920 * 1080 * 30;  // 1080p 30fps.
 // can feel "janky" to the user.
 constexpr double kMinRemotingMediaDurationInSec = 60;
 
+StopTrigger GetStopTrigger(mojom::RemotingStopReason reason) {
+  switch (reason) {
+    case mojom::RemotingStopReason::ROUTE_TERMINATED:
+      return ROUTE_TERMINATED;
+    case mojom::RemotingStopReason::SOURCE_GONE:
+      return MEDIA_ELEMENT_DESTROYED;
+    case mojom::RemotingStopReason::MESSAGE_SEND_FAILED:
+      return MESSAGE_SEND_FAILED;
+    case mojom::RemotingStopReason::DATA_SEND_FAILED:
+      return DATA_SEND_FAILED;
+    case mojom::RemotingStopReason::UNEXPECTED_FAILURE:
+      return UNEXPECTED_FAILURE;
+    case mojom::RemotingStopReason::SERVICE_GONE:
+      return SERVICE_GONE;
+    case mojom::RemotingStopReason::USER_DISABLED:
+      return USER_DISABLED;
+    case mojom::RemotingStopReason::LOCAL_PLAYBACK:
+      // This RemotingStopReason indicates the RendererController initiated the
+      // session shutdown in the immediate past, and the trigger for that should
+      // have already been recorded in the metrics. Here, this is just duplicate
+      // feedback from the sink for that same event. Return UNKNOWN_STOP_TRIGGER
+      // because this reason can not be a stop trigger and it would be a logic
+      // flaw for this value to be recorded in the metrics.
+      return UNKNOWN_STOP_TRIGGER;
+  }
+
+  return UNKNOWN_STOP_TRIGGER;  // To suppress compiler warning on Windows.
+}
+
 }  // namespace
 
 RendererController::RendererController(scoped_refptr<SharedSession> session)
@@ -72,7 +101,8 @@ void RendererController::OnStarted(bool success) {
 
 void RendererController::OnSessionStateChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UpdateFromSessionState(SINK_AVAILABLE, ROUTE_TERMINATED);
+  UpdateFromSessionState(SINK_AVAILABLE,
+                         GetStopTrigger(session_->get_last_stop_reason()));
 }
 
 void RendererController::UpdateFromSessionState(StartTrigger start_trigger,
