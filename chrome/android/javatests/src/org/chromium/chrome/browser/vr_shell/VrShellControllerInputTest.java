@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
@@ -110,6 +112,31 @@ public class VrShellControllerInputTest {
         controller.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
         endScrollPoint = coord.getScrollXPixInt();
         Assert.assertTrue("Controller was able to scroll left", startScrollPoint > endScrollPoint);
+    }
+
+    /**
+     * Verifies that controller clicks in the VR browser are properly registered on the webpage.
+     * This is done by clicking on a link on the page and ensuring that it causes a navigation.
+     */
+    @Test
+    @MediumTest
+    public void testControllerClicksRegisterOnWebpage() throws InterruptedException {
+        // Load page in VR and make sure the controller is pointed at the content quad
+        mVrTestRule.loadUrl(
+                VrTestFramework.getHtmlTestFile("test_controller_clicks_register_on_webpage"),
+                PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.forceEnterVr();
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
+        controller.recenterView();
+
+        // pressReleaseTouchpadButton() appears to be flaky for clicking on things, as sometimes
+        // it happens too fast for Chrome to register. So, manually press and release with a delay
+        controller.sendClickButtonToggleEvent();
+        SystemClock.sleep(50);
+        controller.sendClickButtonToggleEvent();
+        ChromeTabUtils.waitForTabPageLoaded(mVrTestRule.getActivity().getActivityTab(),
+                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"));
     }
 
     /**
