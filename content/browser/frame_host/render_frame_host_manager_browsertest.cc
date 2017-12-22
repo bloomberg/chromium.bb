@@ -303,10 +303,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   WaitForLoadStop(new_shell->web_contents());
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      new_shell->web_contents());
-  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
-      pending_render_view_host());
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noref_blank_site_instance(
@@ -349,10 +345,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   WaitForLoadStop(new_shell->web_contents());
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(new_shell->web_contents());
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->pending_render_view_host());
 
   // Check that the referrer is set correctly.
   std::string expected_referrer =
@@ -399,10 +391,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   WaitForLoadStop(new_shell->web_contents());
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(new_shell->web_contents());
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->pending_render_view_host());
 
   EXPECT_EQ("/title2.html",
             new_shell->web_contents()->GetLastCommittedURL().path());
@@ -469,10 +457,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   WaitForLoadStop(new_shell->web_contents());
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(new_shell->web_contents());
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->pending_render_view_host());
 
   // Should have a new SiteInstance (in a new BrowsingInstance).
   scoped_refptr<SiteInstance> noref_blank_site_instance(
@@ -518,10 +502,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   WaitForLoadStop(new_shell->web_contents());
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      new_shell->web_contents());
-  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
-      pending_render_view_host());
 
   // Should have a new SiteInstance (in a new BrowsingInstance).
   scoped_refptr<SiteInstance> noref_blank_site_instance(
@@ -2931,33 +2911,21 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
   RenderFrameHostImpl* next_rfh =
-      IsBrowserSideNavigationEnabled()
-          ? web_contents->GetRenderManagerForTesting()->speculative_frame_host()
-          : web_contents->GetRenderManagerForTesting()->pending_frame_host();
+      web_contents->GetRenderManagerForTesting()->speculative_frame_host();
   ASSERT_TRUE(next_rfh);
 
   // Navigate to the same new site and verify that we commit in the same RFH.
   GURL cross_site_url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationObserver navigation_observer(web_contents, 1);
   shell()->LoadURL(cross_site_url2);
-  if (IsBrowserSideNavigationEnabled()) {
-    EXPECT_EQ(
-        next_rfh,
-        web_contents->GetRenderManagerForTesting()->speculative_frame_host());
-  } else {
-    EXPECT_EQ(next_rfh,
-              web_contents->GetRenderManagerForTesting()->pending_frame_host());
-  }
+  EXPECT_EQ(
+      next_rfh,
+      web_contents->GetRenderManagerForTesting()->speculative_frame_host());
   navigation_observer.Wait();
   EXPECT_EQ(cross_site_url2, web_contents->GetLastCommittedURL());
   EXPECT_EQ(next_rfh, web_contents->GetMainFrame());
-  if (IsBrowserSideNavigationEnabled()) {
-    EXPECT_FALSE(
-        web_contents->GetRenderManagerForTesting()->speculative_frame_host());
-  } else {
-    EXPECT_FALSE(
-        web_contents->GetRenderManagerForTesting()->pending_frame_host());
-  }
+  EXPECT_FALSE(
+      web_contents->GetRenderManagerForTesting()->speculative_frame_host());
 
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
@@ -3251,13 +3219,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
   RenderFrameDeletedObserver deleted_observer(rfh_a);
   shell()->LoadURL(url_b);
 
-  // The pending RFH shouln't have a last committed origin (the default value
-  // is a unique origin). The current RFH shouldn't change its last committed
-  // origin before commit.
-  RenderFrameHostImpl* rfh_b =
-      IsBrowserSideNavigationEnabled()
-          ? root->render_manager()->speculative_frame_host()
-          : root->render_manager()->pending_frame_host();
+  // The speculative RFH shouln't have a last committed origin (the default
+  // value is a unique origin). The current RFH shouldn't change its last
+  // committed origin before commit.
+  RenderFrameHostImpl* rfh_b = root->render_manager()->speculative_frame_host();
   EXPECT_EQ("null", rfh_b->GetLastCommittedOrigin().Serialize());
   EXPECT_EQ(url::Origin::Create(url_a), rfh_a->GetLastCommittedOrigin());
 

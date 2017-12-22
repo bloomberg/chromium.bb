@@ -92,10 +92,7 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
       to_explore.push(node->child_at(i));
     }
 
-    RenderFrameHost* pending = node->render_manager()->pending_frame_host();
     RenderFrameHost* spec = node->render_manager()->speculative_frame_host();
-    if (pending)
-      legend[GetName(pending->GetSiteInstance())] = pending->GetSiteInstance();
     if (spec)
       legend[GetName(spec->GetSiteInstance())] = spec->GetSiteInstance();
   }
@@ -170,14 +167,9 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
     // RenderFrameHost, and show any exceptional state of the node, like a
     // pending or speculative RenderFrameHost.
     RenderFrameHost* current = node->render_manager()->current_frame_host();
-    RenderFrameHost* pending = node->render_manager()->pending_frame_host();
     RenderFrameHost* spec = node->render_manager()->speculative_frame_host();
     base::StringAppendF(&line, "Site %s",
                         GetName(current->GetSiteInstance()).c_str());
-    if (pending) {
-      base::StringAppendF(&line, " (%s pending)",
-                          GetName(pending->GetSiteInstance()).c_str());
-    }
     if (spec) {
       base::StringAppendF(&line, " (%s speculative)",
                           GetName(spec->GetSiteInstance()).c_str());

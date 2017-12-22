@@ -436,52 +436,43 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 
   // Returns the RenderFrameHost that should be used in the navigation to
   // |entry|.
-  RenderFrameHostImpl* NavigateToEntry(
-      RenderFrameHostManager* manager,
-      const NavigationEntryImpl& entry) {
+  RenderFrameHostImpl* NavigateToEntry(RenderFrameHostManager* manager,
+                                       const NavigationEntryImpl& entry) {
     // Tests currently only navigate using main frame FrameNavigationEntries.
     FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
-    if (IsBrowserSideNavigationEnabled()) {
-      NavigationControllerImpl* controller =
-          static_cast<NavigationControllerImpl*>(manager->current_frame_host()
-                                                     ->frame_tree_node()
-                                                     ->navigator()
-                                                     ->GetController());
-      FrameMsg_Navigate_Type::Value navigate_type =
-          entry.restore_type() == RestoreType::NONE
-              ? FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT
-              : FrameMsg_Navigate_Type::RESTORE;
-      std::unique_ptr<NavigationRequest> navigation_request =
-          NavigationRequest::CreateBrowserInitiated(
-              manager->frame_tree_node_, frame_entry->url(),
-              frame_entry->referrer(), *frame_entry, entry, navigate_type,
-              PREVIEWS_UNSPECIFIED, false, false, nullptr,
-              base::TimeTicks::Now(), controller);
+    NavigationControllerImpl* controller =
+        static_cast<NavigationControllerImpl*>(manager->current_frame_host()
+                                                   ->frame_tree_node()
+                                                   ->navigator()
+                                                   ->GetController());
+    FrameMsg_Navigate_Type::Value navigate_type =
+        entry.restore_type() == RestoreType::NONE
+            ? FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT
+            : FrameMsg_Navigate_Type::RESTORE;
+    std::unique_ptr<NavigationRequest> navigation_request =
+        NavigationRequest::CreateBrowserInitiated(
+            manager->frame_tree_node_, frame_entry->url(),
+            frame_entry->referrer(), *frame_entry, entry, navigate_type,
+            PREVIEWS_UNSPECIFIED, false, false, nullptr, base::TimeTicks::Now(),
+            controller);
 
-      // Simulates request creation that triggers the 1st internal call to
-      // GetFrameHostForNavigation.
-      manager->DidCreateNavigationRequest(navigation_request.get());
+    // Simulates request creation that triggers the 1st internal call to
+    // GetFrameHostForNavigation.
+    manager->DidCreateNavigationRequest(navigation_request.get());
 
-      // And also simulates the 2nd and final call to GetFrameHostForNavigation
-      // that determines the final frame that will commit the navigation.
-      TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
-          manager->GetFrameHostForNavigation(*navigation_request));
-      CHECK(frame_host);
-      frame_host->set_pending_commit(true);
-      return frame_host;
-    }
-
-    return manager->Navigate(frame_entry->url(), *frame_entry, entry, false);
+    // And also simulates the 2nd and final call to GetFrameHostForNavigation
+    // that determines the final frame that will commit the navigation.
+    TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
+        manager->GetFrameHostForNavigation(*navigation_request));
+    CHECK(frame_host);
+    frame_host->set_pending_commit(true);
+    return frame_host;
   }
 
-  // Returns the pending RenderFrameHost.
-  // PlzNavigate: returns the speculative RenderFrameHost.
+  // Returns the speculative RenderFrameHost.
   RenderFrameHostImpl* GetPendingFrameHost(
       RenderFrameHostManager* manager) {
-    if (IsBrowserSideNavigationEnabled())
-      return manager->speculative_render_frame_host_.get();
-
-    return manager->pending_frame_host();
+    return manager->speculative_render_frame_host_.get();
   }
 
   // Exposes RenderFrameHostManager::CollectOpenerFrameTrees for testing.
@@ -913,7 +904,6 @@ TEST_F(RenderFrameHostManagerTest, Init) {
   EXPECT_EQ(web_contents.get(), rvh->GetDelegate());
   EXPECT_EQ(web_contents.get(), rfh->delegate());
   EXPECT_TRUE(manager->GetRenderWidgetHostView());
-  EXPECT_FALSE(manager->pending_render_view_host());
 }
 
 // Tests the Navigate function. We navigate three sites consecutively and check
@@ -1153,105 +1143,6 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
   const GURL kUrl2("http://www.google.com");
   contents()->NavigateAndCommit(kUrl2);
   EXPECT_FALSE(main_test_rfh()->web_ui());
-}
-
-// Tests that we don't end up in an inconsistent state if a page does a back and
-// then reload. http://crbug.com/51680
-// Also tests that only user-gesture navigations can interrupt cross-process
-// navigations. http://crbug.com/75195
-TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
-  if (IsBrowserSideNavigationEnabled()) {
-    // PlzNavigate uses a significantly different logic for renderer initiated
-    // navigations and navigation cancellation. Adapting this test would make it
-    // full of special cases and almost unreadable.
-    // There are tests that exercise these concerns for PlzNavigate, all from
-    // NavigatorTestWithBrowserSideNavigation:
-    // - BrowserInitiatedNavigationCancel
-    // - RendererUserInitiatedNavigationCancel
-    // - RendererNonUserInitiatedNavigationDoesntCancelRendererUserInitiated
-    // - RendererNonUserInitiatedNavigationDoesntCancelBrowserInitiated
-    // - RendererNonUserInitiatedNavigationCancelSimilarNavigation
-    SUCCEED() << "Test is not applicable with browser side navigation enabled";
-    return;
-  }
-  const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.evil-site.com/");
-
-  // Navigate to a safe site, then an evil site.
-  // This will switch RenderFrameHosts.  We cannot assert that the first and
-  // second RFHs are different, though, because the first one may be promptly
-  // deleted.
-  contents()->NavigateAndCommit(kUrl1);
-  contents()->NavigateAndCommit(kUrl2);
-  TestRenderFrameHost* evil_rfh = contents()->GetMainFrame();
-
-  // Now let's simulate the evil page calling history.back().
-  contents()->OnGoToEntryAtOffset(evil_rfh->GetRenderViewHost(), -1);
-  contents()->GetMainFrame()->PrepareForCommit();
-  // We should have a new pending RFH.
-  // Note that in this case, the navigation has not committed, so evil_rfh will
-  // not be deleted yet.
-  EXPECT_NE(evil_rfh, contents()->GetPendingMainFrame());
-  EXPECT_NE(evil_rfh->GetRenderViewHost(),
-            contents()->GetPendingMainFrame()->GetRenderViewHost());
-
-  // Before that RFH has committed, the evil page reloads itself.
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = false;
-  params.url = kUrl2;
-  params.transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.was_within_same_document = false;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(kUrl2);
-
-  evil_rfh->SimulateNavigationStart(kUrl2);
-  evil_rfh->SendNavigateWithParams(&params);
-  evil_rfh->SimulateNavigationStop();
-
-  // That should NOT have cancelled the pending RFH, because the reload did
-  // not have a user gesture. Thus, the pending back navigation will still
-  // eventually commit.
-  EXPECT_TRUE(
-      contents()->GetRenderManagerForTesting()->pending_render_view_host() !=
-      nullptr);
-  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->pending_frame_host() !=
-              nullptr);
-  EXPECT_EQ(evil_rfh,
-            contents()->GetRenderManagerForTesting()->current_frame_host());
-  EXPECT_EQ(evil_rfh->GetRenderViewHost(),
-            contents()->GetRenderManagerForTesting()->current_host());
-
-  // Also we should not have a pending navigation entry.
-  EXPECT_TRUE(contents()->GetController().GetPendingEntry() == nullptr);
-  NavigationEntry* entry = contents()->GetController().GetVisibleEntry();
-  ASSERT_TRUE(entry != nullptr);
-  EXPECT_EQ(kUrl2, entry->GetURL());
-
-  // Now do the same but as a user gesture.
-  params.gesture = NavigationGestureUser;
-  evil_rfh->SimulateNavigationStart(kUrl2);
-  evil_rfh->SendNavigateWithParams(&params);
-  evil_rfh->SimulateNavigationStop();
-
-  // User navigation should have cancelled the pending RFH.
-  EXPECT_TRUE(
-      contents()->GetRenderManagerForTesting()->pending_render_view_host() ==
-      nullptr);
-  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->pending_frame_host() ==
-              nullptr);
-  EXPECT_EQ(evil_rfh,
-            contents()->GetRenderManagerForTesting()->current_frame_host());
-  EXPECT_EQ(evil_rfh->GetRenderViewHost(),
-            contents()->GetRenderManagerForTesting()->current_host());
-
-  // Also we should not have a pending navigation entry.
-  EXPECT_TRUE(contents()->GetController().GetPendingEntry() == nullptr);
-  entry = contents()->GetController().GetVisibleEntry();
-  ASSERT_TRUE(entry != nullptr);
-  EXPECT_EQ(kUrl2, entry->GetURL());
 }
 
 // Ensure that we can go back and forward even if a SwapOut ACK isn't received.
@@ -1631,7 +1522,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
 
   // The RenderFrameHost created in Init will be reused.
   EXPECT_TRUE(host == manager->current_frame_host());
-  EXPECT_FALSE(manager->pending_frame_host());
+  EXPECT_FALSE(manager->speculative_frame_host());
   EXPECT_EQ(manager->current_frame_host()->GetSiteInstance(), instance);
 
   // Commit.
@@ -1653,7 +1544,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
 
   // The RenderFrameHost created in Init will be reused.
   EXPECT_EQ(host, manager->current_frame_host());
-  EXPECT_FALSE(manager->pending_frame_host());
+  EXPECT_FALSE(manager->speculative_frame_host());
 
   // Commit.
   manager->DidNavigateFrame(host, true);
@@ -3163,46 +3054,6 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       NavigationSimulator::CreateRendererInitiated(kUrl3, initial_rfh);
   navigation_to_kUrl3->Start();
   EXPECT_FALSE(main_test_rfh()->frame_tree_node()->navigation_request());
-}
-
-// Tests that a DidStartProvisionalLoad IPC from a no longer active RFH is
-// ignored.
-TEST_F(RenderFrameHostManagerTest,
-       DidStartProvisionalLoadIgnoredWhenNotActive) {
-  if (IsBrowserSideNavigationEnabled()) {
-    SUCCEED() << "This test is not applicable to browser side navigation. See "
-                 "RenderFrameHostManagerTestWithBrowserSideNavigation."
-                 "BeginNavigationIgnoredWhenNotActive for a similar case when "
-                 "PlzNavigate is enabled.";
-    return;
-  }
-  const GURL kUrl1("http://www.google.com");
-  const GURL kUrl2("http://www.chromium.org");
-  const GURL kUrl3("http://foo.com");
-
-  contents()->NavigateAndCommit(kUrl1);
-
-  TestRenderFrameHost* initial_rfh = main_test_rfh();
-  RenderViewHostDeletedObserver delete_observer(
-      initial_rfh->GetRenderViewHost());
-
-  // Navigate cross-site but don't simulate the swap out ACK. The initial RFH
-  // should be pending delete.
-  RenderFrameHostManager* manager =
-      main_test_rfh()->frame_tree_node()->render_manager();
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
-  navigation->ReadyToCommit();
-  static_cast<TestRenderFrameHost*>(manager->pending_frame_host())
-      ->SimulateNavigationCommit(kUrl2);
-  EXPECT_NE(initial_rfh, main_test_rfh());
-  ASSERT_FALSE(delete_observer.deleted());
-  EXPECT_FALSE(initial_rfh->is_active());
-
-  // The initial RFH receives a DidStartProvisionalLoad IPC. It should not
-  // create a NavigationHandle.
-  initial_rfh->SimulateNavigationStart(kUrl3);
-  EXPECT_FALSE(initial_rfh->navigation_handle());
 }
 
 // Tests that sandbox flags received after a navigation away has started do not

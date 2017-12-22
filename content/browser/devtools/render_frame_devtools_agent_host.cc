@@ -1032,11 +1032,9 @@ bool RenderFrameDevToolsAgentHost::CheckConsistency() {
 
   RenderFrameHostManager* manager = frame_tree_node_->render_manager();
   RenderFrameHostImpl* current = manager->current_frame_host();
-  RenderFrameHostImpl* pending = manager->pending_frame_host();
   RenderFrameHostImpl* speculative = manager->speculative_frame_host();
-  RenderFrameHostImpl* host =
-      IsBrowserSideNavigationEnabled() ? frame_host_ : handlers_frame_host_;
-  return host == current || host == pending || host == speculative;
+  RenderFrameHostImpl* host = frame_host_;
+  return host == current || host == speculative;
 }
 
 #if defined(OS_ANDROID)

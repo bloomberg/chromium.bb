@@ -83,11 +83,8 @@ void RenderFrameHostTester::CommitPendingLoad(
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(controller->GetWebContents());
-  RenderFrameHost* pending_rfh =
-      IsBrowserSideNavigationEnabled()
-          ? web_contents->GetRenderManagerForTesting()
-                ->speculative_render_frame_host_.get()
-          : web_contents->GetRenderManagerForTesting()->pending_frame_host();
+  RenderFrameHost* pending_rfh = web_contents->GetRenderManagerForTesting()
+                                     ->speculative_render_frame_host_.get();
 
   // Commit on the pending_rfh, if one exists.
   RenderFrameHost* test_rfh = pending_rfh ? pending_rfh : old_rfh;

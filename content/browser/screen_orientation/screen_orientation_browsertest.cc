@@ -389,9 +389,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   RenderFrameHostImpl* pending_rfh =
-      IsBrowserSideNavigationEnabled()
-          ? root->render_manager()->speculative_frame_host()
-          : root->render_manager()->pending_frame_host();
+      root->render_manager()->speculative_frame_host();
 
   // Send the orientation change to the pending RFH's widget.
   pending_rfh->GetRenderWidgetHost()->Send(new ViewMsg_Resize(

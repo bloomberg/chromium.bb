@@ -331,7 +331,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void UpdateTitleForEntry(NavigationEntry* entry,
                            const base::string16& title) override;
   SiteInstanceImpl* GetSiteInstance() const override;
-  SiteInstanceImpl* GetPendingSiteInstance() const override;
   bool IsLoading() const override;
   bool IsLoadingToDifferentDocument() const override;
   bool IsWaitingForResponse() const override;
