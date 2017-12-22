@@ -275,6 +275,7 @@ void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
       new ui::XScopedEventSelector(grab_input_window_, event_mask));
 
   XMapRaised(display, grab_input_window_);
+  ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(grab_input_window_);
 }
 
 }  // namespace views
