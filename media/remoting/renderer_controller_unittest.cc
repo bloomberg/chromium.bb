@@ -484,6 +484,7 @@ TEST_F(RendererControllerTest, EncryptedWithRemotingCdm) {
   EXPECT_NE(SharedSession::SESSION_PERMANENTLY_STOPPED,
             controller_->session()->state());
   cdm_shared_session->OnSinkGone();
+  cdm_shared_session->OnStopped(mojom::RemotingStopReason::ROUTE_TERMINATED);
   RunUntilIdle();
   EXPECT_EQ(SharedSession::SESSION_PERMANENTLY_STOPPED,
             controller_->session()->state());
@@ -534,6 +535,7 @@ TEST_F(RendererControllerTest, EncryptedWithFailedRemotingCdm) {
   EXPECT_FALSE(IsInDelayedStart());
 
   cdm_shared_session->OnSinkGone();
+  cdm_shared_session->OnStopped(mojom::RemotingStopReason::ROUTE_TERMINATED);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   EXPECT_NE(SharedSession::SESSION_PERMANENTLY_STOPPED,

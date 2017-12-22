@@ -88,6 +88,11 @@ class SharedSession final : public mojom::RemotingSource,
     return state_;
   }
 
+  // Get the last stop reason reported by OnStopped().
+  mojom::RemotingStopReason get_last_stop_reason() const {
+    return stop_reason_;
+  }
+
   const std::string& sink_name() const { return sink_metadata_.friendly_name; }
 
   // Queries on remoting sink capabilities.
@@ -168,6 +173,9 @@ class SharedSession final : public mojom::RemotingSource,
   // All the clients are not belong to this class. They are supposed to call
   // RemoveClient() before they are gone.
   std::vector<Client*> clients_;
+
+  mojom::RemotingStopReason stop_reason_ =
+      mojom::RemotingStopReason::LOCAL_PLAYBACK;
 
   // This is used to check all the methods are called on the current thread in
   // debug builds.

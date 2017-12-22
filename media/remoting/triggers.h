@@ -72,8 +72,17 @@ enum StopTrigger {
   DATA_PIPE_CREATE_ERROR = 17,  // Mojo data pipe creation failed (OOM?).
   MOJO_PIPE_ERROR = 18,         // Mojo message/data pipe operation failed.
 
+  // Message/Data sending errors forcing shutdown.
+  MESSAGE_SEND_FAILED = 19,  // Failed to send a RPC message to the sink.
+  DATA_SEND_FAILED = 20,     // Failed to pull from pipe or send to the sink.
+  UNEXPECTED_FAILURE = 21,   // Unexpected failure or inconsistent state.
+  SERVICE_GONE = 22,         // Mirror service disconnected.
+
+  // User changing setting forcing shutdown.
+  USER_DISABLED = 23,  // Media Remoting was disabled by user.
+
   // Change this to the highest value.
-  STOP_TRIGGER_MAX = 18,
+  STOP_TRIGGER_MAX = 23,
 };
 
 }  // namespace remoting
