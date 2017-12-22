@@ -65,8 +65,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   int32_t StereoPlayout(bool* enabled) const override;
   int32_t SetStereoRecording(bool enable) override;
   int32_t StereoRecording(bool* enabled) const override;
-  int32_t SetAGC(bool enable) override;
-  bool AGC() const override;
   bool BuiltInAECIsAvailable() const override;
   bool BuiltInAGCIsAvailable() const override;
   bool BuiltInNSIsAvailable() const override;

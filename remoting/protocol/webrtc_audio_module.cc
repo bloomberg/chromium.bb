@@ -178,15 +178,6 @@ bool WebrtcAudioModule::Recording() const {
   return false;
 }
 
-int32_t WebrtcAudioModule::SetAGC(bool enable) {
-  return 0;
-}
-
-bool WebrtcAudioModule::AGC() const {
-  NOTREACHED();
-  return false;
-}
-
 int32_t WebrtcAudioModule::InitSpeaker() {
   return 0;
 }
