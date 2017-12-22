@@ -47,7 +47,8 @@
 #header-text {
   -webkit-padding-end: 4px;
   font-size: 1.175em;
-  margin: 8px;
+  line-height: 36px;
+  margin: 0 8px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
