@@ -227,15 +227,24 @@ void DisplayItem::PropertiesAsJSON(JSONObject& json) const {
   if (IsTombstone())
     json.SetBoolean("ISTOMBSTONE", true);
 
-  json.SetString("client", String::Format("%p", &Client()));
+  json.SetString("id", GetId().ToString());
   json.SetString("visualRect", VisualRect().ToString());
   if (OutsetForRasterEffects())
     json.SetDouble("outset", OutsetForRasterEffects().ToDouble());
-  json.SetString("type", TypeAsDebugString(GetType()));
   if (skipped_cache_)
     json.SetBoolean("skippedCache", true);
 }
 
 #endif
+
+String DisplayItem::Id::ToString() const {
+#if DCHECK_IS_ON()
+  return String::Format("%p:%s:%d", &client,
+                        DisplayItem::TypeAsDebugString(type).Ascii().data(),
+                        fragment);
+#else
+  return String::Format("%p:%d:%d", &client, static_cast<int>(type), fragment);
+#endif
+}
 
 }  // namespace blink

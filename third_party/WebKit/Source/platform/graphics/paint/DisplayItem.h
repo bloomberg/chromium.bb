@@ -186,10 +186,11 @@ class PLATFORM_EXPORT DisplayItem {
         outset_for_raster_effects_(client.VisualRectOutsetForRasterEffects()),
         type_(type),
         derived_size_(derived_size),
+        fragment_(0),
         skipped_cache_(false),
         is_tombstone_(false) {
-    // derivedSize must fit in m_derivedSize.
-    // If it doesn't, enlarge m_derivedSize and fix this assert.
+    // |derived_size| must fit in |derived_size_|.
+    // If it doesn't, enlarge |derived_size_| and fix this assert.
     SECURITY_DCHECK(derived_size < (1 << 8));
     SECURITY_DCHECK(derived_size >= sizeof(*this));
   }
@@ -199,14 +200,19 @@ class PLATFORM_EXPORT DisplayItem {
   // Ids are for matching new DisplayItems with existing DisplayItems.
   struct Id {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    Id(const DisplayItemClient& client, const Type type)
-        : client(client), type(type) {}
+    Id(const DisplayItemClient& client, const Type type, unsigned fragment = 0)
+        : client(client), type(type), fragment(fragment) {}
+    Id(const Id& id, unsigned fragment)
+        : client(id.client), type(id.type), fragment(fragment) {}
+
+    String ToString() const;
 
     const DisplayItemClient& client;
     const Type type;
+    const unsigned fragment;
   };
 
-  Id GetId() const { return Id(*client_, GetType()); }
+  Id GetId() const { return Id(*client_, GetType(), fragment_); }
 
   virtual void Replay(GraphicsContext&) const {}
 
@@ -236,6 +242,14 @@ class PLATFORM_EXPORT DisplayItem {
   // the derived class (i.e. runtime type). Derived classes are expected to
   // supply this to the DisplayItem constructor.
   size_t DerivedSize() const { return derived_size_; }
+
+  // The fragment is part of the id, to uniquely identify display items in
+  // different fragments for the same client and type.
+  unsigned Fragment() const { return fragment_; }
+  void SetFragment(unsigned fragment) {
+    DCHECK(fragment < (1 << 14));
+    fragment_ = fragment;
+  }
 
   // For PaintController only. Painters should use DisplayItemCacheSkipper
   // instead.
@@ -329,6 +343,7 @@ class PLATFORM_EXPORT DisplayItem {
     // Failure of this DCHECK would cause bad casts in subclasses.
     SECURITY_CHECK(!is_tombstone_);
     return client_ == other.client_ && type_ == other.type_ &&
+           fragment_ == other.fragment_ &&
            derived_size_ == other.derived_size_ &&
            skipped_cache_ == other.skipped_cache_;
   }
@@ -363,16 +378,16 @@ class PLATFORM_EXPORT DisplayItem {
   LayoutRect visual_rect_;
   LayoutUnit outset_for_raster_effects_;
 
-  static_assert(kTypeLast < (1 << 16),
-                "DisplayItem::Type should fit in 16 bits");
-  unsigned type_ : 16;
+  static_assert(kTypeLast < (1 << 8), "DisplayItem::Type should fit in 8 bits");
+  unsigned type_ : 8;
   unsigned derived_size_ : 8;  // size of the actual derived class
+  unsigned fragment_ : 14;
   unsigned skipped_cache_ : 1;
   unsigned is_tombstone_ : 1;
 };
 
 inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {
-  return a.client == b.client && a.type == b.type;
+  return a.client == b.client && a.type == b.type && a.fragment == b.fragment;
 }
 
 inline bool operator!=(const DisplayItem::Id& a, const DisplayItem::Id& b) {
