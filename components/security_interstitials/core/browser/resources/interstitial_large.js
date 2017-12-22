@@ -13,7 +13,7 @@ var keyPressState = 0;
  * @param {string} e The key that was just pressed.
  */
 function handleKeypress(e) {
-  var BYPASS_SEQUENCE = 'badidea';
+  var BYPASS_SEQUENCE = 'thisisnotsafe';
   if (BYPASS_SEQUENCE.charCodeAt(keyPressState) == e.keyCode) {
     keyPressState++;
     if (keyPressState == BYPASS_SEQUENCE.length) {
