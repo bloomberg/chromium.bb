@@ -31,6 +31,7 @@ class HeapTerminatedArray : public TerminatedArray<T> {
   // instances of HeapTerminatedArray and manage their lifetimes.
   struct Allocator final {
     STATIC_ONLY(Allocator);
+    using BackendAllocator = HeapAllocator;
     using PassPtr = HeapTerminatedArray*;
     using Ptr = Member<HeapTerminatedArray>;
 
