@@ -1,5 +1,8 @@
+ajwong@chromium.org
 haraken@chromium.org
 palmer@chromium.org
+tsepez@chromium.org
 
 # TEAM: platform-architecture-dev@chromium.org
-# COMPONENT: Blink>MemoryAllocator
+#       Also: security-dev@chromium.org
+# COMPONENT: Blink>MemoryAllocator>Partition
