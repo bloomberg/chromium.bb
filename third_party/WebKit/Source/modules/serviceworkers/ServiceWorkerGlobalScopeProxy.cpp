@@ -532,12 +532,11 @@ void ServiceWorkerGlobalScopeProxy::PostMessageToPageInspector(
   DCHECK(embedded_worker_);
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
-  parent_frame_task_runners_->Get(TaskType::kUnthrottled)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(&WebEmbeddedWorkerImpl::PostMessageToPageInspector,
-                          CrossThreadUnretained(embedded_worker_), session_id,
-                          message));
+  PostCrossThreadTask(
+      *parent_frame_task_runners_->Get(TaskType::kUnthrottled), FROM_HERE,
+      CrossThreadBind(&WebEmbeddedWorkerImpl::PostMessageToPageInspector,
+                      CrossThreadUnretained(embedded_worker_), session_id,
+                      message));
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
@@ -563,14 +562,13 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
   // page.
   DCHECK(embedded_worker_);
   WaitableEvent waitable_event;
-  parent_frame_task_runners_->Get(TaskType::kUnthrottled)
-      ->PostTask(
-          FROM_HERE,
-          CrossThreadBind(
-              &SetContentSecurityPolicyAndReferrerPolicyOnMainThread,
-              CrossThreadUnretained(embedded_worker_),
-              csp_headers_on_worker_thread, referrer_policy_on_worker_thread,
-              CrossThreadUnretained(&waitable_event)));
+  PostCrossThreadTask(
+      *parent_frame_task_runners_->Get(TaskType::kUnthrottled), FROM_HERE,
+      CrossThreadBind(&SetContentSecurityPolicyAndReferrerPolicyOnMainThread,
+                      CrossThreadUnretained(embedded_worker_),
+                      csp_headers_on_worker_thread,
+                      referrer_policy_on_worker_thread,
+                      CrossThreadUnretained(&waitable_event)));
   Client().WorkerScriptLoaded();
 
   // Wait for the task to complete before returning. This ensures that worker

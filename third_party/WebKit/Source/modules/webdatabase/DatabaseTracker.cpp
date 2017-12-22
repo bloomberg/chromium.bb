@@ -199,8 +199,8 @@ void DatabaseTracker::CloseDatabasesImmediately(const SecurityOrigin* origin,
   // We have to call closeImmediately() on the context thread.
   for (DatabaseSet::iterator it = database_set->begin();
        it != database_set->end(); ++it) {
-    (*it)->GetDatabaseTaskRunner()->PostTask(
-        FROM_HERE,
+    PostCrossThreadTask(
+        *(*it)->GetDatabaseTaskRunner(), FROM_HERE,
         CrossThreadBind(&DatabaseTracker::CloseOneDatabaseImmediately,
                         CrossThreadUnretained(this), origin_string, name, *it));
   }

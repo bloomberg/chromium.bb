@@ -266,8 +266,8 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
     return;
   deletable_orphan_handlers_.AppendVector(rendering_orphan_handlers_);
   rendering_orphan_handlers_.clear();
-  Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *Platform::Current()->MainThread()->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(&DeferredTaskHandler::DeleteHandlersOnMainThread,
                       scoped_refptr<DeferredTaskHandler>(this)));
 }

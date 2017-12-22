@@ -74,10 +74,10 @@ void TimeZoneMonitorClient::OnTimeZoneChange(const String& time_zone_info) {
     // among multiple WorkerThreads.
     if (posted.Contains(&thread->GetWorkerBackingThread()))
       continue;
-    thread->GetTaskRunner(TaskType::kUnspecedTimer)
-        ->PostTask(FROM_HERE,
-                   CrossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
-                                   WTF::CrossThreadUnretained(thread)));
+    PostCrossThreadTask(*thread->GetTaskRunner(TaskType::kUnspecedTimer),
+                        FROM_HERE,
+                        CrossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
+                                        WTF::CrossThreadUnretained(thread)));
     posted.insert(&thread->GetWorkerBackingThread());
   }
 }

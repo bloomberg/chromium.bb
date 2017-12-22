@@ -76,11 +76,11 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet = CreateAnimationWorkletThread();
     WaitableEvent waitable_event;
-    worklet->GetTaskRunner(TaskType::kInternalTest)
-        ->PostTask(FROM_HERE,
-                   CrossThreadBind(callback, CrossThreadUnretained(this),
-                                   CrossThreadUnretained(worklet.get()),
-                                   CrossThreadUnretained(&waitable_event)));
+    PostCrossThreadTask(
+        *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+        CrossThreadBind(callback, CrossThreadUnretained(this),
+                        CrossThreadUnretained(worklet.get()),
+                        CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
 
     worklet->Terminate();
