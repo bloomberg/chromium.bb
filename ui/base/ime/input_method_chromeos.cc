@@ -30,12 +30,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace {
-ui::IMEEngineHandlerInterface* GetEngine() {
-  return ui::IMEBridge::Get()->GetCurrentEngineHandler();
-}
-}  // namespace
-
 namespace ui {
 
 // InputMethodChromeOS implementation -----------------------------------------

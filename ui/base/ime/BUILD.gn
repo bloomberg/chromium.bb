@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
@@ -14,7 +15,7 @@ source_set("text_input_types") {
   ]
 }
 
-component("ime") {
+jumbo_component("ime") {
   output_name = "ui_base_ime"
   sources = [
     "candidate_window.cc",
