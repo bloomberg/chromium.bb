@@ -54610,6 +54610,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.DeletePage.AccessCount">
+  <obsolete>
+    Deprecated as of 12/2017. Replaced by OfflinePages.AccessCount.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     Number of accesses to the offline page since its creation. This is reported
