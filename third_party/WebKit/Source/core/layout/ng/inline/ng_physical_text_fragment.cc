@@ -58,4 +58,10 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
   return {};
 }
 
+bool NGPhysicalTextFragment::IsLineBreak() const {
+  // TODO(xiaochengh): Introduce and set a text fragment type flag in fragment
+  // builder, instead of check text content string.
+  return Text() == "\n";
+}
+
 }  // namespace blink
