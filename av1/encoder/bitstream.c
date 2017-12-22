@@ -67,12 +67,6 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
   }
 }
 
-static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
-#if CONFIG_JNT_COMP
-static struct av1_token compound_type_encodings[COMPOUND_TYPES - 1];
-#else
-static struct av1_token compound_type_encodings[COMPOUND_TYPES];
-#endif  // CONFIG_JNT_COMP
 #if CONFIG_LOOP_RESTORATION
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
@@ -99,10 +93,6 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
                        int *const tile_size_bytes,
                        int *const tile_col_size_bytes);
 #endif
-void av1_encode_token_init(void) {
-  av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
-  av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
-}
 
 static void write_intra_mode_kf(FRAME_CONTEXT *frame_ctx, const MODE_INFO *mi,
                                 const MODE_INFO *above_mi,

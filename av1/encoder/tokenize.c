@@ -76,23 +76,6 @@ const int *av1_dct_cat_lt_10_value_cost =
     dct_cat_lt_10_value_cost +
     (sizeof(dct_cat_lt_10_value_cost) / sizeof(*dct_cat_lt_10_value_cost)) / 2;
 
-// Array indices are identical to previously-existing CONTEXT_NODE indices
-/* clang-format off */
-const aom_tree_index av1_coef_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
-  -EOB_TOKEN, 2,                       // 0  = EOB
-  -ZERO_TOKEN, 4,                      // 1  = ZERO
-  -ONE_TOKEN, 6,                       // 2  = ONE
-  8, 12,                               // 3  = LOW_VAL
-  -TWO_TOKEN, 10,                      // 4  = TWO
-  -THREE_TOKEN, -FOUR_TOKEN,           // 5  = THREE
-  14, 16,                              // 6  = HIGH_LOW
-  -CATEGORY1_TOKEN, -CATEGORY2_TOKEN,  // 7  = CAT_ONE
-  18, 20,                              // 8  = CAT_THREEFOUR
-  -CATEGORY3_TOKEN, -CATEGORY4_TOKEN,  // 9  = CAT_THREE
-  -CATEGORY5_TOKEN, -CATEGORY6_TOKEN   // 10 = CAT_FIVE
-};
-/* clang-format on */
-
 static const int16_t zero_cost[] = { 0 };
 static const int16_t sign_cost[1] = { 512 };
 static const int16_t cat1_cost[1 << 1] = { 864, 1229 };

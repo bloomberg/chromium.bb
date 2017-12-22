@@ -414,9 +414,6 @@ int main(int argc, const char **argv) {
 
   cts_each_dim[0] = DRL_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.drl_mode[0][0], probsfile, 2, cts_each_dim, NULL, 1,
-      "static const aom_prob default_drl_prob[DRL_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.drl_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)]");
@@ -462,11 +459,6 @@ int main(int argc, const char **argv) {
   /* motion_var and warped_motion experiments */
   cts_each_dim[0] = BLOCK_SIZES_ALL;
   cts_each_dim[1] = MOTION_MODES;
-  optimize_entropy_table(
-      &fc.motion_mode[0][0], probsfile, 2, cts_each_dim, av1_motion_mode_tree,
-      0,
-      "static const aom_prob default_motion_mode_prob[BLOCK_SIZES]"
-      "[MOTION_MODES - 1]");
   optimize_cdf_table(
       &fc.motion_mode[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -480,10 +472,6 @@ int main(int argc, const char **argv) {
   /* Intra/inter flag */
   cts_each_dim[0] = INTRA_INTER_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(&fc.intra_inter[0][0], probsfile, 2, cts_each_dim,
-                         NULL, 1,
-                         "static const aom_prob default_intra_inter_p"
-                         "[INTRA_INTER_CONTEXTS]");
   optimize_cdf_table(
       &fc.intra_inter[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -492,10 +480,6 @@ int main(int argc, const char **argv) {
   /* Single/comp ref flag */
   cts_each_dim[0] = COMP_INTER_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(&fc.comp_inter[0][0], probsfile, 2, cts_each_dim, NULL,
-                         1,
-                         "static const aom_prob default_comp_inter_p"
-                         "[COMP_INTER_CONTEXTS]");
   optimize_cdf_table(
       &fc.comp_inter[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -505,9 +489,6 @@ int main(int argc, const char **argv) {
 #if CONFIG_EXT_COMP_REFS
   cts_each_dim[0] = COMP_REF_TYPE_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.comp_ref_type[0][0], probsfile, 2, cts_each_dim, NULL, 1,
-      "static const aom_prob default_comp_ref_type_p[COMP_REF_TYPE_CONTEXTS]");
   optimize_cdf_table(
       &fc.comp_ref_type[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -516,10 +497,6 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = UNI_COMP_REF_CONTEXTS;
   cts_each_dim[1] = UNIDIR_COMP_REFS - 1;
   cts_each_dim[2] = 2;
-  optimize_entropy_table(
-      &fc.uni_comp_ref[0][0][0], probsfile, 3, cts_each_dim, NULL, 1,
-      "static const aom_prob\n"
-      "default_uni_comp_ref_p[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1]");
   optimize_cdf_table(&fc.uni_comp_ref[0][0][0], probsfile, 3, cts_each_dim,
                      "static const aom_cdf_prob\n"
                      "default_uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_"
@@ -530,10 +507,6 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = REF_CONTEXTS;
   cts_each_dim[1] = SINGLE_REFS - 1;
   cts_each_dim[2] = 2;
-  optimize_entropy_table(
-      &fc.single_ref[0][0][0], probsfile, 3, cts_each_dim, NULL, 1,
-      "static const aom_prob default_single_ref_p[REF_CONTEXTS]"
-      "[SINGLE_REFS - 1]");
   optimize_cdf_table(
       &fc.single_ref[0][0][0], probsfile, 3, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -543,9 +516,6 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = REF_CONTEXTS;
   cts_each_dim[1] = FWD_REFS - 1;
   cts_each_dim[2] = 2;
-  optimize_entropy_table(
-      &fc.comp_ref[0][0][0], probsfile, 3, cts_each_dim, NULL, 1,
-      "static const aom_prob default_comp_ref_p[REF_CONTEXTS][FWD_REFS - 1]");
   optimize_cdf_table(
       &fc.comp_ref[0][0][0], probsfile, 3, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -554,10 +524,6 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = REF_CONTEXTS;
   cts_each_dim[1] = BWD_REFS - 1;
   cts_each_dim[2] = 2;
-  optimize_entropy_table(&fc.comp_bwdref[0][0][0], probsfile, 3, cts_each_dim,
-                         NULL, 1,
-                         "static const aom_prob "
-                         "default_comp_bwdref_p[REF_CONTEXTS][BWD_REFS - 1]");
   optimize_cdf_table(
       &fc.comp_bwdref[0][0][0], probsfile, 3, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -574,9 +540,6 @@ int main(int argc, const char **argv) {
   /* Skip flag */
   cts_each_dim[0] = SKIP_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.skip[0][0], probsfile, 2, cts_each_dim, NULL, 1,
-      "static const aom_prob default_skip_probs[SKIP_CONTEXTS]");
   optimize_cdf_table(&fc.skip[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)]");
@@ -584,8 +547,6 @@ int main(int argc, const char **argv) {
 /* intrabc experiment */
 #if CONFIG_INTRABC
   cts_each_dim[0] = 2;
-  optimize_entropy_table(&fc.intrabc[0], probsfile, 1, cts_each_dim, NULL, 1,
-                         "INTRABC_PROB_DEFAULT");
   optimize_cdf_table(
       &fc.intrabc[0], probsfile, 1, cts_each_dim,
       "static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)]");

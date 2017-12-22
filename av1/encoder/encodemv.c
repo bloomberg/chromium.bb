@@ -20,16 +20,6 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 
-static struct av1_token mv_joint_encodings[MV_JOINTS];
-static struct av1_token mv_class_encodings[MV_CLASSES];
-static struct av1_token mv_fp_encodings[MV_FP_SIZE];
-
-void av1_entropy_mv_init(void) {
-  av1_tokens_from_tree(mv_joint_encodings, av1_mv_joint_tree);
-  av1_tokens_from_tree(mv_class_encodings, av1_mv_class_tree);
-  av1_tokens_from_tree(mv_fp_encodings, av1_mv_fp_tree);
-}
-
 static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
                                 MvSubpelPrecision precision) {
   int offset;

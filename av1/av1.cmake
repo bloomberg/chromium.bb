@@ -165,9 +165,7 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/temporal_filter.c"
     "${AOM_ROOT}/av1/encoder/temporal_filter.h"
     "${AOM_ROOT}/av1/encoder/tokenize.c"
-    "${AOM_ROOT}/av1/encoder/tokenize.h"
-    "${AOM_ROOT}/av1/encoder/treewriter.c"
-    "${AOM_ROOT}/av1/encoder/treewriter.h")
+    "${AOM_ROOT}/av1/encoder/tokenize.h")
 
 if (CONFIG_DAALA_TX)
   set(AOM_AV1_ENCODER_SOURCES

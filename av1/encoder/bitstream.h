@@ -31,8 +31,6 @@ uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
 
 void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size);
 
-void av1_encode_token_init(void);
-
 static INLINE int av1_preserve_existing_gf(AV1_COMP *cpi) {
   // Do not swap gf and arf indices for internal overlay frames
   return !cpi->multi_arf_allowed && cpi->rc.is_src_frame_alt_ref &&

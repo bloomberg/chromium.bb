@@ -136,10 +136,8 @@ typedef struct frame_contexts {
   aom_cdf_prob inter_compound_mode_cdf[INTER_MODE_CONTEXTS]
                                       [CDF_SIZE(INTER_COMPOUND_MODES)];
 #if CONFIG_JNT_COMP
-  aom_prob compound_type_prob[BLOCK_SIZES_ALL][COMPOUND_TYPES - 2];
   aom_cdf_prob compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES - 1)];
 #else
-  aom_prob compound_type_prob[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
   aom_cdf_prob compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)];
 #endif  // CONFIG_JNT_COMP
   aom_cdf_prob interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(2)];
@@ -147,11 +145,9 @@ typedef struct frame_contexts {
   aom_cdf_prob interintra_mode_cdf[BLOCK_SIZE_GROUPS]
                                   [CDF_SIZE(INTERINTRA_MODES)];
 #if CONFIG_EXT_WARPED_MOTION
-  aom_prob motion_mode_prob[MOTION_MODE_CTX][BLOCK_SIZES_ALL][MOTION_MODES - 1];
   aom_cdf_prob motion_mode_cdf[MOTION_MODE_CTX][BLOCK_SIZES_ALL]
                               [CDF_SIZE(MOTION_MODES)];
 #else
-  aom_prob motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1];
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
 #endif  // CONFIG_EXT_WARPED_MOTION
   aom_cdf_prob obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
@@ -185,8 +181,6 @@ typedef struct frame_contexts {
 #if CONFIG_JNT_COMP
   aom_cdf_prob compound_index_cdf[COMP_INDEX_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob comp_group_idx_cdf[COMP_GROUP_IDX_CONTEXTS][CDF_SIZE(2)];
-  aom_prob compound_index_probs[COMP_INDEX_CONTEXTS];
-  aom_prob comp_group_idx_probs[COMP_GROUP_IDX_CONTEXTS];
 #endif  // CONFIG_JNT_COMP
 #if CONFIG_EXT_SKIP
   aom_cdf_prob skip_mode_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
@@ -439,18 +433,6 @@ static const int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES] = {
       9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 4, 5, 3, 6, 7, 8,
   },
 };
-
-extern const aom_tree_index
-    av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)];
-extern const aom_tree_index
-    av1_inter_compound_mode_tree[TREE_SIZE(INTER_COMPOUND_MODES)];
-#if CONFIG_JNT_COMP
-extern const aom_tree_index
-    av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES - 1)];
-#else
-extern const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)];
-#endif  // CONFIG_JNT_COMP
-extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 
 void av1_setup_frame_contexts(struct AV1Common *cm);
 void av1_setup_past_independence(struct AV1Common *cm);

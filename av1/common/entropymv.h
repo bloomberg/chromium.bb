@@ -75,11 +75,6 @@ typedef enum {
 #define MV_UPP ((1 << MV_IN_USE_BITS) - 1)
 #define MV_LOW (-(1 << MV_IN_USE_BITS))
 
-extern const aom_tree_index av1_mv_joint_tree[];
-extern const aom_tree_index av1_mv_class_tree[];
-extern const aom_tree_index av1_mv_class0_tree[];
-extern const aom_tree_index av1_mv_fp_tree[];
-
 typedef struct {
   aom_cdf_prob classes_cdf[CDF_SIZE(MV_CLASSES)];
   aom_cdf_prob class0_fp_cdf[CLASS0_SIZE][CDF_SIZE(MV_FP_SIZE)];

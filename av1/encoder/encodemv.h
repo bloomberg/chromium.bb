@@ -18,8 +18,6 @@
 extern "C" {
 #endif
 
-void av1_entropy_mv_init(void);
-
 void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
                    nmv_context *mvctx, int usehp);
 

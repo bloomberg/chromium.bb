@@ -12,32 +12,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/entropymv.h"
 
-const aom_tree_index av1_mv_joint_tree[TREE_SIZE(MV_JOINTS)] = {
-  -MV_JOINT_ZERO, 2, -MV_JOINT_HNZVZ, 4, -MV_JOINT_HZVNZ, -MV_JOINT_HNZVNZ
-};
-
-/* clang-format off */
-const aom_tree_index av1_mv_class_tree[TREE_SIZE(MV_CLASSES)] = {
-  -MV_CLASS_0, 2,
-  -MV_CLASS_1, 4,
-  6, 8,
-  -MV_CLASS_2, -MV_CLASS_3,
-  10, 12,
-  -MV_CLASS_4, -MV_CLASS_5,
-  -MV_CLASS_6, 14,
-  16, 18,
-  -MV_CLASS_7, -MV_CLASS_8,
-  -MV_CLASS_9, -MV_CLASS_10,
-};
-/* clang-format on */
-
-const aom_tree_index av1_mv_class0_tree[TREE_SIZE(CLASS0_SIZE)] = {
-  -0, -1,
-};
-
-const aom_tree_index av1_mv_fp_tree[TREE_SIZE(MV_FP_SIZE)] = { -0, 2,  -1,
-                                                               4,  -2, -3 };
-
 static const nmv_context default_nmv_context = {
   { AOM_CDF4(4096, 11264, 19328) },  // joints_cdf
   { {

@@ -13,9 +13,8 @@
 #define AV1_ENCODER_TOKENIZE_H_
 
 #include "av1/common/entropy.h"
-
 #include "av1/encoder/block.h"
-#include "av1/encoder/treewriter.h"
+#include "aom_dsp/bitwriter.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,9 +44,6 @@ typedef struct {
   EXTRABIT extra;
   uint8_t token;
 } TOKENEXTRA;
-
-extern const aom_tree_index av1_coef_tree[];
-extern const aom_tree_index av1_coef_con_tree[];
 
 int av1_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 

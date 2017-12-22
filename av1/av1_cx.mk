@@ -77,7 +77,6 @@ endif
 AV1_CX_SRCS-yes += encoder/rd.h
 AV1_CX_SRCS-yes += encoder/rdopt.h
 AV1_CX_SRCS-yes += encoder/tokenize.h
-AV1_CX_SRCS-yes += encoder/treewriter.h
 AV1_CX_SRCS-yes += encoder/mcomp.c
 AV1_CX_SRCS-yes += encoder/encoder.c
 AV1_CX_SRCS-yes += encoder/k_means_template.h
@@ -102,7 +101,6 @@ AV1_CX_SRCS-yes += encoder/subexp.h
 AV1_CX_SRCS-$(CONFIG_INTERNAL_STATS) += encoder/blockiness.c
 
 AV1_CX_SRCS-yes += encoder/tokenize.c
-AV1_CX_SRCS-yes += encoder/treewriter.c
 AV1_CX_SRCS-yes += encoder/aq_variance.c
 AV1_CX_SRCS-yes += encoder/aq_variance.h
 AV1_CX_SRCS-yes += encoder/aq_cyclicrefresh.c
