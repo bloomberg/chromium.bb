@@ -42,9 +42,6 @@ crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/tim
 crbug.com/762353 external/wpt/beacon/headers/header-referrer-no-referrer.html [ Leak Pass ]
 crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-beacon-allowed.sub.html [ Leak Pass ]
 crbug.com/780386 external/wpt/html/dom/reflection-grouping.html [ Leak Pass ]
-crbug.com/796944 [ Linux ] external/wpt/fetch/api/request/request-keepalive-quota.html [ Leak Pass ]
-crbug.com/796944 [ Linux ] virtual/mojo-blobs/external/wpt/fetch/api/request/request-keepalive-quota.html [ Leak Pass ]
-crbug.com/796944 [ Linux ] virtual/outofblink-cors/external/wpt/fetch/api/request/request-keepalive-quota.html [ Leak Pass ]
 crbug.com/796944 [ Linux ] synthetic_gestures/synthetic-pinch-zoom-gesture.html [ Leak Pass ]
 
 # -----------------------------------------------------------------
