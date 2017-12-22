@@ -154,7 +154,7 @@ def gen_commit_msg(logs, cmdline, rolls, reviewers, bug):
   if len(logs) > 1:
     commit_msg = 'Rolling %d dependencies\n\n' % len(logs)
   commit_msg += '\n\n'.join(logs)
-  commit_msg += '\nCreated with:\n  ' + cmdline
+  commit_msg += '\nCreated with:\n  ' + cmdline + '\n'
   commit_msg += 'R=%s\n' % ','.join(reviewers) if reviewers else ''
   commit_msg += 'BUG=%s\n' % bug if bug else ''
   return commit_msg
