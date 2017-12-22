@@ -67,18 +67,10 @@ const CGFloat kURLButtonMargin = 10;
                   action:actionSelector
         forControlEvents:UIControlEventTouchUpInside];
 
-    UIVibrancyEffect* primaryEffect;
-    UIVibrancyEffect* secondaryEffect;
-    if (@available(iOS 10, *)) {
-      primaryEffect = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
-      secondaryEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
-    }
-#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
-    else {
-      primaryEffect = [UIVibrancyEffect notificationCenterVibrancyEffect];
-      secondaryEffect = [UIVibrancyEffect notificationCenterVibrancyEffect];
-    }
-#endif
+    UIVibrancyEffect* primaryEffect =
+        [UIVibrancyEffect widgetPrimaryVibrancyEffect];
+    UIVibrancyEffect* secondaryEffect =
+        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
 
     UIVisualEffectView* primaryEffectView =
         [[UIVisualEffectView alloc] initWithEffect:primaryEffect];
@@ -94,9 +86,7 @@ const CGFloat kURLButtonMargin = 10;
     }
 
     _hairlineView = [[UIView alloc] initWithFrame:CGRectZero];
-    _hairlineView.backgroundColor = base::ios::IsRunningOnIOS10OrLater()
-                                        ? [UIColor colorWithWhite:0 alpha:0.05]
-                                        : [UIColor whiteColor];
+    _hairlineView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
     _hairlineView.translatesAutoresizingMaskIntoConstraints = NO;
     [secondaryEffectView.contentView addSubview:_hairlineView];
 
@@ -193,10 +183,8 @@ const CGFloat kURLButtonMargin = 10;
   self.accessibilityLabel =
       NSLocalizedString(@"IDS_IOS_NO_COPIED_LINK_TITLE", nil);
   self.accessibilityTraits = UIAccessibilityTraitNone;
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    self.copiedURLLabel.alpha = 0.5;
-    self.openCopiedURLTitleLabel.alpha = 0.5;
-  }
+  self.copiedURLLabel.alpha = 0.5;
+  self.openCopiedURLTitleLabel.alpha = 0.5;
 }
 
 @end
