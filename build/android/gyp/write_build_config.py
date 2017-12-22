@@ -410,9 +410,6 @@ def main(argv):
 
   direct_resources_deps = deps.Direct('android_resources')
   all_resources_deps = deps.All('android_resources')
-  # Resources should be ordered with the highest-level dependency first so that
-  # overrides are done correctly.
-  all_resources_deps.reverse()
 
   # Initialize some common config.
   # Any value that needs to be queryable by dependents must go within deps_info.
