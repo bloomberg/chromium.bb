@@ -52,6 +52,7 @@ class Button : public UiElement {
   void OnSetDrawPhase() override;
   void OnSetName() override;
   void OnSetSize(const gfx::SizeF& size) override;
+  void OnSetCornerRadii(const CornerRadii& radii) override;
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int target_property_id,
                                 cc::Animation* animation) override;

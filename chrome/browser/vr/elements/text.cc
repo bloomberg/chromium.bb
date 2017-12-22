@@ -36,9 +36,13 @@ bool IsFixedWidthLayout(TextLayoutMode mode) {
 
 class TextTexture : public UiTexture {
  public:
-  explicit TextTexture(float font_height_dmms)
-      : font_height_dmms_(font_height_dmms) {}
+  TextTexture() = default;
+
   ~TextTexture() override {}
+
+  void SetFontHeightInDmm(float font_height_dmms) {
+    SetAndDirty(&font_height_dmms_, font_height_dmms);
+  }
 
   void SetText(const base::string16& text) { SetAndDirty(&text_, text); }
 
@@ -101,9 +105,15 @@ class TextTexture : public UiTexture {
 };
 
 Text::Text(float font_height_dmms)
-    : TexturedElement(0),
-      texture_(base::MakeUnique<TextTexture>(font_height_dmms)) {}
+    : TexturedElement(0), texture_(base::MakeUnique<TextTexture>()) {
+  texture_->SetFontHeightInDmm(font_height_dmms);
+}
+
 Text::~Text() {}
+
+void Text::SetFontHeightInDmm(float font_height_dmms) {
+  texture_->SetFontHeightInDmm(font_height_dmms);
+}
 
 void Text::SetText(const base::string16& text) {
   texture_->SetText(text);
@@ -146,7 +156,8 @@ gfx::RectF Text::GetCursorBounds() const {
 }
 
 void Text::OnSetSize(const gfx::SizeF& size) {
-  texture_->SetTextWidth(size.width());
+  if (IsFixedWidthLayout(text_layout_mode_))
+    texture_->SetTextWidth(size.width());
 }
 
 void Text::UpdateElementSize() {

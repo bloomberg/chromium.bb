@@ -275,6 +275,13 @@ void UiElement::SetOpacity(float opacity) {
                                       opacity);
 }
 
+void UiElement::SetCornerRadii(const CornerRadii& radii) {
+  corner_radii_ = radii;
+  OnSetCornerRadii(radii);
+}
+
+void UiElement::OnSetCornerRadii(const CornerRadii& radii) {}
+
 gfx::SizeF UiElement::GetTargetSize() const {
   return animation_player_.GetTargetSizeValue(TargetProperty::BOUNDS, size_);
 }

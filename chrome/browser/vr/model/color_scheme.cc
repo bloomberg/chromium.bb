@@ -51,8 +51,8 @@ void InitializeColorSchemes() {
   normal_scheme.exclusive_screen_toast_foreground = 0xCCFFFFFF;
   normal_scheme.exclusive_screen_toast_background = 0xCC2F2F2F;
 
-  normal_scheme.system_indicator_foreground = 0xFF444444;
-  normal_scheme.system_indicator_background = SK_ColorWHITE;
+  normal_scheme.system_indicator_foreground = normal_scheme.element_foreground;
+  normal_scheme.system_indicator_background = normal_scheme.element_background;
   normal_scheme.audio_permission_prompt_icon_foreground = 0xFF4285F4;
   normal_scheme.audio_permission_prompt_background = 0xFFF5F5F5;
   normal_scheme.audio_permission_prompt_secondary_button_colors.foreground =
@@ -148,6 +148,11 @@ void InitializeColorSchemes() {
   fullscreen_scheme.button_colors.background_down =
       fullscreen_scheme.element_background_down;
 
+  fullscreen_scheme.system_indicator_foreground =
+      fullscreen_scheme.element_foreground;
+  fullscreen_scheme.system_indicator_background =
+      fullscreen_scheme.element_background;
+
   g_incognito_scheme.Get() = normal_scheme;
   ColorScheme& incognito_scheme = g_incognito_scheme.Get();
   incognito_scheme.world_background = 0xFF2E2E2E;
@@ -159,6 +164,7 @@ void InitializeColorSchemes() {
   incognito_scheme.element_background = 0xFF454545;
   incognito_scheme.element_background_hover = 0xCC505050;
   incognito_scheme.element_background_down = 0xCC888888;
+
   incognito_scheme.button_colors.foreground =
       fullscreen_scheme.element_foreground;
   incognito_scheme.button_colors.foreground_disabled = 0x33E6E6E6;
@@ -168,6 +174,11 @@ void InitializeColorSchemes() {
       fullscreen_scheme.element_background_hover;
   incognito_scheme.button_colors.background_down =
       fullscreen_scheme.element_background_down;
+
+  incognito_scheme.system_indicator_foreground =
+      incognito_scheme.element_foreground;
+  incognito_scheme.system_indicator_background =
+      incognito_scheme.element_background;
 
   incognito_scheme.url_bar.secure = 0xFFFFFFFF;
   incognito_scheme.url_bar.insecure = incognito_scheme.url_bar.secure;

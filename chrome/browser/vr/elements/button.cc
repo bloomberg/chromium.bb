@@ -124,6 +124,11 @@ void Button::OnSetSize(const gfx::SizeF& size) {
   hit_plane_->SetSize(size.width(), size.height());
 }
 
+void Button::OnSetCornerRadii(const CornerRadii& radii) {
+  background_->SetCornerRadii(radii);
+  hit_plane_->SetCornerRadii(radii);
+}
+
 void Button::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                       int target_property_id,
                                       cc::Animation* animation) {

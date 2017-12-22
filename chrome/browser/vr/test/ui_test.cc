@@ -129,14 +129,15 @@ void UiTest::VerifyOnlyElementsVisible(
   OnBeginFrame();
   SCOPED_TRACE(trace_context);
   for (const auto& element : scene_->root_element()) {
+    SCOPED_TRACE(element.DebugName());
     UiElementName name = element.name();
-    if (name == kNone)
-      name = element.owner_name_for_test();
-    if (element.draw_phase() == kPhaseNone) {
+    UiElementName owner_name = element.owner_name_for_test();
+    if (element.draw_phase() == kPhaseNone && owner_name == kNone) {
       EXPECT_TRUE(names.find(name) == names.end());
       continue;
     }
-    SCOPED_TRACE(element.DebugName());
+    if (name == kNone)
+      name = owner_name;
     bool should_be_visible = (names.find(name) != names.end());
     EXPECT_EQ(WillElementBeVisible(&element), should_be_visible);
   }
