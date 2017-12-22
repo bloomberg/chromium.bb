@@ -33,8 +33,15 @@
   UICubicTimingParameters* timingParams = [[UICubicTimingParameters alloc]
       initWithControlPoint1:CGPointMake(0.0, 0.0)
               controlPoint2:CGPointMake(0.2, 0.1)];
-  self = [super initWithDuration:ios::material::kDuration1
-                timingParameters:timingParams];
+  DCHECK_GE(startProgress, 0.0);
+  DCHECK_LE(startProgress, 1.0);
+  CGFloat finalProgress = roundf(startProgress);
+  // Scale the duration by the progress delta traversed in this animation.
+  // Since |finalProgress - startProgress| <= 0.5, the delta is multiplied by
+  // 2.0.
+  NSTimeInterval duration =
+      2.0 * fabs(finalProgress - startProgress) * ios::material::kDuration1;
+  self = [super initWithDuration:duration timingParameters:timingParams];
   if (self) {
     DCHECK_GE(startProgress, 0.0);
     DCHECK_LE(startProgress, 1.0);

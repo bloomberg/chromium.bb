@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,8 +65,11 @@ void FullscreenMediator::FullscreenModelScrollEventEnded(
     FullscreenModel* model) {
   DCHECK_EQ(model_, model);
   DCHECK(!animator_);
-  animator_ = [[FullscreenScrollEndAnimator alloc]
-      initWithStartProgress:model_->progress()];
+  CGFloat progress = model_->progress();
+  if (AreCGFloatsEqual(progress, 0.0) || AreCGFloatsEqual(progress, 1.0))
+    return;
+  animator_ =
+      [[FullscreenScrollEndAnimator alloc] initWithStartProgress:progress];
   [animator_ addCompletion:^(UIViewAnimatingPosition finalPosition) {
     DCHECK_EQ(finalPosition, UIViewAnimatingPositionEnd);
     model_->AnimationEndedWithProgress(
