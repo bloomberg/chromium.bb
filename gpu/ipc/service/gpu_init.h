@@ -64,6 +64,8 @@ class GPU_EXPORT GpuInit {
   GpuPreferences gpu_preferences_;
   bool init_successful_ = false;
 
+  bool ShouldEnableSwiftShader(base::CommandLine* command_line);
+  void AdjustInfoToSwiftShader();
   DISALLOW_COPY_AND_ASSIGN(GpuInit);
 };
 

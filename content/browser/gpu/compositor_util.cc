@@ -282,7 +282,8 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
   for (size_t i = 0; !eof; ++i) {
     const GpuFeatureData gpu_feature_data = GetGpuFeatureData(i, &eof);
     std::string status;
-    if (gpu_feature_data.disabled || gpu_access_blocked) {
+    if (gpu_feature_data.disabled || gpu_access_blocked ||
+        gpu_feature_data.status == gpu::kGpuFeatureStatusDisabled) {
       status = "disabled";
       if (gpu_feature_data.fallback_to_software)
         status += "_software";

@@ -77,6 +77,7 @@ TEST(GpuPreferencesUtilTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_zero_copy_dxgi_video, true)
     GPU_PREFERENCES_FIELD(enable_nv12_dxgi_video, true)
     GPU_PREFERENCES_FIELD(enable_media_foundation_vea_on_windows7, true)
+    GPU_PREFERENCES_FIELD(disable_software_rasterizer, true)
     GPU_PREFERENCES_FIELD(compile_shader_always_succeeds, true)
     GPU_PREFERENCES_FIELD(disable_gl_error_limit, true)
     GPU_PREFERENCES_FIELD(disable_glsl_translator, true)

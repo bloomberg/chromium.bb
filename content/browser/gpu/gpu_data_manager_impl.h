@@ -73,7 +73,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RequestVideoMemoryUsageStatsUpdate(
       const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
           callback) const override;
-  bool ShouldUseSwiftShader() const override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
   // delete observers from anywhere except in one of the observer's
@@ -167,15 +166,14 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
                           int render_frame_id,
                           ThreeDAPIType requester);
 
-  // Get number of features being blacklisted.
-  size_t GetBlacklistedFeatureCount() const;
-
   // Set the active gpu.
   // Return true if it's a different GPU from the previous active one.
   bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);
 
   // Called when GPU process initialization failed.
   void OnGpuProcessInitFailure();
+
+  void DisableSwiftShader();
 
  private:
   friend class GpuDataManagerImplPrivate;

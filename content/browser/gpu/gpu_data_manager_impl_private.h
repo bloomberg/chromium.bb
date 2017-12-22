@@ -52,7 +52,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void RequestVideoMemoryUsageStatsUpdate(
       const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
           callback) const;
-  bool ShouldUseSwiftShader() const;
   void AddObserver(GpuDataManagerObserver* observer);
   void RemoveObserver(GpuDataManagerObserver* observer);
   void UnblockDomainFrom3DAPIs(const GURL& url);
@@ -60,6 +59,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                     const std::string& gl_renderer,
                     const std::string& gl_version);
   void DisableHardwareAcceleration();
+  bool HardwareAccelerationEnabled() const;
+  void DisableSwiftShader();
   void SetGpuInfo(const gpu::GPUInfo& gpu_info);
 
   void Initialize();
@@ -104,8 +105,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                           int render_frame_id,
                           ThreeDAPIType requester);
 
-  size_t GetBlacklistedFeatureCount() const;
-
   bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);
 
   void OnGpuProcessInitFailure();
@@ -116,21 +115,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   friend class GpuDataManagerImplPrivateTest;
 
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           GpuSideBlacklisting);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           GpuSideExceptions);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           DisableHardwareAcceleration);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           SwiftShaderRendering);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           SwiftShaderRendering2);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
                            GpuInfoUpdate);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           NoGpuInfoUpdateWithSwiftShader);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           GPUVideoMemoryUsageStatsUpdate);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
                            BlockAllDomainsFrom3DAPIs);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
@@ -141,18 +126,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                            UnblockOtherDomainFrom3DAPIs);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
                            UnblockThisDomainFrom3DAPIs);
-#if defined(OS_LINUX)
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           SetGLStrings);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           SetGLStringsNoEffects);
-#endif
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           GpuDriverBugListSingle);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           GpuDriverBugListMultiple);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
-                           BlacklistAllFeatures);
 
   struct DomainBlockEntry {
     GpuDataManagerImpl::DomainGuilt last_guilt;
@@ -190,9 +163,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 
-  // Try to switch to SwiftShader rendering, if possible and necessary.
-  void EnableSwiftShaderIfNecessary();
-
   // Helper to extract the domain from a given URL.
   std::string GetDomainFromURL(const GURL& url) const;
 
@@ -220,11 +190,12 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   std::vector<LogMessage> log_messages_;
 
-  bool use_swiftshader_;
-
-  // Current card force-blacklisted due to GPU crashes, or disabled through
+  // Current card force-disabled due to GPU crashes, or disabled through
   // the --disable-gpu commandline switch.
-  bool card_blacklisted_;
+  bool card_disabled_;
+
+  // SwiftShader force-disabled due to GPU crashes using SwiftShader.
+  bool swiftshader_disabled_;
 
   // We disable histogram stuff in testing, especially in unit tests because
   // they cause random failures.

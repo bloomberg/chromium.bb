@@ -78,6 +78,9 @@ struct GPU_EXPORT GpuPreferences {
   // quality of output. So this flag is disabled by default. Windows only.
   bool enable_media_foundation_vea_on_windows7 = false;
 
+  // Disables the use of a 3D software rasterizer, for example, SwiftShader.
+  bool disable_software_rasterizer = false;
+
   // ===================================
   // Settings from //gpu/command_buffer/service/gpu_switches.cc
 

@@ -60,9 +60,6 @@ class GpuDataManager {
       const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
           callback) const = 0;
 
-  // Returns true if SwiftShader should be used.
-  virtual bool ShouldUseSwiftShader() const = 0;
-
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) = 0;
@@ -77,7 +74,6 @@ class GpuDataManager {
                             const std::string& gl_renderer,
                             const std::string& gl_version) = 0;
 
-  // Turn off all hardware acceleration.
   virtual void DisableHardwareAcceleration() = 0;
 
   // Whether a GPU is in use (as opposed to a software renderer).

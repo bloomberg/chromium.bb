@@ -232,6 +232,7 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   basic_gpu_info->gl_ws_extensions = context_gpu_info.gl_ws_extensions;
   basic_gpu_info->gl_reset_notification_strategy =
       context_gpu_info.gl_reset_notification_strategy;
+  basic_gpu_info->software_rendering = context_gpu_info.software_rendering;
 
   if (!context_gpu_info.driver_vendor.empty())
     basic_gpu_info->driver_vendor = context_gpu_info.driver_vendor;

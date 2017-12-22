@@ -118,11 +118,6 @@ void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate(
   private_->RequestVideoMemoryUsageStatsUpdate(callback);
 }
 
-bool GpuDataManagerImpl::ShouldUseSwiftShader() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->ShouldUseSwiftShader();
-}
-
 void GpuDataManagerImpl::AddObserver(
     GpuDataManagerObserver* observer) {
   base::AutoLock auto_lock(lock_);
@@ -152,10 +147,14 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
   private_->DisableHardwareAcceleration();
 }
 
+void GpuDataManagerImpl::DisableSwiftShader() {
+  base::AutoLock auto_lock(lock_);
+  private_->DisableSwiftShader();
+}
+
 bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
   base::AutoLock auto_lock(lock_);
-  return !private_->ShouldUseSwiftShader() &&
-         private_->GpuAccessAllowed(nullptr);
+  return private_->HardwareAccelerationEnabled();
 }
 
 void GpuDataManagerImpl::GetDisabledExtensions(
@@ -259,11 +258,6 @@ bool GpuDataManagerImpl::Are3DAPIsBlocked(const GURL& top_origin_url,
 void GpuDataManagerImpl::DisableDomainBlockingFor3DAPIsForTesting() {
   base::AutoLock auto_lock(lock_);
   private_->DisableDomainBlockingFor3DAPIsForTesting();
-}
-
-size_t GpuDataManagerImpl::GetBlacklistedFeatureCount() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetBlacklistedFeatureCount();
 }
 
 bool GpuDataManagerImpl::UpdateActiveGpu(uint32_t vendor_id,

@@ -70,6 +70,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_nv12_dxgi_video = prefs.enable_nv12_dxgi_video();
     out->enable_media_foundation_vea_on_windows7 =
         prefs.enable_media_foundation_vea_on_windows7();
+    out->disable_software_rasterizer = prefs.disable_software_rasterizer();
     out->compile_shader_always_succeeds =
         prefs.compile_shader_always_succeeds();
     out->disable_gl_error_limit = prefs.disable_gl_error_limit();
@@ -146,6 +147,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enable_media_foundation_vea_on_windows7(
       const gpu::GpuPreferences& prefs) {
     return prefs.enable_media_foundation_vea_on_windows7;
+  }
+  static bool disable_software_rasterizer(const gpu::GpuPreferences& prefs) {
+    return prefs.disable_software_rasterizer;
   }
   static bool compile_shader_always_succeeds(const gpu::GpuPreferences& prefs) {
     return prefs.compile_shader_always_succeeds;

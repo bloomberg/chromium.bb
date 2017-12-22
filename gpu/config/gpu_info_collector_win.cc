@@ -16,7 +16,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -34,8 +33,6 @@
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_com_initializer.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface_egl.h"
 
 namespace gpu {
 
@@ -235,18 +232,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
   DCHECK(gpu_info);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
-    std::string requested_implementation_name =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kUseGL);
-    if (requested_implementation_name ==
-        gl::kGLImplementationSwiftShaderForWebGLName) {
-      gpu_info->software_rendering = true;
-      gpu_info->context_info_state = kCollectInfoNonFatalFailure;
-      return kCollectInfoNonFatalFailure;
-    }
-  }
-
   CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
   if (result != kCollectInfoSuccess) {
     gpu_info->context_info_state = result;
@@ -352,11 +337,6 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
 void MergeGPUInfo(GPUInfo* basic_gpu_info,
                   const GPUInfo& context_gpu_info) {
   DCHECK(basic_gpu_info);
-
-  if (context_gpu_info.software_rendering) {
-    basic_gpu_info->software_rendering = true;
-    return;
-  }
 
   // Track D3D Shader Model (if available)
   const std::string& shader_version =

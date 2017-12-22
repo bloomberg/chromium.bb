@@ -458,12 +458,12 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # process. On Windows, and eventually on other platforms where
     # SwiftShader is used, this test should pass.
     #
-    args_list = ([
+    args_list = (
       # Hit id 4 from kSoftwareRenderingListEntries.
-      '--gpu-testing-vendor-id=0x8086',
-      '--gpu-testing-device-id=0x27A2'],
+      ['--gpu-testing-vendor-id=0x8086',
+       '--gpu-testing-device-id=0x27A2'],
       # Explicitly disable GPU access.
-     ['--disable-gpu'])
+      ['--disable-gpu'])
     for args in args_list:
       self.RestartBrowserIfNecessaryWithArgs(args)
       self._NavigateAndWait(test_path)
