@@ -135,7 +135,16 @@ void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
   // We need to fork(), so we can't be multi-threaded, as threads could hold
   // locks.
   int num_threads = CountThreads();
+#if !defined(THREAD_SANITIZER)
   const int kNumExpectedThreads = 1;
+#else
+  // Under TSAN, there is a special helper thread. It should be completely
+  // invisible to our testing, so we ignore it. It should be ok to fork()
+  // with this thread. It's currently buggy, but it's the best we can do until
+  // there is a way to delay the start of the thread
+  // (https://code.google.com/p/thread-sanitizer/issues/detail?id=19).
+  const int kNumExpectedThreads = 2;
+#endif
 
   // The kernel is at liberty to wake a thread id futex before updating /proc.
   // If another test running in the same process has stopped a thread, it may
