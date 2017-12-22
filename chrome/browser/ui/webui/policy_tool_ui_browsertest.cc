@@ -268,7 +268,8 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, ImportingSession) {
   EXPECT_EQ(test_policies, *values);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, Editing) {
+// Flaky on all platforms, see https://crbug.com/797446
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DISABLED_Editing) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
 
   // Change one policy value and get its name.
