@@ -34,12 +34,9 @@
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
-class Range;
 
 class CORE_EXPORT SurroundingText {
   USING_FAST_MALLOC(SurroundingText);
@@ -56,7 +53,7 @@ class CORE_EXPORT SurroundingText {
  private:
   void Initialize(const Position&, const Position&, unsigned max_length);
 
-  Persistent<Range> content_range_;
+  String content_;
   size_t start_offset_in_content_;
   size_t end_offset_in_content_;
 
