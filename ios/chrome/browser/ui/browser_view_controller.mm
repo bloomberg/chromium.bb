@@ -2088,9 +2088,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   }
 
-  _pageInfoCoordinator =
-      [[PageInfoLegacyCoordinator alloc] initWithBaseViewController:self];
-  _pageInfoCoordinator.browserState = _browserState;
+  _pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:_browserState];
   _pageInfoCoordinator.dispatcher = _dispatcher;
   _pageInfoCoordinator.loader = self;
   _pageInfoCoordinator.presentationProvider = self;
