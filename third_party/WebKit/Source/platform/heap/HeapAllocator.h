@@ -7,10 +7,12 @@
 
 #include "build/build_config.h"
 #include "platform/heap/Heap.h"
+#include "platform/heap/IncrementalMarkingFlag.h"
 #include "platform/heap/Persistent.h"
 #include "platform/heap/TraceTraits.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/ConstructTraits.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/DoublyLinkedList.h"
 #include "platform/wtf/HashCountedSet.h"
@@ -226,6 +228,47 @@ class PLATFORM_EXPORT HeapAllocator {
 
   static void LeaveGCForbiddenScope() {
     ThreadState::Current()->LeaveGCForbiddenScope();
+  }
+
+  template <typename T, typename Traits>
+  static void NotifyNewObject(T* object) {
+#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+    // The object may have been in-place constructed as part of a large object.
+    // It is not safe to retrieve the page from the object here.
+    ThreadState* const thread_state = ThreadState::Current();
+    if (thread_state->IsIncrementalMarking()) {
+      // Eagerly trace the object ensuring that the object and all its children
+      // are discovered by the marker.
+      ThreadState::NoAllocationScope no_allocation_scope(thread_state);
+      DCHECK(thread_state->CurrentVisitor());
+      // This check ensures that the visitor will not eagerly recurse into
+      // children but rather push all blink::GarbageCollected objects and only
+      // eagerly trace non-managed objects.
+      DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
+      HeapAllocator::template Trace<Visitor*, T, Traits>(
+          thread_state->CurrentVisitor(), *object);
+    }
+#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+  }
+
+  template <typename T, typename Traits>
+  static void NotifyNewObjects(T* array, size_t len) {
+#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+    // The object may have been in-place constructed as part of a large object.
+    // It is not safe to retrieve the page from the object here.
+    ThreadState* const thread_state = ThreadState::Current();
+    if (thread_state->IsIncrementalMarking()) {
+      // See |NotifyNewObject| for details.
+      ThreadState::NoAllocationScope no_allocation_scope(thread_state);
+      DCHECK(thread_state->CurrentVisitor());
+      DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
+      while (len-- > 0) {
+        HeapAllocator::template Trace<Visitor*, T, Traits>(
+            thread_state->CurrentVisitor(), *array);
+        array++;
+      }
+    }
+#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
  private:

@@ -54,6 +54,10 @@ class Isolate;
 
 namespace blink {
 
+namespace incremental_marking_test {
+class IncrementalMarkingScope;
+}  // namespace incremental_marking_test
+
 class GarbageCollectedMixinConstructorMarkerBase;
 class PersistentNode;
 class PersistentRegion;
@@ -519,7 +523,11 @@ class PLATFORM_EXPORT ThreadState {
 
   int GcAge() const { return gc_age_; }
 
+  Visitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
+
  private:
+  // Needs to set up visitor for testing purposes.
+  friend class incremental_marking_test::IncrementalMarkingScope;
   template <typename T>
   friend class PrefinalizerRegistration;
 

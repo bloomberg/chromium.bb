@@ -21,7 +21,8 @@ inline void Visitor::MarkHeader(HeapObjectHeader* header,
   if (header->IsMarked())
     return;
 
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->IsInGC() ||
+         ThreadState::Current()->IsIncrementalMarking());
   DCHECK(GetMarkingMode() != kWeakProcessing);
 
   // A GC should only mark the objects that belong in its heap.

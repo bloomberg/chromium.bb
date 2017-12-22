@@ -25,6 +25,7 @@
 #include <type_traits>
 #include <utility>
 #include "base/memory/scoped_refptr.h"
+#include "platform/wtf/Allocator.h"
 #include "platform/wtf/TypeTraits.h"
 
 namespace WTF {
