@@ -77,8 +77,12 @@ class PLATFORM_EXPORT PaintController {
       const Optional<PaintChunk::Id>& id,
       const PaintChunkProperties& properties) {
     if (id) {
-      new_paint_chunks_.UpdateCurrentPaintChunkProperties(
-          PaintChunk::Id(*id, current_fragment_), properties);
+      PaintChunk::Id id_with_fragment(*id, current_fragment_);
+      new_paint_chunks_.UpdateCurrentPaintChunkProperties(id_with_fragment,
+                                                          properties);
+#if DCHECK_IS_ON()
+      CheckDuplicatePaintChunkId(id_with_fragment);
+#endif
     } else {
       new_paint_chunks_.UpdateCurrentPaintChunkProperties(WTF::nullopt,
                                                           properties);
@@ -272,9 +276,9 @@ class PLATFORM_EXPORT PaintController {
   static size_t FindMatchingItemFromIndex(const DisplayItem::Id&,
                                           const IndicesByClientMap&,
                                           const DisplayItemList&);
-  static void AddItemToIndexIfNeeded(const DisplayItem&,
-                                     size_t index,
-                                     IndicesByClientMap&);
+  static void AddToIndicesByClientMap(const DisplayItemClient&,
+                                      size_t index,
+                                      IndicesByClientMap&);
 
   size_t FindCachedItem(const DisplayItem::Id&);
   size_t FindOutOfOrderCachedItemForward(const DisplayItem::Id&);
@@ -339,6 +343,7 @@ class PLATFORM_EXPORT PaintController {
   SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient&);
 
 #if DCHECK_IS_ON()
+  void CheckDuplicatePaintChunkId(const PaintChunk::Id&);
   void ShowDebugDataInternal(DisplayItemList::JsonFlags) const;
 #endif
 
@@ -408,6 +413,8 @@ class PLATFORM_EXPORT PaintController {
 
   // This is used to check duplicated ids during CreateAndAppend().
   IndicesByClientMap new_display_item_indices_by_client_;
+  // This is used to check duplicated ids for new paint chunks.
+  IndicesByClientMap new_paint_chunk_indices_by_client_;
 #endif
 
   // These are set in UseCachedDrawingIfPossible() and

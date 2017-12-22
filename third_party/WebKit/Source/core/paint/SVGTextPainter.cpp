@@ -19,7 +19,7 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
   PaintInfo block_info(paint_info);
   block_info.UpdateCullRect(layout_svg_text_.LocalToSVGParentTransform());
   SVGTransformContext transform_context(
-      block_info.context, layout_svg_text_,
+      block_info, layout_svg_text_,
       layout_svg_text_.LocalToSVGParentTransform());
 
   BlockPainter(layout_svg_text_).Paint(block_info, LayoutPoint());

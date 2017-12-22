@@ -279,6 +279,15 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
     size_t last_chunk_index = new_paint_chunks_.LastChunkIndex();
     bool chunk_added =
         new_paint_chunks_.IncrementDisplayItemIndex(display_item);
+    auto& last_chunk = new_paint_chunks_.LastChunk();
+
+#if DCHECK_IS_ON()
+    if (chunk_added && last_chunk.is_cacheable) {
+      AddToIndicesByClientMap(last_chunk.id.client,
+                              new_paint_chunks_.LastChunkIndex(),
+                              new_paint_chunk_indices_by_client_);
+    }
+#endif
 
     if (chunk_added && last_chunk_index != kNotFound) {
       DCHECK(last_chunk_index != new_paint_chunks_.LastChunkIndex());
@@ -286,8 +295,8 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
           new_paint_chunks_.PaintChunkAt(last_chunk_index));
     }
 
-    new_paint_chunks_.LastChunk().outset_for_raster_effects =
-        std::max(new_paint_chunks_.LastChunk().outset_for_raster_effects,
+    last_chunk.outset_for_raster_effects =
+        std::max(last_chunk.outset_for_raster_effects,
                  display_item.OutsetForRasterEffects().ToFloat());
   }
 
@@ -306,13 +315,15 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
         new_display_item_list_);
     if (index != kNotFound) {
       ShowDebugData();
-      NOTREACHED() << "DisplayItem " << display_item.AsDebugString()
-                   << " has duplicated id with previous "
-                   << new_display_item_list_[index].AsDebugString()
-                   << " (index=" << index << ")";
+      NOTREACHED()
+          << "DisplayItem " << display_item.AsDebugString().Utf8().data()
+          << " has duplicated id with previous "
+          << new_display_item_list_[index].AsDebugString().Utf8().data()
+          << " (index=" << index << ")";
     }
-    AddItemToIndexIfNeeded(display_item, new_display_item_list_.size() - 1,
-                           new_display_item_indices_by_client_);
+    AddToIndicesByClientMap(display_item.Client(),
+                            new_display_item_list_.size() - 1,
+                            new_display_item_indices_by_client_);
   }
 #endif  // DCHECK_IS_ON()
 
@@ -390,20 +401,13 @@ size_t PaintController::FindMatchingItemFromIndex(
   return kNotFound;
 }
 
-void PaintController::AddItemToIndexIfNeeded(
-    const DisplayItem& display_item,
-    size_t index,
-    IndicesByClientMap& display_item_indices_by_client) {
-  if (!display_item.IsCacheable())
-    return;
-
-  IndicesByClientMap::iterator it =
-      display_item_indices_by_client.find(&display_item.Client());
-  Vector<size_t>& indices =
-      it == display_item_indices_by_client.end()
-          ? display_item_indices_by_client
-                .insert(&display_item.Client(), Vector<size_t>())
-                .stored_value->value
+void PaintController::AddToIndicesByClientMap(const DisplayItemClient& client,
+                                              size_t index,
+                                              IndicesByClientMap& map) {
+  auto it = map.find(&client);
+  auto& indices =
+      it == map.end()
+          ? map.insert(&client, Vector<size_t>()).stored_value->value
           : it->value;
   indices.push_back(index);
 }
@@ -464,7 +468,7 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
 #if DCHECK_IS_ON()
       ++num_indexed_items_;
 #endif
-      AddItemToIndexIfNeeded(item, i, out_of_order_item_indices_);
+      AddToIndicesByClientMap(item.Client(), i, out_of_order_item_indices_);
     }
   }
 
@@ -586,6 +590,7 @@ void PaintController::CommitNewDisplayItems() {
   num_cached_new_items_ = 0;
 #if DCHECK_IS_ON()
   new_display_item_indices_by_client_.clear();
+  new_paint_chunk_indices_by_client_.clear();
 #endif
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
@@ -1149,5 +1154,26 @@ FrameFirstPaint PaintController::EndFrame(const void* frame) {
   frame_first_paints_.pop_back();
   return result;
 }
+
+#if DCHECK_IS_ON()
+void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
+  if (IsSkippingCache())
+    return;
+
+  auto it = new_paint_chunk_indices_by_client_.find(&id.client);
+  if (it != new_paint_chunk_indices_by_client_.end()) {
+    const auto& indices = it->value;
+    for (auto index : indices) {
+      const auto& chunk = new_paint_chunks_.PaintChunkAt(index);
+      if (chunk.id == id) {
+        ShowDebugData();
+        NOTREACHED() << "New paint chunk id " << id.ToString().Utf8().data()
+                     << " has duplicated id with previous chuck "
+                     << chunk.ToString().Utf8().data();
+      }
+    }
+  }
+}
+#endif
 
 }  // namespace blink

@@ -194,6 +194,9 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
   if (IsEndScrollType(type))
     return "End" + ScrollTypeAsDebugString(endScrollTypeToScrollType(type));
 
+  PAINT_PHASE_BASED_DEBUG_STRINGS(SVGTransform);
+  PAINT_PHASE_BASED_DEBUG_STRINGS(SVGEffect);
+
   if (IsTransform3DType(type))
     return Transform3DTypeAsDebugString(type);
   if (IsEndTransform3DType(type))

@@ -160,6 +160,12 @@ class PLATFORM_EXPORT DisplayItem {
     kEndScrollFirst,
     kEndScrollLast = kEndScrollFirst + kScrollLast - kScrollFirst,
 
+    kSVGTransformPaintPhaseFirst,
+    kSVGTransformPaintPhaseLast = kSVGTransformPaintPhaseFirst + kPaintPhaseMax,
+
+    kSVGEffectPaintPhaseFirst,
+    kSVGEffectPaintPhaseLast = kSVGEffectPaintPhaseFirst + kPaintPhaseMax,
+
     kTransform3DFirst,
     kTransform3DElementTransform = kTransform3DFirst,
     kTransform3DLast = kTransform3DElementTransform,
@@ -318,6 +324,9 @@ class PLATFORM_EXPORT DisplayItem {
 
   DEFINE_PAIRED_CATEGORY_METHODS(Scroll, scroll)
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
+
+  DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGTransform)
+  DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGEffect)
 
   DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 

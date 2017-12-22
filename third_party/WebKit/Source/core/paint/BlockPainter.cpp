@@ -192,7 +192,8 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
       // The scroll hit test is in the unscrolled unclipped space.
       ScopedPaintChunkProperties scroll_hit_test_properties(
           paint_info.context.GetPaintController(),
-          view->PreContentClipProperties(), layout_block_);
+          view->PreContentClipProperties(), layout_block_,
+          DisplayItem::kScrollHitTest);
       ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
                                        DisplayItem::kScrollHitTest,
                                        view->ScrollTranslation());
@@ -211,7 +212,8 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
     // properties so that the scroll hit test is not clipped or scrolled.
     ScopedPaintChunkProperties scroll_hit_test_properties(
         paint_info.context.GetPaintController(),
-        *fragment->LocalBorderBoxProperties(), layout_block_);
+        *fragment->LocalBorderBoxProperties(), layout_block_,
+        DisplayItem::kScrollHitTest);
     ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
                                      DisplayItem::kScrollHitTest,
                                      properties->ScrollTranslation());
@@ -274,7 +276,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
         if (scroll_translation) {
           scoped_scroll_property.emplace(
               paint_info.context.GetPaintController(), scroll_translation,
-              layout_block_, DisplayItem::PaintPhaseToDrawingType(paint_phase));
+              layout_block_, DisplayItem::PaintPhaseToScrollType(paint_phase));
           scrolled_paint_info.emplace(paint_info);
           if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
             scrolled_paint_info->UpdateCullRectForScrollingContents(

@@ -42,7 +42,7 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   paint_info_before_filtering.UpdateCullRect(
       layout_svg_foreign_object_.LocalSVGTransform());
   SVGTransformContext transform_context(
-      paint_info_before_filtering.context, layout_svg_foreign_object_,
+      paint_info_before_filtering, layout_svg_foreign_object_,
       layout_svg_foreign_object_.LocalSVGTransform());
 
   // In theory we should just let BlockPainter::paint() handle the clip, but for

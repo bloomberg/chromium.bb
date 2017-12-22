@@ -53,7 +53,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
 
   PaintInfo paint_info_before_filtering(paint_info);
   // Shapes cannot have children so do not call updateCullRect.
-  SVGTransformContext transform_context(paint_info_before_filtering.context,
+  SVGTransformContext transform_context(paint_info_before_filtering,
                                         layout_svg_shape_,
                                         layout_svg_shape_.LocalSVGTransform());
   {

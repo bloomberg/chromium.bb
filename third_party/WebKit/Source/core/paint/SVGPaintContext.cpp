@@ -132,7 +132,9 @@ void SVGPaintContext::ApplyPaintPropertyState() {
       state.SetEffect(effect);
       if (const auto* mask_clip = properties->MaskClip())
         state.SetClip(mask_clip);
-      scoped_paint_chunk_properties_.emplace(paint_controller, state, object_);
+      scoped_paint_chunk_properties_.emplace(
+          paint_controller, state, object_,
+          DisplayItem::PaintPhaseToSVGEffectType(GetPaintInfo().phase));
     }
   }
 }

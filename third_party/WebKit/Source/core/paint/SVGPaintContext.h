@@ -50,10 +50,10 @@ class SVGTransformContext : public TransformRecorder {
   STACK_ALLOCATED();
 
  public:
-  SVGTransformContext(GraphicsContext& context,
+  SVGTransformContext(const PaintInfo& paint_info,
                       const LayoutObject& object,
                       const AffineTransform& transform)
-      : TransformRecorder(context, object, transform) {
+      : TransformRecorder(paint_info.context, object, transform) {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       const auto* properties = object.FirstFragment().PaintProperties();
       if (!properties)
@@ -73,8 +73,9 @@ class SVGTransformContext : public TransformRecorder {
 
       if (transform_node) {
         DCHECK(transform_node->Matrix() == transform.ToTransformationMatrix());
-        transform_property_scope_.emplace(context.GetPaintController(),
-                                          transform_node, object);
+        transform_property_scope_.emplace(
+            paint_info.context.GetPaintController(), transform_node, object,
+            DisplayItem::PaintPhaseToSVGTransformType(paint_info.phase));
       }
     }
   }
