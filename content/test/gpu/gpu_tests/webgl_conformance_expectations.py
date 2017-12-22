@@ -515,6 +515,15 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'amd', 'no_angle'], bug=479260)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd', 'no_passthrough'], bug=479952)
+
+    # Linux passthrough AMD
+    self.Fail('conformance/renderbuffers/' +
+        'depth-renderbuffer-initialization.html',
+        ['linux', 'passthrough', 'amd'], bug=794339)
+    self.Fail('conformance/renderbuffers/' +
+        'stencil-renderbuffer-initialization.html',
+        ['linux', 'passthrough', 'amd'], bug=794339)
+
     # Intel
     # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
