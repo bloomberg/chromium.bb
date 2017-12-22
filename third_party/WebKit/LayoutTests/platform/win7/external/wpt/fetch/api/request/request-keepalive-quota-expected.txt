@@ -4,6 +4,6 @@ FAIL A Keep-Alive fetch() with a body at the Quota Limit should succeed. promise
 PASS A Keep-Alive fetch() with a body over the Quota Limit should reject.
 FAIL A Keep-Alive fetch() should return its allocated Quota upon promise resolution. promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
 FAIL A Keep-Alive fetch() should return only its allocated Quota upon promise resolution. promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
-PASS A Keep-Alive fetch() should not be allowed if the Quota is used up.
+FAIL A Keep-Alive fetch() should not be allowed if the Quota is used up. promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
 Harness: the test ran to completion.
 
