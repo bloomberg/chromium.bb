@@ -45,7 +45,6 @@ void SVGElementRareData::Trace(blink::Visitor* visitor) {
   visitor->Trace(animated_smil_style_properties_);
   visitor->Trace(element_instances_);
   visitor->Trace(corresponding_element_);
-  visitor->Trace(owner_);
 }
 
 AffineTransform* SVGElementRareData::AnimateMotionTransform() {

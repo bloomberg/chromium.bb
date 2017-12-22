@@ -34,9 +34,8 @@ class SVGElementProxySet;
 class SVGElementRareData
     : public GarbageCollectedFinalized<SVGElementRareData> {
  public:
-  SVGElementRareData(SVGElement* owner)
-      : owner_(owner),
-        corresponding_element_(nullptr),
+  SVGElementRareData()
+      : corresponding_element_(nullptr),
         instances_updates_blocked_(false),
         use_override_computed_style_(false),
         needs_override_computed_style_update_(false),
@@ -103,7 +102,6 @@ class SVGElementRareData
   void Trace(blink::Visitor*);
 
  private:
-  Member<SVGElement> owner_;
   SVGElementSet outgoing_references_;
   SVGElementSet incoming_references_;
   HeapHashSet<WeakMember<SVGElement>> element_instances_;
