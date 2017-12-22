@@ -145,7 +145,7 @@ AutomationPredicate.landmark = AutomationPredicate.roles([
  * @return {boolean}
  */
 AutomationPredicate.visitedLink = function(node) {
-  return node.state.visited;
+  return node.state[State.VISITED];
 };
 
 /**
