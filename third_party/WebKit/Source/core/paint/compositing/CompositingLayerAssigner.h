@@ -56,13 +56,6 @@ class CompositingLayerAssigner {
 
  private:
   struct SquashingState {
-    SquashingState()
-        : most_recent_mapping(nullptr),
-          has_most_recent_mapping(false),
-          have_assigned_backings_to_entire_squashing_layer_subtree(false),
-          next_squashed_layer_index(0),
-          total_area_of_squashed_rects(0) {}
-
     void UpdateSquashingStateForNewMapping(
         CompositedLayerMapping*,
         bool has_new_composited_paint_layer_mapping,
@@ -70,18 +63,18 @@ class CompositingLayerAssigner {
 
     // The most recent composited backing that the layer should squash onto if
     // needed.
-    CompositedLayerMapping* most_recent_mapping;
-    bool has_most_recent_mapping;
+    CompositedLayerMapping* most_recent_mapping = nullptr;
+    bool has_most_recent_mapping = false;
 
     // Whether all Layers in the stacking subtree rooted at the most recent
     // mapping's owning layer have had CompositedLayerMappings assigned. Layers
     // cannot squash into a CompositedLayerMapping owned by a stacking ancestor,
     // since this changes paint order.
-    bool have_assigned_backings_to_entire_squashing_layer_subtree;
+    bool have_assigned_backings_to_entire_squashing_layer_subtree = false;
 
     // Counter that tracks what index the next Layer would be if it gets
     // squashed to the current squashing layer.
-    size_t next_squashed_layer_index;
+    size_t next_squashed_layer_index = 0;
 
     // The absolute bounding rect of all the squashed layers.
     IntRect bounding_rect;
@@ -89,7 +82,11 @@ class CompositingLayerAssigner {
     // This is simply the sum of the areas of the squashed rects. This can be
     // very skewed if the rects overlap, but should be close enough to drive a
     // heuristic.
-    uint64_t total_area_of_squashed_rects;
+    uint64_t total_area_of_squashed_rects = 0;
+
+    // This is set to true if we encounter a layer in our paint order walk that
+    // would preclude squashing by subsequent layers.
+    bool preceding_layer_prevents_squashing = false;
   };
 
   void AssignLayersToBackingsInternal(
@@ -107,6 +104,7 @@ class CompositingLayerAssigner {
       CompositingStateTransitionType,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
   bool NeedsOwnBacking(const PaintLayer*) const;
+  bool PreventsSquashing(const PaintLayer*) const;
 
   PaintLayerCompositor* compositor_;
   bool layers_changed_;

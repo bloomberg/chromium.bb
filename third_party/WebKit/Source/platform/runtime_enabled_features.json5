@@ -830,6 +830,10 @@
       status: "stable",
     },
     {
+      name: "PreventLayerSquashing",
+      status: "stable",
+    },
+    {
       name: "PrintBrowser",
     },
     {
