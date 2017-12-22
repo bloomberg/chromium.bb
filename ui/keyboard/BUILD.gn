@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//third_party/google_input_tools/closure.gni")
 import("//third_party/google_input_tools/inputview.gni")
 import("//tools/grit/grit_rule.gni")
 
-component("keyboard") {
+jumbo_component("keyboard") {
   sources = [
     "container_behavior.h",
     "container_floating_behavior.cc",
@@ -57,7 +58,7 @@ component("keyboard") {
   }
 }
 
-component("keyboard_with_content") {
+jumbo_component("keyboard_with_content") {
   sources = [
     "content/keyboard.cc",
     "content/keyboard.h",

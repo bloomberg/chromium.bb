@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//device/vr/features/features.gni")
 import("//testing/test.gni")
@@ -22,7 +23,7 @@ source_set("gfx_export") {
   ]
 }
 
-component("geometry_skia") {
+jumbo_component("geometry_skia") {
   sources = [
     "skia_util.cc",
     "skia_util.h",
@@ -42,7 +43,7 @@ component("geometry_skia") {
   defines = [ "GFX_IMPLEMENTATION" ]
 }
 
-component("gfx") {
+jumbo_component("gfx") {
   sources = [
     "android/java_bitmap.cc",
     "android/java_bitmap.h",
@@ -394,7 +395,7 @@ component("gfx") {
   }
 }
 
-component("color_space") {
+jumbo_component("color_space") {
   sources = [
     "color_space.cc",
     "color_space.h",
@@ -576,7 +577,7 @@ source_set("memory_buffer_sources") {
 }
 
 # TODO(ccameron): This can be moved into a separate source_set.
-component("gfx_switches") {
+jumbo_component("gfx_switches") {
   sources = [
     "switches.cc",
     "switches.h",
