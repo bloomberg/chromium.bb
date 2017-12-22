@@ -121,15 +121,12 @@ void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholder(
   scoped_refptr<WebTaskRunner> dispatcher_task_runner =
       Platform::Current()->CurrentThread()->GetWebTaskRunner();
 
-  Platform::Current()
-      ->MainThread()
-      ->Scheduler()
-      ->CompositorTaskRunner()
-      ->PostTask(FROM_HERE,
-                 CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
-                                 WTF::Passed(std::move(dispatcher_task_runner)),
-                                 placeholder_canvas_id_, std::move(image),
-                                 resource_id));
+  PostCrossThreadTask(
+      *Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),
+      FROM_HERE,
+      CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
+                      WTF::Passed(std::move(dispatcher_task_runner)),
+                      placeholder_canvas_id_, std::move(image), resource_id));
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(

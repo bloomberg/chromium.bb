@@ -113,8 +113,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
     completion.Signal();
   }));
 
-  thread_->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *thread_->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   completion.Wait();
 }
@@ -131,8 +131,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
     completion.Signal();
   }));
 
-  thread_->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *thread_->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   thread_.reset();
 }
@@ -163,8 +163,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
 
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&AddTaskObserver, thread_.get(), &observer));
-  thread_->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *thread_->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(&RunTestTask, WTF::CrossThreadUnretained(&calls)));
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&RemoveTaskObserver, thread_.get(), &observer));
@@ -186,8 +186,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
   EXPECT_CALL(delayed_task, Run()).Times(0);
 
   RunOnWorkerThread(FROM_HERE, base::Bind(&ShutdownOnThread, thread_.get()));
-  thread_->GetWebTaskRunner()->PostTask(
-      FROM_HERE,
+  PostCrossThreadTask(
+      *thread_->GetWebTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   thread_->GetWebTaskRunner()->PostDelayedTask(
       FROM_HERE,

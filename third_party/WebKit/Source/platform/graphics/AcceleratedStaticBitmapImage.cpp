@@ -101,8 +101,8 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
         base::WrapUnique(new gpu::SyncToken(texture_holder_->GetSyncToken()));
     if (original_skia_image_thread_id_ !=
         Platform::Current()->CurrentThread()->ThreadId()) {
-      original_skia_image_task_runner_->PostTask(
-          FROM_HERE,
+      PostCrossThreadTask(
+          *original_skia_image_task_runner_, FROM_HERE,
           CrossThreadBind(
               &DestroySkImageOnOriginalThread, std::move(original_skia_image_),
               std::move(original_skia_image_context_provider_wrapper_),
