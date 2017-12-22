@@ -37,13 +37,13 @@ cvox.ApiImplementation.init = function(opt_onload) {
   var didInstall =
       cvox.ScriptInstaller.installScript(scripts, 'cvoxapi', opt_onload);
   if (!didInstall) {
-    // If the API script is already installed, just re-enable it.
-    window.location.href = 'javascript:cvox.Api.internalEnable();';
+    console.error('Unable to install api scripts');
   }
 
   cvox.ExtensionBridge.addDisconnectListener(function() {
     cvox.ApiImplementation.port.postMessage(
         cvox.ApiImplementation.DISCONNECT_MSG);
+    cvox.ScriptInstaller.uninstallScript('cvoxapi');
   });
 };
 

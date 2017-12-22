@@ -35,7 +35,7 @@ cvox.ScriptInstaller.installScript = function(
     return false;
   }
   if (document.querySelector('script[' + uid + ']')) {
-    return false;
+    cvox.ScriptInstaller.uninstallScript(uid);
   }
   if (!srcs || srcs.length == 0) {
     return false;
@@ -44,6 +44,16 @@ cvox.ScriptInstaller.installScript = function(
   cvox.ScriptInstaller.installScriptHelper_(
       srcs, uid, opt_onload, opt_chromevoxScriptBase);
   return true;
+};
+
+/**
+ * Uninstalls a script.
+ * @param {string} uid Id of the script node.
+ */
+cvox.ScriptInstaller.uninstallScript = function(uid) {
+  var scriptNode;
+  if (scriptNode = document.querySelector('script[' + uid + ']'))
+    scriptNode.remove();
 };
 
 /**
