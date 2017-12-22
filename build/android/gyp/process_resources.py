@@ -782,9 +782,7 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
     link_command += ['--manifest', options.android_manifest]
 
   partials = _CompileDeps(options.aapt_path, dep_subdirs, temp_dir)
-  # It only works if partials are reversed (resource clobbering). This could be
-  # due to aapt2 processes the partials in reversed order (compared to aapt)
-  for partial in reversed(partials):
+  for partial in partials:
     link_command += ['-R', partial]
 
   # Creates a .zip with AndroidManifest.xml, resources.arsc, res/*
