@@ -2102,53 +2102,52 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 
 #if !CONFIG_TXK_SEL
-// full forward transform and quantization
-#if DISABLE_TRELLISQ_SEARCH
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  AV1_XFORM_QUANT_B);
-#else
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  AV1_XFORM_QUANT_FP);
+  // full forward transform and quantization
+  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT) {
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    AV1_XFORM_QUANT_B);
+  } else {
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    AV1_XFORM_QUANT_FP);
 
 // TX-domain results need to shift down to Q2/D10 to match pixel
 // domain distortion values which are in Q2^2
 #if CONFIG_DAALA_TX
-  const int shift = (TX_COEFF_DEPTH - 10) * 2;
+    const int shift = (TX_COEFF_DEPTH - 10) * 2;
 #else
-  const int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
+    const int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
 #endif
-  tran_low_t *const coeff = BLOCK_OFFSET(x->plane[plane].coeff, block);
-  tran_low_t *const dqcoeff = BLOCK_OFFSET(xd->plane[plane].dqcoeff, block);
-  const int buffer_length = av1_get_max_eob(tx_size);
-  int64_t tmp_dist;
-  int64_t tmp;
+    tran_low_t *const coeff = BLOCK_OFFSET(x->plane[plane].coeff, block);
+    tran_low_t *const dqcoeff = BLOCK_OFFSET(xd->plane[plane].dqcoeff, block);
+    const int buffer_length = av1_get_max_eob(tx_size);
+    int64_t tmp_dist;
+    int64_t tmp;
 #if CONFIG_DAALA_TX
-  tmp_dist =
-      av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp, xd->bd);
-#else
-#if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     tmp_dist =
         av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp, xd->bd);
-  else
+#else
+#if CONFIG_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      tmp_dist =
+          av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp, xd->bd);
+    else
 #endif
-    tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp);
+      tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp);
 #endif
-  tmp_dist = RIGHT_SIGNED_SHIFT(tmp_dist, shift);
+    tmp_dist = RIGHT_SIGNED_SHIFT(tmp_dist, shift);
 
-  if (
+    if (
 #if CONFIG_DIST_8X8
-      disable_early_skip ||
+        disable_early_skip ||
 #endif
-      RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
-    av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l, CONFIG_LV_MAP);
-  } else {
-    args->exit_early = 1;
-    return;
+        RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
+      av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize,
+                     tx_size, a, l, CONFIG_LV_MAP);
+    } else {
+      args->exit_early = 1;
+      return;
+    }
   }
-#endif  // DISABLE_TRELLISQ_SEARCH
-
   if (!is_inter_block(mbmi)) {
     struct macroblock_plane *const p = &x->plane[plane];
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
@@ -3647,9 +3646,6 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   MACROBLOCKD *xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-#if DISABLE_TRELLISQ_SEARCH
-  (void)fast;
-#endif
 #if CONFIG_TXK_SEL
   av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, a, l, 0, rd_stats);
@@ -3748,63 +3744,63 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                     0, bw, bh);
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if DISABLE_TRELLISQ_SEARCH
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  AV1_XFORM_QUANT_B);
+  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT) {
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    AV1_XFORM_QUANT_B);
 
-#else
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  AV1_XFORM_QUANT_FP);
+  } else {
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    AV1_XFORM_QUANT_FP);
 
 // TX-domain results need to shift down to Q2/D10 to match pixel
 // domain distortion values which are in Q2^2
 #if CONFIG_DAALA_TX
-  const int shift = (TX_COEFF_DEPTH - 10) * 2;
+    const int shift = (TX_COEFF_DEPTH - 10) * 2;
 #else
-  const int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
+    const int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
 #endif
-  tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
-  const int buffer_length = av1_get_max_eob(tx_size);
-  int64_t tmp_dist, tmp_sse;
+    tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
+    const int buffer_length = av1_get_max_eob(tx_size);
+    int64_t tmp_dist, tmp_sse;
 #if CONFIG_DIST_8X8
-  int blk_w = block_size_wide[plane_bsize];
-  int blk_h = block_size_high[plane_bsize];
-  int disable_early_skip =
-      x->using_dist_8x8 && plane == 0 && blk_w >= 8 && blk_h >= 8 &&
-      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4) &&
-      x->tune_metric != AOM_TUNE_PSNR;
+    int blk_w = block_size_wide[plane_bsize];
+    int blk_h = block_size_high[plane_bsize];
+    int disable_early_skip =
+        x->using_dist_8x8 && plane == 0 && blk_w >= 8 && blk_h >= 8 &&
+        (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4) &&
+        x->tune_metric != AOM_TUNE_PSNR;
 #endif  // CONFIG_DIST_8X8
 
 #if CONFIG_DAALA_TX
-  tmp_dist =
-      av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp_sse, xd->bd);
-#else
-#if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     tmp_dist =
         av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp_sse, xd->bd);
-  else
+#else
+#if CONFIG_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      tmp_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp_sse,
+                                        xd->bd);
+    else
 #endif
-    tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp_sse);
+      tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp_sse);
 #endif
 
-  tmp_dist = RIGHT_SIGNED_SHIFT(tmp_dist, shift);
+    tmp_dist = RIGHT_SIGNED_SHIFT(tmp_dist, shift);
 
-  if (
+    if (
 #if CONFIG_DIST_8X8
-      disable_early_skip ||
+        disable_early_skip ||
 #endif
-      RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
-    av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l, fast);
-  } else {
-    rd_stats->rate += rd_stats->zero_rate;
-    rd_stats->dist += tmp << 4;
-    rd_stats->skip = 1;
-    rd_stats->invalid_rate = 1;
-    return;
+        RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
+      av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize,
+                     tx_size, a, l, fast);
+    } else {
+      rd_stats->rate += rd_stats->zero_rate;
+      rd_stats->dist += tmp << 4;
+      rd_stats->skip = 1;
+      rd_stats->invalid_rate = 1;
+      return;
+    }
   }
-#endif  // DISABLE_TRELLISQ_SEARCH
 
   const int eob = p->eobs[block];
 

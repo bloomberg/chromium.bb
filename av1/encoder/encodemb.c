@@ -595,8 +595,13 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
 
   if (x->blk_skip[plane][blk_row * bw + blk_col] == 0) {
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    AV1_XFORM_QUANT_FP);
+    if (args->enable_optimize_b) {
+      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
+                      tx_size, AV1_XFORM_QUANT_FP);
+    } else {
+      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
+                      tx_size, AV1_XFORM_QUANT_B);
+    }
   } else {
     p->eobs[block] = 0;
   }
@@ -620,13 +625,14 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_TXK_SEL
   if (plane == 0 && p->eobs[block] == 0) {
-#if DISABLE_TRELLISQ_SEARCH
-    xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
-        DCT_DCT;
-#else
-    assert(xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
-           DCT_DCT);
-#endif
+    if (args->enable_optimize_b) {
+      xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
+          DCT_DCT;
+    } else {
+      assert(
+          xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
+          DCT_DCT);
+    }
   }
 #endif  // CONFIG_TXK_SEL
 
@@ -892,14 +898,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_TXK_SEL
     if (plane == 0 && p->eobs[block] == 0) {
-#if DISABLE_TRELLISQ_SEARCH
-      xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
-          DCT_DCT;
-#else
       assert(
           xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
           DCT_DCT);
-#endif
     }
 #endif  // CONFIG_TXK_SEL
   } else {

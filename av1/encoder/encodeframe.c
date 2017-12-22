@@ -4437,10 +4437,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const BLOCK_SIZE block_size = bsize;
   const int num_planes = av1_num_planes(cm);
 
-  // Only optimize coefficients in the final encode
-  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT)
-    x->optimize = (dry_run == OUTPUT_ENABLED);
-
   if (!is_inter) {
 #if CONFIG_CFL
     xd->cfl.store_y = 1;
@@ -4602,6 +4598,4 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
   }
 #endif  // CONFIG_CFL
-  // Turn optimize back off for next block
-  if (cpi->sf.optimize_coefficients == FINAL_PASS_TRELLIS_OPT) x->optimize = 0;
 }
