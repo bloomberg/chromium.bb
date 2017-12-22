@@ -6,4 +6,5 @@ monochrome_android_manifest_jinja_variables = [
   "min_sdk_version=24",
   "sandboxed_service_exported=true",
   "use32bitAbi=android:use32bitAbi=\"true\"",
+  "sandboxed_service_extra_flags=android:visibleToInstantApps=\"true\"",
 ]
