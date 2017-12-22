@@ -58,7 +58,7 @@ template("write_build_config") {
   # consider them in dependency chains.
   if (_type != "android_apk" && _type != "java_binary" &&
       _type != "resource_rewriter" && _type != "dist_jar" &&
-      _type != "java_annotation_processor") {
+      _type != "java_annotation_processor" && _type != "dist_aar") {
     set_sources_assignment_filter(_java_target_whitelist)
     _parent_invoker = invoker.invoker
     _target_label =
