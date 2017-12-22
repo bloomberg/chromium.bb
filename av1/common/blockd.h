@@ -1382,7 +1382,8 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   if (mbmi->mode != GLOBALMV && mbmi->mode != GLOBAL_GLOBALMV) return 0;
 
 #if !GLOBAL_SUB8X8_USED
-  if (mbmi->sb_type < BLOCK_8X8) return 0;
+  if (AOMMIN(mi_size_wide[mbmi->sb_type], mi_size_high[mbmi->sb_type]) < 8)
+    return 0;
 #endif
 
   // Now check if all global motion is non translational
