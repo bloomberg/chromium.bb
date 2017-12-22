@@ -529,6 +529,59 @@ TEST(IncrementalMarkingTest, HeapVectorEagerTracingStopsAtMember) {
   }
 }
 
+// =============================================================================
+// HeapDoublyLinkedList support. ===============================================
+// =============================================================================
+
+namespace {
+
+class ObjectNode : public GarbageCollected<ObjectNode>,
+                   public DoublyLinkedListNode<ObjectNode> {
+ public:
+  explicit ObjectNode(Object* obj) : obj_(obj) {}
+
+  void Trace(Visitor* visitor) {
+    visitor->Trace(obj_);
+    visitor->Trace(prev_);
+    visitor->Trace(next_);
+  }
+
+ private:
+  friend class WTF::DoublyLinkedListNode<ObjectNode>;
+
+  Member<Object> obj_;
+  Member<ObjectNode> prev_;
+  Member<ObjectNode> next_;
+};
+
+}  // namespace
+
+TEST(IncrementalMarkingTest, HeapDoublyLinkedListPush) {
+  Object* obj = Object::Create();
+  ObjectNode* obj_node = new ObjectNode(obj);
+  HeapDoublyLinkedList<ObjectNode> list;
+  {
+    ExpectWriteBarrierFires<ObjectNode> scope(ThreadState::Current(),
+                                              {obj_node});
+    list.Push(obj_node);
+    // |obj| will be marked once |obj_node| gets processed.
+    EXPECT_FALSE(obj->IsMarked());
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapDoublyLinkedListAppend) {
+  Object* obj = Object::Create();
+  ObjectNode* obj_node = new ObjectNode(obj);
+  HeapDoublyLinkedList<ObjectNode> list;
+  {
+    ExpectWriteBarrierFires<ObjectNode> scope(ThreadState::Current(),
+                                              {obj_node});
+    list.Append(obj_node);
+    // |obj| will be marked once |obj_node| gets processed.
+    EXPECT_FALSE(obj->IsMarked());
+  }
+}
+
 }  // namespace incremental_marking_test
 }  // namespace blink
 
