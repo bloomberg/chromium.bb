@@ -40,6 +40,15 @@ namespace blink {
 class FontDescription;
 class SimpleFontData;
 
+enum FontDisplay {
+  kFontDisplayAuto,
+  kFontDisplayBlock,
+  kFontDisplaySwap,
+  kFontDisplayFallback,
+  kFontDisplayOptional,
+  kFontDisplayEnumMax
+};
+
 class CORE_EXPORT CSSFontFaceSource
     : public GarbageCollectedFinalized<CSSFontFaceSource> {
  public:
@@ -55,6 +64,7 @@ class CORE_EXPORT CSSFontFaceSource
 
   virtual bool IsLocalFontAvailable(const FontDescription&) { return false; }
   virtual void BeginLoadIfNeeded() {}
+  virtual void SetDisplay(FontDisplay) {}
 
   virtual bool IsInBlockPeriod() const { return false; }
   virtual bool IsInFailurePeriod() const { return false; }

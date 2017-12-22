@@ -25,19 +25,68 @@
 
 namespace blink {
 
+namespace {
+
+RemoteFontFaceSource::DisplayPeriod ComputePeriod(
+    FontDisplay displayValue,
+    RemoteFontFaceSource::Phase phase,
+    bool is_intervention_triggered) {
+  switch (displayValue) {
+    case kFontDisplayAuto:
+      if (is_intervention_triggered)
+        return RemoteFontFaceSource::kSwapPeriod;
+    // Fall through.
+    case kFontDisplayBlock:
+      switch (phase) {
+        case RemoteFontFaceSource::kNoLimitExceeded:
+        case RemoteFontFaceSource::kShortLimitExceeded:
+          return RemoteFontFaceSource::kBlockPeriod;
+        case RemoteFontFaceSource::kLongLimitExceeded:
+          return RemoteFontFaceSource::kSwapPeriod;
+      }
+
+    case kFontDisplaySwap:
+      return RemoteFontFaceSource::kSwapPeriod;
+
+    case kFontDisplayFallback:
+      switch (phase) {
+        case RemoteFontFaceSource::kNoLimitExceeded:
+          return RemoteFontFaceSource::kBlockPeriod;
+        case RemoteFontFaceSource::kShortLimitExceeded:
+          return RemoteFontFaceSource::kSwapPeriod;
+        case RemoteFontFaceSource::kLongLimitExceeded:
+          return RemoteFontFaceSource::kFailurePeriod;
+      }
+
+    case kFontDisplayOptional:
+      switch (phase) {
+        case RemoteFontFaceSource::kNoLimitExceeded:
+          return RemoteFontFaceSource::kBlockPeriod;
+        case RemoteFontFaceSource::kShortLimitExceeded:
+        case RemoteFontFaceSource::kLongLimitExceeded:
+          return RemoteFontFaceSource::kFailurePeriod;
+      }
+
+    case kFontDisplayEnumMax:
+      NOTREACHED();
+      break;
+  }
+  NOTREACHED();
+  return RemoteFontFaceSource::kSwapPeriod;
+}
+
+}  // namespace
+
 RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
                                            FontSelector* font_selector,
                                            FontDisplay display)
     : face_(css_font_face),
       font_selector_(font_selector),
       display_(display),
-      period_(display == kFontDisplaySwap ? kSwapPeriod : kBlockPeriod),
-      is_intervention_triggered_(false) {
+      phase_(kNoLimitExceeded),
+      is_intervention_triggered_(ShouldTriggerWebFontsIntervention()) {
   DCHECK(face_);
-  if (ShouldTriggerWebFontsIntervention()) {
-    is_intervention_triggered_ = true;
-    period_ = kSwapPeriod;
-  }
+  period_ = ComputePeriod(display_, phase_, is_intervention_triggered_);
 }
 
 RemoteFontFaceSource::~RemoteFontFaceSource() = default;
@@ -90,42 +139,43 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
 void RemoteFontFaceSource::FontLoadShortLimitExceeded(FontResource*) {
   if (IsLoaded())
     return;
-
-  if (display_ == kFontDisplayFallback)
-    SwitchToSwapPeriod();
-  else if (display_ == kFontDisplayOptional)
-    SwitchToFailurePeriod();
+  phase_ = kShortLimitExceeded;
+  UpdatePeriod();
 }
 
 void RemoteFontFaceSource::FontLoadLongLimitExceeded(FontResource*) {
   if (IsLoaded())
     return;
-
-  if (display_ == kFontDisplayBlock ||
-      (!is_intervention_triggered_ && display_ == kFontDisplayAuto))
-    SwitchToSwapPeriod();
-  else if (display_ == kFontDisplayFallback)
-    SwitchToFailurePeriod();
+  phase_ = kLongLimitExceeded;
+  UpdatePeriod();
 
   histograms_.LongLimitExceeded();
 }
 
-void RemoteFontFaceSource::SwitchToSwapPeriod() {
-  DCHECK_EQ(period_, kBlockPeriod);
-  period_ = kSwapPeriod;
-
-  PruneTable();
-  if (face_->DidBecomeVisibleFallback(this))
-    font_selector_->FontFaceInvalidated();
-
-  histograms_.RecordFallbackTime();
+void RemoteFontFaceSource::SetDisplay(FontDisplay display) {
+  // TODO(ksakamoto): If the font is loaded and in the failure period,
+  // changing it to block or swap period should update the font rendering
+  // using the loaded font.
+  if (IsLoaded())
+    return;
+  display_ = display;
+  UpdatePeriod();
 }
 
-void RemoteFontFaceSource::SwitchToFailurePeriod() {
-  if (period_ == kBlockPeriod)
-    SwitchToSwapPeriod();
-  DCHECK_EQ(period_, kSwapPeriod);
-  period_ = kFailurePeriod;
+void RemoteFontFaceSource::UpdatePeriod() {
+  DisplayPeriod new_period =
+      ComputePeriod(display_, phase_, is_intervention_triggered_);
+
+  // Fallback font is invisible iff the font is loading and in the block period.
+  // Invalidate the font if its fallback visibility has changed.
+  if (IsLoading() && period_ != new_period &&
+      (period_ == kBlockPeriod || new_period == kBlockPeriod)) {
+    PruneTable();
+    if (face_->FallbackVisibilityChanged(this))
+      font_selector_->FontFaceInvalidated();
+    histograms_.RecordFallbackTime();
+  }
+  period_ = new_period;
 }
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
