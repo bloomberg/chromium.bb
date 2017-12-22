@@ -91,6 +91,7 @@ class TerminatedArray {
   // of TerminateArray and manage their lifetimes.
   struct Allocator {
     STATIC_ONLY(Allocator);
+    using BackendAllocator = PartitionAllocator;
     using PassPtr = std::unique_ptr<TerminatedArray>;
     using Ptr = std::unique_ptr<TerminatedArray>;
 
