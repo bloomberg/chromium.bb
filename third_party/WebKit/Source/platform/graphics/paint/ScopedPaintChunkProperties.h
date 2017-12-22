@@ -21,11 +21,10 @@ class ScopedPaintChunkProperties {
 
  public:
   // Use new PaintChunkProperties for the scope.
-  ScopedPaintChunkProperties(
-      PaintController& paint_controller,
-      const PaintChunkProperties& properties,
-      const DisplayItemClient& client,
-      DisplayItem::Type type = DisplayItem::kUninitializedType)
+  ScopedPaintChunkProperties(PaintController& paint_controller,
+                             const PaintChunkProperties& properties,
+                             const DisplayItemClient& client,
+                             DisplayItem::Type type)
       : paint_controller_(paint_controller),
         previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
     paint_controller_.UpdateCurrentPaintChunkProperties(
@@ -33,60 +32,50 @@ class ScopedPaintChunkProperties {
   }
 
   // Use new PropertyTreeState, and keep the current backface_hidden.
-  ScopedPaintChunkProperties(
-      PaintController& paint_controller,
-      const PropertyTreeState& state,
-      const DisplayItemClient& client,
-      DisplayItem::Type type = DisplayItem::kUninitializedType)
-      : paint_controller_(paint_controller),
-        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
-    PaintChunkProperties properties(state);
-    properties.backface_hidden = previous_properties_.backface_hidden;
-    paint_controller_.UpdateCurrentPaintChunkProperties(
-        PaintChunk::Id(client, type), properties);
-  }
+  ScopedPaintChunkProperties(PaintController& paint_controller,
+                             const PropertyTreeState& state,
+                             const DisplayItemClient& client,
+                             DisplayItem::Type type)
+      : ScopedPaintChunkProperties(
+            paint_controller,
+            GetPaintChunkProperties(state, paint_controller),
+            client,
+            type) {}
 
   // Use new transform state, and keep the current other properties.
   ScopedPaintChunkProperties(
       PaintController& paint_controller,
       scoped_refptr<const TransformPaintPropertyNode> transform,
       const DisplayItemClient& client,
-      DisplayItem::Type type = DisplayItem::kUninitializedType)
-      : paint_controller_(paint_controller),
-        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
-    PaintChunkProperties properties(previous_properties_);
-    properties.property_tree_state.SetTransform(std::move(transform));
-    paint_controller_.UpdateCurrentPaintChunkProperties(
-        PaintChunk::Id(client, type), properties);
-  }
+      DisplayItem::Type type)
+      : ScopedPaintChunkProperties(
+            paint_controller,
+            GetPaintChunkProperties(transform, paint_controller),
+            client,
+            type) {}
 
   // Use new clip state, and keep the current other properties.
-  ScopedPaintChunkProperties(
-      PaintController& paint_controller,
-      scoped_refptr<const ClipPaintPropertyNode> clip,
-      const DisplayItemClient& client,
-      DisplayItem::Type type = DisplayItem::kUninitializedType)
-      : paint_controller_(paint_controller),
-        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
-    PaintChunkProperties properties(previous_properties_);
-    properties.property_tree_state.SetClip(std::move(clip));
-    paint_controller_.UpdateCurrentPaintChunkProperties(
-        PaintChunk::Id(client, type), properties);
-  }
+  ScopedPaintChunkProperties(PaintController& paint_controller,
+                             scoped_refptr<const ClipPaintPropertyNode> clip,
+                             const DisplayItemClient& client,
+                             DisplayItem::Type type)
+      : ScopedPaintChunkProperties(
+            paint_controller,
+            GetPaintChunkProperties(clip, paint_controller),
+            client,
+            type) {}
 
   // Use new effect state, and keep the current other properties.
   ScopedPaintChunkProperties(
       PaintController& paint_controller,
       scoped_refptr<const EffectPaintPropertyNode> effect,
       const DisplayItemClient& client,
-      DisplayItem::Type type = DisplayItem::kUninitializedType)
-      : paint_controller_(paint_controller),
-        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
-    PaintChunkProperties properties(previous_properties_);
-    properties.property_tree_state.SetEffect(std::move(effect));
-    paint_controller_.UpdateCurrentPaintChunkProperties(
-        PaintChunk::Id(client, type), properties);
-  }
+      DisplayItem::Type type)
+      : ScopedPaintChunkProperties(
+            paint_controller,
+            GetPaintChunkProperties(effect, paint_controller),
+            client,
+            type) {}
 
   ~ScopedPaintChunkProperties() {
     // We should not return to the previous id, because that may cause a new
@@ -99,6 +88,42 @@ class ScopedPaintChunkProperties {
   }
 
  private:
+  static PaintChunkProperties GetPaintChunkProperties(
+      const PropertyTreeState& state,
+      PaintController& paint_controller) {
+    PaintChunkProperties properties(state);
+    properties.backface_hidden =
+        paint_controller.CurrentPaintChunkProperties().backface_hidden;
+    return properties;
+  }
+
+  static PaintChunkProperties GetPaintChunkProperties(
+      scoped_refptr<const TransformPaintPropertyNode> transform,
+      PaintController& paint_controller) {
+    PaintChunkProperties properties(
+        paint_controller.CurrentPaintChunkProperties());
+    properties.property_tree_state.SetTransform(std::move(transform));
+    return properties;
+  }
+
+  static PaintChunkProperties GetPaintChunkProperties(
+      scoped_refptr<const ClipPaintPropertyNode> clip,
+      PaintController& paint_controller) {
+    PaintChunkProperties properties(
+        paint_controller.CurrentPaintChunkProperties());
+    properties.property_tree_state.SetClip(std::move(clip));
+    return properties;
+  }
+
+  static PaintChunkProperties GetPaintChunkProperties(
+      scoped_refptr<const EffectPaintPropertyNode> effect,
+      PaintController& paint_controller) {
+    PaintChunkProperties properties(
+        paint_controller.CurrentPaintChunkProperties());
+    properties.property_tree_state.SetEffect(std::move(effect));
+    return properties;
+  }
+
   PaintController& paint_controller_;
   PaintChunkProperties previous_properties_;
 };

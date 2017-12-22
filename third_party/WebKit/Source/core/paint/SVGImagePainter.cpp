@@ -36,7 +36,7 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
   PaintInfo paint_info_before_filtering(paint_info);
   // Images cannot have children so do not call updateCullRect.
   SVGTransformContext transform_context(
-      paint_info_before_filtering.context, layout_svg_image_,
+      paint_info_before_filtering, layout_svg_image_,
       layout_svg_image_.LocalToSVGParentTransform());
   {
     SVGPaintContext paint_context(layout_svg_image_,

@@ -41,7 +41,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   paint_info_before_filtering.UpdateCullRect(
       layout_svg_container_.LocalToSVGParentTransform());
   SVGTransformContext transform_context(
-      paint_info_before_filtering.context, layout_svg_container_,
+      paint_info_before_filtering, layout_svg_container_,
       layout_svg_container_.LocalToSVGParentTransform());
   {
     Optional<FloatClipRecorder> clip_recorder;
