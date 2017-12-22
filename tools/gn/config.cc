@@ -8,8 +8,10 @@
 #include "tools/gn/input_file_manager.h"
 #include "tools/gn/scheduler.h"
 
-Config::Config(const Settings* settings, const Label& label)
-    : Item(settings, label), resolved_(false) {}
+Config::Config(const Settings* settings,
+               const Label& label,
+               const std::set<SourceFile>& build_dependency_files)
+    : Item(settings, label, build_dependency_files), resolved_(false) {}
 
 Config::~Config() = default;
 

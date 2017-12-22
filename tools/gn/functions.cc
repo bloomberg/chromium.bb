@@ -338,8 +338,8 @@ Value RunConfig(const FunctionCallNode* function,
     g_scheduler->Log("Defining config", label.GetUserVisibleName(true));
 
   // Create the new config.
-  std::unique_ptr<Config> config =
-      std::make_unique<Config>(scope->settings(), label);
+  std::unique_ptr<Config> config = std::make_unique<Config>(
+      scope->settings(), label, scope->build_dependency_files());
   config->set_defined_from(function);
   if (!Visibility::FillItemVisibility(config.get(), scope, err))
     return Value();
@@ -633,6 +633,7 @@ Value RunImport(Scope* scope,
   SourceFile import_file =
       input_dir.ResolveRelativeFile(args[0], err,
           scope->settings()->build_settings()->root_path_utf8());
+  scope->AddBuildDependencyFile(import_file);
   if (!err->has_error()) {
     scope->settings()->import_manager().DoImport(import_file, function,
                                                  scope, err);
@@ -910,7 +911,8 @@ Value RunPool(const FunctionCallNode* function,
   }
 
   // Create the new pool.
-  std::unique_ptr<Pool> pool = std::make_unique<Pool>(scope->settings(), label);
+  std::unique_ptr<Pool> pool = std::make_unique<Pool>(
+      scope->settings(), label, scope->build_dependency_files());
   pool->set_depth(depth->int_value());
 
   // Save the generated item.
