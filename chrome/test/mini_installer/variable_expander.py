@@ -152,6 +152,9 @@ class VariableExpander:
             '{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}'),
           'CHROME_DIR': 'Google\\Chrome',
           'CHROME_HTML_PROG_ID': 'ChromeHTML',
+          'CHROME_HTML_PROG_ID_BETA': 'ChromeBHTML',
+          'CHROME_HTML_PROG_ID_DEV': 'ChromeDHTML',
+          'CHROME_HTML_PROG_ID_SXS': 'ChromeSSHTM',
           'CHROME_LONG_NAME': 'Google Chrome',
           'CHROME_SHORT_NAME': 'Chrome',
           'CHROME_UPDATE_REGISTRY_SUBKEY': (
