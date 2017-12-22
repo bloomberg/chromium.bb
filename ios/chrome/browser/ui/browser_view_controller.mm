@@ -2063,8 +2063,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [_toolbarCoordinator QRScannerResultLoader];
   _qrScannerCoordinator.presentationProvider = self;
 
-  _tabHistoryCoordinator =
-      [[LegacyTabHistoryCoordinator alloc] initWithBaseViewController:self];
+  _tabHistoryCoordinator = [[LegacyTabHistoryCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:_browserState];
   _tabHistoryCoordinator.dispatcher = _dispatcher;
   _tabHistoryCoordinator.positionProvider =
       [_toolbarCoordinator tabHistoryPositioner];
