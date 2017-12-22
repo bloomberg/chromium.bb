@@ -8,6 +8,7 @@ include_rules = [
    # Enable remote assistance on Chrome OS
   "+remoting/base",
   "+remoting/host",
+  "+services/network/public/interfaces",
 ]
 
 specific_include_rules = {

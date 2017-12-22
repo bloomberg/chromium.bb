@@ -31,23 +31,46 @@ class PredicateWrapper {
                                      filter->including_domains.value().begin(),
                                      filter->including_domains.value().end())
                                : std::set<std::string>()),
-        session_control_(filter->session_control) {}
+        use_cookie_name_(filter->cookie_name.has_value()),
+        cookie_name_(filter->cookie_name.has_value()
+                         ? filter->cookie_name.value()
+                         : std::string()),
+        use_url_(filter->url.has_value()),
+        url_(filter->url.has_value() ? filter->url.value() : GURL()),
+        session_control_(filter->session_control) {
+    // Options to use for deletion of cookies associated with
+    // a particular URL.  These options will make sure that all
+    // cookies associated with the URL are deleted.
+    const_cast<net::CookieOptions&>(options_).set_include_httponly();
+    const_cast<net::CookieOptions&>(options_).set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  }
 
   // Return true if the given cookie should be deleted.
   bool Predicate(const net::CanonicalCookie& cookie) {
     // Ignore begin/end times; they're handled by method args.
     bool result = true;
+
     // Delete if the cookie is not in excluding_domains_.
-    if (use_excluding_domains_)
+    if (use_excluding_domains_ && result)
       result &= !DomainMatches(cookie, excluding_domains_);
 
     // Delete if the cookie is in including_domains_.
-    if (use_including_domains_)
+    if (use_including_domains_ && result)
       result &= DomainMatches(cookie, including_domains_);
+
+    // Delete if the cookie has a specified name.
+    if (use_cookie_name_ && result)
+      result &= (cookie_name_ == cookie.Name());
+
+    // Delete if the cookie matches the URL.
+    if (use_url_ && result)
+      result &= cookie.IncludeForRequestURL(url_, options_);
 
     // Delete if the cookie is not the correct persistent or session type.
     if (session_control_ !=
-        network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL) {
+            network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL &&
+        result) {
       // Relies on the assumption that there are only three values possible for
       // session_control.
       result &=
@@ -78,13 +101,22 @@ class PredicateWrapper {
     return match_domains.count(effective_domain) != 0;
   }
 
-  bool use_excluding_domains_;
-  std::set<std::string> excluding_domains_;
+  const bool use_excluding_domains_;
+  const std::set<std::string> excluding_domains_;
 
-  bool use_including_domains_;
-  std::set<std::string> including_domains_;
+  const bool use_including_domains_;
+  const std::set<std::string> including_domains_;
 
-  network::mojom::CookieDeletionSessionControl session_control_;
+  const bool use_cookie_name_;
+  const std::string cookie_name_;
+
+  const bool use_url_;
+  const GURL url_;
+
+  const network::mojom::CookieDeletionSessionControl session_control_;
+
+  // Set at construction; used for IncludeForRequestURL().
+  const net::CookieOptions options_;
 
   DISALLOW_COPY_AND_ASSIGN(PredicateWrapper);
 };
