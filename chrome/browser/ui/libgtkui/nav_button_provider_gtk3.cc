@@ -128,17 +128,27 @@ gfx::Size GetMinimumWidgetSize(gfx::Size content_size,
   return widget_rect.size();
 }
 
+ScopedStyleContext CreateHeaderContext(bool maximized) {
+  std::string window_selector = "GtkWindow#window.background";
+  if (maximized)
+    window_selector += ".maximized";
+  return AppendCssNodeToStyleContext(
+      AppendCssNodeToStyleContext(nullptr, window_selector),
+      "GtkHeaderBar#headerbar.header-bar.titlebar");
+}
+
 void CalculateUnscaledButtonSize(chrome::FrameButtonDisplayType type,
+                                 bool maximized,
                                  gfx::Size* button_size,
                                  gfx::Insets* button_margin) {
   // views::ImageButton expects the images for each state to be of the
   // same size, but GTK can, in general, use a differnetly-sized
   // button for each state.  For this reason, render buttons for all
   // states at the size of a GTK_STATE_FLAG_NORMAL button.
-  auto button_context = GetStyleContextFromCss(
-      "GtkHeaderBar#headerbar.header-bar.titlebar "
+  auto button_context = AppendCssNodeToStyleContext(
+      CreateHeaderContext(maximized),
       "GtkButton#button.titlebutton." +
-      std::string(ButtonStyleClassFromButtonType(type)));
+          std::string(ButtonStyleClassFromButtonType(type)));
 
   ScopedGObject<GdkPixbuf> icon_pixbuf =
       LoadNavButtonIcon(type, button_context, 1);
@@ -156,10 +166,6 @@ void CalculateUnscaledButtonSize(chrome::FrameButtonDisplayType type,
       MarginFromStyleContext(button_context, GTK_STATE_FLAG_NORMAL);
 }
 
-ScopedStyleContext CreateHeaderContext() {
-  return GetStyleContextFromCss("GtkHeaderBar#headerbar.header-bar.titlebar");
-}
-
 ScopedStyleContext CreateAvatarButtonContext(GtkStyleContext* header_context) {
   return AppendCssNodeToStyleContext(
       header_context, GtkVersionCheck(3, 20)
@@ -171,10 +177,12 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
  public:
   NavButtonImageSource(chrome::FrameButtonDisplayType type,
                        views::Button::ButtonState state,
+                       bool maximized,
                        bool active,
                        gfx::Size button_size)
       : type_(type),
         state_(state),
+        maximized_(maximized),
         active_(active),
         button_size_(button_size) {}
 
@@ -185,9 +193,8 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
     // RenderNavButton() is called at most once for each needed scale
     // factor.  Additionally, buttons in the HOVERED or PRESSED states
     // are not actually rendered until they are needed.
-    auto button_context = GetStyleContextFromCss(
-        "GtkHeaderBar#headerbar.header-bar.titlebar "
-        "GtkButton#button.titlebutton");
+    auto button_context = AppendCssNodeToStyleContext(
+        CreateHeaderContext(maximized_), "GtkButton#button.titlebutton");
     gtk_style_context_add_class(button_context,
                                 ButtonStyleClassFromButtonType(type_));
     GtkStateFlags button_state = GtkStateFlagsFromButtonState(state_);
@@ -244,6 +251,7 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
  private:
   chrome::FrameButtonDisplayType type_;
   views::Button::ButtonState state_;
+  bool maximized_;
   bool active_;
   gfx::Size button_size_;
 };
@@ -257,7 +265,7 @@ NavButtonProviderGtk3::~NavButtonProviderGtk3() {}
 void NavButtonProviderGtk3::RedrawImages(int top_area_height,
                                          bool maximized,
                                          bool active) {
-  auto header_context = CreateHeaderContext();
+  auto header_context = CreateHeaderContext(maximized);
 
   GtkBorder header_padding;
   gtk_style_context_get_padding(header_context, GTK_STATE_FLAG_NORMAL,
@@ -273,7 +281,7 @@ void NavButtonProviderGtk3::RedrawImages(int top_area_height,
       chrome::FrameButtonDisplayType::kClose,
   };
   for (auto type : display_types) {
-    CalculateUnscaledButtonSize(type, &button_sizes[type],
+    CalculateUnscaledButtonSize(type, maximized, &button_sizes[type],
                                 &button_margins[type]);
     int button_unconstrained_height = button_sizes[type].height() +
                                       button_margins[type].top() +
@@ -319,8 +327,8 @@ void NavButtonProviderGtk3::RedrawImages(int top_area_height,
     for (size_t state = 0; state < views::Button::STATE_COUNT; state++) {
       button_images_[type][state] = gfx::ImageSkia(
           std::make_unique<NavButtonImageSource>(
-              type, static_cast<views::Button::ButtonState>(state), active,
-              size),
+              type, static_cast<views::Button::ButtonState>(state), maximized,
+              active, size),
           size);
     }
   }
@@ -352,7 +360,7 @@ int NavButtonProviderGtk3::GetInterNavButtonSpacing() const {
 std::unique_ptr<views::Background>
 NavButtonProviderGtk3::CreateAvatarButtonBackground(
     const views::Button* avatar_button) const {
-  auto header_context = CreateHeaderContext();
+  auto header_context = CreateHeaderContext(false);
   auto button_context = CreateAvatarButtonContext(header_context);
   return std::make_unique<Gtk3BackgroundPainter>(avatar_button,
                                                  std::move(button_context));
@@ -363,7 +371,7 @@ void NavButtonProviderGtk3::CalculateCaptionButtonLayout(
     int top_area_height,
     gfx::Size* caption_button_size,
     gfx::Insets* caption_button_spacing) const {
-  auto header_context = CreateHeaderContext();
+  auto header_context = CreateHeaderContext(false);
   gfx::InsetsF header_padding =
       PaddingFromStyleContext(header_context, GTK_STATE_FLAG_NORMAL);
 
