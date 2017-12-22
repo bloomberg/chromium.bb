@@ -619,7 +619,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     // The first wheel event in the sequence should be cancellable.
     DCHECK(wheel_event.phase != WebMouseWheelEvent::kPhaseBegan);
 
-    DCHECK(mouse_wheel_result_ != kEventDispositionUndefined);
     result = static_cast<EventDisposition>(mouse_wheel_result_);
 
     if (wheel_event.phase == WebMouseWheelEvent::kPhaseEnded ||
