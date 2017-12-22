@@ -905,8 +905,10 @@ Polymer({
       ],
       [
         settings.ChromeCleanerCardState.CLEANER_DOWNLOAD_FAILED, {
-          title: this.i18n('chromeCleanupTitleNoInternet'),
-          explanation: this.i18n('chromeCleanupExplanationNoInternet'),
+          // TODO(crbug.com/776538): distinguish between missing network
+          // connectivity and cleanups being disabled by the server.
+          title: this.i18n('chromeCleanupTitleCleanupUnavailable'),
+          explanation: this.i18n('chromeCleanupExplanationCleanupUnavailable'),
           icon: icons.WARNING,
           actionButton: actionButtons.TRY_SCAN_AGAIN,
           flags: learnMoreIfUserInitiatedCleanupsDisabled,

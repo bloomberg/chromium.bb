@@ -792,6 +792,10 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_RESET_CLEANUP_TRY_AGAIN_BUTTON_LABEL},
       {"chromeCleanupTitleLogsPermissionExplanation",
        IDS_SETTINGS_RESET_CLEANUP_LOGS_PERMISSION_EXPLANATION},
+      {"chromeCleanupTitleCleanupUnavailable",
+       IDS_SETTINGS_RESET_CLEANUP_TITLE_CLEANUP_UNAVAILABLE},
+      {"chromeCleanupExplanationCleanupUnavailable",
+       IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CLEANUP_UNAVAILABLE},
   };
 
   AddLocalizedStringsBulk(html_source, localized_strings,
