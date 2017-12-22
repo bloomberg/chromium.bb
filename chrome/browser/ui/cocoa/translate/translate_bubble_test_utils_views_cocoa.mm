@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/views/controls/button/label_button.h"
 
 // TODO(groby): Share with translate_bubble_controller_unittest.mm
 @implementation BrowserWindowController (ForTesting)
@@ -44,7 +46,13 @@ void PressTranslate(Browser* browser) {
   if (chrome::ShowAllDialogsWithViewsToolkit()) {
     TranslateBubbleView* bubble = TranslateBubbleView::GetCurrentBubble();
     DCHECK(bubble);
-    bubble->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_TRANSLATE);
+
+    views::LabelButton button(nullptr, base::string16());
+    button.set_id(TranslateBubbleView::BUTTON_ID_TRANSLATE);
+
+    bubble->ButtonPressed(&button,
+                          ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
+                                       ui::DomCode::ENTER, ui::EF_NONE));
     return;
   }
 
