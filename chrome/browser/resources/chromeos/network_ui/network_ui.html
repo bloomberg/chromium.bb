@@ -1,9 +1,9 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 
 <head>
   <meta charset="utf-8">
-  <title id="network" i18n-content="titleText"></title>
+  <title id="network">$i18n{titleText}</title>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="chrome://network/network_ui.css">
   <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
@@ -18,10 +18,10 @@
 </head>
 
 <body>
-  <div i18n-content="autoRefreshText"></div>
-  <span i18n-values=".innerHTML:deviceLogLinkText"></span>
+  <div>$i18n{autoRefreshText}</div>
+  <span>$i18nRaw{deviceLogLinkText}</span>
 
-  <h2 i18n-content="globalPolicyLabel"></h2>
+  <h2>$i18n{globalPolicyLabel}</h2>
   <div id="global-policy"></div>
 
   <h2>CrNetworkSelect</h2>
@@ -30,25 +30,25 @@
     </cr-network-select>
   </div>
   <div>
-    <paper-button raised class="colored" id="refresh"
-        i18n-content="networkRefreshText">
+    <paper-button raised class="colored" id="refresh">
+      $i18n{networkRefreshText}
     </paper-button>
   </div>
 
-  <h2 i18n-content="networkListsLabel"></h2>
+  <h2>$i18n{networkListsLabel}</h2>
 
-  <div i18n-content="clickToExpandText"></div>
+  <div>$i18n{clickToExpandText}</div>
   <div>
-    <span i18n-content="propertyFormatText"></span>
+    <span>$i18n{propertyFormatText}</span>
     <select id="get-property-format">
-      <option value="normal" i18n-content="normalFormatOption"></option>
-      <option value="managed" i18n-content="managedFormatOption"></option>
-      <option value="state" i18n-content="stateFormatOption"></option>
-      <option value="shill" i18n-content="shillFormatOption"></option>
+      <option value="normal">$i18n{normalFormatOption}</option>
+      <option value="managed">$i18n{managedFormatOption}</option>
+      <option value="state">$i18n{stateFormatOption}</option>
+      <option value="shill">$i18n{shillFormatOption}</option>
     </select>
   </div>
 
-  <h3 i18n-content="devicesLabel"></h3>
+  <h3>$i18n{devicesLabel}</h3>
   <table id="device-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>
@@ -58,7 +58,7 @@
     </tr>
   </table>
 
-  <h3 i18n-content="visibleNetworksLabel"></h3>
+  <h3>$i18n{visibleNetworksLabel}</h3>
   <table id="network-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>
@@ -78,7 +78,7 @@
     </tr>
   </table>
 
-  <h3 i18n-content="favoriteNetworksLabel"></h3>
+  <h3>$i18n{favoriteNetworksLabel}</h3>
   <table id="favorite-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>

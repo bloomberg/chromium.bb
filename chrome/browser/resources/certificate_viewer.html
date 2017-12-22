@@ -1,5 +1,5 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
   <head>
     <meta charset="utf-8">
     <title id="title"></title>
@@ -20,74 +20,74 @@
   <body>
     <tabbox id="tabbox">
       <tabs id="tabs" class="new-style-tabs">
-        <tab i18n-content="general"></tab>
-        <tab i18n-content="details"></tab>
+        <tab>$i18n{general}</tab>
+        <tab>$i18n{details}</tab>
       </tabs>
       <tabpanels id="tabpanels" class="new-style-tabs">
         <!-- General -->
         <tabpanel id="general">
           <!-- Usages -->
-          <h3 id="usages-title" i18n-content="usages"></h3>
+          <h3 id="usages-title">$i18n{usages}</h3>
           <div id="usages"></div>
 
           <div class="groups">
             <!-- Issued to -->
             <div>
-              <h3 i18n-content="issuedTo"></h3>
+              <h3>$i18n{issuedTo}</h3>
             </div>
             <div>
-              <div class="attribute" i18n-content="cn"></div>
+              <div class="attribute">$i18n{cn}</div>
               <div id="issued-cn" class="value"></div>
             </div>
             <div>
-              <div class="attribute" i18n-content="o"></div>
+              <div class="attribute">$i18n{o}</div>
               <div id="issued-o" class="value"></div>
             </div>
             <div>
-              <div class="attribute" i18n-content="ou"></div>
+              <div class="attribute">$i18n{ou}</div>
               <div id="issued-ou" class="value"></div>
             </div>
 
             <!-- Issued by -->
             <div>
-              <h3 i18n-content="issuedBy"></h3>
+              <h3>$i18n{issuedBy}</h3>
             </div>
             <div>
-              <div class="attribute" i18n-content="cn"></div>
+              <div class="attribute">$i18n{cn}</div>
               <div id="issuer-cn" class="value"></div>
             </div>
             <div>
-              <div class="attribute" i18n-content="o"></div>
+              <div class="attribute">$i18n{o}</div>
               <div id="issuer-o" class="value"></div>
             </div>
             <div>
-              <div class="attribute" i18n-content="ou"></div>
+              <div class="attribute">$i18n{ou}</div>
               <div id="issuer-ou" class="value"></div>
             </div>
 
             <!-- Validity -->
             <div>
-              <h3 i18n-content="validity"></h3>
+              <h3>$i18n{validity}</h3>
             </div>
             <div>
-              <div class="attribute" i18n-content="issuedOn"></div>
+              <div class="attribute">$i18n{issuedOn}</div>
               <div id="issue-date" class="value"></div>
             </div>
             <div>
-              <div class="attribute" i18n-content="expiresOn"></div>
+              <div class="attribute">$i18n{expiresOn}</div>
               <div id="expiry-date" class="value"></div>
             </div>
 
             <!-- Fingerprints -->
             <div>
-              <h3 i18n-content="fingerprints"></h3>
+              <h3>$i18n{fingerprints}</h3>
             </div>
             <div>
-              <div class="attribute" i18n-content="sha256"></div>
+              <div class="attribute">$i18n{sha256}</div>
               <div id="sha256" class="value"></div>
             </div>
             <div>
-              <div class="attribute" i18n-content="sha1"></div>
+              <div class="attribute">$i18n{sha1}</div>
               <div id="sha1" class="value"></div>
             </div>
           </div>
@@ -96,20 +96,20 @@
         <!-- Details -->
         <tabpanel>
           <div id="hierarchy-section" class="vertical-box">
-            <h3 i18n-content="hierarchy"></h3>
+            <h3>$i18n{hierarchy}</h3>
             <tree id="hierarchy" class="section-contents"
                 icon-visibility='hidden'></tree>
           </div>
           <div id="cert-fields-section" class="vertical-box">
-            <h3 i18n-content="certFields"></h3>
+            <h3>$i18n{certFields}</h3>
             <tree id="cert-fields" class="section-contents"
                 icon-visibility='hidden'></tree>
           </div>
           <div id="cert-field-value-section" class="vertical-box">
-            <h3 i18n-content="certFieldVal"></h3>
+            <h3>$i18n{certFieldVal}</h3>
             <div id="cert-field-value" class="section-contents"></div>
             <div>
-              <button id="export" i18n-content="export"></button>
+              <button id="export">$i18n{export}</button>
             </div>
           </div>
         </tabpanel>
