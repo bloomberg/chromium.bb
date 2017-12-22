@@ -16,7 +16,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -42,9 +41,9 @@
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(OS_MACOSX)
-#include "media/mojo/interfaces/cdm_service_mac.mojom.h"
+#include "media/mojo/interfaces/media_service_mac.mojom.h"
 #else
-#include "media/mojo/interfaces/cdm_service.mojom.h"
+#include "media/mojo/interfaces/media_service.mojom.h"
 #endif  // defined(OS_MACOSX)
 
 namespace content {
@@ -327,8 +326,8 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::ConnectToCdmService(
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
 
-  media::mojom::CdmServicePtr cdm_service;
-  connector->BindInterface(identity, &cdm_service);
+  media::mojom::MediaServicePtr media_service;
+  connector->BindInterface(identity, &media_service);
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if defined(OS_MACOSX)
@@ -338,15 +337,15 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::ConnectToCdmService(
       std::make_unique<SeatbeltExtensionTokenProviderImpl>(cdm_path),
       mojo::MakeRequest(&token_provider_ptr));
 
-  cdm_service->LoadCdm(cdm_path, std::move(token_provider_ptr));
+  media_service->LoadCdm(cdm_path, std::move(token_provider_ptr));
 #else
-  cdm_service->LoadCdm(cdm_path);
+  media_service->LoadCdm(cdm_path);
 #endif  // defined(OS_MACOSX)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   InterfaceFactoryPtr interface_factory_ptr;
-  cdm_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr),
-                                      GetFrameServices(cdm_file_system_id));
+  media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr),
+                                        GetFrameServices(cdm_file_system_id));
   interface_factory_ptr.set_connection_error_handler(
       base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
                      base::Unretained(this), cdm_guid));
