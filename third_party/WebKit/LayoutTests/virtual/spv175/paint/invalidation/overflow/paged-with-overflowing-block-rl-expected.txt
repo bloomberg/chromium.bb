@@ -17,14 +17,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutPagedFlowThread (anonymous)",
+          "object": "LayoutBlockFlow DIV id='elm'",
           "rect": [8, 8, 500, 485],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutPagedFlowThread (anonymous)",
-          "rect": [8, 8, 500, 485],
-          "reason": "chunk uncacheable"
+          "reason": "style change"
         }
       ]
     }

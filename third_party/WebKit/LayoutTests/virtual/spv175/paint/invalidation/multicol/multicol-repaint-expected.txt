@@ -17,24 +17,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "InlineTextBox 'XXXXXX'",
           "rect": [209, 15, 325, 150],
-          "reason": "chunk uncacheable"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [9, 0, 200, 67],
-          "reason": "chunk uncacheable"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [9, 0, 200, 67],
-          "reason": "chunk uncacheable"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "InlineTextBox 'x'",
           "rect": [209, 15, 75, 150],
-          "reason": "chunk uncacheable"
+          "reason": "disappeared"
         }
       ]
     }

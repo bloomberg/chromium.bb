@@ -68,9 +68,10 @@ bool PaintController::UseCachedDrawingIfPossible(
     return false;
   }
 
-  size_t cached_item = FindCachedItem(DisplayItem::Id(client, type));
+  size_t cached_item =
+      FindCachedItem(DisplayItem::Id(client, type, current_fragment_));
   if (cached_item == kNotFound) {
-    NOTREACHED();
+    // See FindOutOfOrderCachedItemForward() for explanation of the situation.
     return false;
   }
 
@@ -299,19 +300,20 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
       DCHECK(!display_item.IsEndAndPairedWith(begin_display_item.GetType()));
   }
 
-  size_t index = FindMatchingItemFromIndex(display_item.GetId(),
-                                           new_display_item_indices_by_client_,
-                                           new_display_item_list_);
-  if (index != kNotFound) {
-    ShowDebugData();
-    DLOG(INFO) << "DisplayItem " << display_item.AsDebugString()
-               << " has duplicated id with previous "
-               << new_display_item_list_[index].AsDebugString()
-               << " (index=" << index << ")";
-    NOTREACHED();
+  if (display_item.IsCacheable()) {
+    size_t index = FindMatchingItemFromIndex(
+        display_item.GetId(), new_display_item_indices_by_client_,
+        new_display_item_list_);
+    if (index != kNotFound) {
+      ShowDebugData();
+      NOTREACHED() << "DisplayItem " << display_item.AsDebugString()
+                   << " has duplicated id with previous "
+                   << new_display_item_list_[index].AsDebugString()
+                   << " (index=" << index << ")";
+    }
+    AddItemToIndexIfNeeded(display_item, new_display_item_list_.size() - 1,
+                           new_display_item_indices_by_client_);
   }
-  AddItemToIndexIfNeeded(display_item, new_display_item_list_.size() - 1,
-                         new_display_item_indices_by_client_);
 #endif  // DCHECK_IS_ON()
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
@@ -468,17 +470,19 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
 
 #if DCHECK_IS_ON()
   ShowDebugData();
-  LOG(ERROR) << id.client.DebugName() << ":"
-             << DisplayItem::TypeAsDebugString(id.type);
+  LOG(ERROR) << id.client.DebugName() << " " << id.ToString();
 #endif
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
-    CHECK(false) << "Can't find cached display item";
-
-  // We did not find the cached display item. This should be impossible, but may
-  // occur if there is a bug in the system, such as under-invalidation,
-  // incorrect cache checking or duplicate display ids. In this case, the caller
+  // The display item newly appears while the client is not invalidated. The
+  // situation alone (without other kinds of under-invalidations) won't corrupt
+  // rendering, but causes AddItemToIndexIfNeeded() for all remaining display
+  // item, which is not the best for performance. In this case, the caller
   // should fall back to repaint the display item.
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+    // Ensure our paint invalidation tests don't trigger the less performant
+    // situation which should be rare.
+    CHECK(false) << "Can't find cached display item";
+  }
   return kNotFound;
 }
 

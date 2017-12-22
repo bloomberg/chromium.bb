@@ -17,34 +17,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "LayoutBlockFlow DIV id='elm'",
           "rect": [8, 8, 792, 167],
-          "reason": "chunk uncacheable"
+          "reason": "style change"
         },
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [8, 8, 792, 167],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "LayoutBlockFlow DIV id='elm'",
           "rect": [0, 341, 508, 167],
-          "reason": "chunk uncacheable"
+          "reason": "style change"
         },
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [0, 341, 508, 167],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "object": "LayoutBlockFlow DIV id='elm'",
           "rect": [8, 174, 500, 168],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [8, 174, 500, 168],
-          "reason": "chunk uncacheable"
+          "reason": "style change"
         }
       ]
     }

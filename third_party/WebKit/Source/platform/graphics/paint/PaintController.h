@@ -76,7 +76,13 @@ class PLATFORM_EXPORT PaintController {
   void UpdateCurrentPaintChunkProperties(
       const Optional<PaintChunk::Id>& id,
       const PaintChunkProperties& properties) {
-    new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, properties);
+    if (id) {
+      new_paint_chunks_.UpdateCurrentPaintChunkProperties(
+          PaintChunk::Id(*id, current_fragment_), properties);
+    } else {
+      new_paint_chunks_.UpdateCurrentPaintChunkProperties(WTF::nullopt,
+                                                          properties);
+    }
   }
 
   const PaintChunkProperties& CurrentPaintChunkProperties() const {
@@ -98,6 +104,7 @@ class PLATFORM_EXPORT PaintController {
     DisplayItemClass& display_item =
         new_display_item_list_.AllocateAndConstruct<DisplayItemClass>(
             std::forward<Args>(args)...);
+    display_item.SetFragment(current_fragment_);
     ProcessNewItem(display_item);
   }
 
@@ -203,6 +210,12 @@ class PLATFORM_EXPORT PaintController {
   void BeginFrame(const void* frame);
   FrameFirstPaint EndFrame(const void* frame);
 
+  // The current fragment will be part of the ids of all display items and
+  // paint chunks, to uniquely identify display items in different fragments
+  // for the same client and type.
+  unsigned CurrentFragment() const { return current_fragment_; }
+  void SetCurrentFragment(unsigned fragment) { current_fragment_ = fragment; }
+
  protected:
   PaintController()
       : new_display_item_list_(0),
@@ -218,7 +231,8 @@ class PLATFORM_EXPORT PaintController {
 #endif
         under_invalidation_checking_begin_(0),
         under_invalidation_checking_end_(0),
-        last_cached_subsequence_end_(0) {
+        last_cached_subsequence_end_(0),
+        current_fragment_(0) {
     ResetCurrentListIndices();
     // frame_first_paints_ should have one null frame since the beginning, so
     // that PaintController is robust even if it paints outside of BeginFrame
@@ -424,6 +438,8 @@ class PLATFORM_EXPORT PaintController {
   CachedSubsequenceMap current_cached_subsequences_;
   CachedSubsequenceMap new_cached_subsequences_;
   size_t last_cached_subsequence_end_;
+
+  unsigned current_fragment_;
 
   class DisplayItemListAsJSON;
 };
