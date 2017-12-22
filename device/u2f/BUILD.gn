@@ -13,10 +13,14 @@ source_set("u2f") {
     "u2f_apdu_response.h",
     "u2f_ble_connection.cc",
     "u2f_ble_connection.h",
+    "u2f_ble_device.cc",
+    "u2f_ble_device.h",
     "u2f_ble_discovery.cc",
     "u2f_ble_discovery.h",
     "u2f_ble_frames.cc",
     "u2f_ble_frames.h",
+    "u2f_ble_transaction.cc",
+    "u2f_ble_transaction.h",
     "u2f_ble_uuids.cc",
     "u2f_ble_uuids.h",
     "u2f_command_type.h",
@@ -68,6 +72,8 @@ source_set("mocks") {
   testonly = true
 
   sources = [
+    "mock_u2f_ble_connection.cc",
+    "mock_u2f_ble_connection.h",
     "mock_u2f_device.cc",
     "mock_u2f_device.h",
     "mock_u2f_discovery.cc",

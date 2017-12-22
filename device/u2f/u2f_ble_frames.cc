@@ -49,7 +49,7 @@ U2fBleFrame::ErrorCode U2fBleFrame::GetErrorCode() const {
 }
 
 std::pair<U2fBleFrameInitializationFragment,
-          std::vector<U2fBleFrameContinuationFragment>>
+          base::queue<U2fBleFrameContinuationFragment>>
 U2fBleFrame::ToFragments(size_t max_fragment_size) const {
   DCHECK_LE(data_.size(), std::numeric_limits<uint16_t>::max());
   DCHECK_GE(max_fragment_size, 3u);
@@ -65,7 +65,7 @@ U2fBleFrame::ToFragments(size_t max_fragment_size) const {
   U2fBleFrameInitializationFragment initial_fragment(
       command_, data_view.size(), data_view.first(init_fragment_size));
 
-  std::vector<U2fBleFrameContinuationFragment> other_fragments;
+  base::queue<U2fBleFrameContinuationFragment> other_fragments;
   data_view = data_view.subspan(init_fragment_size);
 
   while (!data_view.empty()) {
@@ -73,8 +73,8 @@ U2fBleFrame::ToFragments(size_t max_fragment_size) const {
     const size_t cont_fragment_size =
         std::min(max_fragment_size - 1, data_view.size());
     // High bit must stay cleared.
-    other_fragments.emplace_back(data_view.first(cont_fragment_size),
-                                 other_fragments.size() & 0x7F);
+    other_fragments.emplace(data_view.first(cont_fragment_size),
+                            other_fragments.size() & 0x7F);
 
     data_view = data_view.subspan(cont_fragment_size);
   }

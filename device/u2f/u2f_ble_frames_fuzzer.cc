@@ -46,8 +46,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
     auto fragments = frame.ToFragments(20);
 
     device::U2fBleFrameAssembler assembler(fragments.first);
-    for (const auto& fragment : fragments.second) {
-      assembler.AddFragment(fragment);
+    while (!fragments.second.empty()) {
+      assembler.AddFragment(fragments.second.front());
+      fragments.second.pop();
     }
 
     auto result_frame = std::move(*assembler.GetFrame());

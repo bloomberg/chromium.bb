@@ -77,8 +77,9 @@ TEST(U2fBleFramesTest, SplitAndAssemble) {
               static_cast<size_t>(fragments.first.data_length()));
 
     U2fBleFrameAssembler assembler(fragments.first);
-    for (const auto& fragment : fragments.second) {
-      ASSERT_TRUE(assembler.AddFragment(fragment));
+    while (!fragments.second.empty()) {
+      ASSERT_TRUE(assembler.AddFragment(fragments.second.front()));
+      fragments.second.pop();
     }
 
     EXPECT_TRUE(assembler.IsDone());
@@ -96,13 +97,13 @@ TEST(U2fBleFramesTest, FrameAssemblerError) {
   auto fragments = frame.ToFragments(20);
   ASSERT_EQ(1u, fragments.second.size());
 
-  fragments.second[0] =
-      U2fBleFrameContinuationFragment(fragments.second[0].fragment(), 51);
+  fragments.second.front() =
+      U2fBleFrameContinuationFragment(fragments.second.front().fragment(), 51);
 
   U2fBleFrameAssembler assembler(fragments.first);
   EXPECT_FALSE(assembler.IsDone());
   EXPECT_FALSE(assembler.GetFrame());
-  EXPECT_FALSE(assembler.AddFragment(fragments.second[0]));
+  EXPECT_FALSE(assembler.AddFragment(fragments.second.front()));
   EXPECT_FALSE(assembler.IsDone());
   EXPECT_FALSE(assembler.GetFrame());
 }

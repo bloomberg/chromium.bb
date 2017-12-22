@@ -36,6 +36,9 @@ class U2fDevice {
                               std::unique_ptr<U2fApduResponse> response)>;
   using WinkCallback = base::OnceCallback<void()>;
 
+  static constexpr auto kDeviceTimeout = base::TimeDelta::FromSeconds(3);
+
+  U2fDevice();
   virtual ~U2fDevice();
 
   // Raw messages parameters are defined by the specification at
@@ -54,20 +57,11 @@ class U2fDevice {
   virtual std::string GetId() const = 0;
 
  protected:
-  static constexpr uint8_t kWinkCapability = 0x01;
-  static constexpr uint8_t kLockCapability = 0x02;
-  static constexpr uint32_t kBroadcastChannel = 0xffffffff;
-
-  U2fDevice();
-
   // Pure virtual function defined by each device type, implementing
   // the device communication transaction.
   virtual void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                               DeviceCallback callback) = 0;
   virtual base::WeakPtr<U2fDevice> GetWeakPtr() = 0;
-
-  uint32_t channel_id_;
-  uint8_t capabilities_;
 
  private:
   void OnRegisterComplete(MessageCallback callback,

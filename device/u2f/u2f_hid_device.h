@@ -43,6 +43,10 @@ class U2fHidDevice : public U2fDevice {
   FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestConnectionFailure);
   FRIEND_TEST_ALL_PREFIXES(U2fHidDeviceTest, TestDeviceError);
 
+  static constexpr uint8_t kWinkCapability = 0x01;
+  static constexpr uint8_t kLockCapability = 0x02;
+  static constexpr uint32_t kBroadcastChannel = 0xffffffff;
+
   // Internal state machine states
   enum class State { INIT, CONNECTED, BUSY, IDLE, DEVICE_ERROR };
 
@@ -96,7 +100,10 @@ class U2fHidDevice : public U2fDevice {
                         std::unique_ptr<U2fApduResponse> response);
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
 
-  State state_;
+  uint32_t channel_id_ = kBroadcastChannel;
+  uint8_t capabilities_ = 0;
+  State state_ = State::INIT;
+
   base::CancelableOnceClosure timeout_callback_;
   std::queue<std::pair<std::unique_ptr<U2fApduCommand>, DeviceCallback>>
       pending_transactions_;

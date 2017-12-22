@@ -27,9 +27,7 @@ static constexpr uint8_t kReportId = 0x00;
 
 U2fHidDevice::U2fHidDevice(device::mojom::HidDeviceInfoPtr device_info,
                            device::mojom::HidManager* hid_manager)
-    : U2fDevice(),
-      state_(State::INIT),
-      hid_manager_(hid_manager),
+    : hid_manager_(hid_manager),
       device_info_(std::move(device_info)),
       weak_factory_(this) {}
 
@@ -328,8 +326,7 @@ void U2fHidDevice::ArmTimeout(DeviceCallback callback) {
                                          std::move(callback)));
   // Setup timeout task for 3 seconds
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, timeout_callback_.callback(),
-      base::TimeDelta::FromMilliseconds(3000));
+      FROM_HERE, timeout_callback_.callback(), kDeviceTimeout);
 }
 
 void U2fHidDevice::OnTimeout(DeviceCallback callback) {
