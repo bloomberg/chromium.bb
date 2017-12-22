@@ -88,7 +88,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     MockAnswerCardContents* const contents =
         contents_number == 0 ? contents0_ : contents1_;
     EXPECT_CALL(*contents, LoadURL(GetSearchUrl(kCatQuery)));
-    provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+    provider()->Start(base::UTF8ToUTF16(kCatQuery));
 
     provider()->DidFinishNavigation(contents, GetSearchUrl(kCatQuery),
                                     has_error, has_answer_card, title,
@@ -185,7 +185,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
 // Basic event sequence.
 TEST_F(AnswerCardSearchProviderTest, Basic) {
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl(kCatQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->Start(base::UTF8ToUTF16(kCatQuery));
   provider()->DidFinishNavigation(contents1(), GetSearchUrl(kCatQuery), false,
                                   true, kCatCardTitle, kCatQuery);
   provider()->DidStopLoading(contents1());
@@ -194,28 +194,22 @@ TEST_F(AnswerCardSearchProviderTest, Basic) {
 
   // Now an empty query.
   EXPECT_CALL(*contents0(), LoadURL(_)).Times(0);
-  provider()->Start(false, base::UTF8ToUTF16(""));
+  provider()->Start(base::UTF8ToUTF16(""));
   EXPECT_EQ(0UL, results().size());
-}
-
-// Voice queries are ignored.
-TEST_F(AnswerCardSearchProviderTest, VoiceQuery) {
-  EXPECT_CALL(*contents1(), LoadURL(_)).Times(0);
-  provider()->Start(true, base::UTF8ToUTF16(kCatQuery));
 }
 
 // Queries to non-Google search engines are ignored.
 TEST_F(AnswerCardSearchProviderTest, NotGoogle) {
   GetModelUpdater()->SetSearchEngineIsGoogle(false);
   EXPECT_CALL(*contents1(), LoadURL(_)).Times(0);
-  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->Start(base::UTF8ToUTF16(kCatQuery));
 }
 
 // Three queries in a row.
 TEST_F(AnswerCardSearchProviderTest, ThreeQueries) {
   // 1. Fetch for cat.
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl(kCatQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->Start(base::UTF8ToUTF16(kCatQuery));
   provider()->DidFinishNavigation(contents1(), GetSearchUrl(kCatQuery), false,
                                   true, kCatCardTitle, kCatQuery);
   provider()->DidStopLoading(contents1());
@@ -225,7 +219,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueries) {
   // 2. Fetch for dog.
   // Starting another (dog) search doesn't dismiss the cat card.
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl(kDogQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kDogQuery));
+  provider()->Start(base::UTF8ToUTF16(kDogQuery));
 
   VerifyResult("Cat Result 2", kCatCardId, view1(), kCatCardTitle);
 
@@ -243,7 +237,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueries) {
   // 3. Fetch for shark.
   // The third query will use contents1/view1 again.
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl(kSharkQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kSharkQuery));
+  provider()->Start(base::UTF8ToUTF16(kSharkQuery));
 
   VerifyResult("Dog Result 2", kDogCardId, view0(), kDogCardTitle);
 
@@ -261,7 +255,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueries) {
 TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondErrors) {
   // 1. Fetch for cat.
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl(kCatQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->Start(base::UTF8ToUTF16(kCatQuery));
   provider()->DidFinishNavigation(contents1(), GetSearchUrl(kCatQuery), false,
                                   true, kCatCardTitle, kCatQuery);
   provider()->DidStopLoading(contents1());
@@ -270,7 +264,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondErrors) {
 
   // 2. Fetch for dog. This will fail with an error.
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl(kDogQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kDogQuery));
+  provider()->Start(base::UTF8ToUTF16(kDogQuery));
 
   VerifyResult("Cat Result 2", kCatCardId, view1(), kCatCardTitle);
 
@@ -285,7 +279,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondErrors) {
 
   // 3. Fetch for shark.
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl(kSharkQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kSharkQuery));
+  provider()->Start(base::UTF8ToUTF16(kSharkQuery));
 
   EXPECT_EQ(0UL, results().size());
 
@@ -304,7 +298,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondErrors) {
 TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondNoCard) {
   // 1. Fetch for cat.
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl(kCatQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->Start(base::UTF8ToUTF16(kCatQuery));
   provider()->DidFinishNavigation(contents1(), GetSearchUrl(kCatQuery), false,
                                   true, kCatCardTitle, kCatQuery);
   provider()->DidStopLoading(contents1());
@@ -313,7 +307,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondNoCard) {
 
   // 2. Fetch for dog. This will fail with an error.
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl(kDogQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kDogQuery));
+  provider()->Start(base::UTF8ToUTF16(kDogQuery));
 
   VerifyResult("Cat Result 2", kCatCardId, view1(), kCatCardTitle);
 
@@ -328,7 +322,7 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondNoCard) {
 
   // 3. Fetch for shark.
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl(kSharkQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kSharkQuery));
+  provider()->Start(base::UTF8ToUTF16(kSharkQuery));
 
   EXPECT_EQ(0UL, results().size());
 
@@ -347,15 +341,15 @@ TEST_F(AnswerCardSearchProviderTest, ThreeQueriesSecondNoCard) {
 // query should produce a result.
 TEST_F(AnswerCardSearchProviderTest, InterruptedRequest) {
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl("c")));
-  provider()->Start(false, base::UTF8ToUTF16("c"));
+  provider()->Start(base::UTF8ToUTF16("c"));
   EXPECT_EQ(0UL, results().size());
 
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl("ca")));
-  provider()->Start(false, base::UTF8ToUTF16("ca"));
+  provider()->Start(base::UTF8ToUTF16("ca"));
   EXPECT_EQ(0UL, results().size());
 
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl(kCatQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->Start(base::UTF8ToUTF16(kCatQuery));
   EXPECT_EQ(0UL, results().size());
 
   provider()->DidFinishNavigation(contents1(), GetSearchUrl("c"), false, true,
@@ -379,7 +373,7 @@ TEST_F(AnswerCardSearchProviderTest, InterruptedRequest) {
 // result will stay until we get an uninterrupted answer.
 TEST_F(AnswerCardSearchProviderTest, InterruptedRequestAfterResult) {
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl(kCatQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
+  provider()->Start(base::UTF8ToUTF16(kCatQuery));
   provider()->DidFinishNavigation(contents1(), GetSearchUrl(kCatQuery), false,
                                   true, kCatCardTitle, kCatQuery);
   provider()->DidStopLoading(contents1());
@@ -387,17 +381,17 @@ TEST_F(AnswerCardSearchProviderTest, InterruptedRequestAfterResult) {
   VerifyResult("Cat Result 1", kCatCardId, view1(), kCatCardTitle);
 
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl("d")));
-  provider()->Start(false, base::UTF8ToUTF16("d"));
+  provider()->Start(base::UTF8ToUTF16("d"));
 
   VerifyResult("Cat Result 2", kCatCardId, view1(), kCatCardTitle);
 
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl("do")));
-  provider()->Start(false, base::UTF8ToUTF16("do"));
+  provider()->Start(base::UTF8ToUTF16("do"));
 
   VerifyResult("Cat Result 3", kCatCardId, view1(), kCatCardTitle);
 
   EXPECT_CALL(*contents0(), LoadURL(GetSearchUrl(kDogQuery)));
-  provider()->Start(false, base::UTF8ToUTF16(kDogQuery));
+  provider()->Start(base::UTF8ToUTF16(kDogQuery));
 
   VerifyResult("Cat Result 4", kCatCardId, view1(), kCatCardTitle);
 
@@ -430,7 +424,7 @@ TEST_F(AnswerCardSearchProviderTest, DidFinishNavigation) {
 // Escaping a query with a special character.
 TEST_F(AnswerCardSearchProviderTest, QueryEscaping) {
   EXPECT_CALL(*contents1(), LoadURL(GetSearchUrl("cat%26dog")));
-  provider()->Start(false, base::UTF8ToUTF16("cat&dog"));
+  provider()->Start(base::UTF8ToUTF16("cat&dog"));
 }
 
 }  // namespace test

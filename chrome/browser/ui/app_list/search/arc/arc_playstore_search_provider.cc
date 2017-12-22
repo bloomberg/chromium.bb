@@ -93,9 +93,7 @@ ArcPlayStoreSearchProvider::ArcPlayStoreSearchProvider(
 
 ArcPlayStoreSearchProvider::~ArcPlayStoreSearchProvider() = default;
 
-void ArcPlayStoreSearchProvider::Start(bool is_voice_query,
-                                       const base::string16& query) {
-  DCHECK(!is_voice_query);
+void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()
           ? ARC_GET_INSTANCE_FOR_METHOD(

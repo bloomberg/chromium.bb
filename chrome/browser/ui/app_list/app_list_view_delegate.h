@@ -71,13 +71,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   app_list::SpeechUIModel* GetSpeechUI() override;
   void StartSearch() override;
   void OpenSearchResult(app_list::SearchResult* result,
-                        bool auto_launch,
                         int event_flags) override;
   void InvokeSearchResultAction(app_list::SearchResult* result,
                                 int action_index,
                                 int event_flags) override;
-  base::TimeDelta GetAutoLaunchTimeout() override;
-  void AutoLaunchCanceled() override;
   void ViewInitialized() override;
   void Dismiss() override;
   void ViewClosing() override;
@@ -100,7 +97,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void SetUpSearchUI();
 
   // Overridden from app_list::StartPageObserver:
-  void OnSpeechResult(const base::string16& result, bool is_final) override;
   void OnSpeechSoundLevelChanged(int16_t level) override;
   void OnSpeechRecognitionStateChanged(
       app_list::SpeechRecognitionState new_state) override;
@@ -133,8 +129,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   std::unique_ptr<app_list::SpeechUIModel> speech_ui_;
   std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
   std::unique_ptr<app_list::SearchController> search_controller_;
-
-  base::TimeDelta auto_launch_timeout_;
 
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 

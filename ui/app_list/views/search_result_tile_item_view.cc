@@ -237,7 +237,7 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
   if (IsSuggestedAppTile())
     LogAppLaunch();
 
-  view_delegate_->OpenSearchResult(item_, false, event.flags());
+  view_delegate_->OpenSearchResult(item_, event.flags());
 }
 
 void SearchResultTileItemView::GetAccessibleNodeData(
@@ -263,7 +263,7 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
     if (IsSuggestedAppTile())
       LogAppLaunch();
 
-    view_delegate_->OpenSearchResult(item_, false, event.flags());
+    view_delegate_->OpenSearchResult(item_, event.flags());
     return true;
   }
 

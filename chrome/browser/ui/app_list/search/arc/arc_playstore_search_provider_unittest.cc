@@ -79,7 +79,7 @@ TEST_F(ArcPlayStoreSearchProviderTest, Basic) {
   AddExtension(CreateExtension(extension_misc::kGmailAppId).get());
 
   // Check that the result size of a query doesn't exceed the |kMaxResults|.
-  provider->Start(false, base::UTF8ToUTF16(kQuery));
+  provider->Start(base::UTF8ToUTF16(kQuery));
   const app_list::SearchProvider::Results& results = provider->results();
   ASSERT_GT(results.size(), 0u);
   // Play Store returns |kMaxResults| results, but the first one (GMail) already

@@ -439,8 +439,6 @@ void StartPageService::OnSpeechResult(
     speech_result_obtained_ = true;
     RecordAction(UserMetricsAction("AppList_SearchedBySpeech"));
   }
-  for (auto& observer : observers_)
-    observer.OnSpeechResult(query, is_final);
 }
 
 void StartPageService::OnSpeechSoundLevelChanged(int16_t level) {

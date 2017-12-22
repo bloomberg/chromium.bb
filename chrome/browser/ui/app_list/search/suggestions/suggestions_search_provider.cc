@@ -36,8 +36,7 @@ SuggestionsSearchProvider::SuggestionsSearchProvider(
 SuggestionsSearchProvider::~SuggestionsSearchProvider() {
 }
 
-void SuggestionsSearchProvider::Start(bool /*is_voice_query*/,
-                                      const base::string16& query) {
+void SuggestionsSearchProvider::Start(const base::string16& query) {
   ClearResults();
 
   // Only return suggestions on an empty query.

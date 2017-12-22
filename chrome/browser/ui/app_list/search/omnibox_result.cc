@@ -73,39 +73,6 @@ void ACMatchClassificationsToTags(const base::string16& text,
   }
 }
 
-// Returns true if |url| is on a Google Search domain. May return false
-// positives.
-bool IsUrlGoogleSearch(const GURL& url) {
-  // Just return true if the second or third level domain is "google". This may
-  // result in false positives (e.g. "google.example.com"), but since we are
-  // only using this to decide when to add the spoken feedback query parameter,
-  // this doesn't have any bad consequences.
-  const char kGoogleDomainLabel[] = "google";
-
-  std::vector<std::string> pieces = base::SplitString(
-      url.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  size_t num_pieces = pieces.size();
-
-  if (num_pieces >= 2 && pieces[num_pieces - 2] == kGoogleDomainLabel)
-    return true;
-
-  if (num_pieces >= 3 && pieces[num_pieces - 3] == kGoogleDomainLabel)
-    return true;
-
-  return false;
-}
-
-// Converts a Google Search URL into a spoken feedback URL, by adding query
-// parameters. |search_url| must be a Google Search URL.
-GURL MakeGoogleSearchSpokenFeedbackUrl(const GURL& search_url) {
-  std::string query = search_url.query();
-  query += "&gs_ivs=1";
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(query);
-  return search_url.ReplaceComponents(replacements);
-}
-
 // AutocompleteMatchType::Type to vector icon, used for app list.
 const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
   switch (type) {
@@ -154,12 +121,10 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
 OmniboxResult::OmniboxResult(Profile* profile,
                              AppListControllerDelegate* list_controller,
                              AutocompleteController* autocomplete_controller,
-                             bool is_voice_query,
                              const AutocompleteMatch& match)
     : profile_(profile),
       list_controller_(list_controller),
       autocomplete_controller_(autocomplete_controller),
-      is_voice_query_(is_voice_query),
       match_(match) {
   if (match_.search_terms_args && autocomplete_controller_) {
     match_.search_terms_args->from_app_list = true;
@@ -197,18 +162,13 @@ OmniboxResult::~OmniboxResult() = default;
 
 void OmniboxResult::Open(int event_flags) {
   RecordHistogram(OMNIBOX_SEARCH_RESULT);
-  GURL url = match_.destination_url;
-  if (is_voice_query_ && IsUrlGoogleSearch(url)) {
-    url = MakeGoogleSearchSpokenFeedbackUrl(url);
-  }
-  list_controller_->OpenURL(profile_, url, match_.transition,
+  list_controller_->OpenURL(profile_, match_.destination_url, match_.transition,
                             ui::DispositionFromEventFlags(event_flags));
 }
 
 std::unique_ptr<SearchResult> OmniboxResult::Duplicate() const {
-  return std::unique_ptr<SearchResult>(
-      new OmniboxResult(profile_, list_controller_, autocomplete_controller_,
-                        is_voice_query_, match_));
+  return std::unique_ptr<SearchResult>(new OmniboxResult(
+      profile_, list_controller_, autocomplete_controller_, match_));
 }
 
 void OmniboxResult::UpdateIcon() {

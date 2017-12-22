@@ -65,8 +65,7 @@ WebstoreProvider::WebstoreProvider(Profile* profile,
 
 WebstoreProvider::~WebstoreProvider() {}
 
-void WebstoreProvider::Start(bool /*is_voice_query*/,
-                             const base::string16& query) {
+void WebstoreProvider::Start(const base::string16& query) {
   if (webstore_search_)
     webstore_search_->Stop();
 

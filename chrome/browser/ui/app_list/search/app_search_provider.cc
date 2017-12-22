@@ -314,8 +314,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
 
 AppSearchProvider::~AppSearchProvider() {}
 
-void AppSearchProvider::Start(bool /*is_voice_query*/,
-                              const base::string16& query) {
+void AppSearchProvider::Start(const base::string16& query) {
   query_ = query;
   const bool show_recommendations = query.empty();
   // Refresh list of apps to ensure we have the latest launch time information.
