@@ -303,8 +303,7 @@ android_library("chrome_java") {
     "//components/supervised_user_error_page:enums_srcjar",
   ]
 
-  # Manifest used for linting (determining unused resources).
-  android_manifest = chrome_public_android_manifest
+  android_manifest_for_lint = chrome_public_android_manifest
 
   # From java_sources.gni.
   java_files = chrome_java_sources + [ app_hooks_impl ]

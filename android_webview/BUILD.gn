@@ -882,8 +882,7 @@ android_library("android_webview_java") {
     "//components/safe_browsing/db:sb_threat_values",
   ]
 
-  # Manifest used for linting (determining unused resources).
-  android_manifest = system_webview_android_manifest
+  android_manifest_for_lint = system_webview_android_manifest
 }
 
 java_strings_grd("strings_grd") {

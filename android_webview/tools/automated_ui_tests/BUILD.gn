@@ -30,8 +30,7 @@ android_library("webview_ui_test_app_java") {
     "//base:base_java",
   ]
 
-  # Manifest used for linting (determining unused resources).
-  android_manifest = "java/AndroidManifest.xml"
+  android_manifest_for_lint = "java/AndroidManifest.xml"
 }
 
 android_resources("webview_ui_test_app_apk_resources") {

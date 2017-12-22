@@ -81,8 +81,7 @@ android_library("content_shell_java") {
     "java/src/org/chromium/content_shell/ShellViewAndroidDelegate.java",
   ]
 
-  # Manifest used for linting (determining unused resources).
-  android_manifest = content_shell_manifest
+  android_manifest_for_lint = content_shell_manifest
 }
 
 jinja_template("content_shell_manifest") {
@@ -118,8 +117,7 @@ android_library("content_shell_apk_java") {
     "//ui/android:ui_java",
   ]
 
-  # Supply manifest for linting.
-  android_manifest = content_shell_manifest
+  android_manifest_for_lint = content_shell_manifest
 
   java_files = [
     "shell_apk/src/org/chromium/content_shell_apk/ChildProcessLauncherTestHelperService.java",
