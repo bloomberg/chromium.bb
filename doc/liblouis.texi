@@ -2639,9 +2639,9 @@ positions as in the following example:
 @item mode
 A list of translation modes that should be used for this test. If not
 defined defaults to 0. Valid mode values are @samp{noContractions},
-@samp{compbrlAtCursor}, @samp{dotsIO}, @samp{comp8Dots},
-@samp{pass1Only}, @samp{compbrlLeftCursor},
-@samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
+@samp{compbrlAtCursor}, @samp{dotsIO}, @samp{pass1Only},
+@samp{compbrlLeftCursor}, @samp{ucBrl}, @samp{noUndefinedDots} or
+@samp{partialTrans}.
 
 For a description of the various translation mode flags, please see
 the function @ref{lou_translateString}.
