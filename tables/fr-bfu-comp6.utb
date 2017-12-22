@@ -40,20 +40,37 @@
 # Référence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
 # maintenu par Michel Such <michel.such@free.fr>
 
-# mise à jour importante 2012 :
-# - ajout des signes de la table française encore non pris en compte pour p456 p5 p56
-# - effacement de la ligne z avec caron car c'étaient les codes des p456 et p5
-# Mise à jour 2017 par André-Abush CLAUSE <dev@andreabc.net> et garconvacher (Ludovic Oger <oger.ludovic@gmail.com>)
-#   - corrections de mauvaises définitions telles que pour les signes {}[]$£€¥\•<>#%‰°
-#   - inclusion du fichier fr-fr-unicode permettant le support des lettres grecques, quelques symboles mathématiques et signes divers.
-# Référence : "Arrêté du 6 février 2014 relatif aux normes ayant trait à la présentation et aux différentes codifications du braille utilisées en France"
-#              http://social-sante.gouv.fr/fichiers/bo/2014/14-02/ste_20140002_0000_0086.pdf
-
-
 # Uncontracted Unified French Table
 # ----------------------------------
 
 undefined 0
+
+display 0 3456
+display 1 16
+display 2 126
+display 3 146
+display 4 1456
+display 5 156
+display 6 1246
+display 7 12456
+display 8 1256
+display 9 246
+display ¨ 46
+display : 25
+display " 2356
+display ! 235
+display - 36
+display . 256
+display / 34
+display * 35
+display ¸ 456
+display ¤ 45
+display  56
+display ^ 4
+display \s 0
+display @ 345
+display ó 346
+display ò 346
 
 space \s 0      	# blank 32
 space \t 9 tab    # 9
@@ -65,17 +82,6 @@ space \x00A0 a    # no-break space
 space \x007f 0
 
 punctuation = 2356
-display 0 3456
-display 1 16
-display 2 126
-display 3 146
-display 4 1456
-display 5 156
-display 6 1246
-display 7 12456
-display 8 1256
-display 9 246
-
 include latinLetterDef6Dots.uti
 
 uplow \x00c7\x00e7  12346 # c cédille (Çç)
@@ -282,7 +288,7 @@ include fr-bfu-comp68.cti
 
 # Braille indicators
 numsign 6             # number sign, just a dots operand
-numericmodechars ^,:.+-*/()=
+numericmodechars ^,:.+-*/()=[]
 #numericnocontchars âêîôûëïüœ
 numericnocontchars 0123456789
 
@@ -310,6 +316,10 @@ midnum + 235
 endnum + 235
 midnum = 2356
 endnum = 2356
+midnum / 34
+endnum / 34
+
+
 decpoint , 2
 
 
