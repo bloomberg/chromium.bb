@@ -747,6 +747,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageOrigin.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageTabObserver.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtils.java",
+  "java/src/org/chromium/chrome/browser/offlinepages/OfflinePagesDownloadManagerBridge.java",
   "java/src/org/chromium/chrome/browser/offlinepages/SavePageRequest.java",
   "java/src/org/chromium/chrome/browser/offlinepages/TaskExtrasPacker.java",
   "java/src/org/chromium/chrome/browser/offlinepages/TriggerConditions.java",
