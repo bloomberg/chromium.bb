@@ -265,7 +265,6 @@ EXPERIMENT_LIST="
     ext_partition
     ext_partition_types
     ext_tile
-    q_adapt_probs
     inter_stats_only
     kf_ctx
     cfl
@@ -499,7 +498,6 @@ post_process_cmdline() {
       soft_enable ext_partition_types
 
       # Provisional adopted
-      soft_enable q_adapt_probs
       soft_enable reference_buffer
       soft_enable loopfiltering_across_tiles
       soft_enable palette_throughput

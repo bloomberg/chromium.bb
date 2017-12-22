@@ -5523,14 +5523,12 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
     if (loop_count == 0) setup_frame(cpi);
 
-#if CONFIG_Q_ADAPT_PROBS
     // Base q-index may have changed, so we need to assign proper default coef
     // probs before every iteration.
     if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
       av1_default_coef_probs(cm);
       av1_setup_frame_contexts(cm);
     }
-#endif  // CONFIG_Q_ADAPT_PROBS
 
     // Variance adaptive and in frame q adjustment experiments are mutually
     // exclusive.

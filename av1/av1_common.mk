@@ -163,8 +163,6 @@ ifeq ($(CONFIG_LV_MAP),yes)
 AV1_COMMON_SRCS-$(HAVE_SSE2) += common/x86/txb_sse2.c
 endif
 
-ifeq ($(CONFIG_Q_ADAPT_PROBS),yes)
 AV1_COMMON_SRCS-yes += common/token_cdfs.h
-endif
 
 $(eval $(call rtcd_h_template,av1_rtcd,av1/common/av1_rtcd_defs.pl))

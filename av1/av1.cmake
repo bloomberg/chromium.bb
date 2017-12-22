@@ -481,11 +481,9 @@ if (CONFIG_HASH_ME)
       "${AOM_ROOT}/third_party/vector/vector.c")
 endif ()
 
-if (CONFIG_Q_ADAPT_PROBS)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/token_cdfs.h")
-endif ()
 
 if (CONFIG_XIPHRC)
   set(AOM_AV1_ENCODER_SOURCES

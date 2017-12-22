@@ -2983,12 +2983,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
 
-#if CONFIG_Q_ADAPT_PROBS
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     av1_default_coef_probs(cm);
     av1_setup_frame_contexts(cm);
   }
-#endif  // CONFIG_Q_ADAPT_PROBS
 
   setup_segmentation(cm, rb);
 
