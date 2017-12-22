@@ -87,7 +87,6 @@
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/loader/ThreadableLoadingContext.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/ScopedPagePauser.h"
@@ -9903,16 +9902,14 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   ResourceLoaderOptions resource_loader_options;
   DocumentThreadableLoader::LoadResourceSynchronously(
-      *ThreadableLoadingContext::Create(*frame->GetDocument()), request, client,
-      options, resource_loader_options);
+      *frame->GetDocument(), request, client, options, resource_loader_options);
   EXPECT_TRUE(client.Failed());
 
   client.Reset();
   // Try to load the request with cross origin access. Should succeed.
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
   DocumentThreadableLoader::LoadResourceSynchronously(
-      *ThreadableLoadingContext::Create(*frame->GetDocument()), request, client,
-      options, resource_loader_options);
+      *frame->GetDocument(), request, client, options, resource_loader_options);
   EXPECT_FALSE(client.Failed());
 }
 

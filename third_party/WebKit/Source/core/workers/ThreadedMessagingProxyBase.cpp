@@ -4,7 +4,6 @@
 
 #include "core/workers/ThreadedMessagingProxyBase.h"
 
-#include "base/synchronization/waitable_event.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/frame/Deprecation.h"
@@ -49,8 +48,6 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         web_frame->Client()->CreateWorkerFetchContext();
     DCHECK(web_worker_fetch_context);
-    terminate_sync_load_event_ =
-        web_worker_fetch_context->GetTerminateSyncLoadEvent();
     web_worker_fetch_context->SetApplicationCacheHostID(
         document->Fetcher()->Context().ApplicationCacheHostID());
     web_worker_fetch_context->SetIsOnSubframe(
@@ -148,11 +145,6 @@ void ThreadedMessagingProxyBase::TerminateGlobalScope() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
-
-  if (terminate_sync_load_event_) {
-    terminate_sync_load_event_->Signal();
-    terminate_sync_load_event_ = nullptr;
-  }
 
   if (worker_thread_)
     worker_thread_->Terminate();
