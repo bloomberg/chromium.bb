@@ -1579,7 +1579,7 @@ void ShelfView::OnPaint(gfx::Canvas* canvas) {
   // Draws a round rect around the back button and app list button. This will
   // just be a circle if the back button is hidden.
   const gfx::PointF circle_center(
-      GetAppListButton()->bounds().origin() +
+      GetMirroredRect(GetAppListButton()->bounds()).origin() +
       gfx::Vector2d(GetAppListButton()->GetCenterPoint().x(),
                     GetAppListButton()->GetCenterPoint().y()));
   if (GetBackButton()->layer()->opacity() <= 0.f) {
@@ -1588,10 +1588,10 @@ void ShelfView::OnPaint(gfx::Canvas* canvas) {
   }
 
   const gfx::PointF back_center(
-      GetBackButton()->bounds().x() + kShelfButtonSize / 2,
+      GetMirroredRect(GetBackButton()->bounds()).x() + kShelfButtonSize / 2,
       GetBackButton()->bounds().y() + kShelfButtonSize / 2);
   const gfx::RectF background_bounds(
-      back_center.x() - kAppListButtonRadius,
+      std::min(back_center.x(), circle_center.x()) - kAppListButtonRadius,
       back_center.y() - kAppListButtonRadius,
       std::abs(circle_center.x() - back_center.x()) + 2 * kAppListButtonRadius,
       2 * kAppListButtonRadius);
