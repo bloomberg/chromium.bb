@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_TEST_TEST_OVERSCROLL_DELEGATE_H_
+#define CONTENT_TEST_TEST_OVERSCROLL_DELEGATE_H_
+
 #include <vector>
 
 #include "base/optional.h"
@@ -52,3 +55,5 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 };
 
 }  // namespace content
+
+#endif  // CONTENT_TEST_TEST_OVERSCROLL_DELEGATE_H_
