@@ -66,6 +66,7 @@ var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
 var Movement = cursors.Movement;
 var RoleType = chrome.automation.RoleType;
+var StateType = chrome.automation.StateType;
 var Unit = cursors.Unit;
 
 /**
@@ -197,8 +198,9 @@ cursors.Cursor.prototype = {
     if (!adjustedNode)
       return null;
 
-    // Make no adjustments if we're within editable content.
-    if (adjustedNode.state.editable)
+    // Make no adjustments if we're within non-rich editable content.
+    if (adjustedNode.state[StateType.EDITABLE] &&
+        !adjustedNode.state[StateType.RICHLY_EDITABLE])
       return adjustedNode;
 
     // Selections over line break nodes are broken.
@@ -236,8 +238,12 @@ cursors.Cursor.prototype = {
     if (!this.node)
       return -1;
 
-    if (this.node.state.editable) {
-      return this.index_ == cursors.NODE_INDEX ? 0 : this.index_;
+    if (this.node.state[StateType.EDITABLE]) {
+      if (!this.node.state[StateType.RICHLY_EDITABLE])
+        return this.index_;
+      return this.index_ == cursors.NODE_INDEX ?
+          (this.node.indexInParent || 0) :
+          this.index_;
     } else if (
         this.node.role == RoleType.INLINE_TEXT_BOX &&
         // Selections under a line break are broken.
@@ -765,6 +771,13 @@ cursors.Range.prototype = {
       var endIndex = this.end.index_ == cursors.NODE_INDEX ?
           this.end.selectionIndex_ + 1 :
           this.end.selectionIndex_;
+
+      // Richly editables should always set a caret, but not select. This makes
+      // it possible to navigate through content editables using ChromeVox keys
+      // and not hear selections as you go.
+      if (startNode.state[StateType.RICHLY_EDITABLE] ||
+          endNode.state[StateType.RICHLY_EDITABLE])
+        endIndex = startIndex;
 
       chrome.automation.setDocumentSelection({
         anchorObject: startNode,
