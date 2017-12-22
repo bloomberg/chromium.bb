@@ -69,6 +69,12 @@ class ArcKioskAppManager {
     return auto_launched_with_zero_delay_;
   }
 
+  // Adds an app with the given meta data directly, skips meta data fetching
+  // and sets the app as the auto launched one. Only for test.
+  void AddAutoLaunchAppForTest(const std::string& app_id,
+                               const policy::ArcKioskAppBasicInfo& app_info,
+                               const AccountId& account_id);
+
  private:
   // Updates apps_ based on CrosSettings.
   void UpdateApps();

@@ -756,8 +756,8 @@ message DeviceStatusReportRequest {
   // OS version.
   optional OsUpdateStatus os_update_status = 17;
 
-  // Set only when there is an auto launched with zero delay kiosk app
-  // and it is currently running. Otherwise, this field is empty.
+  // Set only when there is an auto launched with zero delay Chrome or ARC kiosk
+  // app and it is currently running. Otherwise, this field is empty.
   optional AppStatus running_kiosk_app = 18;
 
   // Sound output volume level in range [0,100].
@@ -790,10 +790,12 @@ message OsUpdateStatus {
 
 // Provides status information for an installed app/extension.
 message AppStatus {
-  // ID of the installed app/extension
+  // ID of the installed app/extension for a Chrome app.
+  // Package name for ARC kiosk app.
   optional string app_id = 1;
 
-  // Currently installed version of the app.
+  // Currently installed version of the app for a Chrome app.
+  // Empty for ARC kiosk app.
   optional string extension_version = 2;
 
   // Self-reported status summary (via chrome.reporting APIs)
@@ -803,6 +805,7 @@ message AppStatus {
   optional bool error = 4;
 
   // App required Chrome version, specified in app’s manifest file.
+  // Empty for ARC kiosk app.
   optional string required_platform_version = 5;
 }
 
@@ -820,7 +823,8 @@ message SessionStatusReportRequest {
   // If this is a kiosk session, this is the device local account ID.
   optional string device_local_account_id = 4;
 
-  // Information about installed apps for this user on this device.
+  // Information about installed apps for this user on this device,
+  // including information about ARC kiosk app for ARC kiosk session.
   repeated AppStatus installed_apps = 5;
 
   // Information about ARC status.
