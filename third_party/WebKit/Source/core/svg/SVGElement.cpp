@@ -119,10 +119,8 @@ void SVGElement::BuildPendingResourcesIfNeeded() {
 }
 
 SVGElementRareData* SVGElement::EnsureSVGRareData() {
-  if (HasSVGRareData())
-    return SvgRareData();
-
-  svg_rare_data_ = new SVGElementRareData(this);
+  if (!svg_rare_data_)
+    svg_rare_data_ = new SVGElementRareData();
   return svg_rare_data_.Get();
 }
 
