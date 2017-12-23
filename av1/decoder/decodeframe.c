@@ -89,10 +89,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 static size_t read_uncompressed_header(AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb);
 
-static int is_compound_reference_allowed(const AV1_COMMON *cm) {
-  return !frame_is_intra_only(cm);
-}
-
 static void setup_compound_reference_mode(AV1_COMMON *cm) {
   cm->comp_fwd_ref[0] = LAST_FRAME;
   cm->comp_fwd_ref[1] = LAST2_FRAME;
@@ -129,7 +125,7 @@ static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  if (is_compound_reference_allowed(cm)) {
+  if (av1_is_compound_reference_allowed(cm)) {
 #if CONFIG_REF_ADAPT
     return aom_rb_read_bit(rb) ? REFERENCE_MODE_SELECT : SINGLE_REFERENCE;
 #else

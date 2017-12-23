@@ -3940,14 +3940,8 @@ void av1_encode_frame(AV1_COMP *cpi) {
   mismatch_reset_frame();
 #endif
 
-  // In the longer term the encoder should be generalized to match the
-  // decoder such that we allow compound where one of the 3 buffers has a
-  // different sign bias and that buffer is then the fixed ref. However, this
-  // requires further work in the rd loop. For now the only supported encoder
-  // side behavior is where the ALT ref buffer has opposite sign bias to
-  // the other two.
-  if (!frame_is_intra_only(cm)) {
-    cpi->allow_comp_inter_inter = 1;
+  cpi->allow_comp_inter_inter = av1_is_compound_reference_allowed(cm);
+  if (cpi->allow_comp_inter_inter) {
     cm->comp_fwd_ref[0] = LAST_FRAME;
     cm->comp_fwd_ref[1] = LAST2_FRAME;
     cm->comp_fwd_ref[2] = LAST3_FRAME;
@@ -3955,8 +3949,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
     cm->comp_bwd_ref[0] = BWDREF_FRAME;
     cm->comp_bwd_ref[1] = ALTREF2_FRAME;
     cm->comp_bwd_ref[2] = ALTREF_FRAME;
-  } else {
-    cpi->allow_comp_inter_inter = 0;
   }
 
   if (cpi->sf.frame_parameter_update) {
