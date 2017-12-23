@@ -4,7 +4,7 @@
 
 #include "modules/background_fetch/BackgroundFetchSettledFetch.h"
 
-#include "modules/fetch/Response.h"
+#include "core/fetch/Response.h"
 
 namespace blink {
 

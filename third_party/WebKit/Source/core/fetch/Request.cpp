@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/Request.h"
+#include "core/fetch/Request.h"
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
+#include "core/fetch/FetchManager.h"
+#include "core/fetch/RequestInit.h"
 #include "core/loader/ThreadableLoader.h"
-#include "modules/fetch/FetchManager.h"
-#include "modules/fetch/RequestInit.h"
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"

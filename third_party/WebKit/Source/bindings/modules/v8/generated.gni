@@ -56,8 +56,6 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/rtc_ice_candidate_init_or_rtc_ice_candidate.h",
   "$bindings_modules_v8_output_dir/rendering_context.cc",
   "$bindings_modules_v8_output_dir/rendering_context.h",
-  "$bindings_modules_v8_output_dir/request_or_usv_string.cc",
-  "$bindings_modules_v8_output_dir/request_or_usv_string.h",
   "$bindings_modules_v8_output_dir/request_or_usv_string_or_request_or_usv_string_sequence.cc",
   "$bindings_modules_v8_output_dir/request_or_usv_string_or_request_or_usv_string_sequence.h",
   "$bindings_modules_v8_output_dir/string_or_array_buffer_or_nfc_message.cc",

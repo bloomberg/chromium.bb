@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "modules/ModulesExport.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Time.h"
@@ -27,7 +27,7 @@ class FetchHeaderList;
 class ScriptState;
 class WebServiceWorkerResponse;
 
-class MODULES_EXPORT FetchResponseData final
+class CORE_EXPORT FetchResponseData final
     : public GarbageCollectedFinalized<FetchResponseData> {
  public:
   // "A response can have an associated termination reason which is one of

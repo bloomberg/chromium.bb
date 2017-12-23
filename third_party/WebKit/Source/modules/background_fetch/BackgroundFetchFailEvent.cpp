@@ -4,11 +4,11 @@
 
 #include "modules/background_fetch/BackgroundFetchFailEvent.h"
 
+#include "core/fetch/Request.h"
+#include "core/fetch/Response.h"
 #include "modules/background_fetch/BackgroundFetchFailEventInit.h"
 #include "modules/background_fetch/BackgroundFetchSettledFetch.h"
 #include "modules/event_modules_names.h"
-#include "modules/fetch/Request.h"
-#include "modules/fetch/Response.h"
 #include "public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 
 namespace blink {

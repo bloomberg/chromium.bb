@@ -824,9 +824,10 @@ void FetchManager::Loader::Failed(const String& message) {
   failed_ = true;
   if (execution_context_->IsContextDestroyed())
     return;
-  if (!message.IsEmpty())
+  if (!message.IsEmpty()) {
     execution_context_->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+  }
   if (resolver_) {
     ScriptState* state = resolver_->GetScriptState();
     ScriptState::Scope scope(state);
