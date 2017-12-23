@@ -51,6 +51,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -614,6 +615,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       mojom::WidgetInputHandlerHostRequest host_request);
   void SetWidget(mojom::WidgetPtr widget);
 
+  viz::mojom::InputTargetClient* input_target_client() {
+    return input_target_client_.get();
+  }
+
+  void SetInputTargetClient(
+      viz::mojom::InputTargetClientPtr input_target_client);
+
   // InputRouterImplClient overrides.
   mojom::WidgetInputHandler* GetWidgetInputHandler() override;
   void OnImeCompositionRangeChanged(
@@ -1040,6 +1048,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojom::WidgetInputHandlerAssociatedPtr associated_widget_input_handler_;
   mojom::WidgetInputHandlerPtr widget_input_handler_;
   std::unique_ptr<mojom::WidgetInputHandler> legacy_widget_input_handler_;
+  viz::mojom::InputTargetClientPtr input_target_client_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

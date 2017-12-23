@@ -264,7 +264,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojom::FrameInputHandler* GetFrameInputHandler();
 
   viz::mojom::InputTargetClient* GetInputTargetClient() {
-    return input_target_client_.get();
+    return input_target_client_;
   }
 
   // Creates a RenderFrame in the renderer process.
@@ -1367,7 +1367,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // have created one yet.
   base::Optional<base::UnguessableToken> overlay_routing_token_;
 
-  viz::mojom::InputTargetClientPtr input_target_client_;
+  viz::mojom::InputTargetClient* input_target_client_ = nullptr;
   mojom::FrameInputHandlerPtr frame_input_handler_;
   std::unique_ptr<LegacyIPCFrameInputHandler> legacy_frame_input_handler_;
 
