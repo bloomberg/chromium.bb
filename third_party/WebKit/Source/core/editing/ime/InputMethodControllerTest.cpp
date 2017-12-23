@@ -2502,4 +2502,30 @@ TEST_F(InputMethodControllerTest, SetCompositionContainingNewline) {
                              Position(div, PositionAnchorType::kAfterAnchor))));
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionTamilVirama) {
+  Element* div =
+      InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  // Commit TAMIL LETTER CA (U+0B9A) followed by TAMIL SIGN VIRAMA (U+U0BCD)
+  Controller().CommitText(String::FromUTF8("\xE0\xAE\x9A\xE0\xAF\x8D"),
+                          Vector<ImeTextSpan>(), 0);
+
+  // Open composition with TAMIL LETTER CA (U+0B9A) followed by
+  // TAMIL SIGN VIRAMA (U+U0BCD)
+  Controller().SetComposition(String::FromUTF8("\xE0\xAE\x9A\xE0\xAF\x8D"),
+                              Vector<ImeTextSpan>(), 2, 2);
+  // Remove the TAMIL SIGN VIRAMA from the end of the composition
+  Controller().SetComposition(String::FromUTF8("\xE0\xAE\x9A"),
+                              Vector<ImeTextSpan>(), 1, 1);
+
+  EXPECT_EQ(1u, div->CountChildren());
+  Text* text = ToText(div->firstChild());
+  EXPECT_STREQ("\xE0\xAE\x9A\xE0\xAF\x8D\xE0\xAE\x9A",
+               text->data().Utf8().data());
+
+  Range* range = Controller().CompositionRange();
+  EXPECT_EQ(2u, range->startOffset());
+  EXPECT_EQ(3u, range->endOffset());
+}
+
 }  // namespace blink
