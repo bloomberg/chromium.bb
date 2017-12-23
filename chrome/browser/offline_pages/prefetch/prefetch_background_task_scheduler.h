@@ -15,6 +15,11 @@ class PrefetchBackgroundTaskScheduler {
   // Implemented in platform-specific object files.
   static void Schedule(int additional_delay_seconds);
 
+  // Same as |Schedule| but adapted to when limitless prefetching is enabled so
+  // that less restrictions are applied to the scheduling of the background
+  // task.
+  static void ScheduleLimitless(int additional_delay_seconds);
+
   // Cancels the default 'NWake' prefetching task.
   // Implemented in platform-specific object files.
   static void Cancel();

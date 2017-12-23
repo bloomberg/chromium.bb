@@ -13,6 +13,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_event_logger.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/prefetch/add_unique_urls_task.h"
 #include "components/offline_pages/core/prefetch/download_archives_task.h"
@@ -195,8 +196,9 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
   task_queue_.AddTask(std::move(download_archives_task));
 
   // The following tasks should not be run unless we are in the background task,
-  // as we need to ensure WiFi access at that time.
-  if (!background_task_)
+  // as we need to ensure WiFi access at that time. Schedule them anyway if
+  // limitless prefetching is enabled.
+  if (!background_task_ && !offline_pages::IsLimitlessPrefetchingEnabled())
     return;
 
   std::unique_ptr<Task> get_operation_task = base::MakeUnique<GetOperationTask>(

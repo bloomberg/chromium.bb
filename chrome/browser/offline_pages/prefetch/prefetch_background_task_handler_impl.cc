@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_scheduler.h"
 #include "chrome/common/pref_names.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/backoff_entry_serializer.h"
@@ -38,7 +39,12 @@ void PrefetchBackgroundTaskHandlerImpl::CancelBackgroundTask() {
 }
 
 void PrefetchBackgroundTaskHandlerImpl::EnsureTaskScheduled() {
-  PrefetchBackgroundTaskScheduler::Schedule(GetAdditionalBackoffSeconds());
+  if (IsLimitlessPrefetchingEnabled()) {
+    PrefetchBackgroundTaskScheduler::ScheduleLimitless(
+        GetAdditionalBackoffSeconds());
+  } else {
+    PrefetchBackgroundTaskScheduler::Schedule(GetAdditionalBackoffSeconds());
+  }
 }
 
 int PrefetchBackgroundTaskHandlerImpl::GetAdditionalBackoffSeconds() const {
