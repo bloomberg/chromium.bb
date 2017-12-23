@@ -81,17 +81,18 @@ class CHROMECAST_EXPORT VolumeControl {
   static void SetOutputLimit(AudioContentType type, float limit)
       __attribute__((__weak__));
 
-  // Converts a volume level in the range [0.0, 1.0] to/from a volume in dB.
-  // The volume in dB should be full-scale (so a volume level of 1.0 would be
-  // 0.0 dBFS, and any lower volume level would be negative).
-  // May be called from multiple processes.
-  static float VolumeToDbFS(float volume) __attribute__((__weak__));
-  static float DbFSToVolume(float dbfs) __attribute__((__weak__));
-
   // Called to enable power save mode when no audio is being played
   // (|power_save_on| will be true in this case), and to disable power save mode
   // when audio playback resumes (|power_save_on| will be false).
   static void SetPowerSaveMode(bool power_save_on) __attribute__((__weak__));
+
+  // Converts a volume level in the range [0.0, 1.0] to/from a volume in dB.
+  // The volume in dB should be full-scale (so a volume level of 1.0 would be
+  // 0.0 dBFS, and any lower volume level would be negative).
+  // NOTE: Unlike the other VolumeControl methods, these may be called before
+  // Initialize() or after Finalize(). May be called from multiple processes.
+  static float VolumeToDbFS(float volume) __attribute__((__weak__));
+  static float DbFSToVolume(float dbfs) __attribute__((__weak__));
 };
 
 }  // namespace media
