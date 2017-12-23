@@ -18,6 +18,14 @@ void PrefetchBackgroundTaskScheduler::Schedule(int additional_delay_seconds) {
 }
 
 // static
+void PrefetchBackgroundTaskScheduler::ScheduleLimitless(
+    int additional_delay_seconds) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  prefetch::Java_PrefetchBackgroundTaskScheduler_scheduleTaskLimitless(
+      env, additional_delay_seconds);
+}
+
+// static
 void PrefetchBackgroundTaskScheduler::Cancel() {
   JNIEnv* env = base::android::AttachCurrentThread();
   prefetch::Java_PrefetchBackgroundTaskScheduler_cancelTask(env);
