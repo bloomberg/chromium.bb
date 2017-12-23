@@ -804,7 +804,6 @@ static const aom_cdf_prob
 #endif  // CONFIG_EXT_PARTITION
     };
 
-#if !CONFIG_EXT_WARPED_MOTION
 static const aom_cdf_prob
     default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)] = {
       { AOM_CDF3(16384, 24576) }, { AOM_CDF3(16384, 24576) },
@@ -825,69 +824,6 @@ static const aom_cdf_prob
       { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
 #endif
     };
-#else
-static const aom_cdf_prob
-    default_motion_mode_cdf[MOTION_MODE_CTX][BLOCK_SIZES_ALL][CDF_SIZE(
-        MOTION_MODES)] = {
-      {
-          { AOM_CDF3(16384, 24576) }, { AOM_CDF3(16384, 24576) },
-          { AOM_CDF3(16384, 24576) }, { AOM_CDF3(7936, 19091) },
-          { AOM_CDF3(4991, 19205) },  { AOM_CDF3(4992, 19314) },
-          { AOM_CDF3(15104, 21590) }, { AOM_CDF3(9855, 21043) },
-          { AOM_CDF3(12800, 22238) }, { AOM_CDF3(24320, 26498) },
-          { AOM_CDF3(26496, 28995) }, { AOM_CDF3(25216, 28166) },
-          { AOM_CDF3(30592, 31238) },
-#if CONFIG_EXT_PARTITION
-          { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
-          { AOM_CDF3(32256, 32656) },
-#endif
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-#if CONFIG_EXT_PARTITION
-          { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
-#endif
-      },
-      {
-          { AOM_CDF3(16384, 24576) }, { AOM_CDF3(16384, 24576) },
-          { AOM_CDF3(16384, 24576) }, { AOM_CDF3(7936, 19091) },
-          { AOM_CDF3(4991, 19205) },  { AOM_CDF3(4992, 19314) },
-          { AOM_CDF3(15104, 21590) }, { AOM_CDF3(9855, 21043) },
-          { AOM_CDF3(12800, 22238) }, { AOM_CDF3(24320, 26498) },
-          { AOM_CDF3(26496, 28995) }, { AOM_CDF3(25216, 28166) },
-          { AOM_CDF3(30592, 31238) },
-#if CONFIG_EXT_PARTITION
-          { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
-          { AOM_CDF3(32256, 32656) },
-#endif
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-#if CONFIG_EXT_PARTITION
-          { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
-#endif
-      },
-      {
-          { AOM_CDF3(16384, 24576) }, { AOM_CDF3(16384, 24576) },
-          { AOM_CDF3(16384, 24576) }, { AOM_CDF3(7936, 19091) },
-          { AOM_CDF3(4991, 19205) },  { AOM_CDF3(4992, 19314) },
-          { AOM_CDF3(15104, 21590) }, { AOM_CDF3(9855, 21043) },
-          { AOM_CDF3(12800, 22238) }, { AOM_CDF3(24320, 26498) },
-          { AOM_CDF3(26496, 28995) }, { AOM_CDF3(25216, 28166) },
-          { AOM_CDF3(30592, 31238) },
-#if CONFIG_EXT_PARTITION
-          { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
-          { AOM_CDF3(32256, 32656) },
-#endif
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-          { AOM_CDF3(32640, 32740) }, { AOM_CDF3(32640, 32740) },
-#if CONFIG_EXT_PARTITION
-          { AOM_CDF3(32256, 32656) }, { AOM_CDF3(32256, 32656) },
-#endif
-      },
-    };
-#endif  // CONFIG_EXT_WARPED_MOTION
 
 static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) },

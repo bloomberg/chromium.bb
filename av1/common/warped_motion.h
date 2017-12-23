@@ -36,8 +36,6 @@
 // Here force number of samples within SAMPLES_MAX.
 #define SAMPLES_MAX (LEAST_SQUARES_SAMPLES_MAX * 2)
 #define SAMPLES_ARRAY_SIZE (SAMPLES_MAX * 2)
-
-#define SCALING_FCT 3
 #else
 #define SAMPLES_ARRAY_SIZE (LEAST_SQUARES_SAMPLES_MAX * 2)
 #endif  // CONFIG_EXT_WARPED_MOTION
