@@ -4,6 +4,9 @@
 
 #include "net/cert/symantec_certs.h"
 
+#include <algorithm>
+
+#include "net/base/hash_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -36,6 +39,18 @@ TEST(SymantecCertsTest, IsLegacySymantecCert) {
   // ... but false when the chain includes a root on the exceptions list.
   hashes.push_back(HashValue(google_hash_value));
   EXPECT_FALSE(IsLegacySymantecCert(hashes));
+}
+
+TEST(SymantecCertsTest, AreSortedArrays) {
+  ASSERT_TRUE(std::is_sorted(kSymantecRoots,
+                             kSymantecRoots + kSymantecRootsLength,
+                             SHA256HashValueLessThan()));
+  ASSERT_TRUE(std::is_sorted(kSymantecExceptions,
+                             kSymantecExceptions + kSymantecExceptionsLength,
+                             SHA256HashValueLessThan()));
+  ASSERT_TRUE(std::is_sorted(kSymantecManagedCAs,
+                             kSymantecManagedCAs + kSymantecManagedCAsLength,
+                             SHA256HashValueLessThan()));
 }
 
 }  // namespace net

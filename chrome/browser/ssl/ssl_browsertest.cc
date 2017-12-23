@@ -1853,6 +1853,12 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, CommonNamePrefsCanEnable) {
                           AuthState::NONE);
 }
 
+IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecEnforcementIsNotDisabled) {
+  bool net::SSLConfig::*member = &net::SSLConfig::symantec_enforcement_disabled;
+  ASSERT_NO_FATAL_FAILURE(
+      CheckSSLConfig(browser()->profile()->GetRequestContext(), member, false));
+}
+
 // Visit a HTTP page which request WSS connection to a server providing invalid
 // certificate. Close the page while WSS connection waits for SSLManager's
 // response from UI thread.

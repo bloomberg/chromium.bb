@@ -17,12 +17,17 @@ namespace net {
 // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
 // for details about why.
 //
-// Independently operated sub-CAs are exempt from these policies, and are
-// listed in |kSymantecExceptions|.
-extern const SHA256HashValue kSymantecRoots[];
-extern const size_t kSymantecRootsLength;
-extern const SHA256HashValue kSymantecExceptions[];
-extern const size_t kSymantecExceptionsLength;
+// Pre-existing, independently operated sub-CAs are exempt from these
+// policies, and are listed in |kSymantecExceptions|.
+//
+// The Managed Partner CAs are required to disclose via Certificate
+// Transparency, and are listed in |kSymantecManagedCAs|.
+NET_EXPORT_PRIVATE extern const SHA256HashValue kSymantecRoots[];
+NET_EXPORT_PRIVATE extern const size_t kSymantecRootsLength;
+NET_EXPORT_PRIVATE extern const SHA256HashValue kSymantecExceptions[];
+NET_EXPORT_PRIVATE extern const size_t kSymantecExceptionsLength;
+NET_EXPORT_PRIVATE extern const SHA256HashValue kSymantecManagedCAs[];
+NET_EXPORT_PRIVATE extern const size_t kSymantecManagedCAsLength;
 
 // Returns true if |public_key_hashes| contains a certificate issued from
 // Symantec's "legacy" PKI. This constraint excludes certificates that were

@@ -26,6 +26,7 @@ SSLConfig::SSLConfig()
       rev_checking_required_local_anchors(false),
       sha1_local_anchors_enabled(true),
       common_name_fallback_local_anchors_enabled(true),
+      symantec_enforcement_disabled(false),
       version_min(kDefaultSSLVersionMin),
       version_max(kDefaultSSLVersionMax),
       tls13_variant(kDefaultTLS13Variant),
@@ -69,6 +70,9 @@ int SSLConfig::GetCertVerifyFlags() const {
     flags |= CertVerifier::VERIFY_ENABLE_SHA1_LOCAL_ANCHORS;
   if (common_name_fallback_local_anchors_enabled)
     flags |= CertVerifier::VERIFY_ENABLE_COMMON_NAME_FALLBACK_LOCAL_ANCHORS;
+  if (symantec_enforcement_disabled)
+    flags |= CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT;
+
   return flags;
 }
 

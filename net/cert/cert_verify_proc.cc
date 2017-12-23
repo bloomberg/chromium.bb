@@ -30,6 +30,7 @@
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/known_roots.h"
 #include "net/cert/ocsp_revocation_status.h"
+#include "net/cert/symantec_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
@@ -191,6 +192,23 @@ bool IsPastSHA1DeprecationDate(const X509Certificate& cert) {
   const base::Time kSHA1DeprecationDate =
       base::Time::FromInternalValue(INT64_C(13096080000000000));
   return start >= kSHA1DeprecationDate;
+}
+
+// See
+// https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
+// for more details.
+bool IsUntrustedSymantecCert(const X509Certificate& cert) {
+  const base::Time& start = cert.valid_start();
+  if (start.is_max() || start.is_null())
+    return true;
+  // Certificates issued on/after 2017-12-01 00:00:00 UTC are no longer
+  // trusted.
+  const base::Time kSymantecDeprecationDate =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1512086400);
+  if (start >= kSymantecDeprecationDate)
+    return true;
+
+  return false;
 }
 
 void BestEffortCheckOCSP(const std::string& raw_response,
@@ -580,6 +598,17 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     // error.
     if (rv == OK || IsCertificateError(rv))
       rv = MapCertStatusToNetError(verify_result->cert_status);
+  }
+
+  // Distrust Symantec-issued certificates, as described at
+  // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
+  if (!(flags & CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT) &&
+      IsLegacySymantecCert(verify_result->public_key_hashes)) {
+    if (IsUntrustedSymantecCert(*verify_result->verified_cert)) {
+      verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+      if (rv == OK || IsCertificateError(rv))
+        rv = MapCertStatusToNetError(verify_result->cert_status);
+    }
   }
 
   // Flag certificates from publicly-trusted CAs that are issued to intranet
