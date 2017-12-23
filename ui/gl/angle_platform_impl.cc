@@ -205,7 +205,7 @@ void ResetPlatform(EGLDisplay display) {
       static_cast<EGLDisplayType>(display));
   ResetCacheProgramCallback();
   {
-    auto writer = base::AutoWritableMemory::Create(g_angle_get_platform);
+    auto writer = base::AutoWritableMemory::Create(g_angle_reset_platform);
     *g_angle_reset_platform = nullptr;
   }
 }
