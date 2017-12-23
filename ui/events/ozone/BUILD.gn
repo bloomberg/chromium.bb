@@ -118,6 +118,7 @@ if (use_ozone) {
       "evdev/touch_filter/single_position_touch_noise_filter.cc",
       "evdev/touch_filter/single_position_touch_noise_filter.h",
       "evdev/touch_filter/touch_filter.h",
+      "gamepad/gamepad_event.cc",
       "gamepad/gamepad_event.h",
       "gamepad/gamepad_mapping.cc",
       "gamepad/gamepad_mapping.h",

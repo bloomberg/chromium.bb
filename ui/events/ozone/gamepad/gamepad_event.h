@@ -10,27 +10,34 @@
 
 namespace ui {
 
-struct GamepadEvent {
+class GamepadEvent {
+ public:
   GamepadEvent(int device_id,
                GamepadEventType type,
                uint16_t code,
                double value,
-               base::TimeTicks timestamp)
-      : device_id(device_id),
-        type(type),
-        code(code),
-        value(value),
-        timestamp(timestamp) {}
+               base::TimeTicks timestamp);
 
-  int device_id;
+  int device_id() const { return device_id_; }
 
-  GamepadEventType type;
+  GamepadEventType type() const { return type_; }
 
-  uint16_t code;
+  uint16_t code() const { return code_; }
 
-  double value;
+  double value() const { return value_; }
 
-  base::TimeTicks timestamp;
+  base::TimeTicks timestamp() const { return timestamp_; }
+
+ private:
+  int device_id_;
+
+  GamepadEventType type_;
+
+  uint16_t code_;
+
+  double value_;
+
+  base::TimeTicks timestamp_;
 };
 
 }  // namespace ui
