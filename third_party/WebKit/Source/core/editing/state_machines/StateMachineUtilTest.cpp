@@ -160,6 +160,10 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_IndicSyllabicCategoryVirama) {
   // Do not break after character having Indic_Syllabic_Category=Virama
   // property if following character has General_Category=C(Other) property.
   EXPECT_FALSE(IsGraphemeBreak(kVirama, kDevangariKa));
+
+  // Tamil virama is an exception (crbug.com/693697).
+  const UChar32 kTamilVirama = 0x0BCD;
+  EXPECT_TRUE(IsGraphemeBreak(kTamilVirama, kDevangariKa));
 }
 
 }  // namespace blink
