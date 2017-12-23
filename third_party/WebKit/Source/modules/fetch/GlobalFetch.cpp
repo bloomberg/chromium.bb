@@ -4,12 +4,12 @@
 
 #include "modules/fetch/GlobalFetch.h"
 
+#include "core/fetch/FetchManager.h"
+#include "core/fetch/Request.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/fetch/FetchManager.h"
-#include "modules/fetch/Request.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

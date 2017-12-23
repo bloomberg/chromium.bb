@@ -6,12 +6,12 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/fetch/Request.h"
+#include "core/fetch/Response.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/BackgroundFetchSettledFetch.h"
 #include "modules/background_fetch/BackgroundFetchedEventInit.h"
 #include "modules/event_modules_names.h"
-#include "modules/fetch/Request.h"
-#include "modules/fetch/Response.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 

@@ -7,11 +7,11 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/fetch/Body.h"
 #include "core/fetch/BodyStreamBuffer.h"
+#include "core/fetch/FetchResponseData.h"
 #include "core/fetch/Headers.h"
-#include "modules/ModulesExport.h"
-#include "modules/fetch/FetchResponseData.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
@@ -25,7 +25,7 @@ class ResponseInit;
 class ScriptState;
 class WebServiceWorkerResponse;
 
-class MODULES_EXPORT Response final : public Body {
+class CORE_EXPORT Response final : public Body {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(Response);
 
