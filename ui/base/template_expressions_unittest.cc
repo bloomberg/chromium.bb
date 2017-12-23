@@ -68,7 +68,7 @@ TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsPolymerQuoting) {
                 "<div>[[Call('$i18nPolymer{singleSample}')]]", substitutions));
   // This resolves |Call('\"moo\" said the cow')| to Polymer, which is
   // presented as |"moo" said the cow| to the user.
-  EXPECT_EQ("<div>[[Call('\\\"moo\\\" said the cow')]]",
+  EXPECT_EQ("<div>[[Call('&quot;moo&quot; said the cow')]]",
             ReplaceTemplateExpressions(
                 "<div>[[Call('$i18nPolymer{doubleSample}')]]", substitutions));
 }
@@ -77,12 +77,12 @@ TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsPolymerMixed) {
   static TemplateReplacements substitutions;
   substitutions["punctuationSample"] = "a\"b'c<d>e&f,g";
   substitutions["htmlSample"] = "<div>hello</div>";
-  EXPECT_EQ("a\\\"b\\'c<d>e&f\\,g",
+  EXPECT_EQ("a&quot;b\\'c<d>e&f\\,g",
             ReplaceTemplateExpressions("$i18nPolymer{punctuationSample}",
                                        substitutions));
   EXPECT_EQ("<div>hello</div>", ReplaceTemplateExpressions(
                                     "$i18nPolymer{htmlSample}", substitutions));
-  EXPECT_EQ("multiple: <div>hello</div>, a\\\"b\\'c<d>e&f\\,g.",
+  EXPECT_EQ("multiple: <div>hello</div>, a&quot;b\\'c<d>e&f\\,g.",
             ReplaceTemplateExpressions("multiple: $i18nPolymer{htmlSample}, "
                                        "$i18nPolymer{punctuationSample}.",
                                        substitutions));

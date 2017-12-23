@@ -16,8 +16,8 @@ const size_t kLeaderSize = arraysize(kLeader) - 1;
 const char kKeyOpen = '{';
 const char kKeyClose = '}';
 
-// Escape quotes and backslashes ('"\) with backslashes.
-std::string BackslashEscape(const std::string& in_string) {
+// Escape quotes and backslashes ('"\).
+std::string PolymerParameterEscape(const std::string& in_string) {
   std::string out;
   out.reserve(in_string.size() * 2);
   for (const char c : in_string) {
@@ -29,7 +29,7 @@ std::string BackslashEscape(const std::string& in_string) {
         out.append("\\'");
         break;
       case '"':
-        out.append("\\\"");
+        out.append("&quot;");
         break;
       case ',':
         out.append("\\,");
@@ -105,7 +105,7 @@ std::string ReplaceTemplateExpressions(
       // Pass the replacement through unchanged.
     } else if (context == "Polymer") {
       // Escape quotes and backslash for '$i18nPolymer{}' use (i.e. quoted).
-      replacement = BackslashEscape(replacement);
+      replacement = PolymerParameterEscape(replacement);
     } else {
       CHECK(false) << "Unknown context " << context;
     }
