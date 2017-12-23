@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/FetchManager.h"
+#include "core/fetch/FetchManager.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
@@ -12,7 +12,10 @@
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/BytesConsumer.h"
 #include "core/fetch/BytesConsumerForDataConsumerHandle.h"
+#include "core/fetch/FetchRequestData.h"
 #include "core/fetch/FormDataBytesConsumer.h"
+#include "core/fetch/Response.h"
+#include "core/fetch/ResponseInit.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/Frame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -24,9 +27,6 @@
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/fetch/FetchRequestData.h"
-#include "modules/fetch/Response.h"
-#include "modules/fetch/ResponseInit.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -824,9 +824,10 @@ void FetchManager::Loader::Failed(const String& message) {
   failed_ = true;
   if (execution_context_->IsContextDestroyed())
     return;
-  if (!message.IsEmpty())
+  if (!message.IsEmpty()) {
     execution_context_->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+  }
   if (resolver_) {
     ScriptState* state = resolver_->GetScriptState();
     ScriptState::Scope scope(state);
