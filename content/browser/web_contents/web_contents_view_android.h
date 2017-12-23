@@ -128,6 +128,7 @@ class WebContentsViewAndroid : public WebContentsView,
                      const gfx::PointF& location,
                      const gfx::PointF& screen_location);
   void OnDragEnded();
+  void OnSystemDragEnded();
 
   // The WebContents whose contents we display.
   WebContentsImpl* web_contents_;
@@ -146,6 +147,9 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // Interface used to get notified of events from the synchronous compositor.
   SynchronousCompositorClient* synchronous_compositor_client_;
+
+  gfx::PointF drag_location_;
+  gfx::PointF drag_screen_location_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAndroid);
 };

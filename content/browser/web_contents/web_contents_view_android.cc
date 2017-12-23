@@ -340,14 +340,14 @@ void WebContentsViewAndroid::StartDragging(
     RenderWidgetHostImpl* source_rwh) {
   if (drop_data.text.is_null()) {
     // Need to clear drag and drop state in blink.
-    OnDragEnded();
+    OnSystemDragEnded();
     return;
   }
 
   gfx::NativeView native_view = GetNativeView();
   if (!native_view) {
     // Need to clear drag and drop state in blink.
-    OnDragEnded();
+    OnSystemDragEnded();
     return;
   }
 
@@ -370,7 +370,7 @@ void WebContentsViewAndroid::StartDragging(
 
   if (!native_view->StartDragAndDrop(jtext, gfx::ConvertToJavaBitmap(bitmap))) {
     // Need to clear drag and drop state in blink.
-    OnDragEnded();
+    OnSystemDragEnded();
     return;
   }
 
@@ -446,6 +446,9 @@ void WebContentsViewAndroid::OnDragEntered(
 
 void WebContentsViewAndroid::OnDragUpdated(const gfx::PointF& location,
                                            const gfx::PointF& screen_location) {
+  drag_location_ = location;
+  drag_screen_location_ = screen_location;
+
   blink::WebDragOperationsMask allowed_ops =
       static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
                                                 blink::kWebDragOperationMove);
@@ -466,8 +469,17 @@ void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
       *drop_data, location, screen_location, 0);
 }
 
-void WebContentsViewAndroid::OnDragEnded() {
+void WebContentsViewAndroid::OnSystemDragEnded() {
   web_contents_->GetRenderViewHost()->GetWidget()->DragSourceSystemDragEnded();
+}
+
+void WebContentsViewAndroid::OnDragEnded() {
+  web_contents_->GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
+      drag_location_, drag_screen_location_, blink::kWebDragOperationNone);
+  OnSystemDragEnded();
+
+  drag_location_ = gfx::PointF();
+  drag_screen_location_ = gfx::PointF();
 }
 
 void WebContentsViewAndroid::GotFocus(
