@@ -20,12 +20,16 @@ blink_core_sources("fetch") {
     "FetchDataLoader.h",
     "FetchHeaderList.cpp",
     "FetchHeaderList.h",
-    "FetchManager.cpp",
-    "FetchManager.h",
-    "FetchRequestData.cpp",
-    "FetchRequestData.h",
-    "FetchResponseData.cpp",
-    "FetchResponseData.h",
+
+    # TODO(nhiroki): Move these files from modules/fetch to core/fetch.
+    # (https://crbug.com/794837)
+    # "FetchManager.cpp",
+    # "FetchManager.h",
+    # "FetchRequestData.cpp",
+    # "FetchRequestData.h",
+    # "FetchResponseData.cpp",
+    # "FetchResponseData.h",
+
     "FormDataBytesConsumer.cpp",
     "FormDataBytesConsumer.h",
 
@@ -40,16 +44,19 @@ blink_core_sources("fetch") {
     "MultipartParser.h",
     "ReadableStreamBytesConsumer.cpp",
     "ReadableStreamBytesConsumer.h",
-    "Request.cpp",
-    "Request.h",
-    "RequestInit.cpp",
-    "RequestInit.h",
-    "Response.cpp",
-    "Response.h",
+
+    # TODO(nhiroki): Move these files from modules/fetch to core/fetch.
+    # (https://crbug.com/794837)
+    # "Request.cpp",
+    # "Request.h",
+    # "RequestInit.cpp",
+    # "RequestInit.h",
+    # "Response.cpp",
+    # "Response.h",
   ]
 
   if (is_win && is_component_build) {
-    # Body.cpp exports a class (CORE_EXPORT) that inherits from
+    # Body.cpp exports a class (MODULES_EXPORT) that inherits from
     # PairIterable<String, String> that is also used as base class by an
     # imported (CORE_EXPORT) class and that confuses the Windows
     # linker/compiler. https://crbug.com/739340

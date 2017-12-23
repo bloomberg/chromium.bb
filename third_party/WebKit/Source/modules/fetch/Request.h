@@ -6,11 +6,11 @@
 #define Request_h
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/request_or_usv_string.h"
-#include "core/CoreExport.h"
+#include "bindings/modules/v8/request_or_usv_string.h"
 #include "core/fetch/Body.h"
-#include "core/fetch/FetchRequestData.h"
 #include "core/fetch/Headers.h"
+#include "modules/ModulesExport.h"
+#include "modules/fetch/FetchRequestData.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -25,7 +25,7 @@ class WebServiceWorkerRequest;
 
 using RequestInfo = RequestOrUSVString;
 
-class CORE_EXPORT Request final : public Body {
+class MODULES_EXPORT Request final : public Body {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(Request);
 

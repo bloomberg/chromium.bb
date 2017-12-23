@@ -33,8 +33,8 @@
 #include <memory>
 #include <utility>
 #include "core/dom/ExecutionContext.h"
-#include "core/fetch/Response.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "modules/fetch/Response.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/payments/WebPaymentHandlerResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"

@@ -10,7 +10,7 @@
 #include <v8.h>
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Response.h"
+#include "bindings/modules/v8/V8Response.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/BytesConsumer.h"
