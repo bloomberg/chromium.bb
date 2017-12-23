@@ -606,7 +606,7 @@ def GenerateCredits(
                 continue
         entries.append(MetadataToTemplateEntry(metadata, entry_template))
 
-    entries.sort(key=lambda entry: (entry['name'], entry['content']))
+    entries.sort(key=lambda entry: (entry['name'].lower(), entry['content']))
     for entry_id, entry in enumerate(entries):
         entry['content'] = entry['content'].replace('{{id}}', str(entry_id))
 
