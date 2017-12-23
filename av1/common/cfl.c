@@ -125,8 +125,21 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
   }
 }
 
-void av1_cfl_subtract_c(int16_t *pred_buf_q3, int width, int height,
-                        int16_t avg_q3) {
+static void subtract_average_c(int16_t *pred_buf_q3, int width, int height,
+                               int round_offset, int num_pel_log2) {
+  int sum_q3 = 0;
+  int16_t *pred_buf = pred_buf_q3;
+  for (int j = 0; j < height; j++) {
+    // assert(pred_buf_q3 + tx_width <= cfl->pred_buf_q3 + CFL_BUF_SQUARE);
+    for (int i = 0; i < width; i++) {
+      sum_q3 += pred_buf[i];
+    }
+    pred_buf += CFL_BUF_LINE;
+  }
+  const int avg_q3 = (sum_q3 + round_offset) >> num_pel_log2;
+  // Loss is never more than 1/2 (in Q3)
+  // assert(abs((avg_q3 * (1 << num_pel_log2)) - sum_q3) <= 1 << num_pel_log2 >>
+  //       1);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       pred_buf_q3[i] -= avg_q3;
@@ -135,30 +148,7 @@ void av1_cfl_subtract_c(int16_t *pred_buf_q3, int width, int height,
   }
 }
 
-static void cfl_subtract_average(CFL_CTX *cfl, TX_SIZE tx_size) {
-  const int tx_height = tx_size_high[tx_size];
-  const int tx_width = tx_size_wide[tx_size];
-  const int num_pel_log2 =
-      tx_size_high_log2[tx_size] + tx_size_wide_log2[tx_size];
-
-  int16_t *pred_buf_q3 = cfl->pred_buf_q3;
-  int sum_q3 = 0;
-
-  cfl_pad(cfl, tx_width, tx_height);
-
-  for (int j = 0; j < tx_height; j++) {
-    assert(pred_buf_q3 + tx_width <= cfl->pred_buf_q3 + CFL_BUF_SQUARE);
-    for (int i = 0; i < tx_width; i++) {
-      sum_q3 += pred_buf_q3[i];
-    }
-    pred_buf_q3 += CFL_BUF_LINE;
-  }
-  const int avg_q3 = (sum_q3 + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
-  // Loss is never more than 1/2 (in Q3)
-  assert(abs((avg_q3 * (1 << num_pel_log2)) - sum_q3) <= 1 << num_pel_log2 >>
-         1);
-  av1_cfl_subtract(cfl->pred_buf_q3, tx_width, tx_height, avg_q3);
-}
+CFL_SUB_AVG_FN(c)
 
 static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
                                    CFL_PRED_TYPE pred_type) {
@@ -227,7 +217,8 @@ static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   }
 #endif  // CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
 
-  cfl_subtract_average(cfl, tx_size);
+  cfl_pad(cfl, tx_size_wide[tx_size], tx_size_high[tx_size]);
+  get_subtract_average_fn(tx_size)(cfl->pred_buf_q3);
   cfl->are_parameters_computed = 1;
 }
 

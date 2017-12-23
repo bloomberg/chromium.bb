@@ -15,37 +15,6 @@
 #include "av1/common/cfl.h"
 
 /**
- * Subtracts avg_q3 from the active part of the CfL prediction buffer.
- *
- * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the
- * active area is specified using width and height.
- *
- * Note: We don't need to worry about going over the active area, as long as we
- * stay inside the CfL prediction buffer.
- */
-void av1_cfl_subtract_avx2(int16_t *pred_buf_q3, int width, int height,
-                           int16_t avg_q3) {
-  const __m256i avg_x16 = _mm256_set1_epi16(avg_q3);
-
-  // Sixteen int16 values fit in one __m256i register. If this is enough to do
-  // the entire row, we move to the next row (stride ==32), otherwise we move to
-  // the next sixteen values.
-  //   width   next
-  //     4      32
-  //     8      32
-  //    16      32
-  //    32      16
-  const int stride = CFL_BUF_LINE >> (width == 32);
-
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
-  do {
-    __m256i val_x16 = _mm256_loadu_si256((__m256i *)pred_buf_q3);
-    _mm256_storeu_si256((__m256i *)pred_buf_q3,
-                        _mm256_sub_epi16(val_x16, avg_x16));
-  } while ((pred_buf_q3 += stride) < end);
-}
-
-/**
  * Adds 4 pixels (in a 2x2 grid) and multiplies them by 2. Resulting in a more
  * precise version of a box filter 4:2:0 pixel subsampling in Q3.
  *
@@ -216,3 +185,74 @@ cfl_predict_hbd_fn get_predict_hbd_fn_avx2(TX_SIZE tx_size) {
   };
   return predict_hbd[(tx_size_wide_log2[tx_size] - tx_size_wide_log2[0]) & 3];
 }
+
+static INLINE __m256i fill_sum_epi32(__m256i l0) {
+  l0 = _mm256_add_epi32(l0, _mm256_shuffle_epi32(l0, _MM_SHUFFLE(1, 0, 3, 2)));
+  return _mm256_add_epi32(l0,
+                          _mm256_shuffle_epi32(l0, _MM_SHUFFLE(2, 3, 0, 1)));
+}
+
+static INLINE void subtract_average_avx2(int16_t *pred_buf, int width,
+                                         int height, int round_offset,
+                                         int num_pel_log2) {
+  const __m256i zeros = _mm256_setzero_si256();
+  __m256i *row = (__m256i *)pred_buf;
+  const __m256i *const end = row + height * CFL_BUF_LINE_I256;
+  const int step = CFL_BUF_LINE_I256 * (1 + (width == 8) + 3 * (width == 4));
+  union {
+    __m256i v;
+    int32_t i32[8];
+  } sum;
+  sum.v = zeros;
+  do {
+    if (width == 4) {
+      __m256i l0 = _mm256_loadu_si256(row);
+      __m256i l1 = _mm256_loadu_si256(row + CFL_BUF_LINE_I256);
+      __m256i l2 = _mm256_loadu_si256(row + 2 * CFL_BUF_LINE_I256);
+      __m256i l3 = _mm256_loadu_si256(row + 3 * CFL_BUF_LINE_I256);
+
+      __m256i t0 = _mm256_add_epi16(l0, l1);
+      __m256i t1 = _mm256_add_epi16(l2, l3);
+
+      sum.v = _mm256_add_epi32(
+          sum.v, _mm256_add_epi32(_mm256_unpacklo_epi16(t0, zeros),
+                                  _mm256_unpacklo_epi16(t1, zeros)));
+    } else {
+      __m256i l0;
+      if (width == 8) {
+        l0 = _mm256_add_epi16(_mm256_loadu_si256(row),
+                              _mm256_loadu_si256(row + CFL_BUF_LINE_I256));
+      } else {
+        l0 = _mm256_loadu_si256(row);
+        l0 = _mm256_add_epi16(l0, _mm256_permute2x128_si256(l0, l0, 1));
+      }
+      sum.v = _mm256_add_epi32(
+          sum.v, _mm256_add_epi32(_mm256_unpacklo_epi16(l0, zeros),
+                                  _mm256_unpackhi_epi16(l0, zeros)));
+      if (width == 32) {
+        l0 = _mm256_loadu_si256(row + 1);
+        l0 = _mm256_add_epi16(l0, _mm256_permute2x128_si256(l0, l0, 1));
+        sum.v = _mm256_add_epi32(
+            sum.v, _mm256_add_epi32(_mm256_unpacklo_epi16(l0, zeros),
+                                    _mm256_unpackhi_epi16(l0, zeros)));
+      }
+    }
+  } while ((row += step) < end);
+
+  sum.v = fill_sum_epi32(sum.v);
+
+  __m256i avg_epi16 =
+      _mm256_set1_epi16((sum.i32[0] + round_offset) >> num_pel_log2);
+
+  row = (__m256i *)pred_buf;
+  do {
+    _mm256_storeu_si256(row,
+                        _mm256_sub_epi16(_mm256_loadu_si256(row), avg_epi16));
+    if (width == 32) {
+      _mm256_storeu_si256(
+          row + 1, _mm256_sub_epi16(_mm256_loadu_si256(row + 1), avg_epi16));
+    }
+  } while ((row += CFL_BUF_LINE_I256) < end);
+}
+
+CFL_SUB_AVG_FN(avx2)

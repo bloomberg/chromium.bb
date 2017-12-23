@@ -13,52 +13,71 @@
 
 #include "./av1_rtcd.h"
 
-#include "av1/common/cfl.h"
-
-#define INT16_IN_M128I (8)
-
-#define TWO_BUFFER_LINES (64)
-
-/**
- * Subtracts avg_q3 from the active part of the CfL prediction buffer.
- *
- * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the
- * active area is specified using width and height.
- *
- * Note: We don't need to worry about going over the active area, as long as we
- * stay inside the CfL prediction buffer.
- */
-void av1_cfl_subtract_sse2(int16_t *pred_buf_q3, int width, int height,
-                           int16_t avg_q3) {
-  const __m128i avg_x16 = _mm_set1_epi16(avg_q3);
-
-  // Eight int16 values fit in one __m128i register. If this is enough to do the
-  // entire row, the next value is in the next row, otherwise we move to the
-  // next eight values.
-  //   width   next
-  //     4      32
-  //     8      32
-  //    16       8
-  //    32       8
-  const int next = CFL_BUF_LINE >> (2 * (width > INT16_IN_M128I));
-
-  // If next was in the next row (next == 32), then we need to jump 2 rows
-  // (stride == 64). Otherwise, if width is 16 we move to the next row, if width
-  // is 32 we move 16 values.
-  //   width     stride
-  //     4         64
-  //     8         64
-  //    16         32
-  //    32         16
-  const int stride = TWO_BUFFER_LINES >> (width >> 4);
-
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
-  do {
-    __m128i val_x16 = _mm_loadu_si128((__m128i *)pred_buf_q3);
-    __m128i next_val_x16 = _mm_loadu_si128((__m128i *)(pred_buf_q3 + next));
-
-    _mm_storeu_si128((__m128i *)pred_buf_q3, _mm_sub_epi16(val_x16, avg_x16));
-    _mm_storeu_si128((__m128i *)(pred_buf_q3 + next),
-                     _mm_sub_epi16(next_val_x16, avg_x16));
-  } while ((pred_buf_q3 += stride) < end);
+static INLINE __m128i fill_sum_epi32(__m128i l0) {
+  l0 = _mm_add_epi32(l0, _mm_shuffle_epi32(l0, _MM_SHUFFLE(1, 0, 3, 2)));
+  return _mm_add_epi32(l0, _mm_shuffle_epi32(l0, _MM_SHUFFLE(2, 3, 0, 1)));
 }
+
+static INLINE void subtract_average_sse2(int16_t *pred_buf, int width,
+                                         int height, int round_offset,
+                                         int num_pel_log2) {
+  const __m128i zeros = _mm_setzero_si128();
+  const __m128i round_offset_epi32 = _mm_set1_epi32(round_offset);
+  __m128i *row = (__m128i *)pred_buf;
+  const __m128i *const end = row + height * CFL_BUF_LINE_I128;
+  const int step = CFL_BUF_LINE_I128 * (1 + (width == 8) + 3 * (width == 4));
+
+  __m128i sum = zeros;
+  do {
+    __m128i l0;
+    if (width == 4) {
+      l0 = _mm_add_epi16(_mm_loadl_epi64(row),
+                         _mm_loadl_epi64(row + CFL_BUF_LINE_I128));
+      __m128i l1 = _mm_add_epi16(_mm_loadl_epi64(row + 2 * CFL_BUF_LINE_I128),
+                                 _mm_loadl_epi64(row + 3 * CFL_BUF_LINE_I128));
+      sum = _mm_add_epi32(sum, _mm_add_epi32(_mm_unpacklo_epi16(l0, zeros),
+                                             _mm_unpacklo_epi16(l1, zeros)));
+    } else {
+      if (width == 8) {
+        l0 = _mm_add_epi16(_mm_loadu_si128(row),
+                           _mm_loadu_si128(row + CFL_BUF_LINE_I128));
+      } else {
+        l0 = _mm_add_epi16(_mm_loadu_si128(row), _mm_loadu_si128(row + 1));
+      }
+      sum = _mm_add_epi32(sum, _mm_add_epi32(_mm_unpacklo_epi16(l0, zeros),
+                                             _mm_unpackhi_epi16(l0, zeros)));
+      if (width == 32) {
+        l0 = _mm_add_epi16(_mm_loadu_si128(row + 2), _mm_loadu_si128(row + 3));
+        sum = _mm_add_epi32(sum, _mm_add_epi32(_mm_unpacklo_epi16(l0, zeros),
+                                               _mm_unpackhi_epi16(l0, zeros)));
+      }
+    }
+  } while ((row += step) < end);
+
+  sum = fill_sum_epi32(sum);
+
+  __m128i avg_epi16 =
+      _mm_srli_epi32(_mm_add_epi32(sum, round_offset_epi32), num_pel_log2);
+  avg_epi16 = _mm_packs_epi32(avg_epi16, avg_epi16);
+
+  row = (__m128i *)pred_buf;
+  do {
+    if (width == 4) {
+      _mm_storel_epi64(row, _mm_sub_epi16(_mm_loadl_epi64(row), avg_epi16));
+    } else {
+      _mm_storeu_si128(row, _mm_sub_epi16(_mm_loadu_si128(row), avg_epi16));
+      if (width > 8) {
+        _mm_storeu_si128(row + 1,
+                         _mm_sub_epi16(_mm_loadu_si128(row + 1), avg_epi16));
+        if (width == 32) {
+          _mm_storeu_si128(row + 2,
+                           _mm_sub_epi16(_mm_loadu_si128(row + 2), avg_epi16));
+          _mm_storeu_si128(row + 3,
+                           _mm_sub_epi16(_mm_loadu_si128(row + 3), avg_epi16));
+        }
+      }
+    }
+  } while ((row += CFL_BUF_LINE_I128) < end);
+}
+
+CFL_SUB_AVG_FN(sse2)

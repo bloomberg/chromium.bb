@@ -14,12 +14,13 @@
 #include "./av1_rtcd.h"
 #include "test/util.h"
 #include "test/acm_random.h"
+#include "av1/common/cfl.h"
 
 using std::tr1::make_tuple;
 
 using libaom_test::ACMRandom;
 
-#define NUM_ITERATIONS (10)
+#define NUM_ITERATIONS (100)
 #define NUM_ITERATIONS_SPEED (INT16_MAX)
 
 #define ALL_CFL_SIZES(function)                                     \
@@ -35,30 +36,31 @@ using libaom_test::ACMRandom;
       make_tuple(16, 8, &function), make_tuple(8, 16, &function), \
       make_tuple(16, 16, &function)
 
-#define ALL_CFL_TX_SIZES(function)                                      \
-  make_tuple(TX_4X4, &function), make_tuple(TX_4X8, &function),         \
-      make_tuple(TX_8X4, &function), make_tuple(TX_8X8, &function),     \
-      make_tuple(TX_8X16, &function), make_tuple(TX_16X8, &function),   \
-      make_tuple(TX_16X16, &function), make_tuple(TX_16X32, &function), \
+#define ALL_CFL_TX_SIZES(function)                                     \
+  make_tuple(TX_4X4, &function), make_tuple(TX_4X8, &function),        \
+      make_tuple(TX_4X16, &function), make_tuple(TX_8X4, &function),   \
+      make_tuple(TX_8X8, &function), make_tuple(TX_8X16, &function),   \
+      make_tuple(TX_8X32, &function), make_tuple(TX_16X4, &function),  \
+      make_tuple(TX_16X8, &function), make_tuple(TX_16X16, &function), \
+      make_tuple(TX_16X32, &function), make_tuple(TX_32X8, &function), \
       make_tuple(TX_32X16, &function), make_tuple(TX_32X32, &function)
 
 namespace {
-typedef void (*subtract_fn)(int16_t *pred_buf_q3, int width, int height,
-                            int16_t avg_q3);
-
 typedef cfl_subsample_lbd_fn (*get_subsample_fn)(int width, int height);
 
 typedef cfl_predict_lbd_fn (*get_predict_fn)(TX_SIZE tx_size);
 
 typedef cfl_predict_hbd_fn (*get_predict_fn_hbd)(TX_SIZE tx_size);
 
-typedef std::tr1::tuple<int, int, subtract_fn> subtract_param;
+typedef cfl_subtract_average_fn (*sub_avg_fn)(TX_SIZE tx_size);
 
 typedef std::tr1::tuple<int, int, get_subsample_fn> subsample_param;
 
 typedef std::tr1::tuple<TX_SIZE, get_predict_fn> predict_param;
 
 typedef std::tr1::tuple<TX_SIZE, get_predict_fn_hbd> predict_param_hbd;
+
+typedef std::tr1::tuple<TX_SIZE, sub_avg_fn> sub_avg_param;
 
 static void assertFaster(int ref_elapsed_time, int elapsed_time) {
   EXPECT_GT(ref_elapsed_time, elapsed_time)
@@ -77,23 +79,27 @@ static void printSpeed(int ref_elapsed_time, int elapsed_time, int width,
             << std::endl;
 }
 
-class CFLSubtractTest : public ::testing::TestWithParam<subtract_param> {
+class CFLSubAvgTest : public ::testing::TestWithParam<sub_avg_param> {
  public:
-  virtual ~CFLSubtractTest() {}
-  virtual void SetUp() { subtract = GET_PARAM(2); }
+  virtual ~CFLSubAvgTest() {}
+  virtual void SetUp() { sub_avg = GET_PARAM(1); }
 
  protected:
-  int Width() const { return GET_PARAM(0); }
-  int Height() const { return GET_PARAM(1); }
-  int16_t pred_buf_data[CFL_BUF_SQUARE];
-  int16_t pred_buf_data_ref[CFL_BUF_SQUARE];
-  subtract_fn subtract;
-  void init(int width, int height) {
-    int k = 0;
+  int Width() const { return tx_size_wide[GET_PARAM(0)]; }
+  int Height() const { return tx_size_high[GET_PARAM(0)]; }
+  TX_SIZE Tx_size() const { return GET_PARAM(0); }
+  sub_avg_fn sub_avg;
+  int16_t data[CFL_BUF_SQUARE];
+  int16_t data_ref[CFL_BUF_SQUARE];
+  void init() {
+    const int width = Width();
+    const int height = Height();
+    ACMRandom rnd(ACMRandom::DeterministicSeed());
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
-        pred_buf_data[j * CFL_BUF_LINE + i] = k;
-        pred_buf_data_ref[j * CFL_BUF_LINE + i] = k++;
+        const int16_t d = rnd.Rand15Signed();
+        data[j * CFL_BUF_LINE + i] = d;
+        data_ref[j * CFL_BUF_LINE + i] = d;
       }
     }
   }
@@ -223,49 +229,49 @@ class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd> {
   }
 };
 
-TEST_P(CFLSubtractTest, SubtractTest) {
-  const int width = Width();
-  const int height = Height();
-
-  ACMRandom rnd(ACMRandom::DeterministicSeed());
-
+TEST_P(CFLSubAvgTest, SubAvgTest) {
+  const TX_SIZE tx_size = Tx_size();
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  const cfl_subtract_average_fn ref_sub = get_subtract_average_fn_c(tx_size);
+  const cfl_subtract_average_fn sub = sub_avg(tx_size);
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(width, height);
-    int16_t k = rnd.Rand15Signed();
-    subtract(pred_buf_data, width, height, k);
-    av1_cfl_subtract_c(pred_buf_data_ref, width, height, k);
+    init();
+    sub(data);
+    ref_sub(data_ref);
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
-        ASSERT_EQ(pred_buf_data[j * CFL_BUF_LINE + i],
-                  pred_buf_data_ref[j * CFL_BUF_LINE + i]);
-        ASSERT_EQ(pred_buf_data[j * CFL_BUF_LINE + i], -k);
-        k--;
+        ASSERT_EQ(data_ref[j * CFL_BUF_LINE + i], data[j * CFL_BUF_LINE + i]);
       }
     }
   }
 }
 
-TEST_P(CFLSubtractTest, DISABLED_SubtractSpeedTest) {
+TEST_P(CFLSubAvgTest, DISABLED_SubAvgSpeedTest) {
   const int width = Width();
   const int height = Height();
+  const TX_SIZE tx_size = Tx_size();
+
+  const cfl_subtract_average_fn ref_sub = get_subtract_average_fn_c(tx_size);
+  const cfl_subtract_average_fn sub = sub_avg(tx_size);
 
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
 
-  init(width, height);
+  init();
   aom_usec_timer_start(&ref_timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    av1_cfl_subtract_c(pred_buf_data_ref, width, height, k);
+    ref_sub(data_ref);
   }
   aom_usec_timer_mark(&ref_timer);
-  const int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
+  int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
 
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    subtract(pred_buf_data, width, height, k);
+    sub(data);
   }
   aom_usec_timer_mark(&timer);
-  const int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
+  int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
 
   printSpeed(ref_elapsed_time, elapsed_time, width, height);
   assertFaster(ref_elapsed_time, elapsed_time);
@@ -421,15 +427,16 @@ TEST_P(CFLPredictHBDTest, DISABLED_PredictHBDSpeedTest) {
 }
 
 #if HAVE_SSE2
-const subtract_param subtract_sizes_sse2[] = { ALL_CFL_SIZES(
-    av1_cfl_subtract_sse2) };
+const sub_avg_param sub_avg_sizes_sse2[] = { ALL_CFL_TX_SIZES(
+    get_subtract_average_fn_sse2) };
 
-INSTANTIATE_TEST_CASE_P(SSE2, CFLSubtractTest,
-                        ::testing::ValuesIn(subtract_sizes_sse2));
+INSTANTIATE_TEST_CASE_P(SSE2, CFLSubAvgTest,
+                        ::testing::ValuesIn(sub_avg_sizes_sse2));
 
 #endif
 
 #if HAVE_SSSE3
+
 const subsample_param subsample_sizes_ssse3[] = { CHROMA_420_CFL_SIZES(
     get_subsample_lbd_fn_ssse3) };
 
@@ -450,8 +457,8 @@ INSTANTIATE_TEST_CASE_P(SSSE3, CFLPredictHBDTest,
 #endif
 
 #if HAVE_AVX2
-const subtract_param subtract_sizes_avx2[] = { ALL_CFL_SIZES(
-    av1_cfl_subtract_avx2) };
+const sub_avg_param sub_avg_sizes_avx2[] = { ALL_CFL_TX_SIZES(
+    get_subtract_average_fn_avx2) };
 
 const subsample_param subsample_sizes_avx2[] = { CHROMA_420_CFL_SIZES(
     get_subsample_lbd_fn_avx2) };
@@ -462,8 +469,8 @@ const predict_param predict_sizes_avx2[] = { ALL_CFL_TX_SIZES(
 const predict_param_hbd predict_sizes_hbd_avx2[] = { ALL_CFL_TX_SIZES(
     get_predict_hbd_fn_avx2) };
 
-INSTANTIATE_TEST_CASE_P(AVX2, CFLSubtractTest,
-                        ::testing::ValuesIn(subtract_sizes_avx2));
+INSTANTIATE_TEST_CASE_P(AVX2, CFLSubAvgTest,
+                        ::testing::ValuesIn(sub_avg_sizes_avx2));
 
 INSTANTIATE_TEST_CASE_P(AVX2, CFLSubsampleTest,
                         ::testing::ValuesIn(subsample_sizes_avx2));

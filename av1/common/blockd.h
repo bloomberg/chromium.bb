@@ -520,6 +520,8 @@ typedef struct {
 #endif  // CONFIG_DEBUG
 #define CFL_MAX_BLOCK_SIZE (BLOCK_32X32)
 #define CFL_BUF_LINE (32)
+#define CFL_BUF_LINE_I128 (CFL_BUF_LINE >> 3)
+#define CFL_BUF_LINE_I256 (CFL_BUF_LINE >> 4)
 #define CFL_BUF_SQUARE (CFL_BUF_LINE * CFL_BUF_LINE)
 typedef struct cfl_ctx {
   // The CfL prediction buffer is used in two steps:
