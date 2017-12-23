@@ -1,5 +1,4 @@
-Name: The library to input, validate, and display addresses.
-Short Name: libaddressinput
+Name: libaddressinput
 URL: https://github.com/googlei18n/libaddressinput
 Version: 0
 Date: 10 November 2014

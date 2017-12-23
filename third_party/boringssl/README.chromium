@@ -1,4 +1,4 @@
-Name: boringssl
+Name: BoringSSL
 URL: https://boringssl.googlesource.com/boringssl
 Version: git
 License: BSDish
