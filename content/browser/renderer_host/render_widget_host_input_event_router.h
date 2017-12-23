@@ -14,10 +14,12 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/service/surfaces/surface_hittest_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
+#include "content/browser/renderer_host/render_widget_targeter.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -25,6 +27,7 @@ struct FrameHostMsg_HittestData_Params;
 
 namespace blink {
 class WebGestureEvent;
+class WebInputEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebTouchEvent;
@@ -44,6 +47,7 @@ namespace content {
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
+class RenderWidgetTargeter;
 
 // Class owned by WebContentsImpl for the purpose of directing input events
 // to the correct RenderWidgetHost on pages with multiple RenderWidgetHosts.
@@ -52,7 +56,8 @@ class RenderWidgetHostViewBase;
 // this class requests a Surface hit test from the provided |root_view| and
 // forwards the event to the owning RWHV of the returned Surface ID.
 class CONTENT_EXPORT RenderWidgetHostInputEventRouter
-    : public RenderWidgetHostViewBaseObserver {
+    : public RenderWidgetHostViewBaseObserver,
+      public RenderWidgetTargeter::Delegate {
  public:
   RenderWidgetHostInputEventRouter();
   ~RenderWidgetHostInputEventRouter() final;
@@ -131,12 +136,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   using TargetMap = std::map<uint32_t, TargetData>;
 
   void ClearAllObserverRegistrations();
-  RenderWidgetHostViewBase* FindEventTarget(
-      RenderWidgetHostViewBase* root_view,
-      const blink::WebMouseEvent& event,
-      gfx::PointF* transformed_point) const;
-
-  RenderWidgetHostViewBase* FindViewAtLocation(
+  RenderWidgetTargetResult FindViewAtLocation(
       RenderWidgetHostViewBase* root_view,
       const gfx::PointF& point,
       const gfx::PointF& point_in_screen,
@@ -155,7 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // properly fire. This method determines which RenderWidgetHostViews other
   // than the actual target require notification, and sends the appropriate
   // events to them.
-  void SendMouseEnterOrLeaveEvents(blink::WebMouseEvent* event,
+  void SendMouseEnterOrLeaveEvents(const blink::WebMouseEvent& event,
                                    RenderWidgetHostViewBase* target,
                                    RenderWidgetHostViewBase* root_view);
 
@@ -166,6 +166,26 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                               const blink::WebGestureEvent& event);
   void SendGestureScrollEnd(RenderWidgetHostViewBase* view,
                             const blink::WebGestureEvent& event);
+
+  // Helper functions to implement RenderWidgetTargeter::Delegate functions.
+  RenderWidgetTargetResult FindMouseEventTarget(
+      RenderWidgetHostViewBase* root_view,
+      const blink::WebMouseEvent& event) const;
+
+  // |mouse_event| is in the coord-space of |target|.
+  void DispatchMouseEvent(RenderWidgetHostViewBase* root_view,
+                          RenderWidgetHostViewBase* target,
+                          const blink::WebMouseEvent& mouse_event,
+                          const ui::LatencyInfo& latency);
+
+  // RenderWidgetTargeter::Delegate:
+  RenderWidgetTargetResult FindTargetSynchronously(
+      RenderWidgetHostViewBase* root_view,
+      const blink::WebInputEvent& event) override;
+  void DispatchEventToTarget(RenderWidgetHostViewBase* root_view,
+                             RenderWidgetHostViewBase* target,
+                             const blink::WebInputEvent& event,
+                             const ui::LatencyInfo& latency) override;
 
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;
@@ -193,7 +213,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>
       hittest_data_;
 
+  std::unique_ptr<RenderWidgetTargeter> event_targeter_;
   bool enable_viz_ = false;
+
+  base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   friend class RenderWidgetHostInputEventRouterTest;

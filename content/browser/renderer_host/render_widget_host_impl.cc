@@ -2890,6 +2890,11 @@ void RenderWidgetHostImpl::SetWidgetInputHandler(
   }
 }
 
+void RenderWidgetHostImpl::SetInputTargetClient(
+    viz::mojom::InputTargetClientPtr input_target_client) {
+  input_target_client_ = std::move(input_target_client);
+}
+
 void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
   if (widget && base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
     // If we have a bound handler ensure that we destroy the old input router.
