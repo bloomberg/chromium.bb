@@ -18,7 +18,6 @@
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/browser/net/token_binding_manager.h"
 #include "android_webview/common/aw_content_client.h"
-
 #include "base/base_paths_android.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -30,6 +29,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,6 +55,8 @@
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/channel_id_service.h"
+#include "net/ssl/ssl_config.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
@@ -77,7 +79,6 @@ bool g_created_url_request_context_builder = false;
 bool g_check_cleartext_permitted = false;
 
 
-const base::FilePath::CharType kChannelIDFilename[] = "Origin Bound Certs";
 const char kProxyServerSwitch[] = "proxy-server";
 
 void ApplyCmdlineOverridesToHostResolver(
@@ -174,14 +175,34 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   return job_factory;
 }
 
+// For Android WebView, do not enforce the policies outlined in
+// https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
+// as those will be handled by Android itself on its own schedule. Otherwise,
+// it returns the default SSLConfig.
+class AwSSLConfigService : public net::SSLConfigService {
+ public:
+  AwSSLConfigService() { default_config_.symantec_enforcement_disabled = true; }
+
+  void GetSSLConfig(net::SSLConfig* config) override {
+    *config = default_config_;
+  }
+
+ private:
+  ~AwSSLConfigService() override = default;
+
+  net::SSLConfig default_config_;
+};
+
 }  // namespace
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path,
+    const base::FilePath& channel_id_path,
     std::unique_ptr<net::ProxyConfigService> config_service,
     PrefService* user_pref_service,
     net::NetLog* net_log)
     : cache_path_(cache_path),
+      channel_id_path_(channel_id_path),
       net_log_(net_log),
       proxy_config_service_(std::move(config_service)),
       http_user_agent_settings_(new AwHttpUserAgentSettings()) {
@@ -257,9 +278,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 
   net::URLRequestContextBuilder builder;
 
-  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
-  DCHECK(browser_context);
-
   builder.set_network_delegate(std::make_unique<AwNetworkDelegate>());
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
@@ -267,11 +285,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(proxy_config_service_.get());
   std::unique_ptr<net::ChannelIDService> channel_id_service;
   if (TokenBindingManager::GetInstance()->is_enabled()) {
-    base::FilePath channel_id_path =
-        browser_context->GetPath().Append(kChannelIDFilename);
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
     channel_id_db = new net::SQLiteChannelIDStore(
-        channel_id_path,
+        channel_id_path_,
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BACKGROUND}));
 
@@ -316,6 +332,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       CreateAuthHandlerFactory(host_resolver.get()));
   builder.set_host_resolver(std::move(host_resolver));
 
+  builder.set_ssl_config_service(base::MakeRefCounted<AwSSLConfigService>());
+
   url_request_context_ = builder.Build();
 #if DCHECK_IS_ON()
   g_created_url_request_context_builder = true;
@@ -328,6 +346,21 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   url_request_context_->set_job_factory(job_factory_.get());
   url_request_context_->set_http_user_agent_settings(
       http_user_agent_settings_.get());
+}
+
+// static
+void AwURLRequestContextGetter::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
+  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
+                               std::string());
+}
+
+// static
+void AwURLRequestContextGetter::set_check_cleartext_permitted(bool permitted) {
+#if DCHECK_IS_ON()
+  DCHECK(!g_created_url_request_context_builder);
+#endif
+  g_check_cleartext_permitted = permitted;
 }
 
 net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
@@ -348,14 +381,6 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   std::swap(protocol_handlers_, *protocol_handlers);
   request_interceptors_.swap(request_interceptors);
-}
-
-// static
-void AwURLRequestContextGetter::set_check_cleartext_permitted(bool permitted) {
-#if DCHECK_IS_ON()
-    DCHECK(!g_created_url_request_context_builder);
-#endif
-    g_check_cleartext_permitted = permitted;
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>

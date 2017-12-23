@@ -84,6 +84,10 @@ class NET_EXPORT CertVerifier {
     // match against the commonName of the certificate, but only if they are
     // issued by non-public trust anchors.
     VERIFY_ENABLE_COMMON_NAME_FALLBACK_LOCAL_ANCHORS = 1 << 6,
+
+    // If set, disables the policy enforcement described at
+    // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
+    VERIFY_DISABLE_SYMANTEC_ENFORCEMENT = 1 << 7,
   };
 
   // Parameters to verify |certificate| against the supplied

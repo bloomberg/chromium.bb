@@ -946,9 +946,12 @@ TransportSecurityState::CheckCTRequirements(
 
   const base::Time epoch = base::Time::UnixEpoch();
   const CTRequiredPolicies& ct_required_policies = GetCTRequiredPolicies();
+
+  bool found = false;
   for (const auto& restricted_ca : ct_required_policies) {
-    if (epoch + restricted_ca.effective_date >
-        validated_certificate_chain->valid_start()) {
+    if (!restricted_ca.effective_date.is_zero() &&
+        (epoch + restricted_ca.effective_date >
+         validated_certificate_chain->valid_start())) {
       // The candidate cert is not subject to the CT policy, because it
       // was issued before the effective CT date.
       continue;
@@ -963,15 +966,21 @@ TransportSecurityState::CheckCTRequirements(
     // Found a match, indicating this certificate is potentially
     // restricted. Determine if any of the hashes are on the exclusion
     // list as exempt from the CT requirement.
-    if (IsAnySHA256HashInSortedArray(public_key_hashes,
+    if (restricted_ca.exceptions &&
+        IsAnySHA256HashInSortedArray(public_key_hashes,
                                      restricted_ca.exceptions,
                                      restricted_ca.exceptions_length)) {
       // Found an excluded sub-CA; CT is not required.
-      return default_response;
+      continue;
     }
-    // No exception found. This certificate must conform to the CT policy.
-    return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
+
+    // No exception found. This certificate must conform to the CT policy. The
+    // compliance state is treated as additive - it must comply with all
+    // stated policies.
+    found = true;
   }
+  if (found)
+    return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
 
   return default_response;
 }

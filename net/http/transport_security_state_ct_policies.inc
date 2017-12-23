@@ -20,7 +20,8 @@ struct CTRequiredPolicy {
   size_t roots_length;
 
   // The date at which enforcement should begin, relative to the Unix
-  // Epoch.
+  // Epoch. If equivalent to zero (base::TimeDelta()), then it is enforced
+  // for all certificates.
   base::TimeDelta effective_date;
 
   // However, if a certificate ALSO chains to or through one of
@@ -33,7 +34,7 @@ struct CTRequiredPolicy {
   size_t exceptions_length;
 };
 
-typedef CTRequiredPolicy CTRequiredPolicies[1];
+typedef CTRequiredPolicy CTRequiredPolicies[2];
 
 const CTRequiredPolicies& GetCTRequiredPolicies() {
   static const CTRequiredPolicy kCTRequiredPolicies[] = {
@@ -41,8 +42,12 @@ const CTRequiredPolicies& GetCTRequiredPolicies() {
       {
           kSymantecRoots, kSymantecRootsLength,
           // 1 June 2016, 00:00:00 GMT.
-          base::TimeDelta::FromSeconds(1464739200), kSymantecExceptions,
-          kSymantecExceptionsLength,
+          base::TimeDelta::FromSeconds(1464739200),
+          kSymantecExceptions, kSymantecExceptionsLength,
+      },
+      {
+          kSymantecManagedCAs, kSymantecManagedCAsLength,
+          base::TimeDelta(), nullptr, 0
       },
   };
 

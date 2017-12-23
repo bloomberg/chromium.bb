@@ -1,15 +1,17 @@
 # Symantec Certificates
 
 This directory contains the set of known active and legacy root certificates
-operated by Symantec Corporation. In order for certificates issued from
-roots to be trusted, it is required that the certificates be logged using
-Certificate Transparency.
+that were operated by Symantec Corporation. In order for certificates issued
+from these roots to be trusted, it is required that they comply with the
+policies outlined at <https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html>.
 
-For details about why, see <https://security.googleblog.com/2015/10/sustaining-digital-certificate-security.html>
+The exceptions to this are:
+  * Pre-existing independently operated sub-CAs, whose keys were and are not
+    controled by Symantec and which maintain current and appropriate audits.
+  * The set of Managed CAs in accordance with the above policies.
 
-The exception to this is sub-CAs which have been disclosed as independently
-operated, whose keys are not in control of Symantec, and which are
-maintaining a current and appropriate audit.
+In addition to the above, no changes exist from the Certificate Transparency
+requirement outlined at <https://security.googleblog.com/2015/10/sustaining-digital-certificate-security.html>
 
 ## Roots
 
@@ -34,6 +36,14 @@ The following command can be used to match certificates and their key hashes:
   * [ac2b922ecfd5e01711772fea8ed372de9d1e2245fce3f57a9cdbec77296a424b.pem](excluded/ac2b922ecfd5e01711772fea8ed372de9d1e2245fce3f57a9cdbec77296a424b.pem)
   * [a4fe7c7f15155f3f0aef7aaa83cf6e06deb97ca3f909df920ac1490882d488ed.pem](excluded/a4fe7c7f15155f3f0aef7aaa83cf6e06deb97ca3f909df920ac1490882d488ed.pem)
 
+### DigiCert
+
+[WebTrust Audit](https://cert.webtrust.org/ViewSeal?id=2228)
+[Certification Practices Statement](https://www.digicert.com/CPS)
+
+  * [8bb593a93be1d0e8a822bb887c547890c3e706aad2dab76254f97fb36b82fc26.pem](excluded/8bb593a93be1d0e8a822bb887c547890c3e706aad2dab76254f97fb36b82fc26.pem)
+  * [b94c198300cec5c057ad0727b70bbe91816992256439a7b32f4598119dda9c97.pem](excluded/b94c198300cec5c057ad0727b70bbe91816992256439a7b32f4598119dda9c97.pem)
+
 ### Google
 
 [WebTrust Audit](https://cert.webtrust.org/ViewSeal?id=1941)
@@ -41,3 +51,9 @@ The following command can be used to match certificates and their key hashes:
 
   * [c3f697a92a293d86f9a3ee7ccb970e20e0050b8728cc83ed1b996ce9005d4c36.pem](excluded/c3f697a92a293d86f9a3ee7ccb970e20e0050b8728cc83ed1b996ce9005d4c36.pem)
 
+## Excluded Managed CAs
+
+### DigiCert
+
+  * [7cac9a0ff315387750ba8bafdb1c2bc29b3f0bba16362ca93a90f84da2df5f3e.pem](managed/7cac9a0ff315387750ba8bafdb1c2bc29b3f0bba16362ca93a90f84da2df5f3e.pem)
+  * [ac50b5fb738aed6cb781cc35fbfff7786f77109ada7c08867c04a573fd5cf9ee.pem](managed/ac50b5fb738aed6cb781cc35fbfff7786f77109ada7c08867c04a573fd5cf9ee.pem)

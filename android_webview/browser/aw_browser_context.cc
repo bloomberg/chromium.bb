@@ -65,6 +65,8 @@ const char kWebRestrictionsAuthority[] = "web_restrictions_authority";
 
 namespace {
 
+const base::FilePath::CharType kChannelIDFilename[] = "Origin Bound Certs";
+
 const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
@@ -140,9 +142,9 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
 
   InitUserPrefService();
 
-  url_request_context_getter_ =
-      new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
-                                    user_pref_service_.get(), net_log);
+  url_request_context_getter_ = new AwURLRequestContextGetter(
+      cache_path, context_storage_path_.Append(kChannelIDFilename),
+      CreateProxyConfigService(), user_pref_service_.get(), net_log);
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -219,12 +221,10 @@ void AwBrowserContext::InitUserPrefService() {
   pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, false);
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry);
 
-  pref_registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
-  pref_registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
-                                    std::string());
   pref_registry->RegisterStringPref(prefs::kWebRestrictionsAuthority,
                                     std::string());
 
+  AwURLRequestContextGetter::RegisterPrefs(pref_registry);
   metrics::MetricsService::RegisterPrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
 

@@ -463,6 +463,22 @@ CA_NAME="req_ca_dn" \
 /bin/sh -c "cat out/common_name_only.key out/common_name_only.pem \
     > ../certificates/common_name_only.pem"
 
+# Issued after 1 Dec 2017 (Symantec Legacy Distrust Date)
+openssl req \
+  -config ../scripts/ee.cnf \
+  -newkey rsa:2048 \
+  -text \
+  -out out/dec_2017.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 171220000000Z \
+    -enddate   201220000000Z \
+    -in out/dec_2017.req \
+    -out ../certificates/dec_2017.pem \
+    -config ca.cnf
+
 # Regenerate CRLSets
 ## Block a leaf cert directly by SPKI
 python crlsetutil.py -o ../certificates/crlset_by_leaf_spki.raw \
