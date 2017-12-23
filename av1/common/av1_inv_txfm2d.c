@@ -44,21 +44,21 @@ static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
 static const TXFM_1D_CFG *inv_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
   // DCT
   {
-      &inv_txfm_1d_col_cfg_dct_4,  &inv_txfm_1d_col_cfg_dct_8,
-      &inv_txfm_1d_col_cfg_dct_16, &inv_txfm_1d_col_cfg_dct_32,
+      &inv_txfm_1d_col_cfg_dct_4,     &inv_txfm_1d_col_cfg_dct_8,
+      &inv_txfm_1d_col_cfg_dct_16,    &inv_txfm_1d_col_cfg_dct_32,
 #if CONFIG_TX64X64
       &inv_txfm_1d_col_cfg_dct_64,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_col_cfg_dct_8,  &inv_txfm_1d_col_cfg_dct_4,
-      &inv_txfm_1d_col_cfg_dct_16, &inv_txfm_1d_col_cfg_dct_8,
-      &inv_txfm_1d_col_cfg_dct_32, &inv_txfm_1d_col_cfg_dct_16,
+      &inv_txfm_1d_col_cfg_dct_4x8,   &inv_txfm_1d_col_cfg_dct_8x4,
+      &inv_txfm_1d_col_cfg_dct_8x16,  &inv_txfm_1d_col_cfg_dct_16x8,
+      &inv_txfm_1d_col_cfg_dct_16x32, &inv_txfm_1d_col_cfg_dct_32x16,
 #if CONFIG_TX64X64
-      &inv_txfm_1d_col_cfg_dct_64, &inv_txfm_1d_col_cfg_dct_32,
+      &inv_txfm_1d_col_cfg_dct_32x64, &inv_txfm_1d_col_cfg_dct_64x32,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_col_cfg_dct_16, &inv_txfm_1d_col_cfg_dct_4,
-      &inv_txfm_1d_col_cfg_dct_32, &inv_txfm_1d_col_cfg_dct_8,
+      &inv_txfm_1d_col_cfg_dct_4x16,  &inv_txfm_1d_col_cfg_dct_16x4,
+      &inv_txfm_1d_col_cfg_dct_8x32,  &inv_txfm_1d_col_cfg_dct_32x8,
 #if CONFIG_TX64X64
-      &inv_txfm_1d_row_cfg_dct_64, &inv_txfm_1d_row_cfg_dct_16,
+      &inv_txfm_1d_col_cfg_dct_16x64, &inv_txfm_1d_col_cfg_dct_64x16,
 #endif  // CONFIG_TX64X64
   },
   // ADST
@@ -70,23 +70,23 @@ static const TXFM_1D_CFG *inv_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 #if CONFIG_TX64X64
       NULL,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_col_cfg_adst_8,
-      &inv_txfm_1d_col_cfg_adst_4,
-      &inv_txfm_1d_col_cfg_adst_16,
-      &inv_txfm_1d_col_cfg_adst_8,
-      &inv_txfm_1d_col_cfg_adst_32,
-      &inv_txfm_1d_col_cfg_adst_16,
+      &inv_txfm_1d_col_cfg_adst_4x8,
+      &inv_txfm_1d_col_cfg_adst_8x4,
+      &inv_txfm_1d_col_cfg_adst_8x16,
+      &inv_txfm_1d_col_cfg_adst_16x8,
+      &inv_txfm_1d_col_cfg_adst_16x32,
+      &inv_txfm_1d_col_cfg_adst_32x16,
 #if CONFIG_TX64X64
       NULL,
-      &inv_txfm_1d_col_cfg_adst_32,
+      NULL,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_col_cfg_adst_16,
-      &inv_txfm_1d_col_cfg_adst_4,
-      &inv_txfm_1d_col_cfg_adst_32,
-      &inv_txfm_1d_col_cfg_adst_8,
+      &inv_txfm_1d_col_cfg_adst_4x16,
+      &inv_txfm_1d_col_cfg_adst_16x4,
+      &inv_txfm_1d_col_cfg_adst_8x32,
+      &inv_txfm_1d_col_cfg_adst_32x8,
 #if CONFIG_TX64X64
       NULL,
-      &inv_txfm_1d_row_cfg_adst_16,
+      NULL,
 #endif  // CONFIG_TX64X64
   },
   // FLIPADST
@@ -98,23 +98,23 @@ static const TXFM_1D_CFG *inv_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 #if CONFIG_TX64X64
       NULL,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_col_cfg_adst_8,
-      &inv_txfm_1d_col_cfg_adst_4,
-      &inv_txfm_1d_col_cfg_adst_16,
-      &inv_txfm_1d_col_cfg_adst_8,
-      &inv_txfm_1d_col_cfg_adst_32,
-      &inv_txfm_1d_col_cfg_adst_16,
+      &inv_txfm_1d_col_cfg_adst_4x8,
+      &inv_txfm_1d_col_cfg_adst_8x4,
+      &inv_txfm_1d_col_cfg_adst_8x16,
+      &inv_txfm_1d_col_cfg_adst_16x8,
+      &inv_txfm_1d_col_cfg_adst_16x32,
+      &inv_txfm_1d_col_cfg_adst_32x16,
 #if CONFIG_TX64X64
       NULL,
-      &inv_txfm_1d_col_cfg_adst_32,
+      NULL,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_col_cfg_adst_16,
-      &inv_txfm_1d_col_cfg_adst_4,
-      &inv_txfm_1d_col_cfg_adst_32,
-      &inv_txfm_1d_col_cfg_adst_8,
+      &inv_txfm_1d_col_cfg_adst_4x16,
+      &inv_txfm_1d_col_cfg_adst_16x4,
+      &inv_txfm_1d_col_cfg_adst_8x32,
+      &inv_txfm_1d_col_cfg_adst_32x8,
 #if CONFIG_TX64X64
       NULL,
-      &inv_txfm_1d_row_cfg_adst_16,
+      NULL,
 #endif  // CONFIG_TX64X64
   },
   // IDENTITY

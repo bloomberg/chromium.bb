@@ -145,20 +145,20 @@ static const int8_t fwd_stage_range_row_dct_8x16[6] =
     ARRAYOFFSET6(4, 0, 1, 2, 3, 3, 3);
 static const int8_t fwd_stage_range_row_adst_8x16[8] =
     ARRAYOFFSET8(4, 0, 0, 1, 2, 2, 3, 3, 3);
-static const int8_t fwd_cos_bit_row_dct_8x16[6] = { 13, 13, 13, 13, 13, 13 };
+static const int8_t fwd_cos_bit_row_dct_8x16[6] = { 13, 13, 12, 12, 12, 12 };
 static const int8_t fwd_cos_bit_row_adst_8x16[8] = { 13, 13, 13, 13,
-                                                     13, 13, 13, 13 };
+                                                     12, 12, 12, 12 };
 
-//  ---------------- 8x16 1D constants -----------------------
+//  ---------------- 16x8 1D constants -----------------------
 #define fwd_shift_16x8 fwd_shift_16
 static const int8_t fwd_stage_range_row_dct_16x8[8] =
     ARRAYOFFSET8(3, 0, 1, 2, 3, 4, 4, 4, 4);
 static const int8_t fwd_stage_range_row_adst_16x8[10] =
     ARRAYOFFSET10(3, 0, 0, 1, 2, 2, 3, 3, 4, 4, 4);
-static const int8_t fwd_cos_bit_row_dct_16x8[8] = { 13, 13, 13, 13,
-                                                    13, 13, 13, 13 };
-static const int8_t fwd_cos_bit_row_adst_16x8[10] = { 13, 13, 13, 13, 13,
-                                                      13, 13, 13, 13, 13 };
+static const int8_t fwd_cos_bit_row_dct_16x8[8] = { 13, 13, 13, 12,
+                                                    12, 12, 12, 12 };
+static const int8_t fwd_cos_bit_row_adst_16x8[10] = { 13, 13, 13, 13, 12,
+                                                      12, 12, 12, 12, 12 };
 
 //  ---------------- 16x32 1D constants -----------------------
 #define fwd_shift_16x32 fwd_shift_32
@@ -166,8 +166,8 @@ static const int8_t fwd_stage_range_row_dct_16x32[8] =
     ARRAYOFFSET8(5, 0, 1, 2, 3, 4, 4, 4, 4);
 static const int8_t fwd_stage_range_row_adst_16x32[10] =
     ARRAYOFFSET10(5, 0, 0, 1, 2, 2, 3, 3, 4, 4, 4);
-static const int8_t fwd_cos_bit_row_dct_16x32[8] = { 13, 13, 13, 13,
-                                                     13, 13, 13, 13 };
+static const int8_t fwd_cos_bit_row_dct_16x32[8] = { 13, 13, 13, 12,
+                                                     12, 12, 12, 12 };
 static const int8_t fwd_cos_bit_row_adst_16x32[10] = { 12, 12, 12, 12, 12,
                                                        12, 12, 12, 12, 12 };
 
@@ -186,8 +186,8 @@ static const int8_t fwd_cos_bit_row_adst_32x16[12] = { 12, 12, 12, 12, 12, 12,
 #define fwd_shift_32x64 fwd_shift_64
 static const int8_t fwd_stage_range_row_dct_32x64[10] =
     ARRAYOFFSET10(6, 0, 1, 2, 3, 4, 5, 5, 5, 5, 5);
-static const int8_t fwd_cos_bit_row_dct_32x64[10] = { 12, 12, 12, 12, 12,
-                                                      12, 12, 12, 12, 12 };
+static const int8_t fwd_cos_bit_row_dct_32x64[10] = { 13, 12, 12, 11, 10,
+                                                      10, 10, 10, 10, 10 };
 
 //  ---------------- 64x32 1D constants -----------------------
 #define fwd_shift_64x32 fwd_shift_64
@@ -241,15 +241,15 @@ static const int8_t fwd_cos_bit_row_adst_32x8[12] = { 12, 12, 12, 12, 12, 12,
 #define fwd_shift_16x64 fwd_shift_64
 static const int8_t fwd_stage_range_row_dct_16x64[8] =
     ARRAYOFFSET8(6, 0, 1, 2, 3, 4, 4, 4, 4);
-static const int8_t fwd_cos_bit_row_dct_16x64[8] = { 13, 13, 13, 13,
-                                                     13, 13, 13, 13 };
+static const int8_t fwd_cos_bit_row_dct_16x64[8] = { 12, 12, 12, 11,
+                                                     11, 11, 11, 11 };
 
 //  ---------------- 64x16 1D constants -----------------------
 #define fwd_shift_64x16 fwd_shift_64
 static const int8_t fwd_stage_range_row_dct_64x16[12] =
     ARRAYOFFSET12(4, 0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6);
-static const int8_t fwd_cos_bit_row_dct_64x16[12] = { 13, 13, 12, 11, 10, 10,
-                                                      10, 10, 10, 10, 10, 10 };
+static const int8_t fwd_cos_bit_row_dct_64x16[12] = { 13, 13, 12, 11, 11, 11,
+                                                      11, 11, 11, 11, 11, 11 };
 
 //
 //  ---------------- row config fwd_dct_4 ----------------
