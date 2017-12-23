@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <unistd.h>
+
 #include <memory>
 #include <queue>
 #include <utility>
@@ -167,9 +168,9 @@ TEST_F(GamepadEventConverterEvdevTest, XboxGamepadEvents) {
   }
 
   for (unsigned i = 0; i < observer.events.size(); ++i) {
-    EXPECT_EQ(observer.events[i].type, expected_events[i].type);
-    EXPECT_EQ(observer.events[i].code, expected_events[i].code);
-    double d = observer.events[i].value - expected_events[i].value;
+    EXPECT_EQ(observer.events[i].type(), expected_events[i].type);
+    EXPECT_EQ(observer.events[i].code(), expected_events[i].code);
+    double d = observer.events[i].value() - expected_events[i].value;
     d = d > 0 ? d : -d;
     EXPECT_LT(d, axis_delta);
   }
@@ -250,9 +251,9 @@ TEST_F(GamepadEventConverterEvdevTest, iBuffaloGamepadEvents) {
   }
 
   for (unsigned i = 0; i < observer.events.size(); ++i) {
-    EXPECT_EQ(observer.events[i].type, expected_events[i].type);
-    EXPECT_EQ(observer.events[i].code, expected_events[i].code);
-    double d = observer.events[i].value - expected_events[i].value;
+    EXPECT_EQ(observer.events[i].type(), expected_events[i].type);
+    EXPECT_EQ(observer.events[i].code(), expected_events[i].code);
+    double d = observer.events[i].value() - expected_events[i].value;
     d = d > 0 ? d : -d;
     EXPECT_LT(d, axis_delta);
   }
