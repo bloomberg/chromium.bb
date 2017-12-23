@@ -4,7 +4,7 @@
 
 #include "modules/fetch/testing/WorkerInternalsFetch.h"
 
-#include "core/fetch/Response.h"
+#include "modules/fetch/Response.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

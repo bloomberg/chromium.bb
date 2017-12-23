@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/Response.h"
+#include "modules/fetch/Response.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
@@ -18,7 +18,6 @@
 #include "core/fetch/BlobBytesConsumer.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FormDataBytesConsumer.h"
-#include "core/fetch/ResponseInit.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/forms/FormData.h"
@@ -26,6 +25,7 @@
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "core/url/URLSearchParams.h"
+#include "modules/fetch/ResponseInit.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/loader/fetch/FetchUtils.h"

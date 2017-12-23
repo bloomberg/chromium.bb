@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/Request.h"
+#include "modules/fetch/Request.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
@@ -75,10 +75,9 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   web_request.SetCacheMode(kCacheMode);
   web_request.SetRedirectMode(kRedirectMode);
   web_request.SetRequestContext(kContext);
-  for (int i = 0; headers[i].key; ++i) {
+  for (int i = 0; headers[i].key; ++i)
     web_request.SetHeader(WebString::FromUTF8(headers[i].key),
                           WebString::FromUTF8(headers[i].value));
-  }
   web_request.SetReferrer(referrer, kReferrerPolicy);
 
   Request* request = Request::Create(scope.GetScriptState(), web_request);

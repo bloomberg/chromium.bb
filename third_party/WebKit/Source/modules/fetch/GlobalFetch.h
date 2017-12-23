@@ -6,8 +6,8 @@
 #define GlobalFetch_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/fetch/Request.h"
 #include "modules/ModulesExport.h"
+#include "modules/fetch/Request.h"
 
 namespace blink {
 

@@ -6,7 +6,6 @@
 #define FetchManager_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 
@@ -16,8 +15,8 @@ class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
 
-class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
-                                       public ContextLifecycleObserver {
+class FetchManager final : public GarbageCollected<FetchManager>,
+                           public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
 
  public:
