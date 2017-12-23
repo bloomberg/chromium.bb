@@ -643,7 +643,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'd458ada06171a85af00367251a4ed55db7fe2018',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'c213e2d540bd359f313bea83be8662dd13eff10e', # commit position 20628
+    Var('webrtc_git') + '/src.git' + '@' + 'f6dc412c42ff9d97d24d8b0b7fc6b883129e975a', # commit position 20628
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
