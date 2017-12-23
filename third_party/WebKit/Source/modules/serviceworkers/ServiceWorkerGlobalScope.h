@@ -31,7 +31,7 @@
 #define ServiceWorkerGlobalScope_h
 
 #include <memory>
-#include "bindings/modules/v8/request_or_usv_string.h"
+#include "bindings/core/v8/request_or_usv_string.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"

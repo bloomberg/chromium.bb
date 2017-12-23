@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/FetchResponseData.h"
+#include "core/fetch/FetchResponseData.h"
 
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FetchHeaderList.h"
