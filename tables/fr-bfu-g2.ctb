@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-17
+#-updated: 2017-12-24
 
 # liblouis: Unified French Grade 2 Table
 
@@ -112,7 +112,7 @@ nofor word atabek 1-2345-1-12-15-13
 noback endword ation 16
 endword ations 16-234
 nofor after conabr after voyabr endword ation 16
-nofor begword pack 1234-1-14-13
+nofor begword pack 1234-1-14-13 #$
 noback always au 13
 nofor before voyabr3 midword aufr 13-16
 nofor endword eau 15-13
@@ -126,12 +126,12 @@ nofor before voyabr3 begmidword auss 13-2346
 nofor before conabr begword autoex 13-2345-135-1346
 
 nofor endword az 1-1356
-nofor word län 123-345-1345
-nofor midword änd 345-1345-145
+nofor word län 123-345-1345 #$
+nofor midword änd 345-1345-145 #$
 nofor begword æch 345-12356
 nofor begword æg 345-1245
 nofor begword æl 345-1245
-nofor begword zems 1356-345-234
+nofor begword zems 1356-345-234 #$
 nofor begword æoli 345-135-1245-24
 nofor begword ænig 345-1345-24-1245
 nofor begword æsch 345-234-14-125
@@ -276,14 +276,14 @@ nofor midword erfl 236-126
 nofor midword erfr 236-16
 nofor midword ergl 236-345
 
-noback before con begword es 156
-nofor before conabr begword es 156
+before con begword es 156
 nofor begword esbr 156-23
+nofor begword esch 156-12356
 nofor before voyabr begword escl 156-146
 nofor begword esclan 156-146-2
 nofor begword escr 156-25
-nofor begword espl 156-1246
-nofor begword espr 156-235
+nofor before voyabr begword espl 156-1246
+nofor before voy begword espr 156-235
 nofor begword estr 156-356
 noback endword es 156
 nofor after conabr after voyabr endword es 156
@@ -376,6 +376,7 @@ nofor endword glables 345-45-234
 nofor always glai 345-34
 nofor endword glant 345-1456
 nofor endword glants 345-1456-234
+nofor endword glent 345-126
 nofor before conabr begmidword glion 345-3456
 nofor endword glion 345-3456
 nofor endword gles 345-156
@@ -519,7 +520,7 @@ nofor before conabr midword or 56
 nofor before voyabr3 midword orfl 56-126
 nofor midword orks 56-13-234
 
-endword eous 15-135-136-234
+endword eous 15-135-136-234 #$
 noback always ou 1256
 nofor midendword ou 1256
 nofor before voyabr begword ou 1256
@@ -860,7 +861,7 @@ word apparents		1-1234-234
 contraction aps 1-1234-234
 word apparente		1-1234-15
 word apparentes		1-1234-156
-nofor word d'après 145-3-1-235
+nofor word d'après 145-3-1-235 #$
 word après		1-235
 word aq 1-12345
 word assez		1-1356
@@ -1490,7 +1491,7 @@ prfword figuration		124-1245-16
 prfword figurations	124-1245-16-234
 prfword figurative		124-1245-1236
 prfword figuratives	124-1245-1236-234
-word fg 56-124-1245
+word fg 56-124-1245 #$
 prfword figure		124-1245
 prfword figures		124-1245-234
 word fille		124-123
@@ -1989,7 +1990,7 @@ word nécessités		1345-14-2345-234
 word nécessiteuse	1345-14-2345-234-15
 word nécessiteuses	1345-14-2345-234-156
 word nécessiteux	1345-14-2345-1346
-word nb 56-1345-12
+word nb 56-1345-12 #$
 prfword nombre		1345-12
 contraction nb
 word pnb 56-1234-1345-12
@@ -2711,7 +2712,7 @@ word aujourd'hui 13-3-125
 word autant\sque 13-456-12345
 word autre\schose 13-456-12356
 word autre\spart 13-456-1234
-replace c.-à-d. c'est-à-dire
+replace c.-à-d. c'est-à-dire #$
 word c'est-à-dire 14-3-15-36-12356-36-145
 word d'abord 145-3-1
 word de\ssuite 145-456-234
@@ -2750,6 +2751,55 @@ before apost sufword parce\squ 1234-456-12345
 before apost sufword presqu 235-12345
 before apost sufword puisqu 1234-12345
 
+#Lettres isolées
+contraction b
+contraction c
+contraction d
+contraction f
+contraction g
+contraction h
+contraction i
+contraction j
+contraction k
+contraction l
+contraction m
+contraction n
+contraction o
+contraction p
+contraction q
+contraction r
+contraction s
+contraction t
+contraction u
+contraction v
+contraction w
+contraction x
+contraction z
+
+contraction B
+contraction C
+contraction D
+contraction E
+contraction F
+contraction G
+contraction H
+contraction I
+contraction J
+contraction K
+contraction L
+contraction M
+contraction N
+contraction O
+contraction P
+contraction Q
+contraction R
+contraction S
+contraction T
+contraction U
+contraction V
+contraction W
+contraction X
+contraction Z
 #Mots contenant un "æ" mal interprétés par les règles précédentes
 word althæa 1-123-2345-125-345-1
 nofor word æolidia 345-135-123-24-145-24-1
@@ -2787,9 +2837,9 @@ word haïk 125-1-12456-13
 begword haïss 125-1-12456-2346
 begword héraï 125-123456-1235-1-12456
 begword ïamb 12456-1-134-12
-word oudrir 1256-1456-24-1235
-begword ouï 1256-12456
-begmidword ouï- 1256-12456-36
+word oudrir 1256-1456-24-1235 #$
+begword ouï 1256-12456 #$
+begmidword ouï- 1256-12456-36 #$
 word ouïe 1256-12456-15
 word ouïes 1256-12456-156
 word inouïe 35-1256-12456-15
@@ -4488,12 +4538,15 @@ word ( 56-236
 word ) 56-356
 
 #Correction des sigles dont les lettres sont séparées par des points
+nofor pass4 $l@256[@56]$l ?
+nofor pass4 $l@256[@56]@46$l ?
 nofor pass3 $l[]@256$l@256 @56-56
 nofor pass3 @46$l[]@256@46$l@256 @56-56
 nofor pass2 @56-56-256$l[]@256 @56-56
 nofor pass2 @56-56-256-46$l[]@256 @56-56
 nofor context [@56-56-256] "."
 nofor context [@56-56-256] "."
+
 nofor correct $ls["m.s."] "miens."
 nofor correct $ls["v.s."] "viens."
 nofor correct $ls["t.s."] "tiens."
@@ -4516,9 +4569,11 @@ noback correct $s["-"]$l "`-"
 noback correct $l["("] "ø("
 nofor correct $l[""]"(" ?
 
+#opérations mathématiques
 #"-" dans une opération
-nofor pass4 [@6@36]$l @78
-nofor pass4 $dms$d[@36]$d$dms @78
+nofor pass4 [@6-36]$l @78
+nofor pass4 $l[@6-36] @78-6
+#nofor pass4 $dms$d[@36]$d$dms @78
 nofor pass4 [@6-36]$d @78-6
 nofor context @78 "-"
 
@@ -4537,8 +4592,14 @@ nofor pass4 $dms$d[@235]$d$dms @376
 nofor context @376 "+"
 
 #"(" dans une opération")
-nofor pass4 $m[@236]$d @378-6
+nofor pass4 $dms[@236]$dm2 @378-6
+#nofor pass4 @36[@236]$d2 @378-6
 nofor context @378 "("
+
+noback pass2 @45-236[@6] ?
+noback pass2 @356-12[@6] ?
+noback correct [`"["] "`["
+#Fin opérations mathématiques
 
 nofor pass4 [@1456]@56-1235-125 @145-1235
 nofor pass2 $a[@36-3-36]$a @36-123-1-36
@@ -4588,43 +4649,43 @@ compbrl .tar
 compbrl .zip
 
 nofor word alvaralhão 1-123-1236-1-1235-1-123-125-1-135 
-word	cant	56-14-1456
-word	chs	56-14-125-234
-noback word	cs	56-14-234
-noback word	der	56-145-15-1235
-word mn 56-134-1345
-word ln 56-123-1345
-word lr 56-123-1235
-word lw 56-123-2456
-word jt 56-245-2345
-word ksi 56-13-234-24
-word lm 56-123-134
-word md 56-134-145
-word min 56-134-24-1345
-word mjc 134-245-14
-word mms 56-134-134-234
-noback word	mr	56-134-1235
-noback word	mrs	56-134-1235-234
-word mt 56-134-2345
-word mtm 56-134-2345-134
-word ns 56-1345-234
-word pb 56-1234-12
-word pc 56-1234-14
-word pd 56-1234-145
-word po 56-1234-135
-word ppb 56-1234-1234-12
-word pt 56-1234-2345
-noback	word	sin 234-24-1345
-word ssbs 56-234-234-12-234
-word systems 234-13456-234-2345-15-134-234
-word ten 2345-15-1345
-word th 56-2345-125
-word ths 56-2345-125-234
-word tl 56-2345-123
-word würm 2456-1256-1235-134
-word wb 2456-12
-endword wyg 2456-13456-1245
-word xhosa 1346-125-135-234-1
-word	zen	1356-15-1345
-word	XV	1346-1236
-word elektron 15-123-15-13-2345-1235-135-1345
+word	cant	56-14-1456 #$
+word	chs	56-14-125-234 #$
+noback word	cs	56-14-234 #$
+noback word	der	56-145-15-1235 #$
+word mn 56-134-1345 #$
+word ln 56-123-1345 #$
+word lr 56-123-1235 #$
+word lw 56-123-2456 #$
+word jt 56-245-2345 #$
+word ksi 56-13-234-24 #$
+word lm 56-123-134 #$
+word md 56-134-145 #$
+word min 56-134-24-1345 #$
+word mjc 134-245-14 #$
+word mms 56-134-134-234 #$
+noback word	mr	56-134-1235 #$
+noback word	mrs	56-134-1235-234 #$
+word mt 56-134-2345 #$
+word mtm 56-134-2345-134 #$
+word ns 56-1345-234 #$
+word pb 56-1234-12 #$
+word pc 56-1234-14 #$
+word pd 56-1234-145 #$
+word po 56-1234-135 #$
+word ppb 56-1234-1234-12 #$
+word pt 56-1234-2345 #$
+noback	word	sin 234-24-1345 #$
+word ssbs 56-234-234-12-234 #$
+word systems 234-13456-234-2345-15-134-234 #$
+word ten 2345-15-1345 #$
+word th 56-2345-125 #$
+word ths 56-2345-125-234 #$
+word tl 56-2345-123 #$
+word würm 2456-1256-1235-134 #$
+word wb 2456-12 #$
+endword wyg 2456-13456-1245 #$
+word xhosa 1346-125-135-234-1 #$
+word	zen	1356-15-1345 #$
+word	XV	1346-1236 #$
+word elektron 15-123-15-13-2345-1235-135-1345 #$
