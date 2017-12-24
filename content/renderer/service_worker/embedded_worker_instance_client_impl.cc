@@ -15,9 +15,11 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorkerStartData.h"
 
@@ -133,29 +135,19 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     std::unique_ptr<ServiceWorkerContextClient> context_client,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
-  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>
-      installed_scripts_manager_params;
+  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
   // |installed_scripts_info| is null if scripts should be served by net layer,
   // when the worker is not installed, or the worker is launched for checking
   // the update.
   if (ServiceWorkerUtils::IsScriptStreamingEnabled() &&
       installed_scripts_info) {
-    installed_scripts_manager_params = std::make_unique<
-        blink::WebServiceWorkerInstalledScriptsManagerParams>();
-    installed_scripts_manager_params->installed_scripts_urls =
-        std::move(installed_scripts_info->installed_urls);
-    installed_scripts_manager_params->manager_request =
-        installed_scripts_info->manager_request.PassMessagePipe();
-    installed_scripts_manager_params->manager_host_ptr =
-        installed_scripts_info->manager_host_ptr.PassHandle();
-    DCHECK(installed_scripts_manager_params->manager_request.is_valid());
-    DCHECK(installed_scripts_manager_params->manager_host_ptr.is_valid());
+    manager = WebServiceWorkerInstalledScriptsManagerImpl::Create(
+        std::move(installed_scripts_info), io_thread_runner_);
   }
 
   auto wrapper = std::make_unique<WorkerWrapper>(
       blink::WebEmbeddedWorker::Create(
-          std::move(context_client),
-          std::move(installed_scripts_manager_params),
+          std::move(context_client), std::move(manager),
           content_settings_proxy.PassInterface().PassHandle(),
           interface_provider.PassInterface().PassHandle()),
       params->worker_devtools_agent_route_id);

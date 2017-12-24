@@ -34,7 +34,6 @@ _CONFIG = [
             'base::Location',
             'base::MakeRefCounted',
             'base::Optional',
-            'base::RunLoop',
             'base::SingleThreadTaskRunner',
             'base::UnguessableToken',
             'base::WeakPtr',
@@ -47,7 +46,6 @@ _CONFIG = [
 
             # //base/callback.h is allowed, but you need to use WTF::Bind or
             # WTF::BindRepeating to create callbacks in Blink.
-            'base::BarrierClosure',
             'base::OnceCallback',
             'base::OnceClosure',
             'base::RepeatingCallback',
