@@ -60,12 +60,12 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
         child_break_tokens_.push_back(child->BreakToken());
       break;
     case NGPhysicalBoxFragment::kFragmentLineBox:
-      // NGInlineNode produces multiple line boxes in an anonymous box. Only
-      // the last break token is needed to be reported to the parent.
+      // NGInlineNode produces multiple line boxes in an anonymous box. We won't
+      // know up front which line box to insert a fragment break before (due to
+      // widows), so keep them all until we know.
       DCHECK(child->BreakToken());
       DCHECK(child->BreakToken()->InputNode() == node_);
-      last_inline_break_token_ =
-          child->BreakToken()->IsFinished() ? nullptr : child->BreakToken();
+      inline_break_tokens_.push_back(child->BreakToken());
       break;
     case NGPhysicalBoxFragment::kFragmentText:
       DCHECK(!child->BreakToken());
@@ -92,15 +92,15 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
     has_last_resort_break_ = true;
   }
   if (child.IsInline()) {
-    if (last_inline_break_token_) {
-      // We need to resume at this inline location in the next fragmentainer,
-      // but broken floats, which are resumed and positioned by the parent block
-      // layout algorithm, need to be ignored by the inline layout algorithm.
-      ToNGInlineBreakToken(last_inline_break_token_.get())->SetIgnoreFloats();
-    } else {
-      last_inline_break_token_ = NGInlineBreakToken::Create(
+    if (inline_break_tokens_.IsEmpty()) {
+      // In some cases we may want to break before the first line, as a last
+      // resort. We need a break token for that as well, so that the machinery
+      // will understand that we should resume at the beginning of the inline
+      // formatting context, rather than concluding that we're done with the
+      // whole thing.
+      inline_break_tokens_.push_back(NGInlineBreakToken::Create(
           ToNGInlineNode(child), 0, 0, false,
-          std::make_unique<NGInlineLayoutStateStack>());
+          std::make_unique<NGInlineLayoutStateStack>()));
     }
     return *this;
   }
@@ -111,6 +111,38 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
   Vector<scoped_refptr<NGBreakToken>> dummy;
   auto token = NGBlockBreakToken::Create(child, LayoutUnit(), dummy);
   child_break_tokens_.push_back(token);
+  return *this;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeLine(int line_number) {
+  DCHECK_GT(line_number, 0);
+  DCHECK_LE(unsigned(line_number), inline_break_tokens_.size());
+  int lines_to_remove = inline_break_tokens_.size() - line_number;
+  if (lines_to_remove > 0) {
+    // Remove widows that should be pushed to the next fragment. We'll also
+    // remove all other child fragments than line boxes (typically floats) that
+    // come after the first line that's moved, as those also have to be re-laid
+    // out in the next fragment.
+    inline_break_tokens_.resize(line_number);
+    DCHECK_GT(children_.size(), 0UL);
+    for (int i = children_.size() - 1; i >= 0; i--) {
+      DCHECK_NE(i, 0);
+      if (!children_[i]->IsLineBox())
+        continue;
+      if (!--lines_to_remove) {
+        // This is the first line that is going to the next fragment. Remove it,
+        // and everything after it.
+        children_.resize(i);
+        offsets_.resize(i);
+        break;
+      }
+    }
+  }
+
+  // We need to resume at the right inline location in the next fragment, but
+  // broken floats, which are resumed and positioned by the parent block layout
+  // algorithm, need to be ignored by the inline layout algorithm.
+  ToNGInlineBreakToken(inline_break_tokens_.back().get())->SetIgnoreFloats();
   return *this;
 }
 
@@ -223,9 +255,11 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   scoped_refptr<NGBreakToken> break_token;
   if (node_) {
-    if (last_inline_break_token_) {
-      DCHECK(!last_inline_break_token_->IsFinished());
-      child_break_tokens_.push_back(std::move(last_inline_break_token_));
+    if (!inline_break_tokens_.IsEmpty()) {
+      if (auto token = inline_break_tokens_.back()) {
+        if (!token->IsFinished())
+          child_break_tokens_.push_back(std::move(token));
+      }
     }
     if (did_break_) {
       break_token = NGBlockBreakToken::Create(

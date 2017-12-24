@@ -56,6 +56,9 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // add a break token for the child, but no fragment.
   NGFragmentBuilder& AddBreakBeforeChild(NGLayoutInputNode child);
 
+  // Prepare for a break token before the specified line.
+  NGFragmentBuilder& AddBreakBeforeLine(int line_number);
+
   // Update if we have fragmented in this flow.
   NGFragmentBuilder& PropagateBreak(scoped_refptr<NGLayoutResult>);
   NGFragmentBuilder& PropagateBreak(scoped_refptr<NGPhysicalFragment>);
@@ -90,6 +93,13 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // break-before value, to determine how to deal with breaking between two
   // in-flow siblings.
   EBreakBetween JoinedBreakBetweenValue(EBreakBetween break_before) const;
+
+  // Return the number of line boxes laid out.
+  int LineCount() const { return inline_break_tokens_.size(); }
+
+  // Call when we're setting an undersirable break. It may be possible to avoid
+  // the break if we instead break at an earlier element.
+  void SetHasLastResortBreak() { has_last_resort_break_ = true; }
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
@@ -170,7 +180,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   EBreakBetween previous_break_after_ = EBreakBetween::kAuto;
 
   Vector<scoped_refptr<NGBreakToken>> child_break_tokens_;
-  scoped_refptr<NGBreakToken> last_inline_break_token_;
+  Vector<scoped_refptr<NGBreakToken>> inline_break_tokens_;
 
   Vector<NGBaseline> baselines_;
 
