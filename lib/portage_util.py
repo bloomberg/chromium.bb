@@ -835,8 +835,7 @@ class EBuild(object):
     else:
       return '"%s"' % unformatted_list[0]
 
-  def RevWorkOnEBuild(self, srcroot, manifest, redirect_file=None,
-                      enforce_subdir_rev=False):
+  def RevWorkOnEBuild(self, srcroot, manifest, redirect_file=None):
     """Revs a workon ebuild given the git commit hash.
 
     By default this class overwrites a new ebuild given the normal
@@ -850,8 +849,6 @@ class EBuild(object):
       redirect_file: Optional file to write the new ebuild.  By default
         it is written using the standard rev'ing logic.  This file must be
         opened and closed by the caller.
-      enforce_subdir_rev: Optional Boolean, determines whether we enforce the
-                          CROS_WORKON_SUBDIRS_TO_REV logic. Default: False.
 
     Returns:
       If the revved package is different than the old ebuild, return the full
@@ -908,9 +905,8 @@ class EBuild(object):
     unstable_ebuild_changed = bool(output)
 
     # If there has been any change in the tests list, choose to uprev.
-    if not test_dirs_changed and not unstable_ebuild_changed and (
-        enforce_subdir_rev and not self._ShouldRevEBuild(commit_ids, srcdirs,
-                                                         subdirs_to_rev)):
+    if (not test_dirs_changed and not unstable_ebuild_changed and
+          not self._ShouldRevEBuild(commit_ids, srcdirs, subdirs_to_rev)):
       self._Print('Skipping uprev of ebuild %s, none of the rev_subdirs have '
                   'been modified, nor has the -9999 ebuild.')
       return
