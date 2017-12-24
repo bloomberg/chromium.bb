@@ -61,7 +61,6 @@ class GinJavaBridgeDispatcher
   void OnAddNamedObject(const std::string& name,
                         ObjectID object_id);
   void OnRemoveNamedObject(const std::string& name);
-  void OnSetAllowObjectContentsInspection(bool allow);
 
   typedef std::map<std::string, ObjectID> NamedObjectMap;
   NamedObjectMap named_objects_;
