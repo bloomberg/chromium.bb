@@ -375,7 +375,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
   _mock_ebuild_subdir = ['EAPI=5\n',
                          'CROS_WORKON_COMMIT=old_id\n',
                          'CROS_WORKON_PROJECT=test_package\n',
-                         'CROS_WORKON_SUBDIRS_TO_REV=( files )\n'
+                         'CROS_WORKON_SUBDIRS_TO_REV=( foo )\n'
                          'KEYWORDS="~x86 ~arm ~amd64"\n',
                          'src_unpack(){}\n']
   _revved_ebuild = ('EAPI=2\n'
@@ -393,7 +393,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
                            'CROS_WORKON_COMMIT="my_id"\n'
                            'CROS_WORKON_TREE="treehash"\n'
                            'CROS_WORKON_PROJECT=test_package\n'
-                           'CROS_WORKON_SUBDIRS_TO_REV=( files )\n'
+                           'CROS_WORKON_SUBDIRS_TO_REV=( foo )\n'
                            'KEYWORDS="x86 arm amd64"\n'
                            'src_unpack(){}\n')
 
@@ -430,16 +430,16 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
       if cmd[0] == 'log':
         # special case for git log in the overlay:
         # report if -9999.ebuild supposedly changed
-        if cwd == self.overlay:
-          if self.unstable_ebuild_changed:
-            return 'file'
-          else:
-            return ''
+        if cwd == self.overlay and self.unstable_ebuild_changed:
+          return 'someebuild-9999.ebuild'
 
         file_list = cmd[cmd.index('--') + 1:]
+        # Just get the last path component so we can specify the file_list
+        # without concerning outselves with tempdir
+        file_list = [os.path.split(f)[1] for f in file_list]
         # Return a dummy file if we have changes in any of the listed files.
         if set(self.git_files_changed).intersection(file_list):
-          return 'file'
+          return 'somefile'
         return ''
       self.assertEqual(cwd, self.overlay)
       self.assertTrue(rev, msg='git should not be run when not revving')
@@ -499,8 +499,23 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
   def testRevUnchangedEBuildSubdirsChange(self):
     """Test Uprev of a single-project ebuild with CROS_WORKON_SUBDIRS_TO_REV.
 
-    The 'files' directory is changed in in git, and this directory is mentioned
-    in CROS_WORKON_SUBDIRS_TO_REV, so this should uprev.
+    The 'foo' directory is changed in git, and this directory is mentioned in
+    CROS_WORKON_SUBDIRS_TO_REV, so this should uprev.
+    """
+    self.git_files_changed = ['foo']
+    self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=True)
+    self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
+        self.m_ebuild.ebuild_path, 'test-package')
+    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+    self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
+    self.assertExists(self.revved_ebuild_path)
+
+  def testRevUnchangedEBuildFilesChanged(self):
+    """Test Uprev of a single-project ebuild whose files/ content has changed.
+
+    The 'files' directory is changed in git and some other directory is
+    mentioned in CROS_WORKON_SUBDIRS_TO_REV. files/ should always force uprev.
     """
     self.git_files_changed = ['files']
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=True)

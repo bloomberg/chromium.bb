@@ -900,15 +900,17 @@ class EBuild(object):
                                       old_stable_ebuild_path]).rstrip()
     output = self._RunGit(self.overlay,
                           ['log', '%s..HEAD' % old_stable_commit, '--',
-                           self._unstable_ebuild_path])
+                           self._unstable_ebuild_path,
+                           os.path.join(os.path.dirname(self.ebuild_path),
+                                        'files')])
 
     unstable_ebuild_changed = bool(output)
 
     # If there has been any change in the tests list, choose to uprev.
     if (not test_dirs_changed and not unstable_ebuild_changed and
-          not self._ShouldRevEBuild(commit_ids, srcdirs, subdirs_to_rev)):
+        not self._ShouldRevEBuild(commit_ids, srcdirs, subdirs_to_rev)):
       self._Print('Skipping uprev of ebuild %s, none of the rev_subdirs have '
-                  'been modified, nor has the -9999 ebuild.')
+                  'been modified, no files/, nor has the -9999 ebuild.')
       return
 
     self._Print('Creating new stable ebuild %s' % new_stable_ebuild_path)
