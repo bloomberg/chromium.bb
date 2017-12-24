@@ -66,8 +66,8 @@ function initialize() {
       $('custodian-avatar-img').style.content =
           makeImageSet(avatarURL1x, avatarURL2x);
     }
-    $('custodian-name').innerHTML = custodianName;
-    $('custodian-email').innerHTML = loadTimeData.getString('custodianEmail');
+    $('custodian-name').textContent = custodianName;
+    $('custodian-email').textContent = loadTimeData.getString('custodianEmail');
     var secondAvatarURL1x = loadTimeData.getString('secondAvatarURL1x');
     var secondAvatarURL2x = loadTimeData.getString('secondAvatarURL2x');
     var secondCustodianName = loadTimeData.getString('secondCustodianName');
@@ -78,8 +78,8 @@ function initialize() {
         $('second-custodian-avatar-img').style.content =
             makeImageSet(secondAvatarURL1x, secondAvatarURL2x);
       }
-      $('second-custodian-name').innerHTML = secondCustodianName;
-      $('second-custodian-email').innerHTML = loadTimeData.getString(
+      $('second-custodian-name').textContent = secondCustodianName;
+      $('second-custodian-email').textContent = loadTimeData.getString(
           'secondCustodianEmail');
     }
   }
