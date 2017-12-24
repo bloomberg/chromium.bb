@@ -5507,8 +5507,6 @@ crbug.com/714962 fast/multicol/newmulticol/regular-block-becomes-multicol.html [
 crbug.com/591099 fast/multicol/newmulticol/spanner-inside-child-crash.html [ Crash ]
 crbug.com/591099 fast/multicol/newmulticol/table-cell.html [ Failure ]
 crbug.com/591099 fast/multicol/newmulticol/unresolvable-percent-max-height-2.html [ Failure ]
-crbug.com/591099 fast/multicol/orphaned-line-at-exact-top-of-column.html [ Failure ]
-crbug.com/591099 fast/multicol/orphans-relayout.html [ Failure ]
 crbug.com/591099 fast/multicol/out-of-flow/abspos-auto-left-right.html [ Pass ]
 crbug.com/591099 fast/multicol/out-of-flow/abspos-auto-position-on-line-at-boundary.html [ Crash Failure ]
 crbug.com/591099 fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Crash Failure ]

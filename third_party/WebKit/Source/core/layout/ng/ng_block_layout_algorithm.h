@@ -199,6 +199,17 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGBoxStrut border_scrollbar_padding_;
   LayoutUnit intrinsic_block_size_;
 
+  // The line box index at which we ran out of space. This where we'll actually
+  // end up breaking, unless we determine that we should break earlier in order
+  // to satisfy the widows request.
+  int first_overflowing_line_ = 0;
+
+  // Set if we should fit as many lines as there's room for, i.e. no early
+  // break. In that case we'll break before first_overflowing_line_. In this
+  // case there'll either be enough widows for the next fragment, or we have
+  // determined that we're unable to fulfill the widows request.
+  bool fit_all_lines_ = false;
+
   bool abort_when_bfc_resolved_;
   bool has_processed_first_child_ = false;
 

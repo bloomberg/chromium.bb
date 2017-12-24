@@ -1189,6 +1189,15 @@ bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace() const {
 }
 
 void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
+  if (first_overflowing_line_ && !fit_all_lines_) {
+    // A line box overflowed the fragmentainer, but we continued layout anyway,
+    // in order to determine where to break in order to honor the widows
+    // request. We never got around to actually breaking, before we ran out of
+    // lines. So do it now.
+    intrinsic_block_size_ = FragmentainerSpaceAvailable();
+    container_builder_.SetDidBreak();
+  }
+
   LayoutUnit used_block_size =
       BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
@@ -1220,9 +1229,23 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     // need to prepare a break token.
     container_builder_.SetUsedBlockSize(std::min(space_left, block_size) +
                                         used_block_size);
-    container_builder_.SetDidBreak();
     container_builder_.SetBlockSize(std::min(space_left, block_size));
     container_builder_.SetIntrinsicBlockSize(space_left);
+
+    if (first_overflowing_line_) {
+      int line_number;
+      if (fit_all_lines_) {
+        line_number = first_overflowing_line_;
+      } else {
+        // We managed to finish layout of all the lines for the node, which
+        // means that we won't have enough widows, unless we break earlier than
+        // where we overflowed.
+        int line_count = container_builder_.LineCount();
+        line_number = std::max(line_count - Style().Widows(),
+                               std::min(line_count, int(Style().Orphans())));
+      }
+      container_builder_.AddBreakBeforeLine(line_number);
+    }
     return;
   }
 
@@ -1248,6 +1271,59 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
   DCHECK(ConstraintSpace().HasBlockFragmentation());
   if (!ShouldBreakBeforeChild(child, layout_result, block_offset))
     return false;
+
+  if (child.IsInline()) {
+    // Attempt to honor orphans and widows requests.
+    if (int line_count = container_builder_.LineCount()) {
+      if (!first_overflowing_line_)
+        first_overflowing_line_ = line_count;
+      bool is_first_fragment = !BreakToken();
+      // Figure out how many lines we need before the break. That entails to
+      // attempt to honor the orphans request.
+      int minimum_line_count = Style().Orphans();
+      if (!is_first_fragment) {
+        // If this isn't the first fragment, it means that there's a break both
+        // before and after this fragment. So what was seen as trailing widows
+        // in the previous fragment is essentially orphans for us now.
+        minimum_line_count =
+            std::max(minimum_line_count, static_cast<int>(Style().Widows()));
+      }
+      if (line_count < minimum_line_count) {
+        if (is_first_fragment) {
+          // Not enough orphans. Our only hope is if we can break before the
+          // start of this block to improve on the situation. That's not
+          // something we can determine at this point though. Permit the break,
+          // but mark it as undesirable.
+          container_builder_.SetHasLastResortBreak();
+        }
+        // We're already failing with orphans, so don't even try to deal with
+        // widows.
+        fit_all_lines_ = true;
+      } else {
+        // There are enough lines before the break. Try to make sure that
+        // there'll be enough lines after the break as well. Attempt to honor
+        // the widows request.
+        DCHECK_GE(line_count, first_overflowing_line_);
+        int widows_found = line_count - first_overflowing_line_ + 1;
+        if (widows_found < Style().Widows()) {
+          // Although we're out of space, we have to continue layout to figure
+          // out exactly where to break in order to honor the widows
+          // request. We'll make sure that we're going to leave at least as many
+          // lines as specified by the 'widows' property for the next fragment
+          // (if at all possible), which means that lines that could fit in the
+          // current fragment (that we have already laid out) may have to be
+          // saved for the next fragment.
+          return false;
+        } else {
+          // We have determined that there are plenty of lines for the next
+          // fragment, so we can just break exactly where we ran out of space,
+          // rather than pushing some of the line boxes over to the next
+          // fragment.
+          fit_all_lines_ = true;
+        }
+      }
+    }
+  }
 
   // The remaining part of the fragmentainer (the unusable space for child
   // content, due to the break) should still be occupied by this container.
