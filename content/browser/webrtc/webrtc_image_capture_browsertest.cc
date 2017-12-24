@@ -46,13 +46,26 @@ namespace {
 
 static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 
+enum class Camera {
+  FAKE,
+  DEFAULT,
+#if defined(OS_WIN)
+  // Media Foundation is only available in Windows versions >= 7, below that the
+  // following flag has no effect
+  WIN_MEDIA_FOUNDATION
+#endif
+};
+
 // TODO(mcasas): enable real-camera tests by disabling the Fake Device for
 // platforms where the ImageCaptureCode is landed, https://crbug.com/656810
 static struct TargetCamera {
-  bool use_fake;
-} const kTargetCameras[] = {{true},
+  Camera camera;
+} const kTargetCameras[] = {{Camera::FAKE},
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
-                            {false}
+                            {Camera::DEFAULT},
+#endif
+#if defined(OS_WIN)
+                            {Camera::WIN_MEDIA_FOUNDATION}
 #endif
 };
 
@@ -145,11 +158,23 @@ class WebRtcImageCaptureSucceedsBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcImageCaptureBrowserTestBase::SetUpCommandLine(command_line);
 
-    if (std::get<0>(GetParam()).use_fake) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kUseFakeDeviceForMediaStream);
-      ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFakeDeviceForMediaStream));
+    switch (std::get<0>(GetParam()).camera) {
+      case Camera::FAKE:
+        base::CommandLine::ForCurrentProcess()->AppendSwitch(
+            switches::kUseFakeDeviceForMediaStream);
+        ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUseFakeDeviceForMediaStream));
+        break;
+#if defined(OS_WIN)
+      case Camera::WIN_MEDIA_FOUNDATION:
+        base::CommandLine::ForCurrentProcess()->AppendSwitch(
+            switches::kForceMediaFoundationVideoCapture);
+        ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kForceMediaFoundationVideoCapture));
+        break;
+#endif
+      default:
+        break;
     }
   }
 
@@ -157,7 +182,7 @@ class WebRtcImageCaptureSucceedsBrowserTest
     // TODO(chfremer): Enable test cases using the video capture service with
     // real cameras as soon as root cause for https://crbug.com/733582 is
     // understood and resolved.
-    if ((!std::get<0>(GetParam()).use_fake) &&
+    if ((std::get<0>(GetParam()).camera != Camera::FAKE) &&
         (std::get<1>(GetParam()).use_video_capture_service)) {
       LOG(INFO) << "Skipping this test case";
       return true;
