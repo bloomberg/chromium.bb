@@ -526,7 +526,10 @@ bool FakeChromeUserManager::IsLoggedInAsChildUser() const {
 }
 
 bool FakeChromeUserManager::IsLoggedInAsPublicAccount() const {
-  return false;
+  const user_manager::User* active_user = GetActiveUser();
+  return active_user
+             ? active_user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT
+             : false;
 }
 
 bool FakeChromeUserManager::IsLoggedInAsGuest() const {
