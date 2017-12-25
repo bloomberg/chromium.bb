@@ -30,6 +30,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -316,7 +317,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
     // Add the key to the fake.
     cryptohome::AddKeyRequest request;
-    KeyDefinitionToKey(key_definition, request.mutable_key());
+    cryptohome::KeyDefinitionToKey(key_definition, request.mutable_key());
     fake_cryptohome_client_->AddKeyEx(
         cryptohome::Identification(user_context_.GetAccountId()),
         cryptohome::AuthorizationRequest(), request,

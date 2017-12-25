@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/device_event_log/device_event_log.h"
-#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 using chromeos::DBusThreadManager;
 using google::protobuf::RepeatedPtrField;
@@ -24,72 +24,6 @@ namespace cryptohome {
 namespace {
 
 HomedirMethods* g_homedir_methods = NULL;
-
-void ParseAuthorizationDataProtobuf(
-    const KeyAuthorizationData& authorization_data_proto,
-    KeyDefinition::AuthorizationData* authorization_data) {
-  switch (authorization_data_proto.type()) {
-    case KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256:
-      authorization_data->type =
-          KeyDefinition::AuthorizationData::TYPE_HMACSHA256;
-      break;
-    case KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256:
-      authorization_data->type =
-          KeyDefinition::AuthorizationData::TYPE_AES256CBC_HMACSHA256;
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
-
-  for (RepeatedPtrField<KeyAuthorizationSecret>::const_iterator it =
-          authorization_data_proto.secrets().begin();
-       it != authorization_data_proto.secrets().end(); ++it) {
-    authorization_data->secrets.push_back(
-        KeyDefinition::AuthorizationData::Secret(it->usage().encrypt(),
-                                                 it->usage().sign(),
-                                                 it->symmetric_key(),
-                                                 it->public_key(),
-                                                 it->wrapped()));
-  }
-}
-
-MountError MapError(CryptohomeErrorCode code) {
-  switch (code) {
-    case CRYPTOHOME_ERROR_NOT_SET:
-      return MOUNT_ERROR_NONE;
-    case CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND:
-      return MOUNT_ERROR_USER_DOES_NOT_EXIST;
-    case CRYPTOHOME_ERROR_NOT_IMPLEMENTED:
-    case CRYPTOHOME_ERROR_MOUNT_FATAL:
-    case CRYPTOHOME_ERROR_KEY_QUOTA_EXCEEDED:
-    case CRYPTOHOME_ERROR_BACKING_STORE_FAILURE:
-      return MOUNT_ERROR_FATAL;
-    case CRYPTOHOME_ERROR_AUTHORIZATION_KEY_NOT_FOUND:
-    case CRYPTOHOME_ERROR_KEY_NOT_FOUND:
-    case CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED:
-      return MOUNT_ERROR_KEY_FAILURE;
-    case CRYPTOHOME_ERROR_TPM_COMM_ERROR:
-      return MOUNT_ERROR_TPM_COMM_ERROR;
-    case CRYPTOHOME_ERROR_TPM_DEFEND_LOCK:
-      return MOUNT_ERROR_TPM_DEFEND_LOCK;
-    case CRYPTOHOME_ERROR_MOUNT_MOUNT_POINT_BUSY:
-      return MOUNT_ERROR_MOUNT_POINT_BUSY;
-    case CRYPTOHOME_ERROR_TPM_NEEDS_REBOOT:
-      return MOUNT_ERROR_TPM_NEEDS_REBOOT;
-    case CRYPTOHOME_ERROR_AUTHORIZATION_KEY_DENIED:
-    case CRYPTOHOME_ERROR_KEY_LABEL_EXISTS:
-    case CRYPTOHOME_ERROR_UPDATE_SIGNATURE_INVALID:
-      return MOUNT_ERROR_KEY_FAILURE;
-    case CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION:
-      return MOUNT_ERROR_OLD_ENCRYPTION;
-    case CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE:
-      return MOUNT_ERROR_PREVIOUS_MIGRATION_INCOMPLETE;
-    default:
-      NOTREACHED();
-      return MOUNT_ERROR_FATAL;
-  }
-}
 
 // The implementation of HomedirMethods
 class HomedirMethodsImpl : public HomedirMethods {
@@ -183,7 +117,7 @@ class HomedirMethodsImpl : public HomedirMethods {
       return;
     }
     if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
-      callback.Run(false, MapError(reply->error()),
+      callback.Run(false, CryptohomeErrorToMountError(reply->error()),
                    std::vector<KeyDefinition>());
       return;
     }
@@ -226,9 +160,8 @@ class HomedirMethodsImpl : public HomedirMethods {
            auth_it != it->authorization_data().end(); ++auth_it) {
         key_definition.authorization_data.push_back(
             KeyDefinition::AuthorizationData());
-        ParseAuthorizationDataProtobuf(
-            *auth_it,
-            &key_definition.authorization_data.back());
+        KeyAuthorizationDataToAuthorizationData(
+            *auth_it, &key_definition.authorization_data.back());
       }
 
       // Extract |provider_data|.
@@ -273,7 +206,8 @@ class HomedirMethodsImpl : public HomedirMethods {
     if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
       LOGIN_LOG(ERROR) << "HomedirMethods MountEx error (CryptohomeErrorCode): "
                        << reply->error();
-      callback.Run(false, MapError(reply->error()), std::string());
+      callback.Run(false, CryptohomeErrorToMountError(reply->error()),
+                   std::string());
       return;
     }
     if (!reply->HasExtension(MountReply::reply)) {
@@ -313,7 +247,7 @@ class HomedirMethodsImpl : public HomedirMethods {
       return;
     }
     if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
-      callback.Run(false, MapError(reply->error()));
+      callback.Run(false, CryptohomeErrorToMountError(reply->error()));
       return;
     }
     callback.Run(true, MOUNT_ERROR_NONE);
@@ -325,82 +259,6 @@ class HomedirMethodsImpl : public HomedirMethods {
 };
 
 }  // namespace
-
-void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key) {
-  key->set_secret(key_def.secret);
-  KeyData* data = key->mutable_data();
-  DCHECK_EQ(KeyDefinition::TYPE_PASSWORD, key_def.type);
-  data->set_type(KeyData::KEY_TYPE_PASSWORD);
-  data->set_label(key_def.label);
-
-  if (key_def.revision > 0)
-    data->set_revision(key_def.revision);
-
-  if (key_def.privileges != 0) {
-    KeyPrivileges* privileges = data->mutable_privileges();
-    privileges->set_mount(key_def.privileges & PRIV_MOUNT);
-    privileges->set_add(key_def.privileges & PRIV_ADD);
-    privileges->set_remove(key_def.privileges & PRIV_REMOVE);
-    privileges->set_update(key_def.privileges & PRIV_MIGRATE);
-    privileges->set_authorized_update(key_def.privileges &
-                                      PRIV_AUTHORIZED_UPDATE);
-  }
-
-  for (std::vector<KeyDefinition::AuthorizationData>::const_iterator auth_it =
-           key_def.authorization_data.begin();
-       auth_it != key_def.authorization_data.end(); ++auth_it) {
-    KeyAuthorizationData* auth_data = data->add_authorization_data();
-    switch (auth_it->type) {
-      case KeyDefinition::AuthorizationData::TYPE_HMACSHA256:
-        auth_data->set_type(
-            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256);
-        break;
-      case KeyDefinition::AuthorizationData::TYPE_AES256CBC_HMACSHA256:
-        auth_data->set_type(
-            KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    for (std::vector<KeyDefinition::AuthorizationData::Secret>::const_iterator
-             secret_it = auth_it->secrets.begin();
-         secret_it != auth_it->secrets.end(); ++secret_it) {
-      KeyAuthorizationSecret* secret = auth_data->add_secrets();
-      secret->mutable_usage()->set_encrypt(secret_it->encrypt);
-      secret->mutable_usage()->set_sign(secret_it->sign);
-      if (!secret_it->symmetric_key.empty())
-        secret->set_symmetric_key(secret_it->symmetric_key);
-      if (!secret_it->public_key.empty())
-        secret->set_public_key(secret_it->public_key);
-      secret->set_wrapped(secret_it->wrapped);
-    }
-  }
-
-  for (std::vector<KeyDefinition::ProviderData>::const_iterator it =
-           key_def.provider_data.begin();
-       it != key_def.provider_data.end(); ++it) {
-    KeyProviderData::Entry* entry = data->mutable_provider_data()->add_entry();
-    entry->set_name(it->name);
-    if (it->number)
-      entry->set_number(*it->number);
-    if (it->bytes)
-      entry->set_bytes(*it->bytes);
-  }
-}
-
-cryptohome::AuthorizationRequest CreateAuthorizationRequest(
-    const std::string& label,
-    const std::string& secret) {
-  cryptohome::AuthorizationRequest auth_request;
-  Key* key = auth_request.mutable_key();
-  if (!label.empty())
-    key->mutable_data()->set_label(label);
-
-  key->set_secret(secret);
-  return auth_request;
-}
 
 // static
 void HomedirMethods::Initialize() {

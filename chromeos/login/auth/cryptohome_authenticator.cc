@@ -17,6 +17,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -172,7 +173,7 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   if (ephemeral)
     mount.set_require_ephemeral(true);
   if (create_if_nonexistent) {
-    KeyDefinitionToKey(
+    cryptohome::KeyDefinitionToKey(
         cryptohome::KeyDefinition(key->GetSecret(), kCryptohomeGAIAKeyLabel,
                                   cryptohome::PRIV_DEFAULT),
         mount.mutable_create()->add_keys());
@@ -424,7 +425,7 @@ void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
     mount.set_force_dircrypto_if_available(true);
   mount.set_public_mount(true);
   // Set the request to create a new homedir when missing.
-  KeyDefinitionToKey(
+  cryptohome::KeyDefinitionToKey(
       cryptohome::KeyDefinition(std::string(), kCryptohomePublicMountKeyLabel,
                                 cryptohome::PRIV_DEFAULT),
       mount.mutable_create()->add_keys());

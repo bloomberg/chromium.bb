@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -90,7 +91,7 @@ void ExtendedAuthenticatorImpl::CreateMount(
   cryptohome::Identification id(account_id);
   cryptohome::MountRequest mount;
   for (size_t i = 0; i < keys.size(); i++) {
-    KeyDefinitionToKey(keys[i], mount.mutable_create()->add_keys());
+    cryptohome::KeyDefinitionToKey(keys[i], mount.mutable_create()->add_keys());
   }
   UserContext context(account_id);
   Key key(keys.front().secret);
@@ -216,7 +217,7 @@ void ExtendedAuthenticatorImpl::DoAddKey(const cryptohome::KeyDefinition& key,
   RecordStartMarker("AddKeyEx");
 
   cryptohome::AddKeyRequest request;
-  KeyDefinitionToKey(key, request.mutable_key());
+  cryptohome::KeyDefinitionToKey(key, request.mutable_key());
   request.set_clobber_if_exists(clobber_if_exists);
   const Key* const auth_key = user_context.GetKey();
   cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
