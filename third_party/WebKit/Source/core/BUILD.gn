@@ -261,6 +261,10 @@ jumbo_source_set("testing") {
   ]
 
   sources = [
+    "fetch/testing/InternalsFetch.cpp",
+    "fetch/testing/InternalsFetch.h",
+    "fetch/testing/WorkerInternalsFetch.cpp",
+    "fetch/testing/WorkerInternalsFetch.h",
     "testing/CallbackFunctionTest.cpp",
     "testing/CallbackFunctionTest.h",
     "testing/DeathAwareScriptWrappable.cpp",

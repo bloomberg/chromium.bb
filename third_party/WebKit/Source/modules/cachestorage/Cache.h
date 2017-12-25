@@ -7,9 +7,9 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/fetch/GlobalFetch.h"
 #include "modules/ModulesExport.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
-#include "modules/fetch/GlobalFetch.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"

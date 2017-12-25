@@ -6,8 +6,8 @@
 #define GlobalFetch_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/CoreExport.h"
 #include "core/fetch/Request.h"
-#include "modules/ModulesExport.h"
 
 namespace blink {
 
@@ -17,11 +17,11 @@ class ExceptionState;
 class ScriptState;
 class WorkerGlobalScope;
 
-class GlobalFetch {
+class CORE_EXPORT GlobalFetch {
   STATIC_ONLY(GlobalFetch);
 
  public:
-  class MODULES_EXPORT ScopedFetcher : public GarbageCollectedMixin {
+  class CORE_EXPORT ScopedFetcher : public GarbageCollectedMixin {
    public:
     virtual ~ScopedFetcher();
 
