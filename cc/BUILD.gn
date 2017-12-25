@@ -479,6 +479,8 @@ cc_static_library("test_support") {
     "test/push_properties_counting_layer_impl.h",
     "test/render_pass_test_utils.cc",
     "test/render_pass_test_utils.h",
+    "test/resource_provider_test_utils.cc",
+    "test/resource_provider_test_utils.h",
     "test/scheduler_test_common.cc",
     "test/scheduler_test_common.h",
     "test/skia_common.cc",
