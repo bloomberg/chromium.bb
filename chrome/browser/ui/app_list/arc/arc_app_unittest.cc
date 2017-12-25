@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_arc_home_service.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -147,6 +148,8 @@ enum class ArcState {
   ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED,
   // ARC is persistent but without Play Store UI support.
   ARC_PERSISTENT_WITHOUT_PLAY_STORE,
+  // ARC is persistent, Play Store is managed, enabled, but hidden.
+  ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN,
 };
 
 constexpr ArcState kManagedArcStates[] = {
@@ -154,6 +157,7 @@ constexpr ArcState kManagedArcStates[] = {
     ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED,
     ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED,
     ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED,
+    ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN,
 };
 
 constexpr ArcState kUnmanagedArcStates[] = {
@@ -187,6 +191,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
       case ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED:
       case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED:
       case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
+      case ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN:
         arc::SetArcAlwaysStartForTesting(true);
         break;
       case ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE:
@@ -585,6 +590,7 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
     switch (GetParam()) {
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED:
       case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED:
+      case ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN:
         return true;
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED:
       case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
@@ -598,6 +604,13 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
 
   // ArcPlayStoreAppTest:
   void OnBeforeArcTestSetup() override {
+    if (GetParam() ==
+        ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN) {
+      const AccountId account_id(
+          AccountId::FromUserEmail(profile_->GetProfileUserName()));
+      arc_test()->GetUserManager()->AddPublicAccountUser(account_id);
+      arc_test()->GetUserManager()->LoginUser(account_id);
+    }
     policy::ProfilePolicyConnector* const connector =
         policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
     connector->OverrideIsManagedForTesting(true);
@@ -2070,7 +2083,9 @@ TEST_P(ArcDefaulAppForManagedUserTest, DefaultAppsForManagedUser) {
   // PlayStor exists for managed and enabled state.
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       prefs->GetApp(arc::kPlayStoreAppId);
-  if (IsEnabledByPolicy()) {
+  if (IsEnabledByPolicy() &&
+      GetParam() !=
+          ArcState::ARC_PERSISTENT_MANAGED_ENABLED_AND_PLAY_STORE_HIDDEN) {
     ASSERT_TRUE(app_info);
     EXPECT_FALSE(app_info->ready);
   } else {

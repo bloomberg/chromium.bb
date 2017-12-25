@@ -874,6 +874,11 @@ void ArcAppListPrefs::AddAppAndShortcut(
     const arc::mojom::OrientationLock orientation_lock) {
   const std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                       : GetAppId(package_name, activity);
+
+  // Do not add Play Store app for Public Session and Kiosk modes.
+  if (app_id == arc::kPlayStoreAppId && arc::IsRobotAccountMode())
+    return;
+
   std::string updated_name = name;
   // Add "(beta)" string to Play Store. See crbug.com/644576 for details.
   if (app_id == arc::kPlayStoreAppId)
