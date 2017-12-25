@@ -16,6 +16,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 
 namespace blink {
 
@@ -50,6 +51,11 @@ class CORE_EXPORT Request final : public Body {
                          ExceptionState&);
   static Request* Create(ScriptState*, FetchRequestData*);
   static Request* Create(ScriptState*, const WebServiceWorkerRequest&);
+
+  // Returns false if |credentials_mode| doesn't represent a valid credentials
+  // mode.
+  static bool ParseCredentialsMode(const String& credentials_mode,
+                                   network::mojom::FetchCredentialsMode*);
 
   // From Request.idl:
   String method() const;

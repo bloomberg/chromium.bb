@@ -16,7 +16,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Optional.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 
 namespace v8_inspector {
 struct V8StackTraceId;
@@ -70,11 +69,6 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
 
  private:
   friend class DedicatedWorkerMessagingProxyForTest;
-
-  // TODO(nhiroki): Merge this into ParseCredentialsOption() in Worklet.cpp, or
-  // move this into core/fetch (see https://crbug.com/794837).
-  static network::mojom::FetchCredentialsMode ParseCredentialsOption(
-      const String& credentials_option);
 
   WTF::Optional<WorkerBackingThreadStartupData> CreateBackingThreadStartupData(
       v8::Isolate*);

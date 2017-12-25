@@ -9,6 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/MessageEvent.h"
+#include "core/fetch/Request.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/workers/DedicatedWorker.h"
@@ -21,6 +22,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
 #include "public/platform/TaskType.h"
+#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 
 namespace blink {
 
@@ -66,8 +68,11 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     GetWorkerThread()->EvaluateClassicScript(
         script_url, source_code, nullptr /* cached_meta_data */, stack_id);
   } else if (options.type() == "module") {
-    GetWorkerThread()->ImportModuleScript(
-        script_url, ParseCredentialsOption(options.credentials()));
+    network::mojom::FetchCredentialsMode credentials_mode;
+    bool result =
+        Request::ParseCredentialsMode(options.credentials(), &credentials_mode);
+    DCHECK(result);
+    GetWorkerThread()->ImportModuleScript(script_url, credentials_mode);
   } else {
     NOTREACHED();
   }
@@ -174,19 +179,6 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
 void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
-}
-
-network::mojom::FetchCredentialsMode
-DedicatedWorkerMessagingProxy::ParseCredentialsOption(
-    const String& credentials_option) {
-  if (credentials_option == "omit")
-    return network::mojom::FetchCredentialsMode::kOmit;
-  if (credentials_option == "same-origin")
-    return network::mojom::FetchCredentialsMode::kSameOrigin;
-  if (credentials_option == "include")
-    return network::mojom::FetchCredentialsMode::kInclude;
-  NOTREACHED();
-  return network::mojom::FetchCredentialsMode::kOmit;
 }
 
 WTF::Optional<WorkerBackingThreadStartupData>
