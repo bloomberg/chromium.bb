@@ -26,9 +26,7 @@
 #include "net/http/http_response_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/cors_error_status.h"
 #include "services/network/public/cpp/network_param_ipc_traits.h"
-#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
@@ -44,16 +42,6 @@ struct ResourceDevToolsInfo;
 }
 
 namespace IPC {
-
-template <>
-struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
-  typedef scoped_refptr<net::HttpResponseHeaders> param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct CONTENT_EXPORT ParamTraits<storage::DataElement> {
@@ -237,26 +225,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(resource_body_stream_url)
   IPC_STRUCT_TRAITS_MEMBER(initiated_in_secure_context)
   IPC_STRUCT_TRAITS_MEMBER(download_to_network_cache_only)
-IPC_STRUCT_TRAITS_END()
-
-// Parameters for a ResourceMsg_RequestComplete
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSError,
-                          network::mojom::CORSError::kLast)
-
-IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
-  IPC_STRUCT_TRAITS_MEMBER(cors_error)
-  IPC_STRUCT_TRAITS_MEMBER(related_response_headers)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
-  IPC_STRUCT_TRAITS_MEMBER(error_code)
-  IPC_STRUCT_TRAITS_MEMBER(exists_in_cache)
-  IPC_STRUCT_TRAITS_MEMBER(completion_time)
-  IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)
-  IPC_STRUCT_TRAITS_MEMBER(encoded_body_length)
-  IPC_STRUCT_TRAITS_MEMBER(decoded_body_length)
-  IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
-  IPC_STRUCT_TRAITS_MEMBER(ssl_info)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_COMMON_RESOURCE_MESSAGES_H_

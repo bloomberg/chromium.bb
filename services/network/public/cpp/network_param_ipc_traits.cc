@@ -100,6 +100,34 @@ void ParamTraits<net::HttpRequestHeaders>::Log(const param_type& p,
   l->append(p.ToString());
 }
 
+void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  WriteParam(m, p.get() != nullptr);
+  if (p.get()) {
+    // Do not disclose Set-Cookie headers over IPC.
+    p->Persist(m, net::HttpResponseHeaders::PERSIST_SANS_COOKIES);
+  }
+}
+
+bool ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (has_object)
+    *r = new net::HttpResponseHeaders(iter);
+  return true;
+}
+
+void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("<HttpResponseHeaders>");
+}
+
 void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.is_valid());
   if (!p.is_valid())

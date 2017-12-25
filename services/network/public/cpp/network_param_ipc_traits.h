@@ -16,6 +16,8 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/ssl_info.h"
+#include "services/network/public/cpp/cors_error_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 #ifndef INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
 #define INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
@@ -79,6 +81,16 @@ struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <>
+struct ParamTraits<scoped_refptr<net::HttpResponseHeaders>> {
+  typedef scoped_refptr<net::HttpResponseHeaders> param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
 }  // namespace IPC
 
 #endif  // INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
@@ -105,6 +117,26 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(net::SignedCertificateTimestampAndStatus)
   IPC_STRUCT_TRAITS_MEMBER(sct)
   IPC_STRUCT_TRAITS_MEMBER(status)
+IPC_STRUCT_TRAITS_END()
+
+// Parameters for a ResourceMsg_RequestComplete
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSError,
+                          network::mojom::CORSError::kLast)
+
+IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
+  IPC_STRUCT_TRAITS_MEMBER(cors_error)
+  IPC_STRUCT_TRAITS_MEMBER(related_response_headers)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
+  IPC_STRUCT_TRAITS_MEMBER(error_code)
+  IPC_STRUCT_TRAITS_MEMBER(exists_in_cache)
+  IPC_STRUCT_TRAITS_MEMBER(completion_time)
+  IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)
+  IPC_STRUCT_TRAITS_MEMBER(encoded_body_length)
+  IPC_STRUCT_TRAITS_MEMBER(decoded_body_length)
+  IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
+  IPC_STRUCT_TRAITS_MEMBER(ssl_info)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
