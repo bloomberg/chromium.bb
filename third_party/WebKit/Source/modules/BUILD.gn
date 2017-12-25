@@ -113,7 +113,6 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/encryptedmedia",
     "//third_party/WebKit/Source/modules/eventsource",
     "//third_party/WebKit/Source/modules/exported",
-    "//third_party/WebKit/Source/modules/fetch",
     "//third_party/WebKit/Source/modules/filesystem",
     "//third_party/WebKit/Source/modules/gamepad",
     "//third_party/WebKit/Source/modules/geolocation",
@@ -180,10 +179,6 @@ jumbo_source_set("modules_testing") {
   sources = [
     "accessibility/testing/InternalsAccessibility.cpp",
     "accessibility/testing/InternalsAccessibility.h",
-    "fetch/testing/InternalsFetch.cpp",
-    "fetch/testing/InternalsFetch.h",
-    "fetch/testing/WorkerInternalsFetch.cpp",
-    "fetch/testing/WorkerInternalsFetch.h",
     "mediastream/testing/InternalsMediaStream.cpp",
     "mediastream/testing/InternalsMediaStream.h",
     "navigatorcontentutils/testing/InternalsNavigatorContentUtils.cpp",
@@ -209,15 +204,11 @@ jumbo_source_set("modules_testing") {
     sources += [
       "$bindings_modules_v8_output_dir/v8_internals_partial.cc",
       "$bindings_modules_v8_output_dir/v8_internals_partial.h",
-      "$bindings_modules_v8_output_dir/v8_worker_internals_partial.cc",
-      "$bindings_modules_v8_output_dir/v8_worker_internals_partial.h",
     ]
   } else {
     sources += [
       "$bindings_modules_v8_output_dir/V8InternalsPartial.cpp",
       "$bindings_modules_v8_output_dir/V8InternalsPartial.h",
-      "$bindings_modules_v8_output_dir/V8WorkerInternalsPartial.cpp",
-      "$bindings_modules_v8_output_dir/V8WorkerInternalsPartial.h",
     ]
   }
 

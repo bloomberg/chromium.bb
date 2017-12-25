@@ -660,8 +660,6 @@ modules_dependency_idl_files =
           "encryptedmedia/HTMLMediaElementEncryptedMedia.idl",
           "encryptedmedia/MediaKeysGetStatusForPolicy.idl",
           "encryptedmedia/NavigatorRequestMediaKeySystemAccess.idl",
-          "fetch/WindowFetch.idl",
-          "fetch/WorkerFetch.idl",
           "filesystem/DataTransferItemFileSystem.idl",
           "filesystem/DedicatedWorkerGlobalScopeFileSystem.idl",
           "filesystem/DevToolsHostFileSystem.idl",
@@ -731,8 +729,6 @@ modules_testing_dependency_idl_files =
     get_path_info(
         [
           "accessibility/testing/InternalsAccessibility.idl",
-          "fetch/testing/InternalsFetch.idl",
-          "fetch/testing/WorkerInternalsFetch.idl",
           "mediastream/testing/InternalsMediaStream.idl",
           "navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl",
           "peerconnection/testing/InternalsRTCCertificate.idl",

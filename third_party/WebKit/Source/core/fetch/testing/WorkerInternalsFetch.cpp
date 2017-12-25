@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/testing/InternalsFetch.h"
+#include "core/fetch/testing/WorkerInternalsFetch.h"
 
 #include "core/fetch/Response.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
 
-Vector<String> InternalsFetch::getInternalResponseURLList(Internals& internals,
-                                                          Response* response) {
+Vector<String> WorkerInternalsFetch::getInternalResponseURLList(
+    WorkerInternals& internals,
+    Response* response) {
   if (!response)
     return Vector<String>();
   Vector<String> url_list;

@@ -28,12 +28,8 @@ blink_core_sources("fetch") {
     "FetchResponseData.h",
     "FormDataBytesConsumer.cpp",
     "FormDataBytesConsumer.h",
-
-    # TODO(nhiroki): Move these files from modules/fetch to core/fetch.
-    # (https://crbug.com/794837)
-    # "GlobalFetch.cpp",
-    # "GlobalFetch.h",
-
+    "GlobalFetch.cpp",
+    "GlobalFetch.h",
     "Headers.cpp",
     "Headers.h",
     "MultipartParser.cpp",

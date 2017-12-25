@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/fetch/GlobalFetch.h"
+#include "core/fetch/GlobalFetch.h"
 
 #include "core/fetch/FetchManager.h"
 #include "core/fetch/Request.h"
