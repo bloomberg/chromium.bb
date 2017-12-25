@@ -536,6 +536,7 @@ core_callback_function_idl_files =
                     "dom/FrameRequestCallback.idl",
                     "dom/FunctionStringCallback.idl",
                     "dom/IdleRequestCallback.idl",
+                    "dom/VoidFunction.idl",
                   ],
                   "abspath")
 
