@@ -38,7 +38,6 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader.mojom.h"
-#include "ipc/ipc_message.h"
 #include "net/base/load_states.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -87,11 +86,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
       public ResourceLoaderDelegate {
  public:
-  // Used to handle the result of SyncLoad IPC. |result| is null if it's
-  // unavailable due to an error.
-  using SyncLoadResultCallback =
-      base::Callback<void(const SyncLoadResult* result)>;
-
   // This constructor should be used if we want downloads to work correctly.
   // TODO(ananta)
   // Work on moving creation of download handlers out of
@@ -125,10 +119,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // necessary to ensure that before |context| goes away, all requests
   // for it are dead.
   void CancelRequestsForContext(ResourceContext* context);
-
-  // Returns true if the message was a resource message that was processed.
-  bool OnMessageReceived(const IPC::Message& message,
-                         ResourceRequesterInfo* requester_info);
 
   // Cancels the given request if it still exists.
   void CancelRequest(int child_id, int request_id);
@@ -207,9 +197,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int child_id, int request_id,
       const base::FilePath& file_path);
   void UnregisterDownloadedTempFile(int child_id, int request_id);
-
-  // Needed for the sync IPC message dispatcher macros.
-  bool Send(IPC::Message* message);
 
   // Indicates whether third-party sub-content can pop-up HTTP basic auth
   // dialog boxes.
@@ -535,13 +522,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const GlobalFrameRoutingId& global_routing_id,
       bool cancel_requests);
 
-  void OnRequestResource(
-      ResourceRequesterInfo* requester_info,
-      int routing_id,
-      int request_id,
-      const ResourceRequest& request_data,
-      net::MutableNetworkTrafficAnnotationTag traffic_annotation);
-
   void OnRequestResourceInternal(
       ResourceRequesterInfo* requester_info,
       int routing_id,
@@ -551,11 +531,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       mojom::URLLoaderRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
-
-  void OnSyncLoad(ResourceRequesterInfo* requester_info,
-                  int request_id,
-                  const ResourceRequest& request_data,
-                  IPC::Message* sync_result);
 
   bool IsRequestIDInUse(const GlobalRequestID& id) const;
 
@@ -583,7 +558,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int request_id,
       const ResourceRequest& request_data,
       bool is_sync_load,
-      const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
       int route_id,
       mojom::URLLoaderRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client,
@@ -602,7 +576,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int request_id,
       const ResourceRequest& request_data,
       bool is_sync_load,
-      const SyncLoadResultCallback& sync_result_handler,  // only valid for sync
       int route_id,
       const net::HttpRequestHeaders& headers,
       mojom::URLLoaderRequest mojo_request,
@@ -617,7 +590,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceRequesterInfo* requester_info,
       net::URLRequest* request,
       const ResourceRequest& request_data,
-      const SyncLoadResultCallback& sync_result_handler,
       int route_id,
       int child_id,
       ResourceContext* resource_context,
@@ -651,14 +623,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       NavigationURLLoaderImplCore* navigation_loader_core,
       std::unique_ptr<StreamHandle> stream_handle);
 
-  void OnCancelRequest(ResourceRequesterInfo* requester_info, int request_id);
-  void OnReleaseDownloadedFile(ResourceRequesterInfo* requester_info,
-                               int request_id);
-  void OnDidChangePriority(ResourceRequesterInfo* requester_info,
-                           int request_id,
-                           net::RequestPriority new_priority,
-                           int intra_priority_value);
-
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
   ResourceRequestInfoImpl* CreateRequestInfo(
@@ -690,13 +654,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   ResourceLoader* GetLoader(const GlobalRequestID& id) const;
   ResourceLoader* GetLoader(int child_id, int request_id) const;
-
-  // Registers |delegate| to receive resource IPC messages targeted to the
-  // specified |id|.
-  void RegisterResourceMessageDelegate(const GlobalRequestID& id,
-                                       ResourceMessageDelegate* delegate);
-  void UnregisterResourceMessageDelegate(const GlobalRequestID& id,
-                                         ResourceMessageDelegate* delegate);
 
   // Consults the RendererSecurity policy to determine whether the
   // ResourceDispatcherHostImpl should service this request.  A request might
@@ -827,10 +784,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   LoaderDelegate* loader_delegate_;
 
   bool allow_cross_origin_auth_prompt_;
-
-  typedef std::map<GlobalRequestID,
-                   base::ObserverList<ResourceMessageDelegate>*> DelegateMap;
-  DelegateMap delegate_map_;
 
   std::unique_ptr<ResourceScheduler> scheduler_;
 

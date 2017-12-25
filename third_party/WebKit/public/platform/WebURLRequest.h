@@ -155,11 +155,6 @@ class WebURLRequest {
     kNone
   };
 
-  enum class LoadingIPCType : uint8_t {
-    kChromeIPC,
-    kMojo,
-  };
-
   class ExtraData {
    public:
     virtual ~ExtraData() = default;
@@ -340,8 +335,6 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT network::mojom::CORSPreflightPolicy
   GetCORSPreflightPolicy() const;
-
-  BLINK_PLATFORM_EXPORT LoadingIPCType GetLoadingIPCType() const;
 
   BLINK_PLATFORM_EXPORT void SetNavigationStartTime(double);
 

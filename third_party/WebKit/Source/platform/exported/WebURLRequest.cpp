@@ -408,10 +408,6 @@ network::mojom::CORSPreflightPolicy WebURLRequest::GetCORSPreflightPolicy()
   return resource_request_->CORSPreflightPolicy();
 }
 
-WebURLRequest::LoadingIPCType WebURLRequest::GetLoadingIPCType() const {
-  return resource_request_->GetLoadingIPCType();
-}
-
 void WebURLRequest::SetNavigationStartTime(double navigation_start_seconds) {
   resource_request_->SetNavigationStartTime(navigation_start_seconds);
 }
