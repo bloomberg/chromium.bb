@@ -16,9 +16,6 @@
 
 #include "base/guid.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -26,19 +23,17 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_autofill_manager.h"
 #include "components/autofill/core/browser/test_credit_card_save_manager.h"
-#include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -56,7 +51,6 @@
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
-using base::UTF8ToUTF16;
 using testing::_;
 using testing::AtLeast;
 using testing::Return;
@@ -91,92 +85,6 @@ class MockAutofillClient : public TestAutofillClient {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
 
-class TestAutofillManager : public AutofillManager {
- public:
-  TestAutofillManager(AutofillDriver* driver,
-                      AutofillClient* client,
-                      CreditCardSaveManager* credit_card_save_manager,
-                      payments::TestPaymentsClient* payments_client,
-                      TestPersonalDataManager* personal_data)
-      : AutofillManager(driver, client, personal_data),
-        personal_data_(personal_data),
-        test_form_data_importer_(
-            new TestFormDataImporter(client,
-                                     payments_client,
-                                     credit_card_save_manager,
-                                     personal_data,
-                                     "en-US")) {
-    set_payments_client(payments_client);
-    set_form_data_importer(test_form_data_importer_);
-  }
-  ~TestAutofillManager() override {}
-
-  bool IsAutofillEnabled() const override { return true; }
-
-  bool IsCreditCardAutofillEnabled() override { return credit_card_enabled_; }
-
-  void SetCreditCardEnabled(bool credit_card_enabled) {
-    credit_card_enabled_ = credit_card_enabled;
-    if (!credit_card_enabled_) {
-      // Credit card data is refreshed when this pref is changed.
-      personal_data_->ClearCreditCards();
-    }
-  }
-
-  void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
-                                   const base::TimeTicks& load_time,
-                                   const base::TimeTicks& interaction_time,
-                                   const base::TimeTicks& submission_time,
-                                   bool observed_submission) override {
-    run_loop_->Quit();
-
-    EXPECT_TRUE(observed_submission);
-
-    // If we have expected field types set, make sure they match.
-    if (!expected_submitted_field_types_.empty()) {
-      ASSERT_EQ(expected_submitted_field_types_.size(),
-                submitted_form->field_count());
-      for (size_t i = 0; i < expected_submitted_field_types_.size(); ++i) {
-        SCOPED_TRACE(base::StringPrintf(
-            "Field %d with value %s", static_cast<int>(i),
-            base::UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
-        const ServerFieldTypeSet& possible_types =
-            submitted_form->field(i)->possible_types();
-        EXPECT_EQ(expected_submitted_field_types_[i].size(),
-                  possible_types.size());
-        for (ServerFieldTypeSet::const_iterator it =
-                 expected_submitted_field_types_[i].begin();
-             it != expected_submitted_field_types_[i].end(); ++it) {
-          EXPECT_TRUE(possible_types.count(*it))
-              << "Expected type: " << AutofillType(*it).ToString();
-        }
-      }
-    }
-
-    AutofillManager::UploadFormDataAsyncCallback(
-        submitted_form, load_time, interaction_time, submission_time,
-        observed_submission);
-  }
-
-  // Resets the run loop so that it can wait for an asynchronous form
-  // submission to complete.
-  void ResetRunLoop() { run_loop_ = std::make_unique<base::RunLoop>(); }
-
-  // Wait for the asynchronous calls within StartUploadProcess() to complete.
-  void WaitForAsyncUploadProcess() { run_loop_->Run(); }
-
- private:
-  TestPersonalDataManager* personal_data_;        // Weak reference.
-  TestFormDataImporter* test_form_data_importer_;
-  bool credit_card_enabled_ = true;
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  std::vector<ServerFieldTypeSet> expected_submitted_field_types_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
-};
-
 }  // anonymous namespace
 
 class CreditCardSaveManagerTest : public testing::Test {
@@ -199,8 +107,9 @@ class CreditCardSaveManagerTest : public testing::Test {
         new TestCreditCardSaveManager(autofill_driver_.get(), &autofill_client_,
                                       payments_client_, &personal_data_);
     autofill_manager_.reset(new TestAutofillManager(
-        autofill_driver_.get(), &autofill_client_, credit_card_save_manager_,
-        payments_client_, &personal_data_));
+        autofill_driver_.get(), &autofill_client_, &personal_data_,
+        credit_card_save_manager_, payments_client_));
+    autofill_manager_->SetExpectedObservedSubmission(true);
   }
 
   void TearDown() override {

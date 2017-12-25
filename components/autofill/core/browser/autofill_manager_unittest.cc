@@ -18,12 +18,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -42,6 +40,8 @@
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
+#include "components/autofill/core/browser/test_autofill_manager.h"
+#include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -319,137 +319,6 @@ class MockAutofillDriver : public TestAutofillDriver {
   bool is_incognito_;
   bool did_interact_with_credit_card_form_;
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
-};
-
-class TestAutofillManager : public AutofillManager {
- public:
-  TestAutofillManager(AutofillDriver* driver,
-                      AutofillClient* client,
-                      TestPersonalDataManager* personal_data)
-      : AutofillManager(driver, client, personal_data),
-        personal_data_(personal_data),
-        context_getter_(driver->GetURLRequestContext()),
-        autofill_enabled_(true),
-        credit_card_enabled_(true),
-        expected_observed_submission_(true),
-        call_parent_upload_form_data_(false) {
-    set_payments_client(new payments::PaymentsClient(
-        context_getter_, client->GetPrefs(), client->GetIdentityProvider(),
-        /*unmask_delegate=*/this,
-        /*save_delegate=*/nullptr));
-  }
-  ~TestAutofillManager() override {}
-
-  bool IsAutofillEnabled() const override { return autofill_enabled_; }
-
-  void set_autofill_enabled(bool autofill_enabled) {
-    autofill_enabled_ = autofill_enabled;
-  }
-
-  bool IsCreditCardAutofillEnabled() override { return credit_card_enabled_; }
-
-  void set_credit_card_enabled(bool credit_card_enabled) {
-    credit_card_enabled_ = credit_card_enabled;
-    if (!credit_card_enabled_)
-      // Credit card data is refreshed when this pref is changed.
-      personal_data_->ClearCreditCards();
-  }
-
-  void set_expected_submitted_field_types(
-      const std::vector<ServerFieldTypeSet>& expected_types) {
-    expected_submitted_field_types_ = expected_types;
-  }
-
-  void set_expected_observed_submission(bool expected) {
-    expected_observed_submission_ = expected;
-  }
-
-  void set_call_parent_upload_form_data(bool value) {
-    call_parent_upload_form_data_ = value;
-  }
-
-  void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
-                                   const base::TimeTicks& load_time,
-                                   const base::TimeTicks& interaction_time,
-                                   const base::TimeTicks& submission_time,
-                                   bool observed_submission) override {
-    run_loop_->Quit();
-
-    EXPECT_EQ(expected_observed_submission_, observed_submission);
-
-    // If we have expected field types set, make sure they match.
-    if (!expected_submitted_field_types_.empty()) {
-      ASSERT_EQ(expected_submitted_field_types_.size(),
-                submitted_form->field_count());
-      for (size_t i = 0; i < expected_submitted_field_types_.size(); ++i) {
-        SCOPED_TRACE(base::StringPrintf(
-            "Field %d with value %s", static_cast<int>(i),
-            base::UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
-        const ServerFieldTypeSet& possible_types =
-            submitted_form->field(i)->possible_types();
-        EXPECT_EQ(expected_submitted_field_types_[i].size(),
-                  possible_types.size());
-        for (ServerFieldTypeSet::const_iterator it =
-                 expected_submitted_field_types_[i].begin();
-             it != expected_submitted_field_types_[i].end(); ++it) {
-          EXPECT_TRUE(possible_types.count(*it))
-              << "Expected type: " << AutofillType(*it).ToString();
-        }
-      }
-    }
-
-    AutofillManager::UploadFormDataAsyncCallback(
-        submitted_form, load_time, interaction_time, submission_time,
-        observed_submission);
-  }
-
-  // Resets the run loop so that it can wait for an asynchronous form
-  // submission to complete.
-  void ResetRunLoop() { run_loop_.reset(new base::RunLoop()); }
-
-  // Wait for the asynchronous calls within StartUploadProcess() to complete.
-  void WaitForAsyncUploadProcess() { run_loop_->Run(); }
-
-  void UploadFormData(const FormStructure& submitted_form,
-                      bool observed_submission) override {
-    submitted_form_signature_ = submitted_form.FormSignatureAsStr();
-
-    if (call_parent_upload_form_data_)
-      AutofillManager::UploadFormData(submitted_form, observed_submission);
-  }
-
-  const std::string GetSubmittedFormSignature() {
-    return submitted_form_signature_;
-  }
-
-  int GetPackedCreditCardID(int credit_card_id) {
-    std::string credit_card_guid =
-        base::StringPrintf("00000000-0000-0000-0000-%012d", credit_card_id);
-
-    return MakeFrontendID(credit_card_guid, std::string());
-  }
-
-  void AddSeenForm(std::unique_ptr<FormStructure> form) {
-    form->set_form_parsed_timestamp(base::TimeTicks::Now());
-    form_structures()->push_back(std::move(form));
-  }
-
-  void ClearFormStructures() { form_structures()->clear(); }
-
- private:
-  TestPersonalDataManager* personal_data_;        // Weak reference.
-  net::URLRequestContextGetter* context_getter_;  // Weak reference.
-  bool autofill_enabled_;
-  bool credit_card_enabled_;
-  bool expected_observed_submission_;
-  bool call_parent_upload_form_data_;
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  std::string submitted_form_signature_;
-  std::vector<ServerFieldTypeSet> expected_submitted_field_types_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
 class TestAutofillExternalDelegate : public AutofillExternalDelegate {
@@ -825,30 +694,6 @@ class AutofillManagerTest : public testing::Test {
     credit_card3.set_guid("00000000-0000-0000-0000-000000000006");
     personal_data_.AddCreditCard(credit_card3);
   }
-};
-
-class TestFormStructure : public FormStructure {
- public:
-  explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
-  ~TestFormStructure() override {}
-
-  void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
-                     const std::vector<ServerFieldType>& server_types) {
-    ASSERT_EQ(field_count(), heuristic_types.size());
-    ASSERT_EQ(field_count(), server_types.size());
-
-    for (size_t i = 0; i < field_count(); ++i) {
-      AutofillField* form_field = field(i);
-      ASSERT_TRUE(form_field);
-      form_field->set_heuristic_type(heuristic_types[i]);
-      form_field->set_overall_server_type(server_types[i]);
-    }
-
-    UpdateAutofillCount();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestFormStructure);
 };
 
 // Test that calling OnFormsSeen with an empty set of forms (such as when
@@ -1330,7 +1175,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AutofillDisabledByUser) {
   FormsSeen(forms);
 
   // Disable Autofill.
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
 
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
@@ -4050,7 +3895,7 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -4067,7 +3912,7 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4091,7 +3936,7 @@ TEST_F(AutofillManagerTest,
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4163,7 +4008,7 @@ TEST_F(AutofillManagerTest,
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4189,7 +4034,7 @@ TEST_F(AutofillManagerTest,
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4235,7 +4080,7 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
@@ -4262,7 +4107,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
   form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
-  autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
+  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure));
 
   // Similarly, a second form.
   FormData form2;
@@ -4282,7 +4127,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
 
   TestFormStructure* form_structure2 = new TestFormStructure(form2);
   form_structure2->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
-  autofill_manager_->AddSeenForm(base::WrapUnique(form_structure2));
+  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure2));
 
   AutofillQueryResponseContents response;
   response.add_field()->set_overall_type_prediction(3);
@@ -4334,7 +4179,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
   form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
-  autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
+  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure));
 
   AutofillQueryResponseContents response;
   response.add_field()->set_overall_type_prediction(3);
@@ -4381,7 +4226,7 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
     server_types.push_back(form_structure->field(i)->heuristic_type());
   }
   form_structure->SetFieldTypes(heuristic_types, server_types);
-  autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
+  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure));
 
   // Fill the form.
   const char guid[] = "00000000-0000-0000-0000-000000000001";
@@ -4438,12 +4283,12 @@ TEST_F(AutofillManagerTest, FormSubmittedPossibleTypesTwoSubmissions) {
   type_set.insert(UNKNOWN_TYPE);
   std::vector<ServerFieldTypeSet> unknown_types(expected_types.size(),
                                                 type_set);
-  autofill_manager_->set_expected_submitted_field_types(unknown_types);
+  autofill_manager_->SetExpectedSubmittedFieldTypes(unknown_types);
   FormSubmitted(response_data);
   ASSERT_EQ(1u, personal_data_.GetProfiles().size());
 
   // The second submission should now have data by which to infer types.
-  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
   FormSubmitted(response_data);
   ASSERT_EQ(1u, personal_data_.GetProfiles().size());
 }
@@ -4706,7 +4551,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload_IsTriggered) {
     form.fields[i].value = expected_values[i];
   }
 
-  autofill_manager_->set_expected_submitted_field_types(expected_types);
+  autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
   FormSubmitted(form);
 }
 
@@ -4961,8 +4806,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
 
   // We will expect these types in the upload and no observed submission (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
-  autofill_manager_->set_expected_submitted_field_types(expected_types);
-  autofill_manager_->set_expected_observed_submission(false);
+  autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
+  autofill_manager_->SetExpectedObservedSubmission(false);
 
   // The fields are edited after calling FormsSeen on them. This is because
   // default values are not used for upload comparisons.
@@ -5014,8 +4859,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
 
   // We will expect these types in the upload and no observed submission. (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
-  autofill_manager_->set_expected_submitted_field_types(expected_types);
-  autofill_manager_->set_expected_observed_submission(false);
+  autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
+  autofill_manager_->SetExpectedObservedSubmission(false);
 
   // The fields are edited after calling FormsSeen on them. This is because
   // default values are not used for upload comparisons.
@@ -5068,8 +4913,8 @@ TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
 
   // We will expect these types in the upload and no observed submission. (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
-  autofill_manager_->set_expected_submitted_field_types(expected_types);
-  autofill_manager_->set_expected_observed_submission(false);
+  autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
+  autofill_manager_->SetExpectedObservedSubmission(false);
 
   // Form was autofilled with user data.
   form.fields[0].value = ASCIIToUTF16("Elvis");
@@ -5263,7 +5108,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 }
 
 TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
-  autofill_manager_->set_credit_card_enabled(false);
+  autofill_manager_->SetCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -5281,7 +5126,7 @@ TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
 }
 
 TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
-  autofill_manager_->set_credit_card_enabled(false);
+  autofill_manager_->SetCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -5716,7 +5561,7 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   EXPECT_TRUE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
 
   // Autofill disabled.
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
   EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
 }
 
@@ -5890,7 +5735,7 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsForUpdatedServerTypedForm) {
   const std::vector<ServerFieldType> server_types{NAME_FIRST, NAME_MIDDLE,
                                                   NAME_LAST};
   form_structure->SetFieldTypes(heuristic_types, server_types);
-  autofill_manager_->AddSeenForm(std::move(form_structure));
+  autofill_manager_->AddSeenFormStructure(std::move(form_structure));
 
   // Make sure the form can be autofilled.
   for (const FormFieldData& field : form.fields) {
@@ -5980,9 +5825,9 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
 
   // We will expect these types in the upload and no observed submission. (the
   // callback initiated by WaitForAsyncUploadProcess checks these expectations.)
-  autofill_manager_->set_expected_submitted_field_types(expected_types);
-  autofill_manager_->set_expected_observed_submission(true);
-  autofill_manager_->set_call_parent_upload_form_data(true);
+  autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
+  autofill_manager_->SetExpectedObservedSubmission(true);
+  autofill_manager_->SetCallParentUploadFormData(true);
   autofill_manager_->ResetRunLoop();
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
@@ -6040,9 +5885,9 @@ TEST_F(AutofillManagerTest, SmallForm_Upload_NoHeuristicsOrQuery) {
 
   // Setup expectation on the test autofill manager (these are validated
   // during the simlulated submit).
-  autofill_manager_->set_expected_submitted_field_types({{CREDIT_CARD_NUMBER}});
-  autofill_manager_->set_expected_observed_submission(true);
-  autofill_manager_->set_call_parent_upload_form_data(true);
+  autofill_manager_->SetExpectedSubmittedFieldTypes({{CREDIT_CARD_NUMBER}});
+  autofill_manager_->SetExpectedObservedSubmission(true);
+  autofill_manager_->SetCallParentUploadFormData(true);
   EXPECT_CALL(*download_manager_,
               StartUploadRequest(_, false, _, std::string(), true));
 
