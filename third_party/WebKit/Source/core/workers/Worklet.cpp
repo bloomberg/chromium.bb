@@ -7,29 +7,15 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/fetch/Request.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebURLRequest.h"
+#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 
 namespace blink {
-
-namespace {
-
-network::mojom::FetchCredentialsMode ParseCredentialsOption(
-    const String& credentials_option) {
-  if (credentials_option == "omit")
-    return network::mojom::FetchCredentialsMode::kOmit;
-  if (credentials_option == "same-origin")
-    return network::mojom::FetchCredentialsMode::kSameOrigin;
-  if (credentials_option == "include")
-    return network::mojom::FetchCredentialsMode::kInclude;
-  NOTREACHED();
-  return network::mojom::FetchCredentialsMode::kOmit;
-}
-
-}  // namespace
 
 Worklet::Worklet(Document* document)
     : ContextLifecycleObserver(document),
@@ -110,9 +96,10 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
     return;
 
   // Step 6: "Let credentialOptions be the credentials member of options."
-  // TODO(nhiroki): Add tests for credentialOptions (https://crbug.com/710837).
-  network::mojom::FetchCredentialsMode credentials_mode =
-      ParseCredentialsOption(options.credentials());
+  network::mojom::FetchCredentialsMode credentials_mode;
+  bool result =
+      Request::ParseCredentialsMode(options.credentials(), &credentials_mode);
+  DCHECK(result);
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
   // In the specification, outsideSettings is used for posting a task to the

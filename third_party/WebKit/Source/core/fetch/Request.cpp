@@ -238,15 +238,12 @@ Request* Request::CreateRequestWithRequestOrString(
   // |fallbackCredentials| otherwise."
   // "If |credentials| is non-null, set |request|'s credentials mode to
   // |credentials|."
-  if (init.Credentials() == "omit") {
+
+  network::mojom::FetchCredentialsMode credentials_mode;
+  if (ParseCredentialsMode(init.Credentials(), &credentials_mode)) {
+    request->SetCredentials(credentials_mode);
+  } else if (!input_request) {
     request->SetCredentials(network::mojom::FetchCredentialsMode::kOmit);
-  } else if (init.Credentials() == "same-origin") {
-    request->SetCredentials(network::mojom::FetchCredentialsMode::kSameOrigin);
-  } else if (init.Credentials() == "include") {
-    request->SetCredentials(network::mojom::FetchCredentialsMode::kInclude);
-  } else {
-    if (!input_request)
-      request->SetCredentials(network::mojom::FetchCredentialsMode::kOmit);
   }
 
   // "If |init|'s cache member is present, set |request|'s cache mode to it."
@@ -464,6 +461,24 @@ Request* Request::Create(ScriptState* script_state,
   FetchRequestData* request =
       FetchRequestData::Create(script_state, web_request);
   return new Request(script_state, request);
+}
+
+bool Request::ParseCredentialsMode(
+    const String& credentials_mode,
+    network::mojom::FetchCredentialsMode* result) {
+  if (credentials_mode == "omit") {
+    *result = network::mojom::FetchCredentialsMode::kOmit;
+    return true;
+  }
+  if (credentials_mode == "same-origin") {
+    *result = network::mojom::FetchCredentialsMode::kSameOrigin;
+    return true;
+  }
+  if (credentials_mode == "include") {
+    *result = network::mojom::FetchCredentialsMode::kInclude;
+    return true;
+  }
+  return false;
 }
 
 Request::Request(ScriptState* script_state,
