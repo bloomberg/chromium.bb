@@ -13,9 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/run_loop.h"
 #include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -23,13 +21,13 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_autofill_manager.h"
+#include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -77,103 +75,6 @@ using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
 
 using ExpectedUkmMetrics =
     std::vector<std::vector<std::pair<const char*, int64_t>>>;
-
-class TestFormStructure : public FormStructure {
- public:
-  explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
-  ~TestFormStructure() override {}
-
-  void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
-                     const std::vector<ServerFieldType>& server_types) {
-    ASSERT_EQ(field_count(), heuristic_types.size());
-    ASSERT_EQ(field_count(), server_types.size());
-
-    for (size_t i = 0; i < field_count(); ++i) {
-      AutofillField* form_field = field(i);
-      ASSERT_TRUE(form_field);
-      form_field->set_heuristic_type(heuristic_types[i]);
-      form_field->set_overall_server_type(server_types[i]);
-    }
-
-    UpdateAutofillCount();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestFormStructure);
-};
-
-class TestAutofillManager : public AutofillManager {
- public:
-  TestAutofillManager(AutofillDriver* driver,
-                      AutofillClient* autofill_client,
-                      TestPersonalDataManager* personal_manager)
-      : AutofillManager(driver, autofill_client, personal_manager),
-        autofill_enabled_(true) {}
-  ~TestAutofillManager() override {}
-
-  bool IsAutofillEnabled() const override { return autofill_enabled_; }
-
-  void set_autofill_enabled(bool autofill_enabled) {
-    autofill_enabled_ = autofill_enabled;
-  }
-
-  void AddSeenForm(const FormData& form,
-                   const std::vector<ServerFieldType>& heuristic_types,
-                   const std::vector<ServerFieldType>& server_types) {
-    FormData empty_form = form;
-    for (size_t i = 0; i < empty_form.fields.size(); ++i) {
-      empty_form.fields[i].value = base::string16();
-    }
-
-    std::unique_ptr<TestFormStructure> form_structure =
-        std::make_unique<TestFormStructure>(empty_form);
-    form_structure->SetFieldTypes(heuristic_types, server_types);
-    form_structure->set_form_parsed_timestamp(TimeTicks::Now());
-    form_structures()->push_back(std::move(form_structure));
-
-    form_interactions_ukm_logger()->OnFormsParsed(
-        form.main_frame_origin.GetURL());
-  }
-
-  // Calls AutofillManager::OnWillSubmitForm and waits for it to complete.
-  void WillSubmitForm(const FormData& form, const TimeTicks& timestamp) {
-    ResetRunLoop();
-    if (!OnWillSubmitForm(form, timestamp))
-      return;
-
-    // Wait for the asynchronous OnWillSubmitForm() call to complete.
-    RunRunLoop();
-  }
-
-  // Calls both AutofillManager::OnWillSubmitForm and
-  // AutofillManager::OnFormSubmitted.
-  void SubmitForm(const FormData& form, const TimeTicks& timestamp) {
-    WillSubmitForm(form, timestamp);
-    OnFormSubmitted(form);
-  }
-
-  // Control the run loop from within tests.
-  void ResetRunLoop() { run_loop_ = std::make_unique<base::RunLoop>(); }
-  void RunRunLoop() { run_loop_->Run(); }
-
-  void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
-                                   const TimeTicks& load_time,
-                                   const TimeTicks& interaction_time,
-                                   const TimeTicks& submission_time,
-                                   bool observed_submission) override {
-    run_loop_->Quit();
-
-    AutofillManager::UploadFormDataAsyncCallback(
-        submitted_form, load_time, interaction_time, submission_time,
-        observed_submission);
-  }
-
- private:
-  bool autofill_enabled_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
-};
 
 void VerifyDeveloperEngagementUkm(
     const ukm::TestAutoSetUkmRecorder& ukm_recorder,
@@ -5188,7 +5089,7 @@ TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
 // Test that we log that Autofill is enabled when filling a form.
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->set_autofill_enabled(true);
+  autofill_manager_->SetAutofillEnabled(true);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.PageLoad", true, 1);
 }
@@ -5196,7 +5097,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
 // Test that we log that Autofill is disabled when filling a form.
 TEST_F(AutofillMetricsTest, AutofillIsDisabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.PageLoad", false, 1);
 }
