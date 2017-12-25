@@ -33,7 +33,9 @@
 #include <algorithm>
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "platform/DragImage.h"
 #include "platform/SharedBuffer.h"
+#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Vector.h"
@@ -169,11 +171,24 @@ WebSize WebImage::Size() const {
   return WebSize(bitmap_.width(), bitmap_.height());
 }
 
-WebImage::WebImage(scoped_refptr<Image> image) {
+WebImage::WebImage(scoped_refptr<Image> image,
+                   RespectImageOrientationEnum should_respect_image_orientation) {
   if (!image)
     return;
 
-  if (sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage())
+  PaintImage paint_image = image->PaintImageForCurrentFrame();
+  if (!paint_image)
+    return;
+
+  if (should_respect_image_orientation == kRespectImageOrientation &&
+      image->IsBitmapImage()) {
+    ImageOrientation orientation = ToBitmapImage(image.get())->CurrentFrameOrientation();
+    paint_image = DragImage::ResizeAndOrientImage(paint_image, orientation);
+    if (!paint_image)
+      return;
+  }
+
+  if (sk_sp<SkImage> sk_image = paint_image.GetSkImage())
     sk_image->asLegacyBitmap(&bitmap_, SkImage::kRO_LegacyBitmapMode);
 }
 
