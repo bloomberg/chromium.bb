@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -343,7 +344,7 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
     auth_key->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
 
   cryptohome::AddKeyRequest request;
-  KeyDefinitionToKey(key_def, request.mutable_key());
+  cryptohome::KeyDefinitionToKey(key_def, request.mutable_key());
   request.set_clobber_if_exists(true);
   cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
       cryptohome::Identification(user_context_.GetAccountId()),

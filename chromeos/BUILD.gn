@@ -120,6 +120,8 @@ component("chromeos") {
     "cryptohome/async_method_caller.h",
     "cryptohome/cryptohome_parameters.cc",
     "cryptohome/cryptohome_parameters.h",
+    "cryptohome/cryptohome_util.cc",
+    "cryptohome/cryptohome_util.h",
     "cryptohome/homedir_methods.cc",
     "cryptohome/homedir_methods.h",
     "cryptohome/system_salt_getter.cc",
