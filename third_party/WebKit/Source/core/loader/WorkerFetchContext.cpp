@@ -245,7 +245,6 @@ void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
   DCHECK(!user_agent.IsNull());
   request.SetHTTPUserAgent(AtomicString(user_agent));
 
-  request.OverrideLoadingIPCType(WebURLRequest::LoadingIPCType::kMojo);
   WrappedResourceRequest webreq(request);
   web_context_->WillSendRequest(webreq);
 }

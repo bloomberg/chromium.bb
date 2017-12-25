@@ -25,8 +25,6 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -45,11 +43,9 @@ struct URLLoaderCompletionStatus;
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
-class ResourceSchedulingFilter;
 struct ResourceResponseInfo;
 struct ResourceRequest;
 struct ResourceResponseHead;
-class SharedMemoryReceivedDataFactory;
 struct SiteIsolationResponseMetaData;
 struct SyncLoadResponse;
 class ThrottlingURLLoader;
@@ -62,7 +58,7 @@ class URLLoaderFactory;
 // This class serves as a communication interface to the ResourceDispatcherHost
 // in the browser process. It can be used from any child process.
 // Virtual methods are for tests.
-class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
+class CONTENT_EXPORT ResourceDispatcher {
  public:
   // Generates ids for requests initiated by child processes unique to the
   // particular process, counted up from 0 (browser initiated requests count
@@ -73,13 +69,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // CORS preflight requests.
   static int MakeRequestID();
 
-  ResourceDispatcher(
-      IPC::Sender* sender,
+  explicit ResourceDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner);
-  ~ResourceDispatcher() override;
-
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
+  virtual ~ResourceDispatcher();
 
   // Call this method to load the resource synchronously (i.e., in one shot).
   // This is an alternative to the StartAsync method. Be warned that this method
@@ -97,14 +89,12 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const url::Origin& frame_origin,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
-      blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles);
 
   // Call this method to initiate the request. If this method succeeds, then
   // the peer's methods will be called asynchronously to report various events.
-  // Returns the request id. |url_loader_factory| must be non-null if and only
-  // if |ipc_type| is LoadingIPCType::Mojo.
+  // Returns the request id. |url_loader_factory| must be non-null.
   //
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
@@ -119,7 +109,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
-      blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
@@ -140,30 +129,16 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                          net::RequestPriority new_priority,
                          int intra_priority_value);
 
-  void set_message_sender(IPC::Sender* sender) {
-    DCHECK(sender);
-    DCHECK(pending_requests_.empty());
-    message_sender_ = sender;
-  }
-
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcher.
   void set_delegate(ResourceDispatcherDelegate* delegate) {
     delegate_ = delegate;
   }
 
-  // Remembers IO thread timestamp for next resource message.
-  void set_io_timestamp(base::TimeTicks io_timestamp) {
-    io_timestamp_ = io_timestamp;
-  }
-
   void SetThreadTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner) {
     thread_task_runner_ = thread_task_runner;
   }
-
-  void SetResourceSchedulingFilter(
-      scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter);
 
   base::WeakPtr<ResourceDispatcher> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -176,7 +151,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   friend class URLResponseBodyConsumer;
   friend class ResourceDispatcherTest;
 
-  using MessageQueue = base::circular_deque<IPC::Message*>;
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
                        ResourceType resource_type,
@@ -192,7 +166,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     std::unique_ptr<RequestPeer> peer;
     ResourceType resource_type;
     int render_frame_id;
-    MessageQueue deferred_message_queue;
     bool is_deferred = false;
     // Original requested url.
     GURL url;
@@ -204,12 +177,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     std::string response_method;
     GURL response_referrer;
     bool download_to_file;
-    std::unique_ptr<IPC::Message> pending_redirect_message;
+    bool has_pending_redirect = false;
     base::TimeTicks request_start;
     base::TimeTicks response_start;
     base::TimeTicks completion_time;
     linked_ptr<base::SharedMemory> buffer;
-    scoped_refptr<SharedMemoryReceivedDataFactory> received_data_factory;
     std::unique_ptr<SiteIsolationResponseMetaData> site_isolation_metadata;
     int buffer_size;
 
@@ -234,23 +206,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void OnReceivedRedirect(int request_id,
                           const net::RedirectInfo& redirect_info,
                           const ResourceResponseHead& response_head);
-  void OnSetDataBuffer(int request_id,
-                       base::SharedMemoryHandle shm_handle,
-                       int shm_size);
-  void OnReceivedData(int request_id,
-                      int data_offset,
-                      int data_length,
-                      int encoded_data_length);
   void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(int request_id,
                          const network::URLLoaderCompletionStatus& status);
-
-  // Dispatch the message to one of the message response handlers.
-  void DispatchMessage(const IPC::Message& message);
-
-  // Dispatch any deferred messages for the given request, provided it is not
-  // again in the deferred state. This method may mutate |pending_requests_|.
-  void FlushDeferredMessages(int request_id);
 
   void ToResourceResponseInfo(const PendingRequestInfo& request_info,
                               const ResourceResponseHead& browser_info,
@@ -260,41 +218,16 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const PendingRequestInfo& request_info,
       const base::TimeTicks& browser_completion_time) const;
 
-  // Returns timestamp provided by IO thread. If no timestamp is supplied,
-  // then current time is returned. Saved timestamp is reset, so following
-  // invocations will return current time until set_io_timestamp is called.
-  base::TimeTicks ConsumeIOTimestamp();
-
   void ContinueForNavigation(
       int request_id,
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
-
-  // Returns true if the message passed in is a resource related message.
-  static bool IsResourceDispatcherMessage(const IPC::Message& message);
-
-  // ViewHostMsg_Resource_DataReceived is not POD, it has a shared memory
-  // handle in it that we should cleanup it up nicely. This method accepts any
-  // message and determine whether the message is
-  // ViewHostMsg_Resource_DataReceived and clean up the shared memory handle.
-  static void ReleaseResourcesInDataMessage(const IPC::Message& message);
-
-  // Iterate through a message queue and clean up the messages by calling
-  // ReleaseResourcesInDataMessage and removing them from the queue. Intended
-  // for use on deferred message queues that are no longer needed.
-  static void ReleaseResourcesInMessageQueue(MessageQueue* queue);
-
-  IPC::Sender* message_sender_;
 
   // All pending requests issued to the host
   PendingRequestMap pending_requests_;
 
   ResourceDispatcherDelegate* delegate_;
 
-  // IO thread timestamp for ongoing IPC message.
-  base::TimeTicks io_timestamp_;
-
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
-  scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter_;
 
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 

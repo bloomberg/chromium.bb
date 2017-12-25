@@ -334,13 +334,6 @@ class PLATFORM_EXPORT ResourceRequest final {
     cors_preflight_policy_ = policy;
   }
 
-  void OverrideLoadingIPCType(WebURLRequest::LoadingIPCType loading_ipc_type) {
-    loading_ipc_type_ = loading_ipc_type;
-  }
-  WebURLRequest::LoadingIPCType GetLoadingIPCType() const {
-    return loading_ipc_type_;
-  }
-
   InputToLoadPerfMetricReportPolicy InputPerfMetricReportPolicy() const {
     return input_perf_metric_report_policy_;
   }
@@ -402,7 +395,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   double ui_start_time_;
   bool is_external_request_;
   network::mojom::CORSPreflightPolicy cors_preflight_policy_;
-  WebURLRequest::LoadingIPCType loading_ipc_type_;
   bool is_same_document_navigation_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   RedirectStatus redirect_status_;
@@ -464,7 +456,6 @@ struct CrossThreadResourceRequestData {
   double ui_start_time_;
   bool is_external_request_;
   network::mojom::CORSPreflightPolicy cors_preflight_policy_;
-  WebURLRequest::LoadingIPCType loading_ipc_type_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   ResourceRequest::RedirectStatus redirect_status_;
 };

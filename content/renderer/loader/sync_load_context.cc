@@ -32,7 +32,6 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, nullptr, frame_origin, traffic_annotation,
       true /* is_sync */, base::WrapUnique(context),
-      blink::WebURLRequest::LoadingIPCType::kMojo,
       context->url_loader_factory_.get(), std::move(throttles),
       mojom::URLLoaderClientEndpointsPtr());
 }
@@ -46,8 +45,8 @@ SyncLoadContext::SyncLoadContext(
   url_loader_factory_.Bind(std::move(url_loader_factory));
 
   // Constructs a new ResourceDispatcher specifically for this request.
-  resource_dispatcher_ = std::make_unique<ResourceDispatcher>(
-      nullptr, base::ThreadTaskRunnerHandle::Get());
+  resource_dispatcher_ =
+      std::make_unique<ResourceDispatcher>(base::ThreadTaskRunnerHandle::Get());
 
   // Initialize the final URL with the original request URL. It will be
   // overwritten on redirects.

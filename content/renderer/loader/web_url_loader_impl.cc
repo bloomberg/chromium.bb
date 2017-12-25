@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
-#include "content/common/resource_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -693,7 +692,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_dispatcher_->StartSync(
         std::move(resource_request), request.RequestorID(),
         extra_data->frame_origin(), GetTrafficAnnotationTag(request),
-        sync_load_response, request.GetLoadingIPCType(), url_loader_factory_,
+        sync_load_response, url_loader_factory_,
         extra_data->TakeURLLoaderThrottles());
     return;
   }
@@ -705,8 +704,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       extra_data->frame_origin(), GetTrafficAnnotationTag(request),
       false /* is_sync */,
       std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this),
-      request.GetLoadingIPCType(), url_loader_factory_,
-      extra_data->TakeURLLoaderThrottles(),
+      url_loader_factory_, extra_data->TakeURLLoaderThrottles(),
       std::move(url_loader_client_endpoints));
 
   if (defers_loading_ != NOT_DEFERRING)
