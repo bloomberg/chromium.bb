@@ -27,11 +27,6 @@ UI_BASE_EXPORT extern const char kDisableRemoteCoreAnimation[];
 UI_BASE_EXPORT extern const char kShowMacOverlayBorders[];
 #endif
 
-#if defined(OS_WIN)
-UI_BASE_EXPORT extern const char kDisableMergeKeyCharEvents[];
-UI_BASE_EXPORT extern const char kEnableMergeKeyCharEvents[];
-#endif
-
 UI_BASE_EXPORT extern const char kDisableCompositedAntialiasing[];
 UI_BASE_EXPORT extern const char kDisableDwmComposition[];
 UI_BASE_EXPORT extern const char kDisableTouchAdjustment[];

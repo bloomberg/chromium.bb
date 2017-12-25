@@ -15,7 +15,6 @@
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -123,29 +122,26 @@ ui::EventDispatchDetails InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   }
 
   std::vector<MSG> char_msgs;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableMergeKeyCharEvents)) {
-    // Combines the WM_KEY* and WM_CHAR messages in the event processing flow
-    // which is necessary to let Chrome IME extension to process the key event
-    // and perform corresponding IME actions.
-    // Chrome IME extension may wants to consume certain key events based on
-    // the character information of WM_CHAR messages. Holding WM_KEY* messages
-    // until WM_CHAR is processed by the IME extension is not feasible because
-    // there is no way to know wether there will or not be a WM_CHAR following
-    // the WM_KEY*.
-    // Chrome never handles dead chars so it is safe to remove/ignore
-    // WM_*DEADCHAR messages.
-    MSG msg;
-    while (::PeekMessage(&msg, native_key_event.hwnd, WM_CHAR, WM_DEADCHAR,
-                         PM_REMOVE)) {
-      if (msg.message == WM_CHAR)
-        char_msgs.push_back(msg);
-    }
-    while (::PeekMessage(&msg, native_key_event.hwnd, WM_SYSCHAR,
-                         WM_SYSDEADCHAR, PM_REMOVE)) {
-      if (msg.message == WM_SYSCHAR)
-        char_msgs.push_back(msg);
-    }
+  // Combines the WM_KEY* and WM_CHAR messages in the event processing flow
+  // which is necessary to let Chrome IME extension to process the key event
+  // and perform corresponding IME actions.
+  // Chrome IME extension may wants to consume certain key events based on
+  // the character information of WM_CHAR messages. Holding WM_KEY* messages
+  // until WM_CHAR is processed by the IME extension is not feasible because
+  // there is no way to know wether there will or not be a WM_CHAR following
+  // the WM_KEY*.
+  // Chrome never handles dead chars so it is safe to remove/ignore
+  // WM_*DEADCHAR messages.
+  MSG msg;
+  while (::PeekMessage(&msg, native_key_event.hwnd, WM_CHAR, WM_DEADCHAR,
+                       PM_REMOVE)) {
+    if (msg.message == WM_CHAR)
+      char_msgs.push_back(msg);
+  }
+  while (::PeekMessage(&msg, native_key_event.hwnd, WM_SYSCHAR,
+                       WM_SYSDEADCHAR, PM_REMOVE)) {
+    if (msg.message == WM_SYSCHAR)
+      char_msgs.push_back(msg);
   }
 
   // Handles ctrl-shift key to change text direction and layout alignment.
@@ -181,9 +177,7 @@ ui::EventDispatchDetails InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   // 1) |char_msgs| is empty when the event is non-character key.
   // 2) |char_msgs|.size() == 1 when the event is character key and the WM_CHAR
   // messages have been combined in the event processing flow.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMergeKeyCharEvents) &&
-      char_msgs.size() <= 1 && GetEngine() &&
+  if (char_msgs.size() <= 1 && GetEngine() &&
       GetEngine()->IsInterestedInKeyEvent()) {
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback = base::Bind(
         &InputMethodWin::ProcessKeyEventDone, weak_ptr_factory_.GetWeakPtr(),

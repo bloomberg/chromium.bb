@@ -1391,9 +1391,6 @@ extern const char kEnableDesktopIosPromotionsDescription[];
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
 
-extern const char kMergeKeyCharEventsName[];
-extern const char kMergeKeyCharEventsDescription[];
-
 extern const char kTraceExportEventsToEtwName[];
 extern const char kTraceExportEventsToEtwDesription[];
 
