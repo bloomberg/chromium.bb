@@ -187,6 +187,7 @@ punctuation \x2760 2356     # heavy low double comma quotation mark ornament
 
 noback sign \x200e 0        # (left to right mark)
 noback sign \x200f 0        # (right to left mark)
+sign ¸ 456           # cédille
 
 # tirets et traits d'union
 punctuation - 36         # hyphen-minus
@@ -199,6 +200,9 @@ noback sign \x2015 36-36 # horizontal bar (quotation dash long dash introducing 
 sign \xFE58 36           # small em dash
 sign \xFE63 36           # small hyphen-minus
 sign \xFF0D 36           # fullwidth hyphen-minus
+
+word — 456-36
+word – 36-36
 
 sign \x2022 246-135      # (bullet)
 sign \x2026 256-256-256  # 8230	MS Word smart ellipsis
@@ -215,7 +219,6 @@ sign % 5-346         # pourcent
 sign ‰ 5-346-346     # pour mille
 sign * 5-35          # astérisque
 sign _ 5-36          # souligné
-sign ¸ 456           # cédille
 noback sign ´ 5
 sign \x0060 6   # accent aigu (`)
 sign \x007C 456 # barre verticale
@@ -336,5 +339,3 @@ endword = 6-2356
 
 nofor pass2 [@6-235]$d @6-235-6
 nofor pass2 [@6-2356]$d @6-2356-6
-
-
