@@ -2866,6 +2866,9 @@ contraction W
 contraction X
 contraction Z
 
+contraction ab
+contraction abs
+contraction adn
 contraction tp
 contraction td
 contraction obs
@@ -4612,7 +4615,6 @@ word ? 56-26
 word ! 56-235
 word ( 56-236
 word ) 56-356
-
 #Correction des sigles dont les lettres sont séparées par des points
 nofor pass4 !@56[]@256-56 @56
 nofor pass4 !@56[]@256@46 @56
