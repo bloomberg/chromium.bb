@@ -200,8 +200,12 @@ void PixelTest::SetUpSoftwareRenderer() {
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
-      nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
+      nullptr, shared_bitmap_manager_.get(), nullptr,
       settings_.resource_settings);
+  child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
+      nullptr, shared_bitmap_manager_.get(), nullptr, true,
+      settings_.resource_settings);
+
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());
   software_renderer_ = renderer.get();
