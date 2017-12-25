@@ -38,6 +38,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if INSIDE_BLINK
+#include "platform/graphics/ImageOrientation.h"
 #include "base/memory/scoped_refptr.h"
 #endif
 
@@ -92,7 +93,8 @@ class WebImage {
   BLINK_PLATFORM_EXPORT WebSize Size() const;
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebImage(scoped_refptr<Image>);
+  BLINK_PLATFORM_EXPORT WebImage(scoped_refptr<Image>,
+                                 RespectImageOrientationEnum = kDoNotRespectImageOrientation);
 #endif
 
   WebImage(const SkBitmap& bitmap) : bitmap_(bitmap) {}
