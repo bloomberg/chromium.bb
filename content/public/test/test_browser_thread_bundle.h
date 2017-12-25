@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TestBrowserThreadBundle is a convenience class for creating a set of
-// TestBrowserThreads and a task scheduler in unit tests. For most tests, it is
-// sufficient to just instantiate the TestBrowserThreadBundle as a member
-// variable. It is a good idea to put the TestBrowserThreadBundle as the first
-// member variable in test classes, so it is destroyed last, and the test
-// threads always exist from the perspective of other classes.
+// TestBrowserThreadBundle is a convenience class which allows usage of these
+// APIs within its scope:
+// - Same APIs as base::test::ScopedTaskEnvironment.
+// - content::BrowserThread.
 //
-// By default, all of the created TestBrowserThreads will be backed by a single
-// shared MessageLoop. If a test truly needs separate threads, it can do so by
-// passing the appropriate combination of option values during the
-// TestBrowserThreadBundle construction. TaskScheduler tasks always run on
-// dedicated threads.
+// Only tests that need the BrowserThread API should instantiate a
+// TestBrowserThreadBundle. Use base::test::ScopedTaskEnvironment otherwise.
+//
+// By default, BrowserThread::UI/IO are backed by a single shared MessageLoop on
+// the main thread. If a test truly needs BrowserThread::IO tasks to run on a
+// separate thread, it can pass the REAL_IO_THREAD option to the constructor.
+// TaskScheduler tasks always run on dedicated threads.
 //
 // To synchronously run tasks from the shared MessageLoop:
 //
@@ -36,10 +36,10 @@
 // running tasks from the shared MessageLoop:
 //    base::TaskScheduler::GetInstance()->FlushForTesting();
 //
-// The destructor of TestBrowserThreadBundle runs remaining TestBrowserThreads
-// tasks and remaining task scheduler tasks.
+// The destructor of TestBrowserThreadBundle runs remaining UI/IO tasks and
+// remaining task scheduler tasks.
 //
-// If a test needs a MessageLoopForIO on the main thread, it should use the
+// If a test needs to pump IO messages on the main thread, it should use the
 // IO_MAINLOOP option. Most of the time, IO_MAINLOOP avoids needing to use a
 // REAL_IO_THREAD.
 //
