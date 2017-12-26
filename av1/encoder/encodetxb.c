@@ -771,13 +771,8 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   const LV_MAP_EOB_COST *const eob_costs =
       &x->eob_costs[eob_multi_size][plane_type];
 #endif
-
-  cost = 0;
-
-  if (eob == 0) {
-    cost = coeff_costs->txb_skip_cost[txb_skip_ctx][1];
-    return cost;
-  }
+  // eob must be greater than 0 here.
+  assert(eob > 0);
   cost = coeff_costs->txb_skip_cost[txb_skip_ctx][0];
 
   av1_txb_init_levels(qcoeff, width, height, levels);

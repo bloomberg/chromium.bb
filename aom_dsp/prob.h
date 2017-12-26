@@ -215,7 +215,15 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
 
 #if 1
 #if CONFIG_LV_MAP_MULTI
-  rate = 3 + (cdf[nsymbs] > 15) + (cdf[nsymbs] > 31) + get_msb(nsymbs);
+  // static const int nsymbs2speed[17] = { 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+  // 3, 3, 3, 3, 4 };
+  // static const int nsymbs2speed[17] = { 0, 0, 1, 1, 2, 2, 2, 2, 2,
+  //                                       2, 2, 2, 3, 3, 3, 3, 3 };
+  static const int nsymbs2speed[17] = { 0, 0, 1, 1, 2, 2, 2, 2, 2,
+                                        2, 2, 2, 2, 2, 2, 2, 2 };
+  assert(nsymbs < 17);
+  rate = 3 + (cdf[nsymbs] > 15) + (cdf[nsymbs] > 31) +
+         nsymbs2speed[nsymbs];  // + get_msb(nsymbs);
   tmp = AOM_ICDF(0);
   (void)rate2;
   (void)diff;
