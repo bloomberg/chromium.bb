@@ -117,53 +117,22 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   // initialized. In this method, chrome.fileManagerPrivate.searchDriveMetadata
   // resolves url internally, and it fails if filesystem of the url is not
   // initialized.
-  volumeManagerFactory.getInstance().then(function() {
-    chrome.fileManagerPrivate.searchDriveMetadata(
-        {
-          query: query,
-          types: 'ALL',
-          maxResults: limit
-        }, function(results) {
-          // If query is already changed, discard the results.
-          if (queryId !== this.queryId_ || results.length === 0)
-            return;
+  volumeManagerFactory.getInstance()
+      .then(() => {
+        return Promise.all([
+          this.queryDriveEntries_(queryId, query, limit),
+          this.queryLocalEntries_(queryId, query)
+        ]);
+      })
+      .then((results) => {
+        const entries = results[0].concat(results[1]);
+        if (queryId !== this.queryId_ || entries.length === 0)
+          return;
 
-          chrome.launcherSearchProvider.setSearchResults(
-              queryId,
-              results.map(function(result) {
-                // TODO(yawano): Use filetype_folder_shared.png for a shared
-                //     folder.
-                // TODO(yawano): Add archive launcher filetype icon.
-                var icon = FileType.getIcon(result.entry);
-                if (icon === 'UNKNOWN' || icon === 'archive')
-                  icon = 'generic';
-
-                var useHighDpiIcon = window.devicePixelRatio > 1.0;
-                var iconUrl = chrome.runtime.getURL(
-                    'foreground/images/launcher_filetypes/' +
-                    (useHighDpiIcon ? '2x/' : '') + 'launcher_filetype_' +
-                    icon + '.png');
-
-                // Hide extensions for hosted files.
-                var title = FileType.isHosted(result.entry) ?
-                    result.entry.name.substr(
-                        0,
-                        result.entry.name.length -
-                            FileType.getExtension(result.entry).length) :
-                    result.entry.name;
-
-                return {
-                  itemId: result.entry.toURL(),
-                  title: title,
-                  iconUrl: iconUrl,
-                  // Relevance is set as 2 for all results as a temporary
-                  // implementation. 2 is the middle value.
-                  // TODO(yawano): Implement practical relevance calculation.
-                  relevance: 2
-                };
-              }));
-        }.bind(this));
-  }.bind(this));
+        const resultEntries = this.chooseEntries_(entries, query, limit);
+        const searchResults = resultEntries.map(this.createSearchResult_);
+        chrome.launcherSearchProvider.setSearchResults(queryId, searchResults);
+      });
 };
 
 /**
@@ -249,4 +218,145 @@ LauncherSearch.prototype.openFileManagerWithSelectionURL_ = function(
       {selectionURL: selectionURL},
       undefined, /* App ID */
       LaunchType.FOCUS_SAME_OR_CREATE);
+};
+
+/**
+ * Queries entries which match the given query in Google Drive.
+ * @param {number} queryId
+ * @param {string} query
+ * @param {number} limit
+ * @return {!Promise<!Array<!Entry>>}
+ * @private
+ */
+LauncherSearch.prototype.queryDriveEntries_ = function(queryId, query, limit) {
+  var param = {query: query, types: 'ALL', maxResults: limit};
+  return new Promise((resolve, reject) => {
+    chrome.fileManagerPrivate.searchDriveMetadata(param, function(results) {
+      resolve(results.map(result => result.entry));
+    });
+  });
+};
+
+/**
+ * Queries entries which match the given query in Downloads.
+ * @param {number} queryId
+ * @param {string} query
+ * @return {!Promise<!Array<!Entry>>}
+ * @private
+ */
+LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
+  if (!query)
+    return Promise.resolve([]);
+
+  return this.getDownloadsEntry_()
+      .then((downloadsEntry) => {
+        return this.queryEntriesRecursively_(
+            downloadsEntry, queryId, query.toLowerCase());
+      })
+      .catch((error) => {
+        if (error.name != 'AbortError')
+          console.error('Query local entries failed.', error);
+        return [];
+      });
+};
+
+/**
+ * Returns root entry of Downloads volume.
+ * @return {!Promise<!DirectoryEntry>}
+ * @private
+ */
+LauncherSearch.prototype.getDownloadsEntry_ = function() {
+  return volumeManagerFactory.getInstance().then((volumeManager) => {
+    var downloadsVolumeInfo = volumeManager.getCurrentProfileVolumeInfo(
+        VolumeManagerCommon.VolumeType.DOWNLOADS);
+    return downloadsVolumeInfo.resolveDisplayRoot();
+  });
+};
+
+/**
+ * Queries entries which match the given query inside rootEntry recursively.
+ * @param {!DirectoryEntry} rootEntry
+ * @param {number} queryId
+ * @param {string} query
+ * @return {!Promise<!Array<!Entry>>}
+ * @private
+ */
+LauncherSearch.prototype.queryEntriesRecursively_ = function(
+    rootEntry, queryId, query) {
+  return new Promise((resolve, reject) => {
+    let foundEntries = [];
+    util.readEntriesRecursively(
+        rootEntry,
+        (entries) => {
+          const matchEntries = entries.filter(
+              entry => entry.name.toLowerCase().indexOf(query) >= 0);
+          if (matchEntries.length > 0)
+            foundEntries = foundEntries.concat(matchEntries);
+        },
+        () => {
+          resolve(foundEntries);
+        },
+        reject,
+        () => {
+          return this.queryId_ != queryId;
+        });
+  });
+};
+
+/**
+ * Chooses entries to show among the given entries.
+ * @param {!Array<!Entry>} entries
+ * @param {string} query
+ * @param {number} limit
+ * @return {!Array<!Entry>}
+ * @private
+ */
+LauncherSearch.prototype.chooseEntries_ = function(entries, query, limit) {
+  query = query.toLowerCase();
+  const scoreEntry = (entry) => {
+    // Prefer entry which has the query string as a prefix.
+    if (entry.name.toLowerCase().indexOf(query) === 0)
+      return 1;
+    return 0;
+  };
+  const sortedEntries = entries.sort((a, b) => {
+    return scoreEntry(b) - scoreEntry(a);
+  });
+  return sortedEntries.slice(0, limit);
+};
+
+/**
+ * Creates a search result from entry to pass to launcherSearchProvider API.
+ * @param {!Entry} entry
+ * @return {!Object}
+ * @private
+ */
+LauncherSearch.prototype.createSearchResult_ = function(entry) {
+  // TODO(yawano): Use filetype_folder_shared.png for a shared
+  //     folder.
+  // TODO(yawano): Add archive launcher filetype icon.
+  var icon = FileType.getIcon(entry);
+  if (icon === 'UNKNOWN' || icon === 'archive')
+    icon = 'generic';
+
+  var useHighDpiIcon = window.devicePixelRatio > 1.0;
+  var iconUrl = chrome.runtime.getURL(
+      'foreground/images/launcher_filetypes/' + (useHighDpiIcon ? '2x/' : '') +
+      'launcher_filetype_' + icon + '.png');
+
+  // Hide extensions for hosted files.
+  var title = FileType.isHosted(entry) ?
+      entry.name.substr(
+          0, entry.name.length - FileType.getExtension(entry).length) :
+      entry.name;
+
+  return {
+    itemId: entry.toURL(),
+    title: title,
+    iconUrl: iconUrl,
+    // Relevance is set as 2 for all results as a temporary
+    // implementation. 2 is the middle value.
+    // TODO(yawano): Implement practical relevance calculation.
+    relevance: 2
+  };
 };

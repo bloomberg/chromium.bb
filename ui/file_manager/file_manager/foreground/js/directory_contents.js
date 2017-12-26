@@ -202,57 +202,12 @@ LocalSearchContentScanner.prototype.__proto__ = ContentScanner.prototype;
  */
 LocalSearchContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
-  var numRunningTasks = 0;
-  var error = null;
-  var maybeRunCallback = function() {
-    if (numRunningTasks === 0) {
-      if (this.cancelled_)
-        errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
-      else if (error)
-        errorCallback(error);
-      else
-        successCallback();
-    }
-  }.bind(this);
-
-  var processEntry = function(entry) {
-    numRunningTasks++;
-    var onError = function(fileError) {
-      if (!error)
-        error = fileError;
-      numRunningTasks--;
-      maybeRunCallback();
-    };
-
-    var onSuccess = function(entries) {
-      if (this.cancelled_ || error || entries.length === 0) {
-        numRunningTasks--;
-        maybeRunCallback();
-        return;
-      }
-
-      // Filters by the query, and if found, run entriesCallback.
-      var foundEntries = entries.filter(function(entry) {
-        return entry.name.toLowerCase().indexOf(this.query_) >= 0;
-      }.bind(this));
-      if (foundEntries.length > 0)
-        entriesCallback(foundEntries);
-
-      // Start to process sub directories.
-      for (var i = 0; i < entries.length; i++) {
-        if (entries[i].isDirectory)
-          processEntry(entries[i]);
-      }
-
-      // Read remaining entries.
-      reader.readEntries(onSuccess, onError);
-    }.bind(this);
-
-    var reader = entry.createReader();
-    reader.readEntries(onSuccess, onError);
-  }.bind(this);
-
-  processEntry(this.entry_);
+  util.readEntriesRecursively(assert(this.entry_), (entries) => {
+    const matchEntries = entries.filter(
+        entry => entry.name.toLowerCase().indexOf(this.query_) >= 0);
+    if (matchEntries.length > 0)
+      entriesCallback(matchEntries);
+  }, successCallback, errorCallback, () => this.cancelled_);
 };
 
 /**
@@ -574,7 +529,7 @@ DirectoryContents.prototype.createMetadataSnapshot = function() {
     snapshot[entries[i].toURL()] = metadata[i];
   }
   return snapshot;
-}
+};
 
 /**
  * Sets metadata snapshot which is used to check changed files.
@@ -582,7 +537,7 @@ DirectoryContents.prototype.createMetadataSnapshot = function() {
  */
 DirectoryContents.prototype.setMetadataSnapshot = function(metadataSnapshot) {
   this.metadataSnapshot_ = metadataSnapshot;
-}
+};
 
 /**
  * Use the filelist from the context and replace its contents with the entries

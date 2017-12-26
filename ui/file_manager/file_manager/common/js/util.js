@@ -1288,3 +1288,59 @@ util.isTouchModeEnabled = function() {
         });
   });
 };
+
+/**
+ * Retrieves all entries inside the given |rootEntry|.
+ * @param {!DirectoryEntry} rootEntry
+ * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of
+ *     entries are read. This can be called a couple of times until the
+ *     completion.
+ * @param {function()} successCallback Called when the read is completed.
+ * @param {function(DOMError)} errorCallback Called when an error occurs.
+ * @param {function():boolean} shouldStop Callback to check if the read process
+ *     should stop or not. When this callback is called and it returns false,
+ *     the remaining recursive reads will be aborted.
+ */
+util.readEntriesRecursively = function(
+    rootEntry, entriesCallback, successCallback, errorCallback, shouldStop) {
+  var numRunningTasks = 0;
+  var error = null;
+  var maybeRunCallback = function() {
+    if (numRunningTasks === 0) {
+      if (shouldStop())
+        errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+      else if (error)
+        errorCallback(error);
+      else
+        successCallback();
+    }
+  };
+  var processEntry = function(entry) {
+    var onError = function(fileError) {
+      if (!error)
+        error = fileError;
+      numRunningTasks--;
+      maybeRunCallback();
+    };
+    var onSuccess = function(entries) {
+      if (shouldStop() || error || entries.length === 0) {
+        numRunningTasks--;
+        maybeRunCallback();
+        return;
+      }
+      entriesCallback(entries);
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isDirectory)
+          processEntry(entries[i]);
+      }
+      // Read remaining entries.
+      reader.readEntries(onSuccess, onError);
+    };
+
+    numRunningTasks++;
+    var reader = entry.createReader();
+    reader.readEntries(onSuccess, onError);
+  };
+
+  processEntry(rootEntry);
+};
