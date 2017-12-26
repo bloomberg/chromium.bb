@@ -1180,8 +1180,8 @@ void AwContents::OnWebLayoutContentsSizeChanged(
     return;
   gfx::Size contents_size_css =
       content::UseZoomForDSFEnabled()
-          ? ScaleToCeiledSize(contents_size,
-                              1 / browser_view_renderer_.dip_scale())
+          ? ScaleToRoundedSize(contents_size,
+                               1 / browser_view_renderer_.dip_scale())
           : contents_size;
   Java_AwContents_onWebLayoutContentsSizeChanged(
       env, obj, contents_size_css.width(), contents_size_css.height());
