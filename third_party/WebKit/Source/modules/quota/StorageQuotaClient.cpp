@@ -36,8 +36,6 @@
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
-#include "modules/quota/StorageErrorCallback.h"
-#include "modules/quota/StorageQuotaCallback.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/web/WebFrameClient.h"
@@ -51,8 +49,8 @@ StorageQuotaClient::~StorageQuotaClient() {}
 void StorageQuotaClient::RequestQuota(ScriptState* script_state,
                                       WebStorageQuotaType storage_type,
                                       unsigned long long new_quota_in_bytes,
-                                      StorageQuotaCallback* success_callback,
-                                      StorageErrorCallback* error_callback) {
+                                      V8StorageQuotaCallback* success_callback,
+                                      V8StorageErrorCallback* error_callback) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
   DCHECK(execution_context->IsDocument())

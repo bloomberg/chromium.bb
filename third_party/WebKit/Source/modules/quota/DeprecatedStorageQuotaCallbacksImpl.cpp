@@ -35,42 +35,46 @@
 namespace blink {
 
 DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(
-    StorageUsageCallback* usage_callback,
-    StorageErrorCallback* error_callback)
-    : usage_callback_(usage_callback), error_callback_(error_callback) {}
+    V8StorageUsageCallback* usage_callback,
+    V8StorageErrorCallback* error_callback)
+    : usage_callback_(usage_callback),
+      quota_callback_(nullptr),
+      error_callback_(error_callback) {}
 
 DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(
-    StorageQuotaCallback* quota_callback,
-    StorageErrorCallback* error_callback)
-    : quota_callback_(quota_callback), error_callback_(error_callback) {}
+    V8StorageQuotaCallback* quota_callback,
+    V8StorageErrorCallback* error_callback)
+    : usage_callback_(nullptr),
+      quota_callback_(quota_callback),
+      error_callback_(error_callback) {}
 
 DeprecatedStorageQuotaCallbacksImpl::~DeprecatedStorageQuotaCallbacksImpl() {}
 
 void DeprecatedStorageQuotaCallbacksImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(usage_callback_);
-  visitor->Trace(quota_callback_);
-  visitor->Trace(error_callback_);
   StorageQuotaCallbacks::Trace(visitor);
 }
 
 void DeprecatedStorageQuotaCallbacksImpl::DidQueryStorageUsageAndQuota(
     unsigned long long usage_in_bytes,
     unsigned long long quota_in_bytes) {
-  if (usage_callback_)
-    usage_callback_->handleEvent(usage_in_bytes, quota_in_bytes);
+  if (usage_callback_) {
+    usage_callback_->InvokeAndReportException(nullptr, usage_in_bytes,
+                                              quota_in_bytes);
+  }
 }
 
 void DeprecatedStorageQuotaCallbacksImpl::DidGrantStorageQuota(
     unsigned long long usage_in_bytes,
     unsigned long long granted_quota_in_bytes) {
   if (quota_callback_)
-    quota_callback_->handleEvent(granted_quota_in_bytes);
+    quota_callback_->InvokeAndReportException(nullptr, granted_quota_in_bytes);
 }
 
 void DeprecatedStorageQuotaCallbacksImpl::DidFail(WebStorageQuotaError error) {
-  if (error_callback_)
-    error_callback_->handleEvent(
-        DOMError::Create(static_cast<ExceptionCode>(error)));
+  if (error_callback_) {
+    error_callback_->InvokeAndReportException(
+        nullptr, DOMError::Create(static_cast<ExceptionCode>(error)));
+  }
 }
 
 }  // namespace blink

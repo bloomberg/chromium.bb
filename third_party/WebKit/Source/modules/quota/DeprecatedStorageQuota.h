@@ -31,15 +31,16 @@
 #ifndef DeprecatedStorageQuota_h
 #define DeprecatedStorageQuota_h
 
+#include "core/dom/ExceptionCode.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class ScriptState;
-class StorageErrorCallback;
-class StorageQuotaCallback;
-class StorageUsageCallback;
+class V8StorageErrorCallback;
+class V8StorageQuotaCallback;
+class V8StorageUsageCallback;
 
 class DeprecatedStorageQuota final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -54,17 +55,22 @@ class DeprecatedStorageQuota final : public ScriptWrappable {
     return new DeprecatedStorageQuota(type);
   }
 
+  static void EnqueueStorageErrorCallback(ScriptState*,
+                                          V8StorageErrorCallback*,
+                                          ExceptionCode);
+
   void queryUsageAndQuota(ScriptState*,
-                          StorageUsageCallback*,
-                          StorageErrorCallback*);
+                          V8StorageUsageCallback*,
+                          V8StorageErrorCallback* = nullptr);
 
   void requestQuota(ScriptState*,
                     unsigned long long new_quota_in_bytes,
-                    StorageQuotaCallback*,
-                    StorageErrorCallback*);
+                    V8StorageQuotaCallback* = nullptr,
+                    V8StorageErrorCallback* = nullptr);
 
  private:
   explicit DeprecatedStorageQuota(Type);
+
   Type type_;
 };
 
