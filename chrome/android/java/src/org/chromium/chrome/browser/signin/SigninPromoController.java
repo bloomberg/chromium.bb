@@ -68,14 +68,6 @@ public class SigninPromoController {
     private boolean mWasUsed;
 
     /**
-     * @return Whether the personalized promos experiment is enabled or not.
-     */
-    public static boolean arePersonalizedPromosEnabled() {
-        // TODO(https://crbug.com/792430): Remove this method and dead code for old promos.
-        return true;
-    }
-
-    /**
      * Determines whether the impression limit has been reached for the given access point.
      * @param accessPoint The access point for which the impression limit is being checked.
      */

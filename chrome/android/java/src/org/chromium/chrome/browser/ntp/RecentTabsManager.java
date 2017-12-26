@@ -8,7 +8,6 @@ import android.accounts.Account;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -82,8 +81,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private UpdatedCallback mUpdatedCallback;
     private boolean mIsDestroyed;
 
-    private final @Nullable ProfileDataCache mProfileDataCache;
-    private final @Nullable SigninPromoController mSigninPromoController;
+    private final ProfileDataCache mProfileDataCache;
+    private final SigninPromoController mSigninPromoController;
 
     /**
      * Create an RecentTabsManager to be used with RecentTabsPage and RecentTabsRowAdapter.
@@ -104,14 +103,9 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mSignInManager = SigninManager.get(context);
         mContext = context;
 
-        if (SigninPromoController.arePersonalizedPromosEnabled()) {
-            int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
-            mProfileDataCache = new ProfileDataCache(mContext, imageSize);
-            mSigninPromoController = new SigninPromoController(SigninAccessPoint.RECENT_TABS);
-        } else {
-            mProfileDataCache = null;
-            mSigninPromoController = null;
-        }
+        int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
+        mProfileDataCache = new ProfileDataCache(mContext, imageSize);
+        mSigninPromoController = new SigninPromoController(SigninAccessPoint.RECENT_TABS);
 
         mRecentlyClosedTabManager.setTabsUpdatedRunnable(() -> {
             updateRecentlyClosedTabs();
@@ -137,10 +131,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mSignInManager.removeSignInStateObserver(this);
         mSignInManager = null;
 
-        if (mSigninPromoController != null) {
-            mProfileDataCache.removeObserver(this);
-            AccountManagerFacade.get().removeObserver(this);
-        }
+        mProfileDataCache.removeObserver(this);
+        AccountManagerFacade.get().removeObserver(this);
 
         mFaviconHelper.destroy();
         mFaviconHelper = null;
@@ -170,10 +162,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         AndroidSyncSettings.registerObserver(mContext, this);
         mSignInManager.addSignInStateObserver(this);
 
-        if (mSigninPromoController != null) {
-            mProfileDataCache.addObserver(this);
-            AccountManagerFacade.get().addObserver(this);
-        }
+        mProfileDataCache.addObserver(this);
+        AccountManagerFacade.get().addObserver(this);
     }
 
     private void updateRecentlyClosedTabs() {
