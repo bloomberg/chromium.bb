@@ -303,7 +303,9 @@ IntentPickerBubbleView::IntentPickerBubbleView(
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents,
     bool disable_stay_in_chrome)
-    : LocationBarBubbleDelegateView(nullptr /* anchor_view */, web_contents),
+    : LocationBarBubbleDelegateView(nullptr /* anchor_view */,
+                                    gfx::Point(),
+                                    web_contents),
       content::WebContentsObserver(web_contents),
       intent_picker_cb_(intent_picker_cb),
       selected_app_tag_(0),
