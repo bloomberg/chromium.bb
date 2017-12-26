@@ -11,6 +11,8 @@ function runTests() {
         testRunner.dumpAsText();
         
     debug('document.all: ' + document.all)
+
+    var documentAllOld = document.all;
     
     if (document.all) {
         debug('FAILURE: document.all should evaluate to false')
@@ -62,6 +64,25 @@ function runTests() {
     // Check typeof document.all
     if (typeof document.all != 'undefined') {
         debug('FAILURE: typeof document.all should be undefined');
+        return;
+    }
+
+    // document.all should be [SameObject].
+    if (documentAllOld != document.all) {
+        debug('FAILURE: document.all should be same object')
+        return;
+    }
+    var length = document.all.length;
+    var element = document.createElement("p");
+    element.id = 'change_all_length';
+    document.body.appendChild(element);
+    if ((document.all.length != length + 1) || (documentAllOld != document.all)) {
+        debug('FAILURE: document.all should be same object after adding an element')
+        return;
+    }
+    document.body.removeChild(document.getElementById('change_all_length'));
+    if ((document.all.length != length) || (documentAllOld != document.all)) {
+        debug('FAILURE: document.all should be same object after removing an element')
         return;
     }
 

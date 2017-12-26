@@ -158,8 +158,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [MeasureAs=DocumentCaptureEvents] void captureEvents();
     [MeasureAs=DocumentReleaseEvents] void releaseEvents();
 
-    // TODO: |all| should be [SameObject].
-    [MeasureAs=DocumentAll] readonly attribute HTMLAllCollection all;
+    [SameObject, MeasureAs=DocumentAll] readonly attribute HTMLAllCollection all;
 
     // CSS Object Model (CSSOM)
     // https://drafts.csswg.org/cssom/#extensions-to-the-document-interface
