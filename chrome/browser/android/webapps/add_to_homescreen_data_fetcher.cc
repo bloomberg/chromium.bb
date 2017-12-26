@@ -120,9 +120,9 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
   // Bind the InterfacePtr into the callback so that it's kept alive
   // until there's either a connection error or a response.
   auto* web_app_info_proxy = chrome_render_frame.get();
-  web_app_info_proxy->GetWebApplicationInfo(
-      base::Bind(&AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo,
-                 base::Unretained(this), base::Passed(&chrome_render_frame)));
+  web_app_info_proxy->GetWebApplicationInfo(base::Bind(
+      &AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo,
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(&chrome_render_frame)));
 }
 
 AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {}
