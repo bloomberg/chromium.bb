@@ -3,9 +3,9 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-        <script src="../media-file.js"></script>
-        <script src="../../resources/testharness.js"></script>
-        <script src="../../resources/testharnessreport.js"></script>
+        <script src="/common/media.js"></script>
+        <script src="/resources/testharness.js"></script>
+        <script src="/resources/testharnessreport.js"></script>
     </head>
     <body>
         <script>
@@ -25,7 +25,7 @@
                 var trackElement = document.createElement('track');
                 video.appendChild(trackElement);
 
-                trackElement.src = 'captions-webvtt/tc004-webvtt-file.vtt';
+                trackElement.src = 'resources/webvtt-file.vtt';
                 trackElement.track.mode = 'hidden';
 
                 assert_equals(video.textTracks.length, 1);
@@ -48,7 +48,7 @@
                 }));
 
                 video.appendChild(trackElement);
-                trackElement.src = 'captions-webvtt/tc004-webvtt-file.vtt';
+                trackElement.src = 'resources/webvtt-file.vtt';
                 trackElement.track.mode = 'hidden';
 
                 assert_equals(video.textTracks.length, 1);
@@ -56,7 +56,7 @@
 
                 // Load a media file with an inband text track.
                 var inbandTrack = null;
-                var url = "../content/test-vp8-vorbis-webvtt.webm"
+                var url = "resources/vp8-vorbis-webvtt.webm"
 
                 var firstAddTrackHandler = test.step_func(function()
                 {
