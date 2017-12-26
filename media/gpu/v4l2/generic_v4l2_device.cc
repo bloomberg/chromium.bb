@@ -46,6 +46,10 @@ static const base::FilePath::CharType kV4l2Lib[] =
     FILE_PATH_LITERAL("/usr/lib/libv4l2.so");
 #endif
 
+#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#define VLOGF(level) VLOG(level) << __func__ << "(): "
+#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
+
 namespace media {
 
 GenericV4L2Device::GenericV4L2Device() {
@@ -77,7 +81,7 @@ bool GenericV4L2Device::Poll(bool poll_device, bool* event_pending) {
   nfds = 1;
 
   if (poll_device) {
-    DVLOG(3) << "Poll(): adding device fd to poll() set";
+    DVLOGF(5) << "adding device fd to poll() set";
     pollfds[nfds].fd = device_fd_.get();
     pollfds[nfds].events = POLLIN | POLLOUT | POLLERR | POLLPRI;
     pollfd = nfds;
@@ -85,7 +89,7 @@ bool GenericV4L2Device::Poll(bool poll_device, bool* event_pending) {
   }
 
   if (HANDLE_EINTR(poll(pollfds, nfds, -1)) == -1) {
-    DPLOG(ERROR) << "poll() failed";
+    VPLOGF(1) << "poll() failed";
     return false;
   }
   *event_pending = (pollfd != -1 && pollfds[pollfd].revents & POLLPRI);
@@ -106,19 +110,19 @@ void GenericV4L2Device::Munmap(void* addr, unsigned int len) {
 }
 
 bool GenericV4L2Device::SetDevicePollInterrupt() {
-  DVLOG(3) << "SetDevicePollInterrupt()";
+  DVLOGF(4);
 
   const uint64_t buf = 1;
   if (HANDLE_EINTR(write(device_poll_interrupt_fd_.get(), &buf, sizeof(buf))) ==
       -1) {
-    DPLOG(ERROR) << "SetDevicePollInterrupt(): write() failed";
+    VPLOGF(1) << "write() failed";
     return false;
   }
   return true;
 }
 
 bool GenericV4L2Device::ClearDevicePollInterrupt() {
-  DVLOG(3) << "ClearDevicePollInterrupt()";
+  DVLOGF(5);
 
   uint64_t buf;
   if (HANDLE_EINTR(read(device_poll_interrupt_fd_.get(), &buf, sizeof(buf))) ==
@@ -127,7 +131,7 @@ bool GenericV4L2Device::ClearDevicePollInterrupt() {
       // No interrupt flag set, and we're reading nonblocking.  Not an error.
       return true;
     } else {
-      DPLOG(ERROR) << "ClearDevicePollInterrupt(): read() failed";
+      VPLOGF(1) << "read() failed";
       return false;
     }
   }
@@ -135,9 +139,10 @@ bool GenericV4L2Device::ClearDevicePollInterrupt() {
 }
 
 bool GenericV4L2Device::Initialize() {
+  VLOGF(2);
   static bool v4l2_functions_initialized = PostSandboxInitialization();
   if (!v4l2_functions_initialized) {
-    LOG(ERROR) << "Failed to initialize LIBV4L2 libs";
+    VLOGF(1) << "Failed to initialize LIBV4L2 libs";
     return false;
   }
 
@@ -145,22 +150,23 @@ bool GenericV4L2Device::Initialize() {
 }
 
 bool GenericV4L2Device::Open(Type type, uint32_t v4l2_pixfmt) {
+  VLOGF(2);
   std::string path = GetDevicePathFor(type, v4l2_pixfmt);
 
   if (path.empty()) {
-    DVLOG(1) << "No devices supporting " << std::hex << "0x" << v4l2_pixfmt
+    VLOGF(1) << "No devices supporting " << std::hex << "0x" << v4l2_pixfmt
              << " for type: " << static_cast<int>(type);
     return false;
   }
 
   if (!OpenDevicePath(path, type)) {
-    LOG(ERROR) << "Failed opening " << path;
+    VLOGF(1) << "Failed opening " << path;
     return false;
   }
 
   device_poll_interrupt_fd_.reset(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC));
   if (!device_poll_interrupt_fd_.is_valid()) {
-    LOG(ERROR) << "Failed creating a poll interrupt fd";
+    VLOGF(1) << "Failed creating a poll interrupt fd";
     return false;
   }
 
@@ -171,6 +177,7 @@ std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
     int index,
     size_t num_planes,
     enum v4l2_buf_type buf_type) {
+  VLOGF(2);
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(buf_type));
 
   std::vector<base::ScopedFD> dmabuf_fds;
@@ -216,9 +223,9 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
     unsigned int buffer_index,
     uint32_t v4l2_pixfmt,
     const std::vector<base::ScopedFD>& dmabuf_fds) {
-  DVLOG(3) << "CreateEGLImage()";
+  DVLOGF(3);
   if (!CanCreateEGLImageFrom(v4l2_pixfmt)) {
-    LOG(ERROR) << "Unsupported V4L2 pixel format";
+    VLOGF(1) << "Unsupported V4L2 pixel format";
     return EGL_NO_IMAGE_KHR;
   }
 
@@ -271,7 +278,7 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(
   EGLImageKHR egl_image = eglCreateImageKHR(
       egl_display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, &attrs[0]);
   if (egl_image == EGL_NO_IMAGE_KHR) {
-    LOG(ERROR) << "Failed creating EGL image: " << ui::GetLastEGLErrorString();
+    VLOGF(1) << "Failed creating EGL image: " << ui::GetLastEGLErrorString();
     return egl_image;
   }
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
@@ -284,6 +291,7 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
     const gfx::Size& size,
     uint32_t fourcc,
     const std::vector<base::ScopedFD>& dmabuf_fds) {
+  DVLOGF(3);
   DCHECK(CanCreateEGLImageFrom(fourcc));
   VideoPixelFormat vf_format = V4L2PixFmtToVideoPixelFormat(fourcc);
   size_t num_planes = VideoFrame::NumPlanes(vf_format);
@@ -296,7 +304,7 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
   for (const auto& fd : dmabuf_fds) {
     duped_fds.emplace_back(HANDLE_EINTR(dup(fd.get())));
     if (!duped_fds.back().is_valid()) {
-      PLOG(ERROR) << "Failed duplicating a dmabuf fd";
+      VPLOGF(1) << "Failed duplicating a dmabuf fd";
       return nullptr;
     }
   }
@@ -361,6 +369,7 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
 
 EGLBoolean GenericV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
                                               EGLImageKHR egl_image) {
+  DVLOGF(3);
   EGLBoolean result = eglDestroyImageKHR(egl_display, egl_image);
   if (result != EGL_TRUE) {
     LOG(WARNING) << "Destroy EGLImage failed.";
@@ -387,7 +396,7 @@ std::vector<uint32_t> GenericV4L2Device::GetSupportedImageProcessorPixelformats(
   const auto& devices = GetDevicesForType(type);
   for (const auto& device : devices) {
     if (!OpenDevicePath(device.first, type)) {
-      LOG(ERROR) << "Failed opening " << device.first;
+      VLOGF(1) << "Failed opening " << device.first;
       continue;
     }
 
@@ -411,7 +420,7 @@ GenericV4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
   const auto& devices = GetDevicesForType(type);
   for (const auto& device : devices) {
     if (!OpenDevicePath(device.first, type)) {
-      LOG(ERROR) << "Failed opening " << device.first;
+      VLOGF(1) << "Failed opening " << device.first;
       continue;
     }
 
@@ -433,7 +442,7 @@ GenericV4L2Device::GetSupportedEncodeProfiles() {
   const auto& devices = GetDevicesForType(type);
   for (const auto& device : devices) {
     if (!OpenDevicePath(device.first, type)) {
-      LOG(ERROR) << "Failed opening " << device.first;
+      VLOGF(1) << "Failed opening " << device.first;
       continue;
     }
 
@@ -468,7 +477,7 @@ bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
   if (type == Type::kEncoder &&
       HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
           -1) {
-    DVLOG(2) << "Using libv4l2 for " << path;
+    VLOGF(2) << "Using libv4l2 for " << path;
     use_libv4l2_ = true;
   }
 #endif
@@ -476,6 +485,7 @@ bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
 }
 
 void GenericV4L2Device::CloseDevice() {
+  VLOGF(2);
 #if BUILDFLAG(USE_LIBV4L2)
   if (use_libv4l2_ && device_fd_.is_valid())
     v4l2_close(device_fd_.release());
@@ -544,7 +554,7 @@ void GenericV4L2Device::EnumerateDevicesForType(Type type) {
     const auto& supported_pixelformats =
         EnumerateSupportedPixelformats(buf_type);
     if (!supported_pixelformats.empty()) {
-      DVLOG(1) << "Found device: " << path;
+      DVLOGF(3) << "Found device: " << path;
       devices.push_back(std::make_pair(path, supported_pixelformats));
     }
 
