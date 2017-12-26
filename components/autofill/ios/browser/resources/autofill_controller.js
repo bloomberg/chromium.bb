@@ -677,7 +677,15 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
  */
 __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
   var form = __gCrWeb.common.getFormElementFromIdentifier(formName);
-  var controlElements = __gCrWeb.common.getFormControlElements(form);
+  var controlElements = [];
+  if (form) {
+    controlElements = __gCrWeb.common.getFormControlElements(form);
+  } else {
+    var fieldsets = [];
+    controlElements =
+        getUnownedAutofillableFormFieldElements_(document.all, fieldsets);
+  }
+
   for (var i = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
     if (!element.isAutofilled || element.disabled)
@@ -689,7 +697,7 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
     } else if (__gCrWeb.autofill.isSelectElement(element)) {
       // Reset to the first index.
       // TODO(bondd): Store initial values and reset to the correct one here.
-      __gCrWeb.common.setInputElementValue(element.option[0].value,
+      __gCrWeb.common.setInputElementValue(element.options[0].value,
           element, true);
     } else if (__gCrWeb.autofill.isCheckableElement(element)) {
       // TODO(bondd): Handle checkable elements. They aren't properly supported
