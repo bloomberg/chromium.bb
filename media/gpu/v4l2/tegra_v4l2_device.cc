@@ -11,6 +11,9 @@
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #include "ui/gl/gl_bindings.h"
 
+#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#define VLOGF(level) VLOG(level) << __func__ << "(): "
+
 namespace media {
 
 namespace {
@@ -64,7 +67,7 @@ int TegraV4L2Device::Ioctl(int flags, void* arg) {
 bool TegraV4L2Device::Poll(bool poll_device, bool* event_pending) {
   if (HANDLE_EINTR(TegraV4L2_Poll(device_fd_, poll_device, event_pending)) ==
       -1) {
-    LOG(ERROR) << "TegraV4L2Poll returned -1 ";
+    VLOGF(1) << "TegraV4L2Poll returned -1 ";
     return false;
   }
   return true;
@@ -83,22 +86,25 @@ void TegraV4L2Device::Munmap(void* addr, unsigned int len) {
 }
 
 bool TegraV4L2Device::SetDevicePollInterrupt() {
+  DVLOGF(4);
   if (HANDLE_EINTR(TegraV4L2_SetDevicePollInterrupt(device_fd_)) == -1) {
-    LOG(ERROR) << "Error in calling TegraV4L2SetDevicePollInterrupt";
+    VLOGF(1) << "Error in calling TegraV4L2SetDevicePollInterrupt";
     return false;
   }
   return true;
 }
 
 bool TegraV4L2Device::ClearDevicePollInterrupt() {
+  DVLOGF(5);
   if (HANDLE_EINTR(TegraV4L2_ClearDevicePollInterrupt(device_fd_)) == -1) {
-    LOG(ERROR) << "Error in calling TegraV4L2ClearDevicePollInterrupt";
+    VLOGF(1) << "Error in calling TegraV4L2ClearDevicePollInterrupt";
     return false;
   }
   return true;
 }
 
 bool TegraV4L2Device::Initialize() {
+  VLOGF(2);
   static bool initialized = []() {
     if (!dlopen("/usr/lib/libtegrav4l2.so",
                 RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) {
@@ -109,7 +115,7 @@ bool TegraV4L2Device::Initialize() {
     TegraV4L2_##name = reinterpret_cast<TegraV4L2##name>( \
         dlsym(RTLD_DEFAULT, "TegraV4L2_" #name));         \
     if (TegraV4L2_##name == NULL) {                       \
-      LOG(ERROR) << "Failed to dlsym TegraV4L2_" #name;   \
+      VLOGF(1) << "Failed to dlsym TegraV4L2_" #name;     \
       return false;                                       \
     }                                                     \
   } while (0)
@@ -131,6 +137,7 @@ bool TegraV4L2Device::Initialize() {
 }
 
 bool TegraV4L2Device::Open(Type type, uint32_t /* v4l2_pixfmt */) {
+  VLOGF(2);
   return OpenInternal(type);
 }
 
@@ -145,8 +152,8 @@ bool TegraV4L2Device::OpenInternal(Type type) {
       device_path = kEncoderDevice;
       break;
     default:
-      DVLOG(1) << "Device type " << static_cast<int>(type)
-               << " not supported on this platform";
+      DVLOGF(1) << "Device type " << static_cast<int>(type)
+                << " not supported on this platform";
       return false;
   }
 
@@ -154,13 +161,14 @@ bool TegraV4L2Device::OpenInternal(Type type) {
   device_fd_ = HANDLE_EINTR(
       TegraV4L2_Open(device_path, O_RDWR | O_NONBLOCK | O_CLOEXEC));
   if (device_fd_ == -1) {
-    DLOG(ERROR) << "Unable to open device " << device_path;
+    VLOGF(1) << "Unable to open device " << device_path;
     return false;
   }
   return true;
 }
 
 void TegraV4L2Device::Close() {
+  VLOGF(2) << "device_fd= " << device_fd_;
   if (device_fd_ != -1) {
     TegraV4L2_Close(device_fd_);
     device_fd_ = -1;
@@ -171,6 +179,7 @@ std::vector<base::ScopedFD> TegraV4L2Device::GetDmabufsForV4L2Buffer(
     int /* index */,
     size_t num_planes,
     enum v4l2_buf_type /* buf_type */) {
+  VLOGF(2);
   std::vector<base::ScopedFD> dmabuf_fds;
   // Tegra does not actually provide dmabuf fds currently. Fill the vector with
   // invalid descriptors to prevent the caller from failing on an empty vector
@@ -192,7 +201,7 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(
     unsigned int buffer_index,
     uint32_t v4l2_pixfmt,
     const std::vector<base::ScopedFD>& /* dmabuf_fds */) {
-  DVLOG(3) << "CreateEGLImage()";
+  DVLOGF(3);
   if (!CanCreateEGLImageFrom(v4l2_pixfmt)) {
     LOG(ERROR) << "Unsupported V4L2 pixel format";
     return EGL_NO_IMAGE_KHR;
@@ -203,11 +212,11 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(
       eglCreateImageKHR(egl_display, egl_context, EGL_GL_TEXTURE_2D_KHR,
                         reinterpret_cast<EGLClientBuffer>(texture_id), &attr);
   if (egl_image == EGL_NO_IMAGE_KHR) {
-    LOG(ERROR) << "Unable to create EGL image";
+    VLOGF(1) << "Unable to create EGL image";
     return egl_image;
   }
   if (TegraV4L2_UseEglImage(device_fd_, buffer_index, egl_image) != 0) {
-    LOG(ERROR) << "Unable to use EGL image";
+    VLOGF(1) << "Unable to use EGL image";
     eglDestroyImageKHR(egl_display, egl_image);
     egl_image = EGL_NO_IMAGE_KHR;
   }
@@ -223,6 +232,7 @@ scoped_refptr<gl::GLImage> TegraV4L2Device::CreateGLImage(
 
 EGLBoolean TegraV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
                                             EGLImageKHR egl_image) {
+  DVLOGF(3);
   return eglDestroyImageKHR(egl_display, egl_image);
 }
 

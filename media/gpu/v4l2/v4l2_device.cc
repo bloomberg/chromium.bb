@@ -13,6 +13,9 @@
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #endif
 
+#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#define VLOGF(level) VLOG(level) << __func__ << "(): "
+
 namespace media {
 
 V4L2Device::V4L2Device() {}
@@ -21,7 +24,7 @@ V4L2Device::~V4L2Device() {}
 
 // static
 scoped_refptr<V4L2Device> V4L2Device::Create() {
-  DVLOG(3) << __PRETTY_FUNCTION__;
+  VLOGF(2);
 
   scoped_refptr<V4L2Device> device;
 
@@ -35,7 +38,7 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
   if (device->Initialize())
     return device;
 
-  DVLOG(1) << "Failed to create a V4L2Device";
+  VLOGF(1) << "Failed to create a V4L2Device";
   return nullptr;
 }
 
@@ -63,7 +66,7 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
       return PIXEL_FORMAT_ARGB;
 
     default:
-      DVLOG(1) << "Add more cases as needed";
+      DVLOGF(1) << "Add more cases as needed";
       return PIXEL_FORMAT_UNKNOWN;
   }
 }
@@ -147,7 +150,7 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
       break;
 
     default:
-      DVLOG(1) << "Unhandled pixelformat " << std::hex << "0x" << pix_fmt;
+      VLOGF(1) << "Unhandled pixelformat " << std::hex << "0x" << pix_fmt;
       return profiles;
   }
 
@@ -178,7 +181,7 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
       return DRM_FORMAT_MT21;
 
     default:
-      DVLOG(1) << "Unrecognized format " << std::hex << "0x" << format;
+      DVLOGF(1) << "Unrecognized format " << std::hex << "0x" << format;
       return 0;
   }
 }
@@ -234,7 +237,7 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
 
   if (sizeimage == 0 || bytesperline == 0 || plane_horiz_bits_per_pixel == 0 ||
       total_bpp == 0 || (bytesperline * 8) % plane_horiz_bits_per_pixel != 0) {
-    LOG(ERROR) << "Invalid format provided";
+    VLOGF(1) << "Invalid format provided";
     return coded_size;
   }
 
@@ -253,7 +256,7 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   // aligning to next full row.
   if (sizeimage > VideoFrame::AllocationSize(frame_format, coded_size))
     coded_size.SetSize(coded_width, coded_height + 1);
-  DVLOG(3) << "coded_size=" << coded_size.ToString();
+  DVLOGF(3) << "coded_size=" << coded_size.ToString();
 
   // Sanity checks. Calculated coded size has to contain given visible size
   // and fulfill buffer byte size requirements.
@@ -299,15 +302,15 @@ void V4L2Device::GetSupportedResolution(uint32_t pixelformat,
   }
   if (max_resolution->IsEmpty()) {
     max_resolution->SetSize(1920, 1088);
-    LOG(ERROR) << "GetSupportedResolution failed to get maximum resolution for "
-               << "fourcc " << std::hex << pixelformat
-               << ", fall back to " << max_resolution->ToString();
+    VLOGF(1) << "GetSupportedResolution failed to get maximum resolution for "
+             << "fourcc " << std::hex << pixelformat << ", fall back to "
+             << max_resolution->ToString();
   }
   if (min_resolution->IsEmpty()) {
     min_resolution->SetSize(16, 16);
-    LOG(ERROR) << "GetSupportedResolution failed to get minimum resolution for "
-               << "fourcc " << std::hex << pixelformat
-               << ", fall back to " << min_resolution->ToString();
+    VLOGF(1) << "GetSupportedResolution failed to get minimum resolution for "
+             << "fourcc " << std::hex << pixelformat << ", fall back to "
+             << min_resolution->ToString();
   }
 }
 
@@ -320,8 +323,8 @@ std::vector<uint32_t> V4L2Device::EnumerateSupportedPixelformats(
   fmtdesc.type = buf_type;
 
   for (; Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
-    DVLOG(1) << "Found " << fmtdesc.description << std::hex << " (0x"
-             << fmtdesc.pixelformat << ")";
+    DVLOGF(3) << "Found " << fmtdesc.description << std::hex << " (0x"
+              << fmtdesc.pixelformat << ")";
     pixelformats.push_back(fmtdesc.pixelformat);
   }
 
@@ -352,9 +355,9 @@ V4L2Device::EnumerateSupportedDecodeProfiles(const size_t num_formats,
       profile.profile = video_codec_profile;
       profiles.push_back(profile);
 
-      DVLOG(1) << "Found decoder profile " << GetProfileName(profile.profile)
-               << ", resolutions: " << profile.min_resolution.ToString() << " "
-               << profile.max_resolution.ToString();
+      DVLOGF(3) << "Found decoder profile " << GetProfileName(profile.profile)
+                << ", resolutions: " << profile.min_resolution.ToString() << " "
+                << profile.max_resolution.ToString();
     }
   }
 
@@ -383,8 +386,8 @@ V4L2Device::EnumerateSupportedEncodeProfiles() {
       profile.profile = video_codec_profile;
       profiles.push_back(profile);
 
-      DVLOG(1) << "Found encoder profile " << GetProfileName(profile.profile)
-               << ", max resolution: " << profile.max_resolution.ToString();
+      DVLOGF(3) << "Found encoder profile " << GetProfileName(profile.profile)
+                << ", max resolution: " << profile.max_resolution.ToString();
     }
   }
 
