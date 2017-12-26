@@ -104,7 +104,7 @@ public class WebappActivity extends SingleTabActivity {
     private final WebappActionsNotificationManager mNotificationManager;
     private final WebappDirectoryManager mDirectoryManager;
 
-    protected WebappInfo mWebappInfo;
+    private WebappInfo mWebappInfo;
 
     private WebappSplashScreenController mSplashController;
 
@@ -560,7 +560,7 @@ public class WebappActivity extends SingleTabActivity {
      * @return Structure containing data about the webapp currently displayed.
      *         The return value should not be cached.
      */
-    WebappInfo getWebappInfo() {
+    public WebappInfo getWebappInfo() {
         return mWebappInfo;
     }
 
