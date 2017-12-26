@@ -64,7 +64,7 @@ public class SavePasswordsPreferences
     private static final String PREF_KEY_SAVED_PASSWORDS_NO_TEXT = "saved_passwords_no_text";
 
     // Name of the feature controlling the password export functionality.
-    private static final String EXPORT_PASSWORDS = "password-export";
+    private static final String EXPORT_PASSWORDS = "PasswordExport";
 
     private static final int ORDER_SWITCH = 0;
     private static final int ORDER_AUTO_SIGNIN_CHECKBOX = 1;

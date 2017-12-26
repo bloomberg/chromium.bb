@@ -220,7 +220,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"bookmark-new-edit-page", flag_descriptions::kBookmarkNewEditPageName,
      flag_descriptions::kBookmarkNewEditPageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kBookmarkNewEditPage)},
-    {"password-export", flag_descriptions::kPasswordExportName,
+    {"PasswordExport", flag_descriptions::kPasswordExportName,
      flag_descriptions::kPasswordExportDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordExport)},
     {"wk-http-system-cookie-store",
