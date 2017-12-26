@@ -109,6 +109,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
 }
 
 void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
+  TRACE_EVENT0("video", "H264Encoder::ConfigureEncoderOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   ISVCEncoder* temp_encoder = nullptr;
   if (WelsCreateSVCEncoder(&temp_encoder) != 0) {
@@ -145,8 +146,12 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
     init_params.iRCMode = RC_OFF_MODE;
   }
 
+#if defined(OS_CHROMEOS)
+  init_params.iMultipleThreadIdc = 0;
+#else
   // Threading model: Set to 1 due to https://crbug.com/583348.
   init_params.iMultipleThreadIdc = 1;
+#endif
 
   // TODO(mcasas): consider reducing complexity if there are few CPUs available.
   init_params.iComplexityMode = MEDIUM_COMPLEXITY;
@@ -161,9 +166,7 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
 
   // When uiSliceMode = SM_FIXEDSLCNUM_SLICE, uiSliceNum = 0 means auto design
   // it with cpu core number.
-  // TODO(sprang): Set to 0 when we understand why the rate controller borks
-  // when uiSliceNum > 1. See https://github.com/cisco/openh264/issues/2591
-  init_params.sSpatialLayers[0].sSliceArgument.uiSliceNum = 1;
+  init_params.sSpatialLayers[0].sSliceArgument.uiSliceNum = 0;
   init_params.sSpatialLayers[0].sSliceArgument.uiSliceMode =
       SM_FIXEDSLCNUM_SLICE;
 
