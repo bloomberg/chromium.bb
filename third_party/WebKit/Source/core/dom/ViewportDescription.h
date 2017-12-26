@@ -96,6 +96,10 @@ struct CORE_EXPORT ViewportDescription {
   PageScaleConstraints Resolve(const FloatSize& initial_viewport_size,
                                Length legacy_fallback_width) const;
 
+  // When --use-zoom-for-dsf is enabled, if the type is kFixed, these Length
+  // values (i.e., |min_width|, |max_width|, |min_height|, and |max_height|)
+  // must be in physical pixel scale. When --use-zoom-for-dsf is disabled, if
+  // the type is kFixed, these Length values must be in DIP scale.
   Length min_width;
   Length max_width;
   Length min_height;
