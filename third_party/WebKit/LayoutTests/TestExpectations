@@ -356,15 +356,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001f.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Failure ]
 
-# Inline: Abspos should start new block layout to compute static position
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-width-001.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-004.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-005.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-007.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-height-004.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-height-005.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-height-007.xht [ Failure ]
-
 # Block: margin collapsing.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Failure ]
 
@@ -382,7 +373,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-in
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/positioning
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-height-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-007.xht [ Failure ]
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-027.xht [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-027.xht [ Failure ]
@@ -426,7 +416,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-in-float-painting.html
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-inserted-into-clean-line.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-list-changed-before-layout-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Crash Pass ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-line-obeys-container-padding.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent-rl.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent.html [ Failure ]
@@ -590,7 +579,6 @@ crbug.com/714962 virtual/layout_ng/fast/writing-mode/auto-sizing-orthogonal-flow
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/background-vertical-lr.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/background-vertical-rl.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/basic-vertical-line.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/block-level-images.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-image-vertical-lr.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-image-vertical-rl.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-radius-clipping-vertical-lr.html [ Failure ]
