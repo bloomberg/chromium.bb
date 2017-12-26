@@ -31,7 +31,6 @@
 #include "core/frame/UseCounter.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/EntryCallback.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/LocalFileSystem.h"
@@ -46,7 +45,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
     int type,
     long long size,
     FileSystemCallback* success_callback,
-    ErrorCallback* error_callback) {
+    V8ErrorCallback* error_callback) {
   if (!window.IsCurrentlyDisplayedInFrame())
     return;
 
@@ -86,7 +85,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
     LocalDOMWindow& window,
     const String& url,
     EntryCallback* success_callback,
-    ErrorCallback* error_callback) {
+    V8ErrorCallback* error_callback) {
   if (!window.IsCurrentlyDisplayedInFrame())
     return;
 

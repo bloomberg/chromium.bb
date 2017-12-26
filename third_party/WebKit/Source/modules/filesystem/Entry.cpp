@@ -35,7 +35,6 @@
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/EntryCallback.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/bindings/ScriptState.h"
@@ -58,7 +57,7 @@ DOMFileSystem* Entry::filesystem(ScriptState* script_state) const {
 
 void Entry::getMetadata(ScriptState* script_state,
                         MetadataCallback* success_callback,
-                        ErrorCallback* error_callback) {
+                        V8ErrorCallback* error_callback) {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_GetMetadata_Method_IsolatedFileSystem);
@@ -71,7 +70,7 @@ void Entry::moveTo(ScriptState* script_state,
                    DirectoryEntry* parent,
                    const String& name,
                    EntryCallback* success_callback,
-                   ErrorCallback* error_callback) const {
+                   V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_MoveTo_Method_IsolatedFileSystem);
@@ -84,7 +83,7 @@ void Entry::copyTo(ScriptState* script_state,
                    DirectoryEntry* parent,
                    const String& name,
                    EntryCallback* success_callback,
-                   ErrorCallback* error_callback) const {
+                   V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_CopyTo_Method_IsolatedFileSystem);
@@ -95,7 +94,7 @@ void Entry::copyTo(ScriptState* script_state,
 
 void Entry::remove(ScriptState* script_state,
                    VoidCallback* success_callback,
-                   ErrorCallback* error_callback) const {
+                   V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_Remove_Method_IsolatedFileSystem);
@@ -106,7 +105,7 @@ void Entry::remove(ScriptState* script_state,
 
 void Entry::getParent(ScriptState* script_state,
                       EntryCallback* success_callback,
-                      ErrorCallback* error_callback) const {
+                      V8ErrorCallback* error_callback) const {
   if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_GetParent_Method_IsolatedFileSystem);

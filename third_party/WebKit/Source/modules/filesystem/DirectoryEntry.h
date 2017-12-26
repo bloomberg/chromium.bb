@@ -41,8 +41,8 @@ namespace blink {
 class DOMFileSystemBase;
 class DirectoryReader;
 class EntryCallback;
-class ErrorCallback;
 class FileSystemFlags;
+class V8ErrorCallback;
 class VoidCallback;
 
 class MODULES_EXPORT DirectoryEntry final : public Entry {
@@ -59,13 +59,13 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
   void getFile(const String& path,
                const FileSystemFlags&,
                EntryCallback* = nullptr,
-               ErrorCallback* = nullptr);
+               V8ErrorCallback* = nullptr);
   void getDirectory(const String& path,
                     const FileSystemFlags&,
                     EntryCallback* = nullptr,
-                    ErrorCallback* = nullptr);
+                    V8ErrorCallback* = nullptr);
   void removeRecursively(VoidCallback* success_callback = nullptr,
-                         ErrorCallback* = nullptr) const;
+                         V8ErrorCallback* = nullptr) const;
 
   void Trace(blink::Visitor*) override;
 

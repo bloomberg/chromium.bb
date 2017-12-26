@@ -32,7 +32,6 @@
 
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileWriterCallback.h"
@@ -43,13 +42,13 @@ FileEntry::FileEntry(DOMFileSystemBase* file_system, const String& full_path)
     : Entry(file_system, full_path) {}
 
 void FileEntry::createWriter(FileWriterCallback* success_callback,
-                             ErrorCallback* error_callback) {
+                             V8ErrorCallback* error_callback) {
   filesystem()->CreateWriter(this, success_callback,
                              ScriptErrorCallback::Wrap(error_callback));
 }
 
 void FileEntry::file(FileCallback* success_callback,
-                     ErrorCallback* error_callback) {
+                     V8ErrorCallback* error_callback) {
   filesystem()->CreateFile(this, success_callback,
                            ScriptErrorCallback::Wrap(error_callback));
 }

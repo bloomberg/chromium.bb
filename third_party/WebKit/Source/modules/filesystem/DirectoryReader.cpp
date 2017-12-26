@@ -30,10 +30,10 @@
 
 #include "modules/filesystem/DirectoryReader.h"
 
+#include "bindings/modules/v8/V8ErrorCallback.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/Entry.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 
 namespace blink {
@@ -88,7 +88,7 @@ DirectoryReader::DirectoryReader(DOMFileSystemBase* file_system,
 DirectoryReader::~DirectoryReader() {}
 
 void DirectoryReader::readEntries(EntriesCallback* entries_callback,
-                                  ErrorCallback* error_callback) {
+                                  V8ErrorCallback* error_callback) {
   if (!is_reading_) {
     is_reading_ = true;
     Filesystem()->ReadDirectory(this, full_path_,

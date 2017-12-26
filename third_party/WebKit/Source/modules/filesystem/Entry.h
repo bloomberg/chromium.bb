@@ -40,8 +40,8 @@ namespace blink {
 
 class DirectoryEntry;
 class EntryCallback;
-class ErrorCallback;
 class MetadataCallback;
+class V8ErrorCallback;
 class VoidCallback;
 
 class MODULES_EXPORT Entry : public EntryBase {
@@ -55,23 +55,23 @@ class MODULES_EXPORT Entry : public EntryBase {
 
   void getMetadata(ScriptState*,
                    MetadataCallback* success_callback = nullptr,
-                   ErrorCallback* = nullptr);
+                   V8ErrorCallback* = nullptr);
   void moveTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
               EntryCallback* success_callback = nullptr,
-              ErrorCallback* = nullptr) const;
+              V8ErrorCallback* = nullptr) const;
   void copyTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
               EntryCallback* success_callback = nullptr,
-              ErrorCallback* = nullptr) const;
+              V8ErrorCallback* = nullptr) const;
   void remove(ScriptState*,
               VoidCallback* success_callback = nullptr,
-              ErrorCallback* = nullptr) const;
+              V8ErrorCallback* = nullptr) const;
   void getParent(ScriptState*,
                  EntryCallback* success_callback = nullptr,
-                 ErrorCallback* = nullptr) const;
+                 V8ErrorCallback* = nullptr) const;
   String toURL(ScriptState*) const;
 
   void Trace(blink::Visitor*) override;

@@ -35,7 +35,6 @@
 #include "modules/filesystem/DirectoryEntrySync.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/EntrySync.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 

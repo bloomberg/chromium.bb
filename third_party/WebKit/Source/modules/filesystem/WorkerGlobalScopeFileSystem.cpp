@@ -28,6 +28,7 @@
 #include "modules/filesystem/WorkerGlobalScopeFileSystem.h"
 
 #include <memory>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FileError.h"
@@ -35,7 +36,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
@@ -51,7 +51,7 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
     int type,
     long long size,
     FileSystemCallback* success_callback,
-    ErrorCallback* error_callback) {
+    V8ErrorCallback* error_callback) {
   ExecutionContext* secure_context = worker.GetExecutionContext();
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {
     DOMFileSystem::ReportError(&worker,
@@ -114,7 +114,7 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
     WorkerGlobalScope& worker,
     const String& url,
     EntryCallback* success_callback,
-    ErrorCallback* error_callback) {
+    V8ErrorCallback* error_callback) {
   KURL completed_url = worker.CompleteURL(url);
   ExecutionContext* secure_context = worker.GetExecutionContext();
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem() ||

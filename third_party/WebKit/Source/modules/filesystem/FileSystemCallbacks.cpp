@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "bindings/modules/v8/V8ErrorCallback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
@@ -44,7 +45,6 @@
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryCallback.h"
-#include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
@@ -135,7 +135,7 @@ void FileSystemCallbacksBase::HandleEventOrScheduleCallback(CB* callback) {
 // ScriptErrorCallback --------------------------------------------------------
 
 // static
-ScriptErrorCallback* ScriptErrorCallback::Wrap(ErrorCallback* callback) {
+ScriptErrorCallback* ScriptErrorCallback::Wrap(V8ErrorCallback* callback) {
   // DOMFileSystem operations take an optional (nullable) callback. If a
   // script callback was not passed, don't bother creating a dummy wrapper
   // and checking during invoke().
@@ -153,7 +153,7 @@ void ScriptErrorCallback::Invoke(FileError::ErrorCode error) {
   callback_->handleEvent(FileError::CreateDOMException(error));
 };
 
-ScriptErrorCallback::ScriptErrorCallback(ErrorCallback* callback)
+ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
     : callback_(callback) {}
 
 // EntryCallbacks -------------------------------------------------------------
