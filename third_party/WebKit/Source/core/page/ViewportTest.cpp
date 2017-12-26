@@ -3240,6 +3240,132 @@ TEST_F(ViewportTest, viewportWarnings8) {
   EXPECT_EQ(0U, web_frame_client.messages.size());
 }
 
+class ViewportClient : public FrameTestHelpers::TestWebViewClient {
+ public:
+  ViewportClient() : device_scale_factor_(1.f) {}
+  void ConvertWindowToViewport(WebFloatRect* rect) override {
+    rect->x *= device_scale_factor_;
+    rect->y *= device_scale_factor_;
+    rect->width *= device_scale_factor_;
+    rect->height *= device_scale_factor_;
+  }
+  void set_device_scale_factor(float device_scale_factor) {
+    device_scale_factor_ = device_scale_factor;
+  }
+
+ private:
+  float device_scale_factor_;
+};
+
+TEST_F(ViewportTest, viewportUseZoomForDSF1) {
+  ViewportClient client;
+  client.set_device_scale_factor(3);
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-merge-quirk-1.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-merge-quirk-1.html", nullptr,
+      &client, nullptr, SetQuirkViewportSettings);
+
+  Page* page = web_view_helper.GetWebView()->GetPage();
+  // Initial width and height must be scaled by DSF when --use-zoom-for-dsf
+  // is enabled.
+  PageScaleConstraints constraints = RunViewportTest(page, 960, 1056);
+
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout width == 640 * DSF = 1920
+  EXPECT_EQ(1920, constraints.layout_size.Width());
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout height == 704 * DSF = 2112
+  EXPECT_EQ(2112, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_FALSE(page->GetViewportDescription().user_zoom);
+}
+
+TEST_F(ViewportTest, viewportUseZoomForDSF2) {
+  ViewportClient client;
+  client.set_device_scale_factor(3);
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-merge-quirk-2.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-merge-quirk-2.html", nullptr,
+      &client, nullptr, SetQuirkViewportSettings);
+
+  Page* page = web_view_helper.GetWebView()->GetPage();
+
+  // This quirk allows content attributes of meta viewport tags to be merged.
+  page->GetSettings().SetViewportMetaMergeContentQuirk(true);
+  // Initial width and height must be scaled by DSF when --use-zoom-for-dsf
+  // is enabled.
+  PageScaleConstraints constraints = RunViewportTest(page, 960, 1056);
+
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout width == 500 * DSF = 1500
+  EXPECT_EQ(1500, constraints.layout_size.Width());
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout height == 550 * DSF = 1650
+  EXPECT_EQ(1650, constraints.layout_size.Height());
+  EXPECT_NEAR(2.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_FALSE(page->GetViewportDescription().user_zoom);
+}
+
+TEST_F(ViewportTest, viewportUseZoomForDSF3) {
+  ViewportClient client;
+  client.set_device_scale_factor(3);
+  RegisterMockedHttpURLLoad("viewport/viewport-48.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-48.html",
+                                    nullptr, &client, nullptr,
+                                    SetViewportSettings);
+
+  Page* page = web_view_helper.GetWebView()->GetPage();
+  // Initial width and height must be scaled by DSF when --use-zoom-for-dsf
+  // is enabled.
+  PageScaleConstraints constraints = RunViewportTest(page, 960, 1056);
+
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout width == 3000 * DSF = 9000
+  EXPECT_EQ(9000, constraints.layout_size.Width());
+  EXPECT_EQ(1056, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
+}
+
+TEST_F(ViewportTest, viewportUseZoomForDSF4) {
+  ViewportClient client;
+  client.set_device_scale_factor(3);
+  RegisterMockedHttpURLLoad("viewport/viewport-39.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-39.html",
+                                    nullptr, &client, nullptr,
+                                    SetViewportSettings);
+
+  Page* page = web_view_helper.GetWebView()->GetPage();
+  // Initial width and height must be scaled by DSF when --use-zoom-for-dsf
+  // is enabled.
+  PageScaleConstraints constraints = RunViewportTest(page, 960, 1056);
+
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout width == 200 * DSF = 600
+  EXPECT_EQ(600, constraints.layout_size.Width());
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout height == 700 * DSF = 2100
+  EXPECT_EQ(2100, constraints.layout_size.Height());
+  EXPECT_NEAR(1.6f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.6f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
+}
+
 class ViewportHistogramsTest : public SimTest {
  public:
   ViewportHistogramsTest() {}

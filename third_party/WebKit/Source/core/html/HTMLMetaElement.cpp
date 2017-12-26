@@ -32,6 +32,8 @@
 #include "core/html_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/HttpEquiv.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {
@@ -197,6 +199,10 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
   if (value < 0)
     return Length();  // auto
 
+  if (document && document->GetPage()) {
+    value =
+        document->GetPage()->GetChromeClient().WindowToViewportScalar(value);
+  }
   return Length(ClampLengthValue(value), kFixed);
 }
 
