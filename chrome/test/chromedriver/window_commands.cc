@@ -1211,8 +1211,9 @@ Status ExecuteGetStorageKeys(const char* storage,
                              Timeout* timeout) {
   const char script[] =
       "var keys = [];"
-      "for (var key in %s) {"
-      "  keys.push(key);"
+      "var storage = %s;"
+      "for (var i = 0; i < storage.length; i++) {"
+      "  keys.push(storage.key(i));"
       "}"
       "keys";
   return web_view->EvaluateScript(
