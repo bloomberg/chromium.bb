@@ -20,14 +20,19 @@ class WebState;
 // Returns the default image to return when the snapshot cannot be generated.
 - (UIImage*)defaultSnapshotImage;
 
-// Returns the edge insets to use to crop the snapshot during generation. If
-// the snapshot should not be cropped, then UIEdgeInsetsZero can be returned.
-- (UIEdgeInsets)snapshotEdgeInsets;
+// Returns whether it is possible to capture a snapshot for |webState|.
+- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState;
+
+// Returns the edge insets to use to crop the snapshot for |webState| during
+// generation. If the snapshot should not be cropped, then UIEdgeInsetsZero
+// can be returned.
+- (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState;
 
 // Returns the list of SnapshotOverlays that should be rendered over the
-// page when generating the snapshot. If no overlays should be rendered,
-// the list may be nil or empty.
-- (NSArray<SnapshotOverlay*>*)snapshotOverlays;
+// page when generating the snapshot for |webState|. If no overlays should
+// be rendered, the list may be nil or empty.
+- (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
+    (web::WebState*)webState;
 
 // Invoked before capturing a snapshot for |webState|. The delegate can remove
 // subviews from the hierarchy or take other actions to ensure the snapshot
