@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTestHelper.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/loader/EmptyClients.h"
 #include "platform/PlatformFrameView.h"
 #include "platform/geometry/IntRect.h"
@@ -40,6 +42,13 @@ class TextAutosizerTest : public RenderingTest {
     DEFINE_STATIC_LOCAL(TextAutosizerClient, client,
                         (TextAutosizerClient::Create()));
     return client;
+  }
+  void set_device_scale_factor(float device_scale_factor) {
+    GetTextAutosizerClient().set_device_scale_factor(device_scale_factor);
+
+    // This fake ChromeClient cannot update device scale factor (DSF). We apply
+    // DSF to the zoom factor manually.
+    GetDocument().GetFrame()->SetPageZoomFactor(device_scale_factor);
   }
 
  private:
@@ -938,10 +947,8 @@ TEST_F(TextAutosizerTest, MultiColumns) {
 }
 
 TEST_F(TextAutosizerTest, ScaledbyDSF) {
-  GetTextAutosizerClient().set_device_scale_factor(1.f);
-  // Change setting triggers updating device scale factor
-  GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
-      IntSize(400, 300));
+  const float device_scale = 3;
+  set_device_scale_factor(device_scale);
   SetBodyInnerHTML(R"HTML(
     <style>
       html { font-size: 16px; }
@@ -960,32 +967,14 @@ TEST_F(TextAutosizerTest, ScaledbyDSF) {
       </div>
     </body>
   )HTML");
-
   Element* target = GetDocument().getElementById("target");
   // (specified font-size = 16px) * (thread flow layout width = 800px) /
-  // (window width = 400px) = 32px.
-  EXPECT_FLOAT_EQ(32.0f,
-                  target->GetLayoutObject()->Style()->ComputedFontSize());
-
-  const float device_scale = 3.5f;
-  GetTextAutosizerClient().set_device_scale_factor(device_scale);
-  // Change setting triggers updating device scale factor
-  GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
-      IntSize(200, 150));
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  // (specified font-size = 16px) * (thread flow layout width = 800px) /
-  // (window width = 200px) * (device scale factor) = 64px * device_scale.
-  EXPECT_FLOAT_EQ(64.0f * device_scale,
+  // (window width = 320px) * (device scale factor) = 40px * device_scale.
+  EXPECT_FLOAT_EQ(40.0f * device_scale,
                   target->GetLayoutObject()->Style()->ComputedFontSize());
 }
 
-TEST_F(TextAutosizerTest, ClusterHasEnoughTextToAutosizeForZoomDSF) {
-  GetTextAutosizerClient().set_device_scale_factor(1.f);
-  // Change setting triggers updating device scale factor
-  GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
-      IntSize(800, 600));
-  GetDocument().GetSettings()->SetAccessibilityFontScaleFactor(4);
+TEST_F(TextAutosizerTest, ClusterHasNotEnoughTextToAutosizeForZoomDSF) {
   SetBodyInnerHTML(R"HTML(
     <style>
       html { font-size: 8px; }
@@ -999,24 +988,48 @@ TEST_F(TextAutosizerTest, ClusterHasEnoughTextToAutosizeForZoomDSF) {
       </div>
     </body>
   )HTML");
-
   Element* target = GetDocument().getElementById("target");
   // ClusterHasEnoughTextToAutosize() returns false because
   // minimum_text_length_to_autosize < length. Thus, ClusterMultiplier()
   // returns 1 (not multiplied by the accessibility font scale factor).
   // computed font-size = specified font-size = 8px.
   EXPECT_FLOAT_EQ(8.0f, target->GetLayoutObject()->Style()->ComputedFontSize());
+}
 
-  GetTextAutosizerClient().set_device_scale_factor(3);
-  // Change setting triggers updating device scale factor
-  GetDocument().GetSettings()->SetAccessibilityFontScaleFactor(2);
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  // (accessibility font scale factor = 2) * (specified font-size = 8px) *
-  // (device scale factor = 3) = 48.
+// TODO(jaebaek): Unit tests ClusterHasNotEnoughTextToAutosizeForZoomDSF and
+// ClusterHasEnoughTextToAutosizeForZoomDSF must be updated.
+// The return value of TextAutosizer::ClusterHasEnoughTextToAutosize() must not
+// be the same regardless of DSF. In real world
+// TextAutosizer::ClusterHasEnoughTextToAutosize(),
+// minimum_text_length_to_autosize is in physical pixel scale. However, in
+// these unit tests, it is in DIP scale, which makes
+// ClusterHasEnoughTextToAutosizeForZoomDSF not fail. We need a trick to update
+// the minimum_text_length_to_autosize in these unit test and check the return
+// value change of TextAutosizer::ClusterHasEnoughTextToAutosize() depending on
+// the length of text even when DSF is not 1 (e.g., letting DummyPageHolder
+// update the view size according to the change of DSF).
+TEST_F(TextAutosizerTest, ClusterHasEnoughTextToAutosizeForZoomDSF) {
+  const float device_scale = 3;
+  set_device_scale_factor(device_scale);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html { font-size: 8px; }
+    </style>
+    <body>
+      <div id='target'>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed
+        do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco
+        laboris nisi ut aliquip ex ea commodo consequat.
+      </div>
+    </body>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  // (specified font-size = 8px) * (thread flow layout width = 800px) /
+  // (window width = 320px) * (device scale factor) = 20px * device_scale.
   // ClusterHasEnoughTextToAutosize() returns true and both accessibility font
   // scale factor and device scale factor are multiplied.
-  EXPECT_FLOAT_EQ(48.0f,
+  EXPECT_FLOAT_EQ(20.0f * device_scale,
                   target->GetLayoutObject()->Style()->ComputedFontSize());
 }
 }  // namespace blink
