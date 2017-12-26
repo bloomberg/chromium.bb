@@ -42,9 +42,6 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
                                 const gfx::Point& anchor_point,
                                 content::WebContents* web_contents);
 
-  // TODO(varkha): Delete this override and use the constructor above.
-  LocationBarBubbleDelegateView(views::View* anchor_view,
-                                content::WebContents* web_contents);
   ~LocationBarBubbleDelegateView() override;
 
   // Displays the bubble with appearance and behavior tailored for |reason|.

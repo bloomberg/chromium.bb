@@ -312,7 +312,7 @@ BookmarkBubbleView::BookmarkBubbleView(
     Profile* profile,
     const GURL& url,
     bool newly_bookmarked)
-    : LocationBarBubbleDelegateView(anchor_view, nullptr),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), nullptr),
       observer_(observer),
       delegate_(std::move(delegate)),
       profile_(profile),

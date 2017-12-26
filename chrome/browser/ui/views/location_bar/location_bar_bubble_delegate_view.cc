@@ -74,11 +74,6 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 }
 
-LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
-    views::View* anchor_view,
-    content::WebContents* web_contents)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents) {}
-
 LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
 
 void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
