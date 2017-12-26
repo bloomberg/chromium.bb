@@ -581,19 +581,7 @@ public class AccountManagerFacade {
 
         private AccountManagerResult<Account[]> getAccountManagerResult() {
             try {
-                Account[] accounts = mDelegate.getAccountsSync();
-                if (accounts.length <= 1) return new AccountManagerResult<>(accounts);
-
-                ArrayList<Account> filteredAccounts = new ArrayList<>();
-                for (Account account : accounts) {
-                    if (hasFeatures(account, new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY})) {
-                        filteredAccounts.add(account);
-                    }
-                }
-                // Don't filter if there are no child accounts
-                if (filteredAccounts.isEmpty()) return new AccountManagerResult<>(accounts);
-
-                return new AccountManagerResult<>(filteredAccounts.toArray(new Account[0]));
+                return new AccountManagerResult<>(mDelegate.getAccountsSync());
             } catch (AccountManagerDelegateException ex) {
                 return new AccountManagerResult<>(ex);
             }
