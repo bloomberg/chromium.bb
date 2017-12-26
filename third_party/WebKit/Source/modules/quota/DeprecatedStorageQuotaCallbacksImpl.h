@@ -32,10 +32,10 @@
 #define DeprecatedStorageQuotaCallbacksImpl_h
 
 #include "base/memory/scoped_refptr.h"
+#include "bindings/modules/v8/v8_storage_error_callback.h"
+#include "bindings/modules/v8/v8_storage_quota_callback.h"
+#include "bindings/modules/v8/v8_storage_usage_callback.h"
 #include "modules/ModulesExport.h"
-#include "modules/quota/StorageErrorCallback.h"
-#include "modules/quota/StorageQuotaCallback.h"
-#include "modules/quota/StorageUsageCallback.h"
 #include "platform/StorageQuotaCallbacks.h"
 
 namespace blink {
@@ -44,14 +44,14 @@ class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final
     : public StorageQuotaCallbacks {
  public:
   static DeprecatedStorageQuotaCallbacksImpl* Create(
-      StorageUsageCallback* success,
-      StorageErrorCallback* error) {
+      V8StorageUsageCallback* success,
+      V8StorageErrorCallback* error) {
     return new DeprecatedStorageQuotaCallbacksImpl(success, error);
   }
 
   static DeprecatedStorageQuotaCallbacksImpl* Create(
-      StorageQuotaCallback* success,
-      StorageErrorCallback* error) {
+      V8StorageQuotaCallback* success,
+      V8StorageErrorCallback* error) {
     return new DeprecatedStorageQuotaCallbacksImpl(success, error);
   }
 
@@ -65,14 +65,20 @@ class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final
   void DidFail(WebStorageQuotaError) override;
 
  private:
-  DeprecatedStorageQuotaCallbacksImpl(StorageUsageCallback*,
-                                      StorageErrorCallback*);
-  DeprecatedStorageQuotaCallbacksImpl(StorageQuotaCallback*,
-                                      StorageErrorCallback*);
+  DeprecatedStorageQuotaCallbacksImpl(V8StorageUsageCallback*,
+                                      V8StorageErrorCallback*);
+  DeprecatedStorageQuotaCallbacksImpl(V8StorageQuotaCallback*,
+                                      V8StorageErrorCallback*);
 
-  Member<StorageUsageCallback> usage_callback_;
-  Member<StorageQuotaCallback> quota_callback_;
-  Member<StorageErrorCallback> error_callback_;
+  // This set of callbacks is held by WebStorageQuotaCallbacks and passed in
+  // Platform::QueryStorageUsageAndQuota, which doesn't support wrapper-tracing,
+  // and there is no other owner of this object. Thus, this object holds the
+  // underlying callback functions as persistent handles. This is acceptable
+  // because this object will be discarded in a limited time once
+  // Platform::QueryStorageUsageAndQuota finishes a task.
+  V8StorageUsageCallback::Persistent<V8StorageUsageCallback> usage_callback_;
+  V8StorageQuotaCallback::Persistent<V8StorageQuotaCallback> quota_callback_;
+  V8StorageErrorCallback::Persistent<V8StorageErrorCallback> error_callback_;
 };
 
 }  // namespace blink

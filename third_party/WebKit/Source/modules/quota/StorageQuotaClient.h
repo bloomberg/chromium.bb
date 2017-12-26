@@ -43,8 +43,8 @@ namespace blink {
 
 class ExecutionContext;
 class Page;
-class StorageErrorCallback;
-class StorageQuotaCallback;
+class V8StorageErrorCallback;
+class V8StorageQuotaCallback;
 
 class MODULES_EXPORT StorageQuotaClient
     : public GarbageCollectedFinalized<StorageQuotaClient>,
@@ -60,8 +60,8 @@ class MODULES_EXPORT StorageQuotaClient
   void RequestQuota(ScriptState*,
                     WebStorageQuotaType,
                     unsigned long long new_quota_in_bytes,
-                    StorageQuotaCallback*,
-                    StorageErrorCallback*);
+                    V8StorageQuotaCallback*,
+                    V8StorageErrorCallback*);
 
   static const char* SupplementName();
   static StorageQuotaClient* From(ExecutionContext*);

@@ -34,9 +34,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
-#include "modules/quota/StorageErrorCallback.h"
-#include "modules/quota/StorageQuotaCallback.h"
-#include "modules/quota/StorageUsageCallback.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/TaskType.h"
@@ -48,37 +45,34 @@ DeprecatedStorageInfo::DeprecatedStorageInfo() {}
 void DeprecatedStorageInfo::queryUsageAndQuota(
     ScriptState* script_state,
     int storage_type,
-    StorageUsageCallback* success_callback,
-    StorageErrorCallback* error_callback) {
+    V8StorageUsageCallback* success_callback,
+    V8StorageErrorCallback* error_callback) {
   // Dispatching the request to DeprecatedStorageQuota, as this interface is
   // deprecated in favor of DeprecatedStorageQuota.
   DeprecatedStorageQuota* storage_quota = GetStorageQuota(storage_type);
   if (!storage_quota) {
     // Unknown storage type is requested.
-    ExecutionContext::From(script_state)
-        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-        ->PostTask(FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
-                                  error_callback, kNotSupportedError));
+    DeprecatedStorageQuota::EnqueueStorageErrorCallback(
+        script_state, error_callback, kNotSupportedError);
     return;
   }
   storage_quota->queryUsageAndQuota(script_state, success_callback,
                                     error_callback);
 }
 
-void DeprecatedStorageInfo::requestQuota(ScriptState* script_state,
-                                         int storage_type,
-                                         unsigned long long new_quota_in_bytes,
-                                         StorageQuotaCallback* success_callback,
-                                         StorageErrorCallback* error_callback) {
+void DeprecatedStorageInfo::requestQuota(
+    ScriptState* script_state,
+    int storage_type,
+    unsigned long long new_quota_in_bytes,
+    V8StorageQuotaCallback* success_callback,
+    V8StorageErrorCallback* error_callback) {
   // Dispatching the request to DeprecatedStorageQuota, as this interface is
   // deprecated in favor of DeprecatedStorageQuota.
   DeprecatedStorageQuota* storage_quota = GetStorageQuota(storage_type);
   if (!storage_quota) {
     // Unknown storage type is requested.
-    ExecutionContext::From(script_state)
-        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-        ->PostTask(FROM_HERE, StorageErrorCallback::CreateSameThreadTask(
-                                  error_callback, kNotSupportedError));
+    DeprecatedStorageQuota::EnqueueStorageErrorCallback(
+        script_state, error_callback, kNotSupportedError);
     return;
   }
   storage_quota->requestQuota(script_state, new_quota_in_bytes,
