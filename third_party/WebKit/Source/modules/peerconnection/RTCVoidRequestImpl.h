@@ -31,6 +31,8 @@
 #ifndef RTCVoidRequestImpl_h
 #define RTCVoidRequestImpl_h
 
+#include "bindings/core/v8/v8_void_function.h"
+#include "bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
@@ -39,8 +41,6 @@
 namespace blink {
 
 class RTCPeerConnection;
-class RTCPeerConnectionErrorCallback;
-class VoidCallback;
 
 class RTCVoidRequestImpl final : public RTCVoidRequest,
                                  public ContextLifecycleObserver {
@@ -49,8 +49,8 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
  public:
   static RTCVoidRequestImpl* Create(ExecutionContext*,
                                     RTCPeerConnection*,
-                                    VoidCallback*,
-                                    RTCPeerConnectionErrorCallback*);
+                                    V8VoidFunction*,
+                                    V8RTCPeerConnectionErrorCallback*);
   ~RTCVoidRequestImpl() override;
 
   // RTCVoidRequest
@@ -65,13 +65,19 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
  private:
   RTCVoidRequestImpl(ExecutionContext*,
                      RTCPeerConnection*,
-                     VoidCallback*,
-                     RTCPeerConnectionErrorCallback*);
+                     V8VoidFunction*,
+                     V8RTCPeerConnectionErrorCallback*);
 
   void Clear();
 
-  Member<VoidCallback> success_callback_;
-  Member<RTCPeerConnectionErrorCallback> error_callback_;
+  // This request object is held by WebRTCPeerConnectionHandler, which doesn't
+  // support wrapper-tracing. Thus, this object holds the underlying callback
+  // functions as persistent handles. This is acceptable because the request
+  // object will be discarded in a limited time due to success, failure, or
+  // destruction of the execution context.
+  V8VoidFunction::Persistent<V8VoidFunction> success_callback_;
+  V8RTCPeerConnectionErrorCallback::Persistent<V8RTCPeerConnectionErrorCallback>
+      error_callback_;
   Member<RTCPeerConnection> requester_;
 };
 

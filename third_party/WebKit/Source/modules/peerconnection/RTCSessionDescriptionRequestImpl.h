@@ -32,6 +32,8 @@
 #define RTCSessionDescriptionRequestImpl_h
 
 #include "base/memory/scoped_refptr.h"
+#include "bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
+#include "bindings/modules/v8/v8_rtc_session_description_callback.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/peerconnection/RTCSessionDescriptionRequest.h"
@@ -39,8 +41,6 @@
 namespace blink {
 
 class RTCPeerConnection;
-class RTCPeerConnectionErrorCallback;
-class RTCSessionDescriptionCallback;
 class WebRTCSessionDescription;
 
 class RTCSessionDescriptionRequestImpl final
@@ -52,8 +52,8 @@ class RTCSessionDescriptionRequestImpl final
   static RTCSessionDescriptionRequestImpl* Create(
       ExecutionContext*,
       RTCPeerConnection*,
-      RTCSessionDescriptionCallback*,
-      RTCPeerConnectionErrorCallback*);
+      V8RTCSessionDescriptionCallback*,
+      V8RTCPeerConnectionErrorCallback*);
   ~RTCSessionDescriptionRequestImpl() override;
 
   void RequestSucceeded(const WebRTCSessionDescription&) override;
@@ -67,13 +67,20 @@ class RTCSessionDescriptionRequestImpl final
  private:
   RTCSessionDescriptionRequestImpl(ExecutionContext*,
                                    RTCPeerConnection*,
-                                   RTCSessionDescriptionCallback*,
-                                   RTCPeerConnectionErrorCallback*);
+                                   V8RTCSessionDescriptionCallback*,
+                                   V8RTCPeerConnectionErrorCallback*);
 
   void Clear();
 
-  Member<RTCSessionDescriptionCallback> success_callback_;
-  Member<RTCPeerConnectionErrorCallback> error_callback_;
+  // This request object is held by WebRTCPeerConnectionHandler, which doesn't
+  // support wrapper-tracing. Thus, this object holds the underlying callback
+  // functions as persistent handles. This is acceptable because the request
+  // object will be discarded in a limited time due to success, failure, or
+  // destruction of the execution context.
+  V8RTCSessionDescriptionCallback::Persistent<V8RTCSessionDescriptionCallback>
+      success_callback_;
+  V8RTCPeerConnectionErrorCallback::Persistent<V8RTCPeerConnectionErrorCallback>
+      error_callback_;
   Member<RTCPeerConnection> requester_;
 };
 

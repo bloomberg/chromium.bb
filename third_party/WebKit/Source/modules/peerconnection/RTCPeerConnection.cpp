@@ -41,9 +41,13 @@
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/v8_void_function.h"
 #include "bindings/modules/v8/V8MediaStreamTrack.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "bindings/modules/v8/rtc_ice_candidate_init_or_rtc_ice_candidate.h"
+#include "bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
+#include "bindings/modules/v8/v8_rtc_session_description_callback.h"
+#include "bindings/modules/v8/v8_rtc_stats_callback.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/Document.h"
@@ -54,7 +58,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/VoidCallback.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
@@ -67,16 +70,13 @@
 #include "modules/peerconnection/RTCDataChannelInit.h"
 #include "modules/peerconnection/RTCIceServer.h"
 #include "modules/peerconnection/RTCOfferOptions.h"
-#include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
 #include "modules/peerconnection/RTCPeerConnectionIceEvent.h"
 #include "modules/peerconnection/RTCRtpReceiver.h"
 #include "modules/peerconnection/RTCRtpSender.h"
 #include "modules/peerconnection/RTCSessionDescription.h"
-#include "modules/peerconnection/RTCSessionDescriptionCallback.h"
 #include "modules/peerconnection/RTCSessionDescriptionInit.h"
 #include "modules/peerconnection/RTCSessionDescriptionRequestImpl.h"
 #include "modules/peerconnection/RTCSessionDescriptionRequestPromiseImpl.h"
-#include "modules/peerconnection/RTCStatsCallback.h"
 #include "modules/peerconnection/RTCStatsReport.h"
 #include "modules/peerconnection/RTCStatsRequestImpl.h"
 #include "modules/peerconnection/RTCTrackEvent.h"
@@ -132,17 +132,18 @@ bool ThrowExceptionIfSignalingStateClosed(
   return false;
 }
 
-void AsyncCallErrorCallback(RTCPeerConnectionErrorCallback* error_callback,
+void AsyncCallErrorCallback(V8RTCPeerConnectionErrorCallback* error_callback,
                             DOMException* exception) {
   DCHECK(error_callback);
   Microtask::EnqueueMicrotask(
-      WTF::Bind(&RTCPeerConnectionErrorCallback::handleEvent,
-                WrapPersistent(error_callback), WrapPersistent(exception)));
+      WTF::Bind(&V8RTCPeerConnectionErrorCallback::InvokeAndReportException,
+                WrapPersistentCallbackFunction(error_callback), nullptr,
+                WrapPersistent(exception)));
 }
 
 bool CallErrorCallbackIfSignalingStateClosed(
     RTCPeerConnection::SignalingState state,
-    RTCPeerConnectionErrorCallback* error_callback) {
+    V8RTCPeerConnectionErrorCallback* error_callback) {
   if (state == RTCPeerConnection::kSignalingStateClosed) {
     if (error_callback)
       AsyncCallErrorCallback(
@@ -590,8 +591,8 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
 
 ScriptPromise RTCPeerConnection::createOffer(
     ScriptState* script_state,
-    RTCSessionDescriptionCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback,
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback,
     const Dictionary& rtc_offer_options,
     ExceptionState& exception_state) {
   DCHECK(success_callback);
@@ -666,8 +667,8 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
 
 ScriptPromise RTCPeerConnection::createAnswer(
     ScriptState* script_state,
-    RTCSessionDescriptionCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback,
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback,
     const Dictionary& media_constraints) {
   DCHECK(success_callback);
   DCHECK(error_callback);
@@ -725,8 +726,8 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
 ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init,
-    VoidCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback) {
+    V8VoidFunction* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -785,8 +786,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init,
-    VoidCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback) {
+    V8VoidFunction* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -1017,8 +1018,8 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
 ScriptPromise RTCPeerConnection::addIceCandidate(
     ScriptState* script_state,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate,
-    VoidCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback) {
+    V8VoidFunction* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback) {
   DCHECK(success_callback);
   DCHECK(error_callback);
 
@@ -1212,7 +1213,7 @@ size_t RTCPeerConnection::getRemoteStreamUsageCount(
 }
 
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
-                                          RTCStatsCallback* success_callback,
+                                          V8RTCStatsCallback* success_callback,
                                           MediaStreamTrack* selector) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);

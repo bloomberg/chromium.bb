@@ -59,7 +59,6 @@ enum RTCIceConnectionState {
 
 // TODO(guidou): Many types are of the wrong type in this interface:
 //  * Dictionary -> specific dictionary types like RTCConfiguration
-//  * VoidCallback -> VoidFunction
 [
     ActiveScriptWrappable,
     // TODO(guidou): There should only be one constructor argument.
@@ -96,10 +95,10 @@ enum RTCIceConnectionState {
     [CallWith=ScriptState, RaisesException] Promise<void> createOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
     // TODO(guidou): There should be no mediaConstraints argument.
     [CallWith=ScriptState] Promise<void> createAnswer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary mediaConstraints);
-    [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescriptionInit description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
+    [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
     // TODO(guidou): The failureCallback argument should be non-optional.
-    [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
-    [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidCallback successCallback, RTCPeerConnectionErrorCallback failureCallback);
+    [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidFunction successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
+    [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidFunction successCallback, RTCPeerConnectionErrorCallback failureCallback);
 
     // TODO(guidou): The selector argument should the first (nullable,
     // non-optional) argument, and there should be a third failureCallback
@@ -139,3 +138,14 @@ enum RTCIceConnectionState {
     attribute EventHandler onaddstream;
     attribute EventHandler onremovestream;
 };
+
+// https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionerrorcallback
+callback RTCPeerConnectionErrorCallback = void (DOMException error);
+
+// https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioncallback
+// TODO(yukishiino): The argument type must be RTCSessionDescriptionInit instead
+// of RTCSessionDescription.
+callback RTCSessionDescriptionCallback = void (RTCSessionDescription description);
+
+// No spec.  Blink specific definition.
+callback RTCStatsCallback = void (RTCStatsResponse response);

@@ -25,6 +25,7 @@
 #ifndef RTCStatsRequestImpl_h
 #define RTCStatsRequestImpl_h
 
+#include "bindings/modules/v8/v8_rtc_stats_callback.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/peerconnection/RTCStatsResponse.h"
 #include "platform/heap/Handle.h"
@@ -36,7 +37,6 @@ namespace blink {
 
 class MediaStreamTrack;
 class RTCPeerConnection;
-class RTCStatsCallback;
 
 class RTCStatsRequestImpl final : public RTCStatsRequest,
                                   public ContextLifecycleObserver {
@@ -45,7 +45,7 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
  public:
   static RTCStatsRequestImpl* Create(ExecutionContext*,
                                      RTCPeerConnection*,
-                                     RTCStatsCallback*,
+                                     V8RTCStatsCallback*,
                                      MediaStreamTrack*);
   ~RTCStatsRequestImpl() override;
 
@@ -63,12 +63,17 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
  private:
   RTCStatsRequestImpl(ExecutionContext*,
                       RTCPeerConnection*,
-                      RTCStatsCallback*,
+                      V8RTCStatsCallback*,
                       MediaStreamTrack*);
 
   void Clear();
 
-  Member<RTCStatsCallback> success_callback_;
+  // This request object is held by WebRTCPeerConnectionHandler, which doesn't
+  // support wrapper-tracing. Thus, this object holds the underlying callback
+  // functions as persistent handles. This is acceptable because the request
+  // object will be discarded in a limited time due to success, failure, or
+  // destruction of the execution context.
+  V8RTCStatsCallback::Persistent<V8RTCStatsCallback> success_callback_;
   Member<MediaStreamComponent> component_;
   Member<RTCPeerConnection> requester_;
 };

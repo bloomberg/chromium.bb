@@ -32,17 +32,15 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/html/VoidCallback.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
-#include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
 
 namespace blink {
 
 RTCVoidRequestImpl* RTCVoidRequestImpl::Create(
     ExecutionContext* context,
     RTCPeerConnection* requester,
-    VoidCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback) {
+    V8VoidFunction* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback) {
   return new RTCVoidRequestImpl(context, requester, success_callback,
                                 error_callback);
 }
@@ -50,8 +48,8 @@ RTCVoidRequestImpl* RTCVoidRequestImpl::Create(
 RTCVoidRequestImpl::RTCVoidRequestImpl(
     ExecutionContext* context,
     RTCPeerConnection* requester,
-    VoidCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback)
+    V8VoidFunction* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback)
     : ContextLifecycleObserver(context),
       success_callback_(success_callback),
       error_callback_(error_callback),
@@ -65,7 +63,7 @@ void RTCVoidRequestImpl::RequestSucceeded() {
   bool should_fire_callback =
       requester_ && requester_->ShouldFireDefaultCallbacks();
   if (should_fire_callback && success_callback_)
-    success_callback_->handleEvent();
+    success_callback_->InvokeAndReportException(nullptr);
 
   Clear();
 }
@@ -76,7 +74,8 @@ void RTCVoidRequestImpl::RequestFailed(const String& error) {
   if (should_fire_callback && error_callback_.Get()) {
     // TODO(guidou): The error code should come from the content layer. See
     // crbug.com/589455
-    error_callback_->handleEvent(DOMException::Create(kOperationError, error));
+    error_callback_->InvokeAndReportException(
+        nullptr, DOMException::Create(kOperationError, error));
   }
 
   Clear();
@@ -93,8 +92,6 @@ void RTCVoidRequestImpl::Clear() {
 }
 
 void RTCVoidRequestImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(success_callback_);
-  visitor->Trace(error_callback_);
   visitor->Trace(requester_);
   RTCVoidRequest::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

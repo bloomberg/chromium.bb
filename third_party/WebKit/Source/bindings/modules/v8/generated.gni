@@ -101,6 +101,12 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/v8_position_error_callback.h",
   "$bindings_modules_v8_output_dir/v8_remote_playback_availability_callback.cc",
   "$bindings_modules_v8_output_dir/v8_remote_playback_availability_callback.h",
+  "$bindings_modules_v8_output_dir/v8_rtc_peer_connection_error_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_rtc_peer_connection_error_callback.h",
+  "$bindings_modules_v8_output_dir/v8_rtc_session_description_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_rtc_session_description_callback.h",
+  "$bindings_modules_v8_output_dir/v8_rtc_stats_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_rtc_stats_callback.h",
   "$bindings_modules_v8_output_dir/v8_xr_frame_request_callback.cc",
   "$bindings_modules_v8_output_dir/v8_xr_frame_request_callback.h",
 ]

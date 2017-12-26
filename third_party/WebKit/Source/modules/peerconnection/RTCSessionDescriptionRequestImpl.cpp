@@ -34,9 +34,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
-#include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
 #include "modules/peerconnection/RTCSessionDescription.h"
-#include "modules/peerconnection/RTCSessionDescriptionCallback.h"
 #include "public/platform/WebRTCSessionDescription.h"
 
 namespace blink {
@@ -44,8 +42,8 @@ namespace blink {
 RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::Create(
     ExecutionContext* context,
     RTCPeerConnection* requester,
-    RTCSessionDescriptionCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback) {
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback) {
   return new RTCSessionDescriptionRequestImpl(context, requester,
                                               success_callback, error_callback);
 }
@@ -53,8 +51,8 @@ RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::Create(
 RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(
     ExecutionContext* context,
     RTCPeerConnection* requester,
-    RTCSessionDescriptionCallback* success_callback,
-    RTCPeerConnectionErrorCallback* error_callback)
+    V8RTCSessionDescriptionCallback* success_callback,
+    V8RTCPeerConnectionErrorCallback* error_callback)
     : ContextLifecycleObserver(context),
       success_callback_(success_callback),
       error_callback_(error_callback),
@@ -68,18 +66,20 @@ void RTCSessionDescriptionRequestImpl::RequestSucceeded(
     const WebRTCSessionDescription& web_session_description) {
   bool should_fire_callback =
       requester_ ? requester_->ShouldFireDefaultCallbacks() : false;
-  if (should_fire_callback && success_callback_)
-    success_callback_->handleEvent(
-        RTCSessionDescription::Create(web_session_description));
+  if (should_fire_callback && success_callback_) {
+    success_callback_->InvokeAndReportException(
+        nullptr, RTCSessionDescription::Create(web_session_description));
+  }
   Clear();
 }
 
 void RTCSessionDescriptionRequestImpl::RequestFailed(const String& error) {
   bool should_fire_callback =
       requester_ ? requester_->ShouldFireDefaultCallbacks() : false;
-  if (should_fire_callback && error_callback_)
-    error_callback_->handleEvent(DOMException::Create(kOperationError, error));
-
+  if (should_fire_callback && error_callback_) {
+    error_callback_->InvokeAndReportException(
+        nullptr, DOMException::Create(kOperationError, error));
+  }
   Clear();
 }
 
@@ -94,8 +94,6 @@ void RTCSessionDescriptionRequestImpl::Clear() {
 }
 
 void RTCSessionDescriptionRequestImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(success_callback_);
-  visitor->Trace(error_callback_);
   visitor->Trace(requester_);
   RTCSessionDescriptionRequest::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
