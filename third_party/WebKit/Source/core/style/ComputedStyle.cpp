@@ -1693,7 +1693,8 @@ void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
 
   float autosized_font_size =
       TextAutosizer::ComputeAutosizedFontSize(size, multiplier);
-  desc.SetComputedSize(std::min(kMaximumAllowedFontSize, autosized_font_size));
+  float computed_size = autosized_font_size * EffectiveZoom();
+  desc.SetComputedSize(std::min(kMaximumAllowedFontSize, computed_size));
 
   SetFontDescription(desc);
   GetFont().Update(current_font_selector);
