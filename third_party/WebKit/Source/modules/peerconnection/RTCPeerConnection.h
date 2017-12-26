@@ -32,6 +32,7 @@
 #define RTCPeerConnection_h
 
 #include <memory>
+
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/PausableObject.h"
@@ -47,6 +48,7 @@
 #include "public/platform/WebRTCPeerConnectionHandlerClient.h"
 
 namespace blink {
+
 class ExceptionState;
 class MediaStreamTrack;
 class RTCAnswerOptions;
@@ -56,16 +58,16 @@ class RTCDataChannel;
 class RTCDataChannelInit;
 class RTCIceCandidateInitOrRTCIceCandidate;
 class RTCOfferOptions;
-class RTCPeerConnectionErrorCallback;
 class RTCPeerConnectionTest;
 class RTCRtpReceiver;
 class RTCRtpSender;
 class RTCSessionDescription;
-class RTCSessionDescriptionCallback;
 class RTCSessionDescriptionInit;
-class RTCStatsCallback;
 class ScriptState;
-class VoidCallback;
+class V8RTCPeerConnectionErrorCallback;
+class V8RTCSessionDescriptionCallback;
+class V8RTCStatsCallback;
+class V8VoidFunction;
 struct WebRTCConfiguration;
 
 class MODULES_EXPORT RTCPeerConnection final
@@ -87,31 +89,31 @@ class MODULES_EXPORT RTCPeerConnection final
 
   ScriptPromise createOffer(ScriptState*, const RTCOfferOptions&);
   ScriptPromise createOffer(ScriptState*,
-                            RTCSessionDescriptionCallback*,
-                            RTCPeerConnectionErrorCallback*,
+                            V8RTCSessionDescriptionCallback*,
+                            V8RTCPeerConnectionErrorCallback*,
                             const Dictionary&,
                             ExceptionState&);
 
   ScriptPromise createAnswer(ScriptState*, const RTCAnswerOptions&);
   ScriptPromise createAnswer(ScriptState*,
-                             RTCSessionDescriptionCallback*,
-                             RTCPeerConnectionErrorCallback*,
+                             V8RTCSessionDescriptionCallback*,
+                             V8RTCPeerConnectionErrorCallback*,
                              const Dictionary&);
 
   ScriptPromise setLocalDescription(ScriptState*,
                                     const RTCSessionDescriptionInit&);
   ScriptPromise setLocalDescription(ScriptState*,
                                     const RTCSessionDescriptionInit&,
-                                    VoidCallback*,
-                                    RTCPeerConnectionErrorCallback*);
+                                    V8VoidFunction*,
+                                    V8RTCPeerConnectionErrorCallback*);
   RTCSessionDescription* localDescription();
 
   ScriptPromise setRemoteDescription(ScriptState*,
                                      const RTCSessionDescriptionInit&);
   ScriptPromise setRemoteDescription(ScriptState*,
                                      const RTCSessionDescriptionInit&,
-                                     VoidCallback*,
-                                     RTCPeerConnectionErrorCallback*);
+                                     V8VoidFunction*,
+                                     V8RTCPeerConnectionErrorCallback*);
   RTCSessionDescription* remoteDescription();
 
   String signalingState() const;
@@ -129,8 +131,8 @@ class MODULES_EXPORT RTCPeerConnection final
                                 const RTCIceCandidateInitOrRTCIceCandidate&);
   ScriptPromise addIceCandidate(ScriptState*,
                                 const RTCIceCandidateInitOrRTCIceCandidate&,
-                                VoidCallback*,
-                                RTCPeerConnectionErrorCallback*);
+                                V8VoidFunction*,
+                                V8RTCPeerConnectionErrorCallback*);
 
   String iceGatheringState() const;
 
@@ -153,7 +155,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void removeStream(MediaStream*, ExceptionState&);
 
   ScriptPromise getStats(ScriptState*,
-                         RTCStatsCallback* success_callback,
+                         V8RTCStatsCallback* success_callback,
                          MediaStreamTrack* selector = nullptr);
   ScriptPromise getStats(ScriptState*);
 
