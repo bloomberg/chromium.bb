@@ -32,15 +32,11 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
  public:
   class Observer {
    public:
-    // Called when the installable check is complete.
-    virtual void OnDidDetermineWebApkCompatibility(
-        bool is_webapk_compatible) = 0;
-
     // Called when the homescreen icon title (and possibly information from the
-    // web manifest) is available. Will be called after
-    // OnDidDetermineWebApkCompatibility.
+    // web manifest) is available.
     virtual void OnUserTitleAvailable(const base::string16& title,
-                                      const GURL& url) = 0;
+                                      const GURL& url,
+                                      bool is_webapk_compatible) = 0;
 
     // Called when all the data needed to create a shortcut is available.
     virtual void OnDataAvailable(const ShortcutInfo& info,
@@ -57,7 +53,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   // |observer| must outlive AddToHomescreenDataFetcher.
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
                              int data_timeout_ms,
-                             bool check_webapk_compatible,
                              Observer* observer);
 
   ~AddToHomescreenDataFetcher() override;
@@ -111,8 +106,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
 
   const base::TimeDelta data_timeout_ms_;
 
-  // Indicates whether to check WebAPK compatibility.
-  bool check_webapk_compatibility_;
   bool is_waiting_for_manifest_;
 
   base::WeakPtrFactory<AddToHomescreenDataFetcher> weak_ptr_factory_;

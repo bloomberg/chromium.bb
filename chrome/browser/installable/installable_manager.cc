@@ -64,6 +64,23 @@ int GetIdealBadgeIconSizeInPx() {
 #endif
 }
 
+// Returns true if the overall security state of |web_contents| is sufficient to
+// be considered installable.
+bool IsContentSecure(content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+
+  // Whitelist localhost. Check the VisibleURL to match what the
+  // SecurityStateTabHelper looks at.
+  if (net::IsLocalhost(web_contents->GetVisibleURL().HostNoBracketsPiece()))
+    return true;
+
+  security_state::SecurityInfo security_info;
+  SecurityStateTabHelper::FromWebContents(web_contents)
+      ->GetSecurityInfo(&security_info);
+  return security_state::IsSslCertificateValid(security_info.security_level);
+}
+
 // Returns true if |manifest| specifies a PNG icon with IconPurpose::ANY and of
 // height and width >= kMinimumPrimaryIconSizeInPx (or size "any").
 bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
@@ -144,22 +161,6 @@ InstallableManager::~InstallableManager() {
   // Null in unit tests.
   if (service_worker_context_)
     service_worker_context_->RemoveObserver(this);
-}
-
-// static
-bool InstallableManager::IsContentSecure(content::WebContents* web_contents) {
-  if (!web_contents)
-    return false;
-
-  // Whitelist localhost. Check the VisibleURL to match what the
-  // SecurityStateTabHelper looks at.
-  if (net::IsLocalhost(web_contents->GetVisibleURL().HostNoBracketsPiece()))
-    return true;
-
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
-  return security_state::IsSslCertificateValid(security_info.security_level);
 }
 
 // static
