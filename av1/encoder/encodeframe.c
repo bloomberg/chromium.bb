@@ -3941,15 +3941,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #endif
 
   cpi->allow_comp_inter_inter = av1_is_compound_reference_allowed(cm);
-  if (cpi->allow_comp_inter_inter) {
-    cm->comp_fwd_ref[0] = LAST_FRAME;
-    cm->comp_fwd_ref[1] = LAST2_FRAME;
-    cm->comp_fwd_ref[2] = LAST3_FRAME;
-    cm->comp_fwd_ref[3] = GOLDEN_FRAME;
-    cm->comp_bwd_ref[0] = BWDREF_FRAME;
-    cm->comp_bwd_ref[1] = ALTREF2_FRAME;
-    cm->comp_bwd_ref[2] = ALTREF_FRAME;
-  }
 
   if (cpi->sf.frame_parameter_update) {
     int i;
