@@ -682,18 +682,20 @@ config("compiler_cpu_abi") {
       }
 
       if (mips_arch_variant == "r6") {
+        cflags += [ "-mno-odd-spreg" ]
+        ldflags += [ "-mips32r6" ]
         if (is_clang) {
-          cflags += [ "-march=mips32r6" ]
+          cflags += [
+            "-march=mipsel",
+            "-mcpu=mips32r6",
+          ]
         } else {
           cflags += [
             "-mips32r6",
             "-Wa,-mips32r6",
           ]
           if (is_android) {
-            ldflags += [
-              "-mips32r6",
-              "-Wl,-melf32ltsmip",
-            ]
+            ldflags += [ "-Wl,-melf32ltsmip" ]
           }
         }
         if (mips_use_msa == true) {
@@ -703,18 +705,12 @@ config("compiler_cpu_abi") {
           ]
         }
       } else if (mips_arch_variant == "r2") {
+        ldflags += [ "-mips32r2" ]
         if (is_clang) {
-          if (is_android) {
-            cflags += [
-              "-march=mipsel",
-              "-mcpu=mips32r2",
-            ]
-          } else {
-            cflags += [
-              "-march=mipsel",
-              "-mcpu=mips32r2",
-            ]
-          }
+          cflags += [
+            "-march=mipsel",
+            "-mcpu=mips32r2",
+          ]
         } else {
           cflags += [
             "-mips32r2",
@@ -725,18 +721,12 @@ config("compiler_cpu_abi") {
           }
         }
       } else if (mips_arch_variant == "r1") {
+        ldflags += [ "-mips32" ]
         if (is_clang) {
-          if (is_android) {
-            cflags += [
-              "-march=mipsel",
-              "-mcpu=mips32",
-            ]
-          } else {
-            cflags += [
-              "-march=mipsel",
-              "-mcpu=mips32",
-            ]
-          }
+          cflags += [
+            "-march=mipsel",
+            "-mcpu=mips32",
+          ]
         } else {
           cflags += [
             "-mips32",
