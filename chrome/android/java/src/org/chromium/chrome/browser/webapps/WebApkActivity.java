@@ -65,7 +65,7 @@ public class WebApkActivity extends WebappActivity {
     @Override
     protected void initializeUI(Bundle savedInstance) {
         super.initializeUI(savedInstance);
-        getActivityTab().setWebappManifestScope(mWebappInfo.scopeUri().toString());
+        getActivityTab().setWebappManifestScope(getWebappInfo().scopeUri().toString());
     }
 
     @Override
@@ -120,7 +120,7 @@ public class WebApkActivity extends WebappActivity {
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         super.onDeferredStartupWithStorage(storage);
 
-        WebApkInfo info = (WebApkInfo) mWebappInfo;
+        WebApkInfo info = (WebApkInfo) getWebappInfo();
         WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.apkPackageName());
 
         mUpdateManager = new WebApkUpdateManager(storage);

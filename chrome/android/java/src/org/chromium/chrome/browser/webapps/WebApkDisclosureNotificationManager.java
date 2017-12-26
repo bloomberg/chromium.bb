@@ -52,7 +52,7 @@ public class WebApkDisclosureNotificationManager {
         if (activityState == ActivityState.STARTED || activityState == ActivityState.RESUMED
                 || activityState == ActivityState.PAUSED) {
             sVisibleNotifications.add(packageName);
-            WebApkDisclosureNotificationManager.showDisclosure(activity.mWebappInfo);
+            WebApkDisclosureNotificationManager.showDisclosure(activity.getWebappInfo());
         }
     }
 
