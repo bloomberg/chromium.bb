@@ -33,9 +33,9 @@
 namespace blink {
 
 class EntryCallback;
-class ErrorCallback;
 class FileSystemCallback;
 class LocalDOMWindow;
+class V8ErrorCallback;
 
 class DOMWindowFileSystem {
   STATIC_ONLY(DOMWindowFileSystem);
@@ -45,11 +45,11 @@ class DOMWindowFileSystem {
                                       int type,
                                       long long size,
                                       FileSystemCallback*,
-                                      ErrorCallback*);
+                                      V8ErrorCallback*);
   static void webkitResolveLocalFileSystemURL(LocalDOMWindow&,
                                               const String&,
                                               EntryCallback*,
-                                              ErrorCallback*);
+                                              V8ErrorCallback*);
 
   // They are placed here and in all capital letters so they can be checked
   // against the constants in the IDL at compile time.

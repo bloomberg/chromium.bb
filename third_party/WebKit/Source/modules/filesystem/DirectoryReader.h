@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class ErrorCallback;
+class V8ErrorCallback;
 
 class DirectoryReader : public DirectoryReaderBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -52,7 +52,7 @@ class DirectoryReader : public DirectoryReaderBase {
 
   ~DirectoryReader() override;
 
-  void readEntries(EntriesCallback*, ErrorCallback* = nullptr);
+  void readEntries(EntriesCallback*, V8ErrorCallback* = nullptr);
 
   DOMFileSystem* Filesystem() const {
     return static_cast<DOMFileSystem*>(file_system_.Get());
@@ -74,7 +74,7 @@ class DirectoryReader : public DirectoryReaderBase {
   EntryHeapVector entries_;
   FileError::ErrorCode error_ = FileError::ErrorCode::kOK;
   Member<EntriesCallback> entries_callback_;
-  Member<ErrorCallback> error_callback_;
+  Member<V8ErrorCallback> error_callback_;
 };
 
 }  // namespace blink

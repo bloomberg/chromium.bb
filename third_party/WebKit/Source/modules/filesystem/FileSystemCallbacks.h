@@ -45,7 +45,6 @@ class DOMFileSystemBase;
 class DirectoryReaderBase;
 class EntriesCallback;
 class EntryCallback;
-class ErrorCallback;
 class ExecutionContext;
 class FileCallback;
 class FileMetadata;
@@ -53,6 +52,7 @@ class FileSystemCallback;
 class FileWriterBase;
 class FileWriterBaseCallback;
 class MetadataCallback;
+class V8ErrorCallback;
 class VoidCallback;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
@@ -101,15 +101,15 @@ class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
 // Wraps a script-provided callback for use in DOMFileSystem operations.
 class ScriptErrorCallback final : public ErrorCallbackBase {
  public:
-  static ScriptErrorCallback* Wrap(ErrorCallback*);
+  static ScriptErrorCallback* Wrap(V8ErrorCallback*);
   ~ScriptErrorCallback() override {}
   void Trace(blink::Visitor*) override;
 
   void Invoke(FileError::ErrorCode) override;
 
  private:
-  explicit ScriptErrorCallback(ErrorCallback*);
-  Member<ErrorCallback> callback_;
+  explicit ScriptErrorCallback(V8ErrorCallback*);
+  Member<V8ErrorCallback> callback_;
 };
 
 class EntryCallbacks final : public FileSystemCallbacksBase {
