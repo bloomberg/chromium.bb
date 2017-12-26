@@ -31,20 +31,53 @@ namespace {
 TEST_P(AV1Convolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(2)); }
 
 INSTANTIATE_TEST_CASE_P(
+    C_COPY, AV1Convolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_copy_c, 0, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1Convolve2DTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_convolve_2d_copy_sse2, 0, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    C_X, AV1Convolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_x_c, 1, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    SSE2_X, AV1Convolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_x_sse2, 1, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    C_Y, AV1Convolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_y_c, 0, 1, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    SSE2_Y, AV1Convolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_y_sse2, 0, 1, 1));
+
+INSTANTIATE_TEST_CASE_P(
     SSE2, AV1Convolve2DTest,
-    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_sse2));
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_sse2, 1, 1, 1));
+
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(
     AVX2, AV1Convolve2DTest,
-    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_avx2));
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_avx2, 1, 1, 1));
 #endif
 
 #if CONFIG_JNT_COMP && HAVE_SSE4_1
 TEST_P(AV1JntConvolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(2)); }
 
-INSTANTIATE_TEST_CASE_P(
-    SSE4_1, AV1JntConvolve2DTest,
-    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_2d_sse4_1));
+INSTANTIATE_TEST_CASE_P(C_COPY, AV1JntConvolve2DTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_jnt_convolve_2d_copy_c, 0, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1JntConvolve2DTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_jnt_convolve_2d_copy_sse2, 0, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(SSE4_1, AV1JntConvolve2DTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_jnt_convolve_2d_sse4_1, 1, 1, 1));
 #endif
 
 #if CONFIG_HIGHBITDEPTH && HAVE_SSSE3

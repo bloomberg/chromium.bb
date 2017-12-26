@@ -22,11 +22,13 @@ namespace libaom_test {
 namespace AV1Convolve2D {
 
 ::testing::internal::ParamGenerator<Convolve2DParam> BuildParams(
-    convolve_2d_func filter) {
+    convolve_2d_func filter, int has_subx, int has_suby, int is_compound) {
   const Convolve2DParam params[] = {
-    make_tuple(4, 4, filter),   make_tuple(8, 8, filter),
-    make_tuple(64, 64, filter), make_tuple(4, 16, filter),
-    make_tuple(32, 8, filter),
+    make_tuple(4, 4, filter, has_subx, has_suby, is_compound),
+    make_tuple(8, 8, filter, has_subx, has_suby, is_compound),
+    make_tuple(64, 64, filter, has_subx, has_suby, is_compound),
+    make_tuple(4, 16, filter, has_subx, has_suby, is_compound),
+    make_tuple(32, 8, filter, has_subx, has_suby, is_compound),
   };
   return ::testing::ValuesIn(params);
 }
@@ -40,6 +42,10 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
   const int w = 128, h = 128;
   const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
   int i, j, k;
+  const int has_subx = GET_PARAM(3);
+  const int has_suby = GET_PARAM(4);
+  const int is_compound = GET_PARAM(5);
+  (void)is_compound;
 
   uint8_t *input = new uint8_t[h * w];
 
@@ -63,8 +69,10 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
       ConvolveParams conv_params2 =
           get_conv_params_no_round(0, do_average, 0, output2, MAX_SB_SIZE, 1);
 
-      for (subx = 0; subx < 16; ++subx)
-        for (suby = 0; suby < 16; ++suby) {
+      const int subx_range = has_subx ? 16 : 1;
+      const int suby_range = has_suby ? 16 : 1;
+      for (subx = 0; subx < subx_range; ++subx)
+        for (suby = 0; suby < suby_range; ++suby) {
           // av1_convolve_2d is designed for accumulate two predicted blocks for
           // compound mode, so we set num_iter to two here.
           // A larger number may introduce overflow
@@ -111,6 +119,10 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
   const int w = 128, h = 128;
   const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
   int i, j, k, l, m;
+  const int has_subx = GET_PARAM(3);
+  const int has_suby = GET_PARAM(4);
+  const int is_compound = GET_PARAM(5);
+  (void)is_compound;
 
   uint8_t *input = new uint8_t[h * w];
 
@@ -138,8 +150,10 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
       conv_params1.use_jnt_comp_avg = 0;
       conv_params2.use_jnt_comp_avg = 0;
 
-      for (subx = 0; subx < 16; ++subx)
-        for (suby = 0; suby < 16; ++suby) {
+      const int subx_range = has_subx ? 16 : 1;
+      const int suby_range = has_suby ? 16 : 1;
+      for (subx = 0; subx < subx_range; ++subx)
+        for (suby = 0; suby < suby_range; ++suby) {
           // av1_convolve_2d is designed for accumulate two predicted blocks
           // for compound mode, so we set num_iter to two here.
           // A larger number may introduce overflow
@@ -179,8 +193,8 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
           conv_params2.fwd_offset = quant_dist_lookup_table[l][m][0];
           conv_params2.bck_offset = quant_dist_lookup_table[l][m][1];
 
-          for (subx = 0; subx < 16; ++subx)
-            for (suby = 0; suby < 16; ++suby) {
+          for (subx = 0; subx < subx_range; ++subx)
+            for (suby = 0; suby < suby_range; ++suby) {
               // av1_convolve_2d is designed for accumulate two predicted blocks
               // for compound mode, so we set num_iter to two here.
               // A larger number may introduce overflow

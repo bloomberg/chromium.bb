@@ -31,10 +31,11 @@ typedef void (*convolve_2d_func)(const uint8_t *src, int src_stride,
                                  const int subpel_x_q4, const int subpel_y_q4,
                                  ConvolveParams *conv_params);
 
-typedef std::tr1::tuple<int, int, convolve_2d_func> Convolve2DParam;
+typedef std::tr1::tuple<int, int, convolve_2d_func, int, int, int>
+    Convolve2DParam;
 
 ::testing::internal::ParamGenerator<Convolve2DParam> BuildParams(
-    convolve_2d_func filter);
+    convolve_2d_func filter, int subx_exist, int suby_exist, int is_compound);
 
 class AV1Convolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
