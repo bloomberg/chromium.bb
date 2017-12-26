@@ -96,8 +96,9 @@ const CGFloat kMaxFloatDelta = 0.01;
       return currentRequest;
     }
 
-    CGRect tabContentArea = UIEdgeInsetsInsetRect(
-        [tab.webState->GetView() bounds], [tab snapshotEdgeInsets]);
+    CGRect tabContentArea =
+        UIEdgeInsetsInsetRect([tab.webState->GetView() bounds],
+                              [tab snapshotEdgeInsetsForWebState:tab.webState]);
     CGFloat tabContentAreaRatio =
         tabContentArea.size.width / tabContentArea.size.height;
     CGFloat cachedSnapshotRatio =

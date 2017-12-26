@@ -14,11 +14,16 @@
   return nil;
 }
 
-- (UIEdgeInsets)snapshotEdgeInsets {
+- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
+  return YES;
+}
+
+- (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {
   return UIEdgeInsetsZero;
 }
 
-- (NSArray<SnapshotOverlay*>*)snapshotOverlays {
+- (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
+    (web::WebState*)webState {
   return nil;
 }
 

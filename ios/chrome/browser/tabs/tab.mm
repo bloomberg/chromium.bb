@@ -1048,7 +1048,13 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   return [CRWWebController defaultSnapshotImage];
 }
 
-- (UIEdgeInsets)snapshotEdgeInsets {
+- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
+  DCHECK_EQ(_webStateImpl, webState);
+  return webState->CanTakeSnapshot();
+}
+
+- (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {
+  DCHECK_EQ(_webStateImpl, webState);
   if (self.tabSnapshottingDelegate)
     return [self.tabSnapshottingDelegate snapshotEdgeInsetsForTab:self];
 
@@ -1060,7 +1066,9 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   return UIEdgeInsetsZero;
 }
 
-- (NSArray<SnapshotOverlay*>*)snapshotOverlays {
+- (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
+    (web::WebState*)webState {
+  DCHECK_EQ(_webStateImpl, webState);
   return [snapshotOverlayProvider_ snapshotOverlaysForTab:self];
 }
 

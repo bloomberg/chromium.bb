@@ -63,8 +63,6 @@ class SnapshotTabHelper : public web::WebStateObserver,
   void RemoveSnapshot();
 
  private:
-  friend class web::WebStateUserData<SnapshotTabHelper>;
-
   SnapshotTabHelper(web::WebState* web_state, NSString* session_id);
 
   // web::WebStateObserver implementation.

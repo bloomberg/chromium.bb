@@ -195,7 +195,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
   UIImage* snapshotToCache = snapshot;
   if (!visibleFrameOnly) {
-    UIEdgeInsets insets = [_delegate snapshotEdgeInsets];
+    UIEdgeInsets insets = [_delegate snapshotEdgeInsetsForWebState:_webState];
     if (!UIEdgeInsetsEqualToEdgeInsets(insets, UIEdgeInsetsZero)) {
       CGRect cropRect =
           UIEdgeInsetsInsetRect(CGRect{CGPointZero, [snapshot size]}, insets);
@@ -210,13 +210,20 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay
                         visibleFrameOnly:(BOOL)visibleFrameOnly {
-  if (!_webState->CanTakeSnapshot())
+  // Do not generate a snapshot if web usage is disabled (as the WebState's
+  // view is blank in that case).
+  if (!_webState->IsWebUsageEnabled())
+    return nil;
+
+  // Do not generate a snapshot if the delegate says the WebState view is
+  // not ready (this generally mean a placeholder is displayed).
+  if (_delegate && ![_delegate canTakeSnapshotForWebState:_webState])
     return nil;
 
   UIView* view = _webState->GetView();
   CGRect bounds = [view bounds];
   if (visibleFrameOnly) {
-    UIEdgeInsets insets = [_delegate snapshotEdgeInsets];
+    UIEdgeInsets insets = [_delegate snapshotEdgeInsetsForWebState:_webState];
     bounds = UIEdgeInsetsInsetRect(bounds, insets);
   }
 
@@ -224,7 +231,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     return nil;
 
   NSArray<SnapshotOverlay*>* overlays =
-      shouldAddOverlay ? [_delegate snapshotOverlays] : nil;
+      shouldAddOverlay ? [_delegate snapshotOverlaysForWebState:_webState]
+                       : nil;
   UIImage* snapshot =
       [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
                                             visibleFrameOnly:visibleFrameOnly];
