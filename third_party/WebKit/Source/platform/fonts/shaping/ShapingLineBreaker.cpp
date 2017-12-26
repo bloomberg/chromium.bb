@@ -111,11 +111,11 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
                                        unsigned start,
                                        bool backwards,
                                        bool* is_hyphenated) const {
+  DCHECK(is_hyphenated && !*is_hyphenated);
   const String& text = GetText();
   unsigned word_end = break_iterator_->NextBreakOpportunity(offset);
   if (word_end == offset) {
     DCHECK_EQ(offset, break_iterator_->PreviousBreakOpportunity(offset, start));
-    *is_hyphenated = false;
     return word_end;
   }
   unsigned previous_break_opportunity =
@@ -134,7 +134,6 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
       return word_start + prefix_length;
     }
   }
-  *is_hyphenated = false;
   return backwards ? previous_break_opportunity : word_end;
 }
 
@@ -142,6 +141,7 @@ unsigned ShapingLineBreaker::PreviousBreakOpportunity(
     unsigned offset,
     unsigned start,
     bool* is_hyphenated) const {
+  DCHECK(is_hyphenated && !*is_hyphenated);
   if (UNLIKELY(!IsSoftHyphenEnabled())) {
     const String& text = GetText();
     for (;; offset--) {
@@ -161,6 +161,7 @@ unsigned ShapingLineBreaker::PreviousBreakOpportunity(
 unsigned ShapingLineBreaker::NextBreakOpportunity(unsigned offset,
                                                   unsigned start,
                                                   bool* is_hyphenated) const {
+  DCHECK(is_hyphenated && !*is_hyphenated);
   if (UNLIKELY(!IsSoftHyphenEnabled())) {
     const String& text = GetText();
     for (;; offset++) {
@@ -324,7 +325,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
           break;
         // Doesn't fit after the reshape. Try previous break opportunity, or
         // overflow if there were none.
-        bool is_previous_break_opportunity_hyphenated;
+        bool is_previous_break_opportunity_hyphenated = false;
         unsigned previous_break_opportunity =
             PreviousBreakOpportunity(break_opportunity - 1, start,
                                      &is_previous_break_opportunity_hyphenated);
