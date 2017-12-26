@@ -293,10 +293,14 @@ FloatRoundedRect BoxPainterBase::BackgroundRoundedRectAdjustedForBleedAvoidance(
       }
     }
 
-    FloatRectOutsets insets(-fractional_inset * edges[kBSTop].Width(),
-                            -fractional_inset * edges[kBSRight].Width(),
-                            -fractional_inset * edges[kBSBottom].Width(),
-                            -fractional_inset * edges[kBSLeft].Width());
+    FloatRectOutsets insets(
+        -fractional_inset * edges[static_cast<unsigned>(BoxSide::kTop)].Width(),
+        -fractional_inset *
+            edges[static_cast<unsigned>(BoxSide::kRight)].Width(),
+        -fractional_inset *
+            edges[static_cast<unsigned>(BoxSide::kBottom)].Width(),
+        -fractional_inset *
+            edges[static_cast<unsigned>(BoxSide::kLeft)].Width());
 
     FloatRoundedRect background_rounded_rect = GetBackgroundRoundedRect(
         border_rect, include_logical_left_edge, include_logical_right_edge);

@@ -1959,7 +1959,8 @@ bool ComputedStyle::BorderObscuresBackground() const {
   BorderEdge edges[4];
   GetBorderEdgeInfo(edges);
 
-  for (int i = kBSTop; i <= kBSLeft; ++i) {
+  for (unsigned int i = static_cast<unsigned>(BoxSide::kTop);
+       i <= static_cast<unsigned>(BoxSide::kLeft); ++i) {
     const BorderEdge& curr_edge = edges[i];
     if (!curr_edge.ObscuresBackground())
       return false;
@@ -1973,21 +1974,21 @@ void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
                                       bool include_logical_right_edge) const {
   bool horizontal = IsHorizontalWritingMode();
 
-  edges[kBSTop] = BorderEdge(
+  edges[static_cast<unsigned>(BoxSide::kTop)] = BorderEdge(
       BorderTopWidth(), VisitedDependentColor(GetCSSPropertyBorderTopColor()),
       BorderTopStyle(), horizontal || include_logical_left_edge);
 
-  edges[kBSRight] =
+  edges[static_cast<unsigned>(BoxSide::kRight)] =
       BorderEdge(BorderRightWidth(),
                  VisitedDependentColor(GetCSSPropertyBorderRightColor()),
                  BorderRightStyle(), !horizontal || include_logical_right_edge);
 
-  edges[kBSBottom] =
+  edges[static_cast<unsigned>(BoxSide::kBottom)] =
       BorderEdge(BorderBottomWidth(),
                  VisitedDependentColor(GetCSSPropertyBorderBottomColor()),
                  BorderBottomStyle(), horizontal || include_logical_right_edge);
 
-  edges[kBSLeft] = BorderEdge(
+  edges[static_cast<unsigned>(BoxSide::kLeft)] = BorderEdge(
       BorderLeftWidth(), VisitedDependentColor(GetCSSPropertyBorderLeftColor()),
       BorderLeftStyle(), !horizontal || include_logical_left_edge);
 }

@@ -362,29 +362,31 @@ void CollapsedBorderPainter::PaintCollapsedBorders(
     ObjectPainter::DrawLineForBoxSide(
         context, rect.X() - before_.begin_outset,
         rect.Y() - before_.outer_width, rect.MaxX() + before_.end_outset,
-        rect.Y() + before_.inner_width, kBSTop, before_.value->GetColor(),
-        CollapsedBorderStyle(before_.value->Style()), 0, 0, true);
+        rect.Y() + before_.inner_width, BoxSide::kTop,
+        before_.value->GetColor(), CollapsedBorderStyle(before_.value->Style()),
+        0, 0, true);
   }
   if (after_.value) {
     ObjectPainter::DrawLineForBoxSide(
         context, rect.X() - after_.begin_outset,
         rect.MaxY() - after_.inner_width, rect.MaxX() + after_.end_outset,
-        rect.MaxY() + after_.outer_width, kBSBottom, after_.value->GetColor(),
-        CollapsedBorderStyle(after_.value->Style()), 0, 0, true);
+        rect.MaxY() + after_.outer_width, BoxSide::kBottom,
+        after_.value->GetColor(), CollapsedBorderStyle(after_.value->Style()),
+        0, 0, true);
   }
   if (start_.value) {
     ObjectPainter::DrawLineForBoxSide(
         context, rect.X() - start_.outer_width, rect.Y() - start_.begin_outset,
-        rect.X() + start_.inner_width, rect.MaxY() + start_.end_outset, kBSLeft,
-        start_.value->GetColor(), CollapsedBorderStyle(start_.value->Style()),
-        0, 0, true);
+        rect.X() + start_.inner_width, rect.MaxY() + start_.end_outset,
+        BoxSide::kLeft, start_.value->GetColor(),
+        CollapsedBorderStyle(start_.value->Style()), 0, 0, true);
   }
   if (end_.value) {
     ObjectPainter::DrawLineForBoxSide(
         context, rect.MaxX() - end_.inner_width, rect.Y() - end_.begin_outset,
-        rect.MaxX() + end_.outer_width, rect.MaxY() + end_.end_outset, kBSRight,
-        end_.value->GetColor(), CollapsedBorderStyle(end_.value->Style()), 0, 0,
-        true);
+        rect.MaxX() + end_.outer_width, rect.MaxY() + end_.end_outset,
+        BoxSide::kRight, end_.value->GetColor(),
+        CollapsedBorderStyle(end_.value->Style()), 0, 0, true);
   }
 }
 
