@@ -854,7 +854,6 @@ interface CSSURLImageValue : CSSImageValue
     method constructor
 interface CSSUnitValue : CSSNumericValue
     attribute @@toStringTag
-    getter type
     getter unit
     getter value
     method constructor

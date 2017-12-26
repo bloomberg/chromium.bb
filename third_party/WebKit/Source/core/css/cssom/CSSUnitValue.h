@@ -33,7 +33,6 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   double value() const { return value_; }
   void setUnit(const String& new_unit, ExceptionState&);
   String unit() const;
-  String type() const;
 
   // Internal methods.
   CSSPrimitiveValue::UnitType GetInternalUnit() const { return unit_; }
