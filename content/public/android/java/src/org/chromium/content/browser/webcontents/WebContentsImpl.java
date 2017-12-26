@@ -728,7 +728,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         return userDataMap != null ? userDataMap.get(key) : null;
     }
 
-    private Map<Class, WebContentsUserData> getUserDataMap() {
+    /**
+     * Note: This should be only called by {@link WebContentsUserData}.
+     * @return {@code UserDataMap} that contains internal user data. {@code null} if
+     *         the map is already gc'ed.
+     */
+    Map<Class, WebContentsUserData> getUserDataMap() {
         WebContentsInternals internals = mInternalsHolder.get();
         if (internals == null) return null;
         return ((WebContentsInternalsImpl) internals).userDataMap;

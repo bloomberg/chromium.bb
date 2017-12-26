@@ -530,10 +530,13 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     @CalledByNative
     private void destroy() {
         mDrawableObserverList.removeObserver(this);
-        if (mContentViewCore == null) return;
+        if (mWebContents == null) return;
         hide();
 
-        GestureListenerManager.fromWebContents(mWebContents).removeListener(mGestureStateListener);
+        GestureListenerManager gestureManager =
+                GestureListenerManager.fromWebContents(mWebContents);
+        if (gestureManager != null) gestureManager.removeListener(mGestureStateListener);
+
         mContentViewCore = null;
         mWebContents = null;
     }

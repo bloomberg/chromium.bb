@@ -6,6 +6,8 @@ package org.chromium.content.browser.webcontents;
 
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.Map;
+
 /**
  * Holds an object to be stored in {@code userDataMap} in {@link WebContents} for those
  * classes that have the lifetime of {@link WebContents} without hanging directly onto it.
@@ -65,7 +67,12 @@ public final class WebContentsUserData {
             WebContents webContents, Class<T> key, UserDataFactory<T> userDataFactory) {
         // Casting to WebContentsImpl is safe since it's the actual implementation.
         WebContentsImpl webContentsImpl = (WebContentsImpl) webContents;
-        WebContentsUserData data = webContentsImpl.getUserData(key);
+        Map<Class, WebContentsUserData> userDataMap = webContentsImpl.getUserDataMap();
+
+        // Map can be null after WebView gets gc'ed on it wasy to destruction.
+        if (userDataMap == null) return null;
+
+        WebContentsUserData data = userDataMap.get(key);
         if (data == null) {
             T object = userDataFactory.create(webContents);
             assert object.getClass() == key;
@@ -75,6 +82,6 @@ public final class WebContentsUserData {
             data = webContentsImpl.getUserData(key);
         }
         // Casting Object to T is safe since we make sure the object was of type T upon creation.
-        return (T) data.mObject;
+        return data != null ? (T) data.mObject : null;
     }
 }
