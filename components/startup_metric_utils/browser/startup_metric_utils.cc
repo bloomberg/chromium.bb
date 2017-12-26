@@ -443,13 +443,6 @@ void AddStartupEventsForTelemetry()
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "startup", "Startup.BrowserMainEntryPoint", 0,
       g_browser_main_entry_point_ticks.Get());
-
-  if (!g_process_creation_ticks.Get().is_null())
-  {
-    TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
-        "startup", "Startup.BrowserProcessCreation", 0,
-        g_process_creation_ticks.Get());
-  }
 }
 
 // Logs the Startup.TimeSinceLastStartup histogram. Obtains the timestamp of the
