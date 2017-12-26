@@ -671,10 +671,13 @@ typedef enum ATTRIBUTE_PACKED {
 
 #if CONFIG_NEW_QUANT
 typedef enum ATTRIBUTE_PACKED {
-  DQ_MULT_OFFSET,
-  DQ_MULT_OFFSET_DZ,
+  DQ_MULT,          // Dequant is just multiplication
+  DQ_MULT_OFFSET1,  // Dequant is multiplication and offset1
+  DQ_MULT_OFFSET2,  // Dequant is multiplication and offset2
+  DQ_MULT_OFFSET3,  // Dequant is multiplication and offset3
   DQ_TYPES
 } DqType;
+#define DQ_TYPE_BITS 2
 #endif  // CONFIG_NEW_QUANT
 
 #ifdef __cplusplus

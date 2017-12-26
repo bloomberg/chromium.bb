@@ -3058,9 +3058,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   setup_segmentation_dequant(cm);
 #if CONFIG_NEW_QUANT
   if (!cm->all_lossless) {
-    cm->dq_type = aom_rb_read_bit(rb);
+    cm->dq_type = aom_rb_read_literal(rb, DQ_TYPE_BITS);
   } else {
-    cm->dq_type = DQ_MULT_OFFSET;
+    cm->dq_type = DQ_MULT;
   }
 #endif  // CONFIG_NEW_QUANT
   if (!cm->all_lossless) {

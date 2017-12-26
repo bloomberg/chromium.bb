@@ -17,7 +17,8 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 
-// Setting this to 1 will disable trellis optimization within the
+// Setting this to 1 will disable trellis optimization completely.
+// Setting this to 2 will disable trellis optimization within the
 // transform search. Trellis optimization will still be applied
 // in the final encode.
 #define DISABLE_TRELLISQ_SEARCH 0
@@ -433,10 +434,12 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->mv.subpel_search_method = SUBPEL_TREE;
   sf->mv.subpel_iters_per_step = 2;
   sf->mv.subpel_force_stop = 0;
-#if DISABLE_TRELLISQ_SEARCH
+#if DISABLE_TRELLISQ_SEARCH == 2
   sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
                                   ? FINAL_PASS_TRELLIS_OPT
                                   : NO_TRELLIS_OPT;
+#elif DISABLE_TRELLISQ_SEARCH == 1
+  sf->optimize_coefficients = NO_TRELLIS_OPT;
 #else
   sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf);
 #endif  // DISABLE_TRELLISQ_SEARCH

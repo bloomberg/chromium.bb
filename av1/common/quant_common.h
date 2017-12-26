@@ -60,7 +60,7 @@ qm_val_t *aom_qmatrix(struct AV1Common *cm, int qindex, int comp,
 
 #if CONFIG_NEW_QUANT
 
-#define QUANT_PROFILES 9
+#define QUANT_PROFILES ((DQ_TYPES - 1) * 8 + 1)
 #define QUANT_RANGES 2
 #define NUQ_KNOTS 1
 
@@ -81,15 +81,24 @@ static INLINE int get_dq_profile(DqType dqtype, int qindex, int is_inter,
   static const int
       dq_profile_lookup[DQ_TYPES][REF_TYPES][PLANE_TYPES][QUANT_RANGES] = {
         {
-            { { 2, 1 }, { 2, 1 } },  // intra: Y, UV
-            { { 4, 3 }, { 4, 3 } },  // inter: Y, UV
+            { { 0, 0 }, { 0, 0 } },  // intra: Y, UV
+            { { 0, 0 }, { 0, 0 } },  // inter: Y, UV
         },
         {
-            { { 6, 5 }, { 6, 5 } },  // intra: Y, UV
-            { { 8, 7 }, { 8, 7 } },  // inter: Y, UV
+            { { 1, 2 }, { 3, 4 } },  // intra: Y, UV
+            { { 5, 6 }, { 7, 8 } },  // inter: Y, UV
+        },
+        {
+            { { 9, 10 }, { 11, 12 } },   // intra: Y, UV
+            { { 13, 14 }, { 15, 16 } },  // inter: Y, UV
+        },
+        {
+            { { 17, 18 }, { 19, 20 } },  // intra: Y, UV
+            { { 21, 22 }, { 23, 24 } },  // inter: Y, UV
         },
       };
   if (!qindex) return 0;  // lossless
+  if (!dqtype) return 0;  // DQ_MULT
   return dq_profile_lookup[dqtype][is_inter][plane_type]
                           [qindex_to_qrange(qindex)];
 }

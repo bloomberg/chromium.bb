@@ -4099,7 +4099,11 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // rather than the potential full set of 16 transforms
   cm->reduced_tx_set_used = 0;
 #if CONFIG_NEW_QUANT
-  cm->dq_type = cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT;
+  switch (cpi->sf.optimize_coefficients) {
+    case NO_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET3; break;
+    case FINAL_PASS_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET2; break;
+    case FULL_TRELLIS_OPT: cm->dq_type = DQ_MULT_OFFSET1; break;
+  }
 #endif  // CONFIG_NEW_QUANT
 
 #if CONFIG_FRAME_MARKER
