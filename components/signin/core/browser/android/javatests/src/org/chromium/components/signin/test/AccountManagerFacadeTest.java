@@ -5,7 +5,6 @@
 package org.chromium.components.signin.test;
 
 import android.accounts.Account;
-import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -16,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -67,42 +65,6 @@ public class AccountManagerFacadeTest {
     }
 
     @Test
-    @MediumTest
-    public void testGetAccountsMultipleAccounts() throws AccountManagerDelegateException {
-        Assert.assertArrayEquals(new Account[] {}, mFacade.getGoogleAccounts());
-
-        Account account = addTestAccount("test@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
-
-        Account account2 = addTestAccount("test2@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
-
-        Account account3 = addTestAccount("test3@gmail.com");
-        Assert.assertArrayEquals(
-                new Account[] {account, account2, account3}, mFacade.getGoogleAccounts());
-
-        removeTestAccount(account2);
-        Assert.assertArrayEquals(new Account[] {account, account3}, mFacade.getGoogleAccounts());
-    }
-
-    @Test
-    @MediumTest
-    public void testGetAccountsChildAccountFiltering() throws AccountManagerDelegateException {
-        Account account = addTestAccount("test@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
-
-        Account childAccount = addChildTestAccount("child@gmail.com");
-        Assert.assertArrayEquals(new Account[] {childAccount}, mFacade.getGoogleAccounts());
-
-        Account account2 = addTestAccount("test2@gmail.com");
-        Assert.assertArrayEquals(new Account[] {childAccount}, mFacade.getGoogleAccounts());
-
-        // If child account is gone, non-child accounts should be exposed again
-        removeTestAccount(childAccount);
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
-    }
-
-    @Test
     @SmallTest
     public void testProfileDataSource() throws Throwable {
         String accountName = "test@gmail.com";
@@ -129,20 +91,5 @@ public class AccountManagerFacadeTest {
         AccountHolder holder = AccountHolder.builder(account).alwaysAccept(true).build();
         mDelegate.addAccountHolderBlocking(holder);
         return account;
-    }
-
-    private Account addChildTestAccount(String accountName) {
-        Account account = AccountManagerFacade.createAccountFromName(accountName);
-        AccountHolder holder =
-                AccountHolder.builder(account)
-                        .alwaysAccept(true)
-                        .addFeature(AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY)
-                        .build();
-        mDelegate.addAccountHolderBlocking(holder);
-        return account;
-    }
-
-    private void removeTestAccount(Account account) {
-        mDelegate.removeAccountHolderBlocking(AccountHolder.builder(account).build());
     }
 }
