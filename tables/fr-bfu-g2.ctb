@@ -340,6 +340,8 @@ nofor always eu- 5-36
 noback before con midword eur 46
 endword eur 46
 nofor after con midendword eurs 46-234
+nofor midendword ueur 136-46
+nofor midendword oueur 1256-46
 nofor midendword yeur 13456-46
 nofor midword eurd 46-145
 nofor midword eurn 46-1345
@@ -758,7 +760,7 @@ nofor begword retranscr 3-356-25
 nofor begword retransgr 3-356-12456
 nofor begword retranspl 3-356-1246
 
-before con begword incom 35-36
+nofor before con begword incom 35-36
 nofor before bmpabr begword incom 35-36
 
 before con begword indis 35-256
@@ -1195,6 +1197,7 @@ word complète		36-2345
 word incomplète 35-36-2345
 prfword complètes		36-2345-234
 prfword complètement	36-2345-134
+nofor word incomplètement 35-36-2345-134
 word conclusion		25-14
 word conclusions	25-14-234
 word condition		25-145
@@ -4644,8 +4647,8 @@ nofor correct $l[""]"(" ?
 
 #opérations mathématiques
 #"-" dans une opération
-nofor pass4 [@6-36]$l @78
-nofor pass4 $l[@6-36] @78-6
+nofor pass4 [@6-36]%bmp @78
+#nofor pass4 $l[@6-36] @78-6
 #nofor pass4 $dms$d[@36]$d$dms @78
 nofor pass4 [@6-36]$d @78-6
 nofor context @78 "-"
