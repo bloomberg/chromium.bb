@@ -25526,6 +25526,7 @@ from previous Chrome versions.
   <int value="-110465424" label="PictureInPicture:enabled"/>
   <int value="-108881882" label="NTPCondensedTileLayout:enabled"/>
   <int value="-102537270" label="extension-content-verification"/>
+  <int value="-102227288" label="PasswordExport:disabled"/>
   <int value="-99781021" label="disable-roboto-font-ui"/>
   <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
   <int value="-88822940" label="ssl-version-min"/>
@@ -25682,6 +25683,7 @@ from previous Chrome versions.
   <int value="367063319" label="PasswordImport:disabled"/>
   <int value="368854020" label="ash-screen-rotation-animation"/>
   <int value="369352033" label="GenericSensorExtraClasses:enabled"/>
+  <int value="369635818" label="PasswordExport:enabled"/>
   <int value="370486304" label="enable-origin-chip-on-srp"/>
   <int value="371268743" label="OmniboxUIExperimentVerticalMargin:disabled"/>
   <int value="372460068" label="QuickUnlockFingerprint:disabled"/>

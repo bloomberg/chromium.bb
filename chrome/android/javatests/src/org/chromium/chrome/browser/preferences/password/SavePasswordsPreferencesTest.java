@@ -278,7 +278,7 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("password-export")
+    @EnableFeatures("PasswordExport")
     public void testExportMenuDisabled() throws Exception {
         // Ensure there are no saved passwords reported to settings.
         setPasswordSource(null);
@@ -304,7 +304,7 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("password-export")
+    @EnableFeatures("PasswordExport")
     public void testExportMenuEnabled() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
@@ -324,7 +324,7 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Check that if "password-export" feature is not explicitly enabled, there is no menu item to
+     * Check that if "PasswordExport" feature is not explicitly enabled, there is no menu item to
      * export passwords.
      * TODO(crbug.com/788701): Add the @DisableFeatures annotation once exporting gets enabled by
      * default, and remove completely once the feature is gone.
@@ -355,7 +355,7 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("password-export")
+    @EnableFeatures("PasswordExport")
     @DisabledTest(message = "crbug.com/796939")
     public void testExportMenuItem() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
@@ -386,7 +386,7 @@ public class SavePasswordsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures("password-export")
+    @EnableFeatures("PasswordExport")
     @DisabledTest(message = "crbug.com/796939")
     public void testExportMenuItemNoLock() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
