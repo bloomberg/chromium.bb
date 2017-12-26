@@ -36,7 +36,7 @@ static INLINE int quantize_coeff_nuq(
   int i, q;
   int tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
   for (i = 0; i < NUQ_KNOTS; i++) {
-    if (tmp < cuml_bins_ptr[i]) {
+    if (tmp <= cuml_bins_ptr[i]) {
       q = i;
       break;
     }
@@ -67,7 +67,7 @@ static INLINE int quantize_coeff_bigtx_nuq(
   int i, q;
   int tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
   for (i = 0; i < NUQ_KNOTS; i++) {
-    if (tmp < ROUND_POWER_OF_TWO(cuml_bins_ptr[i], logsizeby16)) {
+    if (tmp <= ROUND_POWER_OF_TWO(cuml_bins_ptr[i], logsizeby16)) {
       q = i;
       break;
     }
@@ -1002,7 +1002,7 @@ static INLINE int highbd_quantize_coeff_nuq(
   int i, q;
   int64_t tmp = clamp(abs_coeff, INT32_MIN, INT32_MAX);
   for (i = 0; i < NUQ_KNOTS; i++) {
-    if (tmp < cuml_bins_ptr[i]) {
+    if (tmp <= cuml_bins_ptr[i]) {
       q = i;
       break;
     }
@@ -1032,7 +1032,7 @@ static INLINE int highbd_quantize_coeff_fp_nuq(
   int i, q;
   int64_t tmp = clamp(abs_coeff, INT32_MIN, INT32_MAX);
   for (i = 0; i < NUQ_KNOTS; i++) {
-    if (tmp < cuml_bins_ptr[i]) {
+    if (tmp <= cuml_bins_ptr[i]) {
       q = i;
       break;
     }
@@ -1061,7 +1061,7 @@ static INLINE int highbd_quantize_coeff_bigtx_fp_nuq(
   int i, q;
   int64_t tmp = clamp(abs_coeff, INT32_MIN, INT32_MAX);
   for (i = 0; i < NUQ_KNOTS; i++) {
-    if (tmp < ROUND_POWER_OF_TWO(cuml_bins_ptr[i], logsizeby16)) {
+    if (tmp <= ROUND_POWER_OF_TWO(cuml_bins_ptr[i], logsizeby16)) {
       q = i;
       break;
     }
@@ -1096,7 +1096,7 @@ static INLINE int highbd_quantize_coeff_bigtx_nuq(
   int i, q;
   int64_t tmp = clamp(abs_coeff, INT32_MIN, INT32_MAX);
   for (i = 0; i < NUQ_KNOTS; i++) {
-    if (tmp < ROUND_POWER_OF_TWO(cuml_bins_ptr[i], logsizeby16)) {
+    if (tmp <= ROUND_POWER_OF_TWO(cuml_bins_ptr[i], logsizeby16)) {
       q = i;
       break;
     }
