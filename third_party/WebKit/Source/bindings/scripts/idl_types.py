@@ -87,8 +87,6 @@ STRING_TYPES = frozenset([
 STANDARD_CALLBACK_FUNCTIONS = frozenset([
     # http://heycam.github.io/webidl/#common-Function
     'Function',
-    # http://heycam.github.io/webidl/#common-VoidFunction
-    'VoidFunction',
 ])
 
 
