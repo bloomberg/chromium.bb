@@ -47,7 +47,6 @@ let resolutionUnits = [
 function validateUnitValue(unitValue, value, unit, type, cssText) {
   assert_equals(unitValue.value, value, 'value');
   assert_equals(unitValue.unit, unit, 'unit');
-  assert_equals(unitValue.type, type, 'type');
 }
 
 function generateTests(unitList, typeString) {

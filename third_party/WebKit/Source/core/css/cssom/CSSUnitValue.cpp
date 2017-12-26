@@ -78,10 +78,6 @@ String CSSUnitValue::unit() const {
   return CSSPrimitiveValue::UnitTypeToString(unit_);
 }
 
-String CSSUnitValue::type() const {
-  return StyleValueTypeToString(GetType());
-}
-
 CSSStyleValue::StyleValueType CSSUnitValue::GetType() const {
   if (unit_ == CSSPrimitiveValue::UnitType::kNumber)
     return StyleValueType::kNumberType;

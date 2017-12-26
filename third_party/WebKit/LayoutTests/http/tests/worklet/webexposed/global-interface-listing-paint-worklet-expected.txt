@@ -122,7 +122,6 @@ CONSOLE MESSAGE: line 147: interface CSSURLImageValue : CSSImageValue
 CONSOLE MESSAGE: line 147:     getter url
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSUnitValue : CSSNumericValue
-CONSOLE MESSAGE: line 147:     getter type
 CONSOLE MESSAGE: line 147:     getter unit
 CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
@@ -419,7 +418,6 @@ CONSOLE MESSAGE: line 147: interface CSSURLImageValue : CSSImageValue
 CONSOLE MESSAGE: line 147:     getter url
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSUnitValue : CSSNumericValue
-CONSOLE MESSAGE: line 147:     getter type
 CONSOLE MESSAGE: line 147:     getter unit
 CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
