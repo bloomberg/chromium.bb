@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/shortcut_helper.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -94,17 +93,11 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
   // Icon generation depends on having a valid visible URL.
   DCHECK(web_contents->GetVisibleURL().is_valid());
 
-  bool check_webapk_compatible = false;
-  if (ChromeWebApkHost::CanInstallWebApk() &&
-      InstallableManager::IsContentSecure(web_contents)) {
-    check_webapk_compatible = true;
-  }
-
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AddToHomescreenManager_showDialog(env, java_ref_);
 
   data_fetcher_ = base::MakeUnique<AddToHomescreenDataFetcher>(
-      web_contents, kDataTimeoutInMilliseconds, check_webapk_compatible, this);
+      web_contents, kDataTimeoutInMilliseconds, this);
 }
 
 AddToHomescreenManager::~AddToHomescreenManager() {}
@@ -123,14 +116,12 @@ void AddToHomescreenManager::RecordAddToHomescreen() {
       base::Time::Now());
 }
 
-void AddToHomescreenManager::OnDidDetermineWebApkCompatibility(
-    bool is_webapk_compatible) {
-  is_webapk_compatible_ = is_webapk_compatible;
-}
-
 void AddToHomescreenManager::OnUserTitleAvailable(
     const base::string16& user_title,
-    const GURL& url) {
+    const GURL& url,
+    bool is_webapk_compatible) {
+  is_webapk_compatible_ = is_webapk_compatible;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_user_title =
       base::android::ConvertUTF16ToJavaString(env, user_title);

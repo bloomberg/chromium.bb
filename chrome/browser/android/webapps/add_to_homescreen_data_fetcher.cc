@@ -12,6 +12,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/installable/installable_manager.h"
@@ -42,21 +43,20 @@ GURL GetShortcutUrl(const content::WebContents* web_contents) {
       web_contents->GetVisibleURL());
 }
 
-InstallableParams ParamsToPerformManifestAndIconFetch(
-    bool check_webapk_compatibility) {
+InstallableParams ParamsToPerformManifestAndIconFetch() {
   InstallableParams params;
   params.valid_primary_icon = true;
-  params.valid_badge_icon = check_webapk_compatibility;
+  params.valid_badge_icon = true;
   params.wait_for_worker = true;
   return params;
 }
 
-InstallableParams ParamsToPerformInstallableCheck(
-    bool check_webapk_compatibility) {
+InstallableParams ParamsToPerformInstallableCheck() {
   InstallableParams params;
-  params.valid_manifest = check_webapk_compatibility;
-  params.has_worker = check_webapk_compatibility;
-  params.valid_primary_icon = check_webapk_compatibility;
+  params.check_eligibility = true;
+  params.valid_manifest = true;
+  params.has_worker = true;
+  params.valid_primary_icon = true;
   params.wait_for_worker = true;
   return params;
 }
@@ -103,14 +103,12 @@ void RecordAddToHomescreenDialogDuration(base::TimeDelta duration) {
 AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
     content::WebContents* web_contents,
     int data_timeout_ms,
-    bool check_webapk_compatibility,
     Observer* observer)
     : content::WebContentsObserver(web_contents),
       installable_manager_(InstallableManager::FromWebContents(web_contents)),
       observer_(observer),
       shortcut_info_(GetShortcutUrl(web_contents)),
       data_timeout_ms_(base::TimeDelta::FromMilliseconds(data_timeout_ms)),
-      check_webapk_compatibility_(check_webapk_compatibility),
       is_waiting_for_manifest_(true),
       weak_ptr_factory_(this) {
   DCHECK(shortcut_info_.url.is_valid());
@@ -179,7 +177,7 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   start_time_ = base::TimeTicks::Now();
 
   installable_manager_->GetData(
-      ParamsToPerformManifestAndIconFetch(check_webapk_compatibility_),
+      ParamsToPerformManifestAndIconFetch(),
       base::Bind(&AddToHomescreenDataFetcher::OnDidGetManifestAndIcons,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -201,10 +199,8 @@ void AddToHomescreenDataFetcher::OnDataTimedout() {
   else
     installable_manager_->RecordAddToHomescreenInstallabilityTimeout();
 
-  if (check_webapk_compatibility_)
-    observer_->OnDidDetermineWebApkCompatibility(false);
-  observer_->OnUserTitleAvailable(shortcut_info_.user_title,
-                                  shortcut_info_.url);
+  observer_->OnUserTitleAvailable(shortcut_info_.user_title, shortcut_info_.url,
+                                  false);
 
   CreateLauncherIcon(raw_primary_icon_);
 }
@@ -225,10 +221,8 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
   // Do this after updating from the manifest for the case where a site has
   // a manifest with name and standalone specified, but no icons.
   if (data.manifest->IsEmpty() || !data.primary_icon) {
-    if (check_webapk_compatibility_)
-      observer_->OnDidDetermineWebApkCompatibility(false);
     observer_->OnUserTitleAvailable(shortcut_info_.user_title,
-                                    shortcut_info_.url);
+                                    shortcut_info_.url, false);
     StopTimer();
     installable_manager_->RecordAddToHomescreenNoTimeout();
     FetchFavicon();
@@ -254,7 +248,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
   }
 
   installable_manager_->GetData(
-      ParamsToPerformInstallableCheck(check_webapk_compatibility_),
+      ParamsToPerformInstallableCheck(),
       base::Bind(&AddToHomescreenDataFetcher::OnDidPerformInstallableCheck,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -268,17 +262,13 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   installable_manager_->RecordAddToHomescreenNoTimeout();
 
-  bool webapk_compatible = false;
-  if (check_webapk_compatibility_) {
-    webapk_compatible =
-        (data.error_code == NO_ERROR_DETECTED && data.valid_manifest &&
-         data.has_worker && AreWebManifestUrlsWebApkCompatible(*data.manifest));
-    observer_->OnDidDetermineWebApkCompatibility(webapk_compatible);
-  }
-
+  bool webapk_compatible =
+      (data.error_code == NO_ERROR_DETECTED && data.valid_manifest &&
+       data.has_worker && AreWebManifestUrlsWebApkCompatible(*data.manifest) &&
+       ChromeWebApkHost::CanInstallWebApk());
   observer_->OnUserTitleAvailable(
       webapk_compatible ? shortcut_info_.name : shortcut_info_.user_title,
-      shortcut_info_.url);
+      shortcut_info_.url, webapk_compatible);
   if (webapk_compatible) {
     shortcut_info_.UpdateSource(ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_PWA);
     NotifyObserver(std::make_pair(raw_primary_icon_, false /* is_generated */));
