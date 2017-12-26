@@ -47,7 +47,7 @@ inline bool EnumHasFlags(Enum v, Enum mask) {
 
 // Sides used when drawing borders and outlines. The values should run clockwise
 // from top.
-enum BoxSide { kBSTop, kBSRight, kBSBottom, kBSLeft };
+enum class BoxSide : unsigned { kTop, kRight, kBottom, kLeft };
 
 // See core/dom/stylerecalc.md for an explanation on what each state means
 enum StyleRecalcChange {

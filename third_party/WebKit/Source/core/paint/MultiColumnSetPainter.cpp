@@ -56,8 +56,8 @@ void MultiColumnSetPainter::PaintColumnRules(const PaintInfo& paint_info,
   bool left_to_right =
       layout_multi_column_set_.Style()->IsLeftToRightDirection();
   BoxSide box_side = layout_multi_column_set_.IsHorizontalWritingMode()
-                         ? left_to_right ? kBSLeft : kBSRight
-                         : left_to_right ? kBSTop : kBSBottom;
+                         ? left_to_right ? BoxSide::kLeft : BoxSide::kRight
+                         : left_to_right ? BoxSide::kTop : BoxSide::kBottom;
   const Color& rule_color = layout_multi_column_set_.ResolveColor(
       block_style, GetCSSPropertyColumnRuleColor());
 

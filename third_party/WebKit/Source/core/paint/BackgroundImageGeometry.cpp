@@ -547,13 +547,13 @@ LayoutRectOutsets BackgroundImageGeometry::ComputeDestRectAdjustment(
       BorderEdge edges[4];
       positioning_box_.StyleRef().GetBorderEdgeInfo(edges);
       const auto border_outsets = positioning_box_.BorderBoxOutsets();
-      if (edges[kBSTop].ObscuresBackground())
+      if (edges[static_cast<unsigned>(BoxSide::kTop)].ObscuresBackground())
         dest_adjust.SetTop(border_outsets.Top());
-      if (edges[kBSRight].ObscuresBackground())
+      if (edges[static_cast<unsigned>(BoxSide::kRight)].ObscuresBackground())
         dest_adjust.SetRight(border_outsets.Right());
-      if (edges[kBSBottom].ObscuresBackground())
+      if (edges[static_cast<unsigned>(BoxSide::kBottom)].ObscuresBackground())
         dest_adjust.SetBottom(border_outsets.Bottom());
-      if (edges[kBSLeft].ObscuresBackground())
+      if (edges[static_cast<unsigned>(BoxSide::kLeft)].ObscuresBackground())
         dest_adjust.SetLeft(border_outsets.Left());
     } break;
     case EFillBox::kText:

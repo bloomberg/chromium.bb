@@ -38,44 +38,44 @@ int AdjustJoint(int outline_width,
   // to increase the edge length to include the joint; - needs a negative
   // adjacent joint width (required by ObjectPainterBase::DrawLineForBoxSide).
   switch (edge1.side) {
-    case kBSTop:
+    case BoxSide::kTop:
       switch (edge2.side) {
-        case kBSRight:  // Clockwise
+        case BoxSide::kRight:  // Clockwise
           return outline_width;
-        case kBSLeft:  // Counterclockwise
+        case BoxSide::kLeft:  // Counterclockwise
           edge1.x2 += outline_width;
           edge2.y2 += outline_width;
           return -outline_width;
         default:  // Same side or no joint.
           return 0;
       }
-    case kBSRight:
+    case BoxSide::kRight:
       switch (edge2.side) {
-        case kBSBottom:  // Clockwise
+        case BoxSide::kBottom:  // Clockwise
           return outline_width;
-        case kBSTop:  // Counterclockwise
+        case BoxSide::kTop:  // Counterclockwise
           edge1.y2 += outline_width;
           edge2.x1 -= outline_width;
           return -outline_width;
         default:  // Same side or no joint.
           return 0;
       }
-    case kBSBottom:
+    case BoxSide::kBottom:
       switch (edge2.side) {
-        case kBSLeft:  // Clockwise
+        case BoxSide::kLeft:  // Clockwise
           return outline_width;
-        case kBSRight:  // Counterclockwise
+        case BoxSide::kRight:  // Counterclockwise
           edge1.x1 -= outline_width;
           edge2.y1 -= outline_width;
           return -outline_width;
         default:  // Same side or no joint.
           return 0;
       }
-    case kBSLeft:
+    case BoxSide::kLeft:
       switch (edge2.side) {
-        case kBSTop:  // Clockwise
+        case BoxSide::kTop:  // Clockwise
           return outline_width;
-        case kBSBottom:  // Counterclockwise
+        case BoxSide::kBottom:  // Counterclockwise
           edge1.y1 -= outline_width;
           edge2.x2 += outline_width;
           return -outline_width;
@@ -126,21 +126,21 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
     if (edge.x1 == edge.x2) {
       if (edge.y1 < edge.y2) {
         edge.x1 -= width;
-        edge.side = kBSRight;
+        edge.side = BoxSide::kRight;
       } else {
         std::swap(edge.y1, edge.y2);
         edge.x2 += width;
-        edge.side = kBSLeft;
+        edge.side = BoxSide::kLeft;
       }
     } else {
       DCHECK(edge.y1 == edge.y2);
       if (edge.x1 < edge.x2) {
         edge.y2 += width;
-        edge.side = kBSTop;
+        edge.side = BoxSide::kTop;
       } else {
         std::swap(edge.x1, edge.x2);
         edge.y1 -= width;
-        edge.side = kBSBottom;
+        edge.side = BoxSide::kBottom;
       }
     }
   }
@@ -170,7 +170,7 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
                              : AdjustJoint(width, edge, edges[i + 1]);
     int adjacent_width1 = adjacent_width_start;
     int adjacent_width2 = adjacent_width_end;
-    if (edge.side == kBSLeft || edge.side == kBSBottom)
+    if (edge.side == BoxSide::kLeft || edge.side == BoxSide::kBottom)
       std::swap(adjacent_width1, adjacent_width2);
     ObjectPainterBase::DrawLineForBoxSide(
         graphics_context, edge.x1, edge.y1, edge.x2, edge.y2, edge.side,
@@ -235,14 +235,14 @@ void DrawDashedOrDottedBoxSide(GraphicsContext& graphics_context,
       style == EBorderStyle::kDashed ? kDashedStroke : kDottedStroke);
 
   switch (side) {
-    case kBSBottom:
-    case kBSTop: {
+    case BoxSide::kBottom:
+    case BoxSide::kTop: {
       int mid_y = y1 + thickness / 2;
       graphics_context.DrawLine(IntPoint(x1, mid_y), IntPoint(x2, mid_y));
       break;
     }
-    case kBSRight:
-    case kBSLeft: {
+    case BoxSide::kRight:
+    case BoxSide::kLeft: {
       int mid_x = x1 + thickness / 2;
       graphics_context.DrawLine(IntPoint(mid_x, y1), IntPoint(mid_x, y2));
       break;
@@ -274,14 +274,14 @@ void DrawDoubleBoxSide(GraphicsContext& graphics_context,
     graphics_context.SetShouldAntialias(antialias);
 
     switch (side) {
-      case kBSTop:
-      case kBSBottom:
+      case BoxSide::kTop:
+      case BoxSide::kBottom:
         graphics_context.DrawRect(IntRect(x1, y1, length, third_of_thickness));
         graphics_context.DrawRect(
             IntRect(x1, y2 - third_of_thickness, length, third_of_thickness));
         break;
-      case kBSLeft:
-      case kBSRight:
+      case BoxSide::kLeft:
+      case BoxSide::kRight:
         graphics_context.DrawRect(IntRect(x1, y1, third_of_thickness, length));
         graphics_context.DrawRect(
             IntRect(x2 - third_of_thickness, y1, third_of_thickness, length));
@@ -299,7 +299,7 @@ void DrawDoubleBoxSide(GraphicsContext& graphics_context,
       ((adjacent_width2 > 0) ? adjacent_width2 + 1 : adjacent_width2 - 1) / 3;
 
   switch (side) {
-    case kBSTop:
+    case BoxSide::kTop:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
           y1, x2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0),
@@ -312,7 +312,7 @@ void DrawDoubleBoxSide(GraphicsContext& graphics_context,
           EBorderStyle::kSolid, adjacent1_big_third, adjacent2_big_third,
           antialias);
       break;
-    case kBSLeft:
+    case BoxSide::kLeft:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1,
           y1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
@@ -327,7 +327,7 @@ void DrawDoubleBoxSide(GraphicsContext& graphics_context,
           EBorderStyle::kSolid, adjacent1_big_third, adjacent2_big_third,
           antialias);
       break;
-    case kBSBottom:
+    case BoxSide::kBottom:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1 + std::max((adjacent_width1 * 2 + 1) / 3, 0), y1,
           x2 - std::max((adjacent_width2 * 2 + 1) / 3, 0),
@@ -340,7 +340,7 @@ void DrawDoubleBoxSide(GraphicsContext& graphics_context,
           EBorderStyle::kSolid, adjacent1_big_third, adjacent2_big_third,
           antialias);
       break;
-    case kBSRight:
+    case BoxSide::kRight:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1, y1 + std::max((adjacent_width1 * 2 + 1) / 3, 0),
           x1 + third_of_thickness,
@@ -386,7 +386,7 @@ void DrawRidgeOrGrooveBoxSide(GraphicsContext& graphics_context,
       ((adjacent_width2 > 0) ? adjacent_width2 + 1 : adjacent_width2 - 1) / 2;
 
   switch (side) {
-    case kBSTop:
+    case BoxSide::kTop:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1 + std::max(-adjacent_width1, 0) / 2, y1,
           x2 - std::max(-adjacent_width2, 0) / 2, (y1 + y2 + 1) / 2, side,
@@ -396,7 +396,7 @@ void DrawRidgeOrGrooveBoxSide(GraphicsContext& graphics_context,
           (y1 + y2 + 1) / 2, x2 - std::max(adjacent_width2 + 1, 0) / 2, y2,
           side, color, s2, adjacent_width1 / 2, adjacent_width2 / 2, antialias);
       break;
-    case kBSLeft:
+    case BoxSide::kLeft:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1, y1 + std::max(-adjacent_width1, 0) / 2,
           (x1 + x2 + 1) / 2, y2 - std::max(-adjacent_width2, 0) / 2, side,
@@ -407,7 +407,7 @@ void DrawRidgeOrGrooveBoxSide(GraphicsContext& graphics_context,
           y2 - std::max(adjacent_width2 + 1, 0) / 2, side, color, s2,
           adjacent_width1 / 2, adjacent_width2 / 2, antialias);
       break;
-    case kBSBottom:
+    case BoxSide::kBottom:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1 + std::max(adjacent_width1, 0) / 2, y1,
           x2 - std::max(adjacent_width2, 0) / 2, (y1 + y2 + 1) / 2, side, color,
@@ -417,7 +417,7 @@ void DrawRidgeOrGrooveBoxSide(GraphicsContext& graphics_context,
           (y1 + y2 + 1) / 2, x2 - std::max(-adjacent_width2 + 1, 0) / 2, y2,
           side, color, s1, adjacent_width1 / 2, adjacent_width2 / 2, antialias);
       break;
-    case kBSRight:
+    case BoxSide::kRight:
       ObjectPainterBase::DrawLineForBoxSide(
           graphics_context, x1, y1 + std::max(adjacent_width1, 0) / 2,
           (x1 + x2 + 1) / 2, y2 - std::max(adjacent_width2, 0) / 2, side, color,
@@ -458,25 +458,25 @@ void DrawSolidBoxSide(GraphicsContext& graphics_context,
 
   FloatPoint quad[4];
   switch (side) {
-    case kBSTop:
+    case BoxSide::kTop:
       quad[0] = FloatPoint(x1 + std::max(-adjacent_width1, 0), y1);
       quad[1] = FloatPoint(x1 + std::max(adjacent_width1, 0), y2);
       quad[2] = FloatPoint(x2 - std::max(adjacent_width2, 0), y2);
       quad[3] = FloatPoint(x2 - std::max(-adjacent_width2, 0), y1);
       break;
-    case kBSBottom:
+    case BoxSide::kBottom:
       quad[0] = FloatPoint(x1 + std::max(adjacent_width1, 0), y1);
       quad[1] = FloatPoint(x1 + std::max(-adjacent_width1, 0), y2);
       quad[2] = FloatPoint(x2 - std::max(-adjacent_width2, 0), y2);
       quad[3] = FloatPoint(x2 - std::max(adjacent_width2, 0), y1);
       break;
-    case kBSLeft:
+    case BoxSide::kLeft:
       quad[0] = FloatPoint(x1, y1 + std::max(-adjacent_width1, 0));
       quad[1] = FloatPoint(x1, y2 - std::max(-adjacent_width2, 0));
       quad[2] = FloatPoint(x2, y2 - std::max(adjacent_width2, 0));
       quad[3] = FloatPoint(x2, y1 + std::max(adjacent_width1, 0));
       break;
-    case kBSRight:
+    case BoxSide::kRight:
       quad[0] = FloatPoint(x1, y1 + std::max(adjacent_width1, 0));
       quad[1] = FloatPoint(x1, y2 - std::max(adjacent_width2, 0));
       quad[2] = FloatPoint(x2, y2 - std::max(-adjacent_width2, 0));
@@ -530,7 +530,7 @@ void ObjectPainterBase::DrawLineForBoxSide(GraphicsContext& graphics_context,
                                            bool antialias) {
   float thickness;
   float length;
-  if (side == kBSTop || side == kBSBottom) {
+  if (side == BoxSide::kTop || side == BoxSide::kBottom) {
     thickness = y2 - y1;
     length = x2 - x1;
   } else {
@@ -570,12 +570,12 @@ void ObjectPainterBase::DrawLineForBoxSide(GraphicsContext& graphics_context,
     case EBorderStyle::kInset:
       // FIXME: Maybe we should lighten the colors on one side like Firefox.
       // https://bugs.webkit.org/show_bug.cgi?id=58608
-      if (side == kBSTop || side == kBSLeft)
+      if (side == BoxSide::kTop || side == BoxSide::kLeft)
         color = color.Dark();
     // fall through
     case EBorderStyle::kOutset:
       if (style == EBorderStyle::kOutset &&
-          (side == kBSBottom || side == kBSRight))
+          (side == BoxSide::kBottom || side == BoxSide::kRight))
         color = color.Dark();
     // fall through
     case EBorderStyle::kSolid:
