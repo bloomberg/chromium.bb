@@ -144,18 +144,16 @@ static const uint8_t kEcdsaCertificateEncoded[] = {
     0x54, 0x49, 0x46, 0x49, 0x43, 0x41, 0x54, 0x45, 0x2d, 0x2d, 0x2d, 0x2d,
     0x2d, 0x0a};
 
-// TODO(https://crbug.com/795627): This test is crashing on the Cast Audio Linux
-// bot.
-#if defined(OS_LINUX)
-TEST(V8ScriptValueSerializerForModulesTest, DISABLED_RoundTripRTCCertificate) {
-#else
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
-#endif
+  // If WebRTC is not supported in this build, this test is meaningless.
+  std::unique_ptr<WebRTCCertificateGenerator> certificate_generator(
+      Platform::Current()->CreateRTCCertificateGenerator());
+  if (!certificate_generator)
+    return;
+
   V8TestingScope scope;
 
   // Make a certificate with the existing key above.
-  std::unique_ptr<WebRTCCertificateGenerator> certificate_generator(
-      Platform::Current()->CreateRTCCertificateGenerator());
   std::unique_ptr<WebRTCCertificate> web_certificate =
       certificate_generator->FromPEM(
           WebString::FromUTF8(kEcdsaPrivateKey, sizeof(kEcdsaPrivateKey)),
@@ -175,13 +173,13 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
   EXPECT_EQ(kEcdsaCertificate, pem.Certificate());
 }
 
-// TODO(https://crbug.com/795627): This test is crashing on the Cast Audio Linux
-// bot.
-#if defined(OS_LINUX)
-TEST(V8ScriptValueSerializerForModulesTest, DISABLED_DecodeRTCCertificate) {
-#else
 TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate) {
-#endif
+  // If WebRTC is not supported in this build, this test is meaningless.
+  std::unique_ptr<WebRTCCertificateGenerator> certificate_generator(
+      Platform::Current()->CreateRTCCertificateGenerator());
+  if (!certificate_generator)
+    return;
+
   V8TestingScope scope;
 
   // This is encoded data generated from Chromium (around M55).
@@ -202,14 +200,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate) {
   EXPECT_EQ(kEcdsaCertificate, pem.Certificate());
 }
 
-// TODO(https://crbug.com/795627): This test is crashing on the Cast Audio Linux
-// bot.
-#if defined(OS_LINUX)
-TEST(V8ScriptValueSerializerForModulesTest,
-     DISABLED_DecodeInvalidRTCCertificate) {
-#else
 TEST(V8ScriptValueSerializerForModulesTest, DecodeInvalidRTCCertificate) {
-#endif
   V8TestingScope scope;
 
   // This is valid, except that "private" is not a valid private key PEM and
