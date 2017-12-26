@@ -2208,7 +2208,7 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const LV_MAP_COEFF_COST txb_costs = x->coeff_costs[txs_ctx][plane_type];
 #if CONFIG_NEW_QUANT
-  int dq = get_dq_profile(x->qindex, is_inter, plane_type);
+  int dq = get_dq_profile(cm->dq_type, x->qindex, is_inter, plane_type);
   const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_LV_MAP_MULTI

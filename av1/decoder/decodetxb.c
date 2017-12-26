@@ -517,7 +517,7 @@ uint8_t av1_read_coeffs_txb_facade(const AV1_COMMON *const cm,
 #if CONFIG_NEW_QUANT
   const int seg_id = mbmi->segment_id;
   const int ref = is_inter_block(mbmi);
-  int dq = get_dq_profile(xd->qindex[seg_id], ref, pd->plane_type);
+  int dq = get_dq_profile(cm->dq_type, xd->qindex[seg_id], ref, pd->plane_type);
 #endif  //  CONFIG_NEW_QUANT
 
   TXB_CTX txb_ctx;

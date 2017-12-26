@@ -161,7 +161,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
 #endif  // CONFIG_AOM_QM
 #if CONFIG_NEW_QUANT
-  int dq = get_dq_profile(mb->qindex, ref, plane_type);
+  int dq = get_dq_profile(cm->dq_type, mb->qindex, ref, plane_type);
   const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
 #endif  // CONFIG_NEW_QUANT
   int64_t rd_cost0, rd_cost1;
@@ -509,7 +509,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif
   qparam.tx_size = tx_size;
 #if CONFIG_NEW_QUANT
-  qparam.dq = get_dq_profile(x->qindex, is_inter, plane_type);
+  qparam.dq = get_dq_profile(cm->dq_type, x->qindex, is_inter, plane_type);
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
   qparam.qmatrix = qmatrix;

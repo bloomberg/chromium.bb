@@ -575,6 +575,9 @@ typedef struct AV1Common {
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[TOTAL_REFS_PER_FRAME];
 #endif
+#if CONFIG_NEW_QUANT
+  DqType dq_type;
+#endif  // CONFIG_NEW_QUANT
 
 #if TXCOEFF_TIMER
   int64_t cum_txcoeff_timer;

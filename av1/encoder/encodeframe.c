@@ -3942,6 +3942,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
   cm->reduced_tx_set_used = 0;
+#if CONFIG_NEW_QUANT
+  cm->dq_type = cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT;
+#endif  // CONFIG_NEW_QUANT
 
 #if CONFIG_FRAME_MARKER
   if (cm->show_frame == 0) {

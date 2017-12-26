@@ -38,22 +38,44 @@ static const qprofile_type nuq[QUANT_PROFILES][2] = {
       { { 64, 128, 128 }, 0 },  // ac
   },
   {
-      // intra
+      // intra, dq_type 0, high quality
       { { 64, 128, 128 }, 3 },  // dc
       { { 64, 128, 128 }, 3 },  // ac
   },
   {
+      // intra, dq_type 0, low quality
       { { 64, 128, 128 }, 14 },  // dc
       { { 64, 128, 128 }, 14 },  // ac
   },
   {
-      // inter
+      // inter, dq_type 0, high quality
       { { 64, 128, 128 }, 4 },  // dc
       { { 64, 128, 128 }, 4 },  // ac
   },
   {
+      // inter, dq_type 0, low quality
       { { 64, 128, 128 }, 8 },  // dc
       { { 64, 128, 128 }, 8 },  // ac
+  },
+  {
+      // intra, dq_type 1, high quality
+      { { 82, 128, 128 }, 4 },  // dc
+      { { 80, 128, 128 }, 8 },  // ac
+  },
+  {
+      // intra, dq_type 1, low quality
+      { { 76, 128, 128 }, 12 },  // dc
+      { { 72, 128, 128 }, 16 },  // ac
+  },
+  {
+      // inter, dq_type 1, high quality
+      { { 82, 128, 128 }, 4 },  // dc
+      { { 80, 128, 128 }, 8 },  // ac
+  },
+  {
+      // inter, dq_type 1, low quality
+      { { 76, 128, 128 }, 12 },  // dc
+      { { 72, 128, 128 }, 16 },  // ac
   }
 };
 

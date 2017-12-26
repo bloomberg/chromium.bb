@@ -669,6 +669,14 @@ typedef enum ATTRIBUTE_PACKED {
 #define SUPERRES_SCALE_DENOMINATOR_MIN (SCALE_NUMERATOR + 1)
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
+#if CONFIG_NEW_QUANT
+typedef enum ATTRIBUTE_PACKED {
+  DQ_MULT_OFFSET,
+  DQ_MULT_OFFSET_DZ,
+  DQ_TYPES
+} DqType;
+#endif  // CONFIG_NEW_QUANT
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
