@@ -95,6 +95,13 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
     injected_clock_ = false;
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kNoUserGestureRequiredPolicy);
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+
   void LoadTestPage(const GURL& url) {
     // We can't do this in SetUp as the browser isn't ready yet and we
     // need it before the page navigates.
