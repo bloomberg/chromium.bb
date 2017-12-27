@@ -132,12 +132,9 @@ void IOSSSLErrorHandler::ShowSSLInterstitial() {
       overridable_ ? security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED
                    : security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
   // SSLBlockingPage deletes itself when it's dismissed.
-  auto dismissal_callback(
-      base::Bind(&IOSSSLErrorHandler::InterstitialWasDismissed,
-                 base::Unretained(web_state_), callback_));
   IOSSSLBlockingPage* page = new IOSSSLBlockingPage(
       web_state_, cert_error_, ssl_info_, request_url_, options_mask,
-      base::Time::NowFromSystemTime(), dismissal_callback);
+      base::Time::NowFromSystemTime(), callback_);
   page->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
@@ -147,11 +144,8 @@ void IOSSSLErrorHandler::ShowSSLInterstitial() {
 void IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
     const GURL& landing_url) {
   // IOSCaptivePortalBlockingPage deletes itself when it's dismissed.
-  auto dismissal_callback(
-      base::Bind(&IOSSSLErrorHandler::InterstitialWasDismissed,
-                 base::Unretained(web_state_), callback_));
   IOSCaptivePortalBlockingPage* page = new IOSCaptivePortalBlockingPage(
-      web_state_, request_url_, landing_url, dismissal_callback);
+      web_state_, request_url_, landing_url, callback_);
   page->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
@@ -194,12 +188,4 @@ void IOSSSLErrorHandler::LogCaptivePortalResult(
   UMA_HISTOGRAM_ENUMERATION(kSessionDetectionResultHistogram,
                             static_cast<int>(status),
                             static_cast<int>(CaptivePortalStatus::COUNT));
-}
-
-// static
-void IOSSSLErrorHandler::InterstitialWasDismissed(
-    web::WebState* web_state,
-    const base::Callback<void(bool)>& callback,
-    bool proceed) {
-  callback.Run(proceed);
 }

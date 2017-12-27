@@ -82,7 +82,12 @@ void IOSCaptivePortalBlockingPage::PopulateInterstitialStrings(
 void IOSCaptivePortalBlockingPage::AfterShow() {}
 
 void IOSCaptivePortalBlockingPage::OnDontProceed() {
-  DCHECK(!callback_.is_null());
+  // It's possible that callback_ may not exist if the user clicks "Proceed"
+  // followed by pressing the back button before the interstitial is hidden.
+  // In that case the certificate will still be treated as allowed.
+  if (callback_.is_null())
+    return;
+
   callback_.Run(false);
   callback_.Reset();
 }

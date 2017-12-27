@@ -73,11 +73,6 @@ class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {
   // state.
   static void LogCaptivePortalResult(
       captive_portal::CaptivePortalResult result);
-  // Called on interstitial dismissal.
-  static void InterstitialWasDismissed(
-      web::WebState* web_state,
-      const base::Callback<void(bool)>& callback,
-      bool proceed);
 
   // The WebState associated with this error handler.
   web::WebState* const web_state_ = nullptr;
