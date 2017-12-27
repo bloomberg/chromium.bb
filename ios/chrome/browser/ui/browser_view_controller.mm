@@ -1599,10 +1599,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (BOOL)shouldAutorotate {
-  if (_voiceSearchController && _voiceSearchController->IsVisible()) {
-    // Don't rotate if a voice search is being presented or dismissed.  Once the
-    // transition animations finish, only the Voice Search UIViewController's
-    // |-shouldAutorotate| will be called.
+  if (self.presentedViewController.beingPresented ||
+      self.presentedViewController.beingDismissed) {
+    // Don't rotate while a presentation or dismissal animation is occurring.
     return NO;
   } else if (_sideSwipeController && ![_sideSwipeController shouldAutorotate]) {
     // Don't auto rotate if side swipe controller view says not to.
