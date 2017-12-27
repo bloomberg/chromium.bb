@@ -8,13 +8,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
-// static
-ButtonLayout* ButtonLayout::CreateAndInstall(views::View* view,
-                                             int view_width) {
-  ButtonLayout* layout = new ButtonLayout(view_width);
-  view->SetLayoutManager(layout);
-  return layout;
-}
+ButtonLayout::ButtonLayout(int view_width) : view_width_(view_width) {}
 
 ButtonLayout::~ButtonLayout() = default;
 
@@ -74,8 +68,6 @@ gfx::Size ButtonLayout::GetPreferredSize(const views::View* host) const {
   // row is needed.
   return {view_width_, max_child_size.height()};
 }
-
-ButtonLayout::ButtonLayout(int view_width) : view_width_(view_width) {}
 
 // static
 bool ButtonLayout::HasTwoButtons(const views::View* host) {

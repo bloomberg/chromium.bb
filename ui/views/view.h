@@ -531,8 +531,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     return lm;
   }
   void SetLayoutManager(nullptr_t);
-  // DEPRECATED version that takes ownership of a raw pointer.
-  void SetLayoutManager(LayoutManager* layout);
 
   // Attributes ----------------------------------------------------------------
 

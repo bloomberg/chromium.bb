@@ -1008,7 +1008,7 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
 
   // |settings_row_| contains inline settings.
   settings_row_ = new views::View();
-  settings_row_->SetLayoutManager(new views::BoxLayout(
+  settings_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kSettingsRowPadding, 0));
   settings_row_->SetBackground(
       views::CreateSolidBackground(kActionsRowBackgroundColor));
@@ -1032,11 +1032,11 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
       this, false, l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_DONE),
       base::EmptyString16());
   auto* settings_button_row = new views::View;
-  auto* settings_button_layout = new views::BoxLayout(
+  auto settings_button_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kSettingsButtonRowPadding, 0);
   settings_button_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
-  settings_button_row->SetLayoutManager(settings_button_layout);
+  settings_button_row->SetLayoutManager(std::move(settings_button_layout));
   settings_button_row->AddChildView(settings_done_button_);
   settings_row_->AddChildView(settings_button_row);
 

@@ -188,7 +188,7 @@ void RootView::SetContentsView(View* contents_view) {
       "Can't be called until after the native widget is created!";
   // The ContentsView must be set up _after_ the window is created so that its
   // Widget pointer is valid.
-  SetLayoutManager(new FillLayout);
+  SetLayoutManager(std::make_unique<FillLayout>());
   if (has_children())
     RemoveAllChildViews(true);
   AddChildView(contents_view);

@@ -244,7 +244,6 @@ views::View* SessionCrashedBubbleView::CreateFootnoteView() {
   views::View* uma_view = new views::View();
   GridLayout* uma_layout =
       uma_view->SetLayoutManager(std::make_unique<views::GridLayout>(uma_view));
-  uma_view->SetLayoutManager(uma_layout);
 
   const int kReportColumnSetId = 0;
   views::ColumnSet* cs = uma_layout->AddColumnSet(kReportColumnSetId);
