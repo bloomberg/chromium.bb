@@ -82,6 +82,7 @@ source_set("history") {
 }
 
 source_set("history_base_feature") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "history_base_feature.h",
     "history_base_feature.mm",
