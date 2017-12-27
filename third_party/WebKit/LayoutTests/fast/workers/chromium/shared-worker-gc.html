@@ -1,7 +1,7 @@
 <body>
 <p>Test shared worker garbage collection. Should print "PASS" followed by "DONE".</p>
 <div id=result></div>
-<script src="../../resources/gc.js"></script>
+<script src="../../../resources/gc.js"></script>
 <script>
 function log(message)
 {
@@ -13,7 +13,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-var worker = new SharedWorker('resources/shared-worker-common.js', 'name');
+var worker = new SharedWorker('../resources/shared-worker-common.js', 'name');
 worker.port.onmessage = handleMessage;
 worker.port.postMessage("ping");
 worker = 0;
