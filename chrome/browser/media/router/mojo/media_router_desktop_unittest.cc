@@ -14,13 +14,12 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
-#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
+#include "chrome/browser/media/router/test_helper.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,32 +48,6 @@ class NullMessageObserver : public RouteMessageObserver {
       final {}
 };
 
-class MockDialMediaSinkService : public DialMediaSinkService {
- public:
-  explicit MockDialMediaSinkService(content::BrowserContext* context)
-      : DialMediaSinkService(context) {}
-  ~MockDialMediaSinkService() override {}
-
-  MOCK_METHOD3(Start,
-               void(const OnSinksDiscoveredCallback&,
-                    const OnDialSinkAddedCallback&,
-                    const scoped_refptr<base::SequencedTaskRunner>&));
-  MOCK_METHOD0(ForceSinkDiscoveryCallback, void());
-  MOCK_METHOD0(OnUserGesture, void());
-};
-
-class MockCastMediaSinkService : public CastMediaSinkService {
- public:
-  explicit MockCastMediaSinkService(content::BrowserContext* context)
-      : CastMediaSinkService(context) {}
-  ~MockCastMediaSinkService() override {}
-
-  MOCK_METHOD1(Start, void(const OnSinksDiscoveredCallback&));
-  MOCK_METHOD0(ForceSinkDiscoveryCallback, void());
-  MOCK_METHOD0(OnUserGesture, void());
-  MOCK_METHOD0(StartMdnsDiscovery, void());
-};
-
 }  // namespace
 
 template <bool enable_cast_discovery>
@@ -83,43 +56,38 @@ class MediaRouterDesktopTestBase : public MediaRouterMojoTest {
   MediaRouterDesktopTestBase() {}
   ~MediaRouterDesktopTestBase() override {}
 
- protected:
-  void SetUp() override {
-    if (enable_cast_discovery)
-      feature_list_.InitWithFeatures({kEnableCastDiscovery}, {});
-
-    MediaRouterMojoTest::SetUp();
+  DualMediaSinkService* media_sink_service() {
+    return media_sink_service_.get();
   }
 
-  std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() override {
-    auto dial_media_sink_service =
-        std::make_unique<MockDialMediaSinkService>(profile());
-    dial_media_sink_service_ = dial_media_sink_service.get();
+  MockCastMediaSinkService* cast_media_sink_service() {
+    return cast_media_sink_service_;
+  }
 
+ protected:
+  std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() override {
     std::unique_ptr<MockCastMediaSinkService> cast_media_sink_service;
     if (enable_cast_discovery) {
-      cast_media_sink_service =
-          std::make_unique<MockCastMediaSinkService>(profile());
+      feature_list_.InitWithFeatures({kEnableCastDiscovery}, {});
+      cast_media_sink_service = std::make_unique<MockCastMediaSinkService>(
+          profile()->GetRequestContext());
       cast_media_sink_service_ = cast_media_sink_service.get();
     }
 
+    media_sink_service_ = std::unique_ptr<DualMediaSinkService>(
+        new DualMediaSinkService(std::move(cast_media_sink_service),
+                                 std::make_unique<MockDialMediaSinkService>(
+                                     profile()->GetRequestContext())));
     return std::unique_ptr<MediaRouterDesktop>(
-        new MediaRouterDesktop(profile(), std::move(dial_media_sink_service),
-                               std::move(cast_media_sink_service)));
-  }
-
-  MockDialMediaSinkService* dial_media_sink_service() const {
-    return dial_media_sink_service_;
-  }
-
-  MockCastMediaSinkService* cast_media_sink_service() const {
-    return cast_media_sink_service_;
+        new MediaRouterDesktop(profile(), media_sink_service_.get()));
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  MockDialMediaSinkService* dial_media_sink_service_ = nullptr;
-  MockCastMediaSinkService* cast_media_sink_service_ = nullptr;
+  std::unique_ptr<DualMediaSinkService> media_sink_service_;
+
+  // Owned by |media_sink_service_|.
+  MockCastMediaSinkService* cast_media_sink_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDesktopTestBase);
 };
@@ -169,8 +137,6 @@ TEST_F(MediaRouterDesktopTestCastDiscoveryDisabled,
 TEST_F(MediaRouterDesktopTest, OnUserGesture) {
   EXPECT_CALL(mock_extension_provider_,
               UpdateMediaSinks(MediaSourceForDesktop().id()));
-  EXPECT_CALL(*dial_media_sink_service(), OnUserGesture());
-  EXPECT_CALL(*cast_media_sink_service(), OnUserGesture());
   router()->OnUserGesture();
   base::RunLoop().RunUntilIdle();
 }
@@ -203,7 +169,7 @@ TEST_F(MediaRouterDesktopTest, SyncStateToMediaRouteProvider) {
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_extension_provider_));
 }
 
-TEST_F(MediaRouterDesktopTest, TestProvideSinks) {
+TEST_F(MediaRouterDesktopTest, ProvideSinks) {
   std::vector<MediaSinkInternal> sinks;
   MediaSink sink("sinkId", "sinkName", SinkIconType::CAST,
                  MediaRouteProviderId::EXTENSION);
@@ -217,11 +183,14 @@ TEST_F(MediaRouterDesktopTest, TestProvideSinks) {
   sinks.push_back(expected_sink);
   std::string provider_name = "cast";
 
+  // |router()| is already registered with |media_sink_service_| during
+  // |SetUp()|.
   EXPECT_CALL(mock_extension_provider_, ProvideSinks(provider_name, sinks));
+  media_sink_service()->OnSinksDiscovered(provider_name, sinks);
+  base::RunLoop().RunUntilIdle();
 
-  MediaRouterDesktop* media_router_desktop =
-      static_cast<MediaRouterDesktop*>(router());
-  media_router_desktop->ProvideSinks(provider_name, sinks);
+  EXPECT_CALL(mock_extension_provider_, ProvideSinks(provider_name, sinks));
+  static_cast<MediaRouterDesktop*>(router())->ProvideSinksToExtension();
   base::RunLoop().RunUntilIdle();
 }
 

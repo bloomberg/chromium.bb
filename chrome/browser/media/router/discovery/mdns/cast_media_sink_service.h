@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
@@ -17,10 +18,6 @@
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
 #include "content/public/browser/browser_thread.h"
-
-namespace content {
-class BrowserContext;
-}  // namespace content
 
 namespace media_router {
 
@@ -34,7 +31,8 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // mDNS service types.
   static const char kCastServiceType[];
 
-  explicit CastMediaSinkService(content::BrowserContext* browser_context);
+  explicit CastMediaSinkService(
+      const scoped_refptr<net::URLRequestContextGetter>& request_context);
 
   ~CastMediaSinkService() override;
 
@@ -42,24 +40,13 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // to perform dual discovery). The callback must be run on the sequence given
   // by |GetImplTaskRunner()|. It is safe to invoke this callback after |this|
   // is destroyed.
-  // TODO(imcheng): It would be better to have this callback PostTask to the
-  // correct SequencedTaskRunner rather than making the caller do it.
   OnDialSinkAddedCallback GetDialSinkAddedCallback();
-
-  // Returns |impl_|'s task runner to be used with |GetDialSinkAddedCallback()|.
-  scoped_refptr<base::SequencedTaskRunner> GetImplTaskRunner();
 
   // Starts Cast sink discovery. No-ops if already started.
   // |sink_discovery_cb|: Callback to invoke when the list of discovered sinks
-  // has been updated. The callback is invoked on the UI thread and may be
-  // invoked after |this| is destroyed.
+  // has been updated.
   // Marked virtual for tests.
   virtual void Start(const OnSinksDiscoveredCallback& sinks_discovered_cb);
-
-  // Forces the sink discovery callback to be invoked with the current list of
-  // sinks.
-  // Marked virtual for tests.
-  virtual void ForceSinkDiscoveryCallback();
 
   // Initiates discovery immediately in response to a user gesture
   // (i.e., opening the Media Router dialog).
@@ -91,6 +78,9 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestTimer);
 
   void OnDialSinkAdded(const MediaSinkInternal& sink);
+  void RunSinksDiscoveredCallback(
+      const OnSinksDiscoveredCallback& sinks_discovered_cb,
+      std::vector<MediaSinkInternal> sinks);
 
   // DnsSdRegistry::DnsSdObserver implementation
   void OnDnsSdEvent(const std::string& service_type,
@@ -106,7 +96,9 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // List of cast sinks found in current round of mDNS discovery.
   std::vector<MediaSinkInternal> cast_sinks_;
 
-  content::BrowserContext* browser_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  base::WeakPtrFactory<CastMediaSinkService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkService);
 };

@@ -9,16 +9,13 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
-
-namespace content {
-class BrowserContext;
-}
 
 namespace net {
 class URLRequestContextGetter;
@@ -36,30 +33,19 @@ using OnDialSinkAddedCallback =
 // SequencedTaskRunner.
 class DialMediaSinkService {
  public:
-  // TODO(imcheng): We can make this a singleton by using
-  // |g_browser_process->system_request_context()| as the
-  // URLRequestContextGetter.
-  explicit DialMediaSinkService(content::BrowserContext* context);
+  explicit DialMediaSinkService(
+      const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~DialMediaSinkService();
 
   // Starts discovery of DIAL sinks. Can only be called once.
   // |sink_discovery_cb|: Callback to invoke on UI thread when the list of
   // discovered sinks has been updated.
   // |dial_sink_added_cb|: Callback to invoke when a new DIAL sink has been
-  // discovered. Can be null.
-  // |dial_sink_added_cb_sequence|: The sequence |dial_sink_added_cb| is
-  // invoked on, or nullptr if the callback is null.
-  // Both callbacks may be invoked after |this| is destroyed.
+  // discovered. The callback may be invoked on any thread, and may be invoked
+  // after |this| is destroyed. Can be null.
   // Marked virtual for tests.
   virtual void Start(const OnSinksDiscoveredCallback& sink_discovery_cb,
-                     const OnDialSinkAddedCallback& dial_sink_added_cb,
-                     const scoped_refptr<base::SequencedTaskRunner>&
-                         dial_sink_added_cb_sequence);
-
-  // Forces the sink discovery callback to be invoked with the current list of
-  // sinks. This method can only be called after |Start()|.
-  // Marked virtual for tests.
-  virtual void ForceSinkDiscoveryCallback();
+                     const OnDialSinkAddedCallback& dial_sink_added_cb);
 
   // Initiates discovery immediately in response to a user gesture
   // (i.e., opening the Media Router dialog). This method can only be called
@@ -78,6 +64,10 @@ class DialMediaSinkService {
       const OnDialSinkAddedCallback& dial_sink_added_cb,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
 
+  void RunSinksDiscoveredCallback(
+      const OnSinksDiscoveredCallback& sinks_discovered_cb,
+      std::vector<MediaSinkInternal> sinks);
+
   // Created on the UI thread, used and destroyed on its SequencedTaskRunner.
   std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter> impl_;
 
@@ -85,6 +75,7 @@ class DialMediaSinkService {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<DialMediaSinkService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DialMediaSinkService);
 };

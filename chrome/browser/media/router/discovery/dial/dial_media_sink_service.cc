@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/service_manager_connection.h"
@@ -13,23 +14,12 @@ using content::BrowserThread;
 
 namespace media_router {
 
-namespace {
-
-void RunDialSinkAddedCallbackOnSequence(
-    const OnDialSinkAddedCallback& dial_sink_added_cb,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const MediaSinkInternal& dial_sink) {
-  task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(dial_sink_added_cb, dial_sink));
-}
-
-}  // namespace
-
-DialMediaSinkService::DialMediaSinkService(content::BrowserContext* context)
-    : impl_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
+DialMediaSinkService::DialMediaSinkService(
+    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+    : impl_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
+      request_context_(request_context),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* profile = Profile::FromBrowserContext(context);
-  request_context_ = profile->GetRequestContext();
   DCHECK(request_context_);
 }
 
@@ -39,37 +29,23 @@ DialMediaSinkService::~DialMediaSinkService() {
 
 void DialMediaSinkService::Start(
     const OnSinksDiscoveredCallback& sink_discovery_cb,
-    const OnDialSinkAddedCallback& dial_sink_added_cb,
-    const scoped_refptr<base::SequencedTaskRunner>&
-        dial_sink_added_cb_sequence) {
+    const OnDialSinkAddedCallback& dial_sink_added_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!impl_);
 
   OnSinksDiscoveredCallback sink_discovery_cb_impl = base::BindRepeating(
       &RunSinksDiscoveredCallbackOnSequence,
-      base::SequencedTaskRunnerHandle::Get(), sink_discovery_cb);
-  OnDialSinkAddedCallback dial_sink_added_cb_impl;
-  if (dial_sink_added_cb) {
-    dial_sink_added_cb_impl =
-        base::BindRepeating(&RunDialSinkAddedCallbackOnSequence,
-                            dial_sink_added_cb, dial_sink_added_cb_sequence);
-  }
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindRepeating(&DialMediaSinkService::RunSinksDiscoveredCallback,
+                          weak_ptr_factory_.GetWeakPtr(), sink_discovery_cb));
 
-  impl_ = CreateImpl(sink_discovery_cb_impl, dial_sink_added_cb_impl,
-                     request_context_);
+  impl_ =
+      CreateImpl(sink_discovery_cb_impl, dial_sink_added_cb, request_context_);
 
   impl_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&DialMediaSinkServiceImpl::Start,
                                 base::Unretained(impl_.get())));
-}
-
-void DialMediaSinkService::ForceSinkDiscoveryCallback() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  impl_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DialMediaSinkServiceImpl::ForceSinkDiscoveryCallback,
-                     base::Unretained(impl_.get())));
 }
 
 void DialMediaSinkService::OnUserGesture() {
@@ -100,6 +76,12 @@ DialMediaSinkService::CreateImpl(
                                    dial_sink_added_cb, request_context,
                                    task_runner),
       base::OnTaskRunnerDeleter(task_runner));
+}
+
+void DialMediaSinkService::RunSinksDiscoveredCallback(
+    const OnSinksDiscoveredCallback& sinks_discovered_cb,
+    std::vector<MediaSinkInternal> sinks) {
+  sinks_discovered_cb.Run(std::move(sinks));
 }
 
 }  // namespace media_router

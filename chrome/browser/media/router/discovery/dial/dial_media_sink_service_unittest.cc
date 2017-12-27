@@ -50,7 +50,6 @@ class MockDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
   ~MockDialMediaSinkServiceImpl() override = default;
 
   MOCK_METHOD0(Start, void());
-  MOCK_METHOD0(ForceSinkDiscoveryCallback, void());
 
   OnSinksDiscoveredCallback sinks_discovered_cb() {
     return sinks_discovered_cb_;
@@ -66,9 +65,9 @@ class MockDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
 class TestDialMediaSinkService : public DialMediaSinkService {
  public:
   explicit TestDialMediaSinkService(
-      content::BrowserContext* context,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const scoped_refptr<base::TestSimpleTaskRunner>& task_runner)
-      : DialMediaSinkService(context), task_runner_(task_runner) {}
+      : DialMediaSinkService(request_context), task_runner_(task_runner) {}
   ~TestDialMediaSinkService() override = default;
 
   std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
@@ -97,15 +96,15 @@ class DialMediaSinkServiceTest : public ::testing::Test {
  public:
   DialMediaSinkServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
-        service_(new TestDialMediaSinkService(&profile_, task_runner_)) {}
+        service_(new TestDialMediaSinkService(profile_.GetRequestContext(),
+                                              task_runner_)) {}
 
   void SetUp() override {
     service_->Start(
         base::BindRepeating(&DialMediaSinkServiceTest::OnSinksDiscovered,
                             base::Unretained(this)),
         base::BindRepeating(&DialMediaSinkServiceTest::OnDialSinkAdded,
-                            base::Unretained(this)),
-        base::SequencedTaskRunnerHandle::Get());
+                            base::Unretained(this)));
     mock_impl_ = service_->mock_impl();
     ASSERT_TRUE(mock_impl_);
     EXPECT_CALL(*mock_impl_, Start()).WillOnce(InvokeWithoutArgs([this]() {
@@ -133,41 +132,13 @@ class DialMediaSinkServiceTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DialMediaSinkServiceTest);
 };
 
-TEST_F(DialMediaSinkServiceTest, TestForceSinkDiscoveryCallback) {
-  EXPECT_CALL(*mock_impl_, ForceSinkDiscoveryCallback())
-      .WillOnce(InvokeWithoutArgs([this]() {
-        EXPECT_TRUE(this->task_runner_->RunsTasksInCurrentSequence());
-      }));
-
-  service_->ForceSinkDiscoveryCallback();
-  task_runner_->RunUntilIdle();
-
-  // Actually invoke the callback.
-  std::vector<MediaSinkInternal> sinks = {CreateTestDialSink()};
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(mock_impl_->sinks_discovered_cb(), sinks));
-  task_runner_->RunUntilIdle();
-
-  EXPECT_CALL(*this, OnSinksDiscovered(sinks)).WillOnce(InvokeWithoutArgs([]() {
-    EXPECT_TRUE(
-        content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  }));
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(DialMediaSinkServiceTest, OnDialSinkAddedCallback) {
   // Runs the callback on |task_runner_| and expects it to post task back to
   // UI thread.
   MediaSinkInternal sink = CreateTestDialSink();
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(mock_impl_->dial_sink_added_cb(), sink));
-  task_runner_->RunUntilIdle();
 
-  EXPECT_CALL(*this, OnDialSinkAdded(sink)).WillOnce(InvokeWithoutArgs([]() {
-    EXPECT_TRUE(
-        content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  }));
-  base::RunLoop().RunUntilIdle();
+  EXPECT_CALL(*this, OnDialSinkAdded(sink));
+  mock_impl_->dial_sink_added_cb().Run(sink);
 }
 
 }  // namespace media_router

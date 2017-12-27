@@ -198,6 +198,14 @@ class CastMediaSinkServiceImpl
     static OpenParams GetFromFieldTrialParam();
   };
 
+  // Invokes |impl->OnDialSinkAdded| with |dial_sink| on |task_runner|. This
+  // method may be called on any thread, and may be called after |impl| is
+  // destroyed.
+  static void InvokeOnDialSinkAddedOnTaskRunner(
+      const base::WeakPtr<CastMediaSinkServiceImpl>& impl,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const MediaSinkInternal& dial_sink);
+
   // Marked virtual for testing.
   virtual void OpenChannels(const std::vector<MediaSinkInternal>& cast_sinks,
                             SinkSource sink_source);
