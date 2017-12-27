@@ -197,7 +197,10 @@ void MediaRouterMojoTest::SetUp() {
 }
 
 void MediaRouterMojoTest::TearDown() {
+  sinks_observer_.reset();
+  routes_observer_.reset();
   media_router_->Shutdown();
+  media_router_.reset();
 }
 
 void MediaRouterMojoTest::ProvideTestRoute(MediaRouteProviderId provider_id,

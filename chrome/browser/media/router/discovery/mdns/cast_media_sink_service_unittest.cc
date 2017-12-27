@@ -71,7 +71,6 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
   MOCK_METHOD2(OpenChannels,
                void(const std::vector<MediaSinkInternal>& cast_sinks,
                     CastMediaSinkServiceImpl::SinkSource sink_source));
-  MOCK_METHOD0(ForceSinkDiscoveryCallback, void());
 
   OnSinksDiscoveredCallback sinks_discovered_cb() {
     return sinks_discovered_cb_;
@@ -83,10 +82,11 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
 
 class TestCastMediaSinkService : public CastMediaSinkService {
  public:
-  TestCastMediaSinkService(content::BrowserContext* browser_context,
-                           cast_channel::CastSocketService* cast_socket_service,
-                           DiscoveryNetworkMonitor* network_monitor)
-      : CastMediaSinkService(browser_context),
+  TestCastMediaSinkService(
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      cast_channel::CastSocketService* cast_socket_service,
+      DiscoveryNetworkMonitor* network_monitor)
+      : CastMediaSinkService(request_context),
         cast_socket_service_(cast_socket_service),
         network_monitor_(network_monitor) {}
   ~TestCastMediaSinkService() override = default;
@@ -118,7 +118,7 @@ class CastMediaSinkServiceTest : public ::testing::Test {
         mock_cast_socket_service_(
             new cast_channel::MockCastSocketService(task_runner_)),
         media_sink_service_(new TestCastMediaSinkService(
-            &profile_,
+            profile_.GetRequestContext(),
             mock_cast_socket_service_.get(),
             DiscoveryNetworkMonitor::GetInstance())),
         test_dns_sd_registry_(media_sink_service_.get()) {}
@@ -185,29 +185,6 @@ TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
   task_runner_->RunUntilIdle();
   // Verify sink content
   EXPECT_EQ(2u, sinks.size());
-}
-
-TEST_F(CastMediaSinkServiceTest, TestForceSinkDiscoveryCallback) {
-  EXPECT_CALL(*mock_impl_, ForceSinkDiscoveryCallback())
-      .WillOnce(InvokeWithoutArgs([this]() {
-        EXPECT_TRUE(this->task_runner_->RunsTasksInCurrentSequence());
-      }));
-
-  media_sink_service_->ForceSinkDiscoveryCallback();
-  task_runner_->RunUntilIdle();
-
-  // Actually invoke the callback.
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(mock_impl_->sinks_discovered_cb(),
-                                        std::vector<MediaSinkInternal>()));
-  task_runner_->RunUntilIdle();
-
-  EXPECT_CALL(mock_sink_discovered_ui_cb_, Run(_))
-      .WillOnce(InvokeWithoutArgs([]() {
-        EXPECT_TRUE(
-            content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-      }));
-  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media_router

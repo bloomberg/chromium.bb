@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/mojo/extension_media_route_provider_proxy.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 
 namespace content {
 class RenderFrameHost;
@@ -19,8 +20,7 @@ class Extension;
 }
 
 namespace media_router {
-class CastMediaSinkService;
-class DialMediaSinkService;
+class DualMediaSinkService;
 class WiredDisplayMediaRouteProvider;
 
 // MediaRouter implementation that uses the MediaRouteProvider implemented in
@@ -55,7 +55,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   template <bool>
   friend class MediaRouterDesktopTestBase;
   friend class MediaRouterFactory;
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, TestProvideSinks);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, ProvideSinks);
 
   // This constructor performs a firewall check on Windows and is not suitable
   // for use in unit tests; instead use the constructor below.
@@ -63,10 +63,8 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
 
   // Used by tests only. This constructor skips the firewall check so unit tests
   // do not have to depend on the system's firewall configuration.
-  MediaRouterDesktop(
-      content::BrowserContext* context,
-      std::unique_ptr<DialMediaSinkService> dial_media_sink_service,
-      std::unique_ptr<CastMediaSinkService> cast_media_sink_service);
+  MediaRouterDesktop(content::BrowserContext* context,
+                     DualMediaSinkService* media_sink_service);
 
   // mojom::MediaRouter implementation.
   void RegisterMediaRouteProvider(
@@ -86,15 +84,16 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request,
                          const extensions::Extension& extension);
 
-  // Starts browser side sink discovery.
-  void StartDiscovery();
+  // Provides the current list of sinks from |media_sink_service_| to the
+  // extension. Also registers with |media_sink_service_| to listen for updates.
+  void ProvideSinksToExtension();
 
   // Notifies the Media Router that the list of MediaSinks discovered by a
   // MediaSinkService has been updated.
   // |provider_name|: Name of the MediaSinkService providing the sinks.
   // |sinks|: sinks discovered by MediaSinkService.
   void ProvideSinks(const std::string& provider_name,
-                    std::vector<MediaSinkInternal> sinks);
+                    const std::vector<MediaSinkInternal>& sinks);
 
   // Initializes MRPs and adds them to |media_route_providers_|.
   void InitializeMediaRouteProviders();
@@ -122,11 +121,8 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // MediaRouteProvider for casting to local screens.
   std::unique_ptr<WiredDisplayMediaRouteProvider> wired_display_provider_;
 
-  // Media sink service for DIAL devices.
-  std::unique_ptr<DialMediaSinkService> dial_media_sink_service_;
-
-  // Media sink service for CAST devices.
-  std::unique_ptr<CastMediaSinkService> cast_media_sink_service_;
+  DualMediaSinkService* media_sink_service_;
+  DualMediaSinkService::Subscription media_sink_service_subscription_;
 
   // A flag to ensure that we record the provider version once, during the
   // initial event page wakeup attempt.

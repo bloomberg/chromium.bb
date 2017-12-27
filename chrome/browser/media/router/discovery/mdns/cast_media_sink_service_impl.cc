@@ -605,8 +605,19 @@ void CastMediaSinkServiceImpl::AttemptConnection(
 }
 
 OnDialSinkAddedCallback CastMediaSinkServiceImpl::GetDialSinkAddedCallback() {
-  return base::BindRepeating(&CastMediaSinkServiceImpl::OnDialSinkAdded,
-                             GetWeakPtr());
+  return base::BindRepeating(
+      &CastMediaSinkServiceImpl::InvokeOnDialSinkAddedOnTaskRunner,
+      GetWeakPtr(), task_runner_);
+}
+
+// static
+void CastMediaSinkServiceImpl::InvokeOnDialSinkAddedOnTaskRunner(
+    const base::WeakPtr<CastMediaSinkServiceImpl>& impl,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const MediaSinkInternal& dial_sink) {
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::OnDialSinkAdded,
+                                impl, dial_sink));
 }
 
 CastMediaSinkServiceImpl::RetryParams::RetryParams()

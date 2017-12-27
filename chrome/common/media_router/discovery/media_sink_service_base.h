@@ -28,10 +28,6 @@ class MediaSinkServiceBase {
   explicit MediaSinkServiceBase(const OnSinksDiscoveredCallback& callback);
   virtual ~MediaSinkServiceBase();
 
-  // Forces |callback| to be invoked with the latest sink list.
-  // Marked virtual for tests.
-  virtual void ForceSinkDiscoveryCallback();
-
  protected:
   void SetTimerForTest(std::unique_ptr<base::Timer> timer);
 

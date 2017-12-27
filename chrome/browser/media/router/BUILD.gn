@@ -85,6 +85,8 @@ static_library("router") {
       "mojo/media_router_mojo_metrics.h",
       "mojo/wired_display_media_route_provider.cc",
       "mojo/wired_display_media_route_provider.h",
+      "providers/cast/dual_media_sink_service.cc",
+      "providers/cast/dual_media_sink_service.h",
     ]
   }
 
