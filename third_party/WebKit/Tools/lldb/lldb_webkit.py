@@ -40,9 +40,9 @@ def __lldb_init_module(debugger, dict):
     debugger.HandleCommand('type summary add --expand -F lldb_webkit.WTFHashTable_SummaryProvider -x "WTF::HashTable<.+>$"')
     debugger.HandleCommand('type synthetic add -x "WTF::Vector<.+>$" --python-class lldb_webkit.WTFVectorProvider')
     debugger.HandleCommand('type synthetic add -x "WTF::HashTable<.+>$" --python-class lldb_webkit.WTFHashTableProvider')
-    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutUnit_SummaryProvider WebCore::LayoutUnit')
-    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutSize_SummaryProvider WebCore::LayoutSize')
-    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutPoint_SummaryProvider WebCore::LayoutPoint')
+    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutUnit_SummaryProvider blink::LayoutUnit')
+    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutSize_SummaryProvider blink::LayoutSize')
+    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutPoint_SummaryProvider blink::LayoutPoint')
 
 
 def WTFString_SummaryProvider(valobj, dict):
@@ -177,7 +177,7 @@ class WTFStringProvider:
 
 
 class WebCoreLayoutUnitProvider:
-    "Print a WebCore::LayoutUnit"
+    "Print a blink::LayoutUnit"
     def __init__(self, valobj, dict):
         self.valobj = valobj
 
@@ -186,7 +186,7 @@ class WebCoreLayoutUnitProvider:
 
 
 class WebCoreLayoutSizeProvider:
-    "Print a WebCore::LayoutSize"
+    "Print a blink::LayoutSize"
     def __init__(self, valobj, dict):
         self.valobj = valobj
 
@@ -198,7 +198,7 @@ class WebCoreLayoutSizeProvider:
 
 
 class WebCoreLayoutPointProvider:
-    "Print a WebCore::LayoutPoint"
+    "Print a blink::LayoutPoint"
     def __init__(self, valobj, dict):
         self.valobj = valobj
 
