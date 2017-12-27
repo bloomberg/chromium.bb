@@ -69,6 +69,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search_provider_logos/features.h"
 #include "components/search_provider_logos/switches.h"
@@ -2067,6 +2068,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDataSaverServerPreviewsDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          data_reduction_proxy::features::kDataReductionProxyDecidesTransform)},
+    {"ignore-previews-blacklist",
+     flag_descriptions::kIgnorePreviewsBlacklistName,
+     flag_descriptions::kIgnorePreviewsBlacklistDescription, kOsAll,
+     SINGLE_VALUE_TYPE(previews::switches::kIgnorePreviewsBlacklist)},
     {"enable-data-reduction-proxy-server-experiment",
      flag_descriptions::kEnableDataReductionProxyServerExperimentName,
      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,

@@ -21,6 +21,8 @@ static_library("core") {
     "previews_opt_out_store.h",
     "previews_opt_out_store_sql.cc",
     "previews_opt_out_store_sql.h",
+    "previews_switches.cc",
+    "previews_switches.h",
     "previews_user_data.cc",
     "previews_user_data.h",
   ]

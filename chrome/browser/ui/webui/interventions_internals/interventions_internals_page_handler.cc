@@ -16,6 +16,7 @@
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_switches.h"
 #include "net/nqe/network_quality_estimator_params.h"
 
 namespace {
@@ -44,12 +45,15 @@ const char kOfflinePageFeatureName[] = "OfflinePreviews";
 const char kEctFlagHtmlId[] = "ect-flag";
 const char kNoScriptFlagHtmlId[] = "noscript-flag";
 const char kOfflinePageFlagHtmlId[] = "offline-page-flag";
+const char kIgnorePreviewsBlacklistFlagHtmlId[] = "ignore-previews-blacklist";
 
 // Links to flags in chrome://flags.
 // TODO(thanhdle): Refactor into vector of structs. crbug.com/787010.
 const char kEctFlagLink[] = "chrome://flags/#force-effective-connection-type";
 const char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 const char kOfflinePageFlagLink[] = "chrome://flags/#enable-offline-previews";
+const char kIgnorePreviewsBlacklistLink[] =
+    "chrome://flags/#ignore-previews-blacklist";
 
 const char kDefaultFlagValue[] = "Default";
 
@@ -78,6 +82,13 @@ std::string GetNonFlagEctValue() {
            nqe_params[net::kForceEffectiveConnectionType];
   }
   return kDefaultFlagValue;
+}
+
+// Check if the switch flag is enabled or disabled via flag/command-line.
+std::string GetEnabledStateForSwitch(const std::string& switch_name) {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(switch_name)
+             ? "Enabled"
+             : "Disabled";
 }
 
 }  // namespace
@@ -145,8 +156,10 @@ void InterventionsInternalsPageHandler::SetIgnorePreviewsBlacklistDecision(
 }
 
 void InterventionsInternalsPageHandler::OnLastObserverRemove() {
-  // Reset the status of ignoring PreviewsBlackList decisions to false.
-  previews_ui_service_->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
+  // Reset the status of ignoring PreviewsBlackList decisions to default value.
+  previews_ui_service_->SetIgnorePreviewsBlacklistDecision(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          previews::switches::kIgnorePreviewsBlacklist));
 }
 
 void InterventionsInternalsPageHandler::OnIgnoreBlacklistDecisionStatusChanged(
@@ -214,6 +227,15 @@ void InterventionsInternalsPageHandler::GetPreviewsFlagsDetails(
   ect_status->value = ect_value.empty() ? GetNonFlagEctValue() : ect_value;
   ect_status->htmlId = kEctFlagHtmlId;
   flags.push_back(std::move(ect_status));
+
+  auto ignore_previews_blacklist = mojom::PreviewsFlag::New();
+  ignore_previews_blacklist->description =
+      flag_descriptions::kIgnorePreviewsBlacklistName;
+  ignore_previews_blacklist->link = kIgnorePreviewsBlacklistLink;
+  ignore_previews_blacklist->value =
+      GetEnabledStateForSwitch(previews::switches::kIgnorePreviewsBlacklist);
+  ignore_previews_blacklist->htmlId = kIgnorePreviewsBlacklistFlagHtmlId;
+  flags.push_back(std::move(ignore_previews_blacklist));
 
   auto noscript_status = mojom::PreviewsFlag::New();
   noscript_status->description = flag_descriptions::kEnableNoScriptPreviewsName;
