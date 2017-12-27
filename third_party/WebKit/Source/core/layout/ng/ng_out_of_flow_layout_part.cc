@@ -108,168 +108,175 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
           default_containing_block_.style->GetWritingMode());
   // Translate start/end fragments into ContainingBlockInfo.
   for (auto& block_info : inline_container_fragments) {
+    // Variables needed to describe ContainingBlockInfo
+    const ComputedStyle* inline_cb_style;
+    NGLogicalSize inline_cb_size;
+    NGLogicalOffset inline_content_offset;
+    NGPhysicalOffset inline_content_physical_offset;
+    NGLogicalOffset default_container_offset;
     if (!block_info.value.start_fragment) {
       // This happens when Legacy block is the default container.
       // In this case, container builder does not have any fragments because
       // ng layout algorithm did not run.
-      DCHECK(false);
-      // TODO(atotic) ContainingBlockInfo must be computed from Legacy algorithm
-    }
-    NGLogicalOffset inline_content_offset;
-    NGPhysicalOffset inline_content_physical_offset;
-    NGLogicalSize inline_cb_size;
-    const ComputedStyle* inline_cb_style;
-    inline_cb_style = &block_info.value.start_fragment->Style();
-    scoped_refptr<NGConstraintSpace> dummy_constraint_space =
-        NGConstraintSpaceBuilder(inline_cb_style->GetWritingMode(), icb_size_)
-            .ToConstraintSpace(inline_cb_style->GetWritingMode());
-    // TODO Creating dummy constraint space just to get borders feels wrong.
-    NGBoxStrut inline_cb_borders =
-        ComputeBorders(*dummy_constraint_space, *inline_cb_style);
-    NGPhysicalBoxStrut physical_borders = inline_cb_borders.ConvertToPhysical(
-        inline_cb_style->GetWritingMode(), inline_cb_style->Direction());
-    NGBoxStrut inline_cb_padding =
-        ComputePadding(*dummy_constraint_space, *inline_cb_style);
-
-    // Warning: lots of non-obvious coordinate manipulation ahead.
-    //
-    // High level goal is:
-    // - Find logical topleft of start fragment, and logical bottomright
-    //   of end fragment.
-    // - Use these to compute inline-cb geometry:
-    //   - inline-cb size (content_size)
-    //   - inline-cb offset from containing block (default_container_offset)
-    //
-    // We start with:
-    // start_fragment, which has physical offset from start_linebox_fragment,
-    // end_fragment, also with physical offset.
-    // start_linebox_fragment, which has logical offset from containing box.
-    // end_linebox_fragment, which also has logical offset from containing box.
-    //
-    // Then magic happens.^H^H^H^H^H^H^H
-    //
-    // Then we do the following:
-    // 1. Find start fragment physical topleft wrt containing box.
-    //    - convert start_fragment offset to logical.
-    //    - convert start fragment inline/block start to physical.
-    //    - convert linebox topleft to physical.
-    //    - add start fragment to linebox topleft
-    // 2. Find end fragment bottom right wrt containing box
-    //    - convert end fragment offset to logical.
-    //    - convert end fragment inline/block end to physical
-    //    - convert linebox topleft to physical
-    //    - add end fragment bottomLeft to linebox topleft
-    // 3. Convert both topleft/bottomright to logical, so that we can
-    // 4. Enforce logical topLeft < bottomRight
-    // 5. Compute size, physical offset
-    const NGPhysicalFragment* start_fragment = block_info.value.start_fragment;
-    const NGPhysicalLineBoxFragment* start_linebox_fragment =
-        block_info.value.start_linebox_fragment;
-    WritingMode container_writing_mode =
-        default_containing_block_.style->GetWritingMode();
-    TextDirection container_direction =
-        default_containing_block_.style->Direction();
-    // Step 1
-    NGLogicalOffset start_fragment_logical_offset =
-        block_info.value.start_fragment_union_rect.offset.ConvertToLogical(
-            container_writing_mode, container_direction,
-            start_linebox_fragment->Size(),
-            block_info.value.start_fragment_union_rect.size);
-    // Text fragments do not include inline-cb borders and padding.
-    if (start_fragment->IsText()) {
-      start_fragment_logical_offset -= inline_cb_borders.StartOffset();
-      start_fragment_logical_offset -= inline_cb_padding.StartOffset();
-    }
-    NGPhysicalOffset start_fragment_physical_offset =
-        start_fragment_logical_offset.ConvertToPhysical(
-            container_writing_mode, container_direction,
-            start_linebox_fragment->Size(), NGPhysicalSize());
-    NGPhysicalOffset start_linebox_physical_offset =
-        block_info.value.start_linebox_offset.ConvertToPhysical(
-            container_writing_mode, container_direction,
-            container_builder_physical_size, start_linebox_fragment->Size());
-    start_fragment_physical_offset += start_linebox_physical_offset;
-    // Step 2
-    const NGPhysicalLineBoxFragment* end_linebox_fragment =
-        block_info.value.end_linebox_fragment;
-    const NGPhysicalFragment* end_fragment = block_info.value.end_fragment;
-    NGLogicalOffset end_fragment_logical_offset =
-        block_info.value.end_fragment_union_rect.offset.ConvertToLogical(
-            container_writing_mode, container_direction,
-            end_linebox_fragment->Size(),
-            block_info.value.end_fragment_union_rect.size);
-    // Text fragments do not include inline-cb borders and padding.
-    if (end_fragment->IsText()) {
-      end_fragment_logical_offset += NGLogicalOffset(
-          inline_cb_borders.inline_end, inline_cb_borders.block_end);
-      end_fragment_logical_offset += NGLogicalOffset(
-          inline_cb_padding.inline_end, inline_cb_padding.block_end);
-    }
-    NGLogicalOffset end_fragment_bottom_right =
-        end_fragment_logical_offset +
-        block_info.value.end_fragment_union_rect.size.ConvertToLogical(
-            container_writing_mode);
-    NGPhysicalOffset end_fragment_physical_offset =
-        end_fragment_bottom_right.ConvertToPhysical(
-            container_writing_mode, container_direction,
-            end_linebox_fragment->Size(), NGPhysicalSize());
-    NGPhysicalOffset end_linebox_physical_offset =
-        block_info.value.end_linebox_offset.ConvertToPhysical(
-            container_writing_mode, container_direction,
-            container_builder_physical_size, end_linebox_fragment->Size());
-    end_fragment_physical_offset += end_linebox_physical_offset;
-    // Step 3
-    NGLogicalOffset start_fragment_logical_offset_wrt_box =
-        start_fragment_physical_offset.ConvertToLogical(
-            inline_cb_style->GetWritingMode(), inline_cb_style->Direction(),
-            container_builder_physical_size, NGPhysicalSize());
-    NGLogicalOffset end_fragment_logical_offset_wrt_box =
-        end_fragment_physical_offset.ConvertToLogical(
-            inline_cb_style->GetWritingMode(), inline_cb_style->Direction(),
-            container_builder_physical_size, NGPhysicalSize());
-
-    // Step 4
-    end_fragment_logical_offset_wrt_box.inline_offset =
-        std::max(end_fragment_logical_offset_wrt_box.inline_offset,
-                 start_fragment_logical_offset_wrt_box.inline_offset +
-                     inline_cb_borders.InlineSum());
-    end_fragment_logical_offset_wrt_box.block_offset =
-        std::max(end_fragment_logical_offset_wrt_box.block_offset,
-                 start_fragment_logical_offset_wrt_box.block_offset +
-                     inline_cb_borders.BlockSum());
-
-    // Step 5
-    inline_cb_size.inline_size =
-        end_fragment_logical_offset_wrt_box.inline_offset -
-        start_fragment_logical_offset_wrt_box.inline_offset -
-        inline_cb_borders.InlineSum();
-    inline_cb_size.block_size =
-        end_fragment_logical_offset_wrt_box.block_offset -
-        start_fragment_logical_offset_wrt_box.block_offset -
-        inline_cb_borders.BlockSum();
-
-    DCHECK_GE(inline_cb_size.inline_size, LayoutUnit());
-    DCHECK_GE(inline_cb_size.block_size, LayoutUnit());
-
-    inline_content_offset = NGLogicalOffset{inline_cb_borders.inline_start,
-                                            inline_cb_borders.block_start};
-    inline_content_physical_offset =
-        NGPhysicalOffset(physical_borders.left, physical_borders.top);
-
-    NGLogicalOffset default_container_offset;
-    if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
-      // NGPaint offset is wrt parent fragment.
-      default_container_offset = start_fragment_logical_offset_wrt_box -
-                                 default_containing_block_.content_offset;
-      default_container_offset += inline_cb_borders.StartOffset();
+      DCHECK(block_info.key->IsLayoutInline());
+      inline_cb_style = block_info.key->Style();
+      NOTIMPLEMENTED()
+          << "Inline containing block might need geometry information";
+      // TODO(atotic) ContainingBlockInfo geometry
+      // must be computed from Legacy algorithm
     } else {
-      // Legacy offset is wrt inline container.
-      default_container_offset =
-          NGLogicalOffset(inline_cb_borders.inline_start,
-                          inline_cb_borders.block_start) -
-          default_containing_block_.content_offset;
-    }
+      inline_cb_style = &block_info.value.start_fragment->Style();
+      scoped_refptr<NGConstraintSpace> dummy_constraint_space =
+          NGConstraintSpaceBuilder(inline_cb_style->GetWritingMode(), icb_size_)
+              .ToConstraintSpace(inline_cb_style->GetWritingMode());
+      // TODO Creating dummy constraint space just to get borders feels wrong.
+      NGBoxStrut inline_cb_borders =
+          ComputeBorders(*dummy_constraint_space, *inline_cb_style);
+      NGPhysicalBoxStrut physical_borders = inline_cb_borders.ConvertToPhysical(
+          inline_cb_style->GetWritingMode(), inline_cb_style->Direction());
+      NGBoxStrut inline_cb_padding =
+          ComputePadding(*dummy_constraint_space, *inline_cb_style);
 
+      // Warning: lots of non-obvious coordinate manipulation ahead.
+      //
+      // High level goal is:
+      // - Find logical topleft of start fragment, and logical bottomright
+      //   of end fragment.
+      // - Use these to compute inline-cb geometry:
+      //   - inline-cb size (content_size)
+      //   - inline-cb offset from containing block (default_container_offset)
+      //
+      // We start with:
+      // start_fragment, which has physical offset from start_linebox_fragment,
+      // end_fragment, also with physical offset.
+      // start_linebox_fragment, which has logical offset from containing box.
+      // end_linebox_fragment, which also has logical offset from containing
+      // box.
+      //
+      // Then magic happens.^H^H^H^H^H^H^H
+      //
+      // Then we do the following:
+      // 1. Find start fragment physical topleft wrt containing box.
+      //    - convert start_fragment offset to logical.
+      //    - convert start fragment inline/block start to physical.
+      //    - convert linebox topleft to physical.
+      //    - add start fragment to linebox topleft
+      // 2. Find end fragment bottom right wrt containing box
+      //    - convert end fragment offset to logical.
+      //    - convert end fragment inline/block end to physical
+      //    - convert linebox topleft to physical
+      //    - add end fragment bottomLeft to linebox topleft
+      // 3. Convert both topleft/bottomright to logical, so that we can
+      // 4. Enforce logical topLeft < bottomRight
+      // 5. Compute size, physical offset
+      const NGPhysicalFragment* start_fragment =
+          block_info.value.start_fragment;
+      const NGPhysicalLineBoxFragment* start_linebox_fragment =
+          block_info.value.start_linebox_fragment;
+      WritingMode container_writing_mode =
+          default_containing_block_.style->GetWritingMode();
+      TextDirection container_direction =
+          default_containing_block_.style->Direction();
+      // Step 1
+      NGLogicalOffset start_fragment_logical_offset =
+          block_info.value.start_fragment_union_rect.offset.ConvertToLogical(
+              container_writing_mode, container_direction,
+              start_linebox_fragment->Size(),
+              block_info.value.start_fragment_union_rect.size);
+      // Text fragments do not include inline-cb borders and padding.
+      if (start_fragment->IsText()) {
+        start_fragment_logical_offset -= inline_cb_borders.StartOffset();
+        start_fragment_logical_offset -= inline_cb_padding.StartOffset();
+      }
+      NGPhysicalOffset start_fragment_physical_offset =
+          start_fragment_logical_offset.ConvertToPhysical(
+              container_writing_mode, container_direction,
+              start_linebox_fragment->Size(), NGPhysicalSize());
+      NGPhysicalOffset start_linebox_physical_offset =
+          block_info.value.start_linebox_offset.ConvertToPhysical(
+              container_writing_mode, container_direction,
+              container_builder_physical_size, start_linebox_fragment->Size());
+      start_fragment_physical_offset += start_linebox_physical_offset;
+      // Step 2
+      const NGPhysicalLineBoxFragment* end_linebox_fragment =
+          block_info.value.end_linebox_fragment;
+      const NGPhysicalFragment* end_fragment = block_info.value.end_fragment;
+      NGLogicalOffset end_fragment_logical_offset =
+          block_info.value.end_fragment_union_rect.offset.ConvertToLogical(
+              container_writing_mode, container_direction,
+              end_linebox_fragment->Size(),
+              block_info.value.end_fragment_union_rect.size);
+      // Text fragments do not include inline-cb borders and padding.
+      if (end_fragment->IsText()) {
+        end_fragment_logical_offset += NGLogicalOffset(
+            inline_cb_borders.inline_end, inline_cb_borders.block_end);
+        end_fragment_logical_offset += NGLogicalOffset(
+            inline_cb_padding.inline_end, inline_cb_padding.block_end);
+      }
+      NGLogicalOffset end_fragment_bottom_right =
+          end_fragment_logical_offset +
+          block_info.value.end_fragment_union_rect.size.ConvertToLogical(
+              container_writing_mode);
+      NGPhysicalOffset end_fragment_physical_offset =
+          end_fragment_bottom_right.ConvertToPhysical(
+              container_writing_mode, container_direction,
+              end_linebox_fragment->Size(), NGPhysicalSize());
+      NGPhysicalOffset end_linebox_physical_offset =
+          block_info.value.end_linebox_offset.ConvertToPhysical(
+              container_writing_mode, container_direction,
+              container_builder_physical_size, end_linebox_fragment->Size());
+      end_fragment_physical_offset += end_linebox_physical_offset;
+      // Step 3
+      NGLogicalOffset start_fragment_logical_offset_wrt_box =
+          start_fragment_physical_offset.ConvertToLogical(
+              inline_cb_style->GetWritingMode(), inline_cb_style->Direction(),
+              container_builder_physical_size, NGPhysicalSize());
+      NGLogicalOffset end_fragment_logical_offset_wrt_box =
+          end_fragment_physical_offset.ConvertToLogical(
+              inline_cb_style->GetWritingMode(), inline_cb_style->Direction(),
+              container_builder_physical_size, NGPhysicalSize());
+
+      // Step 4
+      end_fragment_logical_offset_wrt_box.inline_offset =
+          std::max(end_fragment_logical_offset_wrt_box.inline_offset,
+                   start_fragment_logical_offset_wrt_box.inline_offset +
+                       inline_cb_borders.InlineSum());
+      end_fragment_logical_offset_wrt_box.block_offset =
+          std::max(end_fragment_logical_offset_wrt_box.block_offset,
+                   start_fragment_logical_offset_wrt_box.block_offset +
+                       inline_cb_borders.BlockSum());
+
+      // Step 5
+      inline_cb_size.inline_size =
+          end_fragment_logical_offset_wrt_box.inline_offset -
+          start_fragment_logical_offset_wrt_box.inline_offset -
+          inline_cb_borders.InlineSum();
+      inline_cb_size.block_size =
+          end_fragment_logical_offset_wrt_box.block_offset -
+          start_fragment_logical_offset_wrt_box.block_offset -
+          inline_cb_borders.BlockSum();
+
+      DCHECK_GE(inline_cb_size.inline_size, LayoutUnit());
+      DCHECK_GE(inline_cb_size.block_size, LayoutUnit());
+
+      inline_content_offset = NGLogicalOffset{inline_cb_borders.inline_start,
+                                              inline_cb_borders.block_start};
+      inline_content_physical_offset =
+          NGPhysicalOffset(physical_borders.left, physical_borders.top);
+
+      if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
+        // NGPaint offset is wrt parent fragment.
+        default_container_offset = start_fragment_logical_offset_wrt_box -
+                                   default_containing_block_.content_offset;
+        default_container_offset += inline_cb_borders.StartOffset();
+      } else {
+        // Legacy offset is wrt inline container.
+        default_container_offset =
+            NGLogicalOffset(inline_cb_borders.inline_start,
+                            inline_cb_borders.block_start) -
+            default_containing_block_.content_offset;
+      }
+    }
     containing_blocks_map_.insert(
         block_info.key, ContainingBlockInfo{inline_cb_style, inline_cb_size,
                                             inline_content_offset,

@@ -114,6 +114,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // physical in a single variable.
   LayoutUnit static_inline;
   LayoutUnit static_block;
+  LayoutBoxModelObject* css_container = ToLayoutBoxModelObject(Container());
 
   if (container_style->IsDisplayFlexibleOrGridBox()) {
     static_inline = Layer()->StaticInlinePosition();
@@ -123,9 +124,12 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     Length logical_right;
     Length logical_top;
     Length logical_bottom;
-    ComputeInlineStaticDistance(logical_left, logical_right, this, container,
-                                container->LogicalWidth());
-    ComputeBlockStaticDistance(logical_top, logical_bottom, this, container);
+
+    ComputeInlineStaticDistance(
+        logical_left, logical_right, this, css_container,
+        ContainingBlockLogicalWidthForPositioned(css_container));
+    ComputeBlockStaticDistance(logical_top, logical_bottom, this,
+                               css_container);
     if (parent_style->IsLeftToRightDirection()) {
       if (!logical_left.IsAuto())
         static_inline = ValueForLength(logical_left, container->LogicalWidth());
@@ -164,7 +168,6 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       NGStaticPosition::Create(parent_style->GetWritingMode(),
                                parent_style->Direction(), static_location);
 
-  LayoutObject* css_container = Container();
   // Set correct container for inline containing blocks.
   container_builder.AddOutOfFlowLegacyCandidate(
       NGBlockNode(this), static_position,
