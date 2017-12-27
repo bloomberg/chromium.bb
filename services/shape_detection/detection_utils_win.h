@@ -24,15 +24,15 @@
 
 class SkBitmap;
 
+namespace shape_detection {
+
+namespace WRL = Microsoft::WRL;
+
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::IAsyncOperationCompletedHandler;
 using ABI::Windows::Graphics::Imaging::ISoftwareBitmapStatics;
 using ABI::Windows::Graphics::Imaging::ISoftwareBitmap;
 using ABI::Windows::Graphics::Imaging::BitmapPixelFormat;
-
-namespace shape_detection {
-
-namespace WRL = Microsoft::WRL;
 
 // This template represents an asynchronous operation which returns a result
 // upon completion, internal async callback will be not called if the instance
@@ -42,8 +42,7 @@ namespace WRL = Microsoft::WRL;
 template <typename RuntimeType>
 class AsyncOperation {
  public:
-  using IAsyncOperationPtr =
-      Microsoft::WRL::ComPtr<IAsyncOperation<RuntimeType*>>;
+  using IAsyncOperationPtr = WRL::ComPtr<IAsyncOperation<RuntimeType*>>;
   // A callback run when the asynchronous operation completes. The callback is
   // run with the IAsyncOperation that completed on success, or with an empty
   // pointer in case of failure.
@@ -114,12 +113,18 @@ class AsyncOperation {
   DISALLOW_COPY_AND_ASSIGN(AsyncOperation);
 };
 
+// Creates a Windows ISoftwareBitmap from a kN32_SkColorType |bitmap|, or
+// returns nullptr.
+WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
+    const SkBitmap& bitmap,
+    ISoftwareBitmapStatics* bitmap_factory);
+
 // Creates a Gray8/Nv12 ISoftwareBitmap from a kN32_SkColorType |bitmap|, or
 // returns nullptr.
-Microsoft::WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
+WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapWithPixelFormat(
+    const SkBitmap& bitmap,
     ISoftwareBitmapStatics* bitmap_factory,
-    BitmapPixelFormat pixel_format,
-    const SkBitmap& bitmap);
+    BitmapPixelFormat pixel_format);
 
 }  // namespace shape_detection
 

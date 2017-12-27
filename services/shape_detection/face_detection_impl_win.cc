@@ -46,7 +46,8 @@ void FaceDetectionImplWin::Detect(const SkBitmap& bitmap,
 std::unique_ptr<AsyncOperation<IVector<DetectedFace*>>>
 FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
   Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap =
-      CreateWinBitmapFromSkBitmap(bitmap_factory_.Get(), pixel_format_, bitmap);
+      CreateWinBitmapWithPixelFormat(bitmap, bitmap_factory_.Get(),
+                                     pixel_format_);
   if (!win_bitmap)
     return nullptr;
 
@@ -61,8 +62,8 @@ FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
   }
 
   // The once callback will not be called if this object is deleted, so it's
-  // fine to use Unretained to bind the callback.
-  // |win_bitmap| needs to be kept alive until OnFaceDetected().
+  // fine to use Unretained to bind the callback. |win_bitmap| needs to be kept
+  // alive until OnFaceDetected().
   return AsyncOperation<IVector<DetectedFace*>>::Create(
       base::BindOnce(&FaceDetectionImplWin::OnFaceDetected,
                      base::Unretained(this), std::move(win_bitmap)),
@@ -109,8 +110,8 @@ FaceDetectionImplWin::BuildFaceDetectionResult(
   return results;
 }
 
-// The extra passing of |win_bitmap| need to be kept until AsyncOperation
-// completes, otherwise random crashes will happen.
+// |win_bitmap| is passed here so that it is kept alive until the AsyncOperation
+// completes because DetectFacesAsync does not hold a reference.
 void FaceDetectionImplWin::OnFaceDetected(
     Microsoft::WRL::ComPtr<ISoftwareBitmap> /* win_bitmap */,
     AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op) {

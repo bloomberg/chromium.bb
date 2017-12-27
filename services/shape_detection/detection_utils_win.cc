@@ -10,10 +10,9 @@
 
 namespace shape_detection {
 
-Microsoft::WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
-    ISoftwareBitmapStatics* bitmap_factory,
-    BitmapPixelFormat pixel_format,
-    const SkBitmap& bitmap) {
+WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
+    const SkBitmap& bitmap,
+    ISoftwareBitmapStatics* bitmap_factory) {
   DCHECK(bitmap_factory);
   DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
   if (!base::CheckedNumeric<uint32_t>(bitmap.computeByteSize()).IsValid()) {
@@ -22,7 +21,7 @@ Microsoft::WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
   }
 
   // Create IBuffer from bitmap data.
-  Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> buffer;
+  WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> buffer;
   HRESULT hr = base::win::CreateIBufferFromData(
       static_cast<uint8_t*>(bitmap.getPixels()),
       static_cast<UINT32>(bitmap.computeByteSize()), &buffer);
@@ -32,7 +31,7 @@ Microsoft::WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
     return nullptr;
   }
 
-  Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap;
+  WRL::ComPtr<ISoftwareBitmap> win_bitmap;
   const BitmapPixelFormat pixelFormat =
       (kN32_SkColorType == kRGBA_8888_SkColorType)
           ? ABI::Windows::Graphics::Imaging::BitmapPixelFormat_Rgba8
@@ -48,9 +47,19 @@ Microsoft::WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
     return nullptr;
   }
 
+  return win_bitmap;
+}
+
+WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapWithPixelFormat(
+    const SkBitmap& bitmap,
+    ISoftwareBitmapStatics* bitmap_factory,
+    BitmapPixelFormat pixel_format) {
+  WRL::ComPtr<ISoftwareBitmap> win_bitmap =
+      CreateWinBitmapFromSkBitmap(bitmap, bitmap_factory);
+
   // Convert Rgba8/Bgra8 to Gray8/Nv12 SoftwareBitmap.
-  hr = bitmap_factory->Convert(win_bitmap.Get(), pixel_format,
-                               win_bitmap.GetAddressOf());
+  const HRESULT hr = bitmap_factory->Convert(win_bitmap.Get(), pixel_format,
+                                             win_bitmap.GetAddressOf());
   if (FAILED(hr)) {
     DLOG(ERROR) << "Convert Rgba8/Bgra8 to Gray8/Nv12 failed: "
                 << logging::SystemErrorCodeToString(hr);

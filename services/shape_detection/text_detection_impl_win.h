@@ -5,29 +5,55 @@
 #ifndef SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_WIN_H_
 #define SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_WIN_H_
 
+#include <windows.graphics.imaging.h>
 #include <windows.media.ocr.h>
 #include <wrl/client.h>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shape_detection/detection_utils_win.h"
 #include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 
 class SkBitmap;
 
 namespace shape_detection {
 
+using ABI::Windows::Graphics::Imaging::ISoftwareBitmapStatics;
 using ABI::Windows::Media::Ocr::IOcrEngine;
+using ABI::Windows::Media::Ocr::IOcrResult;
+using ABI::Windows::Media::Ocr::OcrResult;
 
 class TextDetectionImplWin : public mojom::TextDetection {
  public:
-  explicit TextDetectionImplWin(Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine);
+  TextDetectionImplWin(
+      Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine,
+      Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory);
   ~TextDetectionImplWin() override;
 
   // mojom::TextDetection implementation.
   void Detect(const SkBitmap& bitmap,
               mojom::TextDetection::DetectCallback callback) override;
 
+  void SetBinding(mojo::StrongBindingPtr<mojom::TextDetection> binding) {
+    binding_ = std::move(binding);
+  }
+
  private:
   Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine_;
+  Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory_;
+  std::unique_ptr<AsyncOperation<OcrResult>> async_recognize_ops_;
+  DetectCallback recognize_text_callback_;
+  mojo::StrongBindingPtr<mojom::TextDetection> binding_;
+
+  std::unique_ptr<AsyncOperation<OcrResult>> BeginDetect(
+      const SkBitmap& bitmap);
+  std::vector<mojom::TextDetectionResultPtr> BuildTextDetectionResult(
+      AsyncOperation<OcrResult>::IAsyncOperationPtr async_op);
+  void OnTextDetected(Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap,
+                      AsyncOperation<OcrResult>::IAsyncOperationPtr async_op);
 
   DISALLOW_COPY_AND_ASSIGN(TextDetectionImplWin);
 };
