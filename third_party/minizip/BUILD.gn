@@ -57,7 +57,10 @@ static_library("minizip") {
     "src/zip.h",
   ]
 
-  defines = [ "HAVE_AES" ]
+  defines = [
+    "HAVE_AES",
+    "NOCRYPT",
+  ]
 
   if (is_nacl) {
     defines += [ "USE_FILE32API" ]
