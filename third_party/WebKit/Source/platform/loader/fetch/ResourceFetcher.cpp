@@ -1428,7 +1428,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
                                         uint32_t inflight_keepalive_bytes) {
   DCHECK(resource);
 
-  DCHECK_LE(inflight_keepalive_bytes_, inflight_keepalive_bytes);
+  DCHECK_LE(inflight_keepalive_bytes, inflight_keepalive_bytes_);
   inflight_keepalive_bytes_ -= inflight_keepalive_bytes;
 
   RemoveResourceLoader(resource->Loader());
