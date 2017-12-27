@@ -63,43 +63,57 @@ struct CategoryOfWords {
   const size_t non_latin_dictionary_size;
 };
 
-// 1. Removes delimiters from |raw_value| and appends it to |*field_data_value|.
-// A sentinel symbol is added first if |*field_data_value| is not empty.
+// Used only inside DCHECK.
+bool AllElementsBelongsToSameForm(
+    const std::vector<blink::WebFormControlElement>& all_control_elements,
+    const std::vector<blink::WebInputElement>& possible_usernames) {
+  if (std::adjacent_find(
+          possible_usernames.begin(), possible_usernames.end(),
+          [](const blink::WebInputElement& a, const blink::WebInputElement& b) {
+            return a.Form() != b.Form();
+          }) != possible_usernames.end())
+    return false;
+  if (std::adjacent_find(all_control_elements.begin(),
+                         all_control_elements.end(),
+                         [](const blink::WebFormControlElement& a,
+                            const blink::WebFormControlElement& b) {
+                           return a.Form() != b.Form();
+                         }) != all_control_elements.end())
+    return false;
+  DCHECK(!all_control_elements.empty());
+  return all_control_elements[0].Form() == possible_usernames[0].Form();
+}
+
+// 1. Removes delimiters from |raw_value| and appends the remainder to
+// |*field_data_value|. A sentinel symbol is added first if |*field_data_value|
+// is not empty.
 // 2. Tokenizes and appends short tokens (shorter than |kMinimumWordLength|)
 // from |raw_value| to |*field_data_short_tokens|, if any.
 void AppendValueAndShortTokens(
     const base::string16& raw_value,
     base::string16* field_data_value,
     base::flat_set<base::string16>* field_data_short_tokens) {
-  base::string16 lowercase_value = base::i18n::ToLower(raw_value);
+  const base::string16 lowercase_value = base::i18n::ToLower(raw_value);
   const base::string16 delimiters = base::ASCIIToUTF16(kDelimiters);
   std::vector<base::StringPiece16> tokens =
       base::SplitStringPiece(lowercase_value, delimiters, base::TRIM_WHITESPACE,
                              base::SPLIT_WANT_NONEMPTY);
-  // Modify |lowercase_value| only when |tokens| has been processed.
-
-  std::vector<base::string16> short_tokens;
-  std::transform(
-      std::find_if(tokens.begin(), tokens.end(),
-                   [](const base::StringPiece16& token) {
-                     return token.size() < kMinimumWordLength;
-                   }),
-      tokens.end(), std::back_inserter(short_tokens),
-      [](const base::StringPiece16& token) { return token.as_string(); });
-  // It is better to insert elements to a |flat_map| in one operation.
-  field_data_short_tokens->insert(short_tokens.begin(), short_tokens.end());
-
-  // Now that tokens are processed, squeeze delimiters out of |lowercase_value|.
-  lowercase_value.erase(std::remove_if(
-      lowercase_value.begin(), lowercase_value.end(),
-      [delimiters](char c) { return delimiters.find(c) != delimiters.npos; }));
 
   // When computing the developer value, '$' safety guard is being added
   // between field name and id, so that forming of accidental words is
   // prevented.
   if (!field_data_value->empty())
     field_data_value->push_back('$');
-  *field_data_value += lowercase_value;
+
+  field_data_value->reserve(field_data_value->size() + lowercase_value.size());
+  std::vector<base::string16> short_tokens;
+  for (const base::StringPiece16& token : tokens) {
+    if (token.size() < kMinimumWordLength)
+      short_tokens.push_back(token.as_string());
+    token.AppendToString(field_data_value);
+  }
+  // It is better to insert elements to a |base::flat_set| in one operation.
+  field_data_short_tokens->insert(short_tokens.begin(), short_tokens.end());
 }
 
 // For the given |input_element|, compute developer and user value, along with
@@ -119,31 +133,36 @@ UsernameFieldData ComputeUsernameFieldData(
   return field_data;
 }
 
-// For the fields of the given form that can be username fields
-// (all_possible_usernames), computes |UsernameFieldData| needed by the
-// detector.
+// For the fields of the given form (all_control_elements), computes
+// |UsernameFieldData| needed by the detector.
 void InferUsernameFieldData(
-    const std::vector<blink::WebInputElement>& all_possible_usernames,
+    const std::vector<blink::WebFormControlElement>& all_control_elements,
     const FormData& form_data,
     std::vector<UsernameFieldData>* possible_usernames_data) {
-  // |all_possible_usernames| and |form_data.fields| may have different set of
+  // |all_control_elements| and |form_data.fields| may have different set of
   // fields. Match them based on |WebInputElement.NameForAutofill| and
   // |FormFieldData.name|.
   size_t next_element_range_begin = 0;
 
-  for (const blink::WebInputElement& input_element : all_possible_usernames) {
-    const base::string16 element_name = input_element.NameForAutofill().Utf16();
+  for (const blink::WebFormControlElement& control_element :
+       all_control_elements) {
+    const blink::WebInputElement* input_element =
+        ToWebInputElement(&control_element);
+    if (!input_element || input_element->IsPasswordFieldForAutofill())
+      continue;
+    const base::string16 element_name =
+        input_element->NameForAutofill().Utf16();
     for (size_t i = next_element_range_begin; i < form_data.fields.size();
          ++i) {
       const FormFieldData& field_data = form_data.fields[i];
-      if (input_element.NameForAutofill().IsEmpty())
+      if (input_element->NameForAutofill().IsEmpty())
         continue;
 
       // Find matching field data and web input element.
       if (field_data.name == element_name) {
         next_element_range_begin = i + 1;
         possible_usernames_data->push_back(
-            ComputeUsernameFieldData(input_element, field_data));
+            ComputeUsernameFieldData(*input_element, field_data));
         break;
       }
     }
@@ -212,13 +231,12 @@ void RemoveFieldsWithNegativeWords(
 
 // Check if any word from the given category (|category|) appears in fields from
 // the form (|possible_usernames_data|). If the category words appear in more
-// than 2 fields, do not make a decision, because it may just be a prefix. If
-// the words appears in 1 or 2 fields, the first field is saved to
-// |*username_element|.
-bool FormContainsWordFromCategory(
+// than 2 fields, do nothing, because it may just be a prefix. If the words
+// appears in 1 or 2 fields, the first field is added to |username_predictions|.
+void FindWordsFromCategoryInForm(
     const std::vector<UsernameFieldData>& possible_usernames_data,
     const CategoryOfWords& category,
-    WebInputElement* username_element) {
+    std::vector<blink::WebInputElement>* username_predictions) {
   // Auxiliary element that contains the first field (in order of appearance in
   // the form) in which a substring is encountered.
   WebInputElement chosen_field;
@@ -233,19 +251,21 @@ bool FormContainsWordFromCategory(
   }
 
   if (fields_found > 0 && fields_found <= 2) {
-    *username_element = chosen_field;
-    return true;
-  } else {
-    return false;
+    if (std::find(username_predictions->begin(), username_predictions->end(),
+                  chosen_field) == username_predictions->end()) {
+      username_predictions->push_back(chosen_field);
+    }
   }
 }
 
-// Find username element if there is no cached result for the given form.
-bool FindUsernameFieldInternal(
-    const std::vector<blink::WebInputElement>& all_possible_usernames,
+// Find username elements if there is no cached result for the given form and
+// add them to |username_predictions| in the order of decreasing relibility.
+void FindUsernameFieldInternal(
+    const std::vector<blink::WebFormControlElement>& all_control_elements,
     const FormData& form_data,
-    WebInputElement* username_element) {
-  DCHECK(username_element);
+    std::vector<blink::WebInputElement>* username_predictions) {
+  DCHECK(username_predictions);
+  DCHECK(username_predictions->empty());
 
   static const CategoryOfWords kUsernameCategory = {
       kUsernameLatin, kUsernameLatinSize, kUsernameNonLatin,
@@ -263,14 +283,33 @@ bool FindUsernameFieldInternal(
       kUsernameCategory, kUserCategory, kTechnicalCategory, kWeakCategory};
 
   std::vector<UsernameFieldData> possible_usernames_data;
-  InferUsernameFieldData(all_possible_usernames, form_data,
+
+  InferUsernameFieldData(all_control_elements, form_data,
                          &possible_usernames_data);
   RemoveFieldsWithNegativeWords(&possible_usernames_data);
 
   // These are the searches performed by the username detector.
   for (const CategoryOfWords& category : kPositiveCategories) {
-    if (FormContainsWordFromCategory(possible_usernames_data, category,
-                                     username_element)) {
+    FindWordsFromCategoryInForm(possible_usernames_data, category,
+                                username_predictions);
+  }
+}
+
+// Find the first element in |username_predictions| (i.e. the most reliable
+// prediction) that occurs in |possible_usernames|. If the element found, the
+// method saves it to |username_element| and returns true.
+bool FindUsernameInPredictions(
+    const std::vector<blink::WebInputElement>& username_predictions,
+    const std::vector<blink::WebInputElement>& possible_usernames,
+    WebInputElement* username_element) {
+  // To keep linear time complexity, convert |possible_usernames| to a set.
+  const base::flat_set<blink::WebInputElement> usernames(
+      possible_usernames.begin(), possible_usernames.end());
+
+  for (const blink::WebInputElement& prediction : username_predictions) {
+    auto iter = usernames.find(prediction);
+    if (iter != usernames.end()) {
+      *username_element = *iter;
       return true;
     }
   }
@@ -280,23 +319,22 @@ bool FindUsernameFieldInternal(
 }  // namespace
 
 bool GetUsernameFieldBasedOnHtmlAttributes(
-    const std::vector<blink::WebInputElement>& all_possible_usernames,
+    const std::vector<blink::WebFormControlElement>& all_control_elements,
+    const std::vector<blink::WebInputElement>& possible_usernames,
     const FormData& form_data,
     WebInputElement* username_element,
     UsernameDetectorCache* username_detector_cache) {
   DCHECK(username_element);
 
-  if (all_possible_usernames.empty())
+  if (possible_usernames.empty())
     return false;
 
-  // All elements in |all_possible_usernames| should have the same |Form()|.
+  // All elements in |possible_usernames| and |all_control_elements| should have
+  // the same |Form()|.
   DCHECK(
-      std::adjacent_find(
-          all_possible_usernames.begin(), all_possible_usernames.end(),
-          [](const blink::WebInputElement& a, const blink::WebInputElement& b) {
-            return a.Form() != b.Form();
-          }) == all_possible_usernames.end());
-  const blink::WebFormElement form = all_possible_usernames[0].Form();
+      AllElementsBelongsToSameForm(all_control_elements, possible_usernames));
+
+  const blink::WebFormElement form = possible_usernames[0].Form();
 
   // True if the cache has no entry for |form|.
   bool cache_miss = true;
@@ -304,19 +342,22 @@ bool GetUsernameFieldBasedOnHtmlAttributes(
   UsernameDetectorCache::iterator form_position;
   if (username_detector_cache) {
     std::tie(form_position, cache_miss) = username_detector_cache->insert(
-        std::make_pair(form, blink::WebInputElement()));
+        std::make_pair(form, std::vector<blink::WebInputElement>()));
   }
 
   if (!username_detector_cache || cache_miss) {
-    bool username_found = FindUsernameFieldInternal(
-        all_possible_usernames, form_data, username_element);
-    if (username_detector_cache && username_found)
-      form_position->second = *username_element;
-    return username_found;
-  } else {
-    *username_element = form_position->second;
-    return !username_element->IsNull();
+    std::vector<blink::WebInputElement> username_predictions;
+    FindUsernameFieldInternal(all_control_elements, form_data,
+                              &username_predictions);
+    bool result = FindUsernameInPredictions(
+        username_predictions, possible_usernames, username_element);
+    if (username_detector_cache && !username_predictions.empty())
+      form_position->second = std::move(username_predictions);
+    return result;
   }
+
+  return FindUsernameInPredictions(form_position->second, possible_usernames,
+                                   username_element);
 }
 
 }  // namespace autofill
