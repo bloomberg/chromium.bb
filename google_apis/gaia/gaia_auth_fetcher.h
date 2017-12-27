@@ -284,11 +284,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static const char kClientLoginToOAuth2CookiePartCodePrefix[];
   static const int kClientLoginToOAuth2CookiePartCodePrefixLength;
 
-  // Process the results of a ClientLogin fetch.
-  void OnClientLoginFetched(const std::string& data,
-                            const net::URLRequestStatus& status,
-                            int response_code);
-
   void OnIssueAuthTokenFetched(const std::string& data,
                                const net::URLRequestStatus& status,
                                int response_code);
@@ -414,7 +409,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   GURL deprecated_client_login_to_oauth2_gurl_;
   std::string request_body_;
 
-  std::string requested_service_; // Currently tracked for IssueAuthToken only.
+  std::string requested_service_;  // Currently tracked for IssueAuthToken only.
   bool fetch_pending_ = false;
   bool fetch_token_from_auth_code_ = false;
 
