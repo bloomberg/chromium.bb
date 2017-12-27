@@ -36,11 +36,6 @@ class CORE_EXPORT WorkletGlobalScope
 
   bool IsWorkletGlobalScope() const final { return true; }
 
-  void EvaluateClassicScript(
-      const KURL& script_url,
-      String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data) final;
-
   // Always returns false here as PaintWorkletGlobalScope and
   // AnimationWorkletGlobalScope don't have a #close() method on the global.
   // Note that AudioWorkletGlobal overrides this behavior.

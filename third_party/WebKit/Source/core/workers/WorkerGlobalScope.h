@@ -78,10 +78,6 @@ class CORE_EXPORT WorkerGlobalScope
   }
 
   // WorkerOrWorkletGlobalScope
-  void EvaluateClassicScript(
-      const KURL& script_url,
-      String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data) override;
   bool IsClosing() const final { return closing_; }
   void Dispose() override;
   WorkerThread* GetThread() const final { return thread_; }
@@ -127,6 +123,13 @@ class CORE_EXPORT WorkerGlobalScope
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
 
+  // Evaluates the given top-level classic script.
+  virtual void EvaluateClassicScript(
+      const KURL& script_url,
+      String source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data);
+
+  // Imports the top-level module script for |module_url_record|.
   void ImportModuleScript(const KURL& module_url_record,
                           network::mojom::FetchCredentialsMode);
 

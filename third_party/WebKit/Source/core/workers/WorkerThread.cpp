@@ -456,11 +456,11 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(GlobalScope()->IsWorkerGlobalScope());
   WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate());
   debugger->ExternalAsyncTaskStarted(stack_id);
-  GlobalScope()->EvaluateClassicScript(script_url, std::move(source_code),
-                                       std::move(cached_meta_data));
+  ToWorkerGlobalScope(GlobalScope())
+      ->EvaluateClassicScript(script_url, std::move(source_code),
+                              std::move(cached_meta_data));
   debugger->ExternalAsyncTaskFinished(stack_id);
 }
 
