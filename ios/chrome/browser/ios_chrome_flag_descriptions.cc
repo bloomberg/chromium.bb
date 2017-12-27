@@ -64,7 +64,6 @@ const char kInProductHelpDemoModeDescription[] =
 
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
-const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";
 
 const char kNewFullscreenName[] = "Enable the new FullscreenController.";
 const char kNewFullscreenDescription[] =

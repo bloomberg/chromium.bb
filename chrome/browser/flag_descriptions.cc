@@ -821,7 +821,6 @@ const char kManualPasswordSavingDescription[] =
 
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
-const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";
 
 const char kMaterialDesignIncognitoNTPName[] = "Material Design Incognito NTP.";
 const char kMaterialDesignIncognitoNTPDescription[] =

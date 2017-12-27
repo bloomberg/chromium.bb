@@ -83765,6 +83765,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SSL.MarkHttpAsStatus" enum="MarkHttpAsStatus">
+  <obsolete>
+    Deprecated December 2017 (M65). This information in this histogram can be
+    found in LoginCustomFlags (for users who have set a flag) or by filtering to
+    users with the MarkHttpAs feature enabled (for seeing the field trial
+    breakdown).
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <owner>felt@chromium.org</owner>
   <summary>

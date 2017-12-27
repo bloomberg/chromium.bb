@@ -30,8 +30,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
+#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
-#include "components/security_state/core/switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1455,10 +1455,11 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   {
     // Ensure that the security level remains Dangerous in the
     // kMarkHttpAsDangerous configuration.
-    base::test::ScopedCommandLine scoped_command_line;
-    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
-        security_state::switches::kMarkHttpAs,
-        security_state::switches::kMarkHttpAsDangerous);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        security_state::features::kMarkHttpAsFeature,
+        {{security_state::features::kMarkHttpAsFeatureParameterName,
+          security_state::features::kMarkHttpAsParameterDangerous}});
 
     helper->GetSecurityInfo(&security_info);
     EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
@@ -2122,10 +2123,11 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 // MarkHttpAsDangerous is enabled.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
                        SecurityLevelDangerousWhenMarkHttpAsDangerous) {
-  base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
-      security_state::switches::kMarkHttpAs,
-      security_state::switches::kMarkHttpAsDangerous);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::kMarkHttpAsParameterDangerous}});
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -2427,6 +2429,123 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::NONE, security_info.security_level);
+}
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MarkHttpAsWarning) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::kMarkHttpAsParameterWarning}});
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to an HTTP page. Use a non-local hostname so that it is
+  // not considered secure.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html"));
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+}
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       MarkHttpAsWarningAndDangerousOnFormEdits) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::
+            kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to an HTTP page. Use a non-local hostname so that it is
+  // not considered secure.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(),
+                                 "/textinput/focus_input_on_load.html"));
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+
+  // Type one character into the focused input control and wait for a security
+  // state change.
+  SecurityStyleTestObserver observer(contents);
+  content::SimulateKeyPress(contents, ui::DomKey::FromCharacter('A'),
+                            ui::DomCode::US_A, ui::VKEY_A, false, false, false,
+                            false);
+  observer.WaitForDidChangeVisibleSecurityState();
+
+  // Verify that the security state degrades as expected.
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+}
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       MarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::
+            kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards}});
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to an HTTP page. Use a non-local hostname so that it is
+  // not considered secure.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html"));
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+
+  // Insert a password field into the page and wait for a security state change.
+  {
+    SecurityStyleTestObserver observer(contents);
+    EXPECT_TRUE(
+        content::ExecuteScript(contents,
+                               "var i = document.createElement('input');"
+                               "i.type = 'password';"
+                               "i.id = 'password-field';"
+                               "document.body.appendChild(i);"));
+    observer.WaitForDidChangeVisibleSecurityState();
+
+    // Verify that the security state degrades as expected.
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  }
+
+  // Remove the password field and verify that the security level returns to
+  // HTTP_SHOW_WARNING.
+  {
+    SecurityStyleTestObserver observer(contents);
+    EXPECT_TRUE(content::ExecuteScript(contents,
+                                       "document.body.removeChild(document."
+                                       "getElementById('password-field'));"));
+    observer.WaitForDidChangeVisibleSecurityState();
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  }
 }
 
 }  // namespace

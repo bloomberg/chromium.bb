@@ -25548,6 +25548,7 @@ from previous Chrome versions.
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
+  <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="28272521" label="ash-enable-display-move-window-accels"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
@@ -25603,6 +25604,7 @@ from previous Chrome versions.
   <int value="180074362" label="memory-pressure-thresholds"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
+  <int value="191737931" label="enable-mark-http-as"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
@@ -25758,6 +25760,7 @@ from previous Chrome versions.
   <int value="630244477" label="ServiceWorkerPaymentApps:enabled"/>
   <int value="630947363" label="touch-events"/>
   <int value="632340413" label="network-settings-config"/>
+  <int value="635076832" label="MarkHttpAs:disabled"/>
   <int value="635971109" label="PrintPdfAsImage:disabled"/>
   <int value="636425179" label="mhtml-generator-option"/>
   <int value="637396292" label="AllBookmarks:enabled"/>
@@ -27382,8 +27385,11 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MarkHttpAsStatus">
+  <obsolete>
+    Deprecated 12/2017.
+  </obsolete>
   <int value="0" label="Neutral (deprecated February 2017)"/>
-  <int value="1" label="Non-Secure"/>
+  <int value="1" label="Dangerous"/>
   <int value="2"
       label="Neutral with a verbose warning on sensitive fields (deprecated
              October 2017)"/>

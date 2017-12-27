@@ -9,13 +9,13 @@ if (is_android) {
 
 static_library("core") {
   sources = [
+    "features.cc",
+    "features.h",
     "insecure_input_event_data.h",
     "security_state.cc",
     "security_state.h",
     "security_state_ui.cc",
     "security_state_ui.h",
-    "switches.cc",
-    "switches.h",
   ]
 
   public_deps = [

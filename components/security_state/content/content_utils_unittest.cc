@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "components/security_state/core/security_state.h"
-#include "components/security_state/core/switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/security_style_explanation.h"
 #include "content/public/browser/security_style_explanations.h"

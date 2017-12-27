@@ -58,7 +58,6 @@ extern const char kInProductHelpDemoModeDescription[];
 // display of omnibox warnings about non-secure pages.
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
-extern const char kMarkHttpAsDangerous[];
 
 // Title and description for the flag to enable the new fullscreen
 // implementation.
