@@ -477,6 +477,9 @@ extern const char kIconNtpDescription[];
 extern const char kIgnoreGpuBlacklistName[];
 extern const char kIgnoreGpuBlacklistDescription[];
 
+extern const char kIgnorePreviewsBlacklistName[];
+extern const char kIgnorePreviewsBlacklistDescription[];
+
 extern const char kImportantSitesInCbdName[];
 extern const char kImportantSitesInCbdDescription[];
 

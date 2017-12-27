@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
@@ -19,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,6 +35,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
+#include "components/previews/core/previews_switches.h"
 #include "components/previews/core/previews_user_data.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
@@ -327,8 +330,9 @@ class PreviewsIODataTest : public testing::Test {
  public:
   PreviewsIODataTest()
       : field_trial_list_(nullptr),
-        io_data_(scoped_task_environment_.GetMainThreadTaskRunner(),
-                 scoped_task_environment_.GetMainThreadTaskRunner()),
+        io_data_(base::MakeUnique<TestPreviewsIOData>(
+            scoped_task_environment_.GetMainThreadTaskRunner(),
+            scoped_task_environment_.GetMainThreadTaskRunner())),
         optimization_guide_service_(
             scoped_task_environment_.GetMainThreadTaskRunner()),
         context_(true) {
@@ -345,9 +349,15 @@ class PreviewsIODataTest : public testing::Test {
     variations::testing::ClearAllVariationParams();
   }
 
+  void InitializeIOData() {
+    io_data_ = base::MakeUnique<TestPreviewsIOData>(
+        scoped_task_environment_.GetMainThreadTaskRunner(),
+        scoped_task_environment_.GetMainThreadTaskRunner());
+  }
+
   void InitializeUIServiceWithoutWaitingForBlackList() {
     ui_service_.reset(new TestPreviewsUIService(
-        &io_data_, scoped_task_environment_.GetMainThreadTaskRunner(),
+        io_data_.get(), scoped_task_environment_.GetMainThreadTaskRunner(),
         base::MakeUnique<TestPreviewsOptOutStore>(),
         base::MakeUnique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
@@ -381,7 +391,7 @@ class PreviewsIODataTest : public testing::Test {
     return request;
   }
 
-  TestPreviewsIOData* io_data() { return &io_data_; }
+  TestPreviewsIOData* io_data() { return io_data_.get(); }
   TestPreviewsUIService* ui_service() { return ui_service_.get(); }
   net::TestURLRequestContext* context() { return &context_; }
   net::TestNetworkQualityEstimator* network_quality_estimator() {
@@ -391,7 +401,7 @@ class PreviewsIODataTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::FieldTrialList field_trial_list_;
-  TestPreviewsIOData io_data_;
+  std::unique_ptr<TestPreviewsIOData> io_data_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
@@ -1082,6 +1092,35 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeReloadDisallowed) {
   for (size_t i = 0; i < actual_passed_reasons.size(); i++) {
     EXPECT_EQ(checked_decisions[i], actual_passed_reasons[i]);
   }
+}
+
+TEST_F(PreviewsIODataTest, IgnoreBlacklistEnabledViaFlag) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitch(switches::kIgnorePreviewsBlacklist);
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIgnorePreviewsBlacklist));
+
+  InitializeIOData();
+  InitializeUIService();
+
+  CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
+  std::unique_ptr<TestPreviewsBlackList> blacklist =
+      base::MakeUnique<TestPreviewsBlackList>(
+          PreviewsEligibilityReason::HOST_BLACKLISTED, io_data());
+  io_data()->InjectTestBlacklist(std::move(blacklist));
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  auto expected_reason = PreviewsEligibilityReason::ALLOWED;
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi(),
+      params::GetBlackListedHostsForClientLoFiFieldTrial()));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(ui_service()->decision_reasons(),
+              ::testing::Contains(expected_reason));
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeAllowPreviewsOnECT) {

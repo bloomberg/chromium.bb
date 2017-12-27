@@ -8,12 +8,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
+#include "base/test/scoped_command_line.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_logger_observer.h"
+#include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace previews {
@@ -731,6 +734,31 @@ TEST_F(PreviewsLoggerTest, ObserverNotifiedOfBlacklistIgnoreStatusOnAdd) {
   TestPreviewsLoggerObserver observer;
   EXPECT_FALSE(observer.blacklist_ignored());
   logger_->AddAndNotifyObserver(&observer);
+  EXPECT_TRUE(observer.blacklist_ignored());
+}
+
+TEST_F(PreviewsLoggerTest,
+       ObserverNotifiedOfBlacklistIgnoreStatusDisabledViaFlag) {
+  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIgnorePreviewsBlacklist));
+
+  TestPreviewsLoggerObserver observer;
+  PreviewsLogger logger;
+  logger.AddAndNotifyObserver(&observer);
+  EXPECT_FALSE(observer.blacklist_ignored());
+}
+
+TEST_F(PreviewsLoggerTest,
+       ObserverNotifiedOfBlacklistIgnoreStatusEnabledViaFlag) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitch(switches::kIgnorePreviewsBlacklist);
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIgnorePreviewsBlacklist));
+
+  TestPreviewsLoggerObserver observer;
+  PreviewsLogger logger;
+  logger.AddAndNotifyObserver(&observer);
   EXPECT_TRUE(observer.blacklist_ignored());
 }
 

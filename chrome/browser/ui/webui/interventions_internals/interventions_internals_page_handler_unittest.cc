@@ -34,6 +34,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_logger_observer.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/nqe/effective_connection_type.h"
@@ -56,6 +57,8 @@ constexpr char kOfflineDesciption[] = "Offline Previews";
 
 // The HTML DOM ID used in Javascript.
 constexpr char kEctFlagHtmlId[] = "ect-flag";
+constexpr char kIgnorePreviewsBlacklistFlagHtmlId[] =
+    "ignore-previews-blacklist";
 constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
 constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 
@@ -63,6 +66,8 @@ constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 constexpr char kEctFlagLink[] =
     "chrome://flags/#force-effective-connection-type";
+constexpr char kIgnorePreviewsBlacklistLink[] =
+    "chrome://flags/#ignore-previews-blacklist";
 constexpr char kOfflinePageFlagLink[] =
     "chrome://flags/#enable-offline-previews";
 
@@ -420,7 +425,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 3;
+  constexpr size_t expected = 4;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 
@@ -482,6 +487,36 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsEctForceFieldtrialValue) {
             ect_flag->second->description);
   EXPECT_EQ("Fieldtrial forced " + expected_ect, ect_flag->second->value);
   EXPECT_EQ(kEctFlagLink, ect_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       GetFlagsIgnorePreviewsBlacklistDisabledValue) {
+  // Disabled by default.
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto ignore_previews_blacklist =
+      passed_in_flags.find(kIgnorePreviewsBlacklistFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), ignore_previews_blacklist);
+  EXPECT_EQ(flag_descriptions::kIgnorePreviewsBlacklistName,
+            ignore_previews_blacklist->second->description);
+  EXPECT_EQ(kDisabledFlagValue, ignore_previews_blacklist->second->value);
+  EXPECT_EQ(kIgnorePreviewsBlacklistLink,
+            ignore_previews_blacklist->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsNoScriptDisabledValue) {
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto ignore_previews_blacklist =
+      passed_in_flags.find(kIgnorePreviewsBlacklistFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), ignore_previews_blacklist);
+  EXPECT_EQ(flag_descriptions::kIgnorePreviewsBlacklistName,
+            ignore_previews_blacklist->second->description);
+  EXPECT_EQ(kDisabledFlagValue, ignore_previews_blacklist->second->value);
+  EXPECT_EQ(kIgnorePreviewsBlacklistLink,
+            ignore_previews_blacklist->second->link);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsNoScriptDefaultValue) {
@@ -686,6 +721,20 @@ TEST_F(InterventionsInternalsPageHandlerTest,
 
 TEST_F(InterventionsInternalsPageHandlerTest,
        IgnoreBlacklistReversedOnLastObserverRemovedCalled) {
+  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      previews::switches::kIgnorePreviewsBlacklist));
+  page_handler_->OnLastObserverRemove();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(page_->blacklist_ignored());
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       IgnoreBlacklistReversedOnLastObserverRemovedCalledIgnoreViaFlag) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      previews::switches::kIgnorePreviewsBlacklist));
   page_handler_->OnLastObserverRemove();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(page_->blacklist_ignored());
