@@ -10,7 +10,8 @@ import random
 import string
 import tempfile
 import unittest
-import upload_test_result_artifacts as UTRA
+
+import upload_test_result_artifacts
 
 
 class UploadTestResultArtifactsTest(unittest.TestCase):
@@ -57,8 +58,8 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
     }
 
   def _loadTest(self, json_data, upload):
-    return UTRA.upload_artifacts(
-        json_data, '/tmp', upload)
+    return upload_test_result_artifacts.upload_artifacts(
+        json_data, '/tmp', upload, 'test-bucket')
 
 
   def loadTestEndToEndSimple(self):
@@ -80,7 +81,7 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
   ### End load test section.
 
   def testGetTestsSimple(self):
-    self.assertEqual(UTRA.get_tests({
+    self.assertEqual(upload_test_result_artifacts.get_tests({
       'foo': {
         'expected': 'PASS',
         'actual': 'PASS',
@@ -93,7 +94,7 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
     })
 
   def testGetTestsNested(self):
-    self.assertEqual(UTRA.get_tests({
+    self.assertEqual(upload_test_result_artifacts.get_tests({
       'foo': {
         'bar': {
           'baz': {
@@ -119,7 +120,7 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
 
   def testGetTestsError(self):
     with self.assertRaises(ValueError):
-      UTRA.get_tests([])
+      upload_test_result_artifacts.get_tests([])
 
   def testUploadArtifactsMissingType(self):
     """Tests that the type information is used for validation."""
@@ -138,7 +139,8 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
         }
     }
     with self.assertRaises(ValueError):
-      UTRA.upload_artifacts(data, '/tmp', True)
+      upload_test_result_artifacts.upload_artifacts(
+          data, '/tmp', True, 'test-bucket')
 
   @mock.patch('upload_test_result_artifacts.get_file_digest')
   @mock.patch('upload_test_result_artifacts.tempfile.mkdtemp')
@@ -159,7 +161,8 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
           }
         }
     }
-    self.assertEqual(UTRA.upload_artifacts(data, '/tmp', True), data)
+    self.assertEqual(upload_test_result_artifacts.upload_artifacts(
+        data, '/tmp', True, 'test-bucket'), data)
     mkd_patch.assert_called_once_with(prefix='upload_test_artifacts')
     digest_patch.assert_not_called()
     copy_patch.assert_not_called()
@@ -191,7 +194,8 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
           }
         }
     }
-    self.assertEqual(UTRA.upload_artifacts(data, '/tmp', True), {
+    self.assertEqual(upload_test_result_artifacts.upload_artifacts(
+        data, '/tmp', True, 'test-bucket'), {
         'artifact_type_info': {
             'log': 'text/plain'
         },
@@ -250,7 +254,8 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
           },
         }
     }
-    self.assertEqual(UTRA.upload_artifacts(data, '/tmp', True), {
+    self.assertEqual(upload_test_result_artifacts.upload_artifacts(
+        data, '/tmp', True, 'test-bucket'), {
         'artifact_type_info': {
             'log': 'text/plain',
             'screenshot': 'image/png',
@@ -295,7 +300,7 @@ class UploadTestResultArtifactsTest(unittest.TestCase):
       f.write('a')
 
     self.assertEqual(
-        UTRA.get_file_digest(path),
+        upload_test_result_artifacts.get_file_digest(path),
         '86f7e437faa5a7fce15d1ddcb9eaeaea377667b8')
 
 if __name__ == '__main__':
