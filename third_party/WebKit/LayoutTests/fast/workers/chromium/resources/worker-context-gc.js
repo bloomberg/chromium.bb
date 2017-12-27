@@ -8,7 +8,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-var worker = createWorker();
+var worker = new Worker('../resources/worker-common.js');
 
 log("This tests that gc does not destroy the WorkerNavigator and WorkerLocation wrappers if the WorkerContext is still active. You should see two PASSes below if this test succeeds.");
 

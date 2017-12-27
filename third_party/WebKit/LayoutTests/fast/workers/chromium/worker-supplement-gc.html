@@ -1,7 +1,6 @@
 <!DOCTYPE HTML>
-<script src="../../resources/js-test.js"></script>
-<script src="../../resources/gc.js"></script>
-<script src="resources/worker-create-common.js"></script>
+<script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/gc.js"></script>
 <script>
 description("Test GCing of WorkerGlobalScope supplementable");
 window.jsTestIsAsync = true;
@@ -12,7 +11,7 @@ if (window.testRunner) {
 
 // Test that garbage collection of 'supplements' that extend the
 // WorkerGlobalScope object is well behaved.
-var worker = createWorker();
+var worker = new Worker('../resources/worker-common.js');
 var count = 0;
 
 function ping()
