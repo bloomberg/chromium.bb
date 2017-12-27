@@ -12,7 +12,7 @@
     : ChromeIdentityInteractionManager
 
 // Fake identity that will be returned by the add account method.
-@property(nonatomic, assign) ChromeIdentity* fakeIdentity;
+@property(nonatomic, weak) ChromeIdentity* fakeIdentity;
 
 @end
 

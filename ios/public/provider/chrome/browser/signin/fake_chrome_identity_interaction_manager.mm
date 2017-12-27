@@ -5,21 +5,24 @@
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager.h"
 
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface FakeAddAccountViewController : UIViewController {
-  FakeChromeIdentityInteractionManager* _manager;  // Weak.
-  base::scoped_nsobject<UIButton> _cancelButton;
-  base::scoped_nsobject<UIButton> _signInButton;
+  __weak FakeChromeIdentityInteractionManager* _manager;
+  UIButton* _cancelButton;
+  UIButton* _signInButton;
 }
 @end
 
 @interface FakeChromeIdentityInteractionManager () {
-  base::mac::ScopedBlock<SigninCompletionCallback> _completionCallback;
-  base::scoped_nsobject<UIViewController> _viewController;
+  SigninCompletionCallback _completionCallback;
+  UIViewController* _viewController;
   BOOL _isCanceling;
 }
 
@@ -47,7 +50,6 @@
   [_cancelButton removeTarget:self
                        action:@selector(didTapCancel:)
              forControlEvents:UIControlEventTouchUpInside];
-  [super dealloc];
 }
 
 - (void)viewDidLoad {
@@ -56,14 +58,14 @@
   // Obnoxious color, this is a test screen.
   self.view.backgroundColor = [UIColor magentaColor];
 
-  _signInButton.reset([[UIButton buttonWithType:UIButtonTypeCustom] retain]);
+  _signInButton = [UIButton buttonWithType:UIButtonTypeCustom];
   [_signInButton setTitle:@"Sign in" forState:UIControlStateNormal];
   [_signInButton addTarget:self
                     action:@selector(didTapSignIn:)
           forControlEvents:UIControlEventTouchUpInside];
   [self.view addSubview:_signInButton];
 
-  _cancelButton.reset([[UIButton buttonWithType:UIButtonTypeCustom] retain]);
+  _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
   [_cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
   [_cancelButton setAccessibilityIdentifier:@"cancel"];
   [_cancelButton addTarget:self
@@ -103,9 +105,9 @@
 }
 
 - (void)addAccountWithCompletion:(SigninCompletionCallback)completion {
-  _completionCallback.reset(completion, base::scoped_policy::RETAIN);
-  _viewController.reset(
-      [[FakeAddAccountViewController alloc] initWithInteractionManager:self]);
+  _completionCallback = completion;
+  _viewController =
+      [[FakeAddAccountViewController alloc] initWithInteractionManager:self];
   [self.delegate interactionManager:self
               presentViewController:_viewController
                            animated:YES
@@ -152,13 +154,13 @@
 }
 
 - (void)runCompletionCallbackWithError:(NSError*)error {
-  _viewController.reset();
+  _viewController = nil;
   if (_completionCallback) {
     // Ensure self is not destroyed in the callback.
-    base::scoped_nsobject<FakeChromeIdentityInteractionManager> strongSelf(
-        [self retain]);
-    _completionCallback.get()(error ? nil : _fakeIdentity, error);
-    _completionCallback.reset();
+    NS_VALID_UNTIL_END_OF_SCOPE FakeChromeIdentityInteractionManager*
+        strongSelf = self;
+    _completionCallback(error ? nil : _fakeIdentity, error);
+    _completionCallback = nil;
   }
 }
 
