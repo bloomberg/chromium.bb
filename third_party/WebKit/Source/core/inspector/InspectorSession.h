@@ -68,10 +68,6 @@ class CORE_EXPORT InspectorSession
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
   void sendNotification(
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
-  // TODO(kozyatinskiy): remove it.
-  void SendProtocolResponse(int call_id,
-                            const v8_inspector::StringView& message) {}
-  void SendProtocolNotification(const v8_inspector::StringView& message) {}
 
   void SendProtocolResponse(int call_id, const String& message);
 
