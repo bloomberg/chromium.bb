@@ -68,7 +68,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   // Parent's PercentageResolutionInlineSize().
   // This is not always available.
-  Optional<LayoutUnit> ParentPercentageResolutionInlineSize() const;
+  LayoutUnit ParentPercentageResolutionInlineSize() const;
 
   // The available space size.
   // See: https://drafts.csswg.org/css-sizing/#available
@@ -202,7 +202,7 @@ class CORE_EXPORT NGConstraintSpace final
       TextDirection,
       NGLogicalSize available_size,
       NGLogicalSize percentage_resolution_size,
-      Optional<LayoutUnit> parent_percentage_resolution_inline_size,
+      LayoutUnit parent_percentage_resolution_inline_size,
       NGPhysicalSize initial_containing_block_size,
       LayoutUnit fragmentainer_block_size,
       LayoutUnit fragmentainer_space_at_bfc_start,
@@ -225,7 +225,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
-  Optional<LayoutUnit> parent_percentage_resolution_inline_size_;
+  LayoutUnit parent_percentage_resolution_inline_size_;
   NGPhysicalSize initial_containing_block_size_;
 
   LayoutUnit fragmentainer_block_size_;
