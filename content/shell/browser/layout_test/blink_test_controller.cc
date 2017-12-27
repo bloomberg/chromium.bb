@@ -800,6 +800,11 @@ void BlinkTestController::OnAllSharedWorkersDestroyed() {
     RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
     rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));
   }
+  if (secondary_window_) {
+    RenderViewHost* rvh =
+        secondary_window_->web_contents()->GetRenderViewHost();
+    rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));
+  }
 }
 
 void BlinkTestController::OnImageDump(const std::string& actual_pixel_hash,
