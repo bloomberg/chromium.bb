@@ -2800,7 +2800,7 @@ crbug.com/709227 external/wpt/websockets/interfaces/WebSocket/send/006.html?wss 
 crbug.com/709227 external/wpt/websockets/interfaces/WebSocket/send/010.html?wss [ Timeout ]
 crbug.com/709227 external/wpt/websockets/keeping-connection-open/001.html?wss [ Failure Timeout ]
 crbug.com/709227 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
-crbug.com/709227 external/wpt/websockets/opening-handshake/005.html?wss [ Timeout ]
+crbug.com/709227 external/wpt/websockets/opening-handshake/005.html?wss [ Failure Timeout ]
 crbug.com/709227 external/wpt/workers/nested_worker.worker.html [ Timeout ]
 
 # Crashes
