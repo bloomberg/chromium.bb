@@ -268,7 +268,7 @@ static void restore_boundary_column(uint8_t *dst8, int dst_stride,
       dst16[i * dst_stride] = buf[i + RESTORATION_BORDER];
   } else {
     for (int i = -RESTORATION_BORDER; i < h + RESTORATION_BORDER; i++)
-      dst8[i * dst_stride] = buf[i + RESTORATION_BORDER];
+      dst8[i * dst_stride] = (uint8_t)(buf[i + RESTORATION_BORDER]);
   }
 }
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES

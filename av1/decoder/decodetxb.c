@@ -324,24 +324,15 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
 #endif
       for (idx = 0; idx < COEFF_BASE_RANGE / (BR_CDF_SIZE - 1); ++idx) {
-        int k = av1_read_record_symbol(counts, r,
-#if 0
-            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_16X16)][plane_type][ctx],
-#else
-                                       ec_ctx->coeff_br_cdf[AOMMIN(
-                                           txs_ctx, TX_32X32)][plane_type][ctx],
-#endif
-                                       BR_CDF_SIZE, ACCT_STR);
+        int k = av1_read_record_symbol(
+            counts, r,
+            ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx],
+            BR_CDF_SIZE, ACCT_STR);
         *level += k;
         if (counts) {
           for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
-#if 0
-            ++counts->coeff_lps[AOMMIN(txs_ctx, TX_16X16)][plane_type][lps][ctx]
-                               [lps == k];
-#else
             ++counts->coeff_lps[AOMMIN(txs_ctx, TX_32X32)][plane_type][lps][ctx]
                                [lps == k];
-#endif
             if (lps == k) break;
           }
           ++counts->coeff_lps_multi[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx]
@@ -421,7 +412,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       *level = COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
       // Save golomb in tcoeffs because adding it to level may incur overflow
       tran_high_t t = *level + read_golomb(xd, r, counts);
-      cul_level += t;
+      cul_level += (int)t;
 #if CONFIG_NEW_QUANT
       dqv_val = &dq_val[pos != 0][0];
       t = av1_dequant_abscoeff_nuq(t, dequant[!!pos], dqv_val);
