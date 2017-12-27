@@ -555,8 +555,6 @@ static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   (void)mbmi;
   const int segment_id = read_segment_id(r, &ec_ctx->seg);
 #endif
-  FRAME_COUNTS *counts = xd->counts;
-  if (counts) ++counts->seg.tree_total[segment_id];
   set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
   return segment_id;
 }
@@ -576,7 +574,6 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, int preskip,
                                  aom_reader *r) {
   struct segmentation *const seg = &cm->seg;
-  FRAME_COUNTS *counts = xd->counts;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   struct segmentation_probs *const segp = &ec_ctx->seg;
 
@@ -610,12 +607,9 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (cm->preskip_segid) return mbmi->segment_id;
     if (mbmi->skip) {
       if (seg->temporal_update) {
-        const int ctx = av1_get_pred_context_seg_id(xd);
         mbmi->seg_id_predicted = 0;
-        if (counts) ++counts->seg.pred[ctx][mbmi->seg_id_predicted];
       }
       segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, 0);
-      if (counts) ++counts->seg.tree_total[segment_id];
       set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
       return segment_id;
     }
@@ -626,7 +620,6 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const int ctx = av1_get_pred_context_seg_id(xd);
     aom_cdf_prob *pred_cdf = segp->pred_cdf[ctx];
     mbmi->seg_id_predicted = aom_read_symbol(r, pred_cdf, 2, ACCT_STR);
-    if (counts) ++counts->seg.pred[ctx][mbmi->seg_id_predicted];
     if (mbmi->seg_id_predicted) {
       segment_id = predicted_segment_id;
     } else {
@@ -635,7 +628,6 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #else
       segment_id = read_segment_id(r, segp);
 #endif
-      if (counts) ++counts->seg.tree_mispred[segment_id];
     }
   } else {
 #if CONFIG_SPATIAL_SEGMENTATION
@@ -643,7 +635,6 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #else
     segment_id = read_segment_id(r, segp);
 #endif
-    if (counts) ++counts->seg.tree_total[segment_id];
   }
   set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
   return segment_id;

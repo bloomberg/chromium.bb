@@ -42,74 +42,6 @@ void av1_clear_segdata(struct segmentation *seg, int segment_id,
   seg->feature_data[segment_id][feature_id] = 0;
 }
 
-// Based on set of segment counts calculate a probability tree
-static void calc_segtree_probs(unsigned *segcounts,
-                               aom_prob *segment_tree_probs,
-                               const aom_prob *cur_tree_probs,
-                               const int probwt) {
-  // Work out probabilities of each segment
-  const unsigned cc[4] = { segcounts[0] + segcounts[1],
-                           segcounts[2] + segcounts[3],
-                           segcounts[4] + segcounts[5],
-                           segcounts[6] + segcounts[7] };
-  const unsigned ccc[2] = { cc[0] + cc[1], cc[2] + cc[3] };
-  int i;
-
-  segment_tree_probs[0] = get_binary_prob(ccc[0], ccc[1]);
-  segment_tree_probs[1] = get_binary_prob(cc[0], cc[1]);
-  segment_tree_probs[2] = get_binary_prob(cc[2], cc[3]);
-  segment_tree_probs[3] = get_binary_prob(segcounts[0], segcounts[1]);
-  segment_tree_probs[4] = get_binary_prob(segcounts[2], segcounts[3]);
-  segment_tree_probs[5] = get_binary_prob(segcounts[4], segcounts[5]);
-  segment_tree_probs[6] = get_binary_prob(segcounts[6], segcounts[7]);
-
-  for (i = 0; i < 7; i++) {
-    const unsigned *ct =
-        i == 0 ? ccc : i < 3 ? cc + (i & 2) : segcounts + (i - 3) * 2;
-    av1_prob_diff_update_savings_search(ct, cur_tree_probs[i],
-                                        &segment_tree_probs[i],
-                                        DIFF_UPDATE_PROB, probwt);
-  }
-}
-
-// Based on set of segment counts and probabilities calculate a cost estimate
-static int cost_segmap(unsigned *segcounts, aom_prob *probs) {
-  const int c01 = segcounts[0] + segcounts[1];
-  const int c23 = segcounts[2] + segcounts[3];
-  const int c45 = segcounts[4] + segcounts[5];
-  const int c67 = segcounts[6] + segcounts[7];
-  const int c0123 = c01 + c23;
-  const int c4567 = c45 + c67;
-
-  // Cost the top node of the tree
-  int cost = c0123 * av1_cost_zero(probs[0]) + c4567 * av1_cost_one(probs[0]);
-
-  // Cost subsequent levels
-  if (c0123 > 0) {
-    cost += c01 * av1_cost_zero(probs[1]) + c23 * av1_cost_one(probs[1]);
-
-    if (c01 > 0)
-      cost += segcounts[0] * av1_cost_zero(probs[3]) +
-              segcounts[1] * av1_cost_one(probs[3]);
-    if (c23 > 0)
-      cost += segcounts[2] * av1_cost_zero(probs[4]) +
-              segcounts[3] * av1_cost_one(probs[4]);
-  }
-
-  if (c4567 > 0) {
-    cost += c45 * av1_cost_zero(probs[2]) + c67 * av1_cost_one(probs[2]);
-
-    if (c45 > 0)
-      cost += segcounts[4] * av1_cost_zero(probs[5]) +
-              segcounts[5] * av1_cost_one(probs[5]);
-    if (c67 > 0)
-      cost += segcounts[6] * av1_cost_zero(probs[6]) +
-              segcounts[7] * av1_cost_one(probs[6]);
-  }
-
-  return cost;
-}
-
 static void count_segs(const AV1_COMMON *cm, MACROBLOCKD *xd,
                        const TileInfo *tile, MODE_INFO **mi,
                        unsigned *no_pred_segcounts,
@@ -275,24 +207,13 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   struct segmentation *seg = &cm->seg;
   struct segmentation_probs *segp = &cm->fc->seg;
-
   int no_pred_cost;
   int t_pred_cost = INT_MAX;
-
   int tile_col, tile_row, mi_row, mi_col;
-  const int probwt = cm->num_tg;
-
-  unsigned(*temporal_predictor_count)[2] = cm->counts.seg.pred;
-  unsigned *no_pred_segcounts = cm->counts.seg.tree_total;
-  unsigned *t_unpred_seg_counts = cm->counts.seg.tree_mispred;
-
-  aom_prob no_pred_tree[SEG_TREE_PROBS];
-  aom_prob t_pred_tree[SEG_TREE_PROBS];
-
+  unsigned temporal_predictor_count[SEG_TEMPORAL_PRED_CTXS][2] = { { 0 } };
+  unsigned no_pred_segcounts[MAX_SEGMENTS] = { 0 };
+  unsigned t_unpred_seg_counts[MAX_SEGMENTS] = { 0 };
   (void)xd;
-
-  // We are about to recompute all the segment counts, so zero the accumulators.
-  av1_zero(cm->counts.seg);
 
   // First of all generate stats regarding how well the last segment map
   // predicts this one
@@ -320,18 +241,26 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
     }
   }
 
-  // Work out probability tree for coding segments without prediction
-  // and the cost.
-  calc_segtree_probs(no_pred_segcounts, no_pred_tree, segp->tree_probs, probwt);
-  no_pred_cost = cost_segmap(no_pred_segcounts, no_pred_tree);
+  int seg_id_cost[MAX_SEGMENTS];
+  av1_cost_tokens_from_cdf(seg_id_cost, segp->tree_cdf, NULL);
+  no_pred_cost = 0;
+  for (int i = 0; i < MAX_SEGMENTS; ++i)
+    no_pred_cost += no_pred_segcounts[i] * seg_id_cost[i];
 
   // Key frames cannot use temporal prediction
   if (!frame_is_intra_only(cm) && !cm->error_resilient_mode) {
-    // Work out probability tree for coding those segments not
-    // predicted using the temporal method and the cost.
-    calc_segtree_probs(t_unpred_seg_counts, t_pred_tree, segp->tree_probs,
-                       probwt);
-    t_pred_cost = cost_segmap(t_unpred_seg_counts, t_pred_tree);
+    int pred_flag_cost[SEG_TEMPORAL_PRED_CTXS][2];
+    for (int i = 0; i < SEG_TEMPORAL_PRED_CTXS; ++i)
+      av1_cost_tokens_from_cdf(pred_flag_cost[i], segp->pred_cdf[i], NULL);
+    t_pred_cost = 0;
+    // Cost for signaling the prediction flag.
+    for (int i = 0; i < SEG_TEMPORAL_PRED_CTXS; ++i) {
+      for (int j = 0; j < 2; ++j)
+        t_pred_cost += temporal_predictor_count[i][j] * pred_flag_cost[i][j];
+    }
+    // Cost for signaling the unpredicted segment id.
+    for (int i = 0; i < MAX_SEGMENTS; ++i)
+      t_pred_cost += t_unpred_seg_counts[i] * seg_id_cost[i];
   }
 
   // Now choose which coding method to use.

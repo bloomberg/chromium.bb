@@ -74,12 +74,6 @@ typedef struct {
   const int16_t *neighbors;
 } SCAN_ORDER;
 
-struct seg_counts {
-  unsigned int tree_total[MAX_SEGMENTS];
-  unsigned int tree_mispred[MAX_SEGMENTS];
-  unsigned int pred[PREDICTION_PROBS][2];
-};
-
 typedef struct frame_contexts {
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
@@ -355,7 +349,6 @@ typedef struct FRAME_COUNTS {
   unsigned int intra_ext_tx[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                            [TX_TYPES];
 #endif  // CONFIG_ENTROPY_STATS
-  struct seg_counts seg;
 #if CONFIG_FILTER_INTRA
   unsigned int filter_intra_mode[FILTER_INTRA_MODES];
   unsigned int filter_intra_tx[TX_SIZES_ALL][2];
@@ -446,8 +439,6 @@ static const int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES] = {
 
 void av1_setup_frame_contexts(struct AV1Common *cm);
 void av1_setup_past_independence(struct AV1Common *cm);
-
-void av1_adapt_intra_frame_probs(struct AV1Common *cm);
 void av1_adapt_inter_frame_probs(struct AV1Common *cm);
 
 static INLINE int av1_ceil_log2(int n) {

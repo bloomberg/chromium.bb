@@ -21,7 +21,7 @@ extern "C" {
 #define MAX_SEGMENTS 8
 #define SEG_TREE_PROBS (MAX_SEGMENTS - 1)
 
-#define PREDICTION_PROBS 3
+#define SEG_TEMPORAL_PRED_CTXS 3
 #if CONFIG_SPATIAL_SEGMENTATION
 #define SPATIAL_PREDICTION_PROBS 3
 #endif
@@ -65,9 +65,8 @@ struct segmentation {
 };
 
 struct segmentation_probs {
-  aom_prob tree_probs[SEG_TREE_PROBS];
   aom_cdf_prob tree_cdf[CDF_SIZE(MAX_SEGMENTS)];
-  aom_cdf_prob pred_cdf[PREDICTION_PROBS][CDF_SIZE(2)];
+  aom_cdf_prob pred_cdf[SEG_TEMPORAL_PRED_CTXS][CDF_SIZE(2)];
 #if CONFIG_SPATIAL_SEGMENTATION
   aom_cdf_prob spatial_pred_seg_cdf[SPATIAL_PREDICTION_PROBS]
                                    [CDF_SIZE(MAX_SEGMENTS)];

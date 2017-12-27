@@ -3483,7 +3483,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_SYMBOLRATE
       av1_dump_symbol_rate(cm);
 #endif
-      av1_adapt_intra_frame_probs(cm);
       av1_average_tile_coef_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                  num_bwd_ctxs);
       av1_average_tile_intra_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,

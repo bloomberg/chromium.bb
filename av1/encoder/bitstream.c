@@ -1192,22 +1192,8 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
     } else {
       if (cm->preskip_segid) return;
       if (skip) {
-        int prev_segid = mbmi->segment_id;
         write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
-
-        if (seg->temporal_update) {
-          const int pred_flag = mbmi->seg_id_predicted;
-          const int pred_context = av1_get_pred_context_seg_id(xd);
-          unsigned(*temporal_predictor_count)[2] = cm->counts.seg.pred;
-          unsigned *t_unpred_seg_counts = cm->counts.seg.tree_mispred;
-
-          temporal_predictor_count[pred_context][pred_flag]--;
-          if (!pred_flag) t_unpred_seg_counts[prev_segid]--;
-
-          ((MB_MODE_INFO *)mbmi)->seg_id_predicted = 0;
-          temporal_predictor_count[pred_context][0]--;
-          t_unpred_seg_counts[mbmi->segment_id]--;
-        }
+        if (seg->temporal_update) ((MB_MODE_INFO *)mbmi)->seg_id_predicted = 0;
         return;
       }
     }

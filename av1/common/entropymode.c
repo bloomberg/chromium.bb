@@ -1870,17 +1870,15 @@ static const aom_cdf_prob default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)] =
 #endif  // CONFIG_FILTER_INTRA
 
 // FIXME(someone) need real defaults here
-static const aom_prob default_segment_tree_probs[SEG_TREE_PROBS] = {
-  128, 128, 128, 128, 128, 128, 128
+static const aom_cdf_prob default_seg_tree_cdf[CDF_SIZE(MAX_SEGMENTS)] = {
+  AOM_CDF8(4096, 8192, 12288, 16384, 20480, 24576, 28672)
 };
-// clang-format off
+
 static const aom_cdf_prob
-    default_segment_pred_cdf[PREDICTION_PROBS][CDF_SIZE(2)] = {
-  { AOM_CDF2(128 * 128) },
-  { AOM_CDF2(128 * 128) },
-  { AOM_CDF2(128 * 128) }
-};
-// clang-format on
+    default_segment_pred_cdf[SEG_TEMPORAL_PRED_CTXS][CDF_SIZE(2)] = {
+      { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }
+    };
+
 #if CONFIG_DUAL_FILTER
 #if USE_EXTRA_FILTER
 static const aom_cdf_prob
@@ -1921,10 +1919,6 @@ static const aom_cdf_prob
                                    { AOM_CDF3(19072, 26776) },
                                  };
 #endif  // CONFIG_DUAL_FILTER
-
-static const aom_cdf_prob default_seg_tree_cdf[CDF_SIZE(MAX_SEGMENTS)] = {
-  AOM_CDF8(4096, 8192, 12288, 16384, 20480, 24576, 28672)
-};
 
 #if CONFIG_SPATIAL_SEGMENTATION
 static const aom_cdf_prob
@@ -3373,8 +3367,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->interintra_cdf, default_interintra_cdf);
   av1_copy(fc->wedge_interintra_cdf, default_wedge_interintra_cdf);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
-  av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
   av1_copy(fc->seg.pred_cdf, default_segment_pred_cdf);
+  av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
 #if CONFIG_FILTER_INTRA
   av1_copy(fc->filter_intra_cdfs, default_filter_intra_cdfs);
   av1_copy(fc->filter_intra_mode_cdf, default_filter_intra_mode_cdf);
@@ -3395,7 +3389,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_EXT_SKIP
   av1_copy(fc->skip_cdfs, default_skip_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
-  av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
 #if CONFIG_SPATIAL_SEGMENTATION
   for (int i = 0; i < SPATIAL_PREDICTION_PROBS; i++)
     av1_copy(fc->seg.spatial_pred_seg_cdf[i],
@@ -3452,20 +3445,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     for (j = 0; j < (SINGLE_REFS - 1); j++)
       fc->single_ref_prob[i][j] = av1_mode_mv_merge_probs(
           pre_fc->single_ref_prob[i][j], counts->single_ref[i][j]);
-}
-
-void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
-  FRAME_CONTEXT *fc = cm->fc;
-  const FRAME_CONTEXT *pre_fc = cm->pre_fc;
-  const FRAME_COUNTS *counts = &cm->counts;
-
-  if (cm->seg.temporal_update) {
-    aom_tree_merge_probs(av1_segment_tree, pre_fc->seg.tree_probs,
-                         counts->seg.tree_mispred, fc->seg.tree_probs);
-  } else {
-    aom_tree_merge_probs(av1_segment_tree, pre_fc->seg.tree_probs,
-                         counts->seg.tree_total, fc->seg.tree_probs);
-  }
 }
 
 static void set_default_lf_deltas(struct loopfilter *lf) {
