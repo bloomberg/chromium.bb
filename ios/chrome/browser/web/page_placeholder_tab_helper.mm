@@ -12,7 +12,7 @@
 #endif
 
 // Placeholder will not be displayed longer than this time.
-const double kPlaceholderMaxDisplayTimeInSecounds = 1.5;
+const double kPlaceholderMaxDisplayTimeInSeconds = 1.5;
 
 DEFINE_WEB_STATE_USER_DATA_KEY(PagePlaceholderTabHelper);
 
@@ -41,6 +41,13 @@ void PagePlaceholderTabHelper::CreateForWebState(
 
 void PagePlaceholderTabHelper::AddPlaceholderForNextNavigation() {
   add_placeholder_for_next_navigation_ = true;
+}
+
+void PagePlaceholderTabHelper::CancelPlaceholderForNextNavigation() {
+  add_placeholder_for_next_navigation_ = false;
+  if (displaying_placeholder_) {
+    RemovePlaceholder();
+  }
 }
 
 void PagePlaceholderTabHelper::DidStartNavigation(
@@ -74,7 +81,7 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
       FROM_HERE,
       base::Bind(&PagePlaceholderTabHelper::RemovePlaceholder,
                  weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSecondsD(kPlaceholderMaxDisplayTimeInSecounds));
+      base::TimeDelta::FromSecondsD(kPlaceholderMaxDisplayTimeInSeconds));
 }
 
 void PagePlaceholderTabHelper::RemovePlaceholder() {

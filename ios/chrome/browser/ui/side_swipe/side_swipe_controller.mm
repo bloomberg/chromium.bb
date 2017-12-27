@@ -33,7 +33,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -370,19 +369,24 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       if (newIndex != currentIndex) {
         Tab* tab = [model_ tabAtIndex:newIndex];
         // Toggle overlay preview mode for selected tab.
-        [tab.webController setOverlayPreviewMode:YES];
+        PagePlaceholderTabHelper::FromWebState(tab.webState)
+            ->AddPlaceholderForNextNavigation();
         [model_ setCurrentTab:tab];
+
         // And disable overlay preview mode for last selected tab.
-        [currentTab.webController setOverlayPreviewMode:NO];
+        PagePlaceholderTabHelper::FromWebState(currentTab.webState)
+            ->CancelPlaceholderForNextNavigation();
       }
     }
   } else {
     if (gesture.state == UIGestureRecognizerStateCancelled) {
       Tab* tab = [model_ tabAtIndex:startingTabIndex_];
-      [[model_ currentTab].webController setOverlayPreviewMode:NO];
+      PagePlaceholderTabHelper::FromWebState(tab.webState)
+          ->CancelPlaceholderForNextNavigation();
       [model_ setCurrentTab:tab];
     }
-    [[model_ currentTab].webController setOverlayPreviewMode:NO];
+    PagePlaceholderTabHelper::FromWebState([model_ currentTab].webState)
+        ->CancelPlaceholderForNextNavigation();
 
     // Redisplay the view if it was in overlay preview mode.
     [swipeDelegate_ displayTab:[model_ currentTab] isNewSelection:YES];

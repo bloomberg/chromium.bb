@@ -8,7 +8,4 @@ specific_include_rules = {
   "^card_side_swipe_view\.mm$": [
     "+ios/web/web_state/ui/crw_web_controller.h",
   ],
-  "^side_swipe_controller\.mm$": [
-    "+ios/web/web_state/ui/crw_web_controller.h",
-  ],
 }

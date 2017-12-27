@@ -29,9 +29,16 @@ class PagePlaceholderTabHelper
   // will be removed before navigation is finished.
   void AddPlaceholderForNextNavigation();
 
+  // Cancels displaying placeholder during the next navigation. If placeholder
+  // is displayed, then it is removed.
+  void CancelPlaceholderForNextNavigation();
+
+  // true if placeholder is currently being displayed.
+  bool displaying_placeholder() const { return displaying_placeholder_; }
+
   // true if placeholder will be displayed between DidStartNavigation and
   // PageLoaded WebStateObserver callbacks.
-  bool will_add_placeholder_for_next_navigation() {
+  bool will_add_placeholder_for_next_navigation() const {
     return add_placeholder_for_next_navigation_;
   }
 
@@ -57,6 +64,7 @@ class PagePlaceholderTabHelper
   // true if placeholder is currently being displayed.
   bool displaying_placeholder_ = false;
 
+  // true if placeholder must be displayed during the next navigation.
   bool add_placeholder_for_next_navigation_ = false;
 
   base::WeakPtrFactory<PagePlaceholderTabHelper> weak_factory_;

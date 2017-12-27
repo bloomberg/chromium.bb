@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -91,7 +92,9 @@ const CGFloat kMaxFloatDelta = 0.01;
   UIImage* snapshot = [_cache objectForKey:[self keyForTab:tab]];
   if (snapshot && [snapshot size].width >= size.width) {
     // If tab is not in a state to take a snapshot, use the cached snapshot.
-    if (!tab.webState || !tab.webState->CanTakeSnapshot()) {
+    if (!tab.webState || !tab.webState->IsWebUsageEnabled() ||
+        PagePlaceholderTabHelper::FromWebState(tab.webState)
+            ->displaying_placeholder()) {
       completionBlock(snapshot);
       return currentRequest;
     }
