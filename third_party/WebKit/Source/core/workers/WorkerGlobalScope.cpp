@@ -96,24 +96,6 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
   return KURL(BaseURL(), url);
 }
 
-void WorkerGlobalScope::EvaluateClassicScript(
-    const KURL& script_url,
-    String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data) {
-  DCHECK(IsContextThread());
-  CachedMetadataHandler* handler = CreateWorkerScriptCachedMetadataHandler(
-      script_url, cached_meta_data.get());
-  DCHECK(!source_code.IsNull());
-  ReportingProxy().WillEvaluateWorkerScript(
-      source_code.length(),
-      cached_meta_data.get() ? cached_meta_data->size() : 0);
-  bool success = ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown, handler,
-                       script_url),
-      nullptr /* error_event */, v8_cache_options_);
-  ReportingProxy().DidEvaluateWorkerScript(success);
-}
-
 void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   closing_ = true;
@@ -311,6 +293,24 @@ service_manager::InterfaceProvider* WorkerGlobalScope::GetInterfaceProvider() {
 
 ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
+}
+
+void WorkerGlobalScope::EvaluateClassicScript(
+    const KURL& script_url,
+    String source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data) {
+  DCHECK(IsContextThread());
+  CachedMetadataHandler* handler = CreateWorkerScriptCachedMetadataHandler(
+      script_url, cached_meta_data.get());
+  DCHECK(!source_code.IsNull());
+  ReportingProxy().WillEvaluateWorkerScript(
+      source_code.length(),
+      cached_meta_data.get() ? cached_meta_data->size() : 0);
+  bool success = ScriptController()->Evaluate(
+      ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown, handler,
+                       script_url),
+      nullptr /* error_event */, v8_cache_options_);
+  ReportingProxy().DidEvaluateWorkerScript(success);
 }
 
 void WorkerGlobalScope::ImportModuleScript(
