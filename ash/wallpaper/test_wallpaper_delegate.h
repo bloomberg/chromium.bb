@@ -7,7 +7,6 @@
 
 #include "ash/default_wallpaper_delegate.h"
 #include "base/macros.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
@@ -16,24 +15,10 @@ class TestWallpaperDelegate : public DefaultWallpaperDelegate {
   TestWallpaperDelegate();
   ~TestWallpaperDelegate() override;
 
-  void set_custom_wallpaper(const gfx::ImageSkia& wallpaper) {
-    custom_wallpaper_ = wallpaper;
-  }
-
   // DefaultWallpaperDelegate overrides:
-  void UpdateWallpaper(bool clear_cache) override;
   bool CanOpenSetWallpaperPage() override;
 
-  // Returns and clears |update_wallpaper_count_|.
-  int GetUpdateWallpaperCountAndReset();
-
  private:
-  // Number of times that UpdateWallpaper() has been called.
-  int update_wallpaper_count_;
-
-  // If non-null, used as custom wallpaper by UpdateWallpaper().
-  gfx::ImageSkia custom_wallpaper_;
-
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperDelegate);
 };
 

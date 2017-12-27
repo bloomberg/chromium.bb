@@ -21,7 +21,6 @@ class ASH_EXPORT DefaultWallpaperDelegate : public WallpaperDelegate {
   int GetAnimationDurationOverride() override;
   void SetAnimationDurationOverride(int animation_duration_in_ms) override;
   bool ShouldShowInitialAnimation() override;
-  void UpdateWallpaper(bool clear_cache) override;
   void InitializeWallpaper() override;
   bool CanOpenSetWallpaperPage() override;
   void OnWallpaperAnimationFinished() override;

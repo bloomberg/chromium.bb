@@ -78,10 +78,6 @@ class WallpaperDelegate : public ash::WallpaperDelegate {
     return true;
   }
 
-  void UpdateWallpaper(bool clear_cache) override {
-    chromeos::WallpaperManager::Get()->UpdateWallpaper(clear_cache);
-  }
-
   void InitializeWallpaper() override {
     chromeos::WallpaperManager::Get()->InitializeWallpaper();
   }

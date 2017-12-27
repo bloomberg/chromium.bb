@@ -632,6 +632,12 @@ wallpaper::WallpaperLayout WallpaperController::GetWallpaperLayout() const {
   return wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
 }
 
+wallpaper::WallpaperType WallpaperController::GetWallpaperType() const {
+  if (current_wallpaper_)
+    return current_wallpaper_->wallpaper_info().type;
+  return wallpaper::DEFAULT;
+}
+
 void WallpaperController::SetDefaultWallpaperImpl(
     const AccountId& account_id,
     const user_manager::UserType& user_type,
@@ -824,8 +830,8 @@ void WallpaperController::OnDisplayConfigurationChanged() {
       GetInternalDisplayCompositorLock();
       timer_.Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(wallpaper_reload_delay_),
-                   base::Bind(&WallpaperController::UpdateWallpaper,
-                              base::Unretained(this), false /* clear cache */));
+                   base::Bind(&WallpaperController::ReloadWallpaper,
+                              base::Unretained(this), false /*clear_cache=*/));
     }
   }
 }
@@ -840,7 +846,7 @@ void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
   if (current_max_display_size_ != max_display_size) {
     current_max_display_size_ = max_display_size;
     if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_)
-      UpdateWallpaper(true /* clear cache */);
+      ReloadWallpaper(true /*clear_cache=*/);
   }
 
   InstallDesktopController(root_window);
@@ -1177,22 +1183,22 @@ void WallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
 
 void WallpaperController::ShowUserWallpaper(
     mojom::WallpaperUserInfoPtr user_info) {
+  current_user_ = std::move(user_info);
+  const AccountId account_id = current_user_->account_id;
+  const bool is_persistent = !current_user_->is_ephemeral;
+
   // Guest user or regular user in ephemeral mode.
   // TODO(wzang/xdai): Check if the wallpaper info for ephemeral users should
   // be saved to local state.
-  if ((user_info->is_ephemeral && user_info->has_gaia_account) ||
-      user_info->type == user_manager::USER_TYPE_GUEST) {
-    InitializeUserWallpaperInfo(user_info->account_id,
-                                !user_info->is_ephemeral);
-    SetDefaultWallpaperImpl(user_info->account_id, user_info->type,
+  if ((!is_persistent && current_user_->has_gaia_account) ||
+      current_user_->type == user_manager::USER_TYPE_GUEST) {
+    InitializeUserWallpaperInfo(account_id, is_persistent);
+    SetDefaultWallpaperImpl(account_id, current_user_->type,
                             true /*show_wallpaper=*/);
     LOG(ERROR) << "User is ephemeral or guest! Fallback to default wallpaper.";
     return;
   }
 
-  current_user_ = std::move(user_info);
-  const AccountId account_id = current_user_->account_id;
-  const bool is_persistent = !current_user_->is_ephemeral;
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(account_id, &info, is_persistent)) {
     InitializeUserWallpaperInfo(account_id, is_persistent);
@@ -1257,6 +1263,7 @@ void WallpaperController::ShowUserWallpaper(
 }
 
 void WallpaperController::ShowSigninWallpaper() {
+  current_user_.reset();
   // TODO(crbug.com/791654): Call |SetDeviceWallpaperIfApplicable| from here.
   SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
                           true /*show_wallpaper=*/);
@@ -1410,11 +1417,6 @@ bool WallpaperController::ReparentWallpaper(int container) {
 int WallpaperController::GetWallpaperContainerId(bool locked) {
   return locked ? kShellWindowId_LockScreenWallpaperContainer
                 : kShellWindowId_WallpaperContainer;
-}
-
-void WallpaperController::UpdateWallpaper(bool clear_cache) {
-  current_wallpaper_.reset();
-  Shell::Get()->wallpaper_delegate()->UpdateWallpaper(clear_cache);
 }
 
 void WallpaperController::RemoveUserWallpaperInfo(const AccountId& account_id,
@@ -1643,7 +1645,7 @@ void WallpaperController::OnWallpaperDecoded(
   // Empty image indicates decode failure. Use default wallpaper in this case.
   if (user_image->image().isNull()) {
     LOG(ERROR) << "Failed to decode user wallpaper at " << path.value()
-               << "Falls back to default wallpaper. ";
+               << " Falls back to default wallpaper. ";
     SetDefaultWallpaperImpl(account_id, user_type, show_wallpaper);
     return;
   }
@@ -1652,6 +1654,17 @@ void WallpaperController::OnWallpaperDecoded(
       CustomWallpaperElement(path, user_image->image());
   if (show_wallpaper)
     SetWallpaperImage(user_image->image(), info);
+}
+
+void WallpaperController::ReloadWallpaper(bool clear_cache) {
+  current_wallpaper_.reset();
+  if (clear_cache)
+    wallpaper_cache_map_.clear();
+
+  if (current_user_)
+    ShowUserWallpaper(std::move(current_user_));
+  else
+    ShowSigninWallpaper();
 }
 
 void WallpaperController::SetProminentColors(
