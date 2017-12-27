@@ -1135,7 +1135,7 @@ void TryChromeDialog::OnContextInitialized() {
   static constexpr int kButtonsViewWidth =
       kToastWidth - kTextButtonPadding - kTextButtonPadding;
   auto buttons = std::make_unique<views::View>();
-  ButtonLayout::CreateAndInstall(buttons.get(), kButtonsViewWidth);
+  buttons->SetLayoutManager(std::make_unique<ButtonLayout>(kButtonsViewWidth));
 
   layout->StartRow(0, 2);
   auto accept_button = CreateWin10StyleButton(

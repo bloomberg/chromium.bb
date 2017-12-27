@@ -96,9 +96,11 @@ void PresentationReceiverWindowView::Init() {
   location_bar_view_ =
       new LocationBarView(nullptr, profile, &command_updater_, this, true);
 
-  auto* box = new views::BoxLayout(views::BoxLayout::kVertical);
-  box->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  SetLayoutManager(box);
+  auto box_owner =
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  box_owner->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  auto* box = SetLayoutManager(std::move(box_owner));
   AddChildView(location_bar_view_);
   box->SetFlexForView(location_bar_view_, 0);
   AddChildView(web_view);

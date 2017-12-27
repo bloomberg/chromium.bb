@@ -1083,7 +1083,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   // own border and a second border can't be added, therefore a parent view with
   // a border has to be created.
   views::View* signin_button_view = new views::View();
-  signin_button_view->SetLayoutManager(new views::FillLayout());
+  signin_button_view->SetLayoutManager(std::make_unique<views::FillLayout>());
   signin_button_view->SetBorder(
       views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
 

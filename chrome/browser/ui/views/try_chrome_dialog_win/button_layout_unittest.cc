@@ -52,7 +52,8 @@ class ButtonLayoutTest
 
  protected:
   ButtonLayoutTest()
-      : layout_(ButtonLayout::CreateAndInstall(&host_, kFixedHostWidth)),
+      : layout_(host_.SetLayoutManager(
+            std::make_unique<ButtonLayout>(kFixedHostWidth))),
         button_1_width_(::testing::get<0>(GetParam())),
         button_2_width_(::testing::get<1>(GetParam())) {}
 

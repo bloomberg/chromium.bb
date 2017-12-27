@@ -29,14 +29,12 @@ class View;
 // which only the one or two action buttons are added.
 class ButtonLayout : public views::LayoutManager {
  public:
-  // Returns a new instance that has been made the manager of |view|. The
-  // dialog's one or two action button(s) must be the only children of |view|.
-  // |view_width| is the desired width of the view, which controls the width of
-  // the individual buttons as above. The layout manager of |view|'s parent must
-  // respect this width (by, for example, using SizeType::USE_PREF for the
-  // hosting column's size_type if it uses GridLayout).
-  static ButtonLayout* CreateAndInstall(views::View* view, int view_width);
-
+  // The dialog's one or two action button(s) must be the only children of
+  // |view|. |view_width| is the desired width of the view, which controls the
+  // width of the individual buttons as above. The layout manager of |view|'s
+  // parent must respect this width (by, for example, using SizeType::USE_PREF
+  // for the hosting column's size_type if it uses GridLayout).
+  explicit ButtonLayout(int view_width);
   ~ButtonLayout() override;
 
  protected:
@@ -49,8 +47,6 @@ class ButtonLayout : public views::LayoutManager {
 
   // The horizontal or vertical space between two buttons.
   enum { kPaddingBetweenButtons = 4 };
-
-  explicit ButtonLayout(int view_width);
 
   // Returns true if |host| contains two buttons, or false if it contains only
   // one.

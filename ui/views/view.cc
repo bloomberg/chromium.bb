@@ -635,14 +635,6 @@ void View::SetLayoutManager(nullptr_t) {
   SetLayoutManagerImpl(nullptr);
 }
 
-void View::SetLayoutManager(LayoutManager* layout) {
-  // Some callers of this deprecated function may set the same layout manager
-  // twice, which used to be a no-op. Retain this behavior to avoid crashing.
-  if (layout == layout_manager_.get())
-    return;
-  SetLayoutManager(std::unique_ptr<LayoutManager>(layout));
-}
-
 // Attributes ------------------------------------------------------------------
 
 const char* View::GetClassName() const {

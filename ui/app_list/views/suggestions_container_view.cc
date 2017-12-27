@@ -103,7 +103,6 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   DCHECK(search_result_tile_views_.empty());
   views::GridLayout* tiles_layout_manager =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
-  SetLayoutManager(tiles_layout_manager);
 
   views::ColumnSet* column_set = tiles_layout_manager->AddColumnSet(0);
   for (int col = 0; col < kNumStartPageTiles; ++col) {

@@ -40,7 +40,6 @@ CredentialsSelectionView::CredentialsSelectionView(
   // Layout.
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
-  SetLayoutManager(layout);
 
   // ColumnSet.
   int column_set_id = 0;
