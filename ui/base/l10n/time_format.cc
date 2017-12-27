@@ -16,7 +16,6 @@
 #include "ui/base/ui_base_export.h"
 #include "ui/strings/grit/ui_strings.h"
 
-using base::Time;
 using base::TimeDelta;
 using ui::TimeFormat;
 
@@ -149,13 +148,14 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
 
 // static
 base::string16 TimeFormat::RelativeDate(
-    const Time& time,
-    const Time* optional_midnight_today) {
-  Time midnight_today = optional_midnight_today ? *optional_midnight_today :
-      Time::Now().LocalMidnight();
-  TimeDelta day = TimeDelta::FromMicroseconds(Time::kMicrosecondsPerDay);
-  Time tomorrow = midnight_today + day;
-  Time yesterday = midnight_today - day;
+    const base::Time& time,
+    const base::Time* optional_midnight_today) {
+  base::Time midnight_today = optional_midnight_today
+                                  ? *optional_midnight_today
+                                  : base::Time::Now().LocalMidnight();
+  TimeDelta day = TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerDay);
+  base::Time tomorrow = midnight_today + day;
+  base::Time yesterday = midnight_today - day;
   if (time >= tomorrow)
     return base::string16();
   else if (time >= midnight_today)
