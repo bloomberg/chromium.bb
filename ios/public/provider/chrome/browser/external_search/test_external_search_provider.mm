@@ -4,6 +4,10 @@
 
 #import "ios/public/provider/chrome/browser/external_search/test_external_search_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 bool TestExternalSearchProvider::IsExternalSearchEnabled() {
   return true;
 }
