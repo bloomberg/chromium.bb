@@ -81,6 +81,9 @@ class PLATFORM_EXPORT GraphicsContext {
   const PaintCanvas* Canvas() const { return canvas_; }
 
   PaintController& GetPaintController() { return paint_controller_; }
+  const PaintController& GetPaintController() const {
+    return paint_controller_;
+  }
 
   bool ContextDisabled() const { return disabled_state_; }
 
