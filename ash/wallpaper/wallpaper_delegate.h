@@ -29,15 +29,6 @@ class ASH_EXPORT WallpaperDelegate {
   // another's on the login screen)?
   virtual bool ShouldShowInitialAnimation() = 0;
 
-  // Updates current wallpaper. It may switch the size of wallpaper based on the
-  // current display's resolution. If |clear_cache| is true, all wallpaper
-  // cache should be cleared. This is required when the display's native
-  // resolution changes to a larger resolution (e.g. when hooked up a large
-  // external display) and we need to load a larger resolution wallpaper for the
-  // large display. All the previous small resolution wallpaper cache should be
-  // cleared.
-  virtual void UpdateWallpaper(bool clear_cache) = 0;
-
   // Initialize wallpaper.
   virtual void InitializeWallpaper() = 0;
 

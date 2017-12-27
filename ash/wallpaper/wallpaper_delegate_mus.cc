@@ -28,10 +28,6 @@ bool WallpaperDelegateMus::ShouldShowInitialAnimation() {
   return false;
 }
 
-void WallpaperDelegateMus::UpdateWallpaper(bool clear_cache) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
 void WallpaperDelegateMus::InitializeWallpaper() {
   // No action required; ChromeBrowserMainPartsChromeos inits WallpaperManager.
 }

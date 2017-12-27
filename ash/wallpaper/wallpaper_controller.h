@@ -237,6 +237,8 @@ class ASH_EXPORT WallpaperController
 
   wallpaper::WallpaperLayout GetWallpaperLayout() const;
 
+  wallpaper::WallpaperType GetWallpaperType() const;
+
   // Sets the wallpaper and alerts observers of changes.
   void SetWallpaperImage(const gfx::ImageSkia& image,
                          const wallpaper::WallpaperInfo& info);
@@ -451,10 +453,6 @@ class ASH_EXPORT WallpaperController
   // Returns the wallpaper container id for unlocked and locked states.
   int GetWallpaperContainerId(bool locked);
 
-  // Reload the wallpaper. |clear_cache| specifies whether to clear the
-  // wallpaper cache or not.
-  void UpdateWallpaper(bool clear_cache);
-
   // Removes |account_id|'s wallpaper info and color cache if it exists.
   void RemoveUserWallpaperInfo(const AccountId& account_id, bool is_persistent);
 
@@ -508,6 +506,15 @@ class ASH_EXPORT WallpaperController
                           const wallpaper::WallpaperInfo& info,
                           bool show_wallpaper,
                           std::unique_ptr<user_manager::UserImage> user_image);
+
+  // Reloads the current wallpaper. It may change the wallpaper size based on
+  // the current display's resolution. If |clear_cache| is true, all wallpaper
+  // cache should be cleared. This is required when the display's native
+  // resolution changes to a larger resolution (e.g. when hooked up a large
+  // external display) and we need to load a larger resolution wallpaper for the
+  // display. All the previous small resolution wallpaper cache should be
+  // cleared.
+  void ReloadWallpaper(bool clear_cache);
 
   // Sets |prominent_colors_| and notifies the observers if there is a change.
   void SetProminentColors(const std::vector<SkColor>& prominent_colors);
