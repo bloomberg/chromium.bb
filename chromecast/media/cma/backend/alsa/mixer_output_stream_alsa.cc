@@ -473,6 +473,13 @@ void MixerOutputStreamAlsa::UpdateRenderingDelay(int newly_pushed_frames) {
 
   snd_htimestamp_t status_timestamp = {};
   alsa_->PcmStatusGetHtstamp(pcm_status_, &status_timestamp);
+  if (status_timestamp.tv_sec == 0 && status_timestamp.tv_nsec == 0) {
+    // ALSA didn't actually give us a timestamp.
+    rendering_delay_.timestamp_microseconds = kNoTimestamp;
+    rendering_delay_.delay_microseconds = 0;
+    return;
+  }
+
   rendering_delay_.timestamp_microseconds =
       TimespecToMicroseconds(status_timestamp);
   snd_pcm_sframes_t delay_frames = alsa_->PcmStatusGetDelay(pcm_status_);
