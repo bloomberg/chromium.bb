@@ -14,6 +14,10 @@
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager.h"
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using ::testing::_;
 using ::testing::Invoke;
 
@@ -48,8 +52,8 @@ void FakeGetHostedDomainForIdentity(ChromeIdentity* identity,
 }
 
 @interface FakeAccountDetailsViewController : UIViewController {
-  ChromeIdentity* _identity;  // Weak.
-  base::scoped_nsobject<UIButton> _removeAccountButton;
+  __weak ChromeIdentity* _identity;
+  UIButton* _removeAccountButton;
 }
 @end
 
@@ -67,7 +71,6 @@ void FakeGetHostedDomainForIdentity(ChromeIdentity* identity,
   [_removeAccountButton removeTarget:self
                               action:@selector(didTapRemoveAccount:)
                     forControlEvents:UIControlEventTouchUpInside];
-  [super dealloc];
 }
 
 - (void)viewDidLoad {
@@ -76,8 +79,7 @@ void FakeGetHostedDomainForIdentity(ChromeIdentity* identity,
   // Obnoxious color, this is a test screen.
   self.view.backgroundColor = [UIColor orangeColor];
 
-  _removeAccountButton.reset(
-      [[UIButton buttonWithType:UIButtonTypeCustom] retain]);
+  _removeAccountButton = [UIButton buttonWithType:UIButtonTypeCustom];
   [_removeAccountButton setTitle:@"Remove account"
                         forState:UIControlStateNormal];
   [_removeAccountButton addTarget:self
@@ -124,11 +126,10 @@ UINavigationController*
 FakeChromeIdentityService::CreateAccountDetailsController(
     ChromeIdentity* identity,
     id<ChromeIdentityBrowserOpener> browser_opener) {
-  base::scoped_nsobject<UIViewController> accountDetailsViewController(
-      [[FakeAccountDetailsViewController alloc] initWithIdentity:identity]);
-  UINavigationController* navigationController =
-      [[[UINavigationController alloc]
-          initWithRootViewController:accountDetailsViewController] autorelease];
+  UIViewController* accountDetailsViewController =
+      [[FakeAccountDetailsViewController alloc] initWithIdentity:identity];
+  UINavigationController* navigationController = [[UINavigationController alloc]
+      initWithRootViewController:accountDetailsViewController];
   return navigationController;
 }
 
@@ -137,7 +138,7 @@ FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
     ios::ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
   ChromeIdentityInteractionManager* manager =
-      [[[FakeChromeIdentityInteractionManager alloc] init] autorelease];
+      [[FakeChromeIdentityInteractionManager alloc] init];
   manager.delegate = delegate;
   return manager;
 }
@@ -194,8 +195,7 @@ void FakeChromeIdentityService::GetAccessToken(
     const std::string& client_secret,
     const std::set<std::string>& scopes,
     ios::AccessTokenCallback callback) {
-  base::mac::ScopedBlock<ios::AccessTokenCallback> safe_callback(
-      [callback copy]);
+  ios::AccessTokenCallback safe_callback = [callback copy];
   NSError* error = nil;
   NSDictionary* user_info = nil;
   if (_fakeMDMError) {
@@ -219,7 +219,7 @@ void FakeChromeIdentityService::GetAccessToken(
     NSDate* expiresDate = [NSDate dateWithTimeIntervalSinceNow:expiration];
     NSString* token = [expiresDate description];
 
-    safe_callback.get()(token, expiresDate, error);
+    safe_callback(token, expiresDate, error);
   });
 }
 

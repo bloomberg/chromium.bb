@@ -23,6 +23,7 @@ source_set("signin") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "fake_chrome_identity.h",
