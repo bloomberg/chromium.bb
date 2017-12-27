@@ -32,10 +32,11 @@
 #define FileSystemCallbacks_h
 
 #include <memory>
+
 #include "core/fileapi/FileError.h"
-#include "modules/filesystem/EntriesCallback.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileSystemType.h"
+#include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -43,7 +44,8 @@ namespace blink {
 
 class DOMFileSystemBase;
 class DirectoryReaderBase;
-class EntriesCallback;
+class DirectoryReaderOnDidReadCallback;
+class Entry;
 class EntryCallback;
 class ExecutionContext;
 class FileCallback;
@@ -138,7 +140,7 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
 class EntriesCallbacks final : public FileSystemCallbacksBase {
  public:
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(
-      EntriesCallback*,
+      DirectoryReaderOnDidReadCallback*,
       ErrorCallbackBase*,
       ExecutionContext*,
       DirectoryReaderBase*,
@@ -147,12 +149,12 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
   void DidReadDirectoryEntries(bool has_more) override;
 
  private:
-  EntriesCallbacks(EntriesCallback*,
+  EntriesCallbacks(DirectoryReaderOnDidReadCallback*,
                    ErrorCallbackBase*,
                    ExecutionContext*,
                    DirectoryReaderBase*,
                    const String& base_path);
-  Persistent<EntriesCallback> success_callback_;
+  Persistent<DirectoryReaderOnDidReadCallback> success_callback_;
   Persistent<DirectoryReaderBase> directory_reader_;
   String base_path_;
   PersistentHeapVector<Member<Entry>> entries_;

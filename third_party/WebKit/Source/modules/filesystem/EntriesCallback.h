@@ -31,12 +31,10 @@
 #ifndef EntriesCallback_h
 #define EntriesCallback_h
 
+#include "modules/filesystem/EntryHeapVector.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
-
-class Entry;
-typedef HeapVector<Member<Entry>> EntryHeapVector;
 
 class EntriesCallback : public GarbageCollectedFinalized<EntriesCallback> {
  public:

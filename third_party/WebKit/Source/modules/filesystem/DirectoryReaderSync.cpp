@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
-#include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/EntrySync.h"
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
@@ -41,12 +40,12 @@
 namespace blink {
 
 class DirectoryReaderSync::EntriesCallbackHelper final
-    : public EntriesCallback {
+    : public DirectoryReaderOnDidReadCallback {
  public:
   explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
       : reader_(reader) {}
 
-  void handleEvent(const EntryHeapVector& entries) override {
+  void OnDidReadDirectoryEntries(const EntryHeapVector& entries) override {
     EntrySyncHeapVector sync_entries;
     sync_entries.ReserveInitialCapacity(entries.size());
     for (size_t i = 0; i < entries.size(); ++i)
@@ -56,7 +55,7 @@ class DirectoryReaderSync::EntriesCallbackHelper final
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
-    EntriesCallback::Trace(visitor);
+    DirectoryReaderOnDidReadCallback::Trace(visitor);
   }
 
  private:

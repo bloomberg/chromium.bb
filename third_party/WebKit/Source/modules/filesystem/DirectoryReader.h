@@ -33,12 +33,12 @@
 
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
-#include "modules/filesystem/EntriesCallback.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class V8EntriesCallback;
 class V8ErrorCallback;
 
 class DirectoryReader : public DirectoryReaderBase {
@@ -52,7 +52,7 @@ class DirectoryReader : public DirectoryReaderBase {
 
   ~DirectoryReader() override;
 
-  void readEntries(EntriesCallback*, V8ErrorCallback* = nullptr);
+  void readEntries(V8EntriesCallback*, V8ErrorCallback* = nullptr);
 
   DOMFileSystem* Filesystem() const {
     return static_cast<DOMFileSystem*>(file_system_.Get());
@@ -73,7 +73,7 @@ class DirectoryReader : public DirectoryReaderBase {
   bool is_reading_;
   EntryHeapVector entries_;
   FileError::ErrorCode error_ = FileError::ErrorCode::kOK;
-  Member<EntriesCallback> entries_callback_;
+  Member<V8EntriesCallback> entries_callback_;
   Member<V8ErrorCallback> error_callback_;
 };
 

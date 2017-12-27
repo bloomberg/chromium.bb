@@ -37,6 +37,7 @@ blink_modules_sources("filesystem") {
     "EntryBase.cpp",
     "EntryBase.h",
     "EntryCallback.h",
+    "EntryHeapVector.h",
     "EntrySync.cpp",
     "EntrySync.h",
     "ErrorCallback.h",

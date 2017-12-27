@@ -31,7 +31,7 @@
 #ifndef HTMLInputElementFileSystem_h
 #define HTMLInputElementFileSystem_h
 
-#include "modules/filesystem/EntriesCallback.h"
+#include "modules/filesystem/EntryHeapVector.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
