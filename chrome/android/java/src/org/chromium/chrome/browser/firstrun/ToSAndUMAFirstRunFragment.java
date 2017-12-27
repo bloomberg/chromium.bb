@@ -152,14 +152,6 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
     }
 
     @Override
-    public boolean shouldRecreatePageOnDataChange() {
-        // Specify that this page shouldn't be re-created on notifyDataSetChanged(), so
-        // that state like mTriggerAcceptAfterNativeInit can be preserved on the instance
-        // when native is initialized.
-        return false;
-    }
-
-    @Override
     protected void onNativeInitialized() {
         assert !mNativeInitialized;
 

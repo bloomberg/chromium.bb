@@ -343,11 +343,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     @Override
-    public void recreateCurrentPage() {
-        mPagerAdapter.notifyDataSetChanged();
-    }
-
-    @Override
     public void abortFirstRunExperience() {
         finish();
 

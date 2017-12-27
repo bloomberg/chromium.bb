@@ -278,6 +278,22 @@ public class AccountSigninView extends FrameLayout {
         setUpCancelButton();
     }
 
+    /**
+     * @return Whether the view is in signed in mode.
+     */
+    public boolean isInConfirmationScreen() {
+        return mSelectedAccountName != null;
+    }
+
+    /**
+     * Cancels signin confirmation and shows account selection page.
+     */
+    public void cancelConfirmationScreen() {
+        assert isInConfirmationScreen();
+        mUndoBehavior = UNDO_BACK_TO_SELECTION;
+        showSigninPage();
+    }
+
     private void setButtonsEnabled(boolean enabled) {
         mPositiveButton.setEnabled(enabled);
         mNegativeButton.setEnabled(enabled);
@@ -662,12 +678,5 @@ public class AccountSigninView extends FrameLayout {
         } else {
             return getResources().getString(R.string.signin_signed_in_settings_description);
         }
-    }
-
-    /**
-     * @return Whether the view is in signed in mode.
-     */
-    public boolean isInConfirmationScreen() {
-        return mSelectedAccountName != null;
     }
 }
