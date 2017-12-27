@@ -213,6 +213,7 @@
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/error_page_content.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
@@ -1086,8 +1087,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     Tab* currentTab = [_model currentTab];
     // Force loading the view in case it was not loaded yet.
     [self loadViewIfNeeded];
-    if (_expectingForegroundTab)
-      [currentTab.webController setOverlayPreviewMode:YES];
+    if (_expectingForegroundTab) {
+      PagePlaceholderTabHelper::FromWebState(currentTab.webState)
+          ->AddPlaceholderForNextNavigation();
+    }
     if (currentTab)
       [self displayTab:currentTab isNewSelection:YES];
   } else {
@@ -2736,7 +2739,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // tabs (since doing so is a no-op for the tabs that don't have it set).
     _expectingForegroundTab = NO;
     for (Tab* tab in _model) {
-      [tab.webController setOverlayPreviewMode:NO];
+      PagePlaceholderTabHelper::FromWebState(tab.webState)
+          ->CancelPlaceholderForNextNavigation();
     }
   }
 }

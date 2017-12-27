@@ -87,6 +87,7 @@
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/external_app_launcher_tab_helper.h"
 #import "ios/chrome/browser/web/navigation_manager_util.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -917,11 +918,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   return YES;
 }
 
-- (void)webController:(CRWWebController*)webController
-    retrievePlaceholderOverlayImage:(void (^)(UIImage*))block {
-  [self getPlaceholderOverlayImageWithCompletionHandler:block];
-}
-
 #pragma mark - PlaceholderOverlay
 
 - (void)getPlaceholderOverlayImageWithCompletionHandler:
@@ -1050,7 +1046,8 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
 - (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
   DCHECK_EQ(_webStateImpl, webState);
-  return webState->CanTakeSnapshot();
+  return !PagePlaceholderTabHelper::FromWebState(webState)
+              ->displaying_placeholder();
 }
 
 - (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {

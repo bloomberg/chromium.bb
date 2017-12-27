@@ -8,13 +8,11 @@
 
 #include <memory>
 
-#include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
-#include "base/test/ios/wait_util.h"
+#include "base/test/scoped_task_environment.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -55,11 +53,11 @@
 @end
 
 // Test fixture for PagePlaceholderTabHelper class.
-class PagePlaceholderTabHelperTest : public web::WebTest {
+class PagePlaceholderTabHelperTest : public PlatformTest {
  protected:
   PagePlaceholderTabHelperTest()
       : delegate_([[PagePlaceholderTabHelperTestDelegate alloc] init]),
-        web_state_(base::MakeUnique<web::TestWebState>()) {
+        web_state_(std::make_unique<web::TestWebState>()) {
     PagePlaceholderTabHelper::CreateForWebState(web_state_.get(), delegate_);
     delegate_.tabHelper = tab_helper();
   }
@@ -68,6 +66,7 @@ class PagePlaceholderTabHelperTest : public web::WebTest {
     return PagePlaceholderTabHelper::FromWebState(web_state_.get());
   }
 
+  base::test::ScopedTaskEnvironment environement_;
   PagePlaceholderTabHelperTestDelegate* delegate_;
   std::unique_ptr<web::TestWebState> web_state_;
 };
@@ -76,9 +75,29 @@ class PagePlaceholderTabHelperTest : public web::WebTest {
 // requested.
 TEST_F(PagePlaceholderTabHelperTest, NotShown) {
   ASSERT_FALSE(delegate_.displayingPlaceholder);
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
   ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   web_state_->OnNavigationStarted(nullptr);
   EXPECT_FALSE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+}
+
+// Tests that placehold is not shown after DidStartNavigation if it was
+// cancelled before the navigation.
+TEST_F(PagePlaceholderTabHelperTest, NotShownIfCancelled) {
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+  tab_helper()->AddPlaceholderForNextNavigation();
+  ASSERT_FALSE(delegate_.displayingPlaceholder);
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
+  tab_helper()->CancelPlaceholderForNextNavigation();
+  ASSERT_FALSE(delegate_.displayingPlaceholder);
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+  web_state_->OnNavigationStarted(nullptr);
+  EXPECT_FALSE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->displaying_placeholder());
   EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 }
 
@@ -88,14 +107,34 @@ TEST_F(PagePlaceholderTabHelperTest, Shown) {
   ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
   tab_helper()->AddPlaceholderForNextNavigation();
   ASSERT_FALSE(delegate_.displayingPlaceholder);
-
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
   EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
   web_state_->OnNavigationStarted(nullptr);
   EXPECT_TRUE(delegate_.displayingPlaceholder);
+  EXPECT_TRUE(tab_helper()->displaying_placeholder());
   EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 
   web_state_->OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   EXPECT_FALSE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+}
+
+// Tests that placeholder is removed if cancelled while presented.
+TEST_F(PagePlaceholderTabHelperTest, RemovedIfCancelledWhileShown) {
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+  tab_helper()->AddPlaceholderForNextNavigation();
+  ASSERT_FALSE(delegate_.displayingPlaceholder);
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
+  web_state_->OnNavigationStarted(nullptr);
+  EXPECT_TRUE(delegate_.displayingPlaceholder);
+  EXPECT_TRUE(tab_helper()->displaying_placeholder());
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+
+  tab_helper()->CancelPlaceholderForNextNavigation();
+  EXPECT_FALSE(delegate_.displayingPlaceholder);
+  EXPECT_FALSE(tab_helper()->displaying_placeholder());
   EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 }
 
@@ -108,8 +147,11 @@ TEST_F(PagePlaceholderTabHelperTest, DestructWebStateWhenShowingPlaceholder) {
   EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
   web_state_->OnNavigationStarted(nullptr);
   EXPECT_TRUE(delegate_.displayingPlaceholder);
+  EXPECT_TRUE(tab_helper()->displaying_placeholder());
   EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
 
   web_state_.reset();
   EXPECT_FALSE(delegate_.displayingPlaceholder);
+  // The tab helper has been deleted at this point, so do not check the value
+  // of displaying_placeholder().
 }
