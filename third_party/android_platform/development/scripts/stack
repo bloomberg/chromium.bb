@@ -31,8 +31,13 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__),
                                 os.pardir, os.pardir, os.pardir, os.pardir,
                                 'build', 'android'))
+
 from pylib import constants
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__),
+                                os.pardir, os.pardir, os.pardir, os.pardir,
+                                'tools', 'python'))
+import llvm_symbolizer
 
 DEFAULT_SYMROOT='/tmp/symbols'
 # From: https://source.android.com/source/build-numbers.html
@@ -225,10 +230,12 @@ def main(argv):
   print ("Reading Android symbols from: "
          + os.path.normpath(symbol.SYMBOLS_DIR))
   chrome_search_path = symbol.GetLibrarySearchPaths()
-  print ("Searching for Chrome symbols from within: "
-         + ':'.join((os.path.normpath(d) for d in chrome_search_path)))
-  stack_core.ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
-                          arch_defined)
+
+  with llvm_symbolizer.LLVMSymbolizer() as symbolizer:
+    print ("Searching for Chrome symbols from within: "
+           + ':'.join((os.path.normpath(d) for d in chrome_search_path)))
+    stack_core.ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
+                            arch_defined, symbolizer)
 
   if rootdir:
     # be a good citizen and clean up...os.rmdir and os.removedirs() don't work
