@@ -1321,7 +1321,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   return AddStandardHandlers(request, request_data.resource_type,
                              resource_context, request_data.fetch_request_mode,
                              request_data.fetch_request_context_type,
-                             request_data.fetch_mixed_content_context_type,
                              requester_info->appcache_service(), child_id,
                              route_id, std::move(handler), nullptr, nullptr);
 }
@@ -1347,7 +1346,6 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     ResourceContext* resource_context,
     network::mojom::FetchRequestMode fetch_request_mode,
     RequestContextType fetch_request_context_type,
-    blink::WebMixedContentContextType fetch_mixed_content_context_type,
     AppCacheService* appcache_service,
     int child_id,
     int route_id,
@@ -2013,7 +2011,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       new_request.get(), resource_type, resource_context,
       network::mojom::FetchRequestMode::kNoCORS,
       info.begin_params->request_context_type,
-      info.begin_params->mixed_content_context_type,
       appcache_handle_core ? appcache_handle_core->GetAppCacheService()
                            : nullptr,
       -1,  // child_id

@@ -639,8 +639,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =
       GetRequestContextTypeForWebURLRequest(request);
-  resource_request->fetch_mixed_content_context_type =
-      GetMixedContentContextTypeForWebURLRequest(request);
 
   resource_request->fetch_frame_type = request.GetFrameType();
   resource_request->request_body =
