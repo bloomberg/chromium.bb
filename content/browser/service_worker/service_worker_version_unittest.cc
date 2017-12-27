@@ -1055,7 +1055,7 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
                                        base::Time::Now()));
 
-  // Simulate the renderer aborting the pending event.
+  // Simulate the renderer aborting the inflight event.
   // This should not crash: https://crbug.com/676984.
   TakeExtendableMessageEventCallback().Run(
       blink::mojom::ServiceWorkerEventStatus::ABORTED, base::Time::Now());

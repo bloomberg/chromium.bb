@@ -304,7 +304,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool StartExternalRequest(const std::string& request_uuid);
 
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
-  // Returns false if no pending requests with the provided id exist, for
+  // Returns false if no inflight requests with the provided id exist, for
   // example if the request has already timed out.
   // Pass the result of the event to |was_handled|, which is used to record
   // statistics based on the event status.
@@ -436,7 +436,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SetClockForTesting(base::Clock* clock);
 
   // Non-S13nServiceWorker: returns true if the service worker has work to do:
-  // it has pending requests, in-progress streaming URLRequestJobs, or pending
+  // it has inflight requests, in-progress streaming URLRequestJobs, or pending
   // start callbacks.
   //
   // S13nServiceWorker: returns true if the worker has work on the browser.
@@ -540,14 +540,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   class PingController;
 
-  struct RequestInfo {
-    RequestInfo(int id,
-                ServiceWorkerMetrics::EventType event_type,
-                const base::TimeTicks& expiration,
-                TimeoutBehavior timeout_behavior);
-    ~RequestInfo();
+  // Contains timeout info for InflightRequest.
+  struct InflightRequestTimeoutInfo {
+    InflightRequestTimeoutInfo(int id,
+                               ServiceWorkerMetrics::EventType event_type,
+                               const base::TimeTicks& expiration,
+                               TimeoutBehavior timeout_behavior);
+    ~InflightRequestTimeoutInfo();
     // Compares |expiration|, or |id| if |expiration| is the same.
-    bool operator<(const RequestInfo& other) const;
+    bool operator<(const InflightRequestTimeoutInfo& other) const;
 
     const int id;
     const ServiceWorkerMetrics::EventType event_type;
@@ -555,19 +556,21 @@ class CONTENT_EXPORT ServiceWorkerVersion
     const TimeoutBehavior timeout_behavior;
   };
 
-  struct PendingRequest {
-    PendingRequest(StatusCallback error_callback,
-                   base::Time time,
-                   const base::TimeTicks& time_ticks,
-                   ServiceWorkerMetrics::EventType event_type);
-    ~PendingRequest();
+  // Keeps track of the status of each request, which starts at StartRequest()
+  // and ends at FinishRequest().
+  struct InflightRequest {
+    InflightRequest(StatusCallback error_callback,
+                    base::Time time,
+                    const base::TimeTicks& time_ticks,
+                    ServiceWorkerMetrics::EventType event_type);
+    ~InflightRequest();
 
     StatusCallback error_callback;
     base::Time start_time;
     base::TimeTicks start_time_ticks;
     ServiceWorkerMetrics::EventType event_type;
     // Points to this request's entry in |request_timeouts_|.
-    std::set<RequestInfo>::iterator timeout_iter;
+    std::set<InflightRequestTimeoutInfo>::iterator timeout_iter;
   };
 
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
@@ -706,7 +709,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                bool is_browser_startup_complete,
                                ServiceWorkerStatusCode status);
 
-  bool MaybeTimeOutRequest(const RequestInfo& info);
+  bool MaybeTimeoutRequest(const InflightRequestTimeoutInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
 
   // Returns the reason the embedded worker failed to start, using information
@@ -760,13 +763,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Holds in-flight requests, including requests due to outstanding push,
   // fetch, sync, etc. events.
-  base::IDMap<std::unique_ptr<PendingRequest>> pending_requests_;
+  base::IDMap<std::unique_ptr<InflightRequest>> inflight_requests_;
 
   // Keeps track of in-flight requests for timeout purposes. Requests are sorted
   // by their expiration time (soonest to expire at the beginning of the
   // set). The timeout timer periodically checks |request_timeouts_| for entries
   // that should time out.
-  std::set<RequestInfo> request_timeouts_;
+  std::set<InflightRequestTimeoutInfo> request_timeouts_;
 
   // Container for pending external requests for this service worker.
   // (key, value): (request uuid, request id).
@@ -784,8 +787,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // The number of fetch event responses that the service worker is streaming to
   // the browser process. We try to not stop the service worker while there is
-  // an ongoing response.
-  int pending_stream_response_count_ = 0;
+  // an inflight response.
+  int inflight_stream_response_count_ = 0;
 
   // S13nServiceWorker:
   // Set to true if the worker has no inflight events and the idle timer has
