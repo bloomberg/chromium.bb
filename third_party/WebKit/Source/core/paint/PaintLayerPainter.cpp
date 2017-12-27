@@ -177,6 +177,9 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
   if (context.Printing())
     return false;
 
+  if (context.GetPaintController().IsSkippingCache())
+    return false;
+
   if (!paint_layer.SupportsSubsequenceCaching())
     return false;
 

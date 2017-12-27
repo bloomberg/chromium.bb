@@ -201,8 +201,8 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
   // Force new paint chunk which is required for subsequence caching.
   new_paint_chunks_.ForceNewChunk();
 
-  DCHECK(new_cached_subsequences_.find(&client) ==
-         new_cached_subsequences_.end());
+  DCHECK(!new_cached_subsequences_.Contains(&client))
+      << "Multiple subsequences for client: " << client.DebugName();
 
   new_cached_subsequences_.insert(&client, SubsequenceMarkers(start, end));
   last_cached_subsequence_end_ = end;

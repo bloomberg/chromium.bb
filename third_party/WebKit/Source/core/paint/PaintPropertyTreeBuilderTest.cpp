@@ -3714,6 +3714,27 @@ TEST_P(PaintPropertyTreeBuilderTest,
       GetLayoutObjectByElementId("absolute")->Container()->IsLayoutBlock());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, FrameUnderMulticol) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='columns: 2; width: 200px; height: 100px; coloum-gap: 0'>
+      <iframe style='width: 50px; height: 150px'></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      div { height: 60px; }
+    </style>
+    <div id='div1' style='background: blue'></div>
+    <div id='div2' style='background: green'></div>
+  )HTML");
+
+  // This should not crash on duplicated subsequences in the iframe.
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // TODO(crbug.com/797779): Add code to verify fragments under the iframe.
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, Reflection) {
   SetBodyInnerHTML(
       "<div id='filter' style='-webkit-box-reflect: below; height:1000px;'>"
