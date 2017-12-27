@@ -2337,7 +2337,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline',
       'cave',
       'chell',
-      'coral',
       'cyan',
       'daisy',
       'daisy_skate',
@@ -2413,6 +2412,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'capri', # contact:ghines@
       'cobblepot', # contact:jkoleszar@
+      'coral', # contact:grundler@ crbug.com/788584
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
