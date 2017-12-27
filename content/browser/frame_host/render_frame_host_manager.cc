@@ -1242,15 +1242,21 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
 
   // Shortcut some common cases for reusing an existing frame's SiteInstance.
-  // Looking at the main frame and openers is required for TDI mode. It also
-  // helps with hosted apps, allowing same-site, non-app subframes to be kept
-  // inside the hosted app process.
+  // There are several reasons for this:
+  // - looking at the main frame and openers is required for TDI mode.
+  // - with hosted apps, this allows same-site, non-app subframes to be kept
+  //   inside the hosted app process.
+  // - this avoids putting same-site iframes into different processes after
+  //   navigations from isolated origins.  This matters for some OAuth flows;
+  //   see https://crbug.com/796912.
   //
-  // TODO(alexmos): Normally, we'd find these SiteInstances later, as part of
-  // creating a new related SiteInstance from
-  // BrowsingInstance::GetSiteInstanceForURL(), but the lookup there does not
-  // properly deal with hosted apps.  Once that's refactored to skip effective
-  // URLs when necessary, this can be removed.  See https://crbug.com/718516.
+  // TODO(alexmos): Ideally, the right SiteInstance for these cases should be
+  // found later, as part of creating a new related SiteInstance from
+  // BrowsingInstance::GetSiteInstanceForURL().  However, the lookup there (1)
+  // does not properly deal with hosted apps (see https://crbug.com/718516),
+  // and (2) does not yet deal with cases where a SiteInstance is shared by
+  // several sites that don't require a dedicated process (see
+  // https://crbug.com/787576).
   if (!frame_tree_node_->IsMainFrame()) {
     RenderFrameHostImpl* main_frame =
         frame_tree_node_->frame_tree()->root()->current_frame_host();
