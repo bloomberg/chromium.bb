@@ -4,10 +4,10 @@
 
 #include "services/shape_detection/text_detection_impl_win.h"
 
+#include <windows.foundation.collections.h>
 #include <windows.globalization.h>
 #include <memory>
-#include <utility>
-#include <vector>
+#include <string>
 
 #include "base/logging.h"
 #include "base/win/core_winrt_util.h"
@@ -18,8 +18,11 @@
 
 namespace shape_detection {
 
+using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Globalization::ILanguageFactory;
 using ABI::Windows::Media::Ocr::IOcrEngineStatics;
+using ABI::Windows::Media::Ocr::IOcrLine;
+using ABI::Windows::Media::Ocr::OcrLine;
 using base::win::GetActivationFactory;
 using base::win::ScopedHString;
 
@@ -91,22 +94,128 @@ void TextDetectionImpl::Create(mojom::TextDetectionRequest request) {
     return;
   }
 
-  mojo::MakeStrongBinding(
-      std::make_unique<TextDetectionImplWin>(std::move(ocr_engine)),
-      std::move(request));
+  Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory;
+  hr = GetActivationFactory<
+      ISoftwareBitmapStatics,
+      RuntimeClass_Windows_Graphics_Imaging_SoftwareBitmap>(&bitmap_factory);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "ISoftwareBitmapStatics factory failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  auto impl = std::make_unique<TextDetectionImplWin>(std::move(ocr_engine),
+                                                     std::move(bitmap_factory));
+  auto* impl_ptr = impl.get();
+  impl_ptr->SetBinding(
+      mojo::MakeStrongBinding(std::move(impl), std::move(request)));
 }
 
 TextDetectionImplWin::TextDetectionImplWin(
-    Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine)
-    : ocr_engine_(std::move(ocr_engine)) {
+    Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine,
+    Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory)
+    : ocr_engine_(std::move(ocr_engine)),
+      bitmap_factory_(std::move(bitmap_factory)) {
   DCHECK(ocr_engine_);
+  DCHECK(bitmap_factory_);
 }
 
 TextDetectionImplWin::~TextDetectionImplWin() = default;
 
 void TextDetectionImplWin::Detect(const SkBitmap& bitmap,
                                   DetectCallback callback) {
-  std::move(callback).Run(std::vector<mojom::TextDetectionResultPtr>());
+  if ((async_recognize_ops_ = BeginDetect(bitmap))) {
+    // Hold on the callback until AsyncOperation completes.
+    recognize_text_callback_ = std::move(callback);
+    // This prevents the Detect function from being called before the
+    // AsyncOperation completes.
+    binding_->PauseIncomingMethodCallProcessing();
+  } else {
+    // No detection taking place; run |callback| with an empty array of results.
+    std::move(callback).Run(std::vector<mojom::TextDetectionResultPtr>());
+  }
+}
+
+std::unique_ptr<AsyncOperation<OcrResult>> TextDetectionImplWin::BeginDetect(
+    const SkBitmap& bitmap) {
+  Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap =
+      CreateWinBitmapFromSkBitmap(bitmap, bitmap_factory_.Get());
+  if (!win_bitmap)
+    return nullptr;
+
+  // Recognize text asynchronously.
+  AsyncOperation<OcrResult>::IAsyncOperationPtr async_op;
+  const HRESULT hr = ocr_engine_->RecognizeAsync(win_bitmap.Get(), &async_op);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Recognize text asynchronously failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return nullptr;
+  }
+
+  // The once callback will not be called if this object is deleted, so it's
+  // fine to use Unretained to bind the callback.
+  // |win_bitmap| needs to be kept alive until OnTextDetected().
+  return AsyncOperation<OcrResult>::Create(
+      base::BindOnce(&TextDetectionImplWin::OnTextDetected,
+                     base::Unretained(this), std::move(win_bitmap)),
+      std::move(async_op));
+}
+
+std::vector<mojom::TextDetectionResultPtr>
+TextDetectionImplWin::BuildTextDetectionResult(
+    AsyncOperation<OcrResult>::IAsyncOperationPtr async_op) {
+  std::vector<mojom::TextDetectionResultPtr> results;
+  Microsoft::WRL::ComPtr<IOcrResult> ocr_result;
+  HRESULT hr =
+      async_op ? async_op->GetResults(ocr_result.GetAddressOf()) : E_FAIL;
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "GetResults failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return results;
+  }
+
+  Microsoft::WRL::ComPtr<IVectorView<OcrLine*>> ocr_lines;
+  hr = ocr_result->get_Lines(ocr_lines.GetAddressOf());
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Get Lines failed: " << logging::SystemErrorCodeToString(hr);
+    return results;
+  }
+
+  uint32_t count;
+  hr = ocr_lines->get_Size(&count);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "get_Size failed: " << logging::SystemErrorCodeToString(hr);
+    return results;
+  }
+
+  results.reserve(count);
+  for (uint32_t i = 0; i < count; ++i) {
+    Microsoft::WRL::ComPtr<IOcrLine> line;
+    hr = ocr_lines->GetAt(i, &line);
+    if (FAILED(hr))
+      break;
+
+    HSTRING text;
+    hr = line->get_Text(&text);
+    if (FAILED(hr))
+      break;
+
+    auto result = shape_detection::mojom::TextDetectionResult::New();
+    result->raw_value = ScopedHString(text).GetAsUTF8();
+    results.push_back(std::move(result));
+  }
+  return results;
+}
+
+// |win_bitmap| is passed here so that it is kept alive until the AsyncOperation
+// completes because RecognizeAsync does not hold a reference.
+void TextDetectionImplWin::OnTextDetected(
+    Microsoft::WRL::ComPtr<ISoftwareBitmap> /* win_bitmap */,
+    AsyncOperation<OcrResult>::IAsyncOperationPtr async_op) {
+  std::move(recognize_text_callback_)
+      .Run(BuildTextDetectionResult(std::move(async_op)));
+  async_recognize_ops_.reset();
+  binding_->ResumeIncomingMethodCallProcessing();
 }
 
 }  // namespace shape_detection

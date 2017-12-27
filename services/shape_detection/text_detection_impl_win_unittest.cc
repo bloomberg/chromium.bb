@@ -7,7 +7,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_com_initializer.h"
@@ -16,16 +19,16 @@
 #include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 #include "services/shape_detection/text_detection_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkImage.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace shape_detection {
 
 namespace {
 
 void DetectTextCallback(base::Closure quit_closure,
-                        size_t* num_text_chunks,
-                        std::vector<mojom::TextDetectionResultPtr> results) {
-  *num_text_chunks = results.size();
+                        std::vector<mojom::TextDetectionResultPtr>* results_out,
+                        std::vector<mojom::TextDetectionResultPtr> results_in) {
+  *results_out = std::move(results_in);
   quit_closure.Run();
 }
 
@@ -59,17 +62,34 @@ TEST_F(TextDetectionImplWinTest, ScanOnce) {
   auto request = mojo::MakeRequest(&text_service);
   TextDetectionImpl::Create(std::move(request));
 
+  // Load image data from test directory.
+  base::FilePath image_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &image_path));
+  image_path = image_path.Append(FILE_PATH_LITERAL("services"))
+                   .Append(FILE_PATH_LITERAL("test"))
+                   .Append(FILE_PATH_LITERAL("data"))
+                   .Append(FILE_PATH_LITERAL("text_detection.png"));
+  ASSERT_TRUE(base::PathExists(image_path));
+  std::string image_data;
+  ASSERT_TRUE(base::ReadFileToString(image_path, &image_data));
+
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(100, 100);
-  bitmap.eraseColor(SK_ColorBLUE);
+  gfx::PNGCodec::Decode(reinterpret_cast<const uint8_t*>(image_data.data()),
+                        image_data.size(), &bitmap);
+
+  const gfx::Size size(bitmap.width(), bitmap.height());
+  const uint32_t num_bytes = size.GetArea() * 4 /* bytes per pixel */;
+  ASSERT_EQ(num_bytes, bitmap.computeByteSize());
 
   base::RunLoop run_loop;
-  size_t num_text_chunks = 1u;
+  std::vector<mojom::TextDetectionResultPtr> results;
   text_service->Detect(
-      bitmap, base::BindOnce(&DetectTextCallback, run_loop.QuitClosure(),
-                             &num_text_chunks));
+      bitmap,
+      base::BindOnce(&DetectTextCallback, run_loop.QuitClosure(), &results));
   run_loop.Run();
-  EXPECT_EQ(0u, num_text_chunks);
+  ASSERT_EQ(2u, results.size());
+  EXPECT_EQ("The Chromium Project website is:", results[0]->raw_value);
+  EXPECT_EQ("https://www.chromium.org", results[1]->raw_value);
 }
 
 }  // namespace shape_detection
