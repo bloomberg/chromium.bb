@@ -36,6 +36,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -232,6 +233,13 @@ class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
     // Make sure the Hangout Services component extension gets loaded.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
     AudioWaitingExtensionTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AudioWaitingExtensionTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kNoUserGestureRequiredPolicy);
   }
 };
 

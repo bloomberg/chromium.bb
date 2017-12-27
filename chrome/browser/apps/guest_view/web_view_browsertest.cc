@@ -1082,6 +1082,10 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, AudioMutesOnAttach) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, AudioStateJavascriptAPI) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAutoplayPolicy,
+      switches::autoplay::kNoUserGestureRequiredPolicy);
+
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/audio_state_api"))
       << message_;
