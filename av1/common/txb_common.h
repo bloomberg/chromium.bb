@@ -107,8 +107,25 @@ static INLINE int get_eob_pos_token(const int eob, int *const extra) {
 
 static INLINE int av1_get_eob_pos_ctx(const TX_TYPE tx_type,
                                       const int eob_token) {
-  const int offset = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 11;
-  return eob_token - 1 + offset;
+  static const int8_t tx_type_to_offset[TX_TYPES] = {
+    -1,  // DCT_DCT
+    -1,  // ADST_DCT
+    -1,  // DCT_ADST
+    -1,  // ADST_ADST
+    -1,  // FLIPADST_DCT
+    -1,  // DCT_FLIPADST
+    -1,  // FLIPADST_FLIPADST
+    -1,  // ADST_FLIPADST
+    -1,  // FLIPADST_ADST
+    -1,  // IDTX
+    10,  // V_DCT
+    10,  // H_DCT
+    10,  // V_ADST
+    10,  // H_ADST
+    10,  // V_FLIPADST
+    10,  // H_FLIPADST
+  };
+  return eob_token + tx_type_to_offset[tx_type];
 }
 
 static INLINE int get_txb_bwl(TX_SIZE tx_size) {
