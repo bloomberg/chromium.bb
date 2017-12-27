@@ -2,7 +2,7 @@ Name: nmoinvaz/minizip
 Short name: minizip
 URL: https://github.com/nmoinvaz/minizip
 Version: 0
-Revision: e07e141475220196b55294c8172b274cc32d642d
+Revision: 53a657318af1fccc4bac7ed230729302b2391d1d
 Security critical: yes
 License: Custom license
 License File: src/LICENSE
