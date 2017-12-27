@@ -292,7 +292,12 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
 
   // Our opaqueness might have changed without triggering layout.
   if (diff.NeedsFullPaintInvalidation()) {
+    // Invalidate self.
+    InvalidateBackgroundObscurationStatus();
     LayoutObject* parent_to_invalidate = Parent();
+    // Also invalidate up to kBackgroundObscurationTestMaxDepth parents.
+    // This constant corresponds to a descendant walk of the same depth;
+    // see ComputeBackgroundIsKnownToBeObscured.
     for (unsigned i = 0;
          i < kBackgroundObscurationTestMaxDepth && parent_to_invalidate; ++i) {
       parent_to_invalidate->InvalidateBackgroundObscurationStatus();
