@@ -62,7 +62,7 @@ const int kPasswordFillFormDataId = 1234;
 // The name of the username/password element in the form.
 const char kUsernameName[] = "username";
 const char kPasswordName[] = "password";
-const char kEmailName[] = "email";
+const char kDisplayName[] = "display-name";
 const char kCreditCardOwnerName[] = "creditcardowner";
 const char kCreditCardNumberName[] = "creditcardnumber";
 const char kCreditCardVerificationName[] = "cvc";
@@ -198,8 +198,8 @@ const char kJavaScriptClick[] =
 const char kFormHTMLWithTwoTextFields[] =
     "<FORM name='LoginTestForm' id='LoginTestForm' "
     "action='http://www.bidule.com'>"
+    "  <INPUT type='text' id='display-name'/>"
     "  <INPUT type='text' id='username'/>"
-    "  <INPUT type='text' id='email'/>"
     "  <INPUT type='password' id='password'/>"
     "  <INPUT type='submit' value='Login'/>"
     "</FORM>";
@@ -2189,16 +2189,16 @@ TEST_F(PasswordAutofillAgentTest,
 TEST_F(PasswordAutofillAgentTest, FindingUsernameWithoutAutofillPredictions) {
   LoadHTML(kFormHTMLWithTwoTextFields);
   UpdateUsernameAndPasswordElements();
-  WebInputElement email_element = GetInputElementByID(kEmailName);
+  WebInputElement display_name_element = GetInputElementByID(kDisplayName);
   SimulateUsernameTyping("temp");
-  SimulateUserInputChangeForElement(&email_element, "temp@google.com");
+  SimulateUserInputChangeForElement(&display_name_element, "User123");
   SimulatePasswordTyping("random");
 
   SaveAndSubmitForm();
 
-  // Observe that the PasswordAutofillAgent identifies the second field (e-mail)
-  // as username.
-  ExpectFormSubmittedWithUsernameAndPasswords("temp@google.com", "random", "");
+  // Observe that the PasswordAutofillAgent identifies the second field as
+  // username.
+  ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
 }
 
 // Tests that field predictions are followed when identifying the username
@@ -2206,9 +2206,9 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithoutAutofillPredictions) {
 TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   LoadHTML(kFormHTMLWithTwoTextFields);
   UpdateUsernameAndPasswordElements();
-  WebInputElement email_element = GetInputElementByID(kEmailName);
+  WebInputElement display_name_element = GetInputElementByID(kDisplayName);
   SimulateUsernameTyping("temp");
-  SimulateUserInputChangeForElement(&email_element, "temp@google.com");
+  SimulateUserInputChangeForElement(&display_name_element, "User123");
   SimulatePasswordTyping("random");
   // Find FormData for visible password form.
   WebFormElement form_element = username_element_.Form();
@@ -2241,7 +2241,7 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   // TODO(msramek): We should also test that adding another password field
   // won't override the password field prediction either. However, the password
   // field predictions are not taken into account yet.
-  ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
+  ExpectFormSubmittedWithUsernameAndPasswords("User123", "random", "");
 }
 
 // The user types in a username and a password. Then JavaScript changes password

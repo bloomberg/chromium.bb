@@ -491,7 +491,7 @@ bool GetPasswordForm(
   std::map<blink::WebInputElement, blink::WebInputElement>
       last_text_input_without_heuristics;
 
-  std::vector<WebInputElement> all_possible_usernames;
+  std::vector<WebInputElement> possible_usernames;
 
   std::map<WebInputElement, PasswordFormFieldPredictionType> predicted_elements;
   if (form_predictions) {
@@ -595,7 +595,7 @@ bool GetPasswordForm(
     // Various input types such as text, url, email can be a username field.
     if (!input_element->IsPasswordFieldForAutofill()) {
       if (!input_element->Value().IsEmpty()) {
-        all_possible_usernames.push_back(*input_element);
+        possible_usernames.push_back(*input_element);
       }
       if (HasAutocompleteAttributeValue(*input_element,
                                         kAutocompleteUsername)) {
@@ -660,11 +660,12 @@ bool GetPasswordForm(
           password_manager::features::kEnableHtmlBasedUsernameDetector)) {
     if (username_element.IsNull()) {
       GetUsernameFieldBasedOnHtmlAttributes(
-          all_possible_usernames, password_form->form_data, &username_element,
-          username_detector_cache);
-      if (!username_element.IsNull())
+          form.control_elements, possible_usernames, password_form->form_data,
+          &username_element, username_detector_cache);
+      if (!username_element.IsNull()) {
         username_detection_method =
             UsernameDetectionMethod::HTML_BASED_CLASSIFIER;
+      }
     }
   }
 
@@ -753,19 +754,21 @@ bool GetPasswordForm(
       form_util::GetCanonicalOriginForDocument(form.document);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
 
-  // Remove |username_element| from the vector |all_possible_usernames| if the
+  // Remove |username_element| from the vector |possible_usernames| if the
   // value presents in the vector.
   if (!username_element.IsNull()) {
-    all_possible_usernames.erase(
-        std::remove(all_possible_usernames.begin(),
-                    all_possible_usernames.end(), username_element),
-        all_possible_usernames.end());
+    possible_usernames.erase(
+        std::remove(possible_usernames.begin(), possible_usernames.end(),
+                    username_element),
+        possible_usernames.end());
   }
   // Convert |all_possible_usernames| to PossibleUsernamesVector.
   autofill::PossibleUsernamesVector other_possible_usernames;
-  for (WebInputElement possible_username : all_possible_usernames) {
-    other_possible_usernames.push_back(
-        MakePossibleUsernamePair(possible_username));
+  for (WebInputElement possible_username : possible_usernames) {
+    if (!possible_username.Value().IsEmpty()) {
+      other_possible_usernames.push_back(
+          MakePossibleUsernamePair(possible_username));
+    }
   }
   password_form->other_possible_usernames.swap(other_possible_usernames);
 
