@@ -1738,6 +1738,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Returns the bounding box of the visual rects of all fragments.
   LayoutRect FragmentsVisualRectBoundingBox() const;
 
+  void SetNeedsOverflowRecalcAfterStyleChange();
+
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class CORE_EXPORT MutableForPainting {
@@ -2129,15 +2131,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void CheckCounterChanges(const ComputedStyle* old_style,
                            const ComputedStyle* new_style);
 
-  void SetNeedsOverflowRecalcAfterStyleChange();
-
   // Walk up the parent chain and find the first scrolling block to disable
   // scroll anchoring on.
   void SetScrollAnchorDisablingStyleChangedOnAncestor();
 
-  // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make
-  // LayoutBox recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
-  inline void MarkAncestorsForOverflowRecalcIfNeeded();
+  inline void MarkContainerChainForOverflowRecalcIfNeeded();
 
   inline void MarkAncestorsForPaintInvalidation();
   inline void SetNeedsPaintOffsetAndVisualRectUpdate();

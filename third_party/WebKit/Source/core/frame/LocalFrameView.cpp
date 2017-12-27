@@ -1008,9 +1008,21 @@ bool LocalFrameView::ShouldPerformScrollAnchoring() const {
          !frame_->GetDocument()->FinishingOrIsPrinting();
 }
 
-static inline void LayoutFromRootObject(LayoutObject& root) {
+void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   LayoutState layout_state(root);
-  root.UpdateLayout();
+  if (!root.IsBoxModelObject()) {
+    root.UpdateLayout();
+  } else {
+    // Laying out the root may change its visual overflow. If so, that
+    // visual overflow needs to propagate to its containing block.
+    LayoutBoxModelObject& box_object = ToLayoutBoxModelObject(root);
+    LayoutRect previous_visual_overflow_rect = box_object.VisualOverflowRect();
+    box_object.UpdateLayout();
+    if (box_object.VisualOverflowRect() != previous_visual_overflow_rect) {
+      box_object.SetNeedsOverflowRecalcAfterStyleChange();
+      RecalcOverflowAfterStyleChange();
+    }
+  }
 }
 
 void LocalFrameView::PrepareLayoutAnalyzer() {

@@ -1600,7 +1600,7 @@ void LayoutObject::FirstLineStyleDidChange(const ComputedStyle& old_style,
     SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
 }
 
-void LayoutObject::MarkAncestorsForOverflowRecalcIfNeeded() {
+void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
   LayoutObject* object = this;
   do {
     // Cell and row need to propagate the flag to their containing section and
@@ -1619,7 +1619,7 @@ void LayoutObject::SetNeedsOverflowRecalcAfterStyleChange() {
   SetSelfNeedsOverflowRecalcAfterStyleChange();
   SetMayNeedPaintInvalidation();
   if (!needed_recalc)
-    MarkAncestorsForOverflowRecalcIfNeeded();
+    MarkContainerChainForOverflowRecalcIfNeeded();
 }
 
 DISABLE_CFI_PERF
@@ -1894,7 +1894,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     // Ditto.
     if (NeedsOverflowRecalcAfterStyleChange() &&
         old_style->GetPosition() != style_->GetPosition())
-      MarkAncestorsForOverflowRecalcIfNeeded();
+      MarkContainerChainForOverflowRecalcIfNeeded();
 
     SetNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::kStyleChange);
   } else if (diff.NeedsPositionedMovementLayout()) {
