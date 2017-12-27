@@ -671,10 +671,6 @@ typedef struct macroblockd {
 #if CONFIG_JNT_COMP
   JNT_COMP_PARAMS jcp_param;
 #endif
-
-#if CONFIG_EXT_SKIP
-  int all_one_sided_refs;
-#endif  // CONFIG_EXT_SKIP
 } MACROBLOCKD;
 
 static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {

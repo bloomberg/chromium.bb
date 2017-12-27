@@ -3043,18 +3043,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_EXT_SKIP
   av1_setup_skip_mode_allowed(cm);
   cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
-  xd->all_one_sided_refs =
-      frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
-#if 0
-  printf(
-      "DECODER: Frame=%d, frame_offset=%d, show_frame=%d, "
-      "show_existing_frame=%d, is_skip_mode_allowed=%d, "
-      "ref_frame_idx=(%d,%d), reference_mode=%d, "
-      "skip_mode_flag=%d\n\n",
-      cm->current_video_frame, cm->frame_offset, cm->show_frame,
-      cm->show_existing_frame, cm->is_skip_mode_allowed, cm->ref_frame_idx_0,
-      cm->ref_frame_idx_1, cm->reference_mode, cm->skip_mode_flag);
-#endif  // 0
 #endif  // CONFIG_EXT_SKIP
 
   read_compound_tools(cm, rb);

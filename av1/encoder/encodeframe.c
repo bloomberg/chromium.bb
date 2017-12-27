@@ -3829,18 +3829,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 #if CONFIG_EXT_SKIP
   cm->skip_mode_flag = check_skip_mode_enabled(cpi);
-  xd->all_one_sided_refs = cpi->all_one_sided_refs;
-#if 0
-  printf(
-      "\nENCODER: Frame=%d, frame_offset=%d, show_frame=%d, "
-      "show_existing_frame=%d, is_skip_mode_allowed=%d, "
-      "ref_frame_idx=(%d,%d), reference_mode=%d, "
-      "skip_mode_flag=%d, lag_in_frames=%d\n",
-      cm->current_video_frame, cm->frame_offset, cm->show_frame,
-      cm->show_existing_frame, cm->is_skip_mode_allowed, cm->ref_frame_idx_0,
-      cm->ref_frame_idx_1, cm->reference_mode, cm->skip_mode_flag,
-      cpi->oxcf.lag_in_frames);
-#endif  // 0
 #endif  // CONFIG_EXT_SKIP
 
   {
