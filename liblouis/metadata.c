@@ -619,6 +619,7 @@ lou_findTable(const char *query) {
 			bestMatch = strdup(table->name);
 		}
 	}
+	list_free(queryFeatures);
 	if (bestMatch) {
 		_lou_logMessage(LOG_INFO, "Best match: %s (%d)", bestMatch, bestQuotient);
 		return bestMatch;
