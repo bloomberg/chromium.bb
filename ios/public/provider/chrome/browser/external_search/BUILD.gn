@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("external_search") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "external_search_provider.h",
     "external_search_provider.mm",
