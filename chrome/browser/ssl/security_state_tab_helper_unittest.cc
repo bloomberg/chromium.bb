@@ -10,7 +10,6 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
-#include "components/security_state/core/switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
