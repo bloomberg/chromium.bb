@@ -262,10 +262,6 @@ component("base") {
     "template_expressions.h",
     "theme_provider.cc",
     "theme_provider.h",
-    "touch/touch_device.h",
-    "touch/touch_device_util.cc",
-    "touch/touch_editing_controller.cc",
-    "touch/touch_editing_controller.h",
     "ui_base_export.h",
     "ui_base_exports.cc",
     "ui_base_features.cc",
@@ -364,6 +360,10 @@ component("base") {
       "idle/idle_win.cc",
       "text/bytes_formatting.cc",
       "text/bytes_formatting.h",
+      "touch/touch_device.h",
+      "touch/touch_device_util.cc",
+      "touch/touch_editing_controller.cc",
+      "touch/touch_editing_controller.h",
     ]
   }
 
