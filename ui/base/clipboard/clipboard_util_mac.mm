@@ -7,6 +7,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 
+namespace ui {
+
 namespace {
 NSString* const kWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
 NSString* const kPublicUrl = @"public.url";
@@ -21,8 +23,6 @@ NSString* UTIFromPboardType(NSString* type) {
       autorelease];
 }
 }  // namespace
-
-namespace ui {
 
 UniquePasteboard::UniquePasteboard()
     : pasteboard_([[NSPasteboard pasteboardWithUniqueName] retain]) {}
