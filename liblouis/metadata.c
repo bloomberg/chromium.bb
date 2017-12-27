@@ -444,6 +444,8 @@ analyzeTable(const char *table, int activeOnly) {
 							char *k = widestrToStr(key, keySize);
 							char *v = val ? widestrToStr(val, valSize) : NULL;
 							if (!active) {
+								if (!v)
+									goto compile_error;
 								// normalize space
 								int i = 0;
 								int j = 0;
