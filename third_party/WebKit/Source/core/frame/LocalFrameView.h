@@ -1171,6 +1171,8 @@ class CORE_EXPORT LocalFrameView final
 
   PaintController* GetPaintController() { return paint_controller_.get(); }
 
+  void LayoutFromRootObject(LayoutObject& root);
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
