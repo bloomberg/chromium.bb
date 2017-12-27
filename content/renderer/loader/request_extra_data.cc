@@ -7,7 +7,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/service_worker_modes.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 using blink::WebString;
 
@@ -32,7 +31,8 @@ RequestExtraData::~RequestExtraData() {
 }
 
 void RequestExtraData::CopyToResourceRequest(ResourceRequest* request) const {
-  request->visibility_state = visibility_state_;
+  request->is_prerendering =
+      visibility_state_ == blink::mojom::PageVisibilityState::kPrerender;
   request->render_frame_id = render_frame_id_;
   request->is_main_frame = is_main_frame_;
 
