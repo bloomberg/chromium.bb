@@ -106,7 +106,8 @@ class HttpServer : public net::HttpServer::Delegate {
         info,
         base::Bind(&HttpServer::OnResponse,
                    weak_factory_.GetWeakPtr(),
-                   connection_id));
+                   connection_id,
+                   info.HasHeaderValue("connection", "keep-alive")));
   }
   void OnWebSocketRequest(int connection_id,
                           const net::HttpServerRequestInfo& info) override {}
@@ -116,11 +117,10 @@ class HttpServer : public net::HttpServer::Delegate {
 
  private:
   void OnResponse(int connection_id,
+                  bool keep_alive,
                   std::unique_ptr<net::HttpServerResponseInfo> response) {
-    // Don't support keep-alive, since there's no way to detect if the
-    // client is HTTP/1.0. In such cases, the client may hang waiting for
-    // the connection to close (e.g., python 2.7 urllib).
-    response->AddHeader("Connection", "close");
+    if (!keep_alive)
+      response->AddHeader("Connection", "close");
     server_->SendResponse(connection_id, *response);
     // Don't need to call server_->Close(), since SendResponse() will handle
     // this for us.
