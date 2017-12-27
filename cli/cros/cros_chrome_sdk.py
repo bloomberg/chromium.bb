@@ -881,6 +881,11 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args['cros_target_extra_ldflags'] = extra_ldflags.replace(
           extra_thinlto_flag, '')
 
+    # We removed webcore debug symbols on release builds on arm.
+    # See crbug.com/792999. However, we want to keep the symbols
+    # for simplechrome builds.
+    gn_args['remove_webcore_debug_symbols'] = False
+
     if options.gn_extra_args:
       gn_args.update(gn_helpers.FromGNArgs(options.gn_extra_args))
 
