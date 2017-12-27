@@ -66,7 +66,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool do_not_prompt_for_login,
       bool keepalive,
       blink::WebReferrerPolicy referrer_policy,
-      blink::mojom::PageVisibilityState visibility_state,
+      bool is_prerendering,
       ResourceContext* context,
       bool report_raw_headers,
       bool is_async,
@@ -89,7 +89,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ResourceType GetResourceType() const override;
   int GetProcessType() const override;
   blink::WebReferrerPolicy GetReferrerPolicy() const override;
-  blink::mojom::PageVisibilityState GetVisibilityState() const override;
+  bool IsPrerendering() const override;
   ui::PageTransition GetPageTransition() const override;
   bool HasUserGesture() const override;
   bool GetAssociatedRenderFrame(int* render_process_id,
@@ -231,7 +231,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ui::PageTransition transition_type_;
   int memory_cost_;
   blink::WebReferrerPolicy referrer_policy_;
-  blink::mojom::PageVisibilityState visibility_state_;
+  bool is_prerendering_;
   ResourceContext* context_;
   bool report_raw_headers_;
   bool is_async_;

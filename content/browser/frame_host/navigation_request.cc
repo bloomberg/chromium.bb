@@ -1078,7 +1078,9 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->IsMainFrame(), parent_is_main_frame,
           IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
-          report_raw_headers, navigating_frame_host->GetVisibilityState()),
+          report_raw_headers,
+          navigating_frame_host->GetVisibilityState() ==
+              blink::mojom::PageVisibilityState::kPrerender),
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(),
       navigation_handle_->appcache_handle(), this);

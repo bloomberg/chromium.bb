@@ -60,9 +60,8 @@ struct CONTENT_EXPORT ResourceRequest {
   net::URLRequest::ReferrerPolicy referrer_policy =
       net::URLRequest::NEVER_CLEAR_REFERRER;
 
-  // The frame's visibility state.
-  blink::mojom::PageVisibilityState visibility_state =
-      blink::mojom::PageVisibilityState::kVisible;
+  // Whether the frame that initiated this request is used for prerendering.
+  bool is_prerendering = false;
 
   // Additional HTTP request headers.
   net::HttpRequestHeaders headers;

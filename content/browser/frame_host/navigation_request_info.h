@@ -12,7 +12,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/referrer.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -22,17 +21,16 @@ namespace content {
 // ResourceDispatcherHost. It is initialized on the UI thread, and then passed
 // to the IO thread by a NavigationRequest object.
 struct CONTENT_EXPORT NavigationRequestInfo {
-  NavigationRequestInfo(
-      const CommonNavigationParams& common_params,
-      mojom::BeginNavigationParamsPtr begin_params,
-      const GURL& site_for_cookies,
-      bool is_main_frame,
-      bool parent_is_main_frame,
-      bool are_ancestors_secure,
-      int frame_tree_node_id,
-      bool is_for_guests_only,
-      bool report_raw_headers,
-      blink::mojom::PageVisibilityState page_visibility_state);
+  NavigationRequestInfo(const CommonNavigationParams& common_params,
+                        mojom::BeginNavigationParamsPtr begin_params,
+                        const GURL& site_for_cookies,
+                        bool is_main_frame,
+                        bool parent_is_main_frame,
+                        bool are_ancestors_secure,
+                        int frame_tree_node_id,
+                        bool is_for_guests_only,
+                        bool report_raw_headers,
+                        bool is_prerendering);
   ~NavigationRequestInfo();
 
   const CommonNavigationParams common_params;
@@ -55,7 +53,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
 
   const bool report_raw_headers;
 
-  blink::mojom::PageVisibilityState page_visibility_state;
+  const bool is_prerendering;
 };
 
 }  // namespace content

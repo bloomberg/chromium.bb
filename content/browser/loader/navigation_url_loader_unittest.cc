@@ -160,8 +160,7 @@ class NavigationURLLoaderTest : public testing::Test {
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, std::move(begin_params), url,
-                                  true, false, false, -1, false, false,
-                                  blink::mojom::PageVisibilityState::kVisible));
+                                  true, false, false, -1, false, false, false));
     return NavigationURLLoader::Create(
         browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),

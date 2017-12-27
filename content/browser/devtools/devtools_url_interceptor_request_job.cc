@@ -137,7 +137,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->do_not_prompt_for_login(),
       resource_request_info->keepalive(),
       resource_request_info->GetReferrerPolicy(),
-      resource_request_info->GetVisibilityState(),
+      resource_request_info->IsPrerendering(),
       resource_request_info->GetContext(),
       resource_request_info->ShouldReportRawHeaders(),
       resource_request_info->IsAsync(),

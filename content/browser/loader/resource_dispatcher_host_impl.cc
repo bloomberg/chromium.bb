@@ -120,7 +120,6 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
 
@@ -1217,7 +1216,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       do_not_prompt_for_login, request_data.keepalive,
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           request_data.referrer_policy),
-      request_data.visibility_state, resource_context, report_raw_headers,
+      request_data.is_prerendering, resource_context, report_raw_headers,
       !is_sync_load, previews_state, request_data.request_body,
       request_data.initiated_in_secure_context);
   extra_info->SetBlobHandles(std::move(blob_handles));
@@ -1509,7 +1508,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // do_not_prompt_for_login
       false,     // keepalive
       blink::kWebReferrerPolicyDefault,
-      blink::mojom::PageVisibilityState::kVisible, context,
+      false,  // is_prerendering
+      context,
       false,           // report_raw_headers
       true,            // is_async
       previews_state,  // previews_state
@@ -1943,7 +1943,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       false,  // enable_upload_progress
       false,  // do_not_prompt_for_login
       false,  // keepalive
-      info.common_params.referrer.policy, info.page_visibility_state,
+      info.common_params.referrer.policy, info.is_prerendering,
       resource_context, info.report_raw_headers,
       true,  // is_async
       previews_state, info.common_params.post_data,
