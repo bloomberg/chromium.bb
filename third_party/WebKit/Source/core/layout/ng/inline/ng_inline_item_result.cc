@@ -38,9 +38,8 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
     // space that we cannot compute percent for text-indent.
     const Length& length = line_style_->TextIndent();
     LayoutUnit maximum_value;
-    if (length.IsPercentOrCalc() &&
-        constraint_space.ParentPercentageResolutionInlineSize().has_value())
-      maximum_value = *constraint_space.ParentPercentageResolutionInlineSize();
+    if (length.IsPercentOrCalc())
+      maximum_value = constraint_space.ParentPercentageResolutionInlineSize();
     text_indent_ = MinimumValueForLength(length, maximum_value);
   } else {
     text_indent_ = LayoutUnit();

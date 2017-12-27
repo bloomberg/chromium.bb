@@ -11,7 +11,9 @@ namespace blink {
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
     const NGConstraintSpace& parent_space)
     : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
-                               parent_space.InitialContainingBlockSize()) {}
+                               parent_space.InitialContainingBlockSize()) {
+  parent_percentage_resolution_size_ = parent_space.PercentageResolutionSize();
+}
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
                                                    NGPhysicalSize icb_size)
@@ -168,13 +170,12 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
 
   NGLogicalSize available_size = available_size_;
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
-  Optional<NGLogicalSize> parent_percentage_resolution_size =
-      parent_percentage_resolution_size_;
+  NGLogicalSize parent_percentage_resolution_size =
+      parent_percentage_resolution_size_.value_or(percentage_resolution_size);
   if (!is_in_parallel_flow) {
     available_size.Flip();
     percentage_resolution_size.Flip();
-    if (parent_percentage_resolution_size.has_value())
-      parent_percentage_resolution_size->Flip();
+    parent_percentage_resolution_size.Flip();
   }
 
   // If inline size is indefinite, use size of initial containing block.
@@ -197,12 +198,6 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
           initial_containing_block_size_.height;
     }
   }
-  // parent_percentage_resolution_size is so rarely used that compute indefinite
-  // fallback in NGConstraintSpace when it is used.
-  Optional<LayoutUnit> parent_percentage_resolution_inline_size =
-      parent_percentage_resolution_size.has_value()
-          ? parent_percentage_resolution_size->inline_size
-          : Optional<LayoutUnit>();
 
   DEFINE_STATIC_LOCAL(NGExclusionSpace, empty_exclusion_space, ());
 
@@ -229,7 +224,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
     return base::AdoptRef(new NGConstraintSpace(
         static_cast<WritingMode>(out_writing_mode), false,
         static_cast<TextDirection>(text_direction_), available_size,
-        percentage_resolution_size, parent_percentage_resolution_inline_size,
+        percentage_resolution_size,
+        parent_percentage_resolution_size.inline_size,
         initial_containing_block_size_, fragmentainer_block_size_,
         fragmentainer_space_at_bfc_start_, is_fixed_size_inline_,
         is_fixed_size_block_, is_shrink_to_fit_,
@@ -243,9 +239,10 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   return base::AdoptRef(new NGConstraintSpace(
       out_writing_mode, true, static_cast<TextDirection>(text_direction_),
       available_size, percentage_resolution_size,
-      parent_percentage_resolution_inline_size, initial_containing_block_size_,
-      fragmentainer_block_size_, fragmentainer_space_at_bfc_start_,
-      is_fixed_size_block_, is_fixed_size_inline_, is_shrink_to_fit_,
+      parent_percentage_resolution_size.inline_size,
+      initial_containing_block_size_, fragmentainer_block_size_,
+      fragmentainer_space_at_bfc_start_, is_fixed_size_block_,
+      is_fixed_size_inline_, is_shrink_to_fit_,
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,

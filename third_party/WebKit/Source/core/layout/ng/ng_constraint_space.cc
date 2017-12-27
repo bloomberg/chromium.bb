@@ -32,7 +32,7 @@ NGConstraintSpace::NGConstraintSpace(
     TextDirection direction,
     NGLogicalSize available_size,
     NGLogicalSize percentage_resolution_size,
-    Optional<LayoutUnit> parent_percentage_resolution_inline_size,
+    LayoutUnit parent_percentage_resolution_inline_size,
     NGPhysicalSize initial_containing_block_size,
     LayoutUnit fragmentainer_block_size,
     LayoutUnit fragmentainer_space_at_bfc_start,
@@ -183,12 +183,9 @@ NGConstraintSpace::PercentageResolutionInlineSizeForParentWritingMode() const {
   return InitialContainingBlockSize().width;
 }
 
-Optional<LayoutUnit> NGConstraintSpace::ParentPercentageResolutionInlineSize()
-    const {
-  if (!parent_percentage_resolution_inline_size_.has_value())
-    return {};
-  if (*parent_percentage_resolution_inline_size_ != NGSizeIndefinite)
-    return *parent_percentage_resolution_inline_size_;
+LayoutUnit NGConstraintSpace::ParentPercentageResolutionInlineSize() const {
+  if (parent_percentage_resolution_inline_size_ != NGSizeIndefinite)
+    return parent_percentage_resolution_inline_size_;
   return initial_containing_block_size_.ConvertToLogical(GetWritingMode())
       .inline_size;
 }
