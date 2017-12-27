@@ -124,7 +124,7 @@ component("ime") {
     "//skia",
   ]
 
-  if (!use_aura || (!is_linux && !use_ozone)) {
+  if (!use_aura || is_chromeos || (!is_linux && !use_ozone)) {
     sources -= [
       "input_method_auralinux.cc",
       "input_method_auralinux.h",
