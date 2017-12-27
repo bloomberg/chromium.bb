@@ -96,14 +96,11 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
         }
 
         if (forceSignin && getProperties().getBoolean(PRESELECT_BUT_ALLOW_TO_CHANGE)) {
-            // Allow the user to choose the account or refuse to sign in,
-            // and re-create this fragment.
+            // Don't force signin if Activity is recreated.
             getProperties().remove(FORCE_SIGNIN_ACCOUNT_TO);
         }
 
-        // Re-create the fragment if the user presses the back button when in signed in mode.
-        // The fragment is re-created in the normal (signed out) mode.
-        getPageDelegate().recreateCurrentPage();
+        mView.cancelConfirmationScreen();
         return true;
     }
 }

@@ -15,12 +15,6 @@ public interface FirstRunPageDelegate {
     void advanceToNextPage();
 
     /**
-     * Asks to re-instantiate the current page.
-     * Useful to restore the "clean" state of the UI elements.
-     */
-    void recreateCurrentPage();
-
-    /**
      * Unsuccessfully aborts the First Run Experience.
      * This usually means that the application will be closed.
      */

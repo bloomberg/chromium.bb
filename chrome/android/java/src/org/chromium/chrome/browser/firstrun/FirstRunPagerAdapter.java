@@ -65,14 +65,4 @@ class FirstRunPagerAdapter extends FragmentStatePagerAdapter {
         if (mStopAtTheFirstPage) return 1;
         return mPages.size();
     }
-
-    @Override
-    public int getItemPosition(Object object) {
-        // Each page can specify whether it should be re-created or not on a notifyDataSetChanged.
-        if (object instanceof FirstRunPage) {
-            FirstRunPage page = (FirstRunPage) object;
-            return page.shouldRecreatePageOnDataChange() ? POSITION_NONE : POSITION_UNCHANGED;
-        }
-        return POSITION_NONE;
-    }
 }
