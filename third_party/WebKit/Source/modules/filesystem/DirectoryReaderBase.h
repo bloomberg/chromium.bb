@@ -31,12 +31,14 @@
 #ifndef DirectoryReaderBase_h
 #define DirectoryReaderBase_h
 
-#include "modules/filesystem/DOMFileSystemBase.h"
+#include "modules/filesystem/EntryHeapVector.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+
+class DOMFileSystemBase;
 
 class DirectoryReaderBase : public ScriptWrappable {
  public:
@@ -64,6 +66,17 @@ class DirectoryReaderBase : public ScriptWrappable {
   String full_path_;
 
   bool has_more_entries_;
+};
+
+class DirectoryReaderOnDidReadCallback
+    : public GarbageCollectedFinalized<DirectoryReaderOnDidReadCallback> {
+ public:
+  virtual ~DirectoryReaderOnDidReadCallback() = default;
+  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void OnDidReadDirectoryEntries(const EntryHeapVector&) = 0;
+
+ protected:
+  DirectoryReaderOnDidReadCallback() = default;
 };
 
 }  // namespace blink

@@ -197,7 +197,7 @@ void EntryCallbacks::DidSucceed() {
 // EntriesCallbacks -----------------------------------------------------------
 
 std::unique_ptr<AsyncFileSystemCallbacks> EntriesCallbacks::Create(
-    EntriesCallback* success_callback,
+    DirectoryReaderOnDidReadCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
     DirectoryReaderBase* directory_reader,
@@ -206,11 +206,12 @@ std::unique_ptr<AsyncFileSystemCallbacks> EntriesCallbacks::Create(
       success_callback, error_callback, context, directory_reader, base_path));
 }
 
-EntriesCallbacks::EntriesCallbacks(EntriesCallback* success_callback,
-                                   ErrorCallbackBase* error_callback,
-                                   ExecutionContext* context,
-                                   DirectoryReaderBase* directory_reader,
-                                   const String& base_path)
+EntriesCallbacks::EntriesCallbacks(
+    DirectoryReaderOnDidReadCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    ExecutionContext* context,
+    DirectoryReaderBase* directory_reader,
+    const String& base_path)
     : FileSystemCallbacksBase(error_callback,
                               directory_reader->Filesystem(),
                               context),
@@ -238,7 +239,7 @@ void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   entries.swap(entries_);
   // FIXME: delay the callback iff shouldScheduleCallback() is true.
   if (success_callback_)
-    success_callback_->handleEvent(entries);
+    success_callback_->OnDidReadDirectoryEntries(entries);
 }
 
 // FileSystemCallbacks --------------------------------------------------------

@@ -38,7 +38,6 @@
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
-#include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryBase.h"
 #include "modules/filesystem/EntryCallback.h"
@@ -444,11 +443,12 @@ void DOMFileSystemBase::GetDirectory(const EntryBase* entry,
                                   std::move(callbacks));
 }
 
-int DOMFileSystemBase::ReadDirectory(DirectoryReaderBase* reader,
-                                     const String& path,
-                                     EntriesCallback* success_callback,
-                                     ErrorCallbackBase* error_callback,
-                                     SynchronousType synchronous_type) {
+int DOMFileSystemBase::ReadDirectory(
+    DirectoryReaderBase* reader,
+    const String& path,
+    DirectoryReaderOnDidReadCallback* success_callback,
+    ErrorCallbackBase* error_callback,
+    SynchronousType synchronous_type) {
   if (!FileSystem()) {
     ReportError(error_callback, FileError::kAbortErr);
     return 0;

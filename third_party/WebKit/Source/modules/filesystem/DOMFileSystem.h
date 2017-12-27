@@ -37,7 +37,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/ModulesExport.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
-#include "modules/filesystem/EntriesCallback.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/TaskType.h"
 
