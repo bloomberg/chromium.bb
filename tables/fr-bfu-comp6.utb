@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-25
+#-updated: 2017-12-28
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -70,6 +70,8 @@ display ^ 4
 display \s 0
 display @ 345
 display ó 346
+display [ 12356
+display ] 23456
 
 
 space \s 0      	# blank 32
@@ -123,7 +125,8 @@ comp6 0 3456
 include digits6DotsPlusDot6.uti
 include litdigits6DotsPlusDot6.uti
 
-noback math + 235  # plus
+math + 235  # plus
+math - 36
 math * 35   # astérisque
 math / 34   # barre oblique
 math = 2356 # égal
@@ -319,8 +322,6 @@ midnum = 2356
 endnum = 2356
 midnum / 34
 endnum / 34
-
-
 decpoint , 2
 
 

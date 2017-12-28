@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-25
+#-updated: 2017-12-28
 
 # liblouis: Unified French Grade 2 Table
 
@@ -53,6 +53,7 @@ class voy aeiouyéàèùâêîôûëïüœAEIOUYÉÀÈÙÂÊÄËÏÜŒ
 class bmp bmpBMP
 class apost '\X2019\X0092
 class puncEnd ,;.!?)]
+class frmath ⠼0123456789.,+-*/=()¤bàù
 
 #For backtranslation, we need a class that contains consonnants + contractions that begin by a consonnant.
 class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ⠘;àî:ô"ï¸ë!)
@@ -1958,6 +1959,7 @@ word mesdemoiselles	134-134-234
 word messieurs		134-1235-234
 prfword mettre		134-356
 nofor word mettre 356-134-356
+word commettre 36-134-356
 nofor word promettre 235-134-356
 nofor word transmettre 356-134-356
 word mieux		134-1346
@@ -2933,7 +2935,7 @@ partword aïoli 1-12456-135-123-24
 sufword maïor 134-1-12456-135-1235
 word maïzena 134-1-12456-1356-15-1345-1
 begword naïad 1345-1-12456-1-145
-sufword paranoï 1234-a-1235-1-1345-135-12456
+sufword paranoï 1234-1-1235-1-1345-135-12456
 nofor partword oïev 135-12456-15-1236
 word tsaï 2345-234-1-12456
 sufword qaraï 12345-1-1235-1-12456
@@ -4640,37 +4642,76 @@ nofor pass3 [@36-134-356] @14-135-134-134-15-2345-2345-1235-15
 #gestion du tiret en début de mot
 noback correct [`"-"]$l "`-"
 noback correct $s["-"]$l "`-"
+noback pass4 `[@56]@1-36 ?
+noback pass2 [@6]@6-45-236 ?
 
 #Parenthèse dans un mot
 noback correct $l["("] "ø("
 nofor correct $l[""]"(" ?
 
 #opérations mathématiques
-#"-" dans une opération
-nofor pass4 [@6-36]%bmp @78
-#nofor pass4 $l[@6-36] @78-6
-#nofor pass4 $dms$d[@36]$d$dms @78
-nofor pass4 [@6-36]$d @78-6
-nofor context @78 "-"
 
-#"=" dans une opération
-nofor pass4 $d[@2356]$d!$l @5678
-nofor pass4 $d[@2356-36]$d @5678-78
-nofor context @5678 "="
+#éliminer les chaînes n'étant pas des expressions mathématiques
+nofor pass4 `[@6-36]!%frmath @13678
+nofor pass4 [@0-6-36]!%frmath @0-13678
+nofor pass4 `@6-36%frmath$s *
+nofor pass4 $s@6-36%frmath$s *
+nofor pass4 `@6-36%frmath~ *
+nofor pass4 $s@6-36%frmath~ *
+nofor pass4 `[@6-36]%frmath!%frmath @13678
+nofor pass4 [@0-6-36]%frmath!%frmath @0-13678
+nofor pass4 !%frmath[@6-36]%frmath @36-6
 
-#"," dans une opération
-nofor pass4 $dms$d[@2]$d$dms @7
-nofor context @7 ",`"
-nofor correct ",`" ","
+#Une expression commençant par un point 6 est maintenant forcément une expression mathématique
+#Elle se termine par un espace, un letsign ou une fin de chaîne.
+nofor pass3 `@6 *#1=1
+nofor pass3 $s@6 *#1=1
+nofor pass3 $s!@6 *#1=0
+nofor pass3 @56 *#1=0
 
-#"+" dans une opération
-nofor pass4 $dms$d[@235]$d$dms @376
-nofor context @376 "+"
+#Traitement des opérateurs
+nofor pass3 #1=1[@36] @368	moins
+nofor pass3 #1=1[@235] @2358	plus
+nofor pass3 #1=1[@34] @348	divisé
+nofor pass3 #1=1[@35] @358	multiplié
+nofor pass3 #1=1[@236] @2368	parenthèse gauche
+nofor pass3 #1=1[@45-236] @23678	crochet gauche
+nofor pass3 #1=1[@12356] @23678	crochet gauche
+nofor pass3 #1=1[@356-12] @35678	crochet droit
+nofor pass3 #1=1[@23456] @35678	crochet droit
+nofor pass3 #1=1[@2356] @23568	égal
 
-#"(" dans une opération")
-nofor pass4 $dms[@236]$dm2 @378-6
-#nofor pass4 @36[@236]$d2 @378-6
-nofor context @378 "("
+#Les chiffres
+nofor pass3 #1=1[@16] @18
+nofor pass3 #1=1[@126] @128
+nofor pass3 #1=1[@146] @148
+nofor pass3 #1=1[@1456] @1458
+nofor pass3 #1=1[@156] @158
+nofor pass3 #1=1[@1246] @1248
+nofor pass3 #1=1[@12456] @12458
+nofor pass3 #1=1[@1256] @1258
+nofor pass3 #1=1[@246] @248
+nofor pass3 #1=1[@3456] @3458
+
+nofor context @13678 "-"
+nofor context @23678 "["
+nofor context @35678 "]"
+nofor context @2358 "+"
+nofor context @348 "/"
+nofor context @358 "*"
+nofor context @23568 "="
+nofor context @368 "-"
+nofor context @2368 "("
+nofor context @18 "1"
+nofor context @128 "2"
+nofor context @148 "3"
+nofor context @1458 "4"
+nofor context @158 "5"
+nofor context @1248 "6"
+nofor context @12458 "7"
+nofor context @1258 "8"
+nofor context @248 "9"
+nofor context @3458 "0"
 
 noback pass2 @45-236[@6] ?
 noback pass2 @356-12[@6] ?
