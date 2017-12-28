@@ -37,8 +37,8 @@ PASS CSSUnitValue can be constructed with cm
 PASS CSSUnitValue.unit can be updated to cm
 PASS CSSUnitValue can be constructed with mm
 PASS CSSUnitValue.unit can be updated to mm
-PASS CSSUnitValue can be constructed with q
-PASS CSSUnitValue.unit can be updated to q
+FAIL CSSUnitValue can be constructed with Q assert_equals: expected "Q" but got "q"
+FAIL CSSUnitValue.unit can be updated to Q assert_equals: expected "Q" but got "q"
 PASS CSSUnitValue can be constructed with in
 PASS CSSUnitValue.unit can be updated to in
 PASS CSSUnitValue can be constructed with pt
