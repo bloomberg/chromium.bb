@@ -723,16 +723,12 @@ crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-elemen
 
 # ====== IncrementalShadowDOM-only failures until here ======
 
-# ====== DevTools test migration failures from here ======
+crbug.com/667560 http/tests/devtools/console/console-search.js [ Pass Failure Timeout ]
 
-crbug.com/667560 http/tests/devtools/console/console-search.js [ Skip ]
-
-crbug.com/667560 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
+crbug.com/667560 [ Debug ] http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/778515 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
 
 crbug.com/785571 http/tests/devtools/console/console-context-selector.js [ Pass Failure ]
-
-# ====== DevTools test migration failures until here ======
 
 crbug.com/789225 http/tests/devtools/console/console-focus.js [ Pass Failure ]
 
