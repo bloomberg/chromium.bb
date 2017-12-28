@@ -1659,7 +1659,7 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
   return !compositing_layer->EnclosingPaginationLayer();
 }
 
-void PaintLayer::CollectFragmentsForPaint(
+void PaintLayer::CollectFragments(
     PaintLayerFragments& fragments,
     const PaintLayer* root_layer,
     const LayoutRect& dirty_rect,
@@ -1695,155 +1695,6 @@ void PaintLayer::CollectFragmentsForPaint(
     fragment.fragment_data = fragment_data;
     fragment.pagination_offset = fragment_data->PaginationOffset();
 
-    fragments.push_back(fragment);
-  }
-}
-
-void PaintLayer::CollectFragments(
-    PaintLayerFragments& fragments,
-    const PaintLayer* root_layer,
-    const LayoutRect& dirty_rect,
-    ClipRectsCacheSlot clip_rects_cache_slot,
-    PaintLayer::GeometryMapperOption geometry_mapper_option,
-    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
-    ShouldRespectOverflowClipType respect_overflow_clip,
-    const LayoutPoint* offset_from_root,
-    const LayoutSize& sub_pixel_accumulation,
-    const LayoutRect* layer_bounding_box) const {
-  DCHECK_NE(DocumentLifecycle::kInPaint,
-            GetLayoutObject().GetDocument().Lifecycle().GetState());
-
-  // For unpaginated layers, there is only one fragment. We also avoid
-  // fragmentation when compositing, due to implementation limitations.
-  if (!EnclosingPaginationLayer() ||
-      !ShouldFragmentCompositedBounds(root_layer)) {
-    AppendSingleFragmentIgnoringPagination(
-        fragments, root_layer, dirty_rect, clip_rects_cache_slot,
-        geometry_mapper_option, overlay_scrollbar_clip_behavior,
-        respect_overflow_clip, offset_from_root, sub_pixel_accumulation);
-    return;
-  }
-
-  // Compute our offset within the enclosing pagination layer.
-  LayoutPoint offset_within_paginated_layer;
-  ConvertToLayerCoords(EnclosingPaginationLayer(),
-                       offset_within_paginated_layer);
-
-  // Calculate clip rects relative to the enclosingPaginationLayer. The purpose
-  // of this call is to determine our bounds clipped to intermediate layers
-  // between us and the pagination context. It's important to minimize the
-  // number of fragments we need to create and this helps with that.
-  ClipRectsContext pagination_clip_rects_context(
-      EnclosingPaginationLayer(), clip_rects_cache_slot,
-      overlay_scrollbar_clip_behavior);
-  if (respect_overflow_clip == kIgnoreOverflowClip)
-    pagination_clip_rects_context.SetIgnoreOverflowClip();
-  LayoutRect layer_bounds_in_flow_thread;
-  ClipRect background_rect_in_flow_thread;
-  ClipRect foreground_rect_in_flow_thread;
-  Clipper(geometry_mapper_option)
-      .CalculateRects(
-          pagination_clip_rects_context, nullptr,
-          LayoutRect(LayoutRect::InfiniteIntRect()),
-          layer_bounds_in_flow_thread, background_rect_in_flow_thread,
-          foreground_rect_in_flow_thread, &offset_within_paginated_layer);
-
-  // Take our bounding box within the flow thread and clip it.
-  LayoutRect layer_bounding_box_in_flow_thread =
-      layer_bounding_box ? *layer_bounding_box
-                         : PhysicalBoundingBox(offset_within_paginated_layer);
-  layer_bounding_box_in_flow_thread.Intersect(
-      background_rect_in_flow_thread.Rect());
-
-  LayoutFlowThread& enclosing_flow_thread =
-      ToLayoutFlowThread(EnclosingPaginationLayer()->GetLayoutObject());
-  // Visual offset from the root layer to the nearest fragmentation context.
-  LayoutPoint offset_of_pagination_layer_from_root;
-  bool root_layer_is_inside_pagination_layer =
-      root_layer->EnclosingPaginationLayer() == EnclosingPaginationLayer();
-  if (root_layer_is_inside_pagination_layer) {
-    // The root layer is in the same fragmentation context as this layer, so we
-    // need to look inside it and subtract the offset between the fragmentation
-    // context and the root layer.
-    offset_of_pagination_layer_from_root =
-        -root_layer->VisualOffsetFromAncestor(EnclosingPaginationLayer());
-  } else {
-    offset_of_pagination_layer_from_root =
-        EnclosingPaginationLayer()->VisualOffsetFromAncestor(root_layer);
-  }
-  // Make the dirty rect relative to the fragmentation context (multicol
-  // container, etc.).
-  LayoutRect dirty_rect_in_multicol_container(dirty_rect);
-  dirty_rect_in_multicol_container.Move(
-      enclosing_flow_thread.PhysicalLocation() -
-      offset_of_pagination_layer_from_root);
-
-  // Slice the layer into fragments. Each fragment needs to be processed (e.g.
-  // painted) separately. We pass enough information to walk a minimal number of
-  // fragments based on the pages/columns that intersect the actual dirtyRect as
-  // well as the pages/columns that intersect our layer's bounding box.
-  FragmentainerIterator iterator(enclosing_flow_thread,
-                                 layer_bounding_box_in_flow_thread,
-                                 dirty_rect_in_multicol_container);
-  if (iterator.AtEnd())
-    return;
-
-  // Get the parent clip rects of the pagination layer, since we need to
-  // intersect with that when painting column contents.
-  ClipRect ancestor_clip_rect = dirty_rect;
-  if (const PaintLayer* pagination_parent_layer =
-          EnclosingPaginationLayer()->Parent()) {
-    const PaintLayer* ancestor_layer = root_layer_is_inside_pagination_layer
-                                           ? pagination_parent_layer
-                                           : root_layer;
-    ClipRectsContext clip_rects_context(ancestor_layer, clip_rects_cache_slot,
-                                        overlay_scrollbar_clip_behavior);
-    if (respect_overflow_clip == kIgnoreOverflowClip)
-      clip_rects_context.SetIgnoreOverflowClip();
-
-    EnclosingPaginationLayer()
-        ->Clipper(geometry_mapper_option)
-        .CalculateBackgroundClipRect(clip_rects_context, ancestor_clip_rect);
-    if (root_layer_is_inside_pagination_layer)
-      ancestor_clip_rect.MoveBy(
-          -root_layer->VisualOffsetFromAncestor(ancestor_layer));
-    ancestor_clip_rect.Intersect(dirty_rect);
-  }
-
-  const LayoutSize sub_pixel_accumulation_if_needed =
-      offset_from_root ? sub_pixel_accumulation : LayoutSize();
-  for (; !iterator.AtEnd(); iterator.Advance()) {
-    PaintLayerFragment fragment;
-    fragment.pagination_offset = ToLayoutPoint(iterator.PaginationOffset());
-    LayoutRect pagination_clip = iterator.ClipRectInFlowThread();
-
-    // Set our four rects with all clipping applied that was internal to the
-    // flow thread.
-    fragment.SetRects(layer_bounds_in_flow_thread,
-                      background_rect_in_flow_thread,
-                      foreground_rect_in_flow_thread);
-
-    // Shift to the root-relative physical position used when painting the flow
-    // thread in this fragment.
-    LayoutPoint offset = fragment.pagination_offset +
-                         offset_of_pagination_layer_from_root +
-                         sub_pixel_accumulation_if_needed;
-    fragment.MoveBy(offset);
-    pagination_clip.MoveBy(offset);
-
-    // Intersect the fragment with our ancestor's background clip so that e.g.,
-    // columns in an overflow:hidden block are properly clipped by the overflow.
-    fragment.Intersect(ancestor_clip_rect.Rect());
-
-    // Now intersect with our pagination clip. This will typically mean we're
-    // just intersecting the dirty rect with the column clip, so the column clip
-    // ends up being all we apply.
-    fragment.Intersect(pagination_clip);
-
-    // TODO(mstensho): Don't add empty fragments. We've always done that in some
-    // cases, but there should be no reason to do so. Either filter them out
-    // here, or, even better: pass a better clip rectangle to the fragmentainer
-    // iterator, so that we won't end up with empty fragments here.
     fragments.push_back(fragment);
   }
 }
@@ -2177,7 +2028,7 @@ PaintLayer* PaintLayer::HitTestLayer(
         kExcludeOverlayScrollbarSizeForHitTesting);
   } else {
     CollectFragments(layer_fragments, root_layer, hit_test_rect,
-                     clip_rects_cache_slot, PaintLayer::kDoNotUseGeometryMapper,
+                     clip_rects_cache_slot, PaintLayer::kUseGeometryMapper,
                      kExcludeOverlayScrollbarSizeForHitTesting);
   }
 
@@ -2290,42 +2141,18 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
     double* z_offset,
     ClipRectsCacheSlot clip_rects_cache_slot) {
   PaintLayerFragments enclosing_pagination_fragments;
-  LayoutPoint offset_of_pagination_layer_from_root;
   // FIXME: We're missing a sub-pixel offset here crbug.com/348728
-  LayoutRect transformed_extent = TransparencyClipBox(
-      this, EnclosingPaginationLayer(), kHitTestingTransparencyClipBox,
-      PaintLayer::kRootOfTransparencyClipBox, LayoutSize());
+
   EnclosingPaginationLayer()->CollectFragments(
       enclosing_pagination_fragments, root_layer, hit_test_rect,
-      clip_rects_cache_slot, PaintLayer::kDoNotUseGeometryMapper,
-      kExcludeOverlayScrollbarSizeForHitTesting, kRespectOverflowClip,
-      &offset_of_pagination_layer_from_root, LayoutSize(), &transformed_extent);
+      clip_rects_cache_slot, PaintLayer::kUseGeometryMapper,
+      kExcludeOverlayScrollbarSizeForHitTesting, kRespectOverflowClip, nullptr,
+      LayoutSize());
 
-  for (int i = enclosing_pagination_fragments.size() - 1; i >= 0; --i) {
-    const PaintLayerFragment& fragment = enclosing_pagination_fragments.at(i);
-
+  for (const auto& fragment : enclosing_pagination_fragments) {
     // Apply the page/column clip for this fragment, as well as any clips
     // established by layers in between us and the enclosing pagination layer.
     LayoutRect clip_rect = fragment.background_rect.Rect();
-
-    // Now compute the clips within a given fragment
-    if (Parent() != EnclosingPaginationLayer()) {
-      EnclosingPaginationLayer()->ConvertToLayerCoords(
-          root_layer, offset_of_pagination_layer_from_root);
-
-      ClipRect parent_clip_rect;
-      Clipper(PaintLayer::kDoNotUseGeometryMapper)
-          .CalculateBackgroundClipRect(
-              ClipRectsContext(EnclosingPaginationLayer(),
-                               clip_rects_cache_slot,
-                               kExcludeOverlayScrollbarSizeForHitTesting),
-              parent_clip_rect);
-
-      parent_clip_rect.MoveBy(fragment.pagination_offset +
-                              offset_of_pagination_layer_from_root);
-      clip_rect.Intersect(parent_clip_rect.Rect());
-    }
-
     if (!hit_test_location.Intersects(clip_rect))
       continue;
 

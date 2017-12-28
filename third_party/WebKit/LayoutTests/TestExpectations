@@ -880,8 +880,8 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-isolate-002.htm
 crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-plaintext-001.html [ Failure ]
 
-crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
-
+crbug.com/267206 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Timeout ]
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
@@ -1704,8 +1704,6 @@ crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Failure Pass ]
 
 crbug.com/240576 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Timeout Failure Pass ]
-
-crbug.com/747758 [ Mac Win ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure ]
 
 crbug.com/567419 http/tests/devtools/elements/styles-2/metrics-box-sizing.js [ Skip ]
 
