@@ -264,8 +264,8 @@ class ErrorPageTest : public InProcessBrowserTest {
 
   // Navigates the active tab to a mock url created for the file at |path|.
   void NavigateToFileURL(const std::string& path) {
-    ui_test_utils::NavigateToURL(browser(),
-                                 net::URLRequestMockHTTPJob::GetMockUrl(path));
+    GURL url = embedded_test_server()->GetURL(path);
+    ui_test_utils::NavigateToURL(browser(), url);
   }
 
   // Navigates to the given URL and waits for |num_navigations| to occur, and
@@ -577,7 +577,9 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_Basic) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack1) {
-  NavigateToFileURL("title2.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToFileURL("/title2.html");
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -588,14 +590,16 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack1) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2) {
-  NavigateToFileURL("title2.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToFileURL("/title2.html");
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
-  NavigateToFileURL("title3.html");
+  NavigateToFileURL("/title3.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -608,14 +612,16 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2AndForward) {
-  NavigateToFileURL("title2.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToFileURL("/title2.html");
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
-  NavigateToFileURL("title3.html");
+  NavigateToFileURL("/title3.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -631,14 +637,16 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2AndForward) {
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_GoBack2Forward2) {
-  NavigateToFileURL("title3.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToFileURL("/title3.html");
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
   EXPECT_EQ(1, num_requests());
 
-  NavigateToFileURL("title2.html");
+  NavigateToFileURL("/title2.html");
 
   GoBackAndWaitForNavigations(2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);
@@ -855,8 +863,10 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, MAYBE_IFrameDNSError_GoBack) {
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest,
                        MAYBE_IFrameDNSError_GoBackAndForward) {
-  NavigateToFileURL("title2.html");
-  NavigateToFileURL("iframe_dns_error.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToFileURL("/title2.html");
+  NavigateToFileURL("/iframe_dns_error.html");
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
   GoForwardAndWaitForTitle("Blah", 1);
   EXPECT_EQ(0, num_requests());
@@ -944,9 +954,10 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, Page404) {
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, Empty404) {
   // The first navigation should fail and load a blank page, while it fetches
   // the Link Doctor response.  The second navigation is the Link Doctor.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(),
-      net::URLRequestMockHTTPJob::GetMockUrl("errorpage/empty404.html"), 2);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL("/errorpage/empty404.html");
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
   // This depends on the non-internationalized error ID string in
   // localized_error.cc.
   ExpectDisplayingNavigationCorrections(browser(), "HTTP ERROR 404");
