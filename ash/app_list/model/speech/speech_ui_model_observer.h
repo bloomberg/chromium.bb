@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SPEECH_UI_MODEL_OBSERVER_H_
-#define UI_APP_LIST_SPEECH_UI_MODEL_OBSERVER_H_
+#ifndef ASH_APP_LIST_MODEL_SPEECH_SPEECH_UI_MODEL_OBSERVER_H_
+#define ASH_APP_LIST_MODEL_SPEECH_SPEECH_UI_MODEL_OBSERVER_H_
 
 #include <stdint.h>
 
+#include "ash/app_list/model/app_list_model_export.h"
 #include "base/strings/string16.h"
-#include "ui/app_list/app_list_export.h"
 
 namespace app_list {
 
@@ -21,7 +21,7 @@ enum SpeechRecognitionState {
   SPEECH_RECOGNITION_NETWORK_ERROR,
 };
 
-class APP_LIST_EXPORT SpeechUIModelObserver {
+class APP_LIST_MODEL_EXPORT SpeechUIModelObserver {
  public:
   // Invoked when sound level for the speech recognition has changed. |level|
   // represents the current sound-level in the range of [0, 255].
@@ -41,4 +41,4 @@ class APP_LIST_EXPORT SpeechUIModelObserver {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SPEECH_UI_MODEL_OBSERVER_H_
+#endif  // ASH_APP_LIST_MODEL_SPEECH_SPEECH_UI_MODEL_OBSERVER_H_

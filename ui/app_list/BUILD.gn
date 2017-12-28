@@ -38,9 +38,6 @@ component("app_list") {
     "search_controller.h",
     "search_provider.cc",
     "search_provider.h",
-    "speech_ui_model.cc",
-    "speech_ui_model.h",
-    "speech_ui_model_observer.h",
     "views/app_list_drag_and_drop_host.h",
     "views/app_list_folder_view.cc",
     "views/app_list_folder_view.h",
@@ -142,6 +139,7 @@ component("app_list") {
   public_deps = [
     "//ash/app_list/model:app_list_model",
     "//ash/app_list/model:search_model",
+    "//ash/app_list/model:speech_ui_model",
   ]
 }
 
