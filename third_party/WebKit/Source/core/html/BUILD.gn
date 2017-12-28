@@ -554,11 +554,6 @@ blink_core_sources("html") {
 
   jumbo_excluded_sources = [ "canvas/CanvasRenderingContext.cpp" ]  # https://crbug.com/716395
 
-  configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
   deps = [
     "//services/metrics/public/cpp:metrics_cpp",
     "//third_party/WebKit/Source/core/html/parser:parser",

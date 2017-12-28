@@ -343,9 +343,4 @@ blink_core_sources("svg") {
     "properties/SVGPropertyTearOff.cpp",
     "properties/SVGPropertyTearOff.h",
   ]
-
-  configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
 }
