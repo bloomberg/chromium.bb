@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "ipc/ipc_listener.h"
 
@@ -20,7 +21,9 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
  public:
   using List = std::vector<scoped_refptr<SharedWorkerDevToolsAgentHost>>;
 
-  explicit SharedWorkerDevToolsAgentHost(SharedWorkerHost* worker_host);
+  SharedWorkerDevToolsAgentHost(
+      SharedWorkerHost* worker_host,
+      const base::UnguessableToken& devtools_worker_token);
 
   // DevToolsAgentHost override.
   BrowserContext* GetBrowserContext() override;
@@ -46,6 +49,10 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   bool WorkerRestarted(SharedWorkerHost* worker_host);
   void WorkerDestroyed();
 
+  const base::UnguessableToken& devtools_worker_token() const {
+    return devtools_worker_token_;
+  }
+
  private:
   friend class SharedWorkerDevToolsManagerTest;
 
@@ -54,6 +61,7 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
   SharedWorkerHost* worker_host_;
+  base::UnguessableToken devtools_worker_token_;
   std::unique_ptr<SharedWorkerInstance> instance_;
   bool waiting_ready_for_reattach_ = false;
 

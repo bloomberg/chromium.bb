@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/unguessable_token.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
@@ -32,8 +31,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
       blink::WebAddressSpace creation_address_space,
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id,
-      blink::mojom::SharedWorkerCreationContextType creation_context_type,
-      const base::UnguessableToken& devtools_worker_token);
+      blink::mojom::SharedWorkerCreationContextType creation_context_type);
   SharedWorkerInstance(const SharedWorkerInstance& other);
   ~SharedWorkerInstance();
 
@@ -68,9 +66,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
   blink::mojom::SharedWorkerCreationContextType creation_context_type() const {
     return creation_context_type_;
   }
-  const base::UnguessableToken& devtools_worker_token() const {
-    return devtools_worker_token_;
-  }
 
  private:
   const GURL url_;
@@ -87,7 +82,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
   ResourceContext* const resource_context_;
   const WorkerStoragePartitionId partition_id_;
   const blink::mojom::SharedWorkerCreationContextType creation_context_type_;
-  const base::UnguessableToken devtools_worker_token_;
 };
 
 }  // namespace content

@@ -22,7 +22,10 @@ void SharedWorkerDevToolsManager::AddAllAgentHosts(
     result->push_back(it.second.get());
 }
 
-bool SharedWorkerDevToolsManager::WorkerCreated(SharedWorkerHost* worker_host) {
+void SharedWorkerDevToolsManager::WorkerCreated(
+    SharedWorkerHost* worker_host,
+    bool* pause_on_start,
+    base::UnguessableToken* devtools_worker_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(live_hosts_.find(worker_host) == live_hosts_.end());
 
@@ -32,14 +35,18 @@ bool SharedWorkerDevToolsManager::WorkerCreated(SharedWorkerHost* worker_host) {
                      return agent_host->Matches(worker_host);
                    });
   if (it == terminated_hosts_.end()) {
-    live_hosts_[worker_host] = new SharedWorkerDevToolsAgentHost(worker_host);
-    return false;
+    *devtools_worker_token = base::UnguessableToken::Create();
+    live_hosts_[worker_host] =
+        new SharedWorkerDevToolsAgentHost(worker_host, *devtools_worker_token);
+    *pause_on_start = false;
+    return;
   }
 
   SharedWorkerDevToolsAgentHost* agent_host = *it;
   terminated_hosts_.erase(it);
   live_hosts_[worker_host] = agent_host;
-  return agent_host->WorkerRestarted(worker_host);
+  *pause_on_start = agent_host->WorkerRestarted(worker_host);
+  *devtools_worker_token = agent_host->devtools_worker_token();
 }
 
 void SharedWorkerDevToolsManager::WorkerReadyForInspection(

@@ -138,7 +138,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       info->url, info->name, render_frame_host->GetLastCommittedOrigin(),
       info->content_security_policy, info->content_security_policy_type,
       info->creation_address_space, resource_context, partition_id,
-      creation_context_type, base::UnguessableToken::Create());
+      creation_context_type);
 
   SharedWorkerHost* host = FindAvailableSharedWorkerHost(*instance);
   if (host) {
@@ -204,15 +204,17 @@ void SharedWorkerServiceImpl::CreateWorker(
   auto host = std::make_unique<SharedWorkerHost>(
       std::move(instance), worker_process_id, worker_route_id);
 
-  bool pause_on_start =
-      SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(host.get());
+  bool pause_on_start;
+  base::UnguessableToken devtools_worker_token;
+  SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
+      host.get(), &pause_on_start, &devtools_worker_token);
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
   mojom::SharedWorkerFactoryPtr factory;
   BindInterface(process_host, &factory);
 
-  host->Start(std::move(factory), pause_on_start);
+  host->Start(std::move(factory), pause_on_start, devtools_worker_token);
   host->AddClient(std::move(client), process_id, frame_id, message_port);
 
   const GURL url = host->instance()->url();

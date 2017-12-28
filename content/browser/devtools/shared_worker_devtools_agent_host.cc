@@ -19,10 +19,11 @@
 namespace content {
 
 SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
-    SharedWorkerHost* worker_host)
-    : DevToolsAgentHostImpl(
-          worker_host->instance()->devtools_worker_token().ToString()),
+    SharedWorkerHost* worker_host,
+    const base::UnguessableToken& devtools_worker_token)
+    : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
       worker_host_(worker_host),
+      devtools_worker_token_(devtools_worker_token),
       instance_(new SharedWorkerInstance(*worker_host->instance())) {
   NotifyCreated();
 }

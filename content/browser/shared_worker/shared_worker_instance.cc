@@ -17,8 +17,7 @@ SharedWorkerInstance::SharedWorkerInstance(
     blink::WebAddressSpace creation_address_space,
     ResourceContext* resource_context,
     const WorkerStoragePartitionId& partition_id,
-    blink::mojom::SharedWorkerCreationContextType creation_context_type,
-    const base::UnguessableToken& devtools_worker_token)
+    blink::mojom::SharedWorkerCreationContextType creation_context_type)
     : url_(url),
       name_(name),
       constructor_origin_(constructor_origin),
@@ -27,10 +26,8 @@ SharedWorkerInstance::SharedWorkerInstance(
       creation_address_space_(creation_address_space),
       resource_context_(resource_context),
       partition_id_(partition_id),
-      creation_context_type_(creation_context_type),
-      devtools_worker_token_(devtools_worker_token) {
+      creation_context_type_(creation_context_type) {
   DCHECK(resource_context_);
-  DCHECK(!devtools_worker_token_.is_empty());
 }
 
 SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =

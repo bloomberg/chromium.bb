@@ -74,8 +74,10 @@ SharedWorkerHost::~SharedWorkerHost() {
     SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(this);
 }
 
-void SharedWorkerHost::Start(mojom::SharedWorkerFactoryPtr factory,
-                             bool pause_on_start) {
+void SharedWorkerHost::Start(
+    mojom::SharedWorkerFactoryPtr factory,
+    bool pause_on_start,
+    const base::UnguessableToken& devtools_worker_token) {
   blink::mojom::WorkerContentSettingsProxyPtr content_settings;
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
       instance_->url(), this, mojo::MakeRequest(&content_settings));
@@ -94,9 +96,9 @@ void SharedWorkerHost::Start(mojom::SharedWorkerFactoryPtr factory,
       instance_->creation_address_space()));
 
   factory->CreateSharedWorker(
-      std::move(info), pause_on_start, instance_->devtools_worker_token(),
-      route_id_, std::move(content_settings), std::move(host),
-      mojo::MakeRequest(&worker_), std::move(interface_provider));
+      std::move(info), pause_on_start, devtools_worker_token, route_id_,
+      std::move(content_settings), std::move(host), mojo::MakeRequest(&worker_),
+      std::move(interface_provider));
 
   // Monitor the lifetime of the worker.
   worker_.set_connection_error_handler(base::BindOnce(
