@@ -4,31 +4,49 @@
 
 #include "ValueRewriter.h"
 
+#include <utility>
+
 using namespace clang::ast_matchers;
 
-ValueRewriter::GetTypeCallback::GetTypeCallback(
+ValueRewriter::ListValueCallback::ListValueCallback(
+    std::string method,
+    std::string replacement,
     std::set<clang::tooling::Replacement>* replacements)
-    : replacements_(replacements) {}
+    : method_(std::move(method)),
+      replacement_(std::move(replacement)),
+      replacements_(replacements) {}
 
-// Replaces calls to |base::Value::GetType| with calls to |base::Value::type|.
-void ValueRewriter::GetTypeCallback::run(
+void ValueRewriter::ListValueCallback::run(
     const MatchFinder::MatchResult& result) {
-  // Replace 'GetType' with 'type'.
-  auto* callExpr = result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("callExpr");
+  auto* callExpr = result.Nodes.getNodeAs<clang::CXXMemberCallExpr>(method());
 
   clang::CharSourceRange call_range =
       clang::CharSourceRange::getTokenRange(callExpr->getExprLoc());
-  replacements_->emplace(*result.SourceManager, call_range, "type");
+  replacements_->emplace(*result.SourceManager, call_range, replacement());
 }
 
 ValueRewriter::ValueRewriter(
     std::set<clang::tooling::Replacement>* replacements)
-    : get_type_callback_(replacements) {}
+    : list_value_callbacks_({
+          {"::base::ListValue::Clear", "GetList().clear", replacements},
+          {"::base::ListValue::GetSize", "GetList().size", replacements},
+          {"::base::ListValue::empty", "GetList().empty", replacements},
+          {"::base::ListValue::Reserve", "GetList().reserve", replacements},
+          {"::base::ListValue::AppendBoolean", "GetList().emplace_back",
+           replacements},
+          {"::base::ListValue::AppendInteger", "GetList().emplace_back",
+           replacements},
+          {"::base::ListValue::AppendDouble", "GetList().emplace_back",
+           replacements},
+          {"::base::ListValue::AppendString", "GetList().emplace_back",
+           replacements},
+      }) {}
 
 void ValueRewriter::RegisterMatchers(MatchFinder* match_finder) {
-  match_finder->addMatcher(
-      id("callExpr", cxxMemberCallExpr(callee(cxxMethodDecl(
-                                           hasName("::base::Value::GetType"))),
-                                       argumentCountIs(0))),
-      &get_type_callback_);
+  for (auto& callback : list_value_callbacks_) {
+    match_finder->addMatcher(
+        callExpr(callee(functionDecl(hasName(callback.method()))))
+            .bind(callback.method()),
+        &callback);
+  }
 }
