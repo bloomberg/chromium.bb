@@ -21,6 +21,10 @@
 // The delegate object which will be told about presentation events.
 @property(nonatomic, weak) id<ContainedPresenterDelegate> delegate;
 
+// It's an error to call any of the following methods when
+// |presentedViewController| is nil. It's the responsibility of the object that
+// owns an implementation of this protocol to ensure that doesn't happen.
+
 // Prepares the view controllers for presentation. The presented view controller
 // should become a child of the base view controller.
 - (void)prepareForPresentation;

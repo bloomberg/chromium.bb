@@ -101,6 +101,14 @@
   [self start];
 }
 
+- (void)dismissLanguageSelector {
+  if (!self.started)
+    return;
+
+  [self.selectionDelegate languageSelectorClosedWithoutSelection];
+  [self.presenter dismissAnimated:NO];
+}
+
 #pragma mark - LanguageSelectionViewControllerDelegate
 
 - (void)languageSelectedAtIndex:(int)index {

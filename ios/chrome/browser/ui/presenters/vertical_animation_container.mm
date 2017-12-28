@@ -32,6 +32,8 @@ NSTimeInterval kAnimationDuration = 0.2;
 @synthesize presentedConstraints = _presentedConstraints;
 
 - (void)prepareForPresentation {
+  DCHECK(self.presentedViewController);
+
   [self.baseViewController addChildViewController:self.presentedViewController];
   [self.baseViewController.view addSubview:self.presentedViewController.view];
 
@@ -95,6 +97,10 @@ NSTimeInterval kAnimationDuration = 0.2;
 }
 
 - (void)dismissAnimated:(BOOL)animated {
+  DCHECK(self.presentedViewController);
+  // If animated, the base view controller must still be in the view hierarchy.
+  DCHECK(!animated || self.baseViewController.view.superview);
+
   // No-op if already dismissed.
   if (self.dismissedConstraints[0].active)
     return;
@@ -118,10 +124,12 @@ NSTimeInterval kAnimationDuration = 0.2;
                      animations:animations
                      completion:completion];
   } else {
-    // Just execute everything synchronously if the dismissal isn't animated.
-    // Note that just using an animation duration of 0 in -animateWithDuration:
-    // will still call the completion block asynchronously.
-    animations();
+    // Just execute the completion block synchronously if the dismissal isn't
+    // animated. |animations| isn't called because (a) -cleanupAfterDismissal
+    // removes the presented view controller from the view hierarchy, and (b)
+    // in some contexts a non-animated dismissal may occur when the base view
+    // controller is no longer on screen, and the constraint activation in
+    // |animations| will crash.
     completion(YES);
   }
 }

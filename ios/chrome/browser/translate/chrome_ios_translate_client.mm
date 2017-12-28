@@ -249,6 +249,8 @@ void ChromeIOSTranslateClient::WebStateDestroyed(web::WebState* web_state) {
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 
+  [language_selection_handler_ dismissLanguageSelector];
+
   // Translation process can be interrupted.
   // Destroying the TranslateManager now guarantees that it never has to deal
   // with nullptr WebState.
