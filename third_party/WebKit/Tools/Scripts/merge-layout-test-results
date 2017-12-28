@@ -101,13 +101,21 @@ directory. The script will be given the arguments plus
         help='Directories to merge the results from.')
 
     # Swarming Isolated Merge Script API
-    # script.py --build-properties /s/build.json --output-json /tmp/output.json  shard0/output.json shard1/output.json
+    # script.py \
+    #     --build-properties /s/build.json \
+    #     --output-json /tmp/output.json \
+    #     --task-output-dir /path/to/task/output/dir \
+    #     shard0/output.json \
+    #     shard1/output.json
     parser.add_argument(
         '-o', '--output-json',
         help='(Swarming Isolated Merge Script API) Output JSON file to create.')
     parser.add_argument(
         '--build-properties',
         help='(Swarming Isolated Merge Script API) Build property JSON file provided by recipes.')
+    parser.add_argument(
+        '--task-output-dir',
+        help='(Swarming Isolated Merge Script API) Directory containing all swarming task results.')
     parser.add_argument(
         '--results-json-override-with-build-property',
         nargs=2, metavar=('RESULT_JSON_KEY', 'BUILD_PROPERTY_KEY'), default=[],

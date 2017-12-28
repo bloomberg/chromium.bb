@@ -386,6 +386,10 @@ def main():
            '(Output of the swarming.py collect '
            '--task-summary-json=XXX command.)')
   parser.add_argument(
+      '--task-output-dir',
+      help='(Swarming Merge Script API) '
+           'Directory containing all swarming task results.')
+  parser.add_argument(
       'positional', nargs='*',
       help='output.json from shards.')
 
