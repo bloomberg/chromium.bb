@@ -33,7 +33,6 @@ if [ ! -d ".inspect" ]; then
     --disable-docs \
     --disable-unit-tests \
     --enable-inspection \
-    --enable-highbitdepth \
     --extra-cflags="-D_POSIX_SOURCE"
   cd ..
 fi

@@ -36,7 +36,6 @@ Advanced options:
   ${toggle_codec_srcs}            in/exclude codec library source code
   ${toggle_debug_libs}            in/exclude debug version of libraries
   ${toggle_static_msvcrt}         use static MSVCRT (VS builds only)
-  ${toggle_highbitdepth}          enable 16-bit generic pixel pipeline (used by high bitdepth profiles)
   ${toggle_lowbitdepth}           enable 8-bit optimized pixel pipeline
   ${toggle_av1}                  AV1 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
@@ -200,7 +199,6 @@ enable_feature dependency_tracking
 enable_feature spatial_resampling
 enable_feature multithread
 enable_feature os_support
-enable_feature highbitdepth
 enable_feature pic
 
 CODECS="
@@ -376,7 +374,6 @@ CONFIG_LIST="
     symbolrate
     coefficient_range_checking
     lowbitdepth
-    highbitdepth
     experimental
     size_limit
     ${EXPERIMENT_LIST}
@@ -435,7 +432,6 @@ CMDLINE_SELECT="
     mismatch_debug
     symbolrate
     lowbitdepth
-    highbitdepth
     experimental
     adopted_experiments
     colorspace_headers
@@ -545,7 +541,6 @@ post_process_cmdline() {
     enabled jnt_comp && enable_feature frame_marker
     enabled frame_refs && enable_feature frame_marker
     enabled frame_sign_bias && enable_feature frame_marker
-    enabled txmg && enable_feature highbitdepth
     enabled ext_skip && enable_feature frame_marker
     enabled loopfilter_level && enable_feature parallel_deblocking
     enabled loopfilter_level && enable_feature ext_delta_q
@@ -556,7 +551,6 @@ post_process_cmdline() {
     soft_enable daala_tx_dst32
 
     if enabled daala_tx; then
-      enable_feature highbitdepth
       enable_feature daala_tx4
       enable_feature daala_tx8
       enable_feature daala_tx16

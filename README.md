@@ -92,7 +92,7 @@ Both types of options are set at the time CMake is run. The following example
 enables ccache and disables high bit depth:
 
 ~~~
-    $ cmake path/to/aom -DENABLE_CCACHE=1 -DCONFIG_HIGHBITDEPTH=0
+    $ cmake path/to/aom -DENABLE_CCACHE=1
     $ make
 ~~~
 
