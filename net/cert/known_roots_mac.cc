@@ -60,7 +60,7 @@ class OSXKnownRootHelper {
 
   ~OSXKnownRootHelper() {}
 
-  std::set<SHA256HashValue, SHA256HashValueLessThan> known_roots_;
+  std::set<SHA256HashValue> known_roots_;
 };
 
 base::LazyInstance<OSXKnownRootHelper>::Leaky g_known_roots =

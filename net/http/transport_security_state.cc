@@ -142,7 +142,7 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
   for (const auto& hash_value : pkp_state.spki_hashes) {
     std::string known_pin;
 
-    switch (hash_value.tag) {
+    switch (hash_value.tag()) {
       case HASH_VALUE_SHA256:
         known_pin += "pin-sha256=";
         break;

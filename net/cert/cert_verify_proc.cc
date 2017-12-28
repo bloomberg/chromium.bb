@@ -671,7 +671,7 @@ bool CertVerifyProc::IsPublicKeyBlacklisted(
 // Defines kBlacklistedSPKIs.
 #include "net/cert/cert_verify_proc_blacklist.inc"
   for (const auto& hash : public_key_hashes) {
-    if (hash.tag != HASH_VALUE_SHA256)
+    if (hash.tag() != HASH_VALUE_SHA256)
       continue;
     if (std::binary_search(std::begin(kBlacklistedSPKIs),
                            std::end(kBlacklistedSPKIs), hash,
@@ -828,7 +828,7 @@ bool CertVerifyProc::HasNameConstraintsViolation(
   for (unsigned i = 0; i < arraysize(kLimits); ++i) {
     for (HashValueVector::const_iterator j = public_key_hashes.begin();
          j != public_key_hashes.end(); ++j) {
-      if (j->tag == HASH_VALUE_SHA256 &&
+      if (j->tag() == HASH_VALUE_SHA256 &&
           memcmp(j->data(), kLimits[i].public_key, crypto::kSHA256Length) ==
               0) {
         if (dns_names.empty() && ip_addrs.empty()) {

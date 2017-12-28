@@ -16,7 +16,6 @@
 
 namespace net {
 struct SHA256HashValue;
-class SHA256HashValueLessThan;
 }  // namespace net
 
 namespace content {
@@ -27,8 +26,7 @@ namespace content {
 class CONTENT_EXPORT IgnoreErrorsCertVerifier : public net::CertVerifier {
  public:
   // SPKIHashSet is a set of SHA-256 SPKI fingerprints (RFC 7469, Section 2.4).
-  using SPKIHashSet =
-      base::flat_set<net::SHA256HashValue, net::SHA256HashValueLessThan>;
+  using SPKIHashSet = base::flat_set<net::SHA256HashValue>;
 
   // If the |user_data_dir_switch| is passed in as a valid pointer but
   // --user-data-dir flag is missing, or --ignore-certificate-errors-spki-list

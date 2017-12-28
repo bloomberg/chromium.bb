@@ -246,10 +246,8 @@ class SingleTreeTracker::NetworkObserver
 bool SingleTreeTracker::OrderByTimestamp::operator()(
     const EntryToAudit& lhs,
     const EntryToAudit& rhs) const {
-  if (lhs.sct_timestamp != rhs.sct_timestamp)
-    return lhs.sct_timestamp < rhs.sct_timestamp;
-
-  return net::SHA256HashValueLessThan()(lhs.leaf_hash, rhs.leaf_hash);
+  return std::tie(lhs.sct_timestamp, lhs.leaf_hash) <
+         std::tie(rhs.sct_timestamp, rhs.leaf_hash);
 }
 
 SingleTreeTracker::SingleTreeTracker(

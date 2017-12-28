@@ -190,10 +190,7 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
   // of an entry in |checked_entries_| indicates success.
   // To extend support for caching failures, a success indicator should be
   // added to the EntryAuditResult struct.
-  base::MRUCache<net::SHA256HashValue,
-                 EntryAuditResult,
-                 net::SHA256HashValueLessThan>
-      checked_entries_;
+  base::MRUCache<net::SHA256HashValue, EntryAuditResult> checked_entries_;
 
   LogDnsClient* dns_client_;
 

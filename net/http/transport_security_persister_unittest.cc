@@ -283,7 +283,7 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyPins) {
   TransportSecurityState::PKPState new_pkp_state;
   EXPECT_TRUE(state_.GetDynamicPKPState(kTestDomain, &new_pkp_state));
   EXPECT_EQ(1u, new_pkp_state.spki_hashes.size());
-  EXPECT_EQ(sha256.tag, new_pkp_state.spki_hashes[0].tag);
+  EXPECT_EQ(sha256.tag(), new_pkp_state.spki_hashes[0].tag());
   EXPECT_EQ(0, memcmp(new_pkp_state.spki_hashes[0].data(), sha256.data(),
                       sha256.size()));
   EXPECT_EQ(report_uri, new_pkp_state.report_uri);

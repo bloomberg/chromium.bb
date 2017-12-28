@@ -55,9 +55,8 @@ ScopedCERTCertificateList ListCertsInSlot(PK11SlotInfo* slot) {
   std::sort(
       result.begin(), result.end(),
       [](const ScopedCERTCertificate& lhs, const ScopedCERTCertificate& rhs) {
-        return SHA256HashValueLessThan()(
-            x509_util::CalculateFingerprint256(lhs.get()),
-            x509_util::CalculateFingerprint256(rhs.get()));
+        return x509_util::CalculateFingerprint256(lhs.get()) <
+               x509_util::CalculateFingerprint256(rhs.get());
       });
   return result;
 }

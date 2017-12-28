@@ -100,7 +100,7 @@ bool SSLErrorAssistant::IsKnownCaptivePortalCertificate(
   }
 
   for (const net::HashValue& hash_value : ssl_info.public_key_hashes) {
-    if (hash_value.tag != net::HASH_VALUE_SHA256) {
+    if (hash_value.tag() != net::HASH_VALUE_SHA256) {
       continue;
     }
     if (captive_portal_spki_hashes_->find(hash_value.ToString()) !=

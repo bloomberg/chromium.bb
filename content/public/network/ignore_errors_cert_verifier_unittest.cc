@@ -30,7 +30,6 @@ using net::MockCertVerifier;
 using net::CompletionCallback;
 using net::HashValue;
 using net::SHA256HashValue;
-using net::SHA256HashValueLessThan;
 using net::X509Certificate;
 using net::TestCompletionCallback;
 using net::CertVerifyResult;
