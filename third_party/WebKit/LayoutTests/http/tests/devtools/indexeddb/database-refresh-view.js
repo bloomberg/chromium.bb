@@ -83,12 +83,12 @@
   await waitRefreshDatabase();
   TestRunner.addResult('Created second objectstore.');
   ApplicationTestRunner.dumpIndexedDBTree();
-  InspectorTest.dumpObjectStores();
+  ApplicationTestRunner.dumpObjectStores();
 
   // Add entries
   await ApplicationTestRunner.addIDBValueAsync(databaseName, objectStoreName1, 'testKey', 'testValue');
   TestRunner.addResult('Added ' + objectStoreName1 + ' entry.');
-  InspectorTest.dumpObjectStores();
+  ApplicationTestRunner.dumpObjectStores();
 
   // Refresh database view
   await waitRefreshDatabase();
@@ -96,12 +96,12 @@
   await waitUpdateDataView();
   await waitUpdateDataView();
   TestRunner.addResult('Refreshed database view.');
-  InspectorTest.dumpObjectStores();
+  ApplicationTestRunner.dumpObjectStores();
 
   // Add entries
   await ApplicationTestRunner.addIDBValueAsync(databaseName, objectStoreName2, 'testKey2', 'testValue2');
   TestRunner.addResult('Added ' + objectStoreName2 + ' entry.');
-  InspectorTest.dumpObjectStores();
+  ApplicationTestRunner.dumpObjectStores();
 
   // Right-click refresh database view
   await waitRefreshDatabaseRightClick();
@@ -109,7 +109,7 @@
   await waitUpdateDataView();
   await waitUpdateDataView();
   TestRunner.addResult('Right-click refreshed database.');
-  InspectorTest.dumpObjectStores();
+  ApplicationTestRunner.dumpObjectStores();
 
   await ApplicationTestRunner.deleteDatabaseAsync(databaseName);
   TestRunner.completeTest();
