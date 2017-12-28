@@ -837,7 +837,7 @@ display_handle_delete_id(void *data, struct wl_display *display, uint32_t id)
 	if (!proxy)
 		wl_log("error: received delete_id for unknown id (%u)\n", id);
 
-	if (proxy && proxy != WL_ZOMBIE_OBJECT)
+	if (proxy && !wl_object_is_zombie(&display->objects, id))
 		proxy->flags |= WL_PROXY_FLAG_ID_DELETED;
 	else
 		wl_map_remove(&display->objects, id);
@@ -1253,7 +1253,7 @@ queue_event(struct wl_display *display, int len)
 		return 0;
 
 	proxy = wl_map_lookup(&display->objects, id);
-	if (!proxy || proxy == WL_ZOMBIE_OBJECT) {
+	if (!proxy || wl_object_is_zombie(&display->objects, id)) {
 		wl_connection_consume(display->connection, size);
 		return size;
 	}

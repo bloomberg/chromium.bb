@@ -831,6 +831,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 	return NULL;
 }
 
+bool
+wl_object_is_zombie(struct wl_map *map, uint32_t id)
+{
+	struct wl_object *object = wl_map_lookup(map, id);
+
+	return (object == WL_ZOMBIE_OBJECT);
+}
+
 int
 wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 {
@@ -852,7 +860,7 @@ wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 			closure->args[i].o = NULL;
 
 			object = wl_map_lookup(objects, id);
-			if (object == WL_ZOMBIE_OBJECT) {
+			if (wl_object_is_zombie(objects, id)) {
 				/* references object we've already
 				 * destroyed client side */
 				object = NULL;

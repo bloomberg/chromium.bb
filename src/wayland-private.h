@@ -190,6 +190,9 @@ wl_connection_demarshal(struct wl_connection *connection,
 			struct wl_map *objects,
 			const struct wl_message *message);
 
+bool
+wl_object_is_zombie(struct wl_map *map, uint32_t id);
+
 int
 wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects);
 
