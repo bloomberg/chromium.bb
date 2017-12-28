@@ -4,8 +4,6 @@
 
 #include "public/web/WebSurroundingText.h"
 
-// TODO(xiaochengh): Rename this file as core/exported/WebSurroundingText.cpp
-
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
