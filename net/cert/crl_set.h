@@ -70,10 +70,10 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   const CRLList& crls() const;
 
   // EmptyCRLSetForTesting returns a valid, but empty, CRLSet for unit tests.
-  static CRLSet* EmptyCRLSetForTesting();
+  static scoped_refptr<CRLSet> EmptyCRLSetForTesting();
 
   // ExpiredCRLSetForTesting returns a expired, empty CRLSet for unit tests.
-  static CRLSet* ExpiredCRLSetForTesting();
+  static scoped_refptr<CRLSet> ExpiredCRLSetForTesting();
 
   // ForTesting returns a CRLSet for testing. If |is_expired| is true, calling
   // IsExpired on the result will return true. If |issuer_spki| is not NULL,
@@ -83,7 +83,7 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // CRLSet will consider certificates with a subject consisting only of that
   // common name to be revoked unless they match an SPKI hash from
   // |acceptable_spki_hashes_for_cn|.
-  static CRLSet* ForTesting(
+  static scoped_refptr<CRLSet> ForTesting(
       bool is_expired,
       const SHA256HashValue* issuer_spki,
       const std::string& serial_number,
