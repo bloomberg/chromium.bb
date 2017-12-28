@@ -26,24 +26,20 @@
 #include "public/web/WebSurroundingText.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/Range.h"
-#include "core/dom/Text.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/SurroundingText.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/editing/iterators/BackwardsCharacterIterator.h"
+#include "core/editing/iterators/CharacterIterator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "core/layout/LayoutObject.h"
-#include "public/platform/WebPoint.h"
-#include "public/web/WebHitTestResult.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 
 namespace blink {
 
-WebSurroundingText::WebSurroundingText() {}
-
-WebSurroundingText::~WebSurroundingText() {}
+WebSurroundingText::WebSurroundingText()
+    : start_offset_in_text_content_(0), end_offset_in_text_content_(0) {}
 
 void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
                                                         size_t max_length) {
@@ -58,30 +54,91 @@ void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
                                    .ToNormalizedEphemeralRange();
   if (range.IsNull())
     return;
-  // TODO(xiaochengh): The followinng SurroundingText can hold a null Range,
-  // in which case we should prevent it from being stored in |m_private|.
-  private_.reset(new SurroundingText(range, max_length));
+  InitializeFromRange(range, max_length);
+}
+
+void WebSurroundingText::InitializeFromRange(const EphemeralRange& range,
+                                             size_t max_length) {
+  const Position start_position = range.StartPosition();
+  const Position end_position = range.EndPosition();
+  const unsigned half_max_length = max_length / 2;
+
+  Document* document = start_position.GetDocument();
+
+  // The position will have no document if it is null (as in no position).
+  if (!document || !document->documentElement())
+    return;
+  DCHECK(!document->NeedsLayoutTreeUpdate());
+
+  // The forward range starts at the selection end and ends at the document's
+  // or the input element's end. It will then be updated to only contain the
+  // text in the right range around the selection.
+  DCHECK_EQ(RootEditableElementOf(start_position),
+            RootEditableElementOf(end_position));
+  Element* const root_editable = RootEditableElementOf(start_position);
+  Element* const root_element =
+      root_editable ? root_editable : document->documentElement();
+
+  // Do not create surrounding text if start or end position is within a
+  // control.
+  if (HTMLFormControlElement::EnclosingFormControlElement(
+          start_position.ComputeContainerNode()) ||
+      HTMLFormControlElement::EnclosingFormControlElement(
+          end_position.ComputeContainerNode()))
+    return;
+
+  CharacterIterator forward_iterator(
+      end_position,
+      Position::LastPositionInNode(*root_element).ParentAnchoredEquivalent(),
+      TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
+  if (!forward_iterator.AtEnd())
+    forward_iterator.Advance(max_length - half_max_length);
+
+  // Same as with the forward range but with the backward range. The range
+  // starts at the document's or input element's start and ends at the selection
+  // start and will be updated.
+  BackwardsCharacterIterator backwards_iterator(
+      EphemeralRange(Position::FirstPositionInNode(*root_element)
+                         .ParentAnchoredEquivalent(),
+                     start_position),
+      TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
+  if (!backwards_iterator.AtEnd())
+    backwards_iterator.Advance(half_max_length);
+
+  // Upon some conditions backwards iterator yields invalid EndPosition() which
+  // causes a crash in TextIterator::RangeLength().
+  // TODO(editing-dev): Fix BackwardsCharacterIterator, http://crbug.com/758438.
+  if (backwards_iterator.EndPosition() > start_position ||
+      end_position > forward_iterator.StartPosition())
+    return;
+
+  const TextIteratorBehavior behavior =
+      TextIteratorBehavior::NoTrailingSpaceRangeLengthBehavior();
+  const Position content_start = backwards_iterator.EndPosition();
+  const Position content_end = forward_iterator.StartPosition();
+  start_offset_in_text_content_ =
+      TextIterator::RangeLength(content_start, start_position, behavior);
+  end_offset_in_text_content_ =
+      TextIterator::RangeLength(content_start, end_position, behavior);
+  text_content_ = PlainText(
+      EphemeralRange(content_start, content_end),
+      TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
 }
 
 WebString WebSurroundingText::TextContent() const {
-  return private_->Content();
-}
-
-size_t WebSurroundingText::HitOffsetInTextContent() const {
-  DCHECK_EQ(private_->StartOffsetInContent(), private_->EndOffsetInContent());
-  return private_->StartOffsetInContent();
+  return text_content_;
 }
 
 size_t WebSurroundingText::StartOffsetInTextContent() const {
-  return private_->StartOffsetInContent();
+  return start_offset_in_text_content_;
 }
 
 size_t WebSurroundingText::EndOffsetInTextContent() const {
-  return private_->EndOffsetInContent();
+  return end_offset_in_text_content_;
 }
 
 bool WebSurroundingText::IsNull() const {
-  return !private_.get();
+  return text_content_.IsEmpty();
 }
 
 }  // namespace blink

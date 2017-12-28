@@ -25,43 +25,38 @@
 #ifndef WebSurroundingText_h
 #define WebSurroundingText_h
 
+#if INSIDE_BLINK
+#include "core/editing/Forward.h"
+#endif
 #include "public/platform/WebString.h"
-#include "WebNode.h"
-#include "WebRange.h"
-#include <memory>
 
 namespace blink {
 
-class SurroundingText;
-class WebNode;
-class WebRange;
 class WebLocalFrame;
-struct WebPoint;
 
 // WebSurroundingText is a Blink API that gives access to the SurroundingText
 // API. It allows caller to know the text surrounding a point or a range.
 class WebSurroundingText {
  public:
   BLINK_EXPORT WebSurroundingText();
-  BLINK_EXPORT ~WebSurroundingText();
 
+  // TODO(xiaochengh): Rename to IsEmpty() to be more intuitive.
   BLINK_EXPORT bool IsNull() const;
 
   // Initializes the object with the current selection in a given frame.
   // The maximum length of the contents retrieved is defined by maxLength.
   // It does not include the text inside the range.
+  // TODO(xiaochengh): Merge this funciton into the constructor.
   BLINK_EXPORT void InitializeFromCurrentSelection(WebLocalFrame*,
                                                    size_t max_length);
 
+#if INSIDE_BLINK
+  BLINK_EXPORT void InitializeFromRange(const EphemeralRange&,
+                                        size_t max_length);
+#endif
+
   // Surrounding text content retrieved.
   BLINK_EXPORT WebString TextContent() const;
-
-  // Offset in the text content of the initial hit position (or provided
-  // offset in the node).
-  // This should only be called when WebSurroundingText has been initialized
-  // with a WebPoint.
-  // DEPRECATED: use startOffsetInTextContent() or endOffsetInTextContent().
-  BLINK_EXPORT size_t HitOffsetInTextContent() const;
 
   // Start offset of the initial text in the text content.
   BLINK_EXPORT size_t StartOffsetInTextContent() const;
@@ -69,8 +64,10 @@ class WebSurroundingText {
   // End offset of the initial text in the text content.
   BLINK_EXPORT size_t EndOffsetInTextContent() const;
 
- protected:
-  std::unique_ptr<SurroundingText> private_;
+ private:
+  WebString text_content_;
+  size_t start_offset_in_text_content_;
+  size_t end_offset_in_text_content_;
 };
 
 }  // namespace blink

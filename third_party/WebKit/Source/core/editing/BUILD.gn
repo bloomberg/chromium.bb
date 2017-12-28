@@ -72,8 +72,6 @@ blink_core_sources("editing") {
     "SelectionType.h",
     "SetSelectionOptions.cpp",
     "SetSelectionOptions.h",
-    "SurroundingText.cpp",
-    "SurroundingText.h",
     "TextAffinity.cpp",
     "TextAffinity.h",
     "TextGranularity.h",
