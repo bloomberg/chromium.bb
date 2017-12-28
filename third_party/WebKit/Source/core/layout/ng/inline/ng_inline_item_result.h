@@ -66,13 +66,14 @@ struct CORE_EXPORT NGInlineItemResult {
   // Create a box when the box is empty, for open/close tags.
   bool needs_box_when_empty = false;
 
-  // Inside of this is not breakable. Set only for text items.
+  // Inside of this may be breakable. False means there are no break
+  // opportunities, or has CSS properties that prohibit breaking.
   // Used only during line breaking.
-  bool no_break_opportunities_inside = false;
+  bool may_break_inside = false;
 
-  // Lines must not break after this. Set for all items.
+  // Lines can break after this item. Set for all items.
   // Used only during line breaking.
-  bool prohibit_break_after = false;
+  bool can_break_after = false;
 
   // Has spaces that hangs beyond the end margin.
   // Set only for text items.
