@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/speech_ui_model.h"
+#include "ash/app_list/model/speech/speech_ui_model.h"
 
 #include <stdint.h>
 
@@ -23,8 +23,7 @@ SpeechUIModel::SpeechUIModel()
       sound_level_(0),
       state_(app_list::SPEECH_RECOGNITION_OFF),
       minimum_sound_level_(kDefaultSoundLevel),
-      maximum_sound_level_(kDefaultSoundLevel) {
-}
+      maximum_sound_level_(kDefaultSoundLevel) {}
 
 SpeechUIModel::~SpeechUIModel() {}
 

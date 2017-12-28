@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -23,7 +24,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/app_list/speech_ui_model_observer.h"
 
 namespace app_list {
 

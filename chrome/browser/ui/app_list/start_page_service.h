@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "ui/app_list/speech_ui_model_observer.h"
 
 namespace content {
 struct SpeechRecognitionSessionPreamble;
