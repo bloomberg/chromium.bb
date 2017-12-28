@@ -46,40 +46,6 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     virtual ~Observer() {}
   };
 
-  class ServiceWorkerIdentifier {
-   public:
-    ServiceWorkerIdentifier(
-        const ServiceWorkerContextCore* context,
-        base::WeakPtr<ServiceWorkerContextCore> context_weak,
-        int64_t version_id,
-        const GURL& url,
-        const GURL& scope,
-        const base::UnguessableToken& devtools_worker_token);
-    ServiceWorkerIdentifier(const ServiceWorkerIdentifier& other);
-    ~ServiceWorkerIdentifier();
-
-    bool Matches(const ServiceWorkerIdentifier& other) const;
-
-    const ServiceWorkerContextCore* context() const { return context_; }
-    base::WeakPtr<ServiceWorkerContextCore> context_weak() const {
-      return context_weak_;
-    }
-    int64_t version_id() const { return version_id_; }
-    GURL url() const { return url_; }
-    GURL scope() const { return scope_; }
-    const base::UnguessableToken& devtools_worker_token() const {
-      return devtools_worker_token_;
-    }
-
-   private:
-    const ServiceWorkerContextCore* const context_;
-    const base::WeakPtr<ServiceWorkerContextCore> context_weak_;
-    const int64_t version_id_;
-    const GURL url_;
-    const GURL scope_;
-    const base::UnguessableToken devtools_worker_token_;
-  };
-
   // Returns the ServiceWorkerDevToolsManager singleton.
   static ServiceWorkerDevToolsManager* GetInstance();
 
@@ -92,13 +58,16 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
       BrowserContext* browser_context,
       std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>* result);
 
-  // Returns true when the worker must be paused on start because a DevTool
-  // window for the same former ServiceWorkerIdentifier is still opened or
-  // debug-on-start is enabled in chrome://serviceworker-internals.
-  bool WorkerCreated(int worker_process_id,
+  void WorkerCreated(int worker_process_id,
                      int worker_route_id,
-                     const ServiceWorkerIdentifier& service_worker_id,
-                     bool is_installed_version);
+                     const ServiceWorkerContextCore* context,
+                     base::WeakPtr<ServiceWorkerContextCore> context_weak,
+                     int64_t version_id,
+                     const GURL& url,
+                     const GURL& scope,
+                     bool is_installed_version,
+                     base::UnguessableToken* devtools_worker_token,
+                     bool* pause_on_start);
   void WorkerReadyForInspection(int worker_process_id, int worker_route_id);
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
   void WorkerVersionDoomed(int worker_process_id, int worker_route_id);

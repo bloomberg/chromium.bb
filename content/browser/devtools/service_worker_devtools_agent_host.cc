@@ -44,13 +44,23 @@ void SetDevToolsAttachedOnIO(
 ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     int worker_process_id,
     int worker_route_id,
-    const ServiceWorkerIdentifier& service_worker,
-    bool is_installed_version)
-    : DevToolsAgentHostImpl(service_worker.devtools_worker_token().ToString()),
+    const ServiceWorkerContextCore* context,
+    base::WeakPtr<ServiceWorkerContextCore> context_weak,
+    int64_t version_id,
+    const GURL& url,
+    const GURL& scope,
+    bool is_installed_version,
+    const base::UnguessableToken& devtools_worker_token)
+    : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
       state_(WORKER_UNINSPECTED),
+      devtools_worker_token_(devtools_worker_token),
       worker_process_id_(worker_process_id),
       worker_route_id_(worker_route_id),
-      service_worker_(new ServiceWorkerIdentifier(service_worker)),
+      context_(context),
+      context_weak_(context_weak),
+      version_id_(version_id),
+      url_(url),
+      scope_(scope),
       version_installed_time_(is_installed_version ? base::Time::Now()
                                                    : base::Time()) {
   NotifyCreated();
@@ -66,11 +76,11 @@ std::string ServiceWorkerDevToolsAgentHost::GetType() {
 }
 
 std::string ServiceWorkerDevToolsAgentHost::GetTitle() {
-  return "Service Worker " + service_worker_->url().spec();
+  return "Service Worker " + url_.spec();
 }
 
 GURL ServiceWorkerDevToolsAgentHost::GetURL() {
-  return service_worker_->url();
+  return url_;
 }
 
 bool ServiceWorkerDevToolsAgentHost::Activate() {
@@ -81,10 +91,9 @@ void ServiceWorkerDevToolsAgentHost::Reload() {
 }
 
 bool ServiceWorkerDevToolsAgentHost::Close() {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&TerminateServiceWorkerOnIO,
-                                         service_worker_->context_weak(),
-                                         service_worker_->version_id()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&TerminateServiceWorkerOnIO, context_weak_, version_id_));
   return true;
 }
 
@@ -96,13 +105,10 @@ void ServiceWorkerDevToolsAgentHost::WorkerVersionDoomed() {
   version_doomed_time_ = base::Time::Now();
 }
 
-GURL ServiceWorkerDevToolsAgentHost::scope() const {
-  return service_worker_->scope();
-}
-
 bool ServiceWorkerDevToolsAgentHost::Matches(
-    const ServiceWorkerIdentifier& other) {
-  return service_worker_->Matches(other);
+    const ServiceWorkerContextCore* context,
+    int64_t version_id) {
+  return context_ == context && version_id_ == version_id;
 }
 
 ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
@@ -123,19 +129,17 @@ void ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
   session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(GetId())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SetDevToolsAttachedOnIO, service_worker_->context_weak(),
-                     service_worker_->version_id(), true));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&SetDevToolsAttachedOnIO,
+                                         context_weak_, version_id_, true));
 }
 
 void ServiceWorkerDevToolsAgentHost::DetachSession(int session_id) {
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_process_id_))
     host->Send(new DevToolsAgentMsg_Detach(worker_route_id_, session_id));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SetDevToolsAttachedOnIO, service_worker_->context_weak(),
-                     service_worker_->version_id(), false));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&SetDevToolsAttachedOnIO,
+                                         context_weak_, version_id_, false));
   if (state_ == WORKER_INSPECTED) {
     state_ = WORKER_UNINSPECTED;
     DetachFromWorker();
@@ -212,11 +216,9 @@ void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection() {
         }
       }
     }
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&SetDevToolsAttachedOnIO,
-                       service_worker_->context_weak(),
-                       service_worker_->version_id(), true));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&SetDevToolsAttachedOnIO,
+                                           context_weak_, version_id_, true));
   } else if (state_ == WORKER_PAUSED_FOR_DEBUG_ON_START) {
     state_ = WORKER_READY_FOR_DEBUG_ON_START;
   }
