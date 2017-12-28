@@ -284,6 +284,7 @@ struct macroblock {
   int drl_mode_cost0[DRL_MODE_CONTEXTS][2];
 
   int comp_inter_cost[COMP_INTER_CONTEXTS][2];
+  int single_ref_cost[REF_CONTEXTS][SINGLE_REFS - 1][2];
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
 #if CONFIG_JNT_COMP
   int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];

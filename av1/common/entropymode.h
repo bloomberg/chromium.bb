@@ -167,7 +167,6 @@ typedef struct frame_contexts {
   aom_cdf_prob uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1]
                                [CDF_SIZE(2)];
 #endif  // CONFIG_EXT_COMP_REFS
-  aom_prob single_ref_prob[REF_CONTEXTS][SINGLE_REFS - 1];
   aom_prob comp_ref_prob[REF_CONTEXTS][FWD_REFS - 1];
   aom_prob comp_bwdref_prob[REF_CONTEXTS][BWD_REFS - 1];
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
@@ -326,7 +325,9 @@ typedef struct FRAME_COUNTS {
   unsigned int comp_ref_type[COMP_REF_TYPE_CONTEXTS][2];
   unsigned int uni_comp_ref[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1][2];
 #endif  // CONFIG_EXT_COMP_REFS
+#if CONFIG_ENTROPY_STATS
   unsigned int single_ref[REF_CONTEXTS][SINGLE_REFS - 1][2];
+#endif  // CONFIG_ENTROPY_STATS
   unsigned int comp_ref[REF_CONTEXTS][FWD_REFS - 1][2];
   unsigned int comp_bwdref[REF_CONTEXTS][BWD_REFS - 1][2];
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];

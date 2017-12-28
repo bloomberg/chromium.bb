@@ -331,45 +331,15 @@ static INLINE aom_prob av1_get_pred_prob_comp_bwdref_p1(const AV1_COMMON *cm,
 
 int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd);
 
-static INLINE aom_prob av1_get_pred_prob_single_ref_p1(const AV1_COMMON *cm,
-                                                       const MACROBLOCKD *xd) {
-  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p1(xd)][0];
-}
-
 int av1_get_pred_context_single_ref_p2(const MACROBLOCKD *xd);
-
-static INLINE aom_prob av1_get_pred_prob_single_ref_p2(const AV1_COMMON *cm,
-                                                       const MACROBLOCKD *xd) {
-  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p2(xd)][1];
-}
 
 int av1_get_pred_context_single_ref_p3(const MACROBLOCKD *xd);
 
-static INLINE aom_prob av1_get_pred_prob_single_ref_p3(const AV1_COMMON *cm,
-                                                       const MACROBLOCKD *xd) {
-  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p3(xd)][2];
-}
-
 int av1_get_pred_context_single_ref_p4(const MACROBLOCKD *xd);
-
-static INLINE aom_prob av1_get_pred_prob_single_ref_p4(const AV1_COMMON *cm,
-                                                       const MACROBLOCKD *xd) {
-  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p4(xd)][3];
-}
 
 int av1_get_pred_context_single_ref_p5(const MACROBLOCKD *xd);
 
-static INLINE aom_prob av1_get_pred_prob_single_ref_p5(const AV1_COMMON *cm,
-                                                       const MACROBLOCKD *xd) {
-  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p5(xd)][4];
-}
-
 int av1_get_pred_context_single_ref_p6(const MACROBLOCKD *xd);
-
-static INLINE aom_prob av1_get_pred_prob_single_ref_p6(const AV1_COMMON *cm,
-                                                       const MACROBLOCKD *xd) {
-  return cm->fc->single_ref_prob[av1_get_pred_context_single_ref_p6(xd)][5];
-}
 
 static INLINE aom_cdf_prob *av1_get_pred_cdf_single_ref_p1(
     const AV1_COMMON *cm, const MACROBLOCKD *xd) {

@@ -1464,14 +1464,6 @@ static const aom_cdf_prob
       { { AOM_CDF2(32768) }, { AOM_CDF2(32768) } }
     };
 
-static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
-  { 36, 16, 32, 57, 11, 14 },
-  { 68, 128, 73, 128, 49, 124 },
-  { 136, 236, 127, 170, 81, 238 },
-  { 128, 128, 191, 211, 115, 128 },
-  { 224, 128, 230, 242, 208, 128 }
-};
-
 static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
                                                 [CDF_SIZE(2)] = {
                                                   { { AOM_CDF2(4623) },
@@ -1492,18 +1484,18 @@ static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
                                                     { AOM_CDF2(21702) },
                                                     { AOM_CDF2(10365) },
                                                     { AOM_CDF2(30486) } },
-                                                  { { AOM_CDF2(32768) },
-                                                    { AOM_CDF2(32768) },
+                                                  { { AOM_CDF2(16384) },
+                                                    { AOM_CDF2(16384) },
                                                     { AOM_CDF2(24426) },
                                                     { AOM_CDF2(26972) },
                                                     { AOM_CDF2(14760) },
-                                                    { AOM_CDF2(32768) } },
+                                                    { AOM_CDF2(16384) } },
                                                   { { AOM_CDF2(28634) },
-                                                    { AOM_CDF2(32768) },
+                                                    { AOM_CDF2(16384) },
                                                     { AOM_CDF2(29425) },
                                                     { AOM_CDF2(30969) },
                                                     { AOM_CDF2(26676) },
-                                                    { AOM_CDF2(32768) } }
+                                                    { AOM_CDF2(16384) } }
                                                 };
 
 // TODO(huisu): tune these cdfs
@@ -3344,7 +3336,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
   av1_copy(fc->comp_bwdref_prob, default_comp_bwdref_p);
   av1_copy(fc->comp_bwdref_cdf, default_comp_bwdref_cdf);
-  av1_copy(fc->single_ref_prob, default_single_ref_p);
   av1_copy(fc->single_ref_cdf, default_single_ref_cdf);
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
 #if CONFIG_JNT_COMP
@@ -3431,11 +3422,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     for (j = 0; j < (BWD_REFS - 1); j++)
       fc->comp_bwdref_prob[i][j] = mode_mv_merge_probs(
           pre_fc->comp_bwdref_prob[i][j], counts->comp_bwdref[i][j]);
-
-  for (i = 0; i < REF_CONTEXTS; i++)
-    for (j = 0; j < (SINGLE_REFS - 1); j++)
-      fc->single_ref_prob[i][j] = av1_mode_mv_merge_probs(
-          pre_fc->single_ref_prob[i][j], counts->single_ref[i][j]);
 }
 
 static void set_default_lf_deltas(struct loopfilter *lf) {

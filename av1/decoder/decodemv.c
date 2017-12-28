@@ -1406,35 +1406,22 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         ref_frame[idx] = cm->comp_bwd_ref[2];
       }
     } else if (mode == SINGLE_REFERENCE) {
-      const int ctx0 = av1_get_pred_context_single_ref_p1(xd);
       const int bit0 = READ_REF_BIT(single_ref_p1);
-      if (counts) ++counts->single_ref[ctx0][0][bit0];
-
       if (bit0) {
-        const int ctx1 = av1_get_pred_context_single_ref_p2(xd);
         const int bit1 = READ_REF_BIT(single_ref_p2);
-        if (counts) ++counts->single_ref[ctx1][1][bit1];
         if (!bit1) {
-          const int ctx5 = av1_get_pred_context_single_ref_p6(xd);
           const int bit5 = READ_REF_BIT(single_ref_p6);
-          if (counts) ++counts->single_ref[ctx5][5][bit5];
           ref_frame[0] = bit5 ? ALTREF2_FRAME : BWDREF_FRAME;
         } else {
           ref_frame[0] = ALTREF_FRAME;
         }
       } else {
-        const int ctx2 = av1_get_pred_context_single_ref_p3(xd);
         const int bit2 = READ_REF_BIT(single_ref_p3);
-        if (counts) ++counts->single_ref[ctx2][2][bit2];
         if (bit2) {
-          const int ctx4 = av1_get_pred_context_single_ref_p5(xd);
           const int bit4 = READ_REF_BIT(single_ref_p5);
-          if (counts) ++counts->single_ref[ctx4][4][bit4];
           ref_frame[0] = bit4 ? GOLDEN_FRAME : LAST3_FRAME;
         } else {
-          const int ctx3 = av1_get_pred_context_single_ref_p4(xd);
           const int bit3 = READ_REF_BIT(single_ref_p4);
-          if (counts) ++counts->single_ref[ctx3][3][bit3];
           ref_frame[0] = bit3 ? LAST2_FRAME : LAST_FRAME;
         }
       }
