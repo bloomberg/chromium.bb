@@ -51,7 +51,6 @@ class InspectedFrames;
 class InspectorOverlayAgent;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
-class InspectorTraceEvents;
 class LocalFrame;
 class WebDevToolsAgentClient;
 class WebLayerTreeView;
@@ -146,7 +145,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   Member<InspectorResourceContentLoader> resource_content_loader_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorResourceContainer> resource_container_;
-  Member<InspectorTraceEvents> trace_events_;
 
   HeapHashMap<int, Member<InspectorPageAgent>> page_agents_;
   HeapHashMap<int, Member<InspectorNetworkAgent>> network_agents_;

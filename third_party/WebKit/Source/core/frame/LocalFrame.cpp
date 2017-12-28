@@ -63,6 +63,7 @@
 #include "core/html/PluginDocument.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
@@ -220,6 +221,7 @@ void LocalFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(probe_sink_);
   visitor->Trace(performance_monitor_);
   visitor->Trace(idleness_detector_);
+  visitor->Trace(inspector_trace_events_);
   visitor->Trace(loader_);
   visitor->Trace(navigation_scheduler_);
   visitor->Trace(view_);
@@ -280,6 +282,8 @@ void LocalFrame::Detach(FrameDetachType type) {
   if (IsLocalRoot())
     performance_monitor_->Shutdown();
   idleness_detector_->Shutdown();
+  if (inspector_trace_events_)
+    probe_sink_->removeInspectorTraceEvents(inspector_trace_events_);
 
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   loader_.StopAllLoaders();
@@ -802,6 +806,8 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);
+    inspector_trace_events_ = new InspectorTraceEvents();
+    probe_sink_->addInspectorTraceEvents(inspector_trace_events_);
   } else {
     // Inertness only needs to be updated if this frame might inherit the
     // inert state from a higher-level frame. If this is an OOPIF local root,
