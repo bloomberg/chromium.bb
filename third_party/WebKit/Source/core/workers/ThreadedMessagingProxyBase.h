@@ -10,7 +10,6 @@
 #include "core/inspector/ConsoleTypes.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
-#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Forward.h"
@@ -66,7 +65,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   virtual void Trace(blink::Visitor*);
 
  protected:
-  ThreadedMessagingProxyBase(ExecutionContext*, WorkerClients*);
+  explicit ThreadedMessagingProxyBase(ExecutionContext*);
 
   void InitializeWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
@@ -83,9 +82,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
   bool AskedToTerminate() const { return asked_to_terminate_; }
 
-  // Transfers ownership of the clients to the caller.
-  WorkerClients* ReleaseWorkerClients();
-
   // Returns true if this is called on the parent context thread.
   bool IsParentContextThread() const;
 
@@ -93,7 +89,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   virtual std::unique_ptr<WorkerThread> CreateWorkerThread() = 0;
 
   Member<ExecutionContext> execution_context_;
-  Member<WorkerClients> worker_clients_;
   Member<WorkerInspectorProxy> worker_inspector_proxy_;
 
   // Accessed cross-thread when worker thread posts tasks to the parent.
@@ -101,7 +96,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
   std::unique_ptr<WorkerThread> worker_thread_;
 
-  bool asked_to_terminate_;
+  bool asked_to_terminate_ = false;
 
   // Used to keep this alive until the worker thread gets terminated. This is
   // necessary because the co-owner (i.e., Worker or Worklet object) can be

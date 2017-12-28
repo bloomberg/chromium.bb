@@ -26,7 +26,6 @@ namespace blink {
 class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
 class SerializedScriptValue;
-class WorkerClients;
 class WorkerOptions;
 
 // A proxy class to talk to the DedicatedWorkerGlobalScope on a worker thread
@@ -35,9 +34,7 @@ class WorkerOptions;
 class CORE_EXPORT DedicatedWorkerMessagingProxy
     : public ThreadedMessagingProxyBase {
  public:
-  DedicatedWorkerMessagingProxy(ExecutionContext*,
-                                DedicatedWorker*,
-                                WorkerClients*);
+  DedicatedWorkerMessagingProxy(ExecutionContext*, DedicatedWorker*);
   ~DedicatedWorkerMessagingProxy() override;
 
   // These methods should only be used on the parent context thread.

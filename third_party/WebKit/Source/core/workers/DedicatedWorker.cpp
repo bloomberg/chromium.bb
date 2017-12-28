@@ -21,7 +21,6 @@
 #include "core/workers/WorkerContentSettingsClient.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/web/WebFrameClient.h"
@@ -81,7 +80,7 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
     : AbstractWorker(context),
       script_url_(script_url),
       options_(options),
-      context_proxy_(CreateMessagingProxy(context)) {
+      context_proxy_(new DedicatedWorkerMessagingProxy(context, this)) {
   DCHECK(IsMainThread());
   DCHECK(script_url_.IsValid());
   DCHECK(context_proxy_);
@@ -166,10 +165,8 @@ bool DedicatedWorker::HasPendingActivity() const {
   return context_proxy_->HasPendingActivity() || script_loader_;
 }
 
-DedicatedWorkerMessagingProxy* DedicatedWorker::CreateMessagingProxy(
-    ExecutionContext* context) {
-  DCHECK(IsMainThread());
-  Document* document = ToDocument(context);
+WorkerClients* DedicatedWorker::CreateWorkerClients() {
+  Document* document = ToDocument(GetExecutionContext());
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
 
@@ -180,7 +177,8 @@ DedicatedWorkerMessagingProxy* DedicatedWorker::CreateMessagingProxy(
       *worker_clients);
   ProvideContentSettingsClientToWorker(
       worker_clients, web_frame->Client()->CreateWorkerContentSettingsClient());
-  return new DedicatedWorkerMessagingProxy(context, this, worker_clients);
+
+  return worker_clients;
 }
 
 void DedicatedWorker::OnResponse() {
@@ -221,7 +219,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, GetExecutionContext()->UserAgent(),
       document->GetContentSecurityPolicy()->Headers().get(),
-      kReferrerPolicyDefault, starter_origin, nullptr /* worker_clients */,
+      kReferrerPolicyDefault, starter_origin, CreateWorkerClients(),
       document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
       std::make_unique<WorkerSettings>(document->GetSettings()),
       kV8CacheOptionsDefault,

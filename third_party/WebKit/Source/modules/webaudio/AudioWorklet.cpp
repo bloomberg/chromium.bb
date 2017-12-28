@@ -77,10 +77,8 @@ WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
   DCHECK_EQ(GetNumberOfGlobalScopes(), 0u);
 
   AudioWorkletMessagingProxy* proxy =
-      new AudioWorkletMessagingProxy(GetExecutionContext(),
-                                     WorkerClients::Create(),
-                                     this);
-  proxy->Initialize();
+      new AudioWorkletMessagingProxy(GetExecutionContext(), this);
+  proxy->Initialize(WorkerClients::Create());
   return proxy;
 }
 

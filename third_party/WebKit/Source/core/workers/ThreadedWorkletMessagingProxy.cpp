@@ -23,11 +23,10 @@
 namespace blink {
 
 ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
-    ExecutionContext* execution_context,
-    WorkerClients* worker_clients)
-    : ThreadedMessagingProxyBase(execution_context, worker_clients) {}
+    ExecutionContext* execution_context)
+    : ThreadedMessagingProxyBase(execution_context) {}
 
-void ThreadedWorkletMessagingProxy::Initialize() {
+void ThreadedWorkletMessagingProxy::Initialize(WorkerClients* worker_clients) {
   DCHECK(IsMainThread());
   if (AskedToTerminate())
     return;
@@ -42,7 +41,7 @@ void ThreadedWorkletMessagingProxy::Initialize() {
       std::make_unique<GlobalScopeCreationParams>(
           document->Url(), document->UserAgent(), csp->Headers().get(),
           document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-          ReleaseWorkerClients(), document->AddressSpace(),
+          worker_clients, document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           std::make_unique<WorkerSettings>(document->GetSettings()),
           kV8CacheOptionsDefault);
