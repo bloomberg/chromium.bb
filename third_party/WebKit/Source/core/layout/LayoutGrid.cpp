@@ -461,8 +461,9 @@ LayoutUnit LayoutGrid::GuttersSize(const Grid& grid,
   // If the startLine is the start line of a collapsed track we need to go
   // backwards till we reach a non collapsed track. If we find a non collapsed
   // track we need to add that gap.
+  size_t non_empty_tracks_before_start_line = 0;
   if (start_line && grid.IsEmptyAutoRepeatTrack(direction, start_line)) {
-    size_t non_empty_tracks_before_start_line = start_line;
+    non_empty_tracks_before_start_line = start_line;
     auto begin = grid.AutoRepeatEmptyTracks(direction)->begin();
     for (auto it = begin; *it != start_line; ++it) {
       DCHECK(non_empty_tracks_before_start_line);
@@ -487,8 +488,17 @@ LayoutUnit LayoutGrid::GuttersSize(const Grid& grid,
       DCHECK(non_empty_tracks_after_end_line);
       --non_empty_tracks_after_end_line;
     }
-    if (non_empty_tracks_after_end_line)
-      gap_accumulator += gap;
+    if (non_empty_tracks_after_end_line) {
+      // We shouldn't count the gap twice if the span starts and ends
+      // in a collapsed track bewtween two non-empty tracks.
+      if (!non_empty_tracks_before_start_line)
+        gap_accumulator += gap;
+    } else if (non_empty_tracks_before_start_line) {
+      // We shouldn't count the gap if the the span starts and ends in
+      // a collapsed but there isn't non-empty tracks afterwards (it's
+      // at the end of the grid).
+      gap_accumulator -= gap;
+    }
   }
 
   return gap_accumulator;
