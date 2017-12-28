@@ -21,6 +21,8 @@ class DevToolsEyeDropper;
 namespace content {
 class DevToolsAgentHost;
 struct NativeWebKeyboardEvent;
+class NavigationHandle;
+class NavigationThrottle;
 class RenderFrameHost;
 }
 
@@ -105,6 +107,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void InspectElement(content::RenderFrameHost* inspected_frame_host,
                              int x,
                              int y);
+
+  static std::unique_ptr<content::NavigationThrottle>
+  MaybeCreateNavigationThrottle(content::NavigationHandle* handle);
 
   // Sets closure to be called after load is done. If already loaded, calls
   // closure immediately.
@@ -328,6 +333,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void InspectedContentsClosing() override;
   void OnLoadCompleted() override;
   void ReadyForTest() override;
+  void ConnectionReady() override;
+  void SetOpenNewWindowForPopups(bool value) override;
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override;
   void ShowCertificateViewer(const std::string& cert_viewer) override;
@@ -367,6 +374,10 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   base::TimeTicks inspect_element_start_time_;
   std::unique_ptr<DevToolsEventForwarder> event_forwarder_;
   std::unique_ptr<DevToolsEyeDropper> eye_dropper_;
+
+  class Throttle;
+  Throttle* throttle_ = nullptr;
+  bool open_new_window_for_popups_ = false;
 
   friend class DevToolsEventForwarder;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);

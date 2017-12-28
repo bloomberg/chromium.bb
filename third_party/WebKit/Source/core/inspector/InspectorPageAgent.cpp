@@ -88,7 +88,6 @@ static const char kPageAgentEnabled[] = "pageAgentEnabled";
 static const char kPageAgentScriptsToEvaluateOnLoad[] =
     "pageAgentScriptsToEvaluateOnLoad";
 static const char kScreencastEnabled[] = "screencastEnabled";
-static const char kAutoAttachToCreatedPages[] = "autoAttachToCreatedPages";
 static const char kLifecycleEventsEnabled[] = "lifecycleEventsEnabled";
 }
 
@@ -526,11 +525,6 @@ Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
   return removeScriptToEvaluateOnLoad(identifier);
 }
 
-Response InspectorPageAgent::setAutoAttachToCreatedPages(bool auto_attach) {
-  state_->setBoolean(PageAgentState::kAutoAttachToCreatedPages, auto_attach);
-  return Response::OK();
-}
-
 Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
   state_->setBoolean(PageAgentState::kLifecycleEventsEnabled, enabled);
   if (!enabled)
@@ -926,13 +920,6 @@ void InspectorPageAgent::Did(const probe::RecalculateStyle&) {
 void InspectorPageAgent::PageLayoutInvalidated(bool resized) {
   if (enabled_ && client_)
     client_->PageLayoutInvalidated(resized);
-}
-
-void InspectorPageAgent::WindowCreated(LocalFrame* created) {
-  if (enabled_ && state_->booleanProperty(
-                      PageAgentState::kAutoAttachToCreatedPages, false)) {
-    client_->WaitForCreateWindow(this, created);
-  }
 }
 
 void InspectorPageAgent::WindowOpen(Document* document,

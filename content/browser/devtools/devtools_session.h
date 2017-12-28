@@ -90,8 +90,6 @@ class DevToolsSession : public protocol::FrontendChannel,
 
   // mojom::DevToolsSessionHost implementation.
   void DispatchProtocolMessage(mojom::DevToolsMessageChunkPtr chunk) override;
-  void RequestNewWindow(int32_t frame_routing_id,
-                        RequestNewWindowCallback callback) override;
 
   mojo::AssociatedBinding<mojom::DevToolsSessionHost> binding_;
   mojom::DevToolsSessionAssociatedPtr session_ptr_;

@@ -217,6 +217,9 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                                  &Delegate::Reattach, delegate);
   d->RegisterHandler("readyForTest",
                      &Delegate::ReadyForTest, delegate);
+  d->RegisterHandler("connectionReady", &Delegate::ConnectionReady, delegate);
+  d->RegisterHandler("setOpenNewWindowForPopups",
+                     &Delegate::SetOpenNewWindowForPopups, delegate);
   d->RegisterHandler("registerExtensionsAPI", &Delegate::RegisterExtensionsAPI,
                      delegate);
   return d;

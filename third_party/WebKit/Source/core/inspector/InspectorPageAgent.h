@@ -66,7 +66,6 @@ class CORE_EXPORT InspectorPageAgent final
    public:
     virtual ~Client() {}
     virtual void PageLayoutInvalidated(bool resized) {}
-    virtual void WaitForCreateWindow(InspectorPageAgent*, LocalFrame*) {}
   };
 
   enum ResourceType {
@@ -116,7 +115,6 @@ class CORE_EXPORT InspectorPageAgent final
       String* identifier) override;
   protocol::Response removeScriptToEvaluateOnNewDocument(
       const String& identifier) override;
-  protocol::Response setAutoAttachToCreatedPages(bool) override;
   protocol::Response setLifecycleEventsEnabled(bool) override;
   protocol::Response reload(Maybe<bool> bypass_cache,
                             Maybe<String> script_to_evaluate_on_load) override;
@@ -182,7 +180,6 @@ class CORE_EXPORT InspectorPageAgent final
   void Did(const probe::UpdateLayout&);
   void Will(const probe::RecalculateStyle&);
   void Did(const probe::RecalculateStyle&);
-  void WindowCreated(LocalFrame*);
   void WindowOpen(Document*,
                   const String&,
                   const AtomicString&,

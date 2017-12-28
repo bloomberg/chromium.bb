@@ -4566,12 +4566,6 @@ domain Page
       # Whether to block ads.
       boolean enabled
 
-  # Controls whether browser will open a new inspector window for connected pages.
-  experimental command setAutoAttachToCreatedPages
-    parameters
-      # If true, browser will open a new inspector window for every page created from this one.
-      boolean autoAttach
-
   # Overrides the values of device screen dimensions (window.screen.width, window.screen.height,
   # window.innerWidth, window.innerHeight, and "device-width"/"device-height"-related CSS media
   # query results).

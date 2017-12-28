@@ -1798,7 +1798,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, AutoAttachToWindowOpen) {
   OpenDevToolsWindow(kWindowOpenTestPage, false);
-  DispatchOnTestSuite(window_, "enableAutoAttachToCreatedPages");
+  DevToolsWindowTesting::Get(window_)->SetOpenNewWindowForPopups(true);
   DevToolsWindowCreationObserver observer;
   ASSERT_TRUE(content::ExecuteScript(
       GetInspectedTab(), "window.open('window_open.html', '_blank');"));

@@ -48,6 +48,8 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -338,6 +340,43 @@ DevToolsWindow::ObserverWithAccessor::ObserverWithAccessor(
 DevToolsWindow::ObserverWithAccessor::~ObserverWithAccessor() {
 }
 
+// DevToolsWindow::Throttle ------------------------------------------
+
+class DevToolsWindow::Throttle : public content::NavigationThrottle {
+ public:
+  Throttle(content::NavigationHandle* navigation_handle,
+           DevToolsWindow* devtools_window)
+      : content::NavigationThrottle(navigation_handle),
+        devtools_window_(devtools_window) {
+    devtools_window_->throttle_ = this;
+  }
+
+  ~Throttle() override {
+    if (devtools_window_)
+      devtools_window_->throttle_ = nullptr;
+  }
+
+  // content::NavigationThrottle implementation:
+  NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
+    return DEFER;
+  }
+
+  const char* GetNameForLogging() override { return "DevToolsWindowThrottle"; }
+
+  void ResumeThrottle() {
+    if (devtools_window_) {
+      devtools_window_->throttle_ = nullptr;
+      devtools_window_ = nullptr;
+    }
+    Resume();
+  }
+
+ private:
+  DevToolsWindow* devtools_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(Throttle);
+};
+
 // DevToolsWindow -------------------------------------------------------------
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
@@ -360,6 +399,9 @@ void DevToolsWindow::RemoveCreationCallbackForTest(
 }
 
 DevToolsWindow::~DevToolsWindow() {
+  if (throttle_)
+    throttle_->ResumeThrottle();
+
   life_stage_ = kClosing;
 
   UpdateBrowserWindow();
@@ -664,6 +706,31 @@ void DevToolsWindow::InspectElement(
     if (should_measure_time)
       window->inspect_element_start_time_ = start_time;
   }
+}
+
+// static
+std::unique_ptr<content::NavigationThrottle>
+DevToolsWindow::MaybeCreateNavigationThrottle(
+    content::NavigationHandle* handle) {
+  WebContents* web_contents = handle->GetWebContents();
+  if (!web_contents || !web_contents->HasOriginalOpener() ||
+      web_contents->GetController().GetLastCommittedEntry()) {
+    return nullptr;
+  }
+
+  WebContents* opener = WebContents::FromRenderFrameHost(
+      handle->GetWebContents()->GetOriginalOpener());
+  DevToolsWindow* window = GetInstanceForInspectedWebContents(opener);
+  if (!window || !window->open_new_window_for_popups_ ||
+      GetInstanceForInspectedWebContents(web_contents))
+    return nullptr;
+
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  window = GetInstanceForInspectedWebContents(web_contents);
+  if (!window)
+    return nullptr;
+
+  return std::make_unique<Throttle>(handle, window);
 }
 
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {
@@ -1361,6 +1428,15 @@ void DevToolsWindow::ReadyForTest() {
     ready_for_test_callback_.Run();
     ready_for_test_callback_ = base::Closure();
   }
+}
+
+void DevToolsWindow::ConnectionReady() {
+  if (throttle_)
+    throttle_->ResumeThrottle();
+}
+
+void DevToolsWindow::SetOpenNewWindowForPopups(bool value) {
+  open_new_window_for_popups_ = value;
 }
 
 void DevToolsWindow::CreateDevToolsBrowser() {

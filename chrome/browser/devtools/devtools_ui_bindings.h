@@ -64,6 +64,8 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual void InspectedContentsClosing() = 0;
     virtual void OnLoadCompleted() = 0;
     virtual void ReadyForTest() = 0;
+    virtual void ConnectionReady() = 0;
+    virtual void SetOpenNewWindowForPopups(bool value) = 0;
     virtual InfoBarService* GetInfoBarService() = 0;
     virtual void RenderProcessGone(bool crashed) = 0;
     virtual void ShowCertificateViewer(const std::string& cert_chain) = 0;
@@ -157,6 +159,8 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void ClearPreferences() override;
   void Reattach(const DispatchCallback& callback) override;
   void ReadyForTest() override;
+  void ConnectionReady() override;
+  void SetOpenNewWindowForPopups(bool value) override;
   void RegisterExtensionsAPI(const std::string& origin,
                              const std::string& script) override;
 

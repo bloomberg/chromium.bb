@@ -311,6 +311,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -3510,6 +3511,13 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle);
   if (https_upgrade_timing_throttle)
     throttles.push_back(std::move(https_upgrade_timing_throttle));
+
+#if !defined(OS_ANDROID)
+  std::unique_ptr<content::NavigationThrottle> devtools_throttle =
+      DevToolsWindow::MaybeCreateNavigationThrottle(handle);
+  if (devtools_throttle)
+    throttles.push_back(std::move(devtools_throttle));
+#endif
 
   return throttles;
 }

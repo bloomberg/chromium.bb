@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class WebLocalFrame;
 class WebString;
 
 class WebDevToolsAgentClient {
@@ -58,10 +57,6 @@ class WebDevToolsAgentClient {
   // Resume the inspected renderer that is waiting for DevTools front-end to
   // initialize its state.
   virtual void ResumeStartup() {}
-
-  virtual bool RequestDevToolsForFrame(int session_id, WebLocalFrame*) {
-    return false;
-  }
 
  protected:
   ~WebDevToolsAgentClient() {}

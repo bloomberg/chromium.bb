@@ -122,20 +122,10 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       instance_->QuitNow();
   }
 
-  static void PauseForCreateWindow(WebLocalFrameImpl* frame) {
-    if (instance_)
-      instance_->RunForCreateWindow(frame);
-  }
-
-  static bool ResumeForCreateWindow() {
-    return instance_ ? instance_->QuitForCreateWindow() : false;
-  }
-
  private:
   ClientMessageLoopAdapter(
       std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop)
       : running_for_debug_break_(false),
-        running_for_create_window_(false),
         message_loop_(std::move(message_loop)) {
     DCHECK(message_loop_.get());
   }
@@ -145,17 +135,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       return;
 
     running_for_debug_break_ = true;
-    if (!running_for_create_window_)
-      RunLoop(WebLocalFrameImpl::FromFrame(frame));
-  }
-
-  void RunForCreateWindow(WebLocalFrameImpl* frame) {
-    if (running_for_create_window_)
-      return;
-
-    running_for_create_window_ = true;
-    if (!running_for_debug_break_)
-      RunLoop(frame);
+    RunLoop(WebLocalFrameImpl::FromFrame(frame));
   }
 
   void RunLoop(WebLocalFrameImpl* frame) {
@@ -184,26 +164,11 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   void QuitNow() override {
     if (running_for_debug_break_) {
       running_for_debug_break_ = false;
-      if (!running_for_create_window_)
-        message_loop_->QuitNow();
+      message_loop_->QuitNow();
     }
-  }
-
-  bool QuitForCreateWindow() {
-    if (running_for_create_window_) {
-      running_for_create_window_ = false;
-      if (!running_for_debug_break_)
-        message_loop_->QuitNow();
-      return true;
-    }
-    return false;
   }
 
   void RunIfWaitingForDebugger(LocalFrame* frame) override {
-    // If we've paused for createWindow, handle it ourselves.
-    if (QuitForCreateWindow())
-      return;
-    // Otherwise, pass to the client (embedded workers do it differently).
     WebDevToolsAgentImpl* agent =
         WebLocalFrameImpl::FromFrame(frame)->DevToolsAgentImpl();
     if (agent && agent->Client())
@@ -211,7 +176,6 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   }
 
   bool running_for_debug_break_;
-  bool running_for_create_window_;
   std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop_;
 
   static ClientMessageLoopAdapter* instance_;
@@ -527,10 +491,6 @@ void WebDevToolsAgentImpl::InspectElementAt(
   agent_it->value->Inspect(node);
 }
 
-void WebDevToolsAgentImpl::FailedToRequestDevTools(int session_id) {
-  ClientMessageLoopAdapter::ResumeForCreateWindow();
-}
-
 void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
                                                int call_id,
                                                const String& response,
@@ -547,21 +507,6 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {
   for (auto& it : overlay_agents_)
     it.value->PageLayoutInvalidated(resized);
-}
-
-void WebDevToolsAgentImpl::WaitForCreateWindow(InspectorPageAgent* page_agent,
-                                               LocalFrame* frame) {
-  int session_id = -1;
-  for (auto& it : page_agents_) {
-    if (it.value == page_agent)
-      session_id = it.key;
-  }
-  if (session_id == -1)
-    return;
-  if (client_ && client_->RequestDevToolsForFrame(
-                     session_id, WebLocalFrameImpl::FromFrame(frame))) {
-    ClientMessageLoopAdapter::PauseForCreateWindow(web_local_frame_impl_);
-  }
 }
 
 bool WebDevToolsAgentImpl::IsInspectorLayer(GraphicsLayer* layer) {

@@ -201,20 +201,4 @@ void DevToolsSession::DispatchProtocolMessage(
   }
 }
 
-void DevToolsSession::RequestNewWindow(int32_t frame_routing_id,
-                                       RequestNewWindowCallback callback) {
-  bool success = false;
-  RenderFrameHostImpl* frame_host =
-      process_
-          ? RenderFrameHostImpl::FromID(process_->GetID(), frame_routing_id)
-          : nullptr;
-  if (frame_host) {
-    scoped_refptr<DevToolsAgentHost> agent =
-        RenderFrameDevToolsAgentHost::GetOrCreateFor(
-            frame_host->frame_tree_node());
-    success = static_cast<DevToolsAgentHostImpl*>(agent.get())->Inspect();
-  }
-  std::move(callback).Run(success);
-}
-
 }  // namespace content

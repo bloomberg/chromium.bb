@@ -184,23 +184,6 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
       }
     }
 
-    void RequestNewWindow(int32_t frame_routing_id,
-                          RequestNewWindowCallback callback) override {
-      bool success = false;
-      RenderFrameHostImpl* frame_host =
-          owner_->host_->GetProcess()
-              ? RenderFrameHostImpl::FromID(
-                    owner_->host_->GetProcess()->GetID(), frame_routing_id)
-              : nullptr;
-      if (frame_host) {
-        scoped_refptr<DevToolsAgentHost> agent =
-            RenderFrameDevToolsAgentHost::GetOrCreateFor(
-                frame_host->frame_tree_node());
-        success = static_cast<DevToolsAgentHostImpl*>(agent.get())->Inspect();
-      }
-      std::move(callback).Run(success);
-    }
-
     void SendMessageFromProcessor(const std::string& message) {
       int id = chunk_processor_.last_call_id();
       Message sent_message = std::move(sent_messages_[id]);

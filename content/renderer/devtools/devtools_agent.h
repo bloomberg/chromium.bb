@@ -58,8 +58,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                            int call_id,
                            const blink::WebString& message,
                            const blink::WebString& state_cookie) override;
-  bool RequestDevToolsForFrame(int session_id,
-                               blink::WebLocalFrame* frame) override;
 
   void DetachSession(int session_id);
   blink::WebDevToolsAgent* GetWebAgent();
@@ -68,7 +66,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                                   const std::string& method,
                                   const std::string& message);
   void InspectElement(int session_id, const gfx::Point& point);
-  void OnRequestNewWindowCompleted(int session_id, bool success);
   void SendChunkedProtocolMessage(int session_id,
                                   int call_id,
                                   std::string message,
