@@ -8,8 +8,43 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
+import os
+
 TODO_PATTERN = r'TO[D]O\(([^\)]*)\)'
 CRBUG_PATTERN = r'crbug\.com/\d+$'
+ARC_COMPILE_GUARD = '''\
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+'''
+
+def _CheckARCCompilationGuard(input_api, output_api):
+  """ Checks whether new objc files have proper ARC compile guards."""
+  files_without_headers = []
+  for f in input_api.AffectedFiles():
+    if f.Action() != 'A':
+      continue
+
+    _, ext = os.path.splitext(f.LocalPath())
+    if ext not in ('.m', '.mm'):
+      continue
+
+    if ARC_COMPILE_GUARD not in f.NewContents():
+        files_without_headers.append(f.LocalPath())
+
+  if not files_without_headers:
+    return []
+
+  plural_suffix = '' if len(files_without_headers) == 1 else 's'
+  error_message = '\n'.join([
+      'Found new Objective-C implementation file%(plural)s without compile'
+      ' guard%(plural)s. Please use the following compile guard'
+      ':' % {'plural': plural_suffix},
+      ARC_COMPILE_GUARD,
+  ] + files_without_headers) + '\n'
+
+  return [output_api.PresubmitError(error_message)]
+
 
 def _CheckBugInToDo(input_api, output_api):
   """ Checks whether TODOs in ios code are identified by a bug number."""
@@ -40,6 +75,7 @@ def _CheckBugInToDo(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CheckBugInToDo(input_api, output_api))
+  results.extend(_CheckARCCompilationGuard(input_api, output_api))
   return results
 
 def PostUploadHook(cl, change, output_api):
