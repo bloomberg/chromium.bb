@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -89,7 +88,7 @@ class IOSWebViewSigninClient : public SigninClient,
   scoped_refptr<TokenWebData> token_web_data_;
 
   // The CWVAuthenticationController associated with this service.
-  base::WeakNSObject<CWVAuthenticationController> authentication_controller_;
+  __weak CWVAuthenticationController* authentication_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSWebViewSigninClient);
 };
