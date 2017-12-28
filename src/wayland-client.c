@@ -236,7 +236,7 @@ wl_proxy_unref(struct wl_proxy *proxy)
 }
 
 static void
-decrease_closure_args_refcount(struct wl_closure *closure)
+validate_closure_objects(struct wl_closure *closure)
 {
 	const char *signature;
 	struct argument_details arg;
@@ -251,16 +251,44 @@ decrease_closure_args_refcount(struct wl_closure *closure)
 		case 'n':
 		case 'o':
 			proxy = (struct wl_proxy *) closure->args[i].o;
-			if (proxy) {
-				if (proxy->flags & WL_PROXY_FLAG_DESTROYED)
-					closure->args[i].o = NULL;
-				wl_proxy_unref(proxy);
-			}
+			if (proxy && proxy->flags & WL_PROXY_FLAG_DESTROYED)
+				closure->args[i].o = NULL;
 			break;
 		default:
 			break;
 		}
 	}
+}
+
+/* Destroys a closure which was demarshaled for dispatch; unrefs all the
+ * proxies in its arguments, as well as its own proxy, and destroys the
+ * closure itself. */
+static void
+destroy_queued_closure(struct wl_closure *closure)
+{
+	const char *signature;
+	struct argument_details arg;
+	struct wl_proxy *proxy;
+	int i, count;
+
+	signature = closure->message->signature;
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
+		case 'n':
+		case 'o':
+			proxy = (struct wl_proxy *) closure->args[i].o;
+			if (proxy)
+				wl_proxy_unref(proxy);
+			break;
+		default:
+			break;
+		}
+	}
+
+	wl_proxy_unref(closure->proxy);
+	wl_closure_destroy(closure);
 }
 
 static void
@@ -272,9 +300,7 @@ wl_event_queue_release(struct wl_event_queue *queue)
 		closure = container_of(queue->event_list.next,
 				       struct wl_closure, link);
 		wl_list_remove(&closure->link);
-		decrease_closure_args_refcount(closure);
-		wl_proxy_unref(closure->proxy);
-		wl_closure_destroy(closure);
+		destroy_queued_closure(closure);
 	}
 }
 
@@ -1232,6 +1258,8 @@ increase_closure_args_refcount(struct wl_closure *closure)
 			break;
 		}
 	}
+
+	closure->proxy->refcount++;
 }
 
 static int
@@ -1273,9 +1301,8 @@ queue_event(struct wl_display *display, int len)
 		return -1;
 	}
 
-	increase_closure_args_refcount(closure);
-	proxy->refcount++;
 	closure->proxy = proxy;
+	increase_closure_args_refcount(closure);
 
 	if (proxy == &display->proxy)
 		queue = &display->display_queue;
@@ -1302,13 +1329,11 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 
 	/* Verify that the receiving object is still valid by checking if has
 	 * been destroyed by the application. */
-
-	decrease_closure_args_refcount(closure);
+	validate_closure_objects(closure);
 	proxy = closure->proxy;
 	proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
-	wl_proxy_unref(proxy);
 	if (proxy_destroyed) {
-		wl_closure_destroy(closure);
+		destroy_queued_closure(closure);
 		return;
 	}
 
@@ -1328,9 +1353,9 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 				  &proxy->object, opcode, proxy->user_data);
 	}
 
-	wl_closure_destroy(closure);
-
 	pthread_mutex_lock(&display->mutex);
+
+	destroy_queued_closure(closure);
 }
 
 static int
