@@ -411,7 +411,7 @@ proxy_destroy(struct wl_proxy *proxy)
 		wl_map_insert_at(&proxy->display->objects,
 				 WL_MAP_ENTRY_ZOMBIE,
 				 proxy->object.id,
-				 WL_ZOMBIE_OBJECT);
+				 NULL);
 	} else {
 		wl_map_insert_at(&proxy->display->objects, 0,
 				 proxy->object.id, NULL);

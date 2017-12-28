@@ -153,8 +153,6 @@ wl_array_copy(struct wl_array *array, struct wl_array *source)
 
 /** \cond */
 
-struct wl_object global_zombie_object;
-
 int
 wl_interface_equal(const struct wl_interface *a, const struct wl_interface *b)
 {

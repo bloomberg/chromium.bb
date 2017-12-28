@@ -57,9 +57,6 @@ struct wl_object {
 	uint32_t id;
 };
 
-extern struct wl_object global_zombie_object;
-#define WL_ZOMBIE_OBJECT ((void*)&global_zombie_object)
-
 int
 wl_interface_equal(const struct wl_interface *iface1,
 		   const struct wl_interface *iface2);
