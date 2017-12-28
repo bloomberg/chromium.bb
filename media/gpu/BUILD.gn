@@ -16,7 +16,6 @@ buildflag_header("features") {
     "USE_VAAPI=$use_vaapi",
     "USE_V4L2_CODEC=$use_v4l2_codec",
     "USE_LIBV4L2=$use_v4lplugin",
-    "ENABLE_MEDIA_CODEC_VIDEO_DECODER=$enable_media_codec_video_decoder",
     "ENABLE_D3D11_VIDEO_DECODER=$enable_d3d11_video_decoder",
   ]
 }
@@ -207,12 +206,20 @@ component("gpu") {
       "android/avda_state_provider.h",
       "android/avda_surface_bundle.cc",
       "android/avda_surface_bundle.h",
+      "android/codec_image.cc",
+      "android/codec_image.h",
+      "android/codec_image_group.cc",
+      "android/codec_image_group.h",
+      "android/codec_wrapper.cc",
+      "android/codec_wrapper.h",
       "android/content_video_view_overlay.cc",
       "android/content_video_view_overlay.h",
       "android/content_video_view_overlay_allocator.cc",
       "android/content_video_view_overlay_allocator.h",
       "android/device_info.cc",
       "android/device_info.h",
+      "android/media_codec_video_decoder.cc",
+      "android/media_codec_video_decoder.h",
       "android/promotion_hint_aggregator.h",
       "android/promotion_hint_aggregator_impl.cc",
       "android/promotion_hint_aggregator_impl.h",
@@ -220,8 +227,12 @@ component("gpu") {
       "android/surface_chooser_helper.h",
       "android/surface_texture_gl_owner.cc",
       "android/surface_texture_gl_owner.h",
+      "android/video_frame_factory.h",
+      "android/video_frame_factory_impl.cc",
+      "android/video_frame_factory_impl.h",
     ]
     deps += [
+      # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
       "//media/mojo:features",
       "//services/service_manager/public/cpp:cpp",
     ]
@@ -232,26 +243,10 @@ component("gpu") {
         "android/android_video_encode_accelerator.h",
       ]
     }
-    if (enable_media_codec_video_decoder) {
-      assert(mojo_media_host == "gpu", "MCVD requires the CDM")
-      sources += [
-        "android/codec_image.cc",
-        "android/codec_image.h",
-        "android/codec_image_group.cc",
-        "android/codec_image_group.h",
-        "android/codec_wrapper.cc",
-        "android/codec_wrapper.h",
-        "android/media_codec_video_decoder.cc",
-        "android/media_codec_video_decoder.h",
-        "android/video_frame_factory.h",
-        "android/video_frame_factory_impl.cc",
-        "android/video_frame_factory_impl.h",
-      ]
-    }
 
-    # TODO(xhwang): This is needed for AVDA to access the CDM directly.
-    # Remove this dependency after VDAs are also running as part of the mojo
-    # media service. See http://crbug.com/522298
+    # TODO(crbug.com/789435): This is needed for AVDA to access the CDM
+    # directly.  Remove this dependency after VDAs are also running as part of
+    # the mojo media service. See http://crbug.com/522298
     if (mojo_media_host == "gpu") {
       deps += [ "//media/cdm:cdm_manager" ]
     }
@@ -488,9 +483,13 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/android_video_decode_accelerator_unittest.cc",
       "android/android_video_surface_chooser_impl_unittest.cc",
       "android/avda_codec_allocator_unittest.cc",
+      "android/codec_image_group_unittest.cc",
+      "android/codec_image_unittest.cc",
+      "android/codec_wrapper_unittest.cc",
       "android/content_video_view_overlay_allocator_unittest.cc",
       "android/fake_codec_allocator.cc",
       "android/fake_codec_allocator.h",
+      "android/media_codec_video_decoder_unittest.cc",
       "android/mock_android_video_surface_chooser.cc",
       "android/mock_android_video_surface_chooser.h",
       "android/mock_device_info.cc",
@@ -502,16 +501,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/promotion_hint_aggregator_impl_unittest.cc",
       "android/surface_chooser_helper_unittest.cc",
       "android/surface_texture_gl_owner_unittest.cc",
+      "android/video_frame_factory_impl_unittest.cc",
     ]
-    if (enable_media_codec_video_decoder) {
-      sources += [
-        "android/codec_image_group_unittest.cc",
-        "android/codec_image_unittest.cc",
-        "android/codec_wrapper_unittest.cc",
-        "android/media_codec_video_decoder_unittest.cc",
-        "android/video_frame_factory_impl_unittest.cc",
-      ]
-    }
     deps = [
       ":gpu",
       "//base/test:test_support",

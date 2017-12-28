@@ -57,7 +57,9 @@ class CodecWrapperTest : public testing::Test {
     return codec_buffer;
   }
 
+  // So that we can get the thread's task runner.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
   scoped_refptr<AVDASurfaceBundle> surface_bundle_;

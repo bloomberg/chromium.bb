@@ -4,8 +4,11 @@
 
 #include "media/mojo/clients/mojo_decoder_factory.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/clients/mojo_audio_decoder.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/features.h"
@@ -42,6 +45,9 @@ void MojoDecoderFactory::CreateVideoDecoders(
     const RequestOverlayInfoCB& request_overlay_info_cb,
     std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) {
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
+  // If MojoVideoDecoder is not enabled, then return without adding anything.
+  if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder))
+    return;
   mojom::VideoDecoderPtr video_decoder_ptr;
   interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder_ptr));
 

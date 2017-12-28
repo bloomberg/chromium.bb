@@ -64,8 +64,7 @@ std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
 }
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER) || \
-    BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
+#if defined(OS_ANDROID) || BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
 gpu::CommandBufferStub* GetCommandBufferStub(
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     base::UnguessableToken channel_token,
@@ -80,7 +79,7 @@ gpu::CommandBufferStub* GetCommandBufferStub(
 
   return channel->LookupCommandBuffer(route_id);
 }
-#endif  // BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER || D3D11)
+#endif  // OS_ANDROID || BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_D3D11)
 
 }  // namespace
 
@@ -112,7 +111,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
     RequestOverlayInfoCB request_overlay_info_cb) {
-#if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
+#if defined(OS_ANDROID)
   auto get_stub_cb =
       base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id);
