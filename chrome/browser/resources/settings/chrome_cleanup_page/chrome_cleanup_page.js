@@ -279,7 +279,7 @@ Polymer({
   /**
    * If true, the scan offered view is rendered on state idle, regardless of
    * the idle reason received from the cleaner controller. The goal is to
-   * ignore previous interactions (such as completed cleanups) perfomed on
+   * ignore previous interactions (such as completed cleanups) performed on
    * other tabs or if this tab is reloaded.
    * Set to false whenever there is a transition to a non-idle state while the
    * current tab is open.
