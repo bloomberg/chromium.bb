@@ -10393,8 +10393,11 @@ PALETTE_EXIT:
 
       // Compare the use of skip_mode with the best intra/inter mode obtained.
       const int64_t best_intra_inter_mode_cost =
-          RDCOST(x->rdmult, rd_cost->rate + x->skip_mode_cost[skip_mode_ctx][0],
-                 rd_cost->dist);
+          (rd_cost->dist < INT64_MAX && rd_cost->rate < INT32_MAX)
+              ? RDCOST(x->rdmult,
+                       rd_cost->rate + x->skip_mode_cost[skip_mode_ctx][0],
+                       rd_cost->dist)
+              : INT64_MAX;
 
       if (x->skip_mode_rdcost <= best_intra_inter_mode_cost)
         best_mbmode.skip_mode = 1;
