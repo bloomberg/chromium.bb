@@ -20,6 +20,10 @@
 - (void)showLanguageSelectorWithContext:(LanguageSelectionContext*)context
                                delegate:(id<LanguageSelectionDelegate>)delegate;
 
+// Tells the handler to stop displaying the language selector, telling the
+// delegate no selection was made.
+- (void)dismissLanguageSelector;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_TRANSLATE_LANGUAGE_SELECTION_HANDLER_H_
