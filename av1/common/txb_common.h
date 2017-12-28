@@ -550,81 +550,88 @@ static INLINE void set_dc_sign(int *cul_level, tran_low_t v) {
     *cul_level += 2 << COEFF_CONTEXT_BITS;
 }
 
-static INLINE int get_dc_sign_ctx(int dc_sign) {
-  int dc_sign_ctx = 0;
-  if (dc_sign < 0)
-    dc_sign_ctx = 1;
-  else if (dc_sign > 0)
-    dc_sign_ctx = 2;
-
-  return dc_sign_ctx;
-}
-
-static INLINE void get_txb_ctx(BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                               int plane, const ENTROPY_CONTEXT *a,
-                               const ENTROPY_CONTEXT *l, TXB_CTX *txb_ctx) {
+static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
+                               const TX_SIZE tx_size, const int plane,
+                               const ENTROPY_CONTEXT *const a,
+                               const ENTROPY_CONTEXT *const l,
+                               TXB_CTX *const txb_ctx) {
+#define MAX_TX_SIZE_UNIT 16
+  static const int8_t signs[3] = { 0, -1, 1 };
+  static const int8_t dc_sign_contexts[4 * MAX_TX_SIZE_UNIT + 1] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+  };
   const int txb_w_unit = tx_size_wide_unit[tx_size];
   const int txb_h_unit = tx_size_high_unit[tx_size];
-  int ctx_offset = (plane == 0) ? 0 : 7;
-
-  if (num_pels_log2_lookup[plane_bsize] >
-      num_pels_log2_lookup[txsize_to_bsize[tx_size]])
-    ctx_offset += 3;
-
   int dc_sign = 0;
-  for (int k = 0; k < txb_w_unit; ++k) {
-    int sign = ((uint8_t)a[k]) >> COEFF_CONTEXT_BITS;
-    if (sign == 1)
-      --dc_sign;
-    else if (sign == 2)
-      ++dc_sign;
-    else if (sign != 0)
-      assert(0);
-  }
+  int k = 0;
 
-  for (int k = 0; k < txb_h_unit; ++k) {
-    int sign = ((uint8_t)l[k]) >> COEFF_CONTEXT_BITS;
-    if (sign == 1)
-      --dc_sign;
-    else if (sign == 2)
-      ++dc_sign;
-    else if (sign != 0)
-      assert(0);
-  }
+  do {
+    const unsigned int sign = ((uint8_t)a[k]) >> COEFF_CONTEXT_BITS;
+    assert(sign <= 2);
+    dc_sign += signs[sign];
+  } while (++k < txb_w_unit);
 
-  txb_ctx->dc_sign_ctx = get_dc_sign_ctx(dc_sign);
+  k = 0;
+  do {
+    const unsigned int sign = ((uint8_t)l[k]) >> COEFF_CONTEXT_BITS;
+    assert(sign <= 2);
+    dc_sign += signs[sign];
+  } while (++k < txb_h_unit);
+
+  txb_ctx->dc_sign_ctx = dc_sign_contexts[dc_sign + 2 * MAX_TX_SIZE_UNIT];
 
   if (plane == 0) {
-    int top = 0;
-    int left = 0;
-
-    for (int k = 0; k < txb_w_unit; ++k) {
-      top = AOMMAX(top, ((uint8_t)a[k] & COEFF_CONTEXT_MASK));
-    }
-
-    for (int k = 0; k < txb_h_unit; ++k) {
-      left = AOMMAX(left, ((uint8_t)l[k] & COEFF_CONTEXT_MASK));
-    }
-
-    top = AOMMIN(top, 255);
-    left = AOMMIN(left, 255);
-
-    if (plane_bsize == txsize_to_bsize[tx_size])
+    if (plane_bsize == txsize_to_bsize[tx_size]) {
       txb_ctx->txb_skip_ctx = 0;
-    else if (top == 0 && left == 0)
-      txb_ctx->txb_skip_ctx = 1;
-    else if (top == 0 || left == 0)
-      txb_ctx->txb_skip_ctx = 2 + (AOMMAX(top, left) > 3);
-    else if (AOMMAX(top, left) <= 3)
-      txb_ctx->txb_skip_ctx = 4;
-    else if (AOMMIN(top, left) <= 3)
-      txb_ctx->txb_skip_ctx = 5;
-    else
-      txb_ctx->txb_skip_ctx = 6;
+    } else {
+      static const uint8_t skip_contexts[5][5] = { { 1, 2, 2, 2, 3 },
+                                                   { 1, 4, 4, 4, 5 },
+                                                   { 1, 4, 4, 4, 5 },
+                                                   { 1, 4, 4, 4, 5 },
+                                                   { 1, 4, 4, 4, 6 } };
+      int top = 0;
+      int left = 0;
+
+      k = 0;
+      do {
+        top |= a[k];
+      } while (++k < txb_w_unit);
+      top &= COEFF_CONTEXT_MASK;
+
+      k = 0;
+      do {
+        left |= l[k];
+      } while (++k < txb_h_unit);
+      left &= COEFF_CONTEXT_MASK;
+      const int max = AOMMIN(top | left, 4);
+      const int min = AOMMIN(AOMMIN(top, left), 4);
+
+#if 0
+      // This is the algorithm to generate table skip_contexts[].
+      if (!max)
+        txb_ctx->txb_skip_ctx = 1;
+      else if (!min)
+        txb_ctx->txb_skip_ctx = 2 + (max > 3);
+      else if (max <= 3)
+        txb_ctx->txb_skip_ctx = 4;
+      else if (min <= 3)
+        txb_ctx->txb_skip_ctx = 5;
+      else
+        txb_ctx->txb_skip_ctx = 6;
+#endif
+      txb_ctx->txb_skip_ctx = skip_contexts[min][max];
+    }
   } else {
-    int ctx_base = get_entropy_context(tx_size, a, l);
-    txb_ctx->txb_skip_ctx = ctx_offset + ctx_base;
+    const int ctx_base = get_entropy_context(tx_size, a, l);
+    const int ctx_offset = (num_pels_log2_lookup[plane_bsize] >
+                            num_pels_log2_lookup[txsize_to_bsize[tx_size]])
+                               ? 10
+                               : 7;
+    txb_ctx->txb_skip_ctx = ctx_base + ctx_offset;
   }
+#undef MAX_TX_SIZE_UNIT
 }
 
 void av1_init_txb_probs(FRAME_CONTEXT *fc);
