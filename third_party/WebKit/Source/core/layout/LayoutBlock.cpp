@@ -479,6 +479,7 @@ void LayoutBlock::AddOverflowFromChildren() {
 
 DISABLE_CFI_PERF
 void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge, bool) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   overflow_.reset();
 
   AddOverflowFromChildren();
@@ -508,12 +509,8 @@ void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge, bool) {
   AddVisualEffectOverflow();
   AddVisualOverflowFromTheme();
 
-  // An enclosing composited layer will need to update its bounds if we now
-  // overflow it.
-  PaintLayer* layer = EnclosingLayer();
-  if (!NeedsLayout() && layer->HasCompositedLayerMapping() &&
-      !layer->VisualRect().Contains(VisualOverflowRect()))
-    layer->SetNeedsCompositingInputsUpdate();
+  if (Layer() && VisualOverflowRect() != previous_visual_overflow_rect)
+    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 void LayoutBlock::AddOverflowFromBlockChildren() {
