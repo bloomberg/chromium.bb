@@ -22,9 +22,8 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 }
 
 void Shell::PlatformExit() {
-  CHECK(platform_);
   delete platform_;
-  platform_ = NULL;
+  platform_ = nullptr;
 }
 
 void Shell::PlatformCleanUp() {
