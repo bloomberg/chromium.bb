@@ -116,11 +116,9 @@ class NetworkHandler : public DevToolsDomainHandler,
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback)
       override;
 
-  void NavigationPreloadRequestSent(int worker_version_id,
-                                    const std::string& request_id,
+  void NavigationPreloadRequestSent(const std::string& request_id,
                                     const ResourceRequest& request);
-  void NavigationPreloadResponseReceived(int worker_version_id,
-                                         const std::string& request_id,
+  void NavigationPreloadResponseReceived(const std::string& request_id,
                                          const GURL& url,
                                          const ResourceResponseHead& head);
   void NavigationPreloadCompleted(

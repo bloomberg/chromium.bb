@@ -92,19 +92,13 @@ class DelegatingURLLoader final : public mojom::URLLoader {
   DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoader);
 };
 
-ServiceWorkerDevToolsAgentHost* GetAgentHost(
-    const std::pair<int, int>& worker_id) {
-  return ServiceWorkerDevToolsManager::GetInstance()
-      ->GetDevToolsAgentHostForWorker(worker_id.first, worker_id.second);
-}
-
 void NotifyNavigationPreloadRequestSentOnUI(
     const ResourceRequest& request,
     const std::pair<int, int>& worker_id,
     const std::string& request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (ServiceWorkerDevToolsAgentHost* agent_host = GetAgentHost(worker_id))
-    agent_host->NavigationPreloadRequestSent(request_id, request);
+  ServiceWorkerDevToolsManager::GetInstance()->NavigationPreloadRequestSent(
+      worker_id.first, worker_id.second, request_id, request);
 }
 
 void NotifyNavigationPreloadResponseReceivedOnUI(
@@ -113,8 +107,9 @@ void NotifyNavigationPreloadResponseReceivedOnUI(
     const std::pair<int, int>& worker_id,
     const std::string& request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (ServiceWorkerDevToolsAgentHost* agent_host = GetAgentHost(worker_id))
-    agent_host->NavigationPreloadResponseReceived(request_id, url, head);
+  ServiceWorkerDevToolsManager::GetInstance()
+      ->NavigationPreloadResponseReceived(worker_id.first, worker_id.second,
+                                          request_id, url, head);
 }
 
 void NotifyNavigationPreloadCompletedOnUI(
@@ -122,8 +117,8 @@ void NotifyNavigationPreloadCompletedOnUI(
     const std::pair<int, int>& worker_id,
     const std::string& request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (ServiceWorkerDevToolsAgentHost* agent_host = GetAgentHost(worker_id))
-    agent_host->NavigationPreloadCompleted(request_id, status);
+  ServiceWorkerDevToolsManager::GetInstance()->NavigationPreloadCompleted(
+      worker_id.first, worker_id.second, request_id, status);
 }
 
 // DelegatingURLLoaderClient is the URLLoaderClient for the navigation preload
