@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * 'settings-reset-profile-banner' is the banner shown for propmting the user to
+ * 'settings-reset-profile-banner' is the banner shown for prompting the user to
  * clear profile settings.
  */
 Polymer({

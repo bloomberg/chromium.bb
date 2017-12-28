@@ -17,7 +17,7 @@ Polymer({
   },
 
   /**
-   * Tap handler for the "OK" buton.
+   * Tap handler for the "OK" button.
    * @private
    */
   onOkTap_: function() {

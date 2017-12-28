@@ -15,7 +15,7 @@
  */
 
 /**
- * Possible values of the proximity threshould displayed to the user.
+ * Possible values of the proximity threshold displayed to the user.
  * This should be kept in sync with the enum defined here:
  * components/proximity_auth/proximity_monitor_impl.cc
  */

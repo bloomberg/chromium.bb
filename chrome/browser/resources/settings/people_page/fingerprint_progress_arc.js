@@ -5,13 +5,13 @@
 (function() {
 
 /**
- * The time in millseconds of the animation updates.
+ * The time in milliseconds of the animation updates.
  * @const {number}
  */
 var ANIMATE_TICKS_MS = 20;
 
 /**
- * The duration in millseconds of the animation of the progress circle when the
+ * The duration in milliseconds of the animation of the progress circle when the
  * user is touching the scanner.
  * @const {number}
  */
@@ -51,7 +51,7 @@ Polymer({
   is: 'settings-fingerprint-progress-arc',
 
   // Also put these values as member values so they can be overriden by tests
-  // and the tests do not need to be changed everytime the UI is.
+  // and the tests do not need to be changed every time the UI is.
   /** @private {number} */
   canvasCircleRadius_: CANVAS_CIRCLE_RADIUS,
   /** @private {number} */
