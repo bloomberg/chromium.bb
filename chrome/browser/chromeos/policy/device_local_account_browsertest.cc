@@ -727,6 +727,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   void WaitForSessionStart() {
     if (IsSessionStarted())
       return;
+    chromeos::WizardController::SkipPostLoginScreensForTesting();
     content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
                                           base::Bind(IsSessionStarted)).Wait();
   }

@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
@@ -293,6 +294,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(
       base::MakeUnique<TermsOfServiceScreenHandler>(core_handler_));
 
+  AddScreenHandler(base::MakeUnique<SyncConsentScreenHandler>());
+
   AddScreenHandler(base::MakeUnique<ArcTermsOfServiceScreenHandler>());
 
   AddScreenHandler(base::MakeUnique<UserImageScreenHandler>());
@@ -425,6 +428,10 @@ KioskEnableScreenView* OobeUI::GetKioskEnableScreenView() {
 
 TermsOfServiceScreenView* OobeUI::GetTermsOfServiceScreenView() {
   return GetView<TermsOfServiceScreenHandler>();
+}
+
+SyncConsentScreenView* OobeUI::GetSyncConsentScreenView() {
+  return GetView<SyncConsentScreenHandler>();
 }
 
 ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {

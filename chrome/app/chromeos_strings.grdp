@@ -1701,6 +1701,48 @@
   <message name="IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT" desc="Label on a button on the Title of Terms of Service OOBE screen to accept EULA and continue.">
     Accept and continue
   </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE" desc="The title of the dialog that welcomes the user on the first log in, and explains Chrome Sync and privacy options.">
+    You're signed in!
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME" desc="Title of the 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Chrome sync
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION" desc="The description of 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices.
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME" desc="Title of the personalize services section of the sync confirmation dialog that is displayed on the first user log in.">
+    Personalize Google services
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION" desc="The description of the personalize services section of the sync confirmation dialog that is displayed on the first user log in.">
+    Google may use your browsing history to personalize Search, ads, and other Google services.
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SETTINGS_LINK" desc="A note at the end of the sync confirmation dialog that is displayed on the first user log in, suggesting that preferences may be changed in Settings. It also contains link to Settings page.">
+    Control how this works in <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Settings<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SETTINGS_TITLE" desc="The title of the dialog that is shown on the first user log in, and allows user to select Chrome Sync options.">
+    Sync settings
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SETTINGS_SUBTITLE" desc="The sub-title of the dialog that is shown on the first user log in, and allows user to select Chrome Sync options. It explains to the user what options can be changed here.">
+    Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices. You can always change this later in your settings.
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SYNC_ALL_OPTION" desc="Label for toggle-button UI element that controls whether user settings are synced to user's Google Account.">
+    Sync everything
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SYNC_ALL_OPTION_ON" desc="A 'turned on' value for the 'Sync everything' toggle-button UI element that controls whether user settings are synced to user's Google Account.">
+    On
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SYNC_ALL_OPTION_OFF" desc="A 'turned off' value for the 'Sync everything' toggle-button UI element that controls whether user settings are synced to user's Google Account.">
+    Off
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_STATUS_SYNC_ALL_ON" desc="Status message on the Chrome Sync status dialog explaining 'sync is turned on' status.">
+    Personalization is on. You can change this at myaccount.google.com.
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_STATUS_SYNC_ALL_OFF" desc="Status message on the Chrome Sync status dialog explaining 'sync is turned off' status.">
+    Personalization is off. You can change this at myaccount.google.com.
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SAVE_AND_CONTINUE" desc="Label on the button of the Sync Settings dialog that closes the dialog and saves the changes.">
+    Save and continue
+  </message>
   <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
     The owner of this device has disabled new users from being added
   </message>

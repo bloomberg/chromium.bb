@@ -146,6 +146,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowEnableDebuggingScreen();
   void ShowKioskEnableScreen();
   void ShowTermsOfServiceScreen();
+  void ShowSyncConsentScreen();
   void ShowArcTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();

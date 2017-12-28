@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
+#include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
@@ -125,6 +126,7 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_OOBE_EULA,
     chromeos::OobeScreen::SCREEN_OOBE_ENROLLMENT,
     chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE,
+    chromeos::OobeScreen::SCREEN_SYNC_CONSENT,
     chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
     chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK};
 
@@ -405,6 +407,8 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_TERMS_OF_SERVICE) {
     return new TermsOfServiceScreen(this,
                                     oobe_ui_->GetTermsOfServiceScreenView());
+  } else if (screen == OobeScreen::SCREEN_SYNC_CONSENT) {
+    return new SyncConsentScreen(this, oobe_ui_->GetSyncConsentScreenView());
   } else if (screen == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE) {
     return new ArcTermsOfServiceScreen(
         this, oobe_ui_->GetArcTermsOfServiceScreenView());
@@ -559,17 +563,23 @@ void WizardController::ShowEnableDebuggingScreen() {
 void WizardController::ShowTermsOfServiceScreen() {
   // Only show the Terms of Service when logging into a public account and Terms
   // of Service have been specified through policy. In all other cases, advance
-  // to the ARC opt-in screen immediately.
+  // to the post-ToS part immediately.
   if (!user_manager::UserManager::Get()->IsLoggedInAsPublicAccount() ||
       !ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
           prefs::kTermsOfServiceURL)) {
-    ShowArcTermsOfServiceScreen();
+    OnTermsOfServiceAccepted();
     return;
   }
 
   VLOG(1) << "Showing Terms of Service screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE));
+}
+
+void WizardController::ShowSyncConsentScreen() {
+  VLOG(1) << "Showing Sync Consent screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SYNC_CONSENT);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
@@ -863,9 +873,7 @@ void WizardController::OnTermsOfServiceDeclined() {
 }
 
 void WizardController::OnTermsOfServiceAccepted() {
-  // If the user accepts the Terms of Service, advance to the PlayStore terms
-  // of serice.
-  ShowArcTermsOfServiceScreen();
+  ShowSyncConsentScreen();
 }
 
 void WizardController::OnArcTermsOfServiceSkipped() {
@@ -1154,6 +1162,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowEnrollmentScreen();
   } else if (screen == OobeScreen::SCREEN_TERMS_OF_SERVICE) {
     ShowTermsOfServiceScreen();
+  } else if (screen == OobeScreen::SCREEN_SYNC_CONSENT) {
+    ShowSyncConsentScreen();
   } else if (screen == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE) {
     ShowArcTermsOfServiceScreen();
   } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
@@ -1304,6 +1314,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::WAIT_FOR_CONTAINER_READY_ERROR:
       OnOobeFlowFinished();
+      break;
+    case ScreenExitCode::SYNC_CONSENT_FINISHED:
+      ShowArcTermsOfServiceScreen();
       break;
     default:
       NOTREACHED();
@@ -1484,6 +1497,20 @@ bool WizardController::IsOOBEStepToTrack(OobeScreen screen_id) {
 // static
 void WizardController::SkipPostLoginScreensForTesting() {
   skip_post_login_screens_ = true;
+  if (!default_controller_ || !default_controller_->current_screen())
+    return;
+
+  const OobeScreen current_screen_id =
+      default_controller_->current_screen()->screen_id();
+  if (current_screen_id == OobeScreen::SCREEN_TERMS_OF_SERVICE ||
+      current_screen_id == OobeScreen::SCREEN_SYNC_CONSENT ||
+      current_screen_id == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE ||
+      current_screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
+    default_controller_->OnOobeFlowFinished();
+  } else {
+    LOG(WARNING) << "SkipPostLoginScreensForTesting(): Ignore screen "
+                 << static_cast<int>(current_screen_id);
+  }
 }
 
 // static

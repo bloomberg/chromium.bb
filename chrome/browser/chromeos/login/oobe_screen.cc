@@ -54,6 +54,7 @@ const char* kScreenNames[] = {
     "login",                         // SCREEN_SPECIAL_LOGIN
     "oobe",                          // SCREEN_SPECIAL_OOBE
     "test:nowindow",                 // SCREEN_TEST_NO_WINDOW
+    "sync-consent",                  // SCREEN_SYNC_CONSENT
     "unknown",                       // SCREEN_UNKNOWN
 };
 

@@ -57,6 +57,8 @@ enum class OobeScreen : unsigned int {
   // Special test value that commands not to create any window yet.
   SCREEN_TEST_NO_WINDOW,
 
+  SCREEN_SYNC_CONSENT,
+
   SCREEN_UNKNOWN  // This must always be the last element.
 };
 
