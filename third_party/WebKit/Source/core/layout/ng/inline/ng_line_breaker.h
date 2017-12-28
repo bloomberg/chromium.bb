@@ -133,6 +133,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void SetCurrentStyle(const ComputedStyle&);
   bool IsFirstBreakOpportunity(unsigned, const NGLineInfo&) const;
+  static LineBreakState ToLineBreakState(const NGInlineItemResult&);
   LineBreakState ComputeIsBreakableAfter(NGInlineItemResult*) const;
 
   void MoveToNextOf(const NGInlineItem&);
