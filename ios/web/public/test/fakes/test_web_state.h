@@ -82,7 +82,6 @@ class TestWebState : public WebState {
   void DidChangeVisibleSecurityState() override {}
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
-  bool CanTakeSnapshot() const override;
   void TakeSnapshot(const SnapshotCallback& callback,
                     CGSize target_size) const override;
 

@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -272,7 +271,7 @@ const CGFloat kResizeFactor = 4;
         if (PagePlaceholderTabHelper::FromWebState(tab.webState)
                 ->will_add_placeholder_for_next_navigation() &&
             !ios::device_util::IsSingleCoreDevice()) {
-          [card setImage:[CRWWebController defaultSnapshotImage]];
+          [card setImage:[tab defaultSnapshotImage]];
           dispatch_async(priorityQueue, ^{
             UIImage* greyImage = [self smallGreyImage:image];
             dispatch_async(dispatch_get_main_queue(), ^{

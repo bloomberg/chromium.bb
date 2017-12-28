@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/ui/stack_view/page_animation_util.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -511,7 +510,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
         [view setImage:image];
       });
   if (!view.image)
-    [view setImage:[CRWWebController defaultSnapshotImage]];
+    [view setImage:[tab defaultSnapshotImage]];
   view.closeButtonSide = self.closeButtonSide;
 
   return view;

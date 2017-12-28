@@ -229,7 +229,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
       mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
-  bool CanTakeSnapshot() const override;
   void TakeSnapshot(const SnapshotCallback& callback,
                     CGSize target_size) const override;
   void AddObserver(WebStateObserver* observer) override;
