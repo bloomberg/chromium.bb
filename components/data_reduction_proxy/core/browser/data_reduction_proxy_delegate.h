@@ -72,11 +72,7 @@ class DataReductionProxyDelegate
   void SetTickClockForTesting(base::TickClock* tick_clock);
 
  protected:
-  // Protected so that these methods are accessible for testing.
-  void GetAlternativeProxy(const GURL& url,
-                           const net::ProxyServer& resolved_proxy_server,
-                           net::ProxyServer* alternative_proxy_server) const;
-
+  // Protected so that this method is accessible for testing.
   // net::ProxyDelegate implementation:
   void OnAlternativeProxyBroken(
       const net::ProxyServer& alternative_proxy_server) override;
@@ -101,6 +97,10 @@ class DataReductionProxyDelegate
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
+
+  void GetAlternativeProxy(const GURL& url,
+                           const net::ProxyServer& resolved_proxy_server,
+                           net::ProxyServer* alternative_proxy_server) const;
 
   const DataReductionProxyConfig* config_;
   const DataReductionProxyConfigurator* configurator_;
