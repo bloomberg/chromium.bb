@@ -11,52 +11,35 @@
 
 #include "test/warp_filter_test_util.h"
 
-using std::tr1::tuple;
 using std::tr1::make_tuple;
+using std::tr1::tuple;
 
 namespace libaom_test {
 
-namespace AV1WarpFilter {
-
-::testing::internal::ParamGenerator<WarpTestParam> BuildParams(
-    warp_affine_func filter) {
-  const WarpTestParam params[] = {
-    make_tuple(4, 4, 100, filter),   make_tuple(8, 8, 100, filter),
-    make_tuple(64, 64, 100, filter), make_tuple(4, 16, 100, filter),
-    make_tuple(32, 8, 100, filter),
-  };
-  return ::testing::ValuesIn(params);
-}
-
-AV1WarpFilterTest::~AV1WarpFilterTest() {}
-void AV1WarpFilterTest::SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
-
-void AV1WarpFilterTest::TearDown() { libaom_test::ClearSystemState(); }
-
-int32_t AV1WarpFilterTest::random_param(int bits) {
+int32_t random_warped_param(libaom_test::ACMRandom *rnd, int bits) {
   // 1 in 8 chance of generating zero (arbitrarily chosen)
-  if (((rnd_.Rand8()) & 7) == 0) return 0;
+  if (((rnd->Rand8()) & 7) == 0) return 0;
   // Otherwise, enerate uniform values in the range
   // [-(1 << bits), 1] U [1, 1<<bits]
-  int32_t v = 1 + (rnd_.Rand16() & ((1 << bits) - 1));
-  if ((rnd_.Rand8()) & 1) return -v;
+  int32_t v = 1 + (rnd->Rand16() & ((1 << bits) - 1));
+  if ((rnd->Rand8()) & 1) return -v;
   return v;
 }
 
-void AV1WarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
-                                       int16_t *beta, int16_t *gamma,
-                                       int16_t *delta) {
+void generate_warped_model(libaom_test::ACMRandom *rnd, int32_t *mat,
+                           int16_t *alpha, int16_t *beta, int16_t *gamma,
+                           int16_t *delta) {
   while (1) {
-    mat[0] = random_param(WARPEDMODEL_PREC_BITS + 6);
-    mat[1] = random_param(WARPEDMODEL_PREC_BITS + 6);
-    mat[2] = (random_param(WARPEDMODEL_PREC_BITS - 3)) +
+    mat[0] = random_warped_param(rnd, WARPEDMODEL_PREC_BITS + 6);
+    mat[1] = random_warped_param(rnd, WARPEDMODEL_PREC_BITS + 6);
+    mat[2] = (random_warped_param(rnd, WARPEDMODEL_PREC_BITS - 3)) +
              (1 << WARPEDMODEL_PREC_BITS);
-    mat[3] = random_param(WARPEDMODEL_PREC_BITS - 3);
+    mat[3] = random_warped_param(rnd, WARPEDMODEL_PREC_BITS - 3);
     // 50/50 chance of generating ROTZOOM vs. AFFINE models
-    if (rnd_.Rand8() & 1) {
+    if (rnd->Rand8() & 1) {
       // AFFINE
-      mat[4] = random_param(WARPEDMODEL_PREC_BITS - 3);
-      mat[5] = (random_param(WARPEDMODEL_PREC_BITS - 3)) +
+      mat[4] = random_warped_param(rnd, WARPEDMODEL_PREC_BITS - 3);
+      mat[5] = (random_warped_param(rnd, WARPEDMODEL_PREC_BITS - 3)) +
                (1 << WARPEDMODEL_PREC_BITS);
     } else {
       mat[4] = -mat[3];
@@ -94,6 +77,23 @@ void AV1WarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
   }
 }
 
+namespace AV1WarpFilter {
+
+::testing::internal::ParamGenerator<WarpTestParam> BuildParams(
+    warp_affine_func filter) {
+  const WarpTestParam params[] = {
+    make_tuple(4, 4, 50000, filter),  make_tuple(8, 8, 50000, filter),
+    make_tuple(64, 64, 1000, filter), make_tuple(4, 16, 20000, filter),
+    make_tuple(32, 8, 10000, filter),
+  };
+  return ::testing::ValuesIn(params);
+}
+
+AV1WarpFilterTest::~AV1WarpFilterTest() {}
+void AV1WarpFilterTest::SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
+
+void AV1WarpFilterTest::TearDown() { libaom_test::ClearSystemState(); }
+
 void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   const int w = 128, h = 128;
   const int border = 16;
@@ -128,7 +128,7 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
     const int use_no_round = rnd_.Rand8() & 1;
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
-        generate_model(mat, &alpha, &beta, &gamma, &delta);
+        generate_warped_model(&rnd_, mat, &alpha, &beta, &gamma, &delta);
 #if CONFIG_JNT_COMP
         for (int ii = 0; ii < 2; ++ii) {
           for (int jj = 0; jj < 5; ++jj) {
@@ -221,67 +221,6 @@ void AV1HighbdWarpFilterTest::SetUp() {
 
 void AV1HighbdWarpFilterTest::TearDown() { libaom_test::ClearSystemState(); }
 
-int32_t AV1HighbdWarpFilterTest::random_param(int bits) {
-  // 1 in 8 chance of generating zero (arbitrarily chosen)
-  if (((rnd_.Rand8()) & 7) == 0) return 0;
-  // Otherwise, enerate uniform values in the range
-  // [-(1 << bits), 1] U [1, 1<<bits]
-  int32_t v = 1 + (rnd_.Rand16() & ((1 << bits) - 1));
-  if ((rnd_.Rand8()) & 1) return -v;
-  return v;
-}
-
-void AV1HighbdWarpFilterTest::generate_model(int32_t *mat, int16_t *alpha,
-                                             int16_t *beta, int16_t *gamma,
-                                             int16_t *delta) {
-  while (1) {
-    mat[0] = random_param(WARPEDMODEL_PREC_BITS + 6);
-    mat[1] = random_param(WARPEDMODEL_PREC_BITS + 6);
-    mat[2] = (random_param(WARPEDMODEL_PREC_BITS - 3)) +
-             (1 << WARPEDMODEL_PREC_BITS);
-    mat[3] = random_param(WARPEDMODEL_PREC_BITS - 3);
-    // 50/50 chance of generating ROTZOOM vs. AFFINE models
-    if (rnd_.Rand8() & 1) {
-      // AFFINE
-      mat[4] = random_param(WARPEDMODEL_PREC_BITS - 3);
-      mat[5] = (random_param(WARPEDMODEL_PREC_BITS - 3)) +
-               (1 << WARPEDMODEL_PREC_BITS);
-    } else {
-      mat[4] = -mat[3];
-      mat[5] = mat[2];
-    }
-
-    // Calculate the derived parameters and check that they are suitable
-    // for the warp filter.
-    assert(mat[2] != 0);
-
-    *alpha = clamp(mat[2] - (1 << WARPEDMODEL_PREC_BITS), INT16_MIN, INT16_MAX);
-    *beta = clamp(mat[3], INT16_MIN, INT16_MAX);
-    *gamma = clamp(((int64_t)mat[4] * (1 << WARPEDMODEL_PREC_BITS)) / mat[2],
-                   INT16_MIN, INT16_MAX);
-    *delta =
-        clamp(mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-                  (1 << WARPEDMODEL_PREC_BITS),
-              INT16_MIN, INT16_MAX);
-
-    if ((4 * abs(*alpha) + 7 * abs(*beta) >= (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(*gamma) + 4 * abs(*delta) >= (1 << WARPEDMODEL_PREC_BITS)))
-      continue;
-
-    *alpha = ROUND_POWER_OF_TWO_SIGNED(*alpha, WARP_PARAM_REDUCE_BITS) *
-             (1 << WARP_PARAM_REDUCE_BITS);
-    *beta = ROUND_POWER_OF_TWO_SIGNED(*beta, WARP_PARAM_REDUCE_BITS) *
-            (1 << WARP_PARAM_REDUCE_BITS);
-    *gamma = ROUND_POWER_OF_TWO_SIGNED(*gamma, WARP_PARAM_REDUCE_BITS) *
-             (1 << WARP_PARAM_REDUCE_BITS);
-    *delta = ROUND_POWER_OF_TWO_SIGNED(*delta, WARP_PARAM_REDUCE_BITS) *
-             (1 << WARP_PARAM_REDUCE_BITS);
-
-    // We have a valid model, so finish
-    return;
-  }
-}
-
 void AV1HighbdWarpFilterTest::RunCheckOutput(
     highbd_warp_affine_func test_impl) {
   const int w = 128, h = 128;
@@ -319,7 +258,7 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
     const int use_no_round = rnd_.Rand8() & 1;
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
-        generate_model(mat, &alpha, &beta, &gamma, &delta);
+        generate_warped_model(&rnd_, mat, &alpha, &beta, &gamma, &delta);
 #if CONFIG_JNT_COMP
         for (int ii = 0; ii < 2; ++ii) {
           for (int jj = 0; jj < 5; ++jj) {
