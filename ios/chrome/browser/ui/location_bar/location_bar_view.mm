@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/location_bar_view.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_view.h"
 
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
