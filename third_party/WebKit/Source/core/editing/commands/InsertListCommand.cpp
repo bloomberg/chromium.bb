@@ -482,6 +482,8 @@ void InsertListCommand::UnlistifyParagraph(
     // will be moved.
     start = StartOfParagraph(original_start, kCanSkipOverEditingBoundary);
     end = EndOfParagraph(start, kCanSkipOverEditingBoundary);
+    // InsertListCommandTest.UnlistifyParagraphCrashOnRemoveStyle reaches here.
+    ABORT_EDITING_COMMAND_IF(start.DeepEquivalent() == end.DeepEquivalent());
     next_list_child = EnclosingListChild(
         NextPositionOf(end).DeepEquivalent().AnchorNode(), list_element);
     DCHECK_NE(next_list_child, list_child_node);
