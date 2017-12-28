@@ -48,4 +48,22 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
       << "The insert ordered list command should have succeeded";
   EXPECT_EQ("<ol><li>d</li></ol>", GetDocument().body()->InnerHTMLAsString());
 }
+
+// Refer https://crbug.com/794356
+TEST_F(InsertListCommandTest, UnlistifyParagraphCrashOnVisuallyEmptyParagraph) {
+  GetDocument().setDesignMode("on");
+  Selection().SetSelection(
+      SetSelectionTextToBody("^<dl>"
+                             "<textarea style='float:left;'></textarea>"
+                             "</dl>|"));
+  InsertListCommand* command = InsertListCommand::Create(
+      GetDocument(), InsertListCommand::kUnorderedList);
+  // Crash happens here.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ(
+      "<dl><ul>"
+      "|<textarea style=\"float:left;\"></textarea>"
+      "</ul></dl>",
+      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
 }
