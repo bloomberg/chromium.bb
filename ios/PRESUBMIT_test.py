@@ -8,12 +8,6 @@ import unittest
 
 import PRESUBMIT
 
-ARC_COMPILE_GUARD = '''\
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-'''
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import PRESUBMIT_test_mocks
 
@@ -22,7 +16,7 @@ class CheckARCCompilationGuardTest(unittest.TestCase):
 
   def testGoodImplementationFiles(self):
     """Test that .m and .mm files with a guard don't raise any errors."""
-    text = "foobar \n" + ARC_COMPILE_GUARD
+    text = "foobar \n" + PRESUBMIT.ARC_COMPILE_GUARD
     mock_input = PRESUBMIT_test_mocks.MockInputApi()
     mock_input.files = [
       PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.mm', text),
