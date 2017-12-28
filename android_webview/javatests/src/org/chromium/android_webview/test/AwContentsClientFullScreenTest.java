@@ -90,10 +90,13 @@ public class AwContentsClientFullScreenTest {
         mContentsClient.waitForCustomViewHidden();
     }
 
-    @Test
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
+    */
+    @Test
+    @DisabledTest(message = "crbug.com/618749")
     public void testFullscreenForNonVideoElementIsSupportedInSoftwareMode() throws Throwable {
         // Fullscreen for non-video elements is supported and works as expected. Note that
         // this test is the same as testOnShowAndHideCustomViewWithCallback_videoInsideDiv below.
