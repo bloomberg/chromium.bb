@@ -21,11 +21,11 @@
 #include "./av1_rtcd.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::input_base;
-using libaom_test::bd;
-using libaom_test::compute_avg_abs_error;
 using libaom_test::Fwd_Txfm2d_Func;
 using libaom_test::TYPE_TXFM;
+using libaom_test::bd;
+using libaom_test::compute_avg_abs_error;
+using libaom_test::input_base;
 
 using std::vector;
 

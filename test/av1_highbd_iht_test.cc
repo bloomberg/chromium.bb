@@ -22,8 +22,8 @@
 
 namespace {
 
-using std::tr1::tuple;
 using libaom_test::ACMRandom;
+using std::tr1::tuple;
 
 typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
                           TX_TYPE tx_type, int bd);

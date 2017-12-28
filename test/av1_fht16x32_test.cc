@@ -28,8 +28,8 @@ using libaom_test::ACMRandom;
 namespace {
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                         const TxfmParam *txfm_param);
-using std::tr1::tuple;
 using libaom_test::FhtFunc;
+using std::tr1::tuple;
 typedef tuple<FhtFunc, IhtFunc, TX_TYPE, aom_bit_depth_t, int> Ht16x32Param;
 
 void fht16x32_ref(const int16_t *in, tran_low_t *out, int stride,

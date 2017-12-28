@@ -33,9 +33,9 @@ const int kHPad = 32;
 const int kXStepQn = 16;
 const int kYStepQn = 20;
 
-using std::tr1::tuple;
-using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
+using std::tr1::make_tuple;
+using std::tr1::tuple;
 
 enum NTaps { EIGHT_TAP, TEN_TAP, TWELVE_TAP };
 int NTapsToInt(NTaps ntaps) { return 8 + static_cast<int>(ntaps) * 2; }

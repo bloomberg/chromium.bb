@@ -19,8 +19,8 @@
 
 namespace {
 
-using std::tr1::tuple;
 using libaom_test::ACMRandom;
+using std::tr1::tuple;
 
 typedef void (*conv_filter_t)(const uint8_t *, int, uint8_t *, int, int, int,
                               const InterpFilterParams, int, int,

@@ -6071,7 +6071,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
     /* Non-normative definition of current_frame_id ("frame counter" with
-    * wraparound) */
+     * wraparound) */
     const int frame_id_length = FRAME_ID_LENGTH;
     if (cm->current_frame_id == -1) {
       int lsb, msb;

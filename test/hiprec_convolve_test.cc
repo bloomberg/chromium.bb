@@ -12,11 +12,11 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/hiprec_convolve_test_util.h"
 
-using std::tr1::tuple;
-using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
-using libaom_test::AV1HiprecConvolve::AV1HiprecConvolveTest;
 using libaom_test::AV1HighbdHiprecConvolve::AV1HighbdHiprecConvolveTest;
+using libaom_test::AV1HiprecConvolve::AV1HiprecConvolveTest;
+using std::tr1::make_tuple;
+using std::tr1::tuple;
 
 namespace {
 

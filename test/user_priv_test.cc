@@ -28,8 +28,8 @@
 
 namespace {
 
-using std::string;
 using libaom_test::ACMRandom;
+using std::string;
 
 #if CONFIG_WEBM_IO
 

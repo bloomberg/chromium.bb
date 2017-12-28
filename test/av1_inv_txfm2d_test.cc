@@ -21,11 +21,11 @@
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::input_base;
-using libaom_test::bd;
-using libaom_test::compute_avg_abs_error;
 using libaom_test::Fwd_Txfm2d_Func;
 using libaom_test::Inv_Txfm2d_Func;
+using libaom_test::bd;
+using libaom_test::compute_avg_abs_error;
+using libaom_test::input_base;
 
 using std::vector;
 

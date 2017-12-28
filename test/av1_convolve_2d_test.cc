@@ -12,11 +12,11 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/av1_convolve_2d_test_util.h"
 
-using std::tr1::tuple;
-using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
 using libaom_test::AV1Convolve2D::AV1Convolve2DTest;
 using libaom_test::AV1Convolve2D::AV1Convolve2DSrTest;
+using std::tr1::make_tuple;
+using std::tr1::tuple;
 #if CONFIG_JNT_COMP
 using libaom_test::AV1Convolve2D::AV1JntConvolve2DTest;
 #endif

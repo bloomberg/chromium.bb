@@ -26,8 +26,8 @@ double aom_sse_to_psnr(double samples, double peak, double sse) {
 }
 
 /* TODO(yaowu): The block_variance calls the unoptimized versions of variance()
-* and highbd_8_variance(). It should not.
-*/
+ * and highbd_8_variance(). It should not.
+ */
 static void encoder_variance(const uint8_t *a, int a_stride, const uint8_t *b,
                              int b_stride, int w, int h, unsigned int *sse,
                              int *sum) {
