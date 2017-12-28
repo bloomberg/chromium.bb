@@ -353,7 +353,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
     return;
   // The active TabModel can't be changed while a JavaScript dialog is shown.
   DCHECK(!self.showingDialog);
-  if (_active && !_queuedWebStates.empty() && !self.delegate.presenting)
+  if (_active && !_queuedWebStates.empty() &&
+      !self.delegate.dialogPresenterDelegateIsPresenting)
     [self showNextDialog];
 }
 
@@ -387,7 +388,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   _dialogCoordinatorsForWebStates[webState] =
       base::scoped_nsobject<AlertCoordinator>(coordinator);
 
-  if (self.active && !self.showingDialog && !self.delegate.presenting)
+  if (self.active && !self.showingDialog &&
+      !self.delegate.dialogPresenterDelegateIsPresenting)
     [self showNextDialog];
 }
 
@@ -413,7 +415,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   self.presentedDialogWebState = nil;
   self.presentedDialogCoordinator = nil;
   self.blockingConfirmationCoordinator = nil;
-  if (!_queuedWebStates.empty() && !self.delegate.presenting)
+  if (!_queuedWebStates.empty() &&
+      !self.delegate.dialogPresenterDelegateIsPresenting)
     [self showNextDialog];
 }
 

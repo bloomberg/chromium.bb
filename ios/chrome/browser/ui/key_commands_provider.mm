@@ -19,14 +19,17 @@
 
 @implementation KeyCommandsProvider
 
-- (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
-                baseViewController:(UIViewController*)baseViewController
-                        dispatcher:
-                            (id<ApplicationCommands, BrowserCommands>)dispatcher
-                       editingText:(BOOL)editingText {
+- (NSArray*)
+keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
+    baseViewController:(UIViewController*)baseViewController
+            dispatcher:
+                (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
+                    dispatcher
+           editingText:(BOOL)editingText {
   __weak id<KeyCommandsPlumbing> weakConsumer = consumer;
   __weak UIViewController* weakBaseViewController = baseViewController;
-  __weak id<ApplicationCommands, BrowserCommands> weakDispatcher = dispatcher;
+  __weak id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
+      weakDispatcher = dispatcher;
 
   // Block to have the tab model open the tab at |index|, if there is one.
   void (^focusTab)(NSUInteger) = ^(NSUInteger index) {
@@ -117,7 +120,7 @@
                                      title:l10n_util::GetNSStringWithFixup(
                                                IDS_IOS_KEYBOARD_OPEN_LOCATION)
                                     action:^{
-                                      [weakConsumer focusOmnibox];
+                                      [weakDispatcher focusOmnibox];
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"w"
                              modifierFlags:UIKeyModifierCommand

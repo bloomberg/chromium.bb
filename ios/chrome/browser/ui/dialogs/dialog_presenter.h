@@ -97,7 +97,7 @@ class WebState;
     willShowDialogForWebState:(web::WebState*)webState;
 
 // Whether the delegate is presenting another View Controller.
-@property(nonatomic, assign) BOOL presenting;
+@property(nonatomic, assign) BOOL dialogPresenterDelegateIsPresenting;
 
 @end
 
