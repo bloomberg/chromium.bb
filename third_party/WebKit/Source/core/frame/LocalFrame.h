@@ -69,7 +69,6 @@ class InterfaceRegistry;
 class IntPoint;
 class IntSize;
 class LayoutView;
-class LayoutViewItem;
 class LocalDOMWindow;
 class LocalWindowProxy;
 class LocalFrameClient;
@@ -149,7 +148,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Root of the layout tree for the document contained in this frame.
   LayoutView* ContentLayoutObject() const;
-  LayoutViewItem ContentLayoutItem() const;
 
   Editor& GetEditor() const;
   EventHandler& GetEventHandler() const;

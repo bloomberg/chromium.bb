@@ -136,7 +136,6 @@ class IdleRequestOptions;
 class IntersectionObserverController;
 class LayoutPoint;
 class LayoutView;
-class LayoutViewItem;
 class LiveNodeListBase;
 class LocalDOMWindow;
 class Locale;
@@ -579,7 +578,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void GetLayoutObject() const = delete;
 
   LayoutView* GetLayoutView() const { return layout_view_; }
-  LayoutViewItem GetLayoutViewItem() const;
 
   Document& AXObjectCacheOwner() const;
   AXObjectCache* ExistingAXObjectCache() const;

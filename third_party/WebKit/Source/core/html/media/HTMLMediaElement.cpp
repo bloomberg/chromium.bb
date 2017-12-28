@@ -3559,7 +3559,7 @@ void HTMLMediaElement::DidEnterFullscreen() {
   // Cache this in case the player is destroyed before leaving fullscreen.
   in_overlay_fullscreen_video_ = UsesOverlayFullscreenVideo();
   if (in_overlay_fullscreen_video_) {
-    GetDocument().GetLayoutViewItem().Compositor()->SetNeedsCompositingUpdate(
+    GetDocument().GetLayoutView()->Compositor()->SetNeedsCompositingUpdate(
         kCompositingUpdateRebuildTree);
   }
 }
@@ -3573,7 +3573,7 @@ void HTMLMediaElement::DidExitFullscreen() {
   }
 
   if (in_overlay_fullscreen_video_) {
-    GetDocument().GetLayoutViewItem().Compositor()->SetNeedsCompositingUpdate(
+    GetDocument().GetLayoutView()->Compositor()->SetNeedsCompositingUpdate(
         kCompositingUpdateRebuildTree);
   }
   in_overlay_fullscreen_video_ = false;

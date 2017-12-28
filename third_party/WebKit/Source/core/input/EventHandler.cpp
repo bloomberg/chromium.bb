@@ -275,11 +275,11 @@ HitTestResult EventHandler::HitTestResultAtPoint(
   // page.  Furthermore, mousemove events before the first layout should not
   // lead to a premature layout() happening, which could show a flash of white.
   // See also the similar code in Document::performMouseEventHitTest.
-  if (frame_->ContentLayoutItem().IsNull() || !frame_->View() ||
+  if (!frame_->ContentLayoutObject() || !frame_->View() ||
       !frame_->View()->DidFirstLayout())
     return result;
 
-  frame_->ContentLayoutItem().HitTest(result);
+  frame_->ContentLayoutObject()->HitTest(result);
   if (!request.ReadOnly())
     frame_->GetDocument()->UpdateHoverActiveState(request,
                                                   result.InnerElement());
@@ -344,8 +344,8 @@ void EventHandler::UpdateCursor() {
   if (!view || !view->ShouldSetCursor())
     return;
 
-  LayoutViewItem layout_view_item = view->GetLayoutViewItem();
-  if (layout_view_item.IsNull())
+  auto* layout_view = view->GetLayoutView();
+  if (!layout_view)
     return;
 
   frame_->GetDocument()->UpdateStyleAndLayout();
@@ -355,7 +355,7 @@ void EventHandler::UpdateCursor() {
   HitTestResult result(request,
                        view->RootFrameToContents(
                            mouse_event_manager_->LastKnownMousePosition()));
-  layout_view_item.HitTest(result);
+  layout_view->HitTest(result);
 
   if (LocalFrame* frame = result.InnerNodeFrame()) {
     EventHandler::OptionalCursor optional_cursor =
@@ -1933,13 +1933,13 @@ void EventHandler::HoverTimerFired(TimerBase*) {
   DCHECK(frame_);
   DCHECK(frame_->GetDocument());
 
-  if (LayoutViewItem layout_item = frame_->ContentLayoutItem()) {
+  if (auto* layout_object = frame_->ContentLayoutObject()) {
     if (LocalFrameView* view = frame_->View()) {
       HitTestRequest request(HitTestRequest::kMove);
       HitTestResult result(request,
                            view->RootFrameToContents(
                                mouse_event_manager_->LastKnownMousePosition()));
-      layout_item.HitTest(result);
+      layout_object->HitTest(result);
       frame_->GetDocument()->UpdateHoverActiveState(request,
                                                     result.InnerElement());
     }

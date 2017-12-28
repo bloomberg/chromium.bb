@@ -358,7 +358,7 @@ static Element* ElementUnderMouse(Document* document_under_mouse,
                                   const LayoutPoint& point) {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestResult result(request, point);
-  document_under_mouse->GetLayoutViewItem().HitTest(result);
+  document_under_mouse->GetLayoutView()->HitTest(result);
 
   Node* n = result.InnerNode();
   while (n && !n->IsElementNode())
@@ -703,7 +703,7 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   if (!drag_data->ContainsCompatibleContent())
     return false;
 
-  if (local_root.ContentLayoutItem().IsNull())
+  if (!local_root.ContentLayoutObject())
     return false;
 
   LayoutPoint point = local_root.View()->RootFrameToContents(
@@ -927,7 +927,7 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
   DCHECK(DragTypeIsValid(state.drag_type_));
 #endif
   DCHECK(src);
-  if (!src->View() || src->ContentLayoutItem().IsNull())
+  if (!src->View() || !src->ContentLayoutObject())
     return false;
 
   HitTestResult hit_test_result =
@@ -1158,7 +1158,7 @@ bool DragController::StartDrag(LocalFrame* src,
   DCHECK(DragTypeIsValid(state.drag_type_));
 #endif
   DCHECK(src);
-  if (!src->View() || src->ContentLayoutItem().IsNull())
+  if (!src->View() || !src->ContentLayoutObject())
     return false;
 
   HitTestResult hit_test_result =

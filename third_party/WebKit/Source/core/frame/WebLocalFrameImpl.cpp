@@ -284,12 +284,12 @@ class ChromePrintContext : public PrintContext {
   float SpoolSinglePage(WebCanvas* canvas, int page_number) {
     DispatchEventsForPrintingOnAllFrames();
     if (!GetFrame()->GetDocument() ||
-        GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
+        !GetFrame()->GetDocument()->GetLayoutView())
       return 0;
 
     GetFrame()->View()->UpdateLifecyclePhasesForPrinting();
     if (!GetFrame()->GetDocument() ||
-        GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
+        !GetFrame()->GetDocument()->GetLayoutView())
       return 0;
 
     // The page rect gets scaled and translated, so specify the entire
@@ -308,12 +308,12 @@ class ChromePrintContext : public PrintContext {
       const FloatSize& page_size_in_pixels) {
     DispatchEventsForPrintingOnAllFrames();
     if (!GetFrame()->GetDocument() ||
-        GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
+        !GetFrame()->GetDocument()->GetLayoutView())
       return;
 
     GetFrame()->View()->UpdateLifecyclePhasesForPrinting();
     if (!GetFrame()->GetDocument() ||
-        GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
+        !GetFrame()->GetDocument()->GetLayoutView())
       return;
 
     ComputePageRects(page_size_in_pixels);
@@ -599,9 +599,9 @@ WebSize WebLocalFrameImpl::ContentsSize() const {
 }
 
 bool WebLocalFrameImpl::HasVisibleContent() const {
-  LayoutEmbeddedContentItem layout_item = GetFrame()->OwnerLayoutItem();
-  if (!layout_item.IsNull() &&
-      layout_item.Style()->Visibility() != EVisibility::kVisible) {
+  auto* layout_object = GetFrame()->OwnerLayoutObject();
+  if (layout_object &&
+      layout_object->StyleRef().Visibility() != EVisibility::kVisible) {
     return false;
   }
 

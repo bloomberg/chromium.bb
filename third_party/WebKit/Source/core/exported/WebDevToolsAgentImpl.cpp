@@ -525,7 +525,7 @@ void WebDevToolsAgentImpl::InspectElementAt(
   HitTestResult result(
       request, web_local_frame_impl_->GetFrameView()->RootFrameToContents(
                    transformed_point));
-  web_local_frame_impl_->GetFrame()->ContentLayoutItem().HitTest(result);
+  web_local_frame_impl_->GetFrame()->ContentLayoutObject()->HitTest(result);
   Node* node = result.InnerNode();
   if (!node && web_local_frame_impl_->GetFrame()->GetDocument())
     node = web_local_frame_impl_->GetFrame()->GetDocument()->documentElement();

@@ -188,8 +188,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     node = mouse_press_node;
 
   if ((!node || !node->GetLayoutObject()) && frame_->View() &&
-      !frame_->View()->GetLayoutViewItem().IsNull())
-    node = frame_->View()->GetLayoutViewItem().GetNode();
+      frame_->View()->GetLayoutView())
+    node = frame_->View()->GetLayoutView()->GetNode();
 
   if (!node)
     return false;
@@ -313,7 +313,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
   Document* document = frame_->GetDocument();
 
-  if (document->GetLayoutViewItem().IsNull())
+  if (!document->GetLayoutView())
     return WebInputEventResult::kNotHandled;
 
   // If there's no layoutObject on the node, send the event to the nearest
@@ -558,7 +558,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
 
   if (!event_target) {
     Document* document = frame_->GetDocument();
-    if (document->GetLayoutViewItem().IsNull())
+    if (!document->GetLayoutView())
       return WebInputEventResult::kNotHandled;
 
     LocalFrameView* view = frame_->View();
@@ -566,7 +566,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     HitTestRequest request(HitTestRequest::kReadOnly);
     HitTestResult result(request, view_point);
-    document->GetLayoutViewItem().HitTest(result);
+    document->GetLayoutView()->HitTest(result);
 
     event_target = result.InnerNode();
 

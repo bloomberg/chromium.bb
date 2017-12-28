@@ -103,8 +103,8 @@ bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
   // If our frame has an owner layoutObject, we're embedded through eg.
   // object/embed/iframe, but we only negotiate if we're in an SVG document
   // inside a embedded object (object/embed).
-  if (frame->OwnerLayoutItem().IsNull() ||
-      !frame->OwnerLayoutItem().IsEmbeddedObject())
+  if (!frame->OwnerLayoutObject() ||
+      !frame->OwnerLayoutObject()->IsEmbeddedObject())
     return false;
   return frame->GetDocument()->IsSVGDocument();
 }

@@ -352,8 +352,7 @@ AXObject* WebPagePopupImpl::RootAXObject() {
     return nullptr;
   AXObjectCache* cache = document->GetOrCreateAXObjectCache();
   DCHECK(cache);
-  return ToAXObjectCacheBase(cache)->GetOrCreate(ToLayoutView(
-      LayoutAPIShim::LayoutObjectFrom(document->GetLayoutViewItem())));
+  return ToAXObjectCacheBase(cache)->GetOrCreate(document->GetLayoutView());
 }
 
 void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {

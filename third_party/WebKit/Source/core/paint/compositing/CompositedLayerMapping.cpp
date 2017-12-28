@@ -3309,11 +3309,9 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   LayoutRect graphics_layer_bounds_in_root_view_space(
       graphics_layer_bounds_in_object_space);
   LayoutView* root_view = anchor_layout_object->View();
-  while (!root_view->GetFrame()->OwnerLayoutItem().IsNull()) {
-    root_view = LayoutAPIShim::LayoutObjectFrom(
-                    root_view->GetFrame()->OwnerLayoutItem())
-                    ->View();
-  }
+  while (root_view->GetFrame()->OwnerLayoutObject())
+    root_view = root_view->GetFrame()->OwnerLayoutObject()->View();
+
   anchor_layout_object->MapToVisualRectInAncestorSpace(
       root_view, graphics_layer_bounds_in_root_view_space);
   FloatRect visible_content_rect(graphics_layer_bounds_in_root_view_space);

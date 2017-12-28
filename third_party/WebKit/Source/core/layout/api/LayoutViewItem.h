@@ -10,8 +10,6 @@
 
 namespace blink {
 
-class PaintLayerCompositor;
-
 class LayoutViewItem : public LayoutBlockItem {
  public:
   explicit LayoutViewItem(LayoutView* layout_view)
@@ -25,55 +23,17 @@ class LayoutViewItem : public LayoutBlockItem {
 
   LayoutViewItem() {}
 
-  bool UsesCompositing() const { return ToView()->UsesCompositing(); }
-
-  PaintLayerCompositor* Compositor() { return ToView()->Compositor(); }
-
-  IntRect DocumentRect() const { return ToView()->DocumentRect(); }
-
-  LayoutRect ViewRect() const { return ToView()->ViewRect(); }
-
-  IntSize GetLayoutSize(
-      IncludeScrollbarsInRect scrollbars = kExcludeScrollbars) const {
-    return ToView()->GetLayoutSize(scrollbars);
-  }
-
-  LayoutRect OverflowClipRect(const LayoutPoint& location) const {
-    return ToView()->OverflowClipRect(location);
-  }
-
   bool HitTest(HitTestResult& result) { return ToView()->HitTest(result); }
 
   bool HitTestNoLifecycleUpdate(HitTestResult& result) {
     return ToView()->HitTestNoLifecycleUpdate(result);
   }
 
-  //    bool hitTest(HitTestResult&);
-  //    bool hitTestNoLifecycleUpdate(HitTestResult&);
-
   unsigned HitTestCount() const { return ToView()->HitTestCount(); }
 
   unsigned HitTestCacheHits() const { return ToView()->HitTestCacheHits(); }
 
   void ClearHitTestCache() { ToView()->ClearHitTestCache(); }
-
-  void InvalidatePaintForViewAndCompositedLayers() {
-    ToView()->InvalidatePaintForViewAndCompositedLayers();
-  }
-
-  int ViewHeight(
-      IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
-    return ToView()->ViewHeight(scrollbar_inclusion);
-  }
-
-  int ViewWidth(
-      IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
-    return ToView()->ViewWidth(scrollbar_inclusion);
-  }
-
-  FloatSize ViewportSizeForViewportUnits() const {
-    return ToView()->ViewportSizeForViewportUnits();
-  }
 
   void UpdateCounters() { ToView()->UpdateCounters(); }
 

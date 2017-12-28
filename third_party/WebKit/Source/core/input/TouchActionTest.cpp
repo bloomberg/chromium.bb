@@ -224,8 +224,9 @@ IntRect WindowClipRect(const LocalFrameView& frame_view) {
   LayoutRect clip_rect(
       LayoutPoint(),
       LayoutSize(frame_view.VisibleContentSize(kExcludeScrollbars)));
-  frame_view.GetLayoutViewItem().MapToVisualRectInAncestorSpace(
-      &frame_view.GetLayoutView()->ContainerForPaintInvalidation(), clip_rect);
+  frame_view.GetLayoutView()->MapToVisualRectInAncestorSpace(
+      &frame_view.GetLayoutView()->ContainerForPaintInvalidation(), clip_rect,
+      0, kDefaultVisualRectFlags);
   return EnclosingIntRect(clip_rect);
 }
 

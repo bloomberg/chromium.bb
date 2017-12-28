@@ -106,14 +106,14 @@ void RemoteFrameView::Dispose() {
 }
 
 void RemoteFrameView::InvalidateRect(const IntRect& rect) {
-  LayoutEmbeddedContentItem layout_item = remote_frame_->OwnerLayoutItem();
-  if (layout_item.IsNull())
+  auto* object = remote_frame_->OwnerLayoutObject();
+  if (!object)
     return;
 
   LayoutRect repaint_rect(rect);
-  repaint_rect.Move(layout_item.BorderLeft() + layout_item.PaddingLeft(),
-                    layout_item.BorderTop() + layout_item.PaddingTop());
-  layout_item.InvalidatePaintRectangle(repaint_rect);
+  repaint_rect.Move(object->BorderLeft() + object->PaddingLeft(),
+                    object->BorderTop() + object->PaddingTop());
+  object->InvalidatePaintRectangle(repaint_rect);
 }
 
 void RemoteFrameView::SetFrameRect(const IntRect& frame_rect) {

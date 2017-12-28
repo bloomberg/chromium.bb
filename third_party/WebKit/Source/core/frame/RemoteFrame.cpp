@@ -158,7 +158,7 @@ void RemoteFrame::CreateView() {
 
   SetView(RemoteFrameView::Create(this));
 
-  if (!OwnerLayoutItem().IsNull())
+  if (OwnerLayoutObject())
     DeprecatedLocalOwner()->SetEmbeddedContentView(view_);
 }
 

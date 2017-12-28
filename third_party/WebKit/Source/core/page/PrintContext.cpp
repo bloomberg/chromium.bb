@@ -60,8 +60,8 @@ void PrintContext::ComputePageRects(const FloatSize& print_size) {
   if (!IsFrameValid())
     return;
 
-  LayoutViewItem view = frame_->GetDocument()->GetLayoutViewItem();
-  const IntRect& document_rect = view.DocumentRect();
+  auto* view = frame_->GetDocument()->GetLayoutView();
+  const IntRect& document_rect = view->DocumentRect();
   FloatSize page_size = frame_->ResizePageRectsKeepingRatio(
       print_size, FloatSize(document_rect.Width(), document_rect.Height()));
   ComputePageRectsWithPageSizeInternal(page_size);
@@ -78,9 +78,9 @@ void PrintContext::ComputePageRectsWithPageSizeInternal(
   if (!IsFrameValid())
     return;
 
-  LayoutViewItem view = frame_->GetDocument()->GetLayoutViewItem();
+  auto* view = frame_->GetDocument()->GetLayoutView();
 
-  IntRect doc_rect = view.DocumentRect();
+  IntRect doc_rect = view->DocumentRect();
 
   int page_width = page_size_in_pixels.Width();
   // We scaled with floating point arithmetic and need to ensure results like
@@ -88,7 +88,7 @@ void PrintContext::ComputePageRectsWithPageSizeInternal(
   // page for the stray pixel.
   int page_height = page_size_in_pixels.Height() + LayoutUnit::Epsilon();
 
-  bool is_horizontal = view.Style()->IsHorizontalWritingMode();
+  bool is_horizontal = view->StyleRef().IsHorizontalWritingMode();
 
   int doc_logical_height = is_horizontal ? doc_rect.Height() : doc_rect.Width();
   int page_logical_height = is_horizontal ? page_height : page_width;
@@ -102,9 +102,9 @@ void PrintContext::ComputePageRectsWithPageSizeInternal(
     std::swap(block_direction_start, inline_direction_start);
     std::swap(block_direction_end, inline_direction_end);
   }
-  if (!view.Style()->IsLeftToRightDirection())
+  if (!view->StyleRef().IsLeftToRightDirection())
     std::swap(inline_direction_start, inline_direction_end);
-  if (view.Style()->IsFlippedBlocksWritingMode())
+  if (view->StyleRef().IsFlippedBlocksWritingMode())
     std::swap(block_direction_start, block_direction_end);
 
   unsigned page_count =
@@ -313,7 +313,7 @@ int PrintContext::NumberOfPages(LocalFrame* frame,
 
 bool PrintContext::IsFrameValid() const {
   return frame_->View() && frame_->GetDocument() &&
-         !frame_->GetDocument()->GetLayoutViewItem().IsNull();
+         frame_->GetDocument()->GetLayoutView();
 }
 
 void PrintContext::Trace(blink::Visitor* visitor) {

@@ -1127,8 +1127,8 @@ TEST_P(FrameThrottlingTest, SkipPaintingLayersInThrottledFrames) {
   // Simulate the paint for a graphics layer being externally invalidated
   // (e.g., by video playback).
   frame_document->View()
-      ->GetLayoutViewItem()
-      .InvalidatePaintForViewAndCompositedLayers();
+      ->GetLayoutView()
+      ->InvalidatePaintForViewAndCompositedLayers();
 
   // The layer inside the throttled frame should not get painted.
   auto display_items2 = CompositeFrame();

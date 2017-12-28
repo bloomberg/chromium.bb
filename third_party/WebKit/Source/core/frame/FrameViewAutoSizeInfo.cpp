@@ -8,7 +8,6 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "platform/wtf/AutoReset.h"
 
 namespace blink {
@@ -65,11 +64,11 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
     // Update various sizes including contentsSize, scrollHeight, etc.
     document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-    LayoutViewItem layout_view_item = document->GetLayoutViewItem();
-    if (layout_view_item.IsNull())
+    auto* layout_view = document->GetLayoutView();
+    if (!layout_view)
       return;
 
-    int width = layout_view_item.MinPreferredLogicalWidth().ToInt();
+    int width = layout_view->MinPreferredLogicalWidth().ToInt();
 
     LayoutBox* document_layout_box = document_element->GetLayoutBox();
     if (!document_layout_box)

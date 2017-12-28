@@ -51,7 +51,6 @@ class FrameClient;
 class FrameOwner;
 class HTMLFrameOwnerElement;
 class LayoutEmbeddedContent;
-class LayoutEmbeddedContentItem;
 class LocalFrame;
 class KURL;
 class Page;
@@ -123,11 +122,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // otherwise.
   virtual bool PrepareForCommit() = 0;
 
-  // TODO(pilgrim): Replace all instances of ownerLayoutObject() with
-  // ownerLayoutItem(), https://crbug.com/499321
-  LayoutEmbeddedContent* OwnerLayoutObject()
-      const;  // LayoutObject for the element that contains this frame.
-  LayoutEmbeddedContentItem OwnerLayoutItem() const;
+  // LayoutObject for the element that contains this frame.
+  LayoutEmbeddedContent* OwnerLayoutObject() const;
 
   Settings* GetSettings() const;  // can be null
 

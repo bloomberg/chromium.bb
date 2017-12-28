@@ -255,7 +255,7 @@ static void InvalidatePaintRectangleOnWindow(
       !RuntimeEnabledFeatures::PrintBrowserEnabled())
     return;
 
-  DCHECK(frame_view->GetFrame().OwnerLayoutItem().IsNull());
+  DCHECK(!frame_view->GetFrame().OwnerLayoutObject());
 
   IntRect paint_rect = dirty_rect;
   paint_rect.Intersect(frame_view->VisibleContentRect());

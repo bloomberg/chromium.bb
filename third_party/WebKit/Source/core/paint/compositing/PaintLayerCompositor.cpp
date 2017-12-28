@@ -219,9 +219,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
     // the middle of frame detach.
     // TODO(bbudge) Remove this check when trusted Pepper plugins are gone.
     if (local_frame->GetDocument()->IsActive() &&
-        !local_frame->ContentLayoutItem().IsNull()) {
-      local_frame->ContentLayoutItem()
-          .Compositor()
+        local_frame->ContentLayoutObject()) {
+      local_frame->ContentLayoutObject()
+          ->Compositor()
           ->UpdateIfNeededRecursiveInternal(target_state,
                                             compositing_reasons_stats);
     }
@@ -272,10 +272,10 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
       continue;
     LocalFrame* local_frame = ToLocalFrame(child);
     if (local_frame->ShouldThrottleRendering() ||
-        local_frame->ContentLayoutItem().IsNull())
+        !local_frame->ContentLayoutObject())
       continue;
-    local_frame->ContentLayoutItem()
-        .Compositor()
+    local_frame->ContentLayoutObject()
+        ->Compositor()
         ->AssertNoUnresolvedDirtyBits();
   }
 #endif
@@ -800,8 +800,8 @@ PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
   HTMLFrameOwnerElement* element =
       ToHTMLFrameOwnerElement(layout_object.GetNode());
   if (Document* content_document = element->contentDocument()) {
-    if (LayoutViewItem view = content_document->GetLayoutViewItem())
-      return view.Compositor();
+    if (auto* view = content_document->GetLayoutView())
+      return view->Compositor();
   }
   return nullptr;
 }

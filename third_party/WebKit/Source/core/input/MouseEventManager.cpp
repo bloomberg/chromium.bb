@@ -441,10 +441,12 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
     const HitTestResult& hit_test_result,
     InputDeviceCapabilities* source_capabilities) {
   // If clicking on a frame scrollbar, do not mess up with content focus.
-  if (hit_test_result.GetScrollbar() && !frame_->ContentLayoutItem().IsNull()) {
-    if (hit_test_result.GetScrollbar()->GetScrollableArea() ==
-        frame_->ContentLayoutItem().GetScrollableArea())
-      return WebInputEventResult::kNotHandled;
+  if (auto* layout_view = frame_->ContentLayoutObject()) {
+    if (hit_test_result.GetScrollbar() && frame_->ContentLayoutObject()) {
+      if (hit_test_result.GetScrollbar()->GetScrollableArea() ==
+          layout_view->GetScrollableArea())
+        return WebInputEventResult::kNotHandled;
+    }
   }
 
   // The layout needs to be up to date to determine if an element is focusable.
@@ -863,7 +865,7 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
   if (mouse_down_may_start_drag_) {
     HitTestRequest request(HitTestRequest::kReadOnly);
     HitTestResult result(request, mouse_down_pos_);
-    frame_->ContentLayoutItem().HitTest(result);
+    frame_->ContentLayoutObject()->HitTest(result);
     Node* node = result.InnerNode();
     if (node) {
       DragController::SelectionDragPolicy selection_drag_policy =

@@ -46,7 +46,7 @@ bool FillsViewport(const Element& element) {
   LayoutRect bounding_box(quads[0].BoundingBox());
 
   return bounding_box.Location() == LayoutPoint::Zero() &&
-         bounding_box.Size() == top_document.GetLayoutViewItem().Size();
+         bounding_box.Size() == top_document.GetLayoutView()->Size();
 }
 
 }  // namespace

@@ -38,7 +38,7 @@ static void PaintLayers(GraphicsLayer& layer,
 
 static void PaintFrames(LocalFrame& root, SimDisplayItemList& display_list) {
   GraphicsLayer* layer =
-      root.View()->GetLayoutViewItem().Compositor()->RootGraphicsLayer();
+      root.View()->GetLayoutView()->Compositor()->RootGraphicsLayer();
   PaintLayers(*layer, display_list);
 }
 

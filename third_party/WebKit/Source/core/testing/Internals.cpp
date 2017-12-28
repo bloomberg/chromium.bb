@@ -355,7 +355,7 @@ unsigned Internals::hitTestCount(Document* doc,
     return 0;
   }
 
-  return doc->GetLayoutViewItem().HitTestCount();
+  return doc->GetLayoutView()->HitTestCount();
 }
 
 unsigned Internals::hitTestCacheHits(Document* doc,
@@ -366,7 +366,7 @@ unsigned Internals::hitTestCacheHits(Document* doc,
     return 0;
   }
 
-  return doc->GetLayoutViewItem().HitTestCacheHits();
+  return doc->GetLayoutView()->HitTestCacheHits();
 }
 
 Element* Internals::elementFromPoint(Document* doc,
@@ -381,7 +381,7 @@ Element* Internals::elementFromPoint(Document* doc,
     return nullptr;
   }
 
-  if (doc->GetLayoutViewItem().IsNull())
+  if (!doc->GetLayoutView())
     return nullptr;
 
   HitTestRequest::HitTestRequestType hit_type =
@@ -404,10 +404,10 @@ void Internals::clearHitTestCache(Document* doc,
     return;
   }
 
-  if (doc->GetLayoutViewItem().IsNull())
+  if (!doc->GetLayoutView())
     return;
 
-  doc->GetLayoutViewItem().ClearHitTestCache();
+  doc->GetLayoutView()->ClearHitTestCache();
 }
 
 Element* Internals::innerEditorElement(Element* container,
@@ -2018,9 +2018,8 @@ LayerRectList* Internals::touchEventTargetLayerRects(
     }
   }
 
-  LayoutViewItem view = document->GetLayoutViewItem();
-  if (!view.IsNull()) {
-    if (PaintLayerCompositor* compositor = view.Compositor()) {
+  if (auto* view = document->GetLayoutView()) {
+    if (PaintLayerCompositor* compositor = view->Compositor()) {
       if (GraphicsLayer* root_layer = compositor->RootGraphicsLayer()) {
         LayerRectList* rects = LayerRectList::Create();
         AccumulateLayerRectList(compositor, root_layer, rects);
@@ -2094,9 +2093,9 @@ StaticNodeList* Internals::nodesFromRect(
 
   LocalFrame* frame = document->GetFrame();
   LocalFrameView* frame_view = document->View();
-  LayoutViewItem layout_view_item = document->GetLayoutViewItem();
+  auto* layout_view = document->GetLayoutView();
 
-  if (layout_view_item.IsNull())
+  if (!layout_view)
     return nullptr;
 
   float zoom_factor = frame->PageZoomFactor();
@@ -2125,7 +2124,7 @@ StaticNodeList* Internals::nodesFromRect(
   HeapVector<Member<Node>> matches;
   HitTestResult result(request, point, top_padding, right_padding,
                        bottom_padding, left_padding);
-  layout_view_item.HitTest(result);
+  layout_view->HitTest(result);
   CopyToVector(result.ListBasedTestResult(), matches);
 
   return StaticNodeList::Adopt(matches);
@@ -2683,9 +2682,9 @@ void Internals::forceFullRepaint(Document* document,
     return;
   }
 
-  LayoutViewItem layout_view_item = document->GetLayoutViewItem();
-  if (!layout_view_item.IsNull())
-    layout_view_item.InvalidatePaintForViewAndCompositedLayers();
+  auto* layout_view = document->GetLayoutView();
+  if (layout_view)
+    layout_view->InvalidatePaintForViewAndCompositedLayers();
 }
 
 DOMRectList* Internals::draggableRegions(Document* document,
@@ -3057,7 +3056,7 @@ bool Internals::loseSharedGraphicsContext3D() {
 void Internals::forceCompositingUpdate(Document* document,
                                        ExceptionState& exception_state) {
   DCHECK(document);
-  if (document->GetLayoutViewItem().IsNull()) {
+  if (!document->GetLayoutView()) {
     exception_state.ThrowDOMException(kInvalidAccessError,
                                       "The document provided is invalid.");
     return;

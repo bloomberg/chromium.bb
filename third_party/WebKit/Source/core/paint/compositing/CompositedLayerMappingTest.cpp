@@ -198,7 +198,7 @@ TEST_P(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
       ScrollOffset(-5000, 0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  PaintLayer* paint_layer = GetDocument().GetLayoutViewItem().Layer();
+  PaintLayer* paint_layer = GetDocument().GetLayoutView()->Layer();
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
   ASSERT_TRUE(paint_layer->GetCompositedLayerMapping());
   // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px =
@@ -587,7 +587,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
 
   GetDocument().View()->UpdateAllLifecyclePhases();
   GraphicsLayer* root_scrolling_layer =
-      GetDocument().GetLayoutViewItem().Layer()->GraphicsLayerBacking();
+      GetDocument().GetLayoutView()->Layer()->GraphicsLayerBacking();
   EXPECT_EQ(IntRect(0, 0, 800, 4600),
             PreviousInterestRect(root_scrolling_layer));
 
@@ -649,7 +649,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnShrunkenViewport) {
 
   GetDocument().View()->UpdateAllLifecyclePhases();
   GraphicsLayer* root_scrolling_layer =
-      GetDocument().GetLayoutViewItem().Layer()->GraphicsLayerBacking();
+      GetDocument().GetLayoutView()->Layer()->GraphicsLayerBacking();
   EXPECT_EQ(IntRect(0, 0, 800, 4600),
             PreviousInterestRect(root_scrolling_layer));
 
@@ -865,12 +865,12 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
       ScrollOffset(0.0, 7500.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  ASSERT_TRUE(ChildDocument().View()->GetLayoutViewItem().HasLayer());
+  ASSERT_TRUE(ChildDocument().View()->GetLayoutView()->HasLayer());
   EXPECT_EQ(IntRect(0, 3500, 500, 4500),
             RecomputeInterestRect(ChildDocument()
                                       .View()
-                                      ->GetLayoutViewItem()
-                                      .EnclosingLayer()
+                                      ->GetLayoutView()
+                                      ->EnclosingLayer()
                                       ->GraphicsLayerBacking()));
 }
 
@@ -899,13 +899,13 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
       ScrollOffset(0.0, 3000.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  ASSERT_TRUE(ChildDocument().View()->GetLayoutViewItem().HasLayer());
+  ASSERT_TRUE(ChildDocument().View()->GetLayoutView()->HasLayer());
   // The width is 485 pixels due to the size of the scrollbar.
   EXPECT_EQ(IntRect(0, 0, 500, 7500),
             RecomputeInterestRect(ChildDocument()
                                       .View()
-                                      ->GetLayoutViewItem()
-                                      .EnclosingLayer()
+                                      ->GetLayoutView()
+                                      ->EnclosingLayer()
                                       ->GraphicsLayerBacking()));
 }
 
@@ -2399,7 +2399,7 @@ TEST_P(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(Color::kWhite, GetDocument().View()->BaseBackgroundColor());
   auto* view_layer =
-      GetDocument().GetLayoutViewItem().Layer()->GraphicsLayerBacking();
+      GetDocument().GetLayoutView()->Layer()->GraphicsLayerBacking();
   EXPECT_EQ(Color::kWhite, view_layer->BackgroundColor());
 
   Color base_background(255, 0, 0);

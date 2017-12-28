@@ -830,7 +830,7 @@ VisiblePosition VisiblePositionForContentsPoint(const IntPoint& contents_point,
                            HitTestRequest::kActive |
                            HitTestRequest::kIgnoreClipping;
   HitTestResult result(request, contents_point);
-  frame->GetDocument()->GetLayoutViewItem().HitTest(result);
+  frame->GetDocument()->GetLayoutView()->HitTest(result);
 
   if (Node* node = result.InnerNode()) {
     return CreateVisiblePosition(PositionRespectingEditingBoundary(

@@ -83,7 +83,7 @@ void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {
   // FIXME: Improve RAII of StyleResolverState to remove this function.
   style_ = std::move(style);
   css_to_length_conversion_data_ = CSSToLengthConversionData(
-      style_.get(), RootElementStyle(), GetDocument().GetLayoutViewItem(),
+      style_.get(), RootElementStyle(), GetDocument().GetLayoutView(),
       style_->EffectiveZoom());
 }
 
@@ -97,7 +97,7 @@ CSSToLengthConversionData StyleResolverState::FontSizeConversionData() const {
   CSSToLengthConversionData::FontSizes font_sizes(em, rem,
                                                   &ParentStyle()->GetFont());
   CSSToLengthConversionData::ViewportSize viewport_size(
-      GetDocument().GetLayoutViewItem());
+      GetDocument().GetLayoutView());
 
   return CSSToLengthConversionData(Style(), font_sizes, viewport_size, 1);
 }

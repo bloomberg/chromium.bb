@@ -509,10 +509,9 @@ void Write(TextStream& ts,
   if (o.IsLayoutEmbeddedContent()) {
     LocalFrameView* frame_view = ToLayoutEmbeddedContent(o).ChildFrameView();
     if (frame_view) {
-      LayoutViewItem root_item = frame_view->GetLayoutViewItem();
-      if (!root_item.IsNull()) {
-        root_item.UpdateStyleAndLayout();
-        if (auto* layer = root_item.Layer()) {
+      if (auto* layout_view = frame_view->GetLayoutView()) {
+        layout_view->GetDocument().UpdateStyleAndLayout();
+        if (auto* layer = layout_view->Layer()) {
           LayoutTreeAsText::WriteLayers(
               ts, layer, layer, layer->RectIgnoringNeedsPositionUpdate(),
               indent + 1, behavior);

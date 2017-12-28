@@ -335,10 +335,10 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
       ToLayoutEmbeddedContent(root->GetLayoutObject()).ChildFrameView();
   if (!child_frame_view)
     return;
-  LayoutViewItem child_layout_view_item = child_frame_view->GetLayoutViewItem();
-  if (child_layout_view_item.IsNull())
+  LayoutView* child_layout_view = child_frame_view->GetLayoutView();
+  if (!child_layout_view)
     return;
-  PaintLayerCompositor* child_compositor = child_layout_view_item.Compositor();
+  PaintLayerCompositor* child_compositor = child_layout_view->Compositor();
   if (!child_compositor)
     return;
   BuildLayerIdToNodeIdMap(child_compositor->RootLayer(),
@@ -367,9 +367,9 @@ int InspectorLayerTreeAgent::IdForNode(Node* node) {
 }
 
 PaintLayerCompositor* InspectorLayerTreeAgent::GetPaintLayerCompositor() {
-  LayoutViewItem layout_view = inspected_frames_->Root()->ContentLayoutItem();
+  auto* layout_view = inspected_frames_->Root()->ContentLayoutObject();
   PaintLayerCompositor* compositor =
-      layout_view.IsNull() ? nullptr : layout_view.Compositor();
+      layout_view ? layout_view->Compositor() : nullptr;
   return compositor;
 }
 
