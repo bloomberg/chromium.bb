@@ -4,6 +4,7 @@
 
 #include "net/quic/core/quic_server_id.h"
 
+#include "net/quic/platform/api/quic_estimate_memory_usage.h"
 #include "net/quic/platform/api/quic_test.h"
 
 using std::string;
@@ -150,6 +151,13 @@ TEST_F(QuicServerIdTest, Equals) {
   QuicServerId new_a_10_https_no_private(HostPortPair("a.com", 10),
                                          PRIVACY_MODE_DISABLED);
   EXPECT_FALSE(new_a_10_https_no_private == a_10_https_private);
+}
+
+TEST_F(QuicServerIdTest, EstimateMemoryUsage) {
+  HostPortPair host_port_pair("this is a rather very quite long hostname", 10);
+  QuicServerId server_id(host_port_pair, PRIVACY_MODE_ENABLED);
+  EXPECT_EQ(QuicEstimateMemoryUsage(host_port_pair),
+            QuicEstimateMemoryUsage(server_id));
 }
 
 }  // namespace
