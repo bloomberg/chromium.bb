@@ -23,10 +23,11 @@
   },
   'android_webview_unittests': {
     'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
+      # On chromium.android, these do not need to run prior to M.
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
+      # They should be running here, though, once stabilized.
       'Nougat Phone Tester chromium.android',
       # chromium.android.fyi
       'x64 Device Tester',
@@ -40,11 +41,6 @@
         'swarming': {
           'hard_timeout': 900,
         },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'args': [
-          '--gs-results-bucket=chromium-result-details',
-        ],
       },
       'Marshmallow Tablet Tester': {
         'swarming': {
@@ -174,11 +170,6 @@
         'swarming': {
           'hard_timeout': 600,
         },
-      },
-      'Marshmallow 64 bit Tester': {
-        'args': [
-          '--gs-results-bucket=chromium-result-details',
-        ],
       },
       'Marshmallow Phone Tester (rel)': {
         'swarming': {
@@ -592,13 +583,6 @@
     ],
   },
   'cc_unittests': {
-    'key_removals': {
-      # TODO(kbr): on this bot, it looks like the absence of the
-      # "merge" key is largely an accident.
-      'Marshmallow Phone Tester (rel)': [
-        'merge',
-      ],
-    },
     'remove_from': [
       # chromium.chromiumos
       'Linux ChromiumOS Tests (dbg)(1)',
@@ -796,7 +780,6 @@
         'args': [
           '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
           '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-          '--gs-results-bucket=chromium-result-details',
         ],
         'swarming': {
           'hard_timeout': 1920,
@@ -839,17 +822,6 @@
         'args',
       ],
       'x86 Cloud Tester': [
-        'args',
-      ],
-      # chromium.clang
-      'ToTAndroid x64': [
-        'args',
-      ],
-      'ToTAndroidCFI': [
-        'args',
-      ],
-      # chromium.fyi
-      'Out of Process Profiling Android': [
         'args',
       ],
     },
@@ -2665,22 +2637,6 @@
       'Out of Process Profiling Android',
     ],
     'modifications': {
-      # chromium.android
-      'KitKat Phone Tester (dbg)': {
-        'args': [
-          '--gs-results-bucket=chromium-result-details',
-        ],
-      },
-      'KitKat Phone Tester (rel)': {
-        'args': [
-          '--gs-results-bucket=chromium-result-details',
-        ],
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'args': [
-          '--gs-results-bucket=chromium-result-details',
-        ],
-      },
       # chromium.clang
       'ToTAndroidCFI': {
         'swarming': {
@@ -3142,12 +3098,6 @@
       'Linux TSan Tests',
       'Mac ASan 64 Tests (1)',
     ],
-    'key_removals': {
-      'Marshmallow Phone Tester (rel)': [
-        # TODO(kbr): this looks like an accident.
-        'merge',
-      ],
-    },
     'modifications': {
       # chromium.android
       'Marshmallow Phone Tester (rel)': {
@@ -3853,19 +3803,6 @@
       # chromium.memory
       'Linux CFI',
     ],
-    'key_removals': {
-      # TODO(kbr): on Android, it looks like the absence of the
-      # "merge" key is largely an accident.
-      'KitKat Phone Tester (dbg)': [
-        'merge',
-      ],
-      'KitKat Phone Tester (rel)': [
-        'merge',
-      ],
-      'Marshmallow Phone Tester (rel)': [
-        'merge',
-      ],
-    },
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
