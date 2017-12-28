@@ -451,6 +451,9 @@ LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
     ime_keyboard_observer_.Add(keyboard);
     OnCapsLockChanged(keyboard->CapsLockIsEnabled());
   }
+
+  // Make sure the UI start with the correct states.
+  UpdateUiState();
 }
 
 LoginPasswordView::~LoginPasswordView() = default;
