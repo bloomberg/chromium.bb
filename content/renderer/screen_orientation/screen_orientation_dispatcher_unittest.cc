@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "content/public/test/render_view_test.h"
-#include "content/public/test/test_utils.h"
+#include "base/message_loop/message_loop.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 
 namespace content {
@@ -51,12 +51,9 @@ class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
   LockOrientationResultHolder* results_;
 };
 
-// TODO(loonybear): When available, test mojo service without needing a
-// RenderViewTest.
-class ScreenOrientationDispatcherTest : public RenderViewTest {
+class ScreenOrientationDispatcherTest : public testing::Test {
  protected:
   void SetUp() override {
-    RenderViewTest::SetUp();
     dispatcher_.reset(new ScreenOrientationDispatcher(nullptr));
     ScreenOrientationAssociatedPtr screen_orientation;
     mojo::MakeRequestAssociatedWithDedicatedPipe(&screen_orientation);
@@ -77,6 +74,7 @@ class ScreenOrientationDispatcherTest : public RenderViewTest {
     dispatcher_->OnLockOrientationResult(request_id, result);
   }
 
+  base::MessageLoop message_loop_;
   std::unique_ptr<ScreenOrientationDispatcher> dispatcher_;
 };
 
