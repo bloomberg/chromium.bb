@@ -10,6 +10,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -43,6 +44,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -76,6 +78,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -109,6 +112,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -142,6 +146,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -175,6 +180,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -217,6 +223,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -250,6 +257,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -283,6 +291,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -316,6 +325,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -349,6 +359,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -382,6 +393,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -459,6 +471,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -492,6 +505,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -525,6 +539,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -558,6 +573,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -591,6 +607,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -624,6 +641,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "swarming": {
@@ -735,6 +753,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -776,6 +795,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -818,6 +838,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -859,6 +880,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -900,6 +922,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -941,6 +964,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -982,6 +1006,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1112,6 +1137,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1153,6 +1179,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1196,6 +1223,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1283,6 +1311,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1325,6 +1354,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1366,6 +1396,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1407,6 +1438,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1448,6 +1480,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1490,6 +1523,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1531,6 +1565,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1572,6 +1607,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1613,6 +1649,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1654,6 +1691,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1695,6 +1733,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1737,6 +1776,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1779,6 +1819,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1821,6 +1862,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1906,6 +1948,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1949,6 +1992,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -1990,6 +2034,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2032,6 +2077,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2073,6 +2119,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2115,6 +2162,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2156,6 +2204,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2197,6 +2246,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2238,6 +2288,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2280,8 +2331,18 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "viz_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -2367,6 +2428,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2408,6 +2470,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2450,6 +2513,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2491,6 +2555,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2532,6 +2597,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2573,6 +2639,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2614,6 +2681,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2743,6 +2811,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2784,6 +2853,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2827,6 +2897,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2914,6 +2985,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2956,6 +3028,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -2997,6 +3070,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3038,6 +3112,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3079,6 +3154,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3121,6 +3197,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3162,6 +3239,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3203,6 +3281,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3244,6 +3323,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3285,6 +3365,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3326,6 +3407,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3368,6 +3450,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3410,6 +3493,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3452,6 +3536,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3537,6 +3622,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3580,6 +3666,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3621,6 +3708,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3663,6 +3751,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3704,6 +3793,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3746,6 +3836,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3787,6 +3878,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3828,6 +3920,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3869,6 +3962,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -3911,8 +4005,18 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "viz_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -3997,6 +4101,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4040,6 +4145,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4083,6 +4189,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4126,6 +4233,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4258,6 +4366,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4301,6 +4410,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4345,6 +4455,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4434,6 +4545,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4477,6 +4589,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4520,6 +4633,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4563,6 +4677,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4606,6 +4721,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4649,6 +4765,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4692,6 +4809,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4735,6 +4853,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4778,6 +4897,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4821,6 +4941,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4864,6 +4985,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4907,6 +5029,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4951,6 +5074,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -4994,6 +5118,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5037,6 +5162,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5080,6 +5206,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5123,6 +5250,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5166,6 +5294,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5209,6 +5338,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5253,6 +5383,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5296,6 +5427,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5343,6 +5475,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5386,6 +5519,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5429,6 +5563,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5472,6 +5607,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5515,6 +5651,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5693,6 +5830,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5736,6 +5874,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5780,6 +5919,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5869,6 +6009,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5912,6 +6053,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5955,6 +6097,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -5998,6 +6141,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6041,6 +6185,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6084,6 +6229,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6127,6 +6273,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6170,6 +6317,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6213,6 +6361,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6256,6 +6405,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6299,6 +6449,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6342,6 +6493,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6385,6 +6537,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6429,6 +6582,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6472,6 +6626,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6515,6 +6670,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6558,6 +6714,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6601,6 +6758,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6644,6 +6802,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6687,6 +6846,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6731,6 +6891,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6774,6 +6935,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6866,6 +7028,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6909,6 +7072,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6952,6 +7116,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -6995,6 +7160,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7038,6 +7204,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7170,6 +7337,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7213,6 +7381,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7257,6 +7426,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7346,6 +7516,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7389,6 +7560,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7432,6 +7604,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7475,6 +7648,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7518,6 +7692,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7561,6 +7736,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7604,6 +7780,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7647,6 +7824,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7690,6 +7868,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7733,6 +7912,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7776,6 +7956,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7819,6 +8000,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7863,6 +8045,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7906,6 +8089,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7949,6 +8133,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -7992,6 +8177,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8035,6 +8221,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8078,6 +8265,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8121,6 +8309,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8165,6 +8354,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8208,6 +8398,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8300,6 +8491,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8385,6 +8577,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8427,6 +8620,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8469,6 +8663,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8511,6 +8706,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8598,6 +8794,7 @@
       {
         "args": [
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json"
         ],
@@ -8684,6 +8881,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8726,6 +8924,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8769,6 +8968,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8856,6 +9056,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8898,6 +9099,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8940,6 +9142,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -8982,6 +9185,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9024,6 +9228,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9066,6 +9271,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9108,6 +9314,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9150,6 +9357,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9192,6 +9400,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9234,6 +9443,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9276,6 +9486,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9318,6 +9529,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9361,6 +9573,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9403,6 +9616,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9445,6 +9659,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9487,6 +9702,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9529,6 +9745,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9571,6 +9788,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9613,6 +9831,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9656,6 +9875,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9698,6 +9918,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9833,6 +10054,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9875,6 +10097,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9917,6 +10140,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9958,6 +10182,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -9999,8 +10224,18 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "cc_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -10033,6 +10268,7 @@
       {
         "args": [
           "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json"
         ],
@@ -10119,6 +10355,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10161,6 +10398,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10204,6 +10442,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10291,6 +10530,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10333,6 +10573,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10375,6 +10616,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10416,6 +10658,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10458,6 +10701,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10499,6 +10743,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10541,6 +10786,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10582,6 +10828,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10624,6 +10871,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10665,6 +10913,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10706,6 +10955,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10747,6 +10997,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10789,6 +11040,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10831,6 +11083,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10873,6 +11126,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -10915,6 +11169,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11000,6 +11255,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11043,6 +11299,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11084,8 +11341,18 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "services_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -11117,6 +11384,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11158,6 +11426,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11199,6 +11468,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11240,6 +11510,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11281,6 +11552,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11322,6 +11594,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11365,8 +11638,18 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "viz_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -11398,6 +11681,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11510,6 +11794,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11553,6 +11838,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11596,6 +11882,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11639,6 +11926,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11682,6 +11970,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11814,6 +12103,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11857,6 +12147,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11901,6 +12192,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -11990,6 +12282,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12033,6 +12326,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12076,6 +12370,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12119,6 +12414,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12162,6 +12458,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12205,6 +12502,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12248,6 +12546,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12291,6 +12590,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12334,6 +12634,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12377,6 +12678,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12420,6 +12722,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12463,6 +12766,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12507,6 +12811,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12550,6 +12855,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12593,6 +12899,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12636,6 +12943,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12679,6 +12987,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12722,6 +13031,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12765,6 +13075,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12809,6 +13120,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12852,6 +13164,7 @@
       },
       {
         "args": [
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12946,6 +13259,7 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -12982,6 +13296,7 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
@@ -13020,6 +13335,7 @@
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--annotation=Restriction=DON_Enabled",
           "--don-enabled",
+          "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
         "merge": {
