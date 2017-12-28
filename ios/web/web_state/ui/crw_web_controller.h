@@ -106,9 +106,6 @@ class WebStateImpl;
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
 
-// Return an image to use as replacement of a missing snapshot.
-+ (UIImage*)defaultSnapshotImage;
-
 // Replaces the currently displayed content with |contentView|.  The content
 // view will be dismissed for the next navigation.
 - (void)showTransientContentView:(CRWContentView*)contentView;
@@ -154,9 +151,6 @@ class WebStateImpl;
 // Methods for navigation and properties to interrogate state.
 - (void)reload;
 - (void)stopLoading;
-// YES if the CRWWebController's view is deemed appropriate for saving in order
-// to generate an overlay placeholder view.
-- (BOOL)canUseViewForGeneratingOverlayPlaceholderView;
 
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURL;
@@ -183,10 +177,6 @@ class WebStateImpl;
 // should be used only in the case where something has changed that the web view
 // only checks on creation, such that the whole object needs to be rebuilt.
 - (void)requirePageReconstruction;
-
-// Show overlay, don't reload web page. Used when the view will be
-// visible only briefly (e.g., tablet side swipe).
-- (void)setOverlayPreviewMode:(BOOL)overlayPreviewMode;
 
 // Records the state (scroll position, form values, whatever can be harvested)
 // from the current page into the current session entry.

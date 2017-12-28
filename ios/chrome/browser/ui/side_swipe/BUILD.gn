@@ -35,7 +35,7 @@ source_set("side_swipe") {
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/web",
     "//ios/chrome/common",
-    "//ios/web",
+    "//ios/web/public",
     "//ui/base",
     "//url",
   ]

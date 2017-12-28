@@ -1014,7 +1014,7 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   }
 
   // Update page placeholder image.
-  _pagePlaceholder.image = [CRWWebController defaultSnapshotImage];
+  _pagePlaceholder.image = [self defaultSnapshotImage];
   [self getPlaceholderOverlayImageWithCompletionHandler:^(UIImage* image) {
     _pagePlaceholder.image = image;
   }];
@@ -1041,7 +1041,19 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 #pragma mark - SnapshotGeneratorDelegate
 
 - (UIImage*)defaultSnapshotImage {
-  return [CRWWebController defaultSnapshotImage];
+  static UIImage* defaultImage = nil;
+  if (!defaultImage) {
+    CGRect frame = CGRectMake(0, 0, 2, 2);
+    UIGraphicsBeginImageContext(frame.size);
+    [[UIColor whiteColor] setFill];
+    CGContextFillRect(UIGraphicsGetCurrentContext(), frame);
+
+    UIImage* result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    defaultImage = [result stretchableImageWithLeftCapWidth:1 topCapHeight:1];
+  }
+  return defaultImage;
 }
 
 - (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {

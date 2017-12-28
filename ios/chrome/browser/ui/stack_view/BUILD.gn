@@ -66,7 +66,7 @@ source_set("stack_view") {
     "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/common",
     "//ios/third_party/material_components_ios",
-    "//ios/web",
+    "//ios/web/public",
     "//net",
     "//ui/base",
     "//ui/gfx",
