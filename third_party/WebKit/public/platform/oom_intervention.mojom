@@ -4,8 +4,27 @@
 
 module blink.mojom;
 
-// Renderer interface for OOM intervention. An instance of this interface
-// will be created when NearOomMonitor detects near-OOM situation to activate
-// intervention (e.g. pausing the renderer). The instance will be destroyed
-// when the intervention is declined.
-interface OomIntervention {};
+// There are two phases to estimate a near-OOM situation. First phase takes
+// place in the browser process. When the browser detects a high memory
+// pressure it starts the second phase in the foreground renderer process,
+// as the renderer has the best knowledge about memory usage of pages.
+// The renderer schedules tasks to check memory workload from pages. If the
+// workload exceeds a threshold the renderer notifies that a high memory usage
+// is detected.
+
+// Browser side interface for OOM intervention. This interface is used to check
+// high memory usage in a renderer.
+interface OomInterventionHost {
+  // Called when a renderer detects high memory usage. |intervention_triggered|
+  // is set to true when the OOM intervention is activated in the renderer.
+  OnHighMemoryUsage(bool intervention_triggered);
+};
+
+// Renderer side interface for OOM intervention. An instance of this interface
+// will be created when the browser gets a high memory pressure signal.
+// It monitors memory usage in renderer side to detect near-OOM situation.
+interface OomIntervention {
+  // Starts monitoring memory usage in renderer side.
+  StartDetection(OomInterventionHost host,
+                 bool trigger_intervention);
+};
