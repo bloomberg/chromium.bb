@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 """
-This script converts to %time% compatible strings passed to it into seconds,
+This script converts two %time% compatible strings passed to it into seconds,
 subtracts them, and prints the difference. That's it. It's used by timeit.bat.
 """
 
@@ -11,8 +11,9 @@ import re
 import sys
 
 def ParseTime(time_string):
-  # Time looks like 15:19:30.32
-  match = re.match("(.*):(.*):(.*)\.(.*)", time_string)
+  # Time looks like 15:19:30.32 or 15:19:30,32 depending on locale
+  # (and there might be other variants as well)
+  match = re.match("(.*):(.*):(.*)[\.,](.*)", time_string)
   hours, minutes, seconds, fraction = map(int, match.groups())
   return hours * 3600 + minutes * 60 + seconds + fraction * .01
 
