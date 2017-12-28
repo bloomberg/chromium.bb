@@ -6,12 +6,36 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+// TODO(crbug.com/797848): Add unit tests for this file.
+
 namespace cryptohome {
+
+MountError BaseReplyToMountError(const base::Optional<BaseReply>& reply) {
+  if (!reply.has_value()) {
+    LOGIN_LOG(ERROR) << "MountEx failed with no reply.";
+    return MOUNT_ERROR_FATAL;
+  }
+  if (!reply->HasExtension(MountReply::reply)) {
+    LOGIN_LOG(ERROR) << "MountEx failed with no MountReply extension in reply.";
+    return MOUNT_ERROR_FATAL;
+  }
+  if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
+    LOGIN_LOG(ERROR) << "MountEx failed (CryptohomeErrorCode): "
+                     << reply->error();
+  }
+  return CryptohomeErrorToMountError(reply->error());
+}
+
+const std::string& BaseReplyToMountHash(const BaseReply& reply) {
+  return reply.GetExtension(MountReply::reply).sanitized_username();
+}
 
 AuthorizationRequest CreateAuthorizationRequest(const std::string& label,
                                                 const std::string& secret) {

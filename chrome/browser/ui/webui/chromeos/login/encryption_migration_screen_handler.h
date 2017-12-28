@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
@@ -102,9 +103,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void OnGetAvailableStorage(int64_t size);
   void WaitBatteryAndMigrate();
   void StartMigration();
-  void OnMountExistingVault(bool success,
-                            cryptohome::MountError return_code,
-                            const std::string& mount_hash);
+  void OnMountExistingVault(base::Optional<cryptohome::BaseReply> reply);
   // Removes cryptohome and shows the error screen after the removal finishes.
   void RemoveCryptohome();
   void OnRemoveCryptohome(bool success, cryptohome::MountError return_code);

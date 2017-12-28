@@ -554,6 +554,8 @@ void FakeCryptohomeClient::MountEx(
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::MountRequest& request,
     DBusMethodCallback<cryptohome::BaseReply> callback) {
+  cryptohome::CryptohomeErrorCode error = cryptohome_error_;
+  last_mount_request_ = request;
   cryptohome::BaseReply reply;
   cryptohome::MountReply* mount =
       reply.MutableExtension(cryptohome::MountReply::reply);
@@ -561,8 +563,9 @@ void FakeCryptohomeClient::MountEx(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestEncryptionMigrationUI) &&
       !request.to_migrate_from_ecryptfs()) {
-    reply.set_error(cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION);
+    error = cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION;
   }
+  reply.set_error(error);
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
@@ -617,6 +620,8 @@ void FakeCryptohomeClient::MigrateToDircrypto(
     const cryptohome::Identification& cryptohome_id,
     const cryptohome::MigrateToDircryptoRequest& request,
     VoidDBusMethodCallback callback) {
+  id_for_disk_migrated_to_dircrypto_ = cryptohome_id;
+  last_migrate_to_dircrypto_request_ = request;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
   dircrypto_migration_progress_ = 0;

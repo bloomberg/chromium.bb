@@ -95,8 +95,7 @@ class SupervisedUserTestBase : public chromeos::LoginManagerTest {
   void FillNewUserData(const std::string& display_name);
   void StartUserCreation(const std::string& button_id,
                          const std::string& expected_display_name);
-  void SigninAsSupervisedUser(bool check_homedir_calls,
-                              int user_index,
+  void SigninAsSupervisedUser(int user_index,
                               const std::string& expected_display_name);
   void SigninAsManager(int user_index);
   void RemoveSupervisedUser(size_t original_user_count,

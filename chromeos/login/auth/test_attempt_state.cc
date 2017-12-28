@@ -5,6 +5,7 @@
 #include "chromeos/login/auth/test_attempt_state.h"
 
 #include "components/user_manager/user_type.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -24,10 +25,8 @@ void TestAttemptState::PresetOnlineLoginStatus(const AuthFailure& outcome) {
 }
 
 void TestAttemptState::PresetCryptohomeStatus(
-    bool cryptohome_outcome,
     cryptohome::MountError cryptohome_code) {
   cryptohome_complete_ = true;
-  cryptohome_outcome_ = cryptohome_outcome;
   cryptohome_code_ = cryptohome_code;
 }
 
@@ -45,10 +44,6 @@ bool TestAttemptState::is_first_time_user() {
 
 bool TestAttemptState::cryptohome_complete() {
   return cryptohome_complete_;
-}
-
-bool TestAttemptState::cryptohome_outcome() {
-  return cryptohome_outcome_;
 }
 
 cryptohome::MountError TestAttemptState::cryptohome_code() {

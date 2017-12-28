@@ -18,8 +18,10 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -71,7 +73,7 @@ void PreSigninPolicyFetcher::FetchPolicy(PolicyFetchResultCallback callback) {
   key->set_secret(auth_key_.secret);
   cryptohome::MountRequest mount;
   mount.set_hidden_mount(true);
-  cryptohome::HomedirMethods::GetInstance()->MountEx(
+  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
       cryptohome::Identification(account_id_), auth, mount,
       base::Bind(&PreSigninPolicyFetcher::OnMountTemporaryUserHome,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -88,10 +90,8 @@ bool PreSigninPolicyFetcher::ForceTimeoutForTesting() {
 }
 
 void PreSigninPolicyFetcher::OnMountTemporaryUserHome(
-    bool success,
-    cryptohome::MountError return_code,
-    const std::string& mount_hash) {
-  if (!success || return_code != cryptohome::MOUNT_ERROR_NONE) {
+    base::Optional<cryptohome::BaseReply> reply) {
+  if (BaseReplyToMountError(reply) != cryptohome::MOUNT_ERROR_NONE) {
     LOG(ERROR) << "Temporary user home mount failed.";
     NotifyCallback(PolicyFetchResult::ERROR, nullptr);
     return;
