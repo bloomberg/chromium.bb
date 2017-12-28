@@ -216,8 +216,13 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     width =
         container_size.width - *left - *right - *margin_left - *margin_right;
   }
-  DCHECK_EQ(container_size.width,
-            *left + *right + *margin_left + *margin_right + *width);
+
+  // The DCHECK is useful, but only holds true when not saturated.
+  if (!(left->MightBeSaturated() || right->MightBeSaturated() ||
+        width->MightBeSaturated() || margin_left->MightBeSaturated() ||
+        margin_right->MightBeSaturated()))
+    DCHECK_EQ(container_size.width,
+              *left + *right + *margin_left + *margin_right + *width);
 
   // If calculated width is outside of min/max constraints,
   // rerun the algorithm with constrained width.
