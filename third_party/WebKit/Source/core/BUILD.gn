@@ -1783,6 +1783,7 @@ jumbo_source_set("unit_tests") {
     "exported/WebScopedWindowFocusAllowedIndicatorTest.cpp",
     "exported/WebSearchableFormDataTest.cpp",
     "exported/WebSelectorTest.cpp",
+    "exported/WebSurroundingTextTest.cpp",
     "exported/WebUserGestureTokenTest.cpp",
     "exported/WebViewTest.cpp",
     "fetch/BlobBytesConsumerTest.cpp",
