@@ -74,7 +74,7 @@ const gValidUnits = [
   'number', 'percent', 'em', 'ex', 'ch',
   'ic', 'rem', 'lh', 'rlh', 'vw',
   'vh', 'vi', 'vb', 'vmin', 'vmax',
-  'cm', 'mm', 'q', 'in', 'pt',
+  'cm', 'mm', 'Q', 'in', 'pt',
   'pc', 'px', 'deg', 'grad', 'rad',
   'turn', 's', 'ms', 'Hz', 'kHz',
   'dpi', 'dpcm', 'dppx', 'fr',

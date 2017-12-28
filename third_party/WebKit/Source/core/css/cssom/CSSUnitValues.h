@@ -69,7 +69,7 @@ class CSSUnitValues {
                                 CSSPrimitiveValue::UnitType::kMillimeters);
   }
 
-  static CSSUnitValue* q(double value) {
+  static CSSUnitValue* Q(double value) {
     return CSSUnitValue::Create(
         value, CSSPrimitiveValue::UnitType::kQuarterMillimeters);
   }

@@ -563,6 +563,7 @@ interface CDATASection : Text
 interface CSS
     static getter paintWorklet
     static method Hz
+    static method Q
     static method ch
     static method cm
     static method deg
@@ -583,7 +584,6 @@ interface CSS
     static method percent
     static method pt
     static method px
-    static method q
     static method rad
     static method registerProperty
     static method rem
