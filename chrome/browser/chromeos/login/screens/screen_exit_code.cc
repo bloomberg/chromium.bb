@@ -70,6 +70,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "WAIT_FOR_CONTAINER_READY_FINISHED";
     case ScreenExitCode::WAIT_FOR_CONTAINER_READY_ERROR:
       return "WAIT_FOR_CONTAINER_READY_ERROR";
+    case ScreenExitCode::SYNC_CONSENT_FINISHED:
+      return "SYNC_CONSENT_FINISHED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

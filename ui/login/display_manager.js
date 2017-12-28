@@ -38,6 +38,7 @@
     'unrecoverable-cryptohome-error';
 /** @const */ var SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE =
     'ad-password-change';
+/** @const */ var SCREEN_SYNC_CONSENT = 'sync-consent';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -156,7 +157,8 @@ cr.define('cr.ui.login', function() {
     SCREEN_WRONG_HWID,
     SCREEN_CONFIRM_PASSWORD,
     SCREEN_UPDATE_REQUIRED,
-    SCREEN_FATAL_ERROR
+    SCREEN_FATAL_ERROR,
+    SCREEN_SYNC_CONSENT
   ];
 
   /**

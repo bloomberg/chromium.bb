@@ -1341,7 +1341,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerCellularFirstTest, CellularFirstFlow) {
 // http://crbug.com/706017
 
 // TODO(updowndota): Add tests for Voice Interaction OptIn flow.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 32,
+
+// TODO(alemate): Add tests for Sync Consent UI.
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 33,
               "tests for new control flow are missing");
 
 }  // namespace chromeos
