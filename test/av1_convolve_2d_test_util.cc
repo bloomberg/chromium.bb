@@ -11,8 +11,9 @@
 
 #include "test/av1_convolve_2d_test_util.h"
 
-#include "av1/common/convolve.h"
+#include "aom_ports/aom_timer.h"
 #include "av1/common/common_data.h"
+#include "av1/common/convolve.h"
 
 using std::tr1::tuple;
 using std::tr1::make_tuple;
@@ -104,6 +105,51 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
   }
   delete[] input;
   delete[] output;
+  delete[] output2;
+}
+
+void AV1Convolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
+  const int w = 128, h = 128;
+  const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
+  int i, j;
+  const int has_subx = GET_PARAM(3);
+  const int has_suby = GET_PARAM(4);
+  const int is_compound = GET_PARAM(5);
+  (void)is_compound;
+
+  uint8_t *input = new uint8_t[h * w];
+
+  int output_n = out_h * MAX_SB_SIZE;
+  CONV_BUF_TYPE *output2 = new CONV_BUF_TYPE[output_n];
+
+  for (i = 0; i < h; ++i)
+    for (j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
+
+  int hfilter = EIGHTTAP_REGULAR, vfilter = EIGHTTAP_REGULAR;
+  int subx = 0, suby = 0;
+
+  InterpFilterParams filter_params_x =
+      av1_get_interp_filter_params((InterpFilter)hfilter);
+  InterpFilterParams filter_params_y =
+      av1_get_interp_filter_params((InterpFilter)vfilter);
+  const int do_average = 0;
+  ConvolveParams conv_params2 =
+      get_conv_params_no_round(0, do_average, 0, output2, MAX_SB_SIZE, 1);
+  int x;
+
+  aom_usec_timer timer;
+  aom_usec_timer_start(&timer);
+
+  for (x = 0; x < 100000; ++x)
+    test_impl(input, w, NULL, 0, out_w, out_h, &filter_params_x,
+              &filter_params_y, subx, suby, &conv_params2);
+
+  aom_usec_timer_mark(&timer);
+  const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+  printf("%d,%d convolve w: %d h: %d time: %5d ms\n", has_subx, has_suby, out_w,
+         out_h, elapsed_time / 1000);
+
+  delete[] input;
   delete[] output2;
 }
 
