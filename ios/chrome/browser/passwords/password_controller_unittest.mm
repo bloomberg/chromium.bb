@@ -1541,3 +1541,51 @@ TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
     testing::Mock::VerifyAndClearExpectations(&log_manager);
   }
 }
+
+// Tests that a touchend event from a button which contains in a password form
+// works as a submission indicator for this password form.
+TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
+  // Use a mock LogManager to detect that OnInPageNavigation has been
+  // called. TODO(crbug.com/598672): this is a hack, we should modularize the
+  // code better to allow proper unit-testing.
+  MockLogManager log_manager;
+  EXPECT_CALL(*weak_client_, GetLogManager())
+      .WillRepeatedly(Return(&log_manager));
+  EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
+  const char kExpectedMessage[] =
+      "Message: \"PasswordManager::OnInPageNavigation\"\n";
+
+  // The standard pattern is to use a __block variable WaitUntilCondition but
+  // __block variable can't be captured in C++ lambda, so as workaround it's
+  // used normal variable |get_logins_called| and pointer on it is used in a
+  // block.
+  bool expected_message_logged = false;
+  bool* p_expected_message_logged = &expected_message_logged;
+
+  EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage))
+      .WillOnce(testing::Invoke(
+          [&expected_message_logged](const std::string& message) {
+            expected_message_logged = true;
+          }));
+
+  EXPECT_CALL(log_manager,
+              LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
+      .Times(testing::AnyNumber());
+
+  LoadHtml(@"<iframe id='frame1'></iframe>");
+  ExecuteJavaScript(
+      @"document.getElementById('frame1').contentDocument.body.innerHTML = "
+       "'<form id=\"form1\">"
+       "<input type=\"text\" name=\"text\" value=\"user1\" id=\"id2\">"
+       "<input type=\"password\" name=\"password\" value=\"pw1\" id=\"id2\">"
+       "<input type=\"submit\" id=\"submit_input\"/>"
+       "</form>'");
+  ExecuteJavaScript(
+      @"document.getElementById('frame1').contentDocument.getElementById('"
+      @"submit_input').click();");
+
+  // Wait until expected message is called.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
+    return *p_expected_message_logged;
+  }));
+}

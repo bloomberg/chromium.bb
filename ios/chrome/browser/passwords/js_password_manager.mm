@@ -44,8 +44,9 @@ NSString* JSONEscape(NSString* JSONString) {
 - (void)extractForm:(NSString*)formName
       completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
-  NSString* extra = [NSString
-      stringWithFormat:@"__gCrWeb.getPasswordForm(%@)", JSONEscape(formName)];
+  NSString* extra =
+      [NSString stringWithFormat:@"__gCrWeb.getPasswordFormDataAsString(%@)",
+                                 JSONEscape(formName)];
   [self evaluateExtraScript:extra completionHandler:completionHandler];
 }
 
