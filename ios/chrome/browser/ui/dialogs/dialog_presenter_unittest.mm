@@ -52,7 +52,8 @@ class DialogPresenterTestWebState : public web::TestWebState {
 @end
 
 @implementation TestDialogPresenterDelegate
-@synthesize presenting = _presenting;
+@synthesize dialogPresenterDelegateIsPresenting =
+    _dialogPresenterDelegateIsPresenting;
 
 - (std::vector<web::WebState*>)presentedWebStates {
   return _presentedWebStates;
@@ -196,7 +197,7 @@ TEST_F(DialogPresenterTest, CancelTest) {
 TEST_F(DialogPresenterTest, DelegatePresenting) {
   // Tests that the dialog is not shown if the delegate is presenting.
   DialogPresenterTestWebState webState1;
-  delegate().presenting = YES;
+  delegate().dialogPresenterDelegateIsPresenting = YES;
   [presenter() runJavaScriptAlertPanelWithMessage:@""
                                        requestURL:GURL()
                                          webState:&webState1
@@ -206,7 +207,7 @@ TEST_F(DialogPresenterTest, DelegatePresenting) {
   EXPECT_EQ(0U, delegate().presentedWebStates.size());
 
   // The delegate is not presenting anymore, the dialog is not shown yet.
-  delegate().presenting = NO;
+  delegate().dialogPresenterDelegateIsPresenting = NO;
   EXPECT_EQ(0U, delegate().presentedWebStates.size());
 
   // Notify the presenter that it can present.

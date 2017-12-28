@@ -746,8 +746,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)installDelegatesForTab:(Tab*)tab;
 // Remove delegates from the provided |tab|.
 - (void)uninstallDelegatesForTab:(Tab*)tab;
-// Closes the current tab, with animation if applicable.
-- (void)closeCurrentTab;
 // Show the bookmarks page.
 - (void)showAllBookmarks;
 // Shows a panel within the New Tab Page.
@@ -934,25 +932,28 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @end
 
 @implementation BrowserViewController
-
+// Public synthesized propeties.
 @synthesize contentArea = _contentArea;
 @synthesize typingShield = _typingShield;
 @synthesize active = _active;
+// Private synthesized properties
 @synthesize visible = _visible;
 @synthesize viewVisible = _viewVisible;
 @synthesize broadcasting = _broadcasting;
 @synthesize dismissingModal = _dismissingModal;
 @synthesize hideStatusBar = _hideStatusBar;
 @synthesize activityOverlayCoordinator = _activityOverlayCoordinator;
-@synthesize presenting = _presenting;
 @synthesize foregroundTabWasAddedCompletionBlock =
     _foregroundTabWasAddedCompletionBlock;
-@synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
-@synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 @synthesize recentTabsCoordinator = _recentTabsCoordinator;
 @synthesize tabStripCoordinator = _tabStripCoordinator;
 @synthesize tabStripView = _tabStripView;
+@synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
+@synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 @synthesize toolbarOffsetConstraint = _toolbarOffsetConstraint;
+// DialogPresenterDelegate property
+@synthesize dialogPresenterDelegateIsPresenting =
+    _dialogPresenterDelegateIsPresenting;
 
 #pragma mark - Object lifecycle
 
@@ -1032,14 +1033,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(_isShutdown) << "-shutdown must be called before dealloc.";
 }
 
-#pragma mark - Accessibility
-
-- (BOOL)accessibilityPerformEscape {
-  [self dismissPopups];
-  return YES;
-}
-
-#pragma mark - Properties
+#pragma mark - Public Properties
 
 - (id<ApplicationCommands,
       BrowserCommands,
@@ -1101,27 +1095,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self setNeedsStatusBarAppearanceUpdate];
 }
 
-- (void)setPrimary:(BOOL)primary {
-  [_model setPrimary:primary];
-  if (primary) {
-    [self updateDialogPresenterActiveState];
-    [self updateBroadcastState];
-  } else {
-    self.dialogPresenter.active = false;
-  }
-}
-
 - (BOOL)isPlayingTTS {
   return _voiceSearchController && _voiceSearchController->IsPlayingAudio();
+}
+
+- (TabModel*)tabModel {
+  return _model;
 }
 
 - (ios::ChromeBrowserState*)browserState {
   return _browserState;
 }
 
-- (TabModel*)tabModel {
-  return _model;
-}
+#pragma mark - Private Properties
 
 - (SideSwipeController*)sideSwipeController {
   if (!_sideSwipeController) {
@@ -1274,7 +1260,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self setNeedsStatusBarAppearanceUpdate];
 }
 
-#pragma mark - IBActions
+#pragma mark - Public methods
+
+- (void)setPrimary:(BOOL)primary {
+  [_model setPrimary:primary];
+  if (primary) {
+    [self updateDialogPresenterActiveState];
+    [self updateBroadcastState];
+  } else {
+    self.dialogPresenter.active = false;
+  }
+}
 
 - (void)shieldWasTapped:(id)sender {
   [_toolbarCoordinator cancelOmniboxEdit];
@@ -1291,7 +1287,183 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self presentNewIncognitoTabTipBubbleOnInitialized];
 }
 
-#pragma mark - UIViewController methods
+- (void)browserStateDestroyed {
+  [self setActive:NO];
+  [_paymentRequestManager close];
+  _paymentRequestManager = nil;
+  [_toolbarCoordinator browserStateDestroyed];
+  [_model browserStateDestroyed];
+
+  // Disconnect child coordinators.
+  [_activityServiceCoordinator disconnect];
+  [_qrScannerCoordinator disconnect];
+  [_tabHistoryCoordinator disconnect];
+  [_pageInfoCoordinator disconnect];
+  [_externalSearchCoordinator disconnect];
+  [self.tabStripCoordinator stop];
+  self.tabStripCoordinator = nil;
+  self.tabStripView = nil;
+
+  _browserState = nullptr;
+  [_dispatcher stopDispatchingToTarget:self];
+  _dispatcher = nil;
+}
+
+- (Tab*)addSelectedTabWithURL:(const GURL&)url
+                   transition:(ui::PageTransition)transition {
+  return [self addSelectedTabWithURL:url
+                             atIndex:[_model count]
+                          transition:transition];
+}
+
+- (Tab*)addSelectedTabWithURL:(const GURL&)url
+                      atIndex:(NSUInteger)position
+                   transition:(ui::PageTransition)transition {
+  return [self addSelectedTabWithURL:url
+                             atIndex:position
+                          transition:transition
+                  tabAddedCompletion:nil];
+}
+
+- (Tab*)addSelectedTabWithURL:(const GURL&)url
+                      atIndex:(NSUInteger)position
+                   transition:(ui::PageTransition)transition
+           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
+  return [self addSelectedTabWithURL:url
+                            postData:NULL
+                             atIndex:position
+                          transition:transition
+                  tabAddedCompletion:tabAddedCompletion];
+}
+
+- (void)expectNewForegroundTab {
+  _expectingForegroundTab = YES;
+}
+
+- (void)startVoiceSearchWithOriginView:(UIView*)originView {
+  _voiceSearchButton = originView;
+  // Delay Voice Search until new tab animations have finished.
+  if (self.inNewTabAnimation) {
+    _startVoiceSearchAfterNewTabAnimation = YES;
+    return;
+  }
+
+  // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
+  // dismiss the keyboard.
+  [self closeFindInPage];
+  [[_model currentTab].webController dismissKeyboard];
+
+  // Ensure that voice search objects are created.
+  [self ensureVoiceSearchControllerCreated];
+  [self ensureVoiceSearchBarCreated];
+
+  // Present voice search.
+  [_voiceSearchBar prepareToPresentVoiceSearch];
+  _voiceSearchController->StartRecognition(self, [_model currentTab]);
+  [_toolbarCoordinator cancelOmniboxEdit];
+}
+
+- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox {
+  [_activityServiceCoordinator cancelShare];
+  [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:NO];
+  [_bookmarkInteractionController dismissSnackbar];
+  if (dismissOmnibox) {
+    [_toolbarCoordinator cancelOmniboxEdit];
+  }
+  [_dialogPresenter cancelAllDialogs];
+  [self.dispatcher hidePageInfo];
+  [self.tabTipBubblePresenter dismissAnimated:NO];
+  [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
+  if (_voiceSearchController)
+    _voiceSearchController->DismissMicPermissionsHelp();
+
+  Tab* currentTab = [_model currentTab];
+  [currentTab dismissModals];
+
+  if (currentTab) {
+    auto* findHelper = FindTabHelper::FromWebState(currentTab.webState);
+    if (findHelper) {
+      findHelper->StopFinding(^{
+        [self updateFindBar:NO shouldFocus:NO];
+      });
+    }
+  }
+
+  [_paymentRequestManager cancelRequest];
+  [_printController dismissAnimated:YES];
+  _printController = nil;
+  [self.dispatcher dismissToolsMenu];
+  [_contextMenuCoordinator stop];
+  [self dismissRateThisAppDialog];
+
+  if (self.presentedViewController) {
+    // Dismisses any other modal controllers that may be present, e.g. Recent
+    // Tabs.
+    //
+    // Note that currently, some controllers like the bookmark ones were already
+    // dismissed (in this example in -dismissBookmarkModalControllerAnimated:),
+    // but are still reported as the presentedViewController.  Calling
+    // |dismissViewControllerAnimated:completion:| again would dismiss the BVC
+    // itself, so instead check the value of |self.dismissingModal| and only
+    // call dismiss if one of the above calls has not already triggered a
+    // dismissal.
+    //
+    // To ensure the completion is called, nil is passed to the call to dismiss,
+    // and the completion is called explicitly below.
+    if (!TabSwitcherPresentsBVCEnabled() || !self.dismissingModal) {
+      [self dismissViewControllerAnimated:NO completion:nil];
+    }
+    // Dismissed controllers will be so after a delay. Queue the completion
+    // callback after that.
+    if (completion) {
+      dispatch_after(
+          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)),
+          dispatch_get_main_queue(), ^{
+            completion();
+          });
+    }
+  } else if (completion) {
+    // If no view controllers are presented, we should be ok with dispatching
+    // the completion block directly.
+    dispatch_async(dispatch_get_main_queue(), completion);
+  }
+}
+
+- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {
+  return [self.tabStripCoordinator placeholderView];
+}
+
+- (void)shutdown {
+  DCHECK(!_isShutdown);
+  _isShutdown = YES;
+  [self.tabStripCoordinator stop];
+  self.tabStripCoordinator = nil;
+  [_toolbarCoordinator stop];
+  _toolbarCoordinator = nil;
+  self.tabStripView = nil;
+  _infoBarContainer = nil;
+  _readingListMenuNotifier = nil;
+  _bookmarkModelBridge.reset();
+  [_model removeObserver:self];
+  [[UpgradeCenter sharedInstance] unregisterClient:self];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [_toolbarCoordinator setToolbarDelegate:nil];
+  if (_voiceSearchController)
+    _voiceSearchController->SetDelegate(nil);
+  [_rateThisAppDialog setDelegate:nil];
+  [_model closeAllTabs];
+  [_paymentRequestManager setActiveWebState:nullptr];
+}
+
+#pragma mark - NSObject
+
+- (BOOL)accessibilityPerformEscape {
+  [self dismissPopups];
+  return YES;
+}
+
+#pragma mark - UIViewController
 
 // Perform additional set up after loading the view, typically from a nib.
 - (void)viewDidLoad {
@@ -1531,11 +1703,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super dismissViewControllerAnimated:flag
                             completion:^{
                               BrowserViewController* strongSelf = weakSelf;
-                              [strongSelf setDismissingModal:NO];
-                              [strongSelf setPresenting:NO];
+                              strongSelf.dismissingModal = NO;
+                              strongSelf.dialogPresenterDelegateIsPresenting =
+                                  NO;
                               if (completion)
                                 completion();
-                              [[strongSelf dialogPresenter] tryToPresent];
+                              [strongSelf.dialogPresenter tryToPresent];
                             }];
 }
 
@@ -1588,9 +1761,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     }
   }
 
-  self.presenting = YES;
-  if ([_sideSwipeController inSwipe]) {
-    [_sideSwipeController resetContentView];
+  self.dialogPresenterDelegateIsPresenting = YES;
+  if ([self.sideSwipeController inSwipe]) {
+    [self.sideSwipeController resetContentView];
   }
 
   [super presentViewController:viewControllerToPresent
@@ -1603,7 +1776,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       self.presentedViewController.beingDismissed) {
     // Don't rotate while a presentation or dismissal animation is occurring.
     return NO;
-  } else if (_sideSwipeController && ![_sideSwipeController shouldAutorotate]) {
+  } else if (_sideSwipeController &&
+             ![self.sideSwipeController shouldAutorotate]) {
     // Don't auto rotate if side swipe controller view says not to.
     return NO;
   } else {
@@ -1904,28 +2078,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-- (void)browserStateDestroyed {
-  [self setActive:NO];
-  [_paymentRequestManager close];
-  _paymentRequestManager = nil;
-  [_toolbarCoordinator browserStateDestroyed];
-  [_model browserStateDestroyed];
-
-  // Disconnect child coordinators.
-  [_activityServiceCoordinator disconnect];
-  [_qrScannerCoordinator disconnect];
-  [_tabHistoryCoordinator disconnect];
-  [_pageInfoCoordinator disconnect];
-  [_externalSearchCoordinator disconnect];
-  [self.tabStripCoordinator stop];
-  self.tabStripCoordinator = nil;
-  self.tabStripView = nil;
-
-  _browserState = nullptr;
-  [_dispatcher stopDispatchingToTarget:self];
-  _dispatcher = nil;
-}
-
 - (void)installFakeStatusBar {
   CGFloat statusBarHeight = StatusBarHeight();
   CGRect statusBarFrame =
@@ -1967,7 +2119,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                           dispatcher:self.dispatcher
                         browserState:_browserState];
 
-  _sideSwipeController.toolbarInteractionHandler = _toolbarCoordinator;
+  self.sideSwipeController.toolbarInteractionHandler = _toolbarCoordinator;
 
   _toolbarCoordinator.tabModel = _model;
   [_toolbarCoordinator
@@ -2177,10 +2329,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [infoBarContainerView setFrame:infoBarFrame];
 
   // Attach the typing shield to the content area but have it hidden.
-  [_typingShield setFrame:[_contentArea frame]];
+  [self.typingShield setFrame:[_contentArea frame]];
   if (initialLayout) {
-    [[self view] insertSubview:_typingShield aboveSubview:_contentArea];
-    [_typingShield setHidden:YES];
+    [[self view] insertSubview:self.typingShield aboveSubview:_contentArea];
+    [self.typingShield setHidden:YES];
   }
 }
 
@@ -2478,17 +2630,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   _lastTapTime = CACurrentMediaTime();
 }
 
-- (BOOL)addTabIfNoTabWithNormalBrowserState {
-  if (![_model count]) {
-    if (!_isOffTheRecord) {
-      [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
-                       transition:ui::PAGE_TRANSITION_TYPED];
-      return YES;
-    }
-  }
-  return NO;
-}
-
 #pragma mark - Tab creation and selection
 
 // Called when either a tab finishes loading or when a tab with finished content
@@ -2508,33 +2649,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                              atIndex:[_model count]
                           transition:transition
                   tabAddedCompletion:nil];
-}
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                   transition:(ui::PageTransition)transition {
-  return [self addSelectedTabWithURL:url
-                             atIndex:[_model count]
-                          transition:transition];
-}
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition {
-  return [self addSelectedTabWithURL:url
-                             atIndex:position
-                          transition:transition
-                  tabAddedCompletion:nil];
-}
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
-  return [self addSelectedTabWithURL:url
-                            postData:NULL
-                             atIndex:position
-                          transition:transition
-                  tabAddedCompletion:tabAddedCompletion];
 }
 
 - (Tab*)addSelectedTabWithURL:(const GURL&)URL
@@ -2589,10 +2703,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!visibleItem)
     return NO;
   return web::GetWebClient()->IsAppSpecificURL(visibleItem->GetURL());
-}
-
-- (void)expectNewForegroundTab {
-  _expectingForegroundTab = YES;
 }
 
 - (UIImageView*)pageOpenCloseAnimationView {
@@ -2744,32 +2854,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {
-  return [self.tabStripCoordinator placeholderView];
-}
-
-- (void)shutdown {
-  DCHECK(!_isShutdown);
-  _isShutdown = YES;
-  [self.tabStripCoordinator stop];
-  self.tabStripCoordinator = nil;
-  [_toolbarCoordinator stop];
-  _toolbarCoordinator = nil;
-  self.tabStripView = nil;
-  _infoBarContainer = nil;
-  _readingListMenuNotifier = nil;
-  _bookmarkModelBridge.reset();
-  [_model removeObserver:self];
-  [[UpgradeCenter sharedInstance] unregisterClient:self];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [_toolbarCoordinator setToolbarDelegate:nil];
-  if (_voiceSearchController)
-    _voiceSearchController->SetDelegate(nil);
-  [_rateThisAppDialog setDelegate:nil];
-  [_model closeAllTabs];
-  [_paymentRequestManager setActiveWebState:nullptr];
-}
-
 #pragma mark - SnapshotOverlayProvider methods
 
 - (NSArray*)snapshotOverlaysForTab:(Tab*)tab {
@@ -2796,7 +2880,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return overlays;
 }
 
-#pragma mark -
+#pragma mark - Infobar overlay
 
 - (UIView*)infoBarOverlayViewForTab:(Tab*)tab {
   if (IsIPadIdiom()) {
@@ -2834,6 +2918,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
            CGRectGetHeight(_infoBarContainer->view().frame);
   }
 }
+
+#pragma mark - Voice search overlay
 
 - (UIView*)voiceSearchOverlayViewForTab:(Tab*)tab {
   Tab* currentTab = [_model currentTab];
@@ -3391,7 +3477,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
     drawHeaderViewFromOffset:(CGFloat)headerOffset
                      animate:(BOOL)animate {
-  if ([_sideSwipeController inSwipe])
+  if ([self.sideSwipeController inSwipe])
     return;
 
   CGRect footerFrame = CGRectZero;
@@ -3432,7 +3518,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
      changeTopContentPadding:(BOOL)changeTopContentPadding
            scrollingToOffset:(CGFloat)contentOffset {
   DCHECK(webViewProxy);
-  if ([_sideSwipeController inSwipe])
+  if ([self.sideSwipeController inSwipe])
     return;
 
   CGRect footerFrame;
@@ -3474,6 +3560,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 #pragma mark - Install OverScrollActionController method.
+
 - (void)setOverScrollActionControllerToStaticNativeContent:
     (StaticHtmlNativeContent*)nativeContent {
   if (!IsIPadIdiom()) {
@@ -4152,10 +4239,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                       WindowOpenDisposition::CURRENT_TAB);
 }
 
-- (void)focusOmnibox {
-  [_toolbarCoordinator focusOmnibox];
-}
-
 #pragma mark - MainContentUI
 
 - (MainContentUIState*)mainContentUIState {
@@ -4175,8 +4258,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                  editingText:![self isFirstResponder]];
 }
 
-#pragma mark -
-
 // Induce an intentional crash in the browser process.
 - (void)induceBrowserCrash {
   CHECK(false);
@@ -4185,6 +4266,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // for easier identification.
   CHECK(true);
 }
+
+#pragma mark - UrlLoader (public protocol)
 
 - (void)loadURL:(const GURL&)url
              referrer:(const web::Referrer&)referrer
@@ -4393,14 +4476,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kLocationBarBecomesFirstResponderNotification
                     object:nil];
-  [_sideSwipeController setEnabled:NO];
+  [self.sideSwipeController setEnabled:NO];
   if ([[_model currentTab].webController wantsKeyboardShield]) {
-    [[self view] insertSubview:_typingShield aboveSubview:_contentArea];
-    [_typingShield setAlpha:0.0];
-    [_typingShield setHidden:NO];
+    [[self view] insertSubview:self.typingShield aboveSubview:_contentArea];
+    [self.typingShield setAlpha:0.0];
+    [self.typingShield setHidden:NO];
     [UIView animateWithDuration:0.3
                      animations:^{
-                       [_typingShield setAlpha:1.0];
+                       [self.typingShield setAlpha:1.0];
                      }];
   }
   [[OmniboxGeolocationController sharedInstance]
@@ -4411,22 +4494,22 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!_locationBarHasFocus)
     return;  // TODO(crbug.com/244366): This should not be necessary.
   _locationBarHasFocus = NO;
-  [_sideSwipeController setEnabled:YES];
+  [self.sideSwipeController setEnabled:YES];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kLocationBarResignsFirstResponderNotification
                     object:nil];
   [UIView animateWithDuration:0.3
       animations:^{
-        [_typingShield setAlpha:0.0];
+        [self.typingShield setAlpha:0.0];
       }
       completion:^(BOOL finished) {
         // This can happen if one quickly resigns the omnibox and then taps
         // on the omnibox again during this animation. If the animation is
         // interrupted and the toolbar controller is first responder, it's safe
-        // to assume the |_typingShield| shouldn't be hidden here.
+        // to assume |self.typingShield| shouldn't be hidden here.
         if (!finished && [_toolbarCoordinator isOmniboxFirstResponder])
           return;
-        [_typingShield setHidden:YES];
+        [self.typingShield setHidden:YES];
       }];
   [[OmniboxGeolocationController sharedInstance]
       locationBarDidResignFirstResponder:_browserState];
@@ -4624,7 +4707,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
     }
     if (command.shouldFocusOmnibox) {
-      [weakSelf focusOmnibox];
+      [weakSelf.dispatcher focusOmnibox];
     }
   };
 
@@ -4864,8 +4947,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::MOBILE];
 }
 
-#pragma mark - Command Handling
-
 - (void)closeCurrentTab {
   Tab* currentTab = [_model currentTab];
   NSUInteger tabIndex = [_model indexOfTab:currentTab];
@@ -4889,73 +4970,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
         exitingPage, 0, YES, IsPortrait(), ^{
           [exitingPage removeFromSuperview];
         });
-  }
-}
-
-- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
-                           dismissOmnibox:(BOOL)dismissOmnibox {
-  [_activityServiceCoordinator cancelShare];
-  [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:NO];
-  [_bookmarkInteractionController dismissSnackbar];
-  if (dismissOmnibox) {
-    [_toolbarCoordinator cancelOmniboxEdit];
-  }
-  [_dialogPresenter cancelAllDialogs];
-  [self.dispatcher hidePageInfo];
-  [self.tabTipBubblePresenter dismissAnimated:NO];
-  [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
-  if (_voiceSearchController)
-    _voiceSearchController->DismissMicPermissionsHelp();
-
-  Tab* currentTab = [_model currentTab];
-  [currentTab dismissModals];
-
-  if (currentTab) {
-    auto* findHelper = FindTabHelper::FromWebState(currentTab.webState);
-    if (findHelper) {
-      findHelper->StopFinding(^{
-        [self updateFindBar:NO shouldFocus:NO];
-      });
-    }
-  }
-
-  [_paymentRequestManager cancelRequest];
-  [_printController dismissAnimated:YES];
-  _printController = nil;
-  [self.dispatcher dismissToolsMenu];
-  [_contextMenuCoordinator stop];
-  [self dismissRateThisAppDialog];
-
-  if (self.presentedViewController) {
-    // Dismisses any other modal controllers that may be present, e.g. Recent
-    // Tabs.
-    //
-    // Note that currently, some controllers like the bookmark ones were already
-    // dismissed (in this example in -dismissBookmarkModalControllerAnimated:),
-    // but are still reported as the presentedViewController.  Calling
-    // |dismissViewControllerAnimated:completion:| again would dismiss the BVC
-    // itself, so instead check the value of |self.dismissingModal| and only
-    // call dismiss if one of the above calls has not already triggered a
-    // dismissal.
-    //
-    // To ensure the completion is called, nil is passed to the call to dismiss,
-    // and the completion is called explicitly below.
-    if (!TabSwitcherPresentsBVCEnabled() || !self.dismissingModal) {
-      [self dismissViewControllerAnimated:NO completion:nil];
-    }
-    // Dismissed controllers will be so after a delay. Queue the completion
-    // callback after that.
-    if (completion) {
-      dispatch_after(
-          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)),
-          dispatch_get_main_queue(), ^{
-            completion();
-          });
-    }
-  } else if (completion) {
-    // If no view controllers are presented, we should be ok with dispatching
-    // the completion block directly.
-    dispatch_async(dispatch_get_main_queue(), completion);
   }
 }
 
@@ -5044,29 +5058,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     [_rateThisAppDialog dismiss];
     _rateThisAppDialog = nil;
   }
-}
-
-- (void)startVoiceSearchWithOriginView:(UIView*)originView {
-  _voiceSearchButton = originView;
-  // Delay Voice Search until new tab animations have finished.
-  if (self.inNewTabAnimation) {
-    _startVoiceSearchAfterNewTabAnimation = YES;
-    return;
-  }
-
-  // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
-  // dismiss the keyboard.
-  [self closeFindInPage];
-  [[_model currentTab].webController dismissKeyboard];
-
-  // Ensure that voice search objects are created.
-  [self ensureVoiceSearchControllerCreated];
-  [self ensureVoiceSearchBarCreated];
-
-  // Present voice search.
-  [_voiceSearchBar prepareToPresentVoiceSearch];
-  _voiceSearchController->StartRecognition(self, [_model currentTab]);
-  [_toolbarCoordinator cancelOmniboxEdit];
 }
 
 #pragma mark - ToolbarOwner
@@ -5279,7 +5270,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   // Reset horizontal stack view.
   [sideSwipeView removeFromSuperview];
-  [_sideSwipeController setInSwipe:NO];
+  [self.sideSwipeController setInSwipe:NO];
   [_infoBarContainer->view() setHidden:NO];
 }
 
@@ -5518,7 +5509,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)activityServiceDidEndPresenting {
-  self.presenting = NO;
+  self.dialogPresenterDelegateIsPresenting = NO;
   [self.dialogPresenter tryToPresent];
 }
 

@@ -136,9 +136,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // and dismissal animations of the Voice Search UI. |originView| can be nil.
 - (void)startVoiceSearchWithOriginView:(UIView*)originView;
 
-// Focuses the omnibox.
-- (void)focusOmnibox;
-
 // Dismisses all presented views, excluding the omnibox if |dismissOmnibox| is
 // NO, then calls |completion|.
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion

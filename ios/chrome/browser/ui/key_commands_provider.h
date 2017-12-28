@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/toolbar/clean/omnibox_focuser.h"
 
 @protocol KeyCommandsPlumbing<NSObject>
 
@@ -40,20 +41,19 @@
 // Called to reopen the last closed tab.
 - (void)reopenClosedTab;
 
-// Called to focus the omnibox.
-- (void)focusOmnibox;
-
 @end
 
 // Handles the keyboard commands registration and handling for the
 // BrowserViewController.
 @interface KeyCommandsProvider : NSObject
 
-- (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
-                baseViewController:(UIViewController*)baseViewController
-                        dispatcher:
-                            (id<ApplicationCommands, BrowserCommands>)dispatcher
-                       editingText:(BOOL)editingText;
+- (NSArray*)
+keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
+    baseViewController:(UIViewController*)baseViewController
+            dispatcher:
+                (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
+                    dispatcher
+           editingText:(BOOL)editingText;
 
 @end
 
