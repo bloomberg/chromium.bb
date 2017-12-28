@@ -75,6 +75,9 @@ DefaultRendererFactory::CreateVideoDecoders(
     const RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     GpuVideoAcceleratorFactories* gpu_factories) {
+  // TODO(crbug.com/789597): Move this (and CreateAudioDecoders) into a decoder
+  // factory, and just call |decoder_factory_| here.
+
   // Create our video decoders and renderer.
   std::vector<std::unique_ptr<VideoDecoder>> video_decoders;
 
@@ -92,9 +95,12 @@ DefaultRendererFactory::CreateVideoDecoders(
                                             &video_decoders);
     }
 
-    video_decoders.push_back(std::make_unique<GpuVideoDecoder>(
-        gpu_factories, request_overlay_info_cb, target_color_space,
-        media_log_));
+    // MojoVideoDecoder replaces any VDA for this platform when it's enabled.
+    if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
+      video_decoders.push_back(std::make_unique<GpuVideoDecoder>(
+          gpu_factories, request_overlay_info_cb, target_color_space,
+          media_log_));
+    }
   }
 
 #if !defined(MEDIA_DISABLE_LIBVPX)

@@ -239,6 +239,10 @@ const base::Feature kMemoryPressureBasedSourceBufferGC{
 // still missing and this feature should only be enabled for testing.
 const base::Feature kMojoCdm{"MojoCdm", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable MojoVideoDecoder.  Has no effect except on Android currently.
+const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
