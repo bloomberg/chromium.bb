@@ -217,6 +217,7 @@ void ContainerFloatingBehavior::SetCanonicalBounds(
       gfx::Size(kKeyboardWidth, container->bounds().height());
   gfx::Point keyboard_location =
       GetPositionForShowingKeyboard(keyboard_size, display_bounds);
+  SavePosition(keyboard_location);
   container->SetBounds(gfx::Rect(keyboard_location, keyboard_size));
 }
 
