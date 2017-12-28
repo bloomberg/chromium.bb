@@ -11,19 +11,16 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
-#include "content/browser/devtools/worker_devtools_agent_host.h"
-
-namespace network {
-struct URLLoaderCompletionStatus;
-}
+#include "ipc/ipc_listener.h"
 
 namespace content {
 
-struct ResourceRequest;
-struct ResourceResponseHead;
+class BrowserContext;
 
-class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
+class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
+                                       public IPC::Listener {
  public:
   using List = std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
   using Map = std::map<std::string,
@@ -31,13 +28,13 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   using ServiceWorkerIdentifier =
       ServiceWorkerDevToolsManager::ServiceWorkerIdentifier;
 
-  ServiceWorkerDevToolsAgentHost(WorkerId worker_id,
+  ServiceWorkerDevToolsAgentHost(int worker_process_id,
+                                 int worker_route_id,
                                  const ServiceWorkerIdentifier& service_worker,
                                  bool is_installed_version);
 
-  void UnregisterWorker();
-
   // DevToolsAgentHost overrides.
+  BrowserContext* GetBrowserContext() override;
   std::string GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
@@ -45,22 +42,24 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   void Reload() override;
   bool Close() override;
 
-  // WorkerDevToolsAgentHost overrides.
-  void OnAttachedStateChanged(bool attached) override;
+  // DevToolsAgentHostImpl overrides.
+  void AttachSession(DevToolsSession* session) override;
+  void DetachSession(int session_id) override;
+  bool DispatchProtocolMessage(DevToolsSession* session,
+                               const std::string& message) override;
 
+  // IPC::Listener implementation.
+  bool OnMessageReceived(const IPC::Message& msg) override;
+
+  void PauseForDebugOnStart();
+  bool IsPausedForDebugOnStart();
+  bool IsReadyForInspection();
+  void WorkerReadyForInspection();
+  void WorkerRestarted(int worker_process_id, int worker_route_id);
+  void WorkerDestroyed();
   void WorkerVersionInstalled();
   void WorkerVersionDoomed();
 
-  void NavigationPreloadRequestSent(const std::string& request_id,
-                                    const ResourceRequest& request);
-  void NavigationPreloadResponseReceived(const std::string& request_id,
-                                         const GURL& url,
-                                         const ResourceResponseHead& head);
-  void NavigationPreloadCompleted(
-      const std::string& request_id,
-      const network::URLLoaderCompletionStatus& status);
-
-  int64_t service_worker_version_id() const;
   GURL scope() const;
 
   // If the ServiceWorker has been installed before the worker instance started,
@@ -74,7 +73,24 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   bool Matches(const ServiceWorkerIdentifier& other);
 
  private:
+  enum WorkerState {
+    WORKER_UNINSPECTED,
+    WORKER_INSPECTED,
+    WORKER_TERMINATED,
+    WORKER_PAUSED_FOR_DEBUG_ON_START,
+    WORKER_READY_FOR_DEBUG_ON_START,
+    WORKER_PAUSED_FOR_REATTACH,
+  };
+
   ~ServiceWorkerDevToolsAgentHost() override;
+
+  void AttachToWorker();
+  void DetachFromWorker();
+  void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
+
+  WorkerState state_;
+  int worker_process_id_;
+  int worker_route_id_;
   std::unique_ptr<ServiceWorkerIdentifier> service_worker_;
   base::Time version_installed_time_;
   base::Time version_doomed_time_;

@@ -9,26 +9,30 @@
 
 #include <map>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
-#include "content/public/browser/devtools_agent_host.h"
+#include "content/common/content_export.h"
+#include "url/gurl.h"
+
+namespace network {
+struct URLLoaderCompletionStatus;
+}
 
 namespace content {
 
 class BrowserContext;
+struct ResourceRequest;
+struct ResourceResponseHead;
 class ServiceWorkerDevToolsAgentHost;
 class ServiceWorkerContextCore;
 
-// Manages WorkerDevToolsAgentHost's for Service Workers.
-// This class lives on UI thread.
+// Manages ServiceWorkerDevToolsAgentHost's. This class lives on UI thread.
 class CONTENT_EXPORT ServiceWorkerDevToolsManager {
  public:
-  using WorkerId = std::pair<int, int>;
-  using AgentList = std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
-
   class Observer {
    public:
     virtual void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) {}
@@ -99,7 +103,20 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
   void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);
-  void RemoveInspectedWorkerData(WorkerId id);
+  void NavigationPreloadRequestSent(int worker_process_id,
+                                    int worker_route_id,
+                                    const std::string& request_id,
+                                    const ResourceRequest& request);
+  void NavigationPreloadResponseReceived(int worker_process_id,
+                                         int worker_route_id,
+                                         const std::string& request_id,
+                                         const GURL& url,
+                                         const ResourceResponseHead& head);
+  void NavigationPreloadCompleted(
+      int worker_process_id,
+      int worker_route_id,
+      const std::string& request_id,
+      const network::URLLoaderCompletionStatus& status);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -108,25 +125,26 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   bool debug_service_worker_on_start() const {
     return debug_service_worker_on_start_;
   }
+  void AgentHostDestroyed(ServiceWorkerDevToolsAgentHost* agent_host);
 
  private:
   friend struct base::DefaultSingletonTraits<ServiceWorkerDevToolsManager>;
   friend class ServiceWorkerDevToolsAgentHost;
 
-  using AgentHostMap = std::map<WorkerId, ServiceWorkerDevToolsAgentHost*>;
+  using WorkerId = std::pair<int, int>;
 
   ServiceWorkerDevToolsManager();
   ~ServiceWorkerDevToolsManager();
 
-  AgentHostMap::iterator FindExistingWorkerAgentHost(
-      const ServiceWorkerIdentifier& service_worker_id);
-
-  // Resets to its initial state as if newly created.
-  void ResetForTesting();
-
   base::ObserverList<Observer> observer_list_;
-  AgentHostMap workers_;
   bool debug_service_worker_on_start_;
+
+  // We retatin agent hosts as long as the service worker is alive.
+  std::map<WorkerId, scoped_refptr<ServiceWorkerDevToolsAgentHost>> live_hosts_;
+
+  // Clients may retain agent host for the terminated shared worker,
+  // and we reconnect them when shared worker is restarted.
+  base::flat_set<ServiceWorkerDevToolsAgentHost*> terminated_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDevToolsManager);
 };

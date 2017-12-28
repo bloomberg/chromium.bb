@@ -973,12 +973,10 @@ Response NetworkHandler::SetBypassServiceWorker(bool bypass) {
 }
 
 void NetworkHandler::NavigationPreloadRequestSent(
-    int worker_version_id,
     const std::string& request_id,
     const ResourceRequest& request) {
   if (!enabled_)
     return;
-  const std::string version_id(base::IntToString(worker_version_id));
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
@@ -1002,13 +1000,11 @@ void NetworkHandler::NavigationPreloadRequestSent(
 }
 
 void NetworkHandler::NavigationPreloadResponseReceived(
-    int worker_version_id,
     const std::string& request_id,
     const GURL& url,
     const ResourceResponseHead& head) {
   if (!enabled_)
     return;
-  const std::string version_id(base::IntToString(worker_version_id));
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   size_t iterator = 0;
   std::string name;
