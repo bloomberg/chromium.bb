@@ -73,7 +73,9 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
       ConstraintSpace(), Style(), intrinsic_block_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), Style(), &container_builder_)
+  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
+                        Node().IsFixedContainer(), Node().GetScrollbarSizes(),
+                        ConstraintSpace(), Style())
       .Run();
 
   // TODO(mstensho): Propagate baselines.
